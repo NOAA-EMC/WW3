@@ -1,0 +1,271 @@
+\section{~Introduction}
+\vssub
+\subsection{~About this manual}
+\vssub
+
+This is the user manual and system documentation of version \WWver\ of the
+full-spectral third-generation wind-wave model \ww. This model has been
+developed at the Marine Modeling and Analysis Branch (MMAB) of the
+Environmental Modeling Center (EMC) of the National Centers for Environmental
+Prediction (NCEP). It is based on WAVEWATCH~I and WAVEWATCH~II as developed at
+Delft University of Technology, and NASA Goddard Space Flight Center,
+respectively. \ws\ differs from its predecessors in all major aspects; i.e.,
+governing equations, program structure, numerical and physical
+approaches. %\wt\ is a trademark of the United States government.
+
+This manual describes the governing equations, numerical approaches,
+compilation, and running of \ws. The format of a combined user manual and
+system documentation has been chosen, to give users the necessary background
+to upgrade the model according to their own specifications.  This approach is
+becoming more important, as \ws\ is developing into a wave modeling framework
+rather than a wave model. By design, a user can apply his or her numerical or
+physical approaches, and thus develop a new wave model based on the \ws\
+framework. In such an approach, optimization, parallelization, nesting, input
+and output service programs from the framework can be easily shared between
+actual models.  Whereas this document is intended to be complete and
+self-contained, this is not the case for all elements in the system
+documentation. For additional system details, reference is made to the source
+code, which is fully documented.
+
+The governing equations and numerical approaches used in this model are
+described in chapters~\ref{chapt:eq} and \ref{chapt:num}. Running the model is
+described in chapter~\ref{chapt:run}. Installing \ws\ is described in
+chapter~\ref{chapt:impl}. Finally, a short system documentation is given in
+chapter~\ref{chapt:sys}. A thorough knowledge of \ws\ can be obtained by
+following chapters~\ref{chapt:eq} through \ref{chapt:impl}. A shortcut is to
+first install the model (chapter~\ref{chapt:impl}), and then successively
+modify input files in example runs (chapter~\ref{chapt:run}).
+
+\vspace{\baselineskip} \pb \noindent The present model version (\WWver) is the
+first official release since model version 2.22. Since the latter release
+massive modifications have been made to the code.  Some of the major
+modifications are:
+
+\begin{list}{$\bullet$}{\rightmargin 5mm \parsep 0mm \itemsep 0mm}
+
+\item
+Development of the multi-grid or wave model driver {\file ww3\_multi}. In this
+driver, the full two-way interaction between all grids is considered at the
+time step level. The development of this approach is described in
+\cite{tol:MMAB07b, tol:OMOD08b}. Idealized test cases {\file mww3\_test\_01}
+through {\file 05}, and real life test cases {\file mww3\_case\_01} through
+{\file 03} have been added to the standard test cases to demonstrate the
+capabilities of this approach.
+
+\item
+Source term slots for linear wind input and surf-zone physics have been added.
+New source term packages have been included such as linear input, surf
+breaking, \wam\-4 input and dissipation and bottom scattering. The exact
+nonlinear interactions routines (WRT) have been upgraded to version 5 of
+this package.
+
+\item
+To make the development of a multi-grid model possible, a new dynamic data
+structure was introduced to the model. This has little or no impact on the
+model user, but it has major consequences for model developers.
+
+\item
+A model version with a continuously moving grid has been developed
+\citep[model version 3.02,][]{tol:OMOD05b}. This model version is intended
+only for deep water without land masses or currents. As part of this
+implementation, the calculation of advection time steps in Eq.~(\ref{eq:dtpl})
+has been revised. To test this new option, a hurricane test {\file ww3\_ts3}
+has been added to the standard test cases.
+
+\item
+In model version 3.04 the track output file format is converted to a
+sequential file, using a single file server process, and file server options
+are introduced for the restart files \citep{tol:MMAB03b}. In later model
+version, the option is added to designate some processes to perform output
+only.
+
+\item
+Model version 3.05 includes expanded GrADS scripts to plot spectra and source
+terms, adding black and white options, and an alternative Cartesian display
+format.
+
+\item
+Wind stresses in the model are now described as vectors, paving the way for
+flux parameterizations that allow for stresses that do not line up with the
+wind direction. Additional output fields are added. Partitioning of spectral
+data can now be done for the entire wave model grid (new output type), and
+provides partitioned wind sea and swell output fields (publication in
+preparation).
+
+\item
+With the introduction of the multi-grid model driver, active boundary points
+can now be placed at the outer points of the grid. Also, grid points can now
+be defined as inactive rather than land, and an expanded definition of the
+grid status map allows for drying out and wetting of model grid points.
+
+\item
+In the multi-grid model driver, changes of spectral resolution between grids
+are now allowed.
+
+\item
+Time steps can now be fractions of seconds, although general time management
+still propagates the solution by integer seconds.
+
+\end{list}
+
+\vspace{\baselineskip} \noindent 
+A note of caution. \ww\ includes wave-current interactions. The implementation
+of these interactions has only been tested in idealized test cases. Only
+limited tests in realistic conditions have been performed.
+
+\vspace{\baselineskip} \noindent 
+Up to date information on this model can be found (including bugs and bug
+fixes) on the \ww\ web page, and comments, questions and suggestions should be
+directed to the corresponding E-mail address
+
+\begin{center}
+http://polar.ncep.noaa.gov/waves/wavewatch \\
+NCEP.EMC.wavewatch@NOAA.gov
+\end{center}
+
+\noindent
+We will redirect questions regarding contributions from outside NCEP to the
+respective authors of the codes.
+
+
+\vssub
+\subsection{~Licensing terms}
+\vssub
+
+Starting with model version 3.14, \ww\ is distributed under the following
+licensing terms:
+
+\vspace \baselineskip \noindent
+\centerline{
+\rule[1mm]{47mm}{.5mm} {\rm start of licensing terms}
+\rule[1mm]{47mm}{.5mm}}
+
+\vspace \baselineskip \noindent 
+Software, as understood herein, shall be broadly interpreted as being
+inclusive of algorithms, source code, object code, data bases and related
+documentation, all of which shall be furnished free of charge to the Licensee.
+
+Corrections, upgrades or enhancements may be furnished and, if furnished,
+shall also be furnished to the Licensee without charge. NOAA, however, is not
+required to develop or furnish such corrections, upgrades or enhancements.
+
+NOAA's software, whether that initially furnished or corrections or upgrades,
+are furnished “as is.” NOAA furnishes its software without any warranty
+whatsoever and is not responsible for any direct, indirect or consequential
+damages that may be incurred by the Licensee.  Warranties of merchantability,
+fitness for any particular purpose, title, and non-infringement, are
+specifically negated.
+
+The Licensee is not required to develop any software related to the licensed
+software.  However, in the event that the Licensee does so, the Licensee is
+required to offer same to NOAA for inclusion under the instant licensing terms
+with NOAA's licensed software along with documentation regarding its
+principles, use and its advantages.  This includes changes to the wave model
+proper including numerical and physical approaches to wave modeling, and
+boundary layer parameterizations embedded in the wave model The Licensee is
+encouraged but not obligated to provide pre-and post processing tools for
+model input and output.  The software required to be offered shall not include
+additional models to which the wave model may be coupled, such as oceanic or
+atmospheric circulation models. The software provided by the Licensee shall be
+consistent with the latest model version available to the Licensee, and
+interface routines to the software provided shall conform to programming
+standards as outlined in the model documentation. The software offered to NOAA
+shall be offered as is, without any warranties whatsoever and without any
+liability for damages whatsoever.  NOAA shall not be required to include a
+Licensee's software as part of its software.  Licensee's offered software
+shall not include software developed by others.
+
+A Licensee may reproduce sufficient software to satisfy its needs.  All copies
+shall bear the name of the software with any version number as well as
+replicas of any applied copyright notice, trademark notice, other notices and
+credit lines.  Additionally, if the copies have been modified, e.g. with
+deletions or additions, this shall be so stated and identified.
+
+All of Licensee's employees who have a need to use the software may have
+access to the software but only after reading the instant license and stating,
+in writing, that they have read and understood the license and have agreed to
+its terms.  Licensee is responsible for employing reasonable efforts to assure
+that only those of its employees that should have access to the software, in
+fact, have access.
+
+The Licensee may use the software for any purpose relating to sea state
+prediction.
+
+No disclosure of any portion of the software, whether by means of a media or
+verbally, may be made to any third party by the Licensee or the Licensee's
+employees
+
+The Licensee is responsible for compliance with any applicable export or
+import control laws of the United States.
+
+\vspace \baselineskip \noindent
+\centerline{
+\rule[1mm]{48mm}{.5mm} {\rm end of licensing terms}
+\rule[1mm]{48mm}{.5mm}}
+
+\vspace \baselineskip \noindent
+The software will be distributed through our web site after the Licensee has
+agreed to the license terms.
+
+
+\vssub
+\subsection{~Copyrights and trademarks}
+\vssub
+
+\ww\ \copyright\ 2009 National Weather Service, National Oceanic and
+Atmospheric Administration.  All rights reserved. \ww\ is a trademark of the
+National Weather Service. No unauthorized use without permission.
+
+\vssub
+\subsection{~Contributors and acknowledgments}
+\vssub
+
+Even in its original development, when I was working on the code mostly on my
+own on the development of \ww, many have contributed to the success of the
+model. With the expansion of physical and numerical parameterizations
+available, the list of contributors to this model is growing. I would like to
+recognize the following contributors (in alphabetic order) :
+
+\begin{list}{\ldots}{ }
+\item [Henrique Alves] (Metocean Engineers, Australia) \\
+Support of code development while at NCEP, shallow water physics packages.
+\item [Fabrice Ardhuin] (Service Hydrographique et Oc\'{e}anographique de la
+Marine, France) \\
+Various  physics packages.
+\item [Nico Booij] (Delft University of Technology, The Netherlands) \\
+Original design of source code pre-processor ({\code w3adc}), basic method of
+documentation and other programming habits. Spatially varying wavenumber grid.
+\item [Dmitry V. Chalikov] (ESSIC, Univ. of Maryland, USA) \\ Co-author of the
+\cite{tol:JPO96} input and dissipation parameterizations and source code.
+\item [Arun Chawla](Science Applications International Corporation, USA) \\
+Support of code development at NCEP, GRIB packing, automated grid generation
+software \citep{tol:MMAB07a, tol:OMOD08a}.
+%\item [Vladimir Krasnopolsky] (Science Applications International Corporation,
+%  USA) \\
+%Neural Network nonlinear interaction approaches.
+\item [Barbara Tracy] (US Army Corps of Engineers, ERDC-CHL, USA) \\
+Spectral partitioning
+\item [Gerbrant Ph. van Vledder] (Alkyon Hydraulic Consultancy \& Research,
+NL) \\ 
+Webb-Resio-Tracy exact nonlinear interaction routines, as well as some of the
+original service routines.
+\end{list}
+
+\noindent
+The development of \ww\ has been an ongoing process for well over a
+decade. The development of WAVEWATCH I was entirely funded through my
+Ph.D. work at Delft University. The development of WAVEWATCH II has been
+funded entirely through my position as a National Research Council Resident
+Research Associate at NASA, Goddard Space Flight Center. The initial
+development of WAVEWATCH III version 1.18 was entirely funded by NOAA/NCEP,
+with most funding provided by the NOAA High Performance Computing and
+Communication (HPCC) office. Developments of version 2.22 have been funded
+similarly through NOAA/NCEP. Since then, funding is provided by NCEP, but also
+by many partners outside NCEP. Much of the work at NCEP has been performed
+under contract by SAIC.
+
+I would finally like to thank all users who have reported errors and glitches,
+or have made suggestions for improvements, particularly those who have
+beta-tested this and previous model release.
+
+%\bpage

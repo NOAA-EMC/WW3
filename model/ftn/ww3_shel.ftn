@@ -1,0 +1,1196 @@
+!/ ------------------------------------------------------------------- /
+      PROGRAM W3SHEL
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         29-May-2009 |
+!/                  +-----------------------------------+
+!/
+!/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
+!/    19-Jan-2000 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    08-Mar-2000 : Fix time managament bug.            ( version 2.04 )
+!/    09-Jan-2001 : Fix FOUT allocation bug.            ( version 2.05 )
+!/    24-Jan-2001 : Flat grid version.                  ( version 2.06 )
+!/    25-Jan-2002 : Data assimilation set up.           ( version 2.17 )
+!/    08-May-2002 : Clean up for timers.                ( version 2.21 )
+!/    26-Aug-2002 : Generalizing timer.                 ( version 2.22 )
+!/    26-Dec-2002 : Continuously moving grid.           ( version 3.02 )
+!/    01-Aug-2003 : Continuously moving grid, input.    ( version 3.03 )
+!/    07-Oct-2003 : Fixed NHMAX test.                   ( version 3.05 )
+!/    05-Jan-2005 : Multiple grid version.              ( version 3.06 )
+!/    04-May-2005 : Change to MPI_COMM[_WAVE.           ( version 3.07 )
+!/    26-Jun-2006 : Add wiring for output type 6.       ( version 3.07 )
+!/    28-Jun-2006 : Adding file name preamble.          ( version 3.09 )
+!/    28-Oct-2006 : Adding partitioning options.        ( version 3.10 )
+!/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+!/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/
+!/    Copyright 2009 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     A generic shell for WAVEWATCH III, using preformatted
+!     input fields.
+!
+!  2. Method :
+!
+!     Driver for the actual wave model (W3WAVE).
+!
+!     Files : ww3_shel.inp  Input commands for shell.
+!             level.ww3     Water level fields (optional).
+!             current.ww3   Current fields (optional).
+!             wind.ww3      Water level fields (optional).
+!             ice.ww3       Water level fields (optional).
+!             data0.ww3     Files with asiimlation data (optional).
+!             data1.ww3
+!             data2.ww3
+!
+!     The file names of the input files are set in W3FLDO
+!
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!       NHMAX   I.P.  Maximum number of homogeneous fields.
+!
+!       NDSI    Int.  General input unit number (shell only).
+!       NDSS    Int.  Scratch file.
+!       NDSO    Int.  General output unit number (shell only).
+!       NDSE    Int.  Error output unit number (shell only).
+!       NDST    Int.  Test output unit number (shell only).
+!       NDSF    I.A.  Field files unit numbers (shell only).
+!       FLH     L.A.  Flags for homogeneous fields.
+!       NH      I.A.  Number of times for homogeneous fields.
+!       THO     I.A.  Times of homogeneous fields.
+!       TIME0   I.A.  Starting time.
+!       TIMEN   I.A.  Ending time.
+!     ----------------------------------------------------------------
+!
+!       NDS, NTRACE, ..., see W3WAVE
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMOD    Subr. W3GDATMD Set nummber of data structures
+!      W3SETG    Subr.   Id.    Point to data structure.
+!      W3NDAT    Subr. W3WDATMD Set nummber of data structures
+!      W3SETW    Subr.   Id.    Point to data structure.
+!      W3NMOD    Subr. W3ADATMD Set nummber of data structures
+!      W3NAUX    Subr.   Id.    Point to data structure.
+!      W3NOUT    Subr. W3ODATMD Set nummber of data structures
+!      W3SETO    Subr.   Id.    Point to data structure.
+!      W3NINP    Subr. W3IDATMD Set nummber of data structures
+!      W3SETI    Subr.   Id.    Point to data structure.
+!
+!      NEXTLN    Subr. W3SERVMD Skip to next input line.
+!      STME21    Subr. W3TIMEMD Print date and time readable.
+!      DSEC21    Func.   Id.    Difference between times.
+!      TICK21    Subr.   Id.    Increment time.
+!
+!      W3FLDO    Subr. W3FLDSMD Opens and checks input files.
+!      W3FLDG    Subr.   Id.    Reads from input files.
+!      W3FLDD    Subr.   Id.    Reads from data files.
+!      W3FLDH    Subr.   Id.    Udates homogeneous fields.
+!
+!      W3INIT    Subr. W3INITMD Wave model initialization.
+!      W3WAVE    Subr. W3WAVEMD Wave model.
+!      W3WDAS    Subr. W3WDASMD Data assimilation interface.
+!
+!      MPI_INIT, MPI_COMM_SIZE, MPI_COMM_RANK, MPI_BARRIER,
+!         MPI_FINALIZE
+!                Subr.          Standard MPI routines.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     None, stand-alone program.
+!
+!  6. Error messages :
+!
+!     - Checks on I-O.
+!     - Check on time interval.
+!
+!  7. Remarks :
+!
+!     - A rigourous input check is made in W3INIT.
+!     - See W3WDAS for documentation on the set-up of the data
+!       assimilation.
+!
+!  8. Structure :
+!
+!     ----------------------------------------------------------------
+!        0.   Set up data structures.                ( W3NMOD, etc. )
+!        1.   I-O setup.
+!          a  For shell.
+!          b  For WAVEWATCH III.
+!          c  Local parameters.
+!        2.   Define input fields
+!        3.   Set time frame.
+!        4.   Define output
+!          a  Loop over types, do
+!        +--------------------------------------------------------+
+!        | b    Process standard line                             |
+!        | c    If type 1: fields of mean wave parameters         |
+!        | d    If type 2: point output                           |
+!        | e    If type 3: track output                           |
+!        | f    If type 4: restart files                          |
+!        | g    If type 5: boundary output                        |
+!        | h    If type 6: separated wave fields                  |
+!        +--------------------------------------------------------+
+!        5.   Initialzations
+!          a  Wave model.                              ( W3INIT )
+!          b  Read homogeneous field data.
+!          c  Prepare input files.                     ( W3FLDO )
+!          d  Set field times.
+!        6.   If no input fields required, run model in a single
+!             sweep and exit.                          ( W3WAVE )
+!        7.   Run model with input
+!             Do until end time is reached
+!        +--------------------------------------------------------+
+!        | a  Determine next time interval and input fields.      |
+!        |   1  Preparation                                       |
+!        |      Loop over input fields                            |
+!        | +------------------------------------------------------|
+!        | | 2  Check if update is needed                         |
+!        | | 3  Update time and fields                 ( W3FLDG ) |
+!        | |                                           ( W3FLDH ) |
+!        | | 4  Update next ending time                           |
+!        | +------------------------------------------------------|
+!        | b  Run wave model.                          ( W3WAVE ) |
+!        | c  If requested, data assimilation.         ( W3WDAS ) |
+!        | d  Final output if needed.                  ( W3WAVE ) |
+!        | e  Check time                                          |
+!        +--------------------------------------------------------+
+!     ----------------------------------------------------------------
+!
+!  9. Switches :
+!
+!       !/SHRD  Switch for shared / distributed memory architecture.
+!       !/DIST  Id.
+!       !/MPI   Id.
+!
+!       !/LLG   Spherical grid.
+!       !/XYG   Cartesian grid.
+!       !/MGW   Moving grid wind correction.
+!       !/MGP   Moving grid propagation correction.
+!
+!       !/T     Enable test output.
+!       !/O7    Echo input homogeneous fields.
+!
+!       !/NCO   NCEP NCO modifications for operational implementation.
+!
+!       !/F90   Timer function included for F90.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD
+      USE W3WDATMD, ONLY: TIME, W3NDAT, W3DIMW, W3SETW
+      USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
+      USE W3IDATMD
+      USE W3ODATMD, ONLY: W3NOUT, W3SETO
+      USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR,             &
+                          NOGRD, IDOUT, FNMPRE, IOSTYP
+!/
+      USE W3FLDSMD
+      USE W3INITMD
+      USE W3WAVEMD
+      USE W3WDASMD
+!/
+      USE W3IOPOMD
+      USE W3SERVMD, ONLY : NEXTLN, EXTCDE
+      USE W3TIMEMD
+!
+      IMPLICIT NONE
+!
+!/MPI      INCLUDE "mpif.h"
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local PARAMETER statements
+!/
+      INTEGER, PARAMETER  :: NHMAX =    200
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST,     &
+                             NDSF(7), NDSEN, NDS(13), NTRACE(2),      &
+                             TIME0(2), TIMEN(2), TTIME(2), TTT(2),    &
+                             IERR, J, I, ODAT(30), ILOOP, NPTS,       &
+                             NH(4), THO(2,4,NHMAX), RCLD(5:7),        &
+                             NDT(5:7), NDTNEW, MPI_COMM = -99, JJ,    &
+                             IPRT(6)
+!/F90      INTEGER             :: CLKT0, CLKTN, CLKDT, CLKINC, CLKMAX
+!/MPI      INTEGER             :: IERR_MPI
+      REAL                :: FACTOR, DTTST, XX, YY, NODATA(5:7),      &
+                             HA(NHMAX,4), HD(NHMAX,4), HS(NHMAX,4)
+!/F90      REAL                :: CLKFIN
+      REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),        &
+                             DATA1(:,:), DATA2(:,:)
+      LOGICAL             :: FLLSTL, FLLSTI, FLH(8), FLFLG, FLHOM,    &
+                             FLT, TFLAGI, FLGDAS(3), FLGRD(NOGRD),    &
+                             PRTFRM
+!
+      CHARACTER(LEN=1)    :: COMSTR
+      CHARACTER(LEN=3)    :: IDSTR(8), IDTST
+      CHARACTER(LEN=6)    :: YESXNO
+      CHARACTER(LEN=10)   :: PN
+      CHARACTER(LEN=10),                                              &
+              ALLOCATABLE :: PNAMES(:)
+      CHARACTER(LEN=13)   :: IDFLDS(8)
+      CHARACTER(LEN=20)   :: STRNG
+      CHARACTER(LEN=23)   :: DTME21
+      CHARACTER(LEN=30)   :: IDOTYP(6)
+      CHARACTER(LEN=80)   :: LINE
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      DATA IDFLDS / 'water levels ' , 'currents     ' ,               &
+                    'winds        ' , 'ice fields   ' ,               &
+                    'mean param.  ' , '1D spectra   ' ,               &
+                    '2D spectra   ' , 'moving grid  ' /
+      DATA IDOTYP / 'Fields of mean wave parameters' ,                &
+                    'Point output                  ' ,                &
+                    'Track point output            ' ,                &
+                    'Restart files                 ' ,                &
+                    'Nesting data                  ' ,                &
+                    'Partitioned wave field data   ' /
+      DATA IDSTR  / 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1', 'DT2',  &
+                    'MOV' /
+!
+!/LLG      FACTOR = 1.
+!/XYG      FACTOR = 1.E-3
+!
+!/F90      CALL SYSTEM_CLOCK ( CLKT0, CLKINC, CLKMAX )
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 0.  Set up data structures
+!
+      CALL W3NMOD ( 1, 6, 6 )
+      CALL W3NDAT (    6, 6 )
+      CALL W3NAUX (    6, 6 )
+      CALL W3NOUT (    6, 6 )
+      CALL W3NINP (    6, 6 )
+!
+      CALL W3SETG ( 1, 6, 6 )
+      CALL W3SETW ( 1, 6, 6 )
+      CALL W3SETA ( 1, 6, 6 )
+      CALL W3SETO ( 1, 6, 6 )
+      CALL W3SETI ( 1, 6, 6 )
+!
+!/SHRD      NAPROC = 1
+!/SHRD      IAPROC = 1
+!
+!/MPI      CALL MPI_INIT      ( IERR_MPI )
+!/MPI      MPI_COMM = MPI_COMM_WORLD
+!/MPI      CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
+!/MPI      CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
+!/MPI      IAPROC = IAPROC + 1
+!
+!/NCO/!     IF ( IAPROC .EQ. 1 ) CALL W3TAGB                         &
+!/NCO/!                         ('WAVEFCST',1998,0007,0050,'NP21   ')
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 1.  IO set-up
+! 1.a For shell
+!
+      NDSI   = 10
+      NDSS   = 90
+      NDSO   =  6
+      NDSE   =  6
+      NDST   =  6
+      NDSF(1)  = 11
+      NDSF(2)  = 12
+      NDSF(3)  = 13
+      NDSF(4)  = 14
+      NDSF(5)  = 15
+      NDSF(6)  = 16
+      NDSF(7)  = 17
+!
+!/NCO/!
+!/NCO/! Redo according to NCO
+!/NCO/!
+!/NCO      NDSI   = 11
+!/NCO      NDSS   = 90
+!/NCO      NDSO   =  6
+!/NCO      NDSE   = NDSO
+!/NCO      NDST   = NDSO
+!/NCO      NDSF(1)  = 12
+!/NCO      NDSF(2)  = 13
+!/NCO      NDSF(3)  = 14
+!/NCO      NDSF(4)  = 15
+!/NCO      NDSF(5)  = 16
+!/NCO      NDSF(6)  = 17
+!/NCO      NDSF(7)  = 18
+!
+      NAPOUT = 1
+      NAPERR = 1
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
+!
+      IF ( IAPROC .EQ. NAPERR ) THEN
+          NDSEN  = NDSE
+        ELSE
+          NDSEN  = -1
+        END IF
+!
+      JJ     = LEN_TRIM(FNMPRE)
+      OPEN (NDSI,FILE=FNMPRE(:JJ)//'ww3_shel.inp',STATUS='OLD',       &
+            ERR=2000,IOSTAT=IERR)
+      REWIND (NDSI)
+      READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
+      IF (COMSTR.EQ.' ') COMSTR = '$'
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
+!
+! 1.b For WAVEWATCH III (See W3INIT)
+!
+      NDS( 1) = 20
+      NDS( 2) =  6
+!     NDS( 3) =  6
+      NDS( 3) = 21
+      NDS( 4) =  6
+      NDS( 5) = 30
+      NDS( 6) = 30
+      NDS( 7) = 31
+      NDS( 8) = 32
+      NDS( 9) = 33
+      NDS(10) = 35
+      NDS(11) = 22
+      NDS(12) = 23
+      NDS(13) = 34
+!
+      NTRACE(1) =  NDS(3)
+      NTRACE(2) =  10
+!
+!/NCO/!
+!/NCO/! Redo according to NCO
+!/NCO/!
+!/NCO      NDS( 1) = 51
+!/NCO      NDS( 2) = NDSO
+!/NCO      NDS( 3) = NDSO
+!/NCO      NDS( 4) = NDSO
+!/NCO      NDS( 5) = 20
+!/NCO      NDS( 6) = 21
+!/NCO      NDS( 7) = 52
+!/NCO      NDS( 8) = 53
+!/NCO      NDS( 9) = 22
+!/NCO      NDS(10) = 71
+!/NCO      NDS(11) = 23
+!/NCO      NDS(12) = 54
+!/NCO      NDS(13) = 55
+!/NCO      NTRACE(1) = NDSO
+!
+!/T      WRITE (NDST,9000) (NDS(I),I=1,12)
+!/T      WRITE (NDST,9001) (NTRACE(I),I=1,2)
+!
+! 1.c Local parameters
+!
+      FLLSTL = .FALSE.
+      FLLSTI = .FALSE.
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 2.  Define input fields
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
+!
+      DO J=1, 7
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        IF ( J .LT. 4 ) THEN
+            READ (NDSI,*,END=2001,ERR=2002) FLAGS(J), FLH(J)
+            FLH(J) = FLH(J) .AND. FLAGS(J)
+          ELSE
+            READ (NDSI,*,END=2001,ERR=2002) FLAGS(J)
+            FLH(J) = .FALSE.
+          END IF
+        IF ( FLAGS(J) ) THEN
+            YESXNO = 'YES/--'
+          ELSE
+            YESXNO = '---/NO'
+          END IF
+        IF ( FLH(J) ) THEN
+            STRNG  = '(homogeneous field) '
+          ELSE
+            STRNG  = '                    '
+          END IF
+        IF ( IAPROC .EQ. NAPOUT )                                     &
+              WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
+        END DO
+!
+      FLAGS(8) = .FALSE.
+      FLH(8)   = .FALSE.
+!/MGW      FLAGS(8) = .TRUE.
+!/MGP      FLAGS(8) = .TRUE.
+      IF ( FLAGS(8) .AND. IAPROC.EQ.NAPOUT )                          &
+           WRITE (NDSO,921) IDFLDS(8), 'YES/--', ' '
+!
+      FLFLG  = FLAGS(1) .OR. FLAGS(2) .OR. FLAGS(3) .OR. FLAGS(4)     &
+                        .OR. FLAGS(5) .OR. FLAGS(6) .OR. FLAGS(7)
+      FLHOM  = FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLAGS(8)
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
+!
+!/T      WRITE (NDST,9020) FLFLG, FLAGS, FLHOM, FLH
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 3.  Set time frame
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930)
+!
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) TIME0
+      CALL STME21 ( TIME0 , DTME21 )
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,931) DTME21
+      TIME = TIME0
+!
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) TIMEN
+      CALL STME21 ( TIMEN , DTME21 )
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) DTME21
+!
+      DTTST  = DSEC21 ( TIME0 , TIMEN )
+      IF ( DTTST .LE. 0. ) GOTO 2003
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 4.  Define output
+!
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) IOSTYP
+      IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
+!
+      IF ( IAPROC .EQ. NAPOUT ) THEN
+          IF ( IOSTYP .EQ. 0 ) THEN
+              WRITE (NDSO,940) 'No dedicated output process, ' //   &
+                               'parallel file system required.'
+          ELSE IF ( IOSTYP .EQ. 1 ) THEN
+              WRITE (NDSO,940) 'No dedicated output process, ' //   &
+                               'any file system.'
+          ELSE IF ( IOSTYP .EQ. 2 ) THEN
+              WRITE (NDSO,940) 'Single dedicated output process.'
+          ELSE IF ( IOSTYP .EQ. 3 ) THEN
+              WRITE (NDSO,940) 'Multiple dedicated output processes.'
+          ELSE
+              WRITE (NDSO,940) 'IOSTYP NOT RECOGNIZED'
+          END IF
+        END IF
+!
+! 4.a Loop over types
+!
+      NPTS   = 0
+!
+      DO J=1, 6
+!
+! 4.b Process standard line
+!
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        READ (NDSI,*,END=2001,ERR=2002) (ODAT(I),I=5*(J-1)+1,5*J)
+        ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
+!
+        IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
+            TTIME(1) = ODAT(5*(J-1)+1)
+            TTIME(2) = ODAT(5*(J-1)+2)
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) DTME21
+            TTIME(1) = ODAT(5*(J-1)+4)
+            TTIME(2) = ODAT(5*(J-1)+5)
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) DTME21
+            TTIME(1) = 0
+            TTIME(2) = 0
+            DTTST    = REAL ( ODAT(5*(J-1)+3) )
+            CALL TICK21 ( TTIME , DTTST  )
+            CALL STME21 ( TTIME , DTME21 )
+            IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
+                   ODAT(5*(J-1)+2) .NE. ODAT(5*(J-1)+5) ) .AND.       &
+                   IAPROC .EQ. NAPOUT ) THEN
+                IF ( DTME21(9:9) .NE. '0' ) THEN
+                    WRITE (NDSO,1944) DTME21( 9:19)
+                  ELSE IF ( DTME21(10:10) .NE. '0' ) THEN
+                    WRITE (NDSO,2944) DTME21(10:19)
+                  ELSE
+                    WRITE (NDSO,3944) DTME21(12:19)
+                  END IF
+              END IF
+!
+            IF ( J .EQ. 1 ) THEN
+!
+! 4.c Type 1: fields of mean wave parameters
+!
+                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+                READ (NDSI,*,END=2001,ERR=2002) FLGRD
+!
+                IF ( IAPROC .EQ. NAPOUT ) THEN
+                    FLT    = .TRUE.
+                    DO I=1, NOGRD
+                      IF ( FLGRD(I) ) THEN
+                          IF ( FLT ) THEN
+                              WRITE (NDSO,1945) IDOUT(I)
+                              FLT    = .FALSE.
+                            ELSE
+                              WRITE (NDSO,1946) IDOUT(I)
+                            END IF
+                        END IF
+                      END DO
+                    IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
+                  END IF
+!
+              ELSE IF ( J .EQ. 2 ) THEN
+!
+! 4.d Type 2: point output
+!
+                DO ILOOP=1, 2
+                  JJ     = LEN_TRIM(FNMPRE)
+                  IF ( ILOOP .EQ. 1 ) THEN
+                      NDSI2  = NDSI
+                      IF ( IAPROC .EQ. 1 ) OPEN                       &
+                          (NDSS,FILE=FNMPRE(:JJ)//'ww3_shel.scratch')
+                    ELSE
+                      NDSI2  = NDSS
+!/MPI                      CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
+                      OPEN (NDSS,FILE=FNMPRE(:JJ)//'ww3_shel.scratch')
+                      REWIND (NDSS)
+                      ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                    END IF
+!
+                  NPTS   = 0
+                  DO
+                    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+                    READ (NDSI2,*,END=2001,ERR=2002) XX, YY, PN
+                    IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
+                        BACKSPACE (NDSI)
+                        READ (NDSI,'(A)') LINE
+                        WRITE (NDSS,'(A)') LINE
+                      END IF
+                    IF ( PN .EQ. 'STOPSTRING' ) EXIT
+                    NPTS   = NPTS + 1
+                    IF ( ILOOP .EQ. 1 ) CYCLE
+                    X(NPTS)      = XX
+                    Y(NPTS)      = YY
+                    PNAMES(NPTS) = PN
+                    IF ( IAPROC .EQ. NAPOUT ) THEN
+                        IF ( NPTS .EQ. 1 ) THEN
+                            WRITE (NDSO,2945) FACTOR*XX, FACTOR*YY, PN
+                          ELSE
+                            WRITE (NDSO,2946) NPTS, FACTOR*XX,        &
+                                                    FACTOR*YY, PN
+                          END IF
+                      END IF
+                    END DO
+!
+                  IF ( IAPROC.EQ.1 .AND. ILOOP.EQ.1 ) CLOSE (NDSS)
+                  END DO
+!
+                IF ( NPTS.EQ.0 .AND. IAPROC.EQ.NAPOUT )               &
+                     WRITE (NDSO,2947)
+                IF ( IAPROC .EQ. 1 ) THEN
+!/MPI                    CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+                    CLOSE (NDSS,STATUS='DELETE')
+                  ELSE
+                    CLOSE (NDSS)
+!/MPI                    CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+                  END IF
+!
+              ELSE IF ( J .EQ. 3 ) THEN
+!
+! 4.e Type 3: track output
+!
+                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+                READ (NDSI,*,END=2001,ERR=2002) TFLAGI
+!
+                IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
+                IF ( IAPROC .EQ. NAPOUT ) THEN
+                    IF ( .NOT. TFLAGI ) THEN
+                        WRITE (NDSO,3945) 'input', 'UNFORMATTED'
+                      ELSE
+                        WRITE (NDSO,3945) 'input', 'FORMATTED'
+                      END IF
+                  END IF
+!
+              ELSE IF ( J .EQ. 4 ) THEN
+!
+! 4.f Type 4: restart files (no additional data)
+!
+              ELSE IF ( J .EQ. 5 ) THEN
+!
+! 4.g Type 5: nesting data (no additional data)
+!
+              ELSE IF ( J .EQ. 6 ) THEN
+!
+! 4.h Type 6: partitioning
+!
+!             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
+!
+                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+                READ (NDSI,*,END=2001,ERR=2002) IPRT, PRTFRM
+!
+                IF ( IAPROC .EQ. NAPOUT ) THEN
+                    IF ( PRTFRM ) THEN
+                        YESXNO = 'YES/--'
+                      ELSE
+                        YESXNO = '---/NO'
+                      END IF
+                    WRITE (NDSO,6945) IPRT, YESXNO
+                  END IF
+!
+              END IF
+!
+          END IF
+!
+        END DO
+!
+      IF ( NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
+!
+!/T      WRITE (NDST,9040) ODAT
+!/T      WRITE (NDST,9041) FLGRD
+!/T      WRITE (NDST,9042) IPRT, PRTFRM
+!
+! ... End loop over output types
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 5.  Initializations
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950)
+!
+! 5.a Wave model
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) 'Wave model ...'
+      CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, NPTS, X, Y,   &
+                    PNAMES, IPRT, PRTFRM, MPI_COMM )
+!
+      ALLOCATE ( XXX(NX,NY) )
+!
+! 5.b Homogeneous field data
+!
+      IF ( FLHOM ) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
+                        'Homogeneous field data (and moving grid) ...'
+          NH     = 0
+!
+! ... Start of loop.
+!
+          DO
+            CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+            READ (NDSI,*,END=2001,ERR=2002) IDTST
+            IF ( IDTST.NE.IDSTR(1) .AND. IDTST.NE.IDSTR(2) .AND.      &
+                 IDTST.NE.IDSTR(3) .AND. IDTST.NE.IDSTR(8) .AND.      &
+                 IDTST.NE.'STP' ) GOTO 2005
+!
+! ... Stop conditions
+!
+            IF ( IDTST .EQ. 'STP' ) THEN
+                EXIT
+              ELSE
+                BACKSPACE ( NDSI )
+              END IF
+!
+! ... Store data
+!
+            DO J=1, 4
+              I      = J
+              IF ( J .EQ. 4 ) I = 8
+              IF ( IDTST .EQ. IDSTR(I) ) THEN
+                  NH(J)    = NH(J) + 1
+                  IF ( NH(J) .GT. NHMAX ) GOTO 2006
+                  IF ( J .EQ. 1 ) THEN
+                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+                           THO(1,J,NH(J)), THO(2,J,NH(J)),            &
+                           HS(NH(J),J)
+                    ELSE IF ( J .EQ. 2 ) THEN
+                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+                           THO(1,J,NH(J)), THO(2,J,NH(J)),            &
+                           HA(NH(J),J), HD(NH(J),J)
+                    ELSE IF ( J .EQ. 3 ) THEN
+                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+                           THO(1,J,NH(J)), THO(2,J,NH(J)),            &
+                           HA(NH(J),J), HD(NH(J),J), HS(NH(J),J)
+                    ELSE IF ( J .EQ. 4 ) THEN
+                     READ (NDSI,*,END=2001,ERR=2002) IDTST,           &
+                           THO(1,J,NH(J)), THO(2,J,NH(J)),            &
+                           HA(NH(J),J), HD(NH(J),J)
+                    END IF
+                END IF
+              END DO
+!
+            END DO
+!
+! ... End of loop, output
+!
+!/O7          DO J=1, 3
+!/O7            IF ( FLH(J) .AND. IAPROC.EQ.NAPOUT ) THEN
+!/O7                WRITE (NDSO,952) NH(J), IDFLDS(J)
+!/O7                DO I=1, NH(J)
+!/O7                  IF ( J .EQ. 1 ) THEN
+!/O7                      WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+!/O7                                          HS(I,J)
+!/O7                    ELSE IF ( J .EQ. 2 ) THEN
+!/O7                      WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+!/O7                                          HA(I,J), HD(I,J)
+!/O7                    ELSE IF ( J .EQ. 3 ) THEN
+!/O7                      WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+!/O7                                          HA(I,J), HD(I,J), HS(I,J)
+!/O7                    END IF
+!/O7                  END DO
+!/O7              END IF
+!/O7            END DO
+!
+!/O7          IF ( FLAGS(8) .AND. IAPROC.EQ.NAPOUT ) THEN
+!/O7              WRITE (NDSO,952) NH(4), IDFLDS(8)
+!/O7              DO I=1, NH(J)
+!/O7                WRITE (NDSO,953) I, THO(1,4,I), THO(2,4,I),       &
+!/O7                                    HA(I,4), HD(I,4)
+!/O7                END DO
+!/O7              END IF
+!
+          IF ( ( FLH(1) .AND. (NH(1).EQ.0) ) .OR.                     &
+               ( FLH(2) .AND. (NH(2).EQ.0) ) .OR.                     &
+               ( FLH(3) .AND. (NH(3).EQ.0) ) .OR.                     &
+               ( FLAGS(8) .AND. (NH(4).EQ.0) ) ) GOTO 2007
+!
+        END IF
+!
+! 5.c Opening field and data files
+!
+      IF ( FLFLG ) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
+                                          'Preparing input files ...'
+!
+          DO J=1, 4
+            IF ( FLAGS(J) ) THEN
+                IF ( FLH(J) ) THEN
+                    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+                  ELSE
+                    JJ     = LEN_TRIM(FNMPRE)
+                    CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
+                                  NDSEN, NX, NY, X0, Y0, SX, SY,      &
+                                  IERR, FPRE=FNMPRE(:JJ) )
+                    IF ( IERR .NE. 0 ) GOTO 2222
+                    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
+                  END IF
+              ELSE
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+              END IF
+          END DO
+!
+          DO J=5, 7
+            IF ( FLAGS(J) ) THEN
+                CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
+                             RCLD(J), NY, NODATA(J), Y0, SX, SY,     &
+                             IERR, FPRE=FNMPRE(:JJ) )
+                IF ( IERR .NE. 0 ) GOTO 2222
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
+                             RCLD(J), NODATA(J)
+              ELSE
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+              END IF
+          END DO
+!
+        END IF
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 6.  Model without input
+!
+      IF ( .NOT. FLFLG ) THEN
+!
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
+          CALL W3WAVE ( 1, TIMEN )
+!
+          GOTO 2222
+!
+        END IF
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 7.  Model with input
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970)
+  700 CONTINUE
+!
+! 7.a Determine next time interval and input fields
+! 7.a.1 Preparation
+!
+      TTIME  = TIMEN
+!
+      CALL STME21 ( TIME0 , DTME21 )
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,971) DTME21
+!
+!/T      WRITE (NDST,9070) '0-N', TIME0, TTIME,           &
+!/T                        IDSTR(1), FLAGS(1), TLN,       &
+!/T                        IDSTR(2), FLAGS(2), TC0, TCN,  &
+!/T                        IDSTR(3), FLAGS(3), TW0, TWN,  &
+!/T                        IDSTR(4), FLAGS(4), TIN,       &
+!/T                        IDSTR(5), FLAGS(5), T0N,       &
+!/T                        IDSTR(6), FLAGS(6), T1N,       &
+!/T                        IDSTR(7), FLAGS(7), T2N,       &
+!/T                        IDSTR(8), FLAGS(8), TG0, TGN
+!
+      DO J=1,8
+!
+        IF ( FLAGS(J) ) THEN
+!
+! 7.a.2 Check if update is needed
+!
+            TTT(1) = TFN(1,J)
+            TTT(2) = TFN(2,J)
+            IF ( TTT(1) .EQ. -1 ) THEN
+                DTTST  = 0.
+              ELSE
+                DTTST  = DSEC21 ( TIME0 , TTT )
+              END IF
+!
+!/T            WRITE (NDST,9071) IDSTR(J), DTTST
+!
+! 7.a.3 Update time and fields / data
+!
+            IF ( DTTST .LE. 0. ) THEN
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
+!
+                IF ( J .EQ. 1 ) THEN
+                    IF ( FLH(J) ) THEN
+                        CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,  &
+                          TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                          TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
+                      ELSE
+                        CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
+                          NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
+                          TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
+                      END IF
+                    IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
+                  ELSE IF ( J .EQ. 2 ) THEN
+                    IF ( FLH(J) ) THEN
+                        CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,  &
+                          TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                          TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+                      ELSE
+                        CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
+                          NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
+                          TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+                      END IF
+                  ELSE IF ( J .EQ. 3 ) THEN
+                    IF ( FLH(J) ) THEN
+                        CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,  &
+                          TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
+                          TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+                      ELSE
+                        CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
+                          NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
+                          TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+                      END IF
+                  ELSE IF ( J .EQ. 4 ) THEN
+                    CALL W3FLDG ('READ', IDSTR(J), NDSF(J),           &
+                         NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,   &
+                         TTT, XXX, XXX, XXX, TIN, XXX, XXX, ICEI, IERR)
+                    IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
+                  ELSE IF ( J .EQ. 5 ) THEN
+                    CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,     &
+                         NDSEN, TIME0, T0N, RCLD(J), NDT(J),          &
+                         NDTNEW, DATA0, IERR )
+                    IF ( IERR .LT. 0 ) THEN
+                        FLAGS(J) = .FALSE.
+                        IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
+                      ELSE
+                        NDT(J) = NDTNEW
+                        IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
+                        ALLOCATE ( DATA0(RCLD(J),NDT(J)) )
+                        CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
+                             NDSEN, TIME0, T0N, RCLD(J), NDT(J),      &
+                             NDTNEW, DATA0, IERR )
+                      END IF
+                  ELSE IF ( J .EQ. 6 ) THEN
+                    CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,     &
+                         NDSEN, TIME0, T1N, RCLD(J), NDT(J),          &
+                         NDTNEW, DATA1, IERR )
+                    IF ( IERR .LT. 0 ) THEN
+                        FLAGS(J) = .FALSE.
+                        IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
+                      ELSE
+                        NDT(J) = NDTNEW
+                        IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
+                        ALLOCATE ( DATA1(RCLD(J),NDT(J)) )
+                        CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
+                             NDSEN, TIME0, T1N, RCLD(J), NDT(J),      &
+                             NDTNEW, DATA1, IERR )
+                      END IF
+                  ELSE IF ( J .EQ. 7 ) THEN
+                    CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,     &
+                         NDSEN, TIME0, T2N, RCLD(J), NDT(J),          &
+                         NDTNEW, DATA2, IERR )
+                    IF ( IERR .LT. 0 ) THEN
+                        FLAGS(J) = .FALSE.
+                        IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
+                      ELSE
+                        NDT(J) = NDTNEW
+                        IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
+                        ALLOCATE ( DATA2(RCLD(J),NDT(J)) )
+                        CALL W3FLDD ('READ', IDSTR(J), NDSF(J), NDST, &
+                             NDSEN, TIME0, T2N, RCLD(J), NDT(J),      &
+                             NDTNEW, DATA2, IERR )
+                      END IF
+                  ELSE IF ( J .EQ. 8 ) THEN
+                    CALL W3FLDM (4, NDST, NDSEN, TIME0, TIMEN, NH(4), &
+                                 NHMAX, THO, HA, HD, TG0, GA0, GD0,   &
+                                 TGN, GAN, GDN, IERR)
+                  END IF
+!
+                IF ( IERR.GT.0 ) GOTO 2222
+                IF ( IERR.LT.0 .AND. IAPROC.EQ.NAPOUT )               &
+                                 WRITE (NDSO,973) IDFLDS(J)
+!
+              END IF
+!
+! 7.a.4 Update next ending time
+!
+            IF ( FLAGS(J) ) THEN
+                TTT    = TFN(:,J)
+                DTTST  = DSEC21 ( TTT , TTIME )
+                IF ( DTTST.GT.0. .AND. .NOT.                          &
+                       ( (FLLSTL .AND. J.EQ.1) .OR.                   &
+                         (FLLSTI .AND. J.EQ.4) ) ) THEN
+                    TTIME  = TTT
+                  END IF
+              END IF
+!
+          END IF
+!
+        END DO
+!
+      TDN = TTIME
+      CALL TICK21 ( TDN, 1. )
+      DO J=5, 7
+        IF ( FLAGS(J) ) THEN
+            TTT    = TFN(:,J)
+            DTTST  = DSEC21 ( TTT , TDN )
+            IF ( DTTST.GT.0. ) TDN = TTT
+          END IF
+        END DO
+!
+!/T      WRITE (NDST,9072) '0-N', TIME0, TTIME,           &
+!/T                        IDSTR(1), FLAGS(1), TLN,       &
+!/T                        IDSTR(2), FLAGS(2), TC0, TCN,  &
+!/T                        IDSTR(3), FLAGS(3), TW0, TWN,  &
+!/T                        IDSTR(4), FLAGS(4), TIN,       &
+!/T                        IDSTR(5), FLAGS(5), T0N,       &
+!/T                        IDSTR(6), FLAGS(6), T1N,       &
+!/T                        IDSTR(7), FLAGS(7), T2N, TDN,  &
+!/T                        IDSTR(8), FLAGS(8), TG0, TGN
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
+!
+! 7.b Run the wave model for the given interval
+!
+      TIME0  = TTIME
+!
+      CALL W3WAVE ( 1, TIME0 )
+!
+      IF ( FLLSTL ) FLAGS(1) = .FALSE.
+      IF ( FLLSTI ) FLAGS(4) = .FALSE.
+!
+! 7.c Run data assimilation at ending time
+!
+      DTTST  = DSEC21 ( TIME , TDN )
+      IF ( DTTST .EQ. 0 ) THEN
+          CALL STME21 ( TIME0 , DTME21 )
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,975) DTME21
+!
+          FLGDAS(1) = DSEC21(TIME,T0N) .EQ. 0.
+          FLGDAS(2) = DSEC21(TIME,T1N) .EQ. 0.
+          FLGDAS(3) = DSEC21(TIME,T2N) .EQ. 0.
+!
+          CALL W3WDAS ( FLGDAS, RCLD, NDT, DATA0, DATA1, DATA2 )
+!
+! 7.d Call wave model again after data assimilation for output only
+!
+          DTTST  = DSEC21 ( TIME , TIMEN )
+
+          IF ( DTTST .EQ. 0. ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
+              CALL W3WAVE ( 1, TIME0 )
+            END IF
+        END IF
+!
+! 7.e Check times
+!
+      DTTST  = DSEC21 ( TIME0 , TIMEN )
+      IF ( DTTST .GT. 0. ) GOTO 700
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!     End of shell
+!
+      GOTO 2222
+!
+! Error scape locations
+!
+ 2000 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
+      GOTO 2222
+!
+ 2001 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
+      GOTO 2222
+!
+ 2002 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
+      GOTO 2222
+!
+ 2003 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003)
+      GOTO 2222
+!
+ 2005 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1005) IDTST
+      GOTO 2222
+!
+ 2006 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006) IDTST, NH(J)
+      GOTO 2222
+!
+ 2007 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
+      GOTO 2222
+!
+ 2222 CONTINUE
+!
+!/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+!
+      IF ( IAPROC .EQ. NAPOUT ) THEN
+!/F90          CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
+!/F90          IF ( CLKMAX .NE. 0 ) THEN
+!/F90              IF ( CLKTN-CLKT0 .GE. 0 ) THEN
+!/F90                  CLKDT  = CLKTN-CLKT0
+!/F90                ELSE
+!/F90                  CLKDT  = CLKTN-CLKT0 + CLKMAX
+!/F90                END IF
+!/F90              CLKFIN = REAL(CLKDT)/REAL(CLKINC)
+!/F90              WRITE (NDSO,998) CLKFIN
+!/F90              IF ( NDSO .NE. NDS(1) ) WRITE (NDS(1),998) CLKFIN
+!/F90            END IF
+          WRITE (NDSO,999)
+        END IF
+!
+!/NCO/!     IF ( IAPROC .EQ. 1 ) CALL W3TAGE('WAVEFCST')
+!/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
+!
+! Formats
+!
+  900 FORMAT (/15X,'      *** WAVEWATCH III Program shell ***      '/ &
+               15X,'==============================================='/)
+  901 FORMAT ( '  Comment character is ''',A,''''/)
+!
+  920 FORMAT (/'  Input fields : '/                                   &
+               ' --------------------------------------------------')
+  921 FORMAT ( '       ',A,2X,A,2X,A)
+  922 FORMAT ( ' ' )
+!
+  930 FORMAT (/'  Time interval : '/                                  &
+               ' --------------------------------------------------')
+  931 FORMAT ( '       Starting time : ',A)
+  932 FORMAT ( '       Ending time   : ',A/)
+!
+  940 FORMAT (/'  Output requests : '/                                &
+               ' --------------------------------------------------'/ &
+               '       ',A)
+  941 FORMAT (/'       Type',I2,' : ',A/                              &
+               '      -----------------------------------------')
+  942 FORMAT ( '            From     : ',A)
+  943 FORMAT ( '            To       : ',A)
+ 1944 FORMAT ( '            Interval : ', 8X,A11/)
+ 2944 FORMAT ( '            Interval : ', 9X,A10/)
+ 3944 FORMAT ( '            Interval : ',11X,A8/)
+ 1945 FORMAT ( '            Fields   : ',A)
+ 1946 FORMAT ( '                       ',A)
+!/LLG 2945 FORMAT ( '            Point  1 : ',2F8.2,2X,A)
+!/XYG 2945 FORMAT ( '            Point  1 : ',2(F8.0,'E3'),2X,A)
+!/LLG 2946 FORMAT ( '              ',I6,' : ',2F8.2,2X,A)
+!/XYG 2946 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
+ 2947 FORMAT ( '            No points defined')
+ 3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
+ 6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
+               '            IY first,last,inc :',3I5/                 &
+               '            Formatted file    :    ',A)
+!
+  950 FORMAT (/'  Initializations :'/                                 &
+               ' --------------------------------------------------')
+  951 FORMAT ( '       ',A)
+!/O7  952 FORMAT ( '       ',I6,2X,A)
+!/O7  953 FORMAT ( '          ',I6,I11.8,I7.6,3F8.2)
+  954 FORMAT ( '            ',A,': file not needed')
+  955 FORMAT ( '            ',A,': file OK')
+  956 FORMAT ( '            ',A,': file OK, recl =',i3,               &
+               '  undef = ',E10.3)
+!
+  960 FORMAT (/'  Running model without input fields'/                &
+               ' --------------------------------------------------'/)
+!
+  970 FORMAT (/'  Running model with input fields'/                   &
+               ' --------------------------------------------------')
+  971 FORMAT (/'  Updating input at ',A)
+  972 FORMAT ( '     Updating ',A)
+  973 FORMAT ( '        Past last ',A)
+  975 FORMAT (/'  Data assimmilation at ',A)
+!
+!/F90  998 FORMAT (/'  Elapsed time :',F10.2,' s')
+!
+  999 FORMAT(//'  End of program '/                                   &
+               ' ===================================='/               &
+               '         WAVEWATCH III Program shell '/)
+!
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     ERROR IN OPENING INPUT FILE'/                    &
+               '     IOSTAT =',I5/)
+!
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     PREMATURE END OF INPUT FILE'/)
+!
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     ERROR IN READING FROM INPUT FILE'/               &
+               '     IOSTAT =',I5/)
+!
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     ILLEGAL TIME INTERVAL'/)
+!
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
+!
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
+!
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
+!
+!/T 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
+!/T 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)
+!
+!/T 9020 FORMAT ( ' TEST W3SHEL : FLAGS DEF / HOM  : ',9L2,2X,9L2)
+!
+!/T 9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
+!/T                                   4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
+!/T 9041 FORMAT ( ' TEST W3SHEL : FLGRD  : ',20L2)
+!/T 9042 FORMAT ( ' TEST W3SHEL : IPR, PRFRM : ',6I6,1X,L1)
+!
+!/T 9070 FORMAT ( ' TEST W3SHEL : ',A,3X,2(I10.8,I7.6)/                &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,2(I10.8,I7.6)/                &
+!/T               '               ',A,L3,2(I10.8,I7.6)/                &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/             &
+!/T               '               ',A,L3,2(I10.8,I7.6))
+!/T 9071 FORMAT ( ' TEST W3SHEL : ',A,', DTTST = ',E10.3)
+!/T 9072 FORMAT ( ' TEST W3SHEL : ',A,3X,2(I10.8,I7.6)/               &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
+!/T               '               ',A,L3,2(I10.8,I7.6)/               &
+!/T               '               ',A,L3,2(I10.8,I7.6)/               &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
+!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
+!/T               '               ',A,L3,17X,2(I10.8,I7.6)/           &
+!/T               '               ',A,L3,2(I10.8,I7.6))
+!/
+!/ End of W3SHEL ----------------------------------------------------- /
+!/
+      END PROGRAM W3SHEL

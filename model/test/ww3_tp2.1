@@ -1,0 +1,364 @@
+#!/bin/sh
+#############################################################################
+#                                                                           #
+# ww3_tp2.1 Test script for WW-III, two-dimensional propagation.            #
+#           Propagation under angle with grid.                              #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/XYG                Cartesian grid.                                    #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging.                             #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+# - Check the shell script variable 'grads' and section 4.b to generate     #
+#   graphical output using GrADS.                                           #
+# - Coast switched on/of by setting 'shore' in section 0.a                  #
+# - Several initial conditions available. Change with input boundaries ...  #
+# - Check/change scheme settings in name lists in ww3_grid.inp.             #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Jul 2007     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
+
+
+# 0. Preparations -----------------------------------------------------------
+
+  ww3_env='.wwatch3.env'   # setup file
+
+# 0.a Set-up variables
+
+  cd
+  if [ -f $ww3_env ]
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    set `grep WWATCH3_TMP $ww3_env` ; shift
+    temp_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+  path_w="$temp_dir"              # work directory
+  path_e="$main_dir/exe"          # path for executables
+  path_a="$main_dir/aux"          # path for auxiliaries (GrADS)
+  path_o="$main_dir/test"         # path for output files
+# path_o="$main_dir/work"
+
+  shore='yes'                     # add land [yes/-]
+  grads='yes'                     # run gx_outf and grads [yes/-]
+                                  # set you GrADS environment properly !!
+
+# 0.b Clean-up
+
+  clear
+  rm -f $path_o/ww3_????.out
+  rm -f $path_o/gx_????.out
+  rm -f $path_o/log.ww3
+  rm -f $path_o/test.ww3
+  rm -f $path_o/tab??.ww3
+  rm -f $path_o/*.eps
+
+  cd $path_w
+  rm -f *.ww3
+  rm -f *.gs
+
+  echo ' ' ; echo ' '
+  echo '                  ======> TEST RUN WAVEWATCH III <====== '
+  echo '                    ==================================   '
+  echo '                                   propagation test'
+  echo '                                   2-D with land'
+  echo ' '
+
+# 1. Grid pre-processor -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|  Grid preprocessor |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_grid.inp << EOF
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '2-D PROPAGATION TEST #1        '
+$
+   1.1 0.03679  3  24  0.
+$
+   F T T F F F
+  360.  360.  360.  360.
+$
+$ &PRO2 DTIME = 0. /
+$ &PRO2 DTIME = 14400. /
+$ &PRO3 WDTHCG = 0., WDTHTH = 0. /
+$ &PRO4 RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$
+   43   43
+    10.E3   10.E3  1.
+   -60.E3  -60.E3  1.
+$
+  -5. 5.75  10  -2500. 4 1 '(....)' 'UNIT' 'input'
+$
+EOF
+if [ "$shore" = 'yes' ]
+then
+cat >> ww3_grid.inp << EOF
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+   2  5  T
+   2  2  T
+  42  2  T
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0
+EOF
+else
+cat >> ww3_grid.inp << EOF
+   1849*1
+$
+   0  0  F
+$
+   0. 0. 0. 0.  0
+EOF
+fi
+
+  echo "   Screen ouput routed to $path_o/ww3_grid.out"
+  $path_e/ww3_grid > $path_o/ww3_grid.out
+
+  rm -f ww3_grid.inp
+
+# 2. Initial conditions -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '| Initial conditions |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_strt.inp << EOF
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  1
+$  0.040469  0.0001 270. 200   0.E3  15.E3   0.E3  15.E3  2.501
+$  0.040469  0.0001 225. 200   0.E3  15.E3   0.E3  15.E3  2.501
+$  0.040469  0.0001 225.   2   0.E3  15.E3   0.E3  15.E3  2.501
+$  0.040469  0.0001 225. 200   0.E3 999.E3   0.E3  15.E3  2.501
+   0.040469  0.0001 225. 200   0.E3 999.E3   0.E3 999.E3  2.501
+$  0.040469  0.0001 225.   2   0.E3 999.E3   0.E3 999.E3  2.501
+$  0.040469  0.0001 180. 200   0.E3  15.E3   0.E3  15.E3  2.501
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_strt.out"
+  $path_e/ww3_strt > $path_o/ww3_strt.out
+
+  rm -f ww3_strt.inp
+
+# 3. Main program -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Main program    |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_shel.inp << EOF
+$ WAVEWATCH III shell input file
+$ ------------------------------
+   F T
+   F T
+   F T
+   F
+   F
+   F
+   F
+$
+   19680606 000000
+   19680606 044800
+$  19680608 000000
+$
+   1
+$
+   19680606 000000    360  19680606 044800
+     F F F F F   T F F F F  F T F F F  F F F F F  F F F F F  F F F F F F
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+EOF
+
+  $path_e/ww3_shel
+
+  rm -f ww3_shel.inp
+
+  echo ' ' ; echo "   Output file log.ww3 routed to $path_o"
+  mv log.ww3 $path_o/.
+  if [ -f test.ww3 ]
+  then
+    echo "   Output file test.ww3 routed to $path_o"
+    mv test.ww3 $path_o/.
+  fi
+
+# 4. Gridded output ---------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|   Gridded output   |'
+  echo '+--------------------+'
+  echo ' '
+
+# 4.a Regular gridded output
+
+cat > ww3_outf.inp << EOF
+$ WAVEWATCH III Grid output post-processing
+$ -----------------------------------------
+  19680606 000000 1080. 17
+$
+  F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F F
+$
+  1 0
+$
+  1 43 1 1 43 1 T F F
+EOF
+
+  echo "   Screen output routed to $path_o/ww3_outf.out"
+  $path_e/ww3_outf > $path_o/ww3_outf.out
+
+  rm -f ww3_outf.inp
+
+# 4.b GrADS gridded output
+
+  if [ "$grads" = 'yes' ]
+  then
+
+cat > gx_outf.inp << EOF
+$ WAVEWATCH III Grid output post-processing (GrADS)
+$ -------------------------------------------------
+  19680606 000000 1800. 999
+$
+  F F F F F  T F F F F  F T F F F  F F F F F  F F F F F  F F F F F F
+$
+  1 43 1 43  T T
+EOF
+
+    echo ' '
+    echo "   Screen output routed to $path_o/gx_outf.out"
+    $path_e/gx_outf > $path_o/gx_outf.out
+
+    rm -f gx_outf.inp
+
+    ln -s $path_a/colorset.gs .
+    ln -s $path_a/cbarn.gs .
+    ln -s $path_a/map2_1.gs   .
+
+# Set up GrADS properly here if necessary !!!
+
+#   export PATH=${PATH}:/u/wx20mf/grads/bin:
+#   export GADDIR=/u/wx20mf/grads/dat
+#   export GASCRP=/u/wx20mf/grads/gslib
+#   export DISPLAY=frisian:0
+
+    grads -pc "run map2_1"
+
+    gxeps -c -i plot.grads -o $path_o/plot.eps
+
+    rm -f *.gs
+    rm -f ww3.grads ww3.ctl plot.grads
+
+  fi
+
+# 5. Point output -----------------------------------------------------------
+
+# echo ' '
+# echo '+--------------------+'
+# echo '|    Point output    |'
+# echo '+--------------------+'
+# echo ' '
+
+# 6. End, cleaning up -------------------------------------------------------
+
+  echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
+  ls -l *.ww3
+
+  echo ' ' ; echo "Cleaning-up `pwd`"
+  rm -f *.ww3
+
+  echo ' ' ; echo "Files in $path_o :" ; echo ' '
+  cd $path_o
+  ls -l ww3_????.out
+  if [ "$grads" = 'yes' ]
+  then
+    ls -l gx_outf.out
+  fi
+  ls -l *.ww3
+  if [ "$grads" = 'yes' ]
+  then
+    ls -l *.eps
+  fi
+
+  echo ' ' ; echo ' '
+  echo '                  ======>  END OF WAVEWATCH III  <====== '
+  echo '                    ==================================   '
+  echo ' '
+
+# End of ww3_tp2.1 ----------------------------------------------------------

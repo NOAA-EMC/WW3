@@ -1,0 +1,31 @@
+\setlength{\unitlength}{0.1mm}
+
+\begin{figure}
+
+\begin{center}\begin{picture}(850,360)(0,-300)
+
+\subr{  0}{    0}{w3init}
+\subr{350}{    0}{w3iogr}
+\subr{350}{ -100}{w3iors}
+\subr{350}{ -200}{w3iopp}
+\subr{650}{ -100}{w3mpii}
+\subr{650}{ -200}{w3mpio}
+\subr{650}{ -300}{w3mpip}
+
+\put(200,30){\line(1,0){100}}
+\put(300,30){\line(0,-1){300}}
+\multiput(300,30)(0,-100){3}{\line(1,0){50}}
+\put(300,-270){\line(1,0){300}}
+\put(600,-270){\line(0,1){200}}
+\multiput(600,-270)(0,100){3}{\line(1,0){50}}
+
+\end{picture}\end{center}
+
+\caption{Subroutine structure for wave model initialization routine without
+service routines and data base management routines. Note that {\F w3iogr} on
+reading data in calls all necessary initialization routines for interpolation
+tables and phsyics parameterizations.}
+\label{fig:w3init}
+\botline
+
+\end{figure}

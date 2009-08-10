@@ -1,0 +1,47 @@
+\setlength{\unitlength}{0.1mm}
+
+\begin{figure}
+\begin{picture}(1370,550)(0,-490)
+
+\scripta{  85}{   0}{w3\_make}
+\scriptb{ 335}{-100}{make\_makefile.sh}
+\scriptc{ 335}{-200}{make}
+\put(185,-170){\line(0,1){170}}
+\multiput(185,-170)(0,100){2}{\line(1,0){150}}
+
+\scripta{ 785}{-100}{w3\_new}
+\scripta{ 785}{-200}{ad3}
+\scripta{ 785}{-400}{link}
+\put(785, -70){\line(-1,0){100}}
+\put(785,-170){\line(-1,0){100}}
+\put(785,-370){\line(-1,0){ 50}}
+\put(735,-370){\line(0,1){200}}
+
+\scripta{1085}{-200}{w3adc}
+\scripta{1085}{-300}{comp}
+\put(1085,-170){\line(-1,0){100}}
+\put(1085,-270){\line(-1,0){ 50}}
+\put(1035,-270){\line(0,1){100}}
+
+\sscript{ 300}{   0}{1}
+\sscript{ 700}{-100}{1,2,3}
+\sscript{1000}{-100}{1}
+\sscript{1000}{-200}{1}
+\sscript{1300}{-200}{4}
+
+\sscript{50}{-350}{1}
+\put(80,-330){\makebox(-1000,60)[l]{\small Suitable for interactive use.}}
+\sscript{50}{-400}{2}
+\put(80,-380){\makebox(-1000,60)[l]{\small If {\file makefile} does not exist.}}
+\sscript{50}{-450}{3}
+\put(80,-430){\makebox(-1000,60)[l]{\small If switch file has been updated.}}
+\sscript{50}{-500}{4}
+\put(80,-480){\makebox(-1000,60)[l]{\small Files with extension {\file .ftn} only.}}
+
+\end{picture}
+
+\caption{General layout of the compiler program {\file w3\_make}.}
+\label{fig:make}
+
+\botline
+\end{figure}

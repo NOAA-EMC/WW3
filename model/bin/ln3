@@ -1,0 +1,89 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# ln3 :    Make a link from a source code file of WAVEWATCH III to the work   #
+#          directory. Now also looks in bin directory.                        #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      May 2009               #
+#                                                                             #
+#    Copyright 2009 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+# 1.a Check input
+
+  if test "$#" -lt '1'
+  then
+    echo "usage: ln3 filename(s)" 1>&2 ; exit 1
+  fi
+  files="$*"
+
+# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  ww3_env='.wwatch3.env'   # setup file
+
+# 1.c Get info from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  cd
+  if test -f $ww3_env
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+# --------------------------------------------------------------------------- #
+# 2. Make link(s)                                                             #
+# --------------------------------------------------------------------------- #
+
+  set $files
+  found='0'
+
+  cd $main_dir/work
+
+  while [ "$#" -ge '1' ]
+  do
+    name="$1"
+
+    for file in $name $name.ftn $name.f90 $name.doc \
+                w3$name.ftn w3$name.doc w3${name}md.ftn w3${name}md.doc
+    do
+      if test -f ../ftn/$file
+      then
+        rm -f $file
+        echo "make link to $file in ftn dir."
+        ln -s ../ftn/$file .
+        found=`expr $found + 1`
+      fi
+      if test -f ../bin/$file
+      then
+        rm -f $file
+        echo "make link to $file in bin dir."
+        ln -s ../bin/$file .
+        found=`expr $found + 1`
+      fi
+      if test -f ../doc90/$file
+      then
+        rm -f $file
+        echo "make link to $file in doc90 dir."
+        ln -s ../doc90/$file .
+        found=`expr $found + 1`
+      fi
+    done
+
+    shift
+
+  done
+
+  if test "$found" = '0'
+  then
+    echo "No files found."
+  fi
+ 
+# End of list --------------------------------------------------------------- #

@@ -1,0 +1,72 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# find_switch : Find compiler switches in subroutines and include files.      #
+#                                                                             #
+# use         : find_switch [switch]                                          #
+#                 switch : any strig for which the code is to be scanned.     #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      May 2009               #
+#                                                                             #
+#    Copyright 2009 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+# 1.a Internal variables
+
+  ww3_env='.wwatch3.env'   # setup file
+
+# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo 'Find switches in WAVEWATCH III'
+  echo '------------------------------'
+
+# 1.c Process/save input - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  if test "$#" != '0'
+  then
+    switch="$1"
+  else
+    echo -n "Switch ? : " ; read switch
+    progs="$*"
+  fi
+
+  echo ' ' ; echo "Files including $switch :" ; echo ' '
+
+# 1.d Get env. data  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  cd
+  if test -f $ww3_env
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+# 1.e Raw data file  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  cd $main_dir/ftn
+  grep "$switch" * | sed 's/\:/ /' | awk '{ print $1}' > ../.switch.files
+
+# 1.f Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  last=$NULL
+  for file in `cat ../.switch.files`
+  do
+    if test "$file" != "$last"
+    then
+      echo "   $file"
+      last="$file"
+    fi
+  done
+  rm -f ../.switch.files
+  echo ' '
+
+# End of find_switch -------------------------------------------------------- #

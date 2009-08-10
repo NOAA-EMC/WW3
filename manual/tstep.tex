@@ -1,0 +1,131 @@
+\pagestyle{myheadings} \setcounter{page}{1} \setcounter{footnote}{0}
+
+\section{~Setting model time steps} \label{app:tstep}
+\newcounters 
+\vssub
+
+Model time steps are set on a grid-by-grid basis and are considered as a part
+of the model setup in the model definition file {\file mod\_def.ww3}. This
+implies that in a multi-grid model set-up (using the model driver {\file
+ww3\_multi}) each grid is associated with its own time step setting. In this
+section some guidance is given for setting time steps for individual grids,
+and for grids in a mosaic approach.  Examples of practical time step setting
+for practical grids can be found in the individual grids used in the test
+cases {\file mww3\_case\_01} through {\file mww3\_case\_03}.
+
+\subsection{~Individual grids}
+
+A basic wave model grid requires the definition of four time steps as is
+described in \para\ref{sec:basic_num} on page \pageref{dt_list} of this
+manual. Typically, the first step to consider is the \cfl\ time step for
+spatial propagation, that is, the second of the four time steps defined in
+{\file ww3\_grid.inp} for the grid considered. The critical \cfl\ number $C_c$
+that identifies stability of the numerical scheme is defined as [compare
+Eq.~(\ref{eq:quick_4})]
+
+\begin{equation}
+C_c = \frac{c_{g,\max} \Delta t}{\min(\Delta x , \Delta y)} \:\:\: , 
+\label{eq:CFLmax}
+\end{equation}
+
+\noindent 
+where $c_{g,\max}$ is the maximum group velocity, and $\Delta t$, $\Delta x$,
+and $\Delta y$ are time and space increments. The maximum group velocity is
+the group velocity for the lowest discrete model frequency. Noting that for a
+given frequency the largest group velocity occurs in intermediate water depth,
+this maximum velocity is approximately 1.15 times the deep water group
+velocity for the lowest discrete spectral frequency. Note that the \cfl\
+number formally includes affects of currents [Eq.~(\ref{eq:x_dot})] and grid
+movement [Eq.~(\ref{eq:bal_move})]. The latter two effects are accounted for
+internally in the model by adjusting the corresponding minimum time step
+dynamically depending on the current velocity and the grid movement speed.
+Hence, the user can define this minimum propagation time step ignoring
+currents and grid movement. For the schemes used here the critical \cfl\
+number is 1.
+
+The second time step to consider is the overall time step (the first time step
+identified in {\file ww3\_grid.inp}).For maximum numerical accuracy, this time
+step should be set smaller than or equal to the above \cfl\ time step.
+However, particularly in spherical grids, the critical \cfl\ condition occurs
+only in a few grid points. In most grid points, \cfl\ numbers will be much
+smaller. In such grids, accuracy does not suffer significantly if the overall
+time step is take as 2 to 4 times the critical \cfl\ time steps. Such a
+setting generally has a major positive impact on model economy. The key to
+numerical accuracy is the interpretation of the \cfl\ number. this number
+represents the normalized distance over which information propagates in a
+single time step. Inaccuracy occurs if information propagates over several
+grid boxes before source terms are applied. With \cfl\ $\approx 1$ and the
+overall time step four times the \cfl\ time step, information will propagate
+over four grid boxes before source terms are applied. This may lead to model
+inaccuracies. If, however, the maximum \cfl\ number is 1, but the average
+\cfl\ number is only 0.25, as is the case even for the lowest frequency in
+many spherical grids, information only propagates over one grid box in a
+single overall time step, and no issues with accuracy develop.
+
+An effective overall time step also considers requested time intervals at
+which model forcing is available, and at which model output is requested. If
+input and output time steps are multiple integer times the overall time step,
+a balanced and consistent numerical integration scheme exists, although the
+model does not require this. Most important in this consideration is
+reproducibility of results. If input or output time steps are modified so that
+they are no longer an integer multiple of the overall model time step, then
+the actual discrete time stepping in the model will be modified by these input
+and output time steps, and hence an impact on actual model results may be
+expected. Such an impact may be notable, but is generally very minor.
+
+The third time step to consider is the maximum refraction (and wavenumber
+shift) time step. For maximum model economy, this time step should be set
+equal to (or lager then) the overall time step. However, this will alternate
+the order of spatial and refraction computations for consecutive model time
+steps, which in cases of strong refraction may lead to a minor oscillation of
+wave parameter with a period of $2 \Delta t$. Such oscillations can be avoided
+altogether by setting the maximum refraction time step to half the overall
+time step. Considering the minor cost of the refraction term in the model,
+this generally has a negligible impact on model economy. The preferred
+refraction time step is therefore half the overall model time step.
+
+One note of caution is appropriate with setting this time step. To assure
+numerical stability, the characteristic refraction velocities are filter as in
+Eq.~(\ref{eq:theta_filter}). This filtering suppresses refraction in cases
+with rapidly changing bottom topography. The impact of this filtering is
+reduced when the refraction time step is reduced. It is therefore prudent to
+test a model grid with much smaller intra-spectral model time steps to assess
+the impact of this filtering.
+
+The final time step to set is the minimum time step for the dynamical source
+term integration in \para\ref{sub:source}. This is a safety valve to avoid
+prohibitively small time steps in the source term integration. Depending on
+the grid increment size this is typically set to 5 to 15s. Note that
+increasing this time step does not necessarily improve model economy; a larger
+minimum source term integration time step will increase the spectral noise in
+the integration, which in turn may {\em reduce} the average source term
+integration time step!
+
+
+\subsection{~Mosaics of grids}
+
+Considerations for time step settings for individual grids making up a mosaic
+model using {\file ww3\_multi} are in principle identical to those for
+individual grids as discussed in the previous section. Additional
+considerations are:
+
+\begin{itemize}
+
+\item Overall time steps for individual grids do not need to `match' in any
+way for the management algorithm for the mosaic approach to work properly.
+However, if identically ranked grids share overall time steps, and if integer
+ratios between time steps of grids with different ranks are employed, then it
+will be much easier to follow and predict the working of the management
+algorithm,
+
+\item If two grids with identical rank overlap, then the required width of the
+overlap area will be defined by the stencil width of the numerical scheme, and
+the number of times this scheme is called for the longest wave component
+(ratio of overall time step to maximum \cfl\ time step. Thus, model economy
+for individual grids will improve with increased overall model time step, but
+the required overlap of equally ranked grids will then increase, reducing the
+economy of the mosaic approach.
+
+\end{itemize}
+
+\bpage \pagestyle{empty}

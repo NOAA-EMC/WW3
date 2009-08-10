@@ -1,0 +1,92 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# list :      Printing of ASCII files (typically source codes) using the      #
+#             program w3print.f This program is provided as a part of         #
+#             WAVEWATCH III and get is printer setup from the file            #
+#             $ww3_env (set in 1.b) in the users home directory.              #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      May 2009               #
+#                                                                             #
+#    Copyright 2009 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+# 1.a Check input
+
+  if test "$#" = '0'
+  then
+    echo "usage: list filename(s)" 1>&2 ; exit 1
+  fi
+
+  input="$*"
+  dir=`pwd`
+
+# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  ww3_env='.wwatch3.env'   # setup file
+
+# 1.c Get printer name (and switches) from setup file  - - - - - - - - - - - -
+
+  cd
+  if test -f $ww3_env
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    set `grep WWATCH3_LPR $ww3_env` ; shift
+    if test "$#" = '0'
+    then
+      printer="$NULL"
+    else
+      printer="$*"
+    fi
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+# --------------------------------------------------------------------------- #
+# 2. Loop over files                                                          #
+# --------------------------------------------------------------------------- #
+# 2.a Loop control
+
+  cd $dir
+  set $input
+
+  while test "$#" != '0'
+  do
+
+    if test ! -f $1
+    then
+      echo "file $1 not found"
+    else
+      echo "processing $1"
+
+# 2.b Run w3prnt - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      rm -f w3prnt.out
+      echo "$1" | $main_dir/bin/w3prnt 2> /dev/null
+
+# 2.c Spool to printer - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      if test -f w3prnt.out
+      then
+        if test -z "$printer"
+        then
+          lpr w3prnt.out
+        else
+          lpr -P $printer w3prnt.out
+        fi
+        rm -f w3prnt.out
+      else
+        echo "listing not found"
+      fi
+    fi
+    shift
+  done
+ 
+# End of list --------------------------------------------------------------- #

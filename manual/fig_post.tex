@@ -1,0 +1,35 @@
+\setlength{\unitlength}{0.1mm}
+
+\begin{figure}
+\begin{picture}(1370,600)(0,-500)
+
+\subr{ 50}{   0}{w3outf}
+\subr{200}{-100}{w3iogr}
+\subr{200}{-200}{w3iogo}
+\subr{200}{-300}{w3exgo}
+\put(150,-270){\line(0,1){270}}
+\multiput(150,-270)(0,100){3}{\line(1,0){50}}
+
+\subr{550}{   0}{w3outp}
+\subr{700}{-100}{w3iogr}
+\subr{700}{-200}{w3iopo}
+\subr{700}{-300}{w3expo}
+\put(650,-270){\line(0,1){270}}
+\multiput(650,-270)(0,100){3}{\line(1,0){50}}
+
+\subn{1000}{-100}{w3spr}
+\subn{1000}{-200}{w3sin}
+\subn{1000}{-300}{w3snl}
+\subn{1000}{-400}{w3sds}
+\subn{1000}{-500}{w3sbt}
+\put(950,-270){\line(-1,0){50}}
+\put(950,-470){\line(0,1){400}}
+\multiput(950,-470)(0,100){5}{\line(1,0){50}}
+
+\end{picture}
+
+\caption{Subroutine structure for the postprocessors. The structure of the GRIB postprocessor is similar to {\F w3outf}, replacing {\F w3outf} and {\F w3exgo} with {\F w3grib} and {\F w3exgb}, respectively. The structure of the GrADS postprocessors is similar, replacing {\F w3outf}, {\F w3outp}, {\F w3exgo} and {\F w3expo} with {\F gxoutf}, {\F gxoutp}, {\F gxexgo} and {\F gxexpo}, respectively}
+\label{fig:post}
+
+\botline
+\end{figure}

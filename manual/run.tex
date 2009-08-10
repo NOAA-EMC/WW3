@@ -1,0 +1,616 @@
+
+\section{~Running the wave model} \label{chapt:run}
+\newcounters
+\vssub
+\subsection{~Program design}
+\vssub
+
+The core of \ws\ is the wave model subroutine. The wave model routine can be
+called by either a stand-alone program shell or any other program that
+requires dynamically updated wave data. Two such programs are provided with
+the \ws\ release. Auxiliary programs include a grid preprocessor, a program to
+generate artificial initial conditions, a generic program shell (and a
+corresponding input pre-processor) and output post-processors.  In the
+discussion of the model below, file names will be identified by the {\file
+file} type font, the contents of a file by the {\code code} type font and {\sc
+fortran} program elements by the {\F fortran} type font.
+
+The main wave model routine is {\F w3wave}. Data files are identified with the
+file extension {\file .ww3}, except in the multi-grid wave model {\file
+ww3\_multi}, where the file extension identifies an individual grid. For
+simplicity, the file extension {\file .ww3} will be used throughout this
+chapter.  A relational diagram including the basic data flow is presented in
+figure~\ref{fig:elements}.
+
+The grid preprocessor writes a model definition file {\file mod\_def.ww3} with
+bottom and obstruction information and parameter values defining the physical
+and numerical approaches. The wave model requires initial conditions,
+consisting of a restart file {\file restart.ww3}, written by either the wave
+model itself, or by the initial conditions program. If this file is not
+available, the wave model will be initialized automatically, depending on the
+ability of the model to start from calm conditions. If linear growth or
+spectral seeding is switch on, the model will start from calm conditions ($H_s
+= 0$), otherwise the initial conditions will consist of a parametric
+fetch-limited spectrum based on the initial wind field (see the corresponding
+option in the initial conditions program).  The wave model routine ({\F
+w3wave}) optionally generates up to 9 restart files {\file
+restart{\em{n}}.ww3}, where {\file{\em{n}}} represents a single digit integer
+number. The wave model also optionally reads boundary conditions from the file
+{\file nest.ww3} and generates boundary conditions for consecutive runs in
+{\file nest{\em{n}}.ww3}. The model furthermore dumps raw data to the output
+files {\file out\_grd.ww3 }, {\file out\_pnt.ww3}, {\file track\_o.ww3} and
+{\file partition.ww3} (gridded mean wave parameters, spectra at locations,
+spectra along tracks, and partitioned wave data, respectively). The tracks
+along which spectra are to be presented is defined in the file {\file
+track\_i.ww3}. Note that the wave model does not write to standard output,
+because this would be inconvenient if \ws\ is part of an integrated
+model. Instead, it maintains its own log file {\file log.ww3} and optionally a
+test output files {\file test.ww3} for a shared memory version of the model,
+or {\file test{\em{nnn}}.ww3} for distributed memory versions, where {\em nnn}
+is the processor number starting with 1.  Finally, six output post-processors
+are available (binary post-processing of raw gridded fields, point output and
+track output files; GRIB packing of gridded data; post-processing for later
+GrADS graphical processing of gridded and spectral data). A more detailed
+description of all program elements and there input files is given below. Note
+that the source codes of each routine are fully documented. This documentation
+is an additional source of information about \ws.
+
+\input{fig_flow}
+
+Files specific to \ws\ are opened by name within the program. The unit
+numbers, however, have to be defined by the user\footnote{~Except for {\file
+ww3\_multi}.}, guaranteeing the largest possible flexibility for
+implementation in integrated models.
+
+Next to the wave model subroutine, an initialization routine and an interface
+routine for data assimilation are provided. The latter routine is intended to
+be run side by side with the wave model routine. The routine includes a
+generic interface that provides all necessary model components to perform full
+spectral data assimilation. This routine is integrated into the generic wave
+model shell, which is set up to perform time step managements for a wave model
+with or without data assimilation. The shell also provides a simple yet
+flexible way to provide the data assimilation scheme with various types of
+data. Data assimilation has not yet been included in the multi-grid wave model
+shell.
+
+
+% -------------------------------------------------------------
+\vssub
+\subsection{~The wave model routines} \label{sec:core}
+\vssub
+
+As discussed above, the actual wave model is a subroutine. To run the model, a
+program shell is needed. \ws\ is provided with a simple stand-alone shell as
+will be discussed in \para\ref{sec:shell}, and with a more complex multi-grid
+model shell as will be discussed in \para\ref{sec:multi}. The present section
+concentrates on the wave model subroutines.
+
+The wave model initialization routine {\F w3init} performs model
+initialization. This includes setting up part of the I/O system by defining
+unit numbers, initializing internal time management, processing the model
+definition file ({\file mod\_def.ww3}), processing initial conditions ({\file
+restart.ww3}), preparing model output, and calculating grid-dependent
+parameters. If the model is compiled for an \mpi\ environment, all necessary
+communication for both calculations and output are determined and initialized
+(the model uses persistent \mpi\ communication throughout).
+
+The wave model routine {\F w3wave} can be called any number of times to
+propagate the wave field in time after the initialization has taken
+place. After some initial checks, the subroutine interpolates winds and
+currents, updates ice concentrations and water levels, propagates the wave
+field, and applies the selected source terms for a number of time steps. The
+internal time step is defined by the interval for which the calculations are
+to be performed, and by the requested output times. At the end of the
+calculations, the routine provides the calling program with the requested
+fields of wave data. A documentation of the interface of {\F w3wave} can be
+found in the source code ({\file w3wavemd.ftn}).
+
+\input{fig_log.tex} 
+
+Apart from the raw data files as described above, the program maintains a log
+file {\file log.ww3}. This file is opened by {\F w3init} (contained in {\F
+w3wave} in {\file w3wavemd.ftn}), which writes some self-explanatory header
+information to this file. Each consecutive call to {\F w3wave} adds several
+lines to an `action table' in this log file as is shown in
+Fig.~\ref{fig:log}. The column identified as `step' shows the discrete time
+step considered. The column identified as `pass' identifies the sequence
+number of the call to {\F w3wave}; i.e., 3 identifies that this action took
+place in the third call to {\F w3wave}. The third column shows the ending time
+of the time step. In the input and output columns the corresponding actions of
+the model are shown. An {\tt X} identifies that the input has been updated, or
+that the output has been performed. An {\tt F} indicates a first field read,
+and an {\tt L} identifies the last output. The seven input columns identify
+boundary conditions ({\tt b}), wind fields ({\tt w}), water levels ({\tt l}),
+current fields ({\tt c}), ice concentrations ({\tt i}), and data for
+assimilation ({\tt d}), respectively. Note that data assimilation takes place
+at the end of the time step after the wave routine call. The six output
+columns identify gridded output ({\tt g}), point output ({\tt p}), output
+along tracks ({\tt t}), restart files ({\tt r}), boundary data ({\tt b}), and
+partitioned spectral data {\tt f}, respectively. 
+
+
+% -------------------------------------------------------------
+\vssub
+\subsection{~The data assimilation interface} \label{sec:das}
+\vssub
+
+As discussed above, the wave model subroutine is supplemented with a data
+assimilation interface routine ({\F w3wdas} in {\file w3wdasmd.ftn}). This
+routine is integrated in the stand-alone shell (see \para\ref{sec:shell}) to
+provide time step management of a combined wave model / data assimilation
+scheme. In this a fairly simple approach is assumed where data assimilation is
+performed at selected times, while the wave model marches forward in time. In
+the setup of the shell, the data assimilation is performed after the model has
+reached the target time, but has not yet produced output. After the data
+assimilation is performed, the wave model routine is called again only to
+generate output as requested. Thus, the wave model output for a given time
+will include the effects of data assimilation for that specific target time.
+
+The generic program shell also processes several types of data to be
+assimilated, and passes it on to the data assimilation interface routine. All
+data needs to be preprocessed using the wave model input preprocessor (see
+\para\ref{sec:prep}), and will be recognized by the generic shell by file
+name. Presently, up to three different data files can be used. Tentatively,
+these could be mean wave parameters, one dimensional spectral data, and two
+dimensional spectral data, respectively. This is, however, not hardwired to
+the model and in fact needs to be defined by the user.
+
+Presently, no data assimilation packages are available. User supplied data
+assimilation schemes can be included in the wave model using the interface
+routine ({\F w3wdas} in {\file w3wdasmd.ftn}), the documentation of which
+should be sufficient for the necessary programming. Details on how to add user
+supplied software to the \ws\ compilation system can be found in the following
+chapter. NCEP is presently working on wave data assimilation techniques, but
+presently has no plans to distribute wave data assimilation software.
+
+\pb
+
+% -------------------------------------------------------------
+\vssub
+\subsection{~Auxiliary programs} \label{sec:auxprog}
+\vsssub
+\subsubsection{General concepts}
+\vsssub
+
+All auxiliary programs presented here with the exception of the track output
+post-processor read input from a pre-defined input file. The first character
+on the first line of the input file will be considered to be the comment
+character, identifying comment lines in the input file. This comment character
+has to appear on the first position of input lines to be effective. In all
+examples in the following sections lines starting with '{\tt \$}' therefore
+only contain comment. The programs furthermore all write formatted output to
+the standard output unit.
+
+In the following sections, all available auxiliary programs are described
+using an example input file with all options included (partially as
+comment). These files are identical to the distributed example input
+files. The sections furthermore show the name of the executable program, the
+program name (as appears in the program statement), the source code file and
+input and output files and there unit numbers (in brackets behind the file
+name). Input and output files marked with \opt are optional. The intermediate
+files mentioned below are all {\F unformatted}, and are not described in
+detail here. Each file is written and read by a single routine, to which
+reference is made for additional documentation.
+
+\begin{list}{}{\itemsep 0mm \parsep 0mm \leftmargin 40mm \labelwidth 30mm}
+\item[{mod\_def.ww3} \hfill] Subroutine {\F w3iogr} ({\file w3iogrmd.ftn}).
+\item[{out\_grd.ww3} \hfill] Subroutine {\F w3iogo} ({\file w3iogomd.ftn}).
+\item[{out\_pnt.ww3} \hfill] Subroutine {\F w3iopo} ({\file w3iopomd.ftn}).
+\item[{track\_o.ww3} \hfill] Subroutine {\F w3iotr} ({\file w3iotrmd.ftn}).
+\item[{restart.ww3}  \hfill] Subroutine {\F w3iors} ({\file w3iorsmd.ftn}).
+\item[{nest.ww3}     \hfill] Subroutine {\F w3iobc} ({\file w3iobcmd.ftn}).
+\item[{partition.ww3}\hfill] Subroutine {\F w3iosf} ({\file w3iosfmd.ftn}).
+\end{list}
+
+\noindent
+Preprocessing and compilation of the programs is discussed in the following
+two chapters. Examples of test runs of the model are provided with the source
+code.
+
+
+\pb
+
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{The grid preprocessor} \label{sub:ww3grid}
+\vsssub
+
+\proddefH{ww3\_grid}{w3grid}{ww3\_grid.ftn}
+\proddeff{Input}{ww3\_grid.inp}{Formatted input file for program.}{10}
+\proddefa{'grid file' \opt}{File with bottom depths.}{user}
+\proddefa{'obstr. file' \opt}{File with sub-grid obstructions. }{user}
+\proddefa{'mask file' \opt}{File with grid mask. }{user}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{mod\_def.ww3}{Model definition file in \ws\ format.}{20}
+\proddefa{mask.ww3 \opt}{Land-sea mask file (switch {\F o2}a).}{20}
+\proddeff{Scratch}{ww3\_grid.scratch}{Formatted scratch file.}{90}
+
+\vspace{\baselineskip} \noindent
+Note that bottom and obstruction data may be in same file.
+
+\inpfile{inp_grid.tex}
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{The initial conditions program} 
+\vsssub
+
+\proddefH{ww3\_strt}{w3strt}{ww3\_strt.ftn}
+\proddeff{Input}{ww3\_strt.inp}{Formatted input file for program.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{restart.ww3}{Restart file in \ws\ format.}{20}
+
+\inpfile{inp_strt.tex}
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{The field preprocessor for the generic shell}
+\label{sec:prep}
+\vsssub
+
+\proddefH{ww3\_prep}{w3prep}{ww3\_prep.ftn}
+\proddeff{Input}{ww3\_prep.inp}{Formatted input file for program.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{11}
+\proddefa{'user input'\opt}{See example below.}{user}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{level.ww3\opt}{Water levels file.}{12}
+\proddefa{current.ww3\opt}{Current fields file.}{12}
+\proddefa{wind.ww3\opt}{Wind fields file.}{12}
+\proddefa{ice.ww3\opt}{Ice fields file.}{12}
+\proddefa{data0.ww3\opt}{Assimilation data (`mean').}{12}
+\proddefa{data1.ww3\opt}{Assimilation data (`1-D spectra').}{12}
+\proddefa{data2.ww3\opt}{Assimilation data (`2-D spectra').}{12}
+
+\inpfile{inp_prep.tex}
+
+\vspace{\baselineskip} 
+\noindent 
+Note that the optional output files are specific to {\file ww3\_shel} and
+{\file ww3\_multi}, but are not processed by the actual wave model
+routines. These files are consequently not needed if the wave model routines
+are used in a different shell or in an integrated program. However, the
+routines reading and writing these files are system-independent and could
+therefore be used in customized applications of the basic wave model. The
+reading and writing of these files is performed by the subroutine {\F w3fldg}
+({\file w3fldsmd.ftn}). For additional documentation and file formats
+reference if made to this routine.
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{The generic shell} \label{sec:shell}
+\vsssub
+
+\proddefH{ww3\_shel}{w3shel}{ww3\_shel.ftn}
+\proddeff{Input}{ww3\_shel.inp}{Formatted input file for program.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{30}
+\proddefa{restart.ww3}{Restart file.}{30}
+\proddefa{nest.ww3\opt}{Boundary conditions file.}{33}
+\proddefa{level.ww3\opt}{Water levels file.}{11}
+\proddefa{current.ww3\opt}{Current fields file.}{12}
+\proddefa{wind.ww3\opt}{Wind fields file.}{13}
+\proddefa{ice.ww3\opt}{Ice fields file.}{14}
+\proddefa{data0.ww3\opt}{Assimilation data.}{15}
+\proddefa{data1.ww3\opt}{Assimilation data.}{16}
+\proddefa{data2.ww3\opt}{Assimilation data.}{17}
+\proddefa{track\_i.ww3\opt}{Output track information.}{22}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{log.ww3}{Output log of wave model (see \para\ref{sec:core}).}{20}
+\proddefa{test.ww3\opt}{Test output of wave model.}{6/21}
+\proddefa{restart{\sl{n}}.ww3\opt}{Restart file(s).}{30}
+\proddefa{nest{\sl{n}}.ww3\opt}{Nesting file(s).}{34-42}
+\proddefa{out\_grd.ww3\opt}{Raw output of gridded fields.}{31}
+\proddefa{out\_pnt.ww3\opt}{Raw output of spectra.}{32}
+\proddefa{track\_o.ww3\opt}{Raw output of spectra along tracks.}{23}
+\proddeff{Scratch}{ww3\_shel.scratch}{Formatted scratch file.}{90}
+
+\inpfile{inp_shel.tex}
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{The multi-grid shell} \label{sec:multi}
+\vsssub
+
+\proddefH{ww3\_multi}{w3mlti}{ww3\_multi.ftn}
+\proddeff{Input}{ww3\_multi.inp}{Input file for multi-grid wave model shel.}{8}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{log.mww3}{Output log of wave model driver.}{9}
+\proddefa{test.mww3\opt}{Test output of wave model.}{auto}
+
+\vspace{\baselineskip}
+\noindent
+This wave model program requires and produces a plethora of input and output
+files consistent with those of {\file ww3\_shel} in \para\ref{sec:shell},
+where file extensions {\file .ww3} are replaced by an identifier for a
+specific grid. Note that all files are opened by name, and that the unit
+number assignment is dynamic and automatic.
+
+\inpfile{inp_multi.tex}
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Gridded output post-processor} \label{sec:post_f}
+\vsssub
+
+\proddefH{ww3\_outf}{w3outf}{ww3\_outf.ftn}
+\proddeff{Input}{ww3\_outf.inp}{Input file for gridded output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_grd.ww3}{Raw gridded output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{\ldots \opt}{Transfer file.}{50}
+
+\inpfile{inp_outf.tex}
+
+\vspace{\baselineskip} 
+\noindent
+The extension of the file name of transfer files for {\F itype = 3} identifies
+the content of the file. The file extension for each data type is given in
+Table~\ref{tab:fields} on page~\pageref{tab:fields}.
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Point output post-processor} \label{sec:post_p}
+\vsssub
+
+\proddefH{ww3\_outp}{w3outp}{ww3\_outp.ftn}
+\proddeff{Input}{ww3\_outp.inp}{Input file for point output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_pnt.ww3}{Raw point output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{tab{\sl{nn}}.ww3 \opt}{Table of mean parameters where
+{\file{\sl{nn}}} is a two-digit integer.}{\sl nn}
+\proddefa{\ldots \opt}{Transfer file.}{user}
+
+\inpfile{inp_outp.tex}
+
+\vspace{\baselineskip} 
+\noindent 
+The spectral data transfer file generated with {\F itype = 1} and {\F otype =
+3} can be converted into a spectral bulletin using {\file w3split} (see
+section~\ref{sec:install}). This program reads the following five records from
+standard input (no comment lines allowed) :
+
+\begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
+\item Name of output location.
+\item Identifier for run to be used in table.
+\item Name of input file.
+\item Logical identifying UNFORMATTED input file.
+\item Name of output file.
+\end{list}
+
+\noindent
+All above strings are read as characters using free format, and therefore need
+to be enclosed in quotes.
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Track output post-processor} \label{sec:post_t}
+\vsssub
+
+\proddefH{ww3\_trck}{w3trck}{ww3\_trck.ftn}
+\proddeff{Input}{track\_o.ww3}{Raw track output data.}{11}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{track.ww3}{Formatted data file.}{51}
+
+\vspace{\baselineskip} 
+\noindent
+This post-processor does not require a formatted input file with program
+commands. It will simply convert the entire unformatted file to an integer
+compressed formatted file. The file contains the following header records :
+
+\begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
+\item File identifier (character string of length 34).
+\item Number of frequencies and directions, first direction and directional
+      increment (radians, oceanographic convention).
+\item Radian frequencies of each frequency bin.
+\item Corresponding directional bin size times frequency bin size to obtain
+      discrete energy per bin.
+\end{list}
+
+\noindent
+For each output point the following records are printed :
+\begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
+\item Date and time in {\tt yyyymmdd hhmmss} format, longitude and latitude in
+      degrees, and a status identifier `{\F ice}', `{\F lnd}' or `{\F
+      sea}'. The following two records are written only for sea points.
+\item Water depth in meters, current and wind u and v components in meters per
+      second, friction velocity in meters per second, air-sea temperature
+      difference in degrees centigrade and scale factor for spectrum.
+\item The entire spectrum in integer packed format (can be read using free
+      format).
+\end{list}
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{GRIB output post-processor} \label{sec:post_g}
+\vsssub
+
+\proddefH{ww3\_grib}{w3grib}{ww3\_grib.ftn}
+\proddeff{Input}{ww3\_grib.inp}{Input file for gridded output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_grd.ww3}{Raw gridded output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{gribfile}{GRIB file.}{50}
+
+\inpfile{inp_grib.tex}
+
+\vspace{\baselineskip} 
+\noindent
+This post-processor packs fields of mean wave parameters in GRIB format, using
+GRIB version II and \ncep's w3 and bacio library routines, or in GRIB2, using
+NCEPS's operational package. Additional packing data can be found in
+Table~\ref{tab:fields} on page \pageref{tab:fields}.
+
+The GRIB packing is performed using the \ncep's GRIB tables as described in
+\cite{rep:GRIB}. Because the w3 and bacio routine are not fully portable, they
+are not supplied with the code. The user will have to provide corresponding
+routines. It is suggested that such routines are activated with additional
+\ws\ switches in the mandatory switch group containing the `{\F nogrb}'
+switch, as if presently the case with the \ncep\ routines.  The GRIB2 packing
+is performed according to \cite{rep:GRIB2}, and is performed with NCEP's
+standard operational packages.
+
+Table~\ref{tab:fields} shows the {\F kpds(5)} data values for GRIB
+packing. For the partitioned data, the first number identifies the wind sea,
+the second number identifies swell. Most data are packed as surface data ({\F
+kpds(6) = 0}). For the partitioned swell fields, however, consecutive fields
+are packed at consecutive levels, with the level type indicator set to ({\F
+kpds(6) = 241}). {\F kpds(7)} identifies the actual level or swell field
+number.
+
+Table~\ref{tab:fields} shows several {\F kpds} data values for GRIB2
+packing. The first number in the table represents {\F listsec0(2)}, which
+identifies the discipline type (e.g., oceanography, meteorology, etc.)  The
+second number represents {\F kpds(1)}, which identifies the parameter category
+(e.g., waves, circulation, ice, etc.) within the discipline type.  The third
+number represents {\F kpds(2)}, which identifies the actual parameter.  For
+the partitioned data, A/B means A for wind sea and B for swell.  Additionally
+{\F kpds(10) = 0} for surface data, and {\F kpds(10) = 241 } to pack
+consecutive swell fields at consecutive levels. {\F kpds(12)} identifies the
+actual level or swell field number.
+
+Although the above input file contains flags for all 31 output fields of \ws,
+not all fields can be packed in GRIB. If a parameter is chosen for which GRIB
+packing is not available, a message will be printed to standard
+output. Table~\ref{tab:fields} shows which parameter can be packed in GRIB.
+Note that at \ncep\ the conversions from GRIB to GRIB2 coincided with the
+introduction of partitioned wave model output. This required some duplicate
+definitions in GRIB and some apparent inconsistencies between GRIB and GRIB2
+packing.
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Gridded output post-processor for GrADS} \label{sec:post_gf}
+\vsssub
+
+\proddefH{gx\_outf}{gxoutf}{gx\_outf.ftn}
+\proddeff{Input}{gx\_outf.inp}{Input file for gridded output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_grd.ww3}{Raw gridded output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{ww3.grads}{GrADS data file.}{50}
+\proddefa{ww3.ctl}{GrADS control file.}{51}
+
+\inpfile{inpg_outf.tex}
+
+\vspace{\baselineskip} 
+\noindent 
+This post-processor generates input files with gridded model parameters for
+the Grid Analysis and Display System \citep[GrADS,][]{man:GrADS}. This
+graphical software can be obtained from http://www.iges.org/grads. Although
+GrADS can also work with GRIB files, the present preprocessor is preferable,
+as the data file also gives access to a land-sea-ice map.
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Point output post-processor for GrADS} \label{sec:post_gp}
+\vsssub
+
+\proddefH{gx\_outp}{gxoutp}{gx\_outp.ftn}
+\proddeff{Input}{gx\_outp.inp}{Input file for point output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_pnt.ww3}{Raw point output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{ww3.spec.grads}{GrADS data file with spectra and source terms.}{30}
+\proddefa{ww3.mean.grads}{File with mean wave parameters.}{31}
+\proddefa{ww3.spec.ctl}{GrADS control file.}{32}
+
+\inpfile{inpg_outp.tex}
+
+\vspace{\baselineskip} 
+\noindent
+This post-processor is intended to generate data files with which GrADS (see
+previous section) can plot polar plots of spectra and source terms. To achieve
+this, spectra and source terms are store as "longitude-latitude" grids. For
+each output point a different name is generated for the data, typically {\F
+loc{\it nnn}}. When the data file is loaded in GrADS, the variable {\F loc001}
+will contain a spectral grid for the first requested output point at level 1,
+the input source term at level 2, etc. For the second output point the data is
+stored in {\F loc002} etc. The actual output point names are passed to GrADS
+through the control file {\file ww3.spec.ctl}. Wave heights and environmental
+data are obtained from {\file ww3.mean.grads} The user, however, need not be
+aware of the details of the GrADS data files and data storage. The GrADS
+scripts {\file spec.gs}, {\file source.gs} and {\file 1source.gs} are provided
+to automatically generate spectral plots from the output files of this
+post-processor.
+
+Note: for the GrADS scripts to work properly, the names of the output points
+should not contain spaces.
+
+\pb
+\label{pg:tab_fields}
+
+% tab:fields
+
+\begin{table} \begin{center}
+\begin{tabular}{|c|c|c|c|c|} \hline
+field & description &  file     & GRIB1 & GRIB2  \\
+     &             &  extension & data  & data   \\ \hline \hline
+ 1 & depth                           & {\file .dpt} &  --  &    --    \\
+ 2 & mean current components         & {\file .cur} &  --  &    --    \\
+ 3 & wind speed                      & {\file .wnd} &  32  &  0,2,1   \\
+   &  wind direction                 &              &  31  &  0,2,0   \\
+   &  wind $u$                       &              &  33  &  0,2,2   \\
+   &  wind $v$                       &              &  34  &  0,2,3   \\
+ 4 & air-sea temp. dif.              & {\file .dt}  &  --  &    --    \\
+ 5 & friction velocity comp.         & {\file .ust} &  --  &    --    \\
+ 6 & wave height $H_s$               & {\file .hs}  & 100  &  10,0,3  \\
+ 7 & mean wave length                & {\file .l}   &  --  &    --    \\
+ 8 & mean wave period $T_m$          & {\file .t}   & 103  &    --    \\
+ 9 & mean wave direction $\theta_m$  & {\file .dir} & 101  &    --    \\
+10 & directional spread $\sigma$     & {\file .spr} &  --  &    --    \\
+11 & peak period $T_p$               & {\file .fp}  & 108  &  10,0,11 \\
+12 & peak direction $\theta_p$       & {\file .dp}  & 107  &  10,0,10 \\
+13 & wind sea period $T_w$           & {\file .fpl} & 110  &    --    \\
+14 & wind sea direction $\theta_w$   & {\file .dpl} & 109  &    --    \\
+15 & $H_s$ of partition              & {\file .phs} & 102,105 & 10,0,5/8 \\
+16 & $T_p$ of partition              & {\file .ptp} & 103,106 & 10,0,6/9\\
+17 & $L_p$ of partition              & {\file .plp} &  --  &    --    \\
+18 & $\theta_m$ of partition         & {\file .pth} & 101,104 & 10,0,4/7 \\
+19 & $\sigma$ of partition           & {\file .psi} &  --  &    --    \\
+20 & wind sea fraction of part.      & {\file .pws} &  --  &    --    \\
+21 & total wind sea fraction         & {\file .wsf} &  --  &    --    \\
+22 & number of partitions            & {\file .pnr} &  --  &    --    \\
+23 & average time step               & {\file .dtd} &  --  &    --    \\
+24 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
+25 & ice coverage                    & {\file .ice} &  91  &  10,2,0  \\
+26 & water level                     & {\file .wlv} &  --  &  10,3,1  \\
+27 & near-bottom amplitude           & {\file .abr} &  --  &    --    \\
+28 & near-bottom velocity            & {\file .ubr} &  --  &    --    \\
+29 & radiation stress                & {\file .Sxy} &  --  &    --    \\
+30 & user defined \#1                & {\file .us1} &  --  &    --    \\
+31 & user defined \#2                & {\file .us2} &  --  &    --    \\ \hline
+
+\end{tabular} \end{center}
+\caption{~Field output post processors ancillary data.} \label{tab:fields}
+\vspace{0.5in}
+\end{table}
+
+\clearpage
+
+\bpage
+

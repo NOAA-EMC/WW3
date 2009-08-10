@@ -1,0 +1,655 @@
+$
+$ Global output point data file for multi-grid wave model
+$
+$ Key to data in file:
+$
+$   LON      Longitude, east positive
+$   LAT      Latitude
+$   NAME     Output point name C*10, no blanks in name allowed
+$   AH       Anemometer height, dummy value for none-data points
+$   TYPE     Buoy type indicator, used for plotting and postprocessing
+$             DAT      Data point
+$             XDT      Former data point
+$             BPT      Boundary data for external models.
+$             VBY      'Virtual buoy'
+$   SOURCE   Source of data point
+$             ENCAN    Environment Canada
+$             GOMOOS   Gulf of Maine OOS
+$             IDT      Irish Department of Transportation
+$             METFR    Meteo France
+$             NCEP     Boundary and other data points
+$             NDBC     National Data Buoy Center
+$             PRIV     Private and incidental data sources
+$             SCRIPPS  Scripps
+$             UKMO     UK Met Office
+$   SCALE    Scale indicator for plotting of locations on map
+$
+$ Notes:
+$
+$  - The '$' at the first position identifies comments for WAVEWATCH III
+$    input.
+$  - The first three data columns are used by the forecats code, the other
+$    are used by postprocessing scripts.
+$
+$ NE Pacific deep ocean 
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+  -146.53   54.31  '46001     '   5.0   DAT  NDBC      1
+  -130.27   42.60  '46002     '   5.0   DAT  NDBC      1
+  -136.10   50.93  '46004     '   5.0   DAT  ENCAN     1
+  -131.02   46.05  '46005     '   5.0   DAT  NDBC      1
+  -137.48   40.80  '46006     '   5.0   DAT  NDBC      1
+  -177.58   57.05  '46035     '  10.0   DAT  NDBC      1
+  -133.94   48.35  '46036     '   5.0   DAT  ENCAN     1
+  -130.00   37.98  '46059     '   5.0   DAT  NDBC      1
+  -154.98   52.70  '46066     '   5.0   DAT  NDBC      1
+   175.28   55.00  '46070     '   5.0   DAT  NDBC      1
+  -172.03   54.94  '46073     '  10.0   DAT  NDBC      1
+  -138.85   53.91  '46184     '   5.0   DAT  ENCAN     1
+$
+$ NE Pacific coastal
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+$ Alaska
+$
+  -146.83   60.22  '46061     '   5.0   DAT  NDBC      1
+   179.05   51.16  '46071     '   5.0   DAT  NDBC      1
+  -171.73   52.25  '46072     '   5.0   DAT  NDBC      1
+  -160.81   53.93  '46075     '   5.0   DAT  NDBC      1
+  -148.00   59.50  '46076     '   5.0   DAT  NDBC      1
+  -152.45   56.05  '46078     '   5.0   DAT  NDBC      1
+  -150.00   58.00  '46080     '   5.0   DAT  NDBC      1
+  -143.42   59.69  '46082     '   5.0   DAT  NDBC      1
+  -138.00   58.25  '46083     '   5.0   DAT  NDBC      1
+  -136.16   56.59  '46084     '   5.0   DAT  NDBC      1
+$
+$ Canada
+$
+  -127.93   49.74  '46132     '   5.0   DAT  ENCAN     1
+  -132.45   54.38  '46145     '   5.0   DAT  ENCAN     1
+  -131.22   51.83  '46147     '   5.0   DAT  ENCAN     1
+  -131.10   53.62  '46183     '   5.0   DAT  ENCAN     1
+  -129.81   52.42  '46185     '   5.0   DAT  ENCAN     1
+  -128.75   51.37  '46204     '   5.0   DAT  ENCAN     1
+  -134.28   54.16  '46205     '   5.0   DAT  ENCAN     1
+  -126.00   48.84  '46206     '   5.0   DAT  ENCAN     1
+  -129.92   50.87  '46207     '   5.0   DAT  ENCAN     1
+  -132.68   52.52  '46208     '   5.0   DAT  ENCAN     1
+$
+$ USA
+$
+  -120.87   34.88  '46011     '   5.0   DAT  NDBC      1
+  -122.88   37.36  '46012     '   5.0   DAT  NDBC      1
+  -123.32   38.23  '46013     '   5.0   DAT  NDBC      1
+  -123.97   39.22  '46014     '   5.0   DAT  NDBC      1
+  -124.85   42.75  '46015     '   5.0   DAT  NDBC      1
+  -124.54   40.78  '46022     '   5.0   DAT  NDBC      1
+  -120.97   34.71  '46023     '  10.0   DAT  NDBC      1
+  -119.08   33.75  '46025     '   5.0   DAT  NDBC      1
+  -122.82   37.75  '46026     '   5.0   DAT  NDBC      1
+  -124.38   41.85  '46027     '   5.0   DAT  NDBC      1
+  -121.89   35.74  '46028     '   5.0   DAT  NDBC      1
+  -124.51   46.12  '46029     '   5.0   DAT  NDBC      1
+  -124.53   40.42  '46030     '   5.0   DAT  NDBC      1
+  -124.75   47.34  '46041     '   5.0   DAT  NDBC      1
+  -122.42   36.75  '46042     '   5.0   DAT  NDBC      1
+  -119.53   32.43  '46047     '   5.0   DAT  NDBC      1
+  -124.53   44.62  '46050     '   5.0   DAT  NDBC      1
+  -119.85   34.24  '46053     '   5.0   DAT  NDBC      1
+  -120.45   34.27  '46054     '  10.0   DAT  NDBC      1
+  -121.01   35.10  '46062     '   5.0   XDT  NDBC      1
+  -120.70   34.27  '46063     '   5.0   DAT  NDBC      1
+  -120.20   33.65  '46069     '   5.0   DAT  NDBC      1
+  -118.00   32.50  '46086     '   5.0   DAT  NDBC      1
+  -124.73   48.49  '46087     '   5.0   DAT  NDBC      1
+  -125.77   45.88  '46089     '   5.0   DAT  NDBC      1
+  -124.24   46.86  '46211     '  999.   DAT  SCRIPPS   1
+  -124.74   40.29  '46213     '  999.   DAT  SCRIPPS   1
+  -123.47   37.95  '46214     '  999.   DAT  SCRIPPS   1
+  -119.80   34.33  '46216     '  999.   DAT  SCRIPPS   1
+  -119.43   34.17  '46217     '  999.   DAT  SCRIPPS   1
+  -120.78   34.45  '46218     '  999.   DAT  SCRIPPS   1
+  -119.88   33.22  '46219     '  999.   DAT  SCRIPPS   1
+  -118.63   33.85  '46221     '  999.   DAT  SCRIPPS   1
+  -118.32   33.62  '46222     '  999.   DAT  SCRIPPS   1
+  -117.77   33.46  '46223     '  999.   DAT  SCRIPPS   1
+  -117.47   33.18  '46224     '  999.   DAT  SCRIPPS   1
+  -117.39   32.93  '46225     '  999.   DAT  SCRIPPS   1
+  -117.44   32.63  '46227     '  999.   DAT  SCRIPPS   1
+  -124.55   43.77  '46229     '  999.   DAT  SCRIPPS   1
+  -117.37   32.75  '46231     '  999.   DAT  SCRIPPS   1
+  -117.33   32.43  '46232     '  999.   DAT  SCRIPPS   1
+$
+  -117.75   32.64  'SGX01     '  999.   VBY  NCEP      1
+$
+$ NE Pacific boundary data
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+  -124.25   40.00  'EKA51     '  999.   BPT  NCEP      1
+  -125.25   40.00  'EKA52     '  999.   BPT  NCEP      1
+  -127.25   40.00  'EKA53     '  999.   BPT  NCEP      1
+  -127.25   41.25  'EKA54     '  999.   BPT  NCEP      1
+  -127.25   42.50  'EKA55     '  999.   BPT  NCEP      1
+  -127.25   43.75  'EKA56     '  999.   BPT  NCEP      1
+  -125.50   43.75  'EKA57     '  999.   BPT  NCEP      1
+  -124.75   43.75  'EKA58     '  999.   BPT  NCEP      1
+  -127.25   39.00  'EKA59     '  999.   BPT  NCEP      1
+  -127.25   38.00  'EKA60     '  999.   BPT  NCEP      1
+  -127.25   37.00  'EKA61     '  999.   BPT  NCEP      1
+  -125.25   37.00  'EKA62     '  999.   BPT  NCEP      1
+  -123.25   37.00  'EKA63     '  999.   BPT  NCEP      1
+  -122.34   37.00  'EKA64     '  999.   BPT  NCEP      1
+  -127.25   44.75  'EKA65     '  999.   BPT  NCEP      1
+  -127.25   46.00  'EKA66     '  999.   BPT  NCEP      1
+  -125.25   46.00  'EKA67     '  999.   BPT  NCEP      1
+  -124.25   46.00  'EKA68     '  999.   BPT  NCEP      1
+$
+  -125.50   42.75  'WOR51     '  999.   BPT  NCEP      1
+  -126.50   42.75  'WOR52     '  999.   BPT  NCEP      1
+  -126.50   43.75  'WOR53     '  999.   BPT  NCEP      1
+  -126.50   44.75  'WOR54     '  999.   BPT  NCEP      1
+  -126.50   45.75  'WOR55     '  999.   BPT  NCEP      1
+  -126.50   46.75  'WOR56     '  999.   BPT  NCEP      1
+  -126.50   47.75  'WOR57     '  999.   BPT  NCEP      1
+  -126.50   48.50  'WOR58     '  999.   BPT  NCEP      1
+  -125.50   48.50  'WOR59     '  999.   BPT  NCEP      1
+$
+  -125.00   40.00  'MFR51     '  999.   BPT  NCEP      1
+  -126.00   40.00  'MFR52     '  999.   BPT  NCEP      1
+  -127.00   40.00  'MFR53     '  999.   BPT  NCEP      1
+  -128.00   40.00  'MFR54     '  999.   BPT  NCEP      1
+  -128.00   41.00  'MFR55     '  999.   BPT  NCEP      1
+  -128.00   42.00  'MFR56     '  999.   BPT  NCEP      1
+  -128.00   43.00  'MFR57     '  999.   BPT  NCEP      1
+  -128.00   44.00  'MFR58     '  999.   BPT  NCEP      1
+  -128.00   45.00  'MFR59     '  999.   BPT  NCEP      1
+  -128.00   46.00  'MFR60     '  999.   BPT  NCEP      1
+  -127.00   46.00  'MFR61     '  999.   BPT  NCEP      1
+  -126.00   46.00  'MFR62     '  999.   BPT  NCEP      1
+  -125.00   46.00  'MFR63     '  999.   BPT  NCEP      1
+$
+  -121.00   34.50  'SDX51     '  999.   BPT  NCEP      1
+  -121.00   33.50  'SDX52     '  999.   BPT  NCEP      1
+  -121.00   32.50  'SDX53     '  999.   BPT  NCEP      1
+  -121.00   31.50  'SDX54     '  999.   BPT  NCEP      1
+  -120.00   31.50  'SDX55     '  999.   BPT  NCEP      1
+  -119.00   31.50  'SDX56     '  999.   BPT  NCEP      1
+  -118.00   31.50  'SDX57     '  999.   BPT  NCEP      1
+  -117.00   31.50  'SDX58     '  999.   BPT  NCEP      1
+$
+  -122.00   36.00  'LOX51     '  999.   BPT  NCEP      1
+  -123.00   36.00  'LOX52     '  999.   BPT  NCEP      1
+  -123.00   35.00  'LOX53     '  999.   BPT  NCEP      1
+  -123.00   34.00  'LOX54     '  999.   BPT  NCEP      1
+  -123.00   33.00  'LOX55     '  999.   BPT  NCEP      1
+  -123.00   32.00  'LOX56     '  999.   BPT  NCEP      1
+  -122.00   32.00  'LOX57     '  999.   BPT  NCEP      1
+  -121.00   32.00  'LOX58     '  999.   BPT  NCEP      1
+  -120.00   32.00  'LOX59     '  999.   BPT  NCEP      1
+  -119.00   32.00  'LOX60     '  999.   BPT  NCEP      1
+  -118.00   32.00  'LOX61     '  999.   BPT  NCEP      1
+  -117.00   32.00  'LOX62     '  999.   BPT  NCEP      1
+$
+$ Japanese buoys
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   134.90   28.90  '21004     '   999.  XDT  JAPAN     1
+   126.30   28.10  '22001     '   999.  XDT  JAPAN     1
+$
+$ Hawaii
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+  -162.21   23.43  '51001     '   5.0   DAT  NDBC      1
+  -157.78   17.19  '51002     '   5.0   DAT  NDBC      1
+  -160.82   19.22  '51003     '   5.0   DAT  NDBC      1
+  -152.48   17.52  '51004     '   5.0   DAT  NDBC      1
+  -158.12   21.67  '51201     '  999.   DAT  SCRIPPS   1
+  -157.68   21.42  '51202     '  999.   DAT  SCRIPPS   1
+$
+  -158.00   24.00  'HNL01     '  999.   VBY  NCEP      1
+  -153.00   22.50  'HNL02     '  999.   VBY  NCEP      1
+  -157.75   22.00  'HNL10     '  999.   VBY  NCEP      1
+  -158.25   21.00  'HNL11     '  999.   VBY  NCEP      1
+  -156.50   19.75  'HNL12     '  999.   VBY  NCEP      1
+$
+  -157.25   20.75  'HNL51     '  999.   BPT  NCEP      1
+  -157.806  20.160 'HNL52     '  999.   BPT  NCEP      1
+  -158.540  20.569 'HNL53     '  999.   BPT  NCEP      1
+  -159.274  20.978 'HNL54     '  999.   BPT  NCEP      1
+  -158.745  21.787 'HNL55     '  999.   BPT  NCEP      1
+  -158.170  22.665 'HNL56     '  999.   BPT  NCEP      1
+  -157.422  22.264 'HNL57     '  999.   BPT  NCEP      1
+  -156.674  21.874 'HNL58     '  999.   BPT  NCEP      1
+  -157.00   21.50  'HNL59     '  999.   BPT  NCEP      1
+$
+  -161.118  21.337 'HNL61     '  999.   BPT  NCEP      1
+  -160.707  22.494 'HNL62     '  999.   BPT  NCEP      1
+  -160.295  23.650 'HNL63     '  999.   BPT  NCEP      1
+  -159.275  23.198 'HNL64     '  999.   BPT  NCEP      1
+  -158.254  22.746 'HNL65     '  999.   BPT  NCEP      1
+  -158.759  21.799 'HNL66     '  999.   BPT  NCEP      1
+  -159.243  20.823 'HNL67     '  999.   BPT  NCEP      1
+  -160.180  21.080 'HNL68     '  999.   BPT  NCEP      1
+$
+$ Other deep Pacific
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+  -153.87    0.02  '51028     '   5.0   DAT  NDBC      1
+   144.79   13.54  '52200     '  999.   DAT  SCRIPPS   1
+$
+$ NWS forecast points
+$
+   143.75   12.00  'GUAM      '  999.   VBY  NCEP      1
+   147.50   16.00  'SAIPAN    '  999.   VBY  NCEP      1
+   166.50   19.50  'WAKE      '  999.   VBY  NCEP      1
+   136.25    9.00  'PALAU     '  999.   VBY  NCEP      1
+   138.00    9.60  'YAP       '  999.   VBY  NCEP      1
+   152.50    8.00  'CHUUK     '  999.   VBY  NCEP      1
+   157.50    7.00  'POHNPEI   '  999.   VBY  NCEP      1
+   163.00    5.10  'KOSRAE    '  999.   VBY  NCEP      1
+   146.25  -12.00  'NEWGUINE_S'  999.   VBY  NCEP      1
+   171.25    8.00  'MAJURO    '  999.   VBY  NCEP      1
+   163.75   13.00  'ENEWETAK  '  999.   VBY  NCEP      1
+  -168.75  -15.00  'PAGO_PAGO '  999.   VBY  NCEP      1
+$
+$ Pacific training points
+$
+  -177.40   28.20  'MIDWAY    '  999.   VBY  NCEP      1
+  -169.50   16.70  'JOHNSTON  '  999.   VBY  NCEP      1
+   176.25  -18.00  'NADI      '  999.   VBY  NCEP      1
+   179.20   -8.50  'FUNAFUTI  '  999.   VBY  NCEP      1
+  -175.00  -22.00  'TONGATAPU '  999.   VBY  NCEP      1
+  -159.80  -21.20  'RAROTONGA '  999.   VBY  NCEP      1
+   167.50  -24.00  'NOUMEA    '  999.   VBY  NCEP      1
+   167.50  -18.00  'PORT_VILA '  999.   VBY  NCEP      1
+  -149.60  -19.00  'PAPEETE   '  999.   VBY  NCEP      1
+   174.00    1.00  'TARAWA    '  999.   VBY  NCEP      1
+  -169.90  -19.10  'NIUE      '  999.   VBY  NCEP      1
+  -166.30   23.90  'FF_SHOALS '  999.   VBY  NCEP      1
+   167.00   -0.50  'NAURU     '  999.   VBY  NCEP      1
+  -171.90   -9.20  'NUKUNONO  '  999.   VBY  NCEP      1
+   160.00  -12.00  'SOLOMON_SW'  999.   VBY  NCEP      1
+   165.00  -12.00  'SOLOMON_SE'  999.   VBY  NCEP      1
+   160.00   -5.00  'SOLOMON_N '  999.   VBY  NCEP      1
+$
+$ Gulf of Mexico and Carabean
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -89.67   25.90  '42001     '  10.0   DAT  NDBC      1
+   -94.42   25.17  '42002     '  10.0   DAT  NDBC      1
+   -85.94   26.07  '42003     '  10.0   DAT  NDBC      1
+   -88.77   30.09  '42007     '   5.0   DAT  NDBC      1
+   -95.36   27.91  '42019     '   5.0   DAT  NDBC      1
+   -96.70   26.94  '42020     '   5.0   DAT  NDBC      1
+   -94.40   29.92  '42035     '   5.0   DAT  NDBC      1
+   -84.52   28.50  '42036     '   5.0   DAT  NDBC      1
+   -92.55   27.42  '42038     '   5.0   XDT  NDBC      1
+   -86.02   28.79  '42039     '   5.0   DAT  NDBC      1
+   -88.21   29.18  '42040     '   5.0   DAT  NDBC      1
+   -90.46   27.50  '42041     '   5.0   XDT  NDBC      1
+$
+   -94.05   22.01  '42055     '  10.0   DAT  NDBC      1
+   -85.06   19.87  '42056     '  10.0   DAT  NDBC      1
+   -81.50   16.83  '42057     '  10.0   DAT  NDBC      1
+   -75.06   15.09  '42058     '  10.0   DAT  NDBC      1
+$
+   -65.01   20.99  '41043     '   5.0   DAT  NDBC      1
+   -67.50   15.01  '42059     '   5.0   DAT  NDBC      1
+$
+   -53.08   14.55  '41040     '   5.0   DAT  NDBC      1
+   -46.00   14.53  '41041     '   5.0   DAT  NDBC      1
+   -57.90   15.90  '41100     '   5.0   DAT  METFR     1
+   -56.20   14.60  '41101     '   5.0   DAT  METFR     1
+$
+   -81.75   24.00  'EYW01     '  999.   VBY  NCEP      1
+   -82.25   25.00  'EYW02     '  999.   VBY  NCEP      1
+   -66.50   19.00  'PUERTO_R_N'  999.   VBY  NCEP      1
+   -66.50   17.50  'PUERTO_R_S'  999.   VBY  NCEP      1
+$
+$ NW Atlantic deep ocean
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -72.66   34.68  '41001     '   5.0   DAT  NDBC      1
+   -75.36   32.32  '41002     '   5.0   DAT  NDBC      1
+   -79.09   32.50  '41004     '   5.0   DAT  NDBC      1
+   -80.87   31.40  '41008     '   5.0   DAT  NDBC      1
+   -66.58   41.11  '44011     '   5.0   DAT  NDBC      1
+   -62.00   42.26  '44137     '   5.0   DAT  ENCAN     1
+   -53.62   44.26  '44138     '   5.0   DAT  ENCAN     1
+   -57.08   44.26  '44139     '   5.0   DAT  ENCAN     1
+   -51.74   43.75  '44140     '   5.0   DAT  ENCAN     1
+   -58.00   43.00  '44141     '   5.0   DAT  ENCAN     1
+   -64.02   42.50  '44142     '   5.0   DAT  ENCAN     1
+   -64.01   42.50  '44150     '   5.0   DAT  ENCAN     1
+   -53.39   46.44  '44251     '   5.0   DAT  ENCAN     1
+   -57.35   47.28  '44255     '   5.0   DAT  ENCAN     1
+   -48.01   46.77  'WRB07     '  10.0   DAT  OTHER     1
+$
+$ NW Atlantic coastal
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -80.17   28.50  '41009     '   5.0   DAT  NDBC      1
+   -78.47   28.95  '41010     '   5.0   DAT  NDBC      1
+   -80.60   30.00  '41012     '   5.0   DAT  NDBC      1
+   -77.74   33.44  '41013     '   5.0   DAT  NDBC      1
+   -75.40   35.01  '41025     '   5.0   DAT  NDBC      1
+   -77.28   34.48  '41035     '   5.0   DAT  NDBC      1
+   -81.29   30.72  '41112     '  999.   DAT  SCRIPPS   1
+   -80.53   28.40  '41113     '  999.   DAT  SCRIPPS   1
+   -80.22   27.55  '41114     '  999.   DAT  SCRIPPS   1
+$
+   -70.43   38.48  '44004     '   5.0   DAT  NDBC      1
+   -69.16   43.19  '44005     '   5.0   DAT  NDBC      1
+   -69.43   40.50  '44008     '   5.0   DAT  NDBC      1
+   -74.70   38.46  '44009     '   5.0   DAT  NDBC      1
+   -74.84   36.61  '44014     '   5.0   DAT  NDBC      1
+   -72.10   40.70  '44017     '   5.0   DAT  NDBC      1
+   -69.29   41.26  '44018     '   5.0   DAT  NDBC      1
+   -65.93   42.31  '44024     '   4.0   DAT  GOMOOS    1
+   -73.17   40.25  '44025     '   5.0   DAT  NDBC      1
+   -67.31   44.27  '44027     '   5.0   DAT  NDBC      1
+   -67.88   43.49  '44037     '   4.0   DAT  GOMOOS    1
+   -66.55   43.62  '44038     '   4.0   DAT  GOMOOS    1
+$
+   -70.25   42.50  'BOX01     '  999.   VBY  NCEP      1
+   -67.50   44.00  'CAR01     '  999.   VBY  NCEP      1
+   -77.00   30.75  'CHS01     '  999.   VBY  NCEP      1
+   -69.75   43.25  'GYX01     '  999.   VBY  NCEP      1
+   -77.00   34.00  'ILM01     '  999.   VBY  NCEP      1
+   -78.50   33.25  'ILM02     '  999.   VBY  NCEP      1
+   -80.25   29.50  'JAX02     '  999.   VBY  NCEP      1
+   -79.50   27.25  'MLB01     '  999.   VBY  NCEP      1
+   -79.50   26.25  'MIA01     '  999.   VBY  NCEP      1
+   -79.75   25.00  'MIA02     '  999.   VBY  NCEP      1
+$
+$ NE Atlantic boundary data
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -80.25   28.50  'JAX51     '  999.   BPT  NCEP      1
+   -79.50   28.50  'JAX52     '  999.   BPT  NCEP      1
+   -78.50   28.50  'JAX53     '  999.   BPT  NCEP      1
+   -78.50   29.75  'JAX54     '  999.   BPT  NCEP      1
+   -78.50   31.25  'JAX55     '  999.   BPT  NCEP      1
+   -78.50   32.50  'JAX56     '  999.   BPT  NCEP      1
+   -79.25   32.50  'JAX57     '  999.   BPT  NCEP      1
+   -80.00   32.50  'JAX58     '  999.   BPT  NCEP      1
+$
+   -80.25   32.00  'MHX51     '  999.   BPT  NCEP      1
+   -79.75   32.00  'MHX52     '  999.   BPT  NCEP      1
+   -79.25   32.00  'MHX53     '  999.   BPT  NCEP      1
+   -78.75   32.00  'MHX54     '  999.   BPT  NCEP      1
+   -78.25   32.00  'MHX55     '  999.   BPT  NCEP      1
+   -77.75   32.00  'MHX56     '  999.   BPT  NCEP      1
+   -77.25   32.00  'MHX57     '  999.   BPT  NCEP      1
+   -76.75   32.00  'MHX58     '  999.   BPT  NCEP      1
+   -76.25   32.00  'MHX59     '  999.   BPT  NCEP      1
+   -75.75   32.00  'MHX60     '  999.   BPT  NCEP      1
+   -75.25   32.00  'MHX61     '  999.   BPT  NCEP      1
+   -74.75   32.00  'MHX62     '  999.   BPT  NCEP      1
+   -74.75   32.50  'MHX63     '  999.   BPT  NCEP      1
+   -74.75   33.00  'MHX64     '  999.   BPT  NCEP      1
+   -74.75   33.50  'MHX65     '  999.   BPT  NCEP      1
+   -74.75   34.00  'MHX66     '  999.   BPT  NCEP      1
+   -74.75   34.50  'MHX67     '  999.   BPT  NCEP      1
+   -74.75   35.00  'MHX68     '  999.   BPT  NCEP      1
+   -74.75   35.50  'MHX69     '  999.   BPT  NCEP      1
+   -74.75   36.00  'MHX70     '  999.   BPT  NCEP      1
+   -74.75   36.50  'MHX71     '  999.   BPT  NCEP      1
+   -74.75   37.00  'MHX72     '  999.   BPT  NCEP      1
+   -74.75   37.50  'MHX73     '  999.   BPT  NCEP      1
+   -74.75   38.00  'MHX74     '  999.   BPT  NCEP      1
+   -74.75   38.50  'MHX75     '  999.   BPT  NCEP      1
+$
+$ Bermuda boundary data
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -65.50   31.50  'BER51     '  999.   BPT  NCEP      1
+   -65.25   31.50  'BER52     '  999.   BPT  NCEP      1
+   -65.00   31.50  'BER53     '  999.   BPT  NCEP      1
+   -64.75   31.50  'BER54     '  999.   BPT  NCEP      1
+   -64.50   31.50  'BER55     '  999.   BPT  NCEP      1
+   -64.25   31.50  'BER56     '  999.   BPT  NCEP      1
+   -64.00   31.50  'BER57     '  999.   BPT  NCEP      1
+   -64.00   31.75  'BER58     '  999.   BPT  NCEP      1
+   -64.00   32.00  'BER59     '  999.   BPT  NCEP      1
+   -64.00   32.25  'BER60     '  999.   BPT  NCEP      1
+   -64.00   32.50  'BER61     '  999.   BPT  NCEP      1
+   -64.00   32.75  'BER62     '  999.   BPT  NCEP      1
+   -64.00   33.00  'BER63     '  999.   BPT  NCEP      1
+   -64.25   33.00  'BER64     '  999.   BPT  NCEP      1
+   -64.50   33.00  'BER65     '  999.   BPT  NCEP      1
+   -64.75   33.00  'BER66     '  999.   BPT  NCEP      1
+   -64.00   33.00  'BER67     '  999.   BPT  NCEP      1
+   -65.25   33.00  'BER68     '  999.   BPT  NCEP      1
+   -65.50   33.00  'BER69     '  999.   BPT  NCEP      1
+   -65.50   32.75  'BER70     '  999.   BPT  NCEP      1
+   -65.50   32.50  'BER71     '  999.   BPT  NCEP      1
+   -65.50   32.25  'BER72     '  999.   BPT  NCEP      1
+   -65.50   32.00  'BER73     '  999.   BPT  NCEP      1
+   -65.50   31.75  'BER74     '  999.   BPT  NCEP      1
+$
+$ NW Atlantic
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+    -5.00   45.20  '62001     '   3.0   DAT  UKMO      1
+   -20.00   41.60  '62002     '  999.   DAT  UNKNOWN   1
+   -12.40   48.70  '62029     '   3.0   DAT  UKMO      1
+    -7.90   51.40  '62023     '  999.   DAT  UNKNOWN   1
+     1.10   55.30  '62026     '  999.   DAT  UNKNOWN   1
+    -5.60   48.50  '62052     '  999.   DAT  METFR     1
+   -13.30   51.00  '62081     '   3.0   DAT  UKMO      1
+   -11.20   53.13  '62090     '   4.5   DAT  IDT       1
+    -5.42   53.47  '62091     '   4.5   DAT  IDT       1
+   -10.55   51.22  '62092     '   4.5   DAT  IDT       1
+    -9.07   54.67  '62093     '   4.5   DAT  IDT       1
+    -6.70   51.69  '62094     '   4.5   DAT  IDT       1
+   -15.92   53.06  '62095     '   4.5   DAT  IDT       1
+    -2.90   49.90  '62103     '  14.0   DAT  UKMO      1
+   -12.36   54.54  '62105     '   3.0   DAT  UKMO      1
+    -9.90   57.00  '62106     '   4.5   XDT  UKMO      1
+    -6.10   50.10  '62107     '  14.0   DAT  UKMO      1
+   -19.50   53.50  '62108     '   3.0   DAT  UKMO      1
+     0.00   57.00  '62109     '  999.   DAT  UNKNOWN   1
+     0.40   58.10  '62111     '  999.   DAT  UNKNOWN   1
+     1.30   58.70  '62112     '  999.   DAT  UNKNOWN   1
+     1.40   57.70  '62116     '  999.   DAT  UNKNOWN   1
+     0.00   57.90  '62117     '  999.   DAT  UNKNOWN   1
+     2.00   57.00  '62119     '  999.   DAT  UNKNOWN   1
+     2.00   56.40  '62132     '  999.   DAT  UNKNOWN   1
+     1.00   57.10  '62133     '  999.   DAT  UNKNOWN   1
+     2.10   53.00  '62142     '  999.   DAT  PRIV      1
+     1.70   53.40  '62144     '  999.   DAT  PRIV      1
+     2.80   53.10  '62145     '  999.   DAT  PRIV      1
+     0.50   57.40  '62162     '  999.   DAT  UNKNOWN   1
+    -8.50   47.50  '62163     '   3.0   DAT  UKMO      1
+     0.50   57.20  '62164     '  999.   DAT  PRIV      1
+    -4.70   52.30  '62301     '   3.0   DAT  UKMO      1
+    -5.10   51.60  '62303     '   3.0   DAT  UKMO      1
+     1.90   51.10  '62304     '  14.0   DAT  UKMO      1
+     0.00   50.40  '62305     '  14.0   DAT  UKMO      1
+     1.70   60.60  '63055     '  999.   DAT  UNKNOWN   1
+     1.50   59.20  '63057     '  999.   DAT  UNKNOWN   1
+     1.10   61.20  '63103     '  999.   DAT  UNKNOWN   1
+     1.70   60.80  '63108     '  999.   DAT  UNKNOWN   1
+     1.50   59.50  '63110     '  999.   DAT  PRIV      1
+     1.50   59.50  '63111     '  10.0   XDT  PRIV      1
+     1.00   61.10  '63112     '  999.   DAT  PRIV      1
+     1.30   61.60  '63115     '  999.   DAT  PRIV      1
+   -11.40   59.10  '64045     '   3.0   DAT  UKMO      1
+    -4.50   60.70  '64046     '   3.0   DAT  UKMO      1
+$
+$ Norwegian Sea
+$
+     3.70   60.60  'LF4B      '  999.   DAT  UNKNOWN   1
+     2.20   59.60  'LF4H      '  999.   DAT  UNKNOWN   1
+     7.80   64.30  'LF3F      '  999.   DAT  UNKNOWN   1
+     2.30   61.20  'LF3J      '  999.   DAT  UNKNOWN   1
+     7.30   65.30  'LF3N      '  999.   DAT  UNKNOWN   1
+     1.90   58.40  'LF4C      '  999.   DAT  UNKNOWN   1
+     8.10   66.00  'LF5T      '  999.   DAT  UNKNOWN   1
+     3.20   56.50  'LF5U      '  999.   DAT  UNKNOWN   1
+    21.10   71.60  '3FYT      '  999.   DAT  UNKNOWN   1
+     2.00   66.00  'LDWR      '  999.   DAT  UNKNOWN   1
+$
+$ Iceland
+$
+   -23.10   64.05  'TFGSK     '  999.   DAT  UNKNOWN   1
+   -25.00   65.69  'TFBLK     '  999.   DAT  UNKNOWN   1
+   -23.36   66.44  'TFSTD     '  999.   DAT  UNKNOWN   1
+   -21.12   65.76  'TFDRN     '  999.   DAT  UNKNOWN   1
+   -18.20   66.50  'TFGRS     '  999.   DAT  UNKNOWN   1
+   -13.50   65.65  'TFKGR     '  999.   DAT  UNKNOWN   1
+   -15.20   64.00  'TFHFN     '  999.   DAT  UNKNOWN   1
+   -20.35   63.00  'TFSRT     '  999.   DAT  UNKNOWN   1
+   -22.46   63.82  'TFGRV     '  999.   DAT  UNKNOWN   1
+$
+$ Brazil
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -48.13  -27.70  '31201     '  999.   DAT  SCRIPPS   1
+   -48.75  -32.00  'RIO_GRANDE'  999.   VBY  NCEP      1
+   -46.25  -28.00  'FLORIPA   '  999.   VBY  NCEP      1
+   -43.75  -25.00  'SANTOS    '  999.   VBY  NCEP      1
+   -38.75  -21.00  'CAMPOS    '  999.   VBY  NCEP      1
+   -36.25  -13.00  'SALVADOR  '  999.   VBY  NCEP      1
+   -32.50   -8.00  'RECIFE    '  999.   VBY  NCEP      1
+   -36.25   -3.00  'FORTALEZA '  999.   VBY  NCEP      1
+   -47.50    3.00  'AMAZON    '  999.   VBY  NCEP      1
+   -30.00    1.00  'PETER_PAUL'  999.   VBY  NCEP      1
+$
+$ South Africa
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+    22.17  -34.97  'AGULHAS_FA'  10.0   DAT  PRIV      1
+$
+$ Australia
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   141.75  -12.68  '52121     '  999.   DAT  UNKNOWN   1
+   150.34  -35.71  '55014     '  999.   DAT  UNKNOWN   1
+   153.73  -28.69  '55017     '  999.   DAT  UNKNOWN   1
+   153.27  -30.35  '55018     '  999.   DAT  UNKNOWN   1
+   152.86  -31.83  '55019     '  999.   DAT  UNKNOWN   1
+   150.18  -37.29  '55020     '  999.   DAT  UNKNOWN   1
+   151.03  -34.48  '55022     '  999.   DAT  UNKNOWN   1
+   151.42  -33.77  '55024     '  999.   DAT  UNKNOWN   1
+   151.32  -33.90  '55025     '  999.   DAT  UNKNOWN   1
+   145.01  -42.08  '55026     '  999.   DAT  UNKNOWN   1
+   145.71  -16.73  '55028     '  999.   DAT  UNKNOWN   1
+   147.06  -19.16  '55029     '  999.   DAT  UNKNOWN   1
+   149.55  -21.04  '55031     '  999.   DAT  UNKNOWN   1
+   149.31  -21.27  '55032     '  999.   DAT  UNKNOWN   1
+   151.07  -23.31  '55033     '  999.   DAT  UNKNOWN   1
+   153.20  -27.25  '55034     '  999.   DAT  UNKNOWN   1
+   153.63  -27.49  '55035     '  999.   DAT  UNKNOWN   1
+   153.44  -27.96  '55036     '  999.   DAT  UNKNOWN   1
+   153.58  -28.18  '55037     '  999.   DAT  UNKNOWN   1
+   148.19  -38.60  '55039     '  999.   DAT  UNKNOWN   1
+   136.62  -36.07  '55040     '  999.   DAT  UNKNOWN   1
+   116.14  -19.59  '56002     '  999.   DAT  UNKNOWN   1
+   114.91  -30.29  '56004     '  999.   DAT  UNKNOWN   1
+   115.40  -32.11  '56005     '  999.   DAT  UNKNOWN   1
+   114.78  -33.36  '56006     '  999.   DAT  UNKNOWN   1
+   114.94  -21.41  '56007     '  999.   DAT  UNKNOWN   1
+   115.69  -31.98  '56008     '  999.   DAT  UNKNOWN   1
+$
+$ India
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+    72.49   17.02  '23092     '  999.   DAT  UNKNOWN   1
+    73.75   15.40  '23093     '  999.   DAT  UNKNOWN   1
+    74.50   12.94  '23094     '  999.   DAT  UNKNOWN   1
+    80.39   13.19  '23096     '  999.   DAT  UNKNOWN   1
+    69.24   15.47  '23097     '  999.   DAT  UNKNOWN   1
+    72.51   10.65  '23098     '  999.   DAT  UNKNOWN   1
+    90.74   12.14  '23099     '  999.   DAT  UNKNOWN   1
+    87.56   18.35  '23100     '  999.   DAT  UNKNOWN   1
+    83.27   13.97  '23101     '  999.   DAT  UNKNOWN   1
+    87.50   15.00  '23168     '  999.   DAT  UNKNOWN   1
+    90.14   18.13  '23169     '  999.   DAT  UNKNOWN   1
+    72.66    8.33  '23170     '  999.   DAT  UNKNOWN   1
+    72.00   12.50  '23172     '  999.   DAT  UNKNOWN   1
+    78.57    8.21  '23173     '  999.   DAT  UNKNOWN   1
+    81.53   11.57  '23174     '  999.   DAT  UNKNOWN   1
+$
+$ TPC and OPC
+$
+$   LON     LAT     NAME          AH   TYPE  SOURCE  SCALE
+$ ---------------------------------------------------------
+   -85.00  -15.00  'TPC01     '  999.   VBY  NCEP      1
+  -110.00  -15.00  'TPC02     '  999.   VBY  NCEP      1
+  -135.00  -15.00  'TPC03     '  999.   VBY  NCEP      1
+   -93.75    0.00  'TPC04     '  999.   VBY  NCEP      1
+$
+   -55.00   15.00  'TPC20     '  999.   VBY  NCEP      1
+   -63.00   15.00  'TPC21     '  999.   VBY  NCEP      1
+   -77.00   12.00  'TPC22     '  999.   VBY  NCEP      1
+   -80.00   15.00  'TPC23     '  999.   VBY  NCEP      1
+   -76.00   22.00  'TPC24     '  999.   VBY  NCEP      1
+   -80.00   24.00  'TPC25     '  999.   VBY  NCEP      1
+   -86.00   23.00  'TPC26     '  999.   VBY  NCEP      1
+$
+  -118.00   30.00  'TPC50     '  999.   VBY  NCEP      1
+  -135.00   20.00  'TPC51     '  999.   VBY  NCEP      1
+  -117.00   20.00  'TPC52     '  999.   VBY  NCEP      1
+  -120.00    6.00  'TPC53     '  999.   VBY  NCEP      1
+   -95.00   15.00  'TPC54     '  999.   VBY  NCEP      1
+   -88.00    9.00  'TPC55     '  999.   VBY  NCEP      1
+   -80.00    6.00  'TPC56     '  999.   VBY  NCEP      1
+$
+  -130.50   48.10  'OPCP01    '  999.   VBY  NCEP      1
+  -126.60   48.10  'OPCP02    '  999.   VBY  NCEP      1
+  -129.70   45.30  'OPCP03    '  999.   VBY  NCEP      1
+  -125.60   45.30  'OPCP04    '  999.   VBY  NCEP      1
+  -129.90   41.75  'OPCP05    '  999.   VBY  NCEP      1
+  -125.80   41.90  'OPCP06    '  999.   VBY  NCEP      1
+  -129.00   38.50  'OPCP07    '  999.   VBY  NCEP      1
+  -125.50   39.20  'OPCP08    '  999.   VBY  NCEP      1
+  -125.40   36.40  'OPCP09    '  999.   VBY  NCEP      1
+  -125.00   33.30  'OPCP10    '  999.   VBY  NCEP      1
+  -122.30   34.60  'OPCP11    '  999.   VBY  NCEP      1
+  -121.50   30.90  'OPCP12    '  999.   VBY  NCEP      1
+  -117.00   29.60  'OPCP13    '  999.   VBY  NCEP      1
+$
+   -67.70   42.35  'OPCA01    '  999.   VBY  NCEP      1
+   -72.00   39.30  'OPCA02    '  999.   VBY  NCEP      1
+   -65.70   39.30  'OPCA03    '  999.   VBY  NCEP      1
+   -70.10   37.30  'OPCA04    '  999.   VBY  NCEP      1
+   -74.60   36.30  'OPCA05    '  999.   VBY  NCEP      1
+   -73.80   35.60  'OPCA06    '  999.   VBY  NCEP      1
+   -70.80   34.90  'OPCA07    '  999.   VBY  NCEP      1
+   -76.00   33.80  'OPCA08    '  999.   VBY  NCEP      1
+   -72.30   32.80  'OPCA09    '  999.   VBY  NCEP      1
+$
+$ WAM AFOS locations
+$
+$  -72.5    35.0   'ZNT41     '  999.   VBY  NCEP      1
+$  -70.0    37.5   'ZNT42     '  999.   VBY  NCEP      1
+$  -67.5    40.0   'ZNT43     '  999.   VBY  NCEP      1
+$  -85.0    25.0   'ZNT45     '  999.   VBY  NCEP      1
+$ -125.0    47.5   'ZPZ41     '  999.   VBY  NCEP      1
+$ -125.0    45.0   'ZPZ42     '  999.   VBY  NCEP      1
+$ -130.0    42.5   'ZPZ43     '  999.   VBY  NCEP      1
+$ -122.5    35.0   'ZPZ44     '  999.   VBY  NCEP      1
+$ -120.0    32.5   'ZPZ45     '  999.   VBY  NCEP      1
+$ -122.5    27.5   'ZPZ46     '  999.   VBY  NCEP      1
+$
+$ End of list
+$
+     0.00    0.00  'STOPSTRING'  999.   XXX  NCEP     99

@@ -1,0 +1,54 @@
+\setlength{\unitlength}{0.1mm}
+\begin{figure}
+
+\begin{picture}(1370,650)(0,-650)
+
+\put(   0, -650){\framebox(1370,650)[c]{}}
+
+\put( 270, -160){\vector(3,-4){150}}
+\put( 270, -260){\vector(3,-2){150}}
+\put( 270, -360){\vector(1, 0){150}}
+\put( 270, -460){\vector(3, 2){150}}
+\put( 270, -560){\vector(3, 4){150}}
+
+\put( 820, -360){\vector(1,0){120}}
+
+\put( 420, -380){\vector(-3, 4){150}}
+\put( 420, -380){\vector(-3, 2){150}}
+\put( 420, -380){\vector(-1, 0){150}}
+\put( 420, -380){\vector(-3,-2){150}}
+\put( 420, -380){\vector(-3,-4){150}}
+
+\put( 940, -380){\vector(-1,0){120}}
+
+\put(  10,  -80){\makebox(310,80)[c]{processors with}}
+\put(  10, -110){\makebox(310,80)[c]{native data.}}
+\put(  60, -210){\framebox(210,80)[c]{{\F 1}}}
+\put(  60, -310){\framebox(210,80)[c]{{\F 2}}}
+\put(  60, -410){\framebox(210,80)[c]{{\F 3}}}
+\put(  60, -510){\framebox(210,80)[c]{{\F \ldots}}}
+\put(  60, -610){\framebox(210,80)[c]{{\F naproc}}}
+
+\put( 370,  -80){\makebox(500,80)[c]{1-D full-grid array with}}
+\put( 370, -120){\makebox(500,80)[c]{single spectral component.}}
+\put( 420, -400){\framebox(400,60)[c]{active}}
+\put( 420, -460){\dashbox{5}(400,240)[c]{}}
+\put( 430, -280){\makebox(380,60)[l]{buffer space}}
+
+\put( 970,  -80){\makebox(270,80)[c]{corresponding}}
+\put( 970, -120){\makebox(270,80)[c]{2-D array.}}
+\put( 940, -520){\framebox(330,300)[c]{propagate}}
+
+\put( 370, -570){\dashbox{15}(950,400)[c]{}}
+\put( 400, -580){\makebox(270,80)[l]{\small at target processor}}
+
+\end{picture}
+
+\caption{Data transpose in distributed memory model version. First, the data is
+moved from left to right in the figure during the gather operation. After the
+calculation is performed, the data is moved from right to left in the
+scatter operation.}
+\label{fig:transpose}
+
+\botline
+\end{figure}

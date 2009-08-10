@@ -1,0 +1,58 @@
+\documentclass [12pt,twoside]{article}
+
+\usepackage{natbib}
+\usepackage{epsfig}
+\usepackage{amssymb}
+
+%\includeonly{start,intro,eqs,num,run,impl,sys}
+%\includeonly{start,move}
+
+\input{defs}
+
+\begin{document}
+
+\include{start}
+\include{intro}
+\include{eqs}
+\include{num}
+\include{run}
+\include{impl}
+\include{sys}
+
+\addtocontents{toc}{\vspace
+{\baselineskip}}
+\addcontentsline{toc}{section}{References}
+\setcounter{footnote}{0}
+
+\bibliographystyle{jas}
+\bibliography{manual}
+%\bibliography{short,articles,books,reports,conf,mine}
+
+\pb
+\pagestyle{empty}
+
+%\bpage
+
+\pb \strut
+
+\appendix
+\renewcommand{\thepage}{\thesection.\arabic{page}}
+
+\addtocontents{toc}{\vspace{\baselineskip}}
+\addtocontents{toc}{\vspace{\baselineskip}}
+\addtocontents{toc}{ }
+\addtocontents{toc}{\noindent {\bf APPENDICES}}
+\addtocontents{toc}{ }
+
+\vspace{2.5in} \centerline{\large \bf APPENDICES}
+
+\pb
+\bpage
+
+\include{more}
+\include{tstep}
+\include{nest}
+\include{mpi}
+\include{move}
+
+\end{document}

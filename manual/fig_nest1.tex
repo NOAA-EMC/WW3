@@ -1,0 +1,43 @@
+\begin{figure}
+\begin{center}
+
+\setlength{\unitlength}{0.001in}
+
+\begin{picture}(3000,1800)(0,-1550)
+
+\put(0200,-1200){\vector(1,0){2100}}
+\put(2400,-1250){\makebox(400,100){\small space}}
+\put(0300,-1300){\vector(0,1){1300}}
+\put(0100, 0100){\makebox(400,100)[c]{\small time}}
+
+\multiput(0300,-1200)(0,300){4}{\circle {50}}
+\multiput(0600,-1200)(0,300){4}{\circle {50}}
+\multiput(0900,-1200)(0,300){4}{\circle {50}}
+\multiput(1200,-1200)(0,300){4}{\circle*{50}}
+\multiput(1500,-1200)(0,300){4}{\circle {50}}
+\multiput(1800,-1200)(0,300){4}{\circle {50}}
+\multiput(2100,-1200)(0,300){4}{\circle {50}}
+
+\put(0300,-0150){\makebox(600,100)[c]{`land'}}
+\put(0900,-0200){\vector(-1,0){575}}
+
+\put(1500,-0150){\makebox(600,100)[c]{sea}}
+\put(1500,-0200){\vector(1,0){875}}
+				       
+\put(0900, 0050){\makebox(600,100)[c]{bound. data}}
+\put(1100,-1200){\dashbox{50}(0200,1150){}}
+
+\put(1050,-1550){\makebox(600,100)[c]{bound. scheme}}
+\put(1200,-1400){\dashbox{25}(0300,1100){}}
+
+\put(1550,-0750){\makebox(600,100)[l]{internal scheme}}
+\put(1500,-0800){\vector(1,0){875}}
+
+\end{picture}
+\end{center}
+
+\caption{Traditional one-way nesting approach as used in {\file ww3\_shel}.
+         One-dimensional representation in space and time, symbols represent
+         grid points.} \label{fig:nest1}
+\botline
+\end{figure}

@@ -1,0 +1,129 @@
+\pagestyle{myheadings} \setcounter{page}{1} \setcounter{footnote}{0}
+
+\section{~Moving grids} \label{app:move}
+\newcounters 
+\vssub
+\subsection{~General concept} \label{sec:move_eqs}
+\vssub
+
+In order to address wave growth issues in rapidly changing, small scale
+conditions such as hurricanes, an option to add a given continuous advection
+speed to the grid has been added to the model in model version 3.02. This
+model version is described in detail in \cite{tol:OMOD05b}. In this appendix,
+only a cursory description is given.
+
+\begin{center}
+\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\
+ \vspace{\baselineskip}
+\parbox{120mm}{The continuously moving grid version of \ws\ is only intended 
+for testing wave model properties in highly idealized conditions. This model
+version should only be used for deep water without mean currents and land
+masses. Furthermore, to avoid complications with great circle propagation,
+only Cartesian grid should be used. The option is furthermore implemented only
+for propagations options {\F pr1} and {\F pr3}. Note that this is not checked
+in the scripts or programs at either the compile or run time level.  This
+option is not described in the body of the manual but in this appendix only,
+because it is not considered to be a general application.} \\
+\vspace{\baselineskip}
+\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm}
+\end{center}
+
+\noindent
+For the above described application Eq.~(\ref{eq:bal_plane}) can be written as
+
+\begin{equation}
+\frac{\partial N}{\partial t} + 
+\left ( {\bf\dot{x}}-{\bf{v}}_g \right ) \cdot \nabla_x N  = 
+\frac{S}{\sigma} \: , \label{eq:bal_move}
+\end{equation}
+
+\noindent
+where ${\bf{v}}_g$ represents the advection velocity of the grid. This option
+is selected when compiling the model (see section~\ref{sec:move_run}). A
+second compile level option allows for adding the grid advection velocity
+${\bf{v}}_g$ to the wind field. This allows for a simple method to assure mass
+conservation of a wind field independent of the actual and instantaneous grid
+advection velocity. The advection velocity ${\bf{v}}_g$ can vary in time and
+is provided by the user at the run time of the model (see
+section~\ref{sec:move_run}).
+
+
+% -------------------------------------------------------------
+\vssub
+\subsection{~Numerical implementation} \label{sec:move_num}
+\vssub
+
+For the simplified conditions for which Eq.~(\ref{eq:bal_move}) is valid, the
+implementation of the moving grids is trivial if it is considered that this
+equation is equivalent to
+
+\begin{equation}
+\frac{\partial N}{\partial t} + 
+\nabla_x \cdot \left ( {\bf\dot{x}}-{\bf{v}}_g \right ) N  = 
+\frac{S}{\sigma} \: , \label{eq:bal_move2}
+\end{equation}
+
+\noindent
+which in turn implies that the advection velocity ${\bf{v}}_g$ can be added
+directly to ${\bf\dot{x}}$ for arbitrary numerical schemes solving
+Eq.~(\ref{eq:bal_plane}). Because this influences the net advection velocity,
+it also influences stability characteristics. This impact has been accounted
+for automatically by including the moving grid velocity in the calculation of
+the actual propagation time step in Eq~(\ref{eq:dtpl}). Hence, the user need
+to provide a proper maximum propagation time step representative for $\bf{v}_g
+= 0$ only.
+
+The motion of the grid has an apparent influence on the Garden Sprinkler
+Effect (GSE), due to the different retention time in the grid of spectral
+components with identical frequency but different propagation direction.
+Current GSE alleviation methods tend to be more efficient for younger swells
+than for older swells. Hence, swells with longer retention time in the moving
+grid tend to show a more pronounced GSE \citep[see][]{tol:OMOD05b}. To
+mitigate this apparent imbalance in GSE alleviation,  Eq.~(\ref{eq:GSE_avg}) is
+replaced with
+
+\begin{equation}
+\pm \gamma_a \gamma_{a,s} \: \Delta c_g \: \Delta t \: \bs \:\:\: ,
+\pm \gamma_a \gamma_{a,n} \: c_g \Delta \theta \: \Delta t \: \bn \:\:\: ,
+\label{eq:move_GSE_avg1}
+\end{equation}
+
+\begin{equation}
+\gamma_a = \left ( \frac{|\dot{\bf{x}}|}{|\dot{\bf{x}}-\bf{v}_g|}
+\right ) ^{p}
+\label{eq:move_GSE_avg2}
+\end{equation}
+
+\noindent
+where $\gamma_a$ is a correction factor accounting for the grid movement, and
+where the power $p$ is a parameter allows for some tuning. With this
+modification, the effects of the GSE can be distributed more evenly over the
+grid by rescaling the amount of smoothing applied with the expected residence
+time of corresponding spectral component in the moving grid
+\citep[see][]{tol:OMOD05b}.
+
+
+% -------------------------------------------------------------
+\vssub
+\subsection{~Running with moving grids} \label{sec:move_run}
+\vssub
+
+To switch on the moving of the grid, or the correction of the wind field, two
+optional switches are added to the \ws\ source code:
+
+\begin{slist}
+\sit{mgp} {Apply advection correction for continuous moving grid.}
+\sit{mgw} {Apply wind correction for continuous moving grid.}
+\sit{mgg} {Apply correction to averaging strength in GSE correction for
+           continuous moving grid.}
+\end{slist}
+
+\noindent
+The advection velocity and direction is input to the shell similar to the
+input of homogeneous currents (see bottom of file {\file ww3\_shel.inp} in
+section~\ref{sec:shell}), exchanging the keyword '{\code CUR}' with '{\code
+MOV}'. The advection velocity can be changed in time like all homogeneous
+input fields. An example of running with a moving grid model is given in test
+case {\file ww3\_ts3}.
+
+\bpage \pagestyle{empty}

@@ -1,0 +1,85 @@
+\setlength{\unitlength}{0.1mm}
+\newcommand{\wa }{   0}
+\newcommand{\wb }{ 450}
+\newcommand{\wc }{ 700}
+\newcommand{\we }{1100}
+\newcommand{\waa}{ 300}
+\newcommand{\wab}{ 400}
+\newcommand{\wac}{ 200}
+\newcommand{\wbc}{ 700}
+\newcommand{\wce}{1050}
+\newcommand{\wcf}{ 950}
+
+\begin{figure}
+\begin{picture}(1370,1460)(0,-1400)
+
+\subr{\wa}{ -725}{w3wave}
+\put(\waa, -695){\line(-1,0){100}}
+\put(\waa,-1145){\line(0,1){900}}
+
+\subr{\wc}{ -000}{w3ucur}
+\subr{\wb}{ -050}{w3dcxy}
+\subr{\wc}{ -100}{w3uwnd}
+\subr{\wb}{ -150}{w3uini}
+\subr{\wc}{ -200}{w3iobc}
+\subr{\wb}{ -250}{w3ubpt}
+\subr{\wc}{ -300}{w3uice}
+\subr{\wb}{ -350}{w3ulev}
+\subn{\wc}{ -400}{w3map}
+\subr{\wb}{ -450}{w3utrn}
+\subr{\wc}{ -500}{w3nmin}
+\subr{\wb}{ -550}{w3ddxy}
+\put(\waa,-245){\line(1,0){100}}
+\put(\wab,-520){\line(0,1){550}}
+\multiput(\wab,-520)(0,100){6}{\line(1,0){50}}
+\multiput(\wab,-470)(0,100){6}{\line(1,0){300}}
+
+\subr{\wc}{ -650}{w3gath}
+\subn{\wb}{ -700}{w3xyp}
+\subn{\we}{ -700}{w3qck1}
+\subr{\wc}{ -750}{w3scat}
+\subn{\wb}{ -800}{w3ktp}
+\put(\waa,-695){\line(1,0){100}}
+\put(\wab,-770){\line(0,1){150}}
+\multiput(\wab,-720)(0,100){2}{\line(1,0){300}}
+\multiput(\wab,-770)(0,100){2}{\line(1,0){50}}
+\multiput(\wcf,-770)(0,100){2}{\line(-1,0){300}}
+\put(\wcf,-770){\line(0,1){100}}
+\put(\wcf,-670){\line(1,0){150}}
+
+\subr{\wc}{-900}{w3srce}
+\put(\waa,-870){\line(1,0){400}}
+
+\subn{\we}{ -800}{w3flx}
+\subn{\we}{ -900}{w3spr}
+\subn{\we}{-1000}{w3sln}
+\subn{\we}{-1100}{w3sin}
+\subn{\we}{-1200}{w3snl}
+\subn{\we}{-1300}{w3sds}
+\subxn{\we}{-1400}{w3s}
+
+\put(\wce, -870){\line(-1,0){150}}
+\put(\wce,-1370){\line(0,1){600}}
+\multiput(\wce,-1370)(0,100){7}{\line(1,0){50}}
+
+\subr{\wb}{-1000}{w3outg}
+\subr{\wc}{-1050}{w3iogo}
+\subr{\wb}{-1100}{w3iope}
+\subr{\wc}{-1150}{w3iopo}
+\subr{\wb}{-1200}{w3iotr}
+\subr{\wc}{-1250}{w3iors}
+\subr{\wb}{-1300}{w3iobc}
+\subr{\wc}{-1350}{w3iopa}
+\put(\waa,-1145){\line(1,0){100}}
+\put(\wab,-1320){\line(0,1){350}}
+\multiput(\wab,-1170)(0,100){4}{\line(1,0){50}}
+\multiput(\wab,-1320)(0,100){4}{\line(1,0){300}}
+
+\end{picture}
+
+\caption{Subroutine structure for wave model routine without service routines
+         and without routines managing the data structures. {\F w3s}xxn
+         represents all additional shallow water source term routines.}
+\label{fig:w3wave}
+
+\end{figure}

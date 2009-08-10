@@ -1,0 +1,851 @@
+!/ ------------------------------------------------------------------- /
+      MODULE W3PRO1MD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         29-May-2009 |
+!/                  +-----------------------------------+
+!/
+!/    04-Feb-2000 : Origination                         ( version 2.00 )
+!/    28-Mar-2001 : Partial time step bug fix (proper   ( version 2.10 )
+!/                  ingest of boundaries).
+!/    02-Apr-2001 : Sub-grid obstructions.              ( version 2.10 )
+!/    26-Dec-2002 : Moving grid version.                ( version 3.02 )
+!/    20-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    07-Sep-2005 : Improved XY boundary conditions.    ( version 3.08 )
+!/    10-Jan-2007 : Clean-up FACVX/Y compute.           ( version 3.10 )
+!/    05-Mar-2008 : Added NEC sxf90 compiler directives
+!/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/
+!/    Copyright 2009 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     Bundles routines for first order propagation scheme in single
+!     module.
+!
+!  2. Variables and types :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines and functions :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      W3MAP1    Subr. Public   Set up auxiliary maps.
+!      W3XYP1    Subr. Public   First order spatial propagation.
+!      W3KTP1    Subr. Public   First order spectral propagation.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      DSEC21    Func. W3TIMEMD Time difference.
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Remarks :
+!
+!  6. Switches :
+!
+!       !/C90   Cray FORTRAN 90 compiler directives.
+!       !/NEC   NEC SXF90 compiler directives.
+!
+!       !/S     Enable subroutine tracing.
+!       !/Tn    Enable test output.
+!
+!  7. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3MAP1 ( MAPSTA )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         10-Jan-2007 |
+!/                  +-----------------------------------+
+!/
+!/    19-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
+!/    14-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    20-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    10-Jan-2007 : Clean-up FACVX/Y compute.           ( version 3.10 )
+!/
+!  1. Purpose :
+!
+!     Generate 'map' arrays for the first order upstream scheme.
+!
+!  2. Method :
+!
+!     See section 3.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       MAPSTA  I.A.   I   Status map.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ---------------------------------------------------------------- 
+!      W3WAVE    Subr. W3WAVEMD Wave model routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     ------------------------------------------------------
+!      1.   Initialize arrays.
+!      2.   Fill arrays.
+!      3.   Invert arrays.
+!     ------------------------------------------------------
+!
+!  9. Switches :
+!
+!     !/S   Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY: NTH, NSPEC, NX, NY, GLOBAL
+      USE W3ADATMD, ONLY: IS0, IS2, FACVX, FACVY
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: MAPSTA(NY*NX)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IX, IY, IXY, ISP
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3MAP1')
+!
+! 1.  Initialize x-y arrays ------------------------------------------ *
+!
+      FACVX = 0.
+      FACVY = 0.
+!
+! 2.  Fill x-y arrays ------------------------------------------------ *
+!
+      DO IX=1, NX
+        DO IY=1, NY-1
+          IXY    = IY +(IX-1)*NY
+          IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+          IF ( MAPSTA(IXY+1) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+          END DO
+        END DO
+!
+      DO IX=1, NX-1
+        DO IY=2, NY-1
+          IXY    = IY +(IX-1)*NY
+          IF ( MAPSTA( IXY  ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+          IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+          END DO
+        END DO
+!
+      IF ( GLOBAL ) THEN
+          DO IY=2, NY-1
+            IXY    = IY +(NX-1)*NY
+            IF ( MAPSTA(IXY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+            IF ( MAPSTA(IY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+            END DO
+        END IF
+!
+! 3.  Invert x-y arrays ---------------------------------------------- *
+!
+      DO IXY=1, NX*NY
+        IF ( FACVX(IXY) .NE. 0. ) FACVX(IXY) = 1. / FACVX(IXY)
+        IF ( FACVY(IXY) .NE. 0. ) FACVY(IXY) = 1. / FACVY(IXY)
+        END DO
+!
+! 4.  Fill theta arrays ---------------------------------------------- *
+!
+      DO ISP=1, NSPEC
+        IS2  (ISP) = ISP + 1
+        IS0  (ISP) = ISP - 1
+        END DO
+!
+      DO ISP=NTH, NSPEC, NTH
+        IS2(ISP) = IS2(ISP) - NTH
+        END DO
+!
+      DO ISP=1, NSPEC, NTH
+        IS0(ISP) = IS0(ISP) + NTH
+        END DO
+!
+      RETURN
+!/
+!/ End of W3MAP1 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3MAP1
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3XYP1 ( ISP, FACX, FACY, DTG, MAPSTA, FIELD,        &
+                          VGX, VGY )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         05-Mar-2008 |
+!/                  +-----------------------------------+
+!/
+!/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
+!/    14-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    28-Mar-2001 : Partial time step bug fix.          ( version 2.10 )
+!/    02-Apr-2001 : Sub-grid obstructions.              ( version 2.10 )
+!/    26-Dec-2002 : Moving grid version.                ( version 3.02 )
+!/    20-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    07-Sep-2005 : Improved XY boundary conditions.    ( version 3.08 )
+!/    05-Mar-2008 : Added NEC sxf90 compiler directives
+!/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/
+!  1. Purpose :
+!
+!     Propagation in phyiscal space for a given spectral component.
+!
+!  2. Method :
+!
+!     First order scheme with flux formulation.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       ISP     Int.   I   Number of spectral bin (IK-1)*NTH+ITH
+!       FACX/Y  Real   I   Factor in propagation velocity.
+!       DTG     Real   I   Total time step.
+!       MAPSTA  I.A.   I   Grid point status map.
+!       FIELD   R.A.  I/O  Wave action spectral densities on full
+!                          grid.
+!       VGX/Y   Real   I   Speed of grid.
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+!       NTLOC   Int.  Number of local steps.
+!       VCX     R.A.  Propagation velocities.
+!       VCY     R.A.
+!       VFLX    R.A.  Discrete fluxes between grid points.
+!       VFLY    R.A.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ---------------------------------------------------------------- 
+!      W3WAVE    Subr. W3WAVEMD Wave model routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!     - The local work arrays are initialized on the first entry to
+!       the routine.
+!
+!  8. Structure :
+!
+!     ---------------------------------------
+!       1.  Preparations
+!         a Set constants
+!         b Initialize arrays
+!       2.  Calculate local discrete fluxes
+!       3.  Calculate propagation fluxes
+!       4.  Propagate
+!       5.  Update boundary conditions
+!     ---------------------------------------
+!
+!  9. Switches :
+!
+!     !/NEC Enable NEC SXF90 compiler directives.
+!
+!     !/S   Enable subroutine tracing.
+!
+!     !/T   Enable general test output.
+!     !/T1  Test output local fluxes (V)FX-YL.
+!     !/T2  Test output propagation fluxes (V)FLX-Y.
+!     !/T3  Test output propagation.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+!
+      USE W3TIMEMD, ONLY: DSEC21
+!
+      USE W3GDATMD, ONLY: NK, NTH, SIG, ECOS, ESIN, NX, NY, NSEA,     &
+                          MAPSF, DTCFL, GLOBAL, CLATS
+      USE W3WDATMD, ONLY: TIME
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, FACVX, FACVY
+      USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, ONLY: NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI,      &
+                          BBPI0, BBPIN
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: ISP, MAPSTA(NY*NX)
+      REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
+      REAL, INTENT(INOUT)     :: FIELD(1-NY:NY*(NX+2))
+!/
+!/ ------------------------------------------------------------------ /
+!/ Local parameters
+!/
+      INTEGER                 :: IK, ITH, NTLOC, ITLOC, ISEA, IXY,   &
+                                 IY0, IY, JXN, JXP, JYN, JYP, IBI
+!/T3      INTEGER                 :: IX, IXF, IYF
+!/S      INTEGER, SAVE           :: IENT = 0
+      REAL                    :: CG0, CGL, CGA, CC, CGN
+      REAL                    :: CCOS, CSIN, CCURX, CCURY, VCB
+      REAL                    :: RD1, RD2
+!/T3      REAL                    :: AOLD
+!/
+!/ Automatic work arrays
+!/
+      REAL                    :: VCX(NY*(NX+1)), VCY(NY*(NX+1)),     &
+                                 VFLX(1-NY:NY*NX), VFLY(NY*NX)
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XYP1')
+!
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Set constants
+!
+      ITH    = 1 + MOD(ISP-1,NTH)
+      IK     = 1 + (ISP-1)/NTH
+!
+      CG0    = 0.575 * GRAV / SIG(1)
+      CGL    = 0.575 * GRAV / SIG(IK)
+!
+      IF ( FLCUR ) THEN
+          CGA    = SQRT(MAXVAL((CGL*ECOS(ITH)+CX(1:NSEA))**2          &
+                              +(CGL*ESIN(ITH)+CY(1:NSEA))**2))
+          CC     = SQRT(MAXVAL(CX(1:NSEA)**2+CY(1:NSEA)**2))
+!/MGP          CGA    = SQRT(MAXVAL((CGL*ECOS(ITH)+CX(1:NSEA)-VGX)**2      &
+!/MGP                              +(CGL*ESIN(ITH)+CY(1:NSEA)-VGY)**2))
+!/MGP          CC     = SQRT(MAXVAL((CX(1:NSEA)-VGX)**2+(CY(1:NSEA)-VGY)**2))
+        ELSE
+          CGA    = CGL
+!/MGP          CGA    = SQRT((CGL*ECOS(ITH)-VGX)**2+(CGL*ESIN(ITH)-VGY)**2)
+          CC     = 0.
+        END IF
+!
+      CGN    = 0.9999 * MAX ( CGA, CC, 0.001*CG0 )
+!
+      NTLOC  = 1 + INT(DTG/(DTCFL*CG0/CGN))
+      CCOS   = FACX * ECOS(ITH) / REAL(NTLOC)
+      CSIN   = FACY * ESIN(ITH) / REAL(NTLOC)
+!
+      CCURX  = FACX / REAL(NTLOC)
+      CCURY  = FACY / REAL(NTLOC)
+!
+!/T      WRITE (NDST,9000) FACX, FACY, NTLOC
+!/T      WRITE (NDST,9001) ISP, ITH, IK, CCOS, CSIN
+!
+! ====================== Loop partial ================================ *
+!
+      DO ITLOC=1, NTLOC
+!
+! 1.b Initialize arrays
+!
+!/T1      WRITE (NDST,9010) ITLOC
+!
+        VCX   = 0.
+        VCY   = 0.
+!
+! 2.  Calculate field and velocities --------------------------------- *
+!
+!     FIELD = A / CG * CLATS
+!     VCX   = COS*CG / CLATS
+!     VCY   = SIN*CG
+!
+!/T1      WRITE (NDST,9020)
+        DO ISEA=1, NSEA
+          IXY       = MAPSF(ISEA,3)
+          FIELD(IXY) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
+          VCX  (IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
+          VCY  (IXY) = CSIN * CG(IK,ISEA)
+!/MGP          VCX(IXY) = VCX(IXY) - CCURX*VGX/CLATS(ISEA)
+!/MGP          VCY(IXY) = VCY(IXY) - CCURY*VGY
+!/T1          WRITE (NDST,9021) ISEA, IXY, FIELD(IXY), VCX(IXY), VCY(IXY)
+          END DO
+!
+        IF ( FLCUR ) THEN
+            DO ISEA=1, NSEA
+              IXY      = MAPSF(ISEA,3)
+              VCX(IXY) = VCX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
+              VCY(IXY) = VCY(IXY) + CCURY*CY(ISEA)
+              END DO
+          END IF
+!
+        IF ( GLOBAL ) THEN
+!/T1            WRITE (NDST,9024)
+            IY0    = NY*NX
+!/C90/!DIR$ IVDEP
+!/NEC/!CDIR NODEP
+            DO IY=1, NY
+              FIELD(IY0+IY) = FIELD(IY)
+              VCX  (IY0+IY) = VCX  (IY)
+!/T1              WRITE (NDST,9025) IY, FIELD(IY0+IY), VCX(IY0+IY)
+              END DO
+          END IF
+!
+! 3.  Calculate propagation fluxes ----------------------------------- *
+!
+        DO IXY=1,NY*NX
+          VCB       = FACVX(IXY) * ( VCX(IXY) + VCX(IXY+NY) )
+          VFLX(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
+                    + MIN ( VCB , 0. ) * FIELD(IXY+NY)
+          END DO
+!
+        IF ( GLOBAL ) THEN
+!/T2            WRITE (NDST,9032)
+            IY0    = (NX-1)*NY
+            DO IY=1, NY
+              VFLX(IY-NY) = VFLX(IY+IY0)
+!/T2              WRITE (NDST,9033) IY, VFLX(IY+IY0)
+              END DO
+          END IF
+!
+        DO IXY=1,NY*NX-1
+          VCB       = FACVY(IXY) * ( VCY(IXY) + VCY(IXY+1) )
+          VFLY(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
+                    + MIN ( VCB , 0. ) * FIELD(IXY+1)
+          END DO
+!
+! 4.  Propagate ------------------------------------------------------ *
+!
+!/T3        WRITE (NDST,9040)
+!/C90/!DIR$ IVDEP
+!/NEC/!CDIR NODEP
+        DO ISEA=1, NSEA
+!
+          IXY   = MAPSF(ISEA,3)
+!/T3          AOLD   = FIELD(IXY) * CG(IK,ISEA) / CLATS(ISEA)
+!
+          IF (MAPSTA(IXY).EQ.1) THEN
+!
+              IF ( VFLX(IXY-NY) .GT. 0. ) THEN
+                  JXN   = -1
+                ELSE
+                  JXN   =  0
+                END IF
+              IF ( VFLX(IXY   ) .LT. 0. ) THEN
+                  JXP   =  1
+                ELSE
+                  JXP   =  0
+                END IF
+              IF ( VFLY(IXY- 1) .GT. 0. ) THEN
+                  JYN   = -1
+                ELSE
+                  JYN   =  0
+                END IF
+              IF ( VFLY(IXY   ) .LT. 0. ) THEN
+                  JYP   =  1
+                ELSE
+                  JYP   =  0
+                END IF
+!
+              FIELD(IXY) = CG(IK,ISEA) / CLATS(ISEA) *                &
+                         ( FIELD(IXY) + ATRNX(IXY,JXN) * VFLX(IXY-NY) &
+                                      - ATRNX(IXY,JXP) * VFLX(IXY)    &
+                                      + ATRNY(IXY,JYN) * VFLY(IXY- 1) &
+                                      - ATRNY(IXY,JYP) * VFLY(IXY) )
+!/T3              WRITE (NDST,9041) ISEA, IXY, IXY-NY, IXY-1,         &
+!/T3                 VFLX(IXY-NY), VFLX(IXY), VFLY(IXY-1), VFLY(IXY), &
+!/T3                 CG(IK,ISEA)/CLATS(ISEA), AOLD, FIELD(IXY)
+!
+            ELSE
+!
+              FIELD(IXY) = CG(IK,ISEA) / CLATS(ISEA) * FIELD(IXY)
+!/T3              WRITE (NDST,9042) ISEA, MAPSTA(IXY), AOLD, FIELD(IXY)
+!
+            END IF
+!
+          END DO
+!
+! 5.  Update boundary conditions ------------------------------------- *
+!
+        IF ( FLBPI ) THEN
+            RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
+                                      REAL(NTLOC-ITLOC)/REAL(NTLOC)
+            RD2    = DSEC21 ( TBPI0, TBPIN )
+            IF ( RD2 .GT. 0.001 ) THEN
+                 RD2    = MIN(1.,MAX(0.,RD1/RD2))
+                 RD1    = 1. - RD2
+              ELSE
+                 RD1    = 0.
+                 RD2    = 1.
+              END IF
+            DO IBI=1, NBI
+              IXY   = MAPSF(ISBPI(IBI),3)
+              FIELD(IXY) = RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI)
+              END DO
+          END IF
+!
+! ... End of partial time step loop
+!
+        END DO
+!
+      RETURN
+!
+! Formats
+!
+!/T 9000 FORMAT (' TEST W3XYP1 : FACX-Y, NTLOC :',2E10.3,I4)
+!/T 9001 FORMAT (' TEST W3XYP1 : ISP, ITH, IK, COS-SIN :',I8,2I4,2F7.3)
+!
+!/T1 9010 FORMAT (' TEST W3XYP1 : INIT. VFX-YL, ITLOC =',I3)
+!
+!/T1 9020 FORMAT (' TEST W3XYP1 : ISEA, IXY, FIELD, VCX, VCY')
+!/T1 9021 FORMAT ('           ',2I8,3E12.4)
+!/T1 9024 FORMAT (' TEST W3XYP1 : GLOBAL CLOSURE: IY, FIELD, VCX ')
+!/T1 9025 FORMAT ('               ',I4,2E12.4)
+!
+!/T2 9032 FORMAT (' TEST W3XYP1 : CLOSE. : IY, VFLX')
+!/T2 9033 FORMAT ('            ',I4,E12.4)
+!
+!/T3 9040 FORMAT (' TEST W3XYP1 : PROPAGATION '/                      &
+!/T3              '      ISEA, IXY(3), , FLX(2), FLY(2), FAC, A(2)')
+!/T3 9041 FORMAT (2X,4I5,1X,4E10.3,1X,E10.3,1X,2E10.3)
+!/T3 9042 FORMAT (2X,I5,'( MAP = ',I2,' )',56X,2E10.3)
+!/
+!/ End of W3XYP1 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3XYP1
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3KTP1 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
+                          DDDX, DDDY, CX, CY, DCXDX, DCXDY, DCYDX,    &
+                          DCYDY, VA )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         20-Dec-2004 |
+!/                  +-----------------------------------+
+!/
+!/    29-Aug-1997 : Final FORTRAN 77                    ( version 1.18 )
+!/    04-Feb-2000 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    20-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/
+!  1. Purpose :
+!
+!     Propagation in spectral space.
+!
+!  2. Method :
+!
+!     First order scheme.
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       ISEA    Int.   I   Number of sea point.
+!       FACTH/K Real   I   Factor in propagation velocity.
+!       CTHG0   Real   I   Factor in great circle refracftion term.
+!       CG      R.A.   I   Local group velocities.
+!       WN      R.A.   I   Local wavenumbers.
+!       DEPTH   Real   I   Depth.
+!       DDDx    Real   I   Depth gradients.
+!       CX/Y    Real   I   Current components.
+!       DCxDx   Real   I   Current gradients.
+!       VA      R.A.  I/O  Spectrum.
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+!       DSDD    R.A.  Partial derivative of sigma for depth.
+!       FRK, FRG, FKC
+!               R.A.  Partial velocity terms.
+!       DWNI    R.A.  Inverse band width.
+!       CTH-WN  R.A.  Propagation velocities of local fluxes.
+!       FLTH-WN R.A.  Propagation fluxes.
+!       AA      R.A.  Extracted spectrum
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ---------------------------------------------------------------- 
+!      W3WAVE    Subr. W3WAVEMD Wave model routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  8. Structure :
+!
+!     -----------------------------------------------------------------
+!       1.  Preparations
+!         a Calculate DSDD
+!         b Extract spectrum
+!       2.  Refraction velocities
+!         a Filter level depth reffraction.
+!         b Depth refratcion velocity.
+!         c Current refraction velocity.
+!       3.  Wavenumber shift velocities
+!         a Prepare directional arrays
+!         b Calcuate velocity.
+!       4.  Refraction
+!         a Discrete fluxes.
+!         b Propagation fluxes.
+!         c Refraction.
+!       5.  Wavenumber shifts.
+!         a Discrete fluxes.
+!         b Propagation fluxes.
+!         c Refraction.
+!     -----------------------------------------------------------------
+!
+!  9. Switches :
+!
+!     C/S   Enable subroutine tracing.
+!     C/T   Enable general test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, ES2, &
+                          ESC, EC2, FACHFA, MAPWN, FLCTH, FLCK, CTMAX
+      USE W3ADATMD, ONLY: IS0, IS2
+      USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, ONLY: NDST
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: ISEA
+      REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
+                                 WN(0:NK+1), DEPTH, DDDX, DDDY,       &
+                                 CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
+      REAL, INTENT(INOUT)     :: VA(NSPEC)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: ITH, IK, ISP, ITH0
+!/S      INTEGER, SAVE           :: IENT = 0
+      REAL                    :: FDDMAX, FDG, DCYX, DCXXYY, DCXY,     &
+                                 DCXX, DCXYYX, DCYY, FKD, FKD0, CTHB, &
+                                 CWNB
+      REAL                    :: VCTH(NSPEC), VCWN(1-NTH:NSPEC+NTH),  &
+                                 VAA(1-NTH:NSPEC+NTH), VFLTH(NSPEC),  &
+                                 VFLWN(1-NTH:NSPEC), DSDD(0:NK+1),    &
+                                 FRK(NK), FRG(NK), FKC(NTH), DWNI(NK)
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3KTP1')
+!
+!/T      WRITE (NDST,9000) FLCTH, FLCK, FACTH, FACK, CTMAX
+!/T      WRITE (NDST,9001) ISEA, DEPTH, CX, CY,                       &
+!/T             DDDX, DDDY, DCXDX, DCXDY, DCYDX, DCYDY
+!
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Array with partial derivative of sigma versus depth
+!
+      DO IK=0, NK+1
+        IF ( DEPTH*WN(IK) .LT. 5. ) THEN
+            DSDD(IK) = MAX ( 0. ,                                     &
+                CG(IK)*WN(IK)-0.5*SIG(IK) ) / DEPTH
+          ELSE
+            DSDD(IK) = 0.
+          END IF
+        END DO
+!
+!/T      WRITE (NDST,9010)
+!/T      DO IK=1, NK+1
+!/T        WRITE (NDST,9011) IK, TPI/SIG(IK), TPI/WN(IK),             &
+!/T                              CG(IK), DSDD(IK)
+!/T        END DO
+!
+! 1.b Extract spectrum
+!
+      DO ISP=1, NSPEC
+        VAA(ISP) = VA(ISP)
+        END DO
+!
+! 2.  Refraction velocities ------------------------------------------ *
+!
+      IF ( FLCTH ) THEN
+!
+! 2.a Set slope filter for depth refraction
+!
+          FDDMAX = 0.
+          FDG    = FACTH * CTHG0
+!
+          DO ITH=1, NTH
+            FDDMAX = MAX ( FDDMAX , ABS (                             &
+               ESIN(ITH)*DDDX - ECOS(ITH)*DDDY ) )
+            END DO
+!
+          DO IK=1, NK
+            FRK(IK) = FACTH * DSDD(IK) / WN(IK)
+            FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+            FRG(IK) = FDG * CG(IK)
+            END DO
+!
+! 2.b Depth refraction and great-circle propagation
+!
+          DO ISP=1, NSPEC
+            VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)                   &
+              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+            END DO
+!
+! 2.c Current refraction
+!
+          IF ( FLCUR ) THEN
+!
+              DCYX   = FACTH *   DCYDX
+              DCXXYY = FACTH * ( DCXDX - DCYDY )
+              DCXY   = FACTH *   DCXDY
+!
+              DO ISP=1, NSPEC
+                VCTH(ISP) = VCTH(ISP) + ES2(ISP)*DCYX                 &
+                  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+                END DO
+!
+            END IF
+!
+        END IF
+!
+! 3.  Wavenumber shift velocities ------------------------------------ *
+!
+      IF ( FLCK ) THEN
+!
+          DCXX   =  - FACK *   DCXDX
+          DCXYYX =  - FACK * ( DCXDY + DCYDX )
+          DCYY   =  - FACK *   DCYDY
+          FKD    =    FACK * ( CX*DDDX + CY*DDDY )
+!
+          DO ITH=1, NTH
+            FKC(ITH) = EC2(ITH)*DCXX +                                &
+                       ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
+            END DO
+!
+          ISP    = -NTH
+          DO IK=0, NK+1
+            FKD0   = FKD / CG(IK) * DSDD(IK)
+            DO ITH=1, NTH
+              ISP    = ISP + 1
+              VCWN(ISP) = FKD0 + WN(IK)*FKC(ITH)
+              END DO
+            END DO
+!
+          ITH0   = NSPEC - NTH
+          DO ITH=1, NTH
+            VAA(ITH+NSPEC) = FACHFA * VAA(ITH+ITH0)
+            VAA(ITH- NTH ) = 0.
+            END DO
+!
+          DO IK=1, NK
+            DWNI(IK) = CG(IK) / DSIP(IK)
+            END DO
+!
+        END IF
+!
+! 4.  Refraction ----------------------------------------------------- *
+!
+      IF ( FLCTH ) THEN
+!
+! 4.a Boundary velocity and fluxes
+!
+          DO ISP=1, NSPEC
+            CTHB       = 0.5 * ( VCTH(ISP) + VCTH(IS2(ISP)) )
+            VFLTH(ISP) = MAX ( CTHB , 0. ) * VAA(ISP)                 &
+                       + MIN ( CTHB , 0. ) * VAA(IS2(ISP))
+            END DO
+!
+! 4.b Propagation
+!
+          DO ISP=1, NSPEC
+            VA(ISP) = VA(ISP) + VFLTH(IS0(ISP)) - VFLTH(ISP )
+            END DO
+!
+        END IF
+!
+! 5.  Wavenumber shifts ---------------------------------------------- *
+!
+      IF ( FLCK ) THEN
+!
+! 5.a Boundary velocity and fluxes
+!
+          DO ISP=1-NTH, NSPEC
+            CWNB       = 0.5 * ( VCWN(ISP) + VCWN(ISP+NTH) )
+            VFLWN(ISP) = MAX ( CWNB , 0. ) * VAA(  ISP  )             &
+                       + MIN ( CWNB , 0. ) * VAA(ISP+NTH)
+            END DO
+!
+! 5.c Propagation
+!
+          DO ISP=1, NSPEC
+            VA(ISP) = VA(ISP) + DWNI(MAPWN(ISP)) *                    &
+                           ( VFLWN(ISP-NTH) - VFLWN(ISP) )
+            END DO
+!
+        END IF
+!
+      RETURN
+!
+! Formats
+!
+!/T 9000 FORMAT (' TEST W3KTP1 : FLCTH-K, FACTH-K, CTMAX  :',         &
+!/T                2L2,2E10.3,F7.3)
+!/T 9001 FORMAT (' TEST W3KTP1 : LOCAL DATA :',I7,F7.1,2F6.2,1X,      &
+!/T                6E10.3)
+!/T 9010 FORMAT (' TEST W3KTP1 : IK, T, L, CG, DSDD : ')
+!/T 9011 FORMAT ('              ',I3,F7.2,F7.1,F7.2,E11.3)
+!/
+!/ End of W3KTP1 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3KTP1
+!/
+!/ End of module W3PRO1MD -------------------------------------------- /
+!/
+      END MODULE W3PRO1MD

@@ -1,0 +1,193 @@
+\newcommand{\WWver}{3.14}
+
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\newcommand{\newcounters}{\setcounter{equation}{0}
+                          \setcounter{figure}{0}
+                          \setcounter{table}{0} }
+
+\newcommand{\topline}{\rule{137mm}{0.5mm}}
+\newcommand{\botline}{\vspace{1 mm}\rule{137mm}{0.5mm}}
+
+\newcommand{\pb}{\vfill \pagebreak}
+\newcommand{\bpage}{\vfill \pagebreak \strut
+
+\vspace{2.5in} \centerline{This page is intentionally left blank.}}
+\newcommand{\bpagea}{\strut
+
+\vspace{2.5in} \centerline{This page is intentionally left blank.}}
+
+\renewcommand{\oddsidemargin}{0.5in}
+\renewcommand{\evensidemargin}{0.5in}
+
+\newcounter{outpars}
+
+\newcommand{\wt}{WAVEWATCH}
+\newcommand{\ww}{WAVEWATCH~III$\:$\texttrademark}
+\newcommand{\ws}{WAVEWATCH~III$\:$\texttrademark}
+\newcommand{\ncep}{NCEP}
+\newcommand{\wam}{WAM}
+\newcommand{\wg}{WAMDIG}
+\newcommand{\swan}{SWAN}
+\newcommand{\dia}{DIA}
+\newcommand{\vdia}{VDIA}
+\newcommand{\mdia}{MDIA}
+\newcommand{\xnl}{WRT}
+\newcommand{\js}{JONSWAP}
+\newcommand{\ncar}{NCAR}
+%\newcommand{\para}{\S$\:$}
+\newcommand{\para}{section~}
+\newcommand{\as}{ASCII}
+\newcommand{\qck}{QUICKEST}
+\newcommand{\ult}{ULTIMATE}
+\newcommand{\tvd}{TVD}
+\newcommand{\uq}{ULTIMATE QUICKEST}
+\newcommand{\unix}{UNIX}
+\newcommand{\fortran}{FORTRAN}
+\newcommand{\cfl}{CFL}
+\newcommand{\ST}{{\cal ST}}
+\newcommand{\mpi}{MPI}
+\newcommand{\omp}{OpenMP}
+
+\newcommand{\bk}{\mbox{\bf k}}
+\newcommand{\bx}{\mbox{\bf x}}
+\newcommand{\bn}{\mbox{\bf n}}
+\newcommand{\bs}{\mbox{\bf s}}
+\newcommand{\toa}{\tilde{\sigma}_a}
+\newcommand{\CL}{C_{\lambda}}
+\newcommand{\Ff}{{\cal{F}}(f)}
+\newcommand{\Om}{\Omega}
+
+\newcommand{\file}{\sf}
+\newcommand{\code}{\tt}
+\newcommand{\dir}{\sf}
+\newcommand{\F}{\sc}
+
+\newcommand{\n}{$\:$}
+\newcommand{\x}{$\circ$}
+\newcommand{\y}{$\bullet$}
+
+\newcommand{\eqsp}{\vspace{0.15cm}}
+\newcommand{\heqsp}{\vspace{0.05cm}}
+\newcommand{\vssub}{\vspace{0.5cm}}
+\newcommand{\vsssub}{\vspace{0.25cm}}
+
+\newcommand{\p}{\partial}
+\newcommand{\degree}{^\circ}
+\newcommand{\cN}{{\cal N}}
+\newcommand{\cF}{{\cal F}}
+\newcommand{\cD}{{\cal D}}
+\newcommand{\cR}{{\cal R}}
+\newcommand{\cS}{{\cal S}}
+
+\newcommand{\marbox}[1]{\marginpar{\fbox{{\small #1}}}}
+
+\newcommand{\proddefH}[3]{
+      \parbox[t]{16mm}{Program}
+      \parbox[t]{3mm}{:}
+      \parbox[t]{29mm}{\file #1} 
+      \parbox[t]{13mm}{\strut} ({\F #2}) \\
+      \parbox[t]{16mm}{Code}
+      \parbox[t]{3mm}{:}
+      \parbox[t]{25mm}{\file #3} }
+\newcommand{\proddeff}[4]
+  {\\ \parbox[t]{16mm}{#1}
+      \parbox[t]{3mm}{:}
+      \parbox[t]{29mm}{{\file #2}}
+      \parbox[t]{13mm}{(#4)}
+      \parbox[t]{64mm}{#3} }
+\newcommand{\proddefa}[3]
+  {\\ \parbox[t]{16mm}{\strut}
+      \parbox[t]{3mm}{\strut}
+      \parbox[t]{29mm}{{\file #1}}
+      \parbox[t]{13mm}{(#3)}
+      \parbox[t]{64mm}{#2} }
+
+\newcommand{\opt}{$\strut^\ast$}
+\newcommand{\inpfile}[1]{
+  \vspace{\baselineskip} \noindent
+  \rule[1mm]{43mm}{.5mm} {\rm start of example input file}
+  \rule[1mm]{43mm}{.5mm}
+  {\footnotesize \input{#1} } \noindent
+  \rule[1mm]{46mm}{.5mm} end of example input file \rule[1mm]{45.1mm}{.5mm}
+  }
+
+\newenvironment{flist}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 35mm \labelwidth 25mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\fit}[2]{\item[{\file{#1}}\hfill]{#2}}
+
+\newenvironment{flisti}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 30mm \labelwidth 20mm
+            \rightmargin 10mm}}{\end{list}}
+
+\newenvironment{slist}{\begin{list}{noswitch ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 22mm \labelwidth 15mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\sit}[2]{\item[{\F{#1}}\hfill]{#2}}
+\newcommand{\sitn}[2]{\item[{{\F{#1}}n}\hfill]{#2}}
+\newcommand{\sita}[2]{\item[{{\F{#1}}a}\hfill]{#2}}
+\newcommand{\sitb}[2]{\item[{{\F{#1}}b}\hfill]{#2}}
+\newcommand{\sitc}[2]{\item[{{\F{#1}}c}\hfill]{#2}}
+
+\newenvironment{dlist}{\begin{list}{nodir ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 27mm \labelwidth 17mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\dit}[2]{\item[{\dir{#1}}\hfill]{#2}}
+
+\newenvironment{vlist}{\begin{list}{novar ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 27mm \labelwidth 17mm
+            \rightmargin 0mm}}{\end{list}}
+\newcommand{\vit}[3]{\item[{\F{#1}}\hfill]{
+            \begin{list}{ }{\rightmargin 5mm}
+            \item[{\F #2}\hfill] #3 \end{list} }}
+
+\newenvironment{refs}{\begin{list}{ }{\leftmargin 8mm
+                      \itemindent -8mm \parsep 0mm 
+                      \itemsep 0mm}}{\end{list}}
+\newcommand{\rrule}{\rule[1.0mm]{10mm}{0.2mm}$\:$}
+
+\newcommand{\subr}[3]
+   {\put(#1,#2){\framebox(200,60)[c]{{\F #3}}}}
+\newcommand{\subn}[3]
+   {\put(#1,#2){\framebox(200,60)[c]{{\F #3}n}}}
+\newcommand{\subxn}[3]
+   {\put(#1,#2){\framebox(200,60)[c]{{\F #3}xxn}}}
+\newcommand{\subc}[3]
+   {\put(#1,#2){\dashbox{5}(200,60)[c]{#3}}}
+
+\newcommand{\scripta}[3]
+   {\put(#1,#2){\framebox(200,60)[c]{{\file #3}}}}
+\newcommand{\scriptb}[3]
+   {\put(#1,#2){\framebox(350,60)[c]{{\file #3}}}}
+\newcommand{\scriptc}[3]
+   {\put(#1,#2){\dashbox{5}(350,60)[c]{{\file #3} ({\sc unix})}}}
+\newcommand{\sscript}[3]
+   {\put(#1,#2){\makebox(100,120)[l]{{\scriptsize #3}}}}
+
+\setlength{\unitlength}{0.1mm}
+\newsavebox{\hatch}
+\savebox{\hatch}(100,60){\begin{picture}(100,60)
+\put( 0,40){\line(1,1){20}}
+\put( 0,20){\line(1,1){40}}
+\put( 0, 0){\line(1,1){60}}
+\put(20, 0){\line(1,1){60}}
+\put(40, 0){\line(1,1){60}}
+\put(60, 0){\line(1,1){40}}
+\put(80, 0){\line(1,1){20}}
+\put( 0,20){\line(1,-1){20}}
+\put( 0,40){\line(1,-1){40}}
+\put( 0,60){\line(1,-1){60}}
+\put(20,60){\line(1,-1){60}}
+\put(40,60){\line(1,-1){60}}
+\put(60,60){\line(1,-1){40}}
+\put(80,60){\line(1,-1){20}}
+\end{picture}}
+
+\newcommand{\command}[1]{\begin{center}{\code #1}\end{center}}
+
+\hyphenation{wave-num-ber wave-num-bers}
+\hyphenation{va-ry-ing ge-ne-ric}
+\hyphenation{o-ce-an-ogr}
+\hyphenation{Deut-schen}
