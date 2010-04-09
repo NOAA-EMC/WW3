@@ -1,0 +1,132 @@
+\begin{thebibliography}{24}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Battjes and Janssen(1978)}]{battjes-78}
+Battjes, J.~A. and J.~P. F.~M. Janssen, 1978: Energy loss and set-up due to
+  breaking of random waves. \textit{Proceedings 16th International Conference
+  in Coastal Engineering}, 569 -- 587.
+
+\bibitem[{Bidlot et~al.(2007)}]{bidlotetal-07}
+Bidlot, J.~R., et~al., 2007: Inter-comparison of operational wave forecasting
+  systems. \textit{10$^th$ International workshop on wave hindcasting and
+  forecasting}, Oahu, Hawaii.
+
+\bibitem[{Caplan et~al.(1997)Caplan, Derber, Gemmill, Hong, Pan, and
+  Parrish}]{caplanetal-97}
+Caplan, P., J.~Derber, W.~Gemmill, S.-Y. Hong, H.-L. Pan, and D.~Parrish, 1997:
+  Changes to the 1995 {NCEP} operational {M}edium-{R}ange {F}orecast model
+  analysis-forecast system. \textit{Weather and Forecasting}, \textbf{12}, 581
+  -- 594.
+
+\bibitem[{Cavaleri and Malanotte-Rizzoli(1981)}]{cavaleri-81}
+Cavaleri, L. and P.~Malanotte-Rizzoli, 1981: Wind-wave prediction in shallow
+  water: Theory and applications. \textit{Journal of Geophysical Research},
+  \textbf{86}, 10\,961 -- 10\,973.
+
+\bibitem[{Chao et~al.(2003{\natexlab{a}})Chao, Burroughs, and
+  Tolman}]{chao-akw}
+Chao, Y.~Y., L.~D. Burroughs, and H.~L. Tolman, 2003{\natexlab{a}}: Wave
+  forecasting for {A}laskan {W}aters. Technical Procedures Bulletin 496,
+  NWS/NCEP.
+
+\bibitem[{Chao et~al.(2003{\natexlab{b}})Chao, Burroughs, and
+  Tolman}]{chao-enp}
+Chao, Y.~Y., L.~D. Burroughs, and H.~L. Tolman, 2003{\natexlab{b}}: Wave
+  forecasting for {E}astern {N}orth {P}acific ocean and adjacent waters.
+  Technical Procedures Bulletin 491, NWS/NCEP.
+
+\bibitem[{Chao et~al.(2003{\natexlab{c}})Chao, Burroughs, and
+  Tolman}]{chao-wna}
+Chao, Y.~Y., L.~D. Burroughs, and H.~L. Tolman, 2003{\natexlab{c}}: Wave
+  forecasting for {W}estern {N}orth {A}tlantic ocean and adjacent waters.
+  Technical Procedures Bulletin 495, NWS/NCEP.
+
+\bibitem[{Chawla and Tolman(2007)}]{chawla-07}
+Chawla, A. and H.~L. Tolman, 2007: Automated grid generation for {WAVEWATCH
+  III}. Technical note 254, NCEP/NOAA/NWS, National Center for Environmental
+  Prediction, Washington DC.
+
+\bibitem[{Chawla and Tolman(2008)}]{chawla-08}
+Chawla, A. and H.~L. Tolman, 2008: Obstruction grids for spectral wave models.
+  \textit{Ocean Modeling}, in review.
+
+\bibitem[{Derber et~al.(1991)Derber, Parrish, and Lord}]{derberetal-91}
+Derber, J.~C., D.~F. Parrish, and S.~J. Lord, 1991: The new global operational
+  analysis system at the {N}ational {M}eteorological {C}enter. \textit{Weather
+  and Forecasting}, \textbf{6}, 538--547.
+
+\bibitem[{Grumbine(1996)}]{grumbine-96}
+Grumbine, R.~W., 1996: Automated passive microwave sea ice concentration
+  analysis. Technical note 120, NCEP/NOAA/NWS, National Center for
+  Environmental Prediction, Washington DC.
+
+\bibitem[{Hanson and Jenson(2004)}]{hanson-04}
+Hanson, J.~L. and R.~E. Jenson, 2004: Wave system diagnostics for numerical
+  wave models. Tech. Rep.~29, JCOMM, WMO/TD-No. 1319.
+
+\bibitem[{Hanson et~al.(2009)Hanson, Tracy, Tolman, and Scott}]{hansonetal-09}
+Hanson, J.~L., B.~A. Tracy, H.~L. Tolman, and R.~D. Scott, 2009: Pacific
+  hindcast performance of three numerical wave models. \textit{Journal of
+  Atmospheric and Oceanic Technology}, \textbf{26}, 1614 -- 1633.
+
+\bibitem[{Kanamitsu(1989)}]{kanamitsu-89}
+Kanamitsu, M., 1989: Description of the {NMC} global data assimilation and
+  forecast system. \textit{Weather and Forecasting}, \textbf{4}, 335--342.
+
+\bibitem[{Kanamitsu et~al.(1991)}]{kanamitsuetal-91}
+Kanamitsu, M., et~al., 1991: Recent changes implemented into the global
+  forecast system at {NMC}. \textit{Weather and Forecasting}, \textbf{6},
+  425--434.
+
+\bibitem[{Tolman(1992)}]{tolman-92}
+Tolman, H.~L., 1992: Effects of numerics on the physics in a third generation
+  wind-wave model. \textit{Journal of Physical Oceanography}, \textbf{22}, 1095
+  -- 1111.
+
+\bibitem[{Tolman(2002{\natexlab{a}})}]{tolman-02d}
+Tolman, H.~L., 2002{\natexlab{a}}: Distributed memory concepts in the wave
+  model {WAVEWATCH III}. \textit{Parallel Computing,}, \textbf{28}, 35 -- 52.
+
+\bibitem[{Tolman(2002{\natexlab{b}})}]{tolman-02}
+Tolman, H.~L., 2002{\natexlab{b}}: User manual and system documentation of
+  {WAVEWATCH III} version 2.22. Technical note 222, NCEP/NOAA/NWS, National
+  Center for Environmental Prediction, Washington DC.
+
+\bibitem[{Tolman(2003)}]{tolman-03}
+Tolman, H.~L., 2003: Treatment of unresolved islands and ice in wind wave
+  models. \textit{Ocean Modelling}, \textbf{5}, 219 -- 231.
+
+\bibitem[{Tolman(2008)}]{tolman-08}
+Tolman, H.~L., 2008: A mosaic approach to wind wave modeling. \textit{Ocean
+  Modelling}, \textbf{25}, 35--47.
+
+\bibitem[{Tolman et~al.(2002)Tolman, Balasubramaniyan, Burroughs, Chalikov,
+  Chao, Chen, and Gerald}]{tolmanetal-02}
+Tolman, H.~L., B.~Balasubramaniyan, L.~D. Burroughs, D.~V. Chalikov, Y.~Y.
+  Chao, H.~S. Chen, and V.~M. Gerald, 2002: Development and implementation of
+  wind generated ocean surface wave models at {NCEP}. \textit{Weather and
+  Forecasting}, \textbf{17}, 311 -- 333.
+
+\bibitem[{Tolman et~al.(2006)Tolman, Cao, and Gerald}]{tolmanetal-06}
+Tolman, H.~L., D.~Cao, and V.~M. Gerald, 2006: Altimeter data for use in wave
+  models at ncep. Tech. Rep. 252, NCEP/NOAA/NWS, National Center for
+  Environmental Prediction, Wasjington DC.
+
+\bibitem[{Vincent and Soille(1991)}]{vincent-91}
+Vincent, L. and P.~Soille, 1991: Watersheds in digital spaces: An efficient
+  algorithm based on immersion simulations. \textit{IEEE Transactions of
+  Pattern Analysis and Machine Intelligence}, \textbf{13}, 583 -- 598.
+
+\bibitem[{Wessel and Smith(1996)}]{wessel-96}
+Wessel, P. and W.~Smith, 1996: A global self consistent hierarchical high
+  resolution shoreline database. \textit{Journal of Geophysical Research},
+  \textbf{101}, 8741 -- 8743.
+
+\end{thebibliography}

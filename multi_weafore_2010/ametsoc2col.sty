@@ -1,0 +1,189 @@
+\ProvidesPackage{ametsoc2col}
+% AMS Latex Style File Version 3.0
+% 
+% LaTeX style file for AUTHOR USE ONLY
+% Produces two column, single spaced journal page layout.
+%
+%************************************************************************************
+%****************************FOR AUTHOR'S PERSONAL USE ONLY!!!***********************
+%********************** NOT TO BE USED FOR SUBMISSION TO THE AMS!!!******************
+%************************************************************************************
+%* This file can be used with amspaper.tex to generate a double column, single spaced
+%* PDF that closely resembles AMS journal page layout.  This is for author use ONLY!
+%* PAPERS SUBMITTED IN THIS FORMAT WILL BE RETURNED TO THE AUTHOR! To submit a paper
+%* in a format that follows all the AMS guidelines for submission and peer review use 
+%* ametsoc.sty 
+%************************************************************************************
+%
+% August, 2008 - Developed by Brian Papa - American Meteorological Society
+% - A modified version of ametsoc.sty
+%
+\RequirePackage{graphicx}
+%
+% Seup the page layout using the geometry package
+%%%\usepackage[margin=2.54cm,centering]{geometry}
+\RequirePackage[dvips,letterpaper,textwidth=18.5cm,textheight=22.9cm]{geometry}
+%
+% ametsoc.bst is built on top of natbib
+\RequirePackage{natbib}
+
+% Use times font in URLs
+\RequirePackage{url}
+
+% Define a light gray color for use in the title page header
+\RequirePackage{color}
+\definecolor{lightgray}{gray}{0.50}
+\RequirePackage{fancyhdr}
+
+% Provide the amsmath, fonts, symbol, and boldface math packages for use
+\RequirePackage{amsmath,amsfonts,amssymb,bm}
+
+%Use the indent first package to ensure the first paragraph after each
+%section is indented.
+\RequirePackage{indentfirst}
+
+%If then options
+\RequirePackage{ifthen} 
+\newboolean{dc}
+\setboolean{dc}{true}
+
+%Ensure both text and captions are double spaced following AMS requirements
+\ifthenelse{\boolean{dc}}
+{}
+{\renewcommand{\baselinestretch}{2.0}}
+
+% Corrected labels to roman numbers for lists
+\renewcommand{\labelenumi}{\roman{enumi}.}
+
+%Page numbers.
+\pagestyle{plain}
+
+\setcounter{secnumdepth}{4}
+%
+% Article's default is to provide arabic numerals for everything.
+% Change the formatting of section and lower to follow AMS style.
+\renewcommand{\@seccntformat}[1]{{\csname the#1\endcsname}.~~}%1
+
+%section definitions
+\renewcommand{\section}{%
+\renewcommand{\@seccntformat}[1]{{\csname the##1\endcsname}.~~}%1
+\@startsection
+{section}%
+{1}% 1 is the level for subsection
+{0mm}% NO indent, starts immediately
+{-\baselineskip}% skips 1 baseline after end of previous subsection
+{0.5\baselineskip}% half baseline and the first paragraph starts
+{\normalsize\bf}%the style, Large and boldface
+}
+\renewcommand{\thesection}{\arabic{section}} % numbers
+
+% subsection definitions
+\renewcommand{\subsection}{%
+\renewcommand{\@seccntformat}[1]{{\csname the##1\endcsname}.~~}%1
+\@startsection
+{subsection}%
+{2}% 2 is the level for subsection
+{0mm}% NO indent, starts immediately
+{-\baselineskip}% skips 1 baseline after end of previous subsection
+{0.5\baselineskip}% half baseline and the first paragraph starts
+{\normalfont\small\itshape}%the style, all italics
+}
+\renewcommand{\thesubsection}{\alph{subsection}} % letters
+
+% subsubsection definitions
+\renewcommand{\subsubsection}{%
+\renewcommand{\@seccntformat}[1]{{\csname the##1\endcsname})~~}%1
+\@startsection
+{subsubsection}%
+{3}% 3 is the level for subsubsection
+{5mm}% Indent subsubsections
+{-\baselineskip}% skips 1 baseline after end of previous subsubsection
+{0.5\baselineskip}% half baseline and the first paragraph starts
+{\normalfont\small\sc}%
+}
+\renewcommand{\thesubsubsection}{\arabic{subsubsection}}
+
+% paragraph (subsubsubsection) definitions
+\renewcommand{\paragraph}{%
+\renewcommand{\@seccntformat}[1]{({\csname the##1\endcsname})~~}%1
+\@startsection
+{paragraph}%
+{4}% 4 is the level for subsubsubsection (paragraph)
+{5mm}% indent paragraph/subsubsubsections the same as subsubsections
+{-\baselineskip}% skips 1 baseline after end of previous subsubsection
+{0.5\baselineskip}% half baseline and the first paragraph starts
+{\normalfont\small\itshape}%
+}
+\renewcommand{\theparagraph}{\roman{paragraph}}
+
+% Acknowledgments is defined as an unnumbered section.
+\newenvironment{acknowledgment}
+{\subsubsection*{\textit{Acknowledgments.}}}
+{}
+
+\renewenvironment{appendix}[1][1]%
+{\ifthenelse{\equal{#1}{1}}%
+{\renewcommand\theequation{A\arabic{equation}}%
+\setcounter{equation}{0}% reset counter
+\setcounter{subsection}{0}% reset counter
+\begin{center}%
+\section*{\textnormal{APPENDIX}}%
+\end{center}}%
+{\renewcommand\theequation{{#1}\arabic{equation}}%
+\setcounter{equation}{0}% reset counter
+\setcounter{subsection}{0}% reset counter
+\begin{center}%
+\section*{\textnormal{APPENDIX {#1}}}%
+\end{center}}}%
+
+%
+% Remove colon in \caption, AMS style is to have a period after the
+% figure number
+\long\def\@makecaption#1#2{%
+% Create the proper style for the figure and table captions.
+\renewcommand{\figurename}{\textsc{Fig.}}
+\renewcommand{\tablename}{\textsc{Table}}
+\renewcommand{\thefigure}{\arabic{figure}.}
+\renewcommand{\thetable}{\arabic{table}.}
+\vskip\abovecaptionskip
+\sbox\@tempboxa{#1~~#2}%
+\ifdim \wd\@tempboxa >\hsize
+#1~~#2\par%
+\else
+\global \@minipagefalse
+\hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+\fi
+\vskip\belowcaptionskip}
+%
+% Set the abstract heading as upper case and define the abstract environment.
+\renewcommand{\abstractname}{\uppercase{Abstract}}
+%
+\renewenvironment{abstract}{
+\footnotesize% Used under normal template conditions
+\begin{center}%
+{\abstractname\vspace{-.5em}\vspace{\z@}}%
+\end{center}
+}
+
+% Define the amstitle
+\newcommand{\amstitle}{
+   \date{}% No date
+   \maketitle%Make the title
+   \thispagestyle{fancy}% title page doesn't have page number
+   \lhead{\textcolor{lightgray}{\footnotesize{Generated using V3.0 of the official AMS \LaTeX\ template--journal page layout FOR AUTHOR USE ONLY, NOT FOR SUBMISSION!}}}
+   \newpage%Title page is separate from rest of article
+   \pagenumbering{arabic}%Start pagination from this point
+   \newpage%Title page is separate from rest of article
+}
+%
+% Citations should be of the form ``author year''  not ``author, year''
+\bibpunct{(}{)}{;}{a}{}{,}
+%
+% Adjust the spacing for two column papers
+\ifthenelse{\boolean{dc}}
+% Set the column separator width to 0.25 inches.
+{\setlength{\columnsep}{.25in}}
+{}
+%
+% Center the References section title
+\renewcommand{\refname}{\begin{center}\uppercase{\normalfont{References}}\end{center}}

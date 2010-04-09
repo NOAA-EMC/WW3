@@ -1,0 +1,9 @@
+\begin{figure*}
+[t]
+  \noindent\includegraphics[width=19pc,angle=0]{./figures/figure01.eps}\\
+  \caption{Enter the caption for your figure here.  Repeat as
+  necessary for each of your figures. Create a figures directory and
+  place all figures in that directory. Figure from Houghton et al. (2001).}\label{f1}
+\end{figure*}
+\efloatseparator
+ 

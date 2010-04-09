@@ -1,0 +1,180 @@
+\documentclass[12pt,english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{graphicx}
+\usepackage{epsfig}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PREAMBLE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The following two commands will generate a PDF that follows all the
+%requirements for submission
+% and peer review.  Uncomment these commands to generate this output (and
+%comment out the two lines below.)
+% DOUBLE SPACE VERSION FOR SUBMISSION TO THE AMS
+\usepackage{ametsoc}% The following two commands will generate a single space,
+%double column paper that closely
+% matches an AMS journal page.  Uncomment these commands to generate this output
+%(and comment
+% out the two lines above. FOR AUTHOR USE ONLY. PAPERS SUBMITTED IN THIS FORMAT
+%WILL BE RETURNED
+% TO THE AUTHOR for submission with the correct formatting.
+% TWO COLUMN JOURNAL PAGE LAYOUT FOR AUTHOR USE ONLY
+%%%%\documentclass[10pt]{article}
+%%%%\usepackage{ametsoc2col}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ABSTRACT
+% Enter your Abstract here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\myabstract}{Enter abstract here.}
+
+\makeatother
+
+\usepackage{babel}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TITLE
+% Enter your TITLE here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\title{\textbf{\large {The Great Lakes Wave Model at NCEP/NOAA: }\\
+\textbf{\large{} Implementation, General Features and Future Developments}}}
+
+\maketitle
+% Author names, with corresponding author information. 
+% [Update and move the \thanks{...} block as appropriate.]
+
+\author{\textsc{Author One}
+                                \thanks{\textit{Corresponding author address:}
+                                Rua Sobe e Desce, Number 000
+                                \newline{E-mail:
+someone@noaa.gov}}\quad\textsc{Author Two}\\
+\textit{\footnotesize{Somewhere, over the rainbow}}
+\and
+\centerline{\textsc{Extra Author}}\\% Add additional authors, different
+insitution
+\centerline{\textit{\footnotesize{Affiliation, City, State/Province, Country}}}
+}
+
+
+
+% Formatting done here...Authors should skip over this.  See above for abstract.
+\ifthenelse{\boolean{dc}} { \twocolumn[
+\begin{@twocolumnfalse}
+\amstitle
+
+\begin{center}
+\begin{minipage}{13.0cm}
+\begin{abstract}
+	\myabstract
+	\newline
+	\begin{center}
+		\rule{38mm}{0.2mm}
+	\end{center}
+\end{abstract}
+\end{minipage}
+\end{center}
+\end{@twocolumnfalse}
+] } { \amstitle 
+\begin{abstract}
+\myabstract 
+\end{abstract}
+} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MAIN BODY OF PAPER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{intro}
+
+\include{waveclimate}
+
+\include{previouswork}
+
+\section{The Great Lakes wave model at NOAA/NCEP}
+
+The WAVEWATCH III model has been implemented operationally by NOAA/NCEP for most
+major weather forecast guidance areas in the world under USA jurisdiction since
+2000. With the objective to extend this standard NOAA/NCEP wind-wave forecasting
+guidance approach to the Great Lakes, the Environmental Modeling Center (EMC) at
+NOAA/NCEP launched, in 2004, a formal project envisaging the operational
+implementation of WAVEWATCH III in the region within a 2-year time frame. 
+
+The initial plan included using the WAVEWATCH III model with wind fields derived
+from the ETA model. Ice concentrations were to be included int he system,
+provided by operational analyses made at the NOAA/NCEP. Also planned was the
+inclusion of dynamically updated mean water levels on a seasonal time scale.
+WAVEWATCH III was to be implemented in a single grid encompassing the five major
+lakes that integrate the Great Lakes system -- Erie, Huron, Michigan, Ontario
+and Superior.
+
+\include{initialwork}
+
+\subsection{Deployment of the operational GLW model}
+
+\subsubsection{Initial performance assessments}
+
+\subsection{Upgrades to the operational implementation}
+
+\subsubsection{Performance of current operational forecasts}
+
+\section{Recent research and developments}
+
+\section{Concluding remarks}
+
+\begin{acknowledgment} Start acknowledgments here. \end{acknowledgment}
+
+% Create a bibliography directory and place your .bib file there.
+\ifthenelse{\boolean{dc}} {} {\clearpage{}} \bibliographystyle{./ametsoc}
+\bibliographystyle{ametsoc}
+\bibliography{bibliography/references}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FIGURES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\begin{figure}[t]
+% \includegraphics[width=19pc]{figures/figure01}\\
+% \caption{Enter the caption for your figure here. Repeat as necessary for each
+%of your figures. Create a figures directory and place all figures
+%in that directory. Figure from Houghton et al. (2001).}
+
+
+%\noindent \label{f1} 
+%\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TABLES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\begin{table}[t]
+% \caption{This is a sample table caption and table layout. Enter as many tables
+%as necessary at the end of your manuscript. Table from Lorenz (1963).}
+
+%\label{t1} 
+
+%\centering{}\begin{tabular}{ccccrrcrc}
+%\hline 
+%$N$  & $X$  & $Y$  & $Z$ &  &  &  &  & \tabularnewline
+%\hline 
+%0000  & 0000  & 0010  & 0000  &  &  &  &  & \tabularnewline
+%0005  & 0004  & 0012  & 0000  &  &  &  &  & \tabularnewline
+%0010  & 0009  & 0020  & 0000  &  &  &  &  & \tabularnewline
+%0015  & 0016  & 0036  & 0002  &  &  &  &  & \tabularnewline
+%0020  & 0030  & 0066  & 0007  &  &  &  &  & \tabularnewline
+%0025  & 0054  & 0115  & 0024  &  &  &  &  & \tabularnewline
+%\hline
+%\end{tabular}
+%\end{table}
+
+\end{document}

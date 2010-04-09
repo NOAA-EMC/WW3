@@ -1,0 +1,63 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Assel et~al.(1983)Assel, Quinn, Leshkevich, and Bolsenga}]{asset83}
+Assel, R.~A., F.~H. Quinn, G.~A. Leshkevich, and S.~J. Bolsenga, 1983: Great
+  lakes ice atlas noaa. Tech. rep., Great Lakes Environmental Research
+  Laboratories. Ann Arbor, MI.
+
+\bibitem[{Bretschneider(1970)}]{bret70}
+Bretschneider, C.~L., 1970: Forecasting relations for wave generation. Tech.
+  Rep.~1, Look Lab Hawaii, 31-34 pp.
+
+\bibitem[{Burroughs and Dallavalle(1997)}]{burrdal97}
+Burroughs, L.~D. and J.~P. Dallavalle, 1997: Great lakes wind and wave
+  guidance. Technical Procedures Bulletin 433, US National Weather Service.
+
+\bibitem[{Lin and Resio(2001)}]{linres01}
+Lin, L. and D.~T. Resio, 2001: Improving wave hindcast information for the
+  {G}reat {L}akes. \textit{Ocean Wave Measurement and Analysis}, B.~L. Edge and
+  J.~M. Hemsley, Eds., ASCE.
+
+\bibitem[{Liu et~al.(1984)Liu, Schwab, and Bennett}]{liuet84}
+Liu, P.~C., D.~J. Schwab, and J.~R. Bennett, 1984: Comparison of a
+  two-dimensional wave prediction model with synoptic measurements in lake
+  michigan. \textit{J. Phys. Oceanogr.}, \textbf{14}, 1514--1518.
+
+\bibitem[{Phillips and Irbe(1978)}]{philirb78}
+Phillips, D.~W. and J.~G. Irbe, 1978: Lake-to-land comparison of wind,
+  temperature and humidity on {L}ake {O}ntario during the {IFYGL}. Report
+  CLI-2-77, Environment Canada, Atmospheric Environment Service, 51 pp.
+
+\bibitem[{Pore(1974)}]{pore74}
+Pore, N.~A., 1974: Great lakes wave forecasts. Technical Procedures Bulletin
+  127, National Weather Service, 9 pp.
+
+\bibitem[{Resio and Vincent(1976)}]{resvin76}
+Resio, D.~T. and C.~L. Vincent, 1976: Design wave information for the great
+  lakes. Technical Report H-76, USACE.
+
+\bibitem[{Schwab et~al.(1984{\natexlab{a}})Schwab, Bennett, Liu, and
+  Donelan}]{schwet84a}
+Schwab, D.~J., J.~R. Bennett, P.~C. Liu, and M.~A. Donelan, 1984{\natexlab{a}}:
+  Application of a simple numerical wave prediction model to lake erie.
+  \textit{J. Geophys. Res.}, \textbf{89~(C3)}, 3586--3592.
+
+\bibitem[{Schwab et~al.(1984{\natexlab{b}})Schwab, Bennett, and
+  Lynn}]{schwet84b}
+Schwab, D.~J., J.~R. Bennett, and E.~W. Lynn, 1984{\natexlab{b}}: A two
+  dimensional lake wave prediction system. NOAA Technical Memorandum ERL
+  GLERL~51, 74 pp.
+
+\bibitem[{USACE(2010)}]{wisweb}
+USACE, 2010: Field research facility website.
+  \url{http://www.frf.usace.army.mil/}.
+
+\end{thebibliography}

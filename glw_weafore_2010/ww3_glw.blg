@@ -1,0 +1,58 @@
+This is BibTeX, Version 0.99c (Web2C 7.5.6)
+The top-level auxiliary file: ww3_glw.aux
+A level-1 auxiliary file: intro.aux
+A level-1 auxiliary file: waveclimate.aux
+A level-1 auxiliary file: previouswork.aux
+A level-1 auxiliary file: initialwork.aux
+The style file: ./ametsoc.bst
+Illegal, another \bibstyle command---line 18 of file ww3_glw.aux
+ : \bibstyle
+ :          {ametsoc}
+I'm skipping whatever remains of this command
+Database file #1: bibliography/references.bib
+Warning--I didn't find a database entry for "tolman02"
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Warning--missing institution in schwet84b
+Warning--missing publisher in wisweb
+You've used 11 entries,
+            3488 wiz_defined-function locations,
+            798 strings with 7092 characters,
+and the built_in function-call counts, 7681 in all, are:
+= -- 723
+> -- 313
+< -- 13
++ -- 149
+- -- 77
+* -- 463
+:= -- 968
+add.period$ -- 23
+call.type$ -- 11
+change.case$ -- 82
+chr.to.int$ -- 10
+cite$ -- 13
+duplicate$ -- 718
+empty$ -- 492
+format.name$ -- 113
+if$ -- 1551
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 119
+newline$ -- 43
+num.names$ -- 46
+pop$ -- 384
+preamble$ -- 1
+purify$ -- 69
+quote$ -- 0
+skip$ -- 339
+stack$ -- 0
+substring$ -- 233
+swap$ -- 447
+text.length$ -- 6
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 99
+warning$ -- 2
+while$ -- 38
+width$ -- 0
+write$ -- 133
+(There was 1 error message)
