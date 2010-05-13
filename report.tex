@@ -1,0 +1,895 @@
+\documentclass[12pt]{article}
+
+\oddsidemargin=0.4in
+\evensidemargin=0.4in
+\textwidth=5.7in
+\topmargin=-0.6in
+\textheight=8.5in
+
+\usepackage{psfig}
+\usepackage{natbib}
+\usepackage{svn}
+
+\SVN $Revision: 4773 $
+
+\newcommand{\pstyle}{myheadings}
+%\newcommand{\pstyle}{plain}
+\newfont{\ff}{cmsl12}
+
+\newcommand{\ww}{WAVEWATCH III$\:$\texttrademark}
+\newcommand{\ws}{WW3}
+\newcommand{\refs}{(\ldots references \ldots)}
+\newcommand{\p}{\partial}
+\newcommand{\degree}{^{\circ}}
+\newcommand{\bk}{\mbox{\boldmath $k$}}
+\newcommand{\bc}{\mbox{\boldmath $c$}}
+\newcommand{\lae}{$\lambda =$}
+\newcommand{\mue}{$\mu =$}
+\newcommand{\CCe}{$C =$}
+
+\newcommand{\file}{\sf}
+\newcommand{\code}{\tt}
+\newcommand{\dir}{\sf}
+\newcommand{\F}{\sc}
+
+\newcommand{\pb}{\strut \vfill \pagebreak}
+\newcommand{\bpage}{\vfill \pagebreak \strut
+
+\vspace{2.5in} \centerline{This page is intentionally left blank.}}
+\newcommand{\bpagea}{\strut
+
+\vspace{2.5in} \centerline{This page is intentionally left blank.}}
+
+\newcommand{\newsec}{\setcounter{equation}{0}
+                      \setcounter{myfigno}{0}
+                      \setcounter{mytabno}{0}}
+
+\newenvironment{flist}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 35mm \labelwidth 25mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\fit}[2]{\item[{\file{#1}}\hfill]{#2}}
+
+\newcounter{myfigno}[section]
+\newenvironment{myfig}[1]{\begin{figure}[#1]
+                         \refstepcounter{myfigno}}                       
+                        {\end{figure}}
+\newenvironment{myfigx}[1]{\begin{figure}[#1]}                       
+                        {\end{figure}}
+\newcommand{\myfcap}[1]{\begin{list}{\ff Fig. \themyfigno\ :~\hfill}
+                       {\rightmargin 8mm \labelsep 0mm
+                        \labelwidth 8mm \leftmargin 8mm
+                        \topsep 0mm \parskip 0mm \partopsep 0mm }
+                        \item \ff #1 \end{list}}
+\newcommand{\myfcapc}[1]{\begin{center} \ff Fig. \themyfigno\ :~ #1
+                         \end{center}}
+\newcommand{\myfcapx}[1]{\begin{center} \ff #1 \end{center}}
+
+\newcounter{mytabno}[section]
+\newenvironment{mytab}[1]{\begin{table}[#1]
+                         \refstepcounter{mytabno}}                       
+                        {\end{table}}
+\newcommand{\mytcap}[1]{\begin{list}{\ff Table \themytabno :~\hfill}
+                       {\rightmargin 8mm \labelsep 0mm
+                        \labelwidth 8mm \leftmargin 8mm
+                        \topsep 0mm \parskip 0mm \partopsep 0mm }
+                        \item \ff #1 \end{list}
+                        \vspace{\baselineskip}}
+\newcommand{\mytcapc}[1]{\begin{center} \ff Table \themytabno : #1
+                         \end{center} \vspace{\baselineskip}}
+
+\renewcommand{\themyfigno}{\thesection.\arabic{myfigno}}
+\renewcommand{\themytabno}{\thesection.\arabic{mytabno}}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+
+\newcounter{mylistno}
+
+\begin{document}
+
+%--------------------------------------------------------------%
+%           Title page                                         %
+%--------------------------------------------------------------%
+
+\pagestyle{empty}
+
+\strut \vspace{5mm}
+
+\begin{center} 
+U. S. Department of Commerce \\
+National Oceanic and Atmospheric Administration \\
+National Weather Service \\
+National Centers for Environmental Prediction \\
+5200 Auth Road Room 207 \\
+Camp Springs, MD 20746
+
+\vspace{15mm}
+
+{\bf Technical Note}
+
+\vspace{15mm}
+
+{\large \ww\ development best practices $^\dag$.}
+
+\vspace{20mm}
+
+Hendrik l. Tolman$^\ddag$% and Arun Chawla $^{\ddag,\ast}$
+\\
+Environmental Modeling Center \\
+Marine Modeling and Analysis Branch
+
+\vspace{25mm}
+
+\today\ (DRAFT, Revision: \SVNRevision)
+\vfill {\sc this is an unreviewed manuscript, primarily
+intended for informal exchange of information among ncep staff
+members}
+
+\end{center}
+\noindent \rule{140mm}{0.5mm} \\
+{\small $^\dag$ MMAB Contribution No.~nnn. \\
+$^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\ % Arun.Chawla@NOAA.gov} \\
+%$^\ast$ SAIC-GSO
+
+\bpage
+
+\pagebreak
+
+\markright{\fbox{\rm{DRAFT}} \hspace{2mm} \today}
+\pagestyle{\pstyle}
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+%--------------------------------------------------------------%
+%            Abstract                                          %
+%--------------------------------------------------------------%
+\addtocontents{toc}{\vspace{\baselineskip}}
+\addcontentsline{toc}{subsection}{Abstract}
+
+\begin{abstract}
+This report describes best practices for code development of \ww. This
+includes guidelines for packaging of codes delivered by general users to NCEP
+according to the \ww\ license, as well as instructions for co-developers on
+the use of the subversion depository at NCEP. The report addresses codes,
+documentation and manuals.
+\end{abstract}
+
+\vfill \pagebreak
+
+%--------------------------------------------------------------%
+%            Acknowledgements                                  %
+%--------------------------------------------------------------%
+
+\addcontentsline{toc}{subsection}{Acknowledgments}
+
+{\it Acknowledgments.} Code management for \ww\ is provided by NCEP. Arun
+Chawla provided a first filter for this report.
+
+\vspace{\baselineskip} \noindent
+This report is available as a pdf file from
+
+\vspace{\baselineskip}
+\centerline{http://polar.ncep.noaa.gov/waves}
+
+
+\vfill \pagebreak
+%--------------------------------------------------------------%
+%            Contents                                          %
+%--------------------------------------------------------------%
+\addcontentsline{toc}{subsection}{Table of contents}
+
+\tableofcontents
+
+\pb
+\pagestyle{empty}
+
+\bpagea
+
+
+\pb
+\pagestyle{\pstyle}
+\pagenumbering{arabic}
+%--------------------------------------------------------------%
+% Section : Introduction                                       %
+%--------------------------------------------------------------%
+\section{Introduction} \label{sec:intro}
+\newsec
+
+\noindent
+The \ww\ wind wave model has a history dating back to the second half of the
+1980s. It's history started with the development of the WAVEWATCH model at
+Delft university of technology \citep{tol:CHGE89, tol:CHGE90, tol:JPO91b}. The
+next step of development occurred at NASA, Goddard Space Flight Center in the
+early 1990s, with the development of WAVEWATCH II. This model was explicitly
+designed for (vector) super computing, and focused on improved numerics
+\citep{tol:JPO92, tol:ICCE92}. Development of \ww\ at NCEP started in 1993.
+Compared to previous WAVEWATCH models, this model uses modified basic
+equations, and introduces the present model architecture. This model utilizes
+vector optimization, together with OpenMP or MPI parallel optimization, and
+hence can be run efficiently on most modern computer architectures.  With
+model version 3.14, \ww\ has been trademarked and copyrighted, and has been
+distributed under an open-source style license \citep[see section 1.2 of ][or
+the web
+site\footnote{~http://polar.ncep.noaa.gov/waves/wavewatch/license.shtml
+}]{tol:MMAB09a}. Henceforth, \ww\ will be denoted as \ws.
+
+Three public releases of \ws\ have been made available
+\citep{tol:OMB99a,tol:OMB02b, tol:MMAB09a}. This best practices report was
+first provided with model versions 3.14 for two reasons. First, coding
+standards are needed to foster and support community model development. This
+has become particularly important with the National Oceanographic Partnership
+Program (NOPP) project to improve all basic wave model source terms, which
+will run from 2010 through 2013, and which will use \ws\ as a main development
+vehicle. Six or more teams will thus work simultaneously on the \ws\
+code. Second, there is a need for unifying coding approaches within NCEP. A
+first set of standards has been developed for the Community Radiative Transfer
+Model (CRTM) as presented in \cite{rep:PvD08}. Whereas it is unrealistic to
+retrofit all NCEP codes to a completely homogeneous coding standard due to the
+shear size of legacy codes, all basic precepts should be the same, and are
+consistent between the present report on \cite{rep:PvD08}.
+
+From the beginning, \ws\ has been envisioned as a modeling framework, with
+various options for numerical and physical approaches, both for operational
+and research applications. With a focus on operations at NCEP, selections of
+numerical and physical approaches are done at the compile level of the
+code. This limits the complexity of the source code that is used in
+operations. For example, complex exact interaction codes are not compiled into
+the operational models at NCEP, and hence do not need to be maintained in the
+operational code versions. Compile level code selections are made using the
+native \ws\ preprocessor and `switches' in the source code, as described in
+full in the \ws\ manual \cite[or more recent versions]{tol:MMAB09a}.
+
+Starting with the release model version 3.14, we are maintaining the code
+using subservion \citep{bk:CSea06}. The master version of \ws\ will be
+maintained and supported at NCEP. With the licensing of model version 3.14,
+users that develop code and/or modifications for \ws\ are obligated to offer
+these back to NCEP, relative to the most recent version of \ws\ available to
+them\footnote{~Public release or research version on svn server, depending on
+user access.} NCEP will then decide if such modifications and additions will
+be included in the master version of \ws, and will be responsible for
+including it in the subversion depository. Alternatively, collaborators on
+well defined projects and with proven development capability will be
+considered as `co-developers', and will be given direct access to our
+subversion server, and thus to developmental version of \ws. NCEP will invite
+collaborators to become co-developers, and will considered requests to become
+co-developers.
+
+To foster co-development of the \ws\ model code coding standard, best
+practices for upgrading parts of \ws\ and for adding new pieces to \ws, and
+maintenance of documentation are essential. These issues are approached in
+Sections~\ref{sec:style} (also including copyright statements), \ref{sec:add}
+and \ref{sec:man}, respectively.  Finally, Section~\ref{sec:svn} discusses
+standards of code management.
+
+Some formatting practices for the \ws\ manual are used in this report. The
+{\file file} font will be used to identify files, scripts and command lines,
+and the {\code CODE} font is used to identify source code. Previous experience
+with \ws\ is expected, and the use of, for instance, optional switches in the
+code, will not be explained here in detail.
+
+%\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Programming style                                  %
+%--------------------------------------------------------------%
+\section{Programming style} \label{sec:style}
+\newsec
+
+\ws\ is written in ANSI standard Fortran 90, fully modular, and with an
+internal dynamic data structure exclusively using use-associated data modules.
+All modules are internally documented with a style of documentation as
+illustrated in Fig.~\ref{fig:docu_subr} and \ref{fig:docu_mod} for subroutines
+and modules, respectively. Examples of this can be found throughout the source
+code, and templates are also provided in `user slot' routines for source terms
+and propagation schemes. The following is expected of codes provided to NCEP
+for inclusion in the official version of \ws :
+
+\begin{list}{\roman{mylistno})}{\usecounter{mylistno} \rightmargin 8mm
+                                \leftmargin 10mm \labelsep 2mm}
+
+\item Fully document the code following the outline described above.
+
+\item Follow the coding style of \ws, in particular :
+
+\begin{itemize}
+\item For readability, code is written following the use of columns as in
+      fixed format Fortran, even though codes are technically written in free
+      format. Use typical indent strategies for loops and logical structures.
+\item Code intended as permanent code is written in upper case, temporary
+      (test) code is written in lower case. Note that we encourage the
+      inclusion of permanent test output to be activated at compile time using
+      the \ws\ compile switches\footnote{~See manual for details on use of
+      compile level switches.} like `{\code !/T}'. The latter test output
+      should be coded in upper case as a permanent part of the code.
+\end{itemize}
+
+\item Maintain an update log at the top of each module and for each individual
+      routine or function, and update the last update date in the header of
+      each module, function and routine, as has been done in the distribution
+      version of \ws. If a module only contains one program element, only a
+      single update log needs to be maintained.
+
+\item Each subroutine, function or groupings therefore should be embedded in a
+      module to allow for full use association and internal automatic
+      interface checks in Fortran compilers. File naming conventions include:
+
+\begin{itemize}
+\item File names for elements of the basic wave model should start with {\file
+      w3}.
+\item Program elements related to the multi-grid capability should start with
+      {\file wm}.
+\item Module file names should end in {\file md} (before the file extension).
+\item Files with main programs should be stored in file names starting with
+      {\file ww3\_}.
+\item The file extension{\file .ftn} identifies code elements that need to be
+      preprocessed by the \ws\ preprocessor {\file w3adc} to activate
+      switches.
+\item Files with ready-to-use source code (no need for the \ws\ preprocessor)
+      are identified by the extension {\file .f90}.
+\end{itemize}
+
+      As examples {\file w3snl2md.ftn} is a module of the basic wave model
+      (one of the $S_{nl}$ source term options) that needs to be preprocessed
+      by the \ws\ preprocessor. {\file ww3\_grid.ftn} contains the main
+      program for the grid preprocessing. {\file mod\_constants.f90} is a part
+      of a user-supplied package that does not require \ws\ code
+      preprocessing.  Note that the only file not following the \ws\ naming
+      convention is {\file constants.ftn}, which contains a module with
+      physical constants.
+
+\item For now, we have been using the Fortran 90 standard. Required coding
+      practices include:
+
+\begin{itemize}
+\item Use free format with style as described above.
+\item Use {\code IMPLICIT NONE} in each module.
+\item Do not use {\code COMMON} declarations. Eventually all major data
+      structures should become part of the \ws\ dynamical data structures (see
+      manual), which are all contained in separate modules, and can be used by
+      use association. See section~\ref{sec:add} for suggestions on how to
+      deal with these data structures during (initial) code development.
+\item Each module used in a given program element will need to be use
+      associated with a {\code USE} statement. Where feasible, use
+
+      \centerline {{\code USE {\it module\_name}, ONLY: {\it used names}}}
+
+      to avoid unintended use of variables in modules.
+\item For the same reason, use {\code PRIVATE} for general declarations in
+      modules. 
+\item Declare {\code INTENT} on all dummy argument list items.
+\item Do not use tab characters in the code (not in Fortran character set).
+\item Name {\code END}s fully both for readability and because several
+      compilers will require this.
+\item Do not use numbered {\code DO} loops.
+\item Use {\code CYCLE} and {\code EXIT} instead of {\code GOTO}.
+\item Use {\code CASE} statements with a default rather than {\code IF}
+      statements for multiple selection tests.
+
+\item As a holdover of days long gone, short variable names have been used
+      throughout the \ws\ code. Although this makes it easy to keep
+      documentation readable, it does not necessarily make it easy to
+      understand the code at a glance. Feel free to use longer variable names
+      to make the code more easily understandable.
+\item Up to now, there has been no need for explicit {\code KIND} declarations
+      in \ws. If such declarations are needed, follow the standard set in
+      \cite{rep:PvD08}.
+\end{itemize}
+
+\item Provide documentation for the modules to be included in the \ws\
+      manual. The manual is written in \LaTeX. Required manual elements to be
+      provided are
+
+\begin{itemize}
+\item Description or update of basic equations / physical parameterizations as
+      needed.
+\item Description or update of numerical approaches as needed.
+\item Update of system documentation including description of parameters in
+      the dynamical data structure of \ws.
+\end{itemize}
+
+\end{list}
+
+\noindent
+The coding style does not imply that existing packages that are attached to
+\ws\ need to be re-written in this style. However, it is strongly recommended
+that any such package should be fully documented inside the code. Typically, a
+user provided package will require an interface routine to \ws. Such an
+interface routine is expected to conform to the \ws\ coding practices.
+
+Note that the NWS claims copyright for all main elements of \ws, and generally
+will claim copyright for interface routines. Providers of packages to be
+included with the distribution of \ws\ are encourage to provide copyright
+statements and disclaimers in these packages as appropriate. 
+
+
+\begin{myfig}{tbp}
+\begin{center}
+\begin{minipage}[c]{4.5in}
+{\scriptsize \begin{verbatim}
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3XXXX
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |             John Doe              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         01-Jan-2010 |
+!/                  +-----------------------------------+
+!/
+!/    01-Jan-2010 : Origination.                        ( version 4.xx )
+!/
+!  1. Purpose :
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks 
+!  8. Structure :
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XXXX')
+....
+!/
+!/ End of W3XXXX ----------------------------------------------------- /
+!/
+      END SUBROUTINE INSBTX
+\end{verbatim}}
+\end{minipage}
+\end{center}
+
+\myfcap{Documentation template for subroutines. Note that each subroutine is
+        expected to include a call to the {\code STRACE} subroutine to enable
+        subroutine tracing inside \ws,}
+\label{fig:docu_subr}
+\end{myfig}
+
+\begin{myfig}{tbp}
+\begin{center}
+\begin{minipage}[c]{4.5in}
+{\scriptsize \begin{verbatim}
+!/ ------------------------------------------------------------------- /
+      MODULE W3XXXXMD
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |             John Doe              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         01-Jan-2010 |
+!/                  +-----------------------------------+
+!/
+!/    01-Jan-2010 : Origination.                        ( version 4.xx )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!  2. Variables and types :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines and functions :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      W3XXXX    Subr. Public   ........
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Remarks :
+!  6. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+!  7. Source code :
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      PRIVATE
+!/
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3XXXX
+.....
+!/
+!/ End of w3XXXX ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3XXXX
+!/
+!/ End of module W3XXXXMD -------------------------------------------- /
+!/
+      END MODULE W3XXXXMD
+\end{verbatim}}
+\end{minipage}
+\end{center}
+
+\myfcap{Documentation template for modules. Copyright statement to be adapted
+        as appropriate.}
+\label{fig:docu_mod}
+\end{myfig}
+
+\pb
+\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Adding to the model                                %
+%--------------------------------------------------------------%
+\section{Adding to the model} \label{sec:add}
+\newsec
+
+\ws\ is designed as a highly plug-compatible code.  Source term and
+propagation approaches can be included as self-contained modules, with limited
+changes needed to the interface of routine calls in {\code W3SRCE}, {\code
+W3WAVE}, and in the point post-processing programs only. General users can
+experiment with new approaches in user slots that are provided as dummy model
+slots like {\code W3SNLX} in the file {\file w3snlxmd.ftn} for the nonlinear
+interactions. General users are expected to provide these `user slot' routines
+to NCEP for inclusion in subsequent versions of \ws, following the instruction
+in this report and in the documentation of routines like {\code W3SNLX}.  Such
+codes should be self-contained in the way described below.
+
+When providing a module for a source term like {\code W3SNLX} or for a
+propagation scheme the following programming guidelines should be followed:
+
+\begin{list}{\roman{mylistno})}{\usecounter{mylistno} \rightmargin 8mm
+                                \leftmargin 10mm \labelsep 2mm}
+\item Follow coding guidelines as outlined in the previous section.
+\item Provide a file with necessary modifications to {\code W3SRCE} and all
+      other routines that require modification.
+\item Provide a test case with expected results.
+\end{list}
+
+\noindent
+Furthermore, the module needs to be self-contained in the following way.
+
+\begin{list}{\roman{mylistno})}{\usecounter{mylistno} \rightmargin 8mm
+                                \leftmargin 10mm \labelsep 2mm}
+\item All saved variables connected with this source term need to be declared
+      in the module header. Upon acceptance as permanent code, they will be
+      converted to the \ws\ dynamic data structure.
+\item Provide a separate computation and initialization routine.  In the
+      submission, the initialization should be called from the computation
+      routine upon the first call to the routine. Upon acceptance as permanent
+      code, the initialization routine will be moved to a more appropriate
+      location in the code (i.e., being absorbed in {\file ww3\_grid} or being
+      moved to {\code W3IOGR}).
+\end{list}
+
+\noindent
+When such packages are provided to NCEP, NCEP may choose to not include the
+package, or to provide the package as a `user slot routine' like {\code
+W3SNLX}, with some minor work of users required to install these routines, or
+may choose to fully integrate the routines as a standard option in \ws.
+
+\vspace{\baselineskip} \noindent Co-developers of \ws\ with access to the
+subversion server are expected to fully integrate the new modules in the
+experimental versions of \ws, using software selection switches as provided by
+the NCEP code managers. It is, nevertheless, strongly recommended that
+initially data structures are kept internal to the modules that are being
+developed, and that data for the modules are only included in the dynamic data
+structure of \ws\ when the module is mature. This will make code development
+and unification much easier when multiple developers are working on the code
+simultaneously.
+
+\vspace{\baselineskip} \noindent The above approach are applicable to
+inherently modular elements of \ws\ such as source terms or propagations
+schemes. For more intricate changes to the code, please consult the \ws\ code
+managers\footnote{~Mail to NCEP.EMC.wavewatch@NOAA.gov} on how to proceed with
+developing and providing code upgrades.
+
+
+%\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Manual and documentation                           %
+%--------------------------------------------------------------%
+\section{Manual and documentation} \label{sec:man}
+\newsec
+
+The \ws\ manual and other \ws\ documents like this report are written in
+\LaTeX. Since these are dynamic documents, the corresponding files are
+maintained in svn, together with the \ws\ source code, script and auxiliary
+files. Because the manual is rather large, it has been stored in several
+{\file .tex} files. The main files making up the manual are
+
+\begin{flist}
+\fit{manual.tex}{Main {\file .tex} file, mainly combining the {\file .tex}
+                 files below into the complete manual.}
+\fit{defs.tex  }{User defined \LaTeX\ constructs used in the manual.}
+\fit{start.tex }{Title page and table of contents set up.}
+\fit{intro.tex }{Chapter: Introduction.}
+\fit{eqs.tex   }{Chapter: Governing equations.}
+\fit{num.tex   }{Chapter: Numerics.}
+\fit{run.tex   }{Chapter: Running the model.}
+\fit{impl.tex  }{Chapter: Installing the model.}
+\fit{sys.tex   }{Chapter: System documentation.}
+\fit{more.tex  }{Appendix: Managing multiple model versions.}
+\fit{tstep.tex }{Appendix: Setting time steps.}
+\fit{nest.tex  }{Appendix: Nesting.}
+\fit{mpi.tex   }{Appendix: Compiling MPI versions of the model.}
+\fit{move.tex  }{Appendix: Moving grid options.}
+\fit{fig\_{\it{XXXX}}.tex }{Various figures made directly using \LaTeX.}
+\fit{inp\_{\it{XXXX}}.tex, inpg\_{\it{XXXX}}.tex }{}
+\fit{ }{Example input files for \ws\ programs used in {\file run.tex}.}
+\fit{{\it{XXXX}}.eps}{Various encapsulated postscript graphics.}
+
+\fit{manual.bib}{BibTex database with references used in the manual.}
+\fit{jas.bst   }{Bibliography style file used for the manual.}
+\end{flist}
+
+\noindent
+Apart from the files making up the manual, a support script is provided:
+
+\begin{flist}
+\fit{make\_inps.sh}{Convert input files for \ws\ programs to \LaTeX\ file for
+                    use in the manual (e.g., convert the model input file
+                    {\file ww3\_grid.inp} to {\file inp\_grid.tex}). This
+                    script assures that the example input files provided with
+                    the code are the files displayed in the manual.}
+\end{flist}
+
+\pb \noindent
+Note that the manual consist of both a conventional manual and a basic system
+documentation. The following standards should be used in writing \LaTeX\
+contributions to the manual:
+
+\begin{itemize}
+\item Use American spelling and grammar.
+\item Use dynamic references to equation, chapter and section numbers, etc. Do
+      not use any hardwired reference numbers when referring to equations,
+      sections etc.
+\item Use BibTex exclusively for references to other work. Do not write any
+      references directly into the text.
+\item Do not use excessive line lengths in the {\file .tex} files. We
+      typically use a maximum line length of 78 characters and
+      `auto-fill-mode' when writing or updating {\file .tex} files using
+      emacs. 
+\item When adding contributions to the manual, add a note of the
+      update to the introduction, so that users of the public releases
+      have a concise log of upgrades since the previous model release.
+\item If you have no \LaTeX\ capability or experience, contact the \ws\ code
+      managers to determine an acceptable method of delivering contributions
+      to the manual.
+\end{itemize}
+
+\noindent
+For general users we will provide a recent manual package when they are ready
+to provide their manual contributions. For co-developers, the most recent
+version of the manual will be available on the svn server.
+
+\vspace{\baselineskip}
+\begin{center}
+\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
+\vspace{\baselineskip}
+\parbox{120mm}{This guide and other \LaTeX\ \ws\ documents like the manual use
+the svn package for \LaTeX. This package is generally not automatically
+installed with \LaTeX\ and therefore might result in failure of compiling the
+{\file .dvi} files. The package is available from the CTAN web site
+(http://www.ctan.org).} \\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm}
+WARNING \rule[1mm]{55mm}{1.0mm}
+\end{center}
+
+
+%\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Subversion repository                              %
+%--------------------------------------------------------------%
+\section{Subversion repository} \label{sec:svn}
+\newsec
+
+Starting with model version 3.14, \ws\ in maintained using subversion
+\citep{bk:CSea06}. All EMC codes are either on,or are being transferred to the
+EMC subversion server
+
+\vspace{\baselineskip}
+\centerline{\file https://svnemc.ncep.noaa.gov}
+\vspace{\baselineskip}
+
+\noindent
+Access to this server requires an account and password. The \ws\ model is
+maintained in
+
+\vspace{\baselineskip}
+\centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3}
+\vspace{\baselineskip}
+
+\noindent
+In the \ws\ directory, the conventional {\file trunk}, {\file branches} and
+{\file tags} directories have been created, The {\file trunk} directory
+contains the main model development, {\file tags} contains model releases
+(formal, internal and beta testing), and {\file branches} contains work space
+for individual developers. For instance, Hendrik's work space is identified as
+
+\vspace{\baselineskip}
+\centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3/branches/hendrik}
+\vspace{\baselineskip}
+
+\noindent
+Co-developers will get read access to the {\file trunk} and {\file tags}, and
+write access to their designated directory in {\file branches}. In {\file
+trunk} (and {\file tags}), we have initially set up three directories
+
+\begin{flist}
+\fit{model }{Model files as previously distributed as {\file .tar} files.}
+\fit{manual}{\LaTeX files and graphics files for the manual.}
+\fit{guide }{\LaTeX file for this guide.}
+\end{flist}
+
+\noindent
+In the {\file model} directory, subdirectories {\file aux}, {\file bin},
+{\file ftn}, {\file inp} and {\file test} are created, containing the same
+files as in the previous model distributions. To install \ws\ from the
+subversion repository, a new script
+
+\vspace{\baselineskip}
+\centerline{\file install\_ww3\_svn}
+\vspace{\baselineskip}
+
+\noindent
+has been created, which replaces the script {\file install\_wwatch3} used to
+install he model from {\file .tar} files. This script will first fill the five
+directories {\file svn/aux} through {\file svn/test} with all the files from
+the svn repository, and will then continue to set up the model identical to
+the model setup from the tar files. The only difference is that distribution
+files in, for instance the {\file bin} directory, now are linked to the actual
+files in the {\file svn/bin} directory. Thus,
+
+\vspace{\baselineskip}
+\centerline{\file svn commit}
+\vspace{\baselineskip}
+
+\noindent
+called from the {\file svn} directory will update the repository. Note that
+this implies that new files need to be added in the {\file svn} directory
+first, and then need to be added as links in the conventional directory. The
+script {\file install\_ww3\_svn} can be used for either an initial install,
+for updating the working copies from the svn repository, and for updating link
+to the local {\file svn} directory.
+
+The script {\file install\_ww3\_svn} needs to reside in the main \ws\
+directory. Upon first install, this script can be pulled from
+
+\vspace{\baselineskip}
+\centerline{\file trunk/model/bin/install\_ww3\_svn}
+\vspace{\baselineskip}
+
+\noindent
+If this script is found to be identical to the local work copy in the local
+{\file svn/bin} directory, it will be replaced with a link to the latter, so
+that modifications to the script will also be version controlled with svn.
+
+Co-developers will have read access to the {\file trunk} and {\file tags}, and
+will have read and write permission to their workspace in the {\file
+branches}. Read access to the latter work space will be set as requested by
+the co-developer. NCEP code managers will have read access throughout, and
+will be responsible for merging mature codes into the {\file trunk}. As
+mentioned above, co-developer will be responsible for providing mature
+upgrades relative to the most recent upgrade of the {\file trunk}.
+
+
+\begin{myfig}{tbp}
+\begin{center}
+\begin{minipage}[c]{4.5in}
+{\scriptsize \begin{verbatim}
+model/aux subdirectory
+ * spec_ids: File removed, as it was eroneously added to the repository with
+             the initial import of model version 3.14.
+
+model/bin subdirectory
+ * install_ww3_svn: New script to install wave model from svn reporitory.
+
+guide subdirectry (new subdirectory)
+ * report.tex: the latex file with the guide
+ * report.bib: bibtex bibliography information for guide
+
+model/ftn subdirectory
+ * w3sbtxmd.ftn: added copyright statement
+   (w3sbtx): cosmetic changes
+   (insbtx): cleared typos from documentation
+\end{verbatim}}
+\end{minipage}
+\end{center}
+
+\myfcap{Example of commit log entry following the GNU ChangeLog format.}
+\label{fig:log}
+\end{myfig}
+
+
+To fully use the potential of subversion, it is critical that detailed commit
+logs are maintained. As with the CRTM, \ws\ commit logs should follow the GNU
+ChangeLog format\footnote{
+~http://www.gnu.org/prep/standards/standards.html\#Change-Logs}. An example of
+a log entry is given in Fig.~\ref{fig:log}. The log entry should mention each
+file that has been changed. The first line of each block should contain the
+subdirectory name. The log entry should mention every file that has been
+changed. For every file, every procedure changed should be named in full (no
+wildcard) to enable searching the log. We are aware that some duplicity is
+introduced by also asking for a change log entry in the actual source
+files. The latter is typically only a one-line cryptic description. For now,
+this change log will also be maintained because it refers to the \ws\ version
+number. If the commit logs are properly maintained, the ChangeLog will be
+provided with future releases, at which time we may discontinue the habit of
+providing simple change logs in the source files.
+
+\vspace{\baselineskip}
+\noindent
+Finally, we are using Trac\footnote{~http://trac.edgewall.org/} as a web-based
+management tool for the development of \ww. The Trac pages are found at
+
+\vspace{\baselineskip}
+\centerline{\file https://svnemc.ncep.noaa.gov/trac/ww3}
+\vspace{\baselineskip}
+
+\noindent
+and are accessed with the user name and password of the svn pages. The front
+page is a wiki page. Trac gives a web-based way to access files in subversion,
+including a time line of submissions to subversion. Additional tools include a
+road map with milestones, and a ticket system. We intend to use this system to
+manage code development for \ww, and possibly as the beginning of a user
+forum. Trac will be accessible to all those with accounts for our subversion
+server, and is presently being set up by the NCEP managers.
+
+
+\bpage
+\pb
+%--------------------------------------------------------------%
+%           References                                         %
+%--------------------------------------------------------------%
+\addtocontents{toc}{\vspace
+{\baselineskip}}
+\addcontentsline{toc}{subsection}{References}
+\setcounter{footnote}{0}
+
+\bibliographystyle{jas}
+%\bibliography{short,articles,books,reports,conf,mine}
+\bibliography{report}
+
+\pb
+\pagestyle{empty}
+\bpagea
+
+
+\end{document}
