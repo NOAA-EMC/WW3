@@ -12,11 +12,12 @@
 
 \SVN $Revision$
 
-\newcommand{\pstyle}{myheadings}
-%\newcommand{\pstyle}{plain}
+%\newcommand{\pstyle}{myheadings}
+\newcommand{\pstyle}{plain}
 \newfont{\ff}{cmsl12}
 
-\newcommand{\ww}{WAVEWATCH III$\:$\texttrademark}
+\newcommand{\wwt}{WAVEWATCH III$\:$\textsuperscript\textregistered}
+\newcommand{\ww}{WAVEWATCH III}
 \newcommand{\ws}{WW3}
 \newcommand{\refs}{(\ldots references \ldots)}
 \newcommand{\p}{\partial}
@@ -107,7 +108,7 @@ Camp Springs, MD 20746
 
 \vspace{15mm}
 
-{\large \ww\ development best practices $^\dag$.}
+{\large \wwt\ development best practices $^\dag$.}
 
 \vspace{20mm}
 
@@ -118,14 +119,15 @@ Marine Modeling and Analysis Branch
 
 \vspace{25mm}
 
-\today\ (DRAFT, Revision: \SVNRevision)
+Version 0.1, May 2010
+% \today\ (DRAFT, Revision: \SVNRevision)
 \vfill {\sc this is an unreviewed manuscript, primarily
 intended for informal exchange of information among ncep staff
 members}
 
 \end{center}
 \noindent \rule{140mm}{0.5mm} \\
-{\small $^\dag$ MMAB Contribution No.~nnn. \\
+{\small $^\dag$ MMAB Contribution No.~286. \\
 $^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\ % Arun.Chawla@NOAA.gov} \\
 %$^\ast$ SAIC-GSO
 
@@ -145,12 +147,27 @@ $^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\ % Arun.Chawla@NOAA.gov} \\
 \addcontentsline{toc}{subsection}{Abstract}
 
 \begin{abstract}
-This report describes best practices for code development of \ww. This
+This report describes best practices for code development of \wwt. This
 includes guidelines for packaging of codes delivered by general users to NCEP
 according to the \ww\ license, as well as instructions for co-developers on
 the use of the subversion depository at NCEP. The report addresses codes,
 documentation and manuals.
 \end{abstract}
+
+\vspace{\baselineskip}
+\vspace{\baselineskip}
+\vspace{\baselineskip}
+
+\begin{center}
+{\bf Change log} \\
+\vspace{\baselineskip}
+\begin{tabular}{|c|c|c|l|} \hline
+version & svn rev.     & date    & comment    \\ \hline \hline
+  0.1   &   7869       & May 14, 2010 & Initial MMAB No. 286.      \\ 
+        &              &              & No regression testing yet. \\
+% 1.0   & \SVNRevision &    \today    & Draft work version         \\
+\hline \end{tabular}
+\end{center}
 
 \vfill \pagebreak
 
@@ -194,7 +211,7 @@ This report is available as a pdf file from
 \newsec
 
 \noindent
-The \ww\ wind wave model has a history dating back to the second half of the
+The \wwt\ wind wave model has a history dating back to the second half of the
 1980s. It's history started with the development of the WAVEWATCH model at
 Delft university of technology \citep{tol:CHGE89, tol:CHGE90, tol:JPO91b}. The
 next step of development occurred at NASA, Goddard Space Flight Center in the
@@ -217,14 +234,14 @@ first provided with model versions 3.14 for two reasons. First, coding
 standards are needed to foster and support community model development. This
 has become particularly important with the National Oceanographic Partnership
 Program (NOPP) project to improve all basic wave model source terms, which
-will run from 2010 through 2013, and which will use \ws\ as a main development
-vehicle. Six or more teams will thus work simultaneously on the \ws\
+will run from 2010 through 2014, and which will use \ws\ as a main development
+vehicle. This means that several teams will work simultaneously on the \ws\
 code. Second, there is a need for unifying coding approaches within NCEP. A
 first set of standards has been developed for the Community Radiative Transfer
 Model (CRTM) as presented in \cite{rep:PvD08}. Whereas it is unrealistic to
 retrofit all NCEP codes to a completely homogeneous coding standard due to the
 shear size of legacy codes, all basic precepts should be the same, and are
-consistent between the present report on \cite{rep:PvD08}.
+consistent between the present report and \cite{rep:PvD08}.
 
 From the beginning, \ws\ has been envisioned as a modeling framework, with
 various options for numerical and physical approaches, both for operational
@@ -243,7 +260,7 @@ maintained and supported at NCEP. With the licensing of model version 3.14,
 users that develop code and/or modifications for \ws\ are obligated to offer
 these back to NCEP, relative to the most recent version of \ws\ available to
 them\footnote{~Public release or research version on svn server, depending on
-user access.} NCEP will then decide if such modifications and additions will
+user access.}. NCEP will then decide if such modifications and additions will
 be included in the master version of \ws, and will be responsible for
 including it in the subversion depository. Alternatively, collaborators on
 well defined projects and with proven development capability will be
@@ -252,18 +269,19 @@ subversion server, and thus to developmental version of \ws. NCEP will invite
 collaborators to become co-developers, and will considered requests to become
 co-developers.
 
-To foster co-development of the \ws\ model code coding standard, best
-practices for upgrading parts of \ws\ and for adding new pieces to \ws, and
-maintenance of documentation are essential. These issues are approached in
+In this context, coding standards, best practices for upgrading parts of \ws\
+and for adding new pieces to \ws, regression testing, and maintenance of
+documentation are essential. These issues are approached in
 Sections~\ref{sec:style} (also including copyright statements), \ref{sec:add}
-and \ref{sec:man}, respectively.  Finally, Section~\ref{sec:svn} discusses
-standards of code management.
+\ref{sec:testing}, and \ref{sec:man}, respectively.  Finally,
+Section~\ref{sec:svn} discusses standards of code management using the
+subversion server at NCEP.
 
 Some formatting practices for the \ws\ manual are used in this report. The
-{\file file} font will be used to identify files, scripts and command lines,
-and the {\code CODE} font is used to identify source code. Previous experience
-with \ws\ is expected, and the use of, for instance, optional switches in the
-code, will not be explained here in detail.
+{\file file} font will be used to identify files, scripts and command line
+entries. The {\code CODE} font is used to identify source code. Previous
+experience with \ws\ is expected, and the use of, for instance, optional
+switches in the code, will not be explained here in detail.
 
 %\bpage
 \pb
@@ -279,8 +297,15 @@ All modules are internally documented with a style of documentation as
 illustrated in Fig.~\ref{fig:docu_subr} and \ref{fig:docu_mod} for subroutines
 and modules, respectively. Examples of this can be found throughout the source
 code, and templates are also provided in `user slot' routines for source terms
-and propagation schemes. The following is expected of codes provided to NCEP
-for inclusion in the official version of \ws :
+and propagation schemes. 
+
+Is should be noted that \ws\ consists of incomplete ('{\file .ftn}') FORTRAN
+files that require standard \ws\ preprocessing. All changes and additions
+should be made in these files, not in extracted true FORTRAN files (for
+details see the manual).
+
+The following is expected of codes provided to NCEP for inclusion in the
+official version of \ws :
 
 \begin{list}{\roman{mylistno})}{\usecounter{mylistno} \rightmargin 8mm
                                 \leftmargin 10mm \labelsep 2mm}
@@ -305,11 +330,13 @@ for inclusion in the official version of \ws :
       routine or function, and update the last update date in the header of
       each module, function and routine, as has been done in the distribution
       version of \ws. If a module only contains one program element, only a
-      single update log needs to be maintained.
+      single update log needs to be maintained. This is a legacy from code
+      management before using subversion, but will be retained until further
+      notice.
 
-\item Each subroutine, function or groupings therefore should be embedded in a
-      module to allow for full use association and internal automatic
-      interface checks in Fortran compilers. File naming conventions include:
+\item Each subroutine, function or groupings should be embedded in a module to
+      allow for full use association and internal automatic interface checks
+      in Fortran compilers. File naming conventions include:
 
 \begin{itemize}
 \item File names for elements of the basic wave model should start with {\file
@@ -323,7 +350,8 @@ for inclusion in the official version of \ws :
       preprocessed by the \ws\ preprocessor {\file w3adc} to activate
       switches.
 \item Files with ready-to-use source code (no need for the \ws\ preprocessor)
-      are identified by the extension {\file .f90}.
+      are identified by the extension {\file .f90}. This includes external
+      packages interfaced to \ws.
 \end{itemize}
 
       As examples {\file w3snl2md.ftn} is a module of the basic wave model
@@ -397,7 +425,8 @@ interface routine is expected to conform to the \ws\ coding practices.
 Note that the NWS claims copyright for all main elements of \ws, and generally
 will claim copyright for interface routines. Providers of packages to be
 included with the distribution of \ws\ are encourage to provide copyright
-statements and disclaimers in these packages as appropriate. 
+statements and disclaimers in these packages as appropriate (as NWS will not
+claim copyright of such packages).
 
 
 \begin{myfig}{tbp}
@@ -623,6 +652,17 @@ developing and providing code upgrades.
 %\bpage
 \pb
 %--------------------------------------------------------------%
+% Section : Regression testing                                 %
+%--------------------------------------------------------------%
+\section{Regression testing} \label{sec:testing}
+\newsec
+
+Regression testing standards have not yet been defined, and this section is
+presently a placeholder only.
+
+\bpage
+\pb
+%--------------------------------------------------------------%
 % Section : Manual and documentation                           %
 %--------------------------------------------------------------%
 \section{Manual and documentation} \label{sec:man}
@@ -741,7 +781,8 @@ In the \ws\ directory, the conventional {\file trunk}, {\file branches} and
 {\file tags} directories have been created, The {\file trunk} directory
 contains the main model development, {\file tags} contains model releases
 (formal, internal and beta testing), and {\file branches} contains work space
-for individual developers. For instance, Hendrik's work space is identified as
+for individual developers (as well as maintenance of released versions). For
+instance, Hendrik's work space is identified as
 
 \vspace{\baselineskip}
 \centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3/branches/hendrik}
@@ -750,12 +791,14 @@ for individual developers. For instance, Hendrik's work space is identified as
 \noindent
 Co-developers will get read access to the {\file trunk} and {\file tags}, and
 write access to their designated directory in {\file branches}. In {\file
-trunk} (and {\file tags}), we have initially set up three directories
+trunk} (and {\file tags}), we have set up directories
 
 \begin{flist}
+\fit{docs  }{Work space for shared manuscript writing.}
 \fit{model }{Model files as previously distributed as {\file .tar} files.}
 \fit{manual}{\LaTeX files and graphics files for the manual.}
 \fit{guide }{\LaTeX file for this guide.}
+\fit{utilities}{Additional utilities such as the grid generation package.}
 \end{flist}
 
 \noindent
@@ -809,35 +852,6 @@ will be responsible for merging mature codes into the {\file trunk}. As
 mentioned above, co-developer will be responsible for providing mature
 upgrades relative to the most recent upgrade of the {\file trunk}.
 
-
-\begin{myfig}{tbp}
-\begin{center}
-\begin{minipage}[c]{4.5in}
-{\scriptsize \begin{verbatim}
-model/aux subdirectory
- * spec_ids: File removed, as it was eroneously added to the repository with
-             the initial import of model version 3.14.
-
-model/bin subdirectory
- * install_ww3_svn: New script to install wave model from svn reporitory.
-
-guide subdirectry (new subdirectory)
- * report.tex: the latex file with the guide
- * report.bib: bibtex bibliography information for guide
-
-model/ftn subdirectory
- * w3sbtxmd.ftn: added copyright statement
-   (w3sbtx): cosmetic changes
-   (insbtx): cleared typos from documentation
-\end{verbatim}}
-\end{minipage}
-\end{center}
-
-\myfcap{Example of commit log entry following the GNU ChangeLog format.}
-\label{fig:log}
-\end{myfig}
-
-
 To fully use the potential of subversion, it is critical that detailed commit
 logs are maintained. As with the CRTM, \ws\ commit logs should follow the GNU
 ChangeLog format\footnote{
@@ -853,6 +867,34 @@ this change log will also be maintained because it refers to the \ws\ version
 number. If the commit logs are properly maintained, the ChangeLog will be
 provided with future releases, at which time we may discontinue the habit of
 providing simple change logs in the source files.
+
+\begin{myfig}{tbp}
+\begin{center}
+\begin{minipage}[c]{4.5in}
+{\scriptsize \begin{verbatim}
+ww3/branches/hendrik/workcopy/model/aux subdirectory
+ * spec_ids: File removed, as it was eroneously added to the repository with
+             the initial import of model version 3.14.
+
+ww3/branches/hendrik/workcopy/model/bin subdirectory
+ * install_ww3_svn: New script to install wave model from svn reporitory.
+
+ww3/branches/hendrik/workcopy/guide subdirectry (new subdirectory)
+ * report.tex: the latex file with the guide
+ * report.bib: bibtex bibliography information for guide
+
+ww3/branches/hendrik/workcopy/model/ftn subdirectory
+ * w3sbtxmd.ftn: added copyright statement
+   (w3sbtx): cosmetic changes
+   (insbtx): cleared typos from documentation
+\end{verbatim}}
+\end{minipage}
+\end{center}
+
+\myfcap{Example of commit log entry following the GNU ChangeLog format.}
+\label{fig:log}
+\end{myfig}
+
 
 \vspace{\baselineskip}
 \noindent
