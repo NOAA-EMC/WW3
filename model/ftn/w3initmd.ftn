@@ -86,7 +86,7 @@
       PUBLIC
 !/
       REAL, PARAMETER              :: CRITOS = 15.
-      CHARACTER*10, PARAMETER      :: WWVER  = '4.00 '
+      CHARACTER*10, PARAMETER      :: WWVER  = '4.01 '
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
