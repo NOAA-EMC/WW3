@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -26,6 +26,8 @@
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -682,7 +684,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Apr-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -699,6 +701,8 @@
 !/    05-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
 !/    02-Apr-2007 : Adding partitioned output.          ( version 3.11 )
 !/                  Adding user slots for outputs.
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -908,11 +912,11 @@
           IF ( WRITE ) THEN
               WRITE (NDSOG)                                           &
                 IDSTR, VEROGR, GNAME, NOGRD, NSEA, NX, NY,            &
-                X0, Y0, SX, SY, UNDEF, NOSWLL
+                UNDEF, NOSWLL
             ELSE
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                &
                 IDTST, VERTST, TNAME, MOGRD, NSEA, NX, NY,            &
-                X0, Y0, SX, SY, UNDEF, MOSWLL
+                UNDEF, MOSWLL
 !
               IF ( IDTST .NE. IDSTR ) THEN
                   WRITE (NDSE,902) IDTST, IDSTR
@@ -937,7 +941,7 @@
             END IF
 !
 !/T          WRITE (NDST,9002) IDSTR, VEROGR, GNAME, NSEA, NX, NY,    &
-!/T                            X0, Y0, SX, SY, UNDEF
+!/T                            UNDEF
 !
         END IF
 !
@@ -1270,8 +1274,6 @@
 !/T              '       GNAME :  ',A/                                &
 !/T              '        NSEA :',I6/                                 &
 !/T              '       NX,NY : ',I9,I12/                            &
-!/T              '       X0,Y0 : ',2F12.2/                            &
-!/T              '       SX,SY : ',2F12.2/                            &
 !/T              '       UNDEF : ',F8.2)
 !/T 9003 FORMAT (' TEST W3IOGO : TIME  :',I9.8,I7.6/                  &
 !/T              '               FLAGS :',31L2)

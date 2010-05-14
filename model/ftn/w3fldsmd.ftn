@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
@@ -18,6 +18,8 @@
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    09-Oct-2007 : Make file header optional.          ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -68,14 +70,14 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLDO ( INXOUT, IDFLD, NDS, NDST, NDSE, NX, NY,     &
-                          X0, Y0, SX, SY, IERR, FEXT, FPRE, FHDR )
+                          GTYPE, IERR, FEXT, FPRE, FHDR )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Oct-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -85,6 +87,8 @@
 !/    27-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    09-Oct-2007 : Make file header optional.          ( version 3.13 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -110,10 +114,9 @@
 !       NDSE    Int.  I  Dataset number for error output.
 !                        (No output if NDSE < 0).
 !       NX, NY  Int.  I  Discrete grid dimensions.                 \
-!       X0, Y0  Real  I  Coordinates (deg.) of grid point (1,1).   |a
-!       SX, SY  Real  I  Grid increments (deg.).                   /
+!       GTYPE   Int.  I  Integer flag indicating type of grid.     /a
 !       NX      Int. I/O Record length.                            \
-!       X0      Real I/O Undefined value.                          /b
+!       GTYPE   Int.  I  Undefined value.                          /b
 !       IERR    Int.  O  Error indicator.
 !                         0 : No errors.
 !                         1 : Illegal INXOUT.
@@ -179,8 +182,7 @@
       INTEGER, INTENT(IN)                 :: NDS, NDST, NDSE, NY
       INTEGER, INTENT(INOUT)              :: NX
       INTEGER, INTENT(OUT)                :: IERR
-      REAL, INTENT(IN)                    :: Y0, SX, SY
-      REAL, INTENT(INOUT)                 :: X0
+      INTEGER, INTENT(INOUT)              :: GTYPE
       CHARACTER(LEN=3), INTENT(INOUT)     :: IDFLD
       CHARACTER*(*), INTENT(IN)           :: INXOUT
       CHARACTER*(*), INTENT(IN), OPTIONAL :: FEXT, FPRE
@@ -189,9 +191,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NXT, NYT, I
+      INTEGER                 :: NXT, NYT, GTYPET, I
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: X0T, Y0T, SXT, SYT, TOL
       LOGICAL                 :: WRITE
       CHARACTER(LEN=3)        :: TSFLD
       CHARACTER(LEN=11)       :: FORM = 'UNFORMATTED'
@@ -207,7 +208,7 @@
 !/S      CALL STRACE (IENT, 'W3FLDO')
 !
 !/T      WRITE (NDST,9000) INXOUT, IDFLD, NDS, NDST, NDSE,            &
-!/T                        NX, NY, X0, Y0, SX, SY, IERR
+!/T                        NX, NY, GTYPE, IERR
 !
 ! test input parameters ---------------------------------------------- *
 !
@@ -283,19 +284,19 @@
           IF ( FDHDR ) THEN
              IF ( FORM .EQ. 'UNFORMATTED' ) THEN
                  WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
-                       IDSTR, IDFLD, NX, NY, X0, Y0, SX, SY
+                       IDSTR, IDFLD, NX, NY, GTYPE
                ELSE
                  WRITE (NDS,900,ERR=804,IOSTAT=IERR)                  &
-                       IDSTR, IDFLD, NX, NY, X0, Y0, SX, SY
+                       IDSTR, IDFLD, NX, NY, GTYPE
                END IF
             END IF
         ELSE
           IF ( FORM .EQ. 'UNFORMATTED' ) THEN
               READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
-                    TSSTR, TSFLD, NXT, NYT, X0T, Y0T, SXT, SYT
+                    TSSTR, TSFLD, NXT, NYT, GTYPET
             ELSE
               READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
-                    TSSTR, TSFLD, NXT, NYT, X0T, Y0T, SXT, SYT
+                    TSSTR, TSFLD, NXT, NYT, GTYPET
             END IF
           IF ( IDSTR .NE. TSSTR ) GOTO 807
           IF ( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS' ) THEN
@@ -304,13 +305,11 @@
             END IF
           IF ( IDFLD .NE. TSFLD ) GOTO 808
           IF ( IDFLD(1:2) .NE. 'DT' ) THEN
-              TOL    = 1.E-4 * MIN(SX,SY)
               IF ( NX.NE.NXT .OR. NY.NE.NYT .OR.                      &
-                   ABS(X0-X0T).GT.TOL .OR. ABS(Y0-Y0T).GT.TOL .OR.    &
-                   ABS(SX-SXT).GT.TOL .OR. ABS(SY-SYT).GT.TOL ) GOTO 809
+                   GTYPE.NE.GTYPET ) GOTO 809
             ELSE
               NX     = NXT
-              X0     = X0T
+              GTYPE  = GTYPET
             END IF
         END IF
 !
@@ -363,14 +362,14 @@
 !
   809 CONTINUE
       IF ( NDSE .GE. 0 ) WRITE (NDSE,1009)                      &
-                                NXT, NYT, X0T, Y0T, SXT, SYT,   &
-                                NX , NY , X0 , Y0 , SX , SY
+                                NXT, NYT, GTYPET,               &
+                                NX , NY , GTYPE
       IERR   = 9
       RETURN
 !
 ! Formats
 !
-  900 FORMAT (1X,A13,1X,A3,2I12,4E12.5)
+  900 FORMAT (1X,A13,1X,A3,3I12)
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/         &
                '     ILLEGAL INXOUT STRING : ',A/)
@@ -392,8 +391,8 @@
                '     ILLEGAL FIELD ID STRING >',A,'<'/          &
                '                   SHOULD BE >',A,'<'/)
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/         &
-         '     INCOMPATIBLE GRID DATA : ',2(1X,I4),4(1X,F11.3)/ &
-         '                  SHOULD BE : ',2(1X,I4),4(1X,F11.3)/)
+         '     INCOMPATIBLE GRID DATA : ',3(1X,I4)/             &
+         '                  SHOULD BE : ',3(1X,I4)/)            
 !
 !/T 9000 FORMAT (' TEST W3FLDO : INXOUT : ',A/                     &
 !/T              '               IDFLD  : ',A/                     &
@@ -401,8 +400,7 @@
 !/T              '               NDST   : ',I2/                    &
 !/T              '               NDSE   : ',I2/                    &
 !/T              '               NX, NY : ',I9,3X,I9/              &
-!/T              '               X0, Y0 : ',2F12.2/                &
-!/T              '               SX, SY : ',2F12.2/                &
+!/T              '               GTYPE  : ',I2/                    &
 !/T              '               IERR   : ',I2)
 !/T 9001 FORMAT ('               WRITE  : ',L2/                    &
 !/T              '               FNAME  : [',A,']')
@@ -1040,8 +1038,9 @@
 !/
       END SUBROUTINE W3FLDD
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLDP ( NDSM, NDST, NDSE, IERR, MX, MY, NX, NY,     &
-                          X0, SX, Y0, SY, MAPOVR, ILAND, MXI, MYI,    &
+      SUBROUTINE W3FLDP ( NDSM, NDST, NDSE, IERR, FLAGLL,             &
+                          MX, MY, NX, NY,                             &
+                          TLAT, TLON,     MAPOVR, ILAND, MXI, MYI,    &
                           NXI, NYI, CLOSED, ALAT, ALON, MASK,         &
                           RD11, RD21, RD12, RD22, IX1, IX2, IY1, IY2 )
 !/
@@ -1049,21 +1048,22 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Nov-1999 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    08-Feb-1999 : Final FORTRAN 77                    ( version 1.18 )
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
-!     General purpose routine for interpolating data of and irregular
-!     lat-long grid given by ALA AND ALO to a regular lat-long grid
-!     given by X0, Y0, SX and SY.
+!     General purpose routine for interpolating data of an irregular
+!     grid given by ALAT and ALON to a target grid given by TLAT and TLON.
 !
 !  2. Method :
 !
-!     Steepest descent search.
+!     Use the grid search and remapping utilities (W3GSRUMD).
 !     Bi-linear interpolation.
 !
 !  3. Parameters :
@@ -1075,11 +1075,11 @@
 !       NDSE    Int.  I  Unit number error output.
 !       IERR    Int.  O  Error indicator (number of lost points due
 !                        to ap conflicts).
+!       FLAGLL  Log.  I  Coordinate system flag (T=Lat/Lon, F=Cartesian)
 !       MX,MY   Int.  I  Array dimensions for output type arrays.
 !       NX,NY   Int.  I  Id. actual field syze.
-!       X0,Y0   Real  I  (long,lat) for array point (1,1) of output
-!                        arrays.
-!       SX,SY   Real  I  Longitude and latitude grid increments.
+!       TLAT    R.A.  I  Y-coordinates of output grid.
+!       TLON    R.A.  I  X-coordinates of output grid.
 !       MAPOVR  I.A. I/O Overlay map, the value of a grid point is
 !                        incremeted by 1 of the corresponding grid
 !                        point of the output grid is covered by the
@@ -1089,8 +1089,8 @@
 !       MXI,MYI Int.  I  Array dimensions for input fields.
 !       NXI,NYI Int.  I  Id. actual field sizes.
 !       CLOSED  Log.  I  Flag for closed longitude range in input.
-!       ALAT    R.A.  I  Latitude of input grid (degr.).
-!       ALON    R.A. I/O Longitudes of input grid (degr.).
+!       ALAT    R.A.  I  Y-coordinates of input grid.
+!       ALON    R.A. I/O X-coordinates of input grid.
 !                        (will be modified if CLOSED)
 !       MASK    I.A.  I  Land-sea mask for input field (0=land).
 !       RDnn    R.A.  O  Interpolation factors (see below).
@@ -1111,8 +1111,6 @@
 !
 !     Internal parameters
 !     ----------------------------------------------------------------
-!       IPMAX   Int.  Maximum number of passes in descent.    ( DATA )
-!       TOL     Real  "Tolerance" for misfit after search.    ( DATA )
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1122,6 +1120,9 @@
 !      STRACE    Subr.   Id.    Subroutine tracing.
 !      TICK21    Subr. W3TIMEMD Advance time.
 !      DSEC21    Func.   Id.    Difference between times.
+!      W3GSUC    Func. W3GSRUMD Create grid-search-utility object
+!      W3GSUD    Subr. W3GSRUMD Destroy grid-search-utility object
+!      W3GRMP    Func. W3GSRUMD Compute interpolation weights
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -1137,57 +1138,43 @@
 !
 !  7. Remarks :
 !
-!     - The present method will break down for output grids including
-!       a pole, but should work for imput grids including a pole.
 !     - Land points in the input grid are taken out of the interp.
 !       algorithm. If this results in zero weight factors through the
 !       interpolation box in the input grid, the closest 2 sea point
 !       for an extended 4x4 grid are used for interpolation, weighted
-!       threi inverse distance.
+!       by the inverse distance.
 !
 !  8. Structure :
 !
 !     -----------------------------------------------------------------
 !      1.  Initializations.
 !        a Initialize counters and factors.
-!        b Get range of input grid.
-!        c Determine maximum covered range of output grid.
-!      2.  Do for all longitudes
-!      --------------------------------------------------------------
-!          a Calculate longitude
-!          b Shift longitude array if necessary
-!          c Find suitable start point along boundary of input grid
-!          d Loop over latitudes
-!          --------------------------------------------------------
-!            1 Check if sea point
-!            2 Calculate latitude
-!            3 Steepest-descent search
-!            ----------------------------------------------------
-!              a Aux. data for interpolation grid box
-!              b Distances within grid box
-!              c Height above lines in input grid
-!              d Check if value in grid box
-!              e Find new grid box
-!              f Check if new itteration required / allowed
-!            ----------------------------------------------------
-!            4 If point found, calculate/store interpolation data
-!            5 Correct interpolation data for input mask
+!        b Setup logical mask
+!        c Create grid-search-utility object
+!      2.  Loop over output grid
+!        a Check if sea point
+!        b Find enclosing cell and compute interpolation weights using
+!          W3GRMP
+!        c Non-masked or partially masked cell
+!        d Fully masked cell
+!        e Update overlay map
+!      2.  Finalizations.
+!        a Final output
+!        b Destroy grid-search-utility object
 !     -----------------------------------------------------------------
 !
 !  9. Switches :
 !
 !     !/S   Enable subroutine tracing.
 !
-!     !/T   Enable test output.
-!     !/T1  Overlay map before and after.
-!     !/T2  Test output longitude loop.
-!     !/T3  Test output latitude loop.
-!     !/T4  Test output steepest descent.
+!     !/T   Enable limited test output.
+!     !/T1  Enable full debugging in W3GRMP
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 !/
+      USE W3GSRUMD
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -1200,45 +1187,37 @@
       INTEGER, INTENT(INOUT)  :: MAPOVR(MX,MY), ILAND
       INTEGER, INTENT(OUT)    :: IERR, IX1(MX,MY), IX2(MX,MY),        &
                                        IY1(MX,MY), IY2(MX,MY)
-      REAL, INTENT(IN)        :: X0, Y0, SX, SY, ALAT(MXI,MYI)
-      REAL, INTENT(INOUT)     :: ALON(MXI,MYI)
+      REAL, INTENT(IN)        :: TLAT(MY,MX), TLON(MY,MX)
+      REAL, INTENT(IN)   ,TARGET :: ALAT(MXI,MYI)
+      REAL, INTENT(INOUT),TARGET :: ALON(MXI,MYI)
       REAL, INTENT(OUT)       :: RD11(MX,MY), RD12(MX,MY),            &
-                                  RD21(MX,MY), RD22(MX,MY)
-      LOGICAL, INTENT(IN)     :: CLOSED
+                                 RD21(MX,MY), RD22(MX,MY)
+      LOGICAL, INTENT(IN)     :: FLAGLL, CLOSED
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IX, IY, IY0, IYN, JX, JY, IPASS, JXO,&
-                                 JYO, INMASK, J, I, ILOC, II(16),     &
-                                 JJ(16), JX1, JX2, JY1, JY2, IFOUND,  &
-                                 IMASK, ICOR1
-      INTEGER, SAVE           :: IPMAX = 10
 !/S      INTEGER, SAVE           :: IENT = 0
-!/T1      INTEGER                 :: IX0, IXN, IXR
-      REAL                    :: ALTMIN, ALTMAX, ALNMIN, ALNMAX,      &
-                                 ALNAVG, XMIN, XMAX, XAVG, XADD,      &
-                                 RDSUM, LO1, LO2, LO3, LO4, LA1, LA2, &
-                                 LA3, LA4,   D12, D13, D24, D34,      &
-                                 D12X34, D13X24, HT12, HT34, HT13,    &
-                                 HT24, RDB1, RDB2, RR(16), RRMAX1,    &
-                                 RRMAX2, X, Y
-      REAL, SAVE              :: TOL = 0.01
-      LOGICAL                 :: F12X34, F13X24, FL1234
-!/T1      LOGICAL                 :: FLERR
-!/T1      CHARACTER(LEN=1)        :: CHARID
-!/T1      CHARACTER(LEN=78)       :: STR
+      TYPE(T_GSU)             :: GSU
+      INTEGER                 :: IX, IY, I, J, NNBR, II(4), JJ(4),    &
+                                 MSKC, IFOUND, IMASK, ICOR1
+      REAL                    :: RR(4), X, Y
+      REAL, POINTER           :: PLAT(:,:), PLON(:,:)
+      LOGICAL                 :: INGRID, LMSK(MXI,MYI)
+      LOGICAL                 :: LDBG = .FALSE.
+      INTEGER, PARAMETER      :: NNBR_MAX = 2
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3FLDP')
 !
 !/T      WRITE (NDST,9000) NDSM, NDST, NDSE, MX, MY, NX, NY, ILAND, &
-!/T                        MXI, MYI, NXI, NYI, CLOSED, X0, SX, Y0, SY
+!/T                        MXI, MYI, NXI, NYI, CLOSED
 !
 ! 1.  Initializations ------------------------------------------------ *
 ! 1.a Initialize counters and factors
 !
+!/T8      LDBG   = .TRUE.
       IERR   = 0
       IFOUND = 0
       IMASK  = 0
@@ -1257,453 +1236,119 @@
   100     CONTINUE
   110   CONTINUE
 !
-! 1.b Get range of input grid
+! 1.b Setup logical mask
 !
-      ALTMIN = ALAT(1,1)
-      ALTMAX = ALTMIN
-      ALNMIN = ALON(1,1)
-      ALNMAX = ALNMIN
+      LMSK = MASK .EQ. 0
 !
-      DO 130, IX=1, NXI
-        DO 120, IY=1, NYI
-          ALTMIN = MIN ( ALTMIN , ALAT(IX,IY) )
-          ALTMAX = MAX ( ALTMAX , ALAT(IX,IY) )
-          ALNMIN = MIN ( ALNMIN , ALON(IX,IY) )
-          ALNMAX = MAX ( ALNMAX , ALON(IX,IY) )
-  120     CONTINUE
-  130   CONTINUE
-!/T      WRITE (NDST,9001) ALTMIN, ALTMAX, ALNMIN, ALNMAX
+! 1.c Create grid-search-utility object for input grid
 !
-      ALNAVG = 0.5 * ( ALNMIN + ALNMAX )
-      XAVG   = X0 + 0.5*SX*REAL(NX-1)
-      XADD   = -360. * REAL(NINT((ALNAVG-XAVG)/360.))
+      PLAT => ALAT
+      PLON => ALON
+      GSU = W3GSUC( .TRUE., FLAGLL, CLOSED, MXI, MYI, PLON, PLAT )
 !
-      IF ( XADD .NE. 0. ) THEN
-          DO 150, IX=1, NXI
-            DO 140, IY=1, NYI
-              ALON(IX,IY) = ALON(IX,IY) + XADD
-  140         CONTINUE
-  150       CONTINUE
-          ALNMIN = ALNMIN + XADD
-          ALNMAX = ALNMAX + XADD
-!/T          WRITE (NDST,9002) ALNMIN, ALNMAX
-        ENDIF
+!/T      WRITE (NDST,9001)
+!/T      CALL W3GSUP( GSU, NDST )
 !
-! 1.c Determine maximum covered latitude range
+! 2.  Loop over output grid ------------------------------------------ *
 !
-      IY0    = NINT( (ALTMIN-Y0)/SY )
-      IYN    = NINT( (ALTMAX-Y0)/SY ) + 2
-      IY0    = MAX ( 1 , MIN(NY,IY0) )
-      IYN    = MAX ( 1 , MIN(NY,IYN) )
+      DO 500, IY=1, NY
+        DO 400, IX=1, NX
 !
-!/T      WRITE (NDST,9003) IY0, IYN, Y0+REAL(IY0-1)*SY, Y0+REAL(IYN-1)*SY
-!/T1      WRITE (NDST,9005)
-!/T1      IX0    = 1
-!/T1  160 CONTINUE
-!/T1      IXN    = MIN ( IX0+77 , NX )
-!/T1      WRITE (NDST,9007)
-!/T1      STR(01:39) = '                                       '
-!/T1      STR(40:78) = '                                       '
-!/T1      DO 180, IY=NY,1,-1
-!/T1        DO 170, IX=IX0, IXN
-!/T1          IXR    = IX - IX0 + 1
-!/T1          IF ( MAPOVR(IX,IY) .EQ. ILAND ) THEN
-!/T1              STR(IXR:IXR) = '*'
-!/T1            ELSE IF ( MAPOVR(IX,IY) .LT. 0 ) THEN
-!/T1              STR(IXR:IXR) = ' '
-!/T1            ELSE
-!/T1              WRITE (CHARID,'(I1)') MAPOVR(IX,IY)
-!/T1              STR(IXR:IXR) = CHARID
-!/T1            ENDIF
-!/T1  170     CONTINUE
-!/T1        WRITE (NDST,9008) STR
-!/T1  180   CONTINUE
-!/T1      IF ( IXN .NE. NX ) THEN
-!/T1          IX0    = IXN+1
-!/T1          GOTO 160
-!/T1        ENDIF
-!/T1      WRITE (NDST,9007)
+          X = TLON(IY,IX)
+          Y = TLAT(IY,IX)
+!/T1          WRITE (NDST,9010) IX, IY, X, Y
 !
-! 2.  Loop over longitudes ------------------------------------------- *
-!
-      DO 500, IX=1, NX
-!
-! 2.a Calculate longitude
-!
-        X      = X0 + REAL(IX-1)*SX
-!/T2        WRITE (NDST,9010) IX, X
-!
-! 2.b Shift longitude (array) if necessary
-!
-        IF ( CLOSED ) THEN
-!
-            XMIN   = X - 180.
-            XMAX   = X + 180.
-            DO 210, JX=1, NXI
-              DO 200, JY=1, NYI
-                IF (ALON(JX,JY).LT.XMIN) ALON(JX,JY) = ALON(JX,JY)+360.
-                IF (ALON(JX,JY).GT.XMAX) ALON(JX,JY) = ALON(JX,JY)-360.
-  200           CONTINUE
-  210         CONTINUE
-!
-          ELSE
-!
-            IF ( X+0.001*SX .LT. ALNMIN ) THEN
-                X      = X + 360.*REAL(1+INT((ALNMIN-X)/360.+0.01))
-                IF ( X .GT. ALNMAX ) THEN
-!/T2                    WRITE (NDST,9011)
-                  GOTO 500
-!/T2                  ELSE
-!/T2                    WRITE (NDST,9012) X
-                  ENDIF
-              ENDIF
-            IF ( X-0.001*SX .GT. ALNMAX ) THEN
-                X      = X - 360.*REAL(1+INT((X-ALNMAX)/360.+0.01))
-                IF ( X .LT. ALNMIN ) THEN
-!/T2                    WRITE (NDST,9011)
-                  GOTO 500
-!/T2                  ELSE
-!/T2                    WRITE (NDST,9012) X
-                  ENDIF
-              ENDIF
-!
-          ENDIF
-!
-! 2.c Find suitable start point along boundary of input grid
-!
-      DO 270, JX=1, NXI-1
-        JY     =  1
-        IF ((ALON(JX,JY)-X)*(ALON(JX+1,JY)-X).LE.0.                   &
-             .AND. ABS(ALON(JX,JY)-X).LT.45. ) GOTO 290
-        JY     = NYI
-        IF ((ALON(JX,JY)-X)*(ALON(JX+1,JY)-X).LE.0.                   &
-             .AND. ABS(ALON(JX,JY)-X).LT.45. ) GOTO 290
-  270   CONTINUE
-!
-      DO 280, JY=1, NYI-1
-        JX     =  1
-        IF ((ALON(JX,JY)-X)*(ALON(JX,JY+1)-X).LE.0.                   &
-             .AND. ABS(ALON(JX,JY)-X).LT.45. ) GOTO 290
-        JX     = NXI
-        IF ((ALON(JX,JY)-X)*(ALON(JX,JY+1)-X).LE.0.                   &
-             .AND. ABS(ALON(JX,JY)-X).LT.45. ) GOTO 290
-  280   CONTINUE
-!
-  290 CONTINUE
-      JX     = MIN ( JX , NXI-1 )
-      JY     = MIN ( JY , NYI-1 )
-!/T2      WRITE (NDST,9013) JX, JY, ALON(JX,JY), ALAT(JX,JY)
-!
-! 2.d Loop over latitudes  - - - - - - - - - - - - - - - - - - - - - - -
-!
-        DO 400, IY=IY0, IYN
-!
-! 2.d.1 Check if sea point
+! 2.a Check if sea point
 !
           IF ( MAPOVR(IX,IY) .NE. ILAND ) THEN
 !
-! 2.d.2 Calculate latitude
+! 2.b Find enclosing cell and compute interpolation weights
 !
-              Y      = Y0 + REAL(IY-1)*SY
-!/T3              WRITE (NDST,9020) IY, Y, 'SEA'
+              NNBR = NNBR_MAX
+              INGRID = W3GRMP( GSU, X, Y, II, JJ, RR, &
+                               LMSK, MSKC, NNBR, LDBG )
 !
-! 2.d.3 Steepest-descent search                  3      4
-!                                                  +--+
-!                         counters aux. var.       |  |
-!                                                  +--+
-!                                                1      2
-              IPASS  = 0
+              IF ( INGRID ) THEN
 !
-! ...   Search re-entry point
+! 2.c Non-masked or partially masked cell: simply store the weights
 !
-  300         CONTINUE
-              IPASS  = IPASS + 1
+                  IF ( MSKC.EQ.MSKC_NONE .OR. MSKC.EQ.MSKC_PART ) THEN
 !
-! 2.d.3.a Aux. data for interpolation grid box
+                      IF ( MSKC.EQ.MSKC_PART ) IMASK  = IMASK + 1
 !
-              LO1    = ALON(JX  ,JY  )
-              LO2    = ALON(JX+1,JY  )
-              LO3    = ALON(JX  ,JY+1)
-              LO4    = ALON(JX+1,JY+1)
-              LA1    = ALAT(JX  ,JY  )
-              LA2    = ALAT(JX+1,JY  )
-              LA3    = ALAT(JX  ,JY+1)
-              LA4    = ALAT(JX+1,JY+1)
+! ..... Here we switch from counter-clockwise order to column-major
+                      IX1 (IX,IY) = II(1)
+                      IX2 (IX,IY) = II(2)
+                      IY1 (IX,IY) = JJ(1)
+                      IY2 (IX,IY) = JJ(4)
+                      RD11(IX,IY) = RR(1)
+                      RD21(IX,IY) = RR(2)
+                      RD12(IX,IY) = RR(4)
+                      RD22(IX,IY) = RR(3)
 !
-! 2.d.3.b Distances within grid box
+! 2.d Fully masked cell
 !
-              D12    = SQRT ( (LO2-LO1)**2 + (LA2-LA1)**2 )
-              D13    = SQRT ( (LO3-LO1)**2 + (LA3-LA1)**2 )
-              D24    = SQRT ( (LO4-LO2)**2 + (LA4-LA2)**2 )
-              D34    = SQRT ( (LO4-LO3)**2 + (LA4-LA3)**2 )
-              D12X34 = 0.5 * ( D13 + D24 )
-              D13X24 = 0.5 * ( D12 + D34 )
+                    ELSE !MSKC.EQ.MSKC_FULL
 !
-! 2.d.3.c Height above lines in input grid
-!
-              HT12   = ( - (LA2-LA1)*(X-LO1) + (LO2-LO1)*(Y-LA1) ) / &
-                                     ( D12 * D12X34 )
-              HT34   = ( - (LA4-LA3)*(X-LO3) + (LO4-LO3)*(Y-LA3) ) / &
-                                     ( D34 * D12X34 )
-              HT13   = (   (LA3-LA1)*(X-LO1) - (LO3-LO1)*(Y-LA1) ) / &
-                                     ( D13 * D13X24 )
-              HT24   = (   (LA4-LA2)*(X-LO2) - (LO4-LO2)*(Y-LA2) ) / &
-                                     ( D24 * D13X24 )
-!
-! 2.d.3.d Check if value in grid box
-!
-              F12X34 = HT12*HT34 .LE. 0.
-              F13X24 = HT13*HT24 .LE. 0.
-              FL1234 = F12X34 .AND. F13X24
-!
-! 2.d.3.e Find new grid box
-!
-              JXO    = JX
-              JYO    = JY
-!
-              IF (.NOT.F12X34) THEN
-                  IF (HT12.GT.0.) THEN
-                      JY = JY + INT (  HT34 ) + 1
-                      JY = MIN ( JY , NYI-1 )
-                    ELSE
-                      JY = JY - INT ( -HT12 ) - 1
-                      JY = MAX ( JY , 1 )
-                    ENDIF
-                ENDIF
-!
-              IF (.NOT.F13X24) THEN
-                  IF (HT13.GT.0.) THEN
-                      JX = JX + INT (  HT24 ) + 1
-                      JX = MIN ( JX , NXI-1 )
-                    ELSE
-                      JX = JX - INT ( -HT13 ) - 1
-                      JX = MAX ( JX , 1 )
-                    ENDIF
-                ENDIF
-!
-!/T4              WRITE (NDST,9030) IPASS, JXO, JYO, JX, JY,        &
-!/T4                     LO1, LO2, LO3, LO4, LA1, LA2, LA3, LA4,    &
-!/T4                     D12/D13X24, D34/D13X24, D13X24,            &
-!/T4                     D13/D12X34, D24/D12X34, D12X34,            &
-!/T4                     HT12, HT34, HT13, HT24,                    &
-!/T4                     F12X34, F13X24, FL1234
-!
-! 2.d.3.f Check if new itteration required / allowed
-!
-              IF ( FL1234 ) GOTO 320
-              IF ( JXO.EQ.JX .AND. JYO.EQ.JY ) GOTO 310
-              IF ( IPASS .EQ. IPMAX ) GOTO 310
-              GOTO 300
-!
-  310         CONTINUE
-              F12X34 = ABS(HT12).LT.TOL .OR. ABS(HT34).LT.TOL
-              F13X24 = ABS(HT13).LT.TOL .OR. ABS(HT24).LT.TOL
-              FL1234 = F12X34 .AND. F13X24
-  320         CONTINUE
-!
-! 2.d.4 If point found, calculate/store interpolation data
-!
-              IF ( FL1234 ) THEN
-!
-                  IX1 (IX,IY) = JX
-                  IX2 (IX,IY) = JX + 1
-                  IY1 (IX,IY) = JY
-                  IY2 (IX,IY) = JY + 1
-                  RDB1      = MIN ( 1. , MAX(0.,ABS(HT24)) )
-                  RDB2      = MIN ( 1. , MAX(0.,ABS(HT34)) )
-                  RD11(IX,IY) =   RDB1    *   RDB2
-                  RD12(IX,IY) =   RDB1    * (1.-RDB2)
-                  RD21(IX,IY) = (1.-RDB1) *   RDB2
-                  RD22(IX,IY) = (1.-RDB1) * (1.-RDB2)
-!
-! 2.d.5 Correct interpolation data for input mask
-!
-                  INMASK = 0
-!/T1                  FLERR  = .FALSE.
-!
-! ..... Number of points in mask
-!
-                  IF ( MASK( JX , JY ) .EQ. 0 ) THEN
-                      INMASK = INMASK + 1
-                      RD11(IX,IY) = 0.
-                    ENDIF
-!
-                  IF ( MASK( JX ,JY+1) .EQ. 0 ) THEN
-                      INMASK = INMASK + 1
-                      RD12(IX,IY) = 0.
-                    ENDIF
-!
-                  IF ( MASK(JX+1, JY ) .EQ. 0 ) THEN
-                      INMASK = INMASK + 1
-                      RD21(IX,IY) = 0.
-                    ENDIF
-!
-                  IF ( MASK(JX+1,JY+1) .EQ. 0 ) THEN
-                      INMASK = INMASK + 1
-                      RD22(IX,IY) = 0.
-                    ENDIF
-!
-! ..... Correction required
-!
-                  IF ( INMASK .NE. 0 ) THEN
                       IMASK  = IMASK + 1
 !
-! ..... Summate remaining interpolation factors
-!
-                      RDSUM  = RD11(IX,IY) + RD12(IX,IY)        &
-                             + RD21(IX,IY) + RD22(IX,IY)
-!
-! ..... Point partially on land mask, correct interpolation factors
-!
-                      IF ( RDSUM .GT. 1.E-5 ) THEN
-!
-                          RD11(IX,IY) = RD11(IX,IY) / RDSUM
-                          RD12(IX,IY) = RD12(IX,IY) / RDSUM
-                          RD21(IX,IY) = RD21(IX,IY) / RDSUM
-                          RD22(IX,IY) = RD22(IX,IY) / RDSUM
-!
-! ..... SUM RDnn = 0, reset interpolation factors
-!
+                      IF ( NNBR .GT. 0 ) THEN
+                          ICOR1  = ICOR1 + 1
+                          IX1 (IX,IY) = II(1)
+                          IY1 (IX,IY) = JJ(1)
+                          RD11(IX,IY) = RR(1)
+                          IF ( NNBR .GT. 1 ) THEN
+                              IX1 (IX,IY) = II(2)
+                              IY1 (IX,IY) = JJ(2)
+                              RD22(IX,IY) = RR(2)
+                            END IF
+!/T                          IF ( NNBR .EQ. 1 ) THEN
+!/T                              WRITE (NDST,9043) &
+!/T                              IX1(IX,IY), IY1(IX,IY), RD11(IX,IY)
+!/T                            ELSE
+!/T                              WRITE (NDST,9044) &
+!/T                              IX1(IX,IY), IY1(IX,IY), RD11(IX,IY), &
+!/T                              IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
+!/T                          END IF
                         ELSE
-                          RD11(IX,IY) = 0.
-                          RD12(IX,IY) = 0.
-                          RD21(IX,IY) = 0.
-                          RD22(IX,IY) = 0.
-!/T                          WRITE (NDST,9040) IX, IY, X, Y
+                          IERR   = IERR + 1
+                          WRITE (NDSE,910) IX, IY, X, Y,    &
+                                           II(1), II(2), JJ(1), JJ(2)
+                        END IF ! NNBR
 !
-! ..... SUM RDnn = 0, determine distance to sea points in 4x4 grid
+                    END IF ! MSKC
 !
-                          ILOC        = 0
-                          DO 340, I=MAX(1,JX-1), MIN(NXI,JX+2)
-                            DO 330, J=MAX(1,JY-1), MIN(NYI,JY+2)
-                              IF ( MASK(I,J).NE.0 ) THEN
-                                  ILOC     = ILOC + 1
-                                  RR(ILOC) = SQRT ( (ALON(I,J)-X)**2 &
-                                                  + (ALAT(I,J)-Y)**2 )
-                                  II(ILOC) = I
-                                  JJ(ILOC) = J
-!/T                                  WRITE (NDST,9041) I, J, ALAT(I,J), &
-!/T                                         ALON(I,J), RR(ILOC)
-!/T                                ELSE
-!/T                                  WRITE (NDST,9042) I, J
-                                ENDIF
-  330                         CONTINUE
-  340                       CONTINUE
+!/T                  WRITE (NDST,9031)                             &
+!/T                         IX1(IX,IY), IY1(IX,IY), RD11(IX,IY),   &
+!/T                         IX2(IX,IY), IY1(IX,IY), RD21(IX,IY),   &
+!/T                         IX1(IX,IY), IY2(IX,IY), RD12(IX,IY),   &
+!/T                         IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
 !
-                          IF ( ILOC .GT. 0 ) ICOR1  = ICOR1 + 1
-!
-! ..... One point found, set interpolation data
-!
-                          IF ( ILOC .EQ. 1 ) THEN
-                              RD11(IX,IY) = 1.
-                              IX1 (IX,IY) = II(1)
-                              IX2 (IX,IY) = II(1)
-                              IY1 (IX,IY) = JJ(1)
-                              IY2 (IX,IY) = JJ(1)
-!/T                              WRITE (NDST,9043) II(1), JJ(1), 1.
-!
-! ..... Several points found, use closest 2
-!
-                            ELSE IF ( ILOC .GT. 1 ) THEN
-                              RRMAX1 = 1.E10
-                              RRMAX2 = 1.E10
-                              JX1    = 0
-                              JY1    = 0
-                              DO 350, I=1, ILOC
-                                IF ( RR(I) .LT. RRMAX1 ) THEN
-                                     RRMAX2 = RRMAX1
-                                     JX2    = JX1
-                                     JY2    = JY1
-                                     RRMAX1 = RR(I)
-                                     JX1    = II(I)
-                                     JY1    = JJ(I)
-                                   ELSE IF ( RR(I) .LT. RRMAX2 ) THEN
-                                     RRMAX2 = RR(I)
-                                     JX2    = II(I)
-                                     JY2    = JJ(I)
-                                   ENDIF
-  350                           CONTINUE
-                              IX1 (IX,IY) = JX1
-                              IY1 (IX,IY) = JY1
-                              IX2 (IX,IY) = JX2
-                              IY2 (IX,IY) = JY2
-                              RD11(IX,IY) = RRMAX2 / ( RRMAX1 + RRMAX2 )
-                              RD22(IX,IY) = RRMAX1 / ( RRMAX1 + RRMAX2 )
-!/T                              WRITE (NDST,9044) JX1, JY1, RD11(IX,IY), &
-!/T                                                JX2, JY2, RD22(IX,IY)
-!
-! ..... No luck, uncorrectable error
-!
-                            ELSE
-                              IERR   = IERR + 1
-                              WRITE (NDSE,910) IX, IY, X, Y,    &
-                                     JX, JX+1, JY, JY+1
-!/T1                              FLERR  = .TRUE.
-                            ENDIF
-!
-                        ENDIF
-!
-                    ENDIF
-!
-!/T4                  WRITE (NDST,9031)                             &
-!/T4                         IX1(IX,IY), IY1(IX,IY), RD11(IX,IY),   &
-!/T4                         IX2(IX,IY), IY1(IX,IY), RD21(IX,IY),   &
-!/T4                         IX1(IX,IY), IY2(IX,IY), RD12(IX,IY),   &
-!/T4                         IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
-!
-! 2.d.6 Update overlay map
+! 2.e Update overlay map
 !
                   MAPOVR(IX,IY) = MAPOVR(IX,IY) + 1
                   IFOUND  = IFOUND + 1
-!/T1                  IF ( FLERR ) MAPOVR(IX,IY) = - MAPOVR(IX,IY)
 !
-!/T3                ELSE
-!/T3                  WRITE (NDST,9021)
-                ENDIF
-!/T3            ELSE
-!/T3              Y      = Y0 + REAL(IY-1)*SY
-!/T3              WRITE (NDST,9020) IY, Y, 'LAND'
-            ENDIF
+!/T1                ELSE ! .NOT.INGRID
+!/T1                  WRITE (NDST,9021)
+                END IF ! INGRID
+!/T1            ELSE ! land-point
+!/T1              WRITE (NDST,9020) IX, IY, X, Y, 'LAND'
+            ENDIF ! sea-point
 !
-! ... End of loop over latitudes - - - - - - - - - - - - - - - - - - - -
+! ... End loop over output grid -------------------------------------- *
 !
   400     CONTINUE
-!
-! ... End loop over longitudes --------------------------------------- *
-!
   500   CONTINUE
 !
-!     Final output :
+! 3.  Finalizations -------------------------------------------------- *
+! 3.a Final output
 !
       IF (NDSM.NE.0) WRITE (NDSM,900) IFOUND, IMASK, ICOR1, IERR
 !
-!/T1      WRITE (NDST,9006)
-!/T1      IX0    = 1
-!/T1  700 CONTINUE
-!/T1      IXN    = MIN ( IX0+77 , NX )
-!/T1      WRITE (NDST,9007)
-!/T1      STR(01:39) = '                                       '
-!/T1      STR(40:78) = '                                       '
-!/T1      DO 720, IY=NY,1,-1
-!/T1        DO 710, IX=IX0, IXN
-!/T1          IXR    = IX - IX0 + 1
-!/T1          IF ( MAPOVR(IX,IY) .EQ. ILAND ) THEN
-!/T1              STR(IXR:IXR) = '*'
-!/T1            ELSE IF ( MAPOVR(IX,IY) .LT. 0 ) THEN
-!/T1              STR(IXR:IXR) = 'X'
-!/T1              MAPOVR(IX,IY) = - MAPOVR(IX,IY)
-!/T1            ELSE
-!/T1              WRITE (CHARID,'(I1)') MAPOVR(IX,IY)
-!/T1              STR(IXR:IXR) = CHARID
-!/T1            ENDIF
-!/T1  710     CONTINUE
-!/T1        WRITE (NDST,9008) STR
-!/T1  720   CONTINUE
-!/T1      IF ( IXN .NE. NX ) THEN
-!/T1          IX0    = IXN+1
-!/T1          GOTO 700
-!/T1        ENDIF
-!/T1      WRITE (NDST,9007)
+! 3.b Destroy grid-search-utility object
+!
+      CALL W3GSUD(GSU)
 !
       RETURN
 !
@@ -1726,47 +1371,20 @@
 !/T               '               ILAND    : ',I8/                 &
 !/T               '               MXI, MYI : ',2I8/                &
 !/T               '               NXI, NYI : ',2I8/                &
-!/T               '               CLOSED   : ',L8/                 &
-!/T               '               X0, SX   : ',3X,2F8.2/           &
-!/T               '               Y0, SY   : ',3X,2F8.2)
-!/T 9001 FORMAT ( ' TEST W3FLDP : INPUT LATITUDE RANGE  : ',2F8.2/ &
-!/T               '               INPUT LONGITUDE RANGE : ',2F8.2)
-!/T 9002 FORMAT ( '               CORRECTED LONGITUDES  : ',2F8.2)
-!/T 9003 FORMAT ( ' TEST W3FLDP : IY0,IYN  : ',2I8/                &
-!/T               '               RANGE    : ',3X,2F8.2)
+!/T               '               CLOSED   : ',L8)
+!/T 9001 FORMAT ( ' TEST W3FLDP : GRID SEARCH INFO -- OUTPUT FROM W3GSUP')
 !
-!/T1 9005 FORMAT (/' TEST W3FLDP : OVERLAY MAP BEFORE PREPROCESSING')
-!/T1 9006 FORMAT (/' TEST W3FLDP : OVERLAY MAP AFTER PREPROCESSING')
-!/T1 9007 FORMAT ( ' ')
-!/T1 9008 FORMAT (1X,A)
-
+!/T1 9010 FORMAT ( ' TEST W3FLDP : IX =',I4,' IY =',I4,             &
+!/T1               '  LONGITUDE =',F8.2, '  LATITUDE =',F8.2,       &
+!/T1               '  ================================')
 !
-!/T2 9010 FORMAT ( ' TEST W3FLDP : IX =',I4,'  LONGITUDE =',F8.2,   &
-!/T2               '  ================================')
-!/T2 9011 FORMAT ( '                   ***** OUT OF RANGE *****')
-!/T2 9012 FORMAT ( '                         CORRECTED =',F8.2)
-!/T2 9013 FORMAT ( '               START SEARCH AT    : ',2I8/      &
-!/T2               '               LONGITUDE-LATITUDE :    ',2F8.2)
+!/T1 9020 FORMAT ( ' TEST W3FLDP : IX =',I4,' IY =',I4,             &
+!/T1               '  LONGITUDE =',F8.2, '  LATITUDE =',F8.2,       &
+!/T1               '   (',A,')')
+!/T1 9021 FORMAT ( '                   ***** OUT OF RANGE *****')
 !
-!/T3 9020 FORMAT ( ' TEST W3FLDP : IY =',I4,'  LATITUDE  =',F8.2,   &
-!/T3               '   (',A,')')
-!/T3 9021 FORMAT ( '                   ***** OUT OF RANGE *****')
-!
-!/T4 9030 FORMAT ( ' TEST W3FLDP : STEEPEST DESCENT, IPASS =',I3/   &
-!/T4               '               GRID (OLD/NEW) : ',I5,3I8/       &
-!/T4               '               LONGITUDES     : ',4F8.2/        &
-!/T4               '               LATITIDES      : ',4F8.2/        &
-!/T4               '               BOX SIZE (X)   :  ',2F8.3,E10.3/ &
-!/T4               '                        (Y)   :  ',2F8.3,E10.3/ &
-!/T4               '               HEIGHTS        : ',4F8.2/        &
-!/T4               '               BOX FLAGS      : ',3L2)
-!/T4 9031 FORMAT ( ' TEST W3FLDP : FINAL INTERPOLATION DATA (IX,IY,R)', &
-!/T4            4(/'                                ',2I4,f7.3))
-!
-!/T 9040 FORMAT ( ' TEST W3FLDP : ERROR CORRECTION POINT ',2I4,2F8.2/ &
-!/T               '               4x4 GRID : I, J , LAT, LON, DIST ')
-!/T 9041 FORMAT ( '               ',2I4,3F8.2)
-!/T 9042 FORMAT ( '               ',2I4,' *** LAND POINT ***')
+!/T 9031 FORMAT ( ' TEST W3FLDP : FINAL INTERPOLATION DATA (IX,IY,R)', &
+!/T            4(/'                                ',2I4,f7.3))
 !/T 9043 FORMAT ( ' TEST W3FLDP : CORRECTED INTERPOLATION '/       &
 !/T               '               POINT 1 : ',2I4,F6.2)
 !/T 9044 FORMAT ( ' TEST W3FLDP : CORRECTED INTERPOLATION '/       &

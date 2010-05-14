@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -22,6 +22,10 @@
 !/                  Adding user slots for outputs.
 !/    31-Jul-2007 : Fix file extension errors.          ( version 3.12 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -515,9 +519,6 @@
 !     See source code.
 !
 !  9. Switches :
-!
-!       !/LLG  Spherical grid.
-!       !/XYG  Spherical grid.
 !
 !       !/S  Enable subroutine tracing.
 !       !/T  Enable test output.
@@ -1095,18 +1096,31 @@
                     OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,             &
                           FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
                     WRITE (NDSDAT) FILEID, TIME,                      &
-                       X0+SX*REAL(IX1-1),X0+SX*REAL(IXN-1),IXN-IX1+1, &
-                       Y0+SY*REAL(IY1-1),Y0+SY*REAL(IYN-1),IYN-IY1+1, &
+                       MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
+                       MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
+                       MINVAL(YGRD(IY1:IYN,IX1:IXN)),                 &
+                       MAXVAL(YGRD(IY1:IYN,IX1:IXN)), IYN-IY1+1,      &
                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
                   ELSE
                     JJ     = LEN_TRIM(FNMPRE)
                     OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
                           IOSTAT=IERR)
-                    WRITE (NDSDAT,950) FILEID, TIME,                  &
-                       X0+SX*REAL(IX1-1),X0+SX*REAL(IXN-1),IXN-IX1+1, &
-                       Y0+SY*REAL(IY1-1),Y0+SY*REAL(IYN-1),IYN-IY1+1, &
-                       ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
-                  END IF
+                    IF ( FLAGLL ) THEN
+                        WRITE (NDSDAT,950) FILEID, TIME,               &
+                        MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
+                        MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
+                        MINVAL(YGRD(IY1:IYN,IX1:IXN)),                 &
+                        MAXVAL(YGRD(IY1:IYN,IX1:IXN)), IYN-IY1+1,      &
+                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
+                    ELSE
+                        WRITE (NDSDAT,960) FILEID, TIME,               &
+                        MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
+                        MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
+                        MINVAL(YGRD(IY1:IYN,IX1:IXN)),                 &
+                        MAXVAL(YGRD(IY1:IYN,IX1:IXN)), IYN-IY1+1,      &
+                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
+                     END IF
+                END IF
 !
                 IF ( J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.5 .OR.              &
                      J.EQ.27 .OR. J.EQ.28 ) THEN
@@ -1124,21 +1138,26 @@
                       END DO
                     IF ( IDLA .NE. 5 ) THEN
                         CALL OUTA2I ( MXX, NX, NY, IX1, IXN, IY1, IYN, &
-                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1 )
+                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1,0)
                         CALL OUTA2I ( MYY, NX, NY, IX1, IXN, IY1, IYN, &
-                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1 )
+                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1,0)
                       ELSE
                         DO IY=IY1,IYN
-                          YGBX   = Y0 + REAL(IY-1)*SY
                           DO IX=IX1, IXN
-                            XGBX   = X0 + REAL(IX-1)*SX
+                            YGBX   = YGRD(IY,IX)
+                            XGBX   = XGRD(IY,IX)
                             IF ( MXX(IX,IY) .NE. MFILL ) THEN
                                 IF ( IDFM .EQ. 3 ) THEN
                                     WRITE (NDSDAT)                    &
                                       XGBX, YGBX, MXX(IX,IY), MYY(IX,IY)
                                   ELSE
-                                    WRITE (NDSDAT,951)                &
-                                      XGBX, YGBX, MXX(IX,IY), MYY(IX,IY)
+                                    IF ( FLAGLL ) THEN
+                                        WRITE (NDSDAT,951) XGBX, YGBX, &
+                                           MXX(IX,IY), MYY(IX,IY)
+                                      ELSE
+                                        WRITE (NDSDAT,961) XGBX, YGBX, &
+                                           MXX(IX,IY), MYY(IX,IY)
+                                      END IF
                                   END IF
                               END IF
                             END DO
@@ -1157,19 +1176,24 @@
                       END DO
                     IF ( IDLA .NE. 5 ) THEN
                         CALL OUTA2I ( MX1, NX, NY, IX1, IXN, IY1, IYN, &
-                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1 )
+                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1,0)
                       ELSE
                         DO IY=IY1,IYN
-                          YGBX   = Y0 + REAL(IY-1)*SY
                           DO IX=IX1, IXN
-                            XGBX   = X0 + REAL(IX-1)*SX
+                            YGBX   = YGRD(IY,IX)
+                            XGBX   = XGRD(IY,IX)
                             IF ( MX1(IX,IY) .NE. MFILL ) THEN
                                 IF ( IDFM .EQ. 3 ) THEN
                                     WRITE (NDSDAT)                    &
                                       XGBX, YGBX, MX1(IX,IY)
                                   ELSE
-                                    WRITE (NDSDAT,951)                &
-                                      XGBX, YGBX, MX1(IX,IY)
+                                    IF ( FLAGLL ) THEN
+                                        WRITE (NDSDAT,951) XGBX, YGBX, &
+                                           MX1(IX,IY)
+                                      ELSE
+                                        WRITE (NDSDAT,961) XGBX, YGBX, &
+                                           MX1(IX,IY)
+                                      END IF
                                   END IF
                               END IF
                             END DO
@@ -1197,12 +1221,12 @@
 ! Formats
 !
   940 FORMAT (1X,I8,3I3.2,2X,4E12.4)
-!/LLG  950 FORMAT (1X,A13,I9.8,I7.6,2(2F8.2,I4),                      &
-!/LLG              1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
-!/XYG  950 FORMAT (1X,A13,I9.8,I7.6,2(2E11.3,I4),                     &
-!/XYG              1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
-!/LLG  951 FORMAT (1X,2F10.5,2I8)
-!/XYG  951 FORMAT (1X,2E12.4,2I8)
+  950 FORMAT (1X,A13,I9.8,I7.6,2(2F8.2,I4),                      &
+              1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
+  951 FORMAT (1X,2F10.5,2I8)
+  960 FORMAT (1X,A13,I9.8,I7.6,2(2E11.3,I4),                     &
+              1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
+  961 FORMAT (1X,2E12.4,2I8)
 !
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO :'/                &
                '     PLEASE UPDATE FIELDS !!! '/)

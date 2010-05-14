@@ -1,0 +1,846 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# Script for running WW-III tests.                                            #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
+# 1. Function definitions                                                     #
+# --------------------------------------------------------------------------- #
+
+# 1.a Error message function
+errmsg ()
+{
+  echo "" 2>&1
+  while [ $# != 0 ]
+  do
+    echo "ERROR: $1" 2>&1
+    shift
+  done
+  echo "" 2>&1
+}
+
+# 1.b Usage function
+myname="`basename $0`"  #name of script
+optstr="c:eg:hi:m:n:p:q:r:s:w:"  #option string for getopt function
+usage ()
+{
+  echo "" 2>&1
+  echo "Usage: $myname [options] source_dir test_name" 2>&1
+  echo "Required:" 2>&1
+  echo "  source_dir : path to top-level of WW3 source" 2>&1
+  echo "  test_name  : name of test case (directory)" 2>&1
+  echo "Options:" 2>&1
+  echo "  -c cmplr         : setup comp & link files for specified cmplr" 2>&1
+  echo "  -e               : prompt for changes to existing WW3 environment" 2>&1
+  echo "  -g grid_string   : use ww3_grid_<grid_string>.inp" 2>&1
+  echo "  -h               : print usage and exit" 2>&1
+  echo "  -i inpdir        : use inputs in test_name/<inpdir> (default  test_name/input)" 2>&1
+  echo "  -m grid_set      : execute multi-model test" 2>&1
+  echo "                   :   *grid names are obtained from input/<grid_set>" 2>&1
+  echo "                   :   *ww3_multi_<grid_set> will execute instead of ww3_shell" 2>&1
+  echo "                   :   *to execute a single model test case with ww3_multi use" 2>&1
+  echo "                   :    grid_set = none" 2>&1
+  echo "  -n nproc         : specify <nproc> processors for parallel run" 2>&1
+  echo "                   :   *some <runcmd> programs do not require <nproc>" 2>&1
+  echo "                   :   *ignored if -p <runcmd> is not specified" 2>&1
+  echo "  -p runcmd        : run in parallel using <runcmd> to start program" 2>&1
+  echo "                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)" 2>&1
+  echo "                   :   *IBM with Loadleveler: poe (no <nproc> required)" 2>&1
+  echo "                   :   *LSF: mpirun.lsf (no <nproc> required)" 2>&1
+  echo "  -q program       : exit script after program <program> executes" 2>&1
+  echo "  -r program       : only execute program <program>" 2>&1
+  echo "  -s switch_string : use switch_<switch_string>" 2>&1
+  echo "  -w work_dir      : run test case in test_name/work_dir (default test_name/work)" 2>&1
+  echo "" 2>&1
+}
+
+
+# --------------------------------------------------------------------------- #
+# 2. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+
+# 2.a Setup array of command-line arguments
+args=`getopt $optstr $*`
+if [ $? != 0 ]
+then
+  usage
+  exit 1
+fi
+set -- $args
+
+# 2.b Process command-line options
+exit_p=none
+exec_p=none
+multi=0
+inpdir=input
+while :
+do
+  case "$1" in
+  -c) shift; cmplr="$1" ;;
+  -e) prompt=1 ;;
+  -g) shift; grdstr="$1" ;;
+  -h) help=1 ;;
+  -i) shift; inpdir="$1" ;;
+  -m) shift; grdset="$1" ;
+      if [ $grdset = none ]
+      then
+        multi=1
+      else
+        multi=2
+      fi ;;
+  -n) shift; nproc="$1" ;;
+  -p) shift; runcmd="$1" ; pmpi=1 ;;
+  -q) shift; exit_p="$1" ;;
+  -r) shift; exec_p="$1" ;;
+  -s) shift; swtstr="$1" ;;
+  -t) shift; trkstr="$1" ;;
+  -w) shift; wrkdir="$1" ;;
+  --) break ;;
+  esac
+  shift
+done
+shift #remove the trailing --
+if [ $help ]
+then
+  usage
+  exit 1
+fi
+if [ ! $exec_p = "none" ]
+then
+  exit_p=$exec_p
+fi
+
+# 2.c Get required arguments
+if [ ! $# = 0 ]
+then
+  path_s="$1" ; shift
+else
+  usage
+  exit 1
+fi
+if [ ! $# = 0 ]
+then
+  testnm="$1" ; shift
+else
+  usage
+  exit 1
+fi
+
+# 2.d Convert source path from "relative" to "absolute"
+D=`dirname "$path_s"`
+B=`basename "$path_s"`
+path_s="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+if [ ! -d $path_s ]
+then
+  errmsg "$path_s not found"
+  usage
+  exit 1
+fi
+
+# 2.e Path to test directory
+path_t="`pwd`/$testnm"
+if [ ! -d $path_t ]
+then
+  errmsg "$path_t not found"
+  usage
+  exit 1
+fi
+
+# 2.f Path to input files
+path_i="$path_t/$inpdir"
+if [ ! -d $path_i ]
+then
+  errmsg "$path_i not found"
+  usage
+  exit 1
+fi
+
+# 2.g Path to working directory
+if [ $wrkdir ]
+then
+  path_w="$path_t/$wrkdir"
+else
+  path_w="$path_t/work"
+fi
+
+# 2.h Paths to source subdirectories
+path_e="$path_s/exe"
+path_a="$path_s/aux"
+path_b="$path_s/bin"
+if [ ! -d $path_a ]
+then
+  errmsg "$path_a not found"
+  exit 1
+fi
+if [ ! -d $path_b ]
+then
+  errmsg "$path_b not found"
+  exit 1
+fi
+
+# 2.i Check for switch file
+if [ $swtstr ]
+then
+  file_c="$path_i/switch_$swtstr"
+else
+  file_c="$path_i/switch"
+fi
+if [ ! -f $file_c ]
+then
+  errmsg "switch file $file_c not found"
+  exit 1
+fi
+
+# 2.j If parallel execution, then check for proper switches
+#     Also, set default run command
+if [ $pmpi ]
+then
+  if [ "`grep MPI $file_c`" ]
+  then :
+  else
+    errmsg "Improper switch setup for parallel run"
+    exit 1
+  fi
+else
+  runcmd=''
+fi
+
+# 2.k Setup for multi-model (and defaults for non-multi-model)
+gu=""
+if [ $multi -eq 2 ]
+then
+  if [ -f $path_i/$grdset ]
+  then
+    model_grids="`awk '/^MODEL:/' $path_i/$grdset | sed 's/MODEL\://'`"
+    input_grids="`awk '/^INPUT:/' $path_i/$grdset | sed 's/INPUT\://'`"
+    point_grids="`awk '/^POINT:/' $path_i/$grdset | sed 's/POINT\://'`"
+  else
+    errmsg "grid_set file $path_i/$grdset not found"
+    exit 1
+  fi
+else
+  model_grids="none"
+  input_grids="none"
+  point_grids="none"
+fi
+all_grids=$model_grids
+for g in $input_grids $point_grids
+do
+  if [ -z "`echo $all_grids | grep $g`" ]
+  then
+    all_grids="$all_grids $g"
+  fi
+done
+
+# 2.l Setup WW3
+if [ -f $path_b/w3_setup ]
+then
+  args="$path_s"
+  if [ $cmplr ]
+  then
+    args="-c $cmplr $args"
+  fi
+  if [ $prompt ]
+  then :
+  else
+    args="-q $args"
+  fi
+  if $path_b/w3_setup "$args"
+  then :
+  else
+    errmsg "Error occured during w3_setup"
+    exit 1
+  fi
+else
+  errmsg "WW3 setup script $path_b/w3_setup not found"
+  exit 1
+fi
+
+
+# --------------------------------------------------------------------------- #
+# 3. Execute Test                                                             #
+# --------------------------------------------------------------------------- #
+# 3.a Go to work directory and clean-up
+mkdir -p $path_w
+cd $path_w
+if [ $exec_p = "none" ]
+then
+  rm -f *.inp *.ww3 *.out
+fi
+
+# 3.b Header
+echo ' ' ; echo ' '
+echo '                    ==================================   '
+echo '                  ======> TEST RUN WAVEWATCH III <====== '
+echo '                    ==================================   '
+echo ' '
+if [ -f $path_t/info ]
+then
+  cat $path_t/info
+fi
+echo ' '
+echo " Input directory: $path_i"
+echo ' '
+
+# 3.c Grid pre-processor ---------------------------------------------------- #
+
+prog=ww3_grid
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|  Grid preprocessor |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ `uname -s` = 'AIX' ]
+  then #On AIX, build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  for g in $all_grids
+  do
+
+    if [ $multi -eq 2 ]
+    then
+      gu="_$g"
+    fi
+
+    if [ $grdstr ]
+    then
+      ifile=$path_i/${prog}_${grdstr}${gu}.inp
+    else
+      ifile=$path_i/$prog${gu}.inp
+    fi
+    ofile="$path_w/`basename $ifile .inp`.out"
+
+    if [ ! -f $path_e/$prog ]
+    then
+      errmsg "$path_e/$prog not found"
+      exit 1
+    fi
+    if [ ! -f $ifile ]
+    then
+      errmsg "$ifile not found"
+      exit 1
+    fi
+
+    rm -f $prog.inp
+    ln -s $ifile $prog.inp
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
+    if $path_e/$prog > $ofile
+    then
+      rm -f $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        mv mod_def.ww3 mod_def.$g
+      fi
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
+
+  done
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.d Initial conditions ---------------------------------------------------- #
+
+prog=ww3_strt
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+--------------------+'
+  echo '| Initial conditions |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ `uname -s` = 'AIX' ]
+  then #On AIX, build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  for g in $model_grids
+  do
+
+    if [ $multi -eq 2 ]
+    then
+      gu="_$g"
+    fi
+
+    ofile="$path_w/`basename $ifile .inp`${gu}.out"
+
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
+    rm -f $prog.inp
+    ln -s $ifile $prog.inp
+    if [ $multi -eq 2 ]
+    then
+      rm -f mod_def.ww3
+      ln -s mod_def.$g mod_def.ww3
+    fi
+    if $path_e/$prog > $ofile
+    then
+      rm -f $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        mv restart.ww3 restart.$g
+        rm -f mod_def.ww3
+      fi
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
+
+  done
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.e Prep forcing fields --------------------------------------------------- #
+
+prog=ww3_prep
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+---------------------+'
+  echo '| Prep forcing fields |'
+  echo '+---------------------+'
+  echo ' '
+
+  if [ `uname -s` = 'AIX' ]
+  then #On AIX, build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  for g in $input_grids
+  do
+
+    if [ $multi -eq 2 ]
+    then
+      gu="_$g"
+    fi
+
+    for ifile in $inputs; do
+      otype="`basename $ifile .inp | sed s/^${prog}_//`"
+      ofile="$path_w/`basename $ifile .inp`.out"
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
+      rm -f $prog.inp
+      ln -s $ifile $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        rm -f mod_def.ww3
+        ln -s mod_def.$g mod_def.ww3
+      fi
+      if $path_e/$prog > $ofile
+      then
+        rm -f $prog.inp
+        if [ $multi -eq 2 ]
+        then
+          rm -f mod_def.ww3
+          mv $otype.ww3 $otype.$g
+        fi
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+    done
+
+  done
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.f Main program ---------------------------------------------------------- #
+
+if [ $multi -ge 1 ]
+then
+  prog=ww3_multi
+else
+  prog=ww3_shel
+fi
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+ifile="`ls $path_i/track_i.ww3 2>/dev/null`"
+if [ $? = 0 ]
+then
+  rm -f track_i.ww3
+  ln -s $ifile
+fi
+
+if [ $multi -eq 2 ]
+then
+  ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
+else
+  ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
+fi
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Main program    |'
+  echo '+--------------------+'
+  echo ' '
+
+  cp -f $file_c $path_b/switch
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  ofile="$path_w/$prog.out"
+
+  rm -f $prog.inp
+  ln -s $ifile $prog.inp
+  echo "   Processing $ifile"
+  echo "   Screen output copied to $ofile"
+  if [ $pmpi ]
+  then
+    if [ $nproc ]
+    then
+      runcmd="$runcmd -np $nproc"
+    fi
+  fi
+  if $runcmd $path_e/$prog | tee $ofile
+  then
+    rm -f $prog.inp
+  else
+    errmsg "Error occured during $path_e/$prog execution"
+    exit 1
+  fi
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.g Gridded output -------------------------------------------------------- #
+
+prog=ww3_outf
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|   Gridded output   |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ `uname -s` = 'AIX' ]
+  then #On AIX, build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  for g in $model_grids
+  do
+
+    if [ $multi -eq 2 ]
+    then
+      if [ ! -e out_grd.$g ]
+      then
+        continue
+      fi
+      gu="_$g"
+    fi
+
+    for ifile in $inputs; do
+      otype="`basename $ifile .inp | sed s/^${prog}_//`"
+      ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
+      rm -f $prog.inp
+      ln -s $ifile $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        rm -f mod_def.ww3
+        rm -f out_grd.ww3
+        ln -s mod_def.$g mod_def.ww3
+        ln -s out_grd.$g out_grd.ww3
+      fi
+      if $path_e/$prog > $ofile
+      then
+        rm -f $prog.inp
+        if [ $multi -eq 2 ]
+        then
+          mv $otype.ww3 $otype.$g
+          rm -f mod_def.ww3
+          rm -f out_grd.ww3
+        fi
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+    done
+
+  done
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.h Point output ---------------------------------------------------------- #
+
+prog=ww3_outp
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Point output    |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ `uname -s` = 'AIX' ]
+  then #On AIX, build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  for g in $point_grids
+  do
+
+    if [ $multi -eq 2 ]
+    then
+      if [ ! -e out_pnt.$g ]
+      then
+        continue
+      fi
+      gu="_$g"
+    fi
+
+    for ifile in $inputs; do
+      otype="`basename $ifile .inp | sed s/^${prog}_//`"
+      ofile="$path_w/`basename $ifile .inp`${gu}.out"
+      echo "   Processing $ifile"
+      echo "   Screen output routed to $ofile"
+      rm -f $prog.inp
+      ln -s $ifile $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        rm -f mod_def.ww3
+        rm -f out_pnt.ww3
+        ln -s mod_def.$g mod_def.ww3
+        ln -s out_pnt.$g out_pnt.ww3
+      fi
+      if $path_e/$prog > $ofile
+      then
+        rm -f $prog.inp
+        if [ $multi -eq 2 ]
+        then
+          mv $otype.ww3 $otype.$g
+          rm -f mod_def.ww3
+          rm -f out_pnt.ww3
+        fi
+      else
+        errmsg "Error occured during $path_e/$prog execution"
+        exit 1
+      fi
+    done
+
+  done
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.i Track output ---------------------------------------------------------- #
+
+prog=ww3_trck
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Track output    |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ `uname -s` = 'AIX' ]
+  then #On AIX, build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  ofile="$path_w/`basename $ifile .inp`.out"
+
+  rm -f $prog.inp
+  ln -s $ifile $prog.inp
+  echo "   Processing $ifile"
+  echo "   Screen output routed to $ofile"
+  if $path_e/$prog > $ofile
+  then
+    rm -f $prog.inp
+  else
+    errmsg "Error occured during $path_e/$prog execution"
+    exit 1
+  fi
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.j End ------------------------------------------------------------------- #
+
+echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
+ls -l
+
+echo ' ' ; echo ' '
+echo '                    ==================================   '
+echo '                  ======>  END OF WAVEWATCH III  <====== '
+echo '                    ==================================   '
+echo ' '
+
+# --------------------------------------------------------------------------- #
+# End of script                                                               #
+# --------------------------------------------------------------------------- #
+

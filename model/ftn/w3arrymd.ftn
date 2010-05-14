@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -72,19 +72,21 @@
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE INA2R  (ARRAY, MX, MY, LX, HX, LY, HY,         &
-                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC)
+      SUBROUTINE INA2R  (ARRAY, MX, MY, LX, HX, LY, HY,              &
+                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC, VOF)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Nov-1999 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/                                  Based on INAR2D by N.Booij, DUT.
 !/
 !/    31-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -112,6 +114,7 @@
 !                                      IX line by IX line.
 !                           IDLA = 4 : Idem, one read statement.
 !       VSC     Real   I   Scaling factor (multiplication).
+!       VOF     Real   I   Add offset.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -148,7 +151,7 @@
 !/
       INTEGER, INTENT(IN)     :: MX, MY, LX, HX, LY, HY, NDS, NDST,  &
                                  NDSE, IDFM, IDLA
-      REAL, INTENT(IN)        :: VSC
+      REAL, INTENT(IN)        :: VSC, VOF
       CHARACTER, INTENT(IN)   :: RFORM*(*)
       REAL, INTENT(OUT)       :: ARRAY(MX,MY)
 !/
@@ -163,7 +166,7 @@
 !/S      CALL STRACE (IENT, 'INA2R')
 !
 !/T      WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
-!/T                        IDFM, RFORM, IDLA, VSC
+!/T                        IDFM, RFORM, IDLA, VSC, VOF
 !
       IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
           IIDFM = 1
@@ -244,7 +247,7 @@
 !
       DO IX=LX, HX
         DO IY=LY, HY
-          ARRAY(IX,IY) = VSC * ARRAY(IX,IY)
+          ARRAY(IX,IY) = VSC * ARRAY(IX,IY) + VOF
           END DO
         END DO
 !
@@ -268,29 +271,31 @@
                '     ERROR IN READING FROM FILE'/               &
                '     IOSTAT =',I5/)
 !
-!/T 9000 FORMAT (' TEST INA2R  : INPUT :'/6X,8I4,2I3,1X,A,I3,E12.4)
+!/T 9000 FORMAT (' TEST INA2R  : INPUT :'/6X,8I4,2I3,1X,A,I3,2E12.4)
 !/
 !/ End of INA2R  ----------------------------------------------------- /
 !/
       END SUBROUTINE INA2R
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE INA2I  (ARRAY, MX, MY, LX, HX, LY, HY,         &
-                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC)
+      SUBROUTINE INA2I  (ARRAY, MX, MY, LX, HX, LY, HY,              &
+                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC, VOF)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Nov-1999 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/                                  Based on INAR2D by N.Booij, DUT.
 !/
 !/    31-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
-!     Like INA2R , integer ARRAY and VSC, see INA2R .
+!     Like INA2R , integer ARRAY, VSC and VOF, see INA2R .
 !
 ! 10. Source code :
 !
@@ -304,7 +309,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: MX, MY, LX, HX, LY, HY, NDS, NDST,  &
-                                 NDSE, IDFM, IDLA, VSC
+                                 NDSE, IDFM, IDLA, VSC, VOF
       INTEGER, INTENT(OUT)    :: ARRAY(MX,MY)
       CHARACTER, INTENT(IN)   :: RFORM*(*)
 !/
@@ -319,7 +324,7 @@
 !/S      CALL STRACE (IENT, 'INA2I')
 !
 !/T      WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
-!/T                        IDFM, RFORM, IDLA, VSC
+!/T                        IDFM, RFORM, IDLA, VSC, VOF
 !
       IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
           IIDFM = 1
@@ -400,7 +405,7 @@
 !
       DO IX=LX, HX
         DO IY=LY, HY
-          ARRAY(IX,IY) = VSC * ARRAY(IX,IY)
+          ARRAY(IX,IY) = VSC * ARRAY(IX,IY) + VOF
           END DO
         END DO
 !
@@ -424,32 +429,36 @@
                '     ERROR IN READING FROM FILE'/               &
                '     IOSTAT =',I5/)
 !
-!/T 9000 FORMAT (' TEST INA2I  : INPUT :'/6X,8I4,2I3,1X,A,I3,I5)
+!/T 9000 FORMAT (' TEST INA2I  : INPUT :'/6X,8I4,2I3,1X,A,I3,2I5)
 !/
 !/ End of INA2I  ----------------------------------------------------- /
 !/
       END SUBROUTINE INA2I
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE OUTA2R (ARRAY, MX, MY, LX, HX, LY, HY,         &
-                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC)
+      SUBROUTINE OUTA2R (ARRAY, MX, MY, LX, HX, LY, HY,               &
+                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC, VOF)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Feb-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    21-Feb-2008 ; Bug fix IDFM=1, IDLA=2 writing      ( version 3.13 )
+!/    30-Oct-2009 ; Fix non-integer loop bound.         ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
 !     Writes 2-D array of pre-described layout and format. "Inverse"
 !     version of INA2R . For documentation see INA2R .
 !
-!     N.B. - Array is devided by VSC !
+!     N.B. - ARRAY_OUT <= ( ARRAY_IN - VOF ) / VSC
 !          - No error trapping on write.
 !
 ! 10. Source code :
@@ -465,7 +474,7 @@
 !/
       INTEGER, INTENT(IN)     :: MX, MY, LX, HX, LY, HY, NDS, NDST,  &
                                  NDSE, IDFM, IDLA
-      REAL, INTENT(IN)        :: VSC, ARRAY(MX,MY)
+      REAL, INTENT(IN)        :: VSC, VOF, ARRAY(MX,MY)
       CHARACTER, INTENT(IN)   :: RFORM*(*)
 !/
 !/ ------------------------------------------------------------------- /
@@ -479,7 +488,7 @@
 !/S      CALL STRACE (IENT, 'OUTA2R')
 !
 !/T      WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
-!/T                        IDFM, RFORM, IDLA, VSC
+!/T                        IDFM, RFORM, IDLA, VSC, VOF
 !
       IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
           IIDFM = 1
@@ -498,19 +507,19 @@
           IF (IIDLA.EQ.1) THEN
               DO IY=LY, HY
                 WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE IF (IIDLA.EQ.2) THEN
               WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=LY,HY)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,INT(HX/VSC)),IY=LY,HY)
             ELSE IF (IIDLA.EQ.3) THEN
               DO IY=HY, LY, -1
                 WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE
               WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=HY,LY,-1)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
             END IF
 !
 ! Fixed format write :
@@ -519,19 +528,19 @@
           IF (IIDLA.EQ.1) THEN
               DO IY=LY, HY
                 WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE IF (IIDLA.EQ.2) THEN
               WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=LY,HY)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
             ELSE IF (IIDLA.EQ.3) THEN
               DO IY=HY, LY, -1
                 WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE
               WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=HY,LY,-1)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
             END IF
 !
 ! Unformat write :
@@ -540,19 +549,19 @@
           IF (IIDLA.EQ.1) THEN
               DO IY=LY, HY
                 WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE IF (IIDLA.EQ.2) THEN
               WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=LY,HY)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
             ELSE IF (IIDLA.EQ.3) THEN
               DO IY=HY, LY, -1
                 WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE
               WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-                    ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=HY,LY,-1)
+                    (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
             END IF
         END IF
 !
@@ -570,28 +579,30 @@
                '     ERROR IN WRITING TO FILE'/                 &
                '     IOSTAT =',I5/)
 !
-!/T 9000 FORMAT (' TEST OUTA2R : INPUT :'/6X,8I4,2I3,1X,A,I3,E12.4)
+!/T 9000 FORMAT (' TEST OUTA2R : INPUT :'/6X,8I4,2I3,1X,A,I3,2E12.4)
 !/
 !/ End of OUTA2R ----------------------------------------------------- /
 !/
       END SUBROUTINE OUTA2R
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE OUTA2I (ARRAY, MX, MY, LX, HX, LY, HY,         &
-                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC)
+      SUBROUTINE OUTA2I (ARRAY, MX, MY, LX, HX, LY, HY,              &
+                         NDS, NDST, NDSE, IDFM, RFORM, IDLA, VSC, VOF)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Nov-1999 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
-!     Like OUTA2R, integer ARRAY and VSC, see OUTA2R.
+!     Like OUTA2R, integer ARRAY, VSC and VOF, see OUTA2R.
 !
 ! 10. Source code :
 !
@@ -605,7 +616,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: MX, MY, LX, HX, LY, HY, NDS, NDST,  &
-                                 NDSE, IDFM, IDLA, VSC, ARRAY(MX,MY)
+                                 NDSE, IDFM, IDLA, ARRAY(MX,MY)
+      INTEGER, INTENT(IN)     :: VSC, VOF
       CHARACTER, INTENT(IN)   :: RFORM*(*)
 !/
 !/ ------------------------------------------------------------------- /
@@ -619,7 +631,7 @@
 !/S      CALL STRACE (IENT, 'OUTA2I')
 !
 !/T      WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
-!/T                        IDFM, RFORM, IDLA, VSC
+!/T                        IDFM, RFORM, IDLA, VSC, VOF
 !
       IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
           IIDFM = 1
@@ -638,19 +650,19 @@
           IF (IIDLA.EQ.1) THEN
               DO IY=LY, HY
                 WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE IF (IIDLA.EQ.2) THEN
               WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=LY,HY)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
             ELSE IF (IIDLA.EQ.3) THEN
               DO IY=HY, LY, -1
                 WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE
               WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=HY,LY,-1)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
             END IF
 !
 ! Fixed format write :
@@ -659,19 +671,19 @@
           IF (IIDLA.EQ.1) THEN
               DO IY=LY, HY
                 WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE IF (IIDLA.EQ.2) THEN
               WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=LY,HY)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
             ELSE IF (IIDLA.EQ.3) THEN
               DO IY=HY, LY, -1
                 WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE
               WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=HY,LY,-1)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
             END IF
 !
 ! Unformat write :
@@ -680,19 +692,19 @@
           IF (IIDLA.EQ.1) THEN
               DO IY=LY, HY
                 WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE IF (IIDLA.EQ.2) THEN
               WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=LY,HY)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
             ELSE IF (IIDLA.EQ.3) THEN
               DO IY=HY, LY, -1
                 WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                      (ARRAY(IX,IY)/VSC,IX=LX,HX)
+                      ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
                 END DO
             ELSE
               WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-                   ((ARRAY(IX,IY)/VSC,IX=LX,HX),IY=HY,LY,-1)
+                   (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
             END IF
         END IF
 !
@@ -710,7 +722,7 @@
                '     ERROR IN WRITING TO FILE'/                 &
                '     IOSTAT =',I5/)
 !
-!/T 9000 FORMAT (' TEST OUTA2I : INPUT :'/6X,8I4,2I3,1X,A,I3,I5)
+!/T 9000 FORMAT (' TEST OUTA2I : INPUT :'/6X,8I4,2I3,1X,A,I3,2I5)
 !/
 !/ End of OUTA2I ----------------------------------------------------- /
 !/

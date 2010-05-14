@@ -1,0 +1,17 @@
+#!/bin/sh
+
+dirs="ww3_* mww3_*"
+for d in $dirs; do
+  if [ -d $d ]
+  then
+    wdirs=$d/work*
+    for w in $wdirs; do
+      if [ -d $w ]
+      then
+        echo "removing directory $w"
+        rm -fr $w
+      fi
+    done
+  fi
+done
+

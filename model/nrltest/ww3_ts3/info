@@ -1,0 +1,28 @@
+#############################################################################
+#                                                                           #
+# ww3_ts3   Test script for WW-III, moving grid with artificial vortex.     #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
+#                        Select source term, growth needed, other opt.      #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         3: UQ schemes                                     #   
+#   !/MGx                Moving grid outions.                               #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/SEED               Seeding of spectra on.                             #
+#   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
+#                                                                           #
+# Remarks :                                                                 #
+# - Running without ww3-strt, should always initalize properly.             #
+#                                                                           #
+#                                              Hendrik Tolman, Nov 2002     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+############################################################################# 

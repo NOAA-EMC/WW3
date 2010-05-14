@@ -6,7 +6,6 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/LLG                Spherical or Cartesian grid.                       #
 #   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
 #                        Select source term, growth needed, other opt.      #
 #   !/PR0                No propagation.                                    #
@@ -20,10 +19,10 @@
 #   compatible with the linear growth term. LN0 with type 5 in ww3_strt     #
 #   will results in NO WAVE GROWTH.                                         #
 # - The grid option needs to be set to XYG to assure proper initialization  #
-$   with type 3 in ww3_strt.                                                #
+#   with type 3 in ww3_strt.                                                #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Jul 2007     #
+#                                                   Last Mod : Nov 2009     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -106,6 +105,7 @@ $ &SLN1  RFPM = 1.0 RFHF = 0.33 /
   &MISC  XP = 0.075 /
 END OF NAMELISTS
 $
+   'RECT' T F
    3   3
    1.  1.  1.E-4
   -1. -1.  1.E-4

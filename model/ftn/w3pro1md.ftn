@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination                         ( version 2.00 )
@@ -19,6 +19,8 @@
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -207,14 +209,13 @@
 !/
       END SUBROUTINE W3MAP1
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3XYP1 ( ISP, FACX, FACY, DTG, MAPSTA, FIELD,        &
-                          VGX, VGY )
+      SUBROUTINE W3XYP1 ( ISP, DTG, MAPSTA, FIELD, VGX, VGY )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -226,21 +227,24 @@
 !/    07-Sep-2005 : Improved XY boundary conditions.    ( version 3.08 )
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
-!     Propagation in phyiscal space for a given spectral component.
+!     Propagation in physical space for a given spectral component.
 !
 !  2. Method :
 !
 !     First order scheme with flux formulation.
+!     Curvilinear grid implementation: Fluxes are computed in index space
+!       and then transformed back into physical space.
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
 !       ISP     Int.   I   Number of spectral bin (IK-1)*NTH+ITH
-!       FACX/Y  Real   I   Factor in propagation velocity.
 !       DTG     Real   I   Total time step.
 !       MAPSTA  I.A.   I   Grid point status map.
 !       FIELD   R.A.  I/O  Wave action spectral densities on full
@@ -251,9 +255,12 @@
 !     Local variables.
 !     ----------------------------------------------------------------
 !       NTLOC   Int.  Number of local steps.
-!       VCX     R.A.  Propagation velocities.
+!       DTLOC   Real  Local propagation time step.
+!       VCX     R.A.  Propagation velocities in index space.
 !       VCY     R.A.
-!       VFLX    R.A.  Discrete fluxes between grid points.
+!       CXTOT   R.A.  Propagation velocities in physical space.
+!       CYTOT   R.A.
+!       VFLX    R.A.  Discrete fluxes between grid points in index space.
 !       VFLY    R.A.
 !     ----------------------------------------------------------------
 !
@@ -276,6 +283,13 @@
 !
 !     - The local work arrays are initialized on the first entry to
 !       the routine.
+!     - Curvilinear grid implementation. Variables FACX, FACY, CCOS, CSIN,
+!       CCURX, CCURY are not needed and have been removed.  FACX is accounted
+!       for as approriate in this subroutine.  FACX is also accounted for in
+!       the case of .NOT.FLCX.  Since FACX is removed, there is now a check for
+!       .NOT.FLCX in this subroutine.  In CFL calcs dx and dy are omitted,
+!       since dx=dy=1 in index space.  Curvilinear grid derivatives
+!       (DPDY, DQDX, etc.) and metric (GSQRT) are brought in via W3GDATMD.
 !
 !  8. Structure :
 !
@@ -308,7 +322,8 @@
       USE W3TIMEMD, ONLY: DSEC21
 !
       USE W3GDATMD, ONLY: NK, NTH, SIG, ECOS, ESIN, NX, NY, NSEA,     &
-                          MAPSF, DTCFL, GLOBAL, CLATS
+                          MAPSF, DTCFL, GLOBAL, CLATS, FLCX, FLCY,   &
+                          FLAGLL, DPDX, DPDY, DQDX, DQDY, GSQRT
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, FACVX, FACVY
       USE W3IDATMD, ONLY: FLCUR
@@ -322,25 +337,27 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: ISP, MAPSTA(NY*NX)
-      REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
+      REAL, INTENT(IN)        :: DTG, VGX, VGY
       REAL, INTENT(INOUT)     :: FIELD(1-NY:NY*(NX+2))
 !/
 !/ ------------------------------------------------------------------ /
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, NTLOC, ITLOC, ISEA, IXY,   &
-                                 IY0, IY, JXN, JXP, JYN, JYP, IBI
-!/T3      INTEGER                 :: IX, IXF, IYF
+                                 IY0, IX, IY, JXN, JXP, JYN, JYP, IBI
+!/T3      INTEGER                 ::  IXF, IYF
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CG0, CGL, CGA, CC, CGN
-      REAL                    :: CCOS, CSIN, CCURX, CCURY, VCB
+      REAL                    :: DTLOC,DTRAD, VCB
       REAL                    :: RD1, RD2
+      REAL                    :: CP, CQ
 !/T3      REAL                    :: AOLD
 !/
 !/ Automatic work arrays
 !/
       REAL                    :: VCX(NY*(NX+1)), VCY(NY*(NX+1)),     &
                                  VFLX(1-NY:NY*NX), VFLY(NY*NX)
+      REAL                    :: CXTOT((NX+1)*NY), CYTOT(NX*NY)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -371,14 +388,13 @@
       CGN    = 0.9999 * MAX ( CGA, CC, 0.001*CG0 )
 !
       NTLOC  = 1 + INT(DTG/(DTCFL*CG0/CGN))
-      CCOS   = FACX * ECOS(ITH) / REAL(NTLOC)
-      CSIN   = FACY * ESIN(ITH) / REAL(NTLOC)
+      DTLOC  = DTG / REAL(NTLOC)
+      DTRAD  = DTLOC
+      IF ( FLAGLL ) DTRAD=DTRAD/(DERA*RADIUS)
+
 !
-      CCURX  = FACX / REAL(NTLOC)
-      CCURY  = FACY / REAL(NTLOC)
-!
-!/T      WRITE (NDST,9000) FACX, FACY, NTLOC
-!/T      WRITE (NDST,9001) ISP, ITH, IK, CCOS, CSIN
+!/T      WRITE (NDST,9000) NTLOC
+!/T      WRITE (NDST,9001) ISP, ITH, IK
 !
 ! ====================== Loop partial ================================ *
 !
@@ -390,6 +406,8 @@
 !
         VCX   = 0.
         VCY   = 0.
+        CXTOT  = 0.
+        CYTOT  = 0.
 !
 ! 2.  Calculate field and velocities --------------------------------- *
 !
@@ -401,20 +419,50 @@
         DO ISEA=1, NSEA
           IXY       = MAPSF(ISEA,3)
           FIELD(IXY) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
-          VCX  (IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
-          VCY  (IXY) = CSIN * CG(IK,ISEA)
-!/MGP          VCX(IXY) = VCX(IXY) - CCURX*VGX/CLATS(ISEA)
-!/MGP          VCY(IXY) = VCY(IXY) - CCURY*VGY
-!/T1          WRITE (NDST,9021) ISEA, IXY, FIELD(IXY), VCX(IXY), VCY(IXY)
+
+          CXTOT(IXY) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+          CYTOT(IXY) = ESIN(ITH) * CG(IK,ISEA)
+!/MGP          CXTOT(IXY) = CXTOT(IXY) - VGX/CLATS(ISEA)
+!/MGP          CYTOT(IXY) = CYTOT(IXY) - VGY
+
+
+!/T1          WRITE (NDST,9021) ISEA, IXY, FIELD(IXY), CXTOT(IXY), CYTOT(IXY)
           END DO
 !
         IF ( FLCUR ) THEN
             DO ISEA=1, NSEA
               IXY      = MAPSF(ISEA,3)
-              VCX(IXY) = VCX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
-              VCY(IXY) = VCY(IXY) + CCURY*CY(ISEA)
+
+              CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
+              CYTOT(IXY) = CYTOT(IXY) + CY(ISEA)
+
               END DO
           END IF
+          
+          IF ( FLCX ) THEN
+             DO ISEA=1, NSEA
+                IX     = MAPSF(ISEA,1)
+                IY     = MAPSF(ISEA,2)
+                IXY    = MAPSF(ISEA,3)
+                CP=CXTOT(IXY)*DPDX(IY,IX)+CYTOT(IXY)*DPDY(IY,IX)
+                VCX(IXY) = CP*DTRAD
+             END DO
+          ELSE
+             VCX=0.0
+          ENDIF
+
+          IF ( FLCY ) THEN
+             DO ISEA=1, NSEA
+                IX     = MAPSF(ISEA,1)
+                IY     = MAPSF(ISEA,2)
+                IXY    = MAPSF(ISEA,3)
+                CQ=CXTOT(IXY)*DQDX(IY,IX)+CYTOT(IXY)*DQDY(IY,IX)
+                VCY(IXY) = CQ*DTRAD
+             END DO
+          ELSE
+             VCY=0.0
+          ENDIF
+
 !
         IF ( GLOBAL ) THEN
 !/T1            WRITE (NDST,9024)
@@ -430,6 +478,14 @@
 !
 ! 3.  Calculate propagation fluxes ----------------------------------- *
 !
+! Transform FIELD to index space
+        DO ISEA=1, NSEA
+           IX     = MAPSF(ISEA,1)
+           IY     = MAPSF(ISEA,2)
+           IXY    = MAPSF(ISEA,3)
+           FIELD(IXY)= FIELD(IXY) * GSQRT(IY,IX)
+        END DO
+
         DO IXY=1,NY*NX
           VCB       = FACVX(IXY) * ( VCX(IXY) + VCX(IXY+NY) )
           VFLX(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
@@ -501,6 +557,14 @@
             END IF
 !
           END DO
+
+! Transform FIELD back to physical space
+        DO ISEA=1, NSEA
+          IX     = MAPSF(ISEA,1)
+          IY     = MAPSF(ISEA,2)
+          IXY    = MAPSF(ISEA,3)
+          FIELD(IXY)= FIELD(IXY) / GSQRT(IY,IX)
+        END DO
 !
 ! 5.  Update boundary conditions ------------------------------------- *
 !
@@ -529,8 +593,8 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3XYP1 : FACX-Y, NTLOC :',2E10.3,I4)
-!/T 9001 FORMAT (' TEST W3XYP1 : ISP, ITH, IK, COS-SIN :',I8,2I4,2F7.3)
+!/T 9000 FORMAT (' TEST W3XYP1 : NTLOC :',I4)
+!/T 9001 FORMAT (' TEST W3XYP1 : ISP, ITH, IK :',I8,2I4)
 !
 !/T1 9010 FORMAT (' TEST W3XYP1 : INIT. VFX-YL, ITLOC =',I3)
 !

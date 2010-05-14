@@ -6,7 +6,6 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/LLG                Spherical grid.                                    #
 #   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
 #                        Select the 'no source terms' option.               #
 #   !/PRn                Selecting one of the propagation schemes.          #
@@ -21,7 +20,7 @@
 # - No other optional switches should be used.                              #
 #                                                                           #
 #                                              Hendrik Tolman, May 2002     #
-#                                                   Last Mod : Jul 2007     #
+#                                                   Last Mod : Nov 2009     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -93,6 +92,7 @@ $
   &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
+  'RECT' T T
   360    3
     1.   1.  1.
  -180.  -1.  1.

@@ -1,0 +1,2625 @@
+!/ ------------------------------------------------------------------- /
+      MODULE W3GSRUMD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Search and regrid utilities (data structures and associated
+!     methods) for logically rectangular grids.
+!
+!     The grid-search-utility (GSU) object can be used for rapid searching
+!     of the associated grid to identify a grid cell that encloses a target
+!     point and to compute interpolation weights.  The GSU object maintains
+!     internal pointers to the associated grid coordinate arrays.  Rapid
+!     searching is done using a bucket search algorithm.  The search buckets
+!     are based on the bounding box for the associated grid and an optional
+!     user defined minimum number of grid cells per search bucket.
+!
+!     Grid cells are identified by the cell's lower-left corner grid point.
+!     The vertices (grid points) associated with a grid cell are assigned a
+!     sequential index in a counterclockwise order beginning with the cell's
+!     lower-left corner grid point.  That is, when moving from vertex 1 to
+!     vertex 2 to vertex 3, etc., the grid cell interior is always to the left.
+!     Note that though cell will be counterclockwise w.r.t. indices, this does 
+!     not necessarily mean that the cell will be counterclockwise geographically,
+!     specifically in situation of curvilinear grid.
+!
+!                  (x4,y4)               (x3,y3)
+!                      _____________________
+!                     /                    /
+!                    /                    /
+!                   /                    /
+!                  /                    /
+!                 /____________________/
+!             (x1,y1)              (x2,y2)
+!
+!
+!     A simple interpolation example:
+!
+!          -----------------------------------------------------------
+!          ! Define data
+!          TYPE(T_GSU) :: GSU
+!          INTEGER :: NX, NY                  !source grid dimensions
+!          REAL, POINTER :: XS(:,:), YS(:,:)  !source grid coordinates
+!          REAL :: FS(NX,NY)                  !source field
+!          INTEGER :: NT                      !number of target points
+!          REAL :: XT(NT), YT(NT), FT(NT)     !target coordinates and field
+!          INTEGER :: IS(4), JS(4)            !interpolation points
+!          REAL :: RW(4)                      !interpolation weights
+!
+!          ! Setup source grid and field and target points
+!          < ... >
+!
+!          ! Create grid-search-utility object for source grid
+!          GSU = W3GSUC( .TRUE., .FALSE., .FALSE., NX, NY, XS, YS )
+!
+!          ! Interpolate source field to target points
+!          DO K=1,NT
+!            FT(K) = 0
+!            IF ( W3GRMP( GSU, XT(K), YT(K), IS, JS, RW ) ) THEN
+!                DO L=1,4
+!                  FT(K) = FT(K) + RW(L)*FS(IS(L),JS(L))
+!                  END DO
+!              END IF
+!            END DO
+!
+!          ! Destroy grid-search-utility object
+!          CALL W3GSUD( GSU )
+!          -----------------------------------------------------------
+!
+!  2. Variables and types :
+!
+!     All module variables and types are scoped private by default.
+!     The private module variables and types are not listed in this section.
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      MSKC_NONE I.P.  Public   Named constant identifying a non-masked
+!                               enclosing grid cell
+!      MSKC_PART I.P.  Public   Named constant identifying a partially
+!                               masked enclosing grid cell
+!      MSKC_FULL I.P.  Public   Named constant identifying a fully
+!                               masked enclosing grid cell
+!      T_GSU     TYPE  Public   Grid-search-utility type (opaque)
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines and functions :
+!
+!     All module subroutines and functions are scoped private by default.
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      W3GSUC    Func. Public   Create grid-search-utility object.
+!      W3GSUD    Subr. Public   Destroy grid-search-utility object.
+!      W3GSUP    Subr. Public   Print grid-search-utility object to stdout.
+!      W3GFCL    Func. Public   Find grid cell that encloses target point.
+!      W3GFPT    Func. Public   Find grid point that is closest to target point.
+!      W3GRMP    Func. Public   Compute interpolation coeff. from grid.
+!      W3DIST    Func. Public   Compute distance between two points.
+!     ----------------------------------------------------------------
+!      W3NNSC    Func. Private  Create nearest-neighbor-search object.
+!      W3NNSD    Subr. Private  Destroy nearest-neighbor-search object.
+!      W3NNSP    Subr. Private  Print nearest-neighbor-search object to stdout.
+!      W3RMBL    Subr. Private  Compute bilinear interpolation coeff. from cell.
+!      W3CKCL    Func. Private  Check if point lies within grid cell.
+!      W3SORT    Subr. Private  Sort input arrays in increasing order.
+!      W3ISRT    Subr. Private  Insert data into array.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!      EXTCDE    Subr. W3SERVMD Abort program with exit code.
+!     ----------------------------------------------------------------
+!
+!  5. Remarks :
+!
+!     - The GSU object is an "opaque" object.  This means that the
+!       internals of the object are not accessible outside this module.
+!     - The burden is upon the user to invoke the destroy method when
+!       finished with a GSU object.  If created GSU objects are
+!       not properly destroyed, then memory leaks may be introduced.
+!
+!  6. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+!  7. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ Use associated modules
+!/
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+!/ Specify default data typing
+!/
+      IMPLICIT NONE
+!/
+!/ Specify default accessibility
+!/
+      PRIVATE
+!/
+!/ Public module methods
+!/
+      PUBLIC W3GSUC
+      PUBLIC W3GSUD
+      PUBLIC W3GSUP
+      PUBLIC W3GFCL
+      PUBLIC W3GFPT
+      PUBLIC W3GRMP
+      PUBLIC W3DIST
+!/
+!/ Public return codes
+!/
+      INTEGER, PARAMETER, PUBLIC :: MSKC_NONE = 0
+      INTEGER, PARAMETER, PUBLIC :: MSKC_PART = 1
+      INTEGER, PARAMETER, PUBLIC :: MSKC_FULL = 2
+!/
+!/ Public grid-search-utility type
+!/ This is an opaque type -- that is, it's internals are private and only
+!/ accessible to subroutines in this module where the type is declared.
+!/
+      TYPE, PUBLIC :: T_GSU
+        PRIVATE
+        TYPE(CLASS_GSU), POINTER :: PTR => NULL()
+      END TYPE T_GSU
+!/
+!/ Private grid-search-utility class
+!/
+      TYPE :: CLASS_GSU
+        LOGICAL :: IJG  ! grid array ordering flag: T = (NX,NY), F = (NY,NX)
+        LOGICAL :: LLG  ! spherical coordinate flag of associated grid
+        LOGICAL :: ICLO ! flag indicating i-index periodicity with a branch cut
+                        ! at i=NX, i.e., i=NX+1 wraps to i=1.  this flag must be
+                        ! set by the user.
+        LOGICAL :: LCLO ! flag indicating longitudinal periodicity with a branch
+                        ! cut at either 0 or 180 degrees, depending on the longitudinal
+                        ! range; this flag is calculated internally and ICLO => LCLO;
+        INTEGER :: LRNG ! longitudinal range (LRNG_360 = [0:360], LRNG_180 = [-180:180])
+        INTEGER :: NX, NY ! dimensions of associated grid
+        REAL   , POINTER :: XG(:,:), YG(:,:) ! coordinates of associated grid
+        TYPE(T_NNS), POINTER :: NNP  ! nearest-neighbor point search indices object
+        INTEGER :: NCB  ! minimum number of source cells per search bucket;
+                        ! ncb >= 1 required; ncb=1 gives most efficient searching;
+                        ! increasing ncb leads to fewer buckets but slower searching
+        INTEGER :: NBX, NBY  ! number of buckets in each spatial direction
+        REAL    :: DXB, DYB  ! spatial extent of each search bucket
+        REAL    :: XMIN, YMIN, XMAX, YMAX ! bounding box of search domain
+        TYPE(T_BKT), POINTER :: B(:,:) ! array of search buckets
+        TYPE(T_NNS), POINTER :: NNB  ! nearest-neighbor bucket search indices object
+      END TYPE CLASS_GSU
+!/
+!/ Private search bucket type
+!/
+      TYPE :: T_BKT
+        INTEGER :: N  ! number of cells in bucket
+        INTEGER, POINTER :: I(:)  ! i-index of cell c
+        INTEGER, POINTER :: J(:)  ! j-index of cell c
+      END TYPE T_BKT
+!/
+!/ Private nearest-neighbor grid-point search type
+!/
+      TYPE :: T_NNS
+        INTEGER :: NLVL  ! number of nnbr levels
+        INTEGER :: NNBR  ! total number of nnbr's
+        INTEGER, POINTER :: N1(:)  ! starting nearest-nbr loop index for level l
+        INTEGER, POINTER :: N2(:)  ! ending nearest-nbr loop index for level l
+        INTEGER, POINTER :: DI(:)  ! i-index delta for nearest-nbr n
+        INTEGER, POINTER :: DJ(:)  ! j-index delta for nearest-nbr n
+      END TYPE T_NNS
+!/
+!/ Private module parameters
+!/
+      REAL(8), PARAMETER :: PI = 3.14159265358979323846D0
+      REAL(8), PARAMETER :: PI2 = 2D0*PI
+      REAL(8), PARAMETER :: PI3H = 3D0*PI/2D0
+      REAL(8), PARAMETER :: D2R = PI/180D0
+      REAL(8), PARAMETER :: R2D = 1D0/D2R
+      REAL(8), PARAMETER :: D360 = 360D0
+      REAL(8), PARAMETER :: D270 = 270D0
+      REAL(8), PARAMETER :: D180 = 180D0
+      REAL(8), PARAMETER :: D90  =  90D0
+      REAL(8), PARAMETER :: ZERO = 0.0D0
+      REAL(8), PARAMETER :: ONE  = 1.0D0
+      REAL(8), PARAMETER :: HALF = 0.5D0
+      INTEGER, PARAMETER :: LRNG_360 = 1
+      INTEGER, PARAMETER :: LRNG_180 = 2
+
+!/
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3GSUC(IJG, LLG, ICLO, NX, NY, XG, YG, NCB, NNL, DEBUG) &
+      RESULT(GSU)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Create grid-search-utility (GSU) object for a logically rectangular
+!     grid defined by the input coordinates.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Return parameter
+!     ----------------------------------------------------------------
+!       GSU     Type   O   Created grid-search-utility object.
+!     ----------------------------------------------------------------
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       IJG     Log.   I   Logical flag indicating ordering of input
+!                          coord. arrays: T = (NX,NY) and F = (NY,NX).
+!       LLG     Log.   I   Logical flag indicating the coordinate system:
+!                          T = spherical lat/lon (degrees) and F = Cartesian.
+!       ICLO    Log.   I   Logical flag indicating i-index periodicity with a
+!                          branch cut at i=NX, i.e., i=NX+1 wraps to i=1.
+!       NX, NY  Int.   I   Dimensions of input grid.
+!       XG      R.A.   I   Pointer to array of x-coordinates of input grid.
+!       YG      R.A.   I   Pointer to array of y-coordinates of input grid.
+!       NCB     Int.   I   Optional minimum number of grid cells per search
+!                          bucket.  NCB >= 1 is required.  NCB = 1 gives
+!                          most efficient searching, but uses more memory.
+!                          Increasing NCB leads to fewer buckets (less memory)
+!                          but slower searching.
+!       NNL     Int.   I   Optional maximum number of nearest-neighbor grid
+!                          point search levels.
+!       DEBUG   Log.   I   Optional logical flag to turn on debug mode.
+!                          Default is FALSE.
+!
+!     Internal parameters
+!     ----------------------------------------------------------------
+!       NCB_DEFAULT  Int.  Default minimum number of grid cells per search
+!                          bucket.
+!       NNL_DEFAULT  Int.  Default maximum number of nearest-neighbor grid
+!                          point search levels.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on correct coordinate system with global grid.
+!     - Check on association of input grid coordinate array pointers.
+!
+!  7. Remarks :
+!
+!     - Two types of grid periodicity are supported: periodicity along the
+!       i-index direction (ICLO=T) with a branch cut at i=NX and periodicity
+!       along the longitudinal direction (LCLO=T) with a branch cut internally
+!       placed at 360 degrees.
+!     - LCLO is calculated internally.  If ICLO=T, then LCLO=T.
+!     - Periodic Cartesian grids are not allowed.
+!     - The minimum number of grid cells per search bucket, NCB, must be >= 1.
+!       NCB = 1 gives the most efficient searching, but uses more memory.
+!       Increasing NCB leads to fewer buckets (less memory) but slower searching.
+!
+!  8. Structure :
+!
+!     -----------------------------------------------------------------
+!      1.  Test input
+!      2.  Allocate object and set grid related data and pointers
+!      3.  Create nearest-neighbor point search object
+!      4.  Construct bucket search "object"
+!      5.  Set return parameter
+!     -----------------------------------------------------------------
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!     !/T8   Enables debugging flag.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      TYPE(T_GSU) :: GSU
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      LOGICAL, INTENT(IN) :: IJG
+      LOGICAL, INTENT(IN) :: LLG
+      LOGICAL, INTENT(IN) :: ICLO
+      INTEGER, INTENT(IN) :: NX, NY
+      REAL   , POINTER    :: XG(:,:), YG(:,:)
+      INTEGER, INTENT(IN), OPTIONAL :: NCB
+      INTEGER, INTENT(IN), OPTIONAL :: NNL
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(CLASS_GSU), POINTER :: PTR
+      INTEGER, PARAMETER :: NCB_DEFAULT = 1
+      INTEGER, PARAMETER :: NNL_DEFAULT = 2
+      LOGICAL :: LDBG, LBC, LPL, LNPL, LSPL
+      INTEGER :: I, J, K, L, N, IC(4), JC(4), IB, JB, NXC, NYC, ISTAT
+      REAL(8) :: X, Y, XC(4), YC(4), CDX, CDY, DXMAX, DYMAX
+      REAL(8) :: DX, DY
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GSUC')
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( ICLO .AND. .NOT.LLG ) THEN
+          WRITE(*,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+          'periodic cartesian grids are not supported'
+          CALL EXTCDE (1)
+        END IF
+
+      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
+          WRITE(*,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+          'input grid coordinate array pointers are not associated'
+          CALL EXTCDE (1)
+        END IF
+!
+      IF ( PRESENT(DEBUG) ) THEN
+          LDBG = DEBUG
+        ELSE
+          LDBG = .FALSE.
+        END IF
+!/T8      LDBG=.TRUE.
+!
+! -------------------------------------------------------------------- /
+! 2.  Allocate object and set grid related data and pointers
+!
+      ALLOCATE(PTR, STAT=ISTAT)
+      IF ( ISTAT .NE. 0 ) THEN
+          WRITE(*,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+          'gsu object allocation failed'
+          CALL EXTCDE (ISTAT)
+        END IF
+      PTR%IJG = IJG
+      PTR%LLG = LLG
+      PTR%ICLO = ICLO
+      PTR%NX = NX
+      PTR%NY = NY
+      PTR%XG => XG
+      PTR%YG => YG
+!
+! -------------------------------------------------------------------- /
+! 3.  Create nearest-neighbor point search object
+!
+      IF ( PRESENT(NNL) ) THEN
+          PTR%NNP => W3NNSC(NNL)
+        ELSE
+          PTR%NNP => W3NNSC(NNL_DEFAULT)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 4.  Construct bucket search "object"
+!
+!-----number of cells
+      IF ( ICLO ) THEN
+          NXC = NX   !x-cells
+        ELSE
+          NXC = NX-1 !x-cells
+        END IF
+      NYC = NY-1 !y-cells
+!
+!-----default number of cells per bucket
+      IF ( PRESENT(NCB) ) THEN
+          PTR%NCB = NCB
+        ELSE
+          PTR%NCB = NCB_DEFAULT
+        END IF
+!
+!-----initialize longitudinal periodicity flag (LCLO)
+      IF ( LLG .AND. ICLO ) THEN
+          PTR%LCLO = .TRUE.
+        ELSE
+          PTR%LCLO = .FALSE.
+        END IF
+!
+!-----compute bounding box for source grid
+      PTR%XMIN = MINVAL(XG);  PTR%XMAX = MAXVAL(XG);
+      PTR%YMIN = MINVAL(YG);  PTR%YMAX = MAXVAL(YG);
+!
+!-----compute longitudinal range
+      IF ( LLG ) THEN
+          IF ( PTR%XMIN .GE. ZERO .AND. PTR%XMAX .LE. D360 ) THEN
+              PTR%LRNG = LRNG_360
+            ELSE IF ( PTR%XMIN .GE. -D180 .AND. PTR%XMAX .LE. D180 ) THEN
+              PTR%LRNG = LRNG_180
+            ELSE
+              WRITE(*,'(/1A,1A,2E14.6/)') 'W3GSUC ERROR -- ', &
+              'longitudinal range not supported: ',PTR%XMIN,PTR%XMAX
+              CALL EXTCDE (1)
+            END IF
+        END IF
+!
+!-----compute maximum cell extent in each direction
+!-----also check for existence of longitudinal branch cut
+      IF ( LDBG ) THEN
+          WRITE(*,'(/A)') 'W3GSUC - compute maximum cell ' &
+          //'extent in each direction'
+        END IF
+      LNPL = .FALSE.
+      LSPL = .FALSE.
+      DXMAX = ZERO
+      DYMAX = ZERO
+      DO I=1,NXC
+          DO J=1,NYC
+!-------------create list of cell vertices
+              IC(1) = I  ;  JC(1) = J  ;
+              IC(2) = I+1;  JC(2) = J  ;
+              IC(3) = I+1;  JC(3) = J+1;
+              IC(4) = I  ;  JC(4) = J+1;
+              DO L=1,4
+!-----------------periodic grid: (:,nx) cells wrap to (:,1) cells
+                  IF ( ICLO ) THEN
+                      IF ( IC(L) .LT.  1 ) IC(L) = IC(L) + NX
+                      IF ( IC(L) .GT. NX ) IC(L) = IC(L) - NX
+                    END IF
+!-----------------copy cell vertex coordinates into local variables
+                  IF ( IJG ) THEN
+                      XC(L) = XG(IC(L),JC(L));  YC(L) = YG(IC(L),JC(L));
+                    ELSE
+                      XC(L) = XG(JC(L),IC(L));  YC(L) = YG(JC(L),IC(L));
+                    END IF
+                END DO !L
+!-------------check if cell covers a pole or branch cut
+              LPL = .FALSE.
+              LBC = .FALSE.
+              IF ( LLG ) THEN
+!-----------------count longitudinal branch cut crossings
+                  N = 0
+                  DO L=1,4
+                      K = MOD(L,4)+1
+                      IF ( ABS(XC(K)-XC(L)) .GT. D180 ) N = N + 1
+                    END DO
+!-----------------multiple longitudinal branch cut crossing => cell covers branch cut
+                  LBC = N.GT.1
+                  IF ( LBC .AND. LDBG ) &
+                  WRITE(*,'(A,2I6)') 'W3GSUC -- cell covers branch cut:',IC(1),JC(1)
+!-----------------single longitudinal branch cut crossing => cell covers pole
+                  LPL = N.EQ.1
+                  IF ( LPL.AND.MINVAL(YC).GT.ZERO ) THEN
+                      IF ( LDBG ) &
+                      WRITE(*,'(A,2I6)') 'W3GSUC -- cell covers N-pole:',IC(1),JC(1)
+                      LNPL = .TRUE.
+                    END IF
+                  IF ( LPL.AND.MAXVAL(YC).LT.ZERO ) THEN
+                      IF ( LDBG ) &
+                      WRITE(*,'(A,2I6)') 'W3GSUC -- cell covers S-pole:',IC(1),JC(1)
+                      LSPL = .TRUE.
+                    END IF
+!-----------------longitudinal branch cut crossing => longitudinal closure
+                  IF ( LBC .OR. LPL ) PTR%LCLO = .TRUE.
+                END IF !LLG
+!-------------shift branch cut
+              IF ( LBC ) THEN
+                  SELECT CASE ( PTR%LRNG )
+                    CASE ( LRNG_180 )
+                      WHERE ( XC .LT. ZERO ) XC = XC + D360
+                    CASE ( LRNG_360 )
+                      WHERE ( XC .GT. D180 ) XC = XC - D360
+                    END SELECT
+                END IF
+!-------------compute maximum extent of cell
+              CDX = ZERO
+              CDY = ZERO
+              DO L=1,3
+                  DO K=L+1,4
+                      DX = XC(K) - XC(L)
+                      DY = YC(K) - YC(L)
+!---------------------max for this cell
+                      CDX = MAX(CDX,ABS(DX))
+                      CDY = MAX(CDY,ABS(DY))
+                    END DO !K
+                END DO !L
+              IF ( LDBG ) THEN
+                  WRITE(*,'(A,2I6,1L2,2E14.6)') &
+                  'W3GSUC - cell extent info:',IC(1),JC(1),LBC,CDX,CDY
+                  DO L=1,4
+                      WRITE(*,'(10X,2I6,2E14.6)') IC(L),JC(L),XC(L),YC(L)
+                    END DO
+                END IF
+!-------------max for all cells
+              DXMAX = MAX(DXMAX,CDX)
+              DYMAX = MAX(DYMAX,CDY)
+            END DO !J
+        END DO !I
+!
+!-----adjust bounding box for source grid
+!     if longitudinal periodicity, then force bounding box in x to lon range
+!     if grid covers north pole, then set ymax =  90 degrees
+!     if grid covers south pole, then set ymin = -90 degrees
+      IF ( PTR%LCLO ) THEN
+          SELECT CASE ( PTR%LRNG )
+            CASE ( LRNG_180 )
+              PTR%XMIN = -D180;  PTR%XMAX = D180;
+            CASE ( LRNG_360 )
+              PTR%XMIN =  ZERO;  PTR%XMAX = D360;
+            END SELECT
+        END IF
+      IF ( LSPL ) PTR%YMIN = -D90
+      IF ( LNPL ) PTR%YMAX =  D90
+!
+!-----print debug info
+      IF ( LDBG ) THEN
+          IF ( LLG ) THEN
+              WRITE(*,'(/A,2L2)') 'W3GSUC - ICLO,LCLO: ', &
+              PTR%ICLO,PTR%LCLO
+              SELECT CASE ( PTR%LRNG )
+                CASE ( LRNG_180 )
+                  WRITE(*,'(A)') 'W3GSUC - LRNG: [-180:180]'
+                CASE ( LRNG_360 )
+                  WRITE(*,'(A)') 'W3GSUC - LRNG: [0:360]'
+                END SELECT
+            END IF
+          WRITE(*,'(A,4E14.6)') 'W3GSUC - grid bounding box:', &
+          PTR%XMIN,PTR%YMIN,PTR%XMAX,PTR%YMAX
+          WRITE(*,'(A,2E14.6)') 'W3GSUC - max cell extents:',DXMAX,DYMAX
+        END IF
+!
+!-----compute number of search buckets and bucket size based on max cell extent
+!     if longitudinal periodicity but not i-index periodicity, then set number
+!     of longitudinal buckets to 4
+      IF ( .NOT.ICLO .AND. PTR%LCLO ) THEN
+          PTR%NBX = 4
+        ELSE
+          PTR%NBX = MAX(1,INT((PTR%XMAX-PTR%XMIN)/(PTR%NCB*DXMAX)))
+        END IF
+      PTR%NBY = MAX(1,INT((PTR%YMAX-PTR%YMIN)/(PTR%NCB*DYMAX)))
+      PTR%DXB = (PTR%XMAX-PTR%XMIN)/REAL(PTR%NBX)
+      PTR%DYB = (PTR%YMAX-PTR%YMIN)/REAL(PTR%NBY)
+!
+!-----print debug info
+      IF ( LDBG ) THEN
+          WRITE(*,'(/A,2I6)') 'W3GSUC - number of search buckets:', &
+          PTR%NBX,PTR%NBY
+          WRITE(*,'(A,2E14.6)') 'W3GSUC - search bucket size:', &
+          PTR%DXB,PTR%DYB
+        END IF
+!
+!-----allocate array of search buckets
+      ALLOCATE(PTR%B(PTR%NBY,PTR%NBX),STAT=ISTAT)
+      IF ( ISTAT .NE. 0 ) THEN
+          WRITE(*,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+          'search bucket array allocation failed'
+          CALL EXTCDE (ISTAT)
+        END IF
+!
+!-----compute number of cells in each bucket
+      PTR%B(:,:)%N = 0
+      DO I=1,NXC
+          DO J=1,NYC
+!-------------copy into local variables
+              IF ( IJG ) THEN
+                  X = XG(I,J);  Y = YG(I,J);
+                ELSE
+                  X = XG(J,I);  Y = YG(J,I);
+                END IF
+!-------------assign to bucket based on cell lower-left corner point
+              IB = MAX(1,MIN(PTR%NBX,INT((X-PTR%XMIN)/PTR%DXB)+1))
+              JB = MAX(1,MIN(PTR%NBY,INT((Y-PTR%YMIN)/PTR%DYB)+1))
+              PTR%B(JB,IB)%N = PTR%B(JB,IB)%N + 1
+            END DO !J
+        END DO !I
+!
+!-----allocate search bucket cell lists
+      DO IB=1,PTR%NBX
+          DO JB=1,PTR%NBY
+              NULLIFY(PTR%B(JB,IB)%I)
+              NULLIFY(PTR%B(JB,IB)%J)
+              IF ( PTR%B(JB,IB)%N .GT. 0 ) THEN
+                  ALLOCATE(PTR%B(JB,IB)%I(PTR%B(JB,IB)%N))
+                  ALLOCATE(PTR%B(JB,IB)%J(PTR%B(JB,IB)%N))
+                END IF
+            END DO
+        END DO
+!
+!-----build search bucket cell lists
+      PTR%B(:,:)%N = 0
+      DO I=1,NXC
+          DO J=1,NYC
+!-------------copy into local variables
+              IF ( IJG ) THEN
+                  X = XG(I,J);  Y = YG(I,J);
+                ELSE
+                  X = XG(J,I);  Y = YG(J,I);
+                END IF
+!-------------assign to bucket based on cell lower-left corner point
+              IB = MAX(1,MIN(PTR%NBX,INT((X-PTR%XMIN)/PTR%DXB)+1))
+              JB = MAX(1,MIN(PTR%NBY,INT((Y-PTR%YMIN)/PTR%DYB)+1))
+              IF ( ASSOCIATED(PTR%B(JB,IB)%I) ) THEN
+                  PTR%B(JB,IB)%N = PTR%B(JB,IB)%N + 1
+                  PTR%B(JB,IB)%I(PTR%B(JB,IB)%N) = I
+                  PTR%B(JB,IB)%J(PTR%B(JB,IB)%N) = J
+                ELSE
+                  WRITE(*,'(/1A,1A,4I6,2E14.6,1A/)') 'W3GSUC ERROR -- ', &
+                  'build search bucket cell list error: ',IB,JB,I,J,X,Y, &
+                  ' . For diagnostics, use T8 in switch'
+                  CALL EXTCDE (1)
+                END IF
+            END DO !J
+        END DO !I
+!
+!-----print debug info
+      IF ( LDBG ) THEN
+          WRITE(*,'(/A,3I6,4E14.6)') 'W3GSUC - search bucket list:'
+          WRITE(*,'(3A6,4A14)') 'I','J','N','X1','Y1','X2','Y2'
+          DO IB=1,PTR%NBX
+              DO JB=1,PTR%NBY
+                  WRITE(*,'(3I6,4E14.6)') IB,JB,PTR%B(JB,IB)%N, &
+                    PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
+                    PTR%XMIN+(IB-0)*PTR%DXB,PTR%YMIN+(JB-0)*PTR%DYB
+                END DO
+            END DO
+        END IF
+!
+!-----create nnbr bucket search indices
+      IF ( .NOT.ICLO .AND. PTR%LCLO ) THEN
+          PTR%NNB => W3NNSC(2)
+        ELSE
+          PTR%NNB => W3NNSC(1)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 5.  Set return parameter
+!
+      GSU%PTR => PTR
+!/
+!/ End of W3GSUC ----------------------------------------------------- /
+!/
+      END FUNCTION W3GSUC
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3GSUD(GSU)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Destroy grid search utility (GSU) object.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       GSU     Type   I   Grid-search-utility object.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on previous creation of grid-search-utility object.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_GSU), INTENT(INOUT) :: GSU
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: IB, JB
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GSUD')
+!
+! -------------------------------------------------------------------- /
+!
+      IF ( ASSOCIATED(GSU%PTR) ) THEN
+!
+          CALL W3NNSD(GSU%PTR%NNP)
+!
+          DO IB=1,GSU%PTR%NBX
+              DO JB=1,GSU%PTR%NBY
+                  IF ( GSU%PTR%B(JB,IB)%N .GT. 0 ) THEN
+                      DEALLOCATE(GSU%PTR%B(JB,IB)%I)
+                      NULLIFY(GSU%PTR%B(JB,IB)%I)
+                      DEALLOCATE(GSU%PTR%B(JB,IB)%J)
+                      NULLIFY(GSU%PTR%B(JB,IB)%J)
+                    END IF
+                END DO
+            END DO
+          DEALLOCATE(GSU%PTR%B)
+          NULLIFY(GSU%PTR%B)
+          IF ( ASSOCIATED(GSU%PTR%NNB) ) CALL W3NNSD(GSU%PTR%NNB)
+!
+          DEALLOCATE(GSU%PTR)
+          NULLIFY(GSU%PTR)
+!
+        END IF
+!/
+!/ End of W3GSUD ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3GSUD
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3GSUP(GSU, IUNIT, LFULL)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Print grid-search-utility (GSU) object to IUNIT.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       GSU     Type   I   Grid-search-utility object.
+!       IUNIT   Int.   I   Optional unit for output. Default is stdout.
+!       LFULL   Log.   I   Optional logical flag to turn on full-output
+!                          mode.  Default is FALSE.  When full-output
+!                          is enabled the search bucket cell lists and
+!                          nearest-neighbor point search indices are output.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on previous creation of grid-search-utility object.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_GSU), INTENT(IN) :: GSU
+      INTEGER, OPTIONAL, INTENT(IN) :: IUNIT
+      LOGICAL, OPTIONAL, INTENT(IN) :: LFULL
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(CLASS_GSU), POINTER :: PTR
+      INTEGER :: NDST, I, J, K, L, N, IB, JB
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GSUP')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
+          WRITE(*,'(/1A,1A/)') 'W3GSUP ERROR -- ', &
+          'grid search utility object not created'
+          CALL EXTCDE (1)
+        END IF
+
+      IF ( PRESENT(IUNIT) ) THEN
+          NDST = IUNIT
+        ELSE
+          NDST = 6
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Output
+!
+      PTR => GSU%PTR
+      WRITE(NDST,'(//80A)') ('-',K=1,80)
+      WRITE(NDST,'(A)') 'Report on grid search utility object'
+      WRITE(NDST,'( 80A)') ('-',K=1,80)
+      WRITE(NDST,'(A,1L2)') 'Grid  ijg:',PTR%IJG
+      WRITE(NDST,'(A,1L2)') 'Grid  llg:',PTR%LLG
+      WRITE(NDST,'(A,1L2)') 'Grid iclo:',PTR%ICLO
+      WRITE(NDST,'(A,1L2)') 'Grid lclo:',PTR%LCLO
+      SELECT CASE ( PTR%LRNG )
+        CASE ( LRNG_180 )
+          WRITE(NDST,'(A)') 'Grid lrng: [-180:180]'
+        CASE ( LRNG_360 )
+          WRITE(NDST,'(A)') 'Grid lrng: [0:360]'
+        END SELECT
+      WRITE(NDST,'(A,2I6)') 'Grid nx,ny:',PTR%NX,PTR%NY
+      IF ( PRESENT(LFULL) ) THEN
+          IF ( LFULL ) THEN
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(A)') 'Nearest-neighbor point search indices'
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              CALL W3NNSP(PTR%NNP,NDST)
+            END IF
+        END IF
+      WRITE(NDST,'( 80A)') ('-',K=1,80)
+      WRITE(NDST,'(A)') 'Bucket-search object'
+      WRITE(NDST,'( 80A)') ('-',K=1,80)
+      WRITE(NDST,'(A,4E14.6)') 'Spatial grid bounding box: ', &
+      PTR%XMIN,PTR%YMIN,PTR%XMAX,PTR%YMAX
+      WRITE(NDST,'(A,I6)') 'ncb:',PTR%NCB
+      WRITE(NDST,'(A,2I6)') 'nbx,nby:',PTR%NBX,PTR%NBY
+      WRITE(NDST,'(A,2E14.6)') 'dxb,dyb:',PTR%DXB,PTR%DYB
+      IF ( PRESENT(LFULL) ) THEN
+          IF ( LFULL ) THEN
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(A)') 'Nearest-neighbor bucket search indices'
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              CALL W3NNSP(PTR%NNB,NDST)
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(A)') 'Search bucket bounds:'
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(2A4,4A14)') 'IB','JB','X1','Y1','X2','Y2'
+              DO IB=1,PTR%NBX
+              DO JB=1,PTR%NBY
+                  WRITE(*,'(2I4,4E14.6)') IB,JB, &
+                  PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
+                  PTR%XMIN+(IB  )*PTR%DXB,PTR%YMIN+(JB  )*PTR%DYB
+                END DO
+                END DO
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(A)') 'Number of cells in each search bucket:'
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              DO JB=PTR%NBY,1,-1
+                  WRITE(NDST,'(500I4)') (PTR%B(JB,IB)%N,IB=1,PTR%NBX)
+                END DO
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(A)') 'Search bucket cell lists:'
+              WRITE(NDST,'( 80A)') ('-',K=1,80)
+              WRITE(NDST,'(3A4,A)') 'IB','JB','NC',': ( IC, JC), ...'
+              DO JB=1,PTR%NBY
+              DO IB=1,PTR%NBX
+                  WRITE(NDST,'(3I4,A,500(A,I3,A,I3,A))') IB,JB, &
+                  PTR%B(JB,IB)%N, ': ', &
+                  ( '(',PTR%B(JB,IB)%I(K),',',PTR%B(JB,IB)%J(K),') ', &
+                    K=1,PTR%B(JB,IB)%N )
+                END DO
+                END DO
+            END IF !LFULL
+        END IF !PRESENT(LFULL)
+      WRITE(NDST,'( 80A)') ('-',K=1,80)
+      WRITE(NDST,'( 80A)') ('-',K=1,80)
+!/
+!/ End of W3GSUP ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3GSUP
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3GFCL(GSU, XT, YT, IS, JS, XS, YS, POLE, DEBUG) &
+      RESULT(INGRID)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Find cell in grid, associated with the input grid-search-utility
+!     object (GSU), that encloses the target point (xt,yt).
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Return parameter
+!     ----------------------------------------------------------------
+!       INGRID  Log.   O   Logical flag indicating if target point lies
+!                          within the source grid domain.
+!     ----------------------------------------------------------------
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       GSU     Type   I   Grid-search-utility object.
+!       XT      Real   I   X-coordinate of target point.
+!       YT      Real   I   Y-coordinate of target point.
+!       IS,JS   I.A.   O   (I,J) indices of vertices of enclosing grid cell.
+!       XS,YS   R.A.   O   (X,Y) coord. of vertices of enclosing grid cell.
+!       POLE    Log.   O   Optional logical flag to indicate whether or not
+!                          the enclosing grid cell covers a pole.
+!       DEBUG   Log.   I   Optional logical flag to turn on debug mode.
+!                          Default is FALSE.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on previous creation of grid-search-utility object.
+!
+!  7. Remarks :
+!
+!     - The target point coordinates may be modified by this routine.
+!     - The target point longitude will be shifted to the source grid
+!       longitudinal range.
+!     - If enclosing cell covers a branch cut, then the coordinates of
+!       of the cell vertices AND the target point will be adjusted so
+!       that the branch cut is shifted 180 degrees.
+!
+!  8. Structure :
+!
+!     -----------------------------------------------------------------
+!      1.  Test input
+!      2.  Initialize search
+!      3.  Search for enclosing cell in central and nearest nbr buckets
+!     -----------------------------------------------------------------
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      LOGICAL              :: INGRID
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_GSU), INTENT(IN) :: GSU
+      REAL   , INTENT(INOUT) :: XT
+      REAL   , INTENT(INOUT) :: YT
+      INTEGER, INTENT(INOUT) :: IS(4), JS(4)
+      REAL   , INTENT(INOUT) :: XS(4), YS(4)
+      LOGICAL, INTENT(OUT),OPTIONAL :: POLE
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(CLASS_GSU), POINTER :: PTR
+      LOGICAL :: LDBG, LPLC
+      INTEGER :: I, J, K, L, N, IB, JB, IBC, JBC
+      LOGICAL :: IJG, LLG, ICLO, LCLO
+      INTEGER :: LRNG
+      INTEGER :: NX, NY
+      REAL   , POINTER :: XG(:,:), YG(:,:)
+      TYPE(T_NNS), POINTER :: NNB
+      TYPE(T_BKT), POINTER :: B(:,:)
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GFCL')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
+          WRITE(*,'(/2A/)') 'W3GFCL ERROR -- ', &
+          'grid search utility object not created'
+          CALL EXTCDE (1)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Initialize search
+!
+      PTR => GSU%PTR
+!
+      IF ( PRESENT(DEBUG) ) THEN
+          LDBG = DEBUG
+        ELSE
+          LDBG = .FALSE.
+        END IF
+!
+!  Local pointers to grid search utility object data
+      IJG = PTR%IJG
+      LLG = PTR%LLG
+      ICLO = PTR%ICLO
+      LCLO = PTR%LCLO
+      LRNG = PTR%LRNG
+      NX = PTR%NX
+      NY = PTR%NY
+      XG => PTR%XG
+      YG => PTR%YG
+      NNB => PTR%NNB
+!
+      INGRID = .FALSE.
+!
+      IF ( LLG ) THEN
+          IF ( XT .LT. -D180 .OR. XT .GT. D360 ) THEN
+              WRITE(*,'(/2A,1E14.6/)') 'W3GFCL ERROR -- ', &
+              'target point longitude unsupported: ',XT
+              CALL EXTCDE (1)
+            END IF
+!---------shift target point to source grid longitudinal range
+          SELECT CASE ( LRNG )
+            CASE ( LRNG_180 )
+              IF ( XT .GT.  D180 .AND. XT .LE. D360 ) XT = XT - D360
+            CASE ( LRNG_360 )
+              IF ( XT .GE. -D180 .AND. XT .LT. ZERO ) XT = XT + D360
+            END SELECT
+        END IF
+      IF ( LDBG ) WRITE(*,'(/A,2E14.6)') 'W3GFCL - TARGET POINT:',XT,YT
+!
+!  Source (central) bucket that contains the target point
+!  here we force a target point to be associated with a bucket
+!  even if it is not located within the source domain.  the
+!  bucket/cell search below will determine whether-or-not the
+!  target point lies within the source domain.
+      IBC = MAX(1,MIN(PTR%NBX,INT((XT-PTR%XMIN)/PTR%DXB)+1))
+      JBC = MAX(1,MIN(PTR%NBY,INT((YT-PTR%YMIN)/PTR%DYB)+1))
+      IF ( LDBG ) WRITE(*,'(A,2I6)') &
+      'W3GFCL - BEGIN BUCKET SEARCH:',IBC,JBC
+!
+! -------------------------------------------------------------------- /
+! 3.  Search for enclosing cell in central and nearest nbr buckets
+!
+      BUCKET_LOOP: DO N=0,NNB%NNBR
+          IB = IBC + NNB%DI(N);  JB = JBC + NNB%DJ(N);
+          IF ( LCLO ) THEN
+              IF ( IB .LT.       1 ) IB = IB + PTR%NBX
+              IF ( IB .GT. PTR%NBX ) IB = IB - PTR%NBX
+            ELSE
+              IF ( IB.LT.1 .OR. IB.GT.PTR%NBX ) CYCLE BUCKET_LOOP
+            END IF
+          IF ( JB.LT.1 .OR. JB.GT.PTR%NBY ) CYCLE BUCKET_LOOP
+          IF ( LDBG ) &
+          WRITE(*,'(A,3I6)') &
+          'W3GFCL - BUCKET SEARCH:',IB,JB,PTR%B(JB,IB)%N
+          CELL_LOOP: DO K=1,PTR%B(JB,IB)%N
+!-------------setup cell corner indices
+              IS(1) = PTR%B(JB,IB)%I(K)  ;  JS(1) = PTR%B(JB,IB)%J(K)  ;
+              IS(2) = PTR%B(JB,IB)%I(K)+1;  JS(2) = PTR%B(JB,IB)%J(K)  ;
+              IS(3) = PTR%B(JB,IB)%I(K)+1;  JS(3) = PTR%B(JB,IB)%J(K)+1;
+              IS(4) = PTR%B(JB,IB)%I(K)  ;  JS(4) = PTR%B(JB,IB)%J(K)+1;
+!-------------setup cell corner coordinates and adjust for periodicity
+              DO L=1,4
+                  IF ( ICLO ) THEN
+                      IF ( IS(L) .LT.  1 ) IS(L) = IS(L) + NX
+                      IF ( IS(L) .GT. NX ) IS(L) = IS(L) - NX
+                    END IF
+                  IF ( IJG ) THEN
+                      XS(L) = XG(IS(L),JS(L))
+                      YS(L) = YG(IS(L),JS(L))
+                    ELSE
+                      XS(L) = XG(JS(L),IS(L))
+                      YS(L) = YG(JS(L),IS(L))
+                    END IF
+                END DO !L
+              IF ( LDBG ) &
+              WRITE(*,'(A,3I6,4(/A,1I1,A,2I6,2E14.6))') &
+              'W3GFCL - CHECK CELL:',IB,JB,K, &
+              ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
+!-------------check if point is enclosed in cell defined by xs(1:4) & ys(1:4)
+              INGRID = W3CKCL(LLG,LRNG,XT,YT,4,XS,YS,LPLC,LDBG)
+              IF ( LDBG ) WRITE(*,'(A,1L2)')'W3GFCL - INGRID:',INGRID
+              IF ( INGRID ) THEN
+!-----------------exit search
+                  IF ( LDBG ) &
+                  WRITE(*,'(A,3I6,4(2I6))') &
+                  'W3GFCL - ENCLOSING CELL:',IB,JB,K,(IS(L),JS(L),L=1,4)
+                  IF ( PRESENT(POLE) ) POLE = LPLC
+                EXIT BUCKET_LOOP 
+              END IF !point in cell
+            END DO CELL_LOOP
+        END DO BUCKET_LOOP
+!/
+!/ End of W3GFCL ----------------------------------------------------- /
+!/
+      END FUNCTION W3GFCL
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3GFPT(GSU, XTIN, YTIN, IX, IY, DEBUG) &
+      RESULT(INGRID)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Find point in grid, associated with the input grid-search-utility
+!     object (GSU), that is closest to the target point (xtin,ytin).
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Return parameter
+!     ----------------------------------------------------------------
+!       INGRID  Log.   O   Logical flag indicating if target point lies
+!                          within the source grid domain.
+!     ----------------------------------------------------------------
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       GSU     Type   I   Grid-search-utility object.
+!       XTIN    Real   I   X-coordinate of target point.
+!       YTIN    Real   I   Y-coordinate of target point.
+!       IX,JX   I.A.   O   (I,J) indices of nearest grid point.
+!       DEBUG   Log.   I   Optional logical flag to turn on debug mode.
+!                          Default is FALSE.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on previous initialization of grid search utility object.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     -----------------------------------------------------------------
+!      1.  Test input
+!      2.  Initialize search
+!      3.  Find enclosing cell and compute closest point
+!     -----------------------------------------------------------------
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      LOGICAL              :: INGRID
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_GSU), INTENT(IN) :: GSU
+      REAL   , INTENT(IN)  :: XTIN
+      REAL   , INTENT(IN)  :: YTIN
+      INTEGER, INTENT(OUT) :: IX, IY
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(CLASS_GSU), POINTER :: PTR
+      REAL(8), PARAMETER :: BIG = 1D16
+      LOGICAL :: LDBG
+      INTEGER :: I, J, K, L
+      REAL    :: XT, YT
+      INTEGER :: IS(4), JS(4)
+      REAL    :: XS(4), YS(4)
+      REAL    :: DD, DMIN
+      LOGICAL :: IJG, LLG, ICLO, LCLO
+      INTEGER :: LRNG
+      INTEGER :: NX, NY
+      REAL   , POINTER :: XG(:,:), YG(:,:)
+      TYPE(T_NNS), POINTER :: NNB
+      TYPE(T_BKT), POINTER :: B(:,:)
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GFPT')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
+          WRITE(*,'(/2A/)') 'W3GFPT ERROR -- ', &
+          'grid search utility object not created'
+          CALL EXTCDE (1)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Initialize search
+!
+      PTR => GSU%PTR
+!
+      IF ( PRESENT(DEBUG) ) THEN
+          LDBG = DEBUG
+        ELSE
+          LDBG = .FALSE.
+        END IF
+!
+!  Local pointers to grid search utility object data
+      IJG = PTR%IJG
+      LLG = PTR%LLG
+      ICLO = PTR%ICLO
+      LCLO = PTR%LCLO
+      LRNG = PTR%LRNG
+      NX = PTR%NX
+      NY = PTR%NY
+      XG => PTR%XG
+      YG => PTR%YG
+      NNB => PTR%NNB
+!
+      INGRID = .FALSE.
+!
+      XT = XTIN;  YT = YTIN;
+      IF ( LDBG ) WRITE(*,'(/A,2E14.6)') 'W3GFPT - TARGET POINT:',XT,YT
+!
+! -------------------------------------------------------------------- /
+! 3.  Find enclosing cell and compute closest point
+!
+      INGRID = W3GFCL(GSU,XT,YT,IS,JS,XS,YS,DEBUG=LDBG)
+      IF ( INGRID ) THEN
+          DMIN = BIG
+          DO L=1,4
+              DD = W3DIST(LLG,XT,YT,XS(L),YS(L))
+              IF ( DD .LT. DMIN ) THEN
+                  DMIN = DD;  IX = IS(L);  IY = JS(L);
+                END IF
+            END DO !L
+        ELSE
+          IX = 0;  IY = 0;
+        END IF
+!/
+!/ End of W3GFPT ----------------------------------------------------- /
+!/
+      END FUNCTION W3GFPT
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3GRMP(GSU, XTIN, YTIN, IS, JS, RW, &
+                      MASK, MSKC, NNBR, DEBUG) RESULT(INGRID)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Compute remapping for target point ( xtin, ytin ) from source grid
+!     associated with the input grid search utility object (GSU).
+!     The indices of the source points used for remapping are returned in
+!     is(1:4) and js(1:4).  The remapping weights are returned in rw(1:4).
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Return parameter
+!     ----------------------------------------------------------------
+!       INGRID  Log.   O   Logical flag indicating if target point lies
+!                          within the source grid domain.
+!     ----------------------------------------------------------------
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       GSU     Type   I   Grid-search-utility object.
+!       XTIN    Real   I   X-coordinate of target point.
+!       YTIN    Real   I   Y-coordinate of target point.
+!       IS,JS   I.A.   O   (I,J) indices of vertices of enclosing grid cell.
+!       RW      R.A.   O   Array of interpolation weights.
+!       MASK    L.A.   I   Optional logical mask for source grid.
+!       MSKC    Int.   O   Optional output integer parameter indicating how
+!                          the enclosing cell is masked.  Possible values
+!                          are MSKC_NONE, MSKC_PART and MSKC_FULL.
+!                          MSKC is required when MASK is specified.
+!       NNBR    Int.   I/O Optional integer parameter indicating the number
+!                          of nearest-neighbor non-masked points used for
+!                          distance-weighted averaging.
+!                          Input:  Requested number of nearest-neighbor
+!                                  non-masked points (0 < NNBR <= 4).
+!                          Output: Actual number of nearest-neighbor
+!                                  non-masked points used.
+!       DEBUG   Log.   I   Optional logical flag to turn on debug mode.
+!                          Default is FALSE.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on previous initialization of grid search utility object.
+!     - Check on appropriate input of optional arguments.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     -----------------------------------------------------------------
+!      1.  Test input
+!      2.  Initialize search
+!      3.  Find enclosing cell and compute remapping weights
+!          - if enclosing cell does not cover a pole, then
+!            compute bilinear remapping
+!          - if enclosing cell covers a pole, then
+!            compute distance weighted remapping
+!      4.  Handle case of target point located within a partially masked cell.
+!      5.  Handle case of target point located within a fully masked cell.
+!     -----------------------------------------------------------------
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      LOGICAL              :: INGRID
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_GSU), INTENT(IN) :: GSU
+      REAL   , INTENT(IN)  :: XTIN
+      REAL   , INTENT(IN)  :: YTIN
+      INTEGER, INTENT(OUT) :: IS(4)
+      INTEGER, INTENT(OUT) :: JS(4)
+      REAL   , INTENT(OUT) :: RW(4)
+      LOGICAL, INTENT(IN)   , OPTIONAL :: MASK(:,:)
+      INTEGER, INTENT(OUT)  , OPTIONAL :: MSKC
+      INTEGER, INTENT(INOUT), OPTIONAL :: NNBR
+      LOGICAL, INTENT(IN)   , OPTIONAL :: DEBUG
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      TYPE(CLASS_GSU), POINTER :: PTR
+      REAL(8), PARAMETER :: BIG = 1D16
+      REAL(8), PARAMETER :: SMALL = 1D-6
+      LOGICAL :: LDBG, POLE
+      INTEGER :: I, J, K, L, IB, JB, IBC, JBC
+      LOGICAL :: M, MSK(4)
+      INTEGER :: LVL, N, NS, ICC, JCC
+      REAL    :: XT, YT, XS(4), YS(4)
+      REAL    :: X, Y, D(4), DD, DMIN, DSUM
+      LOGICAL :: IJG, LLG, ICLO, LCLO
+      INTEGER :: LRNG
+      INTEGER :: NX, NY
+      REAL   , POINTER :: XG(:,:), YG(:,:)
+      TYPE(T_NNS), POINTER :: NNP
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GRMP')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
+          WRITE(*,'(/2A/)') 'W3GRMP ERROR -- ', &
+          'grid search utility object not created'
+          CALL EXTCDE (1)
+        END IF
+!
+      IF ( PRESENT(MASK) ) THEN
+          IF ( .NOT.PRESENT(MSKC) ) THEN
+              WRITE(*,'(/2A/)') 'W3GRMP ERROR -- ', &
+              'MSKC must be specified with MASK'
+              CALL EXTCDE (1)
+            END IF
+          IF ( PRESENT(NNBR) ) THEN
+              IF ( .NOT.ASSOCIATED(GSU%PTR%NNP) ) THEN
+                  WRITE(*,'(/3A/)') 'W3GRMP ERROR -- ', &
+                  'MASK and NNBR input specified, ', &
+                  'but grid point-search object not created'
+                  CALL EXTCDE (1)
+                END IF
+              IF ( NNBR .LE. 0 .OR. NNBR .GT. 4 ) THEN
+                  WRITE(*,'(/2A/)') 'W3GRMP ERROR -- ', &
+                  'NNBR must be >= 1 AND <= 4'
+                  CALL EXTCDE (1)
+                END IF
+            END IF
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Initialize search
+!
+      PTR => GSU%PTR
+!
+      IF ( PRESENT(DEBUG) ) THEN
+          LDBG = DEBUG
+        ELSE
+          LDBG = .FALSE.
+        END IF
+!
+!  Local pointers to grid search utility object data
+      IJG = PTR%IJG
+      LLG = PTR%LLG
+      ICLO = PTR%ICLO
+      LCLO = PTR%LCLO
+      LRNG = PTR%LRNG
+      NX = PTR%NX
+      NY = PTR%NY
+      XG => PTR%XG
+      YG => PTR%YG
+      NNP => PTR%NNP
+!
+      RW = ZERO;
+!
+      XT = XTIN;  YT = YTIN;
+      IF ( LDBG ) WRITE(*,'(/A,2E14.6)') 'W3GRMP - TARGET POINT:',XT,YT
+!
+! -------------------------------------------------------------------- /
+! 3.  Find enclosing cell and compute remapping
+!
+      INGRID = W3GFCL(GSU,XT,YT,IS,JS,XS,YS,POLE=POLE,DEBUG=LDBG)
+      IF ( .NOT. INGRID ) RETURN
+!
+      IF ( .NOT.POLE ) THEN
+!---------non-pole cell: compute bilinear remapping
+          CALL W3RMBL(LLG,XT,YT,XS,YS,RW,LDBG)
+          IF ( LDBG ) THEN
+              WRITE(*,'(A,2E14.6)') 'W3GRMP - BILINEAR (TGT):',XT,YT
+              DO L=1,4
+                  WRITE(*,'(A,3I6,E14.6)') 'W3GRMP - BILINEAR (SRC):', &
+                  L,IS(L),JS(L),RW(L)
+                END DO
+            END IF !LDBG
+        ELSE
+!---------pole cell: compute distance-weighted remapping
+          DSUM = ZERO
+          DO L=1,4
+              D(L) = W3DIST(LLG,XT,YT,XS(L),YS(L))
+              DSUM = DSUM + ONE/(D(L)+SMALL)
+            END DO
+          RW(1:4) = ONE/(D(1:4)+SMALL)/DSUM
+          IF ( LDBG ) THEN
+              WRITE(*,'(A,2E14.6)') 'W3GRMP - DISTWGHT (TGT):',XT,YT
+              DO L=1,4
+                  WRITE(*,'(A,3I6,E14.6)') 'W3GRMP - DISTWGHT (SRC):', &
+                  L,IS(L),JS(L),RW(L)
+                END DO
+            END IF !LDBG
+        ENDIF
+!
+      IF ( .NOT.PRESENT(MASK) ) RETURN
+!
+! -------------------------------------------------------------------- /
+! 4.  Handle case of target point located within a partially masked cell.
+!
+!-----copy cell mask values according to array ordering
+      IF ( IJG ) THEN
+          DO L=1,4
+              MSK(L) = MASK(IS(L),JS(L))
+            END DO
+        ELSE
+          DO L=1,4
+              MSK(L) = MASK(JS(L),IS(L))
+            END DO
+        END IF
+!
+!-----adjust weights for a partially masked cell
+      DSUM = ZERO
+      NS = 4
+      DO L=1,4
+          IF ( MSK(L) ) THEN
+              NS = NS - 1
+              RW(L) = ZERO
+            END IF
+          DSUM = DSUM + RW(L)
+        END DO
+      IF ( NS .EQ. 4 ) THEN
+          MSKC = MSKC_NONE
+          RETURN
+        END IF
+      IF ( NS .GT. 0 .AND. DSUM .GT. SMALL ) THEN
+          RW = RW / DSUM
+          IF ( LDBG ) &
+          WRITE(*,'(A,2E14.6,4(2I6,E14.6))') &
+          'W3GRMP - PARTIAL MASKED CELL:', &
+          XT,YT,(IS(L),JS(L),RW(L),L=1,4)
+          MSKC = MSKC_PART
+          RETURN
+        ELSE
+          MSKC = MSKC_FULL
+          IF ( .NOT.PRESENT(NNBR) ) RETURN
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 5.  Handle case of target point located within a fully masked cell.
+!
+!  Choose closest point in enclosing land cell to be the central point
+      DMIN = BIG
+      DO L=1,4
+          DD = W3DIST(LLG,XT,YT,XS(L),YS(L))
+          IF ( DD .LT. DMIN ) THEN
+              DMIN = DD;  ICC = IS(L);  JCC = JS(L);
+            END IF
+        END DO !L
+!
+!  Search nearest-neighbor source points for closest nnbr un-masked
+!  points and compute distance-weighted average remapping.
+      IF ( LDBG ) &
+      WRITE(*,'(A,2I6)') &
+      'W3GRMP - BEGIN POINT NNBR SEARCH:',ICC,JCC
+      NS = 0;  D(:) = BIG;
+      LEVEL_LOOP: DO LVL=0,NNP%NLVL
+          NNBR_LOOP: DO N=NNP%N1(LVL),NNP%N2(LVL)
+              I = ICC + NNP%DI(N);  J = JCC + NNP%DJ(N);
+              IF ( ICLO ) THEN
+                  IF ( I .LT.  1 ) I = I + NX
+                  IF ( I .GT. NX ) I = I - NX
+                ELSE
+                  IF ( I.LT.1 .OR. I.GT.NX ) CYCLE NNBR_LOOP
+                END IF
+              IF ( J.LT.1 .OR. J.GT.NY ) CYCLE NNBR_LOOP
+              IF ( IJG ) THEN
+                  M = MASK(I,J)
+                ELSE
+                  M = MASK(J,I)
+                END IF
+              IF ( LDBG ) &
+              WRITE(*,'(A,4I6,1L6)') &
+              'W3GRMP - POINT NNBR SEARCH:',LVL,N,I,J,M
+!-------------if masked point, then skip
+              IF ( M ) CYCLE NNBR_LOOP
+!-------------compute distance
+              IF ( IJG ) THEN
+                  X = XG(I,J);  Y = YG(I,J);
+                ELSE
+                  X = XG(J,I);  Y = YG(J,I);
+                END IF
+              DD = W3DIST(LLG,XT,YT,X,Y)
+!-------------still need nnbr points
+              IF ( NS .LT. NNBR ) THEN
+!-----------------add to list
+                  NS = NS + 1
+                  IS(NS) = I;  JS(NS) = J;  D(NS) = DD;
+!-----------------once list is full sort according to increasing distance
+                  IF ( NS .EQ. NNBR ) CALL W3SORT(NS,IS,JS,D)
+!---------------we have found nnbr points
+                ELSE !list is full
+!-----------------insert into list if the newest point is closer
+                  CALL W3ISRT(I,J,DD,NS,IS,JS,D)
+                END IF !list is full
+              IF ( LDBG ) &
+              WRITE(*,'(A,I2,I3,I6,4(2I6,E14.6)))') &
+              'W3GRMP - POINT NNBR LIST:', &
+              LVL,N,NS,(IS(L),JS(L),D(L),L=1,NS)
+            END DO NNBR_LOOP
+!---------if we have found nnbr_rqd points, then exit the search
+          IF ( NS .EQ. NNBR ) EXIT LEVEL_LOOP
+        END DO LEVEL_LOOP
+      NNBR = NS
+!
+!  If zero unmasked points found, then return nnbr=0 as error indicator
+      IF ( NNBR .EQ. 0 ) RETURN
+!
+!  Compute distance-weighted remapping for nnbr points
+      DSUM = ZERO
+      DO L=1,NNBR
+          DSUM = DSUM + ONE/(D(L)+SMALL)
+        END DO
+      RW(1:NNBR) = ONE/(D(1:NNBR)+SMALL)/DSUM
+      IF ( LDBG ) THEN
+          WRITE(*,'(A,2E14.6,I6)') &
+          'W3GRMP - FULLY MASKED CELL (TGT):',XT,YT,NNBR
+          DO L=1,NNBR
+              WRITE(*,'(A,3I6,E14.6)') &
+              'W3GRMP - FULLY MASKED CELL (SRC):', &
+              L,IS(L),JS(L),RW(L)
+            END DO
+        END IF !LDBG
+!/
+!/ End of W3GRMP ----------------------------------------------------- /
+!/
+      END FUNCTION W3GRMP
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3NNSC(NLVL) RESULT(NNS)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Create nearest-neighbor (NNBR) search object.
+!
+!  2. Method :
+!
+!     Notation
+!     ( L,  N):  L = NNBR level;  N = NNBR sequential index
+!     {DI, DJ}:  DI = I-index delta;  DJ = J-index delta
+!
+!     ---------------------------------------------------
+!     | ( 2,21) | ( 2,20) | ( 2,19) | ( 2,18) | ( 2,17) |
+!     | {-2,+2} | {-1,+2} | { 0,+2} | {+1,+2} | {+2,+2} |
+!     ---------------------------------------------------
+!     | ( 2,22) | ( 1, 7) | ( 1, 6) | ( 1, 5) | ( 2,16) |
+!     | {-2,+1} | {-1,+1} | { 0,+1} | {+1,+1} | {+2,+1} |
+!     ---------------------------------------------------
+!     | ( 2,23) | ( 1, 8) | ( 0, 0) | ( 1, 4) | ( 2,15) |
+!     | {-2, 0} | {-1, 0} | { 0, 0} | {+1, 0} | {+2, 0} |
+!     ---------------------------------------------------
+!     | ( 2,24) | ( 1, 1) | ( 1, 2) | ( 1, 3) | ( 2,14) |
+!     | {-2,-1} | {-1,-1} | { 0,-1} | {+1,-1} | {+2,-1} |
+!     ---------------------------------------------------
+!     | ( 2, 9) | ( 2,10) | ( 2,11) | ( 2,12) | ( 2,13) |
+!     | {-2,-2} | {-1,-2} | { 0,-2} | {+1,-2} | {+2,-2} |
+!     ---------------------------------------------------
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      TYPE(T_NNS), POINTER :: NNS
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN) :: NLVL
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: I, J, K, L, N
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3NNSC')
+!
+! -------------------------------------------------------------------- /
+!
+!-----allocate object
+      ALLOCATE(NNS)
+
+!-----initialize sizes
+      NNS%NLVL = NLVL
+      NNS%NNBR = (2*NLVL+1)**2
+
+!-----allocate arrays
+      ALLOCATE(NNS%N1(0:NNS%NLVL))
+      ALLOCATE(NNS%N2(0:NNS%NLVL))
+      ALLOCATE(NNS%DI(0:NNS%NNBR-1))
+      ALLOCATE(NNS%DJ(0:NNS%NNBR-1))
+
+!-----compute index deltas for nearest-neighbor searches
+      N = 0
+!-----central point
+      L = 0
+      NNS%N1(L) = 0;  NNS%N2(L) = (2*L+1)**2-1;
+      NNS%DI(N) = 0;  NNS%DJ(N) = 0;
+!-----loop over levels
+      DO L=1,NNS%NLVL
+!---------nnbr loop bounds
+          NNS%N1(L) = (2*L-1)**2;  NNS%N2(L) = (2*L+1)**2-1;
+!---------bottom-layer
+          J = -L
+          DO I=-L,L-1
+              N = N + 1
+              NNS%DI(N) = I;  NNS%DJ(N) = J;
+            END DO
+!---------right-layer
+          I =  L
+          DO J=-L,L-1
+              N = N + 1
+              NNS%DI(N) = I;  NNS%DJ(N) = J;
+            END DO
+!---------top-layer
+          J =  L
+          DO I=L,-L+1,-1
+              N = N + 1
+              NNS%DI(N) = I;  NNS%DJ(N) = J;
+            END DO
+!---------left-layer
+          I = -L
+          DO J=L,-L+1,-1
+              N = N + 1
+              NNS%DI(N) = I;  NNS%DJ(N) = J;
+            END DO
+        END DO !loop over levels
+!/
+!/ End of W3NNSC ----------------------------------------------------- /
+!/
+      END FUNCTION W3NNSC
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3NNSD(NNS)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Destroy nearest-neighbor (NNBR) search object.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_NNS), POINTER :: NNS
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3NNSD')
+!
+! -------------------------------------------------------------------- /
+!
+      IF ( ASSOCIATED(NNS) ) THEN
+          NNS%NLVL = 0
+          NNS%NNBR = 0
+          IF ( ASSOCIATED(NNS%N1) ) THEN
+              DEALLOCATE(NNS%N1);  NULLIFY(NNS%N1);
+            END IF
+          IF ( ASSOCIATED(NNS%N2) ) THEN
+              DEALLOCATE(NNS%N2);  NULLIFY(NNS%N2);
+            END IF
+          IF ( ASSOCIATED(NNS%DI) ) THEN
+              DEALLOCATE(NNS%DI);  NULLIFY(NNS%DI);
+            END IF
+          IF ( ASSOCIATED(NNS%DJ) ) THEN
+              DEALLOCATE(NNS%DJ);  NULLIFY(NNS%DJ);
+            END IF
+          DEALLOCATE(NNS)
+          NULLIFY(NNS)
+        END IF
+!/
+!/ End of W3NNSD ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3NNSD
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3NNSP(NNS, IUNIT)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Print nearest-neighbor (NNBR) search object to IUNIT.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NNBR    Type   I   Nearest-neighbor search object.
+!       IUNIT   Int.   I   Optional unit for output. Default is stdout.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      TYPE(T_NNS), INTENT(IN) :: NNS
+      INTEGER, OPTIONAL, INTENT(IN) :: IUNIT
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: NDST, K, L, N
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3NNSP')
+!
+! -------------------------------------------------------------------- /
+!
+      IF ( PRESENT(IUNIT) ) THEN
+          NDST = IUNIT
+        ELSE
+          NDST = 6
+        END IF
+!
+      WRITE(NDST,'(A,2I6)') 'nlvl,nnbr:',NNS%NLVL,NNS%NNBR
+      DO L=0,NNS%NLVL
+          DO N=NNS%N1(L),NNS%N2(L)
+              WRITE(NDST,'(A,4I6)') 'l,n,di,dj:',L,N,NNS%DI(N),NNS%DJ(N)
+            END DO
+        END DO
+!/
+!/ End of W3NNSP ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3NNSP
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3RMBL(LLG, XT, YT, XS, YS, RW, DEBUG)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Bilinear remapping for target point ( xt, yt ) in a cell defined
+!     by the source points ( xs(1:4), ys(1:4) ).  Remapping weights are
+!     returned in rw(1:4).  It is the caller's responsibility to ensure
+!     that the target point is located within the input cell and that the
+!     cell corner points are properly defined.
+!
+!          (xs4,ys4)            (xs3,ys3)
+!               _____________________
+!              /                    /
+!             /        x           /
+!            /   (xtin,ytin)      /
+!           /                    /
+!          /____________________/
+!    (xs1,ys1)             (xs2,ys2)
+!
+!     The coordinate system is indicated by llg (llg=T: spherical
+!     coordinates, otherwise: cartesian coordinates). In spherical
+!     coordinates it is assumed that the longitude range of the target
+!     point is the same as that of the cell vertices.  It is also
+!     assumed that the cell does not cover a branch cut.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!     - Implementation is based on SCRIP.
+!     - In the case of spherical coordinates, the method results in
+!       bogus weights if enclosing cell contains a pole.
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      LOGICAL, INTENT(IN)  :: LLG
+      REAL   , INTENT(IN)  :: XT
+      REAL   , INTENT(IN)  :: YT
+      REAL   , INTENT(IN)  :: XS(4)
+      REAL   , INTENT(IN)  :: YS(4)
+      REAL   , INTENT(OUT) :: RW(4)
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER, PARAMETER :: MAX_ITER = 10
+      REAL(8), PARAMETER :: CONVERGE = 1D-6
+      LOGICAL :: LDBG
+      INTEGER :: K, ITER
+      REAL(8) :: DXT, DX1, DX2, DX3, DXP, DYT, DY1, DY2, DY3, DYP
+      REAL(8) :: IGUESS, JGUESS, MAT1, MAT2, MAT3, MAT4, DELI, DELJ, DET
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3RMBL')
+!
+! -------------------------------------------------------------------- /
+!
+      IF ( PRESENT(DEBUG) ) THEN
+          LDBG = DEBUG
+        ELSE
+          LDBG = .FALSE.
+        END IF
+!
+!-----set iteration parameters and initial guess
+      RW = ZERO
+      IGUESS = HALF
+      JGUESS = HALF
+      DYT = YT    - YS(1)
+      DY1 = YS(2) - YS(1)
+      DY2 = YS(4) - YS(1)
+      DY3 = YS(3) - YS(2) - DY2
+      DXT = XT    - XS(1)
+      DX1 = XS(2) - XS(1)
+      DX2 = XS(4) - XS(1)
+      DX3 = XS(3) - XS(2) - DX2
+
+!-----iterate to find (i,j) for bilinear approximation
+      ITER_LOOP: DO ITER=1,MAX_ITER
+          DYP = DYT - DY1*IGUESS - DY2*JGUESS - DY3*IGUESS*JGUESS
+          DXP = DXT - DX1*IGUESS - DX2*JGUESS - DX3*IGUESS*JGUESS
+          MAT1 = DY1 + DY3*JGUESS
+          MAT2 = DY2 + DY3*IGUESS
+          MAT3 = DX1 + DX3*JGUESS
+          MAT4 = DX2 + DX3*IGUESS
+          DET = MAT1*MAT4 - MAT2*MAT3
+          DELI = (DYP*MAT4 - MAT2*DXP)/DET
+          DELJ = (MAT1*DXP - DYP*MAT3)/DET
+          IF ( LDBG ) &
+          WRITE(*,'(A,I3,4E14.6)') 'W3RMBL - ITER:', &
+          ITER,IGUESS,JGUESS,DELI,DELJ
+          IF ( ABS(DELI) < CONVERGE .AND. &
+               ABS(DELJ) < CONVERGE ) EXIT ITER_LOOP
+          IGUESS = IGUESS + DELI
+          JGUESS = JGUESS + DELJ
+        END DO ITER_LOOP
+
+!-----if successful in finding (i,j), then compute weights
+      IF ( ITER .LE. MAX_ITER ) THEN
+          RW(1) = (ONE-IGUESS)*(ONE-JGUESS)
+          RW(2) = IGUESS*(ONE-JGUESS)
+          RW(3) = IGUESS*JGUESS
+          RW(4) = (ONE-IGUESS)*JGUESS
+        ELSE
+          WRITE(*,'(/A)') &
+          'W3RMBL -- ERROR: exceeded max iteration count'
+          WRITE(*,'(A,2E14.6)') 'W3RMBL - DEST POINT COORDS: ',XT,YT
+          DO K=1,4
+              WRITE(*,'(A,I1,A,2E14.6)') &
+              'W3RMBL - SRC POINT ',K,': ',XS(K),YS(K)
+            END DO
+          WRITE(*,'(A,2E14.6)') 'W3RMBL - CURRENT I,J: ',IGUESS,JGUESS
+          RETURN
+        END IF !(ITER.LE.MAX_ITER)
+!/
+!/ End of W3RMBL ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3RMBL
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3DIST(LLG, XT, YT, XS, YS) RESULT(DIST)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Compute distance between two points.  If spherical grid, then
+!     distance is the angle (in degrees) between the two points.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      REAL                :: DIST
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      LOGICAL, INTENT(IN) :: LLG
+      REAL   , INTENT(IN) :: XT, YT
+      REAL   , INTENT(IN) :: XS, YS
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      REAL(8) :: DX, DY
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3DIST')
+!
+! -------------------------------------------------------------------- /
+!
+!-----compute displacements
+      DX = XT - XS
+      DY = YT - YS
+
+      IF ( LLG ) THEN !spherical coordinates
+!---------check for longitudinal branch cut crossing
+          IF ( ABS(DX) .GT. D270 ) THEN
+              DX = DX - SIGN(D360,DX)
+            END IF
+!---------compute angular distance
+          DIST = ACOS( COS(YT*D2R)*COS(YS*D2R)*COS(DX*D2R) &
+                      + SIN(YT*D2R)*SIN(YS*D2R) )
+          DIST = DIST*R2D
+        ELSE !cartesian coordinates
+!---------compute cartesian distance
+          DIST = SQRT( DX**2 + DY**2 )
+        END IF !cartesian coordinates
+!/
+!/ End of W3DIST ----------------------------------------------------- /
+!/
+      END FUNCTION W3DIST
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3CKCL(LLG, LRNG, XT, YT, NS, XS, YS, POLE, DEBUG) &
+      RESULT(INCELL)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Check if point lies within grid cell.
+!
+!  2. Method :
+!
+!     Calculates cross products for vertex to vertex (i.e. cell side) 
+!     vs vertex to target. If all cross products have the same sign,
+!     the point is considered to be within the cell. Since they can 
+!     be "all positive" *or* "all negative", there are no pre-conditions
+!     that the order of specification of the vertices be clockwise vs.
+!     counter-clockwise geographically.  The logical variable POLE is
+!     set to true if the grid cell covers a pole.
+!     
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!     - For LL grids, this method assumes that the longitudes of point
+!       and grid cell vertices lie in the same range (i.e., both in [0:360]
+!       or [-180:180]).  If the longitudes are not in the same range, then
+!       this method may result in a false positive.  The burden is upon the
+!       caller to ensure that the longitude range of the point is the same
+!       as that of the grid cell vertices.
+!     - If enclosing cell covers a branch cut, then the coordinates of
+!       of the cell vertices AND the target point will be adjusted so
+!       that the branch cut is shifted 180 degrees.
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      LOGICAL             :: INCELL
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      LOGICAL, INTENT(IN) :: LLG
+      INTEGER, INTENT(IN) :: LRNG
+      REAL   , INTENT(INOUT) :: XT, YT
+      INTEGER, INTENT(IN) :: NS
+      REAL   , INTENT(INOUT) :: XS(NS), YS(NS)
+      LOGICAL, INTENT(OUT):: POLE
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      LOGICAL :: LDBG, LSBC, BCUT
+      INTEGER :: I, J, K, N
+      REAL(8) :: XXT, YYT, XXS(NS), YYS(NS)
+      REAL(8) :: V1X, V1Y, V2X, V2Y, S90
+      REAL(8) :: CROSS
+      REAL(8) :: SIGN1
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3CKCL')
+!
+! -------------------------------------------------------------------- /
+!
+      INCELL = .TRUE.
+!
+!-----must have >= 3 points to be a cell
+      IF ( NS .LT. 3 ) THEN
+          INCELL = .FALSE.
+          RETURN
+        END IF
+!
+      IF ( PRESENT(DEBUG) ) THEN
+          LDBG = DEBUG
+        ELSE
+          LDBG = .FALSE.
+        END IF
+!
+!-----copy into locals
+      XXT = XT;  XXS = XS;
+      YYT = YT;  YYS = YS;
+!
+!-----check if cell covers a pole or branch cut
+      IF ( LLG ) THEN
+          N = 0
+!---------count longitudinal branch cut crossings
+          DO I=1,NS
+              J = MOD(I,NS) + 1
+              IF ( ABS(XXS(J)-XXS(I)) .GT. D180 ) N = N + 1
+            END DO
+!---------multiple longitudinal branch cut crossing => cell covers branch cut
+          BCUT = N.GT.1
+          IF ( BCUT .AND. LDBG ) &
+          WRITE(*,'(A)') 'W3CKCL - CELL COVERS A BRANCH CUT'
+!---------single longitudinal branch cut crossing => cell covers pole
+          POLE = N.EQ.1
+          IF ( POLE .AND. LDBG ) &
+          WRITE(*,'(A)') 'W3CKCL - CELL COVERS A POLE'
+        ELSE
+          POLE = .FALSE.
+          BCUT = .FALSE.
+        END IF
+!
+!-----handle cell that covers a pole
+      IF ( POLE ) THEN
+          S90 = D90; IF ( MAXVAL(YS).LT.ZERO ) S90 = -D90;
+!---------perform cross-product check for each triangular subcell
+          SUBCELL_LOOP: DO I=1,NS
+              LSBC = .TRUE.
+              J = MOD(I,NS) + 1
+              DO K=1,3
+                  SELECT CASE (K)
+                    CASE (1)
+!---------------------vector from (xi,yi) to (xj,yj)
+                      V1X = XXS(J) - XXS(I)
+                      V1Y = YYS(J) - YYS(I)
+!---------------------vector from (xi,yi) to (xt,yt)
+                      V2X = XXT    - XXS(I)
+                      V2Y = YYT    - YYS(I)
+                    CASE (2)
+!---------------------vector from (xj,yj) to (pole)
+                      V1X = XXS(J) - XXS(J)
+                      V1Y = S90   - YYS(J)
+!---------------------vector from (xj,yj) to (xt,yt)
+                      V2X = XXT    - XXS(J)
+                      V2Y = YYT    - YYS(J)
+                    CASE (3)
+!---------------------vector from (pole) to (xi,yi)
+                      V1X = XXS(I) - XXS(I)
+                      V1Y = YYS(I) - S90
+!---------------------vector from (pole) to (xt,yt)
+                      V2X = XXT    - XXS(I)
+                      V2Y = YYT    - S90
+                    END SELECT
+!-----------------check for longitudinal branch cut crossing
+                  IF ( ABS(V1X) .GT. D180 ) THEN
+                      V1X = V1X - SIGN(D360,V1X)
+                    END IF
+                  IF ( ABS(V2X) .GT. D180 ) THEN
+                      V2X = V2X - SIGN(D360,V2X)
+                    END IF
+!-----------------cross product
+                  CROSS = V1X*V2Y - V1Y*V2X
+                  IF ( LDBG ) &
+                  WRITE(*,'(A,3(I1,A),5E14.6)') 'W3CKCL - CROSS(', &
+                  I,',',J,',',K,'):',V1X,V1Y,V2X,V2Y,CROSS
+!-----------------if sign of cross product is not "unanimous" among the
+!                 subcell sides, then target is outside the subcell
+                  IF ( K .EQ. 1 ) THEN
+                      SIGN1 = SIGN(ONE,CROSS)
+                    ELSE
+                      IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+                          LSBC = .FALSE.
+                          CYCLE SUBCELL_LOOP
+                        END IF
+                    END IF
+                END DO !K
+                IF ( LSBC ) RETURN
+            END DO SUBCELL_LOOP
+          INCELL = .FALSE.
+          RETURN
+        END IF !POLE
+!
+!-----shift branch cut if necessary
+      IF ( BCUT ) THEN
+          SELECT CASE ( LRNG )
+            CASE ( LRNG_180 )
+              WHERE ( XXS .LT. ZERO ) XXS = XXS + D360
+              IF ( XXT .LT. ZERO ) XXT = XXT + D360
+            CASE ( LRNG_360 )
+              WHERE ( XXS .GT. D180 ) XXS = XXS - D360
+              IF ( XXT .GT. D180 ) XXT = XXT - D360
+            END SELECT
+        END IF
+!
+!-----check if target point lies outside cell bounding box
+      IF ( XXT.LT.MINVAL(XXS) .OR. XXT.GT.MAXVAL(XXS) .OR. &
+           YYT.LT.MINVAL(YYS) .OR. YYT.GT.MAXVAL(YYS) ) THEN
+          IF ( LDBG ) THEN
+              WRITE(*,'(A)') &
+              'W3CKCL - TARGET POINT LIES OUTSIDE CELL BOUNDING BOX'
+              WRITE(*,'(A,2E14.6)') 'W3CKCL - TARGET: ',XXT,YYT
+              WRITE(*,'(A,4E14.6)') 'W3CKCL - SOURCE: ', &
+              MINVAL(XXS),MAXVAL(XXS),MINVAL(YYS),MAXVAL(YYS)
+            END IF
+          INCELL = .FALSE.
+          RETURN
+        END IF
+!
+!-----perform cross-product cell check
+      CORNER_LOOP: DO I=1,NS
+          J = MOD(I,NS) + 1
+!---------vector from (xi,yi) to (xj,yj)
+          V1X = XXS(J) - XXS(I)
+          V1Y = YYS(J) - YYS(I)
+!---------vector from (xi,yi) to (xt,yt)
+          V2X = XXT    - XXS(I)
+          V2Y = YYT    - YYS(I)
+!---------cross product
+          CROSS = V1X*V2Y - V1Y*V2X
+          IF ( LDBG ) &
+          WRITE(*,'(A,2(I1,A),5E14.6)') 'W3CKCL - CROSS(', &
+          I,',',J,'):',V1X,V1Y,V2X,V2Y,CROSS
+!---------if sign of cross product is not "unanimous" among the cell sides,
+!         then target is outside the cell
+          IF ( I .EQ. 1 ) THEN
+              SIGN1 = SIGN(ONE,CROSS)
+            ELSE
+              IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+                  INCELL = .FALSE.
+                  RETURN
+                END IF
+            END IF
+        END DO CORNER_LOOP
+!
+!-----return branch cut shifted coordinates
+      IF ( BCUT ) THEN
+          XT = XXT;  XS = XXS;
+        END IF
+!/
+!/ End of W3CKCL ----------------------------------------------------- /
+!/
+      END FUNCTION W3CKCL
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3SORT(N, I, J, D)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Sort input arrays in increasing order according to input array D.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)    :: N
+      INTEGER, INTENT(INOUT) :: I(N)
+      INTEGER, INTENT(INOUT) :: J(N)
+      REAL   , INTENT(INOUT) :: D(N)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: K, L, IM, JM
+      REAL    :: DM
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3SORT')
+!
+! -------------------------------------------------------------------- /
+!
+      DO K=1, N-1
+          DO L=K+1, N
+              IF ( D(L) .LT. D(K) ) THEN
+                  IM = I(K);  JM = J(K);  DM = D(K);
+                  I(K) = I(L);  J(K) = J(L);  D(K) = D(L);
+                  I(L) = IM;  J(L) = JM;  D(L) = DM;
+                END IF
+            END DO !L
+        END DO !K
+!/
+!/ End of W3SORT ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3SORT
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3ISRT(II, JJ, DD, N, I, J, D)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Insert DD data into D at location where DD < D(K).
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)    :: II
+      INTEGER, INTENT(IN)    :: JJ
+      REAL   , INTENT(IN)    :: DD
+      INTEGER, INTENT(IN)    :: N
+      INTEGER, INTENT(INOUT) :: I(N)
+      INTEGER, INTENT(INOUT) :: J(N)
+      REAL   , INTENT(INOUT) :: D(N)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER :: K, L
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3ISRT')
+!
+! -------------------------------------------------------------------- /
+!
+      K_LOOP: DO K=1,N
+          IF ( DD .LT. D(K) ) THEN
+!---------right-shift list (>= k)
+              DO L=N,K+1,-1
+                  I(L) = I(L-1);  J(L) = J(L-1);  D(L) = D(L-1);
+                END DO !L
+!---------insert point into list at k
+              I(K) = II;  J(K) = JJ;  D(K) = DD;
+              EXIT K_LOOP
+            END IF !dd.lt.d(k)
+        END DO K_LOOP
+!/
+!/ End of W3ISRT ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3ISRT
+!/ ------------------------------------------------------------------- /
+!/
+!/ End of module W3GSRUMD -------------------------------------------- /
+!/
+      END MODULE W3GSRUMD

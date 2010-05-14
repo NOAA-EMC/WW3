@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -18,6 +18,10 @@
 !/    28-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -92,6 +96,7 @@
 !      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IORS    Subr. W3IORSMD Reading/writing restart files.
+!      W3DIST    Subr. W3GSRUMD Compute distance between two points.
 !      MPI_xxx   Subr. mpif.h   Standard MPI routines.
 !     ----------------------------------------------------------------
 !
@@ -106,6 +111,9 @@
 !     - While reading the restart file W3IORS will recognize the
 !       need for checking the time, as the restart file contains
 !       information on the origine of the file ("cold" or "hot").
+!     - User input for x-wise gaussian spread control, SIX, is disregarded
+!       (option for SIX.NE.SIY is removed, and user intervention to create
+!       a circular distribution is no longer needed.)
 !
 !  8. Structure :
 !
@@ -142,9 +150,6 @@
 !
 !  9. Switches :
 !
-!     !/LLG   Longitude-latitude grid.
-!     !/XYG   Cartesian grid.
-!
 !     !/SHRD  Switch for shared / distributed memory architecture.
 !     !/DIST  Id.
 !
@@ -174,6 +179,7 @@
       USE W3DISPMD, ONLY : WAVNU1
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IORSMD, ONLY: W3IORS
+      USE W3GSRUMD, ONLY: W3DIST
 !/
       USE W3GDATMD
       USE W3WDATMD
@@ -199,7 +205,7 @@
                                  CHSIP, FRREL, ETOT, E1I, FACTOR, X,  &
                                  Y, RDSQR, ALFA, GAMMA, SIGA, SIGB,   &
                                  YLN, FR, BETA, FRR, S, SUMD, ANG,    &
-                                 ARG, FACS, DEPTH, WN, CG
+                                 ARG, FACS, DEPTH, WN, CG, HQMAX
       REAL, ALLOCATABLE       :: E1(:), DD(:), E2(:,:), E21(:), FINP(:,:)
 !/O5      REAL, ALLOCATABLE       :: E2OUT(:,:)
 !/O6      REAL, ALLOCATABLE       :: HSIG(:,:)
@@ -309,15 +315,34 @@
             END DO
           THM    = MOD ( THM , 360. )
           NCOS   = MAX ( 2 , 2*(NCOS/2) )
-          SIX    = MAX ( 0.01*SX , SIX )
-          SIY    = MAX ( 0.01*SY , SIY )
+
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+
+          HQMAX=-999.0
+          DO JSEA=1, NSEAL
+!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD            ISEA   = JSEA
+            IX     = MAPSF(ISEA,1)
+            IY     = MAPSF(ISEA,2)
+            IF(HQFAC(IY,IX).GT.HQMAX)THEN
+               HQMAX=HQFAC(IY,IX)
+            ENDIF
+          END DO
+          SIY = MAX(0.01*HQMAX,SIY)
+
           HMAX   = MAX ( 0. , HMAX )
 !
-!/LLG          FACTOR = 1.
-!/XYG          FACTOR = 1.E-3
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,940)                  &
-               FP, SIP, THM, NCOS, FACTOR*XM, FACTOR*SIX,             &
-                                   FACTOR*YM, FACTOR*SIY, HMAX
+          IF ( IAPROC .EQ. NAPOUT ) THEN
+              IF ( FLAGLL ) THEN
+                  FACTOR = 1.
+                  WRITE (NDSO,940) FP, SIP, THM, NCOS, &
+                    FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY, HMAX
+                ELSE
+                  FACTOR = 1.E-3
+                  WRITE (NDSO,941) FP, SIP, THM, NCOS, &
+                    FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY, HMAX
+                END IF
+            END IF
 !
           FP     = FP  * TPI
           SIP    = SIP * TPI
@@ -407,9 +432,7 @@
 !/SHRD            ISEA   = JSEA
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
-            X      = X0 + REAL(IX-1)*SX
-            Y      = Y0 + REAL(IY-1)*SY
-            RDSQR  = ((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+            RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
             IF ( RDSQR .GT. 40. ) THEN
                 FACTOR = 0.
               ELSE
@@ -438,8 +461,21 @@
           IF (SIGB.LE.0.) SIGB = 0.09
           FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
           FP     = MIN ( TPIINV * SIG(NK) , FP )
-          SIX    = MAX ( 0.01*SX , SIX )
-          SIY    = MAX ( 0.01*SY , SIY )
+
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+
+          HQMAX=-999.0
+          DO JSEA=1, NSEAL
+!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD            ISEA   = JSEA
+            IX     = MAPSF(ISEA,1)
+            IY     = MAPSF(ISEA,2)
+            IF(HQFAC(IY,IX).GT.HQMAX)THEN
+               HQMAX=HQFAC(IY,IX)
+            ENDIF
+          END DO
+          SIY = MAX(0.01*HQMAX,SIY)
+
           DO
             IF ( THM .LT. 0. ) THEN
                 THM    = THM + 360.
@@ -451,11 +487,17 @@
           GAMMA  = MAX (GAMMA,1.)
           YLN    = LOG(GAMMA)
 !
-!/LLG          FACTOR = 1.
-!/XYG          FACTOR = 1.E-3
-          IF ( IAPROC .EQ. NAPOUT )                                   &
-               WRITE (NDSO,950) ALFA, FP, THM, GAMMA, SIGA, SIGB,     &
+          IF ( IAPROC .EQ. NAPOUT ) THEN
+              IF ( FLAGLL ) THEN
+                  FACTOR = 1.
+                  WRITE (NDSO,950) ALFA, FP, THM, GAMMA, SIGA, SIGB,  &
                       FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY
+                ELSE
+                  FACTOR = 1.E-3
+                  WRITE (NDSO,951) ALFA, FP, THM, GAMMA, SIGA, SIGB,  &
+                      FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY
+                END IF
+            END IF
           THM    = MOD ( 630. - THM , 360. ) * DERA
 !
 ! 5.b Make 1-D spectrum.
@@ -521,9 +563,9 @@
 !/SHRD            ISEA   = JSEA
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
-            X      = X0 + REAL(IX-1)*SX
-            Y      = Y0 + REAL(IY-1)*SY
-            RDSQR  = ((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+
+            RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
+
             IF ( RDSQR .GT. 40. ) THEN
                 FACTOR = 0.
               ELSE
@@ -670,43 +712,49 @@
                15X,'==============================================='/)
   901 FORMAT ( '  Comment character is ''',A,''''/)
   902 FORMAT ( '  Grid name : ',A/)
+  903 FORMAT ( '  NOTE: User input for x-wise gaussian spread'/       &
+               '  control, SIX, is disregarded (option for' /         &
+               '  SIX.NE.SIY is removed, and user intervention' /     &
+               '  to create a circular distribution is no longer' /   &
+               '  needed.)')
 !
   930 FORMAT (/'  Initial field ITYPE =',I2/                          &
                ' --------------------------------------------------')
 !
-!/LLG  940 FORMAT ( '       Gaussian / cosine power spectrum '//           &
-!/LLG               '       Peak frequency and spread (Hz)    :',2X,2F8.4/ &
-!/LLG               '       Mean direction (Naut., degr.)     :',F7.1/     &
-!/LLG               '       Cosine power of dir. distribution :',I5/       &
-!/LLG               '       Mean longitude and spread (degr.) :',2F8.2/    &
-!/LLG               '       Mean latitude and spread (degr.)  :',2F8.2/    &
-!/LLG               '       Maximum wave height               :',F8.2/)
-!/XYG  940 FORMAT ( '       Gaussian / cosine power spectrum '//           &
-!/XYG               '       Peak frequency and spread (Hz)    :',2X,2F8.4/ &
-!/XYG               '       Mean direction (Naut., degr.)     :',F7.1/     &
-!/XYG               '       Cosine power of dir. distribution :',I5/       &
-!/XYG               '       Mean X and spread (km)            :',2F8.2/    &
-!/XYG               '       Mean Y and spread (km)            :',2F8.2/    &
-!/XYG               '       Maximum wave height               :',F8.2/)
+  940 FORMAT ( '       Gaussian / cosine power spectrum '//           &
+               '       Peak frequency and spread (Hz)    :',2X,2F8.4/ &
+               '       Mean direction (Naut., degr.)     :',F7.1/     &
+               '       Cosine power of dir. distribution :',I5/       &
+               '       Mean longitude and spread (degr.) :',2F8.2/    &
+               '       Mean latitude and spread (degr.)  :',2F8.2/    &
+               '       Maximum wave height               :',F8.2/)
 !
-!/LLG  950 FORMAT ( '       JONSWAP spectrum'//                            &
-!/LLG               '       alfa                          (-) : ',F12.5/   &
-!/LLG               '       Peak frequecy                (Hz) : ',F11.4/   &
-!/LLG               '       Mean direction       (Naut.,deg.) : ',F 8.1/   &
-!/LLG               '       gamma                         (-) : ',F 9.2/   &
-!/LLG               '       sigma-A                       (-) : ',F11.4/   &
-!/LLG               '       sigma-B                       (-) : ',F11.4/   &
-!/LLG               '       Mean longitude and spread (degr.) : ',2F9.2/   &
-!/LLG               '       Mean latitude and spread  (degr.) : ',2F9.2)
-!/XYG  950 FORMAT ( '       JONSWAP spectrum'//                            &
-!/XYG               '       alfa                      (-) : ',F12.5/   &
-!/XYG               '       Peak frequecy            (Hz) : ',F11.4/   &
-!/XYG               '       Mean direction   (Naut.,deg.) : ',F 8.1/   &
-!/XYG               '       gamma                     (-) : ',F 9.2/   &
-!/XYG               '       sigma-A                   (-) : ',F11.4/   &
-!/XYG               '       sigma-B                   (-) : ',F11.4/   &
-!/XYG               '       Mean X and spread        (km) : ',2F9.2/   &
-!/XYG               '       Mean Y and spread        (km) : ',2F9.2)
+  950 FORMAT ( '       JONSWAP spectrum'//                            &
+               '       alfa                          (-) : ',F12.5/   &
+               '       Peak frequecy                (Hz) : ',F11.4/   &
+               '       Mean direction       (Naut.,deg.) : ',F 8.1/   &
+               '       gamma                         (-) : ',F 9.2/   &
+               '       sigma-A                       (-) : ',F11.4/   &
+               '       sigma-B                       (-) : ',F11.4/   &
+               '       Mean longitude and spread (degr.) : ',2F9.2/   &
+               '       Mean latitude and spread  (degr.) : ',2F9.2)
+  941 FORMAT ( '       Gaussian / cosine power spectrum '//           &
+               '       Peak frequency and spread (Hz)    :',2X,2F8.4/ &
+               '       Mean direction (Naut., degr.)     :',F7.1/     &
+               '       Cosine power of dir. distribution :',I5/       &
+               '       Mean X and spread (km)            :',2F8.2/    &
+               '       Mean Y and spread (km)            :',2F8.2/    &
+               '       Maximum wave height               :',F8.2/)
+!
+  951 FORMAT ( '       JONSWAP spectrum'//                            &
+               '       alfa                      (-) : ',F12.5/   &
+               '       Peak frequecy            (Hz) : ',F11.4/   &
+               '       Mean direction   (Naut.,deg.) : ',F 8.1/   &
+               '       gamma                     (-) : ',F 9.2/   &
+               '       sigma-A                   (-) : ',F11.4/   &
+               '       sigma-B                   (-) : ',F11.4/   &
+               '       Mean X and spread        (km) : ',2F9.2/   &
+               '       Mean Y and spread        (km) : ',2F9.2)
 !
   960 FORMAT ( '       Fetch-limited JONSWAP spectra based on local '/ &
                '       wind speed (fetch related to grid increment).')

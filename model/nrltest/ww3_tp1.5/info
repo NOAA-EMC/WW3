@@ -1,0 +1,43 @@
+#############################################################################
+#                                                                           #
+# ww3_tp1.5 Test script for WW-III, one-dimensional propagation.            #
+#           spectral refraction (Y)                                         #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: Switch smoothing off to reproduce 2.           #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+# - Several initial conditions and shoaling to top or bottom are available  #
+#   in the test case. Select by commenting/uncommenting lines in            #
+#   ww3_grid.inp and ww3_strt.inp.                                          #
+# - Note that the refraction time step is chosen as half the spatial        #
+#   time step to avoid slight wiggling due to the otherwise alternating     #
+#   order of the spatial and spectral propagation steps.                    #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 3 x 13 rectilinear Cartesian grid                     #
+#       - dx = 5 km, dy = 5 km                                              #
+#       - Xrange = -5:5 km, Yrange = -5:55 km                               #
+#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.08,    fgamma = 1.25    #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

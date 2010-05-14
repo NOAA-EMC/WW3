@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -66,7 +66,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -84,6 +84,8 @@
 !/    15-Apr-2008 : Clean up for distribution.          ( version 3.14 )
 !/    21-Apr-2008 : Remove PGI bug internal files.      ( version 3.14 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Output file name with 3 digit id.   ( version 3.14 )
+!/                  (W. E. Rogers, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -101,9 +103,9 @@
 !     file is written using UNFORMATTED write statements. The routine
 !     generates new names when called more than once. File names are :
 !
-!                                 restart.FILEXT
-!                                 restart1.FILEXT
-!                                 restart2.FILEXT etc.
+!                                 restart000.FILEXT
+!                                 restart001.FILEXT
+!                                 restart002.FILEXT etc.
 !
 !     The file to be read thus always is unnumbered, whereas all
 !     written files are automatically numbered.
@@ -259,7 +261,7 @@
       LOGICAL                 :: WRITE, IOSFLG
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
-      CHARACTER(LEN=19)       :: FNAME
+      CHARACTER(LEN=21)       :: FNAME
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
 !/
@@ -322,9 +324,9 @@
       IF ( IFILE.EQ.0 ) THEN
           FNAME  = 'restart.'//FILEXT(:I)
         ELSE
-          FNAME  = 'restartN.'//FILEXT(:I)
+          FNAME  = 'restartNNN.'//FILEXT(:I)
           IF ( WRITE .AND. IAPROC.EQ.NAPRST )                         &
-               WRITE (FNAME(8:8),'(I1)') IFILE
+               WRITE (FNAME(8:10),'(I3.3)') IFILE
         END IF
       IFILE  = IFILE + 1
 !

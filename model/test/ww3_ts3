@@ -5,7 +5,6 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/XYG                Cartesian grid.                                    #
 #   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
 #                        Select source term, growth needed, other opt.      #
 #   !/PRn                Selecting one of the propagation schemes.          #
@@ -22,7 +21,7 @@
 # - Running without ww3-strt, should always initalize properly.             #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2002     #
-#                                                   Last Mod : Oct 2007     #
+#                                                   Last Mod : Nov 2009     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -105,6 +104,7 @@ $ &MISC PMOVE = 0.0 /
   &PRO3 WDTHCG = 2.0, WDTHTH = 2.0 /         
 END OF NAMELISTS
 $
+  'RECT' F F
   43  43
 $  0.25  0.25  1.
 $ -5.25 -5.25  1.

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2001 : Origination.                        ( version 2.00 )
@@ -16,6 +16,10 @@
 !/    25-Jul-2006 : Adding grid ID per point.           ( version 3.10 )
 !/    01-May-2007 : Move O7a output from W3INIT.        ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -65,9 +69,6 @@
 !
 !  6. Switches :
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Carthesian grid.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output.
 !
@@ -96,7 +97,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-May-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -106,6 +107,10 @@
 !/    09-Nov-2004 : Multiple grid version.              ( version 3.06 )
 !/    25-Jul-2006 : Adding grid ID per point.           ( version 3.10 )
 !/    01-May-2007 : Move O7a output from W3INIT.        ( version 3.11 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -155,6 +160,8 @@
 !       coverage, the actual interpolation factors can only be
 !       determined at the actual output time. Hence only the basic
 !       bilinear interpolation factors are stored.
+!     - Implementation of the /O7a diagnostic output section for curvilinear
+!       grids is currently incomplete and non-functional.
 !
 !  8. Structure :
 !
@@ -170,9 +177,6 @@
 !
 !  9. Switches :
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Carthesian grid.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Test output.
 !
@@ -181,7 +185,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, X0, Y0, SX, SY,     &
+      USE W3GSRUMD
+      USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, GSU,                &
+                          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
                           MAPSTA, MAPFS, GLOBAL, FILEXT, ZB, TRNX, TRNY
       USE W3ODATMD, ONLY: W3DMO2
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
@@ -201,16 +207,17 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IPT, IX1, IY1, IXS, IYS
+      LOGICAL                 :: INGRID
+      INTEGER                 :: IPT, J, K
 !/S      INTEGER, SAVE           :: IENT = 0
-!/O7a      INTEGER                 :: J, IX2, IY2, IS1, IS2, IS3, IS4, &
-!/O7a                                 IX0, IXN, IY0, IYN, NNX,         &
-!/O7a                                 IX, IY, JX, IIX
+!/O7a      INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
+!/O7a                                 KX, KY, JX, IIX
+      INTEGER                 :: IX(4), IY(4)
+      REAL                    :: RD(4)
       REAL                    :: XN, YN, RX, RY, RDX, RDY
 !/O7a      REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
       REAL, PARAMETER         :: ACC = 0.05
-!/LLG       REAL                   :: FACTOR = 1.
-!/XYG       REAL                   :: FACTOR = 1.E-3
+      REAL                    :: FACTOR
 !/O7a       CHARACTER(LEN=1)         :: SEA(5), LND(5), OUT(5)
 !/O7a       CHARACTER(LEN=9)         :: PARTS
 !/O7a       CHARACTER(LEN=1), ALLOCATABLE :: STRING(:), LINE1(:), LINE2(:)
@@ -223,95 +230,57 @@
 !/
 !/S      CALL STRACE (IENT, 'W3IOPP')
 !
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
+!
       CALL W3DMO2 ( IMOD, NDSE, NDST, NPT )
       GRDID  = FILEXT
 !
-      XN     = X0 + REAL(NX-1)*SX
-      YN     = Y0 + REAL(NY-1)*SY
       NOPTS  = 0
 !
-!/T      WRITE (NDST,9000) X0, XN, Y0, YN
+!/T      CALL W3GSUP( GSU, NDST )
 !
 ! Loop over output points
 !
       DO IPT=1, NPT
 !
-! Correct XPT if necessary
-!
 !/T        WRITE (NDST,9010) IPT, XPT(IPT), YPT(IPT), PNAMES(IPT)
 !
-!/LLG        IF ( XPT(IPT) .GT. XN+ACC*SX ) XPT(IPT) = XPT(IPT)       &
-!/LLG                           - 360.*REAL(1+INT((XPT(IPT)-XN)/360.))
-!/LLG        IF ( XPT(IPT) .LT. X0-ACC*SX ) XPT(IPT) = XPT(IPT)       &
-!/LLG                           + 360.*REAL(1+INT((X0-XPT(IPT))/360.))
+!     Check if point within grid and compute interpolation weights
 !
-!/T        WRITE (NDST,9011) XPT(IPT), YPT(IPT)
+        INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
 !
-!     Check if point within grid
-!
-        IF ( GLOBAL ) THEN
-            IF (YPT(IPT) .LT. Y0 - ACC*SY .OR.                        &
-                YPT(IPT) .GT. YN + ACC*SY ) THEN
-                IF ( IAPROC .EQ. NAPERR )                             &
+        IF ( .NOT.INGRID ) THEN
+            IF ( IAPROC .EQ. NAPERR ) THEN
+                IF ( FLAGLL ) THEN
                     WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
-                CYCLE
+                  ELSE
+                    WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
+                  END IF
               END IF
-          ELSE
-            IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
-                XPT(IPT) .GT. XN + ACC*SX .OR.                        &
-                YPT(IPT) .LT. Y0 - ACC*SY .OR.                        &
-                YPT(IPT) .GT. YN + ACC*SY ) THEN
-                IF ( IAPROC .EQ. NAPERR )                             &
-                    WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
-                CYCLE
-              END IF
+            CYCLE
           END IF
 !
-!     Calculate interpolation data
-!
-        RX     = ( XPT(IPT) - X0 ) / SX
-        RY     = ( YPT(IPT) - Y0 ) / SY
-        RDX    =  MOD ( RX , 1. )
-        RDY    =  MOD ( RY , 1. )
-        IF ( RDX.LT.0. ) RDX = RDX + 1.
-        IF ( RDY.LT.0. ) RDY = RDY + 1.
-!
-!/T        WRITE (NDST,9012) RX, RY, RDX, RDY
-!
-        IX1    = 1 + INT(RX)
-        IY1    = 1 + INT(RY)
-        IXS    = 1
-        IYS    = 1
-!
-        IF ( RDX .LE. ACC ) THEN
-            IXS    = 0
-            RDX    = 0.
-          END IF
-        IF ( RDX .GE. 1.-ACC ) THEN
-            IXS    = 0
-            IX1    = IX1 + 1
-            RDX    = 0.
-          END IF
-        IF ( RDY .LE. ACC ) THEN
-            IYS    = 0
-            RDY    = 0.
-          END IF
-        IF ( RDY .GE. 1.-ACC ) THEN
-            IYS    = 0
-            IY1    = IY1 + 1
-            RDY    = 0.
-          END IF
-!
-!/T        WRITE (NDST,9013) IX1, IY1, IXS, IYS, RDX, RDY
+!/T        DO K = 1,4
+!/T            WRITE (NDST,9012) IX(K), IY(K), RD(K)
+!/T          END DO
 !
 !     Check if point not on land
 !
-        IF (MAPSTA(  IY1  ,  IX1  ).EQ.0 .AND.                        &
-            MAPSTA(  IY1  ,IX1+IXS).EQ.0 .AND.                        &
-            MAPSTA(IY1+IYS,  IX1  ).EQ.0 .AND.                        &
-            MAPSTA(IY1+IYS,IX1+IXS).EQ.0) THEN
-            IF ( IAPROC .EQ. NAPERR )                                 &
-                    WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
+        IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
+             MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
+             MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
+             MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
+            IF ( IAPROC .EQ. NAPERR ) THEN
+                IF ( FLAGLL ) THEN
+                    WRITE (NDSE,1002) XPT(IPT), YPT(IPT), PNAMES(IPT)
+                  ELSE
+                    WRITE (NDSE,1003) XPT(IPT), YPT(IPT), PNAMES(IPT)
+                  END IF
+              END IF
             CYCLE
           END IF
 !
@@ -322,27 +291,17 @@
         PTLOC (1,NOPTS) = XPT(IPT)
         PTLOC (2,NOPTS) = YPT(IPT)
 !
-        IF ( IX1.NE.NX .OR. GLOBAL ) THEN
-            IPTINT(1,NOPTS) = IX1
-            PTIFAC(1,NOPTS) = RDX
-          ELSE
-            IPTINT(1,NOPTS) = IX1 - 1
-            PTIFAC(1,NOPTS) = 1.
-          END IF
-        IF ( IY1.NE.NY ) THEN
-            IPTINT(2,NOPTS) = IY1
-            PTIFAC(2,NOPTS) = RDY
-          ELSE
-            IPTINT(2,NOPTS) = IY1 - 1
-            PTIFAC(2,NOPTS) = 1.
-          END IF
+        DO K = 1,4
+            IPTINT(1,K,NOPTS) = IX(K)
+            IPTINT(2,K,NOPTS) = IY(K)
+            PTIFAC(K,NOPTS) = RD(K)
+          END DO
 !
         PTNME(NOPTS) = PNAMES(IPT)
 !
-!/T        WRITE (NDST,9020) NOPTS, PTNME(NOPTS),                     &
-!/T                          PTLOC (1,NOPTS), PTLOC (2,NOPTS),        &
-!/T                          IPTINT(1,NOPTS), IPTINT(2,NOPTS),        &
-!/T                          PTIFAC(1,NOPTS), PTIFAC(2,NOPTS)
+!/T        WRITE (NDST,9020) &
+!/T          NOPTS, PTNME(NOPTS), PTLOC(1,NOPTS), PTLOC(2,NOPTS), &
+!/T          (IPTINT(1,K,NOPTS),IPTINT(2,K,NOPTS),PTIFAC(K,NOPTS),K=1,4)
 !
         END DO
 !
@@ -353,49 +312,28 @@
 !/O7a          DO J=1, NOPTS
 !
 !/O7a            WRITE (SCREEN,941) PTNME(J), PTLOC(:,J)*FACTOR
-!/O7a            IX1    = IPTINT(1,J)
-!/O7a            IF ( GLOBAL ) THEN
-!/O7a                IX2    = MIN(IX1+1,NX)
-!/O7a              ELSE
-!/O7a                IX2    = 1 + MOD(IX1,NX)
-!/O7a              END IF
-!/O7a            RD1    = PTIFAC(1,J)
-!/O7a            WRITE (SCREEN,942) 'X', IX1, (1.-RD1), IX2, RD1
-!/O7a            IY1    = IPTINT(2,J)
-!/O7a            IY2    = MIN(IY1+1,NY)
-!/O7a            RD2    = PTIFAC(2,J)
-!/O7a            WRITE (SCREEN,942) 'Y', IY1, (1.-RD2), IY2, RD2
-!
-!/O7a            IS1    = MAPFS(IY1,IX1)
-!/O7a            IS2    = MAPFS(IY1,IX2)
-!/O7a            IS3    = MAPFS(IY2,IX1)
-!/O7a            IS4    = MAPFS(IY2,IX2)
+!/O7a            IX(:) = IPTINT(1,:,J)
+!/O7a            IY(:) = IPTINT(2,:,J)
+!/O7a            RD(:) = PTIFAC(:,J)
+!/O7a            WRITE (SCREEN,942) (IX(K),IY(K),RD(K),K=1,4)
 !
 !/O7a            ZBOX   = 0.
 !/O7a            RDTOT  = 0.
-!/O7a            IF ( IS1 .GT. 0 ) THEN
-!/O7a                ZBOX(1) = ZB(IS1)
-!/O7a                RDTOT   = RDTOT + (1.-RD1)*(1.-RD2)
-!/O7a              END IF
-!/O7a            IF ( IS2 .GT. 0 ) THEN
-!/O7a                ZBOX(2) = ZB(IS2)
-!/O7a                RDTOT   = RDTOT +     RD1 *(1.-RD2)
-!/O7a              END IF
-!/O7a            IF ( IS3 .GT. 0 ) THEN
-!/O7a                ZBOX(3) = ZB(IS3)
-!/O7a                RDTOT   = RDTOT + (1.-RD1)*    RD2
-!/O7a              END IF
-!/O7a            IF ( IS4 .GT. 0 ) THEN
-!/O7a                ZBOX(4) = ZB(IS4)
-!/O7a                RDTOT   = RDTOT +     RD1 *    RD2
-!/O7a              END IF
+!/O7a            DO K = 1,4
+!/O7a                IF ( MAPFS(IY(K),IX(K)) .GT. 0 ) THEN
+!/O7a                    ZBOX(K) = ZB(IX(K))
+!/O7a                    RDTOT   = RDTOT + RD(K)
+!/O7a                  END IF
+!/O7a              END DO
 !/O7a            RDTOT  = MAX ( 1.E-7 , RDTOT )
 !
-!/O7a            DEPTH  = - ( (1.-RD1)*(1.-RD2)*ZBOX(1) + &
-!/O7a                             RD1 *(1.-RD2)*ZBOX(2) + &
-!/O7a                         (1.-RD1)*    RD2 *ZBOX(3) + &
-!/O7a                             RD1 *    RD2 *ZBOX(4) ) / RDTOT
+!/O7a            DEPTH  = - ( RD(1)*ZBOX(1) + &
+!/O7a                         RD(2)*ZBOX(2) + &
+!/O7a                         RD(3)*ZBOX(3) + &
+!/O7a                         RD(4)*ZBOX(4) ) / RDTOT
 !/O7a            WRITE (SCREEN,943) DEPTH
+!
+!/O7a       *** implementation of O7a option with curvilinear grids is incomplete ***
 !
 !/O7a            IF ( RD1 .LT. 0.05 ) IX2 = IX1
 !/O7a            IF ( RD1 .GT. 0.95 ) IX1 = IX2
@@ -408,32 +346,32 @@
 !/O7a            NNX    = 13 * ( IXN - IX0 + 1 )
 !
 !/O7a            ALLOCATE ( STRING(NNX), LINE1(NNX), LINE2(NNX) )
-!/O7a            DO IX=1, NNX
-!/O7a              LINE1(IX) = ' '
-!/O7a              LINE2(IX) = '-'
+!/O7a            DO KX=1, NNX
+!/O7a              LINE1(KX) = ' '
+!/O7a              LINE2(KX) = '-'
 !/O7a              END DO
-!/O7a            DO IX=7, NNX, 13
-!/O7a              LINE1(IX) = '|'
-!/O7a              LINE2(IX) = '+'
+!/O7a            DO KX=7, NNX, 13
+!/O7a              LINE1(KX) = '|'
+!/O7a              LINE2(KX) = '+'
 !/O7a              END DO
 !
 !/O7a            IF ( GLOBAL ) THEN
-!/O7a                WRITE (SCREEN,945) (1+MOD(IX+NX-1,NX),IX=IX0,IXN)
+!/O7a                WRITE (SCREEN,945) (1+MOD(KX+NX-1,NX),KX=IX0,IXN)
 !/O7a              ELSE
-!/O7a                WRITE (SCREEN,945) (IX,IX=IX0,IXN)
+!/O7a                WRITE (SCREEN,945) (KX,KX=IX0,IXN)
 !/O7a              END IF
 !/O7a            WRITE (SCREEN,946) LINE1
 !
-!/O7a            DO IY=IYN, IY0, -1
+!/O7a            DO KY=IYN, IY0, -1
 !
 !/O7a              STRING  = LINE1
-!/O7a              DO IX=IX0, IXN
-!/O7a                IF ( GLOBAL .OR. (IX.GE.1 .AND. IX.LE.NX) ) THEN
-!/O7a                    IIX    = 1 + MOD(IX-1+NX,NX)
-!/O7a                    IS1    = MAPFS(IY,IIX)
-!/O7a                    IF ( MAPSTA(IY,IIX) .NE. 0 ) THEN
+!/O7a              DO KX=IX0, IXN
+!/O7a                IF ( GLOBAL .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
+!/O7a                    IIX    = 1 + MOD(KX-1+NX,NX)
+!/O7a                    IS1    = MAPFS(KY,IIX)
+!/O7a                    IF ( MAPSTA(KY,IIX) .NE. 0 ) THEN
 !/O7a                        WRITE (PARTS,'(F8.1,1X)') -ZB(IS1)
-!/O7a                        NNX    = 2 + (IX-IX0)*13
+!/O7a                        NNX    = 2 + (KX-IX0)*13
 !/O7a                        DO JX=1, 9
 !/O7a                          STRING(NNX+JX:NNX+JX) = PARTS(JX:JX)
 !/O7a                          END DO
@@ -443,31 +381,31 @@
 !/O7a              WRITE (SCREEN,946) STRING
 !
 !/O7a              STRING = LINE2
-!/O7a              DO IX=IX0, IXN
-!/O7a                NNX    = 5 + (IX-IX0)*13
-!/O7a                IF ( .NOT.GLOBAL .AND. (IX.LT.1.OR.IX.GT.NX) ) THEN
+!/O7a              DO KX=IX0, IXN
+!/O7a                NNX    = 5 + (KX-IX0)*13
+!/O7a                IF ( .NOT.GLOBAL .AND. (KX.LT.1.OR.KX.GT.NX) ) THEN
 !/O7a                    STRING(NNX:NNX+4) = OUT
 !/O7a                  ELSE
-!/O7a                    IIX    = 1 + MOD(IX-1+NX,NX)
-!/O7a                    IF ( MAPSTA(IY,IIX) .EQ. 0 ) THEN
+!/O7a                    IIX    = 1 + MOD(KX-1+NX,NX)
+!/O7a                    IF ( MAPSTA(KY,IIX) .EQ. 0 ) THEN
 !/O7a                        STRING(NNX:NNX+4) = LND
 !/O7a                      ELSE
 !/O7a                        STRING(NNX:NNX+4) = SEA
 !/O7a                      END IF
 !/O7a                  END IF
 !/O7a                END DO
-!/O7a              WRITE (SCREEN,947) IY, STRING
+!/O7a              WRITE (SCREEN,947) KY, STRING
 !
 !/O7a              STRING  = LINE1
-!/O7a              DO IX=IX0, IXN
-!/O7a                IF ( GLOBAL .OR. (IX.GE.1 .AND. IX.LE.NX) ) THEN
-!/O7a                    IS1    = MAPFS(IY,IX)
-!/O7a                    IIX    = 1 + MOD(IX-1+NX,NX)
-!/O7a                    IF ( MAPSTA(IY,IIX) .NE. 0 ) THEN
+!/O7a              DO KX=IX0, IXN
+!/O7a                IF ( GLOBAL .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
+!/O7a                    IS1    = MAPFS(KY,KX)
+!/O7a                    IIX    = 1 + MOD(KX-1+NX,NX)
+!/O7a                    IF ( MAPSTA(KY,IIX) .NE. 0 ) THEN
 !/O7a                        WRITE (PARTS,'(I4,1A,I4)')               &
-!/O7a                               NINT(1000.*TRNX(IY,IIX)),         &
-!/O7a                               '|', NINT(1000.*TRNY(IY,IIX))
-!/O7a                        NNX    = 2 + (IX-IX0)*13
+!/O7a                               NINT(1000.*TRNX(KY,IIX)),         &
+!/O7a                               '|', NINT(1000.*TRNY(KY,IIX))
+!/O7a                        NNX    = 2 + (KX-IX0)*13
 !/O7a                        DO JX=1, 9
 !/O7a                          STRING(NNX+JX:NNX+JX) = PARTS(JX:JX)
 !/O7a                          END DO
@@ -480,9 +418,9 @@
 !/O7a              END DO
 !
 !/O7a            IF ( GLOBAL ) THEN
-!/O7a                WRITE (SCREEN,945) (1+MOD(IX+NX-1,NX),IX=IX0,IXN)
+!/O7a                WRITE (SCREEN,945) (1+MOD(KX+NX-1,NX),KX=IX0,IXN)
 !/O7a              ELSE
-!/O7a                WRITE (SCREEN,945) (IX,IX=IX0,IXN)
+!/O7a                WRITE (SCREEN,945) (KX,KX=IX0,IXN)
 !/O7a              END IF
 !/O7a            DEALLOCATE ( STRING, LINE1, LINE2 )
 
@@ -501,35 +439,31 @@
 !/O7a                '    X/Y transparency in thousands below')
 !/O7a  941 FORMAT (/'    Point ',A,' at ',2F8.2,' (degr or km)'/    &
 !/O7a          '    -------------------------------------------------')
-!/O7a  942 FORMAT ( '       ',1A,' grid counters (factor) :',         &
-!/O7a                         2(I6,' (',F4.2,')'))
+!/O7a  942 FORMAT ( '       Interp. cell :',4(' (',2I5,F4.2,')'))
 !/O7a  943 FORMAT ( '       Depth (water level = 0)  :',F10.1,' m'/)
 !/O7a  945 FORMAT ( '          IX =  ',4I13)
 !/O7a  946 FORMAT ( '                     ',52A1)
 !/O7a  947 FORMAT ( '          IY =',I5,2X,52A1)
 !
-!/LLG 1000 FORMAT (/' *** WAVEWATCH III WARNING :'/                   &
-!/LLG               '     OUTPUT POINT OUT OF GRID : ',2F10.3,2X,A/   &
-!/LLG               '     POINT SKIPPPED '/)
-!/XYG 1000 FORMAT (/' *** WAVEWATCH III WARNING :'/                   &
-!/XYG               '     OUTPUT POINT OUT OF GRID : ',2E10.3,2X,A/   &
-!/XYG               '     POINT SKIPPPED '/)
+ 1000 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
+               '     OUTPUT POINT OUT OF GRID : ',2F10.3,2X,A/   &
+               '     POINT SKIPPPED '/)
+ 1001 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
+               '     OUTPUT POINT OUT OF GRID : ',2E10.3,2X,A/   &
+               '     POINT SKIPPPED '/)
 !
-!/LLG 1001 FORMAT (/' *** WAVEWATCH III WARNING :'/                   &
-!/LLG               '     OUTPUT POINT ON LAND : ',2F10.3,2X,A/       &
-!/LLG               '     POINT SKIPPPED '/)
-!/XYG 1001 FORMAT (/' *** WAVEWATCH III WARNING :'/                   &
-!/XYG               '     OUTPUT POINT ON LAND : ',2E10.3,2X,A/       &
-!/XYG               '     POINT SKIPPPED '/)
+ 1002 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
+               '     OUTPUT POINT ON LAND : ',2F10.3,2X,A/       &
+               '     POINT SKIPPPED '/)
+ 1003 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
+               '     OUTPUT POINT ON LAND : ',2E10.3,2X,A/       &
+               '     POINT SKIPPPED '/)
 !
-!/T 9000 FORMAT (' TEST W3IOPP : GRID RANGES :',2F12.2/               &
-!/T              '                            ',2F12.2)
 !/T 9010 FORMAT (' TEST W3IOPP : INPUT  : ',I4,2F12.2,2X,A)
 !/T 9011 FORMAT ('               CORR.  :     ',2F12.2)
-!/T 9012 FORMAT (' TEST W3IOPP : INT. DATA A): ',4F8.2)
-!/T 9013 FORMAT (' TEST W3IOPP : INT. DATA B): ',4I4,2F8.2)
-!/T 9020 FORMAT (' TEST W3IOPP : PREPROCESSED DATA',I4,2X,A/          &
-!/T              '             ',2F12.2,2I5,2F6.3)
+!/T 9012 FORMAT (' TEST W3IOPP : INT. DATA: ',2I6,1F8.2)
+!/T 9020 FORMAT (' TEST W3IOPP : PREPROCESSED DATA',I4,2X,A,2X,2F12.2, &
+!/T           4(/'             ',2I5,F6.3))
 !/
 !/ End of W3IOPP ----------------------------------------------------- /
 !/
@@ -541,7 +475,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Nov-2004 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -549,6 +483,8 @@
 !/                  Major changes to logistics.
 !/    11-Jun-2001 : Clean-up.                           ( version 2.11 )
 !/    09-Nov-2004 : Multiple grid version.              ( version 3.06 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -657,29 +593,12 @@
 !
 ! Unpack interpolation data
 !
-        IX1    = IPTINT(1,I)
-        IY1    = IPTINT(2,I)
-        RDX    = PTIFAC(1,I)
-        RDY    = PTIFAC(2,I)
-!
-        IX(1)  = IX1
-        IX(2)  = 1 + MOD(IX1,NX)
-        IX(3)  = IX1
-        IX(4)  = IX(2)
+        IX(:)  = IPTINT(1,:,I)
+        IY(:)  = IPTINT(2,:,I)
+        RD(:)  = PTIFAC(:,I)
 !
 !/T        WRITE (NDST,9001) IX1, IY1, RDX, RDY, IX(2)
 !
-        IY(1)  = IY1
-        IY(2)  = IY1
-        IY(3)  = IY1 + 1
-        IY(4)  = IY1 + 1
-!
-! Interpolation factors assuming sea points only
-!
-        RD(1)  = (1.-RDX) * (1.-RDY)
-        RD(2)  =   RDX    * (1.-RDY)
-        RD(3)  = (1.-RDX) *   RDY
-        RD(4)  =   RDX    *   RDY
 !
 ! Correct for land and ice and get sea point counters
 !

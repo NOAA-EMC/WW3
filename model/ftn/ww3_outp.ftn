@@ -8,7 +8,7 @@
 !/                  |             A. Chawla             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -40,6 +40,8 @@
 !/                  WMO standard (A. Chawla)
 !/    29-Apr-2008 : Adjust format partition output.     ( version 3.14 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -126,9 +128,6 @@
 !
 !  9. Switches :
 !
-!       !/LLG  Spherical grid.
-!       !/XYG  Cartesian grid.
-!
 !       !/S    Enable subroutine tracing.
 !
 !       !/NCO  NCEP NCO modifications for operational implementation.
@@ -169,8 +168,7 @@
 !/O14      INTEGER                 :: NDBO
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
-!/LLG      REAL                    :: FACT = 1.
-!/XYG      REAL                    :: FACT = 1.E-3
+      REAL                    :: M2KM
       REAL, ALLOCATABLE       :: XPART(:,:)
       LOGICAL                 :: FLFORM, FLSRCE(6)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
@@ -240,6 +238,12 @@
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
 !
+      IF ( FLAGLL ) THEN
+          M2KM = 1.
+        ELSE
+          M2KM = 1.E-3
+        END IF
+!
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
       ALLOCATE ( XPART(6,0:DIMXP) )
 !
@@ -250,7 +254,11 @@
 !
       WRITE (NDSO,930)
       DO I=1, NOPTS
-        WRITE (NDSO,931) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
+        IF ( FLAGLL ) THEN
+            WRITE (NDSO,931) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+          ELSE
+            WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+          END IF
         END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -533,8 +541,15 @@
 !
       WRITE (NDSO,950) NREQ
       DO I=1, NOPTS
-        IF (FLREQ(I)) WRITE (NDSO,951) PTNME(I), FACT*PTLOC(1,I),   &
-                                                 FACT*PTLOC(2,I)
+        IF (FLREQ(I)) THEN
+            IF ( FLAGLL ) THEN
+                WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
+                                           M2KM*PTLOC(2,I)
+              ELSE
+                WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
+                                           M2KM*PTLOC(2,I)
+              END IF
+          END IF
         END DO
 !
       IF ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) WRITE (NDSO,952)
@@ -613,8 +628,8 @@
 !
   930 FORMAT ( '  Points in file : '/                                 &
                ' ------------------------------------')
-!/LLG  931 FORMAT ( '      ',A,2F10.2)
-!/XYG  931 FORMAT ( '      ',A,2(F8.1,'E3'))
+  931 FORMAT ( '      ',A,2F10.2)
+  932 FORMAT ( '      ',A,2(F8.1,'E3'))
 !
   940 FORMAT (/'  Output time data : '/                               &
                ' --------------------------------------------------'/ &
@@ -632,8 +647,8 @@
 !
   950 FORMAT (/'  Requested output for',I3,' points : '/              &
                ' --------------------------------------------------')
-!/LLG  951 FORMAT ( '      ',A,2F10.2)
-!/XYG  951 FORMAT ( '      ',A,2(F8.1,'E3'))
+  951 FORMAT ( '      ',A,2F10.2)
+  953 FORMAT ( '      ',A,2(F8.1,'E3'))
   952 FORMAT (/'  Output times :'/                                    &
                ' --------------------------------------------------')
 !
@@ -844,7 +859,7 @@
                                  FPSTAR, FACF, FACE, FACS, HMAT, WNA, &
                                  XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                  YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
-                                 FMEAN, WNMEAN, UDIRCA
+                                 FMEAN, WNMEAN, UDIRCA, M2KM
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY
@@ -873,6 +888,12 @@
 ! 1. Initialisations
 !
 !/S      CALL STRACE (IENT, 'W3EXPO')
+!
+      IF ( FLAGLL ) THEN
+          M2KM   = 1.
+        ELSE
+          M2KM   = 1.E-3
+        END IF
 !
       XL     = 1./XFR - 1.
       XH     =  XFR - 1.
@@ -926,17 +947,33 @@
               CALL STME21 ( TIME , DTME21 )
               IF ( IPASS .NE. 1 ) WRITE (NDSTAB,1910)
               IF ( OTYPE.EQ.1 ) THEN
-                  WRITE (NDSTAB,1911) DTME21
+                  IF ( FLAGLL ) THEN
+                      WRITE (NDSTAB,1911) DTME21
+                    ELSE
+                      WRITE (NDSTAB,1711) DTME21
+                    END IF
                 ELSE IF ( OTYPE.EQ.2 ) THEN
-                  WRITE (NDSTAB,1912) DTME21
+                  IF ( FLAGLL ) THEN
+                      WRITE (NDSTAB,1912) DTME21
+                    ELSE
+                      WRITE (NDSTAB,1712) DTME21
+                    END IF
                 ELSE IF ( OTYPE.EQ.3 ) THEN
                   WRITE (NDSTAB,1913) DTME21
                 ELSE IF ( OTYPE.EQ.4 ) THEN
                   WRITE (NDSTAB,1914) DTME21
                 ELSE IF ( OTYPE.EQ.5 ) THEN
-                  WRITE (NDSTAB,1915) DTME21
+                  IF ( FLAGLL ) THEN
+                      WRITE (NDSTAB,1915) DTME21
+                    ELSE
+                      WRITE (NDSTAB,1715) DTME21
+                    END IF
                 ELSE IF ( OTYPE.EQ.6 ) THEN
-                  WRITE (NDSTAB,1916) DTME21
+                  IF ( FLAGLL ) THEN
+                      WRITE (NDSTAB,1916) DTME21
+                    ELSE
+                      WRITE (NDSTAB,1716) DTME21
+                    END IF
                 END IF
             END IF
         END IF
@@ -1170,8 +1207,11 @@
                   FPSTAR = FP * TPIINV * UNORM / GRAV
                   XSTAR  = PTLOC(1,J) * GRAV / UNORM**2
                   YSTAR  = PTLOC(2,J) * GRAV / UNORM**2
-!/LLG                  XSTAR  = XSTAR * DERA * RADIUS * COS(PTLOC(2,J)*DERA)
-!/LLG                  YSTAR  = YSTAR * DERA * RADIUS
+                  IF ( FLAGLL ) THEN
+                      XSTAR  = XSTAR * DERA * RADIUS &
+                             * COS(PTLOC(2,J)*DERA)
+                      YSTAR  = YSTAR * DERA * RADIUS
+                    END IF
                 END IF
 !
               END IF
@@ -1342,9 +1382,6 @@
 !
             IF ( ITYPE .EQ. 1 ) THEN
 !
-!/LLG                FACT   = 1.
-!/XYG                FACT   = 1.E-3
-!
                 IF ( OTYPE .EQ. 1 ) THEN
 !
                     IF ( SCALE1 .GE. 0. )                             &
@@ -1363,9 +1400,15 @@
                   ELSE IF ( OTYPE .EQ. 2 ) THEN
 !
                     CALL STME21 ( TIME , DTME21 )
-                    WRITE (NDSTAB,920) DTME21, PTNME(J),              &
-                        FACT*PTLOC(1,J), FACT*PTLOC(2,J),             &
-                        DPO(J), USTAR, WAO(J), UDIR
+                    IF ( FLAGLL ) THEN
+                        WRITE (NDSTAB,920) DTME21, PTNME(J),          &
+                            M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                            DPO(J), USTAR, WAO(J), UDIR
+                      ELSE
+                        WRITE (NDSTAB,720) DTME21, PTNME(J),          &
+                            M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                            DPO(J), USTAR, WAO(J), UDIR
+                      END IF
                     IF ( FP .EQ. 0. ) FP = SIG(NK)
                     DO IK=1, NK
                       WRITE (NDSTAB,921) TPIINV*SIG(IK), SIG(IK)/FP,  &
@@ -1382,8 +1425,8 @@
                                        UDIR, CAO(J), CDIR
                         WRITE (NDSTAB) ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
                       ELSE
-                        WRITE (NDSTAB,901) PTNME(J), FACT*PTLOC(2,J), &
-                                           FACT*PTLOC(1,J), DPO(J),   &
+                        WRITE (NDSTAB,901) PTNME(J), M2KM*PTLOC(2,J), &
+                                           M2KM*PTLOC(1,J), DPO(J),   &
                                            WAO(J), UDIR, CAO(J), CDIR
                         WRITE (NDSTAB,902)                            &
                               ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
@@ -1391,14 +1434,17 @@
 !
                   ELSE IF ( OTYPE .EQ. 4 ) THEN
 !
-!/XYG                    WRITE (NDSTAB,940) TIME, FACT*PTLOC(1,J),    &
-!/XYG                        FACT*PTLOC(2,J), PTNME(J), NPART, DEPTH, &
-!/XYG                        WAO(J), UDIR, CAO(J), CDIR
-!/LLG                    IF ( PTLOC(1,J) .LT. 0. )                    &
-!/LLG                        PTLOC(1,J) = PTLOC(1,J) + 360.
-!/LLG                    WRITE (NDSTAB,940) TIME, FACT*PTLOC(2,J),    &
-!/LLG                        FACT*PTLOC(1,J), PTNME(J), NPART, DEPTH, &
-!/LLG                        WAO(J), UDIR, CAO(J), CDIR
+                    IF ( FLAGLL ) THEN
+                        IF ( PTLOC(1,J) .LT. 0. )                     &
+                            PTLOC(1,J) = PTLOC(1,J) + 360.
+                        WRITE (NDSTAB,940) TIME, M2KM*PTLOC(2,J),     &
+                            M2KM*PTLOC(1,J), PTNME(J), NPART, DEPTH,  &
+                            WAO(J), UDIR, CAO(J), CDIR
+                      ELSE
+                        WRITE (NDSTAB,943) TIME, M2KM*PTLOC(1,J),     &
+                            M2KM*PTLOC(2,J), PTNME(J), NPART, DEPTH,  &
+                            WAO(J), UDIR, CAO(J), CDIR
+                      END IF
 !                   WRITE (NDSTAB,941)
                     DO I=0, NPART
                       WRITE (NDSTAB,942) I, XPART(:,I)
@@ -1458,17 +1504,28 @@
 !
                   ELSE
 !
-!/LLG                    FACT   = 1.
-!/XYG                    FACT   = 1.E-3
-!
                     IF ( OTYPE .EQ. 1 ) THEN
-                        WRITE (NDSTAB,1931) FACT*PTLOC(1,J),          &
-                               FACT*PTLOC(2,J), DPO(J), CAO(J), CDIR, &
-                               WAO(J), UDIR
+                        IF ( FLAGLL ) THEN
+                            WRITE (NDSTAB,1931) M2KM*PTLOC(1,J),      &
+                                   M2KM*PTLOC(2,J), DPO(J), CAO(J),   &
+                                   CDIR, WAO(J), UDIR
+                          ELSE
+                            WRITE (NDSTAB,1731) M2KM*PTLOC(1,J),      &
+                                   M2KM*PTLOC(2,J), DPO(J), CAO(J),   &
+                                   CDIR, WAO(J), UDIR
+                          END IF
                       ELSE IF ( OTYPE .EQ. 2 ) THEN
-                        WRITE (NDSTAB,1932) FACT*PTLOC(1,J),          &
-                               FACT*PTLOC(2,J), HSIG, WLEN, TMEAN,    &
-                               THMEAN, THSPRD, FP*TPIINV, THP, SPP
+                        IF ( FLAGLL ) THEN
+                            WRITE (NDSTAB,1932) M2KM*PTLOC(1,J),      &
+                                   M2KM*PTLOC(2,J), HSIG, WLEN,       &
+                                   TMEAN, THMEAN, THSPRD, FP*TPIINV,  &
+                                   THP, SPP
+                          ELSE
+                            WRITE (NDSTAB,1732) M2KM*PTLOC(1,J),      &
+                                   M2KM*PTLOC(2,J), HSIG, WLEN,       &
+                                   TMEAN, THMEAN, THSPRD, FP*TPIINV,  &
+                                   THP, SPP
+                          END IF
                       ELSE IF ( OTYPE .EQ. 3 ) THEN
                         WRITE (NDSTAB,1933) 1.E-4*XSTAR,              &
                                1.E-4*YSTAR, UNORM, ESTAR, FPSTAR,     &
@@ -1483,18 +1540,36 @@
                         AFR    = TPI / TMEAN
                         CALL WAVNU1 ( AFR, DPO(J), WNA, XYZ )
                         AGE2   = MIN ( 100. , AFR / WNA / UABS )
-                        WRITE (NDSTAB,1935) FACT*PTLOC(1,J),          &
-                               FACT*PTLOC(2,J), WAO(J), UDIR, HSIG,   &
-                               HMAT, AGE1, AGE2, ASO(J)
+                        IF ( FLAGLL ) THEN
+                            WRITE (NDSTAB,1935) M2KM*PTLOC(1,J),      &
+                                   M2KM*PTLOC(2,J), WAO(J), UDIR,     &
+                                   HSIG, HMAT, AGE1, AGE2, ASO(J)
+                          ELSE
+                            WRITE (NDSTAB,1735) M2KM*PTLOC(1,J),      &
+                                   M2KM*PTLOC(2,J), WAO(J), UDIR,     &
+                                   HSIG, HMAT, AGE1, AGE2, ASO(J)
+                          END IF
                       ELSE IF ( OTYPE .EQ. 6 ) THEN
                         IF ( HSIG .GE. HSMIN ) THEN
-                           WRITE (NDSTAB,1936) FACT*PTLOC(1,J),       &
-                                  FACT*PTLOC(2,J), WAO(J), NINT(UDIR),&
-                                  HSIG, TPI / FP
+                           IF ( FLAGLL ) THEN
+                               WRITE (NDSTAB,1936) M2KM*PTLOC(1,J),       &
+                                      M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                                      HSIG, TPI / FP
+                             ELSE
+                               WRITE (NDSTAB,1736) M2KM*PTLOC(1,J),       &
+                                      M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                                      HSIG, TPI / FP
+                             END IF
                         ELSE
-                           WRITE (NDSTAB,1936) FACT*PTLOC(1,J),       &
-                                  FACT*PTLOC(2,J), WAO(J), NINT(UDIR),&
-                                  HSIG, 0.0
+                           IF ( FLAGLL ) THEN
+                               WRITE (NDSTAB,1936) M2KM*PTLOC(1,J),       &
+                                      M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                                      HSIG, 0.0
+                             ELSE
+                               WRITE (NDSTAB,1736) M2KM*PTLOC(1,J),       &
+                                      M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                                      HSIG, 0.0
+                             END IF
                         END IF
                       END IF
 !
@@ -1547,12 +1622,16 @@
 !
                   ELSE IF ( OTYPE .EQ. 2 ) THEN
 !
-!/LLG                    FACT   = 1.
-!/XYG                    FACT   = 1.E-3
                     CALL STME21 ( TIME , DTME21 )
-                    WRITE (NDSTAB,2920) DTME21, PTNME(J),             &
-                        FACT*PTLOC(1,J), FACT*PTLOC(2,J),             &
-                        DPO(J), USTAR, WAO(J)
+                    IF ( FLAGLL ) THEN
+                        WRITE (NDSTAB,2920) DTME21, PTNME(J),         &
+                            M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                            DPO(J), USTAR, WAO(J)
+                      ELSE
+                        WRITE (NDSTAB,2720) DTME21, PTNME(J),         &
+                            M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                            DPO(J), USTAR, WAO(J)
+                      END IF
                     IF ( ISCALE.EQ.0 ) THEN
                         WRITE (NDSTAB,2921)
                       ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.2 ) THEN
@@ -1571,12 +1650,16 @@
 !
                   ELSE IF ( OTYPE .EQ. 3 ) THEN
 !
-!/LLG                    FACT   = 1.
-!/XYG                    FACT   = 1.E-3
                     CALL STME21 ( TIME , DTME21 )
-                    WRITE (NDSTAB,2920) DTME21, PTNME(J),             &
-                        FACT*PTLOC(1,J), FACT*PTLOC(2,J),             &
-                        DPO(J), USTAR, WAO(J)
+                    IF ( FLAGLL ) THEN
+                        WRITE (NDSTAB,2920) DTME21, PTNME(J),         &
+                            M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                            DPO(J), USTAR, WAO(J)
+                      ELSE
+                        WRITE (NDSTAB,2720) DTME21, PTNME(J),         &
+                            M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                            DPO(J), USTAR, WAO(J)
+                      END IF
                     IF ( ISCALE.EQ.0 ) THEN
                         WRITE (NDSTAB,2925)
                       ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.2 ) THEN
@@ -1619,11 +1702,15 @@
                         IF ( FLSRCE(6) ) WRITE (NDSTAB)               &
                               ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
                       ELSE
-!/LLG                        FACT   = 1.
-!/XYG                        FACT   = 1.E-3
-                        WRITE (NDSTAB,901) PTNME(J), FACT*PTLOC(2,J), &
-                                           FACT*PTLOC(1,J), DPO(J),   &
-                                           WAO(J), UDIR, CAO(J), CDIR
+                        IF ( FLAGLL ) THEN
+                            WRITE (NDSTAB,901) PTNME(J),              &
+                                M2KM*PTLOC(2,J), M2KM*PTLOC(1,J),     &
+                                DPO(J), WAO(J), UDIR, CAO(J), CDIR
+                          ELSE
+                            WRITE (NDSTAB,701) PTNME(J),              &
+                                M2KM*PTLOC(2,J), M2KM*PTLOC(1,J),     &
+                                DPO(J), WAO(J), UDIR, CAO(J), CDIR
+                          END IF
                         IF ( FLSRCE(1) ) WRITE (NDSTAB,902)           &
                               ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
                         IF ( FLSRCE(2) ) WRITE (NDSTAB,902)           &
@@ -1652,8 +1739,8 @@
 ! Formats
 !
   900 FORMAT (I8.8,I7.6)
-!/LLG  901 FORMAT ('''',A10,'''',2F7.2,F10.1,2(F7.2,F6.1))
-!/XYG  901 FORMAT ('''',A10,'''',2(F8.1,'E3'),F10.1,2(F7.2,F6.1))
+  901 FORMAT ('''',A10,'''',2F7.2,F10.1,2(F7.2,F6.1))
+  701 FORMAT ('''',A10,'''',2(F8.1,'E3'),F10.1,2(F7.2,F6.1))
   902 FORMAT (7E11.3)
   905 FORMAT (9X,A)
   910 FORMAT (/15X,' Water depth       :',F7.1,'  (m)'/               &
@@ -1667,31 +1754,31 @@
                15X,' Mean wave period  :',F7.1,'  (s)'/               &
                15X,' Mean wave direct. :',F7.1,'  (degr)'/            &
                15X,' Direct. spread    :',F7.1,'  (degr)'/)
-!/LLG  920 FORMAT (' Time     : ',A/                                  &
-!/LLG              ' Location : ',A,'  (',2F8.2,' )'/                 &
-!/LLG              ' depth    : ',F7.1,'   m'/                        &
-!/LLG              ' U*       : ',F9.3,' m/s'/                        &
-!/LLG              ' U10      : ',F7.1,'   m/s'/                      &
-!/LLG              ' Dir U10  : ',F7.1,'   degr'//                    &
-!/LLG       '      f     f/fp      F(f)    theta    spr    alpha  '/  &
-!/LLG       '     (Hz)    (-)     (m2s)    (deg)   (deg)    (-)   '/  &
-!/LLG           '  --------------------------------------------------')
-!/XYG  920 FORMAT (' Time     : ',A/                                  &
-!/XYG              ' Location : ',A,'  (',2(F8.1,'E3'),' )'/          &
-!/XYG              ' depth    : ',F7.1,'   m'/                        &
-!/XYG              ' U*       : ',F9.3,' m/s'/                        &
-!/XYG              ' U10      : ',F7.1,'   m/s'/                      &
-!/XYG              ' Dir U10  : ',F7.1,'   degr'//                    &
-!/XYG       '      f     f/fp      F(f)    theta    spr    alpha  '/  &
-!/XYG       '     (Hz)    (-)     (m2s)    (deg)   (deg)    (-)   '/  &
-!/XYG       '  --------------------------------------------------')
+  920 FORMAT (' Time     : ',A/                                  &
+              ' Location : ',A,'  (',2F8.2,' )'/                 &
+              ' depth    : ',F7.1,'   m'/                        &
+              ' U*       : ',F9.3,' m/s'/                        &
+              ' U10      : ',F7.1,'   m/s'/                      &
+              ' Dir U10  : ',F7.1,'   degr'//                    &
+       '      f     f/fp      F(f)    theta    spr    alpha  '/  &
+       '     (Hz)    (-)     (m2s)    (deg)   (deg)    (-)   '/  &
+           '  --------------------------------------------------')
+  720 FORMAT (' Time     : ',A/                                  &
+              ' Location : ',A,'  (',2(F8.1,'E3'),' )'/          &
+              ' depth    : ',F7.1,'   m'/                        &
+              ' U*       : ',F9.3,' m/s'/                        &
+              ' U10      : ',F7.1,'   m/s'/                      &
+              ' Dir U10  : ',F7.1,'   degr'//                    &
+       '      f     f/fp      F(f)    theta    spr    alpha  '/  &
+       '     (Hz)    (-)     (m2s)    (deg)   (deg)    (-)   '/  &
+       '  --------------------------------------------------')
   921 FORMAT (1x,F8.5,F7.3,E11.3,2F8.1,F8.4)
   922 FORMAT (' '/' ')
 !
-!/LLG  940 FORMAT (1X,I8.8,1X,I6.6,2F8.3,2X,'''',A10,'''',            &
-!/LLG              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
-!/XYG  940 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
-!/XYG              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
+  940 FORMAT (1X,I8.8,1X,I6.6,2F8.3,2X,'''',A10,'''',            &
+              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
+  943 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
+              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
   941 FORMAT ('        hs     tp     lp       theta     sp      wf')
   942 FORMAT (I3,3F8.2,2F9.2,F7.2)
 !
@@ -1726,28 +1813,28 @@
      '  yr mth dy h  (m/s) (d.N) (m) (s) '/         &
      ' ----------------------------------')
  1910 FORMAT ( ' '/' ' )
-!/LLG 1911 FORMAT (' Time : ',A//                                     &
-!/LLG   '    Long.    Lat.       d     Uc     Dir.  U10    Dir. '/    &
-!/LLG   '                       (m)   (m/s)  (d.N) (m/s)  (d.N) '/    &
-!/LLG   ' --------------------------------------------------------')
-!/XYG 1911 FORMAT (' Time : ',A//                                     &
-!/XYG   '       X        Y          d     Uc     Dir.  U10    Dir. '/ &
-!/XYG   '      (m)      (m)        (m)   (m/s)  (d.N) (m/s)  (d.N) '/ &
-!/XYG   ' ----------------------------------------------------------')
-!/LLG 1912 FORMAT (' Time : ',A//                                     &
-!/LLG   '    Long.    Lat.       Hs     L      Tr    Dir.  Spr. ',    &
-!/LLG   '    fp    p_dir  p_spr'/                                     &
-!/LLG   '                       (m)    (m)    (s)   (d.N)  (deg)',    &
-!/LLG   '   (Hz)   (d.N)  (deg)'/                                     &
-!/LLG   ' ------------------------------------------------------',    &
-!/LLG   '-----------------------')
-!/XYG 1912 FORMAT (' Time : ',A//                                     &
-!/XYG   '       X        Y          Hs     L      Tr    Dir.  Spr. ', &
-!/XYG   '    fp    p_dir  p_spr'/                                     &
-!/XYG   '      (m)      (m))       (m)    (m)    (s)   (d.N)  (deg)', &
-!/XYG   '   (Hz)   (d.N)  (deg)'/                                     &
-!/XYG   ' ------------------------------------------------------',    &
-!/XYG   '-------------------------')
+ 1911 FORMAT (' Time : ',A//                                     &
+   '    Long.    Lat.       d     Uc     Dir.  U10    Dir. '/    &
+   '                       (m)   (m/s)  (d.N) (m/s)  (d.N) '/    &
+   ' --------------------------------------------------------')
+ 1912 FORMAT (' Time : ',A//                                     &
+   '    Long.    Lat.       Hs     L      Tr    Dir.  Spr. ',    &
+   '    fp    p_dir  p_spr'/                                     &
+   '                       (m)    (m)    (s)   (d.N)  (deg)',    &
+   '   (Hz)   (d.N)  (deg)'/                                     &
+   ' ------------------------------------------------------',    &
+   '-----------------------')
+ 1711 FORMAT (' Time : ',A//                                     &
+   '       X        Y          d     Uc     Dir.  U10    Dir. '/ &
+   '      (m)      (m)        (m)   (m/s)  (d.N) (m/s)  (d.N) '/ &
+   ' ----------------------------------------------------------')
+ 1712 FORMAT (' Time : ',A//                                     &
+   '       X        Y          Hs     L      Tr    Dir.  Spr. ', &
+   '    fp    p_dir  p_spr'/                                     &
+   '      (m)      (m))       (m)    (m)    (s)   (d.N)  (deg)', &
+   '   (Hz)   (d.N)  (deg)'/                                     &
+   ' ------------------------------------------------------',    &
+   '-------------------------')
  1913 FORMAT (' Time : ',A//                                          &
    '       X*       Y*       U*       E*        fp*       Cd   alpha'/&
    '      (-)      (-)     (m/s)     (-)        (-)     *1000  *100'/ &
@@ -1756,28 +1843,28 @@
    '       X*       Y*     U10       E*        fp*       Cd   alpha'/ &
    '      (-)      (-)    (m/s)     (-)        (-)     *1000  *100 '/ &
    ' --------------------------------------------------------------')
-!/LLG 1915 FORMAT (' Time : ',A//                                     &
-!/LLG   '     Long.    Lat.   U10    Dir.    Hs      H*    cp/U  ',   &
-!/LLG       '  cm/U     Dt'/                                          &
-!/LLG   '                    (m/s)  (d.N)   (m)     (-)    (-)   ',   &
-!/LLG       '   (-)   (deg)'/                                         &
-!/LLG   ' -------------------------------------------------',         &
-!/LLG   '---------------------')
-!/XYG 1915 FORMAT (' Time : ',A//                                     &
-!/XYG   '       X        Y      U10    Dir.    Hs      H*    cp/U  ', &
-!/XYG       '  cm/U     Dt'/                                          &
-!/XYG   '      (m)      (m)    (m/s)  (d.N)   (m)     (-)    (-)   ', &
-!/XYG       '   (-)   (deg)'/                                         &
-!/XYG   ' ---------------------------------------------------',       &
-!/XYG   '---------------------')
-!/LLG 1916 FORMAT (' Time : ',A//                                     &
-!/LLG   '   Long.   Lat.   U10     Dir.     Hs      Tp  '/         &
-!/LLG   '                 (m/s)   (d.N)    (m)     (s)  '/         &
-!/LLG   '-----------------------------------------------')
-!/XYG 1916 FORMAT (' Time : ',A//                                     &
-!/XYG   '    X     Y     U10     Dir.     Hs      Tp  '/         &
-!/XYG   '    (m)  (m)   (m/s)   (d.N)    (m)     (s)  '/         &
-!/XYG   '---------------------------------------------')
+ 1915 FORMAT (' Time : ',A//                                     &
+   '     Long.    Lat.   U10    Dir.    Hs      H*    cp/U  ',   &
+       '  cm/U     Dt'/                                          &
+   '                    (m/s)  (d.N)   (m)     (-)    (-)   ',   &
+       '   (-)   (deg)'/                                         &
+   ' -------------------------------------------------',         &
+   '---------------------')
+ 1715 FORMAT (' Time : ',A//                                     &
+   '       X        Y      U10    Dir.    Hs      H*    cp/U  ', &
+       '  cm/U     Dt'/                                          &
+   '      (m)      (m)    (m/s)  (d.N)   (m)     (-)    (-)   ', &
+       '   (-)   (deg)'/                                         &
+   ' ---------------------------------------------------',       &
+   '---------------------')
+ 1916 FORMAT (' Time : ',A//                                     &
+   '   Long.   Lat.   U10     Dir.     Hs      Tp  '/         &
+   '                 (m/s)   (d.N)    (m)     (s)  '/         &
+   '-----------------------------------------------')
+ 1716 FORMAT (' Time : ',A//                                     &
+   '    X     Y     U10     Dir.     Hs      Tp  '/         &
+   '    (m)  (m)   (m/s)   (d.N)    (m)     (s)  '/         &
+   '---------------------------------------------')
  1921 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F10.1,F6.2,F7.1,F6.2,F7.1)
  1922 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F9.3,F7.1,F7.2,F7.1,F7.2,        &
                F8.4,F7.1,F7.2)
@@ -1785,29 +1872,29 @@
  1924 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F7.1,2E11.3,2F7.3)
  1925 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F7.2,F7.1,2F7.2,2F8.2,F7.1)
  1926 FORMAT ( 2X,I4,3(1X,I2),F5.1,1X,I3,2F5.1)
-!/LLG 1931 FORMAT ( 2X,2F8.3,F10.1,F6.2,F7.1,F6.2,F7.1)
-!/XYG 1931 FORMAT ( 2X,2(F7.1,'E3'),F10.1,F6.2,F7.1,F6.2,F7.1)
-!/LLG 1932 FORMAT ( 2X,2F8.3,F9.3,F7.1,F7.2,F7.1,F7.2,                &
-!/LLG               F8.4,F7.1,F7.2)
-!/XYG 1932 FORMAT ( 2X,2(F7.1,'E3'),F9.3,F7.1,F7.2,F7.1,F7.2,         &
-!/XYG               F8.4,F7.1,F7.2)
+ 1931 FORMAT ( 2X,2F8.3,F10.1,F6.2,F7.1,F6.2,F7.1)
+ 1932 FORMAT ( 2X,2F8.3,F9.3,F7.1,F7.2,F7.1,F7.2,                &
+               F8.4,F7.1,F7.2)
+ 1731 FORMAT ( 2X,2(F7.1,'E3'),F10.1,F6.2,F7.1,F6.2,F7.1)
+ 1732 FORMAT ( 2X,2(F7.1,'E3'),F9.3,F7.1,F7.2,F7.1,F7.2,         &
+               F8.4,F7.1,F7.2)
  1933 FORMAT ( 2X,2(F7.1,'E4'),F8.4,2E11.3,2F7.3)
  1934 FORMAT ( 2X,2F9.1,F7.1,2E11.3,2F7.3)
-!/LLG 1935 FORMAT ( 2X,2F8.3,F7.2,F7.1,2F7.2,2F8.2,F7.1)
-!/XYG 1935 FORMAT ( 2X,2(F7.1,'E3'),F7.2,F7.1,2F7.2,2F8.2,F7.1)
-!/LLG 1936 FORMAT ( 2X,2F8.3,F5.1,1X,I3,2F5.1)
-!/XYG 1936 FORMAT ( 2X,2(F7.1,'E3'),F5.1,1X,I3,2F5.1)
+ 1935 FORMAT ( 2X,2F8.3,F7.2,F7.1,2F7.2,2F8.2,F7.1)
+ 1735 FORMAT ( 2X,2(F7.1,'E3'),F7.2,F7.1,2F7.2,2F8.2,F7.1)
+ 1936 FORMAT ( 2X,2F8.3,F5.1,1X,I3,2F5.1)
+ 1736 FORMAT ( 2X,2(F7.1,'E3'),F5.1,1X,I3,2F5.1)
 !
-!/LLG 2920 FORMAT (' Time     : ',A/                                  &
-!/LLG              ' Location : ',A,'  (',2F8.2,' )'/                 &
-!/LLG              ' depth    : ',F7.1,'   m'/                        &
-!/LLG              ' U*       : ',F9.3,' m/s'/                        &
-!/LLG              ' U10      : ',F7.1,'   m/s'/)
-!/XYG 2920 FORMAT (' Time     : ',A/                                  &
-!/XYG              ' Location : ',A,'  (',2(F8.1,'E3'),' )'/          &
-!/XYG              ' depth    : ',F7.1,'   m'/                        &
-!/XYG              ' U*       : ',F9.3,' m/s'/                        &
-!/XYG              ' U10      : ',F7.1,'   m/s'/)
+ 2920 FORMAT (' Time     : ',A/                                  &
+              ' Location : ',A,'  (',2F8.2,' )'/                 &
+              ' depth    : ',F7.1,'   m'/                        &
+              ' U*       : ',F9.3,' m/s'/                        &
+              ' U10      : ',F7.1,'   m/s'/)
+ 2720 FORMAT (' Time     : ',A/                                  &
+              ' Location : ',A,'  (',2(F8.1,'E3'),' )'/          &
+              ' depth    : ',F7.1,'   m'/                        &
+              ' U*       : ',F9.3,' m/s'/                        &
+              ' U10      : ',F7.1,'   m/s'/)
  2921 FORMAT ('    f           E      ',                              &
               '    Sin        Snl        Sds        Sbt       Stot'/  &
               '   (Hz)       (m2s)    ',                              &

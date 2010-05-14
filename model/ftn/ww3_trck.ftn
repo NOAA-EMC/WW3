@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -14,6 +14,8 @@
 !/    20-Aug-2003 : Sequential file version             ( version 3.04 )
 !/    29-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -53,15 +55,12 @@
 !
 !  9. Switches :
 !
-!       !/LLG  Spherical grid.
-!       !/XYG  Cartesian grid.
-!
 !       !/S    Enable subroutine tracing.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY : W3NMOD
+      USE W3GDATMD, ONLY : W3NMOD, FLAGLL
       USE W3ODATMD, ONLY : W3NOUT, FNMPRE
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
@@ -86,8 +85,7 @@
       REAL                    :: TH1, DTH, X, Y, DW, CX, CY, WX, WY,  &
                                  UST, AS, VALUE
       REAL                    :: SCALE  = 0.001
-!/LLG      REAL                    :: FACTOR  = 1.
-!/XYG      REAL                    :: FACTOR  = 1.E-3
+      REAL                    :: FACTOR
       REAL, ALLOCATABLE       :: SIG(:), DSIP(:), SPEC(:,:)
       CHARACTER               :: COMSTR*1, IDSTR*34, TSTSTR*3,        &
                                  STIME*23, STRING*81, EMPTY*81,       &
@@ -137,7 +135,13 @@
 !
       OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',FORM='UNFORMATTED', &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
-      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, MK, MTH
+      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH
+!
+      IF ( FLAGLL ) THEN
+          FACTOR  = 1.
+        ELSE
+          FACTOR  = 1.E-3
+        END IF
 !
       IF ( IDSTR .NE. IDTST ) GOTO 810
       IF ( NK.NE.MK .OR. NTH.NE.MTH ) GOTO 811
@@ -173,8 +177,13 @@
 ! 4.a Read/write basic data
 !
       READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR
-      WRITE (NDSOUT,984,ERR=803,IOSTAT=IERR)                          &
-             TIME, FACTOR*X, FACTOR*Y, TSTSTR
+      IF ( FLAGLL ) THEN
+          WRITE (NDSOUT,984,ERR=803,IOSTAT=IERR)                      &
+                 TIME, FACTOR*X, FACTOR*Y, TSTSTR
+        ELSE
+          WRITE (NDSOUT,974,ERR=803,IOSTAT=IERR)                      &
+                 TIME, FACTOR*X, FACTOR*Y, TSTSTR
+        END IF
 !
       IF ( TIME(1).EQ.TTST(1) .AND. TIME(2).EQ.TTST(2) ) THEN
           ILOC = ILOC + 1
@@ -379,7 +388,7 @@
   900 FORMAT (/15X,'    *** WAVEWATCH III Track output post.***    '/ &
                15X,'==============================================='/)
   901 FORMAT ( '  Comment character is ''',A,''''/)
-  902 FORMAT ( '  Spectral grid size is ',I3,' by ',I3//                  &
+  902 FORMAT ( '  Spectral grid size is ',I3,' by ',I3//              &
                    '  Opening files : '/                              &
                    ' -----------------------------------------------')
   920 FORMAT ( '     Input file ...')
@@ -392,8 +401,8 @@
   981 FORMAT (2I6,2E13.5)
   982 FORMAT (7E11.4)
   983 FORMAT (7E11.4)
-!/LLG  984 FORMAT (I8.8,I7.6,2F9.3,2X,A3)
-!/XYG  984 FORMAT (I8.8,I7.6,2(F9.2,'E3'),2X,A3)
+  984 FORMAT (I8.8,I7.6,2F9.3,2X,A3)
+  974 FORMAT (I8.8,I7.6,2(F9.2,'E3'),2X,A3)
   985 FORMAT (F8.1,2F6.2,2F8.2,f9.5,f7.2,E12.5)
   986 FORMAT (A)
   987 FORMAT (I9)

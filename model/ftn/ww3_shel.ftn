@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -26,6 +26,12 @@
 !/    28-Oct-2006 : Adding partitioning options.        ( version 3.10 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Fix format statement 2945.          ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -175,8 +181,6 @@
 !       !/DIST  Id.
 !       !/MPI   Id.
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !       !/MGW   Moving grid wind correction.
 !       !/MGP   Moving grid propagation correction.
 !
@@ -203,6 +207,7 @@
       USE W3WAVEMD
       USE W3WDASMD
 !/
+      USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
@@ -228,7 +233,8 @@
                              IPRT(6)
 !/F90      INTEGER             :: CLKT0, CLKTN, CLKDT, CLKINC, CLKMAX
 !/MPI      INTEGER             :: IERR_MPI
-      REAL                :: FACTOR, DTTST, XX, YY, NODATA(5:7),      &
+      INTEGER             :: NODATA(5:7)
+      REAL                :: FACTOR, DTTST, XX, YY,                   &
                              HA(NHMAX,4), HD(NHMAX,4), HS(NHMAX,4)
 !/F90      REAL                :: CLKFIN
       REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),        &
@@ -263,9 +269,6 @@
                     'Partitioned wave field data   ' /
       DATA IDSTR  / 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1', 'DT2',  &
                     'MOV' /
-!
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
 !
 !/F90      CALL SYSTEM_CLOCK ( CLKT0, CLKINC, CLKMAX )
 !
@@ -460,6 +463,13 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4.  Define output
 !
+      CALL W3IOGR ( 'GRID', NDSF(5) )
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
+!
       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
       READ (NDSI,*,END=2001,ERR=2002) IOSTYP
       IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
@@ -575,11 +585,22 @@
                     Y(NPTS)      = YY
                     PNAMES(NPTS) = PN
                     IF ( IAPROC .EQ. NAPOUT ) THEN
-                        IF ( NPTS .EQ. 1 ) THEN
-                            WRITE (NDSO,2945) FACTOR*XX, FACTOR*YY, PN
+                        IF ( FLAGLL ) THEN
+                            IF ( NPTS .EQ. 1 ) THEN
+                                WRITE (NDSO,2945)                     &
+                                              FACTOR*XX, FACTOR*YY, PN
+                              ELSE
+                                WRITE (NDSO,2946) NPTS,               &
+                                              FACTOR*XX, FACTOR*YY, PN
+                              END IF
                           ELSE
-                            WRITE (NDSO,2946) NPTS, FACTOR*XX,        &
-                                                    FACTOR*YY, PN
+                            IF ( NPTS .EQ. 1 ) THEN
+                                WRITE (NDSO,2955)                     &
+                                              FACTOR*XX, FACTOR*YY, PN
+                              ELSE
+                                WRITE (NDSO,2956) NPTS,               &
+                                              FACTOR*XX, FACTOR*YY, PN
+                              END IF
                           END IF
                       END IF
                     END DO
@@ -768,7 +789,7 @@
                   ELSE
                     JJ     = LEN_TRIM(FNMPRE)
                     CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
-                                  NDSEN, NX, NY, X0, Y0, SX, SY,      &
+                                  NDSEN, NX, NY, GTYPE,               &
                                   IERR, FPRE=FNMPRE(:JJ) )
                     IF ( IERR .NE. 0 ) GOTO 2222
                     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
@@ -781,7 +802,7 @@
           DO J=5, 7
             IF ( FLAGS(J) ) THEN
                 CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
-                             RCLD(J), NY, NODATA(J), Y0, SX, SY,     &
+                             RCLD(J), NY, NODATA(J),                 &
                              IERR, FPRE=FNMPRE(:JJ) )
                 IF ( IERR .NE. 0 ) GOTO 2222
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
@@ -1102,10 +1123,10 @@
  3944 FORMAT ( '            Interval : ',11X,A8/)
  1945 FORMAT ( '            Fields   : ',A)
  1946 FORMAT ( '                       ',A)
-!/LLG 2945 FORMAT ( '            Point  1 : ',2F8.2,2X,A)
-!/XYG 2945 FORMAT ( '            Point  1 : ',2(F8.0,'E3'),2X,A)
-!/LLG 2946 FORMAT ( '              ',I6,' : ',2F8.2,2X,A)
-!/XYG 2946 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
+ 2945 FORMAT ( '            Point  1 : ',2F8.2,2X,A)
+ 2955 FORMAT ( '            Point  1 : ',2(F8.1,'E3'),2X,A)
+ 2946 FORMAT ( '              ',I6,' : ',2F8.2,2X,A)
+ 2956 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
  2947 FORMAT ( '            No points defined')
  3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
  6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
@@ -1119,8 +1140,8 @@
 !/O7  953 FORMAT ( '          ',I6,I11.8,I7.6,3F8.2)
   954 FORMAT ( '            ',A,': file not needed')
   955 FORMAT ( '            ',A,': file OK')
-  956 FORMAT ( '            ',A,': file OK, recl =',i3,               &
-               '  undef = ',E10.3)
+  956 FORMAT ( '            ',A,': file OK, recl =',I3,               &
+               '  undef = ',I3)
 !
   960 FORMAT (/'  Running model without input fields'/                &
                ' --------------------------------------------------'/)

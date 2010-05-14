@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -24,6 +24,8 @@
 !/    28-Mar-2007 : Adding partitioned output.          ( version 3.11 )
 !/                  Adding user slots for outputs.
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -76,21 +78,20 @@
 !  6. Error messages :
 !
 !     Checks on input, checks in W3IOxx.
+!     Check on grid type.
 !
 !  7. Remarks :
 !
 !     - For the Cartesian grid version the X and Y increment are
 !       artificially converted to long-lat by assuming the 1 degree
 !       equals 100 km.
+!     - Curvilinear grids currently not supported.
 !
 !  8. Structure :
 !
 !     See source code.
 !
 !  9. Switches :
-!
-!        !/LLG   Spherical grid.
-!        !/XYG   Cartesian grid.
 !
 !        !/S     Enable subroutine tracing.
 !
@@ -131,8 +132,7 @@
                                  TIMEN(2)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST
-!/LLG      REAL                    :: FAC = 1.
-!/XYG      REAL                    :: FAC, XYMAX
+      REAL                    :: FAC, XYMAX
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
                                  CINC*2
       CHARACTER*3             :: MNTH(12)
@@ -183,6 +183,12 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+      IF ( GTYPE .EQ. CLGTYPE ) THEN                                    !TRAP
+         WRITE(*,*)'PROGRAM GXOUTF: '// &                               !TRAP
+         'GRADS OUTPUT NOT IMPLEMENTED FOR CURVILINEAR GRIDS. '// &     !TRAP
+         'NOW STOPPING.'                                                !TRAP
+         STOP                                                           !TRAP
+      END IF                                                            !TRAP
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
@@ -347,19 +353,25 @@
 !
       WRITE (NDSO,983) IOUT, IH0, IM0, ID0, MNTH(IID), IJ0, IINC, CINC
 !
-!/XYG      XYMAX  = MAX ( ABS(X0+REAL(IX0-1)*SX), ABS(X0+REAL(IXN-1)*SX),  &
-!/XYG                     ABS(Y0+REAL(IY0-1)*SY), ABS(Y0+REAL(IYN-1)*SY) )
-!/XYG      IF ( XYMAX .LT. 1.E3 ) THEN
-!/XYG          FAC    = 1.E-1
-!/XYG        ELSE IF ( XYMAX .LT. 1.E4 ) THEN
-!/XYG          FAC    = 1.E-2
-!/XYG        ELSE IF ( XYMAX .LT. 1.E5 ) THEN
-!/XYG          FAC    = 1.E-3
-!/XYG        ELSE IF ( XYMAX .LT. 1.E6 ) THEN
-!/XYG          FAC    = 1.E-4
-!/XYG        ELSE
-!/XYG          FAC    = 1.E-5
-!/XYG        END IF
+      IF ( FLAGLL ) THEN
+          FAC = 1.
+        ELSE
+          XYMAX  = MAX ( ABS(X0+REAL(IX0-1)*SX), &
+                         ABS(X0+REAL(IXN-1)*SX), &
+                         ABS(Y0+REAL(IY0-1)*SY), &
+                         ABS(Y0+REAL(IYN-1)*SY) )
+          IF ( XYMAX .LT. 1.E3 ) THEN
+              FAC    = 1.E-1
+            ELSE IF ( XYMAX .LT. 1.E4 ) THEN
+              FAC    = 1.E-2
+            ELSE IF ( XYMAX .LT. 1.E5 ) THEN
+              FAC    = 1.E-3
+            ELSE IF ( XYMAX .LT. 1.E6 ) THEN
+              FAC    = 1.E-4
+            ELSE
+              FAC    = 1.E-5
+          END IF
+        END IF !FLAGLL
 !
       WRITE (NDSCTL,990) UNDEF,                                       &
                          (1+IXN-IX0), FAC*(X0+REAL(IX0-1)*SX), FAC*SX,&

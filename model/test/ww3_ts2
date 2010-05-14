@@ -5,7 +5,6 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/XYG                Cartesian grid.                                    #
 #   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
 #                        Select source term, growth needed, other opt.      #
 #   !/PRn                Selecting one of the propagation schemes.          #
@@ -53,7 +52,7 @@
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                              Sep 2003     #
-#                                                   Last Mod : Jul 2007     #
+#                                                   Last Mod : Nov 2009     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -139,6 +138,7 @@ $ &MISC  XP = 0.075 /
 $ &MISC  XP = 0.025 /
 END OF NAMELISTS
 $
+  'RECT' F F
   26   3
    25.E3  250.E3  1.
     0.E3 -250.E3  1.

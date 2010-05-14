@@ -1,0 +1,44 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.4 Test for WW-III, two-dimensional propagation.                   #
+#           Eastern Pacific region on spherical lat/lon grid and            #
+#           Lambert Conformal grid.                                         #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging (set to zero here).          #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+#       switch_PRn_MPI : for parallel run with MPI                          #
+# - Test case input (default):                                              #
+#   * By default the GSE correction is enabled. To disable GSE correction   #
+#     comment/uncomment the appropriate lines in ww3_grid.inp.              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 225 x 106 rectilinear lat/lon grid                    #
+#       - dx = 0.35 deg, dy = 0.35 deg                                      #
+#       - Xrange = 183.40:262.82 deg, Yrange = 25.10:62.33 deg              #
+#       - input depth: depth.225x106.IDLA1.dat                              #
+#     + Spectral grid: ntheta = 12, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * ww3_grid_curv.inp :                                                   #
+#     + Spatial grid: 169 x 139 curvilinear lat/lon grid                    #
+#       - dx and dy variable                                                #
+#       - Xrange = 183.49:262.51 deg, Yrange = 25.11:62.10 deg              #
+#       - input grid coordinates: <lat,lon>.169x139.IDLA1.dat               #
+#       - input depth: depth.169x139.IDLA1.dat                              #
+#     + Spectral grid: ntheta = 12, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#                                                                           #
+#                                             W. Erick Rogers, Nov 2009     #
+#                                             Naval Research Laboratory     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#############################################################################

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    27-Jun-2006 : Origination.                        ( version 3.09 )
@@ -13,6 +13,12 @@
 !/    24-Mar-2007 : Add pars for entire spectrum.       ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Fix unitialized dtsiz in w3iosf.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -55,9 +61,6 @@
 !  5. Remarks :
 !
 !  6. Switches :
-!
-!     !/XYG  Grid type
-!     !/LLG
 !
 !     !/S    Enable subroutine tracing.
 !     !/T    Enable test output
@@ -286,12 +289,18 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-May-2007 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    02-Nov-2006 : Origination.                        ( version 1.10 )
 !/    24-Mar-2007 : Add pars for entire spectrum.       ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+!/    30-Oct-2009 : Fix unitialized dtsiz error.        ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -336,9 +345,6 @@
 !
 !  9. Switches :
 !
-!     !/XYG  Grid type
-!     !/LLG
-!
 !     !/S    Enable subroutine tracing.
 !     !/T    Enable test output
 !
@@ -350,7 +356,7 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3GDATMD, ONLY: FILEXT, NSEA, X0, Y0, SX, SY, MAPSF
+      USE W3GDATMD, ONLY: FILEXT, NSEA, XGRD, YGRD, MAPSF, FLAGLL
 !/MPI      USE W3GDATMD, ONLY: NSEAL
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ODATMD, ONLY: NDST, NDSE, IAPROC, NAPROC, NAPPRT, NAPERR, &
@@ -373,8 +379,8 @@
 !/ Local parameters
 !/
       INTEGER                 :: I, J, IERR, ISEA, JSEA, JAPROC,      &
-                                 IX, IY, IP, IOFF, NSEALM
-!/MPI      INTEGER                 :: ICSIZ, DTSIZ, IERR_MPI, IT,     &
+                                 IX, IY, IP, IOFF, NSEALM, DTSIZ=0
+!/MPI      INTEGER                 :: ICSIZ, IERR_MPI, IT,            &
 !/MPI                                 STATUS(MPI_STATUS_SIZE,1), JSLM
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, POINTER        :: ICP(:,:)
@@ -425,22 +431,28 @@
 !
           IF ( FLFORM ) THEN
               WRITE (NDSPT,910) IDSTR, VERPRT
-!/XYG              WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
-!/XYG                                'X       Y     name       nprt'// &
-!/XYG                                ' depth uabs  udir cabs  cdir'
-!/LLG              WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
-!/LLG                                'lat     lon   name       nprt'// &
-!/LLG                                ' depth uabs  udir cabs  cdir'
+              IF ( FLAGLL ) THEN
+                  WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
+                                    'lat     lon   name       nprt'// &
+                                    ' depth ubas  udir cabs  cdir'
+                ELSE
+                  WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
+                                    'X       Y     name       nprt'// &
+                                    ' depth ubas  udir cabs  cdir'
+                END IF
               WRITE (NDSPT,911) '        hs     tp     lp  '//    &
                                 '     theta     sp      wf'
             ELSE
               WRITE (  NDSPT  ) IDSTR, VERPRT
-!/XYG              WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
-!/XYG                                'X       Y     name       nprt'// &
-!/XYG                                ' depth uabs  udir cabs  cdir'
-!/LLG              WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
-!/LLG                                'lat     lon   name       nprt'// &
-!/LLG                                ' depth uabs  udir cabs  cdir'
+              IF ( FLAGLL ) THEN
+                  WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
+                                    'lat     lon   name       nprt'// &
+                                    ' depth ubas  udir cabs  cdir'
+                ELSE
+                  WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
+                                    'X       Y     name       nprt'// &
+                                    ' depth ubas  udir cabs  cdir'
+                END IF
               WRITE (  NDSPT  ) '        hs     tp     lp  '//    &
                                 '     theta     sp      wf'
             END IF
@@ -532,8 +544,8 @@
         IY     = MAPSF(ISEA,2)
         IF ( IX.LT.IX0 .OR. IX.GT.IXN .OR. MOD(IX-IX0,IXS).NE.0 ) CYCLE
         IF ( IY.LT.IY0 .OR. IY.GT.IYN .OR. MOD(IY-IY0,IYS).NE.0 ) CYCLE
-        X      = X0 + REAL(IX-1)*SX
-        Y      = Y0 + REAL(IY-1)*SY
+        X      = XGRD(IY,IX)
+        Y      = YGRD(IY,IX)
         DEPTH   = DW(ISEA)
         UABS   = U10(ISEA)*ASF(ISEA)
         UDIR   = MOD ( 270. - U10D(ISEA)*RADE , 360. )
@@ -546,19 +558,25 @@
           END IF
 !
         IF ( FLFORM ) THEN
-!/XYG            WRITE (NDSPT,940) TIME, X*1.E-3, Y*1.E-3,            &
-!/XYG                             'grid_point', ICP(JSEA,1) - 1,      &
-!/XYG                              DEPTH, UABS, UDIR, CABS, CDIR
-!/LLG            WRITE (NDSPT,940) TIME, Y, X,                        &
-!/LLG                             'grid_point', ICP(JSEA,1) - 1,      &
-!/LLG                              DEPTH, UABS, UDIR, CABS, CDIR
+            IF ( FLAGLL ) THEN
+                WRITE (NDSPT,940) TIME, Y, X,                        &
+                                 'grid_point', ICP(JSEA,1) - 1,      &
+                                  DEPTH, UABS, UDIR, CABS, CDIR
+              ELSE
+                WRITE (NDSPT,941) TIME, X*1.E-3, Y*1.E-3,            &
+                                 'grid_point', ICP(JSEA,1) - 1,      &
+                                  DEPTH, UABS, UDIR, CABS, CDIR
+              END IF
           ELSE
-!/XYG            WRITE (  NDSPT  ) TIME, X*1.E-3, Y*1.E-3,            &
-!/XYG                             'grid_point', ICP(JSEA,1) - 1,      &
-!/XYG                              DEPTH, UABS, UDIR, CABS, CDIR
-!/LLG            WRITE (  NDSPT  ) TIME, Y, X,                        &
-!/LLG                             'grid_point', ICP(JSEA,1) - 1,      &
-!/LLG                              DEPTH, UABS, UDIR, CABS, CDIR
+            IF ( FLAGLL ) THEN
+                WRITE (  NDSPT  ) TIME, Y, X,                        &
+                                 'grid_point', ICP(JSEA,1) - 1,      &
+                                  DEPTH, UABS, UDIR, CABS, CDIR
+              ELSE
+                WRITE (  NDSPT  ) TIME, X*1.E-3, Y*1.E-3,            &
+                                 'grid_point', ICP(JSEA,1) - 1,      &
+                                  DEPTH, UABS, UDIR, CABS, CDIR
+              END IF
           END IF
 !
 ! 4.d Process partitions for this point
@@ -567,7 +585,7 @@
 !
         IF ( FLFORM ) THEN
             DO IP=0, ICP(JSEA,1) - 1
-              WRITE (NDSPT,941) IP, DTP(:,IP+IOFF)
+              WRITE (NDSPT,942) IP, DTP(:,IP+IOFF)
               END DO
           ELSE
             DO IP=0, ICP(JSEA,1) - 1
@@ -600,11 +618,11 @@
   910 FORMAT (A,1X,A)
   911 FORMAT (A)
 !
-!/LLG  940 FORMAT (1X,I8.8,1X,I6.6,2F8.3,2X,'''',A10,'''',            &
-!/LLG              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
-!/XYG  940 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
-!/XYG              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
-  941 FORMAT (I3,3F8.2,2F9.2,F7.2)
+  940 FORMAT (1X,I8.8,1X,I6.6,2F8.3,2X,'''',A10,'''',            &
+              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
+  941 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
+              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
+  942 FORMAT (I3,3F8.2,2F9.2,F7.2)
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOSF : '/               &
                '     ERROR IN OPENING FILE'/                          &

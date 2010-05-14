@@ -1,0 +1,29 @@
+#############################################################################
+#                                                                           #
+# ww3_ts1   Test script for WW-III, source term integration in homogeneous  #
+#           conditions (1-point model)                                      #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
+#                        Select source term, growth needed, other opt.      #
+#   !/PR0                No propagation.                                    #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
+#                                                                           #
+# Remarks :                                                                 #
+# - There is no check to see if the initial conditions in ww3_strt are      #
+#   compatible with the linear growth term. LN0 with type 5 in ww3_strt     #
+#   will results in NO WAVE GROWTH.                                         #
+# - Set FLAGLL=F (Cartesian coordinate system) in ww3_grid.inp to assure    #
+#   proper initialization with type 3 in ww3_strt.                          #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+############################################################################# 

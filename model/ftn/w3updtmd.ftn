@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -23,6 +23,10 @@
 !/    11-Jan-2007 : Clean-up W3UTRN boundary points.    ( version 3.10 )
 !/    11-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -46,8 +50,7 @@
 !      W3UICE    Subr. Public   Update ice concentrations.
 !      W3ULEV    Subr. Public   Update water levels.
 !      W3UTRN    Subr. Public   Update cell boundary transparancies.
-!      W3DDXY    Subr. Public   Calculate depth dirivatives.
-!      W3DCXY    Subr. Public   Calculate current dirivatives.
+!      W3DZXY    Subr. Public   Calculate derivatives of a field.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -69,9 +72,6 @@
 !       !/DIST   Id.
 !
 !       !/OMP1   OpenMP compiler directives.
-!
-!       !/LLG    Spherical grid.
-!       !/XYG    Cartesian grid.
 !
 !       !/CRT1   Linear current interpolation.
 !       !/CRT2   Quasi-quadratic current interpolation.
@@ -500,7 +500,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Dec-2004 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -508,6 +508,10 @@
 !/    24-Jan-2001 : Flat grid version.                  ( version 2.06 )
 !/    18-May-2001 : Fix CG declaration.                 ( version 2.11 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -555,9 +559,6 @@
 !       !/SHRD  Switch for shared / distributed memory architecture.
 !       !/DIST  Id.
 !
-!       !/LLG    Spherical grid.
-!       !/XYG    Cartesian grid.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     General test output.
 !       !/T1    Parameters at grid points.
@@ -565,8 +566,10 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, SX, SY,         &
-                          NK, NTH, TH, SIG, DTH, DSIP
+      USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF,                 &
+                          NK, NTH, TH, SIG, DTH, DSIP,                &
+                          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
+                          HPFAC, HQFAC
       USE W3ADATMD, ONLY: U10, U10D, CG
 !/T      USE W3ARRYMD, ONLY : PRTBLK
 !
@@ -580,9 +583,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local variables
 !/
-      INTEGER                 :: ISEA, JSEA, IK, ITH
+      INTEGER                 :: IX, IY, ISEA, JSEA, IK, ITH
 !/S      INTEGER, SAVE           :: IENT = 0
-!/T      INTEGER                 :: IX, IY, IX0, IXN, MAPOUT(NX,NY)
+!/T      INTEGER                 :: IX0, IXN, MAPOUT(NX,NY)
 !/T      INTEGER                 :: NXP = 60
       REAL                    :: ALFA(NSEAL), FP(NSEAL), YLN(NSEAL),  &
                                  AA, BB, CC
@@ -597,17 +600,21 @@
 !/
 !/S      CALL STRACE (IENT, 'W3UINI')
 !
-!/LLG      XGR    = 0.5 * RADIUS * SQRT(SX**2+SY**2) * DERA
-!/XYG      XGR    = 0.5 * SQRT(SX**2+SY**2)
 !
 ! Pre-process JONSWAP data for all grid points ----------------------- *
 !
-!/T      WRITE (NDST,9000) XGR
 !/T1      WRITE (NDST,9010)
 !
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
+!
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        XGR    = 0.5 * SQRT(HPFAC(IY,IX)**2+HQFAC(IY,IX)**2)
+        IF ( FLAGLL ) THEN
+            XGR    = XGR * RADIUS * DERA
+          END IF
 !
         U10C   = MAX ( MIN(U10(ISEA),U10MAX) , U10MIN )
 !
@@ -1441,7 +1448,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Jan-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    02-Apr-2001 : Origination.                        ( version 2.10 )
@@ -1449,6 +1456,10 @@
 !/    30-Apr-2002 : Change to ICE on storage grid.      ( version 2.20 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    11-Jan-2007 : Clean-up for boundary points.       ( version 3.10 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1496,14 +1507,13 @@
 !       !/S      Enable subroutine tracing.
 !       !/T      Basic test output.
 !
-!       !/LLG    Spherical grid.
-!       !/XYG    Cartesian grid.
-!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPSF, SX, SY,        &
-                          TRFLAG, CLAT, FICE0, FICEN
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPSF,                &
+                          TRFLAG, FICE0, FICEN,                       &
+                          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
+                          HPFAC, HQFAC
       USE W3WDATMD, ONLY: ICE
       USE W3ADATMD, ONLY: ATRNX, ATRNY
 !
@@ -1669,10 +1679,12 @@
             IY     = MAPSF(ISEA,2)
             IXY    = MAPSF(ISEA,3)
 !
-!/XYG            DX     = SX
-!/XYG            DY     = SY
-!/LLG            DX     = SX * RADIUS * DERA * CLAT(IY)
-!/LLG            DY     = SY * RADIUS * DERA
+            DX     = HPFAC(IY,IX)
+            DY     = HQFAC(IY,IX)
+            IF ( FLAGLL ) THEN
+                DX     = DX * RADIUS * DERA
+                DY     = DY * RADIUS * DERA
+              END IF
 !
             LICE0  = FICE0*MIN(DX,DY)
             LICEN  = FICEN*MIN(DX,DY)
@@ -1751,27 +1763,24 @@
 !/
       END SUBROUTINE W3UTRN
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3DDXY
+      SUBROUTINE W3DZXY( ZZ, ZUNIT, DZZDX, DZZDY )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
+!/                  |         W. E. Rogers, NRL         |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Dec-2004 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
-!/    17-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
-!/    22-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/    24-Jan-2001 : Flat grid version                   ( version 2.06 )
-!/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    30-Oct-2009 : Origination.                        ( version 3.14 )
 !/
 !  1. Purpose :
 !
-!     Calculate dirivatives of the depth field.
+!     Calculate derivatives of a field.
 !
 !  2. Method :
 !
-!     Derivaties are calculated in m/m from the longitude/latitude
+!     Derivatives are calculated in m/m from the longitude/latitude
 !     grid, central in space for iternal points, one-sided for
 !     coastal points.
 !
@@ -1779,6 +1788,10 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!       ZZ      R.A.  I   Field to calculate derivatives of.
+!       ZUNIT   R.A.  I   Units of ZZ (used for test output).
+!       DZZDX   R.A.  O   Derivative in X-direction (W-E).
+!       DZZDY   R.A.  O   Derivative in Y-direction (S-N).
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1796,6 +1809,12 @@
 !
 !       None.
 !
+!  7. Remarks :
+!
+!     This routine replaces the functionality of W3DDXY and W3DCXY.
+!
+!     Output arrays are always initialized to zero.
+!
 !  8. Structure :
 !
 !     ----------------------------------------
@@ -1808,18 +1827,14 @@
 !
 !  9. Switches :
 !
-!       !/LLG    Spherical grid.
-!       !/XYG    Cartesian grid.
-!
 !       !/S   Enable subroutine tracing.
 !       !/T   Enable test output.
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, SX, SY,        &
-                          GLOBAL, CLATI
-      USE W3ADATMD, ONLY: DW, DDDX, DDDY
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MAPFS, &
+             DPDX, DPDY, DQDX, DQDY, FLAGLL, GLOBAL
 !/T      USE W3ARRYMD, ONLY : PRTBLK
 !/
       IMPLICIT NONE
@@ -1830,105 +1845,106 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IX, IY, IXP, IXM, IYP, IYM
-!/S      INTEGER, SAVE           :: IENT = 0
+      REAL, INTENT(IN)        :: ZZ(NSEA)
+      CHARACTER, INTENT(IN)   :: ZUNIT*(*)
+      REAL, INTENT(OUT)       :: DZZDX(NY,NX), DZZDY(NY,NX)
+      INTEGER                 :: ISEA, IX, IY, IXP, IXM, IYP, IYM
 !/T      INTEGER                 :: ISX, ISY, MAPOUT(NX,NY)
+!/S      INTEGER, SAVE           :: IENT = 0
 !/T      INTEGER, SAVE           :: NXS = 49
-      REAL                    :: DX0I, DY0I, STX, STY
+      REAL                    :: DFAC , STX, STY
 !/T      REAL                    :: XOUT(NX,NY)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3DDXY')
+!/S      CALL STRACE (IENT, 'W3DZXY')
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Initialize arrays
 !
-      DDDX = 0.
-      DDDY = 0.
+      DZZDX = 0.
+      DZZDY = 0.
 !
 ! 1.b Set constants
 !
-!/LLG      DX0I   = 1. / ( SX * DERA * RADIUS )
-!/LLG      DY0I   = 1. / ( SY * DERA * RADIUS )
-!/XYG      DX0I   = 1. / SX
-!/XYG      DY0I   = 1. / SY
+
+      IF ( FLAGLL ) THEN
+         DFAC   = 1. / ( DERA * RADIUS )
+      ELSE
+         DFAC   = 1.
+      END IF
+
 !
-!/T      WRITE (NDST,9000) DX0I, DY0I
+! 2.  Derivatives in X-direction (W-E) and Y-direction (S-N) ----- *
 !
-! 2.  Derivatives in X-direction (W-E) ------------------------------- *
-!
+
+! 2a. Interior points
       DO IY=2, NY-1
         DO IX=2, NX-1
           IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+            STX    = 0.5
+            IF (MAPSTA(IY,IX+1).EQ.0) THEN
+                IXP    = IX
+                STX    = 1.0
+              ELSE
+                IXP    = IX + 1
+              END IF
+            IF (MAPSTA(IY,IX-1).EQ.0) THEN
+                IXM    = IX
+                STX    = 1.0
+              ELSE
+                IXM    = IX - 1
+              END IF
+
+            STY    = 0.5
+            IF (MAPSTA(IY+1,IX).EQ.0) THEN
+                IYP    = IY
+                STY    = 1.0
+              ELSE
+                IYP    = IY + 1
+              END IF
+            IF (MAPSTA(IY-1,IX).EQ.0) THEN
+                IYM    = IY
+                STY    = 1.0
+              ELSE
+                IYM    = IY - 1
+              END IF
+
+               DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
+                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
+
+               DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
+                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
+
+               DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
+               DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+
+            END IF
+
+         END DO
+      END DO
+
+      IF ( GLOBAL ) THEN
+
+! 2b. column IX=1 for global case
+         IX=1
+         DO IY=2, NY-1
+
+           IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
               STX    = 0.5
               IF (MAPSTA(IY,IX+1).EQ.0) THEN
                   IXP    = IX
                   STX    = 1.0
                 ELSE
-                  IXP    = IX + 1
+                  IXP    = IX+1
                 END IF
-              IF (MAPSTA(IY,IX-1).EQ.0) THEN
+              IF (MAPSTA(IY,NX).EQ.0) THEN
                   IXM    = IX
                   STX    = 1.0
                 ELSE
-                  IXM    = IX - 1
+                  IXM    = NX
                 END IF
-              DDDX(IY,IX) = STX * DX0I * CLATI(IY)                    &
-                 * ( DW(MAPFS(IY,IXP)) - DW(MAPFS(IY,IXM)) )
-            END IF
-          END DO
-        END DO
-!
-      IF ( GLOBAL ) THEN
-!
-          DO IY=2, NY-1
-            IF ( MAPSTA(IY,1) .NE. 0 ) THEN
-                STX    = 0.5
-                IF (MAPSTA(IY,2).EQ.0) THEN
-                    IXP    = 1
-                    STX    = 1.0
-                  ELSE
-                    IXP    = 2
-                  END IF
-                IF (MAPSTA(IY,NX).EQ.0) THEN
-                    IXM    = 1
-                    STX    = 1.0
-                  ELSE
-                    IXM    = NX
-                  END IF
-                DDDX(IY,1) = STX * DX0I * CLATI(IY)                   &
-                   * ( DW(MAPFS(IY,IXP)) - DW(MAPFS(IY,IXM)) )
-              END IF
-            END DO
-!
-          DO IY=2, NY-1
-            IF ( MAPSTA(IY,NX) .NE. 0 ) THEN
-                STX    = 0.5
-                IF (MAPSTA(IY,1).EQ.0) THEN
-                    IXP    = NX
-                    STX    = 1.0
-                  ELSE
-                    IXP    = 1
-                  END IF
-                IF (MAPSTA(IY,NX-1).EQ.0) THEN
-                    IXM    = NX
-                    STX    = 1.0
-                  ELSE
-                    IXM    = NX-1
-                  END IF
-                DDDX(IY,NX) = STX * DX0I * CLATI(IY)                  &
-                   * ( DW(MAPFS(IY,IXP)) - DW(MAPFS(IY,IXM)) )
-              END IF
-            END DO
-!
-        END IF
-!
-! 3.  Derivatives in Y-direction (S-N) ------------------------------- *
-!
-      DO IY=2, NY-1
-        DO IX=1, NX
-          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+
               STY    = 0.5
               IF (MAPSTA(IY+1,IX).EQ.0) THEN
                   IYP    = IY
@@ -1942,15 +1958,69 @@
                 ELSE
                   IYM    = IY - 1
                 END IF
-!
-              DDDY(IY,IX) = STY * DY0I                                &
-                 * ( DW(MAPFS(IYP,IX)) - DW(MAPFS(IYM,IX)) )
-!
+
+               DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
+                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
+
+               DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
+                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
+
+               DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
+               DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+
+            END IF
+
+         END DO
+
+
+! 2c. column IX=NX for global case
+         IX=NX
+         DO IY=2, NY-1
+
+            IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+               STX    = 0.5
+               IF (MAPSTA(IY,1).EQ.0) THEN
+                  IXP    = IX
+                  STX    = 1.0
+               ELSE
+                  IXP    = 1
+               END IF
+               IF (MAPSTA(IY,IX-1).EQ.0) THEN
+                  IXM    = IX
+                  STX    = 1.0
+               ELSE
+                  IXM    = IX-1
+               END IF
+
+               STY    = 0.5
+               IF (MAPSTA(IY+1,IX).EQ.0) THEN
+                  IYP    = IY
+                  STY    = 1.0
+               ELSE
+                  IYP    = IY + 1
+               END IF
+               IF (MAPSTA(IY-1,IX).EQ.0) THEN
+                  IYM    = IY
+                  STY    = 1.0
+               ELSE
+                  IYM    = IY - 1
+               END IF
+
+               DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
+                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
+
+               DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
+                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
+
+               DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
+               DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+
             END IF
           END DO
-        END DO
+
+      END IF
 !
-! 4.  Test output of fields ------------------------------------------ *
+! 3.  Test output of fields ------------------------------------------ *
 !
 !/T      WRITE (NDST,9010)
 !/T      ISX   = 1 + NX/NXS
@@ -1959,310 +2029,37 @@
 !/T        DO IX=1, NX
 !/T          MAPOUT(IX,IY) = MAPSTA(IY,IX)
 !/T          IF ( MAPFS(IY,IX) .NE. 0 )                               &
-!/T               XOUT  (IX,IY) = DW(MAPFS(IY,IX))
+!/T               XOUT(IX,IY) = ZZ(MAPFS(IY,IX))
 !/T          END DO
 !/T        END DO
 !/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DW', 'm')
+!/T                      1, NX, ISX, 1, NY, ISY, 'ZZ', ZUNIT)
 !/T      DO IY=1, NY
 !/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = DDDX  (IY,IX)
+!/T          XOUT(IX,IY) = DZZDX(IY,IX)
 !/T          END DO
 !/T        END DO
 !/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DDDX', 'm/m')
+!/T                      1, NX, ISX, 1, NY, ISY, 'DZZDX',TRIM(ZUNIT)//'/m')
 !/T      DO IY=1, NY
 !/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = DDDY  (IY,IX)
+!/T          XOUT(IX,IY) = DZZDY(IY,IX)
 !/T          END DO
 !/T        END DO
 !/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DDDY', 'm/m')
+!/T                      1, NX, ISX, 1, NY, ISY, 'DZZDY',TRIM(ZUNIT)//'/m')
 !
       RETURN
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3DDXY : DX0I, DY0I : ',2E12.5)
-!/T 9010 FORMAT (' TEST W3DDXY : FIELDS ')
+!/T 9000 FORMAT (' TEST W3DZXY : DX0I, DY0I : ',2E12.5)
+!/T 9010 FORMAT (' TEST W3DZXY : FIELDS ')
 !/
-!/ End of W3DDXY ----------------------------------------------------- /
+!/ End of W3DZXY ----------------------------------------------------- /
 !/
-      END SUBROUTINE W3DDXY
+      END SUBROUTINE W3DZXY
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3DCXY
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Dec-2004 |
-!/                  +-----------------------------------+
-!/
-!/    29-Aug-1997 : Final FORTRAN 77                    ( version 1.18 )
-!/    22-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/    24-Jan-2001 : Flat grid version                   ( version 2.06 )
-!/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
-!/
-!  1. Purpose :
-!
-!     Calculate dirivatives of the current field.
-!
-!  2. Method :
-!
-!     Derivaties are calculated in m/m from the longitude/latitude
-!     grid, central in space for iternal points, one-sided for
-!     coastal points.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!     See module documentation.
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!       None.
-!
-!  8. Structure :
-!
-!     ----------------------------------------
-!      1.  Preparations
-!        a Initialize arrays
-!        b Set constants
-!      2.  Derivatives in X-direction (W-E).
-!      3.  Derivatives in Y-direction (S-N).
-!     ----------------------------------------
-!
-!  9. Switches :
-!
-!       !/LLG    Spherical grid.
-!       !/XYG    Cartesian grid.
-!
-!       !/S   Enable subroutine tracing.
-!       !/T   Enable test output.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, SX, SY, CLATI, &
-                          GLOBAL
-      USE W3ADATMD, ONLY: CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
-!/T      USE W3ARRYMD, ONLY : PRTBLK
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-      INTEGER                 :: IX, IY, IXP, IXM, IYP, IYM
-!/T      INTEGER                 ::  ISX, ISY, MAPOUT(NX,NY)
-      INTEGER, SAVE           :: IPASS = 0
-!/S      INTEGER, SAVE           :: IENT = 0
-!/T      INTEGER, SAVE           :: NXS = 49
-      REAL                    :: DX0I, DY0I, STX, STY
-!/T      REAL                    :: XOUT(NX,NY)
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3DCXY')
-!
-! 1.  Preparations --------------------------------------------------- *
-! 1.a Initialize arrays
-!
-      IF ( IPASS .EQ. 0 ) THEN
-          DCXDX = 0.
-          DCXDY = 0.
-          DCYDX = 0.
-          DCYDY = 0.
-          IPASS  = 1
-        END IF
-!
-! 1.b Set constants
-!
-!/LLG      DX0I   = 1. / ( SX * DERA * RADIUS )
-!/LLG      DY0I   = 1. / ( SY * DERA * RADIUS )
-!/XYG      DX0I   = 1. / SX
-!/XYG      DY0I   = 1. / SY
-!
-!/T      WRITE (NDST,9000) DX0I, DY0I
-!
-! 2.  Derivatives in X-direction (W-E) ------------------------------- *
-!
-      DO IY=2, NY-1
-        DO IX=2, NX-1
-          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
-              STX    = 0.5
-              IF (MAPSTA(IY,IX+1).EQ.0) THEN
-                  IXP    = IX
-                  STX    = 1.0
-                ELSE
-                  IXP    = IX + 1
-                END IF
-              IF (MAPSTA(IY,IX-1).EQ.0) THEN
-                  IXM    = IX
-                  STX    = 1.0
-                ELSE
-                  IXM    = IX - 1
-                END IF
-              DCXDX(IY,IX) = (CX(MAPFS(IY,IXP))-CX(MAPFS(IY,IXM))) *  &
-                             STX * DX0I * CLATI(IY)
-              DCYDX(IY,IX) = (CY(MAPFS(IY,IXP))-CY(MAPFS(IY,IXM))) *  &
-                             STX * DX0I * CLATI(IY)
-            END IF
-          END DO
-        END DO
-!
-      IF ( GLOBAL ) THEN
-!
-        DO IY=2, NY-1
-          IF ( MAPSTA(IY,1) .NE. 0 ) THEN
-              STX    = 0.5
-              IF (MAPSTA(IY,2).EQ.0) THEN
-                  IXP    = 1
-                  STX    = 1.0
-                ELSE
-                  IXP    = 2
-                END IF
-              IF (MAPSTA(IY,NX).EQ.0) THEN
-                  IXM    = 1
-                  STX    = 1.0
-                ELSE
-                  IXM    = NX
-                END IF
-              DCXDX(IY,1) = (CX(MAPFS(IY,IXP))-CX(MAPFS(IY,IXM))) *   &
-                            STX * DX0I * CLATI(IY)
-              DCYDX(IY,1) = (CY(MAPFS(IY,IXP))-CY(MAPFS(IY,IXM))) *   &
-                            STX * DX0I * CLATI(IY)
-            END IF
-          END DO
-!
-        DO IY=2, NY-1
-          IF ( MAPSTA(IY,NX) .NE. 0 ) THEN
-              STX    = 0.5
-              IF (MAPSTA(IY,1).EQ.0) THEN
-                  IXP    = NX
-                  STX    = 1.0
-                ELSE
-                  IXP    = 1
-                END IF
-              IF (MAPSTA(IY,NX-1).EQ.0) THEN
-                  IXM    = NX
-                  STX    = 1.0
-                ELSE
-                  IXM    = NX-1
-                END IF
-              DCXDX(IY,NX) = (CX(MAPFS(IY,IXP))-CX(MAPFS(IY,IXM))) *  &
-                             STX * DX0I * CLATI(IY)
-              DCYDX(IY,NX) = (CY(MAPFS(IY,IXP))-CY(MAPFS(IY,IXM))) *  &
-                             STX * DX0I * CLATI(IY)
-            END IF
-          END DO
-!
-        END IF
-!
-! 3.  Derivatives in Y-direction (S-N) ------------------------------- *
-!
-      DO IY=2, NY-1
-        DO IX=1, NX
-          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
-              STY    = 0.5
-              IF (MAPSTA(IY+1,IX).EQ.0) THEN
-                  IYP    = IY
-                  STY    = 1.0
-                ELSE
-                  IYP    = IY + 1
-                END IF
-              IF (MAPSTA(IY-1,IX).EQ.0) THEN
-                  IYM    = IY
-                  STY    = 1.0
-                ELSE
-                  IYM    = IY - 1
-                END IF
-!
-              DCXDY(IY,IX) = (CX(MAPFS(IYP,IX))-CX(MAPFS(IYM,IX)))    &
-                           * STY * DY0I
-              DCYDY(IY,IX) = (CY(MAPFS(IYP,IX))-CY(MAPFS(IYM,IX)))    &
-                           * STY * DY0I
-!
-            END IF
-          END DO
-        END DO
-!
-! 4.  Test output of fields ------------------------------------------ *
-!
-!/T      WRITE (NDST,9010)
-!/T      ISX   = 1 + NX/NXS
-!/T      ISY   = 1 + NY/NXS
-!/T      DO IY=1, NY
-!/T        DO IX=1, NX
-!/T          MAPOUT(IX,IY) = MAPSTA(IY,IX)
-!/T          XOUT  (IX,IY) = CX(MAPFS(IY,IX))
-!/T          END DO
-!/T        END DO
-!/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'CX', 'm/s')
-!/T      DO IY=1, NY
-!/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = CY(MAPFS(IY,IX))
-!/T          END DO
-!/T        END DO
-!/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'CY', 'm/s')
-!/T      DO IY=1, NY
-!/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = DCXDX (IY,IX)
-!/T          END DO
-!/T        END DO
-!/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DCXDX', 'm/sm')
-!/T      DO IY=1, NY
-!/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = DCXDY (IY,IX)
-!/T          END DO
-!/T        END DO
-!/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DCXDY', 'm/sm')
-!/T      DO IY=1, NY
-!/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = DCYDX (IY,IX)
-!/T          END DO
-!/T        END DO
-!/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DCYDX', 'm/sm')
-!/T      DO IY=1, NY
-!/T        DO IX=1, NX
-!/T          XOUT  (IX,IY) = DCYDY (IY,IX)
-!/T          END DO
-!/T        END DO
-!/T      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
-!/T                       1, NX, ISX, 1, NY, ISY, 'DCYDY', 'm/sm')
-!
-      RETURN
-!
-! Formats
-!
-!/T 9000 FORMAT (' TEST W3DCXY : DX0I, DY0I : ',2E12.5)
-!/T 9010 FORMAT (' TEST W3DCXY : FIELDS ')
-!/
-!/ End of W3DCXY ----------------------------------------------------- /
-!/
-      END SUBROUTINE W3DCXY
-!/
 !/ End of module W3UPDTMD -------------------------------------------- /
 !/
       END MODULE W3UPDTMD

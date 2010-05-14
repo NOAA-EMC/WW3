@@ -16,8 +16,7 @@
 #    following parts of this scripts :                                        #
 #      sec. 3 : Provide correct link command                                  #
 #                                                                             #
-#  - This version is made for the Portland pgf90 compiler version 5.0-2       #
-#    on a Pentium 4 processor.                                                #
+#  - This version is made for the Portland Group compilers on x86_64.         #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      February 2005          #

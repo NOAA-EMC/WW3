@@ -31,8 +31,7 @@
 #      sec. 3.a : Provide correct error capturing.                            #
 #      sec. 3.d : Remove unnecessary files.                                   #
 #                                                                             #
-#  - This version is made for the Portland pgf90 compiler version 5.0-2       #
-#    on a Pentium 4 processor.                                                #
+#  - This version is made for the Portland Group compilers on x86_64.         #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      February 2005          #
@@ -79,11 +78,11 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  ver=`pgf90 -V | grep 'pgf90 ' | awk '{print $2}' | cut -c1-2`
+  ver=`pgf90 -V | grep 'pgf90 ' | awk '{print $2}' | cut -d. -f1`
 
-  if [ "$ver" = '5.' ]
+  if [ $ver -ge 5 ]
   then
-    opt="-c -Mlist -fast -fastsse -module $path_m"
+    opt="-c -Mlist -fastsse -module $path_m"
   else
     opt="-c -Mlist -fast -module $path_m"
   fi

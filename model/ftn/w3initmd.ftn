@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination (out of W3WAVEMD).      ( version 3.06 )
@@ -31,6 +31,10 @@
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    29-Feb-2008 : Add NEC compiler directives.        ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -71,8 +75,6 @@
 !       !/SHRD  Switch for shared / distributed memory architecture.
 !       !/DIST  Id.
 !       !/MPI   Id.
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !
 !       !/S     Enable subroutine tracing.
 !       !/Tn    Enable test output.
@@ -96,7 +98,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Jun-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -123,6 +125,10 @@
 !/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -266,8 +272,6 @@
 !       !/SHRD  Switch for shared / distributed memory architecture.
 !       !/DIST  Id.
 !       !/MPI   Id.
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !
 !       !/S     Enable subroutine tracing.
 !       !/Tn    Enable test output.
@@ -291,6 +295,7 @@
       USE W3ARRYMD, ONLY: PRTBLK
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSTA, MAPST2, MAPFS, &
+                          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
                           GLOBAL, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
                           FLCK, NK, NTH, NSPEC, SIG, GNAME
       USE W3WDATMD, ONLY: TIME, TLEV, TICE, WLV, UST, USTDIR, VA
@@ -339,8 +344,7 @@
 !/T      INTEGER, SAVE           :: NXS = 49
       REAL                    :: DTTST, DEPTH, SQRTH, SIX, R1, R2,    &
                                  FRACOS
-!/LLG       REAL                   :: FACTOR = 1.
-!/XYG       REAL                   :: FACTOR = 1.E-3
+      REAL                    :: FACTOR
 !/T       REAL, ALLOCATABLE      :: XOUT(:,:)
       LOGICAL                 :: OPENED
       CHARACTER(LEN=8)        :: STTIME
@@ -358,6 +362,7 @@
       CALL W3SETW ( IMOD, MDS(2), MDS(3) )
       CALL W3SETA ( IMOD, MDS(2), MDS(3) )
       CALL W3SETI ( IMOD, MDS(2), MDS(3) )
+!
 !
 ! 1.b Number of processors and processor number.
 !     Overwrite some initializations from W3ODATMD.
@@ -491,6 +496,11 @@
 ! 2.a Read model defintition file
 !
       CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,920)
 !
 ! 2.b Save MAPSTA
@@ -894,10 +904,19 @@
               IF ( NOPTS .EQ. 0 ) THEN
                   WRITE (NDSO,978)
                 ELSE
-                  WRITE (NDSO,979)
+                  IF ( FLAGLL ) THEN
+                      WRITE (NDSO,979)
+                    ELSE
+                      WRITE (NDSO,985)
+                    END IF
                   DO IP=1, NOPTS
-                    WRITE (NDSO,980) IP, FACTOR*PTLOC(1,IP),          &
+                    IF ( FLAGLL ) THEN
+                        WRITE (NDSO,980) IP, FACTOR*PTLOC(1,IP),      &
                                          FACTOR*PTLOC(2,IP), PTNME(IP)
+                      ELSE
+                        WRITE (NDSO,986) IP, FACTOR*PTLOC(1,IP),      &
+                                         FACTOR*PTLOC(2,IP), PTNME(IP)
+                      END IF
                     END DO
                 END IF
             END IF
@@ -974,14 +993,14 @@
   977 FORMAT (/' Point output requested for',I4,' points : '/         &
                '------------------------------------------')
   978 FORMAT (/'      Point output disabled')
-!/LLG  979 FORMAT                                                     &
-!/LLG        (/'      point  |  longitude  |   latitude  |  name  '/  &
-!/LLG     '     --------|-------------|-------------|----------------')
-!/XYG  979 FORMAT                                                     &
-!/XYG        (/'      point  |      X      |      Y      |  name  '/  &
-!/XYG     '     --------|-------------|-------------|----------------')
-!/LLG  980 FORMAT ( 5X,I5,'   |',2(F10.2,'   |'),2X,A)
-!/XYG  980 FORMAT ( 5X,I5,'   |',2(F8.1,'E3   |'),2X,A)
+  979 FORMAT                                                     &
+        (/'      point  |  longitude  |   latitude  |  name  '/  &
+     '     --------|-------------|-------------|----------------')
+  985 FORMAT                                                     &
+        (/'      point  |      X      |      Y      |  name  '/  &
+     '     --------|-------------|-------------|----------------')
+  980 FORMAT ( 5X,I5,'   |',2(F10.2,'   |'),2X,A)
+  986 FORMAT ( 5X,I5,'   |',2(F8.1,'E3   |'),2X,A)
 !
   981 FORMAT (/' Initial time     : ',A)
   982 FORMAT ( ' Water level time : ',A)
@@ -2299,11 +2318,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-May-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    02-Aug-2006 : Origination.                        ( version 3.10 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -2412,15 +2433,15 @@
 !
 !/MPI      DO I=1, NOPTS
 !
-!/MPI        IX(1)  = IPTINT(1,I)
-!/MPI        IX(2)  = 1 + MOD(IPTINT(1,I),NX)
-!/MPI        IX(3)  = IPTINT(1,I)
-!/MPI        IX(4)  = IX(2)
+!/MPI        IX(1)  = IPTINT(1,1,I)
+!/MPI        IX(2)  = IPTINT(1,2,I)
+!/MPI        IX(3)  = IPTINT(1,3,I)
+!/MPI        IX(4)  = IPTINT(1,4,I)
 !
-!/MPI        IY(1)  = IPTINT(2,I)
-!/MPI        IY(2)  = IPTINT(2,I)
-!/MPI        IY(3)  = IPTINT(2,I) + 1
-!/MPI        IY(4)  = IPTINT(2,I) + 1
+!/MPI        IY(1)  = IPTINT(2,1,I)
+!/MPI        IY(2)  = IPTINT(2,2,I)
+!/MPI        IY(3)  = IPTINT(2,3,I)
+!/MPI        IY(4)  = IPTINT(2,4,I)
 !
 ! 1.b Loop over corner points
 !
@@ -2470,15 +2491,15 @@
 !
 !/MPI          DO I=1, NOPTS
 !
-!/MPI            IX(1)  = IPTINT(1,I)
-!/MPI            IX(2)  = 1 + MOD(IPTINT(1,I),NX)
-!/MPI            IX(3)  = IPTINT(1,I)
-!/MPI            IX(4)  = IX(2)
+!/MPI            IX(1)  = IPTINT(1,1,I)
+!/MPI            IX(2)  = IPTINT(1,2,I)
+!/MPI            IX(3)  = IPTINT(1,3,I)
+!/MPI            IX(4)  = IPTINT(1,4,I)
 !
-!/MPI            IY(1)  = IPTINT(2,I)
-!/MPI            IY(2)  = IPTINT(2,I)
-!/MPI            IY(3)  = IPTINT(2,I) + 1
-!/MPI            IY(4)  = IPTINT(2,I) + 1
+!/MPI            IY(1)  = IPTINT(2,1,I)
+!/MPI            IY(2)  = IPTINT(2,2,I)
+!/MPI            IY(3)  = IPTINT(2,3,I)
+!/MPI            IY(4)  = IPTINT(2,4,I)
 !
 !/MPI            DO J=1, 4
 !

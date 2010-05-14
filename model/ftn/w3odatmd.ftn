@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -23,6 +23,8 @@
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -127,14 +129,14 @@
 !                               renamed to IPASS in routine.
 !      NOPTS     Int.  Public   Number of output points.
 !      NRQPO(2)  Int.  Public   Number of MPI handles IRQPOn. (!/MPI)
-!      IPTINT    I.A.  Public   Id. interpolation counters.
+!      IPTINT    I.A.  Public   (I,J)-indices of enclosing cell corner points
 !      IL        I.A.  Public   Number of land points in interpola-
 !                               tion box for output point.
 !      IW        I.A.  Public   Id. water.
 !      II        I.A.  Public   Id. ice.
 !      IRQPO1/2  I.A.  Public   Array with MPI handles.       (!/MPI)
 !      PTLOC     R.A.  Public   Name of output locations.
-!      PTIFAC    R.A.  Public   Id. weights.
+!      PTIFAC    R.A.  Public   Interpolation weights.
 !      DPO       R.A.  Public   Interpolated depths.
 !      WAO       R.A.  Public   Interpolated wind speeds.
 !      WDO       R.A.  Public   Interpolated wind directions.
@@ -304,7 +306,7 @@
       TYPE OTYPE2
         INTEGER               :: IPASS2, NOPTS
 !/MPI        INTEGER               :: NRQPO, NRQPO2
-        INTEGER, POINTER      :: IPTINT(:,:), IL(:), IW(:), II(:)
+        INTEGER, POINTER      :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 !/MPI        INTEGER, POINTER      :: IRQPO1(:), IRQPO2(:)
         REAL, POINTER         :: PTLOC(:,:), PTIFAC(:,:),            &
                                  DPO(:), WAO(:), WDO(:), ASO(:),     &
@@ -397,7 +399,7 @@
 !/
       INTEGER, POINTER        :: IPASS2, NOPTS
 !/MPI      INTEGER, POINTER        :: NRQPO, NRQPO2
-      INTEGER, POINTER        :: IPTINT(:,:), IL(:), IW(:), II(:)
+      INTEGER, POINTER        :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 !/MPI      INTEGER, POINTER        :: IRQPO1(:), IRQPO2(:)
       REAL, POINTER           :: PTLOC(:,:), PTIFAC(:,:),            &
                                  DPO(:), WAO(:), WDO(:), ASO(:),     &
@@ -613,13 +615,15 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    10-Nov-2004 : Origination.                        ( version 3.06 )
 !/    24-Jul-2006 : Adding unified point output storage.( version 3.10 )
 !/    25-Jul-2006 : Originating grid ID for points.     ( version 3.10 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -720,11 +724,11 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-      ALLOCATE ( OUTPTS(IMOD)%OUT2%IPTINT(2,NPT)   ,                  &
+      ALLOCATE ( OUTPTS(IMOD)%OUT2%IPTINT(2,4,NPT) ,                  &
                  OUTPTS(IMOD)%OUT2%IL(NPT)         ,                  &
                  OUTPTS(IMOD)%OUT2%IW(NPT)         ,                  &
                  OUTPTS(IMOD)%OUT2%II(NPT)         ,                  &
-                 OUTPTS(IMOD)%OUT2%PTIFAC(2,NPT)   ,                  &
+                 OUTPTS(IMOD)%OUT2%PTIFAC(4,NPT)   ,                  &
                  OUTPTS(IMOD)%OUT2%PTNME(NPT)      ,                  &
                  OUTPTS(IMOD)%OUT2%GRDID(NPT)      ,                  &
                  OUTPTS(IMOD)%OUT2%DPO(NPT)        ,                  &

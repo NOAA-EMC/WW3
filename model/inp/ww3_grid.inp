@@ -205,13 +205,77 @@ $
 END OF NAMELISTS
 $
 $ Define grid -------------------------------------------------------- $
-$ Four records containing :
-$  1 NX, NY. As the outer grid lines are always defined as land
+$
+$ Five records containing :
+$
+$  1 Type of grid, coordinate system and global flag: GSTRG, FLAGLL,
+$    GLOBAL.  A global grid may be rectilinear or curvilinear.
+$    A global grid must be in spherical coordinates.
+$      GSTRG  : String indicating type of grid :
+$               'RECT'  : rectilinear
+$               'CURV'  : curvilinear  
+$      FLAGLL : Flag to indicate coordinate system :
+$               T  : Spherical (lon/lat in degrees)
+$               F  : Cartesian (meters)
+$      GLOBAL : Flag to indicate whether or not the grid is global :
+$               T  : Global (longitudinal closure is applied)
+$               F  : Not global
+$  2 NX, NY. As the outer grid lines are always defined as land
 $    points, the minimum size is 3x3.
-$  2 Grid increments SX, SY (degr.or m) and scaling (division) factor.
-$    If NX*SX = 360., latitudinal closure is applied.
-$  3 Coordinates of (1,1) (degr.) and scaling (division) factor.
-$  4 Limiting bottom depth (m) to discriminate between land and sea
+$
+$ Branch here based on grid type
+$
+$ IF ( RECTILINEAR GRID ) THEN
+$
+$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+$    If GLOBAL=T, then SX is set to 360/NX.
+$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
+$
+$ ELSE IF ( CURVILINEAR GRID ) THEN
+$
+$  3 Unit number of file with x-coordinate.
+$    Scale factor and add offset: x <= scale_fac * x_read + add_offset.
+$    IDLA, IDFM, format for formatted read, FROM and filename.
+$      IDLA : Layout indicator :
+$                  1   : Read line-by-line bottom to top.
+$                  2   : Like 1, single read statement.
+$                  3   : Read line-by-line top to bottom.
+$                  4   : Like 3, single read statement.
+$      IDFM : format indicator :
+$                  1   : Free format.
+$                  2   : Fixed format with above format descriptor.
+$                  3   : Unformatted.
+$      FROM : file type parameter
+$               'UNIT' : open file by unit number only.
+$               'NAME' : open file by name and assign to unit.
+$
+$    If the above unit number equals 10, then the x-coord is read from this
+$    file.  The x-coord must follow the above record.  No comment lines are
+$    allowed within the x-coord input.
+$
+$  4 Unit number of file with y-coordinate.
+$    Scale factor and add offset: y <= scale_fac * y_read + add_offset.
+$    IDLA, IDFM, format for formatted read, FROM and filename.
+$      IDLA : Layout indicator :
+$                  1   : Read line-by-line bottom to top.
+$                  2   : Like 1, single read statement.
+$                  3   : Read line-by-line top to bottom.
+$                  4   : Like 3, single read statement.
+$      IDFM : format indicator :
+$                  1   : Free format.
+$                  2   : Fixed format with above format descriptor.
+$                  3   : Unformatted.
+$      FROM : file type parameter
+$               'UNIT' : open file by unit number only.
+$               'NAME' : open file by name and assign to unit.
+$
+$    If the above unit number equals 10, then the y-coord is read from this
+$    file.  The y-coord must follow the above record.  No comment lines are
+$    allowed within the y-coord input.
+$
+$ END IF ( CURVILINEAR GRID )
+$
+$  5 Limiting bottom depth (m) to discriminate between land and sea
 $    points, minimum water depth (m) as allowed in model, unit number
 $    of file with bottom depths, scale factor for bottom depths (mult.),
 $    IDLA, IDFM, format for formatted read, FROM and filename.
@@ -228,16 +292,72 @@ $      FROM : file type parameter
 $               'UNIT' : open file by unit number only.
 $               'NAME' : open file by name and assign to unit.
 $
-$ Example for longitude-latitude grid (switch !/LLG), for Cartesian
-$ grid the unit is meters (NOT km).
+$    If the above unit number equals 10, then the bottom depths are read from
+$    this file.  The depths must follow the above record.  No comment lines are
+$    allowed within the depth input.
 $
+$ ------------------------------------------------------------------------
+$ Example for rectilinear grid with spherical (lon/lat) coordinate system.
+$ Note that for Cartesian coordinates the unit is meters (NOT km).
+$
+     'RECT'  T
      12     12
       1.     1.     4.
      -1.    -1.     4.
      -0.1 2.50  10  -10. 3 1 '(....)' 'NAME' 'bottom.inp'
 $
-$ If the above unit number equals 10, the bottom data is read from
-$ this file and follows below (no intermediate comment lines allowed).
+  6 6 6 6 6 6 6 6 6 6 6 6
+  6 6 6 5 4 2 0 2 4 5 6 6
+  6 6 6 5 4 2 0 2 4 5 6 6
+  6 6 6 5 4 2 0 2 4 5 6 6
+  6 6 6 5 4 2 0 0 4 5 6 6
+  6 6 6 5 4 4 2 2 4 5 6 6
+  6 6 6 6 5 5 4 4 5 6 6 6
+  6 6 6 6 6 6 5 5 6 6 6 6
+  6 6 6 6 6 6 6 6 6 6 6 6
+  6 6 6 6 6 6 6 6 6 6 6 6
+  6 6 6 6 6 6 6 6 6 6 6 6
+  6 6 6 6 6 6 6 6 6 6 6 6
+$
+$ ------------------------------------------------------------------------
+$ Example for curvilinear grid with spherical (lon/lat) coordinate system.
+$ Same spatial grid as preceding rectilinear example.
+$ Note that for Cartesian coordinates the unit is meters (NOT km).
+$
+     'CURV'  T
+     12     12
+$
+     10 0.25 -0.5 3 1 '(....)' 'NAME' 'x.inp'
+$
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+   1  2  3  4  5  6  7  8  9 10 11 12
+$
+     10 0.25 0.5 3 1 '(....)' 'NAME' 'y.inp'
+$
+   1  1  1  1  1  1  1  1  1  1  1  1
+   2  2  2  2  2  2  2  2  2  2  2  2
+   3  3  3  3  3  3  3  3  3  3  3  3
+   4  4  4  4  4  4  4  4  4  4  4  4
+   5  5  5  5  5  5  5  5  5  5  5  5
+   6  6  6  6  6  6  6  6  6  6  6  6
+   7  7  7  7  7  7  7  7  7  7  7  7
+   8  8  8  8  8  8  8  8  8  8  8  8
+   9  9  9  9  9  9  9  9  9  9  9  9
+  10 10 10 10 10 10 10 10 10 10 10 10
+  11 11 11 11 11 11 11 11 11 11 11 11
+  12 12 12 12 12 12 12 12 12 12 12 12
+$
+     -0.1 2.50  10  -10. 3 1 '(....)' 'NAME' 'bottom.inp'
 $
   6 6 6 6 6 6 6 6 6 6 6 6
   6 6 6 5 4 2 0 2 4 5 6 6

@@ -10,6 +10,7 @@ $
 $
 END OF NAMELISTS
 $
+      'RECT' T F
       3      3
       1.     1.     1.
      -1.    -1.     1.

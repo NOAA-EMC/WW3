@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !
 !/    See subroutine for update history.
@@ -71,7 +71,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    22-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -84,6 +84,10 @@
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -144,9 +148,6 @@
 !     !/DIST  Id.
 !     !/MPI   MPI interface routines.
 !
-!     !/LLG   Spherical grid.
-!     !/XYG   Cartesian grid.
-!
 !     !/S     Enable subroutine tracing.
 !     !/T     General test output.
 !     !/T1    Test output on track point status.
@@ -164,8 +165,11 @@
       USE W3ODATMD, ONLY: W3SETO, W3DMO3
 !/
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
-                          X0, Y0, SX, SY, GLOBAL, MAPSTA, MAPST2,     &
+                          FLAGLL, GLOBAL, XGRD, YGRD, GSU,            &
+                          DPDX, DPDY, DQDX, DQDY, MAPSTA, MAPST2,     &
                           MAPFS, TH, DTH, SIG, DSIP, FILEXT
+      USE W3GSRUMD, ONLY: W3GFCL
+!/T      USE W3GSRUMD, ONLY: W3GSUP
       USE W3WDATMD, ONLY: TIME, UST
       USE W3ADATMD, ONLY: CG, DW, CX, CY, UA, UD, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
@@ -194,26 +198,22 @@
       INTEGER, PARAMETER      :: OTYPE = 3
       INTEGER                 :: NDSTI, NDSTO, ISPROC, IERR,          &
                                  IK, ITH, IX, IY, TIMEB(2), TIMEE(2), &
-                                 TTIME(2), IX1, IX2, IY1, IY2,        &
-                                 IXX(4), IYY(4), I, J, ISEA, JSEA,    &
-                                 TOLAST(2)
+                                 TTIME(2), IXX(4), IYY(4), I, J,      &
+                                 ISEA, JSEA, TOLAST(2)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T      INTEGER                 :: NREAD, NTRACK, NSPECO, NLOCO
 !/T3      INTEGER                 :: ISPT
 !/MPI      INTEGER                 :: IT, IROOT, IFROM, IERR_MPI
 !/MPI      INTEGER, ALLOCATABLE    :: STATUS(:,:)
-      REAL                    :: XN, YN, XT, YT, RD, X, Y, WX, WY,    &
+      REAL                    :: XT, YT, RD, X, Y, WX, WY,            &
                                  SPEC(NK,NTH), FACTOR, ASPTRK(NTH,NK),&
-                                 DTOUT
+                                 DTOUT, XX(4), YY(4)
       REAL, SAVE              :: RDCHCK = 0.05, RTCHCK = 0.05
-      LOGICAL                 :: FORMI, FLAG1, FLAG2
+      LOGICAL                 :: FORMI, FLAG1, FLAG2, INGRID
       CHARACTER(LEN=3)        :: TSTSTR
       CHARACTER(LEN=34)       :: IDTST
 !/T1      CHARACTER(LEN=17), SAVE :: TSTLOC = '                 '
 !/T2      CHARACTER(LEN=1)        :: MAPSTR(NX)
-!
-      EQUIVALENCE                (IXX(1),IX1) , (IXX(2),IX2) ,        &
-                                 (IYY(1),IY1) , (IYY(3),IY2)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -233,14 +233,14 @@
       NDSTI  = ABS(NDSINP)
       NDSTO  = ABS(NDSOUT)
 !
-      XN     = X0 + REAL(NX-1)*SX
-      YN     = Y0 + REAL(NY-1)*SY
-!
       ISPROC = IAPROC
       IPASS  = IPASS + 1
 !
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
 !
 !/T      WRITE (NDST,9000) TIME
 !
@@ -255,8 +255,8 @@
 !
       IF ( IPASS .EQ. 1 ) THEN
 !
-!/T          WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI,    &
-!/T                            NX, NY, X0, Y0, SX, SY, GLOBAL
+!/T          WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI
+!/T          CALL W3GSUP ( GSU, NDST )
 !
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
@@ -286,7 +286,7 @@
 !/T                                'UNFORMATTED'
               OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
                     FORM='UNFORMATTED',ERR=810,IOSTAT=IERR)
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, NK, NTH
+              WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK, NTH
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
                     (SIG(IK)*TPIINV,IK=1,NK),                          &
                     (DSIP(IK)*TPIINV,IK=1,NK)
@@ -368,54 +368,46 @@
 !
 ! 3.e Check point coordinates
 !
-!/LLG        IF ( XT .GT. X0 ) THEN
-!/LLG            XT     = XT - 360.*REAL(INT((XT-X0)/360.))
-!/LLG          ELSE
-!/LLG            XT     = XT + 360.*REAL(1+INT((X0-XT)/360.))
-!/LLG          END IF
-!
-!/LLG        IF ( .NOT.GLOBAL .AND. XT.GT.XN ) THEN
-!/XYG        IF ( XT.LT.X0 .OR. XT.GT.XN ) THEN
-!/T1            WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT,        &
-!/T1                              'OUT OF RANGE X'
+!       Find cell that encloses target point (note that the returned
+!       cell corner indices are adjusted for global wrapping and the
+!       coordinates are adjusted to avoid branch cut crossings)
+        INGRID = W3GFCL( GSU, XT, YT, IXX, IYY, XX, YY )
+        IF ( .NOT. INGRID ) THEN
+!/T1            WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
+!/T1                              'OUT OF GRID'
             CYCLE
           END IF
 !
-        IF ( YT.LT.Y0 .OR. YT.GT.YN ) THEN
-!/T1            WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT,        &
-!/T1                              'OUT OF RANGE Y'
-            CYCLE
-          END IF
+!       Change cell-corners from counter-clockwise to column-major order
+        IX     = IXX(4);  IY     = IYY(4);
+        IXX(4) = IXX(3);  IYY(4) = IYY(3);
+        IXX(3) = IX;      IYY(3) = IY;
 !
-        IX1    = 1 + INT((XT-X0)/SX)
-        RD     = (XT-X0-REAL(IX1-1)*SX)/SX
+!       Project onto I-axis
+        RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
+           + DPDY(IYY(1),IXX(1))*(YT-YY(1))
+!
+!       Collapse to left or right if within tolerance
         IF ( RD .LT. RDCHCK ) THEN
-            IX2    = IX1
+            IXX(2) = IXX(1)
+            IXX(4) = IXX(3)
           ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-            IX1    = IX1 + 1
-            IX2    = IX1
-          ELSE
-            IX2    = IX1 + 1
+            IXX(1) = IXX(2)
+            IXX(3) = IXX(4)
           END IF
 !
-        IF ( GLOBAL .AND. IX1.GT.NX ) IX1 = IX1 - NX
-        IF ( GLOBAL .AND. IX2.GT.NX ) IX2 = IX2 - NX
+!       Project onto J-axis
+        RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
+           + DQDY(IYY(1),IXX(1))*(YT-YY(1))
 !
-        IY1    = 1 + INT((YT-Y0)/SY)
-        RD     = (YT-Y0-REAL(IY1-1)*SY)/SY
+!       Collapse to top or bottom if within tolerance
         IF ( RD .LT. RDCHCK ) THEN
-            IY2    = IY1
+            IYY(3) = IYY(1)
+            IYY(4) = IYY(2)
           ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-            IY1    = IY1 + 1
-            IY2    = IY1
-          ELSE
-            IY2    = IY1 + 1
+            IYY(1) = IYY(3)
+            IYY(2) = IYY(4)
           END IF
-!
-        IXX(3) = IX1
-        IXX(4) = IX2
-        IYY(2) = IY1
-        IYY(4) = IY2
 !
 ! 3.f Mark the four corner points
 !
@@ -423,8 +415,6 @@
 !
           IX     = IXX(J)
           IY     = IYY(J)
-          X      = X0 + REAL(IX-1)*SX
-          Y      = Y0 + REAL(IY-1)*SY
           MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
           MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
 !
@@ -494,8 +484,8 @@
         DO IX=1, NX
           IF ( MASK1(IY,IX) ) THEN
 !
-              X      = X0 + REAL(IX-1)*SX
-              Y      = Y0 + REAL(IY-1)*SY
+              X      = XGRD(IY,IX)
+              Y      = YGRD(IY,IX)
 !/MPI              IT     = IT + 1
 !/T              NLOCO  = NLOCO + 1
 !
@@ -688,11 +678,7 @@
 !/T 9010 FORMAT ('               LAST OUTPUT TIME : ',I8.8,I7.6/      &
 !/T              '               OUTPUT TIME INC, : ',F6.0/           &
 !/T              '               UNIT NUMBERS     : ',2I4/            &
-!/T              '               FORMAT FLAGS     : ',L4/             &
-!/T              '               GRID DIMENSIONS  : ',I9,I12/         &
-!/T              '               GRID ORIGINE     : ',2F12.2/         &
-!/T              '               GRID INCREMENTS  : ',2F12.2/         &
-!/T              '               GLOBAL GRID      : ',L4)
+!/T              '               FORMAT FLAGS     : ',L4)
 !/T 9011 FORMAT (' TEST W3IOTR : OPENING INPUT    : ',A,' [',A,']')
 !/T 9012 FORMAT (' TEST W3IOTR : OPENING OUTPUT   : ',A,' [',A,']')
 !/T 9015 FORMAT (' TEST W3IOTR : PREPARING MASKS')

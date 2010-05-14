@@ -1,0 +1,39 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.3 Test script for WW-III, two-dimensional propagation.            #
+#           Garden Sprinkler Effect tests.                                  #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging.                             #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+#       switch_PRn_MPI : for parallel run with MPI                          #
+# - Test case input (default):                                              #
+#   * Several initial conditions available in ww3_strt.inp                  #
+#   * Set proper parameters for propagation schemes in ww3_grid.inp         #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 48 x 38 rectilinear Cartesian grid                    #
+#       - dx = 100 km, dy = 100 km                                          #
+#       - Xrange = -600:4100 km, Yrange = -600:3100 km                      #
+#     + Spectral grid: several resolutions available, choose one            #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

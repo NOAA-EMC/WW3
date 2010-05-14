@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    01-Nov-1999 : Final FORTRAN 77        ( version 1.18 + error fix )
@@ -23,6 +23,8 @@
 !/                  (A. Chawla)
 !/    01-Aug-2007 : Update FLGRIB for GRIB2.            ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -82,8 +84,6 @@
 !     See source code.
 !
 !  9. Switches :
-!
-!       !/XYG   Flat grid error message
 !
 !       !/S     Enable subroutine tracing.
 !
@@ -164,6 +164,11 @@
 !
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3SETG ( 1, 6, 6 )
+      IF ( GTYPE .EQ. CLGTYPE ) THEN                                    !TRAP
+      WRITE(*,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// &         !TRAP
+      'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'            !TRAP
+      STOP                                                              !TRAP
+      END IF                                                            !TRAP
       CALL W3NDAT (    6, 6 )
       CALL W3SETW ( 1, 6, 6 )
       CALL W3NAUX (    6, 6 )
@@ -192,7 +197,7 @@
 !/NCO      NDSTRC = NDSO
 !
       WRITE (NDSO,900)
-!/XYG      GOTO 810
+      IF ( .NOT. FLAGLL ) GOTO 810
 !
       CALL ITRACE ( NDSTRC, NTRACE )
 !/S      CALL STRACE (IENT, 'W3GRIB')
@@ -587,9 +592,11 @@
       WRITE (NDSE,1005) IDOUT(9), IDOUT(18)
       CALL EXTCDE ( 5 )
 !
-!/XYG  810 CONTINUE
-!/XYG      WRITE (NDSE,1010)
-!/XYG      CALL EXTCDE ( 10 )
+  810 CONTINUE
+      IF ( .NOT. FLAGLL ) THEN
+          WRITE (NDSE,1010)
+          CALL EXTCDE ( 10 )
+        END IF
 !
   888 CONTINUE
       WRITE (NDSO,999)
@@ -659,8 +666,8 @@
                '     FIRST FIELD  : ',A/                              &
                '     SECOND FIELD : ',A/)
 !
-!/XYG 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRIB : '/          &
-!/XYG               '     GRIB REQUIRES SPHERICAL GRID'/)
+ 1010 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRIB : '/          &
+               '     GRIB REQUIRES SPHERICAL GRID'/)
 !/
 !/ Internal subroutine W3EXGO ---------------------------------------- /
 !/

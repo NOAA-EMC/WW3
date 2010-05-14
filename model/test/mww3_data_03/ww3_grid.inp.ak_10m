@@ -14,6 +14,7 @@ $
   &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
 END OF NAMELISTS
 $
+    'RECT' T F
     401    187
       1.5    1.     6.
     140.    44.     1.

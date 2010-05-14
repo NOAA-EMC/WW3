@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -53,6 +53,10 @@
 !/                  ( F. Ardhuin )
 !/    22-Feb-2008 : Initialize TRNX-Y properly.         ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -80,6 +84,7 @@
 !       NDSG    Int.  Grid unit ( may be NDSI )
 !       NDSTR   Int.  Sub-grid unit ( may be NDSI or NDSG )
 !       VSC     Real  Scale factor.
+!       VOF     Real  Add offset.
 !       ZLIM    Real  Limiting bottom depth, used to define land.
 !       IDLA    Int.  Layout indicator used by INA2R.
 !       IDFM    Int.  Id. FORMAT indicator.
@@ -96,6 +101,7 @@
 !      W3SETG    Subr.   Id.    Point to selected model.
 !      W3DIMS    Subr.   Id.    Set array dims for a spectral grid.
 !      W3DIMX    Subr.   Id.    Set array dims for a spatial grid.
+!      W3GRMP    Subr. W3GSRUMD Compute bilinear interpolation for point
 !      W3NOUT    Subr. W3ODATMD Set number of model for output.
 !      W3SETO    Subr.   Id.    Point to selected model for output.
 !      W3DMO5    Subr.   Id.    Set array dims for output type 5.
@@ -282,9 +288,6 @@
 !
 !  9. Switches :
 !
-!     !/LLG   Longitude-latitule grid.
-!     !/XYG   Cartesian XY grid.
-!
 !     !/FLX1  Stresses according to Wu (1980).
 !     !/FLX2  Stresses according to T&C (1996).
 !     !/FLX3  Stresses according to T&C (1996) with cap on Cd.
@@ -349,6 +352,7 @@
       USE CONSTANTS
 !/
 !     USE W3GDATMD, ONLY: W3NMOD, W3SETG
+      USE W3GSRUMD, ONLY: W3GRMP
       USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
@@ -375,9 +379,9 @@
                                  NRBT, NRDB, NRTR, NRBS, NRXX, NRPROP,&
                                  IDLA, IDFM, IX0, IXN, IX, IY, ISEA,  &
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
-                                 IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
-                                 IY2, J, JJ, ISEAI(4), IST, NKI, NTHI,&
-                                 IDFT, NSTAT, NBT, NLAND
+                                 IFL, NBOTOT, NPO, IP, IX1, IY1, J,   &
+                                 JJ, IXR(4), IYR(4), ISEAI(4), IST,   &
+                                 NKI, NTHI, IDFT, NSTAT, NBT, NLAND
 !/NL2      INTEGER                 :: IDEPTH
 !/O1      INTEGER                 :: IBI, IP0, IPN, IPH, IPI
       INTEGER                 :: NCOL =  78
@@ -390,10 +394,12 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: TMPSTA(:,:), TMPMAP(:,:), READMP(:,:)
 !/T      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
-      REAL                    :: RXFR, RFR1, SIGMA, SXFR, FACHF, VSC, &
-                                 ZLIM, Y, XP,  XO0, YO0, DXO, DYO,    &
-                                 XO, YO, RDX, RDY, RDTOT, FACTOR,     &
+      REAL                    :: RXFR, RFR1, SIGMA, SXFR, FACHF,      &
+                                 VSC, VOF,                            &
+                                 ZLIM, X, Y, XP,  XO0, YO0, DXO, DYO, &
+                                 XO, YO, RD(4), RDTOT, FACTOR,        &
                                  RTH0, FMICHE
+      CHARACTER(LEN=4)        :: GSTRG
 !/LN1      REAL                    :: CLIN, RFPM, RFHF
 !/ST1      REAL                    :: CINP, CDIS, APM
 !/ST2      REAL                    :: PHIMIN, FPIA, FPIB, DPHID
@@ -401,10 +407,11 @@
 !/NL2      REAL                    :: DPTFAC, DEPTHS(100)
 !/BT1      REAL                    :: GAMMA
 !/PR2      REAL                    :: LATMIN
+      REAL, ALLOCATABLE       :: XGRDIN(:,:), YGRDIN(:,:)
       REAL, ALLOCATABLE       :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
                                  FLTR, FLBS, FLXX, FLPROP,            &
-                                 FIRST, CONNCT, FLNEW
+                                 FIRST, CONNCT, FLNEW, INGRID
       LOGICAL                 :: FLTC96 = .FALSE.
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
@@ -1372,41 +1379,192 @@
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 7.  Read and prepare the grid.
-! 7.a Layout of grid
+! 7.a Type of grid
 !
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) GSTRG, FLAGLL, GLOBAL
+      SELECT CASE (TRIM(GSTRG))
+        CASE ('RECT')
+          GTYPE = RLGTYPE
+          WRITE (NDSO,3000) 'rectilinear'
+        CASE ('CURV')
+          GTYPE = CLGTYPE
+          WRITE (NDSO,3000) 'curvilinear'
+        CASE DEFAULT
+          WRITE (NDSE,1007) TRIM(GSTRG)
+          CALL EXTCDE ( 25 )
+        END SELECT
+      IF ( GLOBAL .AND. .NOT.FLAGLL ) THEN
+          WRITE (NDSE,1007)
+          CALL EXTCDE ( 25 )
+        END IF
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+          WRITE (NDSO,3001) 'spherical'
+        ELSE
+          FACTOR = 1.E-3
+          WRITE (NDSO,3001) 'Cartesian'
+        END IF
+      WRITE (NDSO,3002) GLOBAL
+!
+! 7.b Size of grid
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=2001,ERR=2002) NX, NY
       NX     = MAX ( 3 , NX )
       NY     = MAX ( 3 , NY )
+      WRITE (NDSO,3003) NX, NY
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) SX, SY, VSC
-      VSC    = MAX ( 1.E-7 , VSC )
-      SX     = SX / VSC
-      SY     = SY / VSC
-      SX     = MAX ( 1.E-7 , SX )
-      SY     = MAX ( 1.E-7 , SY )
-!/XYG      GLOBAL = .FALSE.
-!/LLG      GLOBAL = REAL(NX)*SX .GT. 359.5
-      IF ( GLOBAL ) SX = 360. / REAL(NX)
+! 7.c Grid coordinates (branch here based on grid type)
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) X0, Y0, VSC
-      VSC    = MAX ( 1.E-7 , VSC )
-      X0     = X0 / VSC
-      Y0     = Y0 / VSC
+      ALLOCATE ( XGRDIN(NX,NY), YGRDIN(NX,NY) )
 !
-!/LLG      WRITE (NDSO,970) NX, NY, SX, SY, X0, X0+REAL(NX-1)*SX,     &
-!/LLG                                       Y0, Y0+REAL(NY-1)*SY
-!/XYG      WRITE (NDSO,970) NX, NY, 1.E-3*SX, 1.E-3*SY,               &
-!/XYG                       1.E-3*X0, 1.E-3*(X0+REAL(NX-1)*SX),       &
-!/XYG                       1.E-3*Y0, 1.E-3*(Y0+REAL(NY-1)*SY)
-      IF ( GLOBAL ) WRITE (NDSO,971)
+      SELECT CASE ( GTYPE )
 !
-! 7.b Storage of grid
+! 7.c.1 Rectilinear grid
+!
+        CASE ( RLGTYPE )
+!
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) SX, SY, VSC
+          VSC    = MAX ( 1.E-7 , VSC )
+          SX     = SX / VSC
+          SY     = SY / VSC
+          SX     = MAX ( 1.E-7 , SX )
+          SY     = MAX ( 1.E-7 , SY )
+          IF ( GLOBAL ) SX = 360. / REAL(NX)
+!
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) X0, Y0, VSC
+          VSC    = MAX ( 1.E-7 , VSC )
+          X0     = X0 / VSC
+          Y0     = Y0 / VSC
+!
+          IF ( FLAGLL ) THEN
+              WRITE (NDSO,3004) FACTOR*SX, FACTOR*SY,         &
+                     FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),    &
+                     FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
+            ELSE
+              WRITE (NDSO,3005) FACTOR*SX, FACTOR*SY,         &
+                     FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),    &
+                     FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
+            END IF
+!
+          DO IY=1, NY
+            DO, IX=1, NX
+              XGRDIN(IX,IY) = X0 + REAL(IX-1)*SX
+              YGRDIN(IX,IY) = Y0 + REAL(IY-1)*SY
+              END DO
+            END DO
+!
+! 7.c.2 Curvilinear grid
+!
+        CASE ( CLGTYPE )
+!
+! 7.c.2.a Process x-coordinates
+!
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
+                                          IDLA, IDFM, RFORM, FROM, FNAME
+!
+          IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+          IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
+!
+          WRITE (NDSO,3006) NDSG, VSC, VOF, IDLA, IDFM
+          IF (IDFM.EQ.2) WRITE (NDSO,3008) TRIM(RFORM)
+          IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
+              WRITE (NDSO,3009) TRIM(FNAME)
+!
+          IF ( NDSG .EQ. NDSI ) THEN
+              IF ( IDFM .EQ. 3 ) THEN
+                  WRITE (NDSE,1004) NDSG
+                  CALL EXTCDE (23)
+                ELSE
+                  CALL NEXTLN ( COMSTR , NDSI , NDSE )
+                END IF
+            ELSE
+              IF ( IDFM .EQ. 3 ) THEN
+                  IF (FROM.EQ.'NAME') THEN
+                      OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                            FORM='UNFORMATTED',                 &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSG,                               &
+                            FORM='UNFORMATTED',                 &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                ELSE
+                  IF (FROM.EQ.'NAME') THEN
+                      OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSG,                               &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                END IF !IDFM
+            END IF !NDSG
+!
+          CALL INA2R ( XGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
+                       IDFM, RFORM, IDLA, VSC, VOF)
+!
+! 7.c.2.b Process y-coordinates
+!
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
+                                          IDLA, IDFM, RFORM, FROM, FNAME
+!
+          IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+          IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
+!
+          WRITE (NDSO,3007) NDSG, VSC, VOF, IDLA, IDFM
+          IF (IDFM.EQ.2) WRITE (NDSO,3008) TRIM(RFORM)
+          IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
+              WRITE (NDSO,3009) TRIM(FNAME)
+!
+          IF ( NDSG .EQ. NDSI ) THEN
+              IF ( IDFM .EQ. 3 ) THEN
+                  WRITE (NDSE,1004) NDSG
+                  CALL EXTCDE (23)
+                ELSE
+                  CALL NEXTLN ( COMSTR , NDSI , NDSE )
+                END IF
+            ELSE
+              IF ( IDFM .EQ. 3 ) THEN
+                  IF (FROM.EQ.'NAME') THEN
+                      OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                            FORM='UNFORMATTED',                 &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSG,                               &
+                            FORM='UNFORMATTED',                 &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                ELSE
+                  IF (FROM.EQ.'NAME') THEN
+                      OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSG,                               &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                END IF !IDFM
+            END IF !NDSG
+!
+          CALL INA2R ( YGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
+                       IDFM, RFORM, IDLA, VSC, VOF)
+!
+! 7.c.2.c Check for obvious errors in grid definition or input
+!
+! ....... Check for inverted grid (can result from wrong IDLA)
+          IF ( (XGRDIN(2,1)-XGRDIN(1,1))*(YGRDIN(1,2)-YGRDIN(1,1)) .LT. &
+               (YGRDIN(2,1)-YGRDIN(1,1))*(XGRDIN(1,2)-XGRDIN(1,1)) ) THEN
+              WRITE (NDSE,1011) IDLA
+              CALL EXTCDE (25)
+            END IF
+!
+        END SELECT !GTYPE
+!
+! 7.d Depth information for grid
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=2001,ERR=2002) ZLIM, DMIN, NDSG, VSC, IDLA,    &
@@ -1418,10 +1576,11 @@
       IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
 !
       WRITE (NDSO,972) NDSG, ZLIM, DMIN, VSC, IDLA, IDFM
-      IF (IDFM.EQ.2) WRITE (NDSO,973) RFORM
-      IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) WRITE (NDSO,974) FNAME
+      IF (IDFM.EQ.2) WRITE (NDSO,973) TRIM(RFORM)
+      IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
+          WRITE (NDSO,974) TRIM(FNAME)
 !
-! 7.c Read bottom depths
+! 7.e Read bottom depths
 !
       IF ( NDSG .EQ. NDSI ) THEN
           IF ( IDFM .EQ. 3 ) THEN
@@ -1433,20 +1592,20 @@
         ELSE
           IF ( IDFM .EQ. 3 ) THEN
               IF (FROM.EQ.'NAME') THEN
-                  J      = LEN_TRIM(FNMPRE)
-                  OPEN (NDSG,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',&
+                  OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                        FORM='UNFORMATTED',                 &
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
                 ELSE
-                  OPEN (NDSG,           FORM='UNFORMATTED',           &
+                  OPEN (NDSG,                               &
+                        FORM='UNFORMATTED',                 &
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
                 END IF
             ELSE
               IF (FROM.EQ.'NAME') THEN
-                  J      = LEN_TRIM(FNMPRE)
-                  OPEN (NDSG,FILE=FNMPRE(:J)//FNAME,                  &
+                  OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
                 ELSE
-                  OPEN (NDSG,                                         &
+                  OPEN (NDSG,                               &
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
                 END IF
             END IF
@@ -1454,10 +1613,10 @@
 !
       ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
       CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
-                   IDFM, RFORM, IDLA, VSC)
+                   IDFM, RFORM, IDLA, VSC, 0.0)
       WRITE (NDSO,*)
 !
-! 7.d Set up temporary map
+! 7.f Set up temporary map
 !
       ALLOCATE ( TMPSTA(NY,NX), TMPMAP(NY,NX) )
       TMPSTA = 0
@@ -1468,7 +1627,7 @@
           END DO
         END DO
 !
-! 7.e Subgrid information
+! 7.g Subgrid information
 !
       TRFLAG = FLAGTR
       IF ( TRFLAG.GT.4 .OR. TRFLAG.LT.0 ) TRFLAG = 0
@@ -1484,7 +1643,7 @@
 !
       IF ( TRFLAG .NE. 0 ) THEN
 !
-! 7.e.1 Info from input file
+! 7.g.1 Info from input file
 !
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
           READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
@@ -1498,7 +1657,7 @@
           IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
           IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
 !
-! 7.e.2 Open file and check if necessary
+! 7.g.2 Open file and check if necessary
 !
           IF ( NDSTR .EQ. NDSI ) THEN
               IF ( IDFT .EQ. 3 ) THEN
@@ -1536,17 +1695,17 @@
                 END IF
             END IF
 !
-! 7.e.3 Read the data
+! 7.g.3 Read the data
 !
           CALL INA2R ( OBSX, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-                       IDFM, RFORM, IDLA, VSC)
+                       IDFM, RFORM, IDLA, VSC, 0.0)
 !
           IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
           CALL INA2R ( OBSY, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-                       IDFM, RFORM, IDLA, VSC)
+                       IDFM, RFORM, IDLA, VSC, 0.0)
 !
-! 7.e.4 Limit
+! 7.g.4 Limit
 !
           DO, IX=1, NX
             DO IY=1, NY
@@ -1795,7 +1954,7 @@
           IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
           ALLOCATE ( READMP(NX,NY) )
           CALL INA2I ( READMP, NX, NY, 1, NX, 1, NY, NDSTR, NDST,    &
-                       NDSE, IDFM, RFORM, IDLA, 1 )
+                       NDSE, IDFM, RFORM, IDLA, 1, 0 )
 !
           IF ( .NOT. GLOBAL ) THEN
               DO IY=2, NY-1
@@ -1844,14 +2003,22 @@
           WRITE (NDSO,985)
         ELSE
           WRITE (NDSO,986) NBI
-!/O1          WRITE (NDSO,987)
+!/O1          IF ( FLAGLL ) THEN
+!/O1              WRITE (NDSO, 987)
+!/O1            ELSE
+!/O1              WRITE (NDSO,1987)
+!/O1            END IF
 !/O1          IBI    = 1
 !/O1          DO IY=1, NY
 !/O1            DO IX=1, NX
-!/O1            IF ( TMPSTA(IY,IX).EQ.2 ) THEN
-!/O1                  WRITE (NDSO,988) IBI, IX, IY,             &
-!/O1                             FACTOR * ( X0+REAL(IX-1)*SX ), &
-!/O1                             FACTOR * ( Y0+REAL(IY-1)*SY )
+!/O1              X = FACTOR * ( XGRDIN(IX,IY) )
+!/O1              Y = FACTOR * ( YGRDIN(IX,IY) )
+!/O1              IF ( TMPSTA(IY,IX).EQ.2 ) THEN
+!/O1                  IF ( FLAGLL ) THEN
+!/O1                      WRITE (NDSO, 988) IBI, IX, IY, X, Y
+!/O1                    ELSE
+!/O1                      WRITE (NDSO,1988) IBI, IX, IY, X, Y
+!/O1                    END IF
 !/O1                  IBI    = IBI + 1
 !/O1                END IF
 !/O1              END DO
@@ -1869,16 +2036,15 @@
 !
       CALL W3DIMX ( 1, NX, NY, NSEA, NDSE, NDST )
 !
-!/LLG      DO IY=1, NY
-!/LLG        Y         = Y0 + REAL(IY-1)*SY
-!/LLG        CLAT (IY) = COS(Y*DERA)
-!/LLG        CLATI(IY) = 1. / CLAT(IY)
-!/LLG        CTHG0(IY) = - TAN(DERA*Y) / RADIUS
-!/LLG        END DO
+      DO IY=1, NY
+        DO IX=1, NX
+          XGRD(IY,IX) = XGRDIN(IX,IY)
+          YGRD(IY,IX) = YGRDIN(IX,IY)
+          END DO
+        END DO
+      DEALLOCATE ( XGRDIN, YGRDIN )
 !
-!/XYG      CLAT   = 1.
-!/XYG      CLATI  = 1.
-!/XYG      CTHG0  = 0.
+      CALL W3GNTX ( 1, 6, 6 )
 !
       MAPSTA = TMPSTA
       MAPFS  = 0
@@ -1912,7 +2078,16 @@
 !/T              MAPOUT(IX,IY)  = 1
               MAPSF(ISEA,1)  = IX
               MAPSF(ISEA,2)  = IY
-              CLATS(ISEA)    = CLAT(IY)
+              IF ( FLAGLL ) THEN
+                  Y              = YGRD(IY,IX)
+                  CLATS(ISEA)    = COS(Y*DERA)
+                  CLATIS(ISEA)   = 1. / CLATS(ISEA)
+                  CTHG0S(ISEA)   = - TAN(DERA*Y) / RADIUS
+                ELSE
+                  CLATS(ISEA)    = 1.
+                  CLATIS(ISEA)   = 1.
+                  CTHG0S(ISEA)   = 0.
+                END IF
               IF ( TRFLAG .NE. 0 ) THEN
                   TRNX(IY,IX) = 1. - OBSX(IX,IY)
                   TRNY(IY,IX) = 1. - OBSY(IX,IY)
@@ -2033,26 +2208,50 @@
                   WRITE (NDSO,991)  NFBPO, NBO(NFBPO) - NBO(NFBPO-1), &
                                           NBO2(NFBPO) - NBO2(NFBPO-1)
 !/O1                  IF ( NBO(NFBPO) - NBO(NFBPO-1) .EQ. 1 ) THEN
-!/O1                      WRITE (NDSO,992)
+!/O1                      IF ( FLAGLL ) THEN
+!/O1                          WRITE (NDSO,992)
+!/O1                        ELSE
+!/O1                          WRITE (NDSO,2992)
+!/O1                        END IF
 !/O1                    ELSE
-!/O1                      WRITE (NDSO,1992)
+!/O1                      IF ( FLAGLL ) THEN
+!/O1                          WRITE (NDSO,1992)
+!/O1                        ELSE
+!/O1                          WRITE (NDSO,3992)
+!/O1                        END IF
 !/O1                    END IF
 !/O1                  IP0    = NBO(NFBPO-1)+1
 !/O1                  IPN    = NBO(NFBPO)
 !/O1                  IPH    = IP0 + (IPN-IP0-1)/2
 !/O1                  IPI    = IPH -IP0 + 1 + MOD(IPN-IP0+1,2)
 !/O1                  DO IP=IP0, IPH
-!/O1                    WRITE (NDSO,1993) IP-NBO(NFBPO-1),     &
-!/O1                                      FACTOR*XBPO(IP),     &
-!/O1                                      FACTOR*YBPO(IP),     &
-!/O1                                      IP+IPI-NBO(NFBPO-1), &
-!/O1                                      FACTOR*XBPO(IP+IPI), &
-!/O1                                      FACTOR*YBPO(IP+IPI)
+!/O1                    IF ( FLAGLL ) THEN
+!/O1                        WRITE (NDSO,1993) IP-NBO(NFBPO-1),     &
+!/O1                                          FACTOR*XBPO(IP),     &
+!/O1                                          FACTOR*YBPO(IP),     &
+!/O1                                          IP+IPI-NBO(NFBPO-1), &
+!/O1                                          FACTOR*XBPO(IP+IPI), &
+!/O1                                          FACTOR*YBPO(IP+IPI)
+!/O1                      ELSE
+!/O1                        WRITE (NDSO,3993) IP-NBO(NFBPO-1),     &
+!/O1                                          FACTOR*XBPO(IP),     &
+!/O1                                          FACTOR*YBPO(IP),     &
+!/O1                                          IP+IPI-NBO(NFBPO-1), &
+!/O1                                          FACTOR*XBPO(IP+IPI), &
+!/O1                                          FACTOR*YBPO(IP+IPI)
+!/O1                      END IF
 !/O1                    END DO
-!/O1                  IF ( MOD(IPN-IP0+1,2) .EQ. 1 )           &
-!/O1                    WRITE (NDSO,993) IPH+1-NBO(NFBPO-1),   &
-!/O1                                     FACTOR*XBPO(IPH+1),   &
-!/O1                                     FACTOR*YBPO(IPH+1)
+!/O1                  IF ( MOD(IPN-IP0+1,2) .EQ. 1 ) THEN
+!/O1                      IF ( FLAGLL ) THEN
+!/O1                          WRITE (NDSO, 993) IPH+1-NBO(NFBPO-1), &
+!/O1                                            FACTOR*XBPO(IPH+1), &
+!/O1                                            FACTOR*YBPO(IPH+1)
+!/O1                        ELSE
+!/O1                          WRITE (NDSO,2993) IPH+1-NBO(NFBPO-1), &
+!/O1                                            FACTOR*XBPO(IPH+1), &
+!/O1                                            FACTOR*YBPO(IPH+1)
+!/O1                        END IF
+!/O1                    END IF
 !/O1                  WRITE (NDSO,*)
                 END IF
 !
@@ -2077,67 +2276,32 @@
             XO     = XO0 + REAL(IP-1)*DXO
             YO     = YO0 + REAL(IP-1)*DYO
 !
-! ... Full-grid counters
+! ... Compute bilinear remapping weights
 !
-!/LLG            IX1    = 1 + INT(MOD(1080.+XO-X0,360.)/SX)
-!/LLG            RDX    = MOD(MOD(1080.+XO-X0,360.),SX)/SX
-!/XYG            IX1    = 1 + INT((XO-X0)/SX)
-!/XYG            RDX    = MOD(XO-X0,SX)/SX
-            IX2    = IX1 + 1
-!/LLG            IF ( GLOBAL ) THEN
-!/LLG                IF ( IX1 .EQ. NX ) IX2    =  1
-!/LLG                IF ( IX1 .EQ.  0 ) IX1    =  1
-!/LLG              ELSE
-!/LLG                IF ( INT(MOD(1080.+XO-X0+0.05*SX,360.)/SX).EQ.0  &
-!/LLG                     .AND. IX1.GE.NX ) THEN
-!/XYG                IF ( IX1.EQ.0 .AND. ABS(RDX-1.).LT.0.05 ) THEN
-                    IX1    =  1
-                    IX2    =  2
-                    RDX    =  0.
-                  END IF
-                IF ( IX1.EQ.NX .AND. ABS(RDX).LT.0.05 ) THEN
-                    IX1    = NX-1
-                    IX2    = NX
-                    RDX    =  1.
-                  END IF
-!/LLG              END IF
+            INGRID = W3GRMP( GSU, XO, YO, IXR, IYR, RD )
 !
-            IY1    = 1 + INT((YO-Y0)/SY)
-            RDY    = MOD(YO-Y0,SY)/SY
-            IF ( RDY .LT. 0. ) THEN
-                IY1    = IY1 - 1
-                RDY    = 1. + RDY
-              END IF
-            IY2    = IY1 + 1
-            IF ( IY1.EQ.0 .AND. ABS(RDY-1.).LT.0.05 ) THEN
-                IY1    =  1
-                IY2    =  2
-                RDY    =  0.
-              END IF
-            IF ( IY1.EQ.NY .AND. ABS(RDY).LT.0.05 ) THEN
-                IY1    = NY-1
-                IY2    = NY
-                RDY    =  1.
-              END IF
+!           Change cell-corners from counter-clockwise to column-major order
+            IX     = IXR(3);  IY     = IYR(3);  X     = RD(3);
+            IXR(3) = IXR(4);  IYR(3) = IYR(4);  RD(3) = RD(4);
+            IXR(4) = IX    ;  IYR(4) = IY    ;  RD(4) = X    ;
 !
-!/T        WRITE (NDST,9091) FACTOR*XO, FACTOR*YO,                    &
-!/T                          IX1, IX2, RDX, IY1, IY2, RDY
+!/T            WRITE (NDST,9091) FACTOR*XO, FACTOR*YO,                   &
+!/T                              (IXR(J), IYR(J), RD(J), J=1,4)
 !
 ! ... Check if point in grid
 !
-            IF ( IY1.GE.1 .AND. IY2.LE.NY .AND.                       &
-                 ( GLOBAL .OR. ( IX1.GE.1 .AND. IX2.LE.NX) ) ) THEN
+            IF ( INGRID ) THEN
 !
 ! ... Check if point not on land
 !
-                IF ( ( MAPSTA(IY1,IX1).GT.0 .AND.                     &
-                              (1.-RDX)*(1.-RDY).GT.0.05 ) .OR.        &
-                     ( MAPSTA(IY1,IX2).GT.0 .AND.                     &
-                                 RDX  *(1.-RDY).GT.0.05 ) .OR.        &
-                     ( MAPSTA(IY2,IX1).GT.0 .AND.                     &
-                              (1.-RDX)*  RDY   .GT.0.05 ) .OR.        &
-                     ( MAPSTA(IY2,IX2).GT.0 .AND.                     &
-                                 RDX  *  RDY   .GT.0.05 ) ) THEN
+                IF ( ( MAPSTA(IYR(1),IXR(1)).GT.0 .AND.               &
+                                          RD(1).GT.0.05 ) .OR.        &
+                     ( MAPSTA(IYR(2),IXR(2)).GT.0 .AND.               &
+                                          RD(2).GT.0.05 ) .OR.        &
+                     ( MAPSTA(IYR(3),IXR(3)).GT.0 .AND.               &
+                                          RD(3).GT.0.05 ) .OR.        &
+                     ( MAPSTA(IYR(4),IXR(4)).GT.0 .AND.               &
+                                          RD(4).GT.0.05 ) ) THEN
 !
 ! ... Check storage and store coordinates
 !
@@ -2149,47 +2313,28 @@
 !
 ! ... Interpolation factors
 !
-                IF ( MAPSTA(IY1,IX1).GT.0 .AND.                       &
-                              (1.-RDX)*(1.-RDY).GT.0.05 ) THEN
-                    RDBPO(NBOTOT,1) = (1.-RDX)*(1.-RDY)
-                  ELSE
-                    RDBPO(NBOTOT,1) = 0.
-                  END IF
-                IF ( MAPSTA(IY1,IX2).GT.0 .AND.                       &
-                                 RDX  *(1.-RDY).GT.0.05 ) THEN
-                    RDBPO(NBOTOT,2) = RDX*(1.-RDY)
-                  ELSE
-                    RDBPO(NBOTOT,2) = 0.
-                  END IF
-                IF ( MAPSTA(IY2,IX1).GT.0 .AND.                       &
-                              (1.-RDX)*  RDY   .GT.0.05 ) THEN
-                    RDBPO(NBOTOT,3) = (1.-RDX)*RDY
-                  ELSE
-                    RDBPO(NBOTOT,3) = 0.
-                  END IF
-                IF ( MAPSTA(IY2,IX2).GT.0 .AND.                       &
-                                 RDX  *  RDY   .GT.0.05 ) THEN
-                    RDBPO(NBOTOT,4) = RDX*RDY
-                  ELSE
-                    RDBPO(NBOTOT,4) = 0.
-                  END IF
-!
-                RDTOT  = RDBPO(NBOTOT,1) + RDBPO(NBOTOT,2) +          &
-                         RDBPO(NBOTOT,3) + RDBPO(NBOTOT,4)
+                RDTOT = 0.
+                DO J=1, 4
+                  IF ( MAPSTA(IYR(J),IXR(J)).GT.0 .AND.               &
+                                            RD(J).GT.0.05 ) THEN
+                      RDBPO(NBOTOT,J) = RD(J)
+                    ELSE
+                      RDBPO(NBOTOT,J) = 0.
+                    END IF
+                    RDTOT = RDTOT + RDBPO(NBOTOT,J)
+                  END DO
 !
               DO J=1, 4
                 RDBPO(NBOTOT,J) = RDBPO(NBOTOT,J) / RDTOT
                 END DO
 !
-!/T              WRITE (NDST,9092) RDTOT, RDBPO(NBOTOT,1),RDBPO(NBOTOT,2),&
-!/T                                       RDBPO(NBOTOT,3),RDBPO(NBOTOT,4)
+!/T              WRITE (NDST,9092) RDTOT, (RDBPO(NBOTOT,J),J=1,4)
 !
 ! ... Determine sea and interpolation point counters
 !
-                ISEAI(1) = MAPFS(IY1,IX1)
-                ISEAI(2) = MAPFS(IY1,IX2)
-                ISEAI(3) = MAPFS(IY2,IX1)
-                ISEAI(4) = MAPFS(IY2,IX2)
+                DO J=1, 4
+                  ISEAI(J) = MAPFS(IYR(J),IXR(J))
+                  END DO
 !
                 DO J=1, 4
                   IF ( ISEAI(J).EQ.0 .OR. RDBPO(NBOTOT,J).EQ. 0. ) THEN
@@ -2535,20 +2680,31 @@
                '        WSM =',F6.3,', WSC =',F6.3,', FLC = ',A,      &
                ', FMICHE =',F6.3,' /')
 !
-!/LLG  970 FORMAT (/'  The spatial grid (spherical): '/               &
-!/LLG               ' --------------------------------------------------'/ &
-!/LLG               '       Discrete dimensions         :',I6,I8/     &
-!/LLG               '       Increments           (deg.) :',2F8.2/     &
-!/LLG               '       Longitude range      (deg.) :',2F8.2/     &
-!/LLG               '       Latitude range       (deg.) :',2F8.2)
-!/XYG  970 FORMAT (/'  The spatial grid (Cartesian): '/                    &
-!/XYG               ' --------------------------------------------------'/ &
-!/XYG               '       Discrete dimensions         :',I6,I8/     &
-!/XYG               '       Increments             (km) :',2F8.2/     &
-!/XYG               '       X range                (km) :',2F8.2/     &
-!/XYG               '       Y range                (km) :',2F8.2)
-  971 FORMAT ( '       This is a global grid')
-  972 FORMAT ( '       Bottom level unit           :',I6/             &
+ 3000 FORMAT (/'  The spatial grid: '/                                &
+               ' --------------------------------------------------'/ &
+              /'       Grid type                   : ',A)
+ 3001 FORMAT ( '       Coordinate system           : ',A)
+ 3002 FORMAT ( '       Global flag                 : ',1L6)
+ 3003 FORMAT ( '       Dimensions                  : ',I6,I8)
+ 3004 FORMAT (/'       Increments           (deg.) :',2F8.2/          &
+               '       Longitude range      (deg.) :',2F8.2/          &
+               '       Latitude range       (deg.) :',2F8.2)
+ 3005 FORMAT ( '       Increments             (km) :',2F8.2/          &
+               '       X range                (km) :',2F8.2/          &
+               '       Y range                (km) :',2F8.2)
+ 3006 FORMAT (/'       X-coordinate unit           :',I6/             &
+               '       Scale factor                :',F8.2/           &
+               '       Add offset                  :',F8.2/           &
+               '       Layout indicator            :',I6/             &
+               '       Format indicator            :',I6)
+ 3007 FORMAT (/'       Y-coordinate unit           :',I6/             &
+               '       Scale factor                :',F8.2/           &
+               '       Add offset                  :',F8.2/           &
+               '       Layout indicator            :',I6/             &
+               '       Format indicator            :',I6)
+ 3008 FORMAT ( '       Format                      : ',A)
+ 3009 FORMAT ( '       File name                   : ',A)
+  972 FORMAT (/'       Bottom level unit           :',I6/             &
                '       Limiting depth          (m) :',F8.2/           &
                '       Minimum depth           (m) :',F8.2/           &
                '       Scale factor                :',F8.2/           &
@@ -2578,40 +2734,40 @@
   986 FORMAT ( '       Number of boundary points   :',I6/)
  1985 FORMAT ( '       No excluded points.'/)
  1986 FORMAT ( '       Number of excluded points   :',I6/)
-!/LLG  987 FORMAT ( '         Nr.|  IX |  IY |  Long.  |   Lat.  '/        &
-!/LLG               '       -----|-----|-----|---------|---------')
-!/XYG  987 FORMAT ( '         Nr.|  IX |  IY |     X     |     Y     '/    &
-!/XYG               '       -----|-----|-----|-----------|-----------')
-!/LLG  988 FORMAT ( '       ',I4,2(' |',I4),2(' |',F8.2))
-!/XYG  988 FORMAT ( '       ',I4,2(' |',I4),2(' |',F8.1,'E3'))
+  987 FORMAT ( '         Nr.|  IX |  IY |  Long.  |   Lat.  '/        &
+               '       -----|-----|-----|---------|---------')
+ 1987 FORMAT ( '         Nr.|  IX |  IY |     X     |     Y     '/    &
+               '       -----|-----|-----|-----------|-----------')
+  988 FORMAT ( '       ',I4,2(' |',I4),2(' |',F8.2))
+ 1988 FORMAT ( '       ',I4,2(' |',I4),2(' |',F8.1,'E3'))
   989 FORMAT ( ' ')
 !
   990 FORMAT (/'  Output boundary points : '/                         &
                ' --------------------------------------------------')
   991 FORMAT ( '       File nest',I1,'.ww3  Number of points  :',I6/  &
                '                       Number of spectra :',I6)
-!/LLG  992 FORMAT (/'         Nr.|  Long.  |   Lat.  '/               &
-!/LLG               '       -----|---------|---------')
-!/XYG  992 FORMAT (/'         Nr.|     X     |     Y     '/           &
-!/XYG               '       -----|-----------|-----------')
-!/LLG 1992 FORMAT (/'         Nr.|  Long.  |   Lat.  ',               &
-!/LLG               '         Nr.|  Long.  |   Lat.  '/               &
-!/LLG               '       -----|---------|---------',               &
-!/LLG               '       -----|---------|---------')
-!/XYG 1992 FORMAT (/'         Nr.|     X     |     Y     ',           &
-!/XYG                 '       Nr.|     X     |     Y     '/           &
-!/XYG               '       -----|-----------|-----------',           &
-!/XYG                 '     -----|-----------|-----------')
-!/LLG  993 FORMAT ( '       ',I4,2(' |',F8.2))
-!/XYG  993 FORMAT ( '       ',I4,2(' |',F8.1,'E3'))
-!/LLG 1993 FORMAT ( '       ',I4,2(' |',F8.2),                        &
-!/LLG              '        ',I4,2(' |',F8.2))
-!/XYG 1993 FORMAT ( '       ',I4,2(' |',F8.1,'E3'),                   &
-!/XYG                '      ',I4,2(' |',F8.1,'E3'))
-!/LLG  994 FORMAT ( '   *** POINT OUTSIDE GRID (SKIPPED) : X,Y =',2F7.2)
-!/XYG  994 FORMAT ( '   *** POINT OUTSIDE GRID (SKIPPED) : X,Y =',2(F8.1,'E3'))
-!/LLG  995 FORMAT ( '   *** POINT ON LAND      (SKIPPED) : X,Y =',2F7.2)
-!/XYG  995 FORMAT ( '   *** POINT ON LAND      (SKIPPED) : X,Y =',2(F8.1,'E3'))
+  992 FORMAT (/'         Nr.|  Long.  |   Lat.  '/               &
+               '       -----|---------|---------')
+ 1992 FORMAT (/'         Nr.|  Long.  |   Lat.  ',               &
+               '         Nr.|  Long.  |   Lat.  '/               &
+               '       -----|---------|---------',               &
+               '       -----|---------|---------')
+  993 FORMAT ( '       ',I4,2(' |',F8.2))
+ 1993 FORMAT ( '       ',I4,2(' |',F8.2),                        &
+              '        ',I4,2(' |',F8.2))
+  994 FORMAT ( '   *** POINT OUTSIDE GRID (SKIPPED) : X,Y =',2F7.2)
+  995 FORMAT ( '   *** POINT ON LAND      (SKIPPED) : X,Y =',2F7.2)
+ 2992 FORMAT (/'         Nr.|     X     |     Y     '/           &
+               '       -----|-----------|-----------')
+ 3992 FORMAT (/'         Nr.|     X     |     Y     ',           &
+                 '       Nr.|     X     |     Y     '/           &
+               '       -----|-----------|-----------',           &
+                 '     -----|-----------|-----------')
+ 2993 FORMAT ( '       ',I4,2(' |',F8.1,'E3'))
+ 3993 FORMAT ( '       ',I4,2(' |',F8.1,'E3'),                   &
+                '      ',I4,2(' |',F8.1,'E3'))
+ 2994 FORMAT ( '   *** POINT OUTSIDE GRID (SKIPPED) : X,Y =',2(F8.1,'E3'))
+ 2995 FORMAT ( '   *** POINT ON LAND      (SKIPPED) : X,Y =',2(F8.1,'E3'))
   996 FORMAT ( '       No boundary points.'/)
   997 FORMAT ( '       Number of boundary points   :',I6/             &
                '       Number of spectra           :',I6/)
@@ -2648,12 +2804,21 @@
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     TOO MANY NESTING OUTPUT FILES '/)
 !
- 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'//               &
+ 1007 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '     ILLEGAL GRID TYPE:',A4)
+!
+ 1008 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '     A CARTESIAN GLOBAL GRID IS NOT ALLOWED')
+!
+ 1010 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'//               &
                '     NO PROPAGATION + NO SOURCE TERMS = NO WAVE MODEL'// &
                '     ( USE DRY RUN FLAG TO TEMPORARILY SWITCH OFF ',  &
                'CALCULATIONS )'/)
 !
- 1020 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+ 1011 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '     INVERTED GRID -- POSSIBLE CAUSE IS WRONG IDLA:',I4)
+!
+ 1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     SOURCE TERMS REQUESTED BUT NOT SELECTED'/)
  1021 FORMAT (/' *** WAVEWATCH III WARNING IN W3GRID :'/              &
                '     SOURCE TERMS SELECTED BUT NOT REQUESTED'/)
@@ -2722,7 +2887,7 @@
                '         WAVEWATCH III Grid preprocessor '/)
 !
 !/T 9090 FORMAT ( ' TEST W3GRID : OUTPUT BOUND. POINT DATA LINE SEG.')
-!/T 9091 FORMAT ( '             ',2F8.2,2(2I4,F7.2))
+!/T 9091 FORMAT ( '             ',2F8.2,4(2I4,F7.2))
 !/T 9092 FORMAT ( '                      ',F7.2,2X,4F7.2)
 !/T 9093 FORMAT ( '                            ',4I7/                 &
 !/T               '                            ',4I7)

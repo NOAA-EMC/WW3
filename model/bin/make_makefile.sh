@@ -122,9 +122,6 @@
       lrecl  ) TY='one'
                ID='word length in record length'
                OK='LRB4 LRB8' ;;
-      grid   ) TY='one'
-               ID='grid type (LL or XY)'
-               OK='XYG LLG' ;;
       prop   ) TY='one'
                ID='propagation scheme'
                OK='PR0 PR1 PR2 PR3 PRX' ;;
@@ -454,21 +451,21 @@
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd'
-                aux='constants w3servmd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_strt) IDstring='Initial conditions program'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iorsmd'
-                aux='constants w3servmd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_shel) IDstring='Generic shell'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -476,7 +473,7 @@
              source="w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd' ;;
     ww3_multi) IDstring='Multi-grid shell'
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd'
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
@@ -485,7 +482,7 @@
              source="w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd'
                 aux="$aux  wmunitmd" ;;
      ww3_outf) IDstring='Gridded output'
                core=
@@ -493,42 +490,42 @@
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iogomd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_outp) IDstring='Point output'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$flx $ln $st $nl $bt $db $tr $bs $xx"
                  IO='w3iogrmd w3iopomd w3partmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
                core=
                data='w3gdatmd w3odatmd'
                prop=
              source=
                  IO=
-                aux="w3servmd w3timemd" ;;
+                aux="w3servmd w3timemd w3gsrumd" ;;
      ww3_grib) IDstring='Gridded output (GRIB)'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iogomd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       gx_outf) IDstring='GrADS input file generation (gridded fields)'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$stx $nlx $btx $db $tr $bs $xx"
                  IO='w3iogrmd w3iogomd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       gx_outp) IDstring='GrADS input file generation for point output'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$flx $ln $st $nl $bt $db $tr $bs $xx"
                  IO='w3iogrmd w3iopomd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
     esac
 
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
@@ -601,7 +598,7 @@
     rm -f $file.$fext
 
     for mod in W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
-              CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD \
+              CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
                W3IOSFMD W3PARTMD \
                W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD \
@@ -671,6 +668,7 @@
          'W3TIMEMD'     ) modtest=w3timemd.o ;;
          'W3SERVMD'     ) modtest=w3servmd.o ;;
          'W3ARRYMD'     ) modtest=w3arrymd.o ;;
+         'W3GSRUMD'     ) modtest=w3gsrumd.o ;;
          'W3FLDSMD'     ) modtest=w3fldsmd.o ;;
          'W3CSPCMD'     ) modtest=w3cspcmd.o ;;
          'WMMDATMD'     ) modtest=wmmdatmd.o ;;

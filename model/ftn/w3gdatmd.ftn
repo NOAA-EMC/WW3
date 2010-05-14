@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -27,6 +27,10 @@
 !/    27-Jun-2008 : Expand WAM4 variants namelist       ( version 3.14 )
 !/                  ( F. Ardhuin )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -50,7 +54,11 @@
 !      IGRID     Int.  Public   Selected spatial grid, init. at -1.
 !      ISGRD     Int.  Public   Selected spectral grid, init. at -1.
 !      IPARS     Int.  Public   Selected num. and ph. pars, init. at -1.
-!      FLAGLL    L.P.  Public   Flag for LL grid (otherwise XY).
+!      RLGTYPE   I.P.  Public   Named constant for rectilinear grid type
+!      CLGTYPE   I.P.  Public   Named constant for curvilinear grid type
+!      FLAGLL    Log.  Public   Flag to indicate coordinate system for all grids
+!                               .TRUE.: Spherical (lon/lat in degrees)
+!                               .FALSE.: Cartesian (meters)
 !      GRID      TYPE  Public   Data structure defining grid.
 !      GRIDS     GRID  Public   Array of grids.
 !      SGRD      TYPE  Public   Data structure defining spectral grid.
@@ -65,6 +73,10 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
+!      GTYPE     Int.  Public   Flag for type of grid
+!                               RLGTYPE: Rectilinear grid
+!                               CLGTYPE: Curvilinear grid
+!      GLOBAL    Log.  Public   Flag for global grid (closed parallels).
 !      NX, NY    Int.  Public   Discrete dimensions of spatial grid.
 !      NSEA(L)   Int.  Public   Number of sea points (local for MPP).
 !      TRFLAG    Int.  Public   Flag for use of transparencies
@@ -76,8 +88,8 @@
 !      MAPSTA    I.A.  Public   Grid status map.
 !      MAPST2    I.A.  Public   Second grid status map.
 !      MAPxx     I.A.  Public   Storage grid maps.
-!      SX,SY     Real  Public   Spatial grid increments.
-!      X0,Y0     Real  Public   Lower left corner of spatial grid.
+!      SX,SY     Real  Public   Spatial (rectilinear) grid increments.
+!      X0,Y0     Real  Public   Lower left corner of spatial (rectilinear) grid.
 !      DTCFL     Real  Public   Maximum CFL time step X-Y propagation.
 !      DTCFLI    Real  Public   Id. intra-spectral.
 !      DTMAX     Real  Public   Maximum overall time step.
@@ -89,12 +101,12 @@
 !      PFMOVE    Real  Public   Tunable parameter in GSE correction
 !                               for moving grids.
 !      ZB        R.A.  Public   Bottom levels on storage grid.
-!      CLAT(I)   R.A.  Public   (Inverse) cosine of latitude.
-!      CLATS     R.A.  Public   Id.
-!      CTHG0     R.A.  Public   Constant in great-circle refr. term.
+!      CLATS(I)  R.A.  Public   (Inverse) cosine of latitude at sea points.
+!      CTHG0S    R.A.  Public   Constant in great-circle refr. term at sea points.
 !      TRNX/Y    R.A.  Public   Transparencies in X/Y for sub-grid
+!      X/YGRD    R.A.  Public   Spatial grid coordinate arrays.
+!      SX/SYGRD  R.A.  Public   Spatial grid increment arrays.
 !      GINIT     Log.  Public   Flag identifying grid initialization.
-!      GLOBAL    Log.  Public   Flag for global grid (closed parallels).
 !      FLDRY     Log.  Public   Flag for 'dry' run (IO and data
 !                               processing only).
 !      FLCx      Log.  Public   Flags for prop. is different spaces.
@@ -350,6 +362,7 @@
 !      W3DIMX    Subr. Public   Set dimensions of spatial grid.
 !      W3DIMS    Subr. Public   Set dimensions of spectral grid.
 !      W3SETG    Subr. Public   Point to selected grid / model.
+!      W3GNTX    Subr. Public   Construct grid arrays
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -369,9 +382,6 @@
 !
 !  6. Switches :
 !
-!     !/LLG  Grid type
-!     !/XYG
-!
 !     !/PRn  Select propagation scheme
 !
 !     !/LNn  Select source terms
@@ -389,6 +399,13 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
+!/
+!/ Required modules
+!/
+      USE W3GSRUMD
+!/
+!/ Specify default accessibility
+!/
       PUBLIC
 !/
 !/ Conventional declarations
@@ -396,25 +413,46 @@
       INTEGER                 :: NGRIDS = -1, IGRID = -1, ISGRD = -1, &
                                  IPARS = -1, NAUXGR
 !
-!/LLG      LOGICAL, PARAMETER      :: FLAGLL = .TRUE.
-!/XYG      LOGICAL, PARAMETER      :: FLAGLL = .FALSE.
+      INTEGER, PARAMETER      :: RLGTYPE = 1
+      INTEGER, PARAMETER      :: CLGTYPE = 2
+      LOGICAL                 :: FLAGLL
 !/
 !/ Data structures
 !/
+!/ Grid type
       TYPE GRID
-        INTEGER               :: NX, NY, NSEA, NSEAL, TRFLAG
-        INTEGER, POINTER      :: MAPSTA(:,:), MAPST2(:,:),            &
-                                 MAPFS(:,:), MAPSF(:,:)
-        REAL                  :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
-                                 DTMAX, DTMIN, DMIN, CTMAX,           &
-                                 FICE0, FICEN, PFMOVE
-        REAL, POINTER         :: ZB(:), CLAT(:), CLATI(:), CLATS(:),  &
-                                 CTHG0(:), TRNX(:,:), TRNY(:,:)
-        LOGICAL               :: GINIT, GLOBAL, FLDRY, FLCX, FLCY,    &
-                                 FLCTH, FLCK, FLSOU
-        LOGICAL, POINTER      :: FLAGST(:)
-        CHARACTER(LEN=30)     :: GNAME
-        CHARACTER(LEN=10)     :: FILEXT
+        INTEGER          :: GTYPE
+        LOGICAL          :: GLOBAL
+        INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
+        INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
+                            MAPFS(:,:), MAPSF(:,:)
+        REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
+                            DTMAX, DTMIN, DMIN, CTMAX,           &
+                            FICE0, FICEN, PFMOVE
+
+        REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
+        REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
+        REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
+        REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
+
+        REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
+        REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+        REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
+        REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
+        REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
+        REAL   , POINTER :: DQDX(:,:), DQDY(:,:) ! DQ/DX & DQ/DY DEFINED ON IX,IY
+        REAL   , POINTER :: GSQRT(:,:) ! SQRT(G) DEFINED ON IX,IY
+        REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
+        REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
+
+        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+        LOGICAL, POINTER :: FLAGST(:)
+
+        CHARACTER(LEN=30) :: GNAME
+        CHARACTER(LEN=10) :: FILEXT
+
+        TYPE(T_GSU) :: GSU ! Grid search utility object
+
       END TYPE GRID
 !
       TYPE SGRD
@@ -538,18 +576,37 @@
 !/
 !/ Data aliasses for structure GRID(S)
 !/
-      INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
-      INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
-                                 MAPFS(:,:), MAPSF(:,:)
-      REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
-                                 DTMAX, DTMIN, DMIN, CTMAX,           &
-                                 FICE0, FICEN, PFMOVE
-      REAL, POINTER           :: ZB(:), CLAT(:), CLATI(:), CLATS(:),  &
-                                 CTHG0(:), TRNX(:,:), TRNY(:,:)
-      LOGICAL, POINTER        :: GINIT, GLOBAL, FLDRY, FLCX, FLCY,    &
-                                 FLCTH, FLCK, FLSOU, FLAGST(:)
+      INTEGER, POINTER :: GTYPE
+      LOGICAL, POINTER :: GLOBAL
+      INTEGER, POINTER :: NX, NY, NSEA, NSEAL, TRFLAG
+      INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
+                          MAPFS(:,:), MAPSF(:,:)
+      REAL   , POINTER :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
+                          DTMAX, DTMIN, DMIN, CTMAX,           &
+                          FICE0, FICEN, PFMOVE
+
+      REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
+      REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
+      REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
+      REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
+
+      REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
+      REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+      REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
+      REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
+      REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
+      REAL   , POINTER :: DQDX(:,:), DQDY(:,:) ! DQ/DX & DQ/DY DEFINED ON IX,IY
+      REAL   , POINTER :: GSQRT(:,:) ! SQRT(G) DEFINED ON IX,IY
+      REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
+      REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
+
+      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      LOGICAL, POINTER :: FLAGST(:)
+
       CHARACTER(LEN=30), POINTER :: GNAME
       CHARACTER(LEN=10), POINTER :: FILEXT
+
+      TYPE(T_GSU), POINTER :: GSU ! Grid search utility object
 !/
 !/ Data aliasses for structure SGRD(S)
 !/
@@ -769,13 +826,17 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Feb-2007 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
 !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
 !/    05-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    02-Feb-2007 : Add FLAGST.                         ( version 3.10 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -879,18 +940,30 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-      ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),                           &
-                 GRIDS(IMOD)%MAPST2(MY,MX),                           &
-                 GRIDS(IMOD)%MAPFS(MY,MX),                            &
-                 GRIDS(IMOD)%MAPSF(MSEA,3),                           &
-                 GRIDS(IMOD)%FLAGST(MSEA),                            &
-                 GRIDS(IMOD)%ZB(MSEA),                                &
-                 GRIDS(IMOD)%CLAT(MY),                                &
-                 GRIDS(IMOD)%CLATI(MY),                               &
-                 GRIDS(IMOD)%CLATS(MSEA),                             &
-                 GRIDS(IMOD)%CTHG0(MY),                               &
-                 GRIDS(IMOD)%TRNX(MY,MX),                             &
-                 GRIDS(IMOD)%TRNY(MY,MX) )
+      ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
+                 GRIDS(IMOD)%MAPST2(MY,MX),  &
+                 GRIDS(IMOD)%MAPFS(MY,MX),   &
+                 GRIDS(IMOD)%MAPSF(MSEA,3),  &
+                 GRIDS(IMOD)%FLAGST(MSEA),   &
+                 GRIDS(IMOD)%ZB(MSEA),       &
+                 GRIDS(IMOD)%CLATS(MSEA),    &
+                 GRIDS(IMOD)%CLATIS(MSEA),   &
+                 GRIDS(IMOD)%CTHG0S(MSEA),   &
+                 GRIDS(IMOD)%TRNX(MY,MX),    &
+                 GRIDS(IMOD)%TRNY(MY,MX),    &
+                 GRIDS(IMOD)%XGRD(MY,MX),    &
+                 GRIDS(IMOD)%YGRD(MY,MX),    &
+                 GRIDS(IMOD)%DXDP(MY,MX),    &
+                 GRIDS(IMOD)%DXDQ(MY,MX),    &
+                 GRIDS(IMOD)%DYDP(MY,MX),    &
+                 GRIDS(IMOD)%DYDQ(MY,MX),    &
+                 GRIDS(IMOD)%DPDX(MY,MX),    &
+                 GRIDS(IMOD)%DPDY(MY,MX),    &
+                 GRIDS(IMOD)%DQDX(MY,MX),    &
+                 GRIDS(IMOD)%DQDY(MY,MX),    &
+                 GRIDS(IMOD)%GSQRT(MY,MX),   &
+                 GRIDS(IMOD)%HPFAC(MY,MX),   &
+                 GRIDS(IMOD)%HQFAC(MY,MX)    )
 !
       GRIDS(IMOD)%FLAGST = .TRUE.
       GRIDS(IMOD)%GINIT  = .TRUE.
@@ -898,18 +971,18 @@
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
-! 3.  Point to allocated arrays
+! 2.  Update counters in grid
 !
-      CALL W3SETG ( IMOD, NDSE, NDST )
+      GRIDS(IMOD)%NX     = MX
+      GRIDS(IMOD)%NY     = MY
+      GRIDS(IMOD)%NSEA   = MSEA
 !
 !/T      WRITE (NDST,9002)
 !
 ! -------------------------------------------------------------------- /
-! 4.  Update counters in grid
+! 3.  Point to allocated arrays
 !
-      NX     = MX
-      NY     = MY
-      NSEA   = MSEA
+      CALL W3SETG ( IMOD, NDSE, NDST )
 !
 !/T      WRITE (NDST,9003)
 !
@@ -929,8 +1002,8 @@
 !
 !/T 9000 FORMAT (' TEST W3DIMX : MODEL ',I4,' DIM. AT ',2I5,I7)
 !/T 9001 FORMAT (' TEST W3DIMX : ARRAYS ALLOCATED')
-!/T 9002 FORMAT (' TEST W3DIMX : POINTERS RESET')
-!/T 9003 FORMAT (' TEST W3DIMX : DIMENSIONS STORED')
+!/T 9002 FORMAT (' TEST W3DIMX : DIMENSIONS STORED')
+!/T 9003 FORMAT (' TEST W3DIMX : POINTERS RESET')
 !/
 !/ End of W3DIMX ----------------------------------------------------- /
 !/
@@ -1122,7 +1195,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jun-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -1139,6 +1212,10 @@
 !/                  ( F. Ardhuin )
 !/    27-Jun-2008 : Expand WAM4 variants namelist       ( version 3.14 )
 !/                  ( F. Ardhuin )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1231,6 +1308,9 @@
 ! -------------------------------------------------------------------- /
 ! 3.  Set pointers in structure GRID
 !
+      GTYPE  => GRIDS(IMOD)%GTYPE
+      GLOBAL => GRIDS(IMOD)%GLOBAL
+!
       NX     => GRIDS(IMOD)%NX
       NY     => GRIDS(IMOD)%NY
       NSEA   => GRIDS(IMOD)%NSEA
@@ -1241,6 +1321,7 @@
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0
       Y0     => GRIDS(IMOD)%Y0
+!
       DTCFL  => GRIDS(IMOD)%DTCFL
       DTCFLI => GRIDS(IMOD)%DTCFLI
       DTMAX  => GRIDS(IMOD)%DTMAX
@@ -1252,7 +1333,6 @@
       PFMOVE => GRIDS(IMOD)%PFMOVE
 !
       GINIT  => GRIDS(IMOD)%GINIT
-      GLOBAL => GRIDS(IMOD)%GLOBAL
       FLDRY  => GRIDS(IMOD)%FLDRY
       FLCX   => GRIDS(IMOD)%FLCX
       FLCY   => GRIDS(IMOD)%FLCY
@@ -1272,12 +1352,27 @@
           FLAGST => GRIDS(IMOD)%FLAGST
 !
           ZB     => GRIDS(IMOD)%ZB
-          CLAT   => GRIDS(IMOD)%CLAT
-          CLATI  => GRIDS(IMOD)%CLATI
           CLATS  => GRIDS(IMOD)%CLATS
-          CTHG0  => GRIDS(IMOD)%CTHG0
+          CLATIS => GRIDS(IMOD)%CLATIS
+          CTHG0S => GRIDS(IMOD)%CTHG0S
           TRNX   => GRIDS(IMOD)%TRNX
           TRNY   => GRIDS(IMOD)%TRNY
+!
+          XGRD   => GRIDS(IMOD)%XGRD
+          YGRD   => GRIDS(IMOD)%YGRD
+          DXDP   => GRIDS(IMOD)%DXDP
+          DXDQ   => GRIDS(IMOD)%DXDQ
+          DYDP   => GRIDS(IMOD)%DYDP
+          DYDQ   => GRIDS(IMOD)%DYDQ
+          DPDX   => GRIDS(IMOD)%DPDX
+          DPDY   => GRIDS(IMOD)%DPDY
+          DQDX   => GRIDS(IMOD)%DQDX
+          DQDY   => GRIDS(IMOD)%DQDY
+          GSQRT  => GRIDS(IMOD)%GSQRT
+          HPFAC  => GRIDS(IMOD)%HPFAC
+          HQFAC  => GRIDS(IMOD)%HQFAC
+!
+          GSU  => GRIDS(IMOD)%GSU
 !
         END IF
 !
@@ -1460,6 +1555,296 @@
 !/ End of W3SETG ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SETG
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3GNTX ( IMOD, NDSE, NDST )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH-III           NOAA/NCEP |
+!/                  |           T. J. Campbell          |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Oct-2009 |
+!/                  +-----------------------------------+
+!/
+!/    30-Oct-2009 : Origination.                        ( version 3.13 )
+!/
+!  1. Purpose :
+!
+!     Construct required spatial grid quantities for curvilinear grids.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       IMOD    Int.   I   Model number to point to.
+!       NDSE    Int.   I   Error output unit number.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!     Any program that uses this grid structure.
+!
+!  6. Error messages :
+!
+!     - Check on previous initialization of grids.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!     !/T    Enable test output
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: IMOD, NDSE, NDST
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      REAL(8), PARAMETER :: PI = 3.14159265358979323846D0
+      REAL(8), PARAMETER :: D360 = 360D0
+      REAL(8), PARAMETER :: D180 = 180D0
+      REAL(8), PARAMETER :: D2R = PI/D180
+      REAL(8), PARAMETER :: R2D = 1D0/D2R
+      REAL(8), PARAMETER :: HALF = 0.5D0
+      REAL(8)            :: DXCIRC(3)
+      INTEGER            :: IX, IY
+!/T      REAL               :: ANGPQ(NY,NX)
+!     REAL               :: UVECPX(NY,NX), UVECPY(NY,NX)
+!     REAL               :: UVECQX(NY,NX), UVECQY(NY,NX)
+!/S      INTEGER, SAVE      :: IENT = 0
+!/
+!/S      CALL STRACE (IENT, 'W3GNTX')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input and module status
+!
+      IF ( NGRIDS .EQ. -1 ) THEN
+          WRITE (NDSE,1001)
+          CALL EXTCDE (1)
+        END IF
+!
+      IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NGRIDS ) THEN
+          WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
+          CALL EXTCDE (2)
+        END IF
+!
+!/T      WRITE (NDST,9000) IMOD
+!
+! -------------------------------------------------------------------- /
+! 2.  Create grid search utility object
+!
+      GRIDS(IMOD)%GSU = W3GSUC( .FALSE., FLAGLL, GRIDS(IMOD)%GLOBAL, &
+                                GRIDS(IMOD)%NX, GRIDS(IMOD)%NY, &
+                                GRIDS(IMOD)%XGRD, GRIDS(IMOD)%YGRD )
+!/T      CALL W3GSUP(GRIDS(IMOD)%GSU, NDST)
+!
+!/T      WRITE (NDST,9001)
+!
+! -------------------------------------------------------------------- /
+! 3.  Reset grid pointers
+!
+      CALL W3SETG ( IMOD, NDSE, NDST )
+!
+!/T      WRITE (NDST,9002)
+!
+! -------------------------------------------------------------------- /
+! 4.  Construct curvilinear grid derivatives and metric
+!
+!  x = x(p,q);  y = y(p,q);  dp = dq = 1;
+!
+!  When using spherical coordinates x = longitude and y = latitude.
+!  Also, the derivatives with respect to p are adjusted by the spherical
+!  coordinate metric.  In other words (with radius = 1),
+!
+!      dx/dp <= cos(y)*(dx/dp)  and  dy/dp <= cos(y)*(dy/dp).
+!
+!  The 2D curvilinear coordinates metric is
+!
+!      g_pq = (dx/dp)*(dx/dq) + (dy/dp)*(dy/dq),
+!      g_pp = (dx/dp)*(dx/dp) + (dy/dp)*(dy/dp),
+!      g_qq = (dx/dq)*(dx/dq) + (dy/dq)*(dy/dq).
+!
+!  Derivatives are computed with central differences for all non-boundary
+!  cells.  One-sided differences are used at boundary cells.  If the grid
+!  is a global grid, then the i-differences at the i=1 and i=nx boundary
+!  cells are computed with central differences using the wrapped cell
+!  x-coordinates.
+      !
+      !  Compute dx/dp & dy/dp
+      IX = 1
+      IF(FLAGLL)THEN
+         DO IY=1,NY
+            DXCIRC(1)=       ( XGRD(IY ,IX+1) - XGRD(IY ,IX  ) )-D360
+            DXCIRC(2)=       ( XGRD(IY ,IX+1) - XGRD(IY ,IX  ) )
+            DXCIRC(3)=       ( XGRD(IY ,IX+1) - XGRD(IY ,IX  ) )+D360
+            DXDP(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
+         END DO
+      ELSE
+         DXDP(: ,IX) =        ( XGRD(: ,IX+1) - XGRD(: ,IX  ) )
+      ENDIF
+      DYDP(: ,IX) =        ( YGRD(: ,IX+1) - YGRD(: ,IX  ) )
+
+      IX = NX
+      IF(FLAGLL)THEN
+         DO IY=1,NY
+            DXCIRC(1)=       ( XGRD(IY ,IX  ) - XGRD(IY ,IX-1) )-D360
+            DXCIRC(2)=       ( XGRD(IY ,IX  ) - XGRD(IY ,IX-1) )
+            DXCIRC(3)=       ( XGRD(IY ,IX  ) - XGRD(IY ,IX-1) )+D360
+            DXDP(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
+         END DO
+      ELSE
+         DXDP(: ,IX) =        ( XGRD(: ,IX  ) - XGRD(: ,IX-1) )
+      ENDIF
+      DYDP(: ,IX) =        ( YGRD(: ,IX  ) - YGRD(: ,IX-1) )
+
+      DO IX=2, NX-1
+
+         IF(FLAGLL)THEN
+            DO IY=1,NY
+               DXCIRC(1)= ( XGRD(IY ,IX+1) - XGRD(IY ,IX-1) )-D360
+               DXCIRC(2)= ( XGRD(IY ,IX+1) - XGRD(IY ,IX-1) )
+               DXCIRC(3)= ( XGRD(IY ,IX+1) - XGRD(IY ,IX-1) )+D360
+               DXDP(IY,IX)=HALF * DXCIRC(MINLOC(ABS(DXCIRC),1))
+            END DO
+         ELSE
+            DXDP(: ,IX)   = HALF * ( XGRD(: ,IX+1) - XGRD(: ,IX-1) )
+         ENDIF
+
+         DYDP(: ,IX)   = HALF * ( YGRD(: ,IX+1) - YGRD(: ,IX-1) )
+
+      END DO
+      !
+      !  Compute dx/dq & dy/dq
+
+      IY = 1
+      IF(FLAGLL)THEN
+         DO IX=1,NX
+            DXCIRC(1)=       ( XGRD(IY+1,IX) - XGRD(IY  ,IX) )-D360
+            DXCIRC(2)=       ( XGRD(IY+1,IX) - XGRD(IY  ,IX) )
+            DXCIRC(3)=       ( XGRD(IY+1,IX) - XGRD(IY  ,IX) )+D360
+            DXDQ(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
+         END DO
+      ELSE
+         DXDQ(IY,: )   =        ( XGRD(IY+1,: ) - XGRD(IY  ,: ) )
+      ENDIF
+      DYDQ(IY,: )   =        ( YGRD(IY+1,: ) - YGRD(IY  ,: ) )
+
+      IY = NY
+      IF(FLAGLL)THEN
+         DO IX=1,NX
+            DXCIRC(1)=       ( XGRD(IY  ,IX) - XGRD(IY-1,IX) )-D360
+            DXCIRC(2)=       ( XGRD(IY  ,IX) - XGRD(IY-1,IX) )
+            DXCIRC(3)=       ( XGRD(IY  ,IX) - XGRD(IY-1,IX) )+D360
+            DXDQ(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
+         END DO
+      ELSE
+         DXDQ(IY,: )   =        ( XGRD(IY  ,: ) - XGRD(IY-1,: ) )
+      ENDIF
+      DYDQ(IY,: )   =        ( YGRD(IY  ,: ) - YGRD(IY-1,: ) )
+
+      DO IY=2, NY-1
+         IF(FLAGLL)THEN
+            DO IX=1,NX
+               DXCIRC(1)= ( XGRD(IY+1,IX) - XGRD(IY-1,IX) )-D360
+               DXCIRC(2)= ( XGRD(IY+1,IX) - XGRD(IY-1,IX) )
+               DXCIRC(3)= ( XGRD(IY+1,IX) - XGRD(IY-1,IX) )+D360
+               DXDQ(IY,IX)=HALF * DXCIRC(MINLOC(ABS(DXCIRC),1))
+            END DO
+         ELSE
+            DXDQ(IY,: ) = HALF * ( XGRD(IY+1,: ) - XGRD(IY-1,: ) )
+         ENDIF
+         DYDQ(IY,: ) = HALF * ( YGRD(IY+1,: ) - YGRD(IY-1,: ) )
+      END DO
+
+!
+!  Convert from degrees to radians
+!  Account for spherical metric if lat/lon grid (only if the metric
+!  is to be w.r.t. the Cartesian space)
+!     IF ( FLAGLL ) THEN
+!         DXDP = DXDP * D2R !* COS(YGRD*D2R)
+!         DXDQ = DXDQ * D2R !* COS(YGRD*D2R)
+!         DYDP = DYDP * D2R
+!         DYDQ = DYDQ * D2R
+!       END IF
+!
+!  HPFAC: h_p = sqrt(g_pp) = sqrt( (dx/dp)^2 + (dy/dp)^2 )
+      HPFAC = SQRT( DXDP**2 + DYDP**2 )
+!/T      WRITE(NDST,'(A,2E14.6)')'HPFAC MIN/MAX:',MINVAL(HPFAC),MAXVAL(HPFAC)
+!
+!  HQFAC: h_q = sqrt(g_qq) = sqrt( (dx/dq)^2 + (dy/dq)^2 )
+      HQFAC = SQRT( DXDQ**2 + DYDQ**2 )
+!/T      WRITE(NDST,'(A,2E14.6)')'HQFAC MIN/MAX:',MINVAL(HQFAC),MAXVAL(HQFAC)
+!
+!  GSQRT: sqrt(g) = (dx/dp)(dy/dq) - (dx/dq)(dy/dp)
+      GSQRT = DXDP*DYDQ - DXDQ*DYDP
+!/T      WRITE(NDST,'(A,2E14.6)')'GSQRT MIN/MAX:',MINVAL(GSQRT),MAXVAL(GSQRT)
+!
+!  Compute curvilinear derivatives
+!  DPDX: dp/dx =  (1/sqrt(g))*(dy/dq)
+!  DPDY: dp/dy = -(1/sqrt(g))*(dx/dq)
+!  DQDX: dq/dx = -(1/sqrt(g))*(dy/dp)
+!  DQDY: dq/dy =  (1/sqrt(g))*(dx/dp)
+      DPDX =  DYDQ / GSQRT
+      DPDY = -DXDQ / GSQRT
+      DQDX = -DYDP / GSQRT
+      DQDY =  DXDP / GSQRT
+!/T      WRITE(NDST,'(A,2E14.6)')'DPDX MIN/MAX:',MINVAL(DPDX),MAXVAL(DPDX)
+!/T      WRITE(NDST,'(A,2E14.6)')'DPDY MIN/MAX:',MINVAL(DPDY),MAXVAL(DPDY)
+!/T      WRITE(NDST,'(A,2E14.6)')'DQDX MIN/MAX:',MINVAL(DQDX),MAXVAL(DQDX)
+!/T      WRITE(NDST,'(A,2E14.6)')'DQDY MIN/MAX:',MINVAL(DQDY),MAXVAL(DQDY)
+!
+!  Check orthogonality of grid by computing angle between the
+!  curvilinear coordinate unit vectors.
+!    cos(a) = uvec_p \dot uvec_q = g_pq/sqrt(g_pp*g_qq)
+!/T      ANGPQ = R2D * ACOS( ( DXDP*DXDQ + DYDP*DYDQ ) / ( HPFAC*HQFAC ) )
+!/T      WRITE(NDST,'(A,2E14.6)')'ANGPQ MIN/MAX:',MINVAL(ANGPQ),MAXVAL(ANGPQ)
+!
+!  Compute cell unit vectors
+!  uvec_p = (1/h_p)*(dx/dp)*uvec_x + (1/h_p)*(dy/dp)*uvec_y
+!  uvec_q = (1/h_q)*(dx/dq)*uvec_x + (1/h_q)*(dy/dq)*uvec_y
+!     UVECPX = DXDP / HPFAC
+!     UVECPY = DYDP / HPFAC
+!     UVECQX = DXDQ / HQFAC
+!     UVECQY = DYDQ / HQFAC
+!
+!/T      WRITE (NDST,9003)
+!
+! Formats
+!
+ 1001 FORMAT (/' *** ERROR W3GNTX : GRIDS NOT INITIALIZED *** '/      &
+               '                    RUN W3NMOD FIRST '/)
+ 1002 FORMAT (/' *** ERROR W3GNTX : ILLEGAL MODEL NUMBER *** '/       &
+               '                    IMOD   = ',I10/                   &
+               '                    NAUXGR = ',I10/                   &
+               '                    NGRIDS = ',I10/)
+!
+!/T 9000 FORMAT (' TEST W3GNTX : MODEL ',I4)
+!/T 9001 FORMAT (' TEST W3GNTX : SEARCH OBJECT CREATED')
+!/T 9002 FORMAT (' TEST W3GNTX : POINTERS RESET')
+!/T 9003 FORMAT (' TEST W3GNTX : GRID ARRAYS CONSTRUCTED')
+!/
+!/ End of W3GNTX ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3GNTX
+!/ ------------------------------------------------------------------- /
 !/
 !/ End of module W3GDATMD -------------------------------------------- /
 !/

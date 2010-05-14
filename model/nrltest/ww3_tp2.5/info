@@ -1,0 +1,40 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.5 Test for WW-III, two-dimensional propagation.                   #
+#           Arctic region on polar stereographic grid.                      #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging (set to zero here).          #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+#       switch_PRn_MPI : for parallel run with MPI                          #
+# - Test case input (default):                                              #
+#   * By default the GSE correction is enabled. To disable GSE correction   #
+#     comment/uncomment the appropriate lines in ww3_grid.inp.              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 361 x 361 curvilinear lat/lon grid                    #
+#       - input coordinates: <lat,lon>.361x361.IDLA1.dat                    #
+#       - input depth: depth.361x361.IDLA1.dat (GEODAS bathy)               #
+#     + Spectral grid: ntheta = 12, nf = 3, f1 = 0.0368, fgamma = 1.1       #
+#     + Input spectrum: Gaussian in space, JONSWAP in spectrum              #
+#   * ww3_grid_36dirs.inp :                                                 #
+#     + Spatial grid: same as default                                       #
+#     + Spectral grid: ntheta = 36, nf = 3, f1 = 0.0368, fgamma = 1.1       #
+#     + Input spectrum: Gaussian in space, JONSWAP in spectrum              #
+#                                                                           #
+#                                             W. Erick Rogers, Nov 2009     #
+#                                             Naval Research Laboratory     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#############################################################################

@@ -5,12 +5,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
 !/                  See subroutine for update log.
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -60,7 +62,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Jun-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -73,6 +75,8 @@
 !/    03-Nov-2006 : Adding wave field separation.       ( version 3.10 )
 !/    02-Feb-2007 : Adding FLAGST initialization.       ( version 3.10 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -239,8 +243,6 @@
 !       !/DIST  Id.
 !       !/MPI   Id.
 !                            
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !       !/MGW   Moving grid wind correction.
 !       !/MGP   Moving grid propagation correction.
 !
@@ -277,7 +279,8 @@
       USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
-      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GLOBAL,             &
+      USE W3GDATMD, ONLY: FLAGLL, GTYPE, GLOBAL, NX, NY,              &
+                          X0, Y0, SX, SY,                             &
                           FILEXT, NSEA, NSEAL, NK, NTH, XFR, FR1, TH, &
                           DTMAX, DTCFL, FLAGST
       USE W3WDATMD, ONLY: TIME
@@ -330,7 +333,7 @@
                                  TMPRNK(:), TMPGRP(:), NINGRP(:),     &
                                  TMOVE(:,:), LOADMP(:,:), IPRT(:,:),  &
                                  NDPOUT(:)
-      REAL                    :: DTTST, XX, YY, FACTOR
+      REAL                    :: DTTST, XX, YY
 !/MPRF      REAL                    :: PRFT0, PRFTN
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
                                  RP1(:), RPN(:)
@@ -343,7 +346,7 @@
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
       CHARACTER(LEN=10)       :: STDATE, PN, MN
-      CHARACTER(LEN=10),                                              &
+      CHARACTER(LEN=11),                                              &
                   ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
 !/DIST      CHARACTER(LEN=12)       :: TFILE
 !/MPRF      CHARACTER(LEN=12)       :: PFILE
@@ -379,9 +382,6 @@
 !
       DATA YESXX  / 'YES/--' /
       DATA XXXNO  / '---/NO' /
-!
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
 !
 !/MPRF      CALL PRINIT
 !/MPRF      CALL PRTIME ( PRFT0 )
@@ -1047,10 +1047,9 @@
                     PNAMES(NPTS) = PN
                     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                         IF ( NPTS .EQ. 1 ) THEN
-                            WRITE (MDSS,957) FACTOR*XX, FACTOR*YY, PN
+                            WRITE (MDSS,957)       XX, YY, PN
                           ELSE
-                            WRITE (MDSS,958) NPTS, FACTOR*XX,         &
-                                                   FACTOR*YY, PN
+                            WRITE (MDSS,958) NPTS, XX, YY, PN
                           END IF
                       END IF
 !
@@ -1289,10 +1288,9 @@
                     OT2(I)%PNAMES(OT2(I)%NPTS) = PN
                     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                         IF ( OT2(I)%NPTS .EQ. 1 ) THEN
-                            WRITE (MDSS,957) FACTOR*XX, FACTOR*YY, PN
+                            WRITE (MDSS,957)              XX, YY, PN
                           ELSE
-                            WRITE (MDSS,958) OT2(I)%NPTS, FACTOR*XX,  &
-                                                          FACTOR*YY, PN
+                            WRITE (MDSS,958) OT2(I)%NPTS, XX, YY, PN
                           END IF
                       END IF
 !
@@ -1984,7 +1982,7 @@
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
-                            NX, NY, X0, Y0, SX, SY, IERR, MNAMES(I),  &
+                            NX, NY, GTYPE, IERR, MNAMES(I),           &
                             FNMPRE(:JJ) )
               IF ( IERR .NE. 0 ) GOTO 2080
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
@@ -2073,6 +2071,12 @@
 !
 ! 8.a.4 Grid sizes etc. for processors that are not used.
 !
+!/MPI            CALL MPI_BCAST ( FLAGLL,1, MPI_LOGICAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( GTYPE, 1, MPI_INTEGER, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( GLOBAL,1, MPI_LOGICAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( NX   , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( NY   , 1, MPI_INTEGER, 0,           &
@@ -2084,8 +2088,6 @@
 !/MPI            CALL MPI_BCAST ( Y0   , 1, MPI_REAL   , 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( SY   , 1, MPI_REAL   , 0,           &
-!/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( GLOBAL,1, MPI_LOGICAL, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( NSEA , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
@@ -2181,7 +2183,7 @@
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(-I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
-                            MDSE2, NX, NY, X0, Y0, SX, SY, IERR,      &
+                            MDSE2, NX, NY, GTYPE, IERR,               &
                             MNAMES(-I), FNMPRE(:JJ) )
               IF ( IERR .NE. 0 ) GOTO 2080
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
@@ -2611,10 +2613,8 @@
   954 FORMAT ( '            Interval : ',A/)
   955 FORMAT ( '            Fields   : ',A)
   956 FORMAT ( '                       ',A)
-!/LLG  957 FORMAT ( '            Point  1 : ',2F8.2,2X,A)             
-!/XYG  957 FORMAT ( '            Point  1 : ',2(F8.0,'E3'),2X,A)      
-!/LLG  958 FORMAT ( '              ',I6,' : ',2F8.2,2X,A)
-!/XYG  958 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
+  957 FORMAT ( '            Point  1 : ',2E14.6,2X,A)             
+  958 FORMAT ( '              ',I6,' : ',2E14.6,2X,A)
   959 FORMAT ( '            No points defined')
   960 FORMAT ( '            The file with ',A,' data is ',A,'.')
   961 FORMAT ( '            IX fls   : ',3I6/                         &

@@ -100,23 +100,23 @@
 # 3.a Build options and determine compiler name
 #     Note GRIB libraries for this one
 
-  opt="-o $prog -O3 -qnosave"
+  opt="-o $prog -O3 -qstrict -qarch=auto -qtune=auto -qcache=auto -qfloat=hsflt -qnosave"
 
 # debug=' -g -C -qcheck -qfltrap:enable -qsigtrap -qfullpath'
   debug=
 
   opt="$opt$debug"
 
-  comp=xlf90
+  comp="xlf90_r -q64"
 
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=mpxlf90
+    comp="mpxlf90_r -q64"
   fi
 
   if [ "$omp_mod" = 'yes' ]
   then
-    comp=xlf90_r
+    comp="xlf90_r -q64"
     opt="$opt -qsmp=noauto"
   fi
 

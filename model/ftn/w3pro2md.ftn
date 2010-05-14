@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -21,6 +21,8 @@
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives.
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -61,9 +63,6 @@
 !  5. Remarks :
 !
 !  6. Switches :
-!
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !
 !       !/MGP   Correct for motion of grid.
 !
@@ -243,6 +242,7 @@
           END DO
         END DO
 !
+
 !/T      WRITE (NDST,9000) 'MAPX2', NMX0, NMX1-NMX0,                  &
 !/T                         NMX2-NMX1, NMX2
 !/T      DO IY=NY, 1, -1
@@ -406,14 +406,13 @@
 !/
       END SUBROUTINE W3MAP2
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3XYP2 ( ISP, FACX, FACY, DTG, MAPSTA, MAPFS, VQ,    &
-                          VGX, VGY )
+      SUBROUTINE W3XYP2 ( ISP, DTG, MAPSTA, MAPFS, VQ, VGX, VGY )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -428,23 +427,26 @@
 !/    09-Nov-2005 : Removing soft boundary option.      ( version 3.08 )
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives.
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
-!     Propagation in phyiscal space for a given spectral component.
+!     Propagation in physical space for a given spectral component.
 !
 !  2. Method :
 !
 !     Third-order ULTIMATE QUICKEST scheme and diffusion correction
 !     for linear dispersion (see manual).
+!     Curvilinear grid implementation: Fluxes are computed in index space
+!       and then transformed back into physical space.  The diffusion term
+!       is handled in physical space.
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
 !       ISP     Int.   I   Number of spectral bin (IK-1)*NTH+ITH
-!       FACX/Y  Real   I   Factor in propagation velocity.
-!                          ( 1 or 0 * DT / DX )
 !       DTG     Real   I   Total time step.
 !       MAPSTA  I.A.   I   Grid point status map.
 !       MAPFS   I.A.   I   Storage map.
@@ -457,14 +459,14 @@
 !       DTLOC   Real  Local propagation time step.
 !       CGD     Real  Deep water group velocity.
 !       DSSD, DNND    Deep water diffusion coefficients.
-!       VLCFLX  R.A.  Local courant numbers in 'x' (norm. velocities)
-!       VLCFLY  R.A.  Id. in 'y'.
+!       VLCFLX  R.A.  Local courant numbers in index space (norm. velocities)
+!       VLCFLY  R.A.
+!       CXTOT   R.A.  Propagation velocities in physical space.
+!       CYTOT   R.A.
 !       CELLP   Real  Cell Reynolds/Peclet number used to calculate
 !                     diffusion coefficient for growing spectral
 !                     components.
 !       DFRR    Real  Relative frequency increment.
-!       DX0     Real  Grid incremenent in meters (longitude, eq.).
-!       DY0     Real  Grid incremenent in meters (latitude).
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -486,7 +488,7 @@
 !
 !     - Note that the ULTIMATE limiter does not guarantee non-zero
 !       energies.
-!     - The present scheme shows a strong distorsion when propaga-
+!     - The present scheme shows a strong distortion when propaga-
 !       ting a field under an angle with the grid in a truly 2-D
 !       fashion. Propagation is therefore split along the two
 !       axes.
@@ -500,6 +502,27 @@
 !       to become inpenetrable.
 !     - If TDYN is set to zero, ALL diffusion is skipped. Set TDYN
 !       to a small positive number to have growth diffusion only.
+!     - Curvilinear grid implementation. Variables FACX, FACY, CCOS, CSIN,
+!       CCURX, CCURY are not needed and have been removed.  FACX is accounted
+!       for as approriate in this subroutine.  FACX is also accounted for in
+!       the case of .NOT.FLCX.  Since FACX is removed, there is now a check for
+!       .NOT.FLCX in this subroutine.  In CFL calcs dx and dy are omitted,
+!       since dx=dy=1 in index space.  Curvilinear grid derivatives
+!       (DPDY, DQDX, etc.) and metric (GSQRT) are brought in via W3GDATMD.
+!     - Factors VFDIFX_FAC VFDIFY_FAC VFDIFC_FAC are introduced so that results
+!       match for test case tp2.3.  Use of these factors is optional and removal
+!       can significantly reduce size/cost of code. These variants are marked as
+!       CURV1 or CURV2. NCEP will make final decision re: which version to adopt.
+!       CURV1 is the shorter version and results do not match the original code
+!       for all test cases. CURV2 is the longer version and results do match the 
+!       original. DETAILED EXPLANATION: Discrepancies occur at the boundaries. 
+!       This is because, at the boundaries, the pre-curvilinear version zeros out 
+!       some terms in the diffusion calculation. Since they are zeroed out, 
+!       they aren't there to *cancel* certain other terms: these "other terms"
+!       affect the result, so they have to be retained in the long vesion (CURV2) 
+!       to get an exact match. In the short version, the "canceling out" is 
+!       performed prior to coding the scheme, so both the canceled and canceling 
+!       terms are always omitted.
 !
 !  8. Structure :
 !
@@ -520,9 +543,6 @@
 !     ---------------------------------------------
 !
 !  9. Switches :
-!
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !
 !       !/MGP   Correct for motion of grid.
 !
@@ -548,7 +568,8 @@
 !
       USE W3GDATMD, ONLY: NK, NTH, DTH, XFR, ESIN, ECOS, SIG, NX, NY, &
                           NSEA, SX, SY, MAPSF, GLOBAL, FLCX, FLCY,    &
-                          DTCFL, CLATS, DTME, CLATMN
+                          DTCFL, CLATS, DTME, CLATMN, FLAGLL,         &
+                          HPFAC, HQFAC, DPDX, DPDY, DQDX, DQDY, GSQRT
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, WN, U10, CX, CY, ATRNX, ATRNY, ITIME,   &
                           NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
@@ -565,22 +586,23 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: ISP, MAPSTA(NY*NX), MAPFS(NY*NX)
-      REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
+      REAL, INTENT(IN)        :: DTG, VGX, VGY
       REAL, INTENT(INOUT)     :: VQ(1-NY:NY*(NX+2))
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: ITH, IK, NTLOC, ITLOC, ISEA, IXY,    &
-                                 IY, IY0, IP, IBI
+                                 IX,IY, IY0, IP, IBI
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CG0, CGA, CGN, CGX, CGY, CXC, CYC,  &
                                  CXMIN, CXMAX, CYMIN, CYMAX
-      REAL                    :: DTLOC, CCOS, CSIN, CCURX, CCURY,     &
-                                 DFRR, CELLP, DX0, DY0, CGD, DSSD,    &
+      REAL                    :: DTLOC, DTRAD,               &
+                                 DFRR, CELLP,  CGD, DSSD,    &
                                  DNND, DCELL, XWIND, TFAC, DSS, DNN
       REAL                    :: RD1, RD2
-      REAL, SAVE              :: DTXDX2 = 0., DTXDY2 = 0., DTXDXY = 0.
+      REAL                    :: RFAC, DFAC, DVQ, QXX, QXY, QYY
+      REAL                    :: CP, CQ
       LOGICAL                 :: YFIRST
 !/
 !/ Automatic work arrays
@@ -589,6 +611,14 @@
                                  VFDIFX(1-NY:NX*NY), VFDIFY(NX*NY),   &
                                  VFDIFC(1-NY:NX*NY), VDXX((NX+1)*NY), &
                                  VDYY(NX*NY), VDXY((NX+1)*NY)
+
+      REAL                    :: CXTOT((NX+1)*NY), CYTOT(NX*NY)
+      REAL                    :: VQ_OLD(1-NY:NY*(NX+2))
+!CURV2: BEGIN -----------------------------------------------------------------
+      REAL                    :: VFDIFX_FAC(1-NY:NX*NY),              &
+                                 VFDIFY_FAC(1-NY:NX*NY),              &
+                                 VFDIFC_FAC(1-NY:NX*NY)
+!CURV2: END -------------------------------------------------------------------
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -644,16 +674,20 @@
 !
       NTLOC  = 1 + INT(DTG/(DTCFL*CG0/CGN))
       DTLOC  = DTG / REAL(NTLOC)
+      DTRAD  = DTLOC
+      IF ( FLAGLL ) DTRAD=DTRAD/(DERA*RADIUS)
 !
-      CCOS   = FACX * ECOS(ITH) / REAL(NTLOC)
-      CSIN   = FACY * ESIN(ITH) / REAL(NTLOC)
-!
-      CCURX  = FACX / REAL(NTLOC)
-      CCURY  = FACY / REAL(NTLOC)
+      IF ( FLAGLL ) THEN
+          RFAC = DERA * RADIUS
+          DFAC = 1. / RFAC**2
+      ELSE
+          RFAC = 1.
+          DFAC = 1.
+      END IF
 !
       YFIRST = MOD(ITIME,2) .EQ. 0
 !
-!/T      WRITE (NDST,9000) FACX, FACY, YFIRST
+!/T      WRITE (NDST,9000) YFIRST
 !/T      WRITE (NDST,9001) ISP, ITH, IK, ECOS(ITH), ESIN(ITH)
 !
 !/TDYN      IF ( ISP .EQ. 1 ) DTME = DTME + DTG
@@ -661,17 +695,14 @@
       IF ( DTME .NE. 0. ) THEN
           DFRR   = XFR - 1.
           CELLP  = 10.
-!/LLG          DX0    = SX * DERA * RADIUS
-!/LLG          DY0    = SY * DERA * RADIUS
-!/XYG          DX0    = SX
-!/XYG          DY0    = SY
           CGD    = 0.5 * GRAV / SIG(IK)
           DSSD   = ( DFRR * CGD )**2 * DTME / 12.
           DNND   = ( CGD * DTH )**2 * DTME / 12.
-!/T          WRITE (NDST,9002) DFRR, CELLP, DTME, DX0, DY0
+!/T          WRITE (NDST,9002) DFRR, CELLP, DTME
 !/T        ELSE
 !/T          WRITE (NDST,9003)
         END IF
+
 !
 ! 1.b Initialize arrays
 !
@@ -685,6 +716,8 @@
       VDXX   = 0.
       VDYY   = 0.
       VDXY   = 0.
+      CXTOT  = 0.
+      CYTOT  = 0.
 !
 ! 2.  Calculate velocities and diffusion coefficients ---------------- *
 ! 2.a Velocities
@@ -698,42 +731,48 @@
       DO ISEA=1, NSEA
         IXY         = MAPSF(ISEA,3)
         VQ    (IXY) = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
-        VLCFLX(IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
-        VLCFLY(IXY) = CSIN * CG(IK,ISEA)
-!/MGP        VLCFLX(IXY) = VLCFLX(IXY) - CCURX*VGX/CLATS(ISEA)
-!/MGP        VLCFLY(IXY) = VLCFLY(IXY) - CCURY*VGY
+        CXTOT(IXY) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+        CYTOT(IXY) = ESIN(ITH) * CG(IK,ISEA)
+!/MGP        CXTOT(IXY) = CXTOT(IXY) - VGX/CLATS(ISEA)
+!/MGP        CYTOT(IXY) = CYTOT(IXY) - VGY
 !/T1        IF ( .NOT. FLCUR )                                        &
 !/T1            WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
-!/T1                              VQ(IXY), VLCFLX(IXY), VLCFLY(IXY)
+!/T1                              VQ(IXY), CXTOT(IXY), CYTOT(IXY)
         END DO
 !
       IF ( FLCUR ) THEN
 !/T          WRITE (NDST,9022)
           DO ISEA=1, NSEA
             IXY         = MAPSF(ISEA,3)
-            VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
-            VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
+            CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
+            CYTOT(IXY) = CYTOT(IXY) + CY(ISEA)
 !/T1            WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
-!/T1                              VQ(IXY), VLCFLX(IXY), VLCFLY(IXY)
+!/T1                              VQ(IXY), CXTOT(IXY), CYTOT(IXY)
            END DO
         END IF
+
+      DO ISEA=1, NSEA
+         IX     = MAPSF(ISEA,1)
+         IY     = MAPSF(ISEA,2)
+         IXY    = MAPSF(ISEA,3)
+         CP=CXTOT(IXY)*DPDX(IY,IX)+CYTOT(IXY)*DPDY(IY,IX)
+         CQ=CXTOT(IXY)*DQDX(IY,IX)+CYTOT(IXY)*DQDY(IY,IX)
+         VLCFLX(IXY) = CP*DTRAD
+         VLCFLY(IXY) = CQ*DTRAD
+      END DO
 !
 ! 2.b Diffusion coefficients
 !
       IF ( DTME .NE. 0. ) THEN
-!
-          IF ( FLCX ) DTXDX2 = DTLOC / DX0**2
-          IF ( FLCY ) DTXDY2 = DTLOC / DY0**2
-          IF ( FLCX .AND. FLCY  ) DTXDXY = 0.5 * DTLOC / ( DX0 * DY0 )
-          VDXX   = 0.
-          VDYY   = 0.
-          VDXY   = 0.
-!
+
           DO ISEA=1, NSEA
+            IX        = MAPSF(ISEA,1)
+            IY        = MAPSF(ISEA,2)
             IXY       = MAPSF(ISEA,3)
             IF ( MIN ( ATRNX(IXY,1) , ATRNX(IXY,-1) ,                 &
                        ATRNY(IXY,1) , ATRNY(IXY,-1) ) .GT. TRNMIN ) THEN
-                DCELL     = CGD * MIN ( DX0*CLATS(ISEA) , DY0 ) / CELLP
+                DCELL     = CGD * MIN ( HPFAC(IY,IX)*RFAC*CLATS(ISEA), &
+                                        HQFAC(IY,IX)*RFAC ) / CELLP
                 XWIND     = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
                 XWIND     = MAX ( 0. , MIN ( 1. , XWIND ) )
 !/XW0                XWIND     = 0.
@@ -742,15 +781,18 @@
                 DSS       = XWIND * DCELL + (1.-XWIND) * DSSD * TFAC
 !/DSS0                DSS       = 0.
                 DNN       = XWIND * DCELL + (1.-XWIND) * DNND * TFAC
-                VDXX(IXY) = DTXDX2 * (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
-                VDYY(IXY) = DTXDY2 * (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) &
+
+                VDXX(IXY) = DTLOC * (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
+                VDYY(IXY) = DTLOC * (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) &
                                      / CLATS(ISEA)**2
-                VDXY(IXY) = DTXDXY * (DSS-DNN) * ESIN(ITH)*ECOS(ITH)  &
+                VDXY(IXY) = DTLOC * (DSS-DNN) * ESIN(ITH)*ECOS(ITH)     &
                                      / CLATS(ISEA)
+
               END IF
             END DO
 !
         END IF
+
 !
 ! 3.  Loop over sub-steps -------------------------------------------- *
 !
@@ -758,6 +800,15 @@
 !
 ! 3.a Propagate fields
 !
+
+! Transform VQ to index space
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
+        VQ(IXY)= VQ(IXY) * GSQRT(IY,IX)
+      END DO
+
         IF ( YFIRST ) THEN
             IF ( FLCY ) CALL W3QCK3                                   &
                         (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,           &
@@ -777,6 +828,15 @@
                          .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,       &
                          NMY1, NMY2, NDSE, NDST )
           END IF
+
+! Transform VQ back to physical space
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
+        VQ(IXY)= VQ(IXY) / GSQRT(IY,IX)
+      END DO
+
 !
 ! 3.b Update boundaries
 !
@@ -802,49 +862,109 @@
 ! 3.c Diffusion correction
 !
         IF ( DTME .NE. 0. ) THEN
-!
+
            IF ( GLOBAL ) THEN
                DO IY=1, NY
                   VQ(IY+NX*NY) = VQ(IY)
                   END DO
               END IF
-!
+
+!CURV2: BEGIN -----------------------------------------------------------------
+            VFDIFX_FAC=0.0
             DO IP=1, NMX0
               IXY         = MAPX2(IP)
-              VFDIFX(IXY) = VQ(IXY+NY) - VQ(IXY)
+              VFDIFX_FAC(IXY) = 1.0
               END DO
-!
+            VFDIFY_FAC=0.0
             DO IP=1, NMY0
               IXY         = MAPY2(IP)
-              VFDIFY(IXY) = VQ(IXY+1) - VQ(IXY)
+              VFDIFY_FAC(IXY) = 1.0
               END DO
-!
+            VFDIFC_FAC=0.0
             DO IP=1, NMXY
               IXY         = MAPXY(IP)
-              VFDIFC(IXY) = VQ(IXY) - VQ(IXY+1)                       &
-                       - VQ(IXY+NY) + VQ(IXY+1+NY)
+              VFDIFC_FAC(IXY) = 1.0
               END DO
-!
             IF ( GLOBAL ) THEN
                 IY0     = (NX-1)*NY
                 DO IY=1, NY
-                  VFDIFX(IY-NY) = VFDIFX(IY+IY0)
-                  VFDIFC(IY-NY) = VFDIFC(IY+IY0)
+                  VFDIFX_FAC(IY-NY) = VFDIFX_FAC(IY+IY0)
+                  VFDIFC_FAC(IY-NY) = VFDIFC_FAC(IY+IY0)
                   END DO
               END IF
-!
+!CURV2: END -------------------------------------------------------------------
+
+            VQ_OLD = VQ
+
             DO IP=1, NACT
-              IXY    = MAPAXY(IP)
-              ISEA   = MAPFS(IXY)
-              VQ(IXY) =  VQ(IXY)                                      &
-                 + VDXX(IXY) * ( VFDIFX(IXY) - VFDIFX(IXY-NY) )       &
-                 + VDYY(IXY) * ( VFDIFY(IXY) - VFDIFY(IXY- 1) )       &
-                 + VDXY(IXY) * ( VFDIFC(  IXY ) + VFDIFC(IXY   -1)    &
-                               + VFDIFC(IXY-NY) + VFDIFC(IXY-NY-1) )
-              END DO
-!
+                 IXY    = MAPAXY(IP)
+                 ISEA   = MAPFS(IXY)
+                 IX     = MAPSF(ISEA,1)
+                 IY     = MAPSF(ISEA,2)
+
+!CURV1: DOES NOT GIVE EXACT MATCH TO EARLIER WW3 VERSION FOR TEST CASE TP2.3
+!CURV1: NEAR THE BOUNDARY, NOTE THAT THIS VERSION USES NON-ACTIVE GRID POINTS
+!CURV1: IN ITS CALCS. THIS IS NO PROBLEM, AS LONG AS THE NON-ACTIVE GRID POINTS
+!CURV1: EXIST IN THE ARRAY AND ARE VQ=0. ALSO NOTE THAT WITH THE SHORT VERSION
+!CURV1: OF THE CODE, VFDIF?_FAC VARIABLES CAN BE REMOVED AND 3-4 DO LOOPS ABOVE
+!CURV1: CAN BE REMOVED.
+!CURV1: BEGIN -----------------------------------------------------------------
+!                QXX = VQ_OLD(IXY+NY) - 2.0*VQ_OLD(IXY) + VQ_OLD(IXY-NY)
+!                QYY = VQ_OLD(IXY+1)  - 2.0*VQ_OLD(IXY) + VQ_OLD(IXY-1)
+!                QXY = VQ_OLD(IXY+NY+1) - VQ_OLD(IXY-NY+1) &
+!                    - VQ_OLD(IXY+NY-1) + VQ_OLD(IXY-NY-1)
+!CURV1: END -------------------------------------------------------------------
+
+!CURV2: DOES GIVE EXACT MATCH TO EARLIER WW3 VERSION FOR TEST CASE TP2.3. NOTE
+!CURV2: THAT IF VFDIFC_FAC VARIABLES ARE ALL UNITY, MANY TERMS CANCEL OUT.
+!CURV2: HOWEVER, VFDIFC_FAC IS ZERO WHEN A RELATED VQ POINT IS NOT AN ACTIVE
+!CURV2: GRID POINT
+!CURV2: BEGIN -----------------------------------------------------------------
+                 QXX = VFDIFX_FAC(IXY)   *VQ_OLD(IXY+NY)     &
+                     - VFDIFX_FAC(IXY)   *VQ_OLD(IXY)        &
+                     - VFDIFX_FAC(IXY-NY)*VQ_OLD(IXY)        &
+                     + VFDIFX_FAC(IXY-NY)*VQ_OLD(IXY-NY)
+                 QYY = VFDIFY_FAC(IXY)   *VQ_OLD(IXY+1)      &
+                     - VFDIFY_FAC(IXY)   *VQ_OLD(IXY)        &
+                     - VFDIFY_FAC(IXY-1) *VQ_OLD(IXY)        &
+                     + VFDIFY_FAC(IXY-1) *VQ_OLD(IXY-1)
+                 QXY = VFDIFC_FAC(IXY)     *VQ_OLD(IXY)      &
+                     + VFDIFC_FAC(IXY-NY-1)*VQ_OLD(IXY)      &
+                     - VFDIFC_FAC(IXY-1)   *VQ_OLD(IXY)      &
+                     - VFDIFC_FAC(IXY-NY)  *VQ_OLD(IXY)      &
+                     + VFDIFC_FAC(IXY-NY)  *VQ_OLD(IXY+1)    &
+                     - VFDIFC_FAC(IXY)     *VQ_OLD(IXY+1)    &
+                     + VFDIFC_FAC(IXY-1)   *VQ_OLD(IXY-1)    &
+                     - VFDIFC_FAC(IXY-NY-1)*VQ_OLD(IXY-1)    &
+                     + VFDIFC_FAC(IXY-1)   *VQ_OLD(IXY+NY)   &
+                     - VFDIFC_FAC(IXY)     *VQ_OLD(IXY+NY)   &
+                     + VFDIFC_FAC(IXY-NY)  *VQ_OLD(IXY-NY)   &
+                     - VFDIFC_FAC(IXY-NY-1)*VQ_OLD(IXY-NY)   &
+                     + VFDIFC_FAC(IXY)     *VQ_OLD(IXY+NY+1) &
+                     - VFDIFC_FAC(IXY-1)   *VQ_OLD(IXY+NY-1) &
+                     + VFDIFC_FAC(IXY-NY-1)*VQ_OLD(IXY-NY-1) &
+                     - VFDIFC_FAC(IXY-NY)  *VQ_OLD(IXY-NY+1)
+!CURV2: END -------------------------------------------------------------------
+
+                 QXY = 0.25*QXY
+
+                 DVQ = VDXX(IXY)*(  DPDX(IY,IX)*DPDX(IY,IX)*QXX          &
+                                  + 2.0*DPDX(IY,IX)*DQDX(IY,IX)*QXY      &
+                                  + DQDX(IY,IX)*DQDX(IY,IX)*QYY )        &
+                     + VDYY(IXY)*(  DPDY(IY,IX)*DPDY(IY,IX)*QXX          &
+                                  + 2.0*DPDY(IY,IX)*DQDY(IY,IX)*QXY      &
+                                  + DQDY(IY,IX)*DQDY(IY,IX)*QYY)         &
+                     + 2.0*VDXY(IXY)*(  DPDX(IY,IX)*DPDY(IY,IX)*QXX      &
+                                      + DQDX(IY,IX)*DQDY(IY,IX)*QYY      &
+                                      +      (  DPDX(IY,IX)*DQDY(IY,IX)  &
+                                      + DQDX(IY,IX)*DPDY(IY,IX) )*QXY )
+
+                 VQ(IXY) = VQ_OLD(IXY) + DVQ * DFAC
+
+             END DO
+
           END IF
-!
+
         YFIRST = .NOT. YFIRST
         END DO
 !
@@ -858,7 +978,7 @@
         IXY    = MAPSF(ISEA,3)
         IF ( MAPSTA(IXY) .GT. 0 ) THEN
 !/T2            WRITE (NDST,9041) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), VQ(IXY)
-            VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
+            VQ(IXY) =  MAX ( 0. , CG(IK,ISEA) / CLATS(ISEA) * VQ(IXY) )
 !         ELSE
 !           VQ(IXY) =  0.
           END IF
@@ -868,10 +988,9 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3XYP2 : FACX-Y, YFIRST  :',2E10.3,L2)
+!/T 9000 FORMAT (' TEST W3XYP2 : YFIRST  :',L2)
 !/T 9001 FORMAT (' TEST W3XYP2 : ISP, ITH, IK, COS-SIN :',I8,2I4,2F7.3)
-!/T 9002 FORMAT (' TEST W3XYP2 : DFRR, CELLP, DTME     :',3E10.3/     &
-!/T              '               DX0, DY0              :',2E10.3)
+!/T 9002 FORMAT (' TEST W3XYP2 : DFRR, CELLP, DTME     :',3E10.3)
 !/T 9003 FORMAT (' TEST W3XYP2 : NO DISPERSION CORRECTION ')
 !
 !/T 9010 FORMAT (' TEST W3XYP2 : INITIALIZE ARRAYS')
@@ -1213,3 +1332,4 @@
 !/ End of module W3PRO2MD -------------------------------------------- /
 !/
       END MODULE W3PRO2MD
+

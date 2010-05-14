@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    08-Feb-2001 : Origination of module. Routines     ( version 2.08 )
@@ -15,6 +15,8 @@
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives.
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Fixed a couple of doc lines.        ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -73,7 +75,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    11-Mar-1997 : Final FORTRAN 77                    ( version 1.18 )
@@ -81,6 +83,8 @@
 !/    15-Feb-2001 : Unit numbers added to par list.     ( version 2.08 )
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives.
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    30-Oct-2009 : Fixed "Called by" doc line.         ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -123,7 +127,7 @@
 !
 !  5. Called by :
 !
-!       W3XYP2   Propagation in physical space
+!       W3KTP2   Propagation in spectral space
 !
 !  6. Error messages :
 !
@@ -383,7 +387,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    07-Sep-1997 : Final FORTRAN 77                    ( version 1.18 )
@@ -391,6 +395,8 @@
 !/    14-Feb-2001 : Unit numbers added to par list.     ( version 2.08 )
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives.
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    30-Oct-2009 : Fixed "Called by" doc line.         ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -429,7 +435,7 @@
 !
 !  5. Called by :
 !
-!       W3XYP2   Propagation in physical space
+!       W3KTP2   Propagation in spectral space
 !
 !  6. Error messages :
 !
@@ -695,9 +701,6 @@
 !/ End of W3QCK2 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3QCK2
-!/
-!/ End of module W3UQCKMD -------------------------------------------- /
-!/
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3QCK3 (MX, MY, NX, NY, CFLL, TRANS, Q, CLOSE,       &
                          INC, MAPACT, NACT, MAPBOU, NB0, NB1, NB2,    &
@@ -1017,5 +1020,7 @@
 !/ End of W3QCK3 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3QCK3
+!/
+!/ End of module W3UQCKMD -------------------------------------------- /
 !/
       END MODULE W3UQCKMD

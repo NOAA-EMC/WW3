@@ -6,7 +6,6 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/XYG                Cartesian grid.                                    #
 #   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
 #                        Select the 'no source terms' option.               #
 #   !/PRn                Selecting one of the propagation schemes.          #
@@ -17,7 +16,7 @@
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Oct 2007     #
+#                                                   Last Mod : Nov 2009     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -89,6 +88,7 @@ $
   &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
+  'RECT' F F
   22   3
     3.E3   3.E3  1.
    -3.E3  -3.E3  1.

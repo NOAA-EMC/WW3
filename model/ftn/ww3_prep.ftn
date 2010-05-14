@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -21,6 +21,10 @@
 !/    25-Sep-2007 : Switch header of file on or off,    ( version 3.13 )
 !/                  Times to file (!/O15) (A. Chawla)
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -93,6 +97,9 @@
 !      W3FLDP    Subr.   Id.    Prepare interp. from arbitrary grid.
 !      W3FLDG    Subr.   Id.    Reading/writing shell input data.
 !      W3FLDD    Subr.   Id.    Reading/writing shell assim. data.
+!      W3GSUC    Func. W3GSRUMD Create grid-search-utility object
+!      W3GSUD    Subr. W3GSRUMD Destroy grid-search-utility object
+!      W3GRMP    Func. W3GSRUMD Compute interpolation weights
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -172,6 +179,7 @@
       USE W3FLDSMD, ONLY: W3FLDO, W3FLDP, W3FLDG, W3FLDD
 !/
       USE W3GDATMD
+      USE W3GSRUMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, FNMPRE
 !
       IMPLICIT NONE
@@ -185,7 +193,7 @@
                                  NDSLL, IDLALL, IDFMLL, NDSF(2),      &
                                  IDLAF(2), IDFMF(2), TIME2(2),        &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
-                                 NDAT, NDATMX, JJ
+                                 NDAT, NDATMX, JJ, IS(4), JS(4)
       INTEGER                 :: ILAND = -999
 !/O15      INTEGER                 :: NDSTIME
       INTEGER, ALLOCATABLE    :: IX1(:), IX2(:), IY1(:), IY2(:),      &
@@ -193,20 +201,22 @@
                                  IY22(:,:), JX21(:,:), JX22(:,:),     &
                                  JY21(:,:), JY22(:,:), MAPOVR(:,:)
       INTEGER, ALLOCATABLE    :: MASK(:,:)
+      TYPE(T_GSU)             :: GSI
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T2      INTEGER                 :: IXP0, IXPN, IXPWDT = 60
 !/T3      INTEGER                 :: IX0, IXN, IXWDT = 60
 !/T3      INTEGER, ALLOCATABLE    :: MAPOUT(:,:)
       REAL                    :: X0I, XNI, Y0I, YNI, SXI, SYI, XDIF,  &
-                                 ADD, X, Y, FACTOR, EFAC, NODATA
+                                 ADD, X, Y, FACTOR, EFAC, NODATA, RW(4)
       REAL                    :: ACC = 0.05
       REAL, ALLOCATABLE       :: RX2(:), RY2(:), RD11(:,:), RD21(:,:),&
                                  RD12(:,:), RD22(:,:), XD11(:,:),     &
                                  XD21(:,:), XD12(:,:), XD22(:,:),     &
                                  FX(:,:), FY(:,:), FA(:,:), A1(:,:),  &
                                  A2(:,:), A3(:,:)
-      REAL, ALLOCATABLE       :: ALA(:,:), ALO(:,:), XC(:,:),         &
-                                 YC(:,:), AC(:,:), DATA(:,:)
+      REAL, POINTER           :: ALA(:,:), ALO(:,:)
+      REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
+      LOGICAL                 :: INGRID
       LOGICAL                 :: FLSTAB, GLOBX, CLO(2), FLTIME, FLHDR
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
@@ -216,6 +226,7 @@
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*16            :: FORMT(2), FORMF(2)
       CHARACTER*20            :: IDSTR2(5)
+      INTEGER                 :: GTYPEDUM = 0
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
 !/
@@ -366,8 +377,11 @@
         END IF
 !
       J      = 1
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
 !
 ! ... type 1
 !
@@ -378,8 +392,13 @@
           ALLOCATE ( MASK(NXI,NYI) )
           MASK   = 1
           WRITE (NDSO,932) NXI, NYI
-          WRITE (NDSO,933) FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),      &
-                           FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
+          IF ( FLAGLL ) THEN
+              WRITE (NDSO,933) FACTOR*XGRD(1,1), FACTOR*XGRD(NY,NX),  &
+                               FACTOR*YGRD(1,1), FACTOR*YGRD(NY,NX)
+            ELSE
+              WRITE (NDSO,733) FACTOR*XGRD(1,1), FACTOR*XGRD(NY,NX),  &
+                               FACTOR*YGRD(1,1), FACTOR*YGRD(NY,NX)
+          END IF
 !
 ! ... type 2
 !
@@ -395,8 +414,14 @@
           ALLOCATE ( MASK(NXI,NYI) )
           MASK   = 1
           WRITE (NDSO,932) NXI, NYI
-          WRITE (NDSO,933) FACTOR*X0I, FACTOR*XNI,                    &
-                           FACTOR*Y0I, FACTOR*YNI
+
+          IF ( FLAGLL ) THEN
+              WRITE (NDSO,933) FACTOR*X0I, FACTOR*XNI,                &
+                               FACTOR*Y0I, FACTOR*YNI
+            ELSE
+              WRITE (NDSO,733) FACTOR*X0I, FACTOR*XNI,                &
+                               FACTOR*Y0I, FACTOR*YNI
+            END IF
 !
 ! ... type 5
 !
@@ -435,162 +460,61 @@
           IF (ITYPE.EQ.2) THEN
               WRITE (NDSO,941)
 !
-! ... Check and adjust ranges
+! ... setup coordinates
 !
               SXI    = (XNI-X0I)/REAL(NXI-1)
               SYI    = (YNI-Y0I)/REAL(NYI-1)
-!/LLG              GLOBX  = ABS(ABS(REAL(NXI)*SXI)-360.) .LT. 0.1*ABS(SXI)
-!/XYG              GLOBX  = .FALSE.
-!
-!/LLG              IF (ABS(X0I-XNI) .GT. 360.+0.5*ABS(SXI)) GOTO 840
-!/LLG              IF ( GLOBX ) THEN
-!/LLG                  XDIF   = X0 - X0I
-!/LLG                  IF ( XDIF .GE. 0. ) THEN
-!/LLG                      ADD    = REAL(INT(XDIF/360.))
-!/LLG                    ELSE
-!/LLG                      ADD    = -1 + REAL(INT(XDIF/360.))
-!/LLG                    END IF
-!/LLG                ELSE
-!/LLG                  XDIF   = - 0.5*(XNI+X0I) + 0.5*(2.*X0+REAL(NX-1)*SX)
-!/LLG                  ADD    = REAL(NINT(XDIF/360.))
-!/LLG                END IF
-!/LLG              ADD    = ADD * 360.
-!/LLG              X0I    = X0I + ADD
-!/LLG              XNI    = XNI + ADD
-!
-!/LLG              IF (Y0I.LT.-90 .OR. YNI.GT.90.) GOTO 841
-!
-!/T              WRITE (NDST,9040) X0I, XNI, SXI, GLOBX, Y0I, YNI, SYI
-!
-! ... Calculate 1-D interpolation data longitudes
-!
-!/T              WRITE (NDST,9041) 'LON / X'
-!
-              IF ( GLOBX ) THEN
-!
-                  DO IX=1, NX
-                    X       = X0 + REAL(IX-1)*SX
-                    IX1(IX) = 1 + INT((X-X0I)/SXI)
-                    RX2(IX) = (X-X0I)/SXI - REAL(IX1(IX)-1)
-                    IF (IX1(IX).GT.NXI) IX1(IX) = 1 + MOD(IX1(IX)-1,NXI)
-                    IF (IX1(IX).EQ.NXI) THEN
-                        IX2(IX) = 1
-                      ELSE
-                        IX2(IX) = IX1(IX) + 1
-                      END IF
-!/T                    WRITE (NDST,9042) IX, FACTOR*X, IX1(IX), IX2(IX),  &
-!/T                                      FACTOR*(X0I+REAL(IX1(IX)-1)*SXI),&
-!/T                                      FACTOR*(X0I+REAL(IX2(IX)-1)*SXI),&
-!/T                                      RX2(IX), ' '
-                    END DO
-!
-                ELSE
-!
-                  DO IX=1, NX
-!
-                    X       = X0 + REAL(IX-1)*SX
-                    IX1(IX) = 1 + INT((X-X0I)/SXI)
-                    IX1(IX) = MAX ( 1 , MIN(IX1(IX),NXI-1) )
-                    IX2(IX) = IX1(IX) + 1
-                    RX2(IX) = (X-X0I)/SXI - REAL(IX1(IX)-1)
-!/T                    WRITE (NDST,9042) IX, FACTOR*X, IX1(IX), IX2(IX),  &
-!/T                                      FACTOR*(X0I+REAL(IX1(IX)-1)*SXI),&
-!/T                                      FACTOR*(X0I+REAL(IX2(IX)-1)*SXI),&
-!/T                                      RX2(IX), ' '
-!/T                    FLMOD  = .FALSE.
-!
-                    IF (IX1(IX).EQ.1 .AND. RX2(IX).LT.ACC) THEN
-                        IF (RX2(IX).LT.-ACC) THEN
-                            WRITE (NDSO,1043) X
-                          ELSE IF (RX2(IX).LT.0.) THEN
-                            RX2(IX) = 0.
-!/T                            FLMOD  = .TRUE.
-                          END IF
-                      END IF
-!
-                    IF (IX2(IX).EQ.NXI .AND. RX2(IX).GT.1.-ACC) THEN
-                        IF (RX2(IX).GT.1.+ACC) THEN
-                            WRITE (NDSO,1043) X
-                          ELSE IF (RX2(IX).GT.1.) THEN
-                            RX2(IX) = 1.
-!/T                            FLMOD  = .TRUE.
-                          END IF
-                      END IF
-!
-!/T                    IF ( FLMOD ) WRITE (NDST,9042)                      &
-!/T                                       IX, FACTOR*X, IX1(IX), IX2(IX),  &
-!/T                                       FACTOR*(X0I+REAL(IX1(IX)-1)*SXI),&
-!/T                                       FACTOR*(X0I+REAL(IX2(IX)-1)*SXI),&
-!/T                                       RX2(IX), '<-- MOD'
-!
-                    END DO
-!
+              IF ( FLAGLL ) THEN
+                  GLOBX  = ABS(ABS(REAL(NXI)*SXI)-360.) .LT. 0.1*ABS(SXI)
+              ELSE
+                  GLOBX  = .FALSE.
+              END IF
+              IF ( ASSOCIATED(ALA) ) THEN
+                  DEALLOCATE ( ALA, ALO )
+                  NULLIFY ( ALA, ALO )
                 END IF
-!
-! ... Calculate 1-D interpolation data latitudes
-!
-!/T              WRITE (NDST,9041) 'LAT / Y'
-!
-              DO IY=1, NY
-!
-                Y       = Y0 + REAL(IY-1)*SY
-                IY1(IY) = 1 + INT((Y-Y0I)/SYI)
-                IY1(IY) = MAX ( 1 , MIN(IY1(IY),NYI-1) )
-                IY2(IY) = IY1(IY) + 1
-                RY2(IY) = (Y-Y0I)/SYI - REAL(IY1(IY)-1)
-!/T                WRITE (NDST,9042) IY, FACTOR*Y, IY1(IY), IY2(IY),     &
-!/T                                  FACTOR*(Y0I+REAL(IY1(IY)-1)*SYI),   &
-!/T                                  FACTOR*(Y0I+REAL(IY2(IY)-1)*SYI),   &
-!/T                                  RY2(IY), ' '
-!/T                FLMOD  = .FALSE.
-!
-                IF (IY1(IY).EQ.1 .AND. RY2(IY).LT.ACC) THEN
-                    IF (RY2(IY).LT.-ACC) THEN
-                        WRITE (NDSO,1043) Y
-                      ELSE IF (RY2(IY).LT.0.) THEN
-                        RY2(IY) = 0.
-!/T                        FLMOD  = .TRUE.
-                      END IF
-                  END IF
-!
-                IF (IY2(IY).EQ.NYI .AND. RY2(IY).GT.1.-ACC) THEN
-                    IF (RY2(IY).GT.1.+ACC) THEN
-                        WRITE (NDSO,1043) Y
-                      ELSE IF (RY2(IY).GT.1.) THEN
-                        RY2(IY) = 1.
-!/T                        FLMOD  = .TRUE.
-                      END IF
-                  END IF
-!
-!/T                IF ( FLMOD ) WRITE (NDST,9042)                        &
-!/T                                   IY, FACTOR*Y, IY1(IY), IY2(IY),    &
-!/T                                   FACTOR*(Y0I+REAL(IY1(IY)-1)*SYI),  &
-!/T                                   FACTOR*(Y0I+REAL(IY2(IY)-1)*SYI),  &
-!/T                                   RY2(IY), '<-- MOD'
-!
+              ALLOCATE ( ALA(NXI,NYI), ALO(NXI,NYI) )
+              DO IY=1, NYI
+                DO IX=1, NXI
+                    ALO(IX,IY) = X0I + REAL(IX-1)*SXI
+                    ALA(IX,IY) = Y0I + REAL(IY-1)*SYI
+                  END DO
                 END DO
 !
-! ... Compose 2-D interpolation data
+! ... create grid search utility
+!
+              GSI = W3GSUC( .TRUE., FLAGLL, GLOBX, NXI, NYI, ALO, ALA )
+!
+! ... construct interpolation data
 !
 !/T1              WRITE (NDST,9045)
               DO IY=1,NY
                 DO IX=1,NX
-                  IX21(IX,IY) =   IX1(IX)
-                  IX22(IX,IY) =   IX2(IX)
-                  IY21(IX,IY) =   IY1(IY)
-                  IY22(IX,IY) =   IY2(IY)
-                  EFAC        = SQRT ( MAX(0.,ABS(RX2(IX)-0.5)-0.5)**2 +  &
-                                       MAX(0.,ABS(RY2(IY)-0.5)-0.5)**2 )
-                  EFAC        = 1. / ( 1. + 0.25*EFAC**2 )
-                  RD11(IX,IY) = EFAC * (1.-RX2(IX)) * (1.-RY2(IY))
-                  RD21(IX,IY) = EFAC *    RX2(IX)   * (1.-RY2(IY))
-                  RD12(IX,IY) = EFAC * (1.-RX2(IX)) *    RY2(IY)
-                  RD22(IX,IY) = EFAC *    RX2(IX)   *    RY2(IY)
+                  INGRID = W3GRMP( GSI, XGRD(IY,IX), YGRD(IY,IX),      &
+                                   IS, JS, RW )
+                  IF ( .NOT.INGRID ) THEN
+                      WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
+                      CYCLE
+                    END IF
+                  IX21(IX,IY) = IS(1)
+                  IX22(IX,IY) = IS(2)
+                  IY21(IX,IY) = JS(1)
+                  IY22(IX,IY) = JS(4)
+                  RD11(IX,IY) = RW(1)
+                  RD21(IX,IY) = RW(2)
+                  RD12(IX,IY) = RW(4)
+                  RD22(IX,IY) = RW(3)
 !/T1                  WRITE (NDST,9046) IX, IY,                           &
 !/T1                    IX21(IX,IY),IX22(IX,IY),IY21(IX,IY),IY22(IX,IY),  &
-!/T1                    RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY), EFAC
+!/T1                    RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
                   END DO
                 END DO
+!
+! ... clean up
+!
+              CALL W3GSUD( GSI )
+              DEALLOCATE ( ALA, ALO )
+              NULLIFY ( ALA, ALO )
 !
 ! 4.b Grid(s) from file
 !
@@ -674,12 +598,15 @@
 !
 ! ... read lat-lon data
 !
-                IF ( ALLOCATED(ALA) ) DEALLOCATE ( ALA, ALO )
+                IF ( ASSOCIATED(ALA) ) THEN
+                    DEALLOCATE ( ALA, ALO )
+                    NULLIFY ( ALA, ALO )
+                  END IF
                 ALLOCATE ( ALA(NXJ(J),NYJ(J)), ALO(NXJ(J),NYJ(J)) )
                 CALL INA2R (ALA, NXJ(J), NYJ(J), 1, NXJ(J), 1, NYJ(J),&
-                     NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1.)
+                     NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1., 0.)
                 CALL INA2R (ALO, NXJ(J), NYJ(J), 1, NXJ(J), 1, NYJ(J),&
-                     NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1.)
+                     NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1., 0.)
                 IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
 !
 ! ... file info mask file
@@ -733,7 +660,7 @@
 ! ... read mask data
 !
                 CALL INA2I (MASK, NXJ(J), NYJ(J), 1,NXJ(J), 1,NYJ(J), &
-                     NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1)
+                     NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1, 0)
                 IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
 !
 !/T1a                WRITE (NDST,9050)
@@ -747,14 +674,14 @@
 ! ... generate interpolation data
 !
               IF ( J .EQ. 1 ) THEN
-                  CALL W3FLDP ( NDSO, NDST, NDSE, IERR,               &
-                    NX, NY, NX, NY, X0, SX, Y0, SY, MAPOVR, ILAND,    &
+                  CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
+                    NX, NY, NX, NY, YGRD, XGRD, MAPOVR, ILAND,        &
                     NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
                     MASK, RD11, RD21, RD12, RD22, IX21, IX22, IY21,   &
                     IY22 )
                 ELSE
-                  CALL W3FLDP ( NDSO, NDST, NDSE, IERR,               &
-                    NX, NY, NX, NY, X0, SX, Y0, SY, MAPOVR, ILAND,    &
+                  CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
+                    NX, NY, NX, NY, YGRD, XGRD, MAPOVR, ILAND,        &
                     NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
                     MASK, XD11, XD21, XD12, XD22, JX21, JX22, JY21,   &
                     JY22 )
@@ -867,11 +794,11 @@
       J      = LEN_TRIM(FNMPRE)
       IF ( ITYPE .LE. 4 ) THEN
           CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
-               NX, NY, X0, Y0, SX, SY, IERR, FPRE=FNMPRE(:J),         &
+               NX, NY, GTYPE, IERR, FPRE=FNMPRE(:J),                  &
                FHDR=FLHDR )
         ELSE
           CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
-               RECLDT, 0, NODATA, 0., 0., 0., IERR, FPRE=FNMPRE(:J) )
+               RECLDT, 0, GTYPEDUM, IERR, FPRE=FNMPRE(:J) )
         END IF
 !
 ! 5.c Initialize fields
@@ -934,7 +861,7 @@
 !
         IF ( ITYPE .LE. 4 ) THEN
             CALL INA2R (XC, MXM, MYM, 1, NXJ(1), 1, NYJ(1),           &
-                 NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1.)
+                 NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
 !
 !/T2            WRITE (NDST,9060) 1
 !/T2            IXP0   = 1
@@ -953,7 +880,7 @@
             IF (NFCOMP.EQ.2 .OR. IFLD.GE.3) THEN
                 CALL INA2R (YC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),       &
                             NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),  &
-                            IDLAF(2), 1.)
+                            IDLAF(2), 1., 0.)
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
@@ -972,7 +899,7 @@
                 IF ( FLSTAB ) THEN
                     CALL INA2R (AC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),   &
                        NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),       &
-                       IDLAF(2), 1. )
+                       IDLAF(2), 1., 0. )
 !
 !/T2                    WRITE (NDST,9060) 3
 !/T2                    IXP0   = 1
@@ -1312,10 +1239,10 @@
  2930 FORMAT ( '          Field corrected for energy conservation.')
   931 FORMAT (/'       Single field, time: ',A)
   932 FORMAT (/'       Input grid dim.   :',I5,3X,I5)
-!/LLG  933 FORMAT ( '       Longitude range   :',2F8.2,' (deg)'/           &
-!/LLG               '       Latitude range    :',2F8.2,' (deg)')
-!/XYG  933 FORMAT ( '       X range           :',2F8.2,' (km)'/           &
-!/XYG               '       Y range           :',2F8.2,' (km)')
+  933 FORMAT ( '       Longitude range   :',2F8.2,' (deg)'/           &
+               '       Latitude range    :',2F8.2,' (deg)')
+  733 FORMAT ( '       X range           :',2F8.2,' (km)'/           &
+               '       Y range           :',2F8.2,' (km)')
   934 FORMAT (/'       Data type         : ',A/                       &
                '       Data record length:',I5/                       &
                '       Missing values    :',F8.2)
@@ -1413,14 +1340,9 @@
                '     LONGITUDE GRID RANGE > 360 DEGR. : ',2F6.1/)
  1041 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ILLEGAL LATITUDE GRID RANGE : ',2F6.1/)
-!/LLG 1042 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
-!/LLG               '     LONGITUDE ',F7.2,' NOT COVERED BY INPUT GRID.'/)
-!/LLG 1043 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
-!/LLG               '     LATITUDE ',F7.2,' NOT COVERED BY INPUT GRID.'/)
-!/XYG 1042 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
-!/XYG               '     X = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
-!/XYG 1043 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
-!/XYG               '     Y = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
+ 1042 FORMAT (/' *** WAVEWATCH-III WARNING W3PREP : '/                &
+               '     GRID POINT ',2I6,2F7.2,/                         &
+               ' NOT COVERED BY INPUT GRID.'/)
 !
  1045 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ERROR IN OPENING LAT-LONG DATA FILE'/            &
@@ -1468,7 +1390,7 @@
 !/T 9042 FORMAT ('              ',I4,F8.2,2I4,2F8.2,1X,F6.3,1X,A)
 !/T 9043 FORMAT (' TEST W3PREP : GRID SHIFTED BY ',F5.0,' DEGREES / M')
 !/T1 9045 FORMAT (' TEST W3PREP : IX, IY, IXI(2), IYI(2), RD(4)')
-!/T1 9046 FORMAT ('     ',2I4,2X,4I4,2X,5F6.2)
+!/T1 9046 FORMAT ('     ',2I4,2X,4I4,2X,4F6.2)
 !
 !/T1a 9050 FORMAT (' TEST W3PREP : LAT-LONG OF INPUT FILE ')
 !/T1a 9051 FORMAT ('             ',2I4,2F8.2,I4)

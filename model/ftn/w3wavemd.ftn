@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -50,6 +50,10 @@
 !/    22-Feb-2008 : Initialize VGX-Y properly.          ( version 3.13 )
 !/    10-Apr-2008 : Bug fix writing log file (MPI).     ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -124,9 +128,6 @@
 !       !/DIST  Id.
 !       !/MPI   Id.
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
-!
 !       !/PR1   First order propagation schemes.
 !       !/PR2   ULTIMATE QUICKEST scheme.
 !       !/PR3   Averaged ULTIMATE QUICKEST scheme.
@@ -151,7 +152,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Apr-2008 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -191,6 +192,10 @@
 !/    08-Oct-2007 : Adding AS CX-Y to W3SRCE par. list. ( version 3.13 )
 !/    22-Feb-2008 : Initialize VGX-Y properly.          ( version 3.13 )
 !/    10-Apr-2008 : Bug fix writing log file (MPI).     ( version 3.13 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -341,7 +346,7 @@
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
                                  DTL0, DTI0, DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
-                                 FACX, FACY, SXM, SYM, XXX
+                                 SXM, SYM, XXX
       REAL, ALLOCATABLE       :: FIELD(:)
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
                                  SKIP_O, FLAG_O, FLDDIR, READBC,      &
@@ -377,6 +382,7 @@
 ! 0.b Subroutine tracing
 !
 !/S      CALL STRACE (IENT, 'W3WAVE')
+!
 !
 ! 0.c Local parameter initialization
 !
@@ -558,7 +564,8 @@
 !
           IF ( FLCUR  ) THEN
                CALL W3UCUR ( FLFRST )
-               CALL W3DCXY
+               CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
+               CALL W3DZXY(CY(1:NSEA),'m/s',DCYDX, DCYDY) !CY GRADIENT
             ELSE IF ( FLFRST ) THEN
               CX = 0.
               CY = 0.
@@ -666,7 +673,7 @@
             END IF
 !
           IF ( FLDDIR ) THEN
-              CALL W3DDXY
+              CALL W3DZXY(DW(1:NSEA),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
               FLDDIR = .FALSE.
             END IF
 !
@@ -702,21 +709,21 @@
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
-!/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0(IY), &
-!/PR1                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),      &
-!/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),    &
-!/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),  &
-!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA) )
-!/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0(IY), &
-!/PR2                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),      &
-!/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),    &
-!/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),  &
-!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA) )
-!/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0(IY), &
-!/PR3                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),      &
-!/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),    &
-!/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),  &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA) )
+!/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/PR1                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
+!/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
+!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/PR2                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
+!/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
+!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/PR3                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
+!/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
+!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
 !/PRX                      CALL W3KTPX
                     END IF
                   END DO
@@ -728,23 +735,6 @@
 !
           IF ( FLCX .OR. FLCY ) THEN
 !
-              IF ( FLCX ) THEN
-!/LLG                  FACX   = DTG / ( SX * DERA * RADIUS )
-!/XYG                  FACX   = DTG / SX
-!/LLG                  SXM    = SX * DERA * RADIUS
-!/XYG                  SXM    = SX
-                ELSE
-                  FACX   = 0.
-                END IF
-              IF ( FLCY ) THEN
-!/LLG                  FACY   = DTG / ( SY * DERA * RADIUS )
-!/XYG                  FACY   = DTG / SY
-!/LLG                  SYM    = SY * DERA * RADIUS
-!/XYG                  SYM    = SY
-                ELSE
-                  FACY   = 0.
-                END IF
-!
 !/MPI              IF ( NRQSG1 .GT. 0 ) THEN
 !/MPI                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
 !/MPI                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
@@ -754,12 +744,12 @@
               DO ISPEC=1, NSPEC
                 IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
                     CALL W3GATH ( ISPEC, FIELD )
-!/PR1                    CALL W3XYP1 ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PR1                                  FIELD, VGX, VGY )
-!/PR2                    CALL W3XYP2 ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PR2                                  MAPFS, FIELD, VGX, VGY )
-!/PR3                    CALL W3XYP3 ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PR3                                  MAPFS,  FIELD, VGX, VGY )
+!/PR1                    CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
+!/PR2                    CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+
+
+
+!/PR3                    CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
 !/PRX                    CALL W3XYPX
                      CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
                   END IF
@@ -787,21 +777,21 @@
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
-!/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0(IY), &
-!/PR1                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),      &
-!/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),    &
-!/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),  &
-!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA) )
-!/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0(IY), &
-!/PR2                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),      &
-!/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),    &
-!/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),  &
-!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA) )
-!/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0(IY), &
-!/PR3                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),      &
-!/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),    &
-!/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),  &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA) )
+!/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/PR1                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
+!/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
+!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/PR2                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
+!/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
+!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/PR3                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
+!/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
+!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
 !/PRX                      CALL W3KTPX
                     END IF
                   END DO

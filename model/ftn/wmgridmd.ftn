@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination WMGLOW, WMGHGH, WMRSPC. ( version 3.08 )
@@ -24,6 +24,8 @@
 !/    20-May-2009 : Linking FLAGST and FLGHG1.          ( version 3.14 )
 !/    26-May-2009 : Fix erroneous cyclic upd in WMGHGH. ( version 3.14 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -70,9 +72,6 @@
 !
 !  6. Switches :
 !
-!     !/XYG  Cartesian grid.
-!     !/LLG  Longitude-latitude grid.
-!
 !     !/PRn  propagation scheme.
 !
 !     !/SHRD Distributed memory approach
@@ -98,12 +97,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Mar-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
 !/    10-Feb-2006 : Add test on grid resolution.        ( version 3.09 )
 !/    26-Mar-2009 : Adding test output !/T9.            ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -156,9 +157,6 @@
 !
 !  9. Switches :
 !
-!     !/XYG  Cartesian grid.
-!     !/LLG  Longitude-latitude grid.
-!
 !     !/MPI  Distribbuted memory management.
 !
 !     !/S    Enable subroutine tracing.
@@ -208,6 +206,12 @@
 ! -------------------------------------------------------------------- /
 ! 1.  Test grid, Initialize and synchronize grids as needed ( !/MPI )
 !
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMGLOW: ', &
+          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+!
 !/MPI      FLBARR = .FALSE.
 !
       DO I=1, NRGRD
@@ -237,7 +241,7 @@
 !/MPI             CALL MPI_BCAST ( GRIDS(I)%MAPSF (1,1), NXYG,        &
 !/MPI                              MPI_INTEGER, 0,                    &
 !/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
-!/MPI             CALL MPI_BCAST ( GRIDS(I)%CLATI(1), NY, MPI_REAL, 0,&
+!/MPI             CALL MPI_BCAST ( GRIDS(I)%CLATIS(1), NSEA, MPI_REAL, 0,&
 !/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
 !/MPI             CALL MPI_BCAST ( SGRDS(I)%SIG(0), NK+2, MPI_REAL, 0,&
 !/MPI                              MDATAS(I)%MPI_COMM_BCT, IERR_MPI )
@@ -252,8 +256,11 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Process grids
 !
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
 !
       GRIDD = .FALSE.
       RFILE = .FALSE.
@@ -329,9 +336,12 @@
                     END IF
                   IF ( JY.LT.1 .OR. JY.GE.GRIDS(J)%NY ) CYCLE
 !
-!/LLG                  RX     = MOD (1080. + XA - GRIDS(J)%X0 , 360. ) &
-!/LLG                                     / GRIDS(J)%SX
-!/XYG                  RX     = ( XA - GRIDS(J)%X0 ) / GRIDS(J)%SX
+                  IF ( FLAGLL ) THEN
+                      RX     = MOD (1080. + XA - GRIDS(J)%X0 , 360. ) &
+                                   / GRIDS(J)%SX
+                    ELSE
+                      RX     = ( XA - GRIDS(J)%X0 ) / GRIDS(J)%SX
+                    END IF
                   JX     = 1 + INT ( RX )
                   RX     = RX - REAL(JX-1)
                   IF ( .NOT. GRIDS(J)%GLOBAL ) THEN
@@ -680,7 +690,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-May-2009 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination.                        ( version 3.08 )
@@ -689,6 +699,8 @@
 !/    07-Feb-2007 : Setting FLAGST.                     ( version 3.10 )
 !/    20-May-2009 : Linking FLAGST and FLGHG1.          ( version 3.14 )
 !/    26-May-2009 : Fix erroneous cyclic updating.      ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -728,9 +740,6 @@
 !     See source code.
 !
 !  9. Switches :
-!
-!     !/XYG  Cartesian grid.
-!     !/LLG  Longitude-latitude grid.
 !
 !     !/SHRD Distributed memory approach
 !     !/DIST
@@ -789,6 +798,12 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations / tests
 !
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMGHGH: ', &
+          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+!
       IF ( .NOT. ALLOCATED(GRDHGH) ) THEN
           IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,1000)
           CALL EXTCDE (1000)
@@ -797,11 +812,11 @@
       DO I=1, NRGRD
         DO J=1, NRGRD
             IF ( HGSTGE(I,J)%INIT ) THEN
-                IF ( HGSTGE(I,J)%NREC .NE. 0 ) DEALLOCATE             &       
+                IF ( HGSTGE(I,J)%NREC .NE. 0 ) DEALLOCATE             &
                            ( HGSTGE(I,J)%LJSEA , HGSTGE(I,J)%NRAVG,   &
                              HGSTGE(I,J)%IMPSRC, HGSTGE(I,J)%ITAG ,   &
                              HGSTGE(I,J)%WGTH  , HGSTGE(I,J)%SHGH )
-                IF ( HGSTGE(I,J)%NSND .NE. 0 ) DEALLOCATE             &       
+                IF ( HGSTGE(I,J)%NSND .NE. 0 ) DEALLOCATE             &
                            ( HGSTGE(I,J)%ISEND )
                 HGSTGE(I,J)%NTOT = 0
                 HGSTGE(I,J)%NREC = 0
@@ -820,8 +835,11 @@
 !
       IF ( .NOT. FLGBDI ) THEN
 !
-!/XYG          FACTOR = 1.
-!/LLG          FACTOR = RADIUS / 360.
+          IF ( FLAGLL ) THEN
+              FACTOR = RADIUS / 360.
+            ELSE
+              FACTOR = 1.
+            END IF
 !
 !/T          WRITE (MDST,9010)
 !
@@ -893,11 +911,13 @@
                     END DO
 !
                   CHANGD = .FALSE.
-                  STY    = FACTOR * SY / ( 0.58 * GRAV )
                   DO IY=2, NY-1
-                    STX    = FACTOR * SX * CLATI(IY) / ( 0.58 * GRAV )
-                    STXY   = SQRT ( STX**2 + STY**2 )
                     DO IX=2, NX-1
+                      ISEA   = MAPFS(IY,IX)
+                      STY    = FACTOR * HQFAC(IY,IX) / ( 0.58 * GRAV )
+                      STX    = FACTOR * HPFAC(IY,IX) * CLATIS(ISEA)   &
+                                                     / ( 0.58 * GRAV )
+                      STXY   = SQRT ( STX**2 + STY**2 )
                       IF ( CHANGE(IY,IX) ) THEN
                           NEWVAL = 9.99E33
                           IF ( MAPBDI(IY+1,IX  ).GE.0. .AND. .NOT.    &
@@ -1010,10 +1030,13 @@
               YH     = GRIDS(J)%Y0 + ( REAL(GRIDS(J)%NY) - 1.5 )      &
                                          * GRIDS(J)%SY
 !
-!/XYG              IXL(JJ) = 2 + INT( (XL-X0)/SX + 0.49 )
-!/XYG              IXH(JJ) = 1 + INT( (XH-X0)/SX - 0.49 )
-!/LLG              IXL(JJ) = 1
-!/LLG              IXH(JJ) = NX
+              IF ( FLAGLL ) THEN
+                  IXL(JJ) = 1
+                  IXH(JJ) = NX
+                ELSE
+                  IXL(JJ) = 2 + INT( (XL-X0)/SX + 0.49 )
+                  IXH(JJ) = 1 + INT( (XH-X0)/SX - 0.49 )
+                END IF
               IYL(JJ) = 2 + INT( (YL-Y0)/SY + 0.49 )
               IYH(JJ) = 1 + INT( (YH-Y0)/SY - 0.49 )
 !
@@ -1066,11 +1089,14 @@
 !       Note for LLG: Assumption is made that the higher ranked grid
 !                     cannot be global.
 !
-!/XYG                  XL     = 1. + (XA-GRIDS(J)%X0-0.5*SX)/GRIDS(J)%SX
-!/XYG                  XH     = 1. + (XA-GRIDS(J)%X0+0.5*SX)/GRIDS(J)%SX
-!/LLG                  DXC    = MOD ( 1080.+XA-GRIDS(J)%X0 , 360. )
-!/LLG                  XL     = 1. + (DXC-0.5*SX)/GRIDS(J)%SX
-!/LLG                  XH     = 1. + (DXC+0.5*SX)/GRIDS(J)%SX
+                  IF ( FLAGLL ) THEN
+                      DXC    = MOD ( 1080.+XA-GRIDS(J)%X0 , 360. )
+                      XL     = 1. + (DXC-0.5*SX)/GRIDS(J)%SX
+                      XH     = 1. + (DXC+0.5*SX)/GRIDS(J)%SX
+                    ELSE
+                      XL     = 1. + (XA-GRIDS(J)%X0-0.5*SX)/GRIDS(J)%SX
+                      XH     = 1. + (XA-GRIDS(J)%X0+0.5*SX)/GRIDS(J)%SX
+                    END IF
                   YL     = 1. + (YA-GRIDS(J)%Y0-0.5*SY)/GRIDS(J)%SY
                   YH     = 1. + (YA-GRIDS(J)%Y0+0.5*SY)/GRIDS(J)%SY
 !
@@ -1154,11 +1180,14 @@
                 TMPINT(NRTOT,-1) = JF
                 TMPRL (NRTOT, 0) = JD * SIG(1) / DTMAX
 !
-!/XYG                XL     = 1. + (XA-GRIDS(JF)%X0-0.5*SX)/GRIDS(JF)%SX
-!/XYG                XH     = 1. + (XA-GRIDS(JF)%X0+0.5*SX)/GRIDS(JF)%SX
-!/LLG                DXC    = MOD ( 1080.+XA-GRIDS(JF)%X0 , 360. )
-!/LLG                XL     = 1. + (DXC-0.5*SX)/GRIDS(JF)%SX
-!/LLG                XH     = 1. + (DXC+0.5*SX)/GRIDS(JF)%SX
+                IF ( FLAGLL ) THEN
+                    DXC    = MOD ( 1080.+XA-GRIDS(JF)%X0 , 360. )
+                    XL     = 1. + (DXC-0.5*SX)/GRIDS(JF)%SX
+                    XH     = 1. + (DXC+0.5*SX)/GRIDS(JF)%SX
+                  ELSE
+                    XL     = 1. + (XA-GRIDS(JF)%X0-0.5*SX)/GRIDS(JF)%SX
+                    XH     = 1. + (XA-GRIDS(JF)%X0+0.5*SX)/GRIDS(JF)%SX
+                  END IF
                 YL     = 1. + (YA-GRIDS(JF)%Y0-0.5*SY)/GRIDS(JF)%SY
                 YH     = 1. + (YA-GRIDS(JF)%Y0+0.5*SY)/GRIDS(JF)%SY
 !
@@ -1569,7 +1598,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-May-2009 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    24-Apr-2006 : Origination.                        ( version 3.09 )
@@ -1581,6 +1610,8 @@
 !/    11-Apr-2008 : Big fix active edges (MAPSTA=2)     ( version 3.13 )
 !/    14-Apr-2008 : Big fix for global grids.           ( version 3.13 )
 !/    20-May-2009 : Linking FLAGST and FLGHG1.          ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1620,9 +1651,6 @@
 !  8. Structure :
 !
 !  9. Switches :
-!
-!     !/XYG  Cartesian grid.
-!     !/LLG  Longitude-latitude grid.
 !
 !     !/PRn  Propagation scheme.
 !
@@ -1697,6 +1725,12 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
 !
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMGEQL: ', &
+          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+!
       ALLOCATE ( SHRANK(NRGRD,NRGRD), STORES(NRGRD,NRGRD),            &
                  DOGRID(NRGRD) )
 !
@@ -1710,8 +1744,11 @@
           END DO
         END DO
 !
-!/XYG      FACTOR = 1.
-!/LLG      FACTOR = RADIUS / 360.
+      IF ( FLAGLL ) THEN
+          FACTOR = RADIUS / 360.
+        ELSE
+          FACTOR = 1.
+        END IF
       ITAG   = 0
 !
 ! -------------------------------------------------------------------- /
@@ -1750,13 +1787,16 @@
 ! 1.c.2 Determine shared area
 !       Don't even try for X in LLG
 !
-!/XYG          XSL    = ( GRIDS(J)%X0 - X0 ) / SX - 0.01
-!/XYG          XSH    = ( GRIDS(J)%X0 + GRIDS(J)%SX*(GRIDS(J)%NX-1)   &
-!/XYG                                 - X0 ) / SX + 0.01
-!/XYG          IXL    = MAX ( 1+NINT(XSL) ,  1 )
-!/XYG          IXH    = MIN ( 1+NINT(XSH) , NX )
-!/LLG          IXL    =  1
-!/LLG          IXH    = NX
+          IF ( FLAGLL ) THEN
+              IXL    =  1
+              IXH    = NX
+            ELSE
+              XSL    = ( GRIDS(J)%X0 - X0 ) / SX - 0.01
+              XSH    = ( GRIDS(J)%X0 + GRIDS(J)%SX*(GRIDS(J)%NX-1)   &
+                                     - X0 ) / SX + 0.01
+              IXL    = MAX ( 1+NINT(XSL) ,  1 )
+              IXH    = MIN ( 1+NINT(XSH) , NX )
+            END IF
 !
           YSL    = ( GRIDS(J)%Y0 - Y0 ) / SY - 0.01
           YSH    = ( GRIDS(J)%Y0 + GRIDS(J)%SY*(GRIDS(J)%NY-1)   &
@@ -1790,9 +1830,12 @@
 !
           DO IX=IXL, IXH
             XA     = X0 + REAL(IX-1)*SX
-!/XYG            XR     = 1. + (XA-GRIDS(J)%X0) / GRIDS(J)%SX
-!/LLG            XR     = 1. + MOD (1080. + XA - GRIDS(J)%X0 , 360. ) &
-!/LLG                                           / GRIDS(J)%SX
+            IF ( FLAGLL ) THEN
+                XR     = 1. + MOD (1080. + XA - GRIDS(J)%X0 , 360. ) &
+                                  / GRIDS(J)%SX
+              ELSE
+                XR     = 1. + (XA-GRIDS(J)%X0) / GRIDS(J)%SX
+              END IF
             JXL    = INT(XR)
             JXH    = JXL + 1
             RX(1)     = 1. - MOD(XR,1.)
@@ -2079,10 +2122,7 @@
             END DO
 !
           CHANGE = .FALSE.
-          STY    = FACTOR * SY / ( 0.58 * GRAV )
           DO IY=2, NY-1
-            STX    = FACTOR * SX * CLATI(IY) / ( 0.58 * GRAV )
-            STXY   = SQRT ( STX**2 + STY**2 )
             DO IX=IXL, IXH
               IF ( IX .EQ. 1 ) THEN
                   JXL    = NX
@@ -2094,6 +2134,11 @@
                   JXL    = IX - 1
                   JXH    = IX + 1
                 END IF
+              ISEA   = MAPFS(IY,IX)
+              STY    = FACTOR * HQFAC(IY,IX) / ( 0.58 * GRAV )
+              STX    = FACTOR * HPFAC(IY,IX) * CLATIS(ISEA)           &
+                                             / ( 0.58 * GRAV )
+              STXY   = SQRT ( STX**2 + STY**2 )
               IF ( MASKI(IY,IX) ) THEN
                   NEWVAL = ODIMAX / SIG(1) * DTMAX
                   IF ( MAPODI(IY+1,IX ).GE.0. .AND. .NOT.             &
@@ -2638,8 +2683,11 @@
 !
 ! 5.c Resolution test
 !
-!/XYG      FACTOR = 1.E-3
-!/LLG      FACTOR = 1.
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
 !
       DO I=1, NRGRD
         CALL W3SETG ( I, MDSE, MDST )
@@ -2784,11 +2832,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Jul-2006 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    22-Sep-2005 : Origination.                        ( version 3.08 )
 !/    25-Jul-2006 : Point output grid added.            ( version 3.10 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !

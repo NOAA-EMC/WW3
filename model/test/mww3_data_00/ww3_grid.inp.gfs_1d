@@ -10,6 +10,7 @@ $
 $
 END OF NAMELISTS
 $
+    'RECT' T T
     360    181
       1.     1.     1.
       0.   -90.     1.

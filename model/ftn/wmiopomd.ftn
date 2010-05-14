@@ -5,13 +5,15 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
 !/    01-May-2007 : Addd diagnostic output O7a/b.       ( version 3.11 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -60,9 +62,6 @@
 !       !/SHRD Distributed memory model.
 !       !/MPI
 !
-!       !/LLG  Grid type
-!       !/XYG
-!
 !       !O7a   Disgnostic output to NMPSCR.
 !       !O7b
 !
@@ -83,11 +82,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-May-2007 !
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
 !/    01-May-2007 : Addd diagnostic output O7a,b        ( version 3.11 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -155,9 +156,6 @@
 !       !/SHRD Distributed memory model.
 !       !/MPI
 !
-!       !/LLG  Grid type
-!       !/XYG
-!
 !       !O7a   Disgnostic output to NMPSCR.
 !       !O7b
 !
@@ -179,7 +177,7 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GLOBAL, MAPSTA,     &
-                          GRIDS
+                          GRIDS, FLAGLL
       USE W3ODATMD, ONLY: O2INIT, NOPTS, PTLOC, PTNME, GRDID, OUTPTS
 !/MPI      USE W3ODATMD, ONLY: O2IRQI
       USE WMMDATMD, ONLY: MDSE, MDST, NRGRD, MDATAS, IMPROC, NMPSCR,  &
@@ -204,8 +202,7 @@
       REAL                    :: XN, YN, RX, RY, RDX, RDY
       REAL, PARAMETER         :: ACC = 0.05
       REAL, ALLOCATABLE       :: XP(:), YP(:)
-!/LLG       REAL                   :: FACTOR = 1.
-!/XYG       REAL                   :: FACTOR = 1.E-3
+      REAL                    :: FACTOR
       LOGICAL, ALLOCATABLE    :: INGRID(:,:)
       LOGICAL, SAVE           :: SETUP = .FALSE., FLGO7a = .FALSE.
       CHARACTER(LEN=10), ALLOCATABLE :: PN(:)
@@ -250,6 +247,12 @@
 !
 !/T      WRITE (MDST,9020)
 !
+      IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
+!
       ALLOCATE ( INGRID(NRGRD,NOPTS), XP(NOPTS), YP(NOPTS) )
 !
       INGRID = .FALSE.
@@ -264,10 +267,12 @@
 !
         DO I=1, NOPTS
 !
-!/LLG          IF ( XP(I) .GT. XN+ACC*SX ) XP(I) = XP(I)              &
-!/LLG                             - 360.*REAL(1+INT((XP(I)-XN)/360.))
-!/LLG          IF ( XP(I) .LT. X0-ACC*SX ) XP(I) = XP(I)              &
-!/LLG                             + 360.*REAL(1+INT((X0-XP(I))/360.))
+          IF ( FLAGLL ) THEN
+              IF ( XP(I) .GT. XN+ACC*SX ) XP(I) = XP(I)              &
+                                 - 360.*REAL(1+INT((XP(I)-XN)/360.))
+              IF ( XP(I) .LT. X0-ACC*SX ) XP(I) = XP(I)              &
+                                 + 360.*REAL(1+INT((X0-XP(I))/360.))
+            END IF
 !
           IF ( GLOBAL ) THEN
               IF (YP(I) .LT. Y0 - ACC*SY .OR.                         &

@@ -1,0 +1,54 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.1 Test script for WW-III, two-dimensional propagation.            #
+#           Propagation under angle with grid.                              #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging.                             #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+#       switch_PRn_MPI : for parallel run with MPI                          #
+# - Test case input (default):                                              #
+#   * Input is also available to execute test case with ww3_multi.          #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 43 x 43 rectilinear Cartesian grid                    #
+#       - dx = 1 km, dy = 1 km                                              #
+#       - Xrange = -60:360 km, Yrange = -60:360 km                          #
+#       - land mask defined                                                 #
+#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * ww3_grid_noland.inp :                                                 #
+#     + same as default, but with no land mask defined                      #
+#   * ww3_grid_b.inp :                                                      #
+#     + Spatial grid: 273 x 274 rectilinear Cartesian grid                  #
+#       - dx = 16 km, dy = 16 km                                            #
+#       - Xrange = 0:4352 km, Yrange = 0:4368 km                            #
+#       - no land mask defined                                              #
+#     + Spectral grid: ntheta = 12, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * ww3_grid_c.inp :                                                      #
+#     + Spatial grid: 226 x 331 curvilinear Cartesian grid                  #
+#       - dx and dy are variable                                            #
+#       - Xrange = 1040.39:7000.00 km, Yrange = 2000.00:7959.61 km          #
+#       - input grid coordinates: <x,y>grd.IDLA1.dat                        #
+#       - no land mask defined                                              #
+#     + Spectral grid: ntheta = 12, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Nov 2009     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

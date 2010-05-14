@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -72,7 +72,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -85,6 +85,8 @@
 !/    30-Sep-2005 : Add 'DUMP' option.                  ( version 3.08 )
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -166,7 +168,7 @@
       USE W3CSPCMD, ONLY: W3CSPC
 !
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
-                          X0, Y0, SX, SY, MAPSTA, MAPFS, MAPSF,       &
+                          GSU, MAPSTA, MAPFS, MAPSF,                  &
                           XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE
 !/T1      USE W3GDATMD, ONLY: SIG
       USE W3WDATMD, ONLY: VA
@@ -177,6 +179,7 @@
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO,            &
                           ABPI0, ABPIN, ABPOS, FLBPI, FILER, FILEW,   &
                           FILED, SPCONV, FNMPRE
+      USE W3GSRUMD
 !
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -350,12 +353,16 @@
 !
           FLOK   = .TRUE.
           DO I=1, NBI
-            IX     = 1 + NINT((XBPI(I)-X0)/SX)
-            IY     = 1 + NINT((YBPI(I)-Y0)/SY)
-            IF ( ABS(MAPSTA(IY,IX)) .NE. 2 ) THEN
+            IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY ) ) THEN
+                IF ( ABS(MAPSTA(IY,IX)) .NE. 2 ) THEN
+                    IF ( IAPROC .EQ. NAPERR )                         &
+                        WRITE (NDSE,909) IX, IY, ABS(MAPSTA(IY,IX))
+                    FLOK   = .FALSE.
+                  END IF
+              ELSE
                 IF ( IAPROC .EQ. NAPERR )                             &
                     WRITE (NDSE,910) IX, IY, ABS(MAPSTA(IY,IX))
-                FLOK   = .FALSE.
+                CALL EXTCDE ( 12 )
               END IF
             ISBPI(I) = MAPFS(IY,IX)
             END DO
@@ -569,8 +576,10 @@
                '     ILEGAL VEROGR, READ : ',A/                       &
                '                   CHECK : ',A/)
 !
-  910 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
+  909 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
                '     POINT',2I4,' NOT ACTIVE SEA POINT (',I1,')')
+  910 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
+               '     POINT',2I4,' NOT LOCATED IN GRID')
   911 FORMAT ( ' *** WAVEWATCH III WARNING : POINT',2I4,              &
                    ' WILL NOT BE UPDATED')
 !

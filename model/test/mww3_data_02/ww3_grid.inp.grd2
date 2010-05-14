@@ -16,6 +16,7 @@ $
 $ In this case, the mask is build up part by part here.
 $ the obstructions are taken from both neighbouring cells.
 $
+    'RECT' T F
     157    121
       0.5    0.25   1.
     160.    48.     1.

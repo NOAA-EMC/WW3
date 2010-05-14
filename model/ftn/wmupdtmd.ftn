@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -13,6 +13,8 @@
 !/    10-Dec-2006 : Bug fix WMUPD2 initial fields.      ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -52,9 +54,6 @@
 !       !/WNX0   Wind vector component conservation.
 !       !/WNX1   Wind speed conservation.
 !       !/WNX2   Wind exenrgy conservation.
-!
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
 !
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
@@ -899,11 +898,13 @@ call extcde (99)
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Jan-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -958,9 +959,6 @@ call extcde (99)
 !
 !  9. Switches :
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
 !       !/T1    Test output interpolation data.
@@ -972,7 +970,8 @@ call extcde (99)
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
-      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS
+      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
+                          GTYPE, RLGTYPE, CLGTYPE
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1015,6 +1014,12 @@ call extcde (99)
 !
 !/S      CALL STRACE (IENT, 'WMUPDV')
 !
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
+          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+!
       NXI    => GRIDS(JMOD)%NX
       NYI    => GRIDS(JMOD)%NY
       X0I    => GRIDS(JMOD)%X0
@@ -1044,15 +1049,17 @@ call extcde (99)
 !
           IXO    = NINT((X0-X0I)/SX)
 !
-!/XYG          IXF0   = MAX (  1  , 1-IXO )
-!/XYG          IXFN   = MIN ( NX  , NXI-IXO )
-!/XYG          IXS0   = MAX (  1  , 1+IXO )
-!/XYG          IXSN   = IXS0 + IXFN - IXF0
-!
-!/LLG          IXF0   = 1
-!/LLG          IXFN   = NX
-!/LLG          IXS0   = -999
-!/LLG          IXSN   = -999
+          IF ( FLAGLL ) THEN
+              IXF0   = 1
+              IXFN   = NX
+              IXS0   = -999
+              IXSN   = -999
+            ELSE
+              IXF0   = MAX (  1  , 1-IXO )
+              IXFN   = MIN ( NX  , NXI-IXO )
+              IXS0   = MAX (  1  , 1+IXO )
+              IXSN   = IXS0 + IXFN - IXF0
+            END IF
 !
           IYO    = NINT((Y0-Y0I)/SY)
 !
@@ -1067,10 +1074,13 @@ call extcde (99)
 ! 1.b Fill arrays for sea points only
 !
           DO IX=IXF0, IXFN
-!/XYG            IXS    = IX + IXO
-!/LLG            IXS    = 1 + NINT ( MOD (                            &
-!/LLG              1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
-!/LLG            IF ( IXS .GT. NXI ) CYCLE
+            IF ( FLAGLL ) THEN
+                IXS    = 1 + NINT ( MOD (                             &
+                  1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
+                IF ( IXS .GT. NXI ) CYCLE
+              ELSE
+                IXS    = IX + IXO
+              END IF
             VX(IX,IYF0:IYFN) = VXI(IXS,IYS0:IYSN)
             VY(IX,IYF0:IYFN) = VYI(IXS,IYS0:IYSN)
             END DO
@@ -1104,18 +1114,21 @@ call extcde (99)
       IF ( MXA .EQ. 2 ) THEN
 !
           DO IX=1, NX
-!/XYG            XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
-!/LLG            XR     = 1. + MOD                                    &
-!/LLG                    ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
+            IF ( FLAGLL ) THEN
+                XR     = 1. + MOD       &
+                         ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
+              ELSE
+                XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
+              END IF
             IF ( XR.GT.0. ) THEN
                 J1     = INT(XR)
                 J2     = J1 + 1
                 R2     = MAX ( 0. , XR-REAL(J1) )
                 R1     = 1. - R2
-!/LLG                IF ( GLOBAL ) THEN
-!/LLG                    J1 = 1 + MOD(J1-1,NXI)
-!/LLG                    J2 = 1 + MOD(J2-1,NXI)
-!/LLG                  END IF
+                IF ( FLAGLL .AND. GLOBAL ) THEN
+                    J1 = 1 + MOD(J1-1,NXI)
+                    J2 = 1 + MOD(J2-1,NXI)
+                  END IF
                 IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
                     NXA(IX,0) = NXA(IX,0) + 1
                     NXA(IX,NXA(IX,0)) = J1
@@ -1142,22 +1155,28 @@ call extcde (99)
 !
             XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
             XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
-!/XYG            IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
-!/XYG            IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
-!/XYG            IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
-!/LLG            IXC    = 1 + NINT ( MOD (                            &
-!/LLG                        1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
-!/LLG            IXS0   = IXC - 1 - MXA/2
-!/LLG            IXSN   = IXC + 1 + MXA/2
+            IF ( FLAGLL ) THEN
+                IXC    = 1 + NINT ( MOD (                             &
+                            1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
+                IXS0   = IXC - 1 - MXA/2
+                IXSN   = IXC + 1 + MXA/2
+              ELSE
+                IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
+                IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
+                IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
+              END IF
             DO J=IXS0, IXSN
-!/XYG              JJ     = J
-!/LLG              IF ( GLOBAL ) JJ = 1 + MOD(J-1,NXI)
-!/LLG              IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
-!/LLG              IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
-!/LLG              IF ( IXC .NE. 0 ) THEN
-!/LLG                  XFL    = XFL - REAL(IXC) * 360.
-!/LLG                  XFR    = XFR - REAL(IXC) * 360.
-!/LLG                END IF
+              IF ( FLAGLL ) THEN
+                  IF ( GLOBAL ) JJ = 1 + MOD(J-1,NXI)
+                  IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
+                  IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
+                  IF ( IXC .NE. 0 ) THEN
+                      XFL    = XFL - REAL(IXC) * 360.
+                      XFR    = XFR - REAL(IXC) * 360.
+                    END IF
+                ELSE
+                  JJ     = J
+                END IF
               XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
               XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
               R1     = MAX ( 0. , XSR - XSL ) / SX
@@ -1336,22 +1355,36 @@ call extcde (99)
                 VXL    = 0.
                 VYL    = 0.
                 J1     = 0
-!/XYG                DO JX=IX-1, IX+1
-!/XYG                  IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
-!/LLG                DO J2=IX-1, IX+1
-!/LLG                  IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. GLOBAL ) THEN
-!/LLG                      JX     = 1 + MOD(NX+J2-1,NX)
-                      DO JY=IY-1, IY+1
-                        IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
-                            IF ( MAP2(JX,JY) ) THEN
-                                VXL     = VXL + VX(JX,JY)
-                                VYL     = VYL + VY(JX,JY)
-                                J1      = J1 + 1
+                IF ( FLAGLL ) THEN
+                    DO J2=IX-1, IX+1
+                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. GLOBAL ) THEN
+                          JX     = 1 + MOD(NX+J2-1,NX)
+                          DO JY=IY-1, IY+1
+                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                                IF ( MAP2(JX,JY) ) THEN
+                                    VXL     = VXL + VX(JX,JY)
+                                    VYL     = VYL + VY(JX,JY)
+                                    J1      = J1 + 1
+                                  END IF
                               END IF
-                          END IF
-                        END DO
-                      END IF
-                  END DO
+                            END DO
+                        END IF
+                      END DO
+                  ELSE
+                    DO JX=IX-1, IX+1
+                      IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
+                          DO JY=IY-1, IY+1
+                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                                IF ( MAP2(JX,JY) ) THEN
+                                    VXL     = VXL + VX(JX,JY)
+                                    VYL     = VYL + VY(JX,JY)
+                                    J1      = J1 + 1
+                                  END IF
+                              END IF
+                            END DO
+                        END IF
+                      END DO
+                  END IF !FLAGLL
                 IF ( J1 .GT. 0 ) THEN
                     VX(IX,IY) = VXL / REAL(J1)
                     VY(IX,IY) = VYL / REAL(J1)
@@ -1399,11 +1432,13 @@ call extcde (99)
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Jan-2007 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1454,9 +1489,6 @@ call extcde (99)
 !
 !  9. Switches :
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Cartesian grid.
-!
 !       !/S     Enable subroutine tracing.
 !       !/T     Enable test output
 !       !/T1    Test output interpolation data.
@@ -1468,7 +1500,8 @@ call extcde (99)
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
-      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS
+      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
+                          GTYPE, RLGTYPE, CLGTYPE
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1509,6 +1542,12 @@ call extcde (99)
 !
 !/S      CALL STRACE (IENT, 'WMUPDS')
 !
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
+          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+!
       NXI    => GRIDS(JMOD)%NX
       NYI    => GRIDS(JMOD)%NY
       X0I    => GRIDS(JMOD)%X0
@@ -1537,15 +1576,17 @@ call extcde (99)
 !
           IXO    = NINT((X0-X0I)/SX)
 !
-!/XYG          IXF0   = MAX (  1  , 1-IXO )
-!/XYG          IXFN   = MIN ( NX  , NXI-IXO )
-!/XYG          IXS0   = MAX (  1  , 1+IXO )
-!/XYG          IXSN   = IXS0 + IXFN - IXF0
-!
-!/LLG          IXF0   = 1
-!/LLG          IXFN   = NX
-!/LLG          IXS0   = -999
-!/LLG          IXSN   = -999
+          IF ( FLAGLL ) THEN
+              IXF0   = 1
+              IXFN   = NX
+              IXS0   = -999
+              IXSN   = -999
+            ELSE
+              IXF0   = MAX (  1  , 1-IXO )
+              IXFN   = MIN ( NX  , NXI-IXO )
+              IXS0   = MAX (  1  , 1+IXO )
+              IXSN   = IXS0 + IXFN - IXF0
+            END IF
 !
           IYO    = NINT((Y0-Y0I)/SY)
 !
@@ -1559,13 +1600,19 @@ call extcde (99)
 !
 ! 1.b Fill arrays for sea points only
 !
-          DO IX=IXF0, IXFN
-!/XYG            IXS    = IX + IXO
-!/LLG            IXS    = 1 + NINT ( MOD (                            &
-!/LLG              1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
-!/LLG            IF ( IXS .GT. NXI ) CYCLE
-            FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
-            END DO
+          IF ( FLAGLL ) THEN
+              DO IX=IXF0, IXFN
+                IXS    = 1 + NINT ( MOD (                             &
+                  1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
+                IF ( IXS .GT. NXI ) CYCLE
+                FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
+                END DO
+            ELSE
+              DO IX=IXF0, IXFN
+                IXS    = IX + IXO
+                FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
+                END DO
+            END IF
 !
 ! 1.c Return to calling routine
 !
@@ -1596,18 +1643,21 @@ call extcde (99)
       IF ( MXA .EQ. 2 ) THEN
 !
           DO IX=1, NX
-!/XYG            XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
-!/LLG            XR     = 1. + MOD                                    &
-!/LLG                    ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
+            IF ( FLAGLL ) THEN
+                XR     = 1. + MOD       &
+                         ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
+              ELSE
+                XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
+              END IF
             IF ( XR.GT.0. ) THEN
                 J1     = INT(XR)
                 J2     = J1 + 1
                 R2     = MAX ( 0. , XR-REAL(J1) )
                 R1     = 1. - R2
-!/LLG                IF ( GLOBAL ) THEN
-!/LLG                    J1 = 1 + MOD(J1-1,NXI)
-!/LLG                    J2 = 1 + MOD(J2-1,NXI)
-!/LLG                  END IF
+                IF ( FLAGLL .AND. GLOBAL ) THEN
+                    J1 = 1 + MOD(J1-1,NXI)
+                    J2 = 1 + MOD(J2-1,NXI)
+                  END IF
                 IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
                     NXA(IX,0) = NXA(IX,0) + 1
                     NXA(IX,NXA(IX,0)) = J1
@@ -1634,22 +1684,28 @@ call extcde (99)
 !
             XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
             XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
-!/XYG            IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
-!/XYG            IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
-!/XYG            IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
-!/LLG            IXC    = 1 + NINT ( MOD (                            &
-!/LLG                        1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
-!/LLG            IXS0   = IXC - 1 - MXA/2
-!/LLG            IXSN   = IXC + 1 + MXA/2
+            IF ( FLAGLL ) THEN
+                IXC    = 1 + NINT ( MOD (                             &
+                         1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
+                IXS0   = IXC - 1 - MXA/2
+                IXSN   = IXC + 1 + MXA/2
+              ELSE
+                IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
+                IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
+                IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
+              END IF
             DO J=IXS0, IXSN
-!/XYG              JJ     = J
-!/LLG              IF ( GLOBAL ) JJ = 1 + MOD(J-1,NXI)
-!/LLG              IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
-!/LLG              IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
-!/LLG              IF ( IXC .NE. 0 ) THEN
-!/LLG                  XFL    = XFL - REAL(IXC) * 360.
-!/LLG                  XFR    = XFR - REAL(IXC) * 360.
-!/LLG                END IF
+              IF ( FLAGLL ) THEN
+                  IF ( GLOBAL ) JJ = 1 + MOD(J-1,NXI)
+                  IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
+                  IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
+                  IF ( IXC .NE. 0 ) THEN
+                      XFL    = XFL - REAL(IXC) * 360.
+                      XFR    = XFR - REAL(IXC) * 360.
+                    END IF
+                ELSE
+                  JJ     = J
+                END IF
               XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
               XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
               R1     = MAX ( 0. , XSR - XSL ) / SX
@@ -1808,21 +1864,34 @@ call extcde (99)
             IF ( MAP1(IX,IY) ) THEN
                 FDL    = 0.
                 J1     = 0
-!/XYG                DO JX=IX-1, IX+1
-!/XYG                  IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
-!/LLG                DO J2=IX-1, IX+1
-!/LLG                  IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. GLOBAL ) THEN
-!/LLG                      JX     = 1 + MOD(NX+J2-1,NX)
-                      DO JY=IY-1, IY+1
-                        IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
-                            IF ( MAP2(JX,JY) ) THEN
-                                FDL     = FDL + FD(JX,JY)
-                                J1      = J1 + 1
+                IF ( FLAGLL ) THEN
+                    DO J2=IX-1, IX+1
+                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. GLOBAL ) THEN
+                          JX     = 1 + MOD(NX+J2-1,NX)
+                          DO JY=IY-1, IY+1
+                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                                IF ( MAP2(JX,JY) ) THEN
+                                    FDL     = FDL + FD(JX,JY)
+                                    J1      = J1 + 1
+                                  END IF
                               END IF
-                          END IF
-                        END DO
-                      END IF
-                  END DO
+                            END DO
+                        END IF
+                      END DO
+                  ELSE
+                    DO JX=IX-1, IX+1
+                      IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
+                          DO JY=IY-1, IY+1
+                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                                IF ( MAP2(JX,JY) ) THEN
+                                    FDL     = FDL + FD(JX,JY)
+                                    J1      = J1 + 1
+                                  END IF
+                              END IF
+                            END DO
+                        END IF
+                      END DO
+                  END IF !FLAGLL
                 IF ( J1 .GT. 0 ) THEN
                     FD(IX,IY) = FDL / REAL(J1)
                     MAP1(IX,IY) = .FALSE.

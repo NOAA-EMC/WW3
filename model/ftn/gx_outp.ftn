@@ -7,7 +7,7 @@
 !/                  |            J.H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -29,6 +29,8 @@
 !/    09-Oct-2007 : Experimental Sbs (BS1) added.       ( version 3.13 )
 !/                  (F. Ardhuin)
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+!/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -105,17 +107,17 @@
 !  6. Error messages :
 !
 !     Checks on input, checks in W3IOxx.
+!     Check on grid type.
 !
 !  7. Remarks :
+!
+!     - Curvilinear grids currently not supported.
 !
 !  8. Structure :
 !
 !     See source code.
 !
 !  9. Switches :
-!
-!       !/LLG  Spherical grid.
-!       !/XYG  Cartesian grid.
 !
 !       !/S    Enable subroutine tracing.
 !
@@ -154,8 +156,7 @@
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: DTREQ, DTEST
       REAL                    :: UNDEFP = -99.E20
-!/LLG      REAL                    :: FACT   = 1.
-!/XYG      REAL                    :: FACT   = 1.E-3
+      REAL                    :: FACT
       LOGICAL                 :: FLSRCE(6)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
@@ -188,6 +189,12 @@
 !/NL1      CALL W3SETA ( 1, 6, 6 )
       CALL W3NOUT (    6, 6 )
       CALL W3SETO ( 1, 6, 6 )
+!
+      IF ( FLAGLL ) THEN
+          FACT   = 1.
+        ELSE
+          FACT   = 1.E-3
+        END IF
 !
       NDSI   = 10
       NDSM   = 20
@@ -229,7 +236,11 @@
 !
       WRITE (NDSO,930)
       DO I=1, NOPTS
-        WRITE (NDSO,931) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
+        IF ( FLAGLL ) THEN
+            WRITE (NDSO,931) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
+          ELSE
+            WRITE (NDSO,932) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
+          END IF
         END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -279,8 +290,15 @@
 !
       WRITE (NDSO,950) NREQ
       DO I=1, NOPTS
-        IF (FLREQ(I)) WRITE (NDSO,951) PTNME(I), FACT*PTLOC(1,I),     &
-                                                 FACT*PTLOC(2,I)
+        IF (FLREQ(I)) THEN
+            IF ( FLAGLL ) THEN
+                WRITE (NDSO,951) PTNME(I), FACT*PTLOC(1,I), &
+                                           FACT*PTLOC(2,I)
+              ELSE
+                WRITE (NDSO,956) PTNME(I), FACT*PTLOC(1,I), &
+                                           FACT*PTLOC(2,I)
+              END IF
+          END IF
         END DO
 !
 ! ... Output of output points
@@ -421,8 +439,10 @@
 !
   930 FORMAT ( '  Points in file : '/                                 &
                ' ------------------------------------')
-!/LLG  931 FORMAT ( '      ',A,2F10.2)
-!/XYG  931 FORMAT ( '      ',A,2(F8.1,'E3'))
+
+  931 FORMAT ( '      ',A,2F10.2)
+
+  932 FORMAT ( '      ',A,2(F8.1,'E3'))
 !
   940 FORMAT (/'  Output time data : '/                               &
                ' --------------------------------------------------'/ &
@@ -432,8 +452,11 @@
 !
   950 FORMAT (/'  Requested output for',I3,' points : '/              &
                ' --------------------------------------------------')
-!/LLG  951 FORMAT ( '      ',A,2F10.2)
-!/XYG  951 FORMAT ( '      ',A,2(F8.1,'E3'))
+
+  951 FORMAT ( '      ',A,2F10.2)
+
+  956 FORMAT ( '      ',A,2(F8.1,'E3'))
+
   952 FORMAT (/'  Requested output fields :'/                         &
                ' --------------------------------------------------')
   953 FORMAT ( '      ',A)
@@ -561,9 +584,6 @@
 !     See source code.
 !
 !  9. Switches :
-!
-!       !/LLG  Spherical grid.
-!       !/XYG  Cartesian grid.
 !
 !       !/S      Enable subroutine tracing.
 !       !/T      Enable test output.
@@ -939,11 +959,19 @@
             IF ( FLSRCE(6) ) WRITE (NDSGRD)                           &
                ((STT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
 !
-            WRITE (NDSPNT,940) PTNME(J),                              &
+            IF ( FLAGLL ) THEN
+                WRITE (NDSPNT,940) PTNME(J),                          &
                    FACT*PTLOC(1,J), FACT*PTLOC(2,J), DPO(J), WAO(J),  &
                    WAO(J)*COS(WDO(J)), WAO(J)*SIN(WDO(J)), ASO(J),    &
                    CAO(J), CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)),    &
                    HSIG, GRDID(J)
+              ELSE
+                WRITE (NDSPNT,941) PTNME(J),                          &
+                   FACT*PTLOC(1,J), FACT*PTLOC(2,J), DPO(J), WAO(J),  &
+                   WAO(J)*COS(WDO(J)), WAO(J)*SIN(WDO(J)), ASO(J),    &
+                   CAO(J), CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)),    &
+                   HSIG, GRDID(J)
+              END IF
 !
 ! ... End of points loop
 !
@@ -955,8 +983,11 @@
 ! Formats
 !
   905 FORMAT (9X,A)
-!/LLG  940 FORMAT (A10,1X,2F6.1,f7.1,3F7.1,F8.2,3F7.2,F6.2,2X,A)
-!/XYG  940 FORMAT (A10,1X,2F8.1,f7.1,3F7.1,F8.2,3F7.2,F6.2,2X,A)
+
+  940 FORMAT (A10,1X,2F6.1,f7.1,3F7.1,F8.2,3F7.2,F6.2,2X,A)
+
+  941 FORMAT (A10,1X,2F8.1,f7.1,3F7.1,F8.2,3F7.2,F6.2,2X,A)
+
 !
 !/T 9000 FORMAT (' TEST GXEXPO : FLAGS  :',40L2)
 !/T 9001 FORMAT (' TEST GXEXPO : FLSRCE :',6L2)
