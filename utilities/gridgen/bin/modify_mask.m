@@ -45,21 +45,42 @@ function m_new = modify_mask2(m,lon,lat,px,py,mb,lonb,latb,igl);
 
 m_new = m;
 
+% Use the center of the grid as reference point
+
+%lon0 = mean(lon);
+%lat0 = mean(lat);
+%R = 6370000;
+
+% Convert to Cartesian coordinates
+
+%lon = R.*cos(lat0*pi/180.0).*(lon-lon0).*pi/180.0;
+%lat = R.*(lat-lat0).*pi/180.0;
+%lonb = R.*cos(lat0*pi/180.0).*(lonb-lon0).*pi/180.0;
+%latb = R.*(latb-lat0).*pi/180.0;
+%px = R.*cos(lat0*pi/180.0).*(px-lon0).*pi/180.0;
+%py = R.*(py-lat0).*pi/180.0;
+
+%
+ 
 [lon2,lat2] = meshgrid(lon,lat);
 [in_points,on_points] = inpolygon(lon2,lat2,px,py);
+
+clear lon2 lat2;
 
 Nx = length(lon);
 Ny = length(lat);
 
 loc = find(in_points == 0);
+length(loc)
 m_new(loc) = 3;
 clear loc;
 loc = find(on_points == 1 & m == 1);
+length(loc)
 m_new(loc) = 2;
 clear loc;
 
-dx = lon(2)-lon(1);
-dy = lat(2)-lat(1);
+dx = lon(2)-lon(1)
+dy = lat(2)-lat(1)
 
 N = length(px);
 
@@ -193,10 +214,10 @@ for j = 1:Nx
                                 d = sqrt((px1(r)-px1(r+1))^2+(py1(r)-py1(r+1))^2);
                                 d1 = sqrt((px1(r)-x)^2+(py1(r)-y)^2);
                                 d2 = sqrt((x-px1(r+1))^2+(y-py1(r+1))^2);                               
-                                if (abs(1-(d1+d2)/d) < 0.00001 & d1 <= d & d2 <= d)
+                                if (abs(1-(d1+d2)/d) < 0.00001)
                                     d1 = sqrt((x1-x)^2+(y1-y)^2);
                                     d2 = sqrt((x2-x)^2+(y2-y)^2);
-                                    if (abs(1-(d1+d2)/d0) < 0.00001 & d1 <= d0 & d2 <= d0)
+                                    if (abs(1-(d1+d2)/d0) < 0.00001)
                                         count = count+1;
                                         tx(count) = x;
                                         ty(count) = y;
@@ -233,7 +254,7 @@ for j = 1:Nx
                                 end;                               
                                 count = length(tx);
                             end;
-                            if (poly_bound(l) == 0 & poly_bound(l+1) == 0)
+                            if (poly_bound(l) == 0 & poly_bound(l+1) == 0 & length(tx) > 1 & length(ty) > 1)
                                 trans_lth(k-i+1) = trans_lth(k-i+1) + sqrt((tx(2)-tx(1))^2+(ty(2)-ty(1))^2);
                             else       
                                 if (on_pts(l) == 1)
@@ -417,10 +438,10 @@ for i = 1:Ny
                                 d = sqrt((px1(r)-px1(r+1))^2+(py1(r)-py1(r+1))^2);
                                 d1 = sqrt((px1(r)-x)^2+(py1(r)-y)^2);
                                 d2 = sqrt((x-px1(r+1))^2+(y-py1(r+1))^2);                                
-                                if (abs(1-(d1+d2)/d) < 0.00001 & d1 <= d & d2 <= d)
+                                if (abs(1-(d1+d2)/d) < 0.00001 )
                                     d1 = sqrt((x1-x)^2+(y1-y)^2);
                                     d2 = sqrt((x2-x)^2+(y2-y)^2);
-                                    if (abs(1-(d1+d2)/d0) < 0.00001 & d1 <= d0 & d2 <= d0)
+                                    if (abs(1-(d1+d2)/d0) < 0.00001 )
                                         count = count+1;
                                         tx(count) = x;
                                         ty(count) = y;
@@ -458,7 +479,7 @@ for i = 1:Ny
                                 end;                               
                                 count = length(tx);
                             end;
-                            if (poly_bound(l) == 0 & poly_bound(l+1) == 0)
+                            if (poly_bound(l) == 0 & poly_bound(l+1) == 0 & length(tx) > 1 & length(ty) > 1)
                                 trans_lth(k-j+1) = trans_lth(k-j+1) + sqrt((tx(2)-tx(1))^2+(ty(2)-ty(1))^2);
                             else
                                 if (on_pts(l) == 1)

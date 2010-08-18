@@ -15,8 +15,8 @@ function [lon_sub,lat_sub,depth_sub] = generate_grid(ref_dir,bathy_source,coord,
 %|       National Oceanic and Atmospheric Administration.  All rights reserved.        |
 %|                                                                                     |
 %| DESCRIPTION                                                                         |
-%| This function creates a 2D bathymetry data set from high resolution "ETOPO2" or     | 
-%| "DBDB2" global bathymetry sets. Global bathymetry data sets are assumed to be       |
+%| This function creates a 2D bathymetry data set from high resolution "ETOPO1" or     | 
+%| "ETOPO2" global bathymetry sets. Global bathymetry data sets are assumed to be       |
 %| stored in Netcdf formats                                                            |
 %|                                                                                     |
 %| [lon,lat,depth] = generate_grid(ref_dir,bathy_source,coord,dx,dy,coords,limit,...   |
@@ -29,8 +29,8 @@ function [lon_sub,lat_sub,depth_sub] = generate_grid(ref_dir,bathy_source,coord,
 %|                    (User needs to make sure that the bathymetry data files          |
 %|                    corresponding to the options are available in ref_dir            |
 %|                    Options are --                                                   |
-%|                        'etopo2' -- ETOPO2 bathymetry (corresponding file ETOPO2.nc) |
-%|                        'dbdb2'  -- DBDB2 bathymetry  (corresponding file DBDB2.nc)  |
+%|                        'etopo1' -- ETOPO1 bathymetry (corresponding file etopo1.nc) |
+%|                        'etopo2' -- ETOPO2 bathymetry (corresponding file etopo2.nc) |
 %|     coord        : An array defining the corner points of the grid                  |
 %|                    coord(1) = Lattitude (y) of lower left hand corner               |
 %|                    coord(2) = Longitude (x) of lower left hand corner               |
@@ -72,18 +72,26 @@ lones = lone;
 %@@@ Determine the file name for source bathymetry
 
 if (strcmp(bathy_source,'etopo2'))
-    fname_base = [ref_dir,'/Etopo2.nc'];
-elseif (strcmp(bathy_source,'dbdb2'))
-    fname_base = [ref_dir,'/Dbdb2.nc'];
+    fname_base = [ref_dir,'/etopo2.nc'];
+    var_x = 'x';
+    var_y = 'y';
+    dx_base = 1/30.0;
+    dy_base = 1/30.0;
+    Nx_base = 10801;
+    Ny_base = 5401;
+elseif (strcmp(bathy_source,'etopo1'))
+    fname_base = [ref_dir,'/etopo1.nc'];
+    var_x = 'lon';
+    var_y = 'lat';
+    dx_base = 1/60.0;
+    dy_base = 1/60.0;
+    Nx_base = 21601;
+    Ny_base = 10801;
 else
     fprintf(1,'Unrecognized source bathymetry option \n');
     return;
 end;
 
-dx_base = 1/30.0;
-dy_base = 1/30.0;
-Nx_base = 10801;
-Ny_base = 5401;
 
 %@@@ Check the range of lattitudes and longitudes
 
@@ -154,21 +162,23 @@ if (lon_end >Nx_base)
 end;    
 
 %@@@ Extract data from Netcdf files
+%@@@ The next few lines assume that your Matlab
+%@@@ version has ability to read NETCDF files
 
-f = netcdf(fname_base,'nowrite');                                 %!!!! NETCDF DEPENDENCY !!!!!!!
+f = netcdf.open(fname_base,'nowrite');                            %!!!! NETCDF DEPENDENCY !!!!!!!
 
-lat_base = f{'Latitude'}(lat_start:lat_end);                      %!!!! NETCDF DEPENDENCY !!!!!!!
+lat_base = f{var_y}(lat_start:lat_end);                           %!!!! NETCDF DEPENDENCY !!!!!!!
 
 if (coords == 1 & lone <= lons)
-     lon1 = f{'Longitude'}(lon_start:Nx_base);                    %!!!! NETCDF DEPENDENCY !!!!!!!
-     lon2 = f{'Longitude'}(2:lon_end);                            %!!!! NETCDF DEPENDENCY !!!!!!!
+     lon1 = f{var_x}(lon_start:Nx_base);                          %!!!! NETCDF DEPENDENCY !!!!!!!
+     lon2 = f{var_x}(2:lon_end);                                  %!!!! NETCDF DEPENDENCY !!!!!!!
     lon_base = [lon1;lon2];
-    dep1 = f{'Depth'}(lat_start:lat_end,lon_start:Nx_base);       %!!!! NETCDF DEPENDENCY !!!!!!!
-    dep2 = f{'Depth'}(lat_start:lat_end,2:lon_end);               %!!!! NETCDF DEPENDENCY !!!!!!!
+    dep1 = f{'z'}(lat_start:lat_end,lon_start:Nx_base);           %!!!! NETCDF DEPENDENCY !!!!!!!
+    dep2 = f{'z'}(lat_start:lat_end,2:lon_end);                   %!!!! NETCDF DEPENDENCY !!!!!!!
     depth_base = [dep1 dep2];
 else
-    lon_base = f{'Longitude'}(lon_start:lon_end);                 %!!!! NETCDF DEPENDENCY !!!!!!!
-    depth_base = f{'Depth'}(lat_start:lat_end,lon_start:lon_end); %!!!! NETCDF DEPENDENCY !!!!!!!
+    lon_base = f{var_x}(lon_start:lon_end);                       %!!!! NETCDF DEPENDENCY !!!!!!!
+    depth_base = f{'z'}(lat_start:lat_end,lon_start:lon_end);     %!!!! NETCDF DEPENDENCY !!!!!!!
 end;
 
 fprintf(1,'read in the base bathymetry \n');
@@ -189,47 +199,108 @@ Ny0 = length(lat_base);
 ndx = round(dx/dx_base);
 ndy = round(dy/dy_base);
 
-%@@@ 2D averaging of bathymetry (only done if the desired grid is coarser than the base grid)
-%@@@ Checks if grid cells wrap around in Longitudes. Does not do so for Lattitudes
-
-if (ndx <= 1 & ndy <= 1)
-    fprintf(1,'Target grid is too fine, returning base bathymetry \n');
-    [tmp,lon_start] = min(abs(lon_base-lonss));
-    [tmp,lon_end] = min(abs(lon_base-lones));
-    [tmp,lat_start] = min(abs(lat_base-latss));
-    [tmp,lat_end] = min(abs(lat_base-lates));
-    lon_sub = lon_base(lon_start:lon_end);
-    lat_sub = lat_base(lat_start:lat_end);
-    depth_sub = depth_base(lat_start:lat_end,lon_start:lon_end);
-    loc = find(depth_sub > cut_off);
-    depth_sub(loc) = dry;
-    clear loc;
-    return;
-end;
-
-
 lon_sub = [lonss:dx:lones];
 lat_sub = [latss:dy:lates];
 
 Nx = length(lon_sub);
 Ny = length(lat_sub);
 
-fprintf(1,'Starting grid averaging ....\n');
+%@@@ Obtaining data from base bathymetry. If desired grid is coarser than base grid then 2D averaging of bathymetry 
+%@@@ else grid is interpolated from base grid 
+%@@@ Checks if grid cells wrap around in Longitudes. Does not do so for Lattitudes
 
 itmp = 0;
 Nb = Nx*Ny;
 
-%@@@ 2D grid averaging over base bathymetry
+if (ndx <= 1 & ndy <= 1)
+    
+    %@@@ Interpolating from base grid
+    
+    fprintf(1,'Target grid is too fine, interpolating from base bathymetry ... \n');
+    den = dx_base*dy_base;
+    
+    %@@@ Initializing starting points
+    
+    [lon_prev,tmp] = min(abs(lon_base-lon_sub(1)));
+    if (lon_base(lon_prev) > lon_sub(1))
+        lon_prev = lon_prev - 1;
+    end;
+    lon_next = lon_prev + 1;
+    if (lon_prev == 0 ) 
+        lon_prev = Nx_base - 1;
+    end;
+    if (lon_next > Nx_base)
+        lon_next = 2;
+    end;
+    [lat_prev,tmp] = min(abs(lat_base-lat_sub(1)));
+    if (lat_base(lat_prev) > lat_sub(1))
+        lat_prev = lat_prev - 1;
+    end;
+    lat_next = lat_prev + 1;
+    
+    for i = 1:Nx
+        
+        %@@@ Find prev and next lon points
+        
+        while (lon_base(lon_next) < lon_sub(i))
+            lon_prev = lon_next;
+            lon_next = lon_next+1;
+            if lon_next > Nx_base
+                lon_next = 2;
+            end; 
+        end;
+        dx1 = min(abs(lon_sub(i) - lon_base(lon_prev)),abs(lon_sub(i) - lon_base(lon_prev)- ...
+                      360*sign(lon_sub(i) - lon_base(lon_prev))));
+        dx2 = dx_base - dx1;
+        
+        for j = 1:Ny
+            
+            %@@@ Find prev and next lat points
+            
+            while (lat_base(lat_next) < lat_sub(j))
+                lat_prev = lat_next;
+                lat_next = lat_next+1;
+            end;
+            dy1 = lat_sub(j) - lat_base(lat_prev);
+            dy2 = dy_base - dy1;
+            
+            %@@@ Four point interpolation
+            
+            a11 = depth_base(lat_prev,lon_prev);
+            a12 = depth_base(lat_prev,lon_next);
+            a21 = depth_base(lat_next,lon_prev);
+            a22 = depth_base(lat_next,lon_next);
+            depth_sub(j,i) = (a11*dy2*dx2 + a12*dy2*dx1 + a21*dy1*dx2 + a22*dx1*dy1)/den;
+            
+            %@@@ Counter to check proportion of cells completed
 
-for i = 1:Nx
-    for j = 1:Ny
+            Nl = (i-1)*Ny+j;
+            itmp_prev = itmp;
+            itmp = floor(Nl/Nb*100);
+            if (mod(itmp,5) == 0 & itmp_prev ~= itmp)
+                fprintf(1,'Completed %d per cent of the cells \n',itmp);
+            end;
+            
+        end;  %@@@ end loop through lattitudes
+        
+    end;   %@@@ end loop through longitudes
+    
+    depth_sub(loc) = dry;
+    clear loc;
+    return;  %@@@ End of interpolating part of routine
+    
+else
+    
+    %@@@ Averaging from base grid
+    
+    fprintf(1,'Starting grid averaging ....\n');
 
-        %@@@ Determine the edges of each cell
-
+    for i = 1:Nx
+        
+        %@@@ Determine the edges of cell along longitude 
+        
         lon_start = lon_sub(i)-dx/2.0;
         lon_end = lon_sub(i)+dx/2.0;
-        lat_start = lat_sub(j)-dy/2.0;
-        lat_end = lat_sub(j)+dy/2.0;
         if (coords == 1)
             if (lon_start < 0)
                 lon_start = lon_start + 360;
@@ -245,76 +316,70 @@ for i = 1:Nx
                 lon_end = lon_end - 360;
             end;
         end;
-
-        %@@@ Determine all the source points within this cell
-
-        [tmp,lat_start_pos] = min(abs(lat_base-lat_start));
-        [tmp,lat_end_pos] = min(abs(lat_base-lat_end));        
         [tmp,lon_start_pos] = min(abs(lon_base-lon_start));
         [tmp,lon_end_pos] = min(abs(lon_base-lon_end));
-
-        %@@@ Average the depth over all the wet cells in source that lie within the cell
-        %@@@ Cell is marked dry if the proportion of wet cells in source is less than specified
-        %@@@ limit
-
-        if (lon_start_pos < lon_end_pos)      %@@@ grid cells do not wrap around
+        
+        for j = 1:Ny
             
-            depth_tmp = depth_base(lat_start_pos:lat_end_pos,lon_start_pos:lon_end_pos);
-            loc = find(depth_tmp <= cut_off);
-            Nt = numel(depth_tmp);
-            if (~isempty(loc))
-                Ntt = length(loc);
-                if (Ntt/Nt > limit)
-                    depth_sub(j,i) = mean(depth_tmp(loc));
+            %@@@ Determine the edges of cell along lattitude
+            
+            lat_start = lat_sub(j)-dy/2.0;
+            lat_end = lat_sub(j)+dy/2.0;
+            [tmp,lat_start_pos] = min(abs(lat_base-lat_start));
+            [tmp,lat_end_pos] = min(abs(lat_base-lat_end));        
+        
+            %@@@ Average the depth over all the wet cells in source that lie within the cell
+            %@@@ Cell is marked dry if the proportion of wet cells in source is less than specified
+            %@@@ limit
+
+            if (lon_start_pos < lon_end_pos)      %@@@ grid cells do not wrap around            
+                depth_tmp = depth_base(lat_start_pos:lat_end_pos,lon_start_pos:lon_end_pos);
+                loc = find(depth_tmp <= cut_off);
+                Nt = numel(depth_tmp);
+                if (~isempty(loc))
+                    Ntt = length(loc);
+                    if (Ntt/Nt > limit)
+                        depth_sub(j,i) = mean(depth_tmp(loc));
+                    else
+                        depth_sub(j,i) = dry;
+                    end;
                 else
                     depth_sub(j,i) = dry;
                 end;
-            else
-                depth_sub(j,i) = dry;
-            end;
-            clear depth_tmp;
-            clear loc;
-
-	 else                                 %@@@ grid cell wraps around
- 
-            depth_tmp1 = depth_base(lat_start_pos:lat_end_pos,lon_start_pos:end);
-            depth_tmp2 = depth_base(lat_start_pos:lat_end_pos,2:lon_end_pos);
-            loc1 = find(depth_tmp1 <= cut_off);
-            loc2 = find(depth_tmp2 <= cut_off);
-            Nt = numel(depth_tmp1) + numel(depth_tmp2);
-            if (~isempty(loc1) || ~isempty(loc2))
-                Ntt = length(loc1) + length(loc2);
-                if (Ntt/Nt > limit)
-                    depth_sub(j,i) = mean(mean(depth_tmp1(loc1)) + mean(depth_tmp2(loc2)));
+                clear depth_tmp loc;
+            else                                 %@@@ grid cell wraps around 
+                depth_tmp1 = depth_base(lat_start_pos:lat_end_pos,lon_start_pos:end);
+                depth_tmp2 = depth_base(lat_start_pos:lat_end_pos,2:lon_end_pos);
+                loc1 = find(depth_tmp1 <= cut_off);
+                loc2 = find(depth_tmp2 <= cut_off);
+                Nt = numel(depth_tmp1) + numel(depth_tmp2);
+                if (~isempty(loc1) || ~isempty(loc2))
+                    Ntt = length(loc1) + length(loc2);
+                    if (Ntt/Nt > limit)
+                        depth_sub(j,i) = mean(mean(depth_tmp1(loc1)) + mean(depth_tmp2(loc2)));
+                    else
+                        depth_sub(j,i) = dry;
+                    end;
                 else
                     depth_sub(j,i) = dry;
                 end;
-            else
-                depth_sub(j,i) = dry;
+                clear depth_tmp1 depth_tmp2 loc1 loc2;
+            end;           %@@@ end of check to see if cell wraps around
+
+            %@@@ Counter to check proportion of cells completed
+
+            Nl = (i-1)*Ny+j;
+            itmp_prev = itmp;
+            itmp = floor(Nl/Nb*100);
+            if (mod(itmp,5) == 0 & itmp_prev ~= itmp)
+                fprintf(1,'Completed %d per cent of the cells \n',itmp);
             end;
-            clear depth_tmp1;
-            clear depth_tmp2;
-            clear loc1;
-            clear loc2;
 
-        end;           %@@@ end of check to see if cell wraps around
+        end;    %@@@ end of for loop through all the rows (lattitudes)
 
-        %@@@ Counter to check proportion of cells completed
+    end;    %@@@ end of for loop through all the columns (longitudes)
 
-        Nl = (i-1)*Ny+j;
-        itmp_prev = itmp;
-        itmp = floor(Nl/Nb*100);
-        if (mod(itmp,5) == 0 & itmp_prev ~= itmp)
-           fprintf(1,'Completed %d per cent of the cells \n',itmp);
-        end;
+    return;  %@@@ end of averaging part of routine
 
-    end;    %@@@ end of for loop through all the rows (lattitudes)
-
-end;    %@@@ end of for loop through all the columns (longitudes)
-
-clear lon_base;
-clear lat_base;
-clear depth_base;
-
-return;
+end;
 
