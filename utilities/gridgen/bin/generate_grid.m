@@ -5,10 +5,12 @@ function [lon_sub,lat_sub,depth_sub] = generate_grid(ref_dir,bathy_source,coord,
 %|                          +----------------------------+                             |
 %|                          | GRIDGEN          NOAA/NCEP |                             |
 %|                          |      Arun Chawla           |                             |
+%|                          |    Andre VanderWesthuysen  |                             |
 %|                          |                            |                             |
-%|                          | Last Update :  31-Jul-2007 |                             |
+%|                          | Last Update :  20-Aug-2010 |                             |
 %|                          +----------------------------+                             |
 %|                                    Arun.Chawla@noaa.gov                             |
+%|                         Andre.VanderWesthuysen@noaa.gov                             |
 %|                          Distributed with WAVEWATCH III                             |
 %|                                                                                     |
 %|                     Copyright 2009 National Weather Service (NWS),                  |
@@ -55,6 +57,18 @@ function [lon_sub,lat_sub,depth_sub] = generate_grid(ref_dir,bathy_source,coord,
 %|                    coordinates of the grid                                          |
 %|    depth         : A 2D array of dimensions (Nx,Ny) consisting of the grid depths   |
 %|                                                                                     |
+%|   NOTES                                                                             |
+%|    a. This version uses the in-house matlab NETCDF functions which is available     |
+%|       with Matlab 2008a or higher. If you are using an older version of MATLAB      |
+%|       then you will have to install a NETCDF package and change portions of this    |
+%|       script that handle netcdf files. Keep in mind that the NETCDF functions       |
+%|       used in this package start their index from 0, this may not be the case in    |
+%|       other NETCDF packages                                                         |
+%|    b. The default bathymetric sets are etopo1 and etopo2, and while this package    |
+%|       will allow you to create grids finer than these base grids, make sure that    |
+%|       features are defined in the base bathymetries before using them.              |
+%|    c. While the code allows for wrapping around in the base grid it assumes that    |
+%|       the target grid will be monotonically increasing.                             |
 % -------------------------------------------------------------------------------------
 
 %@@@ Initialize the corners of the grid domain
@@ -166,19 +180,25 @@ end;
 %@@@ version has ability to read NETCDF files
 
 f = netcdf.open(fname_base,'nowrite');                            %!!!! NETCDF DEPENDENCY !!!!!!!
-
-lat_base = f{var_y}(lat_start:lat_end);                           %!!!! NETCDF DEPENDENCY !!!!!!!
-
+count_lat = (lat_end - lat_start) + 1;
+lat_base = netcdf.getVar(f,0,lat_start-1,count_lat);              %!!!! NETCDF DEPENDENCY !!!!!!!
+                                                                  %!! NOTE: Indexing from 0 !!
 if (coords == 1 & lone <= lons)
-     lon1 = f{var_x}(lon_start:Nx_base);                          %!!!! NETCDF DEPENDENCY !!!!!!!
-     lon2 = f{var_x}(2:lon_end);                                  %!!!! NETCDF DEPENDENCY !!!!!!!
+    count_lon1 = (Nx_base - lon_start) + 1;                       %!!!! NETCDF DEPENDENCY !!!!!!!
+    count_lon2 = (lon_end - 2) + 1;                               %!!!! NETCDF DEPENDENCY !!!!!!!
+    lon1 = netcdf.getVar(f,1,lon_start-1,count_lon1);             %!!!! NETCDF DEPENDENCY !!!!!!!
+    lon2 = netcdf.getVar(f,1,1,count_lon2);                       %!!!! NETCDF DEPENDENCY !!!!!!!
     lon_base = [lon1;lon2];
-    dep1 = f{'z'}(lat_start:lat_end,lon_start:Nx_base);           %!!!! NETCDF DEPENDENCY !!!!!!!
-    dep2 = f{'z'}(lat_start:lat_end,2:lon_end);                   %!!!! NETCDF DEPENDENCY !!!!!!!
+    depth_base_all = netcdf.getVar(f,2);                          %!!!! NETCDF DEPENDENCY !!!!!!!
+    dep1 = depth_base_all([lon_start:Nx_base],[lat_start:lat_end]);
+    dep2 = depth_base_all([2:lon_start_end],[lat_start:lat_end]);
     depth_base = [dep1 dep2];
 else
-    lon_base = f{var_x}(lon_start:lon_end);                       %!!!! NETCDF DEPENDENCY !!!!!!!
-    depth_base = f{'z'}(lat_start:lat_end,lon_start:lon_end);     %!!!! NETCDF DEPENDENCY !!!!!!!
+    count_lon = (lon_end - lon_start) + 1;                        %!!!! NETCDF DEPENDENCY !!!!!!!
+    lon_base = netcdf.getVar(f,1,lon_start-1,count_lon);          %!!!! NETCDF DEPENDENCY !!!!!!!
+    depth_base_all = netcdf.getVar(f,2);                          %!!!! NETCDF DEPENDENCY !!!!!!!
+    depth_base = depth_base_all([lon_start:lon_end],...
+                                [lat_start:lat_end]);
 end;
 
 fprintf(1,'read in the base bathymetry \n');
@@ -356,7 +376,7 @@ else
                 if (~isempty(loc1) || ~isempty(loc2))
                     Ntt = length(loc1) + length(loc2);
                     if (Ntt/Nt > limit)
-                        depth_sub(j,i) = mean(mean(depth_tmp1(loc1)) + mean(depth_tmp2(loc2)));
+                        depth_sub(j,i) = 0.5*(mean(depth_tmp1(loc1)) + mean(depth_tmp2(loc2)));
                     else
                         depth_sub(j,i) = dry;
                     end;
