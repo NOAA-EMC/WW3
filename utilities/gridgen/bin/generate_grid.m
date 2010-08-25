@@ -89,6 +89,7 @@ if (strcmp(bathy_source,'etopo2'))
     fname_base = [ref_dir,'/etopo2.nc'];
     var_x = 'x';
     var_y = 'y';
+    var_z = 'z';
     dx_base = 1/30.0;
     dy_base = 1/30.0;
     Nx_base = 10801;
@@ -97,6 +98,7 @@ elseif (strcmp(bathy_source,'etopo1'))
     fname_base = [ref_dir,'/etopo1.nc'];
     var_x = 'lon';
     var_y = 'lat';
+    var_z = 'z';
     dx_base = 1/60.0;
     dy_base = 1/60.0;
     Nx_base = 21601;
@@ -180,25 +182,29 @@ end;
 %@@@ version has ability to read NETCDF files
 
 f = netcdf.open(fname_base,'nowrite');                            %!!!! NETCDF DEPENDENCY !!!!!!!
+varid_lon = netcdf.inqVarID(f,var_x);                             %!!!! NETCDF DEPENDENCY !!!!!!!
+varid_lat = netcdf.inqVarID(f,var_y);                             %!!!! NETCDF DEPENDENCY !!!!!!!
+varid_dep = netcdf.inqVarID(f,var_z);                             %!!!! NETCDF DEPENDENCY !!!!!!!
+
 count_lat = (lat_end - lat_start) + 1;
-lat_base = netcdf.getVar(f,0,lat_start-1,count_lat);              %!!!! NETCDF DEPENDENCY !!!!!!!
+lat_base = netcdf.getVar(f,varid_lat,lat_start-1,count_lat);              %!!!! NETCDF DEPENDENCY !!!!!!!
                                                                   %!! NOTE: Indexing from 0 !!
 if (coords == 1 & lone <= lons)
     count_lon1 = (Nx_base - lon_start) + 1;                       %!!!! NETCDF DEPENDENCY !!!!!!!
     count_lon2 = (lon_end - 2) + 1;                               %!!!! NETCDF DEPENDENCY !!!!!!!
-    lon1 = netcdf.getVar(f,1,lon_start-1,count_lon1);             %!!!! NETCDF DEPENDENCY !!!!!!!
-    lon2 = netcdf.getVar(f,1,1,count_lon2);                       %!!!! NETCDF DEPENDENCY !!!!!!!
+    lon1 = netcdf.getVar(f,varid_lon,lon_start-1,count_lon1);     %!!!! NETCDF DEPENDENCY !!!!!!!
+    lon2 = netcdf.getVar(f,varid_lon,1,count_lon2);               %!!!! NETCDF DEPENDENCY !!!!!!!
     lon_base = [lon1;lon2];
-    depth_base_all = netcdf.getVar(f,2);                          %!!!! NETCDF DEPENDENCY !!!!!!!
-    dep1 = depth_base_all([lon_start:Nx_base],[lat_start:lat_end]);
-    dep2 = depth_base_all([2:lon_start_end],[lat_start:lat_end]);
+    dep1 = ( netcdf.getVar(f,varid_dep,...
+          [lon_start-1 lat_start-1],[count_lon1 count_lat]) )';   %!!!! NETCDF DEPENDENCY !!!!!!!
+    dep2 = ( netcdf.getVar(f,varid_dep,...
+          [1 lat_start-1],[count_lon2 count_lat]) )';             %!!!! NETCDF DEPENDENCY !!!!!!!
     depth_base = [dep1 dep2];
 else
-    count_lon = (lon_end - lon_start) + 1;                        %!!!! NETCDF DEPENDENCY !!!!!!!
-    lon_base = netcdf.getVar(f,1,lon_start-1,count_lon);          %!!!! NETCDF DEPENDENCY !!!!!!!
-    depth_base_all = netcdf.getVar(f,2);                          %!!!! NETCDF DEPENDENCY !!!!!!!
-    depth_base = depth_base_all([lon_start:lon_end],...
-                                [lat_start:lat_end]);
+    count_lon = (lon_end - lon_start) + 1;                        
+    lon_base = netcdf.getVar(f,varid_lon,lon_start-1,count_lon);  %!!!! NETCDF DEPENDENCY !!!!!!!
+    depth_base = ( netcdf.getVar(f,varid_dep,...
+            [lon_start-1 lat_start-1],[count_lon count_lat]) )';  %!!!! NETCDF DEPENDENCY !!!!!!!
 end;
 
 fprintf(1,'read in the base bathymetry \n');

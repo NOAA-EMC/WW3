@@ -1,14 +1,16 @@
-function [bound_ingrid,Nb] = compute_boundary(coord,bound)
+function [bound_ingrid,Nb] = compute_boundary(coord,bound,icoords)
 
 % -------------------------------------------------------------------------------------
 %|                                                                                     |
 %|                          +----------------------------+                             |
 %|                          | GRIDGEN          NOAA/NCEP |                             |
 %|                          |      Arun Chawla           |                             |
+%|                          |  Andre van der Westhuysen  |                             |
 %|                          |                            |                             |
-%|                          | Last Update :  31-Jul-2007 |                             |
+%|                          | Last Update :  20-Aug-2010 |                             |
 %|                          +----------------------------+                             |
 %|                                    Arun.Chawla@noaa.gov                             |
+%|                         Andre.VanderWesthuysen@noaa.gov                             |
 %|                          Distributed with WAVEWATCH III                             |
 %|                                                                                     |
 %|                     Copyright 2009 National Weather Service (NWS),                  |
@@ -51,7 +53,11 @@ function [bound_ingrid,Nb] = compute_boundary(coord,bound)
 %|          as land.                                                                   |
 %|                                                                                     | 
 %|          See also optional_bound.m which shows how the optional coastal polygons    |
-%|          are used                                                                   | 
+%|          are used                                                                   |
+%|   icoords : Coordinate system representation for longitude data                     |
+%|               Options are --                                                        |
+%|                  0 --> Longitudes range from -180 to 180                            |
+%|                  1 --> Longitudes range from 0 to 360                               |
 %|                                                                                     | 
 %| OUTPUT                                                                              |
 %|  bound_ingrid : Subset data structure array of polygons that lie inside the grid    |
@@ -98,6 +104,26 @@ norm(end+1,2) = norm(1,2);
 N = length(bound);
 in_coord = 1;
 itmp = 0;
+
+%@@@ Convert base data to specified longitude range
+
+      if (icoords == 0)
+          for i = 1:N
+              loc = find(bound(i).x > 180);
+              bound(i).x(loc) = bound(i).x(loc) - 360;
+              bound(i).west = min(bound(i).x);
+              bound(i).east = max(bound(i).x);
+              clear loc;
+          end;
+      elseif (icoords == 1)
+          for i = 1:N
+              loc = find(bound(i).x < 0);
+              bound(i).x(loc) = bound(i).x(loc) + 360;
+              bound(i).west = min(bound(i).x);
+              bound(i).east = max(bound(i).x);
+              clear loc;
+          end;
+      end;
 
 %@@@ Loop through all the boundaries in the database
 

@@ -32,10 +32,8 @@ fid = fopen(fname,'r');
 [messg,errno] = ferror(fid);
 
 if (errno == 0)
-   for i = 1:Ny
-       a = fscanf(fid,'%d',Nx);
-       m(i,:) = a;
-   end;
+   a = fscanf(fid,'%d');
+   m = (reshape(a,Nx,Ny))';
 else
    fprintf(1,'!!ERROR!!: %s \n',messg);
 end;

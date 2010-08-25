@@ -33,14 +33,10 @@ fid = fopen(fname,'r');
 [messg,errno] = ferror(fid);
 
 if (errno == 0)
-   for i = 1:Ny
-       a = fscanf(fid,'%d',Nx);
-       m1(i,:) = a;
-   end;
-   for i = 1:Ny
-       a = fscanf(fid,'%d',Nx);
-       m2(i,:) = a;
-   end;
+   a = fscanf(fid,'%d',Nx*Ny);
+   m1 = (reshape(a,Nx,Ny))';
+   a = fscanf(fid,'%d',Nx*Ny);
+   m2 = (reshape(a,Nx,Ny))';
 else
    fprintf(1,'!!ERROR!!: %s \n',messg);
 end;
