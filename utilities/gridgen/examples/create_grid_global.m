@@ -24,7 +24,7 @@
   dy = 30.0/60.0;                    % grid resolution in y (degrees)
   ref_grid = 'etopo2';               % reference grid source (etopo2 = Etopo2 grid
                                      %                        dbdb2 = DBDB2 v3.0)
-  boundary = 'coarse';               % Option to determine which GSHHS .mat file to load
+  boundary = 'full';                 % Option to determine which GSHHS .mat file to load
                                      %         full = full resolution
                                      %         high = 0.2 km
                                      %         inter = 1 lm
@@ -55,23 +55,6 @@
                                                          % datastructure array is stored in bound
 
       N = length(bound);
-      if (icoords == 0)
-          for i = 1:N
-              loc = find(bound(i).x > 180);
-              bound(i).x(loc) = bound(i).x(loc) - 360;
-              bound(i).west = min(bound(i).x);
-              bound(i).east = max(bound(i).x);
-              clear loc;
-          end;
-      elseif (icoords == 1)
-          for i = 1:N
-              loc = find(bound(i).x < 0);
-              bound(i).x(loc) = bound(i).x(loc) + 360;
-              bound(i).west = min(bound(i).x);
-              bound(i).east = max(bound(i).x);
-              clear loc;
-          end;
-      end;
 
       if (opt_poly == 1)
           [bound_user,Nu] = optional_bound(ref_dir,...
@@ -90,39 +73,49 @@
 
 % 1. Generate the grid
 
-% The Global Reference grid cannot be loaded onto the workspace all at once. As a result the 
-% bathymetry data has to be built in segments
+% Keep in mind that depending upon the available memory, you may not be able to load the 
+% Global Reference grid on your workspace all at once. In which case you will have to build
+% the bathymetry data set in segments. Both options are given below. Uncomment the one you 
+% want to use
 
   fprintf(1,'.........Creating Bathymetry..................\n');
 
   lon = [grid_box(2):dx:grid_box(4)];
   lat = [grid_box(1):dy:grid_box(3)];
 
-  for j = 1:6                                              % this has been set up to read in 
-      for k = 1:12                                         % chunks of 30 x 31 degrees
-          lons = grid_box(2) + (k-1)*30;
-          lone = grid_box(2) + k*30;
-          lats = grid_box(1) + (j-1)*31;
-          late = grid_box(1) + j*31;
-          if late > grid_box(3)
-            late = grid_box(3);
-          end;
-          grid_boxt = [lats lons late lone]
+% Uncomment the following lines if you want to build the bathymetry in segments.
+% We have set it up ro read in chunks of 30 x 31 degrees
+% --->
+%  for j = 1:6                                              
+%      for k = 1:12                                        
+%          lons = grid_box(2) + (k-1)*30;
+%          lone = grid_box(2) + k*30;
+%          lats = grid_box(1) + (j-1)*31;
+%          late = grid_box(1) + j*31;
+%          if late > grid_box(3)
+%            late = grid_box(3);
+%          end;
+%          grid_boxt = [lats lons late lone]
+%
+%          [lont,latt,deptht] = generate_grid(ref_dir,ref_grid,grid_boxt,...
+%                                  dx,dy,icoords,0.1,0,999); % this grid has been generated using a 
+%                                                            % limit of 0.1 (cell will be marked wet
+%                                                            % if 10% of area has wet reference cells)
+%                                                            % using depth=0 to distinguish wet and dry
+%                                                            % cells and setting dry cells to 999
+%          [tmp,xpos1] = min(abs(lon-lons));
+%          [tmp,xpos2] = min(abs(lon-lone));
+%          [tmp,ypos1] = min(abs(lat-lats));
+%          [tmp,ypos2] = min(abs(lat-late));
+%          depth(ypos1:ypos2,xpos1:xpos2) = deptht;
+%      end;
+%  end;
+%-->
 
-          [lont,latt,deptht] = generate_grid(ref_dir,ref_grid,grid_boxt,...
-                                  dx,dy,icoords,0.1,0,999); % this grid has been generated using a 
-                                                            % limit of 0.1 (cell will be marked wet
-                                                            % if 10% of area has wet reference cells)
-                                                            % using depth=0 to distinguish wet and dry
-                                                            % cells and setting dry cells to 999
-          [tmp,xpos1] = min(abs(lon-lons));
-          [tmp,xpos2] = min(abs(lon-lone));
-          [tmp,ypos1] = min(abs(lat-lats));
-          [tmp,ypos2] = min(abs(lat-late));
-          depth(ypos1:ypos2,xpos1:xpos2) = deptht;
-      end;
-  end;
+% Use the function below if you can load the Reference grid in your workspace all at once
 
+   [lon,lat,depth] = generate_grid(ref_dir,ref_grid,grid_box, ...
+                          dx,dy,icoords,0.1,0,999);
 % 2. Computing boundaries within the domain
 
   fprintf(1,'.........Computing Boundaries..................\n');
@@ -137,8 +130,8 @@
 %     the subset of polygons within the grid domain are stored in b and b_opt
 %     for GSHHS and user defined polygons respectively
 
-  [ba,N1a] = compute_boundary(grid_box1,bound);
-  [bb,N1b] = compute_boundary(grid_box2,bound);
+  [ba,N1a] = compute_boundary(grid_box1,bound,icoords);
+  [bb,N1b] = compute_boundary(grid_box2,bound,icoords);
   
   N1 = 0;
   if (N1a ~= 0)
@@ -156,8 +149,8 @@
   end;
 
   if (opt_poly == 1)
-      [ba_opt,N2a] = compute_boundary(grid_box1,bound_user);
-      [bb_opt,N2b] = compute_boundary(grid_box2,bound_user);
+      [ba_opt,N2a] = compute_boundary(grid_box1,bound_user,icoords);
+      [bb_opt,N2b] = compute_boundary(grid_box2,bound_user,icoords);
 
       N2 = 0;
       if (N2a > 0)

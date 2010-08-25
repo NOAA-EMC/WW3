@@ -54,23 +54,6 @@
                                                          % datastructure array is stored in bound
 
       N = length(bound);
-      if (icoords == 0)
-          for i = 1:N
-              loc = find(bound(i).x > 180);
-              bound(i).x(loc) = bound(i).x(loc) - 360;
-              bound(i).west = min(bound(i).x);
-              bound(i).east = max(bound(i).x);
-              clear loc;
-          end;
-      elseif (icoords == 1)
-          for i = 1:N
-              loc = find(bound(i).x < 0);
-              bound(i).x(loc) = bound(i).x(loc) + 360;
-              bound(i).west = min(bound(i).x);
-              bound(i).east = max(bound(i).x);
-              clear loc;
-          end;
-      end;
 
       if (opt_poly == 1)
           [bound_user,Nu] = optional_bound(ref_dir,...
@@ -126,21 +109,21 @@
   if (lon_start < lon_end)                                  % Domain does not wrap around
 
       coord = [lat_start lon_start lat_end lon_end];        % Define the Domain and  extract polygons
-      [b,N1] = compute_boundary(coord,bound);               
+      [b,N1] = compute_boundary(coord,bound,icoords);               
       if (opt_poly == 1)
-          [b_opt,N2] = compute_boundary(coord,bound_user);            
+          [b_opt,N2] = compute_boundary(coord,bound_user,icoords);            
       end;
   else                                                      % Domain wraps around the end
 
       coord = [lat_start lon_start lat_end coord_end];      % Extract from domain start to end of 
-      [ba,N1a] = compute_boundary(coord,bound);             % longitude range
+      [ba,N1a] = compute_boundary(coord,bound,icoords);     % longitude range
       N1 = 0;
       if (N1a>0)
           b = ba;
           N1 = N1a;
       end;
       if (opt_poly == 1)
-          [ba_opt,N2a] = compute_boundary(coord,bound_user);
+          [ba_opt,N2a] = compute_boundary(coord,bound_user,icoords);
           N2 = 0;
           if (N2a > 0)
               b_opt = ba_opt;
@@ -148,7 +131,7 @@
           end;
       end;
       coord = [lat_start coord_start lat_end lon_end];      % Extract from start of longitude range
-      [bb,N1b] = compute_boundary(coord,bound);             % to end of grid domain
+      [bb,N1b] = compute_boundary(coord,bound,icoords);     % to end of grid domain
       if (N1b > 0)
           if (N1 == 0)
               b = bb;
@@ -159,7 +142,7 @@
           end;
       end;
       if (opt_poly == 1)
-          [bb_opt,N2b] = compute_boundary(coord,bound_user);
+          [bb_opt,N2b] = compute_boundary(coord,bound_user,icoords);
           if (N2b > 0)
               if (N2 == 0)
                   b_opt = bb_opt;
