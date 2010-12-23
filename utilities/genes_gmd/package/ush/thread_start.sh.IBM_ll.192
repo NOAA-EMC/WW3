@@ -1,0 +1,114 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# thread_start.sh : Start a version of the threaded engine to compute errors.  #
+#                   Version for IBM under loadleveler.                         #
+#                                                                              #
+# remarks : When modifying this script for another environment take care of    #
+#           the following requirements for the system to work.                 #
+#            - The first line of the datafile contains the number of threads   #
+#              only. The rest of the file depends on the engine.               #
+#            - User modifications should be limited to section 3.              #
+#            - Limit communication to $datafile only.                          #
+#            - Each thread should generate output file thread_NN.out.          #
+#            - Set up for using 99 or less threads.                            #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 12-Feb-2010 : Origination.                                                   #
+# 16-Feb-2010 : Adapt for up to 999 threads.                                   #
+#                                                                              #
+#    Copyright 2010 National Weather Service (NWS),                            #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Initialization
+# 1.a Loadleveler job cards and start of script
+
+cat > g_engine << EOF
+#!/bin/sh
+
+#@ shell=/bin/sh
+#@ job_name=g_engine
+#@ output=g_engine.out
+#@ error=g_engine.out
+#@ notification=never
+#@ class=devhigh
+#@ network.MPI=sn_all,shared,us
+#@ job_type=parallel
+#@ total_tasks=192
+#@ node=3
+#@ wall_clock_limit=03:00:00
+#@ node_usage=not_shared
+#@ node_resources=ConsumableMemory(110 GB)
+#@ task_affinity=cpu(1)
+#@ group=devonprod
+#@ account_no=WAV-T2O
+#@ queue 
+
+  export MP_PGMMODEL=mpmd
+  export MP_CMDFILE=cmdfile
+
+  rm -f cmdfile
+  touch cmdfile
+  chmod 700 cmdfile
+
+EOF
+
+# 1.b Find number of threads
+
+  nr_threads=`grep total_tasks g_engine | sed 's/total_tasks=//g' | awk '{ print $2 }'`
+  datafile=threads.data
+
+  echo "$nr_threads" > $datafile
+
+# 1.c Make temp script
+
+  rm -f temp.sh
+  echo '/bin/sh'                                                   >> temp.sh
+  echo ' '                                                         >> temp.sh
+  echo 'cd $1'                                                     >> temp.sh
+  echo '$2 $3 > thread_$3.out'                                     >> temp.sh
+
+  chmod 700 temp.sh
+
+# ---------------------------------------------------------------------------- #
+# 2. Set up control files for threads
+
+  ddir=`pwd`
+  cmnd="$genes_main/ush/run_thread.sh"
+
+  i=1
+  rm -f tdata.??
+
+  while [ "$i" -le "$nr_threads" ]
+  do
+    if [ "$i" -lt '100' ] ; then
+      i="0$i" ; fi
+    if [ "$i" -lt '10' ] ; then
+      i="0$i" ; fi
+    echo "starting" > tdata.$i
+    echo "  echo 'temp.sh $ddir $cmnd $i > $outfile' >> cmdfile" >> g_engine
+    i=`expr $i + 1`
+  done
+
+  echo ''                                                        >> g_engine
+  echo '  poe'                                                   >> g_engine
+  echo ''                                                        >> g_engine
+  echo '  rm -f temp.sh cmdfile'                                 >> g_engine
+
+# ---------------------------------------------------------------------------- #
+# 3. Start threads and add data to datafile
+
+  llsubmit g_engine > g_engine.ll 2>&1
+  sleep 5
+
+  ID=`grep 'has been submitted' g_engine.ll | sed 's/"//g' | \
+        sed 's/ncep.noaa.gov.//g' | awk '{ print $4}'`.0
+
+  echo $ID >> threads.data
+
+  rm -f g_engine.ll
+
+# End of thread_start.sh ----------------------------------------------------- #

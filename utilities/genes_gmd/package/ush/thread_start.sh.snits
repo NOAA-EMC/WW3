@@ -1,0 +1,105 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# thread_start.sh : Stop a version of the threaded engine to compute errors.   #
+#                   Version for cluster 'snits'. 16 processes on 4 nodes       #
+#                   with up to 4 added on front end.                           #
+#                                                                              #
+# remarks : When modifying this script for another environment take care of    #
+#           the following requirements for the system to work.                 #
+#            - The first line of the datafile contains the number of threads   #
+#              only. The rest of the file depends on the engine.               #
+#            - User modifications should be limited to section 3.              #
+#            - Limit communication to $datafile only.                          #
+#            - Each thread should generate output file thread_NN.out.          #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 23-Dec-2008 : Origination.                                                   #
+# 09-Jan-2009 : Allow thread 17 and 18 if selected at n1.                      #
+# 28-Aug-2009 : Allow for taking out nodes.                                    #
+# 16-Feb-2010 : Adapt for up to 999 threads.                                   #
+#                                                                              #
+#    Copyright 2008-2010 National Weather Service (NWS),                       #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Initialization
+
+  nr_threads=20
+  nr_thrd_1=21               # Above this number, threads go to node n1
+  exclude='n9'               # Nodes to exclude
+  datafile=threads.data
+
+  echo "$nr_threads" > $datafile
+
+# ---------------------------------------------------------------------------- #
+# 2. Set up control files for threads
+
+  i=1
+  rm -f tdata.???
+
+  while [ "$i" -le "$nr_threads" ]
+  do
+    if [ "$i" -lt '100' ] ; then
+      i="0$i" ; fi
+    if [ "$i" -lt '10' ] ; then
+      i="0$i" ; fi
+    echo "starting" > tdata.$i
+    i=`expr $i + 1`
+  done
+
+# ---------------------------------------------------------------------------- #
+# 3. Start threads and add data to datafile
+
+  ddir=`pwd`
+  cmnd="$genes_main/ush/run_thread.sh"
+
+  all='not'
+
+  until [ "$all" = 'OK' ]
+  do
+    i=1
+    j=2
+    all='OK'
+    while [ "$i" -le "$nr_threads" ]
+    do
+      if [ "$i" -lt '100' ] ; then
+        i="0$i" ; fi
+      if [ "$i" -lt '10' ] ; then
+        i="0$i" ; fi
+      outfile="thread_$i.out"
+      node=n$j
+      excl=`echo $exclude | grep $node`
+      if [ ! -f $ddir/$outfile ] && [ -z "$excl" ]
+      then
+        ssh $node "cd $ddir ; $cmnd $i > $outfile" 2> /dev/null  &
+#       echo "ssh $node 'cd $ddir ; $cmnd $i > $outfile'"
+      fi
+      if [ -z "$excl" ]
+      then
+        i=`expr $i + 1`
+      else
+        i=`expr $i + 0`
+      fi
+      j=`expr $j + 1`
+      if [ "$j" -gt '5' ] ; then
+        j=2 ; fi
+      if [ "$i" -gt "$nr_thrd_1" ] ; then
+        j=1 ; fi
+      if [ ! -f $ddir/$outfile ] ; then
+        all='not' ; fi
+    done
+    if [ "$all" != 'OK' ] ; then
+      sleep 3 ; fi
+  done
+
+  sleep 1
+  ps aux > tempfile
+  pid=`cat tempfile | grep ssh | grep run_thread.sh | awk '{print $2}'`
+  rm -f tempfile
+
+  echo $pid >> $datafile
+
+# End of thread_start.sh ----------------------------------------------------- #

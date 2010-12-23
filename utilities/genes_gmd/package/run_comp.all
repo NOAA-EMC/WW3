@@ -1,0 +1,123 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# run_comp.all : Run run_comp.sh for a available data for a set of cases.      #
+#                                                                              #
+# usage: run_comp.all compID runID [run_ID [ ....]]                            #
+#                                                                              #
+# remarks: Runs consecutive versions of run_comp.sh                            #
+#        - Runs for all test cases in the directories.                         #
+#        - compID = none produces all_data.ww3 files.                          #
+#        - Using ush script get_cases.sh to identify test cases ....           #
+#                                                                              #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 13-Nov-2008 : Origination.                                                   #
+# 24-Nov-2008 : Get test cases from get_cases.sh.                              #
+# 14-Sep-2009 : Compute errors per test in case of comparison to base.         #
+# 22-Dec-2009 : Add total error if compID is given.                            #
+#                                                                              #
+#    Copyright 2008-2010 National Weather Service (NWS),                       #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Initialization
+
+  set -e
+
+  echo ' '
+  echo 'run_comp.all :'
+  echo '--------------'
+
+  if [ "$#" -lt "1" ] ; then
+    echo "   run_comp.all compID/'none' runID [runID [...]]" ; exit 1 ; fi
+
+  compID=$1 ; shift
+  runIDs=$*
+  echo "   Base ID : $compID"
+  echo "   RunIDs  : $runIDs"
+
+  setup='.genes.env'
+
+# ---------------------------------------------------------------------------- #
+# 2. Test setup file
+
+  echo ' '
+
+  if [ -f ~/$setup ]
+  then
+    echo "   Setup file $setup found."
+    . ~/$setup
+  else
+    echo "   Setup file $setup NOT found (abort)."
+    exit 1
+  fi
+
+  if [ "$compID" = 'none' ]
+  then
+    compID=
+  else
+    if [ ! -d  $genes_data/$compID ]
+    then
+      echo "   Comparison directory $genes_data/$compID NOT found (abort)."
+      exit 2
+    fi
+  fi
+
+  cd $genes_main
+  rm -f errors.* all_data.ww3
+
+# ---------------------------------------------------------------------------- #
+# 2. Cycle over runs and produced test cases
+
+  echo ' '
+  echo '   Looping over cases ...'
+
+  for runID in $runIDs
+  do
+    if [ ! -d $genes_data/$runID ]
+    then
+      echo "      Run $runID not found ..."
+    else
+      echo "      Processing $runID ..."
+      cd $genes_data/$runID
+      tests=`$genes_main/ush/get_cases.sh`
+      cd $genes_main
+      if [ -n "$tests" ]
+      then
+        for test in $tests
+        do
+          if [ -z "$compID" ] || [ -d $genes_data/$compID/$test ]
+          then
+            echo "         Processing $test ..."
+            run_comp.sh $test $runID $compID > run_comp.out
+            rm -f run_comp.out all_data.ww3
+            if [ -n "$compID" ]
+            then
+              ./ush/get_err_test.sh $test $runID $compID > test.out
+              error=`head -1 test.out | awk '{ print $1}'`
+              rm -f test.out
+              echo "            Error for test: $error"
+            fi
+          fi
+        done
+        if [ -n "$compID" ]
+        then
+          ./ush/get_err_tot.sh $runID $compID > test.out
+          error=`head -1 test.out | awk '{ print $1}'`
+          rm -f test.out
+          echo "         Total error : $error"
+        fi
+      fi
+    fi
+  done
+
+# ---------------------------------------------------------------------------- #
+# 3. End of script
+
+  echo ' '
+  echo 'End of run_comp.all' 
+
+# End of run_comp.all -------------------------------------------------------- #

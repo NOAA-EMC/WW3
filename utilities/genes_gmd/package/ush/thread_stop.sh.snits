@@ -1,0 +1,62 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# thread_stop.sh :  Stop a version of the threaded engine to compute errors.   #
+#                   Version for cluster 'snits'. 16 processes on 4 nodes       #
+#                   with up to 4 added on front end.                           #
+#                                                                              #
+# remarks : When modifying this script for another environment take care of    #
+#           the following requirements for the system to work.                 #
+#            - Only section 1 is modified by the user. Use the data in the     #
+#              datafile to determine which processes to kill.                  #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 23-Dec-2008 : Origination.                                                   #
+# 28-Aug-2009 : Exclude node n4.                                               #
+# 01-Nov-2009 : Remove incomplete error files.                                 #
+# 16-Feb-2010 : Adapt for up to 999 threads.                                   #
+#                                                                              #
+#    Copyright 2008-2010 National Weather Service (NWS),                       #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Killing processes
+
+  . ~/.genes.env
+
+  command="killall run_thread.sh run_one.sh `$genes_main/ush/get_cases.sh`"
+  command="$command ww3_shel ww3_multi ww3_outp gx_outp 2> /dev/null" 
+
+# for node in n2 n3 n4 n5 n1
+  for node in n2 n3 n5 n1
+  do
+    ssh $node "$command" 2> /dev/null
+  done
+  sleep 1
+
+# 2. Cleaning up files
+
+  rm -f tdata.???
+  rm -f threads.data
+  rm -f thread_???.out
+  rm -rf thread_???
+
+  set +e
+  err_files=`ls err.* 2> /dev/null`
+  set -e
+
+  if [ -n "$err_files" ]
+  then
+    for file in $err_files
+    do
+      lines=`wc -l $file | awk '{print $1}'`
+      if [ "$lines" != '2' ]
+      then
+        rm -f $file
+      fi
+    done
+  fi
+
+# End of thread_stop.sh ------------------------------------------------------ #

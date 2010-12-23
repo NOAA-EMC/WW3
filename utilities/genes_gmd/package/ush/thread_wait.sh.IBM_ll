@@ -1,0 +1,41 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# thread_wait.sh :  Wait for a version of the threaded engine to finish.       #
+#                   Version for IBM LoadLeveler.                               #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 12-Feb-2010 : Origination.                                                   #
+#                                                                              #
+#    Copyright 2010 National Weather Service (NWS),                            #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Initialization
+
+  nr_threads=`sed -n 1,1p threads.data | awk '{print $1}'`
+  job=`sed -n 2,2p threads.data | awk '{print $1}'`
+
+# 2. Waiting game
+
+  OK='n'
+  until [ "$OK" = 'y' ]
+  do
+    if [ -z "`llq | grep $job`" ]
+    then
+      OK='y'
+    else
+#     echo "waiting for job $job ..."
+      sleep 5
+    fi
+  done
+
+# 3. IBM cleanup
+
+  rm -f cmdfile
+  rm -f g_engine*
+  rm -f temp.sh
+
+# End of thread_wait.sh ------------------------------------------------------ #

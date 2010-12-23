@@ -1,0 +1,65 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# thread_stop.sh :  Stop a version of the threaded engine to compute errors.   #
+#                   Version for IBM Loadleveler.                               #
+#                                                                              #
+# remarks : When modifying this script for another environment take care of    #
+#           the following requirements for the system to work.                 #
+#            - Only section 1 is modified by the user. Use the data in the     #
+#              datafile to determine which processes to kill.                  #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 12-Feb-2010 : Origination.                                                   #
+# 16-Feb-2010 : Adapt for up to 999 threads.                                   #
+#                                                                              #
+#    Copyright 2010 National Weather Service (NWS),                            #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Killing processes
+
+  . ~/.genes.env
+  cd $genes_data/$genes_exp1/$genes_exp2/
+  dir=`ls -d gen???? | tail -1 | awk '{print $1}'`
+  cd $dir
+
+  if [ -f threads.data ]
+  then
+    tdata=`sed -n '2,2p' threads.data | awk '{print $1}'`
+
+    llcancel $tdata > g_engine.llc
+    sleep 5
+  fi
+
+# 2. Cleaning up files
+
+  rm -f tdata.???
+  rm -f threads.data
+  rm -f thread_???.out
+  rm -rf thread_???
+  rm -f g_engine
+  rm -f g_engine.llc
+  rm -f g_engine.out
+  rm -f cmdfile
+  rm -f temp.sh
+
+  set +e
+  err_files=`ls err.* 2> /dev/null`
+  set -e
+
+  if [ -n "$err_files" ]
+  then
+    for file in $err_files
+    do
+      lines=`wc -l $file | awk '{print $1}'`
+      if [ "$lines" != '2' ]
+      then
+        rm -f $file
+      fi
+    done
+  fi
+
+# End of thread_stop.sh ------------------------------------------------------ #
