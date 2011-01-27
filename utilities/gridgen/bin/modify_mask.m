@@ -71,11 +71,11 @@ Nx = length(lon);
 Ny = length(lat);
 
 loc = find(in_points == 0);
-length(loc)
+length(loc);
 m_new(loc) = 3;
 clear loc;
 loc = find(on_points == 1 & m == 1);
-length(loc)
+length(loc);
 m_new(loc) = 2;
 clear loc;
 

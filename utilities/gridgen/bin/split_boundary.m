@@ -1,4 +1,4 @@
-function bound_ingrid = split_boundary(bound,lim)
+function bound_ingrid = split_boundary(bound,lim,icoords)
 
 % -------------------------------------------------------------------------------------
 %|                                                                                     |
@@ -62,7 +62,7 @@ for i = 1:N
                 lon_end = x_axis(lx+1);
                 i;
                 [lat_start lon_start lat_end lon_end];
-                [bt,Nb] = compute_boundary([lat_start lon_start lat_end lon_end],bound(i));
+                [bt,Nb] = compute_boundary([lat_start lon_start lat_end lon_end],bound(i),icoords); 
                 if (Nb > 0)
                     bound_ingrid = [bound_ingrid bt];
                     in_coord = in_coord + Nb;

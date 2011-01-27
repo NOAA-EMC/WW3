@@ -65,7 +65,7 @@ itmp = 0;
 %@@@ Loop through all the boundaries
 
 for i = 1:N1
-    
+    i
     %@@@ Determine limits of boundary
 
     west = bound_ingrid(i).west-dx;
@@ -119,42 +119,68 @@ for i = 1:N1
                     lon_end = lon_end-360;
                 end;
 
-                %@@@ Subdivide cell into equidistant points in x and y
-
-                ytt = [lat_start:dy/5:lat_end]; 
-                if (lon_start < lon_end)
-                    xtt = [lon_start:dx/5:lon_end];
-                else
-                    xtta = [lon_start:dx/5:coord_end];
-                    xttb = [(coord_start+dx/5):dx/5:lon_end];
-                    xtt = [xtta xttb];
-                end;
-                
-                %@@@ Convert 1D arrays into 2D arrays, creating a mesh of equidistant points within the cell
- 
-                [xtt2,ytt2] = meshgrid(xtt,ytt);
-
-                %@@@ Determine proportion of points that lie inside the boundary
-                %@@@ this is an estimate of the proportion of cell area inside the 
+                %@@@ Check to see if the four corners  of the cell are inside the
                 %@@@ boundary
+                
+                xt = [lon_start lon_end lon_end lon_start];
+                yt = [lat_start lat_start lat_end lat_end];
+                
+                inout = inpolygon(xt,yt,bound_ingrid(i).x,bound_ingrid(i).y);
+                loc2 = find(inout > 0);
+                
+                %@@@ Check to see what part of cell is inside domain to
+                %@@@ proceed
+                
+                if (length(loc2) == 4)
+                    
+                    mask(yp,xp) = 0; 
+                                        
+                elseif (length(loc2) ~= 0)
+                    
+                    %@@@ At least one of the cell edges is inside boundary.
+                    %@@@ Subdivide cell into equidistant points in x and y
+                    %@@@ to determine the proportion of cell inside domain
 
-                Na = numel(xtt2);
-                inout2 = inpolygon(xtt2,ytt2,bound_ingrid(i).x,bound_ingrid(i).y);
-                loc3 = find(inout2 > 0);
-                prop = length(loc3)./Na;
+                    ytt = [lat_start:dy/5:lat_end]; 
+                    if (lon_start < lon_end)
+                        xtt = [lon_start:dx/5:lon_end];
+                    else
+                        xtta = [lon_start:dx/5:coord_end];
+                        xttb = [(coord_start+dx/5):dx/5:lon_end];
+                        xtt = [xtta xttb];
+                    end;
+                
+                    %@@@ Convert 1D arrays into 2D arrays, creating a mesh 
+                    %@@@ of equidistant points within the cell
+ 
+                    [xtt2,ytt2] = meshgrid(xtt,ytt);
 
-                %@@@ Update mask_obstr. This variable mantains an estimate for proportion of cell
-                %@@@ that is covered by boundaries
+                    %@@@ Determine proportion of points that lie inside the
+                    %@@@ boundary this is an estimate of the proportion of  
+                    %@@@ cell area inside the boundary
 
-                mask_obstr(yp,xp) = mask_obstr(yp,xp) + prop;
+                    Na = numel(xtt2);
+                    inout2 = inpolygon(xtt2,ytt2,bound_ingrid(i).x,bound_ingrid(i).y);
+                    loc3 = find(inout2 > 0);
+                    prop = length(loc3)./Na;
 
-                %@@@ If proportion exceeds user specified limit then mark the cell dry
+                    %@@@ Update mask_obstr. This variable mantains an estimate 
+                    %@@@ for proportion of cellthat is covered by boundaries
 
-                if (mask_obstr(yp,xp) >= lim) 
-                    mask(yp,xp) = 0;
-                end;
+                    mask_obstr(yp,xp) = mask_obstr(yp,xp) + prop;
 
-                clear loc3 inout2 xtt ytt xtt2 ytt2 xtta xttb;
+                    %@@@ If proportion exceeds user specified limit then mark 
+                    %@@@ the cell dry
+
+                    if (mask_obstr(yp,xp) >= lim) 
+                        mask(yp,xp) = 0;
+                    end;
+
+                    clear loc3 inout2 xtt ytt xtt2 ytt2 xtta xttb;
+                    
+                end; %@@@ Corresponds to cell boundary check
+                
+                clear loc2 inout xt yt;
                 
             end; %@@@ Corresponds to wet cell check
 
