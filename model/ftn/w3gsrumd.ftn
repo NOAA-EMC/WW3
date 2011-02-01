@@ -104,6 +104,7 @@
 !      W3GFPT    Func. Public   Find grid point that is closest to target point.
 !      W3GRMP    Func. Public   Compute interpolation coeff. from grid.
 !      W3DIST    Func. Public   Compute distance between two points.
+!      W3INAN    Func. Public   Check if input is infinite or NaN.
 !     ----------------------------------------------------------------
 !      W3NNSC    Func. Private  Create nearest-neighbor-search object.
 !      W3NNSD    Subr. Private  Destroy nearest-neighbor-search object.
@@ -160,6 +161,7 @@
       PUBLIC W3GFPT
       PUBLIC W3GRMP
       PUBLIC W3DIST
+      PUBLIC W3INAN
 !/
 !/ Public return codes
 !/
@@ -236,6 +238,13 @@
       REAL(8), PARAMETER :: HALF = 0.5D0
       INTEGER, PARAMETER :: LRNG_360 = 1
       INTEGER, PARAMETER :: LRNG_180 = 2
+!/
+!/ Module Interfaces
+!/
+      INTERFACE W3INAN
+        MODULE PROCEDURE W3INAN_R4
+        MODULE PROCEDURE W3INAN_R8
+      END INTERFACE W3INAN
 
 !/
       CONTAINS
@@ -2128,10 +2137,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         14-Jun-2010 |
 !/                  +-----------------------------------+
 !/
 !/    30-Oct-2009 : Origination.                        ( version 3.14 )
+!/    14-Jun-2010 : Fix for ACOS argument > 1.          ( version 3.14 )
 !/
 !  1. Purpose :
 !
@@ -2161,6 +2171,7 @@
 !  9. Switches :
 !
 !     !/S    Enable subroutine tracing.
+!     !/T8   Enables NaN check.
 !
 ! 10. Source code :
 !
@@ -2181,7 +2192,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      REAL(8) :: DX, DY
+      REAL(8) :: DX, DY, ARGD
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3DIST')
@@ -2197,14 +2208,19 @@
           IF ( ABS(DX) .GT. D270 ) THEN
               DX = DX - SIGN(D360,DX)
             END IF
-!---------compute angular distance
-          DIST = ACOS( COS(YT*D2R)*COS(YS*D2R)*COS(DX*D2R) &
-                      + SIN(YT*D2R)*SIN(YS*D2R) )
-          DIST = DIST*R2D
+!---------compute angular distance (min required for rare
+!         situation of acos(1+small) generating NaN)
+          ARGD = MIN( ONE, COS(YT*D2R)*COS(YS*D2R)*COS(DX*D2R) &
+                           + SIN(YT*D2R)*SIN(YS*D2R) )
+          DIST = R2D*ACOS( ARGD )
         ELSE !cartesian coordinates
 !---------compute cartesian distance
           DIST = SQRT( DX**2 + DY**2 )
         END IF !cartesian coordinates
+!/T8      IF ( W3INAN(DIST) ) THEN
+!/T8          WRITE(*,'(/1A/)') 'W3DIST ERROR -- result is NaN'
+!/T8          CALL EXTCDE (1)
+!/T8        END IF
 !/
 !/ End of W3DIST ----------------------------------------------------- /
 !/
@@ -2618,6 +2634,144 @@
 !/ End of W3ISRT ----------------------------------------------------- /
 !/
       END SUBROUTINE W3ISRT
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3INAN_R4(X) RESULT(INAN)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         14-Jun-2010 |
+!/                  +-----------------------------------+
+!/
+!/    14-Jun-2010 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Return TRUE if input is infinite or NaN (not a number).
+!     Single precision version.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      LOGICAL             :: INAN
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL(4), INTENT(IN) :: X
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3INAN_R4')
+!
+! -------------------------------------------------------------------- /
+!
+!-----return true if X is NaN or +Inf or -Inf
+      INAN = .NOT. ( X .GE. -HUGE(X) .AND. X .LE. HUGE(X) )
+!/
+!/ End of W3INAN_R4 -------------------------------------------------- /
+!/
+      END FUNCTION W3INAN_R4
+!/ ------------------------------------------------------------------- /
+      FUNCTION W3INAN_R8(X) RESULT(INAN)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         14-Jun-2010 |
+!/                  +-----------------------------------+
+!/
+!/    14-Jun-2010 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Return TRUE if input is infinite or NaN (not a number).
+!     Double precision version.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Return parameter
+!/
+      LOGICAL             :: INAN
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL(8), INTENT(IN) :: X
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3INAN_R4')
+!
+! -------------------------------------------------------------------- /
+!
+!-----return true if X is NaN or +Inf or -Inf
+      INAN = .NOT. ( X .GE. -HUGE(X) .AND. X .LE. HUGE(X) )
+!/
+!/ End of W3INAN_R8 -------------------------------------------------- /
+!/
+      END FUNCTION W3INAN_R8
 !/ ------------------------------------------------------------------- /
 !/
 !/ End of module W3GSRUMD -------------------------------------------- /

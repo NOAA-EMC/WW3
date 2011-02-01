@@ -76,7 +76,7 @@
 
   if test ! -d $temp_dir
   then
-    if ! `mkdir $temp_dir`
+    if ! `mkdir -p $temp_dir`
     then
       echo ' ' ; echo "      *** Cannot create $temp_dir ***" ; echo ' '
       exit
