@@ -326,7 +326,6 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2,       &
                           ESIN, ECOS, FTE, FTTR, FPIMIN, ZWIND,       &
                           FACTI1, FACTI2, FSWELL
-use w3odatmd, only: ndst
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS

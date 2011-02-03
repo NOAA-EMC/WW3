@@ -5,8 +5,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
+#                                                      July 2010              #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2010 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -245,7 +246,7 @@
 
     files='ad3 ad3_test switch.gen 
            w3_make w3_new list ln3 find_switch all_switches make_makefile.sh
-           arc_wwatch3 w3_clean w3_source'
+           make_MPI arc_wwatch3 w3_clean w3_source'
     for file in $files
     do 
       if [ -f ../bin/$file ]

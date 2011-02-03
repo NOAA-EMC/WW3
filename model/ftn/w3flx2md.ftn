@@ -5,13 +5,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         20-Apr-2010 |
 !/                  +-----------------------------------+
 !/
 !/    03-Jul-2006 : Origination.                        ( version 3.09 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    20-Apr-2010 : Fix INTENT of UST.                ( version 3.14.1 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -57,10 +58,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Jul-2006 |
+!/                  | Last update :         20-Apr-2010 |
 !/                  +-----------------------------------+
 !/
 !/    03-Jul-2006 : Origination.                        ( version 3.09 )
+!/    20-Apr-2010 : Fix INTENT of UST.                ( version 3.14.1 )
 !/
 !  1. Purpose :
 !
@@ -127,7 +129,8 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: ZWIND, DEPTH, FP, U, UDIR
-      REAL, INTENT(OUT)       :: UST, USTD, Z0, CD
+      REAL, INTENT(INOUT)     :: UST
+      REAL, INTENT(OUT)       :: USTD, Z0, CD
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters

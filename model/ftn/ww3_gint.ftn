@@ -1,0 +1,1652 @@
+!/ ------------------------------------------------------------------- /
+	PROGRAM W3GRID_INTERP
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH-III           NOAA/NCEP |
+!/                  |             A. Chawla             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         24-Sep-2007 |
+!/                  +-----------------------------------+
+!/
+!/  24-Sep-2007 : Original code               ( version 1.0 + error fixes )
+!/
+!   1. Purpose : 
+!
+!	Re-gridding output to older grids for backward compatibility
+!
+!   2. Method :
+!
+!	Data is interpolated from a combination of base grids to the target
+!	grid. For each grid, if resolution is coarser or similar to target
+!	grid then a linear interpolation approach is used. On the other hand
+!	if resolution is much higher then an averaging technique based on 
+!	cell areas. Furthermore, for each cell, contributions from 
+!	overlapping grids is weighted by the area of the cell they cover.
+!	Total number of base grids to be used for interpolation together with
+!	their (and target grid) file extns are read from 'grid_interp.inp'. 
+!	Base grids should be ordered according to their resolution (highest
+!	resolution first) to provide greater priority to the higher resolution 
+!	grids. Target grid should always be the last grid 
+!
+!   3. Parameters : 
+!
+!   4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!	 W3NMOD    Subr. W3GDATMD Set number of model.
+!	 W3SETG    Subr.   Id.    Point to selected model.
+!	 W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
+!        NEXTLN    Subr. W3SERVMD Get next line from input file
+!	 EXTCDE    Subr.   Id.    Abort program as graceful as possible.
+!        ITRACE    Subr.   Id.    Subroutine tracing initialization.
+!        STRACE    Subr.   Id.    Subroutine tracing.
+!	 W3NOUT    Subr. W3ODATMD Set number of model for output.
+!	 W3SETO    Subr.   Id.    Point to selected model for output.
+!        W3NDAT    Subr. W3WDATMD Set number of model for wave data.
+!	 W3SETW    Subr. W3WDATMD Point to selected model for wave data.
+!        W3NAUX    Subr. W3ADATMD Set number of model for aux data.
+!        W3SETA    Subr.   Id.    Point to selected model for aux data.
+!	 W3DIMA	   Subr.   Id.    Assign memory for aux data.
+!        W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     None, stand-alone program.
+!
+!  6. Error messages :
+!
+!     Checks on input, checks on determining the interpolation weights
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S     Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+	USE CONSTANTS
+!/
+	USE W3IOGRMD
+	USE W3TIMEMD
+	USE W3IOGOMD, ONLY : W3IOGO
+	USE W3ADATMD, ONLY : W3DIMA, W3NAUX, W3SETA
+	USE W3GDATMD, ONLY : GRID, NGRIDS, GRIDS, NX, NY, NSEA, MAPSTA,       &
+			     MAPFS, MAPSF, MAPST2, SX, SY, X0, Y0, ZB
+	USE W3GDATMD, ONLY : W3NMOD, W3SETG  
+	USE W3ODATMD, ONLY : FNMPRE, NOGRD, OUTPTS, UNDEF, NDSE, NDST,        &
+			     FLOGRD, NAPROC, NOSWLL
+	USE W3ODATMD, ONLY : W3NOUT, W3SETO
+	USE W3WDATMD, ONLY : W3NDAT, W3SETW
+	USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, UST, USTDIR, ASF
+	USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+!/S      USE W3SERVMD, ONLY : STRACE
+	USE W3ARRYMD, ONLY : PRTBLK
+!/
+	IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local data structure
+!/
+	TYPE GR_INT
+	   INTEGER, ALLOCATABLE	:: COUNT(:), ID(:,:)
+	   REAL,    ALLOCATABLE :: WTAREA(:), WT(:,:)
+	END TYPE GR_INT
+	TYPE GR_WT
+	   INTEGER              :: NO
+	   INTEGER, ALLOCATABLE :: ID(:)
+	   REAL,    ALLOCATABLE :: WT(:)
+	END TYPE GR_WT
+!/
+!/ Local variables
+!/
+
+	TYPE(GR_INT), TARGET, ALLOCATABLE :: GR_INTS(:)
+	TYPE(GR_WT),  TARGET, ALLOCATABLE :: GR_WTS(:), NO_WTS(:)
+	INTEGER			:: J, K, IERR, NG, IG, NXT, NYT, ISEA, IX,    &
+				   IY, IXFS, IXFE, IYFS, IYFE, IXT, IYT,      &
+				   NS, INS, COUNTF, NDSM, NDSI, NDSO,  &
+			           NO_WTC, GSEA, IOTST, IOGRD, IX3, IY3,      &
+                                   NTRACE, NDSTRC
+	INTEGER, ALLOCATABLE    :: FIDOUT(:), COUNTG(:), MAP(:,:)
+	REAL			:: SXT, SYT, X0T, Y0T, X, Y, XSS, YSS,        &
+				   DXSS, DYSS, XST, YST, XEN, YEN, XT, YT,    &
+				   XT1, YT1, XT2, YT2, DAREA, AREAF,DS(4),    &
+				   DST
+        INTEGER			:: TOUT(2), NOUT, IOUT
+	REAL			:: DTREQ, DTEST
+!/S      INTEGER, SAVE           :: IENT = 0
+	REAL, ALLOCATABLE       :: INT_MAP(:,:)
+	CHARACTER               :: COMSTR*1, IDTIME*23
+!
+!---------------------------------------------------------------------------
+! 1. Initialization
+!
+        NDSM   = 20
+	NDSI   = 10
+	NDSO   = 6
+!
+        NDSTRC = 6
+        NTRACE = 10
+!
+!---------------------------------------------------------------------------
+! 2.  I/O Setup
+!
+!
+	J      = LEN_TRIM(FNMPRE)
+	OPEN(NDSI,FILE=FNMPRE(:J)//'grid_interp.inp',STATUS='OLD',            &
+            ERR=2000,IOSTAT=IERR)
+	WRITE (NDSO,900)
+!
+        CALL ITRACE ( NDSTRC, NTRACE )
+!/S        CALL STRACE (IENT, 'W3GRIDINT')
+!---------------------------------------------------------------------------
+! 3.  Read and process input file upto number of grids
+! 3.a Get comment character
+!
+	REWIND (NDSI)
+	READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
+        IF ( COMSTR .EQ. ' ' ) COMSTR = '$'
+        WRITE (NDSO,901) COMSTR
+!
+! 3.b Read starting time, time step and number of outputs
+!
+	CALL NEXTLN ( COMSTR, NDSI, NDSE )
+	READ (NDSI,*,END=2001,ERR=2002) TOUT, DTREQ, NOUT
+	DTREQ  = MAX ( 0. , DTREQ )
+        IF ( DTREQ.EQ.0 ) NOUT = 1
+        NOUT   = MAX ( 1 , NOUT )
+!
+	CALL STME21 ( TOUT , IDTIME )
+	WRITE (NDSO,902) IDTIME, DTREQ, NOUT	
+!
+! 3.c Read number of grids and allocate memory
+!	
+	CALL NEXTLN ( COMSTR, NDSI, NDSE )
+	READ (NDSI,*,END=2001,ERR=2002) NG
+	WRITE (NDSO,903) NG
+!
+	CALL W3NMOD (NG, 6, 6)
+	CALL W3NDAT (    6, 6)
+	CALL W3NAUX (    6, 6)
+!	CALL W3NINP (    6, 6)
+        CALL W3NOUT(     6, 6)
+	CALL W3SETO(1,   6, 6)	
+	ALLOCATE( GR_INTS(NG), COUNTG(NG-1) )
+!
+! 3.d Read file extensions for each of the grids and 
+!     the grid information from the corresponding mod_def files
+!
+	CALL NEXTLN ( COMSTR, NDSI, NDSE )
+!
+	DO IG = 1,NG	
+	  READ (NDSI,*,END=2001,ERR=2002) GRIDS(IG)%FILEXT
+	  WRITE (NDSO,904) IG,GRIDS(IG)%FILEXT
+!
+	  CALL W3IOGR ('GRID', NDSM, IG, GRIDS(IG)%FILEXT)
+	  CALL W3SETG( IG, 6, 6)
+	  WRITE (NDSO,905) NX, NY, X0, Y0, SX, SY
+!
+	END DO
+!
+! 3.e Allocate memory for integration map and initialize with grid status map
+!
+	ALLOCATE(INT_MAP(NX,NY),MAP(NX,NY))
+!	MAP = TRANSPOSE(MAPSTA)
+	DO IX = 1,NX
+	  DO IY = 1,NY
+	    IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+	      MAP(IX,IY) = -1
+	    END IF
+	  END DO
+	END DO
+!
+!---------------------------------------------------------------------------
+! 4.  Determine interpolation weights for output grids
+!
+!
+! 4.a Point to output grid
+!
+	DAREA = SX*SY
+	WRITE (NDSO,906) NSEA
+!
+! 4.b Loop through each of the interpolation grids
+!
+	DO IG = 1,NG-1
+	  COUNTG(IG) = 0
+	  SXT = GRIDS(IG)%SX
+	  SYT = GRIDS(IG)%SY
+	  NXT = GRIDS(IG)%NX
+	  NYT = GRIDS(IG)%NY
+	  X0T = GRIDS(IG)%X0
+	  Y0T = GRIDS(IG)%Y0
+	  NS = NINT(SX*SY/(SXT*SYT))
+!
+	  IF ( NS .LT. 1 ) NS = 1
+!	
+	  ALLOCATE( GR_INTS(IG)%WTAREA(NSEA),GR_INTS(IG)%COUNT(NSEA),         &
+	            GR_INTS(IG)%ID(NSEA,NS*5), GR_INTS(IG)%WT(NSEA,NS*5) )
+!
+	  IF ( NS .EQ. 1 ) THEN  
+!
+! 4.b.i     Linear Interpolation for coarser or similar resolution
+!
+	    DO ISEA = 1,NSEA
+	      IX = MAPSF(ISEA,1)
+	      IY = MAPSF(ISEA,2)
+	      X = X0 + (IX-1)*SX
+	      Y = Y0 + (IY-1)*SY
+	      XSS = (X-X0T)/SXT+1
+	      YSS = (Y-Y0T)/SYT+1
+!
+! 4.b.ii    Check if grid lies within the domain
+!
+              IF ( XSS .GE. 1 .AND. XSS .LE. NXT .AND. YSS .GE. 1             &
+                     .AND. YSS .LE. NYT ) THEN
+!
+	         DXSS = ABS(XSS-NINT(XSS))
+	         DYSS = ABS(YSS-NINT(YSS))
+	         IF ( DXSS .LE. 0.05 .AND. DYSS .LE. 0.05 ) THEN
+	           IXT = NINT(XSS)
+	           IYT = NINT(YSS)
+		   IF ( IXT .GE. 1 .AND. IXT .LE. NXT .AND.                      &
+		        IYT .GE. 1 .AND. IYT .LE. NYT ) THEN
+		     IF ( GRIDS(IG)%MAPSTA(IYT,IXT) .NE. 0 ) THEN
+	               GR_INTS(IG)%ID(ISEA,1) = GRIDS(IG)%MAPFS(IYT,IXT)
+	               GR_INTS(IG)%WT(ISEA,1) = 1.0
+	               GR_INTS(IG)%COUNT(ISEA) = 1
+	             ELSE
+		       GR_INTS(IG)%COUNT(ISEA) = 0
+		     ENDIF
+	           ELSE
+		     GR_INTS(IG)%COUNT(ISEA) = 0
+		   ENDIF
+	         ELSEIF ( DXSS .LE. 0.05 ) THEN
+	           IXT = NINT(XSS)
+	           IYT = INT(YSS)
+		   IF (IXT .GE. 1 .AND. IXT .LE. NXT .AND.                       &
+		       IYT .GE. 1 .AND. IYT .LT. NYT ) THEN
+		     IF ( GRIDS(IG)%MAPSTA(IYT,IXT) .NE. 0 .AND.                 &
+		        GRIDS(IG)%MAPSTA(IYT+1,IXT) .NE. 0) THEN
+	               GR_INTS(IG)%ID(ISEA,1) = GRIDS(IG)%MAPFS(IYT,IXT)
+	               GR_INTS(IG)%ID(ISEA,2) = GRIDS(IG)%MAPFS(IYT+1,IXT)
+	               GR_INTS(IG)%WT(ISEA,1) = ABS(Y0T+IYT*SYT-Y)/SYT
+	               GR_INTS(IG)%WT(ISEA,2) = ABS(Y-Y0T-(IYT-1)*SYT)/SYT
+	               GR_INTS(IG)%COUNT(ISEA) = 2
+	             ELSE
+		       GR_INTS(IG)%COUNT(ISEA) = 0
+		     ENDIF
+	           ELSE
+		     GR_INTS(IG)%COUNT(ISEA) = 0
+		   ENDIF
+	         ELSEIF ( DYSS .LE. 0.05 ) THEN
+	           IYT = NINT(YSS)
+	           IXT = INT(XSS)
+		   IF ( IXT .GE. 1 .AND. IXT .LT. NXT .AND.                      &
+		        IYT .GE. 1 .AND. IYT .LE. NYT ) THEN
+		     IF ( GRIDS(IG)%MAPSTA(IYT,IXT) .NE. 0 .AND.                 &
+		        GRIDS(IG)%MAPSTA(IYT,IXT+1) .NE. 0 ) THEN
+	               GR_INTS(IG)%ID(ISEA,1) = GRIDS(IG)%MAPFS(IYT,IXT)
+	               GR_INTS(IG)%ID(ISEA,2) = GRIDS(IG)%MAPFS(IYT,IXT+1)
+	               GR_INTS(IG)%WT(ISEA,1) = ABS(X0T+IXT*SXT-X)/SXT
+	               GR_INTS(IG)%WT(ISEA,2) = ABS(X-X0T-(IXT-1)*SXT)/SXT
+	               GR_INTS(IG)%COUNT(ISEA) = 2
+	             ELSE
+		       GR_INTS(IG)%COUNT(ISEA) = 0
+		     ENDIF
+	           ELSE
+		     GR_INTS(IG)%COUNT(ISEA) = 0
+		   ENDIF
+                 ELSE
+	           IYT = INT(YSS)
+	           IXT = INT(XSS)
+		   IF ( IXT .GE. 1 .AND. IXT .LT. NXT .AND.                      &
+		        IYT .GE. 1 .AND. IYT .LT. NYT ) THEN
+		     IF ( GRIDS(IG)%MAPSTA( IYT , IXT ) .NE. 0 .AND.             &
+		          GRIDS(IG)%MAPSTA( IYT ,IXT+1) .NE. 0 .AND.             &
+		          GRIDS(IG)%MAPSTA(IYT+1, IXT ) .NE. 0 .AND.             &
+		          GRIDS(IG)%MAPSTA(IYT+1,IXT+1) .NE. 0 ) THEN
+	               GR_INTS(IG)%ID(ISEA,1) = GRIDS(IG)%MAPFS(IYT,IXT)
+	               GR_INTS(IG)%ID(ISEA,2) = GRIDS(IG)%MAPFS(IYT,IXT+1)
+	               GR_INTS(IG)%ID(ISEA,3) = GRIDS(IG)%MAPFS(IYT+1,IXT)
+	               GR_INTS(IG)%ID(ISEA,4) = GRIDS(IG)%MAPFS(IYT+1,IXT+1)
+	               GR_INTS(IG)%WT(ISEA,1) = ABS(X0T+IXT*SXT-X)/SXT*          &
+                                              ABS(Y0T+IYT*SYT-Y)/SYT
+	               GR_INTS(IG)%WT(ISEA,2) = ABS(X-X0T-(IXT-1)*SXT)/SXT*      &
+                                              ABS(Y0T+IYT*SYT-Y)/SYT
+	               GR_INTS(IG)%WT(ISEA,3) = ABS(X0T+IXT*SXT-X)/SXT*          &
+                                              ABS(Y-Y0T-(IYT-1)*SYT)/SYT
+	               GR_INTS(IG)%WT(ISEA,4) = ABS(X-X0T-(IXT-1)*SXT)/SXT*      &
+                                              ABS(Y-Y0T-(IYT-1)*SYT)/SYT
+	               GR_INTS(IG)%COUNT(ISEA) = 4
+	             ELSE
+		       GR_INTS(IG)%COUNT(ISEA) = 0
+		     ENDIF
+	           ELSE
+		     GR_INTS(IG)%COUNT(ISEA) = 0
+		   ENDIF
+	         ENDIF
+	         IF ( GR_INTS(IG)%COUNT(ISEA) .NE. 0 ) THEN
+		   GR_INTS(IG)%WTAREA(ISEA) = DAREA
+	         ELSE
+        	   GR_INTS(IG)%WTAREA(ISEA) = 0
+!
+! 4.b.iii	Look for nearest points when direct intp does not work
+!
+		   COUNTF = 0	
+		   DST = 0
+		   DO IYT = INT(YSS),INT(YSS)+1
+		     DO IXT = INT(XSS),INT(XSS)+1
+		       IF ( GRIDS(IG)%MAPSTA(IYT,IXT) .NE. 0 ) THEN
+		         COUNTF = COUNTF+1
+			   XT1 = X0T + (IXT-1)*SXT
+			   YT1 = Y0T + (IYT-1)*SYT
+		           DS(COUNTF) = SQRT((XT1-X)**2+(YT1-Y)**2)
+		           DST = DST + DS(COUNTF)
+	                   GR_INTS(IG)%ID(ISEA,COUNTF) = GRIDS(IG)%MAPFS(IYT,IXT)
+		       END IF 
+		     END DO
+		   END DO
+		   IF ( COUNTF .GE. 2 ) THEN
+		     GR_INTS(IG)%COUNT(ISEA) = COUNTF
+		     GR_INTS(IG)%WTAREA(ISEA) = DAREA
+		     DO INS = 1,COUNTF
+		       GR_INTS(IG)%WT(ISEA,INS) = (DST-DS(INS))/(DST*(COUNTF-1))
+		     END DO  
+		   ELSE
+		     GR_INTS(IG)%WTAREA(ISEA) = 0
+		   END IF
+	         ENDIF
+               ELSE                              ! Grid lies outside the domain
+                  GR_INTS(IG)%WTAREA(ISEA) = 0
+                  GR_INTS(IG)%COUNT(ISEA) = 0
+               ENDIF
+	    END DO
+	  ELSE	             
+!
+! 4.b.iv   Averaging used when base resolution is much finer
+!
+	    DO ISEA = 1, NSEA
+	      IX = MAPSF(ISEA,1)
+	      IY = MAPSF(ISEA,2)
+	      X = X0 + (IX-1)*SX
+	      Y = Y0 + (IY-1)*SY
+	      XST = X - SX*0.5
+	      YST = Y - SY*0.5
+	      XEN = X + SX*0.5
+	      YEN = Y + SY*0.5
+!
+              COUNTF = 0
+	      AREAF = 0
+!           
+	      IXFS = INT((XST-X0T)/SXT) 
+              IXFE = INT((XEN-X0T)/SXT)+2
+	      IYFS = INT((YST-Y0T)/SYT) 
+              IYFE = INT((YEN-Y0T)/SYT)+2
+	      IXFS = MAX(1,IXFS); IXFS = MIN(IXFS,NXT)
+	      IXFE = MAX(1,IXFE); IXFE = MIN(IXFE,NXT)
+	      IYFS = MAX(1,IYFS); IYFS = MIN(IYFS,NYT)
+	      IYFE = MAX(1,IYFE); IYFE = MIN(IYFE,NYT)
+!
+              DO IXT = IXFS,IXFE
+                DO IYT = IYFS,IYFE
+	          IF ( GRIDS(IG)%MAPSTA(IYT,IXT) .NE. 0 ) THEN 
+                    XT = X0T + (IXT-1)*SXT
+	            YT = Y0T + (IYT-1)*SYT
+	            XT1 = MAX(XST,XT-SXT*0.5) 
+	            XT2 = MIN(XEN,XT+SXT*0.5) 
+	            YT1 = MAX(YST,YT-SYT*0.5) 
+	            YT2 = MIN(YEN,YT+SYT*0.5) 
+		    IF ( YT2 .GT. YT1 .AND. XT2 .GT. XT1 ) THEN
+		      AREAF = AREAF + (YT2-YT1)*(XT2-XT1)
+		      COUNTF = COUNTF + 1
+		      GR_INTS(IG)%ID(ISEA,COUNTF) = GRIDS(IG)%MAPFS(IYT,IXT)
+		      GR_INTS(IG)%WT(ISEA,COUNTF) = (YT2-YT1)*(XT2-XT1)
+		    ENDIF
+                  ENDIF
+                END DO
+              END DO
+!
+	      GR_INTS(IG)%COUNT(ISEA) = COUNTF
+	      GR_INTS(IG)%WTAREA(ISEA) = AREAF
+	      IF ( COUNTF .GT. 0 ) THEN
+	         DO INS = 1,COUNTF
+		   GR_INTS(IG)%WT(ISEA,INS) =  GR_INTS(IG)%WT(ISEA,INS)/AREAF
+		 END DO
+	      ENDIF
+	    END DO
+	  ENDIF 
+	END DO
+!
+!---------------------------------------------------------------------------
+! 5.  Determine individual grid weights based on area of coverage
+!
+! 5.a Allocate memory 
+	ALLOCATE(GR_WTS(NSEA),NO_WTS(NSEA))
+	NO_WTC = 0
+!
+! 5.b Loop through the wet points
+!
+	DO ISEA = 1,NSEA
+!
+! 5.b.i   allocate memory for the individual grids
+!
+	  ALLOCATE(GR_WTS(ISEA)%ID(NG-1),GR_WTS(ISEA)%WT(NG-1))
+	  COUNTF = 0
+	  AREAF = 0
+!
+! 5.b.ii  loop through the grids and allocate weights
+!
+	  DO IG = 1,NG-1
+	    IF ( GR_INTS(IG)%COUNT(ISEA) .GT. 0 ) THEN
+	      COUNTF = COUNTF+1
+	      COUNTG(IG) = COUNTG(IG) + 1
+	      GR_WTS(ISEA)%ID(COUNTF) = IG
+	      IF ( (AREAF+GR_INTS(IG)%WTAREA(ISEA)) .GT. DAREA ) THEN
+		GR_WTS(ISEA)%WT(COUNTF) = (DAREA-AREAF)/DAREA
+		AREAF = DAREA
+	      ELSE
+	      	GR_WTS(ISEA)%WT(COUNTF) = GR_INTS(IG)%WTAREA(ISEA)/DAREA
+	      	AREAF = AREAF + GR_INTS(IG)%WTAREA(ISEA)
+	      ENDIF
+	    ENDIF	
+	    IF ( AREAF .GE. DAREA ) EXIT
+	  END DO
+	  GR_WTS(ISEA)%NO = COUNTF
+	  IF ( AREAF .LT. DAREA ) THEN
+	    IF ( AREAF/DAREA .GT. 0.75 ) THEN
+!	     
+! 5.b.iii     rescale weights if at least 75 % coverage available
+!
+              DO IG = 1,COUNTF
+	         GR_WTS(ISEA)%WT(IG) = GR_WTS(ISEA)%WT(IG)*DAREA/AREAF
+	      END DO	
+	    ELSE
+!
+!5.b.iv       save points where no intp info found
+!
+	      NO_WTC = NO_WTC+1
+	      GR_WTS(ISEA)%NO = 0
+	      NO_WTS(NO_WTC)%NO = ISEA
+	      ALLOCATE( NO_WTS(NO_WTC)%ID(9),NO_WTS(NO_WTC)%WT(9))
+	      WRITE (NDSO,907) ISEA,AREAF/DAREA,COUNTF
+	    ENDIF
+	  ENDIF
+!
+! 5.b.v   save grid info in interpolation map
+!
+	  IX = MAPSF(ISEA,1)
+	  IY = MAPSF(ISEA,2)
+	  IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+	    IG = GR_WTS(ISEA)%ID(1)
+	    INT_MAP(IX,IY) = REAL(IG)
+	  ELSE
+	    INT_MAP(IX,IY) = 0.0
+	  END IF
+	END DO
+!
+	DO IG = 1,NG-1
+	  WRITE (NDSO,908) IG, COUNTG(IG)
+	END DO
+!
+! 5.c Loop through points with no intp info and determine weights
+!	for interpolation from target grid itself
+!
+	WRITE(NDSO,909) NO_WTC
+!
+	DO ISEA = 1, NO_WTC
+	  COUNTF = 0
+	  IX = MAPSF(ISEA,1)
+	  IY = MAPSF(ISEA,2)
+	  IXFS = MAX(1,IX-1)
+	  IXFE = MIN(NX,IX+1)
+	  IYFS = MAX(1,IY-1)
+	  IYFE = MIN(NY,IY+1)
+	  DO IXT = IXFS,IXFE
+	    DO IYT = IYFS,IYFE
+	      GSEA = MAPFS(IYT,IXT)
+	      IF ( GSEA .NE. 0 .AND. GR_WTS(GSEA)%NO .NE. 0 ) THEN
+		COUNTF = COUNTF+1
+		NO_WTS(ISEA)%ID(COUNTF) = GSEA
+	      END IF
+	    END DO
+	  END DO
+	  WRITE (NDSO,910) NO_WTS(ISEA)%NO,COUNTF
+	  DO IG = 1,COUNTF
+	    NO_WTS(ISEA)%WT(IG) = 1./COUNTF
+	  END DO
+	  DO IG = COUNTF+1,9
+	    NO_WTS(ISEA)%WT(IG) = 0.0
+	    NO_WTS(ISEA)%ID(IG) = GSEA	
+	  END DO
+	END DO
+
+
+	IX3 = 1+NX/24
+	IY3 = 1+NY/24
+	CALL PRTBLK(NDSO, NX, NY, NX, INT_MAP, MAP, -1, 1., 1, NX, IX3,       &
+	             1, NY, IY3, 'Grid Interpolation Map', ' ')
+!
+!---------------------------------------------------------------------------
+! 6   Output interpolations
+!
+! 6.a Set-up dimensions for target grid outputs and allocate file pointers
+!
+	CALL W3SETA(NG, 6, 6)
+	CALL W3DIMA(NG, 6, 6)
+	ALLOCATE(FIDOUT(NG))
+	DO IG = 1,NG
+	  FIDOUT(IG) = 30 + (IG-1)*10
+	END DO
+
+!
+! 6.b Initialize and read the first set of fields for base grids
+!
+	DO IG = 1,NG-1
+	  CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
+	  IF ( IOTST .NE. 0 ) THEN
+	    GO TO 2111
+	  ENDIF
+	END DO
+
+!
+! 6.c Setup the output flag options for the target grid
+!
+	OUTPTS(NG)%OUT1%FLOGRD = OUTPTS(1)%OUT1%FLOGRD
+!
+! 6.d Carry out interpolation in an infinite loop till appropriate 
+!     time steps are interpolated 
+!
+	IOUT = 0
+!
+        WRITE (NDSO,911) (FLOGRD(J),J=1,NOGRD) 
+        WRITE (NDSO,912) 
+!
+	DO
+	  DTEST = DSEC21 ( WDATAS(1)%TIME, TOUT )
+	  IF ( DTEST .GT. 0. ) THEN
+	    DO IG = 1,NG-1
+	      CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
+	      IF ( IOTST .NE. 0 ) THEN
+	        GO TO 2111
+	      ENDIF
+	    END DO
+	    CYCLE
+	  ENDIF
+	  IF ( DTEST .LT. 0. ) THEN
+	    CALL TICK21 ( TOUT , DTREQ )
+            CYCLE
+	  END IF
+!
+	  IOUT = IOUT + 1
+	  CALL STME21 ( TOUT, IDTIME)
+	  WRITE (NDSO,913) IDTIME
+!
+	  WDATAS(NG)%TIME = WDATAS(1)%TIME
+	  CALL W3SETO(NG, 6, 6)
+	  CALL W3SETG(NG, 6, 6)
+	  CALL W3SETA(NG, 6, 6)
+	  CALL W3SETW(NG, 6, 6)
+!
+	  CALL W3EXGI ( NSEA )
+!
+	  CALL TICK21 ( TOUT , DTREQ )
+	  IF ( IOUT .GE. NOUT ) EXIT
+	END DO
+	GOTO 2222
+!
+!---------------------------------------------------------------------------
+! Escape locations read errors :
+!
+ 2000 	CONTINUE
+      	WRITE (NDSE,1000) IERR
+      	CALL EXTCDE ( 1 )
+!
+ 2001 	CONTINUE
+	WRITE(NDSE,1001)
+	CALL EXTCDE ( 2 )
+!
+ 2002 	CONTINUE
+	WRITE(NDSE,1002) IERR
+	CALL EXTCDE ( 3 )
+!
+ 2111   CONTINUE
+	WRITE(NDSO,950)
+ 2222   CONTINUE
+	WRITE(NDSO,999)
+!
+!---------------------------------------------------------------------------
+! Formats
+!
+ 900  	FORMAT (/15X,'    *** WAVEWATCH III Grid interpolation ***    '/      &
+               15X,'==============================================='/)
+ 901  	FORMAT ( '  Comment character is ''',A,''''/)
+ 902    FORMAT ( '  Time Information : '/                                     &
+                 '---------------------------------------------'/             &
+                 '    Starting Time      : ',A/                               &
+                 '    Interval (in sec)  : ',F10.2/                           &
+                 '    Number of requests : ',I4/                              &
+                 '---------------------------------------------')
+ 903	FORMAT ( '  Number of grids (including output grid) =',I5/)
+ 904    FORMAT ( /'  Extension for grid ',I5,' is --> ',A10/)
+ 905    FORMAT ( '    Grid Particulars are : '/                               &
+		 '      Dimensions         --> ',2(I5,2X)/                    &
+		 '      Bottom left corner --> ',2(F6.2,2X)/                  &
+		 '      Grid resolution    --> ',2(F5.3,2X)/)
+ 906    FORMAT (/'  Total number of wet points for interpolation ',I6/)
+ 907    FORMAT ( '  For wet point ',I6,' only ',F5.3,' overlap region in',    &
+                    I3,' grids'/)
+ 908    FORMAT (/'  In Grid ',I3,' Total no. of wet points found = ',I6/)
+ 909    FORMAT (/'  Total no. of wet points where no grids found = ',I6)
+ 910    FORMAT ( '  --> For wet point ',I6,' found ',I1,' output intp points')
+ 911	FORMAT (/'  Interpolating fields .... '/                              &
+		 '    Output variable flags are -> ',7(5L2,1X))
+ 912    FORMAT ( '   -----------------------------------------------------------------------------------------------------')
+ 913    FORMAT ( '        OUTPUT TIME : ',A)
+ 950    FORMAT (/'  End of file reached'/)
+ 999  	FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/     &
+               15X,'==============================================='/)
+!
+ 1000 	FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                          &
+               '     ERROR IN OPENING INPUT FILE'/                            &
+               '     IOSTAT =',I5/)
+ 1001 	FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                          &
+               '     PREMATURE END IN INPUT FILE'/)
+ 1002 	FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                          &
+               '     ERROR IN READING FROM INPUT FILE'/                       &
+               '     IOSTAT =',I5/)
+!
+!/
+!/ Internal Subroutine W3EXGI ----------------------------------------------/
+!/
+	CONTAINS
+!/ -----------------------------------------------------------------------/
+	SUBROUTINE W3EXGI ( NSEA )
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH-III           NOAA/NCEP |
+!/                  |             A. Chawla             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         09-Jul-2009 |
+!/                  +-----------------------------------+
+!/
+!/	09-Jul-2009 : Original code		( version 3.14 )
+!/
+!	1. Purpose :
+!
+!		Perform actual output of interpolated data. 
+!
+!	3. Parameters : 
+!
+!	4. Subroutines used : 
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!        W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
+!     ----------------------------------------------------------------
+!
+!	5. Called by : 
+!
+!		Subroutine it resides in
+!
+!	6. Error messages : 
+!
+!		None.
+!
+!	7. Remarks : 
+!
+!	8. Structure : 
+!
+!		See source code.
+!
+!	9. Switches : 
+!
+!      10. Source code : 
+!
+!/ -------------------------------------------------------------------------/
+	USE W3ADATMD, ONLY : WADAT, WADATS, NADATA, DW, CX, CY, UA, UD,       &
+			     AS, HS, WLM, TMN, THM, THS, FP0, THP0, FP1,      &
+			     THP1, PHS, PTP, PLP, PTH, PSI, PWS, PWST,        &
+                             PNR, DTDYN, FCUT, ABA, ABD, UBA, UBD, SXX,       &
+			     SXY, SYY, USERO
+	USE W3IOGOMD, ONLY: W3IOGO
+!/ -------------------------------------------------------------------------/
+!/ Parameter List
+!/
+	INTEGER, INTENT(IN)	:: NSEA
+!/
+!/ Local Parameters
+!/
+	INTEGER			:: IOGRD, ISEA, GSEA, J, IG, K, IX, IY, ISWLL
+	REAL			:: AUX1(NSEA), AUX2(NSEA)
+	REAL			:: VAR1, VAR2, VAR3
+!/
+!
+!-------------------------------------------------------------------
+! 1.  Preparations
+!
+	AUX1 = UNDEF
+	AUX2 = UNDEF
+!
+!-------------------------------------------------------------------
+! 2.  Loop through output points
+!
+	DO IOGRD = 1,NOGRD
+	  IF ( FLOGRD(IOGRD) ) THEN
+!
+	    SELECT CASE (IOGRD)
+		CASE (1)        !<===================================CASE 1  << 
+		  DO ISEA = 1,NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WDATAS(IG)%WLV(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			    END IF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+                    AUX1(GSEA) = UNDEF
+		  END DO
+		  WLV = AUX1
+		  DO ISEA = 1,NSEA
+		    IF ( WLV(ISEA) .NE. UNDEF ) THEN 
+		      DW(ISEA) = MAX (0. , WLV(ISEA) - ZB(ISEA))
+		    ELSE
+		      DW(ISEA) = UNDEF
+		    ENDIF
+		  END DO
+		CASE (2)        !<===================================CASE 2  << 
+		  DO ISEA = 1, NSEA
+		    CX(ISEA) = UNDEF
+		    CY(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%CX(GSEA)
+			  VAR2 = WADATS(IG)%CY(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( CX(ISEA) .EQ. UNDEF ) THEN
+			      CX(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			      CY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			                    GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      CX(ISEA)=CX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			      CY(ISEA)=CY(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			                    GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+                    CX(GSEA) = UNDEF
+                    CY(GSEA) = UNDEF
+		  END DO
+		CASE (3)        !<===================================CASE 3  << 
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%UA(GSEA)
+			  VAR2 = WADATS(IG)%UD(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			               GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+		  DO ISEA = 1, NSEA
+		    VAR1 = AUX1(ISEA)
+		    VAR2 = AUX2(ISEA)
+		    IF ( VAR1 .NE. UNDEF .AND. VAR2 .NE. UNDEF ) THEN
+                      UA(ISEA) = SQRT(VAR1**2+VAR2**2)
+		      UD(ISEA) = ATAN2(VAR2,VAR1)
+                    ELSE
+                      UA(ISEA) = UNDEF
+		      UD(ISEA) = UNDEF
+                    ENDIF
+                  END DO
+		CASE (4)        !<===================================CASE 4  << 
+		  DO ISEA = 1, NSEA
+		    AS(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%AS(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AS(ISEA) .EQ. UNDEF ) THEN
+			      AS(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AS(ISEA)=AS(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AS(GSEA) = UNDEF
+		  END DO
+		CASE (5)        !<===================================CASE 5  << 
+		  DO ISEA = 1, NSEA
+		    ASF(ISEA) = 1.
+		    IX = MAPSF(ISEA,1)
+                    IY = MAPSF(ISEA,2)
+		    IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WDATAS(IG)%UST(GSEA)
+			    VAR2 = WDATAS(IG)%USTDIR(GSEA)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			        AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*          &
+			                       GR_WTS(ISEA)%WT(J)*VAR1 
+			        AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*          &
+			                       GR_WTS(ISEA)%WT(J)*VAR2 
+			      ELSE
+			        AUX1(ISEA)=AUX1(ISEA)+GR_INTS(IG)%WT(ISEA,K)* &
+			                       GR_WTS(ISEA)%WT(J)*VAR1 
+			        AUX2(ISEA)=AUX2(ISEA)+GR_INTS(IG)%WT(ISEA,K)* &
+			                       GR_WTS(ISEA)%WT(J)*VAR2 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+		  DO ISEA = 1, NSEA
+		    VAR1 = AUX1(ISEA)
+		    VAR2 = AUX2(ISEA)
+		    IF ( VAR1 .NE. UNDEF .AND. VAR2 .NE. UNDEF ) THEN
+                      UST(ISEA) = SQRT(VAR1**2+VAR2**2)
+		      USTDIR(ISEA) = ATAN2(VAR2,VAR1)
+                    ELSE
+                      UST(ISEA) = UNDEF*SQRT(2.)
+		      USTDIR(ISEA) = PI/4
+                    ENDIF
+                  END DO
+		CASE (6)        !<===================================CASE 6  << 
+		  DO ISEA = 1, NSEA
+		    HS(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%HS(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( HS(ISEA) .EQ. UNDEF ) THEN
+			      HS(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      HS(ISEA)=HS(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    HS(GSEA) = UNDEF
+		  END DO
+		CASE (7)        !<===================================CASE 7  << 
+		  DO ISEA = 1, NSEA
+		    WLM(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%WLM(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+		            IF ( WLM(ISEA) .EQ. UNDEF ) THEN
+			      WLM(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      WLM(ISEA)=WLM(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    WLM(GSEA) = UNDEF
+		  END DO
+		CASE (8)        !<===================================CASE 8  << 
+		  DO ISEA = 1, NSEA
+		    TMN(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%TMN(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( TMN(ISEA) .EQ. UNDEF ) THEN
+			      TMN(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      TMN(ISEA)=TMN(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    TMN(GSEA) = UNDEF
+		  END DO
+		CASE (9)        !<===================================CASE 9  << 
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  IF ( WADATS(IG)%THM(GSEA) .NE. UNDEF ) THEN
+			    VAR1 = COS( WADATS(IG)%THM(GSEA) )
+			    VAR2 = SIN( WADATS(IG)%THM(GSEA) )
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                    GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                    GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+		  DO ISEA = 1,NSEA
+		    VAR1 = AUX1(ISEA)
+		    VAR2 = AUX2(ISEA)
+		    IF ( VAR1 .NE. UNDEF .AND. VAR2 .NE. UNDEF) THEN
+		      THM(ISEA) = ATAN2( VAR2, VAR1 )
+		    ELSE
+		      THM(ISEA) = UNDEF
+		    ENDIF
+		  END DO
+		CASE (10)       !<===================================CASE 10 << 
+		  DO ISEA = 1, NSEA
+		    THS(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%THS(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( THS(ISEA) .EQ. UNDEF ) THEN 
+			      THS(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      THS(ISEA)=THS(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    THS(GSEA) = UNDEF
+		  END DO
+		CASE (11)       !<===================================CASE 11 << 
+		  DO ISEA = 1, NSEA
+		    FP0(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%FP0(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    FP0(ISEA) = VAR1
+			    EXIT
+			  ENDIF
+		        END DO
+			IF ( FP0(ISEA) .NE. UNDEF ) EXIT
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    FP0(GSEA) = UNDEF
+		  END DO
+		CASE (12)       !<===================================CASE 12 << 
+		  DO ISEA = 1, NSEA
+		    THP0(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%THP0(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    THP0(ISEA) = VAR1
+			    EXIT
+			  ENDIF
+		        END DO
+			IF ( THP0(ISEA) .NE. UNDEF ) EXIT
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+                    THP0(GSEA) = UNDEF
+		  END DO
+		CASE (13)       !<===================================CASE 13 << 
+		  DO ISEA = 1, NSEA
+		    FP1(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%FP1(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    FP1(ISEA) = VAR1
+			    EXIT
+			  ENDIF
+		        END DO
+			IF ( FP1(ISEA) .NE. UNDEF ) EXIT
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    FP1(GSEA) = UNDEF
+		  END DO
+		CASE (14)       !<===================================CASE 14 << 
+		  DO ISEA = 1, NSEA
+		    THP1(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%THP1(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    THP1(ISEA) = VAR1
+			    EXIT
+			  ENDIF
+		        END DO
+			IF ( THP1(ISEA) .NE. UNDEF ) EXIT
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    THP1(GSEA) = UNDEF
+		  END DO
+		CASE (15)       !<===================================CASE 15 << 
+                  DO ISWLL = 0,NOSWLL
+		    DO ISEA = 1, NSEA
+		      PHS(ISEA,ISWLL) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WADATS(IG)%PHS(GSEA,ISWLL)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( PHS(ISEA,ISWLL) .EQ. UNDEF ) THEN
+			        PHS(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			                            GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        PHS(ISEA,ISWLL) = PHS(ISEA,ISWLL) +           &
+                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			                             GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      PHS(GSEA,ISWLL) = UNDEF
+		    END DO
+                  END DO
+		CASE (16)       !<===================================CASE 16 << 
+                  DO ISWLL = 0,NOSWLL
+		    DO ISEA = 1, NSEA
+		      PTP(ISEA,ISWLL) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WADATS(IG)%PTP(GSEA,ISWLL)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( PTP(ISEA,ISWLL) .EQ. UNDEF ) THEN
+			        PTP(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			                            GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        PTP(ISEA,ISWLL) = PTP(ISEA,ISWLL) +           &
+                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			                             GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      PTP(GSEA,ISWLL) = UNDEF
+		    END DO
+                  END DO
+		CASE (17)       !<===================================CASE 17 << 
+                  DO ISWLL = 0,NOSWLL
+		    DO ISEA = 1, NSEA
+		      PLP(ISEA,ISWLL) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WADATS(IG)%PLP(GSEA,ISWLL)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( PLP(ISEA,ISWLL) .EQ. UNDEF ) THEN
+			        PLP(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			                            GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        PLP(ISEA,ISWLL) = PLP(ISEA,ISWLL) +           &
+                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			                             GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      PLP(GSEA,ISWLL) = UNDEF
+		    END DO
+                  END DO
+		CASE (18)       !<===================================CASE 18 << 
+                  DO ISWLL = 0,NOSWLL
+		    DO ISEA = 1, NSEA
+		      PTH(ISEA,ISWLL) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WADATS(IG)%PTH(GSEA,ISWLL)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( PTH(ISEA,ISWLL) .EQ. UNDEF ) THEN
+			        PTH(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			                            GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        PTH(ISEA,ISWLL) = PTH(ISEA,ISWLL) +           &
+                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			                             GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      PTH(GSEA,ISWLL) = UNDEF
+		    END DO
+                  END DO
+		CASE (19)       !<===================================CASE 19 << 
+                  DO ISWLL = 0,NOSWLL
+		    DO ISEA = 1, NSEA
+		      PSI(ISEA,ISWLL) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WADATS(IG)%PSI(GSEA,ISWLL)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( PSI(ISEA,ISWLL) .EQ. UNDEF ) THEN
+			        PSI(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			                            GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        PSI(ISEA,ISWLL) = PSI(ISEA,ISWLL) +           &
+                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			                             GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      PSI(GSEA,ISWLL) = UNDEF
+		    END DO
+                  END DO
+		CASE (20)       !<===================================CASE 20 << 
+                  DO ISWLL = 0,NOSWLL
+		    DO ISEA = 1, NSEA
+		      PWS(ISEA,ISWLL) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WADATS(IG)%PWS(GSEA,ISWLL)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( PWS(ISEA,ISWLL) .EQ. UNDEF ) THEN
+			        PWS(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			                            GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        PWS(ISEA,ISWLL) = PWS(ISEA,ISWLL) +           &
+                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			                             GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      PWS(GSEA,ISWLL) = UNDEF
+		    END DO
+                  END DO
+		CASE (21)       !<===================================CASE 21 << 
+		  DO ISEA = 1, NSEA
+		    PWST(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%PWST(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+		            IF ( PWST(ISEA) .EQ. UNDEF ) THEN
+			      PWST(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      PWST(ISEA)=PWST(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    PWST(GSEA) = UNDEF
+		  END DO
+		CASE (22)       !<===================================CASE 22 << 
+		  DO ISEA = 1, NSEA
+		    PNR(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%PNR(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+		            IF ( PNR(ISEA) .EQ. UNDEF ) THEN
+			      PNR(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      PNR(ISEA)=PNR(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    PNR(GSEA) = UNDEF
+		  END DO
+		CASE (23)       !<===================================CASE 23 << 
+		  DO ISEA = 1, NSEA
+		    DTDYN(ISEA) = UNDEF
+		  END DO
+		CASE (24)       !<===================================CASE 24 << 
+		  DO ISEA = 1, NSEA
+		    FCUT(ISEA) = UNDEF
+		  END DO
+		CASE (25)       !<===================================CASE 25 << 
+		  DO ISEA = 1, NSEA
+		    ICE(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WDATAS(IG)%ICE(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( ICE(ISEA) .EQ. UNDEF ) THEN
+			      ICE(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      ICE(ISEA)=ICE(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    ICE(GSEA) = UNDEF
+		  END DO
+		CASE (26)       !<===================================CASE 26 << 
+		  IF ( .NOT. FLOGRD( 1 ) ) THEN
+		    DO ISEA = 1, NSEA
+		      WLV(ISEA) = UNDEF
+		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		        DO J = 1,GR_WTS(ISEA)%NO
+		          IG = GR_WTS(ISEA)%ID(J)
+		          DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
+			    VAR1 = WDATAS(IG)%WLV(GSEA)
+			    IF ( VAR1 .NE. UNDEF ) THEN
+			      IF ( WLV(ISEA) .EQ. UNDEF ) THEN
+			        WLV(ISEA) = GR_INTS(IG)%WT(ISEA,K)*           &
+			                      GR_WTS(ISEA)%WT(J)*VAR1 
+			      ELSE
+			        WLV(ISEA)=WLV(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                      GR_WTS(ISEA)%WT(J)*VAR1 
+			      ENDIF
+			    ENDIF
+		          END DO
+		        END DO
+		      ENDIF
+		    END DO
+		    DO ISEA = 1,NO_WTC
+		      GSEA = NO_WTS(ISEA)%NO
+		      WLV(GSEA) = UNDEF
+		    END DO
+		  END IF
+		CASE (27)       !<===================================CASE 27 << 
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%ABA(GSEA)
+			  VAR2 = WADATS(IG)%ABD(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+		  DO ISEA = 1, NSEA
+		    VAR1 = AUX1(ISEA)
+		    VAR2 = AUX2(ISEA)
+		    IF ( VAR1 .NE. UNDEF .AND. VAR2 .NE. UNDEF ) THEN
+                      ABA(ISEA) = SQRT(VAR1**2+VAR2**2)
+		      ABD(ISEA) = ATAN2(VAR2,VAR1)
+                    ELSE
+                      ABA(ISEA) = UNDEF
+		      ABD(ISEA) = UNDEF
+                    ENDIF
+                  END DO
+		CASE (28)       !<===================================CASE 28 << 
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%UBA(GSEA)
+			  VAR2 = WADATS(IG)%UBD(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+		  DO ISEA = 1, NSEA
+		    VAR1 = AUX1(ISEA)
+		    VAR2 = AUX2(ISEA)
+		    IF ( VAR1 .NE. UNDEF .AND. VAR2 .NE. UNDEF ) THEN
+                      UBA(ISEA) = SQRT(VAR1**2+VAR2**2)
+		      UBD(ISEA) = ATAN2(VAR2,VAR1)
+                    ELSE
+                      UBA(ISEA) = UNDEF
+		      UBD(ISEA) = UNDEF
+                    ENDIF
+                  END DO
+		CASE (29)       !<===================================CASE 29 << 
+		  DO ISEA = 1, NSEA
+		    SXX(ISEA) = UNDEF
+		    SXY(ISEA) = UNDEF
+		    SYY(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%SXX(GSEA)
+			  VAR2 = WADATS(IG)%SXY(GSEA)
+			  VAR3 = WADATS(IG)%SYY(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( SXX(ISEA) .EQ. UNDEF ) THEN
+			      SXX(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			      SXY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR2 
+			      SYY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR3 
+			    ELSE
+			      SXX(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      SXY(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			      SYY(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                     GR_WTS(ISEA)%WT(J)*VAR3 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    SXX(GSEA) = UNDEF
+		    SXY(GSEA) = UNDEF
+		    SYY(GSEA) = UNDEF
+		  END DO
+		CASE (30)       !<===================================CASE 30 << 
+		  DO ISEA = 1, NSEA
+		    USERO(ISEA,1) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%USERO(GSEA,1)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+		            IF ( USERO(ISEA,1) .EQ. UNDEF ) THEN
+			      USERO(ISEA,1) = GR_INTS(IG)%WT(ISEA,K)*         &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      USERO(ISEA,1) = USERO(ISEA,1) +                 &
+                                                GR_INTS(IG)%WT(ISEA,K)*       &
+			                        GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    USERO(GSEA,1) = UNDEF
+		  END DO
+		CASE (31)       !<===================================CASE 31 << 
+		  DO ISEA = 1, NSEA
+		    USERO(ISEA,2) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%USERO(GSEA,2)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+		            IF ( USERO(ISEA,2) .EQ. UNDEF ) THEN
+			      USERO(ISEA,2) = GR_INTS(IG)%WT(ISEA,K)*         &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      USERO(ISEA,2) = USERO(ISEA,2) +                 &
+                                                GR_INTS(IG)%WT(ISEA,K)*       &
+			                        GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    USERO(GSEA,2) = UNDEF
+		  END DO
+		CASE DEFAULT
+		  GO TO 2003
+	      END SELECT
+!
+	  END IF
+	END DO	  
+!
+!------------------------------------------------------------------------------
+! 3. Write out interpolated data to target output file
+!
+	CALL W3IOGO('WRITE',FIDOUT(NG),IOTST,NG)
+!
+	RETURN
+!
+! Error escape locations
+!
+ 2003   CONTINUE
+	WRITE(NDSE,1003) IOGRD
+	CALL EXTCDE ( 4 )
+!
+ 1003   FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                          &
+	         '   INVALID OUTPUT SWITCH ',I5/)
+!/
+!/ End of W3EXGI ------------------------------------------------------------/
+!/
+	END SUBROUTINE W3EXGI
+!/
+!/ End of W3GRID_INTERP -----------------------------------------------------/
+!/
+	END PROGRAM W3GRID_INTERP

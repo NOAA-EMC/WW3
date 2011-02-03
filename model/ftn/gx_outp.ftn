@@ -7,7 +7,7 @@
 !/                  |            J.H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         20-Apr-2010 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -31,8 +31,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    20-Apr-2010 : Fix initialization of USTAR.      ( version 3.14.1 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -844,6 +845,7 @@
 !/ST3            TAUWX  = 0.
 !/ST3            TAUWY  = 0.
 !/ST3            LLWS(:,:)  = .TRUE.
+            USTAR  = 1.
 !
 !/ST0            FHIGH  = SIG(NK)
 !/ST1            CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)

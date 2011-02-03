@@ -817,13 +817,18 @@
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CY(1:NSEA)          &
                                                         , MAPSF, XY )
                 DO ISEA=1, NSEA
-                  CABS   = SQRT(CX(ISEA)**2+CY(ISEA)**2)
-                  IF ( CABS .GT. 0.001 ) THEN
-                      CY(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(CY(ISEA),CX(ISEA)) , 360. )
+                  IF (CX(ISEA) .NE. UNDEF) THEN
+                     CABS   = SQRT(CX(ISEA)**2+CY(ISEA)**2)
+                     IF ( CABS .GT. 0.001 ) THEN
+                         CY(ISEA) = MOD ( 630. -                         &
+                               RADE*ATAN2(CY(ISEA),CX(ISEA)) , 360. )
+                       ELSE
+                         CY(ISEA) = 0.
+                       END IF
                     ELSE
-                      CY(ISEA) = 0.
-                    END IF
+                       CABS = UNDEF
+                       CY(ISEA) = UNDEF
+                     END IF
                   CX(ISEA) = CABS
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CX(1:NSEA)          &
@@ -843,13 +848,18 @@
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UD(1:NSEA)          &
                                                         , MAPSF, XY )
                 DO ISEA=1, NSEA
-                  UABS   = SQRT(UA(ISEA)**2+UD(ISEA)**2)
-                  IF ( UABS .GT. 0.001 ) THEN
-                      UD(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(UD(ISEA),UA(ISEA)) , 360. )
+                  IF (UA(ISEA) .NE. UNDEF) THEN
+                     UABS   = SQRT(UA(ISEA)**2+UD(ISEA)**2)
+                     IF ( UABS .GT. 0.001 ) THEN
+                         UD(ISEA) = MOD ( 630. -                         &
+                               RADE*ATAN2(UD(ISEA),UA(ISEA)) , 360. )
+                       ELSE
+                         UD(ISEA) = 0.
+                       END IF
                     ELSE
-                      UD(ISEA) = 0.
-                    END IF
+                       UABS = UNDEF
+                       UD(ISEA) = UNDEF
+                     END IF
                   UA(ISEA) = UABS
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UA(1:NSEA)          &
@@ -922,7 +932,7 @@
 !/NCEP1                KPDS(5) = 108
 !/NCEP2                KPDS(2) = 11
                 DO ISEA=1, NSEA
-                  IF ( FP0(ISEA) .NE. UNDEF ) THEN
+                  IF ( FP0(ISEA) .NE. UNDEF .AND. FP0(ISEA) .NE. 0 ) THEN
                       FP0(ISEA) = 1. / FP0(ISEA)
                     END IF
                   END DO
@@ -1013,6 +1023,13 @@
 !/NCEP1                KPDS5B  = 104
 !/NCEP2                KPDS5A  = 4
 !/NCEP2                KPDS5B  = 7
+                DO ISEA = 1,NSEA
+                  DO I = 0,NOSWLL
+                     IF ( PTH(ISEA,I) .NE. UNDEF ) THEN
+                        PTH(ISEA,I) = MOD ( 630 - RADE*PTH(ISEA,I) , 360. )
+                        END IF
+                     END DO
+                  END DO
                 CALL W3S2XY                                           &
                         ( NSEA, NSEA, NX, NY, PTH(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL

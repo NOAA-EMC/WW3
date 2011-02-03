@@ -11,9 +11,9 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      May 2009               #
+#                                                      Dec 2010               #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2010 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -143,7 +143,7 @@
                OK='NL0 NL1 NL2 NLX' ;;
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BTX' ;;
+               OK='BT0 BT1 BT2 BTX' ;;
       s_db   ) TY='one'
                ID='depth-induced breaking'
                OK='DB0 DB1 DBX' ;;
@@ -382,7 +382,7 @@
   case $s_nl in
    NL0) nl=$NULL
         nlx=$NULL ;;
-   NL1) nl='w3snl1md'
+   NL1) nl='w3snl1md' 
         nlx='w3snl1md' ;;
    NL2) nl='w3snl2md mod_xnl4v5 serv_xnl4v5 mod_constants mod_fileio'
         nlx="$nl" ;;
@@ -393,6 +393,7 @@
   case $s_bt in
    BT0) bt=$NULL ;;
    BT1) bt='w3sbt1md' ;;
+   BT2) bt='w3sbt2md mod_btffac' ;;
    BTX) bt='w3sbtxmd' ;;
   esac
 
@@ -439,8 +440,8 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
-  progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_outf ww3_outp
-         ww3_trck ww3_grib gx_outf gx_outp'
+  progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_sbs1
+         ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_gint'
 
   for prog in $progs
   do
@@ -484,6 +485,16 @@
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd'
                 aux="$aux  wmunitmd" ;;
+   ww3_sbs1) IDstring='Multi-grid shell sbs version' 
+               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
+               core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
+               data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
+               prop="$pr" 
+             source="w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx" 
+                 IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
+                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd' 
+                aux="$aux  wmunitmd" ;; 
      ww3_outf) IDstring='Gridded output'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -496,7 +507,7 @@
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$flx $ln $st $nl $bt $db $tr $bs $xx"
-                 IO='w3iogrmd w3iopomd w3partmd'
+                 IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
                core=
@@ -512,6 +523,13 @@
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_gint) IDstring='Grid Interpolation'
+               core=
+               data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+                 IO='w3iogrmd w3iogomd'
+               prop=
+             source="$st $nl"
+               aux='constants w3servmd  w3arrymd w3dispmd w3timemd' ;;
       gx_outf) IDstring='GrADS input file generation (gridded fields)'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -606,11 +624,11 @@
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRCXMD \
                W3SNL1MD W3SNL2MD W3SNLXMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
-               W3SBT1MD W3SBTXMD W3SDB1MD W3SDBXMD \
+               W3SBT1MD W3SBT2MD W3SBTXMD W3SDB1MD W3SDBXMD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD
+               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD m_btffac
     do
       case $mod in
          'CONSTANTS'    ) modtest=constants.o ;;
@@ -649,6 +667,8 @@
          'm_constants'  ) modtest=mod_constants.o ;;
          'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
+         'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
+         'm_btffac'     ) modtest=mod_btffac.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
@@ -671,6 +691,7 @@
          'W3GSRUMD'     ) modtest=w3gsrumd.o ;;
          'W3FLDSMD'     ) modtest=w3fldsmd.o ;;
          'W3CSPCMD'     ) modtest=w3cspcmd.o ;;
+         'W3BULLMD'     ) modtest=w3bullmd.o ;;
          'WMMDATMD'     ) modtest=wmmdatmd.o ;;
          'WMINITMD'     ) modtest=wminitmd.o ;;
          'WMWAVEMD'     ) modtest=wmwavemd.o ;;

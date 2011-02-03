@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         17-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -27,6 +27,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    17-Aug-2010 : ABPI0-N(:,0) init. bug fix.       ( version 3.14.5 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -725,13 +726,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Sep-2005 |
+!/                  | Last update :         17-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    20-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    07-Sep-2005 : Moving update to end of time step.  ( version 3.08 )
+!/    17-Aug-2010 : Add initialization ABPI0-N(:,0).  ( version 3.14.5 )
 !/
 !  1. Purpose :
 !
@@ -809,6 +811,8 @@
 !
           BBPI0(:,0) = 0.
           BBPIN(:,0) = 0.
+          ABPI0(:,0) = 0.
+          ABPIN(:,0) = 0.
 !
           DO IBI=1, NBI
             ISEA   = ISBPI(IBI)

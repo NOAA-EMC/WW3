@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         20-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -20,8 +20,9 @@
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug.            ( version 3.14.6 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -70,7 +71,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Sep-2007 |
+!/                  | Last update :         20-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -84,6 +85,7 @@
 !/    10-May-2007 : Removing / streamlining WMBCST.     ( version 3.11 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
+!/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug sec. 9.a.   ( version 3.14.6 )
 !/
 !  1. Purpose :
 !
@@ -990,6 +992,7 @@
                     IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
                          GRDHGH(I,0).GT.0 ) THEN
                         MAPST2 = MAPST2 + 8*MAPMSK
+                        MAPSTA = ABS(MAPSTA)
                         DO IX=1, NX
                           DO IY=1, NY
                             IF ( MAPST2(IY,IX) .GT. 0 )               &

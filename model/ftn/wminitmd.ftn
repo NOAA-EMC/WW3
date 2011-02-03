@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         16-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -13,8 +13,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.    ( version 3.14.5 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -29,6 +30,8 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
+!      NTRMAX    Int.  Local    Maximum number of subroutine trace
+!                               printouts (NTRACE in subr. ITRACE).
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -53,6 +56,8 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
+      INTEGER, PRIVATE        :: NTRMAX = 1000
+!/
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WMINIT ( IDSI, IDSO, IDSS, IDST, IDSE, IFNAME,       &
@@ -62,7 +67,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         16-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -77,6 +82,7 @@
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.    ( version 3.14.5 )
 !/
 !  1. Purpose :
 !
@@ -439,7 +445,7 @@
 !
 ! 1.b Subroutine tracing
 !
-      CALL ITRACE ( MDST, 10 )
+      CALL ITRACE ( MDST, NTRMAX )
 !
 !/O10      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,900)
 !
@@ -577,7 +583,7 @@
         MDS   ( 5,I) = NDSREC
         MDS   ( 6,I) = NDSREC
         NTRACE( 1,I) = MDST
-        NTRACE( 2,I) = 10
+        NTRACE( 2,I) = NTRMAX
         END DO
 !
 !/T      WRITE (MDST,9020) 'INITIAL'
@@ -2455,7 +2461,6 @@
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,998)
 !/O10      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,999)
-!!!!!
 !!!!!/MPI CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
 !!!!!/MPI CALL MPI_FINALIZE  ( IERR_MPI )
 !!!!!/MPI stop

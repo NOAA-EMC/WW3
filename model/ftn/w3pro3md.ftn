@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         17-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -23,8 +23,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    17-Aug-2010 : Add test output W3XYP3.           ( version 3.14.5 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -518,7 +519,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         17-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -534,6 +535,7 @@
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    17-Aug-2010 : Add test output.                  ( version 3.14.5 )
 !/
 !  1. Purpose :
 !
@@ -645,7 +647,8 @@
 !       !/T     Enable general test output.
 !       !/T0    Dump of precalcaulted interpolation data.
 !       !/T1    Dump of input field and fluxes.
-!       !/T2    Dump of output field.
+!       !/T2    Dump of output field (before boundary update).
+!       !/T3    Dump of output field (final).
 !
 ! 10. Source code :
 !
@@ -1105,6 +1108,16 @@
 !
 ! 3.c Update boundaries
 !
+!/T          WRITE (NDST,9030) NSEA
+!
+!/T2          DO ISEA=1, NSEA
+!/T2            IXY    = MAPSF(ISEA,3)
+!/T2            IF ( MAPSTA(IXY) .GT. 0 ) THEN
+!/T2                WRITE(NDST,9031)ISEA,MAPSF(ISEA,1),MAPSF(ISEA,2),VQ(IXY)
+!/T2                VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
+!/T2              END IF
+!/T2            END DO
+!
         IF ( FLBPI ) THEN 
             RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
                                       REAL(NTLOC-ITLOC)/REAL(NTLOC)
@@ -1155,6 +1168,9 @@
 !/T 9020 FORMAT (' TEST W3XYP3 : CALCULATING VCFL0X/Y (NSEA=',I6,')')
 !/T1 9021 FORMAT (1X,I6,2I5,E12.4,2f7.3)
 !/T 9022 FORMAT (' TEST W3XYP3 : CALCULATING VCFLUX/Y')
+!
+!/T 9030 FORMAT (' TEST W3XYP3 : FIELD BEFORE BPI. (NSEA=',I6,')')
+!/T2 9031 FORMAT (1X,I6,2I5,E12.4)
 !
 !/T 9040 FORMAT (' TEST W3XYP3 : FIELD AFTER PROP. (NSEA=',I6,')')
 !/T3 9041 FORMAT (1X,I6,2I5,E12.4)

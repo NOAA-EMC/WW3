@@ -1011,8 +1011,13 @@
                     WRITE ( NDSOG ) CY(1:NSEA)
                   ELSE IF ( IO .EQ.  3 ) THEN
                     DO ISEA=1, NSEA
-                      AUX1(ISEA) = UA(ISEA)*COS(UD(ISEA))
-                      AUX2(ISEA) = UA(ISEA)*SIN(UD(ISEA))
+                      IF (UA(ISEA) .NE.UNDEF) THEN
+                          AUX1(ISEA) = UA(ISEA)*COS(UD(ISEA))
+                          AUX2(ISEA) = UA(ISEA)*SIN(UD(ISEA))
+                       ELSE
+                        AUX1(ISEA) = UNDEF
+                        AUX2(ISEA) = UNDEF
+                       END IF
                       END DO
                     WRITE ( NDSOG ) AUX1
                     WRITE ( NDSOG ) AUX2
@@ -1208,6 +1213,12 @@
 !
           END IF
         END DO
+!
+! Flush the buffers for write
+!
+      IF (WRITE ) THEN
+        FLUSH ( NDSOG )
+        END IF
 !
       RETURN
 !

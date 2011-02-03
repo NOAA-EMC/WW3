@@ -191,7 +191,9 @@
 !       ---------------------------------------------------
 !          1     Ice flag (1 = ice coverage)
 !          2     Dry flag (1 = dry point with depth 0)
-!          3     land point flag for relocatable grid.
+!          3     Inferred land in multi-grid model.
+!          4     Masking in multi-grid model.
+!          5     land point flag for relocatable grid.
 !
 !      Thus ISTA2=0 for ISTAT<0 is in error, ISTA2=1 means ice cover,
 !      ISTA2=3 means ice on dry point, etc.

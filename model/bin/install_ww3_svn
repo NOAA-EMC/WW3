@@ -11,9 +11,9 @@
 #    for this script to work.                                                 #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      August 2009            #
+#                                                      July 2010              #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2010 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -560,7 +560,7 @@
     case $list in 
       1) echo 'Scripts for compiling and linking :'
          echo '-----------------------------------'
-         files='ad3_test ad3 w3_make w3_new make_makefile.sh'
+         files='ad3_test ad3 w3_make w3_new make_makefile.sh make_MPI'
          cd $main_dir/svn/bin
          files="$files switch.gen `ls comp.*` `ls link.*`"
          cd $main_dir/bin ;;
@@ -853,6 +853,7 @@
   ln -sf ../bin/switch
   ln -sf ../bin/comp
   ln -sf ../bin/link
+  ln -sf ../bin/make_MPI
 
 # 8.b selected GrADS scripts
 

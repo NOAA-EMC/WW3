@@ -7,8 +7,10 @@
 !/                  |            J.H. Alves             |
 !/                  |             A. Chawla             |
 !/                  |            F. Ardhuin             |
+!/                  |             E. Rogers             |
+!/                  |            T. Campbell            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         01-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -42,8 +44,11 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    04-Mar-2010 : Added partitions bulletin output.   ( version 3.14 )
+!/                  (J. H. Alves)
+!/    20-Apr-2010 : Fix initialization of USTAR.      ( version 3.14.1 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -66,7 +71,6 @@
 !                                      1 : Print plots.
 !                                      2 : Table of 1-D spectra
 !                                      3 : Transfer file
-!                                      4 : Spectral partitioning
 !       2 : Table of mean wave parameters
 !                                      1 : Depth, current,  wind
 !                                      2 : Mean wave pars.
@@ -80,6 +84,11 @@
 !                                      3 : Table of 1-D time scales.
 !                                      4 : Transfer file.
 !
+!       4 : Partitioning and bulletins 
+!                                      1 : Spectral partitions table
+!                                      2 : Bulletins ASCII format
+!                                      3 : Bulletins CSV format
+!                                      4 : Bulletins CSV & ASCII format
 !  3. Parameters :
 !
 !  4. Subroutines used :
@@ -104,6 +113,7 @@
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IOPO    Subr. W3IOPOMD Reading/writing raw point output file.
 !      W3EXPO    Subr. Internal Execute point output.
+!      W3BULL    Subr. W3BULLMD Generate buletins from spectral part.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -153,6 +163,9 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE
+      USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, HSMIN, HSDROP, IYY,    &
+                          HST, TPT, DMT, ASCBLINE, CSVBLINE
+!/NCO       USE W3BULLMD, ONLY: CASCBLINE
 !/O14      USE W3ODATMD, ONLY: GRDID
 !
       IMPLICIT NONE
@@ -163,8 +176,11 @@
       INTEGER                 :: NDSI, NDSM, NDSOP,  NDSTRC, NTRACE,  &
                                  IERR, I, TOUT(2), NOUT, TDUM(2),     &
                                  NREQ, IPOINT, ITYPE, OTYPE, NDSTAB,  &
-                                 IOTEST, IK, ITH, IOUT, J, DIMXP
+                                 IOTEST, IK, ITH, IOUT, J, DIMXP,     &
+                                 NDSBUL, NDSCSV, ICSV, IJ
+!/NCO       INTEGER                 :: NDSCBUL
       INTEGER                 :: ISCALE = 0
+      INTEGER                 :: TIMEV(2)
 !/O14      INTEGER                 :: NDBO
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
@@ -172,10 +188,11 @@
       REAL, ALLOCATABLE       :: XPART(:,:)
       LOGICAL                 :: FLFORM, FLSRCE(6)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
-
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
                                  TABNME*9, TFNAME*16
       CHARACTER*25            :: IDSRCE(6)
+      CHARACTER               :: HSTR*6, HTYPE*3
+!/BT2      REAL                    :: SBTC2
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -204,10 +221,13 @@
       NDSI   = 10
       NDSM   = 20
       NDSOP  = 20
+      NDSBUL = 0
+!/NCO       NDSCBUL = 0
 !
       NDSTRC =  6
       NTRACE = 10
       CALL ITRACE ( NDSTRC, NTRACE )
+
 !
 !/S      CALL STRACE (IENT, 'W3OUTP')
 !
@@ -390,14 +410,6 @@
                   WRITE (NDSTAB,1946)                                 &
                                (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
                 END IF
-            ELSE IF ( OTYPE .EQ. 4 ) THEN
-              WRITE (NDSO,943) 'Partitioning of spectra'
-              TABNME = 'tab--.ww3'
-              IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
-              WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
-              J      = LEN_TRIM(FNMPRE)
-              OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
-              WRITE (NDSO,1947) TABNME
             ELSE
               WRITE (NDSE,1011) OTYPE
               CALL EXTCDE ( 10 )
@@ -529,6 +541,61 @@
               WRITE (NDSO,3941) TABNME
             END IF
 !
+! ... ITYPE = 4
+!
+        ELSE IF (ITYPE .EQ. 4) THEN
+          WRITE (NDSO,942) ITYPE, 'Spectral partitions or bulletins'
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB, TIMEV, HTYPE
+!/NCO          NDSTAB = 51
+            IF ( OTYPE .EQ. 1 ) THEN
+              WRITE (NDSO,943) 'Partitioning of spectra'
+              TABNME = 'tab--.ww3'
+              IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
+              WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+              J      = LEN_TRIM(FNMPRE)
+              OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+              WRITE (NDSO,1947) TABNME
+
+            ELSEIF ( OTYPE .GE. 2 ) THEN
+              IF (OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
+              WRITE (NDSO,943) 'Bulletins, ASCII format'
+              J      = LEN_TRIM(FNMPRE)
+              DO IJ = 1,NOPTS
+                IF ( COUNT(FLREQ .EQV. .TRUE. )  .GT. 1 ) THEN
+! ... This version only allows single point output for bulletins
+                  WRITE (NDSE,1012) OTYPE
+                  CALL EXTCDE ( 45 )
+                ENDIF
+                IF (FLREQ(IJ)) THEN 
+                  NDSBUL = NDSTAB + (IJ - 1)
+                  OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
+                  WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
+!/NCO                   NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
+!/NCO                   OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
+!/NCO                   WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
+                ENDIF
+              ENDDO
+              ENDIF
+              IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
+              WRITE (NDSO,943) 'Bulletins, CSV format'
+              J      = LEN_TRIM(FNMPRE)
+              DO IJ = 1,NOPTS
+                IF (FLREQ(IJ)) THEN
+                  ICSV = 0
+                  IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL 
+!/NCO                   IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+                  NDSCSV = NDSTAB + (IJ - 1) + ICSV
+                  OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//'.csv',ERR=803,IOSTAT=IERR)
+                  WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
+                ENDIF
+              ENDDO
+              ENDIF
+            ELSE
+              WRITE (NDSE,1011) OTYPE
+              CALL EXTCDE ( 50 )
+            END IF
+!
 ! ... ITYPE = ILLEGAL
 !
         ELSE
@@ -583,6 +650,21 @@
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) EXIT
         END DO
+!
+! ... ITYPE=4 & OTYPES=[2,4] requires adding lines at bottom of
+!     bulletin output for compatibility with version 2.22
+!
+      IF (ITYPE .EQ. 4 .AND. OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
+        DO IJ = 1,NOPTS
+          IF (FLREQ(IJ)) THEN
+            NDSBUL = NDSTAB + (IJ - 1)
+            WRITE(NDSBUL,971) 
+            WRITE(NDSBUL,974) HSDROP, HSMIN 
+!/NCO             NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
+!/NCO             WRITE(NDSCBUL,961)
+          ENDIF
+        ENDDO
+      ENDIF
 !
       GOTO 888
 !
@@ -651,7 +733,23 @@
   953 FORMAT ( '      ',A,2(F8.1,'E3'))
   952 FORMAT (/'  Output times :'/                                    &
                ' --------------------------------------------------')
-!
+!/NCO  961 FORMAT ('----------------------------------------',              &
+!/NCO              '---------------------------')
+  971 FORMAT (' +-------+-----------+-----------------+',             &
+             '-----------------+-----------------+----',              &
+             '-------------+-----------------+--------',              &
+             '---------+')!
+  974 FORMAT ( &
+       75X,'Hst : Total sigificant wave height.'/                     &
+       75X,'n   : Number of fields with Hs > ',f4.2,                  &
+                ' in 2-D spectrum.'/                                  &
+       75X,'x   : Number of fields with Hs > ',f4.2,                  &
+                ' not in table.'/                                     &
+       75X,'Hs  : Significant wave height of separate wave field.'/   &
+       75X,'Tp  : Peak period of separate wave field.'/               &
+       75X,'dir : Mean direction of separate wave field.'/            &
+       75X,'*   : Wave generation due to local wind probable.')
+ 
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
  1942 FORMAT ( '      Scale factor ',A,' spectrum : ',E10.3)
@@ -706,6 +804,10 @@
 !
  1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
                '     ILLEGAL TYPE, OTYPE =',I4/)
+!
+ 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
+               '     MULTIPLE OUTPUT POINTS DEFINED, ITYPE =',I4,/    &
+               '     ONLY SINGLE POINT ALLOWED IN THIS VERSION'/)
 !/
 !/ Internal subroutine W3EXPO ---------------------------------------- /
 !/
@@ -829,6 +931,7 @@
 !/NL2      USE W3SNL2MD
 !/NLX      USE W3SNLXMD
 !/BT1      USE W3SBT1MD
+!/BT2      USE W3SBT2MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
@@ -841,13 +944,14 @@
 !/
       USE W3ARRYMD, ONLY: PRT1DS, PRT2DS, PRT1DM
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
+      USE W3BULLMD, ONLY: W3BULL
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: J, I1, I2, ISP, IKM, IKL, IKH, ITH,  &
                                  IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
-                                 I, NPART
+                                 I, NPART, IP
       INTEGER, SAVE           :: IPASS  = 0
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: DEPTH, SQRTH, CDIR, SIX, R1, R2,     &
@@ -859,13 +963,13 @@
                                  FPSTAR, FACF, FACE, FACS, HMAT, WNA, &
                                  XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                  YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
-                                 FMEAN, WNMEAN, UDIRCA, M2KM
+                                 FMEAN, WNMEAN, UDIRCA, X, Y, M2KM
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY
 !/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
 !/STAB2                                 THARG1, THARG2
-      REAL, SAVE              :: HSMIN  = 0.05
+!      REAL, SAVE              :: HSMIN  = 0.05
       REAL                    :: WN(NK), CG(NK)
       REAL                    :: E(NK,NTH), E1(NK), APM(NK),          &
                                  THBND(NK), SPBND(NK), A(NTH,NK),     &
@@ -880,6 +984,7 @@
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
       CHARACTER               :: DTME21*23
       CHARACTER*4             :: VAR1(5)
+      CHARACTER*1             :: IDLAT, IDLON
 !
       DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Stot' /
 !/
@@ -1129,7 +1234,7 @@
 !
 ! spectral partitioning
 !
-            IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) CALL W3PART            &
+            IF ( ITYPE.EQ.4 ) CALL W3PART                             &
                 ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
 !
 ! nondimensional parameters
@@ -1155,6 +1260,7 @@
 !/ST3                TAUWX  = 0.
 !/ST3                TAUWY  = 0.
 !/ST3                LLWS(:)  = .TRUE.
+                USTAR  = 1.
 !
 !/ST1                CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
 !/ST1                FP     = 0.85 * FMEAN
@@ -1234,6 +1340,9 @@
 !/ST1                ZWND   = 10.
 !/ST2                ZWND   = ZWIND
 !/ST3                ZWND   = ZZWND
+!/ST0                USTAR  = 1.
+!/ST1                USTAR  = 1.
+!/ST2                USTAR  = 1.
 !/ST3                USTAR  = 0.
 !/ST3                USTD   = 0.
 !/ST3                TAUWX  = 0.
@@ -1311,6 +1420,8 @@
                   END IF
                 IF ( FLSRCE(5) ) THEN
 !/BT1                    CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
+!/BT2                    SBTC2 = 2. * -0.067 / GRAV
+!/BT2                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
 !/BTX                    CALL W3SBTX
 !
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &
@@ -1431,24 +1542,6 @@
                         WRITE (NDSTAB,902)                            &
                               ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
                       END IF
-!
-                  ELSE IF ( OTYPE .EQ. 4 ) THEN
-!
-                    IF ( FLAGLL ) THEN
-                        IF ( PTLOC(1,J) .LT. 0. )                     &
-                            PTLOC(1,J) = PTLOC(1,J) + 360.
-                        WRITE (NDSTAB,940) TIME, M2KM*PTLOC(2,J),     &
-                            M2KM*PTLOC(1,J), PTNME(J), NPART, DEPTH,  &
-                            WAO(J), UDIR, CAO(J), CDIR
-                      ELSE
-                        WRITE (NDSTAB,943) TIME, M2KM*PTLOC(1,J),     &
-                            M2KM*PTLOC(2,J), PTNME(J), NPART, DEPTH,  &
-                            WAO(J), UDIR, CAO(J), CDIR
-                      END IF
-!                   WRITE (NDSTAB,941)
-                    DO I=0, NPART
-                      WRITE (NDSTAB,942) I, XPART(:,I)
-                      END DO
 !
                   END IF
 !
@@ -1727,8 +1820,88 @@
 !
                   END IF
 !
-              END IF
+! 4.d Perform output type 4 ( Spectral partitions and bulletins )
 !
+              ELSE IF ( ITYPE .EQ. 4 ) THEN
+!
+                  IF ( OTYPE .EQ. 1 ) THEN
+!
+                    IF ( FLAGLL ) THEN
+                        IF ( PTLOC(1,J) .LT. 0. )                     &
+                            PTLOC(1,J) = PTLOC(1,J) + 360.
+                        WRITE (NDSTAB,940) TIME, M2KM*PTLOC(2,J),     &
+                            M2KM*PTLOC(1,J), PTNME(J), NPART, DEPTH,  &
+                            WAO(J), UDIR, CAO(J), CDIR
+                      ELSE
+                        WRITE (NDSTAB,943) TIME, M2KM*PTLOC(1,J),     &
+                            M2KM*PTLOC(2,J), PTNME(J), NPART, DEPTH,  &
+                            WAO(J), UDIR, CAO(J), CDIR
+                      END IF
+!                   WRITE (NDSTAB,941)
+                    DO I=0, NPART
+                      WRITE (NDSTAB,942) I, XPART(:,I)
+                      END DO
+!
+                  ELSEIF ( OTYPE .GE. 2 ) THEN
+                      CALL W3BULL (NPART, XPART, DIMXP, UABS, UDIR, &
+                              J, IOUT, TIMEV )
+!
+                    IF ( FLAGLL ) THEN
+                      X = M2KM * PTLOC(1,J)
+                      Y = M2KM * PTLOC(2,J)
+
+                      X      = MOD ( X+720. , 360. )
+                      IF ( X .LE. 180. ) THEN
+                        IDLON  = 'E'
+                      ELSE
+                        X      = 360. - X
+                        IDLON  = 'W'
+                      ENDIF
+                      !IF ( ABS(Y) .LE. 0.0049 ) THEN
+                       !IDLAT  = '-'
+                      IF ( Y .GE. 0. ) THEN
+                        IDLAT  = 'N'
+                      ELSE
+                        IDLAT  = 'S'
+                        Y      = -Y
+                      ENDIF
+                    ELSE
+                      IDLAT = ' '
+                      IDLON = ' '
+                    ENDIF
+                      IF ( OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
+                        NDSBUL=NDSTAB + (J - 1)
+!/NCO                         NDSCBUL=NDSTAB + (J - 1) + NOPTS
+                        IF (IOUT .EQ. 1) THEN
+                          WRITE(HSTR,'(I2,1X,A)') TIMEV(2)/10000,   &
+                                   HTYPE 
+                          WRITE (NDSBUL,970) PTNME(J), Y, IDLAT, X, &
+                                           IDLON, GNAME, TIMEV(1),  &
+                                           HSTR
+                          WRITE (NDSBUL,971) 
+                          WRITE (NDSBUL,972)
+                          WRITE (NDSBUL,971)
+!/NCO                           WRITE (NDSCBUL,960) PTNME(J), Y, IDLAT,   &
+!/NCO                              X, IDLON, GNAME, TIMEV(1), HSTR
+!/NCO                           WRITE (NDSCBUL,961)
+                        ENDIF
+
+                        WRITE (NDSBUL,973) ASCBLINE
+!/NCO                         WRITE (NDSCBUL,963) CASCBLINE
+                        IF (IOUT .EQ. NOUT) WRITE (NDSBUL,971)
+!/NCO                         IF (IOUT .EQ. NOUT) WRITE (NDSCBUL,961)
+ 
+                     ENDIF
+                      IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
+                        ICSV = 0 
+                        IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+!/NCO                         IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+                        NDSCSV = NDSTAB + (J - 1) + ICSV
+                        WRITE (NDSCSV,'(A664)') CSVBLINE
+                      ENDIF
+                  END IF
+!
+              END IF
 ! ... End of fields loop
 !
           END IF
@@ -1781,6 +1954,43 @@
               1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
   941 FORMAT ('        hs     tp     lp       theta     sp      wf')
   942 FORMAT (I3,3F8.2,2F9.2,F7.2)
+!
+! 
+!/NCO  960 FORMAT ( 'Location : ',A,' (',F5.2,A,1X,F6.2,A,')'/              &
+!/NCO                'Model    : ',A/                                       &
+!/NCO                'Cycle    : ',I8,1X,A//                                &
+!/NCO                'DDHH HS SS PP DDD SS PP DDD SS PP DDD',               &
+!/NCO                       ' SS PP DDD SS PP DDD SS PP DDD')
+!/NCO  961 FORMAT ('----------------------------------------',              &
+!/NCO              '---------------------------')
+!/NCO  962 FORMAT ( 'DD  = Day of Month'/                                   &
+!/NCO        'HH  = Hour of Day'/                                           &
+!/NCO        'HS  = Total Significant Wave Height (feet)'/                  &
+!/NCO        'SS  = Significant Wave Height of separate system (feet)'/     &
+!/NCO        'PP  = Peak Period of separate system (whole seconds)'/        &
+!/NCO        'DDD = Mean Direction of separate system (degrees,"from")')
+!/NCO  963 FORMAT (A)
+!
+ 970 FORMAT ( '  Location : ',A,' (',F5.2,A,1X,F6.2,A,')'/            &
+              '  Model    : ',A/                                      &
+              '  Cycle    : ',I8,1X,A)
+ 971 FORMAT (' +-------+-----------+-----------------+',              &
+             '-----------------+-----------------+----',              &
+             '-------------+-----------------+--------',              &
+             '---------+')
+ 972 FORMAT (' | day & |  Hst  n x |    Hs   Tp  dir |',              &
+                                   '    Hs   Tp  dir |',              &
+                                   '    Hs   Tp  dir |',              &
+                                   '    Hs   Tp  dir |',              &
+                                   '    Hs   Tp  dir |',              &
+                                   '    Hs   Tp  dir |'/              &
+             ' |  hour |  (m)  - - |    (m)  (s) (d) |',              &
+                                   '    (m)  (s) (d) |',              &
+                                   '    (m)  (s) (d) |',              &
+                                   '    (m)  (s) (d) |',              &
+                                   '    (m)  (s) (d) |',              &
+                                   '    (m)  (s) (d) |')
+ 973 FORMAT (1X,A)
 !
  1901 FORMAT (                                                        &
        '    Date     Time        d     Uc     Dir.  U10    Dir. '/    &

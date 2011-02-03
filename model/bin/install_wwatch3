@@ -5,9 +5,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      December 2006          #
-#                                                      August 2009            #
+#                                                      July 2010              #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2010 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -544,7 +544,7 @@
         1) echo 'Scripts for compiling and linking :'
            echo '-----------------------------------'
            goto=bin
-           files='ad3 ad3_test w3_make w3_new make_makefile.sh'
+           files='ad3 ad3_test w3_make w3_new make_makefile.sh make_MPI'
            files="$files switch.gen `ls comp.*` `ls link.*`" ;;
         2) echo 'GrADS aux scripts'
            echo '-----------------'
@@ -645,6 +645,7 @@
     ln -s ../bin/switch    . 2> /dev/null
     ln -s ../bin/comp      . 2> /dev/null
     ln -s ../bin/link      . 2> /dev/null
+    ln -s ../bin/make_MPI  . 2> /dev/null
     ln -s ../aux/c*.gs     . 2> /dev/null
     ln -s ../aux/s*.gs     . 2> /dev/null
     ln -s ../aux/1s*.gs    . 2> /dev/null

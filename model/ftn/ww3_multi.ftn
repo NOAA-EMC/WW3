@@ -107,7 +107,7 @@
 !
 !/ ------------------------------------------------------------------- /
 ! 1.  Initialization of all wave models / grids
-!     Use only one of the three calls ....
+!     Use only one of the calls ....
 !
 ! ... Log and screen output, no separate test output file
 !

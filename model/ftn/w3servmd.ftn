@@ -143,6 +143,7 @@
 !/    30-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
 !/    23-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    25-Jan-2000 : Force flushing of uniit.            ( version 2.00 )
+!/                  This was taken out around version 3.01.
 !/
 !  1. Purpose :
 !

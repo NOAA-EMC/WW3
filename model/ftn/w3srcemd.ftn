@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         19-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -48,7 +48,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SRCE ( IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, DEPTH, &
+      SUBROUTINE W3SRCE ( IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
                           U10ABS, U10DIR, AS, USTAR, USTDIR, CX, CY,  &
                           EMEAN, FMEAN, WNMEAN, AMAX, FPI, CD, Z0,    &
                           DTDYN, FCUT, DTG )
@@ -58,7 +58,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         19-Aug-2010 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -81,8 +81,10 @@
 !/    09-Oct-2007 : Adding WAM 4+ and SB1 options.      ( version 3.13 )
 !/                  (F. Ardhuin)
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    19-Aug-2010 : Making treatment of 0 water depth ( version 3.14.6 )
+!/                  consistent with the rest of the model.
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -143,7 +145,7 @@
 !                          economy on vector machine (W3SPR2).
 !       WN1     R.A.   I   Discrete wavenumbers.
 !       CG1     R.A.   I   Id. group velocities.
-!       DEPTH   Real.  I   Depth.
+!       D_INP   Real.  I   Depth. Compared to DMIN to get DEPTH.
 !       U10ABS  Real.  I   Wind speed at reference height.
 !       U10DIR  Real.  I   Id. wind direction.
 !       AS      Real.  I   Air-sea temp. difference.      ( !/ST3 )
@@ -277,8 +279,8 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DTMAX, DTMIN,      &
-                          FACTI1, FACTI2, FACSD, FACHFA, FACP,        &
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
+                          DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
                           FTE, FTF, FHMAX
       USE W3WDATMD, ONLY: TIME
@@ -316,7 +318,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: IX, IY, IMOD
-      REAL, INTENT(IN)        :: WN1(NK), CG1(NK), DEPTH, U10ABS,     &
+      REAL, INTENT(IN)        :: WN1(NK), CG1(NK), D_INP, U10ABS,     &
                                  U10DIR, AS, CX, CY, DTG
       REAL, INTENT(INOUT)     :: SPEC(NSPEC), ALPHA(NK), EMEAN,       &
                                  FMEAN, WNMEAN, USTAR, USTDIR, FPI,   &
@@ -331,7 +333,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/NNT      INTEGER, SAVE           :: NDSD = 89, NDSD2 = 88, J
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
-                                 HDT, ZWND, FP
+                                 HDT, ZWND, FP, DEPTH
 !/ST1      REAL                    :: FH1, FH2, EBAND
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
 !/ST3      REAL                    :: FMEANS, FMEANWS, TAUWX, TAUWY, FH1, FH2
@@ -366,6 +368,8 @@
 !/S      CALL STRACE (IENT, 'W3SRCE')
 !
 !/T      FLTEST = .TRUE.
+!
+      DEPTH  = MAX ( DMIN , D_INP )
 !
 !/LN0      VSLN = 0.
 !/SEED      VSLN = 0.

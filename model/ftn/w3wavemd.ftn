@@ -341,6 +341,7 @@
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2)
+!/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
@@ -356,6 +357,7 @@
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=11)       :: IDACT, OUTID
       CHARACTER(LEN=23)       :: IDTIME
+!/SBS      CHARACTER(LEN=30)       :: FOUTNAME
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -410,7 +412,11 @@
 !
       LOCAL   = IAPROC .LE. NAPROC
 !
-! 0.c Test output
+!/SBS      NDSOFLG = 99
+!
+
+!
+! 0.d Test output
 !
 !/T      ILEN   = LEN_TRIM(FILEXT)
 !/T      WRITE (NDST,9000) IMOD, FILEXT(:ILEN), TEND
@@ -985,6 +991,14 @@
 !/MPI                              FLGMPI(1) = .FALSE.
                               CALL W3IOGO                             &
                                  ( 'WRITE', NDS(7), ITEST, IMOD )
+!AC Generate output flag file
+!/SBS                              JJ = LEN_TRIM ( FILEXT )
+!/SBS                              CALL STME21 ( TIME, IDTIME )
+!/SBS                              FOUTNAME = 'Field_done.' // IDTIME(1:4) &
+!/SBS                                       // IDTIME(6:7) // IDTIME(9:10) &
+!/SBS                                      // IDTIME(12:13) // '.' // FILEXT(1:JJ)
+!/SBS                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
+!/SBS                              CLOSE( NDSOFLG )
                             END IF
                         ELSE IF ( J .EQ. 2 ) THEN
                           IF ( IAPROC .EQ. NAPPNT ) THEN
@@ -1150,7 +1164,7 @@
 !/T              '               TND              :',I9.8,I7.6/       &
 !/T              '               DTTST[1], FLAG_O :',2F8.1,L4)
 !/T 9041 FORMAT (' TEST W3WAVE : PERFORMING OUTPUT')
-!/T 9042 FORMAT (' TEST W3WAVE : OUTPUT COMPUTATION FLAGS: '3L2)
+!/T 9042 FORMAT (' TEST W3WAVE : OUTPUT COMPUTATION FLAGS: ',3L2)
 !/MPIT 9043 FORMAT (' TEST W3WAVE : TYPE, NRQ, NRQMAX, NA : ',A2,3I6)
 !/T 9044 FORMAT (' TEST W3WAVE : END OF OUTPUT')
 !/

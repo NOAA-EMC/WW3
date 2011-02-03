@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         27-Jul-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -25,8 +25,10 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    14-Jul-2010 : Fix VAAUX declaration bug.        ( version 3.14.2 )
+!/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -179,7 +181,7 @@
 !      NRQSR     Int.  Public   Number of MPI handles.
 !      IRQRS     I.A.  Public   Array with MPI handles.
 !      IRQRSS    I.A.  Public   Array with MPI handles.
-!      VAAUX     I.A.  Public   Aux. spectra storage.
+!      VAAUX     R.A.  Public   Aux. spectra storage.
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT5 are aliased to pointers with the same
@@ -190,11 +192,14 @@
 !      NBI(2)    Int.  Public   Number of input bound. points.
 !      NFBPO     Int.  Public   Number of files for output bound. data.
 !      NRQBP(2)  Int.  Public   Number of MPI handles.
+!      NKI,NTHI  Int.  Public   Size of input spectra
 !      NBO(2)    I.A.  Public   Number of output bound. pts. per file.
 !      NDSL      I.A.  Public   Array with unit numbers.
 !      IPBPI     I.A.  Public   Interpolation data input b.p.
 !      ISBPI     I.A.  Public   Sea point counters for input b.p.
 !      IRQBP1/2  I.A.  Public   Array with MPI handles.
+!      XFRI, FR1I, TH1I
+!                Real  Public   Definition of input spectra.
 !      X/YBPI    R.A.  Public   Location of input boundary points.
 !      RDBPI     R.A.  Public   Interpolation factors input b.p.
 !      ABPI0/N   R.A.  Public   Storage of spectra from which to
@@ -327,16 +332,18 @@
       TYPE OTYPE4
         INTEGER               :: IFILE4
 !/MPI        INTEGER               :: NRQRS, NBLKRS, RSBLKS
-!/MPI        INTEGER, POINTER      :: IRQRS(:), IRQRSS(:), VAAUX(:,:,:)
+!/MPI        INTEGER, POINTER      :: IRQRS(:), IRQRSS(:)
+!/MPI        REAL, POINTER         :: VAAUX(:,:,:)
       END TYPE OTYPE4
 !/
       TYPE OTYPE5
         INTEGER               :: NBI, NBI2, NFBPO, NBO(0:9),          &
-                                 NBO2(0:9), NDSL(9)
+                                 NBO2(0:9), NDSL(9), NKI, NTHI
 !/MPI        INTEGER               :: NRQBP, NRQBP2
         INTEGER, POINTER      :: IPBPI(:,:), ISBPI(:),                &
                                  IPBPO(:,:), ISBPO(:)
 !/MPI        INTEGER, POINTER      :: IRQBP1(:), IRQBP2(:)
+        REAL                  :: XFRI, FR1I, TH1I
         REAL, POINTER         :: XBPI(:), YBPI(:), RDBPI(:,:),        &
                                  XBPO(:), YBPO(:), RDBPO(:,:),        &
                                  ABPI0(:,:), ABPIN(:,:), ABPOS(:,:),  &
@@ -420,16 +427,18 @@
 !/
       INTEGER, POINTER        :: IFILE4
 !/MPI      INTEGER, POINTER        :: NRQRS, NBLKRS, RSBLKS
-!/MPI      INTEGER, POINTER        :: IRQRS(:), IRQRSS(:), VAAUX(:,:,:)
+!/MPI      INTEGER, POINTER        :: IRQRS(:), IRQRSS(:)
+!/MPI      REAL, POINTER           :: VAAUX(:,:,:)
 !/
 !/ Type 5 ...
 !/
-      INTEGER, POINTER        :: NBI, NBI2, NFBPO
+      INTEGER, POINTER        :: NBI, NBI2, NFBPO, NKI, NTHI
       INTEGER, POINTER        :: NBO(:), NBO2(:), NDSL(:)
 !/MPI      INTEGER, POINTER        :: NRQBP, NRQBP2
       INTEGER, POINTER        :: IPBPI(:,:), ISBPI(:),                &
                                  IPBPO(:,:), ISBPO(:)
 !/MPI      INTEGER, POINTER        :: IRQBP1(:), IRQBP2(:)
+      REAL, POINTER           :: XFRI, FR1I, TH1I
       REAL, POINTER           :: XBPI(:), YBPI(:), RDBPI(:,:),        &
                                  XBPO(:), YBPO(:), RDBPO(:,:),        &
                                  ABPI0(:,:), ABPIN(:,:), ABPOS(:,:),  &
@@ -1133,7 +1142,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-May-2007 !
+!/                  | Last update :         27-Jul-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -1144,6 +1153,7 @@
 !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
 !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+!/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
 !/
 !  1. Purpose :
 !
@@ -1328,6 +1338,11 @@
       NBO    => OUTPTS(IMOD)%OUT5%NBO
       NBO2   => OUTPTS(IMOD)%OUT5%NBO2
       NDSL   => OUTPTS(IMOD)%OUT5%NDSL
+      NKI    => OUTPTS(IMOD)%OUT5%NKI
+      NTHI   => OUTPTS(IMOD)%OUT5%NTHI
+      XFRI   => OUTPTS(IMOD)%OUT5%XFRI
+      FR1I   => OUTPTS(IMOD)%OUT5%FR1I
+      TH1I   => OUTPTS(IMOD)%OUT5%TH1I
       FLBPI  => OUTPTS(IMOD)%OUT5%FLBPI
       FLBPO  => OUTPTS(IMOD)%OUT5%FLBPO
       FILER  => OUTPTS(IMOD)%OUT5%FILER

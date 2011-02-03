@@ -14,6 +14,9 @@
 !/    24-Mar-2007 : Bug fix IMI, adding overall field   ( version 3.11 )
 !/                  and sorting.
 !/    15-Apr-2008 : Clean up for distribution.          ( version 3.14 )
+!/    02-Dec-2010 : Adding a mapping PMAP between       ( version 3.14 )
+!/                  original and combined partitions
+!/                  ( M. Szyszka )
 !/
 !  1. Purpose :
 !
@@ -80,6 +83,9 @@
 !/                  +-----------------------------------+
 !/
 !/    28-Oct-2006 : Origination.                       ( version 3.10 )
+!/    02-Dec-2010 : Adding a mapping PMAP between      ( version 3.14 )
+!/                  original and combined partitions
+!/                  ( M. Szyszka )
 !/
 !  1. Purpose :
 !
@@ -159,6 +165,7 @@
                                  IMO(NSPEC), IND(NSPEC), NP_MAX,      &
                                  IP, IT(1), INDEX(DIMXP), NWS,        &
                                  IPW, IPT, ISP
+      INTEGER                 :: PMAP(DIMXP)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: ZP(NSPEC), ZMIN, ZMAX, Z(NSPEC),     &
                                  FACT, WSMAX, HSMAX
@@ -209,7 +216,7 @@
 !     NP and NX initialized inside routine.
 !
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-                    NP, XP, DIMXP )
+                    NP, XP, DIMXP, PMAP )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Sort and recombine wind seas as needed
@@ -233,16 +240,16 @@
 ! 3.b Combine wind seas as needed and resort
 !
       IF ( NWS.GT.1 .AND. FLCOMB ) THEN
-          IPW    = INDEX(1)
+          IPW    = PMAP(INDEX(1))                         
           DO IP=2, NWS
-            IPT    = INDEX(IP)
-            DO ISP=1, NSPEC
-              IF ( IMO(ISP) .EQ. IPT ) IMO(ISP) = IPW
-              END DO
-            END DO
+             IPT    = PMAP(INDEX(IP))
+             DO ISP=1, NSPEC
+                IF ( IMO(ISP) .EQ. IPT ) IMO(ISP) = IPW
+             END DO
+          END DO
 !
           CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
-                        NP, XP, DIMXP )
+                        NP, XP, DIMXP, PMAP )
           IF ( NP .LE. 1 ) RETURN
 !
           TP(:,1:NP)  = XP(:,1:NP)
@@ -876,7 +883,7 @@
       END SUBROUTINE PT_FLD
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,        &
-                          NPO, XP, DIMXP )
+                          NPO, XP, DIMXP, PMAP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III          USACE/NOAA |
@@ -889,6 +896,9 @@
 !/    28-Oct-2006 : Origination.                       ( version 3.10 )
 !/    02-Nov-2006 : Adding tail to integration.        ( version 3.10 )
 !/    24-Mar-2007 : Adding overall field.              ( version 3.11 )
+!/    02-Dec-2010 : Adding a mapping PMAP between      ( version 3.14 )
+!/                  original and combined partitions
+!/                  ( M. Szyszka )
 !/
 !  1. Purpose :
 !
@@ -908,6 +918,7 @@
 !       NPO     Int.   O   Number of partitions with mean parameters.
 !       XP      R.A.   O   Array with output parameters.
 !       DIMXP   int.   I   Second dimesion of XP.
+!       PMAP    I.A.   O   Mapping between orig. and combined partitions
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -936,7 +947,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP
-      INTEGER, INTENT(OUT)    :: NPO
+      INTEGER, INTENT(OUT)    :: NPO, PMAP(DIMXP)
       REAL, INTENT(IN)        :: ZP(NSPEC), DEPTH, UABS, UDIR, WN(NK)
       REAL, INTENT(OUT)       :: XP(6,0:DIMXP)
 !/
@@ -1062,6 +1073,7 @@
 !
         IF ( NPO .GE. DIMXP ) GOTO 2000
         NPO       = NPO + 1
+        IF (IP.GT.0) PMAP(NPO) = IP
         XP(1,NPO) = HS
         XP(2,NPO) = TPI / SIGP
         XP(3,NPO) = TPI / WNP

@@ -315,6 +315,7 @@
               RDY    = 0.
             END IF
 !
+          IF ( GLOBAL .AND. IX1 .EQ. NX ) IXS = 1-NX
           IF (MAPSTA(  IY1  ,  IX1  ).EQ.0 .AND.                      &
               MAPSTA(  IY1  ,IX1+IXS).EQ.0 .AND.                      &
               MAPSTA(IY1+IYS,  IX1  ).EQ.0 .AND.                      &
@@ -902,7 +903,7 @@
 !/T               ' IN GRID 0')
 !/MPIT 9117 FORMAT ( ' TEST WMIOPO : STORING DATA FROM GRID',I4,      &
 !/MPIT               ' IN GRID 0')
-!/MPIT 9018 FORMAT ( ' TEST WMIOPO : GRID',I4,' SEND FROM',I4' TO',I4)
+!/MPIT 9018 FORMAT ( ' TEST WMIOPO : GRID',I4,' SEND FROM',I4,' TO',I4)
 !/MPIT 9019 FORMAT ( '                 IT = ',I4,'  PAR = ',A)
 !
 !/T 9020 FORMAT ( ' TEST WMIOPO : DONE AT THIS PROCESSOR')

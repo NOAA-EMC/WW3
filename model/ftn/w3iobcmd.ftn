@@ -5,12 +5,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         28-Jul-2010 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -72,7 +72,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         28-Jul-2010 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -87,6 +87,8 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    28-Jul-2010 : Moving NKI, NTHI, XFRI, FR1I and
+!/                  TH1I to W3ODATMD.                 ( version 3.14.3 )
 !/
 !  1. Purpose :
 !
@@ -175,6 +177,7 @@
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPBPT, &
                           NBI, NBI2, NFBPO, NBO, NBO2, NDSL,          &
+                          NKI, NTHI, XFRI, FR1I, TH1I,                &
                           IPBPI, ISBPI, XBPI, YBPI, RDBPI,            &
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO,            &
                           ABPI0, ABPIN, ABPOS, FLBPI, FILER, FILEW,   &
@@ -199,11 +202,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IFILE, IERR, I, J, NKI, NTHI, IX, IY,&
-                                 ISEA, IP, ISP, NPTS, ISOUT, IS, IGRD
+      INTEGER                 :: IFILE, IERR, I, J, IX, IY, ISEA,     &
+                                 IP, ISP, NPTS, ISOUT, IS, IGRD
 !/T1      INTEGER               :: IK, ITH
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: XFRI, FR1I, TH1I
 !/T1      REAL                  :: HS, HS0
       REAL, ALLOCATABLE       :: TMPSPC(:,:)
       LOGICAL                 :: FLOK
