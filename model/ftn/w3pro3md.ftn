@@ -174,7 +174,8 @@
 !
 ! 10. Source code :
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, NX, NY, NSEA, MAPSTA, MAPSF
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, NX, NY, NSEA, MAPSTA, MAPSF,& 
+                          GTYPE
       USE W3ADATMD, ONLY: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
                           NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,        &
                           MAPTH2, MAPWN2
@@ -199,6 +200,7 @@
 !/
 !/S      CALL STRACE (IENT, 'W3MAP3')
 !
+   IF (GTYPE .LT. 3) THEN
 ! 1.  Map MAPX2 ------------------------------------------------------ *
 ! 1.a Range 1 to NMX0
 !
@@ -353,6 +355,7 @@
             NCENTC = NCENTC - 1
           END IF
         END DO
+      ENDIF	
 !
 ! 5.  Maps for intra-spectral propagation ---------------------------- *
 !
@@ -519,7 +522,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Aug-2010 |
+!/                  | Last update :         31-Oct-2010 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -536,6 +539,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    17-Aug-2010 : Add test output.                  ( version 3.14.5 )
+!/    30-Oct-2010 : Implement unstructured grid         ( version 3.14 )
 !/
 !  1. Purpose :
 !

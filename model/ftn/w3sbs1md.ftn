@@ -5,28 +5,21 @@
 !/                  | WAVEWATCH III                SHOM |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Jun-2006 |
+!/                  | Last update :         31-Mar-2010 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jul-2005 : Origination.                        ( version 3.07 )
 !/    23-Jun-2006 : Formatted for submitting code for   ( version 3.09 )
 !/                  inclusion in WAVEWATCH III.
 !/    10-May-2007 : adapt from version 2.22.SHOM        ( version 3.10.SHOM )
+!/    14-Nov-2010 : include scaling factor and clean up ( version 3.14 )
 !/
 !  1. Purpose :
 !
-!       ***********************************************
-!       *** This is a test version by F. Ardhuin.   ***
-!       *** To be fully documented in due time.     ***
-!       ***********************************************
-!
-!     Dummy slot for bottom scattering source term.
-!        This module can be used to include user-defined source term(s),
-!     or to submit a source term to be included into the WAVEWATCH III
-!     distribution. See section 5 for requirements for submissions.
-!        Codes may be included in WAVEWATCH III as a standard option
-!     with its own dedicated compile switch, or as a version of this
-!     module that can be plugged in by a user.
+!     This module computes a scattering term that combines : 
+!        - shoreline reflection 
+!        - unresolved islands and iceberg reflections
+!        - bottom scattering based on the theory by Ardhuin and Magne (JFM 2007)
 !
 !  2. Variables and types :
 !
@@ -38,7 +31,7 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      W3SBS1    Subr. Public   User supplied bottom scattering.
+!      W3SBS1    Subr. Public   bottom scattering 
 !      INSBS1    Subr. Public   Corresponding initialization routine.
 !     ----------------------------------------------------------------
 !
@@ -51,47 +44,6 @@
 !
 !  5. Remarks :
 !
-!     WAVEWATCH III is designed as a highly plug-compatible code.
-!     Source term modules can be included as self-contained modules,
-!     with limited changes needed to the interface of routine calls
-!     in W3SRCE, and in the point postprocessing programs only.
-!     Codes submitted for inclusion in WAVEWATCH III should be
-!     self-contained in the way described below, and might be
-!     provided with distributions fully integrated in the data
-!     structure, or as an optional version of this module to be
-!     included by the user.
-!
-!     Rules for preparing a module to be included in or distributed
-!     with WAVEWATCH III :
-!
-!      - Fully document the code following the outline given in this
-!        file, and according to all other WAVEWATCH III routines.
-!      - Provide a file with necessary modifications to W3SRCE and
-!        all other routines that require modification.
-!      - Provide a test case with expected results.
-!      - It is strongly recommended that the programming style used
-!        in WAVEWATCH III is followed, in particular 
-!          a) for readability, write as if in fixed FORTRAN format 
-!             regarding column use, even though all files are F90
-!             free format.
-!          b) I prefer upper case programming for permanent code,
-!             as I use lower case in debugging and temporary code.
-!
-!     This module needs to be self-contained in the following way.
-!
-!      a) All saved variables connected with this source term need
-!         to be declared in the module header. Upon acceptance as
-!         permanent code, they will be converted to the WAVEWATCH III
-!         dynamic data structure).  
-!      b) Provide a separate computation and initialization routine.
-!         In the submission, the initialization should be called
-!         from the computation routine upon the first call to the
-!         routine. Upon acceptance as permanent code, the
-!         initialization routine will be moved to a more appropriate
-!         location in the code (i.e., being absorbed in ww3_grid or
-!         being moved to W3IOGR). 
-!
-!     See notes in the file below where to add these elements.
 !
 !  6. Switches :
 !
@@ -101,12 +53,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!     *****************************************
-!     ***    Declare saved variables here   ***
-!     ***  public or private as appropriate ***
-!     *****************************************
 !
       PUBLIC
+!/
+!/ Public variables
+!/
       REAL, DIMENSION(:,:), ALLOCATABLE   :: BOTSPEC 
       INTEGER, PARAMETER :: NKSCAT = 30                 !number of wavenumbers
       DOUBLE PRECISION  ,DIMENSION(:,:,:) ,  ALLOCATABLE :: SCATMATV !scattering matrices
@@ -119,8 +70,9 @@
       REAL               :: CURTX, CURTY
 !/
       CONTAINS
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SBS1(A, CG, WN, DEPTH, CX1, CY1, S, D)
+!
+      SUBROUTINE W3SBS1(A, CG, WN, DEPTH, CX1, CY1,      &
+                                              TAUSCX, TAUSCY, S, D)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -135,21 +87,26 @@
 !/
 !  1. Purpose :
 !
-!     Slot for user-supplied bottom scattering source term.
+!     Bottom scattering source term 
 !
 !  2. Method :
+!
+!     Without current, goes through a diagonalization of the matrix 
+!     problem  S(f,:) = M(f,:,:)**E(f,:)
+!     With current, integrates the source term along the resonant locus 
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!	A       R.A.  I   Action density spectrum (1-D)
-!       CG      R.A.  I   Group velocities.
-!       WN      R.A.  I   Wavenumbers.
-!       DEPTH   Real  I   Mean water depth.
-!       S       R.A.  O   Source term (1-D version).
-!       D       R.A.  O   Diagonal term of derivative (1-D version).
-!       CX1-Y1  R.A.  I   Current components at ISEA.   
+!  A         R.A.  I   Action density spectrum (1-D)
+!       CG        R.A.  I   Group velocities.
+!       WN        R.A.  I   Wavenumbers.
+!       DEPTH     Real  I   Mean water depth.
+!       S         R.A.  O   Source term (1-D version).
+!       D         R.A.  O   Diagonal term of derivative (1-D version).
+!       CX1-Y1    R.A.  I   Current components at ISEA.   
+!       TAUSCX-Y  R.A.  I   Change of wave momentum due to scattering   
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -185,19 +142,23 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD
       USE CONSTANTS
-      USE W3SERVMD, ONLY: EXTCDE
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, RREF, &
+                          REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
+        SIG2, DSII
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
+!
       IMPLICIT NONE
-      REAL                    :: CG(NK), WN(NK), DEPTH, A(NTH,NK),     &
-                                 CX1, CY1
-      REAL                    :: S(NSPEC), D(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
+      REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH
+      REAL, INTENT(IN)        :: A(NTH,NK)
+      REAL, INTENT(IN)        :: CX1, CY1
+      REAL, INTENT(OUT)       :: TAUSCX, TAUSCY
+      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -207,6 +168,8 @@
       LOGICAL, SAVE   :: FIRST = .TRUE.
       INTEGER         :: MATRICES = 0
        
+      REAL            :: R1, R2, R3
+      
       REAL            :: WN2(NSPEC, NTH), Ka(NSPEC),        &
                          Kb(NSPEC, NTH), WNBOT(NSPEC, NTH), &
                          B(NSPEC, NTH)
@@ -237,28 +200,33 @@
 !     *** initialization, including reading data from files. ***
 !     **********************************************************
 !
-      IF ( FIRST ) THEN
-           CALL INSBS1( 1 )
+      IF ( RREF(3)) THEN
+        IF ( FIRST ) THEN
+          CALL INSBS1( 1 )
           FIRST  = .FALSE.
-        END IF
-      IF (( (ABS(CX1)+ABS(CY1)).EQ.0.).AND.(MATRICES.EQ.0) ) THEN
-      	 kwmin=MAX(MAX(dkbx,dkby),SIG(1)**2/GRAV)
+          END IF
+        IF (( (ABS(CX1)+ABS(CY1)).EQ.0.).AND.(MATRICES.EQ.0) ) THEN
+          kwmin=MAX(MAX(dkbx,dkby),SIG(1)**2/GRAV)
           kwmax=MIN(nkbx*dkbx,nkby*dkby)*0.25
           WRITE(*,*) 'k range:',kwmin,kwmax,SIG(1)**2/GRAV
           CALL INSBS1( 2 )
           MATRICES  = 1
-        END IF
+          END IF
+  END IF
 !
-! 1.  Deep water ===================================================== *
+! 1.  Sets scattering term to zero
 !
-      IF ( DEPTH*WN(1) .GT. 6 ) THEN
-        D = 0.
-        S = 0.
+      D = 0.
+      S = 0.
+      TAUSCX=0.
+      TAUSCY=0.
 !
-! 2.  Shallow water ================================================== *
+! 3.  Bottom scattering ================================================== *
 !
-      ELSE
-      ! Ardhuin and Herbers JFM 2000: noc current
+      IF ( DEPTH*WN(1) .LE. 6 .AND. RREF(3) ) THEN
+!
+! 3.a Ardhuin and Herbers JFM 2000: no current
+!
         IF ((ABS(CX1)+ABS(CY1).EQ.0.).AND.(MATRICES.EQ.1)) THEN 
           DO IK=1,NK
             KD=WN(IK)*DEPTH
@@ -290,7 +258,9 @@
               END IF
             END DO
         ELSE
-! 2.a Compute k' (WN2) from k (WN), U (CX1, CY1), 
+! 3.b
+!  Case with current (Ardhuin and Magne JFM 2007)
+! Compute k' (WN2) from k (WN), U (CX1, CY1), 
 ! using : k'=(Cg+k.U/k)/(Cg+k'.U/k') 
 !
          DO ITH2=1, NTH
@@ -307,7 +277,7 @@
 
            END DO
 !
-! 2.b Compute the coupling coefficient as a product of two terms 
+! 3.c Compute the coupling coefficient as a product of two terms 
 !               
 !   K=0.5*pi k'^2 * M(k,k')^2 / [sig*sig' *(k'*Cg'+k'.U)]  
 !                                      (Magne and Ardhuin JFM 2007)
@@ -353,11 +323,8 @@
 !
              END DO                 
            END DO  
-!
-! 3.a call the subroutine READBOTSPEC to read the Bottom spectrum
-!
 !    
-! 3.b Bilinear interpolation of the bottom spectrum BOTSPEC 
+! 3.a Bilinear interpolation of the bottom spectrum BOTSPEC 
 !     along the locus -> B(ISPEC,ITH2)
 !
          B(:,:)=0
@@ -369,7 +336,7 @@
              kboty=WN(MAPWN(ISPEC))*ESIN(MAPTH(ISPEC)) - &             
                WN2(ISPEC, ITH2) * ESIN(ITH2)           
 !
-! 3.b.1 test if the bottom wavenumber is larger than the cutoff
+! 3.a.1 test if the bottom wavenumber is larger than the cutoff
 !        otherwise the interaction is set to zero
     
              IF ((kbotx**2+kboty**2)>(kcutoff**2)) THEN    
@@ -420,35 +387,25 @@
         
               integral=integral + Ka(ISPEC)*Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*               &
                      ( Ap*WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)- A(MAPTH(ISPEC),MAPWN(ISPEC))) *DTH  
-		     ! the factor WN/WN2 accounts for the fact that N(K) and N(K') 
+         ! the factor WN/WN2 accounts for the fact that N(K) and N(K') 
                      ! have different Jacobian transforms from kx,ky to k,theta
-	!write(*,*) ( Ap*WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)- A(MAPTH(ISPEC),MAPWN(ISPEC))), &
-	!           A(MAPTH(ISPEC),MAPWN(ISPEC)),Ap,WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)
 
-!              IF (MAPWN(ISPEC).EQ.6) THEN 
-!                SMATRIX(MAPTH(ISPEC),ITH2)=SMATRIX(MAPTH(ISPEC),ITH2)+Ka(ISPEC)*Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*  &
-!                WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)*DTH
-!                SMATRIX(MAPTH(ISPEC),MAPTH(ISPEC))=SMATRIX(MAPTH(ISPEC),MAPTH(ISPEC)) &
-!                       -Ka(ISPEC)*Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*DTH
-!              
-!                END IF
               integral1=integral1+Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*Ap*WN(MAPWN(ISPEC))/WN2(ISPEC,ITH2)*DTH &
                          *DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))  
               integral1b=integral1b+Kb(ISPEC, ITH2)*B(ISPEC,ITH2)*A(MAPTH(ISPEC),MAPWN(ISPEC))*DTH  &
                          *DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))
               END DO
-            S(ISPEC)=integral
+            S(ISPEC)=S(ISPEC)+integral
 
             integral2=integral2+S(ISPEC)*DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))
             integral3=integral3+ABS(S(ISPEC))*DTH*DSII(MAPWN(ISPEC))/CG(MAPWN(ISPEC))
             END DO
           END IF
-!/T0    print*,'BOTTOM SCAT CHECKSUM:',integral2,integral3,integral1,integral1b
+!/T    print*,'BOTTOM SCAT CHECKSUM:',integral2,integral3,integral1,integral1b
     
-!/T0    DO ITH=1,120 
-!/T0      WRITE(6,'(120G15.7)') SMATRIX(ITH,:)
-!/T0      END DO
-        D(:)=0.
+!/T    DO ITH=1,120 
+!/T      WRITE(6,'(120G15.7)') SMATRIX(ITH,:)
+!/T      END DO
         END IF
 
 !/
@@ -469,7 +426,7 @@
 !/
 !  1. Purpose :
 !
-!     Initialization for source term routine.
+!     Initialization for bottom scattering source term routine.
 !
 !  2. Method :
 !
@@ -510,8 +467,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD
-      USE W3SERVMD, ONLY: EXTCDE
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, ECOS, ESIN
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -561,7 +517,7 @@
 ! 2.  Precomputed the scatering matrices for zero current
 !
 ! The Scattering source term is expressed as a matrix problem for 
-! a lsit of wavenumbers k0
+! a list of wavenumbers k0
 ! in the range of wavenumbers used in the model. 
 ! i.e. S(k0,theta)=Kfactor*SCATMATA ** TRANSPOSE (E(k0,theta))
 !
@@ -584,13 +540,8 @@
            kcutoff=scattcutoff*kcurr
            DO K1=1,NTH
              DO K2=1,NTH
-!               kbotx=kcurr*(COS(THETA(K2))-COS(THETA(K1)))  
-!               kboty=kcurr*(SIN(THETA(K2))-SIN(THETA(K1)))
-               ! BUG fix 2005/04/04: the minus sign below comes from the 
-               ! fact that in CREST directions are directions FROM !!
                kbotx=-kcurr*(ECOS(K2)-ECOS(K1))  
                kboty=-kcurr*(ESIN(K2)-ESIN(K1))  
-               !WRITE(6,*) 'Bottom wavenumber:',K1,K2,kbotx,kboty
                AMAT(K1,K2)=0.
                ! Tests if the bottom wavenumber is larger than the cutoff
                ! Otherwise the interaction is set to zero
@@ -631,17 +582,17 @@
          ALLOCATE(D(NTH))
          DO I=0,nkscat-1
            AMAT(:,:)=SCATMATA(I,:,:1)
-           !diagonalizes the matrix A
-           !D is a vector with the eigenvalues, V is the matrix made of the 
-           !eigenvectors so that VD2Vt=A  with D2(i,j)=delta(i,j)D(i)
-           !and VVt=Id, so that exp(A)=Vexp(D2)Vt
+!
+!diagonalizes the matrix A
+!D is a vector with the eigenvalues, V is the matrix made of the 
+!eigenvectors so that VD2Vt=A  with D2(i,j)=delta(i,j)D(i)
+!and VVt=Id, so that exp(A)=Vexp(D2)Vt
+!
            CALL diagonalize(AMAT,D,V,nrot) 
            SCATMATD(I,:)=D(:)    !eigen values
            SCATMATV(I,:,:)=V(:,:) !eigen vectors
-           !WRITE(102,*) SIZE(V),SIZE(MATMUL(V,TRANSPOSE(V)))
-           !WRITE(102,'(72G16.5)') MATMUL(V,TRANSPOSE(V))
            kcurr=kwmin+I*(kwmax-kwmin)/(nkscat-2)
-           WRITE(*,*) 'Diagonalized for k=  ',kcurr,',',I+1,'out of ',nkscat
+           WRITE(*,*) 'Scattering matrix diagonalized for k=  ',kcurr,',',I+1,'out of ',nkscat
            END DO
          END IF
 
@@ -652,13 +603,12 @@
 
 !*********************************************************************
    SUBROUTINE DIAGONALIZE(a,d,v,nrot)
-! inspired from numerical recipes for Fortran 90. Chapter B11
 !*********************************************************************
    IMPLICIT NONE
-	INTEGER,    INTENT(out)  :: nrot
-   DOUBLE PRECISION    , DIMENSION(:), INTENT(OUT) ::d
-   DOUBLE PRECISION    , DIMENSION(:,:), INTENT(INOUT) ::a
-   DOUBLE PRECISION    , DIMENSION(:,:), INTENT(OUT) ::v
+   INTEGER,                          INTENT(out)   :: nrot
+   DOUBLE PRECISION, DIMENSION(:)  , INTENT(OUT)   ::d
+   DOUBLE PRECISION, DIMENSION(:,:), INTENT(INOUT) ::a
+   DOUBLE PRECISION, DIMENSION(:,:), INTENT(OUT)   ::v
 
    INTEGER    i,j,ip,iq,n
    DOUBLE PRECISION       c,g,h,s,sm,t,tau,theta,tresh
@@ -721,7 +671,7 @@
       d(:)=b(:)
       z(:)=0.0
    ENDDO
-   WRITE(6,*) 'Too many iterations in jacobi'
+   WRITE(6,*) 'Too many iterations in DIAGONALIZE'
    CONTAINS
    SUBROUTINE ROTATE(X1,X2)
    DOUBLE PRECISION, DIMENSION(:), INTENT(INOUT) :: X1,X2
@@ -736,3 +686,5 @@
 !/ End of module INSBS1MD -------------------------------------------- /
 !/
       END MODULE W3SBS1MD
+
+

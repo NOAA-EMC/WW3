@@ -1,0 +1,296 @@
+!/ ------------------------------------------------------------------- /
+      MODULE W3REF1MD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                SHOM |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         31-Mar-2010 |
+!/                  +-----------------------------------+
+!/
+!/    31-Mar-2010 : Origination.                        ( version 3.14.IFREMER )
+!/    03-Sep-2010 : Clean up                            ( version 3.14.IFREMER )
+!/    14-Nov-2010 : Adding variable reflections         ( version 4.04.IFREMER )
+!/ 
+!  1. Purpose :
+!
+!     This module computes : 
+!        - shoreline reflection 
+!        - unresolved islands and iceberg reflections
+!
+!  2. Variables and types :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines and functions :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      W3SREF    Subr. Public   Reflection of waves (shorline, islands...)
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Remarks :
+!
+!
+!  6. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+!  7. Source code :
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!
+      PUBLIC
+!/
+!/ Public variables
+!/
+!
+!/
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3SREF(A, CG, WN, DEPTH, CX1, CY1, REFLC, REFLD,     &
+                         DELX, DELY, DELA, TRNX, TRNY, BERG, DT,  S)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            F. Ardhuin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         23-Jun-2006 |
+!/                  +-----------------------------------+
+!/
+!/    06-May-2010 : Origination.                        ( version 3.14-Ifremer )
+!/
+!  1. Purpose :
+!
+!     Computes coastal and iceberg/island reflections
+!
+!  2. Method :
+!
+!     Adds the reflected components from 2 types of sources: 
+!        shoreline reflection, subgrid obstruction and icebergs 
+!      
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!  A         R.A.  I   Action density spectrum (1-D)
+!       CG        R.A.  I   Group velocities.
+!       WN        R.A.  I   Wavenumbers.
+!       DEPTH     Real  I   Mean water depth.
+!       S         R.A.  O   Source term (1-D version).
+!       D         R.A.  O   Diagonal term of derivative (1-D version).
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3SRCE    Subr. W3SRCEMD Source term integration.
+!      W3EXPO    Subr.   N/A    Point output post-processor.
+!      GXEXPO    Subr.   N/A    GrADS point output post-processor.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, RREF, &
+                          REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
+        SIG2, DSII
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH
+      REAL, INTENT(IN)        :: A(NTH,NK)
+      REAL, INTENT(IN)        :: CX1, CY1, DT
+      INTEGER, INTENT(IN)     :: REFLD(4)
+      REAL, INTENT(IN)        :: REFLC(4), DELX, DELY, DELA, TRNX, &
+                                 TRNY, BERG
+      REAL, INTENT(OUT)       :: S(NSPEC)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/ 
+      INTEGER         :: ISPEC, IK, ITH, ITH2, ITH3
+!/S      INTEGER, SAVE           :: IENT = 0
+      LOGICAL, SAVE   :: FIRST = .TRUE.
+       
+      REAL            :: R0, R1, R2, R3, R4, R2X, R2Y
+    REAL            :: FAC1, FAC2, FAC3, FAC4
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3SREF')
+!
+! 0.  Initializations ------------------------------------------------ *
+!
+!
+! 1.  Sets scattering term to zero
+!
+      S = 0.
+!
+! 2.  Shoreline reflection =============================================== *
+!
+      IF (REFLC(1).GT.0) THEN 
+      FAC1=1/(0.5*REAL(NTH))
+      FAC2=1.57/(0.5*REAL(NTH))
+      FAC3=2.6/(0.5*REAL(NTH))
+      FAC4=1.
+      R0=ABS(ECOS(REFLD(1)))
+      DO IK=1, NK
+        DO ITH=1, NTH
+!
+!   ITH is the incident wave direction
+!
+          R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
+          R2=REFLC(1)*A(ITH,IK)
+          IF (R1.GT.0.AND.R2.GT.0) THEN 
+            DO ITH2=1,NTH
+!
+!   ITH2 is the reflected wave direction
+!
+              ISPEC=ITH2+(IK-1)*NTH
+              R3=ECOS(1+MOD(ABS(ITH2-REFLD(1)),NTH))
+              IF (R3.LT.0) THEN 
+!
+! Determines direction of specular reflection: th3=pi+2*n-th1  
+!
+                ITH3=1+MOD(NTH/2+NTH+2*REFLD(1)-ITH-1,NTH)
+                R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))
+!               WRITE(6,'(A,5I4,F7.3)') 'TEST:',NTH,ITH,REFLD(1),ITH3,ITH2,R4
+                IF (R4.GT.0.) THEN 
+!
+! Tests the type of shoreline geometry
+!
+                  SELECT CASE (REFLD(2))
+                    CASE (0)
+                   ! Sharp corner: broad reflection
+                      IF (REFLD(3).EQ.0)      & 
+                        S(ISPEC)=S(ISPEC)+    &
+                        R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*FAC1
+                      IF (REFLD(4).EQ.0)      & 
+                        S(ISPEC)=S(ISPEC)+ &
+                        R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*FAC1
+                    CASE (1)
+                   ! mild corner: average reflection
+                      IF (REFLD(3).EQ.0)      & 
+                        S(ISPEC)=S(ISPEC)+    &
+                        R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*ABS(R4)*FAC2
+                      IF (REFLD(4).EQ.0)      & 
+                        S(ISPEC)=S(ISPEC)+    &
+                        R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*ABS(R4)*FAC2
+                    CASE (2)
+                   ! straight coast: narrow reflection
+!
+! Specular for tests 
+!                  IF (ITH2.EQ.ITH3) THEN               
+           !
+           !  According to the shoreline direction, changes the 
+           !  numerical schemes (due to neighbors) in order to 
+           !  account for along-coast advection
+           !         
+!                      IF (R0.GT.0.7) THEN 
+                      IF (REFLD(3).EQ.0)      & 
+!
+! Specular for tests 
+!                       S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX)
+                        S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
+                                              *(R4**4) *FAC3
+!                      ELSE
+!
+! Specular for tests 
+!                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
+                      IF (REFLD(4).EQ.0)      & 
+                        S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
+                                              *(R4**4) *FAC3
+!                        ENDIF   
+              !IF (IK.EQ.6) &
+              !    WRITE(6,*) 'TEST:',ITH,ITH2,ITH3, &
+              !  REFPARS(1), R4, R2, A(ITH2,IK),  &
+              !    S(ISPEC), S(ISPEC)*DT, DELX, DELY, R0, REFLD(1)
+              !   END IF
+               END SELECT
+              END IF  
+                END IF
+              END DO
+              END IF
+            END DO   
+          END DO
+        END IF
+!
+!  Add diffuse reflection due to subgrid islands and icebergs
+!
+      IF (    ((REFPARS(2).GT.0.).AND.((TRNX+TRNY).LT.2))     &
+        .OR.((REFPARS(4).GT.0.).AND.(BERG.GT.0)       )   ) THEN 
+        R2X=  REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
+            + REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
+        R2Y=  REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
+            + REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
+      FAC1=1/(0.5*REAL(NTH))
+        DO IK=1, NK
+          DO ITH=1, NTH
+            IF (A(ITH,IK).GT.0.) THEN 
+              R0=ABS(ECOS(ITH))
+             R2=A(ITH,IK)
+
+              DO ITH2=1,NTH
+                ISPEC=ITH2+(IK-1)*NTH
+                R3=ECOS(1+MOD(NTH+ITH2-ITH,NTH))
+                IF (R3.LT.0) THEN 
+                     S(ISPEC)=S(ISPEC)+ &
+                               CG(IK)*R2X*R2*ABS(ECOS(ITH2)/DELX)*FAC1 &
+                             + CG(IK)*R2Y*R2*ABS(ESIN(ITH2)/DELY)*FAC1
+                  END IF
+                END DO
+              END IF
+            END DO
+          END DO
+        END IF
+!/
+!/ End of W3SREF ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3SREF!/ ------------------------------------------------------------------- /
+
+!/
+!/ End of module W3REF1MD -------------------------------------------- /
+!/
+      END MODULE W3REF1MD
+
+

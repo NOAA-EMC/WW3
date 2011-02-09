@@ -44,7 +44,7 @@
   if test "$#" = '0'
   then
     progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp
-           ww3_trck ww3_grib gx_outf gx_outp'
+           ww3_trck ww3_grib gx_outf gx_outp ww3_ounf ww3_ounp'
     progs="$progs ww3_multi ww3_sbs1 ww3_gint"
   else
     progs="$*"
@@ -142,7 +142,7 @@
 
     OK='n'
     checks='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_sbs1
-            ww3_outf ww3_outp ww3_trck ww3_grib ww3_gint gx_outf gx_outp'
+            ww3_outf ww3_outp ww3_trck ww3_grib ww3_gint gx_outf gx_outp ww3_ounf ww3_ounp'
 
     for check in $checks
     do

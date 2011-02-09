@@ -487,7 +487,7 @@ call extcde (99)
       USE W3IDATMD, ONLY: TLN, WLEV, TC0, TCN, CX0, CXN, CY0, CYN,    &
                           TW0, TWN, WX0, WXN, WY0, WYN, DT0, DTN,     &
                           TIN, ICEI, T0N, T1N, T2N, TDN, FLAGS,       &
-                          TG0, TGN, GA0, GD0, GAN, GDN
+                          TG0, TGN, GA0, GD0, GAN, GDN, BERGI
       USE WMMDATMD, ONLY: IMPROC, NMPERR, MDST, MDSE, MDSF, ETIME,    &
                           FLLSTL, FLLSTI, RCLD, NDT, DATA0, DATA1,    &
                           DATA2, NMV, NMVMAX, TMV, AMV, DMV
@@ -552,7 +552,7 @@ call extcde (99)
         CASE (4)
           CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
                        NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-                       XXX, XXX, XXX, TIN, XXX, XXX, ICEI, IERR)
+                       XXX, XXX, XXX, TIN, XXX , BERGI, ICEI, IERR)
           IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
 !
 ! 5.  Data type 0 ---------------------------------------------------- /
@@ -808,6 +808,9 @@ call extcde (99)
         CASE (4)
           CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEI,                      &
                         JMOD, INPUTS(JMOD)%ICEI, 0. )
+          IF ( IDINP(IMOD,J) .EQ. 'ISI' ) CALL WMUPDS                 &
+                      ( IMOD, INPUTS(IMOD)%BERGI,                     &
+                        JMOD, INPUTS(JMOD)%BERGI, 0. )
 !
 ! 2.e Assimilation data 0
 !
@@ -971,7 +974,7 @@ call extcde (99)
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
-                          GTYPE, RLGTYPE, CLGTYPE
+                          GTYPE, RLGTYPE, CLGTYPE, UNGTYPE
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1018,6 +1021,10 @@ call extcde (99)
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
+      ELSE IF (GTYPE .EQ. UNGTYPE) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
+          'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )      
         END IF
 !
       NXI    => GRIDS(JMOD)%NX
@@ -1501,7 +1508,7 @@ call extcde (99)
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
-                          GTYPE, RLGTYPE, CLGTYPE
+                          GTYPE, RLGTYPE, CLGTYPE, UNGTYPE
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1546,6 +1553,10 @@ call extcde (99)
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
+        ELSE IF ( GTYPE .EQ. UNGTYPE) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
+          'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )	  
         END IF
 !
       NXI    => GRIDS(JMOD)%NX

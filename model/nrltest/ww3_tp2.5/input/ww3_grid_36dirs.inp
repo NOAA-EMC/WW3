@@ -6,9 +6,7 @@ $
 $
    F T T T F F
 $ geogr. CFL time step is the 2nd one....
-$ UQ does fine with 600s, but PR1 shows instability
-$ 450s is confirmed "OK" with PR1
-  600.  450.0  600.  600.
+  600.  600.0  600.  600.
 $
 $ &PRO2 DTIME = 0. /
   &PRO2 DTIME = 2500. /

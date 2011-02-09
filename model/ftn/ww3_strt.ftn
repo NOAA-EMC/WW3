@@ -22,6 +22,8 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    31-Oct-2010 : Implement unstructured grid         ( version 3.14 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -430,8 +432,14 @@
 !
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
+         IF (GTYPE .EQ. UNGTYPE) THEN 
+            IX     = MAPSF(ISEA,1)
+            X      = XYB(IX,1)
+            Y      = XYB(IX,2)
+         ELSE
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
+         ENDIF 	    
             RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
             IF ( RDSQR .GT. 40. ) THEN
                 FACTOR = 0.
@@ -561,9 +569,15 @@
 !
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
-            IX     = MAPSF(ISEA,1)
-            IY     = MAPSF(ISEA,2)
 
+     IF (GTYPE .EQ. UNGTYPE) THEN 
+         IX     = MAPSF(ISEA,1)
+         X      = XYB(IX,1)
+         Y      = XYB(IX,2)
+       ELSE
+         IX     = MAPSF(ISEA,1)
+         IY     = MAPSF(ISEA,2)
+       ENDIF 	    
             RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
 
             IF ( RDSQR .GT. 40. ) THEN

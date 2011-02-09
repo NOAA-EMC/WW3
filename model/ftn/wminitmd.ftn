@@ -80,9 +80,11 @@
 !/    03-Nov-2006 : Adding wave field separation.       ( version 3.10 )
 !/    02-Feb-2007 : Adding FLAGST initialization.       ( version 3.10 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+!/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.    ( version 3.14.5 )
+!/    21-Sep-2010 : Adding coupling output              ( version 3.14-Ifremer)
 !/
 !  1. Purpose :
 !
@@ -214,6 +216,7 @@
 !        m Type 2: point output
 !        n Type 3: track output
 !        o Type 6: partitioning output
+!        p Type 7: coupling output
 !        ---------------------------------------------------
 !      6.  Read moving grid data
 !      7.  Work load distribution
@@ -296,7 +299,7 @@
                           NFBPO, NBI, NDS, IAPROC, NAPLOG, NAPFLD,    &
                           NAPPNT, NAPTRK, NAPRST, NAPBPT, NAPPRT,     &
                           NAPROC, FNMPRE, OUTPTS, NDST, NDSE, NOPTS,  &
-                          IOSTYP, UNIPTS, UPPROC, DTOUT, TOLAST
+                          IOSTYP, UNIPTS, UPPROC, DTOUT, TOLAST, NOTYPE
       USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, MDSF, MDSUP,  &
                           IMPROC, NMPROC, NMPSCR, NMPERR, NMPTST,     &
                           NMPLOG, NMPUPT, STIME, ETIME, NMV, NMVMAX,  &
@@ -345,7 +348,7 @@
                                  RP1(:), RPN(:)
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(8), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:), FLRBPI(:), BCDTMP(:),    &
-                                 USEINP(:), LPRT(:)
+                                 USEINP(:), LPRT(:), FLGR2(:,:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=3)        :: IDSTR(7), IDTST, OUTSTR(6)
       CHARACTER(LEN=6)        :: ACTION(9), YESXX, XXXNO
@@ -358,7 +361,7 @@
 !/MPRF      CHARACTER(LEN=12)       :: PFILE
       CHARACTER(LEN=13)       :: IDFLDS(7)
       CHARACTER(LEN=23)       :: DTME21
-      CHARACTER(LEN=30)       :: IDOTYP(6)
+      CHARACTER(LEN=30)       :: IDOTYP(7)
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
 !
@@ -382,7 +385,8 @@
                     'Track point output            ' ,                &
                     'Restart files                 ' ,                &
                     'Nesting data                  ' ,                &
-                    'Separated wave field data     ' /
+                    'Separated wave field data     ' ,                &
+                    'Fields for coupling           ' /
 !
       DATA IDSTR  / 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1', 'DT2' /
 !
@@ -560,9 +564,9 @@
 !
 ! 2.c Set up I/O for individual models (initial)
 !
-      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(30,0:NRGRD),    &
+      ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
            FLGRD(NOGRD,NRGRD), OT2(0:NRGRD), MDSF(-NRINP:NRGRD,7),    &
-           IPRT(6,NRGRD), LPRT(NRGRD) )
+           IPRT(6,NRGRD), LPRT(NRGRD), FLGR2(NOGRD,NRGRD) )
 !
       MDS    = -1
       MDSF   = -1
@@ -953,7 +957,9 @@
 !
 ! 5.a Loop over types for unified output
 !
-      DO J=1, 6
+      NOTYPE = 6
+!/COU      NOTYPE = 7
+      DO J=1, NOTYPE
 !
 ! 5.b Process standard line
 !
@@ -1112,6 +1118,29 @@
                       END IF
                   END IF
 !
+!/COU              ELSE IF ( J .EQ. 7 ) THEN
+!
+! 5.i Type 7: coupling
+!
+!/COU                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+!/COU                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,1)
+!
+!/COU                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+!/COU                    FLT    = .TRUE.
+!/COU                    DO I=1, NOGRD 
+!/COU                      IF ( FLGR2(I,1) ) THEN
+!/COU                          IF ( FLT ) THEN 
+!/COU                              WRITE (MDSS,955) IDOUT(I)
+!/COU                              FLT    = .FALSE.
+!/COU                            ELSE
+!/COU                              WRITE (MDSS,956) IDOUT(I)
+!/COU                            END IF
+!/COU                        END IF
+!/COU                      END DO
+!/COU                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
+!/COU                  END IF
+
+!
 ! ... End of output type selecttion ELSE IF
 !
               END IF
@@ -1134,6 +1163,7 @@
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
         FLGRD(:,I) = FLGRD(:,1)
+        FLGR2(:,I) = FLGR2(:,1)
         IPRT(:,I)  = IPRT(:,1)
         LPRT(I)    = LPRT(1)
         END DO
@@ -1350,6 +1380,27 @@
                   END IF
 !
               END IF
+            ELSE IF ( J .EQ. 1 ) THEN
+!
+! 5.p Type 7: coupling fields
+!
+                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,I)
+!
+                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                    FLT    = .TRUE.
+                    DO II=1, NOGRD
+                      IF ( FLGR2(II,I) ) THEN
+                          IF ( FLT ) THEN
+                              WRITE (MDSS,955) IDOUT(II)
+                              FLT    = .FALSE.
+                            ELSE
+                              WRITE (MDSS,956) IDOUT(II)
+                            END IF
+                        END IF
+                      END DO
+                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
+                  END IF
 !
           ELSE
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,963)
@@ -1890,7 +1941,7 @@
 !
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
-                      FLGRD(:,I), OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y,    &
+                      FLGRD(:,I),FLGR2(:,I), OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y,    &
                       OT2(I)%PNAMES, IPRT(:,I), LPRT(I), MPI_COMM_LOC )
 !
 ! ..... Finalize I/O file hook up
@@ -2044,7 +2095,7 @@
 !
 ! 8.a.3 Status indicator and model times
 !
-        DO J=1, 6
+        DO J=1, NOTYPE
           IF ( FLOUT(J) ) THEN
               IF ( TOUTP(1,I) .EQ. -1 ) THEN
                   TOUTP(:,I) = TONEXT(:,J)
@@ -2128,13 +2179,13 @@
 !/MPI            CALL MPI_BCAST ( NBI  , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
-!/MPI            CALL MPI_BCAST ( FLOUT,  6, MPI_LOGICAL, 0,          &
+!/MPI            CALL MPI_BCAST ( FLOUT,  7     , MPI_LOGICAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( DTOUT , 6, MPI_REAL, 0,             &
+!/MPI            CALL MPI_BCAST ( DTOUT , 7     , MPI_REAL, 0,             &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TONEXT,12, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TONEXT,14, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( TOLAST,12, MPI_INTEGER, 0,          &
+!/MPI            CALL MPI_BCAST ( TOLAST,14, MPI_INTEGER, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
 !/MPI          END IF
@@ -2454,7 +2505,7 @@
       CALL WMUSET ( MDSE, MDST, SCRATCH, .FALSE. )
       CALL WMUDMP ( MDST, 0 )
 !
-      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, INAMES, MNAMES )
+      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, INAMES, MNAMES )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN

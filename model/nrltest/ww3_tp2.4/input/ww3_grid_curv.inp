@@ -10,10 +10,8 @@ $ 360.  180.0  360.  360.
 $ tp2.4 w/out GSE, 3hr output : 2200 unstable , 1600 stable
   2200.  1100. 2200.  2200.
 $
-$ dt=1100s, DTIME = 64800., unstable
-$ dt=1100s, DTIME = 43200., stable
 $ &PRO2 DTIME = 0. /
-  &PRO2 DTIME = 43200. /
+  &PRO2 DTIME = 64800. /
 $ &PRO3 WDTHCG = 0., WDTHTH = 0. /
   &PRO3 WDTHCG = 1.50, WDTHTH = 1.50 /
 $ &PRO4 RNFAC = 0., RSFAC = 0. /

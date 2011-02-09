@@ -346,6 +346,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+!/RWND      USE W3GDATMD, ONLY:   RWINDC
 !/ST2      USE W3GDATMD, ONLY: ZWIND, OFSTAB, FFNG, FFPS, CCNG, CCPS, SHSTAB
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ADATMD, ONLY: DW, CX, CY, UA, UD, U10, U10D, AS,          &
@@ -444,8 +445,8 @@
 !/RWND      IF ( FLCUR ) THEN
 !
 !/RWND          DO ISEA=1, NSEA
-!/RWND            UXR        = UA(ISEA)*COS(UD(ISEA)) - CX(ISEA)
-!/RWND            UYR        = UA(ISEA)*SIN(UD(ISEA)) - CY(ISEA)
+!/RWND            UXR        = UA(ISEA)*COS(UD(ISEA)) - RWINDC*CX(ISEA)
+!/RWND            UYR        = UA(ISEA)*SIN(UD(ISEA)) - RWINDC*CY(ISEA)
 !/RWND            U10 (ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
 !/RWND            U10D(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
 !/RWND            END DO
@@ -879,7 +880,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-May-2007 |
+!/                  | Last update :         15-May-2010 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -889,6 +890,7 @@
 !/    28-Jun-2005 : Adding MAPST2.                      ( version 3.07 )
 !/                  Taking out initilization.
 !/    11-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+!/    15-May-2010 : Adding second field for icebergs    ( version 3.14.4 )
 !/
 !  1. Purpose :
 !
@@ -902,6 +904,9 @@
 !     points spectra are set to zero. Points from wich ice disappears
 !     are initialized with a "small" JONSWAP spectrum, based on the
 !     frequency SIG(NK-1) and the local wind direction.
+!
+!     In the case of icebergs, the iceberg attenuation coefficient is
+!     added to the subgrid obstruction map.
 !
 !  3. Parameters :
 !
@@ -945,10 +950,10 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
                           NTH, NK, NSPEC, SIG, TH, DTH, FICEN
-      USE W3WDATMD, ONLY: TIME, TICE, ICE
+      USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG
 !!    USE W3ADATMD, ONLY: U10, U10D, CG
       USE W3ADATMD, ONLY: CG
-      USE W3IDATMD, ONLY: TIN, ICEI
+      USE W3IDATMD, ONLY: TIN, ICEI, BERGI
 !/
       IMPLICIT NONE
 !/
@@ -994,6 +999,7 @@
         IX        = MAPSF(ISEA,1)
         IY        = MAPSF(ISEA,2)
         ICE(ISEA) = ICEI(IX,IY)
+        BERG(ISEA)= BERGI(IX,IY)
 !
 ! 2.b Sea point to be de-activated..
 !
@@ -1289,6 +1295,14 @@
 !
             IF (WLV(ISEA)-ZB(ISEA).GT.0. .AND. MAPDRY(IY,IX).EQ.1) THEN
                 MAPDRY(IY,IX) = 0
+!
+! Resets the spectrum to zero
+!
+                    IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC).EQ.0 ) THEN
+                        JSEA   = 1 + (ISEA-1)/NAPROC
+                        VA(:,JSEA) = 0.
+                      END IF
+!
                 IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
                     MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
 !/T2                    WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
@@ -1517,8 +1531,8 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPSF,                &
                           TRFLAG, FICE0, FICEN,                       &
                           RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
-                          HPFAC, HQFAC
-      USE W3WDATMD, ONLY: ICE
+                          HPFAC, HQFAC, REFPARS
+      USE W3WDATMD, ONLY: ICE, BERG
       USE W3ADATMD, ONLY: ATRNX, ATRNY
 !
       IMPLICIT NONE
@@ -1558,7 +1572,7 @@
 !
 ! 2.b TRFLAG = 1,3: TRNX/Y defined at boundaries
 !
-        ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 ) THEN
+        ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
 !/T          WRITE (NDST,9001) 'DATA APPLIED AT CELL BOUNDARIES'
 !/T          LEVS   = 0.
 !
@@ -1585,7 +1599,7 @@
 !
             END DO
 !
-! 2.c TRFLAG = 2,4: TRNX/Y defined at cell centers
+! 2.c TRFLAG = 2,4,6: TRNX/Y defined at cell centers
 !
         ELSE
 !/T          WRITE (NDST,9001) 'DATA APPLIED AT CELL CENTERS'
@@ -1669,7 +1683,7 @@
 !/T          WRITE (NDST,9001) 'NO ICE ACTION REQUIRED'
           RETURN
 !
-! 3.b TRFLAG = 3,4: Calculate ice transparencies
+! 3.b TRFLAG = 3,4,5,6: Calculate ice transparencies
 !
         ELSE
 !/T          WRITE (NDST,9001) 'CALCULATE ICE TRANSPARENCIES'
@@ -1689,15 +1703,40 @@
                 DX     = DX * RADIUS * DERA
                 DY     = DY * RADIUS * DERA
               END IF
+
 !
-            LICE0  = FICE0*MIN(DX,DY)
-            LICEN  = FICEN*MIN(DX,DY)
-!           TRIX(IXY) = MAX ( 0. , MIN ( 1. , 1.5-ICE(ISEA)*DX/LICE ) )
-!           TRIY(IXY) = MAX ( 0. , MIN ( 1. , 1.5-ICE(ISEA)*DY/LICE ) )
-            TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
-            TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) ) 
-            TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
-            TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
+            IF (TRFLAG.GT.4) THEN
+!
+! Added by F. Ardhuin for iceberg tests ... 
+! Case in which the ice file contains the transparencies / 10*(dx or dy) with dx in km
+!
+              IF (BERG(ISEA).GT.0) THEN 
+                 TRIX(IXY) = EXP(-BERG(ISEA)*DX*0.0001)
+                 TRIY(IXY) = EXP(-BERG(ISEA)*DY*0.0001)
+              ELSE
+                TRIX(IXY)=1.
+                TRIY(IXY)=1.
+              END IF
+            ELSE
+!
+! Otherwise: original Tolman expression (Tolman 2003)
+!
+              LICE0  = FICE0*MIN(DX,DY)
+              LICEN  = FICEN*MIN(DX,DY)
+!             TRIX(IXY) = MAX ( 0. , MIN ( 1. , 1.5-ICE(ISEA)*DX/LICE ) )
+!             TRIY(IXY) = MAX ( 0. , MIN ( 1. , 1.5-ICE(ISEA)*DY/LICE ) )
+              TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+              TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
+              TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
+              TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
+!
+!  Adding iceberg attenuation
+!
+              IF (BERG(ISEA).GT.0) THEN
+                TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*REFPARS(5)*DX*0.0001)
+                TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*REFPARS(5)*DY*0.0001)
+                END IF
+              END IF          
 !
 !/T            ILEV          = NINT(10.*MIN(TRIX(IXY),TRIY(IXY)))
 !/T            LEVS(ILEV)    = LEVS(ILEV) + 1.

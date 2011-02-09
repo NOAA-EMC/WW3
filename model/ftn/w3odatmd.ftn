@@ -27,6 +27,8 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    14-Jul-2010 : Fix VAAUX declaration bug.        ( version 3.14.2 )
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
+!/    08-Nov-2010 : Implementing unstructured grids     ( version 3.14.4 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -48,6 +50,7 @@
 !      IOUTP     Int.  Public   Selected model for output, init. at -1.
 !      IOSTYP    Int.  Public   Output data server type.
 !      NOGRD     I.P.  Public   Number of output fields available.
+!      NOTYPE    I.P.  Public   Number of output types
 !      NOSWLL    I.P.  Public   Number of swell fields from part.
 !                               to be used in field output.
 !      NOEXTR    I.P.  Public   Number of extra (user available) 
@@ -120,6 +123,7 @@
 !      NRQGO     Int.  Public   Number of MPI handles W3IOGO.
 !      IRQGO     I.A.  Public   Array with MPI handles W3IOGO.
 !      FLOGRD    L.A.  Public   FLags for output fields.
+!      FLOGR2    L.A.  Public   FLags for coupling fields.
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT2 are aliased to pointers with the same
@@ -274,8 +278,9 @@
 !/ Conventional declarations
 !/     
       INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
-      INTEGER, PARAMETER      :: NOGRD = 31
-      INTEGER, PARAMETER      :: NOSWLL=  2
+      INTEGER, PARAMETER      :: NOGRD = 53
+      INTEGER                 :: NOTYPE
+      INTEGER, PARAMETER      :: NOSWLL=  5
       INTEGER, PARAMETER      :: NOEXTR=  2
       CHARACTER(LEN=20)       :: IDOUT(NOGRD)
       CHARACTER(LEN=80)       :: FNMPRE = './'
@@ -284,20 +289,31 @@
 !
       DATA IDOUT  / 'Water depth         ' , 'Current vel.        ' , &
                     'Wind speed          ' , 'Air-sea temp. dif.  ' , &
-                    'Friction velocity   ' , 'Wave height         ' , &
-                    'Mean wave length    ' , 'Mean wave period    ' , &
-                    'Mean wave direction ' , 'Mean dir. spread    ' , &
-                    'Peak frequency      ' , 'Peak direction      ' , &
-                    'Wind sea pk. fr.    ' , 'Wind sea direction  ' , &
+                    'Water level         ' , 'Ice concentration   ' , &
+                    'Wave height         ' ,  'Mean wave length   ' , &
+                    'Mean wave freq. (+2)' , 'Mean wave period(+1)' , &
+                    'Mean wave period(-1)' , 'Energy flux         ' , &
+                    'Peak frequency      ' , 'Mean wave direction ' , &
+                    'Mean dir. spread    ' , 'Peak direction      ' , &
                     'Part. wave heigt    ' , 'Part. peak period   ' , &
                     'Part. peak wave l.  ' , 'Part. mean direction' , &
                     'Part. dir. spread   ' , 'Part. wind sea frac.' , &
                     'Total wind sea frac.' , 'Number of partitions' , &
                     'Avg. time step.     ' , 'Cut-off freq.       ' , &
-                    'Ice concentration   ' , 'Water level         ' , &
-                    'Bottom rms ampl.    ' , 'Bottom rms velocity ' , &
-                    'Radiation stresses  ' , 'User defined #1     ' , &
-                    'User defined #2     ' /
+                    'Maximum spatial CFL ' , 'Maximum angular CFL ' , &
+                    'Friction velocity   ' , 'Charnock parameter  ' , &
+                    'Wind-wave enrgy flux' , 'Wind-wave net mom. f' , &
+                    'Wind-wave neg.mom.f.' , 'Whitecap coverage   ' , &
+                    'Whitecap mean thick.' , 'Mean breaking height' , &
+                    'Whitecap moment     ' , 'Bottom rms ampl.    ' , &
+                    'Bottom rms velocity ' , 'Bedform parameters  ' , &
+                    'Energy diss. in WBBL' , 'Moment. loss in WBBL' , &
+                    'Radiation stresses  ' , 'Wave-ocean mom. flux' , &
+                    'Bernoulli head      ' , 'Wave-ocean nrg  flux' , &
+                    'Stokes transport    ' , 'Stokes drift at z=0 ' , &
+                    'Mean square slopes  ' , 'Tail level          ' , &
+                    'Second order press. ' , 'User defined #1     ' , &
+                    'User defined #2     '/ 
 !/
 !/ Data structures
 !/
@@ -305,7 +321,7 @@
         INTEGER               :: IPASS1
 !/MPI        INTEGER               :: NRQGO
 !/MPI        INTEGER, POINTER      :: IRQGO(:)
-        LOGICAL               :: FLOGRD(NOGRD), WRITE1
+        LOGICAL               :: FLOGRD(NOGRD),FLOGR2(NOGRD), WRITE1
       END TYPE OTYPE1
 !/
       TYPE OTYPE2
@@ -367,10 +383,10 @@
         INTEGER               :: NTPROC, NAPROC, IAPROC, NAPLOG,      &
                                  NAPOUT, NAPERR, NAPFLD, NAPPNT,      &
                                  NAPTRK, NAPRST, NAPBPT, NAPPRT
-        INTEGER               :: TOFRST(2), TONEXT(2,6), TOLAST(2,6), &
+        INTEGER               :: TOFRST(2), TONEXT(2,7), TOLAST(2,7), &
                                  TBPI0(2), TBPIN(2), NDS(13)
-        REAL                  :: DTOUT(6)
-        LOGICAL               :: FLOUT(6)
+        REAL                  :: DTOUT(7)
+        LOGICAL               :: FLOUT(7)
         TYPE(OTYPE1)          :: OUT1
         TYPE(OTYPE2)          :: OUT2
         TYPE(OTYPE3)          :: OUT3
@@ -400,7 +416,7 @@
       INTEGER, POINTER        :: IPASS1
 !/MPI      INTEGER, POINTER        :: NRQGO
 !/MPI      INTEGER, POINTER        :: IRQGO(:)
-      LOGICAL, POINTER        :: FLOGRD(:), WRITE1
+      LOGICAL, POINTER        :: FLOGRD(:),  FLOGR2(:),WRITE1
 !/
 !/ Type 2 ...
 !/
@@ -1275,6 +1291,7 @@
 !/MPI      NRQGO  => OUTPTS(IMOD)%OUT1%NRQGO
 !/MPI      IF ( NRQGO .NE. 0 ) IRQGO  => OUTPTS(IMOD)%OUT1%IRQGO
       FLOGRD => OUTPTS(IMOD)%OUT1%FLOGRD
+      FLOGR2 => OUTPTS(IMOD)%OUT1%FLOGR2
 !
       IPASS2 => OUTPTS(IMOD)%OUT2%IPASS2
       NOPTS  => OUTPTS(IMOD)%OUT2%NOPTS

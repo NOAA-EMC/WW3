@@ -53,10 +53,18 @@
 !/                  ( F. Ardhuin )
 !/    22-Feb-2008 : Initialize TRNX-Y properly.         ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    23-Jul-2009 : Modification of ST3 namelist  .     ( version 3.14-SHOM )
+!/    23-Dec-2009 : Addition of COU namelists           ( version 3.14-SHOM )
+!/    31-Mar-2010 : Addition of shoreline reflection    ( version 3.14-IFREMER )
+!/    29-Jun-2010 : Adding Stokes drift profile output  ( version 3.14-IFREMER )
+!/    30-Aug-2010 : Adding ST4 option                   ( version 3.14-IFREMER )
+
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    29-Oct-2010 : Clean up of unstructured grids      ( version 3.14.4 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -303,7 +311,8 @@
 !     !/ST0   No source terms included (input/dissipation)
 !     !/ST1   WAM-3 physics package.
 !     !/ST2   Tolman and Chalikov (1996) physics package.
-!     !/ST3   WAM 4+ source terms from F. Ardhuin.
+!     !/ST3   WAM 4+ source terms from P.A.E.M. Janssen and J-R. Bidlot
+!     !/ST4   Ardhuin et al. (2009,2010) input and dissipation 
 !     !/STX   Open slot.
 !
 !     !/NL0   No nonlinear interactions.
@@ -353,7 +362,8 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
 !/
-!     USE W3GDATMD, ONLY: W3NMOD, W3SETG
+      USE W3TRIAMD
+!!/COU  USE W3GDATMD, ONLY: COUG_2D, COUG_RAD3D, COUG_US3D
       USE W3GSRUMD, ONLY: W3GRMP
       USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
       USE W3IOGRMD, ONLY: W3IOGR
@@ -381,11 +391,12 @@
                                  NRBT, NRDB, NRTR, NRBS, NRXX, NRPROP,&
                                  IDLA, IDFM, IX0, IXN, IX, IY, ISEA,  &
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
-                                 IFL, NBOTOT, NPO, IP, IX1, IY1, J,   &
-                                 JJ, IXR(4), IYR(4), ISEAI(4), IST,   &
-                                 NKI, NTHI, IDFT, NSTAT, NBT, NLAND
-!/NL2      INTEGER                 :: IDEPTH
-!/O1      INTEGER                 :: IBI, IP0, IPN, IPH, IPI
+                                 IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
+                                 IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
+                                 IST, NKI, NTHI,                      &
+                                 IDFT, NSTAT, NBT, NLAND
+!/NL2      INTEGER            :: IDEPTH
+!/O1      INTEGER             :: IBI, IP0, IPN, IPH, IPI
       INTEGER                 :: NCOL =  78
 !     INTEGER                 :: NCOL = 130
 !     INTEGER                 :: NCOL = 180
@@ -399,9 +410,12 @@
       REAL                    :: RXFR, RFR1, SIGMA, SXFR, FACHF,      &
                                  VSC, VOF,                            &
                                  ZLIM, X, Y, XP,  XO0, YO0, DXO, DYO, &
-                                 XO, YO, RD(4), RDTOT, FACTOR,        &
-                                 RTH0, FMICHE
+                                 XO, YO, RD(4), RDTOT,                &
+                                 FACTOR, RTH0, FMICHE, RWNDC, COSAVG, &
+                                 SINAVG, THAVG
       CHARACTER(LEN=4)        :: GSTRG
+      INTEGER                 :: P2SF,I1P2SF,I2P2SF
+      INTEGER                 :: US3D_OUNF,I1US3D_OUNF,I2US3D_OUNF
 !/LN1      REAL                    :: CLIN, RFPM, RFHF
 !/ST1      REAL                    :: CINP, CDIS, APM
 !/ST2      REAL                    :: PHIMIN, FPIA, FPIB, DPHID
@@ -411,18 +425,32 @@
 !/PR2      REAL                    :: LATMIN
       REAL, ALLOCATABLE       :: XGRDIN(:,:), YGRDIN(:,:)
       REAL, ALLOCATABLE       :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
+      REAL, ALLOCATABLE       :: REFD(:,:), REFD2(:,:), REFS(:,:)
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
                                  FLTR, FLBS, FLXX, FLPROP,            &
                                  FIRST, CONNCT, FLNEW, INGRID
       LOGICAL                 :: FLTC96 = .FALSE.
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
+      LOGICAL                 :: FLAGICESOURCE
+      REAL                    :: REFCOAST, REFFREQ,                  &
+                                 REFSUBGRID,  BSBOTTOM,              &
+                                 REFICEBERG, FACBERG
+      INTEGER                 :: REFMAP
+!
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
-                                 STATUS*20
+                                 STATUS*20,FNAME2*60, PNAME2*40
       CHARACTER(LEN=6)        :: YESXNO(2)
 !/FLX3      CHARACTER(LEN=18)       :: TYPEID
-!/
+!
+! Variables for unstructured grids
+!
+      INTEGER                 :: IE, I1, I2, I3
+      INTEGER, ALLOCATABLE    :: TRILAND(:),MAPBORD(:)
+      REAL, ALLOCATABLE       :: ANGLETOT(:), ANGLETOTINV(:)
+      INTEGER                 :: K
+      INTEGER                 :: NEIGH1(0:7)
 !/ ------------------------------------------------------------------- /
 !/ Namelists
 !/
@@ -436,17 +464,25 @@
 !/ST2                                 CNEG, CPOS, FNEG, FPOS
 !/ST2      REAL                    :: SDSA0, SDSA1, SDSA2,                 &
 !/ST2                                 SDSB0, SDSB1, SDSB2, SDSB3
-!/ST3      INTEGER                 :: SWELLFPAR,SDSISO
 !/ST3      REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
-!/ST3                                 ZALP, Z0RAT,               &
-!/ST3                                 TAUWSHELTER, SWELLF, SWELLF2,SWELLF3,&
-!/ST3                                 SWELLF4, SWELLF5, &
+!/ST3                                 ZALP, SWELLF, FXPM3, FXFM3,          &
 !/ST3                                 WNMEANPTAIL, WNMEANP, STXFTF, STXFTWN
-!/ST3      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSC3,     &
-!/ST3                                 SDSC4, SDSC5, SDSC6, SDSBR, SDSP,    &
-!/ST3                                 SDSCOS, SDSDTH,                      &
-!/ST3                                 SDSDELTA1, SDSDELTA2, SDSLF, SDSHF,  &
-!/ST3                                 SDSBR2, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST3      REAL                    :: STXFTFTAIL, SDSC1,                   &
+!/ST3                                 SDSDELTA1, SDSDELTA2
+!
+!/ST4      INTEGER                 :: SWELLFPAR,SDSISO,SDSBRFDF
+!/ST4      REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
+!/ST4                                 ZALP, Z0RAT, TAUWSHELTER,     &
+!/ST4                                 SWELLF, SWELLF2,SWELLF3,SWELLF4, SWELLF5,&
+!/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3, &
+!/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF, STXFTWN
+!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSC3,     &
+!/ST4                                 SDSC4, SDSC5, SDSC6, SDSBR, SDSP,    &
+!/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK, SDSPBK, &
+!/ST4                                 SDSBINT, SDSHCK,  &               
+!/ST4                                 SDSBR2, SDSBRF1, SDSBRF2,            &
+!/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!
 !/NL1      REAL                    :: LAMBDA, KDCONV, KDMIN,               &
 !/NL1                                 SNLCS1, SNLCS2, SNLCS3
 !/NL2      INTEGER                 :: IQTYPE, NDEPTH
@@ -455,32 +491,48 @@
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
 !/PR3      REAL                    :: WDTHCG, WDTHTH
+           LOGICAL                 :: UGCONT, EXPFSN, EXPFSPSI,     &
+                                      EXPFSFCT,IMPFSNIMP,TSTC
+!/COU      LOGICAL                 :: COU_2D, COU_RAD3D, COU_US3D 
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
 !/ST1      NAMELIST /SIN1/ CINP
 !/ST2      NAMELIST /SIN2/ ZWND, SWELLF, STABSH, STABOF, CNEG, CPOS, FNEG
-!/ST3      NAMELIST /SIN3/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,     &
-!/ST3                      TAUWSHELTER, SWELLFPAR, SWELLF,                 &
-!/ST3                      SWELLF2, SWELLF3, SWELLF4, SWELLF5, Z0RAT
+!/ST3      NAMELIST /SIN3/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
+!/ST3                      SWELLF
+!/ST4      NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
+!/ST4                      TAUWSHELTER, SWELLFPAR, SWELLF,                 &
+!/ST4                      SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
+!/ST4                      SWELLF7, Z0RAT
 !/NL1      NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
 !/NL1                      SNLCS1, SNLCS2, SNLCS3
 !/NL2      NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
 !/NL2      NAMELIST /ANL2/ DEPTHS
 !/ST1      NAMELIST /SDS1/ CDIS, APM
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
-!/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, WNMEANPTAIL, SDSDELTA1,         &
-!/ST3                      SDSDELTA2, SDSLF, SDSHF,  SDSC2, SDSC3, SDSC4,  &
-!/ST3                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
-!/ST3                      SDSDTH, SDSCOS,                                 &
-!/ST3                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
+!/ST3                      SDSDELTA2
+!/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, FXPM3, FXFM3,    &
+!/ST4                      SDSC2, SDSC3, SDSC4,  &
+!/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
+!/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
+!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
+!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
 !/BT1      NAMELIST /SBT1/ GAMMA
 !/DB1      NAMELIST /SDB1/ BJALFA, BJGAM, BJFLAG
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
-      NAMELIST /MISC/ CICE0, CICEN, XSEED, FLAGTR, XP, XR, XFILT,     &
-                      PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE
+           NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,&
+                           IMPFSNIMP, TSTC
+!/COU      NAMELIST /COU/  COU_2D, COU_RAD3D, COU_US3D
+           NAMELIST /MISC/ CICE0, CICEN, XSEED, FLAGTR, XP, XR, XFILT,&
+                      PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE,        &
+                      RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
+                      US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
+                      REFCOAST, REFFREQ, REFMAP, REFSUBGRID,          &
+                      BSBOTTOM, REFICEBERG, FACBERG
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -561,20 +613,20 @@
         ESIN(ITH) = SIN ( TH(ITH) )
         ECOS(ITH) = COS ( TH(ITH) )
         IF ( ABS(ESIN(ITH)) .LT. 1.E-5 ) THEN
-            ESIN(ITH) = 0.
-            IF ( ECOS(ITH) .GT. 0.5 ) THEN
-                ECOS(ITH) =  1.
-              ELSE
-                ECOS(ITH) = -1.
-              END IF
+          ESIN(ITH) = 0.
+          IF ( ECOS(ITH) .GT. 0.5 ) THEN
+            ECOS(ITH) =  1.
+          ELSE
+            ECOS(ITH) = -1.
+            END IF
           END IF
         IF ( ABS(ECOS(ITH)) .LT. 1.E-5 ) THEN
-            ECOS(ITH) = 0.
-            IF ( ESIN(ITH) .GT. 0.5 ) THEN
-                ESIN(ITH) =  1.
-              ELSE
-                ESIN(ITH) = -1.
-              END IF
+          ECOS(ITH) = 0.
+          IF ( ESIN(ITH) .GT. 0.5 ) THEN
+            ESIN(ITH) =  1.
+          ELSE
+            ESIN(ITH) = -1.
+            END IF
           END IF
         ES2 (ITH) = ESIN(ITH)**2
         EC2 (ITH) = ECOS(ITH)**2
@@ -646,8 +698,11 @@
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=2001,ERR=2002) DTMAX, DTCFL, DTCFLI, DTMIN
       DTMAX  = MAX ( 1. , DTMAX )
-      DTCFL  = MAX ( 1. , DTCFL  )
-      DTCFLI = MIN ( DTMAX , MAX ( 1. , DTCFLI ) )
+!
+! Commented to allow very high resolution zooms
+!
+!      DTCFL  = MAX ( 1. , DTCFL  )
+!      DTCFLI = MIN ( DTMAX , MAX ( 1. , DTCFLI ) )
       DTMIN  = MIN ( DTMAX , MAX ( 0. , DTMIN  ) )
       WRITE (NDSO,912) DTMAX, DTCFL, DTCFLI, DTMIN
 !
@@ -683,6 +738,7 @@
 !/ST2      NRSRCE = NRSRCE + 1
 !/ST2      FLTC96 = .TRUE.
 !/ST3      NRSRCE = NRSRCE + 1
+!/ST4      NRSRCE = NRSRCE + 1
 !/STX      NRSRCE = NRSRCE + 1
 !
 !/NL0      NRNL   = NRNL + 1
@@ -846,18 +902,28 @@
 !
 !/ST3      ZWND   =   10.
 !/ST3      ALPHA0 = 0.0095
-!/ST3      Z0MAX = 0.0
-!/ST3      Z0RAT = 1.0
-!/ST3      BETAMAX  = 1.2  !  default WAM4 / WAM4 + is 1.2 but rhow=1000
-!/ST3      SINTHP   = 2.
-!/ST3      SWELLF = 0.     ! 0.125
-!/ST3      SWELLFPAR = 0
-!/ST3      SWELLF2 = 0.
-!/ST3      SWELLF3 = 0.
-!/ST3      SWELLF4 = 1.E5
-!/ST3      SWELLF5 = 1.2
-!/ST3      TAUWSHELTER = 0.
+!/ST3      Z0MAX = 0.0    
+!/ST3      BETAMAX  = 1.2       !  default WAM4 / WAM4 + is 1.2 with rhow=1000
+!/ST3      SINTHP   = 2.     
+!/ST3      SWELLF = 0.         
 !/ST3      ZALP   = 0.0110
+!
+!/ST4      ZWND   =   10.
+!/ST4      ALPHA0 = 0.0095
+!/ST4      Z0MAX = 0.0    
+!/ST4      Z0RAT = 0.04 
+!/ST4      BETAMAX   = 1.52     
+!/ST4      SINTHP    = 2.     
+!/ST4      SWELLF    = 0.8     
+!/ST4      SWELLFPAR = 1
+!/ST4      SWELLF2 = -0.018
+!/ST4      SWELLF3 = 0.015
+!/ST4      SWELLF4 = 1.E5
+!/ST4      SWELLF5 = 1.2
+!/ST4      SWELLF6 = 0.
+!/ST4      SWELLF7 = 0.
+!/ST4      TAUWSHELTER = 1.
+!/ST4      ZALP   = 0.006
 !
 !/ST1      CALL READNL ( NDSS, 'SIN1', STATUS )
 !/ST1      WRITE (NDSO,920) STATUS
@@ -891,22 +957,37 @@
 !
 !/ST3      CALL READNL ( NDSS, 'SIN3', STATUS )
 !/ST3      WRITE (NDSO,920) STATUS
-!/ST3      WRITE (NDSO,921) ALPHA0, BETAMAX, SINTHP, Z0MAX, ZALP, ZWND, TAUWSHELTER, &
-!/ST3           SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, SWELLF5, Z0RAT
+!/ST3      WRITE (NDSO,921) ALPHA0, BETAMAX, SINTHP, Z0MAX, ZALP, ZWND, &
+!/ST3           SWELLF
 !/ST3      ZZWND  = ZWND
 !/ST3      AALPHA = ALPHA0
 !/ST3      BBETA  = BETAMAX
 !/ST3      SSINTHP  = SINTHP
 !/ST3      ZZ0MAX  = Z0MAX
-!/ST3      ZZ0RAT  = Z0RAT
 !/ST3      ZZALP  = ZALP
-!/ST3      TTAUWSHELTER = TAUWSHELTER
 !/ST3      SSWELLF(1) = SWELLF
-!/ST3      SSWELLF(2) = SWELLF2
-!/ST3      SSWELLF(3) = SWELLF3
-!/ST3      SSWELLF(4) = SWELLF4
-!/ST3      SSWELLF(5) = SWELLF5
-!/ST3      SSWELLFPAR = SWELLFPAR
+!
+!/ST4      CALL READNL ( NDSS, 'SIN4', STATUS )
+!/ST4      WRITE (NDSO,920) STATUS
+!/ST4      WRITE (NDSO,921) ALPHA0, BETAMAX, SINTHP, Z0MAX, ZALP, ZWND, TAUWSHELTER, &
+!/ST4           SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, SWELLF5, &
+!/ST4           SWELLF6, SWELLF7, Z0RAT
+!/ST4      ZZWND  = ZWND
+!/ST4      AALPHA = ALPHA0
+!/ST4      BBETA  = BETAMAX
+!/ST4      SSINTHP  = SINTHP
+!/ST4      ZZ0MAX  = Z0MAX
+!/ST4      ZZ0RAT  = Z0RAT
+!/ST4      ZZALP  = ZALP
+!/ST4      TTAUWSHELTER = TAUWSHELTER
+!/ST4      SSWELLF(1) = SWELLF
+!/ST4      SSWELLF(2) = SWELLF2
+!/ST4      SSWELLF(3) = SWELLF3
+!/ST4      SSWELLF(4) = SWELLF4
+!/ST4      SSWELLF(5) = SWELLF5
+!/ST4      SSWELLF(6) = SWELLF6
+!/ST4      SSWELLF(7) = SWELLF7
+!/ST4      SSWELLFPAR = SWELLFPAR
 !
 ! 6.e Define Snl.
 !
@@ -940,6 +1021,7 @@
 !/ST1      FACHF  = 4.5
 !/ST2      FACHF  = 5.
 !/ST3      FACHF  = 5.
+!/ST4      FACHF  = 5.
 !/STX      FACHF  = 5.
 !/NL2      IQTYPE =  2
 !/NL2      TAILNL = -FACHF
@@ -999,29 +1081,43 @@
 !/ST2      PHIMIN =  0.003
 !/ST2      SDSALN =  0.002
 !/ST2      FPIMIN =  0.009
-!/ST3      SDSC1  = -2.1 !! This is Bdlot et al. 2005,  Otherwise WAM4 uses -4.5
-!/ST3      WNMEANP = 0.5 !! This is Bdlot et al. 2005,  Otherwise WAM4 uses -0.5
-!/ST3      WNMEANPTAIL = -0.5
-!/ST3      SDSDELTA1 = 0.4 !! This is Bdlot et al. 2005,  Otherwise WAM4 uses 0.5
-!/ST3      SDSDELTA2 = 0.6 !! This is Bdlot et al. 2005,  Otherwise WAM4 uses 0.5
-!/ST3      SDSLF     = 1.
-!/ST3      SDSHF     = 1.
-!/ST3      SDSC2     = 0. !-2.4E-5
-!/ST3      SDSC3     = 0.
-!/ST3      SDSC4     = 0.
-!/ST3      SDSC5     = 0.
-!/ST3      SDSC6     = 1.
-!/ST3      SDSBR     = 1.20E-3 ! Babanin (personnal communication)
-!/ST3      SDSP      = 2.
-!/ST3      SDSDTH    = 180.
-!/ST3      SDSCOS    = 0.
-!/ST3      SDSISO    = 1
-!/ST3      SDSBM0    = 1.
-!/ST3      SDSBM1    = 0.
-!/ST3      SDSBM2    = 0.
-!/ST3      SDSBM3    = 0.
-!/ST3      SDSBM4    = 0.
-!/ST3      SDSBR2    = 0.8
+!/ST3      SDSC1  = -2.1 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses -4.5
+!/ST3      WNMEANP = 0.5 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses -0.5
+!/ST3      FXFM3 = 2.5 
+!/ST3      FXPM3 = 4.
+!/ST3      WNMEANPTAIL = -0.5 
+!/ST3      SDSDELTA1 = 0.4 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
+!/ST3      SDSDELTA2 = 0.6 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
+!
+!/ST4      SDSC1  = 0.0                                                                
+!/ST4      WNMEANP = 0.5 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses -0.5
+!/ST4      FXFM3 = 9.9 
+!/ST4      FXPM3 = 4.
+!/ST4      WNMEANPTAIL = -0.5 
+!/ST4      SDSC2     = -2.2E-5
+!/ST4      SDSC3     = -0.80
+!/ST4      SDSC4     = 1.
+!/ST4      SDSC5     = 0. 
+!/ST4      SDSC6     = 0.3
+!/ST4      SDSBR     = 0.90E-3                                     
+!/ST4      SDSBRFDF  = 0
+!/ST4      SDSBRF1   = 0.5
+!/ST4      SDSBRF2   = 0.
+!/ST4      SDSP      = 2.
+!/ST4      SDSDTH    = 80.
+!/ST4      SDSCOS    = 2.
+!/ST4      SDSISO    = 2
+!/ST4      SDSBM0    = 1.
+!/ST4      SDSBM1    = 0.
+!/ST4      SDSBM2    = 0.
+!/ST4      SDSBM3    = 0.
+!/ST4      SDSBM4    = 0.
+!/ST4      SDSBR2    = 0.8
+!/ST4      SDSBCK    = 0.
+!/ST4      SDSABK    = 1.5
+!/ST4      SDSPBK    = 4.
+!/ST4      SDSBINT   = 0.3
+!/ST4      SDSHCK    = 1.
 !
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
@@ -1059,31 +1155,48 @@
 !
 !/ST3      CALL READNL ( NDSS, 'SDS3', STATUS )
 !/ST3      WRITE (NDSO,924) STATUS
-!/ST3      WRITE (NDSO,925) SDSC1, SDSC2, SDSC3, WNMEANP, SDSDELTA1,  &
-!/ST3                       SDSDELTA2, SDSLF, SDSHF
+!/ST3      WRITE (NDSO,925) SDSC1, WNMEANP, SDSDELTA1,  &
+!/ST3                       SDSDELTA2
 !/ST3      SSDSC1   = SDSC1
-!/ST3      SSDSC2   = SDSC2
-!/ST3      SSDSC3   = SDSC3
-!/ST3      SSDSC4   = SDSC4
-!/ST3      SSDSC5   = SDSC5
-!/ST3      SSDSC6   = SDSC6
-!/ST3      SSDSBR   = SDSBR
-!/ST3      SSDSBM(0)   = SDSBM0
-!/ST3      SSDSBM(1)   = SDSBM1
-!/ST3      SSDSBM(2)   = SDSBM2
-!/ST3      SSDSBM(3)   = SDSBM3
-!/ST3      SSDSBM(4)   = SDSBM4
-!/ST3      SSDSBR2  = SDSBR2
-!/ST3      SSDSP    = SDSP
-!/ST3      SSDSDTH  = SDSDTH
-!/ST3      SSDSISO  = SDSISO
-!/ST3      SSDSCOS  = SDSCOS
 !/ST3      WWNMEANP   = WNMEANP
+!/ST3      FFXFM = FXFM3 * TPI
+!/ST3      FFXPM = FXPM3 * GRAV / 28.
 !/ST3      WWNMEANPTAIL   = WNMEANPTAIL
 !/ST3      DDELTA1   = SDSDELTA1
 !/ST3      DDELTA2   = SDSDELTA2
-!/ST3      SSDSLF    = SDSLF
-!/ST3      SSDSHF    = SDSHF
+!
+!/ST4      CALL READNL ( NDSS, 'SDS4', STATUS )
+!/ST4      WRITE (NDSO,924) STATUS
+!/ST4      WRITE (NDSO,925) SDSC1, SDSC2, SDSC3, WNMEANP 
+!/ST4      SSDSC1   = SDSC1
+!/ST4      SSDSC2   = SDSC2
+!/ST4      SSDSC3   = SDSC3
+!/ST4      SSDSC4   = SDSC4
+!/ST4      SSDSC5   = SDSC5
+!/ST4      SSDSC6   = SDSC6
+!/ST4      SSDSBR   = SDSBR
+!/ST4      SSDSBRF1 = SDSBRF1
+!/ST4      SSDSBRF2 = SDSBRF2
+!/ST4      SSDSBRFDF= SDSBRFDF
+!/ST4      SSDSBM(0)   = SDSBM0
+!/ST4      SSDSBM(1)   = SDSBM1
+!/ST4      SSDSBM(2)   = SDSBM2
+!/ST4      SSDSBM(3)   = SDSBM3
+!/ST4      SSDSBM(4)   = SDSBM4
+!/ST4      SSDSBR2  = SDSBR2
+!/ST4      SSDSISO  = SDSISO
+!/ST4      SSDSCOS  = SDSCOS
+!/ST4      SSDSP    = SDSP
+!/ST4      SSDSDTH  = SDSDTH
+!/ST4      WWNMEANP   = WNMEANP
+!/ST4      FFXFM = FXFM3 * TPI
+!/ST4      FFXPM = FXPM3 * GRAV / 28.
+!/ST4      WWNMEANPTAIL   = WNMEANPTAIL
+!/ST4      SSDSBCK   = SDSBCK
+!/ST4      SSDSABK   = SDSABK
+!/ST4      SSDSPBK   = SDSPBK
+!/ST4      SSDSBINT  = SDSBINT
+!/ST4      SSDSHCK   = SDSHCK
 !
 ! 6.g Define Sbt.
 !
@@ -1138,7 +1251,19 @@
 ! !/XX0      WRITE (NDSO,934)
 !/XXX      WRITE (NDSO,934)
 !
-! 6.l Select propagation scheme
+! 6.l Read unstructured data 
+! initialisation of logical related to unstructured grid
+       UGCONT    = .FALSE.
+       EXPFSN    = .TRUE.
+       EXPFSPSI  = .FALSE.
+       EXPFSFCT  = .FALSE.
+       IMPFSNIMP = .FALSE.
+       TSTC      = .FALSE.
+! read data from the unstructured devoted namelist
+       CALL READNL ( NDSS, 'UG  ', STATUS ) 
+               WRITE(NDSO, 950)
+!
+! 6.m Select propagation scheme
 !
       WRITE (NDSO,950)
 !
@@ -1208,13 +1333,15 @@
 !
 !/PR3      CALL READNL ( NDSS, 'PRO3', STATUS )
 !/PR3      IF ( STATUS(18:18) .EQ. ':' ) STATUS(18:18) = ' '
-!/PR3      WRITE (NDSO,952) STATUS(1:18)
+       IF (GTYPE.NE.UNGTYPE) THEN
+!/PR3          WRITE (NDSO,952) STATUS(1:18)
 !/PR3      CFLTM  = MAX ( 0. , CFLTM )
-!/PR3      WRITE (NDSO,953) CFLTM, WDTHCG
+!/PR3          WRITE (NDSO,953) CFLTM, WDTHCG
 !/PR3      IF ( WDTHCG*(XFR-1.) .GT. 1. ) WRITE (NDSO,955) 1./(XFR-1.)
-!/PR3      WRITE (NDSO,954) WDTHTH
+!/PR3          WRITE (NDSO,954) WDTHTH
 !/PR3      IF ( WDTHTH*DTH .GT. 1. ) WRITE (NDSO,955) 1./DTH
-!/PR3      WRITE (NDSO,*)
+!/PR3          WRITE (NDSO,*)
+       ENDIF
 !/PR3      WDCG   = WDTHCG
 !/PR3      WDTH   = WDTHTH
 !
@@ -1236,11 +1363,25 @@
       WSC    = 0.333
       FLC    = .TRUE.
       FMICHE = 0.75
+      RWNDC  = 1.
+      P2SF   = 0
+      I1P2SF = 1
+      I2P2SF = 15
+      I1US3D_OUNF=1
+      I2US3D_OUNF=30
+      FLAGICESOURCE=.FALSE.
+      REFCOAST=0.
+      REFMAP=0
+      REFFREQ=0.
+      REFSUBGRID=0.
+      BSBOTTOM=0.
+      REFICEBERG=0.
+      FACBERG=1.
 !
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
 !
-      IF ( FLAGTR.LT.0 .OR. FLAGTR.GT.4 ) FLAGTR = 0
+      IF ( FLAGTR.LT.0 .OR. FLAGTR.GT.6 ) FLAGTR = 0
       CICEN  = MIN ( 1. , MAX ( 0. , CICEN ) )
       FICEN  = CICEN
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
@@ -1255,6 +1396,7 @@
 !/SEED      XSEED  =  MAX ( 1. , XSEED )
 !/SEED      WRITE (NDSO,964) XSEED
       FACSD  = XSEED
+!/RWND RWINDC = RWNDC 
 !
       XP     = MAX ( 1.E-6 , XP )
       XR     = MAX ( 1.E-6 , XR )
@@ -1283,6 +1425,33 @@
       IF ( FHMAX.LT.0.50 .AND. J.EQ.1 ) WRITE (NDST,968)
       WRITE (NDSO,*)
 !
+! output of microseismic source spectra
+!
+      P2MSF(1) = P2SF
+      P2MSF(2) = I1P2SF
+      P2MSF(3) = I2P2SF
+!
+! output of Stokes drift profile
+!
+      US3DF(1) = US3D_OUNF
+      US3DF(2) = I1US3D_OUNF
+      US3DF(3) = I2US3D_OUNF
+      US3DF(2)= MAX( 1 , MIN(NK,US3DF(2)) )
+      US3DF(3)= MAX( 1 , MIN(NK,US3DF(3)) )
+!
+! 6.n2 Coupling parameters
+!
+!/COU           COU_2D=.TRUE.
+!/COU           COU_RAD3D=.FALSE.
+!/COU           COU_US3D=.TRUE.
+!/COU      CALL READNL ( NDSS, 'COU ', STATUS )
+!/COU      COUG_2D     = COU_2D
+!/COU      COUG_RAD3D  = COU_RAD3D
+!/COU      COUG_US3D   = COU_US3D
+!    !/COU      WRITE (NDSO,969) STATUS
+
+
+!
 ! 6.o End of namelist processing
 !
       CLOSE (NDSS,STATUS='DELETE')
@@ -1298,9 +1467,12 @@
 !/STAB2              WRITE (NDSO,2921) ZWND, SWELLF, STABSH, STABOF,  &
 !/STAB2                                CNEG, CPOS, FNEG
             END IF
+!
 !/ST3          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
-!/ST3            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-!/ST3            SWELLF5, Z0RAT
+!/ST3            SWELLF
+!/ST4          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
+!/ST4            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
+!/ST4            SWELLF5, SWELLF6, SWELLF7, Z0RAT
 !/NL1          WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
 !/NL1                            SNLCS1, SNLCS2, SNLCS3
 !/NL2          WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -1315,10 +1487,14 @@
 !/NL2            END IF
 !/ST1          WRITE (NDSO,2924) CDIS, APM
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
-!/ST3          WRITE (NDSO,2924) SDSC1, SDSC2, SDSC3, SDSC4, SDSC5, SDSC6, &
-!/ST3                    WNMEANP, SDSDELTA1, SDSDELTA2, SDSLF, SDSHF,      &
-!/ST3                    SDSBR, SDSBR2, SDSP, SDSISO, SDSCOS, SDSDTH,      &
-!/ST3                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
+!/ST3                            SDSDELTA2
+!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSC3, SDSC4, SDSC5, SDSC6, &
+!/ST4                    WNMEANP, FXPM3, FXFM3,                            &
+!/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
+!/ST4                    SDSBR, SDSBR2, SDSP, SDSISO, SDSCOS, SDSDTH,      &
+!/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
+!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
 !/BT1          WRITE (NDSO,2926) GAMMA
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
@@ -1328,17 +1504,32 @@
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
+              WRITE (NDSO,2956) UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
           IF ( FLCOMB ) THEN
               WRITE (NDSO,2966) CICE0, CICEN, PMOVE, XSEED, FLAGTR,   &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
-                                WSCUT, '.TRUE.', FHMAX
+                                WSCUT, '.TRUE.', FHMAX, RWNDC,        &
+                                FLAGICESOURCE,                        &
+                                P2SF, I1P2SF, I2P2SF,                 &
+                                US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
+                                REFCOAST, REFFREQ, REFMAP,            &
+                                REFSUBGRID, BSBOTTOM, REFICEBERG,     &
+                                FACBERG
             ELSE
               WRITE (NDSO,2966) CICE0, CICEN, PMOVE, XSEED, FLAGTR,   &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
-                                WSCUT, '.FALSE.', FHMAX
+                                WSCUT, '.FALSE.', FHMAX, RWNDC,       &
+                                FLAGICESOURCE,                        &
+                                P2SF, I1P2SF, I2P2SF,                 &
+                                US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
+                                REFCOAST, REFFREQ, REFMAP,            &
+                                REFSUBGRID, BSBOTTOM, REFICEBERG,     &
+                                FACBERG
             END IF
+!/COU           WRITE (NDSO,2969) COU_2D, COU_RAD3D, COU_US3D
           WRITE (NDSO,918)
         END IF
+
 !
 ! 6.p Set various other values ...
 ! ... Tail in integration       --> scale factor for A to E conv
@@ -1358,12 +1549,22 @@
 !/ST3      SSTXFTFTAIL = STXFTFTAIL
 !/ST3      SSTXFTWN    = STXFTWN
 !
+!/ST4      STXFTF      = 1/(FACHF-1.-WNMEANP*2)                       &
+!/ST4                           * SIG(NK)**(2+WNMEANP*2) * DTH
+!/ST4      STXFTFTAIL  = 1/(FACHF-1.-WNMEANPTAIL*2)                   &
+!/ST4                           * SIG(NK)**(2+WNMEANPTAIL*2) * DTH
+!/ST4      STXFTWN = 1/(FACHF-1.-WNMEANP*2) * SIG(NK)**(2)            &
+!/ST4                 * (SIG(NK)/SQRT(GRAV))**(WNMEANP*2)   * DTH
+!/ST4      SSTXFTF     = STXFTF
+!/ST4      SSTXFTFTAIL = STXFTFTAIL
+!/ST4      SSTXFTWN    = STXFTWN
+!
 ! ... High frequency cut-off
 !
       FXFM   = 2.5
       FXPM   = 4.0
-      FXFM   = FXFM * TPI
       FXPM   = FXPM * GRAV / 28.
+      FXFM   = FXFM * TPI
       XFC    = 3.0
 !/ST2      XFH    = 2.0
 !/ST2      XF1    = 1.75
@@ -1392,30 +1593,68 @@
         CASE ('CURV')
           GTYPE = CLGTYPE
           WRITE (NDSO,3000) 'curvilinear'
+        CASE ('UNST')
+          GTYPE = UNGTYPE
+          WRITE (NDSO,3000) 'unstructured'
         CASE DEFAULT
           WRITE (NDSE,1007) TRIM(GSTRG)
           CALL EXTCDE ( 25 )
-        END SELECT
+        END SELECT      
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!
       IF ( GLOBAL .AND. .NOT.FLAGLL ) THEN
           WRITE (NDSE,1007)
           CALL EXTCDE ( 25 )
         END IF
       IF ( FLAGLL ) THEN
-          FACTOR = 1.
-          WRITE (NDSO,3001) 'spherical'
-        ELSE
-          FACTOR = 1.E-3
-          WRITE (NDSO,3001) 'Cartesian'
+        FACTOR = 1.
+        WRITE (NDSO,3001) 'spherical'
+      ELSE
+        FACTOR = 1.E-3
+        WRITE (NDSO,3001) 'Cartesian'
         END IF
       WRITE (NDSO,3002) GLOBAL
 !
+      IF ( GTYPE.NE.UNGTYPE) THEN 
+!
+! Propagation specific to structured grids
+!
+
+!
 ! 7.b Size of grid
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) NX, NY
-      NX     = MAX ( 3 , NX )
-      NY     = MAX ( 3 , NY )
-      WRITE (NDSO,3003) NX, NY
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NX, NY
+        NX     = MAX ( 3 , NX )
+        NY     = MAX ( 3 , NY )
+        WRITE (NDSO,3003) NX, NY
+      ELSE 
+!
+! Propagation specific to unstructured grids
+!
+        IF (UGCONT) CONTOUR = UGCONT
+        IF (EXPFSN) THEN
+          FSN = EXPFSN
+          PNAME2 = 'N Explicit (Fluctuation Splitting) '
+          ENDIF
+        IF (EXPFSPSI) THEN
+          FSPSI = EXPFSPSI
+          PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
+          ENDIF
+        IF (EXPFSFCT) THEN
+          FSFCT = EXPFSFCT
+          PNAME2 = ' Flux Corrected Transport Explicit'
+          ENDIF
+        IF (IMPFSNIMP) THEN
+          FSNIMP = IMPFSNIMP 
+          PNAME2 = 'N Implicit (Fluctuation Splitting) '
+          ENDIF
+        WRITE (NDSO,2951) PNAME2
+!
+! 7.b Size of grid
+!
+       NY =1 
+        END IF
 !
 ! 7.c Grid coordinates (branch here based on grid type)
 !
@@ -1453,7 +1692,7 @@
             END IF
 !
           DO IY=1, NY
-            DO, IX=1, NX
+            DO IX=1, NX
               XGRDIN(IX,IY) = X0 + REAL(IX-1)*SX
               YGRDIN(IX,IY) = Y0 + REAL(IY-1)*SY
               END DO
@@ -1563,7 +1802,14 @@
               WRITE (NDSE,1011) IDLA
               CALL EXTCDE (25)
             END IF
-!
+    
+        CASE ( UNGTYPE )
+    
+             MAXX = 0.
+             MAXY = 0.
+             DXYMAX = 0.
+! X0
+             WRITE (NDSO,1150)
         END SELECT !GTYPE
 !
 ! 7.d Depth information for grid
@@ -1584,39 +1830,55 @@
 !
 ! 7.e Read bottom depths
 !
-      IF ( NDSG .EQ. NDSI ) THEN
+      IF (GTYPE.NE.UNGTYPE) THEN 
+        IF ( NDSG .EQ. NDSI ) THEN
           IF ( IDFM .EQ. 3 ) THEN
-              WRITE (NDSE,1004) NDSG
-              CALL EXTCDE (23)
-            ELSE
-              CALL NEXTLN ( COMSTR , NDSI , NDSE )
+            WRITE (NDSE,1004) NDSG
+            CALL EXTCDE (23)
+          ELSE
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
             END IF
-        ELSE
+        ELSE  ! NDSG.NE.NDSI
           IF ( IDFM .EQ. 3 ) THEN
-              IF (FROM.EQ.'NAME') THEN
-                  OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                        FORM='UNFORMATTED',                 &
+            IF (FROM.EQ.'NAME') THEN
+              J = LEN_TRIM(FNMPRE)
+              OPEN (NDSG,FILE=TRIM(FNMPRE(:J))//TRIM(FNAME), &
+                        FORM='UNFORMATTED',&
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                ELSE
-                  OPEN (NDSG,                               &
-                        FORM='UNFORMATTED',                 &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
             ELSE
-              IF (FROM.EQ.'NAME') THEN
-                  OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+              OPEN (NDSG, FORM='UNFORMATTED',           &
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                ELSE
-                  OPEN (NDSG,                               &
+
+              END IF
+          ELSE
+            IF (FROM.EQ.'NAME') THEN
+              J      = LEN_TRIM(FNMPRE)
+              OPEN (NDSG,FILE=TRIM(FNMPRE(:J))//TRIM(FNAME),  &
+                      STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSG,                                         &
                         STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
+              END IF
             END IF
-        END IF
+          END IF  !( NDSG .EQ. NDSI ) 
 !
       ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
       CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
                    IDFM, RFORM, IDLA, VSC, 0.0)
-      WRITE (NDSO,*)
+!
+      ELSE
+!
+! Reading unstructured grid 
+!
+        CALL READMSH(NDSS,FNAME)
+        ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
+        ZBIN(:,1) = VSC*XYB(:,3)
+!
+! subgrid obstructions are not yet handled in unstructured grids
+!
+        OBSX(:,:)=0.
+        OBSY(:,:)=0.
+        END IF
 !
 ! 7.f Set up temporary map
 !
@@ -1632,12 +1894,12 @@
 ! 7.g Subgrid information
 !
       TRFLAG = FLAGTR
-      IF ( TRFLAG.GT.4 .OR. TRFLAG.LT.0 ) TRFLAG = 0
+      IF ( TRFLAG.GT.6 .OR. TRFLAG.LT.0 ) TRFLAG = 0
 !
       IF ( TRFLAG .EQ. 0 ) THEN
           WRITE (NDSO,976) 'Not available.'
           WRITE (NDSO,*)
-        ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 ) THEN
+        ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
           WRITE (NDSO,976) 'In between grid points.'
         ELSE
           WRITE (NDSO,976) 'At grid points.'
@@ -1709,7 +1971,7 @@
 !
 ! 7.g.4 Limit
 !
-          DO, IX=1, NX
+          DO IX=1, NX
             DO IY=1, NY
               OBSX(IX,IY) = MAX( 0. , MIN(1.,OBSX(IX,IY)) )
               OBSY(IX,IY) = MAX( 0. , MIN(1.,OBSY(IX,IY)) )
@@ -1886,6 +2148,7 @@
 !
 ! ... Outer boundary excluded points
 !
+            IF(GTYPE .NE.UNGTYPE) THEN    
               DO IX=1, NX
                 IF ( TMPSTA( 1,IX) .EQ. 1 ) THEN
                      TMPSTA( 1,IX) = NSTAT
@@ -1905,14 +2168,37 @@
                       END IF
                     END DO
                 END IF
+            ELSE  
+! the logical CONTOUR enables to choose whether the contour is excluded from computation 
+! the available criterion to spot contour points is that such points have more connections than
+! surrounding connected triangles.
+WRITE(6,*) 'CONTOUR:',UGCONT,NX
+
+              IF(UGCONT)  THEN 
+                J = 0
+                DO IX= 1, NX
+                  IF (COUNTCON(IX) .GT. CCON(IX)) THEN
+                    J = J+1
+                    TMPSTA(1,IX) = NSTAT 
+                    END IF
+                  END DO 
+              ELSE
+                ALLOCATE(MAPBORD(NX))  
+                DO IX= 1, NX
+                  IF (COUNTCON(IX) .GT. CCON(IX))  MAPBORD(IX) = 1
+                  END DO
+                END IF ! UGCONT
 !
-            END IF
+              END IF ! GTYPE
+
+!
+            END IF ! ILOOP .EQ. 2
 !
 ! ... Branch back input / excluded points ( ILOOP in 8.b )
 !
-          END DO
+          END DO           
 !
-        ELSE
+        ELSE ! FROM .EQ. PART
 !
 ! 8.d Read the map from file instead
 !
@@ -1981,7 +2267,7 @@
             END DO
           DEALLOCATE ( READMP )
 !
-        END IF
+        END IF !FROM .NE. 'PART'
 !
 ! 8.e Get NSEA and other counters
 !
@@ -2013,9 +2299,14 @@
 !/O1          IBI    = 1
 !/O1          DO IY=1, NY
 !/O1            DO IX=1, NX
-!/O1              X = FACTOR * ( XGRDIN(IX,IY) )
-!/O1              Y = FACTOR * ( YGRDIN(IX,IY) )
-!/O1              IF ( TMPSTA(IY,IX).EQ.2 ) THEN
+!/O1              IF (GTYPE.NE.UNGTYPE) THEN
+!/O1                X = FACTOR * ( XGRDIN(IX,IY) )
+!/O1                Y = FACTOR * ( YGRDIN(IX,IY) )
+!/O1              ELSE
+!/O1                X = FACTOR * XYB(IX,1)
+!/O1                Y = FACTOR * XYB(IX,2)
+!/O1                END IF
+!/O1            IF ( TMPSTA(IY,IX).EQ.2 ) THEN
 !/O1                  IF ( FLAGLL ) THEN
 !/O1                      WRITE (NDSO, 988) IBI, IX, IY, X, Y
 !/O1                    ELSE
@@ -2038,15 +2329,41 @@
 !
       CALL W3DIMX ( 1, NX, NY, NSEA, NDSE, NDST )
 !
-      DO IY=1, NY
-        DO IX=1, NX
-          XGRD(IY,IX) = XGRDIN(IX,IY)
-          YGRD(IY,IX) = YGRDIN(IX,IY)
-          END DO
-        END DO
-      DEALLOCATE ( XGRDIN, YGRDIN )
+! 8.g Activation of reflections and scattering 
 !
-      CALL W3GNTX ( 1, 6, 6 )
+      FLICES = FLAGICESOURCE
+      REFPARS(1)=REFCOAST
+      REFPARS(2)=REFSUBGRID
+      REFPARS(3)=BSBOTTOM
+      REFPARS(4)=REFICEBERG
+      REFPARS(5)=FACBERG
+      REFPARS(6)=REFFREQ
+      RREF(:)=.FALSE.
+      IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
+      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
+      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
+      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
+
+      IF (GTYPE.NE.UNGTYPE) THEN
+        DO IY=1, NY
+          DO IX=1, NX
+            XGRD(IY,IX) = XGRDIN(IX,IY)
+            YGRD(IY,IX) = YGRDIN(IX,IY)
+            END DO
+          END DO
+          DEALLOCATE ( XGRDIN, YGRDIN )   
+          CALL W3GNTX ( 1, 6, 6 )  
+      ELSE 
+!
+!FA:  This distinction  between structured and unstructured
+! should be removed when XYB is replaced by XGRD and YGRD
+!
+        DO IX=1, NX
+          XGRD(:,IX) = XYB(IX,1)
+          YGRD(:,IX) = XYB(IX,2)
+          END DO
+        END IF   ! GTYPE
+!      
 !
       MAPSTA = TMPSTA
       MAPFS  = 0
@@ -2119,6 +2436,74 @@
 !/O2        END DO
 !/O2      WRITE (NDSO,1102)
 !
+! MAP FOR LAND POINTS    
+! 
+     IF (GTYPE.EQ.UNGTYPE) THEN
+       ALLOCATE( TRILAND(NTRI), ANGLETOT(NX), ANGLETOTINV(NX))
+       TRILAND(:) = 0
+       K = 0
+       DO IE = 1, NTRI
+         I1 = TRIGP(IE,1)
+         I2 = TRIGP(IE,2)
+         I3 = TRIGP(IE,3)
+!
+!! MAP FOR TRIANGLE STATUS: 
+!     0->sea triangle,  
+!     1->contour vertex, 
+!     2->contour vertices , 
+!     3->Contour triangle  
+     
+          IF ((MAPSTA(1,I1).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
+          IF ((MAPSTA(1,I2).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
+          IF ((MAPSTA(1,I3).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
+          END DO
+!
+! Now calculate the angle of action of a vertex (see gradients in w3updtmd.ftn)
+! If a triangle is connected to the contour, the angle of each vertex is not
+! taken into account when interpolating gradients.
+!
+        ANGLETOT(:) = TPI
+        DO IE = 1, NTRI 
+          I1 = TRIGP(IE,1)
+          I2 = TRIGP(IE,2)
+          I3 = TRIGP(IE,3) 
+          IF (TRILAND(IE).EQ. 1 ) THEN  
+            ANGLETOT(I1) = ANGLETOT(I1) - ANGLE(IE,1)/2
+            ANGLETOT(I2) = ANGLETOT(I2) - ANGLE(IE,2)/2
+            ANGLETOT(I3) = ANGLETOT(I3) - ANGLE(IE,3)/2
+            END IF
+          IF (TRILAND(IE) .GE. 2) THEN  
+            ANGLETOT(I1) = ANGLETOT(I1) - ANGLE(IE,1)
+            ANGLETOT(I2) = ANGLETOT(I2) - ANGLE(IE,2)
+            ANGLETOT(I3) = ANGLETOT(I3) - ANGLE(IE,3)
+            END IF
+          END DO
+!
+!If contour is included in computation, contour vertices has an angle action of pi 
+! 
+        IF (.NOT.UGCONT) THEN
+          DO IX = 1,NX
+            IF (MAPBORD(IX) .EQ. 1) ANGLETOT(IX) = PI
+            END DO 
+          END IF   
+
+      DO IP = 1, NX
+        IF (ANGLETOT(IP) .NE. 0)  ANGLETOTINV(IP) = 1./ANGLETOT(IP)
+        END DO
+!
+      DO IE = 1, NTRI
+        I1 = TRIGP(IE,1)
+        I2 = TRIGP(IE,2)
+        I3 = TRIGP(IE,3) 
+        ANGLE(IE,1) = ANGLE(IE,1)*ANGLETOTINV(I1)
+        ANGLE(IE,2) = ANGLE(IE,2)*ANGLETOTINV(I2)
+        ANGLE(IE,3) = ANGLE(IE,3)*ANGLETOTINV(I3)
+        END DO
+!      
+      DEALLOCATE(TRILAND, ANGLETOT, ANGLETOTINV)
+!      
+      END IF ! GTYPE .EQ. UNGTYPE
+
 !/O2a      J      = LEN_TRIM(FNMPRE)
 !/O2a      OPEN (NDSM,FILE=FNMPRE(:J)//'mask.ww3')
 !/O2a      DO IY=1, NY
@@ -2157,10 +2542,211 @@
 !/O2c        END DO
 !/O2c      CLOSE (NDSM)
 !
+
+       IF (GTYPE .EQ. UNGTYPE .AND. .NOT. UGCONT) DEALLOCATE(MAPBORD)     
+!
+! Calculate interpolation info which are to be used in gradients computation (w3updtmd.ftn)  
+!   
+      CALL DIFFERENCE
+! 
+!  9.a Reads shorline direction and slope
+!
+      IF ( REFMAP .NE. 0 ) THEN
+        ALLOCATE ( REFD(NX,NY), REFD2(NX,NY), REFS(NX,NY) )
+
+!
+!  9.b Info from input file
+!
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+                                          FROM, TNAME
+!
+          IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
+          IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+          IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+!
+          WRITE (NDSO,977) NDSTR, VSC, IDLA, IDFT
+          IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+          IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
+!
+! 9;c  Open file and check if necessary
+!
+          IF ( NDSTR .EQ. NDSI ) THEN
+              IF ( IDFT .EQ. 3 ) THEN
+                  WRITE (NDSE,1004) NDSTR
+                  CALL EXTCDE (23)
+                ELSE
+                  CALL NEXTLN ( COMSTR , NDSI , NDSE )
+                END IF
+            ELSE IF ( NDSTR .EQ. NDSG ) THEN
+              IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
+                   ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
+                  WRITE (NDSE,1005) IDFM, IDFT
+                  CALL EXTCDE (24)
+                END IF
+            ELSE
+              IF ( IDFT .EQ. 3 ) THEN
+                  IF (FROM.EQ.'NAME') THEN
+                      J      = LEN_TRIM(FNMPRE)
+                      OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
+                            FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+                            IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSTR,           FORM='UNFORMATTED',      &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                ELSE
+                  IF (FROM.EQ.'NAME') THEN
+                      J      = LEN_TRIM(FNMPRE)
+                      OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSTR,                                    &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                END IF
+            END IF
+!
+! 7.e.3 Read the data
+!
+          CALL INA2R ( REFD, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+                       IDFM, RFORM, IDLA, VSC, VOF)
+!
+          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!
+          CALL INA2R ( REFD2, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+                       IDFM, RFORM, IDLA, VSC, VOF)
+          CALL INA2R ( REFS, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+                       IDFM, RFORM, IDLA, VSC, VOF)
+!
+          WRITE (NDSO,*)
+!
+        END IF
+!
+! 8.h Estimates shoreline direction for scattering 
+!
+      IF (GTYPE.NE.UNGTYPE) THEN
+        DO IY=2, NY-1
+          DO IX=2, NX-1
+            IF (TMPSTA(IY,IX).EQ.1) THEN
+!
+! Prepares for reflection from subgrid islands
+!
+            IF (RREF(2)) &
+              REFLC(2,MAPFS(IY,IX))= OBSX(IX,IY)+OBSY(IX,IY)
+!
+! Prepares for iceberg reflections
+!
+            IF (RREF(4)) &
+              REFLC(4,MAPFS(IY,IX))= 1.
+
+!
+! resolved shoreline reflection
+!
+            IF (RREF(1)) THEN 
+!
+! Search for neighboring coastline.        3 2 1 
+! around X. These are the neighbors of X:  4 X 0
+!                                          5 6 7
+!
+!
+              NEIGH1(0)=TMPSTA(IY,IX+1)
+              NEIGH1(1:3)=TMPSTA(IY+1,IX+1:IX-1:-1)
+              NEIGH1(4)=TMPSTA(IY,IX-1)
+              NEIGH1(5:7)=TMPSTA(IY-1,IX-1:IX+1)
+              IF ((NEIGH1(0).EQ.1).AND.(NEIGH1(4).EQ.1)) THEN 
+                REFLD(3,MAPFS(IY,IX))=1
+              ELSE
+                REFLD(3,MAPFS(IY,IX))=0
+                END IF
+              IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).EQ.1)) THEN 
+                REFLD(4,MAPFS(IY,IX))=1
+              ELSE
+                REFLD(4,MAPFS(IY,IX))=0
+                END IF
+!
+! Test if one of the surrounding points is land
+!              
+              IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN 
+!
+! Looks for a locally straight coast in all 8 orientations 
+! It will be fun to adapt this for curvilinear grids ;-) 
+!
+                J=0
+                REFLD(1,MAPFS(IY,IX))=0
+                COSAVG=0
+                SINAVG=0
+                DO K=0,7
+                  IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
+                    .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+                    .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+                    REFLC(1,MAPFS(IY,IX))= REFCOAST
+!
+! Defines direction index for specular reflection (normal to coast)
+!
+!  for example, if we have this layout   001
+!                                        0X1
+!                                        001
+!
+!  then there is only a coastline detection for K=0, giving J=1 
+!  and the final result will be REFLD(1,MAPFS(IY,IX))=1
+!
+                    REFLD(2,MAPFS(IY,IX))= 2
+                    COSAVG=COSAVG+ECOS(1+(K*NTH)/8)
+                    SINAVG=SINAVG+ESIN(1+(K*NTH)/8)
+                    J=J+1
+                    ENDIF
+                  END DO
+                IF (J.GT.0) THEN 
+                  THAVG=ATAN2(SINAVG,COSAVG)
+!/T        WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+                ELSE
+
+!                             1 1 1 
+! Looks for mild corners like 1 1 1
+!                             1 0 0          
+                  DO K=0,7
+                    IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+                      REFLC(1,MAPFS(IY,IX))= REFCOAST
+                      REFLD(1,MAPFS(IY,IX))= 1+(K*NTH+(K+1)*NTH)/16
+                      REFLD(2,MAPFS(IY,IX))= 1
+                      !WRITE(6,*) 'NEIGH2:',IX,IY,K,NEIGH1,K*(NTH/8)
+                      ENDIF
+                    END DO
+!                              1 1 1                        1 1 1
+! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
+!                              1 0 1                        1 1 0          
+                  IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN 
+                    DO K=0,7,2
+                      IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+                        REFLC(1,MAPFS(IY,IX))= REFCOAST
+                        REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
+                        REFLD(2,MAPFS(IY,IX))= 0
+                        !WRITE(6,*) 'NEIGH3:',IX,IY,K,NEIGH1,K*(NTH/8)
+                        END IF
+                      END DO
+                    END IF
+                  END IF
+! End of test if surrounding point is land
+                END IF
+!/T                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  &
+!/T        WRITE (NDST,*) 'COASTAL REFLECTION:',IX,IY, &
+!/T                    REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
+! End of test if local point is sea
+              END IF
+            END IF
+          END DO
+        END DO
+      ELSE IF (GTYPE.EQ.UNGTYPE) THEN
+! To do: reflections for for Unstr. and curvi     
+      ENDIF
+!
       DEALLOCATE ( ZBIN, TMPSTA, TMPMAP )
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 9.  Prepare output boundary points.
+! 10.  Prepare output boundary points.
 !     ILOOP = 1 to count NFBPO and NBO
 !     ILOOP = 2 to fill data arrays
 !
@@ -2421,13 +3007,24 @@
       CALL EXTCDE ( 62 )
 !
  2222 CONTINUE
+      IF (GTYPE.NE.UNGTYPE) THEN
       IF ( NX*NY .NE. NSEA ) THEN
           WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                      &
                             100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
         ELSE
           WRITE (NDSO,9998) NX, NY, NX*NY, NSEA, NBI, NLAND, NBT
-        END IF
-      WRITE (NDSO,9999)
+          END IF
+       ELSE IF (GTYPE.EQ.UNGTYPE) THEN
+         IF ( NX*NY .NE. NSEA ) THEN
+           WRITE (NDSO,9997) 0, 0, NX*NY, NSEA, 100.*REAL(NSEA)/REAL(NX*NY),  &
+                               NBI, NLAND, NBT
+         ELSE
+           WRITE (NDSO,9998) 0, 0, NX*NY, NSEA, NBI, NLAND, NBT
+           END IF
+         ENDIF ! GTYPE .EQ. UNGTYPE
+              
+      WRITE (NDSO,9999)  
+ 
 !
 ! Formats
 !
@@ -2508,26 +3105,45 @@
 !
 !/ST3  920 FORMAT (/'  Wind input (WAM 4+) ',A/                            &
 !/ST3        ' --------------------------------------------------')
-!/ST3  921 FORMAT ( '       minimum Charnock coeff.     :',F10.4/     &
-!/ST3               '       betamax                     :',F9.3/      &
-!/ST3               '       power of cos. in wind input :',F9.3/      &
-!/ST3               '       z0max                       :',F9.3/      &
-!/ST3               '       zalp                        :',F9.3/      &
-!/ST3               '       Height of input wind (m)    :',F8.2/      &
-!/ST3               '       wind stress sheltering      :',F9.3/      &
-!/ST3               '       swell attenuation param.    :',I5/        &
-!/ST3               '       swell attenuation factor    :',F9.3/      &
-!/ST3               '       swell attenuation factor2   :',F9.3/      &
-!/ST3               '       swell attenuation factor3   :',F9.3/      &
-!/ST3               '       critical Reynolds number    :',F9.1/      &
-!/ST3               '       swell attenuation factor5   :',F9.3/      &
-!/ST3               '       ratio of z0 for orb. & mean :',F9.3/)
+!/ST3  921 FORMAT ( '       minimum Charnock coeff.     :',F10.4/          &
+!/ST3               '       betamax                     :',F9.3/           &
+!/ST3               '       power of cos. in wind input :',F9.3/           &
+!/ST3               '       z0max                       :',F9.3/           &
+!/ST3               '       zalp                        :',F9.3/           &
+!/ST3               '       Height of input wind (m)    :',F8.2/           &
+!/ST3               '       swell attenuation factor    :',F9.3/ )
 !/ST3 2920 FORMAT ( '  &SIN3 ZWND =',F5.1,', ALPHAO =',F8.5,', Z0MAX =',F8.5,', BETAMAX =', &
-!/ST3                  F8.5,','/                                      &
-!/ST3              '        SINTHP =',F8.5,', ZALP =',F8.5,', TAUWSHELTER =',F8.5,           &
-!/ST3              ', SWELLFPAR =',I2,','/                            &
-!/ST3              '        SWELLF =',F8.5,', SWELLF2 =',F8.5,        &
-!/ST3              ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,', SWELLF5 =',F8.5,', Z0RAT =',F8.5,' /')
+!/ST3                  F8.5,','/                                           &
+!/ST3              '        SINTHP =',F8.5,', ZALP =',F8.5,','/            &
+!/ST3              '        SWELLF =',F8.5,'R /'/)                              
+!
+!/ST4  920 FORMAT (/'  Wind input (WAM 4+) ',A/                            &
+!/ST4        ' --------------------------------------------------')
+!/ST4  921 FORMAT ( '       minimum Charnock coeff.     :',F10.4/          &
+!/ST4               '       betamax                     :',F9.3/           &
+!/ST4               '       power of cos. in wind input :',F9.3/           &
+!/ST4               '       z0max                       :',F9.3/           &
+!/ST4               '       zalp                        :',F9.3/           &
+!/ST4               '       Height of input wind (m)    :',F8.2/           &
+!/ST4               '       wind stress sheltering      :',F9.3/           &
+!/ST4               '       swell attenuation param.    :',I5/             &
+!/ST4               '       swell attenuation factor    :',F9.3/           &
+!/ST4               '       swell attenuation factor2   :',F9.3/           &
+!/ST4               '       swell attenuation factor3   :',F9.3/           &
+!/ST4               '       critical Reynolds number    :',F9.1/           &
+!/ST4               '       swell attenuation factor5   :',F9.3/           &
+!/ST4               '       swell attenuation factor6   :',F9.3/           &
+!/ST4               '       swell attenuation factor7   :',F12.9/           &
+!/ST4               '       ratio of z0 for orb. & mean :',F9.3/)
+!/ST4 2920 FORMAT ( '  &SIN4 ZWND =',F5.1,', ALPHAO =',F8.5,', Z0MAX =',F8.5,', BETAMAX =', &
+!/ST4                  F8.5,','/                                           &
+!/ST4              '        SINTHP =',F8.5,', ZALP =',F8.5,', TAUWSHELTER =',F8.5,           &
+!/ST4              ', SWELLFPAR =',I2,','/                                 &
+!/ST4              '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
+!/ST4              ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
+!/ST4              '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
+!/ST4              ', SWELLF7 =',F12.9,', Z0RAT =',F8.5,' /')
+
 !
 !/STX  920 FORMAT (/'  Experimental wind input.'/)
 !
@@ -2583,21 +3199,35 @@
 !
 !/ST3  924 FORMAT (/' Dissipation (WAM Cycle 4+) ',A/                 &
 !/ST3        ' --------------------------------------------------')
-!/ST3  925 FORMAT ( '       SDSC1, SDSC2, SDSC3         :',3E11.3/    &
+!/ST3  925 FORMAT ( '       SDSC1                       :',1E11.3/    &
 !/ST3               '       Power of k in mean k        :',F8.2/      &
-!/ST3               '       weights of k and k^2        :',F9.3,F6.3/ &
-!/ST3               '       low/high freq. WAM4 weight  :',F9.3,F6.3/)
-!/ST3 2924 FORMAT ( '  &SDS3 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST3               ', SDSC3 =',E12.4,','/                            &
-!/ST3               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
-!/ST3               ', SDSC6 =',E12.4,', WNMEANP =',F5.2,','/         &
+!/ST3               '       weights of k and k^2        :',F9.3,F6.3/)  
+!/ST3 2924 FORMAT ( '  &SDS3 SDSC1 =',E12.4,', WNMEANP =',F4.2,       &
+!/ST3               ', FXPM3 =', F4.2,',FXFM3 =',F4.2,', '/           &  
 !/ST3               '        SDSDELTA1 =', F5.2,', SDSDELTA2 =',F5.2, &
-!/ST3               ', SDSLF =',F5.2,', SDSHF =',F5.2,', '/           &
-!/ST3               '        SDSBR = ',E12.4, ', SDSBR2 =',F5.2,      &
-!/ST3               ', SDSP =',F5.2,', SDSISO =',I2,                  &
-!/ST3               ', SDSCOS =',F3.1,', SDSDTH =',F5.1,', '/         &
-!/ST3               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
-!/ST3               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =',F5.2,' /')
+!/ST3               ' /')                               
+!
+!/ST4  924 FORMAT (/' Dissipation (Ardhuin et al. 2010) ',A/          &
+!/ST4        ' --------------------------------------------------')
+!/ST4  925 FORMAT ( '       SDSC1, SDSC2, SDSC3         :',3E11.3/    &
+!/ST4               '       Power of k in mean k        :',F8.2/)      
+!/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
+!/ST4               ', SDSC3 =',E12.4,','/                            &
+!/ST4               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
+!/ST4               ', SDSC6 =',E12.4,','/                            &
+!/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
+!/ST4               ',FXFM3 =',F4.2,','/                              &
+!/ST4               '        SDSBINT =',E12.4,', SDSBCK =',E12.4,     &
+!/ST4               ', SDSABK =',F6.3,', SDSPBK =',F6.3,', '/         &
+!/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4, ',  '/&
+!/ST4               '        SDSBR2 =',F5.2,', SDSP =',F5.2,          &
+!/ST4               ', SDSISO =',I2, &
+!/ST4               ', SDSCOS =',F3.1,', SDSDTH =',F5.1,', '/         &
+!/ST4               '        SDSBRF1 = ',F5.2,',  SDSBRF2 = ',F5.2,   &
+!/ST4               ', SDSBRFDF =',I2,', '/                           &
+!/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
+!/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
+!/ST4               F5.2,' /')
 !
 !/STX  924 FORMAT (/'  Experimental dissipation.'/)
 !
@@ -2633,7 +3263,8 @@
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
-  951 FORMAT ( '       Type of scheme              :',1X,A)
+  951 FORMAT ( '       Type of scheme (structured) :',1X,A)
+ 2951 FORMAT ( '       Type of scheme(unstructured):',1X,A)
   952 FORMAT ( '                                    ',1X,A)
 !/PR1  953 FORMAT ( '       CFLmax depth refraction     :',F9.3/)
 !/PR1 2953 FORMAT ( '  &PRO1 CFLTM =',F5.2,' /')
@@ -2653,6 +3284,9 @@
 !/PR3  955 FORMAT ( '            **** Internal maximum .GE.',F6.2,' ****')
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
+!
+ 2956 FORMAT ( '  &UG   UGCONT =',L3, ',EXPFSN =',L3,      &
+                      ',EXPFSPSI =',L3, ',EXPFSFCT =',L3,',GMSH =',L3,         / )
 !
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')
@@ -2680,7 +3314,16 @@
                ','/'        XP =',F6.3,', XR =',F6.3,', XFILT =',     &
                F6.3,', IHM =',I5,', HSPM =',F6.3,','/                 &
                '        WSM =',F6.3,', WSC =',F6.3,', FLC = ',A,      &
-               ', FMICHE =',F6.3,' /')
+               ', FMICHE =',F6.3,', RWNDC =' ,F6.3,','/               &
+               '        FLAGICESOURCE =',L3,                          &
+               ', P2SF =',I1,', I1P2SF =',I2,', I2P2SF =',I2,         &
+               ', US3D_OUNF =',I1,', I1US3D_OUNF =',I2,               &
+               ', I2US3D_OUNF =',I2,','/                              &
+               '     REFCOAST =',F4.1,', REFFREQ =',F4.1,             &
+               ', REFMAP =',I1, ', REFSUBGRID =',F4.1,                &
+               ', BSBOTTOM =',F4.1,', REFICEBERG =',F4.1,', FACBERG =',F4.1,' /')
+!/COU  2969 FORMAT ( '  &COU  COU_2D =',L3,', COU_RAD3D =',L3,         &
+!/COU               ', COU_US3D =',L3,' /')
 !
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &
@@ -2865,6 +3508,7 @@
  1104 FORMAT ( '  Legend : '/                                         &
                ' --------------------------------'/                   &
                '    fraction of obstruction * 10 '/)
+ 1150 FORMAT (/'  Reading unstructured grid definition files ...'/)
 !
  9997 FORMAT (/'  Summary grid statistics : '/                        &
                ' --------------------------------------------------'/ &
@@ -2988,6 +3632,8 @@
 !/ST2                          READ (NDS,NML=SIN2,END=801,ERR=802,IOSTAT=J)
 !/ST3                        CASE('SIN3')
 !/ST3                          READ (NDS,NML=SIN3,END=801,ERR=802,IOSTAT=J)
+!/ST4                        CASE('SIN4')
+!/ST4                          READ (NDS,NML=SIN4,END=801,ERR=802,IOSTAT=J)
 !/NL1                        CASE('SNL1')
 !/NL1                          READ (NDS,NML=SNL1,END=801,ERR=802,IOSTAT=J)
 !/NL2                        CASE('SNL2')
@@ -3003,6 +3649,8 @@
 !/ST2                          READ (NDS,NML=SDS2,END=801,ERR=802,IOSTAT=J)
 !/ST3                        CASE('SDS3')
 !/ST3                          READ (NDS,NML=SDS3,END=801,ERR=802,IOSTAT=J)
+!/ST4                        CASE('SDS4')
+!/ST4                          READ (NDS,NML=SDS4,END=801,ERR=802,IOSTAT=J)
 !/BT1                        CASE('SBT1')
 !/BT1                          READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
 !/DB1                        CASE('SDB1')
@@ -3013,6 +3661,8 @@
 !/PR2                          READ (NDS,NML=PRO2,END=801,ERR=802,IOSTAT=J)
 !/PR3                        CASE('PRO3')
 !/PR3                          READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
+                        CASE('UG')
+                          READ (NDS,NML=UG,END=801,ERR=802,IOSTAT=J)
                         CASE('MISC')
                           READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
                         CASE DEFAULT

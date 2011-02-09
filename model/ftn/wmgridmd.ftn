@@ -211,6 +211,11 @@
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
         END IF
+      IF ( GTYPE .EQ. UNGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMGLOW: ', &
+          'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
 !
 !/MPI      FLBARR = .FALSE.
 !
@@ -801,6 +806,11 @@
       IF ( GTYPE .EQ. CLGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMGHGH: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+      IF ( GTYPE .EQ. UNGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMGHGH: ', &
+          'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
         END IF
 !
@@ -1728,6 +1738,11 @@
       IF ( GTYPE .EQ. CLGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMGEQL: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          CALL EXTCDE ( 999 )
+        END IF
+      IF ( GTYPE .EQ. UNGTYPE ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMGEQL: ', &
+          'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
         END IF
 !

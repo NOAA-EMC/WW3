@@ -221,6 +221,12 @@
 ! -------------------------------------------------------------------- /
 ! 4.  perform partitioning
 !
+!AR: NaN checks should results in immediate stop after trace ...
+        IF (DEPTH.NE.DEPTH) THEN
+          WRITE(6,*) 'IOSF:',ISEA,IX,IY,DW(ISEA),DEPTH
+          WRITE(*,*) 'FOUND NaN in depth'
+          STOP 'CRITICAL ERROR IN DEPTH ARRAY'
+        END IF
         CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
                       NP, XP, DIMXP )
 !

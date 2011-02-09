@@ -4,6 +4,22 @@ $ -------------------------------------------------------------------- $
 $ Grid name (C*30, in quotes)
 $
   'TEST GRID (GULF OF NOWHERE)   '
+$  
+$  Type of grid, coordinate system and global flag: GSTRG, FLAGLL,
+$    GLOBAL.  A global grid may be rectilinear or curvilinear.
+$    A global grid must be in spherical coordinates.
+$      GSTRG  : String indicating type of grid :
+$               'RECT'  : rectilinear
+$               'CURV'  : curvilinear  
+$               'UNST'  : unstructured (triangle-based)
+$      FLAGLL : Flag to indicate coordinate system :
+$               T  : Spherical (lon/lat in degrees)
+$               F  : Cartesian (meters)
+$      GLOBAL : Flag to indicate whether or not the grid is global :
+$               T  : Global (longitudinal closure is applied)
+$               F  : Not global
+$
+     'RECT'  T F
 $
 $ Frequency increment factor and first frequency (Hz) ---------------- $
 $ number of frequencies (wavenumbers) and directions, relative offset
@@ -206,34 +222,22 @@ END OF NAMELISTS
 $
 $ Define grid -------------------------------------------------------- $
 $
-$ Five records containing :
+$ Four records containing :
 $
-$  1 Type of grid, coordinate system and global flag: GSTRG, FLAGLL,
-$    GLOBAL.  A global grid may be rectilinear or curvilinear.
-$    A global grid must be in spherical coordinates.
-$      GSTRG  : String indicating type of grid :
-$               'RECT'  : rectilinear
-$               'CURV'  : curvilinear  
-$      FLAGLL : Flag to indicate coordinate system :
-$               T  : Spherical (lon/lat in degrees)
-$               F  : Cartesian (meters)
-$      GLOBAL : Flag to indicate whether or not the grid is global :
-$               T  : Global (longitudinal closure is applied)
-$               F  : Not global
-$  2 NX, NY. As the outer grid lines are always defined as land
+$  1 NX, NY. As the outer grid lines are always defined as land
 $    points, the minimum size is 3x3.
 $
 $ Branch here based on grid type
 $
 $ IF ( RECTILINEAR GRID ) THEN
 $
-$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+$  2 Grid increments SX, SY (degr.or m) and scaling (division) factor.
 $    If GLOBAL=T, then SX is set to 360/NX.
-$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
+$  3 Coordinates of (1,1) (degr.) and scaling (division) factor.
 $
 $ ELSE IF ( CURVILINEAR GRID ) THEN
 $
-$  3 Unit number of file with x-coordinate.
+$  2 Unit number of file with x-coordinate.
 $    Scale factor and add offset: x <= scale_fac * x_read + add_offset.
 $    IDLA, IDFM, format for formatted read, FROM and filename.
 $      IDLA : Layout indicator :
@@ -253,7 +257,7 @@ $    If the above unit number equals 10, then the x-coord is read from this
 $    file.  The x-coord must follow the above record.  No comment lines are
 $    allowed within the x-coord input.
 $
-$  4 Unit number of file with y-coordinate.
+$  3 Unit number of file with y-coordinate.
 $    Scale factor and add offset: y <= scale_fac * y_read + add_offset.
 $    IDLA, IDFM, format for formatted read, FROM and filename.
 $      IDLA : Layout indicator :
@@ -273,9 +277,11 @@ $    If the above unit number equals 10, then the y-coord is read from this
 $    file.  The y-coord must follow the above record.  No comment lines are
 $    allowed within the y-coord input.
 $
+$ ELSE IF ( UNSTRUCTURED GRID ) THEN
+$   Nothing to declare: all the data will be read from the GMESH file 
 $ END IF ( CURVILINEAR GRID )
 $
-$  5 Limiting bottom depth (m) to discriminate between land and sea
+$  4 Limiting bottom depth (m) to discriminate between land and sea
 $    points, minimum water depth (m) as allowed in model, unit number
 $    of file with bottom depths, scale factor for bottom depths (mult.),
 $    IDLA, IDFM, format for formatted read, FROM and filename.
@@ -294,13 +300,13 @@ $               'NAME' : open file by name and assign to unit.
 $
 $    If the above unit number equals 10, then the bottom depths are read from
 $    this file.  The depths must follow the above record.  No comment lines are
-$    allowed within the depth input.
+$    allowed within the depth input. In the case of unstructured grids, the file 
+$    is expected to be a GMESH grid file containing node and element lists.
 $
 $ ------------------------------------------------------------------------
 $ Example for rectilinear grid with spherical (lon/lat) coordinate system.
 $ Note that for Cartesian coordinates the unit is meters (NOT km).
 $
-     'RECT'  T
      12     12
       1.     1.     4.
      -1.    -1.     4.

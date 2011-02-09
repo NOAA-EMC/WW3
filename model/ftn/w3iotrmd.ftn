@@ -169,7 +169,8 @@
                           DPDX, DPDY, DQDX, DQDY, MAPSTA, MAPST2,     &
                           MAPFS, TH, DTH, SIG, DSIP, FILEXT
       USE W3GSRUMD, ONLY: W3GFCL
-!/T      USE W3GSRUMD, ONLY: W3GSUP
+!/T      USE W3GSRUMD, ONLY: W3GSUP      
+      USE W3GDATMD, ONLY: XYB, MAXX, MAXY, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME, UST
       USE W3ADATMD, ONLY: CG, DW, CX, CY, UA, UD, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
@@ -198,14 +199,15 @@
       INTEGER, PARAMETER      :: OTYPE = 3
       INTEGER                 :: NDSTI, NDSTO, ISPROC, IERR,          &
                                  IK, ITH, IX, IY, TIMEB(2), TIMEE(2), &
-                                 TTIME(2), IXX(4), IYY(4), I, J,      &
-                                 ISEA, JSEA, TOLAST(2)
+                                 TTIME(2), IX1, IX2, IY1, IY2,        &
+                                 IXX(4), IYY(4), I, J, ISEA, JSEA,    &
+                                 TOLAST(2)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T      INTEGER                 :: NREAD, NTRACK, NSPECO, NLOCO
 !/T3      INTEGER                 :: ISPT
 !/MPI      INTEGER                 :: IT, IROOT, IFROM, IERR_MPI
 !/MPI      INTEGER, ALLOCATABLE    :: STATUS(:,:)
-      REAL                    :: XT, YT, RD, X, Y, WX, WY,            &
+      REAL                    :: XN, YN, XT, YT, RD, X, Y, WX, WY,    &
                                  SPEC(NK,NTH), FACTOR, ASPTRK(NTH,NK),&
                                  DTOUT, XX(4), YY(4)
       REAL, SAVE              :: RDCHCK = 0.05, RTCHCK = 0.05
@@ -214,6 +216,10 @@
       CHARACTER(LEN=34)       :: IDTST
 !/T1      CHARACTER(LEN=17), SAVE :: TSTLOC = '                 '
 !/T2      CHARACTER(LEN=1)        :: MAPSTR(NX)
+!
+!FAB: was not in trunk ...?  
+      EQUIVALENCE                (IXX(1),IX1) , (IXX(2),IX2) ,        &
+                                 (IYY(1),IY1) , (IYY(3),IY2)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -232,6 +238,11 @@
       FORMI  = NDSINP .GT. 0
       NDSTI  = ABS(NDSINP)
       NDSTO  = ABS(NDSOUT)
+      
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        XN     = MAXX
+        YN     = MAXY
+        ENDIF       
 !
       ISPROC = IAPROC
       IPASS  = IPASS + 1
@@ -256,7 +267,7 @@
       IF ( IPASS .EQ. 1 ) THEN
 !
 !/T          WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI
-!/T          CALL W3GSUP ( GSU, NDST )
+!   Removed by F.A. 2010/12/24  /T          CALL W3GSUP ( GSU, NDST )
 !
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
@@ -415,6 +426,10 @@
 !
           IX     = IXX(J)
           IY     = IYY(J)
+          IF(GTYPE .EQ. UNGTYPE) THEN	  
+            X = XYB(IX,1)
+            Y = XYB(IX,2)
+            ENDIF 	  
           MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
           MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
 !
@@ -484,8 +499,13 @@
         DO IX=1, NX
           IF ( MASK1(IY,IX) ) THEN
 !
-              X      = XGRD(IY,IX)
-              Y      = YGRD(IY,IX)
+            IF(GTYPE .EQ. UNGTYPE) THEN
+	      X = XYB(IX,1)
+              Y = XYB(IX,2)	  
+	      ELSE
+              X = XGRD(IY,IX)
+              Y = YGRD(IY,IX)
+              ENDIF 	      
 !/MPI              IT     = IT + 1
 !/T              NLOCO  = NLOCO + 1
 !

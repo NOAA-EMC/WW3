@@ -56,6 +56,7 @@
 !      CY0/N     R.A.  Public      for both times.
 !      WLEV      R.A.  Public   Next water level field.
 !      ICEI      R.A.  Public   Ice concentrations.
+!      BERGI     R.A.  Public   Iceberg damping coefficient
 !      IINIT     Log.  Public   Flag for array initialization.
 !      FLLEV     Log.  Public   Flag for water level input.
 !      FLCUR     Log.  Public   Flag for current input.
@@ -112,7 +113,8 @@
         REAL, POINTER         :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
-                                 CYN(:,:), WLEV(:,:), ICEI(:,:)
+                                 CYN(:,:), WLEV(:,:), ICEI(:,:),      &
+                                 BERGI(:,:)
         LOGICAL               :: IINIT
         LOGICAL               :: FLAGS(8)
       END TYPE INPUT
@@ -130,7 +132,8 @@
       REAL, POINTER           :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
-                                 CYN(:,:), WLEV(:,:), ICEI(:,:)
+                                 CYN(:,:), WLEV(:,:), ICEI(:,:),      &
+                                 BERGI(:,:)
       LOGICAL, POINTER        :: IINIT
       LOGICAL, POINTER        :: FLAGS(:)
       LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE
@@ -385,7 +388,11 @@
           INPUTS(IMOD)%DTN = 0.
         END IF
 !
-      IF ( FLICE  ) ALLOCATE ( INPUTS(IMOD)%ICEI(NX,NY) )
+      IF ( FLICE  ) THEN 
+                    ALLOCATE ( INPUTS(IMOD)%ICEI(NX,NY),              &
+                               INPUTS(IMOD)%BERGI(NX,NY) )
+          INPUTS(IMOD)%BERGI = 0.
+        END IF
 !
       INPUTS(IMOD)%IINIT  = .TRUE.
 !
@@ -578,6 +585,7 @@
 !
           IF ( FLICE  ) THEN
               ICEI   => INPUTS(IMOD)%ICEI
+              BERGI  => INPUTS(IMOD)%BERGI
             END IF
 !
         END IF

@@ -569,4 +569,29 @@
 !/
 !/ End of module W3TIMEMD -------------------------------------------- /
 !/
+
+!*********************************************************************
+INTEGER FUNCTION julday(id,mm,iyyy)
+!*********************************************************************
+   IMPLICIT NONE
+	INTEGER(KIND=4),    INTENT(in)  :: id,mm,iyyy
+   INTEGER(KIND=4), PARAMETER :: IGREG=15+31*(10+12*1582)
+   INTEGER(KIND=4) ja,jm,jy
+   jy=iyyy
+   IF (jy.EQ.0) WRITE(6,*) 'There is no zero year !!'
+   IF (jy.LT.0) jy=jy+1
+   IF (mm.GT.2) THEN
+      jm=mm+1
+   ELSE
+      jy=jy-1
+      jm=mm+13
+   ENDIF
+   julday=INT(365.25*jy)+int(30.6001*jm)+id+1720995
+   IF (id+31*(mm+12*iyyy).GE.IGREG) THEN
+      ja=INT(0.01*jy)
+      julday=julday+2-ja+INT(0.25*ja)
+   ENDIF
+   RETURN
+END FUNCTION JULDAY
+
       END MODULE W3TIMEMD

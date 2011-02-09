@@ -31,6 +31,7 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    30-Aug-2010 : Adding ST4                          ( version 3.14 )
 !/    20-Apr-2010 : Fix initialization of USTAR.      ( version 3.14.1 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
@@ -612,6 +613,7 @@
 !/ST1      USE W3SRC1MD
 !/ST2      USE W3SRC2MD
 !/ST3      USE W3SRC3MD
+!/ST4      USE W3SRC4MD
 !/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
@@ -633,18 +635,22 @@
 !/ Local parameters
 !/
       INTEGER                 :: J, I1, I2, IK, ITH, ISPEC, IKM, IKL, &
-                                 IKH, ITT
+                                 IKH, ITT, IX, IY
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: XL, XH, XL2, XH2, DEPTH, SQRTH, UDIR,&
                                  UDIRR, UABS, CDIR, SIX, R1, R2, ET,  &
                                  EWN, ETR, ETX, ETY, EBND, EBX, EBY,  &
                                  HSIG, WLEN, TMEAN, THMEAN, THSPRD,   &
                                  EMAX, EL, EH, DENOM, FP, THP, SPP,   &
-                                 FACTOR, CD, USTAR, FHIGH, ZWND,      &
-                                 USTD, Z0, EMEAN, FMEAN, WNMEAN
+                                 FACTOR, CD, USTAR, FHIGH, ZWND, ICE, &
+                                 USTD, Z0, CHARN, EMEAN, FMEAN, WNMEAN
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
-!/ST3      REAL                    :: FMEANS, FMEANWS, TAUWX, TAUWY, AMAX
+!/ST3      REAL                    :: FMEANS, FMEANWS, TAUWX, TAUWY, AMAX, &
+!/ST3                                 TAUWNX, TAUWNY
+!/ST4      REAL                    :: FMEANWS, TAUWX, TAUWY, AMAX, &
+!/ST4                                 TAUWNX, TAUWNY
+!/BS1      REAL                    :: TAUSCX, TAUSCY
 !/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1,   &
 !/STAB2                                 COR2, ASFAC
       REAL                    :: HSMIN = 0.05
@@ -657,6 +663,7 @@
                                  XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
                                  XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH)
 !/ST3      LOGICAL                :: LLWS(NTH,NK) 
+!/ST4      LOGICAL                :: LLWS(NTH,NK)
       CHARACTER               :: DTME21*23
 !/
 !/ ------------------------------------------------------------------- /
@@ -667,6 +674,7 @@
       XH     =  XFR - 1.
       XL2    = XL**2
       XH2    = XH**2
+      ICE = 0.
 !
       XLN = 0.
       XWI = 0.
@@ -845,7 +853,9 @@
 !/ST3            TAUWX  = 0.
 !/ST3            TAUWY  = 0.
 !/ST3            LLWS(:,:)  = .TRUE.
-            USTAR  = 1.
+!/ST4            ZWND   = ZZWND
+!/ST4            TAUWX  = 0.
+!/ST4            TAUWY  = 0.
 !
 !/ST0            FHIGH  = SIG(NK)
 !/ST1            CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
@@ -857,7 +867,10 @@
 !/ST2                         EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 !/ST3            CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,        &
 !/ST3                         WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
-!/ST3                         TAUWX, TAUWY, CD, Z0, LLWS, FMEANWS)
+!/ST3                         TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST4            CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,         &
+!/ST4                         WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
+!/ST4                         TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !
 !/FLX1            CALL W3FLX1 ( ZWND, UABS, UDIRR,                     &
 !/FLX1                          USTAR, USTD, Z0, CD )
@@ -873,10 +886,17 @@
 !/ST2                           EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 !/ST3              CALL W3SIN3 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
 !/ST3                           ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
-!/ST3                           XWI, DIA, LLWS )
+!/ST3                           TAUWNX, TAUWNY,                       &
+!/ST3                           ICE, XWI, DIA, LLWS, IX, IY )
 !/ST3            CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,        &
 !/ST3                         WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
-!/ST3                         TAUWX, TAUWY, CD, Z0, LLWS, FMEANWS)
+!/ST3                         TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST4              CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
+!/ST4                           ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
+!/ST4                           TAUWNX, TAUWNY, ICE, XWI, DIA, LLWS, IX, IY )
+!/ST4              CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,         &
+!/ST4                         WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
+!/ST4                         TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !/FLX2              CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
 !/FLX2                            USTAR, USTD, Z0, CD )
 !/FLX3              CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
@@ -894,7 +914,12 @@
 !/ST2                                                   FPI, XWI, DIA )
 !/ST3                CALL W3SIN3 (A, CG, WN2, UABS, USTAR, DAIR/DWAT, &
 !/ST3                             ASO(J), UDIRR, Z0, CD,              &
-!/ST3                             TAUWX, TAUWY, XWI, DIA, LLWS )
+!/ST3                             TAUWX, TAUWY, TAUWNX, TAUWNY,       &
+!/ST3                             ICE, XWI, DIA, LLWS, IX, IY )
+!/ST4                CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT, &
+!/ST4                             ASO(J), UDIRR, Z0, CD,              &
+!/ST4                             TAUWX, TAUWY, TAUWNX, TAUWNY,       &
+!/ST4                             ICE, XWI, DIA,  LLWS, IX, IY )
 !/STX                CALL W3SINX
               END IF
             IF ( FLSRCE(3) ) THEN
@@ -908,8 +933,10 @@
             IF ( FLSRCE(4) ) THEN
 !/ST1                CALL W3SDS1 ( A, WN2, EMEAN, FMEAN, WNMEAN, XDS, DIA )
 !/ST2                CALL W3SDS2 ( A, CG, WN, FPI, USTAR, ALPHA, XDS, DIA )
-!/ST3                CALL W3SDS3 ( A, WN, EMEAN, FMEANS, WNMEAN,         &
-!/ST3                                        USTAR, USTD, DEPTH, XDS, DIA )
+!/ST3                CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,         &
+!/ST3                                        USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
+!/ST4                CALL W3SDS4 ( A, WN, CG,          &
+!/ST4                                        USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
 !/STX                CALL W3SDSX
 !
 !/DB1                CALL W3SDB1 ( A, WN2, DEPTH, EMEAN, FMEAN, WNMEAN,  &
@@ -922,7 +949,8 @@
 !/BTX                CALL W3SBTX
 !
 !/BS1                CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
-!/BS1                              CAO(J)*COS(CDO(J)),           XBS, DIA )
+!/BS1                              CAO(J)*SIN(CDO(J)),     &
+!/BS1                             TAUSCX, TAUSCY, XBS, DIA )
 !/BSX                CALL W3SBSX
 !
               END IF

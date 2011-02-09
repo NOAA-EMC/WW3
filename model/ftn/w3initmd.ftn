@@ -31,6 +31,7 @@
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    29-Feb-2008 : Add NEC compiler directives.        ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    23-Jul-2009 : Implement unstructured grids        ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
@@ -91,8 +92,8 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3INIT ( IMOD, FEXT, MDS, MTRACE, ODAT,              &
-                          FLGRD, NPT, XPT, YPT, PNAMES, IPRT, PRTFRM, &
-                          MPI_COMM )
+                          FLGRD, FLGR2, NPT, XPT, YPT, PNAMES, IPRT,  &
+			  PRTFRM, MPI_COMM )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -124,11 +125,14 @@
 !/    01-May-2007 : Move O7a output to W3IOPP.          ( version 3.11 )
 !/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-!/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+!/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 
+!/    13-Sep-2009 : Add coupling option                 ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.1 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !  1. Purpose :
 !
@@ -176,6 +180,7 @@
 !                          11-15 Id. for OTYPE = 3; track point output.
 !                          16-20 Id. for OTYPE = 4; restart files.
 !                          21-25 Id. for OTYPE = 5; boundary data.
+!                          31-35 Id. for OTYPE = 7; coupling data.
 !       FLGRD   L.A.   I   Flags for gridded output.
 !       NPT     Int.   I   Number of output points
 !       X/YPT   R.A.   I   Coordinates of output points.
@@ -295,7 +300,7 @@
       USE W3ARRYMD, ONLY: PRTBLK
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSTA, MAPST2, MAPFS, &
-                          RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
+                          RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
                           GLOBAL, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
                           FLCK, NK, NTH, NSPEC, SIG, GNAME
       USE W3WDATMD, ONLY: TIME, TLEV, TICE, WLV, UST, USTDIR, VA
@@ -306,7 +311,8 @@
                           FLOUT, NOGRD, FLOGRD, FLBPO, NOPTS, PTNME,  &
                           PTLOC, IPTINT, PTIFAC, UNDEF, IDOUT,        &
                           OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN,    &
-                          IYS, FLFORM, IOSTYP, UNIPTS, UPPROC
+                          IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE,&
+                          FLOGR2
       USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
                           UA, UD, U10, U10D, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
@@ -321,9 +327,10 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
-                                       ODAT(30), NPT, IPRT(6), MPI_COMM
+                                       ODAT(35), NPT, IPRT(6), MPI_COMM
       REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
-      LOGICAL, INTENT(IN)           :: FLGRD(NOGRD), PRTFRM
+      LOGICAL, INTENT(IN)           :: FLGRD(NOGRD), FLGR2(NOGRD),    &
+                                       PRTFRM
       CHARACTER*(*), INTENT(IN)     :: FEXT
       CHARACTER(LEN=10), INTENT(IN) :: PNAMES(NPT)
 !/
@@ -333,7 +340,7 @@
       INTEGER                 :: IE, IFL, IFT, IERR, NTTOT, NTLOC,    &
                                  NTTARG, IK, IP, ITH, INTYPE, IX, IY, &
                                  J, J0, TOUT(2), TLST(2), ISEA, IS,   &
-                                 I1, I2, JSEA, NTTMAX
+                                 K, I1, I2, JSEA, NTTMAX
 !/DIST      INTEGER                 :: ISTEP, ISP
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -405,7 +412,10 @@
           IF ( IOSTYP .EQ. 2 ) THEN
               NAPROC = MAX(1,NAPROC-1)
             ELSE IF ( IOSTYP .EQ. 3 ) THEN
-              IF ( ODAT( 3).GT.0 ) THEN
+!
+! For field or coupling output
+!
+              IF ( ODAT( 3).GT.0 .OR.  ODAT(33).GT.0 ) THEN
                   NAPFLD =       NAPROC
                   NAPROC = MAX(1,NAPROC-1)
                 END IF
@@ -676,7 +686,7 @@
 ! 4.  Set-up output times -------------------------------------------- *
 ! 4.a Unpack ODAT
 !
-      DO J=1, 6
+      DO J=1, NOTYPE
         J0 = (J-1)*5
         TONEXT(1,J) =        ODAT(J0+1) 
         TONEXT(2,J) =        ODAT(J0+2)
@@ -692,6 +702,14 @@
       DO J=1, NOGRD
         FLOUT(1) = FLOUT(1) .OR. FLOGRD(J)
         END DO
+!
+      FLOUT(7) = .FALSE.
+      FLOGR2   = FLGR2
+      DO J=1, NOGRD
+        FLOUT(7) = FLOUT(7) .OR. FLOGR2(J)
+
+        END DO
+	
 !
       FLOUT(2) = NPT .GT. 0
 !
@@ -720,7 +738,7 @@
       TOFRST(1) = -1
       TOFRST(2) =  0
 !
-      DO J=1, 6
+      DO J=1, NOTYPE
 !
 ! ... check time step  
 !
@@ -873,8 +891,8 @@
 !
       AS     = UNDEF
 !
-      UST   (0) = 0.
-      USTDIR(0) = 0.
+      UST   (:) = 0.
+      USTDIR(:) = 0.
       AS    (0) = 0.
       DW    (0) = 0.
 !
@@ -894,6 +912,13 @@
 !
           IF ( FLOUT(1) ) THEN
               WRITE (NDSO,975)
+              DO J=1,NOGRD
+                IF ( FLOGRD(J) ) WRITE (NDSO,976) IDOUT(J)
+                END DO
+            END IF
+!
+          IF ( FLOUT(7) ) THEN
+              WRITE (NDSO,987)
               DO J=1,NOGRD
                 IF ( FLOGRD(J) ) WRITE (NDSO,976) IDOUT(J)
                 END DO
@@ -1007,14 +1032,16 @@
   983 FORMAT ( ' Ice field time   : ',A)
 !
   984 FORMAT (//                                                      &
-        43X,'  |    input    |    output   |'/                        &
-        43X,'  |-------------|-------------|'/                        &
+        43X,'  |    input    |     output    |'/                        &
+        43X,'  |-------------|---------------|'/                        &
          8X,'   step | pass |    date      time   | b w l c i d |',   &
-              ' g p t r b f |'/                                       &
-         8X,'--------|------|---------------------|-------------|',   &
+              ' g p t r b f c |'/                                     &
+         8X,'--------|------|---------------------|---------------|',   &
               '-------------|'/                                       &
-         8X,'--------+------+---------------------+-------------+',   &
+         8X,'--------+------+---------------------+---------------+',   &
               '-------------+')
+  987 FORMAT (/' Coupling output fields : '/                          &
+               '--------------------------------------------------')
 !
  8000 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
                '     ERROR IN OPENING LOG FILE'/                      &
@@ -1435,13 +1462,21 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NSEA
-!/MPI      USE W3GDATMD, ONLY: NX, NSPEC, MAPFS
+!/MPI      USE W3GDATMD, ONLY: NX, NSPEC, MAPFS, P2MSF
 !/MPI      USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC, HS, WLM, &
 !/MPI                          TMN, THM, THS, FP0, THP0, FP1, THP1,   &
 !/MPI                          DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
 !/MPI                          SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
-!/MPI                          PTH, PSI, PWS, PWST, PNR
+!/MPI                          PTH, PSI, PWS, PWST, PNR, PHIAW, PHIOC,&
+!/MPI                          TUSX, TUSY, TAUWIX, TAUWIY, TAUOX,     &
+!/MPI                          TAUOY, USSX, USSY, MSSX, MSSY,   &
+!/MPI                          MSCX, MSCY, PRMS, TPMS, CHARN,     &
+!/MPI                          TAUWNX, TAUWNY, JSMITH, P2SMS, T02, CGE, &
+!/MPI                          CFLXYMAX, CFLTHMAX, WHITECAP, BEDFORMS, & 
+!/MPI                          PHIBBL, TAUBBL, TM0M1
+!/COU      USE W3ADATMD, ONLY: SXX3D, US3D
+!/COU      USE W3GDATMD, ONLY: COUG_RAD3D,COUG_US3D,NK
 !/MPI      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
 !/MPI                          NOGRD, NAPFLD, NAPPNT, NAPRST, NAPBPT, &
 !/MPI                          NAPTRK
@@ -1451,7 +1486,7 @@
 !/MPI                          VAAUX, NRQBP, NRQBP2, IRQBP1, IRQBP2,  &
 !/MPI                          NFBPO, NBO2, ISBPO, ABPOS, NRQTR,      &
 !/MPI                          IRQTR, IT0PNT, IT0TRK, IT0PRT, NOSWLL, &
-!/MPI                          NOEXTR, NDSE, IOSTYP
+!/MPI                          NOEXTR, NDSE, IOSTYP, FLOGR2
 !/
       IMPLICIT NONE
 !
@@ -1466,6 +1501,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NSEALM
+!/COUMPI      INTEGER                 :: IK
 !/MPI      INTEGER                 :: IH, IT0, IROOT, IT, IERR, I0,   &
 !/MPI                                 IFROM, IX(4), IY(4), IS(4),     &
 !/MPI                                 IP(4), I, J, JSEA, ITARG, IB,   &
@@ -1479,16 +1515,24 @@
 !
 ! 1.  Set-up for W3IOGO ---------------------------------------------- /
 !
+!/MPI      LOGICAL                 :: FLGRDALL(NOGRD)
+!/MPI      DO J=1, NOGRD
+!/MPI        FLGRDALL (J) =  (FLOGRD(J) .OR. FLOGR2(J))
+!/MPI        END DO
+
 !/MPI      NRQGO  = 0
 !/MPI      IH     = 0
 !/MPI      IT0    = NSPEC
 !/MPI      IROOT  = NAPFLD - 1
 !
-!/MPI      IF ( FLOUT(1) ) THEN
+!/MPI      IF ( FLOUT(1) .OR. FLOUT(7) ) THEN
 !/MPI          IF ( NTPROC .EQ. 1 ) THEN
 !/MPI              NRQMAX = 0
 !/MPI            ELSE
-!/MPI              NRQMAX = 29 + NOEXTR + 6*NOSWLL
+!/MPI              NRQMAX = 46 + NOEXTR + 6*NOSWLL
+!/MPI              IF (P2MSF(1).GT.0) NRQMAX = NRQMAX + P2MSF(3) - P2MSF(2) + 1
+!/COUMPI              IF (COUG_RAD3D) NRQMAX = NRQMAX+3*NK
+!/COUMPI              IF (COUG_US3D) NRQMAX = NRQMAX+2*NK
 !/MPI              IF ( IAPROC .EQ. NAPFLD ) THEN
 !/MPI                  IF ( IAPROC .LE. NAPROC ) THEN
 !/MPI                      NRQMAX = NRQMAX * (NAPROC-1)
@@ -1506,7 +1550,196 @@
 !/MPI      IF ( IAPROC.NE.NAPFLD .AND. IAPROC.LE.NAPROC ) THEN
 !/MPI          IT     = IT0
 !
-!/MPI          IF ( FLOGRD( 5) ) THEN
+!/MPI          IF ( FLGRDALL( 7) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (HS   (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S  7', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL( 8) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (WLM  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S  8', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!
+!/MPI          IF ( FLGRDALL( 9) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (T02  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S  9', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(10) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TMN  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 10', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(11) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TM0M1  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 10', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(12) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (CGE  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 12', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(13) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (FP0  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 13', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(14) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (THM  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 14', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(15) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (THS  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 15', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(16) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (THP0 (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 16', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(17) ) THEN
+!/MPI            DO K=0, NOSWLL
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PHS(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 17', IROOT, IT, IRQGO(IH), IERR
+!/MPI              END DO
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(18) ) THEN
+!/MPI            DO K=0, NOSWLL
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PTP(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 18', IROOT, IT, IRQGO(IH), IERR
+!/MPI              END DO
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(19) ) THEN
+!/MPI            DO K=0, NOSWLL
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PLP(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 19', IROOT, IT, IRQGO(IH), IERR
+!/MPI              END DO
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(20) ) THEN
+!/MPI            DO K=0, NOSWLL
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PTH(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 20', IROOT, IT, IRQGO(IH), IERR
+!/MPI              END DO
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(21) ) THEN
+!/MPI            DO K=0, NOSWLL
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PSI(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 21', IROOT, IT, IRQGO(IH), IERR
+!/MPI              END DO
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(22) ) THEN
+!/MPI            DO K=0, NOSWLL
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PWS(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 22', IROOT, IT, IRQGO(IH), IERR
+!/MPI              END DO
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(23) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PWST (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 23', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(24) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PNR  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 24', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(25) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (DTDYN(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 25', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(26) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (FCUT (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 24', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(27) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (CFLXYMAX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 27', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(28) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (CFLTHMAX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 28', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(29) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (UST  (IAPROC),1,WW3_FIELD_VEC, &
@@ -1523,206 +1756,300 @@
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, 'S 5C', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF 
-!/MPI          IF ( FLOGRD( 6) ) THEN
+!
+!/MPI          IF ( FLGRDALL(30) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (HS   (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (CHARN (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S  6', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 30', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD( 7) ) THEN
+!
+!/MPI          IF ( FLGRDALL(31) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (WLM  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (PHIAW (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S  7', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 31', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD( 8) ) THEN
+!
+!/MPI          IF ( FLGRDALL(32) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (TMN  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (TAUWIX (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S  8', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD( 9) ) THEN
+!/MPIT      WRITE (NDST,9011) IH, 'S 32', IROOT, IT, IRQGO(IH), IERR
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (THM  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (TAUWIY(IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S  9', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(10) ) THEN
+!/MPIT      WRITE (NDST,9011) IH, 'S 32', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!/MPI          IF ( FLGRDALL(33) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (THS  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (TAUWNX (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 10', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(11) ) THEN
+!/MPIT      WRITE (NDST,9011) IH, 'S 33', IROOT, IT, IRQGO(IH), IERR
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (FP0  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (TAUWNY(IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 11', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(12) ) THEN
+!/MPIT      WRITE (NDST,9011) IH, 'S 33', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!
+!/MPI          IF ( FLGRDALL(34) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (THP0 (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (WHITECAP (IAPROC,1),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 12', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 34', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(13) ) THEN
+!
+!
+!/MPI          IF ( FLGRDALL(35) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (FP1  (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (WHITECAP (IAPROC,2),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 13', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 35', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(14) ) THEN
+!
+!
+!/MPI          IF ( FLGRDALL(36) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (THP1 (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (WHITECAP (IAPROC,3),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 14', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 36', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(15) ) THEN
-!/MPI            DO K=0, NOSWLL
+!
+!/MPI          IF ( FLGRDALL(37) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PHS(IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI              CALL MPI_SEND_INIT (WHITECAP (IAPROC,4),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 15', IROOT, IT, IRQGO(IH), IERR
-!/MPI              END DO
+!/MPIT      WRITE (NDST,9011) IH, 'S 37', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(16) ) THEN
-!/MPI            DO K=0, NOSWLL
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PTP(IAPROC,K),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 16', IROOT, IT, IRQGO(IH), IERR
-!/MPI              END DO
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(17) ) THEN
-!/MPI            DO K=0, NOSWLL
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PLP(IAPROC,K),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 17', IROOT, IT, IRQGO(IH), IERR
-!/MPI              END DO
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(18) ) THEN
-!/MPI            DO K=0, NOSWLL
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PTH(IAPROC,K),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 18', IROOT, IT, IRQGO(IH), IERR
-!/MPI              END DO
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(19) ) THEN
-!/MPI            DO K=0, NOSWLL
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PSI(IAPROC,K),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 19', IROOT, IT, IRQGO(IH), IERR
-!/MPI              END DO
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(20) ) THEN
-!/MPI            DO K=0, NOSWLL
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PWS(IAPROC,K),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 20', IROOT, IT, IRQGO(IH), IERR
-!/MPI              END DO
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(21) ) THEN
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PWST (IAPROC),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 21', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(22) ) THEN
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (PNR  (IAPROC),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 22', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(23) ) THEN
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (DTDYN(IAPROC),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 23', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(24) ) THEN
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (FCUT (IAPROC),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 24', IROOT, IT, IRQGO(IH), IERR
-!/MPI            END IF
-!/MPI          IF ( FLOGRD(27) ) THEN
+!
+!/MPI          IF ( FLGRDALL(38) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (ABA  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 27', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 38', IROOT, IT, IRQGO(IH), IERR
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (ABD  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 27', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 38', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(28) ) THEN
+!
+!/MPI          IF ( FLGRDALL(39) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (UBA  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 28', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 39', IROOT, IT, IRQGO(IH), IERR
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (UBD  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 28', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 39', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(29) ) THEN
+!
+!/MPI          IF ( FLGRDALL(40) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (BEDFORMS (IAPROC,1),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 40', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (BEDFORMS (IAPROC,2),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 40', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(41) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PHIBBL (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 41', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(42) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TAUBBL (IAPROC,1),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 42', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TAUBBL (IAPROC,2),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 42', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(43) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (SXX  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 29', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 43', IROOT, IT, IRQGO(IH), IERR
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (SYY  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 29', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 43', IROOT, IT, IRQGO(IH), IERR
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (SXY  (IAPROC),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 29', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 43', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(30) ) THEN
+!
+!/MPI          IF ( FLGRDALL(44) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TAUOX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 44', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TAUOY(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 44', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!/MPI       IF ( FLGRDALL(45) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (JSMITH (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 45', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(46) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PHIOC (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 46', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF
+!
+!/MPI          IF ( FLGRDALL(47) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TUSX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 47', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TUSY(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 47', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!/MPI          IF ( FLGRDALL(48) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (USSX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 48', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (USSY(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 48', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!
+!/MPI          IF ( FLGRDALL(49) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (MSSX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 49', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (MSSY(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 49', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!/MPI          IF ( FLGRDALL(50) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (MSCX (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 50', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (MSCY(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'S 50', IROOT, IT, IRQGO(IH), IERR
+!/MPI            END IF 
+!
+!/MPI          IF ( FLGRDALL(51) ) THEN
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (PRMS (IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT             WRITE (NDST,9011) IH, 'S 51', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (TPMS(IAPROC),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT             WRITE (NDST,9011) IH, 'S 51', IROOT, IT, IRQGO(IH), IERR
+!/MPI              IF ( P2MSF(1) .GT. 0 ) THEN
+!/MPI                DO K=P2MSF(2),P2MSF(3)
+!/MPI                  IH     = IH + 1
+!/MPI                  IT     = IT + 1
+!/MPI                  CALL MPI_SEND_INIT (P2SMS (IAPROC,K),1,WW3_FIELD_VEC, &
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT                 WRITE (NDST,9011) IH, 'S 51', IROOT, IT, IRQGO(IH), IERR
+!/MPI                  END DO
+!/MPI                END IF
+!/MPI              END IF
+!
+!/MPI          IF ( FLGRDALL(52) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (USERO(IAPROC,1),1,WW3_FIELD_VEC,&
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 30', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 52', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
-!/MPI          IF ( FLOGRD(31) ) THEN
+!/MPI          IF ( FLGRDALL(53) ) THEN
 !/MPI              IH     = IH + 1
 !/MPI              IT     = IT + 1
 !/MPI              CALL MPI_SEND_INIT (USERO(IAPROC,2),1,WW3_FIELD_VEC,&
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 31', IROOT, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'S 53', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
+!
+!/COUMPI       IF (COUG_RAD3D) THEN 
+!/COUMPI         DO IK=1,3*NK
+!/COUMPI              IH     = IH + 1
+!/COUMPI              IT     = IT + 1
+!/COUMPI              CALL MPI_SEND_INIT (SXX3D(IAPROC,IK),1,WW3_FIELD_VEC,&
+!/COUMPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!   !/MPIT      WRITE (NDST,9011) IH, 'S R3', IROOT, IT, IRQGO(IH), IERR
+!/COUMPI            END DO
+!/COUMPI          END IF
+!/COUMPI       IF (COUG_US3D) THEN 
+!/COUMPI         DO IK=1,2*NK
+!/COUMPI              IH     = IH + 1
+!/COUMPI              IT     = IT + 1
+!/COUMPI              CALL MPI_SEND_INIT (US3D(IAPROC,IK),1,WW3_FIELD_VEC,&
+!/COUMPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!   !/MPIT      WRITE (NDST,9011) IH, 'S U3', IROOT, IT, IRQGO(IH), IERR
+!/COUMPI            END DO
+!/COUMPI          END IF
+
 !
 !/MPI        ELSE IF ( IAPROC .EQ. NAPFLD ) THEN
 !
@@ -1730,223 +2057,497 @@
 !/MPI            IT     = IT0
 !/MPI            IF ( I0 .NE. IAPROC ) THEN
 !/MPI                IFROM  = I0 - 1
-!/MPI                IF ( FLOGRD( 5) ) THEN
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (UST  (I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 5A', IFROM, IT, IRQGO(IH), IERR
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (USTDIR(I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 5B', IFROM, IT, IRQGO(IH), IERR
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (ASF  (I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 5C', IFROM, IT, IRQGO(IH), IERR
-!/MPI                  END IF
-!/MPI                IF ( FLOGRD( 6) ) THEN
+!
+!/MPI                IF ( FLGRDALL( 7) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (HS   (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R  6', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R  7', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD( 7) ) THEN
+!
+!/MPI                IF ( FLGRDALL( 8) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (WLM  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R  7', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R  8', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD( 8) ) THEN
+!
+!/MPI                IF ( FLGRDALL( 9) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (T02  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R  9', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(10) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (TMN  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R  8', IFROM, IT, IRQGO(IH), IERR
-!/MPI                  END IF
-!/MPI                IF ( FLOGRD( 9) ) THEN
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (THM  (I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R  9', IFROM, IT, IRQGO(IH), IERR
-!/MPI                  END IF
-!/MPI                IF ( FLOGRD(10) ) THEN
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (THS  (I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, 'R 10', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(11) ) THEN
+!
+!/MPI                IF ( FLGRDALL(11) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TM0M1  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 11', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(12) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (CGE  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 12', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(13) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (FP0  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 11', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 13', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(12) ) THEN
+!
+!/MPI                IF ( FLGRDALL(14) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (THM  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 14', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(15) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (THS  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 15', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(16) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (THP0 (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 12', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 16', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(13) ) THEN
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (FP1  (I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 13', IFROM, IT, IRQGO(IH), IERR
-!/MPI                  END IF
-!/MPI                IF ( FLOGRD(14) ) THEN
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (THP1 (I0),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 14', IFROM, IT, IRQGO(IH), IERR
-!/MPI                  END IF
-!/MPI                IF ( FLOGRD(15) ) THEN
+!
+!/MPI                IF ( FLGRDALL(17) ) THEN
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PHS(I0,K),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 15', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 17', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    END DO
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(16) ) THEN
+!/MPI                IF ( FLGRDALL(18) ) THEN
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PTP(I0,K),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 16', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 18', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    END DO
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(17) ) THEN
+!/MPI                IF ( FLGRDALL(19) ) THEN
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PLP(I0,K),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 17', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 19', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    END DO
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(18) ) THEN
+!/MPI                IF ( FLGRDALL(20) ) THEN
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PTH(I0,K),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 18', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 20', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    END DO
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(19) ) THEN
+!/MPI                IF ( FLGRDALL(21) ) THEN
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PSI(I0,K),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 19', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 21', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    END DO
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(20) ) THEN
+!/MPI                IF ( FLGRDALL(22) ) THEN
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PWS(I0,K),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 20', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 22', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    END DO
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(21) ) THEN
+!/MPI                IF ( FLGRDALL(23) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PWST (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, 'R 21', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(22) ) THEN
+!/MPI                IF ( FLGRDALL(24) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (PNR  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 22', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 24', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(23) ) THEN
+!/MPI                IF ( FLGRDALL(25) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (DTDYN(I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 23', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 25', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(24) ) THEN
+!
+!/MPI                IF ( FLGRDALL(26) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (FCUT (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 24', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 26', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(27) ) THEN
+!
+!/MPI                IF ( FLGRDALL(27) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (CFLXYMAX (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 27', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(28) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (CFLTHMAX (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 28', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(29) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (UST  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 29A', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (USTDIR(I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 29B', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (ASF  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 29C', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(30) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (CHARN (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 30', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!
+!/MPI                IF ( FLGRDALL(31) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (PHIAW (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 31', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(32) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUWIX  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 32', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUWIY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 32', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(33) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUWNX  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 33', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUWNY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 33', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(34) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (WHITECAP(I0,1),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 34', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(35) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (WHITECAP(I0,2),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 35', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(36) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (WHITECAP(I0,3),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 36', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(37) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (WHITECAP(I0,4),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 37', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(38) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (ABA  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 27', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 38', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (ABD  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 27', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 38', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(28) ) THEN
+!/MPI                IF ( FLGRDALL(39) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (UBA  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 28', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 39', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (UBD  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 28', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 39', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(29) ) THEN
+!
+!/MPI                IF ( FLGRDALL(40) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (BEDFORMS (I0,1),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 40', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (BEDFORMS (I0,2),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 40', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(41) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (PHIBBL (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 41', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(42) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUBBL (I0,1),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 42', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUBBL (I0,2),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 42', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!
+!/MPI                IF ( FLGRDALL(43) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (SXX  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 29', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 43', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (SYY  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 29', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 43', IFROM, IT, IRQGO(IH), IERR
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (SXY  (I0),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 29', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 43', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(30) ) THEN
+!
+!/MPI                IF ( FLGRDALL(44) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUOX (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 44', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TAUOY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 44', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(45) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (JSMITH (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 45', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(46) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (PHIOC (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 46', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(47) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TUSX  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 47', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TUSY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 47', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(48) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (USSX  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 48', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (USSY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 48', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(49) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (MSSX  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 49', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (MSSY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 49', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(50) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (MSCX  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 50', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (MSCY  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, 'R 50', IFROM, IT, IRQGO(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL(51) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (PRMS (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT                   WRITE (NDST,9011) IH, 'R 51', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI                    CALL MPI_RECV_INIT (TPMS  (I0),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT                   WRITE (NDST,9011) IH, 'R 51', IFROM, IT, IRQGO(IH), IERR
+!/MPI                    IF ( P2MSF(1) .GT.0) THEN
+!/MPI                      DO K=P2MSF(2),P2MSF(3) 
+!/MPI                        IH     = IH + 1
+!/MPI                        IT     = IT + 1
+!/MPI                        CALL MPI_RECV_INIT (P2SMS(I0,K),1,WW3_FIELD_VEC,&
+!/MPI                          IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPIT                       WRITE (NDST,9011) IH, 'R P2', IFROM, IT, IRQGO(IH), IERR
+!/MPI                        END DO
+!/MPI                      END IF
+!/MPI                  END IF
+!
+!
+!/MPI                IF ( FLGRDALL(52) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (USERO(I0,1),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 30', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 52', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
-!/MPI                IF ( FLOGRD(31) ) THEN
+!
+!/MPI                IF ( FLGRDALL(53) ) THEN
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (USERO(I0,2),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 31', IFROM, IT, IRQGO(IH), IERR
+!/MPIT      WRITE (NDST,9011) IH, 'R 53', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
+!
+!/COUMPI       IF (COUG_RAD3D) THEN 
+!/COUMPI         DO IK=1,3*NK
+!/COUMPI              IH     = IH + 1
+!/COUMPI              IT     = IT + 1
+!/COUMPI              CALL MPI_RECV_INIT (SXX3D(I0,IK),1,WW3_FIELD_VEC,&
+!/COUMPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!   !/MPIT      WRITE (NDST,9011) IH, 'R X3', IROOT, IT, IRQGO(IH), IERR
+!/COUMPI            END DO
+!/COUMPI          END IF
+!/COUMPI       IF (COUG_US3D) THEN 
+!/COUMPI         DO IK=1,2*NK
+!/COUMPI              IH     = IH + 1
+!/COUMPI              IT     = IT + 1
+!/COUMPI              CALL MPI_RECV_INIT (US3D(I0,IK),1,WW3_FIELD_VEC,&
+!/COUMPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!   !/MPIT      WRITE (NDST,9011) IH, 'R U3', IROOT, IT, IRQGO(IH), IERR
+!/COUMPI            END DO
+!/COUMPI          END IF
+
 !/MPI              END IF
 !/MPI            END DO
 !
@@ -2380,7 +2981,8 @@
 !/S      USE W3SERVMD, ONLY: STRACE
 !/MPI      USE W3SERVMD, ONLY: EXTCDE
 !/
-!/MPI      USE W3GDATMD, ONLY: NX, NSPEC, MAPFS
+!/MPI      USE W3GDATMD, ONLY: NX, NY, NSPEC, MAPFS
+           USE W3GDATMD, ONLY: TRIGP, GTYPE, UNGTYPE
 !/MPI      USE W3WDATMD, ONLY: VA
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, SPPNT
 !/MPI      USE W3ODATMD, ONLY: NDST, NDSE, IAPROC, NAPROC, NAPPNT, FLOUT
@@ -2401,7 +3003,8 @@
 !/
 !/MPI      INTEGER                 :: IH, IROOT, I, J, IT, IT0, JSEA, &
 !/MPI                                 IERR, ITARG, IX(4), IY(4),      &
-!/MPI                                 IS(4), IP(4)
+!/MPI                                 K, IS(4), IP(4)
+        INTEGER                 :: itout
 !/S      INTEGER, SAVE           :: IENT
 !/
 !/ ------------------------------------------------------------------- /
@@ -2432,17 +3035,19 @@
 !/MPIT      WRITE (NDST,9010) 'MPI_SEND_INIT'
 !
 !/MPI      DO I=1, NOPTS
-!
-!/MPI        IX(1)  = IPTINT(1,1,I)
-!/MPI        IX(2)  = IPTINT(1,2,I)
-!/MPI        IX(3)  = IPTINT(1,3,I)
-!/MPI        IX(4)  = IPTINT(1,4,I)
-!
-!/MPI        IY(1)  = IPTINT(2,1,I)
-!/MPI        IY(2)  = IPTINT(2,2,I)
-!/MPI        IY(3)  = IPTINT(2,3,I)
-!/MPI        IY(4)  = IPTINT(2,4,I)
-!
+!/MPI        IF (GTYPE .NE. UNGTYPE) THEN
+!/MPI          DO K=1,4
+!/MPI            IX(K)=IPTINT(1,K,I)
+!/MPI            IY(K)=IPTINT(2,K,I)
+!/MPI            END DO
+!/MPI        ELSE 
+!/MPI          itout  =  IPTINT(1,1,I)
+!/MPI          IX(1)  =  TRIGP(itout,1)
+!/MPI          IX(2)  =  TRIGP(itout,2)
+!/MPI          IX(3)  =  TRIGP(itout,3)
+!/MPI          IX(4)  =  TRIGP(itout,1)
+!/MPI          IY(:)  =  1
+!/MPI          END IF
 ! 1.b Loop over corner points
 !
 !/MPI        DO J=1, 4
@@ -2490,16 +3095,19 @@
 !/MPIT          WRITE (NDST,9010) 'MPI_RECV_INIT'
 !
 !/MPI          DO I=1, NOPTS
-!
-!/MPI            IX(1)  = IPTINT(1,1,I)
-!/MPI            IX(2)  = IPTINT(1,2,I)
-!/MPI            IX(3)  = IPTINT(1,3,I)
-!/MPI            IX(4)  = IPTINT(1,4,I)
-!
-!/MPI            IY(1)  = IPTINT(2,1,I)
-!/MPI            IY(2)  = IPTINT(2,2,I)
-!/MPI            IY(3)  = IPTINT(2,3,I)
-!/MPI            IY(4)  = IPTINT(2,4,I)
+!/MPI            IF (GTYPE .NE. UNGTYPE) THEN
+!/MPI              DO K=1,4
+!/MPI                IX(K)=IPTINT(1,K,I)  
+!/MPI                IY(K)=IPTINT(2,K,I)
+!/MPI                END DO 
+!/MPI            ELSE 
+!/MPI              ITOUT  =  IPTINT(1,1,I)
+!/MPI              IX(1)  =  TRIGP(itout,1)
+!/MPI              IX(2)  =  TRIGP(itout,2)
+!/MPI              IX(3)  =  TRIGP(itout,3)
+!/MPI              IX(4)  =  TRIGP(itout,1)
+!/MPI              IY(:)  =  1
+!/MPI              END IF
 !
 !/MPI            DO J=1, 4
 !

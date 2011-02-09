@@ -14,7 +14,8 @@ $
    1
 $
    19680601 000000  43200  19680607 000000
-    F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F
+$     F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F  (OLD form)
+     F F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F (New with Ifremer code +17 Fs)
    19680601 000000      0  19680607 000000
    19680601 000000      0  19680625 000000
    19680601 000000      0  19680625 000000

@@ -115,6 +115,10 @@
 !/                  (T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    23-Dec-2009 : Addition of COU namelists           ( version 3.14 )
+!/    23-Jun-2010 : Addition of US3DF namelists         ( version 3.14 )
+!/    31-Oct-2010 : Implement unstructured grids        ( version 3.14 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -192,7 +196,11 @@
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
       USE W3ODATMD
 !/ST2      USE W3SRC2MD, ONLY: INPTAB
-!/ST3      USE W3SRC3MD, ONLY: INSIN3, INPTAB
+!/ST3      USE W3SRC3MD, ONLY: INSIN3
+!/ST4      USE W3SRC4MD, ONLY: INSIN4, TAUT, TAUHFT, TAUHFT2, &
+!/ST4                          SWELLFT, DELU, DELTAUW, DELUST, &
+!/ST4                          DELALP, DELTAIL, DELAB, &
+!/ST4                          DIKCUMUL 
 !/NL1      USE W3SNL1MD, ONLY: INSNL1
 !/NL2      USE W3SNL2MD, ONLY: INSNL2
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
@@ -216,11 +224,12 @@
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR, I, J, MTH, MK, ISEA, IX, IY
+!/ST4 INTEGER                 :: IK, ITH, IK2, ITH2
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/MPI      INTEGER                 :: IERR_MPI, IP
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T      INTEGER                 :: K
-      LOGICAL                 :: WRITE, FLTEST = .FALSE.,             &
+      LOGICAL                 :: WRITE, FLTEST = .FALSE., TESTLL,     &
                                  FLSNL2 = .FALSE.
       LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.
       CHARACTER(LEN=10)       :: VERTST, TEMPXT
@@ -257,6 +266,7 @@
 !/ST1      TNAME1 = 'WAM cycles 1 through 3        '
 !/ST2      TNAME1 = 'Tolman and Chalikov (1996)    '
 !/ST3      TNAME1 = 'WAM cycle 4+                  '
+!/ST4      TNAME1 = 'Ardhuin et al. (2009+)        '
 !/STX      TNAME1 = 'Experimental                  '
 !/NL0      TNAME2 = 'Not defined                   '
 !/NL1      TNAME2 = 'Discrete Interaction Approx.  '
@@ -446,6 +456,9 @@
           MAPTMP = MAPSTA + 8*MAPST2
           WRITE (NDSM)                                                &
                GTYPE, FLAGLL, GLOBAL
+!
+! Writes different kind of information depending on grid type
+!
           SELECT CASE ( GTYPE )
             CASE ( RLGTYPE )
               WRITE (NDSM)                                            &
@@ -453,7 +466,16 @@
             CASE ( CLGTYPE )
               WRITE (NDSM)                                            &
                    XGRD, YGRD
+            CASE (UNGTYPE) 
+              WRITE (NDSM)                                            &
+                FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, NNZ
+              WRITE (NDSM)                                            &
+                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                CROSSDIFF,LEN,IEN,ANGLE, TRIA03, SI,MAXX,MAXY,        &
+                DXYMAX, CCON,COUNTCON, IE_CELL, POS_CELL, IOBP, IOBPD,&
+                IAA, JAA, POSI
             END SELECT !GTYPE
+!
           WRITE (NDSM)                                                &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
@@ -461,10 +483,16 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, PFMOVE, FLDRY, FLCX, FLCY, FLCTH,        &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
+
+!/COU     WRITE(NDSM)                                                 &
+!/COU          COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
-          IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, GLOBAL
+          IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
+!
+! Reads different kind of information depending on grid type
+!
           SELECT CASE ( GTYPE )
             CASE ( RLGTYPE )
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
@@ -481,8 +509,22 @@
               !Set SX, SY, X0, Y0 to large values if curvilinear grid
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
+            CASE (UNGTYPE) 
+              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               & 
+                FSN,FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT,NNZ
+              IF (.NOT. GUGINIT) THEN
+                CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
+                END IF
+              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,           &
+                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY, &
+                DXYMAX, CCON,COUNTCON, IE_CELL, POS_CELL, IOBP, IOBPD, &
+                IAA, JAA, POSI
+                XGRD(1,:)=XYB(:,1)
+                YGRD(1,:)=XYB(:,2)
             END SELECT !GTYPE
-          CALL W3GNTX ( IGRD, NDSE, NDST )
+!
+          IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST ) 
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
           MAPSTA = MOD(MAPTMP+2,8) - 2
@@ -495,6 +537,9 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, PFMOVE, FLDRY, FLCX, FLCY,               &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
+
+!/COU     READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+!/COU          COUG_2D, COUG_RAD3D, COUG_US3D
         END IF
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, GLOBAL, SX, SY, X0, Y0, TRFLAG
@@ -527,8 +572,8 @@
 !/T                        DMIN, CTMAX, FICE0, FICEN, PFMOVE
 !/T      WRITE (NDST,9016) FLDRY, FLCX, FLCY, FLCTH, FLCK,            &
 !/T                        FLSOU, FLBPI, FLBPO
-!/T      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,3),                    &
-!/T                        (CLATIS(ISEA),ISEA=1,3), (CTHG0S(IY),ISEA=1,3)
+!/T      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,1),                    &
+!/T                        (CLATIS(ISEA),ISEA=1,1), (CTHG0S(IY),ISEA=1,1)
 !
 ! Spectral parameters ------------------------------------------------ *
 !                                                 Module W3GDATMD SGRD
@@ -596,10 +641,18 @@
 !
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
-                FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX
+                FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
+                FLICES, RREF, REFPARS, REFLC, REFLD,        &
+                P2MSF, US3DF
+!/RWND          WRITE (NDSM)                                                &
+!/RWND                RWINDC
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-                FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX
+                FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
+                FLICES, RREF, REFPARS, REFLC, REFLD,        &
+                P2MSF, US3DF
+!/RWND          READ  (NDSM)                                                &
+!/RWND                RWINDC
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
@@ -670,27 +723,53 @@
 !/ST3      IF ( WRITE ) THEN
 !/ST3          WRITE (NDSM)                                           &
 !/ST3                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST3                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST3                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
-!/ST3                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
-!/ST3                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
-!/ST3                SSTXFTFTAIL, SSTXFTWN, SSDSLF, SSDSHF,           &
-!/ST3                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN
+!/ST3                SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
+!/ST3                SSTXFTFTAIL, SSTXFTWN,                           &
+!/ST3                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
+!/ST3                FFXPM, FFXFM
 !/ST3        ELSE
 !/ST3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/ST3                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST3                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST3                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
-!/ST3                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
-!/ST3                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
-!/ST3                SSTXFTFTAIL, SSTXFTWN, SSDSLF, SSDSHF,           &
-!/ST3                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN
+!/ST3                SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
+!/ST3                SSTXFTFTAIL, SSTXFTWN,                           &
+!/ST3                DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
+!/ST3                FFXPM, FFXFM
 !/ST3          IF ( .NOT. FLINP ) THEN
 !/ST3              CALL INSIN3
-!/ST3              IF ( SSWELLF(1) .NE. 0 ) CALL INPTAB
 !/ST3              FLINP  = .TRUE.
 !/ST3            END IF
 !/ST3        END IF
+!
+!/ST4      IF ( WRITE ) THEN
+!/ST4          CALL INSIN4(.TRUE.)
+!/ST4          WRITE (NDSM)                                           &
+!/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
+!/ST4                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
+!/ST4                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
+!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
+!/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
+!/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
+!/ST4                SSDSPBK, SSDSBINT, &
+!/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
+!/ST4                DELU, DELALP, DELAB, TAUT, TAUHFT, TAUHFT2,      &
+!/ST4                SWELLFT, IKTAB, DCKI, SATINDICES, SATWEIGHTS, &
+!/ST4                DIKCUMUL, CUMULW
+!/ST4        ELSE
+!/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
+!/ST4                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
+!/ST4                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
+!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
+!/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
+!/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
+!/ST4                SSDSPBK, SSDSBINT, &
+!/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
+!/ST4                DELU, DELALP, DELAB, TAUT, TAUHFT, TAUHFT2,      &
+!/ST4                SWELLFT, IKTAB, DCKI, SATINDICES, SATWEIGHTS, &
+!/ST4                DIKCUMUL, CUMULW
+!/ST4        END IF
 !
 ! ... Nonlinear interactions
 !
@@ -835,6 +914,11 @@
                '                IN FILE :',A/                         &
                '               EXPECTED :',A/                         &
                '     CHECK CONSISTENCY OF SWITCHES IN PROGRAMS'/)
+  910 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR :'/                &
+               '     UNEXPECTED LL GRID FLAG'/                        &
+               '                IN FILE :',L2/                        &
+               '               EXPECTED :',L2/                        &
+               '     CHECK CONSISTENCY OF SWITCHES IN PROGRAMS'/)
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR : '/               &
                '     ERROR IN OPENING FILE'/                          &
@@ -882,6 +966,7 @@
 !/T              '      DEPTH  : ',F8.1,F10.3/                        &
 !/T              '      FICE0/N: ',F9.2,F8.2/                         &
 !/T              '      PFMOVE : ',F9.2)
+!
 !/T 9016 FORMAT ('      FLAGS  : ',8L2)
 !/T 9017 FORMAT ('      CLATS   : ',3F8.3,' ...'/                      &
 !/T              '      CLATIS  : ',3F8.3,' ...'/                      &

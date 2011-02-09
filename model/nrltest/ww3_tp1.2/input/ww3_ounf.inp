@@ -1,0 +1,12 @@
+$ WAVEWATCH III Grid output post-processing
+$ -----------------------------------------
+  19680601 000000 43200 20
+$
+$     F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F  (OLD form)
+     F F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F (New with Ifremer code +17 Fs)
+$
+  4 0
+$
+ww3.
+ 6
+ 2 2 2 123 3 1

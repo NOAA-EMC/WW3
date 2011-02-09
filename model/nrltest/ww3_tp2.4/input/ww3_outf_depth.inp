@@ -13,23 +13,19 @@ $
 $ Request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual.
 $
-$  Legitimate input for v3: 
-$ F F F F F  T F F T T  F F F F F  F F F F F  F F F F F F  F F F F F  F
 $
-$ Wave direction
-$ F F F F F  F F F T F  F F F F F  F F F F F  F F F F F F  F F F F F  F
-$ Wave height
-$ F F F F F  T F F F F  F F F F F  F F F F F  F F F F F F  F F F F F  F
-$ Wind speed (vector)
-$ F F T F F  F F F F F  F F F F F  F F F F F  F F F F F F  F F F F F  F
-$ Height, Wind Speed, Direction
-$ F F T F F  T F F T F  F F F F F  F F F F F  F F F F F F  F F F F F  F
-$ Height, Wind Speed
-$  F F T F F  T F F F F  F F F F F  F F F F F  F F F F F F  F F F F F  F
-$ Height, Direction
-$ F F F F F  T F F T F  F F F F F  F F F F F  F F F F F F  F F F F F  F
-$ Water Depth
-  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F F  F F F F F  F
+$    D C W D W  I H L T T  T C F D S  D H T L T  S W W P D     
+$    P U N T L  C S   0    M G P I P  P S P P H  I S S N T
+$    T R D   V  E     2    1 E   R R    P P P P  P P F R D
+$
+     T F F F F  F F F F F  F F F F F  F F F F F  F F F F F 
+     F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$
+$    F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U 
+$    C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$      X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$
+$
 $
 $ Output type ITYPE [0,1,2,3]
 $ WER: I use "3" for field output.

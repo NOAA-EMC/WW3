@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         04-Apr-2010 |
 !/                  +-----------------------------------+
 !/
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
@@ -20,6 +20,7 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    04-Apr-2010 : Adding icebergs with ISI.           ( version 3.14 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -77,7 +78,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         04-Apr-2010 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -89,6 +90,7 @@
 !/    09-Oct-2007 : Make file header optional.          ( version 3.13 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    04-Apr-2010 : Adding iceberg field.               ( version 3.14_SHOM )
 !/
 !  1. Purpose :
 !
@@ -108,7 +110,7 @@
 !       INXOUT  C*(*) I  Test string for read/write, valid are:
 !                        'READ' and 'WRITE'.
 !       IDFLD   C*3  I/O ID string for field type, valid are:
-!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE' and 'DTn'.
+!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', and 'DTn'.
 !       NDS     Int.  I  Dataset number for fields file.
 !       NDST    Int.  I  Dataset number for test output.
 !       NDSE    Int.  I  Dataset number for error output.
@@ -158,6 +160,8 @@
 !
 !     - On read, the ID 'WND' may be changed to 'WNS' (including
 !       stability data).
+!     - On read, the ID 'ICE' may be changed to 'ISI' (including
+!       iceberg data).
 !
 !  8. Structure :
 !
@@ -192,6 +196,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NXT, NYT, GTYPET, I
+      INTEGER                 :: FILLER(3)
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL                 :: WRITE
       CHARACTER(LEN=3)        :: TSFLD
@@ -212,11 +217,13 @@
 !
 ! test input parameters ---------------------------------------------- *
 !
+      FILLER(:)=0
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
       IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
            IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
-           IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' )    GOTO 802
+           IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
+           IDFLD.NE.'ISI' )    GOTO 802
 !
       IF ( PRESENT(FEXT) ) THEN
           TEMPXT = FEXT
@@ -241,7 +248,7 @@
         ELSE IF ( IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' ) THEN
           FNAME = 'wind.' // TEMPXT(:I)
           I     = I + 5
-        ELSE IF ( IDFLD.EQ.'ICE' ) THEN
+        ELSE IF ( IDFLD.EQ.'ICE' .OR. IDFLD.EQ.'ISI' ) THEN
           FNAME = 'ice.' // TEMPXT(:I)
           I     = I + 4
         ELSE IF ( IDFLD.EQ.'DT0' ) THEN
@@ -283,33 +290,38 @@
       IF ( WRITE ) THEN
           IF ( FDHDR ) THEN
              IF ( FORM .EQ. 'UNFORMATTED' ) THEN
+! 
+! The "filler" was added for compatibility with old binary forcing files
+!
                  WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
-                       IDSTR, IDFLD, NX, NY, GTYPE
+                       IDSTR, IDFLD, NX, NY, GTYPE, FILLER
                ELSE
                  WRITE (NDS,900,ERR=804,IOSTAT=IERR)                  &
-                       IDSTR, IDFLD, NX, NY, GTYPE
+                       IDSTR, IDFLD, NX, NY, GTYPE, FILLER
                END IF
             END IF
         ELSE
           IF ( FORM .EQ. 'UNFORMATTED' ) THEN
               READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
-                    TSSTR, TSFLD, NXT, NYT, GTYPET
+                    TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER
             ELSE
               READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
-                    TSSTR, TSFLD, NXT, NYT, GTYPET
+                    TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER
             END IF
           IF ( IDSTR .NE. TSSTR ) GOTO 807
-          IF ( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS' ) THEN
+          IF (( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS') .OR.             &
+              ( IDFLD.EQ.'ICE' .AND. TSFLD.EQ.'ISI')  ) THEN
               IDFLD  = TSFLD
 !/T              WRITE (NDST,9002) IDFLD
             END IF
           IF ( IDFLD .NE. TSFLD ) GOTO 808
           IF ( IDFLD(1:2) .NE. 'DT' ) THEN
-              IF ( NX.NE.NXT .OR. NY.NE.NYT .OR.                      &
-                   GTYPE.NE.GTYPET ) GOTO 809
+            IF ( NX.NE.NXT .OR. NY.NE.NYT ) THEN 
+              GOTO 809
             ELSE
               NX     = NXT
-              GTYPE  = GTYPET
+              IF (GTYPE.LE.3) GTYPE  = GTYPET
+              END IF
             END IF
         END IF
 !
@@ -418,12 +430,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Jul-2005 |
+!/                  | Last update :         O4-Apr-2010 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
+!/    04-Apr-2010 : Adding icebergs in ISI              ( version 3.14 )
 !/
 !  1. Purpose :
 !
@@ -441,7 +454,7 @@
 !       INXOUT  C*(*)  I   Test string for read/write, valid are:
 !                          'READ' and 'WRITE'.
 !       IDFLD   C*3    I   ID string for field type, valid are:
-!                          'LEV', 'CUR', 'WND', 'WNS'  and 'ICE'.
+!                          'LEV', 'CUR', 'WND', 'WNS', 'ICE' and 'ISI'.
 !       NDS     Int.   I   Dataset number for fields file.
 !       NDST    Int.   I   Dataset number for test output.
 !       NDSE    Int.   I   Dataset number for error output.
@@ -527,7 +540,7 @@
       INTEGER                 :: IX, IY, J, ISTAT
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTTST
-      LOGICAL                 :: WRITE, FL2D, FLFRST, FLST
+      LOGICAL                 :: WRITE, FL2D, FLFRST, FLBE, FLST
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -543,16 +556,18 @@
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
       IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
-           IDFLD.NE.'ICE' )    GOTO 802
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'ISI'  )    GOTO 802
 !
 ! Set internal variables --------------------------------------------- *
 !
       WRITE  = INXOUT .EQ. 'WRITE'
-      FL2D   = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS'
-      FLST   = IDFLD.EQ.'WNS'
+      FL2D   = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' &
+                              .OR. IDFLD.EQ.'ISI'
+      FLBE   = IDFLD.EQ.'ISI'       
+      FLST   = IDFLD.EQ.'WNS' 
       FLFRST = TFN(1) .EQ. -1
 !
-!/T      WRITE (NDST,9001) WRITE, FL2D, FLST, FLFRST
+!/T      WRITE (NDST,9001) WRITE, FL2D, FLBE, FLST, FLFRST
 !
 ! Loop over times / fields ========================================== *
 !
@@ -624,6 +639,7 @@
                 J      = 2
                 READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
                            ((FYN(IX,IY),IX=1,NX),IY=1,NY)
+                FAN(:,:) = FXN(:,:)    ! this was added for ISI files
                 J      = 3
                 IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
                            ((FAN(IX,IY),IX=1,NX),IY=1,NY)
@@ -762,6 +778,7 @@
 !/T              '               IERR       :',I4)
 !/T 9001 FORMAT (' TEST W3FLDG : WRITE      :',L4/                    &
 !/T              '               FL2D       :',L4/                    &
+!/T              '               FLBE       :',L4/                    &
 !/T              '               FLST       :',L4/                    &
 !/T              '               FIRST      :',L4)
 !

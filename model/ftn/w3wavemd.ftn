@@ -54,6 +54,8 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    29-Mar-2010 : Adding coupling, ice in W3SRCE.     ( version 3.14_SHOM )
+!/    16-May-2010 : Adding transparencies in W3SCRE     ( version 3.14_SHOM )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -196,6 +198,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    31-Mar-2010 : Add reflections                     ( version 3.14.4 )
+!/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !  1. Purpose :
 !
@@ -311,7 +316,12 @@
 !/PR2      USE W3PRO2MD
 !/PR3      USE W3PRO3MD
 !/PRX      USE W3PROXMD
+!/PR1      USE W3PROFSMD
+!/PR2      USE W3PROFSMD
+!/PR3      USE W3PROFSMD
+!/PRX      USE W3PROFSMD
 !/
+      USE W3TRIAMD
       USE W3IOGRMD
       USE W3IOGOMD
       USE W3IOPOMD
@@ -322,6 +332,8 @@
 !/
       USE W3SERVMD
       USE W3TIMEMD
+!/PALM USE palmlib 	    !interface for palm coupler
+!/PALM USE palm_user_param  !min_palm_time_a etc ...
 !
       IMPLICIT NONE
 !
@@ -340,28 +352,39 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
-                                 IX, IY, ISPEC, J, TOUT(2), TLST(2)
-!/SBS      INTEGER                 :: JJ, NDSOFLG
+                                 IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
+                                 REFLED(4), IK, ITH, IS
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
                                  DTL0, DTI0, DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
-                                 SXM, SYM, XXX
+                                 FACX, FACY, SXM, SYM, XXX, REFLEC(4),&
+                                 DELX, DELY, DELA, DEPTH
       REAL, ALLOCATABLE       :: FIELD(:)
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
                                  SKIP_O, FLAG_O, FLDDIR, READBC,      &
                                  FLAG0=.FALSE., FLOUTG, FLPFLD,       &
-                                 FLPART, LOCAL
+                                 FLPART, LOCAL, FLOUTG2
 !/MPI      LOGICAL                 :: FLGMPI(6)
+      LOGICAL                 :: UGDTUPDATE
       CHARACTER(LEN=8)        :: STTIME
-      CHARACTER(LEN=11)       :: IDACT, OUTID
+      CHARACTER(LEN=11)       :: IDACT 
+      CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
-!/SBS      CHARACTER(LEN=30)       :: FOUTNAME
+!
+!/PALM integer ::il_err, palm_time_a,palm_time_b
+!/PALM real ::vecta(1:NSEAL),vectb(1:NSEAL)
+!/PALM real ::vectg(1:NSEAL),vecth(1:NSEAL),vecti(1:NSEAL)
+!/PALM real ::vectj(1:NSEAL),vectk(1:NSEAL),vectl(1:NSEAL)
+!/PALM  CHARACTER(LEN=PL_LNAME) :: cl_object, cl_space
+!/PALM  INTEGER                :: PALMED
+!/PALM  LOGICAL :: MEL03
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
 ! 0.a Set pointers to data structure
+!/PALM  PALMED = 1
 !
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
       IF ( IGRID  .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
@@ -390,14 +413,14 @@
 !
       IPASS  = IPASS + 1
       IDACT  = '           '
-      OUTID  = '           '
+      OUTID  = '             '
       FLACT  = ITIME .EQ. 0
       FLMAP  = ITIME .EQ. 0
       FLDDIR = ITIME .EQ. 0 .AND. ( FLCTH .OR. FLCK )
 !
       FLPFLD = .FALSE.
       DO J=15,20
-        FLPFLD = FLPFLD .OR. FLOGRD(J)
+        FLPFLD = FLPFLD .OR. FLOGRD(J) .OR. FLOGR2(J)
         END DO
 !
       IF ( IAPROC .EQ. NAPLOG ) BACKSPACE ( NDSO )
@@ -411,7 +434,7 @@
       FIELD = 0.
 !
       LOCAL   = IAPROC .LE. NAPROC
-!
+      UGDTUPDATE = .FALSE.
 !/SBS      NDSOFLG = 99
 !
 
@@ -532,13 +555,16 @@
 !/T        WRITE (NDST,9020) IT0, NT, DTGA
 !
 ! ==================================================================== /
+!/PALM! write(*,*)'itime',itime
 ! 3.  Loop over time steps
 !
         DTRES  = 0.
 !
         DO IT=IT0, NT
 !
+!/PALM! write(*,*)'itime',itime
           ITIME  = ITIME + 1
+!/PALM! write(*,*)'itime',itime
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
           DTRES  = DTRES + DTGA - DTG
           IF ( ABS(DTRES) .LT. 0.001 ) DTRES  = 0.
@@ -569,13 +595,49 @@
 !     (Initialize wave fields with winds)
 !
           IF ( FLCUR  ) THEN
+!/PALM !
+!/PALM ! Getting currents AND water levels from coupler
+!/PALM !
+!/PALM write(*,*)'PALM:ww this is before goingto 3.1  ',itime,iaproc
+!/PALM PALM_TIME_a=ITIME
+!/PALM if((palm_time_a.ge.min_palm_time_a).and.(palm_time_a.le.max_palm_time_a))then
+!/PALM if (iaproc==1)write(*,*)'PALM:ww wavemd : palm_time_a',palm_time_a
+!/PALM !get  du cx
+!/PALM if (iaproc==1)write(*,*)'PALM:ww will get cx cy',palm_time_a,itime
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectcx'
+!/PALM  CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cx, il_err)
+!/PALM! get du cy
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectcy'
+!/PALM  CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cy, il_err)
+!/PALM if(iaproc==1)write(*,*)'PALM:ww got cx',palm_time_a,itime,cx(100),cy(100)
+!/PALM! get du wlv
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectwlv'
+!/PALM  CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, wlv, il_err)
+!/PALM if(iaproc==1)write(*,*)'PALM:ww got wlv',palm_time_a,itime,wlv(100)
+!/PALM endif
+!/PALM !
+!/PALM ! End of current and water level update from coupler
+!/PALM !
+!/PALM IF (PALMED.EQ.0) THEN
                CALL W3UCUR ( FLFRST )
-               CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
-               CALL W3DZXY(CY(1:NSEA),'m/s',DCYDX, DCYDY) !CY GRADIENT
-            ELSE IF ( FLFRST ) THEN
+!/PALM ENDIF
+           IF (GTYPE .NE. UNGTYPE) THEN       
+             CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
+             CALL W3DZXY(CY(1:NSEA),'m/s',DCYDX, DCYDY) !CY GRADIENT
+           ELSE
+             CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
+             CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
+             UGDTUPDATE=.TRUE.
+             END IF      
+!
+           ELSE IF ( FLFRST ) THEN
+              UGDTUPDATE=.TRUE.
               CX = 0.
               CY = 0.
-            END IF
+           END IF ! FLCUR 
 !
           IF ( FLWIND ) THEN
                IF ( FLFRST ) ASF = 1.
@@ -656,6 +718,7 @@
 !
               IF ( IDACT(5:5).NE.' ' ) THEN
                   CALL W3ULEV ( VA, VA )
+                  UGDTUPDATE=.TRUE.
                   DTL0   = 0.
                   FLACT  = .TRUE.
                   FLMAP  = .TRUE.
@@ -679,7 +742,11 @@
             END IF
 !
           IF ( FLDDIR ) THEN
+            IF (GTYPE .NE. UNGTYPE) THEN  
               CALL W3DZXY(DW(1:NSEA),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
+            ELSE
+              CALL UG_GRADIENTS(DW, DDDX, DDDY)
+              END IF 
               FLDDIR = .FALSE.
             END IF
 !
@@ -715,18 +782,19 @@
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
+                  DEPTH  = MAX ( DMIN , DW(ISEA) )
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR1                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
 !/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR2                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
 !/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR3                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
@@ -740,6 +808,16 @@
 !       (time step correction in routine)
 !
           IF ( FLCX .OR. FLCY ) THEN
+!	  
+           IF(GTYPE .EQ. UNGTYPE) THEN
+             IF (FLAGLL) THEN 
+                FACX   =  1./(DERA * RADIUS) 
+                FACY   =  1./(DERA * RADIUS)
+              ELSE 
+                FACX   =  1.
+                FACY   =  1. 
+              END IF
+            END IF
 !
 !/MPI              IF ( NRQSG1 .GT. 0 ) THEN
 !/MPI                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
@@ -750,13 +828,21 @@
               DO ISPEC=1, NSPEC
                 IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
                     CALL W3GATH ( ISPEC, FIELD )
-!/PR1                    CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
-!/PR2                    CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-
-
-
-!/PR3                    CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-!/PRX                    CALL W3XYPX
+              IF (GTYPE .NE. UNGTYPE) THEN
+!/PR1                CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
+!/PR2                CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+!/PR3                CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+!/PRX                CALL W3XYPX
+                ELSE IF (GTYPE .EQ. 3) THEN
+!/PR1                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PR1                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
+!/PR2                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PR2                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
+!/PR3                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PR3                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
+!/PRX                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PRX                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
+                ENDIF
                      CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
                   END IF
                 END DO
@@ -770,6 +856,10 @@
 !/MPI                  DEALLOCATE ( STATCO )
 !/MPI                END IF
 !
+         UGDTUPDATE = .FALSE.
+!
+! End of test FLCX.OR.FLCY
+!
             END IF
 !
 ! 3.6.4 Intra-spectral part 2
@@ -782,19 +872,20 @@
 !/SHRD                  ISEA   = JSEA
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
+                  DEPTH  = MAX ( DMIN , DW(ISEA) )
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR1                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
 !/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR2                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
 !/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-!/PR3                           CG(:,ISEA), WN(:,ISEA), DW(ISEA),         &
+!/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
@@ -811,20 +902,45 @@
           IF ( FLSOU ) THEN
 !
 !/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
+!
+            IF (FLAGLL) THEN 
+              SXM    = SX * DERA * RADIUS
+              SYM    = SY * DERA * RADIUS
+            ELSE
+              SXM    = SX
+              SYM    = SY
+              END IF
+!
               DO JSEA=1, NSEAL
 !/DIST                ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD                ISEA   = JSEA
                 IX     = MAPSF(ISEA,1)
                 IY     = MAPSF(ISEA,2)
+                DELX=SXM*CLATS(ISEA)
+                DELY=SYM
+                DELA=DELX*DELY
+                REFLEC=REFLC(:,ISEA)
+                REFLEC(4)=BERG(ISEA)*REFLEC(4)
+                REFLED=REFLD(:,ISEA)
+                DEPTH  = MAX ( DMIN , DW(ISEA) )
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
-                          CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
+                          CG(1:NK,ISEA), DEPTH,    U10(ISEA),         &
                           U10D(ISEA), AS(ISEA), UST(ISEA),            &
-                          USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
-                          EMN(ISEA), FMN(ISEA), WNM(ISEA), AMX(ISEA), &
+                          USTDIR(ISEA), ICE(ISEA), CX(ISEA), CY(ISEA),&
+                          REFLEC, REFLED, DELX, DELY, DELA,           &
+                          TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),       &
+                          EMN(ISEA), FMN(ISEA),           &
+                          WNM(ISEA), AMX(ISEA),                       &
                           FPIS(ISEA), CDS(ISEA), Z0S(ISEA),           &
-                          DTDYN(ISEA), FCUT(ISEA), DTG )
+                          DTDYN(ISEA), FCUT(ISEA), DTG,               &
+                          TAUWX(ISEA), TAUWY(ISEA),                   &
+                          TAUOX(ISEA), TAUOY(ISEA), TAUWIX(ISEA),     &
+                          TAUWIY(ISEA), TAUWNX(ISEA),                 &
+                          TAUWNY(ISEA),  PHIAW(ISEA), CHARN(ISEA),    &
+                          PHIOC(ISEA), WHITECAP(ISEA,1:4),              & 
+                          BEDFORMS(ISEA,1:2), PHIBBL(ISEA), TAUBBL(ISEA,1:2))
                   ELSE
                     UST   (ISEA) = UNDEF
                     USTDIR(ISEA) = UNDEF
@@ -908,6 +1024,12 @@
                 FLOUTG = .FALSE.
               END IF
 !
+            IF ( FLOUT(7) ) THEN
+                FLOUTG2 = DSEC21(TIME,TONEXT(:,7)).EQ.0.
+              ELSE
+                FLOUTG2 = .FALSE.
+              END IF
+!
             FLPART = .FALSE.
             IF ( FLOUT(1) .AND. FLPFLD )                               &
                  FLPART = FLPART .OR. DSEC21(TIME,TONEXT(:,1)).EQ.0.
@@ -917,12 +1039,12 @@
 !/T            WRITE (NDST,9042) LOCAL, FLPART, FLOUTG
 !
             IF ( LOCAL .AND. FLPART ) CALL W3CPRT ( IMOD )
-            IF ( LOCAL .AND. FLOUTG ) CALL W3OUTG ( VA, FLPFLD )
+            IF ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) ) CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
 !
 !/MPI            FLGMPI = .FALSE.
 !/MPI            NRQMAX = 0
 !
-!/MPI            IF ( FLOUT(1) .AND. NRQGO.NE.0 ) THEN
+!/MPI            IF ( (FLOUT(1) .OR.  FLOUT(7)) .AND. NRQGO.NE.0 ) THEN
 !/MPI                IF ( DSEC21(TIME,TONEXT(:,1)).EQ.0. ) THEN
 !/MPI                    CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
 !/MPI                    FLGMPI(1) = .TRUE.
@@ -975,7 +1097,7 @@
             TOFRST(1) = -1
             TOFRST(2) =  0
 !
-            DO J=1, 6
+            DO J=1, NOTYPE
               IF ( FLOUT(J) ) THEN
 !
 ! 4.d Perform output
@@ -991,22 +1113,126 @@
 !/MPI                              FLGMPI(1) = .FALSE.
                               CALL W3IOGO                             &
                                  ( 'WRITE', NDS(7), ITEST, IMOD )
-!AC Generate output flag file
-!/SBS                              JJ = LEN_TRIM ( FILEXT )
-!/SBS                              CALL STME21 ( TIME, IDTIME )
-!/SBS                              FOUTNAME = 'Field_done.' // IDTIME(1:4) &
-!/SBS                                       // IDTIME(6:7) // IDTIME(9:10) &
-!/SBS                                      // IDTIME(12:13) // '.' // FILEXT(1:JJ)
-!/SBS                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
-!/SBS                              CLOSE( NDSOFLG )
+                            END IF
+                        ELSE IF ( J .EQ. 7 ) THEN
+                          IF ( IAPROC .EQ. NAPFLD ) THEN
+!/MPI                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
+!/MPI                                 ( NRQGO, IRQGO, STATIO, IERR_MPI )
+!/MPI                              FLGMPI(1) = .FALSE.
+!
+! PALM COUPLER calls 
+!
+!/PALM  DO JSEA=1, NSEAL
+!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM!  vecta(JSEA)=ust(ISEA)
+!/PALM!  vectb(JSEA)=ustdir(ISEA)
+!/PALM  vecta(JSEA)=0.0
+!/PALM  vectb(JSEA)=0.0
+!/PALM  END DO
+!
+!/PALM if(iaproc==1)write(*,*)'PALM:ww this is where you send vecta',itime
+! this may be the mistake
+!/PALM  palm_time_b=ITIME
+!/PALM if(iaproc==1)write(*,*)'ww palm_time_b,min_palm_time_b,max_palm_time_b',palm_time_b,min_palm_time_b,max_palm_time_b
+!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
+!/PALM if(iaproc==1)write(*,*)'send ust plam_time_b iaproc',palm_time_b,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vecta'
+!/PALM if(iaproc==1)write(*,*)'PALM:ww will send vecta',palm_time_b,itime
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecta, il_err)
+!/PALM if(iaproc==1)write(*,*)'PALM:ww sent vecta',palm_time_b,itime
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectb'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectb, il_err)
+!/PALM if(iaproc==1)write(*,*)'PALM:ww sent vectb',palm_time_b,itime
+!/PALM  endif
+!
+!
+!/PALM  !palm_time_b=ITIME+1
+!/PALM  !if(ITIME.eq.0) palm_time_b=2
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww coucou here calculating vectc at itime=',itime,iaproc
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww this is where you send vectc',itime,palm_time_b,iaproc
+!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
+!/PALM  DO JSEA=1, NSEAL
+!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM  vectg(JSEA)=WLV(ISEA) 
+!/PALM  vecth(JSEA)=JSMITH(ISEA) 
+!/PALM  vecti(JSEA)=TAUOX(ISEA) 
+!/PALM  vectj(JSEA)=TAUOY(ISEA) 
+!/PALM  vectk(JSEA)=TAUWX(ISEA) 
+!/PALM  vectl(JSEA)=TAUWY(ISEA)
+!/PALM  END DO 
+!
+!modif ac pour tester avec ma version de mellor 2003
+!/PALM  MEL03=.TRUE.
+!/PALM  IF (MEL03) THEN
+!/PALM  DO JSEA=1, NSEAL
+!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM  vecth(JSEA)=TMN(ISEA)
+!/PALM  vecti(JSEA)=HS(ISEA)
+!/PALM  vectj(JSEA)=THM(ISEA)
+!/PALM  END DO
+!/PALM  END IF
+!fin modif ac
+!
+! Rajouter: WN(IK,ISEA),  US3D  et/ou  SXX3D 
+!
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectg'
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectg',palm_time_b,itime,iaproc
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectg, il_err)
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectg',palm_time_b,itime,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vecth'
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vecth',palm_time_b,itime,iaproc
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecth, il_err)
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vecth',palm_time_b,itime,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vecti'
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vecti',palm_time_b,itime,iaproc
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecti, il_err)
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vecti',palm_time_b,itime,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectj'
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectj',palm_time_b,itime,iaproc
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectj, il_err)
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectj',palm_time_b,itime,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectk'
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectk',palm_time_b,itime,iaproc
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectk, il_err)
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectk',palm_time_b,itime,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectl'
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectl',palm_time_b,itime,iaproc
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectl, il_err)
+!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectl',palm_time_b,itime,iaproc
+!/PALM  endif
+!
+! End of PALM COUPLER calls
+!
                             END IF
                         ELSE IF ( J .EQ. 2 ) THEN
+!
+!   Point output
+!
                           IF ( IAPROC .EQ. NAPPNT ) THEN
+!
+!   Gets the necessary spectral data
+!
+                            IF (GTYPE .NE. UNGTYPE) THEN  
                               CALL W3IOPE ( VA )
+                            ELSE
+                              CALL W3IOPENS( VA )
+                              END IF      
                               CALL W3IOPO                             &
                                  ( 'WRITE', NDS(8), ITEST, IMOD )
                             END IF
+!
                         ELSE IF ( J .EQ. 3 ) THEN
+!
+! Track output
+!
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
                         ELSE IF ( J .EQ. 4 ) THEN
                           CALL W3IORS ('HOT', NDS(6), XXX, ITEST, IMOD )
@@ -1257,11 +1483,11 @@
 !/ ------------------------------------------------------------------- /
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
-      USE W3GDATMD, ONLY: NSPEC, NX, NY, NSEA, NSEAL, MAPSF
+      USE W3GDATMD, ONLY: NSPEC, NX, NY, NSEA, NSEAL, MAPSF, DMIN
       USE W3WDATMD, ONLY: A => VA
 !/MPI      USE W3ADATMD, ONLY: MPIBUF, BSTAT, IBFLOC, ISPLOC, BISPL, &
 !/MPI                          NSPLOC, NRQSG2, IRQSG2, GSTORE
-!/MPI      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC
+!/MPI      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NOTYPE
 !/
       IMPLICIT NONE
 !

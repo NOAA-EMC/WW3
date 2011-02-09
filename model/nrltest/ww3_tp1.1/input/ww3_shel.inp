@@ -14,9 +14,8 @@ $
    1
 $
    19680600 000000  86400  19680625 000000
-$     F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F  (New with Fabrice code +13 Fs)
 $     F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F  (OLD form)
-     F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F
+     F F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F (New with Ifremer code +17 Fs)
    19680600 000000  86400  19680625 000000
    -10.0   0.0  'Point -10 '
     -9.0   0.0  'Point  -9 '

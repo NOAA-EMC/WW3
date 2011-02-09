@@ -1,0 +1,8 @@
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+$ ITYPE: 1= GAUSSIAN
+$          FP, SIP, THM, NCOS, XM, SIX, YM, SIY, HMAX
+ 1
+   0.125  0.0001  90. 200  -83.01 0.01  9.99 2.8 4.
+EOF
+

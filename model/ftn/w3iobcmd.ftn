@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2010 |
+!/                  | Last update :         31-Oct-2010 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -72,7 +72,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2010 |
+!/                  | Last update :         31-Oct-2010 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -89,6 +89,8 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    28-Jul-2010 : Moving NKI, NTHI, XFRI, FR1I and
 !/                  TH1I to W3ODATMD.                 ( version 3.14.3 )
+!/    31-Oct-2010 : Implementing unstructured grid      ( version 3.14.3 )
+!/                  (A. Roland and F. Ardhuin) 
 !/
 !  1. Purpose :
 !
@@ -168,10 +170,13 @@
       USE W3ADATMD, ONLY: W3SETA
       USE W3ODATMD, ONLY: W3SETO, W3DMO5
       USE W3CSPCMD, ONLY: W3CSPC
+      USE W3TRIAMD, ONLY: W3NESTUG      
 !
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
-                          GSU, MAPSTA, MAPFS, MAPSF,                  &
-                          XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE
+                          GSU, MAPSTA, MAPFS, MAPSF,       &
+                          XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE,    &
+                          GTYPE, UNGTYPE
+      USE W3GDATMD, ONLY: DXYMAX  
 !/T1      USE W3GDATMD, ONLY: SIG
       USE W3WDATMD, ONLY: VA
       USE W3ADATMD, ONLY: CG
@@ -354,8 +359,11 @@
               ((RDBPI(I,J),I=1,NBI),J=1,4)
 !
           FLOK   = .TRUE.
-          DO I=1, NBI
-            IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY ) ) THEN
+          IF (GTYPE .EQ. UNGTYPE) THEN
+            CALL W3NESTUG(DXYMAX,FLOK) 
+          ELSE 
+            DO I=1, NBI
+              IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY ) ) THEN
                 IF ( ABS(MAPSTA(IY,IX)) .NE. 2 ) THEN
                     IF ( IAPROC .EQ. NAPERR )                         &
                         WRITE (NDSE,909) IX, IY, ABS(MAPSTA(IY,IX))
@@ -368,6 +376,7 @@
               END IF
             ISBPI(I) = MAPFS(IY,IX)
             END DO
+          END IF    
 !
 !/T0          WRITE (NDST,9003)
 !/T0          DO I=1, NBI

@@ -13,14 +13,10 @@ $ &PRO3 WDTHCG = 0., WDTHTH = 0. /
 $ &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-$  1 Type of grid, coordinate system and global flag: GSTRG, FLAGLL,
   'RECT' F F
-$  2 NX, NY. As the outer grid lines are always defined as land
   273  274
-$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
     1.6E+4   1.6E+4  1.
-$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
-    -2.2E+6 -2.2E+6   1.
+     0.E3    0.E3  1.
 $
   -5. 5.75  10  -2500. 4 1 '(....)' 'UNIT' 'input'
 $

@@ -186,7 +186,7 @@
       USE W3GDATMD, ONLY: W3SETG
       USE W3WDATMD, ONLY: W3SETW
       USE W3ADATMD, ONLY: W3SETA
-      USE W3ODATMD, ONLY: W3SETO
+      USE W3ODATMD, ONLY: W3SETO, NOTYPE
       USE W3IOPOMD, ONLY: W3IOPE
       USE W3WAVEMD, ONLY: W3WAVE
       USE W3SERVMD, ONLY: EXTCDE, WWTIME
@@ -1009,7 +1009,7 @@
                     TOUTP(1,I) = -1
                     TOUTP(2,I) =  0
 !
-                    DO JO=1, 6
+                    DO JO=1, NOTYPE
                       IF ( .NOT.FLOUT(JO) ) CYCLE
                       IF ( TOUTP(1,I) .EQ. -1 ) THEN
                           TOUTP(:,I) = TONEXT(:,JO)
@@ -1065,8 +1065,8 @@
 !/MPI                TIME       = TOUTP(:,I)
 !/MPI                TOUTP(1,I) = -1
 !/MPI                TOUTP(2,I) =  0
-!
-!/MPI                DO JO=1, 6
+! 
+!/MPI                DO JO=1, NOTYPE
 !
 !/MPI                  IF ( FLOUT(JO) ) THEN
 !/MPI                      DO

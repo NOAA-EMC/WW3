@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         16-May-2010 |
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -14,6 +14,7 @@
 !/    05-Jul-2006 : Consolidate stress vector.          ( version 3.09 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    16-May-2010 : Add iceberg damping                 ( version 3.14.4 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -46,6 +47,7 @@
 !      VA        R.A.  Public   Storage array for spectra.
 !      WLV       R.A.  Public   Water levels.  
 !      ICE       R.A.  Public   Ice coverage.  
+!      BERG      R.A.  Public   Iceberg damping.
 !      UST       R.A.  Public   Friction velocity (absolute).
 !      USTDIR    R.A.  Public   Friction velocity direction.
 !      ASF       R.A.  Public   Stability correction factor.
@@ -97,7 +99,7 @@
       TYPE WDATA
         INTEGER               :: TIME(2), TLEV(2), TICE(2)
         REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), UST(:),     &
-                                 USTDIR(:), ASF(:), FPIS(:)
+                                 USTDIR(:), ASF(:), FPIS(:), BERG(:)
         LOGICAL               :: DINIT, FL_ALL
       END TYPE WDATA
 !
@@ -110,7 +112,7 @@
 !/
       INTEGER, POINTER        :: TIME(:), TLEV(:), TICE(:)
       REAL, POINTER           :: VA(:,:), WLV(:), ICE(:), UST(:),     &
-                                 USTDIR(:), ASF(:), FPIS(:)
+                                 USTDIR(:), ASF(:), FPIS(:), BERG(:)
       LOGICAL, POINTER        :: DINIT, FL_ALL
 !/
       CONTAINS
@@ -357,11 +359,13 @@
 !
       ALLOCATE ( WDATAS(IMOD)%WLV(NSEA),                              &
                  WDATAS(IMOD)%ICE(NSEA),                              &
+                 WDATAS(IMOD)%BERG(NSEA),                             &
                  WDATAS(IMOD)%UST(0:NSEATM),                          &
                  WDATAS(IMOD)%USTDIR(0:NSEATM),                       &
                  WDATAS(IMOD)%ASF(NSEATM),                            &
                  WDATAS(IMOD)%FPIS(NSEATM) )
 !
+      WDATAS(IMOD)%BERG(:)=0.
       WDATAS(IMOD)%DINIT  = .TRUE.
       CALL W3SETW ( IMOD, NDSE, NDST )
 !
@@ -509,6 +513,7 @@
           IF ( FL_ALL ) VA     => WDATAS(IMOD)%VA
           WLV    => WDATAS(IMOD)%WLV
           ICE    => WDATAS(IMOD)%ICE
+          BERG   => WDATAS(IMOD)%BERG
           UST    => WDATAS(IMOD)%UST
           USTDIR => WDATAS(IMOD)%USTDIR
           ASF    => WDATAS(IMOD)%ASF
