@@ -112,15 +112,16 @@ Camp Springs, MD 20746
 
 \vspace{20mm}
 
-Hendrik l. Tolman$^\ddag$% and Arun Chawla $^{\ddag,\ast}$
+Hendrik L. Tolman$^\ddag$ (Editor)
 \\
 Environmental Modeling Center \\
 Marine Modeling and Analysis Branch
 
 \vspace{25mm}
 
-Version 0.1, May 2010
-% \today\ (DRAFT, Revision: \SVNRevision)
+% Version 0.1, May 2010
+% Version 1.0, Feb. 2011
+\today\ (DRAFT, Revision: \SVNRevision)
 \vfill {\sc this is an unreviewed manuscript, primarily
 intended for informal exchange of information among ncep staff
 members}
@@ -128,8 +129,7 @@ members}
 \end{center}
 \noindent \rule{140mm}{0.5mm} \\
 {\small $^\dag$ MMAB Contribution No.~286. \\
-$^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\ % Arun.Chawla@NOAA.gov} \\
-%$^\ast$ SAIC-GSO
+$^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\
 
 \bpage
 
@@ -164,10 +164,16 @@ documentation and manuals.
 \begin{tabular}{|c|c|c|l|} \hline
 version & svn rev.     & date    & comment    \\ \hline \hline
   0.1   &   7869       & May 14, 2010 & Initial MMAB No. 286.      \\ 
-        &              &              & No regression testing yet. \\
-% 1.0   & \SVNRevision &    \today    & Draft work version         \\
+        &              &              & Sec.~\ref{sec:testing} (regression testing) \\
+        &              &              & as placeholder only \\
+  1.0   & \SVNRevision &    \today    & Adding svn note p.~\pageref{svn_n}  \\
+(draft) &              &              & Adding svn warning p.~\pageref{svn_w} \\
+        &              &              & Section~\ref{sec:testing} updated  \\
+% 1.1   & \SVNRevision &    \today    & Draft work version         \\
 \hline \end{tabular}
 \end{center}
+\vspace{-3mm}
+\strut \hspace{60mm} (minor edits included in each new version)
 
 \vfill \pagebreak
 
@@ -178,7 +184,8 @@ version & svn rev.     & date    & comment    \\ \hline \hline
 \addcontentsline{toc}{subsection}{Acknowledgments}
 
 {\it Acknowledgments.} Code management for \ww\ is provided by NCEP. Arun
-Chawla provided a first filter for this report.
+Chawla (IMSG), Henrique Alves (RSG), Erick Rogers and Tim Campbell (NRL
+Stennis) contributed to this report.
 
 \vspace{\baselineskip} \noindent
 This report is available as a pdf file from
@@ -334,7 +341,7 @@ official version of \ws :
       management before using subversion, but will be retained until further
       notice.
 
-\item Each subroutine, function or groupings should be embedded in a module to
+\item Each subroutine, function or grouping should be embedded in a module to
       allow for full use association and internal automatic interface checks
       in Fortran compilers. File naming conventions include:
 
@@ -411,6 +418,9 @@ official version of \ws :
 \item Description or update of numerical approaches as needed.
 \item Update of system documentation including description of parameters in
       the dynamical data structure of \ws.
+\item Document namelist options as applicable in {\file ww3\_grid} in full
+      in the example input file {\file ww3\_grid.inp}. The example file is
+      included in full in the manual.
 \end{itemize}
 
 \end{list}
@@ -428,10 +438,10 @@ included with the distribution of \ws\ are encourage to provide copyright
 statements and disclaimers in these packages as appropriate (as NWS will not
 claim copyright of such packages).
 
-
 \begin{myfig}{tbp}
 \begin{center}
 \begin{minipage}[c]{4.5in}
+\vspace{-10mm}
 {\scriptsize \begin{verbatim}
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3XXXX
@@ -579,6 +589,7 @@ claim copyright of such packages).
 \label{fig:docu_mod}
 \end{myfig}
 
+
 \pb
 \bpage
 \pb
@@ -643,7 +654,7 @@ and unification much easier when multiple developers are working on the code
 simultaneously.
 
 \vspace{\baselineskip} \noindent The above approach are applicable to
-inherently modular elements of \ws\ such as source terms or propagations
+inherently modular elements of \ws\ such as source terms or propagation
 schemes. For more intricate changes to the code, please consult the \ws\ code
 managers\footnote{~Mail to NCEP.EMC.wavewatch@NOAA.gov} on how to proceed with
 developing and providing code upgrades.
@@ -657,8 +668,43 @@ developing and providing code upgrades.
 \section{Regression testing} \label{sec:testing}
 \newsec
 
-Regression testing standards have not yet been defined, and this section is
-presently a placeholder only.
+The wave model is distributed with a number of test cases, ranging from simple
+test to assure that basic features such as propagation and source terms work,
+to a realistic tests that include wave hindcast cases in the Atlantic and
+Pacific oceans, and a version of the first multi-grid wave model implemented
+in operations at NCEP. The following naming conventions have been used in the
+test cases:
+
+\begin{itemize}
+\item {\file ww3\_tp1.{\it N}}: Test for one-dimensional propagation.
+\item {\file ww3\_tp2.{\it N}}: Tests for two-dimensional propagation.
+\item {\file ww3\_ts{\it N}}: Tests for source term integration.
+\item {\file mww3\_test\_{\it NN}}: Tests cases for the multi-grid wave model.
+\item {\file mww3\_case\_{\it NN}}: Real-world application of the multi-grid
+       wave model.
+\end{itemize}
+
+\noindent
+Particularly the simple idealized test cases should be used for regression
+testing when new code is added to the repository; i.e., these test should
+result in different answers compared to the previous codes only when
+expected. To automate regression testing, \ldots
+
+
+
+
+\vspace{\baselineskip}
+\begin{center}
+\rule[1mm]{35mm}{1.0mm} NOTE TO ERICK AND TIM \rule[1mm]{35mm}{1.0mm} \\ 
+\vspace{\baselineskip}
+\parbox{120mm}{Please provide a description of the nrl\_test procedure here. I
+  would like to move {\file nrl\_test} to plain {\file test} in the
+  repository, keeping the present {\file test} and {\file test\_old} if you
+  two think there is a need for this. Can you work with Arun and/or
+  Henrique to get this done earlier rather than later please?} \\
+\vspace{\baselineskip} \rule[1mm]{35mm}{1.0mm} NOTE TO ERICK AND TIM
+\rule[1mm]{35mm}{1.0mm}
+\end{center}
 
 \bpage
 \pb
@@ -761,8 +807,24 @@ WARNING \rule[1mm]{55mm}{1.0mm}
 \newsec
 
 Starting with model version 3.14, \ws\ in maintained using subversion
-\citep{bk:CSea06}. All EMC codes are either on,or are being transferred to the
-EMC subversion server
+\citep{bk:CSea06}. The subversion (svn) system has two components. One is the
+svn repository maintained at NCEP. The other is the svn client that has to be
+installed at your own machine. 
+
+The svn server is where codes are stored and shared between collaborators. The
+subversion client allows you interact with the server to obtain codes, and to
+submit (share and backup) your own modifications to the code. The server and
+client communicate through svn commands, mostly as command line actions from
+the client side\footnote{~You can access code on the server directly though
+the web interface, but this bypasses all tools available in svn and and should
+NEVER be practiced.}. Putting data from your local system into the server will
+always require command line action from the client side (i.e., is the
+responsibility of, and is under full control of the co-developer). For
+examples of how to work with the serve and client, see the tutorials on the
+wiki page mentioned below.
+
+\vspace{\baselineskip} \noindent
+All EMC codes are now in the EMC subversion server
 
 \vspace{\baselineskip}
 \centerline{\file https://svnemc.ncep.noaa.gov}
@@ -794,7 +856,6 @@ write access to their designated directory in {\file branches}. In {\file
 trunk} (and {\file tags}), we have set up directories
 
 \begin{flist}
-\fit{docs  }{Work space for shared manuscript writing.}
 \fit{model }{Model files as previously distributed as {\file .tar} files.}
 \fit{manual}{\LaTeX files and graphics files for the manual.}
 \fit{guide }{\LaTeX file for this guide.}
@@ -813,12 +874,12 @@ subversion repository, a new script
 
 \noindent
 has been created, which replaces the script {\file install\_wwatch3} used to
-install he model from {\file .tar} files. This script will first fill the five
-directories {\file svn/aux} through {\file svn/test} with all the files from
-the svn repository, and will then continue to set up the model identical to
-the model setup from the tar files. The only difference is that distribution
-files in, for instance the {\file bin} directory, now are linked to the actual
-files in the {\file svn/bin} directory. Thus,
+install the model from {\file .tar} files. This script will first fill the
+five directories {\file svn/aux} through {\file svn/test} with all the files
+from the svn repository, and will then continue to set up the model identical
+to the model setup from the tar files. The only difference is that
+distribution files in, for instance the {\file bin} directory, now are linked
+to the actual files in the {\file svn/bin} directory. Thus,
 
 \vspace{\baselineskip}
 \centerline{\file svn commit}
@@ -909,13 +970,57 @@ management tool for the development of \ww. The Trac pages are found at
 and are accessed with the user name and password of the svn pages. The front
 page is a wiki page. Trac gives a web-based way to access files in subversion,
 including a time line of submissions to subversion. Additional tools include a
-road map with milestones, and a ticket system. We intend to use this system to
-manage code development for \ww, and possibly as the beginning of a user
-forum. Trac will be accessible to all those with accounts for our subversion
-server, and is presently being set up by the NCEP managers.
+road map with milestones, and a ticket system to track bugs and their fixes,
+and to manage code development for \ww\ among co-developers.  Trac will be
+accessible to all those with accounts for our subversion server.
+
+\pb
+
+%\vspace{\baselineskip}
+\begin{center}
+\rule[1mm]{55mm}{1.0mm} NOTE \rule[1mm]{55mm}{1.0mm} \\ 
+\vspace{\baselineskip} \label{svn_n}
+\parbox{120mm}{To assure that codes can be maintained effectively with
+  subversion, make sure that work copies in your branch are created using an
+  {\file svn copy} or {\file svn cp} command from the trunk, and not by
+  checking in new code form outside the repository. The first approach will
+  allow you to easily keep your copy synchronized with the trunk, the latter
+  approach will require much manual labor to achieve this. Synchronizing a
+  properly generated work copy with the trunk require the following steps:
+\begin{itemize}
+\item Check out a work copy from your branch in the repository to a work space
+      on your local machine.
+\item Merge this copy with the trunk using {\file svn merge \ldots}
+\item Resolve conflicts and test as needed.
+\item Commit merged version to your work space in the repository. This version
+      is now up to date with the trunk and also includes your changes, if
+      conflict resolution is done properly.
+\end{itemize}
+As a general rule, do not create branches from branches if you do not want to
+create much work to stay synchronized with trunk.} \\
+\vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} NOTE \rule[1mm]{55mm}{1.0mm}
+\end{center}
+
+\vspace{\baselineskip}
+\begin{center}
+\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
+\vspace{\baselineskip} \label{svn_w}
+\parbox{120mm}{NCEP code managers WILL NOT accept branches for merge with the
+trunk if the branch does not originate from an {\file svn copy} from the
+trunk, as NCEP does not have the resources to manually merge each submitted
+code.
+
+\vspace{\baselineskip} \noindent 
+NEVER download code directly from the web interface to the svn server at NCEP
+as this bypasses all svn code management tools. All interactions with the
+server other than looking around should be done through command lines at the
+svn client. ALWAYS use svn commands to manage local codes (e.g., copies,
+moves, adding files) rather than use Unix/Linux commands.} \\
+\vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm}
+\end{center}
 
 
-\bpage
+%\bpage
 \pb
 %--------------------------------------------------------------%
 %           References                                         %
