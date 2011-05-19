@@ -2,8 +2,8 @@
 
 \oddsidemargin=0.4in
 \evensidemargin=0.4in
-\textwidth=5.7in
-\topmargin=-0.6in
+\textwidth=6.0in
+\topmargin=0.4in
 \textheight=8.5in
 
 \usepackage{psfig}
@@ -11,6 +11,7 @@
 \usepackage{svn}
 
 \SVN $Revision$
+\SVN $Date$
 
 %\newcommand{\pstyle}{myheadings}
 \newcommand{\pstyle}{plain}
@@ -121,7 +122,10 @@ Marine Modeling and Analysis Branch
 
 % Version 0.1, May 2010
 % Version 1.0, Feb. 2011
-\today\ (DRAFT, Revision: \SVNRevision)
+(DRAFT) \\
+Last Changed Rev: \SVNRevision \\
+Last Changed Date: \SVNDate \\
+\vspace{\baselineskip}
 \vfill {\sc this is an unreviewed manuscript, primarily
 intended for informal exchange of information among ncep staff
 members}
@@ -166,10 +170,11 @@ version & svn rev.     & date    & comment    \\ \hline \hline
   0.1   &   7869       & May 14, 2010 & Initial MMAB No. 286.      \\ 
         &              &              & Sec.~\ref{sec:testing} (regression testing) \\
         &              &              & as placeholder only \\
-  1.0   & \SVNRevision &    \today    & Adding svn note p.~\pageref{svn_n}  \\
-(draft) &              &              & Adding svn warning p.~\pageref{svn_w} \\
+  1.0   &  12398       & Feb 18, 2011 & Adding svn note p.~\pageref{svn_n}  \\
+        &              &              & Adding svn warning p.~\pageref{svn_w} \\
         &              &              & Section~\ref{sec:testing} updated  \\
-% 1.1   & \SVNRevision &    \today    & Draft work version         \\
+  1.1   & \SVNRevision &   \SVNDate   & Draft work version \\
+(draft) &              &              & \\
 \hline \end{tabular}
 \end{center}
 \vspace{-3mm}
@@ -290,7 +295,7 @@ entries. The {\code CODE} font is used to identify source code. Previous
 experience with \ws\ is expected, and the use of, for instance, optional
 switches in the code, will not be explained here in detail.
 
-%\bpage
+
 \pb
 %--------------------------------------------------------------%
 % Section : Programming style                                  %
@@ -519,6 +524,7 @@ claim copyright of such packages).
 \begin{myfig}{tbp}
 \begin{center}
 \begin{minipage}[c]{4.5in}
+\vspace{-10mm}
 {\scriptsize \begin{verbatim}
 !/ ------------------------------------------------------------------- /
       MODULE W3XXXXMD
@@ -591,8 +597,6 @@ claim copyright of such packages).
 
 
 \pb
-\bpage
-\pb
 %--------------------------------------------------------------%
 % Section : Adding to the model                                %
 %--------------------------------------------------------------%
@@ -653,6 +657,16 @@ structure of \ws\ when the module is mature. This will make code development
 and unification much easier when multiple developers are working on the code
 simultaneously.
 
+\vspace{\baselineskip} \noindent The integration of new modules may involve
+adding new software selection switches to the source code. When this happens it
+is necessary to also add the new software selection switches to the build scripts.
+Specifically, the new switches must be properly encoded in
+{\file model/bin/make\_file.sh} and {\file model/bin/w3\_new}. This is required so
+that switch incompatibilities can be trapped at compile time and source files
+affected by changes to {\file model/bin/switch} can be correctly identified and
+recompiled. Documentation for new software selection switches must be added to
+chapter 5.4 of the manual.
+
 \vspace{\baselineskip} \noindent The above approach are applicable to
 inherently modular elements of \ws\ such as source terms or propagation
 schemes. For more intricate changes to the code, please consult the \ws\ code
@@ -660,7 +674,6 @@ managers\footnote{~Mail to NCEP.EMC.wavewatch@NOAA.gov} on how to proceed with
 developing and providing code upgrades.
 
 
-%\bpage
 \pb
 %--------------------------------------------------------------%
 % Section : Regression testing                                 %
@@ -668,45 +681,210 @@ developing and providing code upgrades.
 \section{Regression testing} \label{sec:testing}
 \newsec
 
-The wave model is distributed with a number of test cases, ranging from simple
-test to assure that basic features such as propagation and source terms work,
-to a realistic tests that include wave hindcast cases in the Atlantic and
-Pacific oceans, and a version of the first multi-grid wave model implemented
-in operations at NCEP. The following naming conventions have been used in the
-test cases:
+The wave model is distributed with a suite of test cases
+(in {\file model/test}), ranging from simple
+tests to assure that basic features such as propagation and source terms work,
+to realistic tests that include wave hindcast cases in the Atlantic and
+Pacific oceans, and examples of the first multi-grid wave model implemented
+in operations at NCEP. The following conventions are used in naming the test cases:
 
 \begin{itemize}
-\item {\file ww3\_tp1.{\it N}}: Test for one-dimensional propagation.
-\item {\file ww3\_tp2.{\it N}}: Tests for two-dimensional propagation.
+\item {\file ww3\_tp1.{\it N}}: Tests for one-dimensional propagation (regular grid).
+\item {\file ww3\_tp2.{\it N}}: Tests for two-dimensional propagation (regular grid).
+\item {\file ww3\_tp3.{\it N}}: Tests for two-dimensional propagation (unstructured grid).
 \item {\file ww3\_ts{\it N}}: Tests for source term integration.
 \item {\file mww3\_test\_{\it NN}}: Tests cases for the multi-grid wave model.
-\item {\file mww3\_case\_{\it NN}}: Real-world application of the multi-grid
-       wave model.
+\item {\file mww3\_case\_{\it NN}}: Real-world application of the multi-grid wave model.
 \end{itemize}
 
 \noindent
 Particularly the simple idealized test cases should be used for regression
-testing when new code is added to the repository; i.e., these test should
+testing when new code is added to the repository; i.e., these tests should
 result in different answers compared to the previous codes only when
-expected. To automate regression testing, \ldots
+expected. To facilitate regression testing, a shell script, {\file model/bin/run\_test}
+is provided along with input files for a number of test cases. The test cases
+are organized such that each major test case occupies its own
+directory. Within each test case directory, it is possible to have more than
+one file of the same type, thus allowing multiple test cases from one major
+test case. This is all possible using command-line commands. The user may
+further customize test cases by editing input files (see below).
 
+When editing input files, it is recommended that developers avoid ``checking
+in'' trivial changes as updates to the svn repository. In the case of {\file
+  ww3\_grid.inp} and {\file switch}, this can easily be avoided by keeping
+non-version-controlled variants of these files for local editing and accessing
+them via the -g and -s switches, respectively.
 
+Most WW3 developers will not have any reason to edit the {\file run\_test}
+script itself, i.e. it is treated as a black box. However, developers who
+would like to extend the capabilities of the script (e.g. by adding new
+command line switches) and commit these changes to the repository for sharing
+are encouraged to do so.
 
+Executing {\file run\_test} without arguments or with "-h" causes it to output
+a summary about using the script. That information is repeated Fig.
+\ref{fig:run_test} in slightly more verbose form.
 
-\vspace{\baselineskip}
+\begin{myfig}{tbp}
 \begin{center}
-\rule[1mm]{35mm}{1.0mm} NOTE TO ERICK AND TIM \rule[1mm]{35mm}{1.0mm} \\ 
-\vspace{\baselineskip}
-\parbox{120mm}{Please provide a description of the nrl\_test procedure here. I
-  would like to move {\file nrl\_test} to plain {\file test} in the
-  repository, keeping the present {\file test} and {\file test\_old} if you
-  two think there is a need for this. Can you work with Arun and/or
-  Henrique to get this done earlier rather than later please?} \\
-\vspace{\baselineskip} \rule[1mm]{35mm}{1.0mm} NOTE TO ERICK AND TIM
-\rule[1mm]{35mm}{1.0mm}
+\begin{minipage}[c]{4.5in}
+\vspace{-10mm}
+{\scriptsize \begin{verbatim}
+Usage: run_test [options] source_dir test_name
+
+Required:
+  source_dir : path to top-level of WW3 source
+  test_name  : name of test case (directory)
+
+Options:
+  -a ww3_env       : use WW3 environment setup file <ww3_env>
+                   :   *default is <source_dir>/wwatch3.env
+                   :   *file will be created if it does not already exist
+
+  -c cmplr         : Setup comp & link files for specified cmplr
+                   : The cmplr string matches the comp.* and link.*
+                   : files in /model/bin (e.g., comp.Portland or comp.gnu).
+                   : Once the comp and link files are set, this flag does not
+                   : need to be used again until the user wants to change compilers.
+
+  -e               : Prompt for changes to existing WW3 environment
+                   : This causes run_test to execute w3_setup.
+
+  -g grid_string   : Use ww3_grid_<grid_string>.inp
+                   : Example: -g b_pseudo will access ww3_grid_b_pseudo.inp in the
+                   : test_name/input directory. If -g is not used, then the script
+                   : will use the test_name/input/ww3_grid.inp file.
+
+  -h               : Print usage and exit
+
+  -i inpdir        : Use inputs in test_name/<inpdir> (default  test_name/input)
+
+  -m grid_set      : Execute multi-model test
+                   :   *grid names are obtained from input/<grid_set>
+                   :   *ww3_multi_<grid_set> will execute instead of ww3_shell
+                   :   *to execute a single model test case with ww3_multi use
+                   :    grid_set = none
+
+  -n nproc         : Specify <nproc> processors for parallel run
+                   :   *some <runcmd> programs do not require <nproc>
+                   :   *ignored if -p <runcmd> is not specified
+
+  -p runcmd        : Run in parallel using <runcmd> to start program
+                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
+                   :   *IBM with Loadleveler: poe (no <nproc> required)
+                   :   *LSF: mpirun.lsf (no <nproc> required)
+
+  -q program       : Exit script after program <program> executes
+
+  -r program       : Only execute program <program>
+                   : For example, if the user already has files from a previous
+                   : application of ww3_shel, and now wants to run only ww3_outp.
+
+  -s switch_string : Use switch_<switch_string>
+                   : Example: -s PR2 will access test_name/input/switch_PR2.
+                   : If -s is not used, then test_name/input/switch will be used.
+
+  -w work_dir      : Run test case in test_name/work_dir (default test_name/work)
+                   : Thus, for example, it is possible to keep separate output
+                   : directories for separate codes for comparison.
+
+\end{verbatim}}
+\end{minipage}
+\end{center}
+\myfcap{Description of arguments for {\file run\_test} script.}
+\label{fig:run_test}
+\end{myfig}
+
+There are 12 simple, single-grid test cases [{\file ww3\_tp1.1 ww3\_tp1.2 ww3\_tp1.3
+ww3\_tp1.4 ww3\_tp1.5 ww3\_tp1.6 ww3\_tp2.1 ww3\_tp2.2 ww3\_tp2.3 ww3\_ts1
+ww3\_ts2 ww3\_ts3}]. Developers with substantial changes to the code should
+apply their code to at least one variant of each of the these 12 test cases,
+before they can consider the code to be regression-tested and ready for merge
+with the trunk. Depending on the part of the code that they are working on,
+additional tests should be performed. For example, someone working on
+propagation routines PR1 PR2 and PR3 will need to run tests for each using the
+-s switch, and someone working on the multi-grid source code will need to
+apply the multi-grid test cases. Developers with relatively modest changes
+to the code can employ an appropriate smaller set of test cases, according
+to common sense. If available to them, developers are encouraged to use alternate
+compilers for a few test cases on occasion.
+
+The {\file run\_test} script exists in {\file /model/test/bin}. The test
+directories exist in {\file /model/test}, e.g.  {\file/model/test/ww3\_tp1.1}. For
+example, the contents of {\file /ww3\_tp1.1} might be
+  \begin{itemize}
+\item {\file info}: a file containing information
+about the test case 
+\item {\file input}: a permanent directory containing input files for
+the test case 
+\item {\file work\_PR3} : a scratch directory for model output (in this
+example, filename is such because the user had specified ``{\file run\_test -w PR3
+...''})
+  \end{itemize}
+
+For a test case to run to completion is a necessary but not sufficient
+indication of success. The output from test cases should be compared with
+results using an appropriate prior version of the code. As an example, from
+{\file/test/} , these commands are executed:
+\begin{center}
+{\small \begin{verbatim}
+(baseline)
+./bin/run_test -g v4.00 -s PR3_v4.00 -w work_PR3_v4.00 $WW3_v4p00 ww3_tp1.1
+
+(verify)
+./bin/run_test -g v4.01 -s PR3_v4.01 -w work_PR3_v4.01 $WW3_v4p01 ww3_tp1.1
+\end{verbatim}}
+\end{center}
+\noindent
+Here, the user is comparing his/her version (v4.01) with the previous version
+(v4.00). In situations where the two versions are expected to produce
+essentially identical results, this can be evaluated using ``diff'' on the
+scratch directories:
+\begin{center}
+{\small \begin{verbatim}
+diff ./work_PR3_v4.01 ./work_PR3_v4.00.
+\end{verbatim}}
+\end{center}
+\noindent
+This will, of course, report some irrelevant differences such as different
+wall clock time and different version number, and it is up to the user to
+determine if any changes are significant.
+
+Since ``diff'' is utilized, it is recommended that users designing new test
+cases use text files for output, rather than relying exclusively on binary
+output (e.g. {\file out\_grd.ww3}). The log files from ww3\_grid are given
+names according to {\file ww3\_grid.inp}, so these must be compared separately, e.g.
+\begin{center}
+{\small \begin{verbatim}
+diff ./work_PR3_v4.00/ww3_grid_v4.00.out ./work_PR3_v4.01/ww3_grid_v4.01.out
+\end{verbatim}}
 \end{center}
 
-\bpage
+For those who have access, a wiki describing each test case has been installed
+in {\file https://svnemc.ncep.noaa.gov/trac/ww3/wiki/NrlTest }. This also includes
+many examples of {\file run\_test} commands.
+
+Common sense applies. A developer of a new deep-water source term package, say
+ST5, would not include ST5 in regression testing, but it is reasonable for
+this developer to regression-test ST1 and ST2 to verify that they still work
+the same as before. Further, the developer should add ST5-compatible input
+files (or even new test cases) to the {\file/test/} directory. This would, for
+example, make it possible for the future ST8 developer to include ST5 in
+regression testing.
+
+Also, note that {\file run\_test} has utility beyond regression testing. Perhaps the
+most useful feature is that it makes it possible to fully document (or
+communicate) a model simulation using a single line of text, ``{\file ./bin/run\_test}
+...'' without ambiguity. Larger applications (i.e. those not necessarily
+suitable for regression testing) can be included in {\file/test/} of development
+branches for purposes of collaboration.
+
+[Aside: On the nrl repository, we have a directory {\file/test/matlab/} containing {\file.m} files
+  for processing, evaluating, and visualizing output. A similar directory
+  could be included in the ncep repository. Ours is a bit of a mess (e.g. too
+  much hard-wiring and not enough comments).]
+
+
 \pb
 %--------------------------------------------------------------%
 % Section : Manual and documentation                           %
@@ -737,24 +915,25 @@ files. Because the manual is rather large, it has been stored in several
 \fit{mpi.tex   }{Appendix: Compiling MPI versions of the model.}
 \fit{move.tex  }{Appendix: Moving grid options.}
 \fit{fig\_{\it{XXXX}}.tex }{Various figures made directly using \LaTeX.}
-\fit{inp\_{\it{XXXX}}.tex, inpg\_{\it{XXXX}}.tex }{}
-\fit{ }{Example input files for \ws\ programs used in {\file run.tex}.}
 \fit{{\it{XXXX}}.eps}{Various encapsulated postscript graphics.}
 
 \fit{manual.bib}{BibTex database with references used in the manual.}
 \fit{jas.bst   }{Bibliography style file used for the manual.}
 \end{flist}
 
-\noindent
-Apart from the files making up the manual, a support script is provided:
+\vspace{\baselineskip} \noindent
+A {\file makefile} is provided for compiling a PDF version of the manual.
+Use "make" or "make manual" to compile the manual.
+Use "make clean" to remove the files generated during the compile.
 
-\begin{flist}
-\fit{make\_inps.sh}{Convert input files for \ws\ programs to \LaTeX\ file for
-                    use in the manual (e.g., convert the model input file
-                    {\file ww3\_grid.inp} to {\file inp\_grid.tex}). This
-                    script assures that the example input files provided with
-                    the code are the files displayed in the manual.}
-\end{flist}
+\vspace{\baselineskip} \noindent
+The example input files ({\file ww3\_{\it{XXXX}}.tex} and {\file gx\_{\it{XXXX}}.tex})
+required for the programs described in {\file run.tex} are automatically generated
+during compilation of the manual. The source input files are copied from
+{\file \$(WWATCH3\_DIR)/inp}.  The default setting for {\file WWATCH3\_DIR},
+"../model", can be overridden by setting {\file WWATCH3\_DIR} either on the make
+command-line or in the environment. This method assures that the example input files
+provided with the code are the files displayed in the manual.
 
 \pb \noindent
 Note that the manual consist of both a conventional manual and a basic system
@@ -1031,7 +1210,6 @@ moves, adding files) rather than use Unix/Linux commands.} \\
 \setcounter{footnote}{0}
 
 \bibliographystyle{jas}
-%\bibliography{short,articles,books,reports,conf,mine}
 \bibliography{report}
 
 \pb
