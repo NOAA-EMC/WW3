@@ -165,7 +165,7 @@ $               'UNIT' : open file by unit number only.
 $               'NAME' : open file by name and assign to unit.
 $
 $ rect/curv flag and llg/xxg flag
-  'RECT' T F
+  'RECT' T 'NONE'
 $In topo.LM.2 , new values will be :
 $ dx = 0.049 ; dy = 0.035972 ; 
 $ x0 = -87.9671 ; y0 = 41.5717 ;

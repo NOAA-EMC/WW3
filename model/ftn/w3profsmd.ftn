@@ -121,10 +121,10 @@
       USE W3TIMEMD, ONLY: DSEC21
 !
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
-                          GLOBAL, FLCX, FLCY, NK, NTH, DTH, XFR,      &
-                          ECOS, ESIN, SIG,  PFMOVE,IEN,    &
+                          FLCX, FLCY, NK, NTH, DTH, XFR,              &
+                          ECOS, ESIN, SIG,  PFMOVE,IEN,               &
                           NTRI, TRIGP, CCON , TRIA03,                 &
-                          IE_CELL, POS_CELL, &
+                          IE_CELL, POS_CELL,                          &
                           FSN, FSPSI, FSFCT, FSNIMP
 
       USE W3WDATMD, ONLY: TIME

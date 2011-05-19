@@ -13,7 +13,7 @@ $ &MISC PMOVE = 0.0 /
   &PRO3 WDTHCG = 2.0, WDTHTH = 2.0 /         
 END OF NAMELISTS
 $
-  'RECT' F F
+  'RECT' F 'NONE'
   43  43
 $  0.25  0.25  1.
 $ -5.25 -5.25  1.

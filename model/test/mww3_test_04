@@ -39,7 +39,7 @@
 #       variables in poe jobcards at the top of the scripts.                #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2005     #
-#                                                   Last Mod : Nov 2009     #
+#                                                   Last Mod : Dec 2010     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -334,7 +334,7 @@ $PRO3
 $
 END OF NAMELISTS
 $
-   'RECT' F F
+   'RECT' F 'NONE'
    55   57
     10.E3   10.E3   1.
   -270.E3 -280.E3   1.
@@ -379,7 +379,7 @@ $PRO2
 $PRO3
 END OF NAMELISTS
 $
-   'RECT' F F
+   'RECT' F 'NONE'
    55   55
     10.E3   10.E3   1.
   -270.E3 -270.E3   1.
@@ -418,7 +418,7 @@ $PRO2
 $PRO3
 END OF NAMELISTS
 $
-   'RECT' F F
+   'RECT' F 'NONE'
    51   51
      5.E3    5.E3   1.
   -125.E3 -125.E3   1.
@@ -446,7 +446,7 @@ $time_p
 $
 END OF NAMELISTS
 $
-    'RECT' F F
+    'RECT' F 'NONE'
     3    3
      5.E3    5.E3   1.
     -5.E3   -5.E3   1.

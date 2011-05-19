@@ -14,17 +14,12 @@ $
    1
 $
    19680606 000000   3600  19680608 000000
-$
-$    D C W D W  I H L T T  T C F D S  D H T L T  S W W P D
-$    P U N T L  C S   0    M G P I P  P S P P H  I S S N T
-$    T R D   V  E     2    1 E   R R    P P P P  P P F R D
-$
-     F F F F F  F T T T T  T T F F F  F F F F F  F F F F T
-     T T T T T  F F F F F  F F F F F  F F F F F  F F F F F  F F F
-$
-$    F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
-$    C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
-$      X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$-------------------------------------------------------------------------------------------------------------------
+$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$-------------------------------------------------------------------------------------------------------------------
+ F F F F F  F T T T T  T T F F F  F F F F F  F F F F T  T T T T T  F F F F F  F F F F F  F F F F F  F F F F F  F F F
 $
    19680606 000000   3600  19680608 000000
       25.E3  0.0  'fetch_025 '

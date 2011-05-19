@@ -22,7 +22,7 @@
 #       variables in poe jobcards at the top of the scripts.                #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Nov 2009     #
+#                                                   Last Mod : Dec 2010     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -115,7 +115,7 @@ $
 $
 END OF NAMELISTS
 $
-   'RECT' F F
+   'RECT' F 'NONE'
    23   23
     10.E3   10.E3   1.
    -10.E3  -10.E3   1.

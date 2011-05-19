@@ -22,7 +22,7 @@
 #   with type 3 in ww3_strt.                                                #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Nov 2009     #
+#                                                   Last Mod : Dec 2010     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -105,7 +105,7 @@ $ &SLN1  RFPM = 1.0 RFHF = 0.33 /
   &MISC  XP = 0.075 /
 END OF NAMELISTS
 $
-   'RECT' T F
+   'RECT' T 'NONE'
    3   3
    1.  1.  1.E-4
   -1. -1.  1.E-4

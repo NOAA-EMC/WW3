@@ -33,7 +33,7 @@
 #       variables in poe jobcards at the top of the scripts.                #
 #                                                                           #
 #                                              Hendrik Tolman, Sep 2005     #
-#                                                   Last Mod : Nov 2009     #
+#                                                   Last Mod : Dec 2010     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -143,7 +143,7 @@ $ &PRO2 DTIME = 21600. /
 $ &PRO3 WDTHCG = 0., WDTHTH = 0. /
 END OF NAMELISTS
 $
-   'RECT' F F
+   'RECT' F 'NONE'
    43   43
     25.E3   25.E3   1.
    -25.E3  -25.E3   1.

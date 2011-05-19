@@ -1,0 +1,4 @@
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  1
+   0.15 0.02    240. 4  -10.E3 10.E3  100.E3 1.E8  1.00

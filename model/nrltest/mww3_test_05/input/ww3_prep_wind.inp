@@ -1,0 +1,6 @@
+$ WAVEWATCH III Field preprocessor input file
+$ -------------------------------------------
+   'WND' 'AI' T T
+$
+  'NAME' 1 1 '(..T..)' '(..F..)'
+  20 '../input/wind.data'

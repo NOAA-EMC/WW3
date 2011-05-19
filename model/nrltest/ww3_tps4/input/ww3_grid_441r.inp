@@ -91,14 +91,16 @@ $                                    PHImin.
 $
 $ for TEST441:
 $
-  &SIN3 BETAMAX = 1.55, ZALP=0.006,
+  &SIN4 BETAMAX = 1.55, ZALP=0.006,
    Z0MAX = 0.0020, SINTHP=2.0, SWELLFPAR = 3, SWELLF = 0.80,
    TAUWSHELTER = 1.0, SWELLF2=-0.018, SWELLF3= 0.015, Z0RAT = 0.04,
    SWELLF4 =100000, SWELLF5 = 1.2 /
-  &SDS3 SDSC1 = -4.2, SDSLF = 0., SDSHF=0., SDSBR = 0.00090,
+  &SDS4 SDSC1 = -4.2, SDSBR = 0.00090,
    SDSC2 = -2.2E-5, SDSC3 = -0.80, SDSC4 = 1. , SDSC5 = 0., SDSC6 = 0.30,
    SDSDTH = 80., FXFM3= 9.9,
    SDSCOS = 2., SDSISO = 2  / 
+$ 
+$ removed from TEST441 namelist:   SDSLF = 0., SDSHF=0.,
 $
 $ for TEST437
 $
@@ -194,6 +196,8 @@ $      FROM : file type parameter
 $               'UNIT' : open file by unit number only.
 $               'NAME' : open file by name and assign to unit.
 $
+$ rect/curv flag and llg/xxg flag
+  'RECT' T 'NONE'
 $In topo.LM.2 , new values will be :
 $dx = 0.049 ;
 $dy = 0.035972 ;

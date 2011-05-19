@@ -13,7 +13,7 @@ $
   &PRO4 CFLTM = 0.75, RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-  'RECT' F F
+  'RECT' F 'NONE'
    3  13
     5.E3   5.E3  1.
    -5.E3  -5.E3  1.

@@ -13,7 +13,8 @@ $ &PRO3 WDTHCG = 0., WDTHTH = 0. /
 $ &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-  'RECT' F F
+$  1 Type of grid, coordinate system and closure: GSTRG, FLAGLL, CSTRG
+  'RECT' F 'NONE'
   273  274
     1.6E+4   1.6E+4  1.
      0.E3    0.E3  1.

@@ -5,12 +5,15 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2002 : Origination.                        ( version 2.17 )
 !/    27-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -85,11 +88,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Dec-2004 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2002 : Origination.                        ( version 2.17 )
 !/    27-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -200,7 +206,7 @@
 ! 1.c Test grid info from W3GDATMD
 !
 !/T      WRITE (NDST,9010) NX, NY, NSEA, NSEAL, NK, NTH,              &
-!/T                        GLOBAL, FLAGLL, SX, SY, X0, Y0
+!/T                        ICLOSE, FLAGLL, SX, SY, X0, Y0
 !
 ! 2.  Actual data assimilation routine ------------------------------- /
 !
@@ -234,7 +240,7 @@
 !/T 9003 FORMAT (19X,   6E10.3)
 !
 !/T 9010 FORMAT ( ' TEST W3WDAS : ARRAY DIMS.  : ',6I8/               &
-!/T               '               GRID         : ',2L2,4E11.4)
+!/T               '               GRID         : ',1I2,1L2,4E11.4)
 !/
 !/ End of W3WDAS ----------------------------------------------------- /
 !/

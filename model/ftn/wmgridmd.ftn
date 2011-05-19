@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination WMGLOW, WMGHGH, WMRSPC. ( version 3.08 )
@@ -26,6 +26,12 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -97,7 +103,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
@@ -105,6 +111,9 @@
 !/    26-Mar-2009 : Adding test output !/T9.            ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -206,9 +215,9 @@
 ! -------------------------------------------------------------------- /
 ! 1.  Test grid, Initialize and synchronize grids as needed ( !/MPI )
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN
+      IF ( GTYPE .EQ. CLGTYPE .AND. NRGRD .GT. 1 ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMGLOW: ', &
-          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          'CURVILINEAR GRID SUPPORT NOT IMPLEMENTED FOR NRGRD > 1 ***'
           CALL EXTCDE ( 999 )
         END IF
       IF ( GTYPE .EQ. UNGTYPE ) THEN
@@ -349,7 +358,7 @@
                     END IF
                   JX     = 1 + INT ( RX )
                   RX     = RX - REAL(JX-1)
-                  IF ( .NOT. GRIDS(J)%GLOBAL ) THEN
+                  IF ( .NOT. GRIDS(J)%ICLOSE.NE.ICLOSE_NONE ) THEN
                       IF ( JX.EQ.0 .AND. ABS(RX-1.).LT.0.05 ) THEN
                           JX     = 1
                           RX     = 0.
@@ -367,7 +376,7 @@
 ! ... Check against MAPSTA
 !
                   JX1    = JX
-                  IF ( GRIDS(J)%GLOBAL ) THEN
+                  IF ( GRIDS(J)%ICLOSE.NE.ICLOSE_NONE ) THEN
                       JX2    = 1 + MOD(JX,GRIDS(J)%NX)
                     ELSE
                       JX2    = JX + 1
@@ -695,7 +704,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination.                        ( version 3.08 )
@@ -706,6 +715,9 @@
 !/    26-May-2009 : Fix erroneous cyclic updating.      ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -803,9 +815,9 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations / tests
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN
+      IF ( GTYPE .EQ. CLGTYPE .AND. NRGRD .GT. 1 ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMGHGH: ', &
-          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          'CURVILINEAR GRID SUPPORT NOT IMPLEMENTED FOR NRGRD > 1 ***'
           CALL EXTCDE ( 999 )
         END IF
       IF ( GTYPE .EQ. UNGTYPE ) THEN
@@ -925,7 +937,7 @@
                     DO IX=2, NX-1
                       ISEA   = MAPFS(IY,IX)
                       STY    = FACTOR * HQFAC(IY,IX) / ( 0.58 * GRAV )
-                      STX    = FACTOR * HPFAC(IY,IX) * CLATIS(ISEA)   &
+                      STX    = FACTOR * HPFAC(IY,IX) &
                                                      / ( 0.58 * GRAV )
                       STXY   = SQRT ( STX**2 + STY**2 )
                       IF ( CHANGE(IY,IX) ) THEN
@@ -1608,7 +1620,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    24-Apr-2006 : Origination.                        ( version 3.09 )
@@ -1622,6 +1634,12 @@
 !/    20-May-2009 : Linking FLAGST and FLGHG1.          ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1735,9 +1753,9 @@
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN
+      IF ( GTYPE .EQ. CLGTYPE .AND. NRGRD .GT. 1 ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMGEQL: ', &
-          'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
+          'CURVILINEAR GRID SUPPORT NOT IMPLEMENTED FOR NRGRD > 1 ***'
           CALL EXTCDE ( 999 )
         END IF
       IF ( GTYPE .EQ. UNGTYPE ) THEN
@@ -2043,7 +2061,7 @@
 !/PR2        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 !/PR3        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 !
-        IF ( GLOBAL ) THEN
+        IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
             IXL    =  1
             IXH    = NX
           ELSE
@@ -2151,7 +2169,7 @@
                 END IF
               ISEA   = MAPFS(IY,IX)
               STY    = FACTOR * HQFAC(IY,IX) / ( 0.58 * GRAV )
-              STX    = FACTOR * HPFAC(IY,IX) * CLATIS(ISEA)           &
+              STX    = FACTOR * HPFAC(IY,IX) &
                                              / ( 0.58 * GRAV )
               STXY   = SQRT ( STX**2 + STY**2 )
               IF ( MASKI(IY,IX) ) THEN

@@ -24,7 +24,8 @@
   doc=wwatch3.doc.tar      # tar file with docblocks (NCEP only)
 
   tmp='ww3_temp'           # temporary working directory
-  ww3_env='.wwatch3.env'   # setup file
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -38,8 +39,7 @@
 # 1.c Test present directory - - - - - - - - - - - - - - - - - - - - - - - - -
 
   main_dir=`pwd`
-  cd
-  home_dir=`pwd`
+  home_dir=${HOME}
 
   if [ -s $ww3_env ]
   then
@@ -85,31 +85,31 @@
   echo ' '
   echo 'Setting up environment variables.'
 
-  if [ -f $home_dir/$ww3_env ]
+  if [ -f $ww3_env ]
   then
-    echo "   Setup file $ww3_env found in $home_dir"
+    echo "   Setup file $ww3_env found"
 
-    set `grep WWATCH3_LPR $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_LPR $ww3_env` ; shift
     prnt="$*"
     echo "      Printer (listings)       : $prnt"
 
-    set `grep WWATCH3_F77 $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_F77 $ww3_env` ; shift
     fort="$*"
     echo "      FORTRAN comp. (aux only) : $fort"
 
-    set `grep WWATCH3_CC  $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_CC  $ww3_env` ; shift
     cc="$*"
     echo "      C Compiler (aux only)    : $cc"
 
-    set `grep WWATCH3_TMP $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_TMP $ww3_env` ; shift
     temp_dir="$*"
     echo "      Scratch directory        : $temp_dir"
 
-    set `grep WWATCH3_SOURCE $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_SOURCE $ww3_env` ; shift
     s_source="$*"
     echo "      Save source code         : $s_source"
 
-    set `grep WWATCH3_LIST $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_LIST $ww3_env` ; shift
     s_list="$*"
     echo "      Save listings            : $s_list"
 
@@ -241,7 +241,6 @@
 
 # 1.e Save environment in file - - - - - - - - - - - - - - - - - - - - - - - -
 
-  cd $home_dir
   rm -f $ww3_env
 
   echo '#'                                                    > $ww3_env

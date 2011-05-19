@@ -14,7 +14,7 @@ $ &PRO3 WDTHCG = 0.,   WDTHTH = 0. /
   &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-  'RECT' T F
+  'RECT' T 'NONE'
   193   93
     1.   1.  1.
    -6. -46.  1.

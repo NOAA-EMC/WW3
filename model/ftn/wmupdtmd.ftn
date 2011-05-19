@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -15,6 +15,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -901,13 +904,16 @@ call extcde (99)
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -974,7 +980,8 @@ call extcde (99)
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
-                          GTYPE, RLGTYPE, CLGTYPE, UNGTYPE
+                          GTYPE, RLGTYPE, CLGTYPE, UNGTYPE,           &
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1008,7 +1015,7 @@ call extcde (99)
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
       REAL, POINTER           :: X0I, Y0I, SXI, SYI
-      LOGICAL, POINTER        :: GLOBAL
+      INTEGER, POINTER        :: ICLOSE
 !/T      CHARACTER(LEN=17)       :: FORMAT
 !/
 !/ ------------------------------------------------------------------- /
@@ -1035,7 +1042,7 @@ call extcde (99)
       SYI    => GRIDS(JMOD)%SY
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
-      GLOBAL => GRIDS(JMOD)%GLOBAL
+      ICLOSE => GRIDS(JMOD)%ICLOSE
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF
@@ -1132,7 +1139,7 @@ call extcde (99)
                 J2     = J1 + 1
                 R2     = MAX ( 0. , XR-REAL(J1) )
                 R1     = 1. - R2
-                IF ( FLAGLL .AND. GLOBAL ) THEN
+                IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
                     J1 = 1 + MOD(J1-1,NXI)
                     J2 = 1 + MOD(J2-1,NXI)
                   END IF
@@ -1174,7 +1181,7 @@ call extcde (99)
               END IF
             DO J=IXS0, IXSN
               IF ( FLAGLL ) THEN
-                  IF ( GLOBAL ) JJ = 1 + MOD(J-1,NXI)
+                  IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
                   IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
                   IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
                   IF ( IXC .NE. 0 ) THEN
@@ -1348,7 +1355,7 @@ call extcde (99)
 !/T      WRITE (MDST,9022)
 !
       JJ     = 0
-      GLOBAL => GRIDS(IMOD)%GLOBAL
+      ICLOSE => GRIDS(IMOD)%ICLOSE
 !
       DO
         IF ( JJ .GT. SWPMAX ) EXIT
@@ -1364,7 +1371,7 @@ call extcde (99)
                 J1     = 0
                 IF ( FLAGLL ) THEN
                     DO J2=IX-1, IX+1
-                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. GLOBAL ) THEN
+                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. ICLOSE.NE.ICLOSE_NONE ) THEN
                           JX     = 1 + MOD(NX+J2-1,NX)
                           DO JY=IY-1, IY+1
                             IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
@@ -1439,13 +1446,16 @@ call extcde (99)
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    14-Oct-2006 : Origination.                        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1508,7 +1518,8 @@ call extcde (99)
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GRIDS, FLAGLL,      &
-                          GTYPE, RLGTYPE, CLGTYPE, UNGTYPE
+                          GTYPE, RLGTYPE, CLGTYPE, UNGTYPE,           &
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
       USE WMMDATMD, ONLY: IMPROC, NMPERR, NMPSCR, MDST, MDSE, MDSO,   &
                           MDSS
 !/
@@ -1540,7 +1551,7 @@ call extcde (99)
 !
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
       REAL, POINTER           :: X0I, Y0I, SXI, SYI
-      LOGICAL, POINTER        :: GLOBAL
+      INTEGER, POINTER        :: ICLOSE
 !/T      CHARACTER(LEN=17)       :: FORMAT
 !/
 !/ ------------------------------------------------------------------- /
@@ -1567,7 +1578,7 @@ call extcde (99)
       SYI    => GRIDS(JMOD)%SY
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
-      GLOBAL => GRIDS(JMOD)%GLOBAL
+      ICLOSE => GRIDS(JMOD)%ICLOSE
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF
@@ -1665,7 +1676,7 @@ call extcde (99)
                 J2     = J1 + 1
                 R2     = MAX ( 0. , XR-REAL(J1) )
                 R1     = 1. - R2
-                IF ( FLAGLL .AND. GLOBAL ) THEN
+                IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
                     J1 = 1 + MOD(J1-1,NXI)
                     J2 = 1 + MOD(J2-1,NXI)
                   END IF
@@ -1707,7 +1718,7 @@ call extcde (99)
               END IF
             DO J=IXS0, IXSN
               IF ( FLAGLL ) THEN
-                  IF ( GLOBAL ) JJ = 1 + MOD(J-1,NXI)
+                  IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
                   IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
                   IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
                   IF ( IXC .NE. 0 ) THEN
@@ -1862,7 +1873,7 @@ call extcde (99)
 !/T      WRITE (MDST,9022)
 !
       JJ     = 0
-      GLOBAL => GRIDS(IMOD)%GLOBAL
+      ICLOSE => GRIDS(IMOD)%ICLOSE
 !
       DO
         IF ( JJ .GT. SWPMAX ) EXIT
@@ -1877,7 +1888,7 @@ call extcde (99)
                 J1     = 0
                 IF ( FLAGLL ) THEN
                     DO J2=IX-1, IX+1
-                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. GLOBAL ) THEN
+                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. ICLOSE.NE.ICLOSE_NONE ) THEN
                           JX     = 1 + MOD(NX+J2-1,NX)
                           DO JY=IY-1, IY+1
                             IF ( JY.GT.1 .AND. JY.LE.NY ) THEN

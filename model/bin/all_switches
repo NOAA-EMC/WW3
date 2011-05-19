@@ -18,7 +18,8 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
-  ww3_env='.wwatch3.env'   # setup file
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -28,7 +29,6 @@
 
 # 1.c Get env. data  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  cd
   if test -f $ww3_env
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift
@@ -44,8 +44,8 @@
 # 2. Strip all switches from sources                                          #
 # --------------------------------------------------------------------------- #
 
-  all=`sed -n '/^!\//'p *.ftn | sed -n '/^!\/$/'!p | sed -n '/^!\/ /'!p | \
-     sed 's/!\///g' | sed 's/\// /g' | awk '{ print $1 }' | sort -u | more`
+  all=`sed -n '/^!\/[[:alpha:]]/'p *.ftn | awk '{print $1}' | \
+       sed 's/^!\///' | sed 's/[\/!].*$//' | sort -u`
 
   set $all
 

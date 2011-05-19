@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -65,6 +65,10 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Clean up of unstructured grids      ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid. Change GLOBAL
+!/                  input in ww3_grid.inp to CSTRG.     ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -413,7 +417,7 @@
                                  XO, YO, RD(4), RDTOT,                &
                                  FACTOR, RTH0, FMICHE, RWNDC, COSAVG, &
                                  SINAVG, THAVG
-      CHARACTER(LEN=4)        :: GSTRG
+      CHARACTER(LEN=4)        :: GSTRG, CSTRG
       INTEGER                 :: P2SF,I1P2SF,I2P2SF
       INTEGER                 :: US3D_OUNF,I1US3D_OUNF,I2US3D_OUNF
 !/LN1      REAL                    :: CLIN, RFPM, RFHF
@@ -1585,7 +1589,7 @@
 ! 7.a Type of grid
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=2001,ERR=2002) GSTRG, FLAGLL, GLOBAL
+      READ (NDSI,*,END=2001,ERR=2002) GSTRG, FLAGLL, CSTRG
       SELECT CASE (TRIM(GSTRG))
         CASE ('RECT')
           GTYPE = RLGTYPE
@@ -1602,64 +1606,95 @@
         END SELECT      
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
-      IF ( GLOBAL .AND. .NOT.FLAGLL ) THEN
-          WRITE (NDSE,1007)
-          CALL EXTCDE ( 25 )
-        END IF
       IF ( FLAGLL ) THEN
-        FACTOR = 1.
-        WRITE (NDSO,3001) 'spherical'
-      ELSE
-        FACTOR = 1.E-3
-        WRITE (NDSO,3001) 'Cartesian'
+          FACTOR = 1.
+          WRITE (NDSO,3001) 'spherical'
+        ELSE
+          FACTOR = 1.E-3
+          WRITE (NDSO,3001) 'Cartesian'
         END IF
-      WRITE (NDSO,3002) GLOBAL
 !
-      IF ( GTYPE.NE.UNGTYPE) THEN 
-!
-! Propagation specific to structured grids
-!
-
+!     Only process grid closure string for logically rectangular grids.
+!     Closure setting for unstructured grids is NONE.
+      ICLOSE = ICLOSE_NONE
+      IF ( GTYPE.NE.UNGTYPE ) THEN
+          SELECT CASE (TRIM(CSTRG))
+            CASE ('NONE')
+              ICLOSE = ICLOSE_NONE
+              WRITE (NDSO,3002) 'none'
+            CASE ('SMPL')
+              ICLOSE = ICLOSE_SMPL
+              WRITE (NDSO,3002) 'simple'
+            CASE ('TRPL')
+              WRITE (NDSE,'(/2A)') ' *** ERROR WW3_GRID: ', &
+              'TRIPOLE GRID CLOSURE NOT IMPLEMENTED YET ***'
+              CALL EXTCDE ( 999 )
+              ICLOSE = ICLOSE_TRPL
+              WRITE (NDSO,3002) 'tripole'
+              IF ( GTYPE.EQ.RLGTYPE ) THEN
+                  WRITE (NDSE,1009)
+                  CALL EXTCDE ( 25 )
+                END IF
+            CASE DEFAULT
+              ! Check for old style GLOBAL input
+              SELECT CASE (TRIM(CSTRG))
+                CASE ('T','t','.TRU','.tru')
+                  ICLOSE = ICLOSE_SMPL
+                  WRITE (NDSO,3002) 'simple'
+                  WRITE (NDSE,1013)
+                CASE ('F','f','.FAL','.fal')
+                  ICLOSE = ICLOSE_NONE
+                  WRITE (NDSO,3002) 'none'
+                  WRITE (NDSE,1013)
+                CASE DEFAULT
+                  WRITE (NDSE,1012) TRIM(CSTRG)
+                  CALL EXTCDE ( 25 )
+                END SELECT
+            END SELECT
+          IF ( ICLOSE.NE.ICLOSE_NONE .AND. .NOT.FLAGLL ) THEN
+              WRITE (NDSE,1008)
+              CALL EXTCDE ( 25 )
+            END IF
+        END IF !GTYPE.NE.UNGTYPE
 !
 ! 7.b Size of grid
 !
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=2001,ERR=2002) NX, NY
-        NX     = MAX ( 3 , NX )
-        NY     = MAX ( 3 , NY )
-        WRITE (NDSO,3003) NX, NY
-      ELSE 
+      IF ( GTYPE.NE.UNGTYPE) THEN 
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NX, NY
+          NX     = MAX ( 3 , NX )
+          NY     = MAX ( 3 , NY )
+          WRITE (NDSO,3003) NX, NY
+        ELSE 
+          NY =1 
+        END IF
 !
 ! Propagation specific to unstructured grids
 !
-        IF (UGCONT) CONTOUR = UGCONT
-        IF (EXPFSN) THEN
-          FSN = EXPFSN
-          PNAME2 = 'N Explicit (Fluctuation Splitting) '
-          ENDIF
-        IF (EXPFSPSI) THEN
-          FSPSI = EXPFSPSI
-          PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
-          ENDIF
-        IF (EXPFSFCT) THEN
-          FSFCT = EXPFSFCT
-          PNAME2 = ' Flux Corrected Transport Explicit'
-          ENDIF
-        IF (IMPFSNIMP) THEN
-          FSNIMP = IMPFSNIMP 
-          PNAME2 = 'N Implicit (Fluctuation Splitting) '
-          ENDIF
-        WRITE (NDSO,2951) PNAME2
-!
-! 7.b Size of grid
-!
-       NY =1 
+      IF ( GTYPE.EQ.UNGTYPE) THEN 
+          IF (UGCONT) CONTOUR = UGCONT
+          IF (EXPFSN) THEN
+              FSN = EXPFSN
+              PNAME2 = 'N Explicit (Fluctuation Splitting) '
+            END IF
+          IF (EXPFSPSI) THEN
+              FSPSI = EXPFSPSI
+              PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
+            END IF
+          IF (EXPFSFCT) THEN
+              FSFCT = EXPFSFCT
+              PNAME2 = ' Flux Corrected Transport Explicit'
+            END IF
+          IF (IMPFSNIMP) THEN
+              FSNIMP = IMPFSNIMP 
+              PNAME2 = 'N Implicit (Fluctuation Splitting) '
+            END IF
+          WRITE (NDSO,2951) PNAME2
         END IF
 !
 ! 7.c Grid coordinates (branch here based on grid type)
 !
-      ALLOCATE ( XGRDIN(NX,NY), YGRDIN(NX,NY) )
-!
+      IF ( GTYPE.NE.UNGTYPE) ALLOCATE ( XGRDIN(NX,NY), YGRDIN(NX,NY) )
       SELECT CASE ( GTYPE )
 !
 ! 7.c.1 Rectilinear grid
@@ -1673,7 +1708,7 @@
           SY     = SY / VSC
           SX     = MAX ( 1.E-7 , SX )
           SY     = MAX ( 1.E-7 , SY )
-          IF ( GLOBAL ) SX = 360. / REAL(NX)
+          IF ( ICLOSE.EQ.ICLOSE_SMPL ) SX = 360. / REAL(NX)
 !
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
           READ (NDSI,*,END=2001,ERR=2002) X0, Y0, VSC
@@ -1802,14 +1837,16 @@
               WRITE (NDSE,1011) IDLA
               CALL EXTCDE (25)
             END IF
-    
+!
+! 7.c.3 Curvilinear grid
+!
         CASE ( UNGTYPE )
     
              MAXX = 0.
              MAXY = 0.
              DXYMAX = 0.
-! X0
              WRITE (NDSO,1150)
+
         END SELECT !GTYPE
 !
 ! 7.d Depth information for grid
@@ -1830,54 +1867,57 @@
 !
 ! 7.e Read bottom depths
 !
-      IF (GTYPE.NE.UNGTYPE) THEN 
-        IF ( NDSG .EQ. NDSI ) THEN
-          IF ( IDFM .EQ. 3 ) THEN
-            WRITE (NDSE,1004) NDSG
-            CALL EXTCDE (23)
-          ELSE
-            CALL NEXTLN ( COMSTR , NDSI , NDSE )
-            END IF
-        ELSE  ! NDSG.NE.NDSI
-          IF ( IDFM .EQ. 3 ) THEN
-            IF (FROM.EQ.'NAME') THEN
-              J = LEN_TRIM(FNMPRE)
-              OPEN (NDSG,FILE=TRIM(FNMPRE(:J))//TRIM(FNAME), &
-                        FORM='UNFORMATTED',&
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-            ELSE
-              OPEN (NDSG, FORM='UNFORMATTED',           &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-
-              END IF
-          ELSE
-            IF (FROM.EQ.'NAME') THEN
-              J      = LEN_TRIM(FNMPRE)
-              OPEN (NDSG,FILE=TRIM(FNMPRE(:J))//TRIM(FNAME),  &
-                      STATUS='OLD',ERR=2000,IOSTAT=IERR)
-            ELSE
-              OPEN (NDSG,                                         &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-              END IF
-            END IF
-          END IF  !( NDSG .EQ. NDSI ) 
+      IF ( GTYPE.NE.UNGTYPE ) THEN 
 !
-      ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
-      CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
-                   IDFM, RFORM, IDLA, VSC, 0.0)
+! Reading depths on structured grid 
 !
-      ELSE
+          IF ( NDSG .EQ. NDSI ) THEN
+              IF ( IDFM .EQ. 3 ) THEN
+                  WRITE (NDSE,1004) NDSG
+                  CALL EXTCDE (23)
+                ELSE
+                  CALL NEXTLN ( COMSTR , NDSI , NDSE )
+                END IF
+            ELSE  ! NDSG.NE.NDSI
+              IF ( IDFM .EQ. 3 ) THEN
+                  IF (FROM.EQ.'NAME') THEN
+                      J = LEN_TRIM(FNMPRE)
+                      OPEN (NDSG,FILE=TRIM(FNMPRE(:J))//TRIM(FNAME), &
+                            FORM='UNFORMATTED',&
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSG, FORM='UNFORMATTED',                &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                ELSE
+                  IF (FROM.EQ.'NAME') THEN
+                      J      = LEN_TRIM(FNMPRE)
+                      OPEN (NDSG,FILE=TRIM(FNMPRE(:J))//TRIM(FNAME),  &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    ELSE
+                      OPEN (NDSG,                                     &
+                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+                    END IF
+                END IF
+            END IF  !( NDSG .EQ. NDSI ) 
 !
-! Reading unstructured grid 
+          ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
+          CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
+                       IDFM, RFORM, IDLA, VSC, 0.0)
 !
-        CALL READMSH(NDSS,FNAME)
-        ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
-        ZBIN(:,1) = VSC*XYB(:,3)
+        ELSE
+!
+! Reading depths on unstructured grid (this also sets number of mesh points, NX)
+!
+          CALL READMSH(NDSS,FNAME)
+          ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
+          ZBIN(:,1) = VSC*XYB(:,3)
 !
 ! subgrid obstructions are not yet handled in unstructured grids
 !
-        OBSX(:,:)=0.
-        OBSY(:,:)=0.
+          OBSX(:,:)=0.
+          OBSY(:,:)=0.
+
         END IF
 !
 ! 7.f Set up temporary map
@@ -2148,49 +2188,41 @@
 !
 ! ... Outer boundary excluded points
 !
-            IF(GTYPE .NE.UNGTYPE) THEN    
-              DO IX=1, NX
-                IF ( TMPSTA( 1,IX) .EQ. 1 ) THEN
-                     TMPSTA( 1,IX) = NSTAT
-                  END IF
-                IF ( TMPSTA(NY,IX) .EQ. 1 )THEN
-                     TMPSTA(NY,IX) = NSTAT
-                  END IF
-                END DO
+            IF ( GTYPE.NE.UNGTYPE ) THEN    
+
+                DO IX=1, NX
+                    IF ( TMPSTA( 1,IX) .EQ. 1 ) TMPSTA( 1,IX) = NSTAT
+                    IF ( TMPSTA(NY,IX) .EQ. 1 ) TMPSTA(NY,IX) = NSTAT
+                  END DO
 !
-              IF ( .NOT. GLOBAL ) THEN
-                  DO IY=2, NY-1
-                    IF ( TMPSTA(IY, 1) .EQ. 1 ) THEN
-                         TMPSTA(IY, 1) = NSTAT
-                      END IF
-                    IF ( TMPSTA(IY,NX) .EQ. 1 ) THEN
-                         TMPSTA(IY,NX) = NSTAT
-                      END IF
-                    END DO
-                END IF
-            ELSE  
+                IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
+                    DO IY=2, NY-1
+                        IF ( TMPSTA(IY, 1) .EQ. 1 ) TMPSTA(IY, 1) = NSTAT
+                        IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
+                      END DO
+                  END IF
+              ELSE  
 ! the logical CONTOUR enables to choose whether the contour is excluded from computation 
 ! the available criterion to spot contour points is that such points have more connections than
 ! surrounding connected triangles.
-WRITE(6,*) 'CONTOUR:',UGCONT,NX
+                WRITE(6,*) 'CONTOUR:',UGCONT,NX
 
-              IF(UGCONT)  THEN 
-                J = 0
-                DO IX= 1, NX
-                  IF (COUNTCON(IX) .GT. CCON(IX)) THEN
-                    J = J+1
-                    TMPSTA(1,IX) = NSTAT 
-                    END IF
-                  END DO 
-              ELSE
-                ALLOCATE(MAPBORD(NX))  
-                DO IX= 1, NX
-                  IF (COUNTCON(IX) .GT. CCON(IX))  MAPBORD(IX) = 1
-                  END DO
-                END IF ! UGCONT
+                IF (UGCONT) THEN 
+                    J = 0
+                    DO IX= 1, NX
+                        IF (COUNTCON(IX) .GT. CCON(IX)) THEN
+                            J = J+1
+                            TMPSTA(1,IX) = NSTAT 
+                          END IF
+                      END DO 
+                  ELSE
+                    ALLOCATE(MAPBORD(NX))  
+                    DO IX= 1, NX
+                        IF (COUNTCON(IX) .GT. CCON(IX))  MAPBORD(IX) = 1
+                      END DO
+                  END IF ! UGCONT
 !
               END IF ! GTYPE
-
 !
             END IF ! ILOOP .EQ. 2
 !
@@ -2244,7 +2276,7 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
           CALL INA2I ( READMP, NX, NY, 1, NX, 1, NY, NDSTR, NDST,    &
                        NDSE, IDFM, RFORM, IDLA, 1, 0 )
 !
-          IF ( .NOT. GLOBAL ) THEN
+          IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
               DO IY=2, NY-1
                 IF ( READMP( 1,IY) .EQ. 1 ) READMP( 1,IY) = 3
                 IF ( READMP(NX,IY) .EQ. 1 ) READMP(NX,IY) = 3
@@ -3007,21 +3039,21 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
       CALL EXTCDE ( 62 )
 !
  2222 CONTINUE
-      IF (GTYPE.NE.UNGTYPE) THEN
-      IF ( NX*NY .NE. NSEA ) THEN
-          WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                      &
-                            100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
-        ELSE
-          WRITE (NDSO,9998) NX, NY, NX*NY, NSEA, NBI, NLAND, NBT
-          END IF
-       ELSE IF (GTYPE.EQ.UNGTYPE) THEN
-         IF ( NX*NY .NE. NSEA ) THEN
-           WRITE (NDSO,9997) 0, 0, NX*NY, NSEA, 100.*REAL(NSEA)/REAL(NX*NY),  &
-                               NBI, NLAND, NBT
-         ELSE
-           WRITE (NDSO,9998) 0, 0, NX*NY, NSEA, NBI, NLAND, NBT
-           END IF
-         ENDIF ! GTYPE .EQ. UNGTYPE
+      IF ( GTYPE .NE. UNGTYPE) THEN
+          IF ( NX*NY .NE. NSEA ) THEN
+              WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                       &
+                                100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
+            ELSE
+              WRITE (NDSO,9998) NX, NY, NX*NY, NSEA, NBI, NLAND, NBT
+            END IF
+        ELSE IF ( GTYPE .EQ. UNGTYPE ) THEN
+          IF ( NX*NY .NE. NSEA ) THEN
+              WRITE (NDSO,9997)  0,  0, NX*NY, NSEA,                       &
+                                100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
+            ELSE
+              WRITE (NDSO,9998)  0,  0, NX*NY, NSEA, NBI, NLAND, NBT
+            END IF
+        ENDIF ! GTYPE .EQ. UNGTYPE
               
       WRITE (NDSO,9999)  
  
@@ -3112,7 +3144,7 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
 !/ST3               '       zalp                        :',F9.3/           &
 !/ST3               '       Height of input wind (m)    :',F8.2/           &
 !/ST3               '       swell attenuation factor    :',F9.3/ )
-!/ST3 2920 FORMAT ( '  &SIN3 ZWND =',F5.1,', ALPHAO =',F8.5,', Z0MAX =',F8.5,', BETAMAX =', &
+!/ST3 2920 FORMAT ( '  &SIN3 ZWND =',F5.1,', ALPHA0 =',F8.5,', Z0MAX =',F8.5,', BETAMAX =', &
 !/ST3                  F8.5,','/                                           &
 !/ST3              '        SINTHP =',F8.5,', ZALP =',F8.5,','/            &
 !/ST3              '        SWELLF =',F8.5,'R /'/)                              
@@ -3135,7 +3167,7 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
 !/ST4               '       swell attenuation factor6   :',F9.3/           &
 !/ST4               '       swell attenuation factor7   :',F12.9/           &
 !/ST4               '       ratio of z0 for orb. & mean :',F9.3/)
-!/ST4 2920 FORMAT ( '  &SIN4 ZWND =',F5.1,', ALPHAO =',F8.5,', Z0MAX =',F8.5,', BETAMAX =', &
+!/ST4 2920 FORMAT ( '  &SIN4 ZWND =',F5.1,', ALPHA0 =',F8.5,', Z0MAX =',F8.5,', BETAMAX =', &
 !/ST4                  F8.5,','/                                           &
 !/ST4              '        SINTHP =',F8.5,', ZALP =',F8.5,', TAUWSHELTER =',F8.5,           &
 !/ST4              ', SWELLFPAR =',I2,','/                                 &
@@ -3329,7 +3361,7 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
                ' --------------------------------------------------'/ &
               /'       Grid type                   : ',A)
  3001 FORMAT ( '       Coordinate system           : ',A)
- 3002 FORMAT ( '       Global flag                 : ',1L6)
+ 3002 FORMAT ( '       Index closure type          : ',A)
  3003 FORMAT ( '       Dimensions                  : ',I6,I8)
  3004 FORMAT (/'       Increments           (deg.) :',2F8.2/          &
                '       Longitude range      (deg.) :',2F8.2/          &
@@ -3453,7 +3485,10 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
                '     ILLEGAL GRID TYPE:',A4)
 !
  1008 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
-               '     A CARTESIAN GLOBAL GRID IS NOT ALLOWED')
+               '     A CARTESIAN WITH CLOSURE IS NOT ALLOWED')
+!
+ 1009 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '     A RECTILINEAR TRIPOLE GRID IS NOT ALLOWED')
 !
  1010 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'//               &
                '     NO PROPAGATION + NO SOURCE TERMS = NO WAVE MODEL'// &
@@ -3462,6 +3497,15 @@ WRITE(6,*) 'CONTOUR:',UGCONT,NX
 !
  1011 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     INVERTED GRID -- POSSIBLE CAUSE IS WRONG IDLA:',I4)
+!
+ 1012 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
+               '     ILLEGAL GRID CLOSURE TYPE:',A4)
+!
+ 1013 FORMAT (/' *** WAVEWATCH-III WARNING IN W3GRID :'/              &
+               '     THE GLOBAL (LOGICAL) INPUT FLAG IS DEPRECATED'/  &
+               '     AND REPLACED WITH A STRING INDICATING THE TYPE'/ &
+               '     OF GRID INDEX CLOSURE (NONE, SMPL or TRPL).'/    &
+               ' *** PLEASE UPDATE YOUR GRID INPUT FILE ACCORDINGLY ***'/)
 !
  1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     SOURCE TERMS REQUESTED BUT NOT SELECTED'/)

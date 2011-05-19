@@ -31,17 +31,17 @@ $ &PRO4 QTFAC=0.01, RNFAC=0.50, RSFAC=0.00 /
 $ &PRO4 QTFAC=0.05, RNFAC=0.75, RSFAC=0.50 /
 END OF NAMELISTS
 $
-$ 'RECT' F F
+$ 'RECT' F 'NONE'
 $ 189  149
 $   100.E3   100.E3  4.
 $  -600.E3  -600.E3  1.
 $
-$ 'RECT' F F
+$ 'RECT' F 'NONE'
 $  95   75
 $   100.E3   100.E3  2.
 $  -600.E3  -600.E3  1.
 $
-  'RECT' F F
+  'RECT' F 'NONE'
    48   38
     100.E3   100.E3  1.
    -600.E3  -600.E3  1.

@@ -35,12 +35,14 @@ myname="`basename $0`"  #name of script
   optstr="c"  #option string for getopt function
   usage ()
   {
-    echo "" 2>&1
-    echo "Usage: $myname [-c]" 2>&1
-    echo "Required: none" 2>&1
-    echo "Options:" 2>&1
-    echo "  -c : also clean-up model directories" 2>&1
-    echo "" 2>&1
+cat 2>&1 << EOF
+
+Usage: $myname [-c]
+Required: none
+Options:
+  -c : also clean-up model directories
+
+EOF
   }
 
 # 0.c Setup array of command-line arguments
@@ -73,11 +75,11 @@ myname="`basename $0`"  #name of script
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  ww3_env='.wwatch3.env'   # setup file
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
 # 1.b Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
-  cd
   if test -f $ww3_env
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift

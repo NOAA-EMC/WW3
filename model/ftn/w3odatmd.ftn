@@ -287,33 +287,59 @@
       REAL                    :: UNDEF  = -999.9
       LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
 !
-      DATA IDOUT  / 'Water depth         ' , 'Current vel.        ' , &
-                    'Wind speed          ' , 'Air-sea temp. dif.  ' , &
-                    'Water level         ' , 'Ice concentration   ' , &
-                    'Wave height         ' ,  'Mean wave length   ' , &
-                    'Mean wave freq. (+2)' , 'Mean wave period(+1)' , &
-                    'Mean wave period(-1)' , 'Energy flux         ' , &
-                    'Peak frequency      ' , 'Mean wave direction ' , &
-                    'Mean dir. spread    ' , 'Peak direction      ' , &
-                    'Part. wave heigt    ' , 'Part. peak period   ' , &
-                    'Part. peak wave l.  ' , 'Part. mean direction' , &
-                    'Part. dir. spread   ' , 'Part. wind sea frac.' , &
-                    'Total wind sea frac.' , 'Number of partitions' , &
-                    'Avg. time step.     ' , 'Cut-off freq.       ' , &
-                    'Maximum spatial CFL ' , 'Maximum angular CFL ' , &
-                    'Friction velocity   ' , 'Charnock parameter  ' , &
-                    'Wind-wave enrgy flux' , 'Wind-wave net mom. f' , &
-                    'Wind-wave neg.mom.f.' , 'Whitecap coverage   ' , &
-                    'Whitecap mean thick.' , 'Mean breaking height' , &
-                    'Whitecap moment     ' , 'Bottom rms ampl.    ' , &
-                    'Bottom rms velocity ' , 'Bedform parameters  ' , &
-                    'Energy diss. in WBBL' , 'Moment. loss in WBBL' , &
-                    'Radiation stresses  ' , 'Wave-ocean mom. flux' , &
-                    'Bernoulli head      ' , 'Wave-ocean nrg  flux' , &
-                    'Stokes transport    ' , 'Stokes drift at z=0 ' , &
-                    'Mean square slopes  ' , 'Tail level          ' , &
-                    'Second order press. ' , 'User defined #1     ' , &
-                    'User defined #2     '/ 
+      DATA IDOUT(  1 )  / 'Water depth         ' /
+      DATA IDOUT(  2 )  / 'Current vel.        ' /
+      DATA IDOUT(  3 )  / 'Wind speed          ' /
+      DATA IDOUT(  4 )  / 'Air-sea temp. dif.  ' /
+      DATA IDOUT(  5 )  / 'Water level         ' /
+      DATA IDOUT(  6 )  / 'Ice concentration   ' /
+      DATA IDOUT(  7 )  / 'Wave height         ' /
+      DATA IDOUT(  8 )  / 'Mean wave length    ' /
+      DATA IDOUT(  9 )  / 'Mean wave freq. (+2)' /
+      DATA IDOUT( 10 )  / 'Mean wave period(+1)' /
+      DATA IDOUT( 11 )  / 'Mean wave period(-1)' /
+      DATA IDOUT( 12 )  / 'Energy flux         ' /
+      DATA IDOUT( 13 )  / 'Peak frequency      ' /
+      DATA IDOUT( 14 )  / 'Mean wave direction ' /
+      DATA IDOUT( 15 )  / 'Mean dir. spread    ' /
+      DATA IDOUT( 16 )  / 'Peak direction      ' /
+      DATA IDOUT( 17 )  / 'Part. wave heigt    ' /
+      DATA IDOUT( 18 )  / 'Part. peak period   ' /
+      DATA IDOUT( 19 )  / 'Part. peak wave l.  ' /
+      DATA IDOUT( 20 )  / 'Part. mean direction' /
+      DATA IDOUT( 21 )  / 'Part. dir. spread   ' /
+      DATA IDOUT( 22 )  / 'Part. wind sea frac.' /
+      DATA IDOUT( 23 )  / 'Total wind sea frac.' /
+      DATA IDOUT( 24 )  / 'Number of partitions' /
+      DATA IDOUT( 25 )  / 'Avg. time step.     ' /
+      DATA IDOUT( 26 )  / 'Cut-off freq.       ' /
+      DATA IDOUT( 27 )  / 'Maximum spatial CFL ' /
+      DATA IDOUT( 28 )  / 'Maximum angular CFL ' /
+      DATA IDOUT( 29 )  / 'Friction velocity   ' /
+      DATA IDOUT( 30 )  / 'Charnock parameter  ' /
+      DATA IDOUT( 31 )  / 'Wind-wave enrgy flux' /
+      DATA IDOUT( 32 )  / 'Wind-wave net mom. f' /
+      DATA IDOUT( 33 )  / 'Wind-wave neg.mom.f.' /
+      DATA IDOUT( 34 )  / 'Whitecap coverage   ' /
+      DATA IDOUT( 35 )  / 'Whitecap mean thick.' /
+      DATA IDOUT( 36 )  / 'Mean breaking height' /
+      DATA IDOUT( 37 )  / 'Whitecap moment     ' /
+      DATA IDOUT( 38 )  / 'Bottom rms ampl.    ' /
+      DATA IDOUT( 39 )  / 'Bottom rms velocity ' /
+      DATA IDOUT( 40 )  / 'Bedform parameters  ' /
+      DATA IDOUT( 41 )  / 'Energy diss. in WBBL' /
+      DATA IDOUT( 42 )  / 'Moment. loss in WBBL' /
+      DATA IDOUT( 43 )  / 'Radiation stresses  ' /
+      DATA IDOUT( 44 )  / 'Wave-ocean mom. flux' /
+      DATA IDOUT( 45 )  / 'Bernoulli head      ' /
+      DATA IDOUT( 46 )  / 'Wave-ocean nrg  flux' /
+      DATA IDOUT( 47 )  / 'Stokes transport    ' /
+      DATA IDOUT( 48 )  / 'Stokes drift at z=0 ' /
+      DATA IDOUT( 49 )  / 'Mean square slopes  ' /
+      DATA IDOUT( 50 )  / 'Tail level          ' /
+      DATA IDOUT( 51 )  / 'Second order press. ' /
+      DATA IDOUT( 52 )  / 'User defined #1     ' /
+      DATA IDOUT( 53 )  / 'User defined #2     ' / 
 !/
 !/ Data structures
 !/

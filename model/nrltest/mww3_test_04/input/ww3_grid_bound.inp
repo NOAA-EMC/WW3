@@ -1,0 +1,44 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'The Boundary data grid        '
+$
+   1.03 0.075 20 24 0.
+$
+   F T F F F F
+   720.  720.  720.   15.
+$
+  &PRO2 DTIME = 0. /
+  &PRO3 WDTHCG = 0., WDTHTH = 0. /
+  &PRO4 RNFAC = 0., RSFAC = 0. /
+$
+END OF NAMELISTS
+$
+   'RECT' F 'NONE'
+   55   57
+    10.E3   10.E3   1.
+  -270.E3 -280.E3   1.
+$
+  -0.1 0.25  10  -250. 4 1 '(....)' 'UNIT' 'input'
+$
+  3135*1
+$
+   10 1 1 '(....)' 'PART' 'mapsta.inp'
+$
+   1  2  T
+   1 56  T
+   0  0  F
+$
+   2  3  T
+  55  3  T
+  55 55  T
+   2 55  T
+   0  0  F
+$
+  28 28
+   0  0
+$
+   -270.E3  -260.E3    0.E3   10.E3   53
+   -270.E3  -270.E3   10.E3    0.E3   54
+   -270.E3   270.E3   10.E3    0.E3   54
+      0.       0.      0.      0.      0
+$

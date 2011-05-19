@@ -18,7 +18,8 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
-  ww3_env='.wwatch3.env'   # setup file
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -40,7 +41,6 @@
 
 # 1.d Get env. data  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  cd
   if test -f $ww3_env
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift

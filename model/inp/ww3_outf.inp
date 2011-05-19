@@ -5,16 +5,20 @@ $ Time, time increment and number of outputs
 $
   19680606 060000 10800. 1
 $
-$ Request flags identifying fields as in ww3_shel input and
+$ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual.
-$
-$D C W D U  H L T D S  F D F D P  P P P P P  W P D F I  W A U S U  U P P T T  T U M M H  F C T P
-$E U N T S  S     I P  P P P P H  T L T S W  S N T C C  L B B X S  S A O U A  W S S S S  W H W 2
-$P R D   T        R R      L L S  P P H I S  F R D   E  V R R Y 1  2 W C S W  O S S C W  S A A S
- F F T F T  T T F T T  T T F F F  F F F F F  F F F T T  F F F F T  T F F F F  F T T T T  F T F T F 
-$
-$ F F F F F  F F F F F  F F F F T  T T T T T  T T F F F  F F F F F  F
-$ T T T T T  T T T T T  T T T T T  T T T T T  T T T T T  T T T T T  T
+$----------------------------------------------------------------
+$ D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C
+$ P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H
+$ T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A
+$----------------------------------------------------------------
+  F F T F T  T T F T T  T T F F F  F F F F F  F F F T T  F F F F T
+  T F F F F  F T T T T  F T F T F  F F F F F  F F F
+$----------------------------------------------------------------
+$ F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$ A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$ W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$----------------------------------------------------------------
 $
 $ Output type ITYPE [0,1,2,3], and IPART [ 0,...,NOSWLL ]
 $

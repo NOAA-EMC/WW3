@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -26,6 +26,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -770,7 +773,7 @@
                 ELSE IF ( MBOUT ) THEN
                   IF ( MAPSTA(IY,IX).EQ.2  .OR.                      &
                        IY.EQ.1 .OR. IY.EQ.NY .OR.                    &
-                       ( .NOT.GLOBAL .AND.                           &
+                       ( ICLOSE.NE.ICLO_NONE .AND.                   &
                              (IX.EQ.1 .OR. IX.EQ.NX) ) ) THEN
                       X1(IX,IY) = UNDEF
                     ELSE

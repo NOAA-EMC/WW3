@@ -16,7 +16,7 @@ $ &PRO2 DTIME = 2777. /
 $ &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-  'CURV' T F
+  'CURV' T 'NONE'
   361  361
   20 1.0 0.0 1 1 '(....)' 'NAME' './../input/lon.361x361.IDLA1.dat'
   21 1.0 0.0 1 1 '(....)' 'NAME' './../input/lat.361x361.IDLA1.dat'

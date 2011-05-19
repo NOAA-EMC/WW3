@@ -21,19 +21,22 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="c:hqs"  #option string for getopt function
+optstr="c:hqst:"  #option string for getopt function
 usage ()
 {
-  echo "" 2>&1
-  echo "Usage: $myname source_dir" 2>&1
-  echo "Required:" 2>&1
-  echo "  source_dir : path to top-level of WW3 source" 2>&1
-  echo "Options:" 2>&1
-  echo "  -c cmplr         : setup comp & link files for specified cmplr" 2>&1
-  echo "  -h               : print usage and exit" 2>&1
-  echo "  -q               : do not prompt for changes to existing WW3 environment" 2>&1
-  echo "  -s               : setup and edit switch file" 2>&1
-  echo "" 2>&1
+cat 2>&1 << EOF
+
+Usage: $myname source_dir
+Required:
+  source_dir : path to top-level of WW3 source
+Options:
+  -c cmplr         : setup comp & link files for specified cmplr
+  -h               : print usage and exit
+  -q               : do not prompt for changes to existing WW3 environment
+  -s               : setup and edit switch file
+  -t tdir          : set path for scratch directory to tdir
+
+EOF
 }
 
 # 1.c Setup array of command-line arguments
@@ -53,6 +56,7 @@ do
   -h) help=1 ;;
   -q) no_prompt=1 ;;
   -s) swtch=1 ;;
+  -t) shift; tdir="$1" ;;
   --) break ;;
   esac
   shift
@@ -74,15 +78,13 @@ else
 fi
 
 # 1.f Convert source path from "relative" to "absolute"
-D=`dirname "$path_s"`
-B=`basename "$path_s"`
-path_s="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
 if [ ! -d $path_s ]
 then
   errmsg "$path_s not found"
   usage
   exit 1
 fi
+path_s="`cd $path_s 1>/dev/null 2>&1 && pwd`"
 
 # 1.g Paths to source subdirectories
 path_b="$path_s/bin"
@@ -98,13 +100,7 @@ then
   exit 1
 fi
 
-# 1.h Get current path and home
-path_r="`pwd`"
-cd
-path_h="`pwd`"
-cd $path_r
-
-# 1.i Header
+# 1.h Header
 echo ' '
 echo 'Setting up WAVEWATCH III'
 echo ' '
@@ -113,7 +109,8 @@ echo ' '
 # 2. Set up WWATCH3 environment                                               #
 # --------------------------------------------------------------------------- #
 # 2.a Environment file
-ww3_env="$path_h/.wwatch3.env"
+ww3_env="${HOME}/.wwatch3.env"
+if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi
 
 # 2.b Check for existing environment and set defaults
 if [ -f $ww3_env ]
@@ -135,7 +132,12 @@ then
   echo "      Source directory            : $path_s"
 
   set `grep WWATCH3_TMP $ww3_env` ; shift
-  temp_dir="$*"
+  if [ $tdir ]
+  then
+    temp_dir=$tdir
+  else
+    temp_dir="$*"
+  fi
   echo "      Scratch directory           : $temp_dir"
 
   set `grep WWATCH3_SOURCE $ww3_env` ; shift
@@ -174,16 +176,21 @@ else
   fi
   comp_fc=f77
   comp_cc=cc
-  temp_dir=
-  if [ -d /tmp ]
+  if [ $tdir ]
   then
-    if [ -n "$user" ]
+    temp_dir=$tdir
+  else
+    temp_dir=
+    if [ -d /tmp ]
     then
-      temp_dir=/tmp/$user
-    else
-      if [ -n "$USER" ]
+      if [ -n "$user" ]
       then
-        temp_dir=/tmp/$USER
+        temp_dir=/tmp/$user
+      else
+        if [ -n "$USER" ]
+        then
+          temp_dir=/tmp/$USER
+        fi
       fi
     fi
   fi

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !
 !/    See subroutine for update history.
@@ -71,7 +71,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    22-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -88,6 +88,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -165,7 +168,7 @@
       USE W3ODATMD, ONLY: W3SETO, W3DMO3
 !/
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
-                          FLAGLL, GLOBAL, XGRD, YGRD, GSU,            &
+                          FLAGLL, ICLOSE, XGRD, YGRD, GSU,            &
                           DPDX, DPDY, DQDX, DQDY, MAPSTA, MAPST2,     &
                           MAPFS, TH, DTH, SIG, DSIP, FILEXT
       USE W3GSRUMD, ONLY: W3GFCL

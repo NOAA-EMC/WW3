@@ -12,7 +12,7 @@ $
  &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-  'RECT' F F
+  'RECT' F 'NONE'
    43  3
     15.E3   15.E3  1.
    -15.E3  -15.E3  1.

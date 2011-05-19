@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
@@ -14,6 +14,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -82,13 +85,16 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
 !/    01-May-2007 : Addd diagnostic output O7a,b        ( version 3.11 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -176,8 +182,8 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, GLOBAL, MAPSTA,     &
-                          GRIDS, FLAGLL
+      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, MAPSTA, GRIDS,      &
+                          FLAGLL, ICLOSE, ICLOSE_NONE
       USE W3ODATMD, ONLY: O2INIT, NOPTS, PTLOC, PTNME, GRDID, OUTPTS
 !/MPI      USE W3ODATMD, ONLY: O2IRQI
       USE WMMDATMD, ONLY: MDSE, MDST, NRGRD, MDATAS, IMPROC, NMPSCR,  &
@@ -274,7 +280,7 @@
                                  + 360.*REAL(1+INT((X0-XP(I))/360.))
             END IF
 !
-          IF ( GLOBAL ) THEN
+          IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
               IF (YP(I) .LT. Y0 - ACC*SY .OR.                         &
                   YP(I) .GT. YN + ACC*SY ) CYCLE
             ELSE
@@ -315,7 +321,7 @@
               RDY    = 0.
             END IF
 !
-          IF ( GLOBAL .AND. IX1 .EQ. NX ) IXS = 1-NX
+          IF ( ICLOSE.NE.ICLOSE_NONE .AND. IX1 .EQ. NX ) IXS = 1-NX
           IF (MAPSTA(  IY1  ,  IX1  ).EQ.0 .AND.                      &
               MAPSTA(  IY1  ,IX1+IXS).EQ.0 .AND.                      &
               MAPSTA(IY1+IYS,  IX1  ).EQ.0 .AND.                      &

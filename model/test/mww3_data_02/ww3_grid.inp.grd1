@@ -16,7 +16,7 @@ $
 $ In this case, the mask is included in the bottom grid,
 $ the obstructions are taken from both neighbouring cells.
 $
-    'RECT' T F
+    'RECT' T 'NONE'
     176    139
       1.     1.     1.
     120.   -78.     1.

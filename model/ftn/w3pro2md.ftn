@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -23,6 +23,12 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -412,7 +418,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -429,6 +435,12 @@
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -567,7 +579,8 @@
       USE W3TIMEMD, ONLY: DSEC21
 !
       USE W3GDATMD, ONLY: NK, NTH, DTH, XFR, ESIN, ECOS, SIG, NX, NY, &
-                          NSEA, SX, SY, MAPSF, GLOBAL, FLCX, FLCY,    &
+                          NSEA, SX, SY, MAPSF, ICLOSE, FLCX, FLCY,    &
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,      &
                           DTCFL, CLATS, DTME, CLATMN, FLAGLL,         &
                           HPFAC, HQFAC, DPDX, DPDY, DQDX, DQDY, GSQRT
       USE W3WDATMD, ONLY: TIME
@@ -604,6 +617,7 @@
       REAL                    :: RFAC, DFAC, DVQ, QXX, QXY, QYY
       REAL                    :: CP, CQ
       LOGICAL                 :: YFIRST
+      LOGICAL                 :: GLOBAL
 !/
 !/ Automatic work arrays
 !/
@@ -636,6 +650,7 @@
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
 !
+      GLOBAL = ICLOSE.NE.ICLOSE_NONE
       ITH    = 1 + MOD(ISP-1,NTH)
       IK     = 1 + (ISP-1)/NTH
 !
@@ -771,7 +786,7 @@
             IXY       = MAPSF(ISEA,3)
             IF ( MIN ( ATRNX(IXY,1) , ATRNX(IXY,-1) ,                 &
                        ATRNY(IXY,1) , ATRNY(IXY,-1) ) .GT. TRNMIN ) THEN
-                DCELL     = CGD * MIN ( HPFAC(IY,IX)*RFAC*CLATS(ISEA), &
+                DCELL     = CGD * MIN ( HPFAC(IY,IX)*RFAC, &
                                         HQFAC(IY,IX)*RFAC ) / CELLP
                 XWIND     = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
                 XWIND     = MAX ( 0. , MIN ( 1. , XWIND ) )

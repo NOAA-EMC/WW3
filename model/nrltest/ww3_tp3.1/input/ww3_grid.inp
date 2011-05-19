@@ -159,56 +159,9 @@ $ Mandatory string to identify end of namelist input section.
 $
 END OF NAMELISTS
 $
-$ FLAG for grid features
-$ 1 Type of grid 'NS' 'RECT' 'CURV'
-$ 2 Flag for geographical coordinates (LLG)
-$ 3 Flag for periodic grid
-$'NS' T  F
 $ Define grid -------------------------------------------------------- $
 $
-$ Define grid -------------------------------------------------------- $
-$ Five records containing :
-$  
-$  1 Type of grid, coordinate system and global flag: GSTRG, FLAGLL,
-$    GLOBAL.  A global grid may be rectilinear or curvilinear.
-$    A global grid must be in spherical coordinates.
-$      GSTRG  : String indicating type of grid :
-$               'RECT'  : rectilinear
-$               'CURV'  : curvilinear  
-$               'UNST'  : unstructured (triangle-based)
-$      FLAGLL : Flag to indicate coordinate system :
-$               T  : Spherical (lon/lat in degrees)
-$               F  : Cartesian (meters)
-$      GLOBAL : Flag to indicate whether or not the grid is global :
-$               T  : Global (longitudinal closure is applied)
-$               F  : Not global
-$
-$  2 NX, NY. As the outer grid lines are always defined as land
-$    points, the minimum size is 3x3.
-$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
-$    If NX*SX = 360., latitudinal closure is applied.
-$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
-$  5 Limiting bottom depth (m) to discriminate between land and sea
-$    points, minimum water depth (m) as allowed in model, unit number
-$    of file with bottom depths, scale factor for bottom depths (mult.),
-$    IDLA, IDFM, format for formatted read, FROM and filename.
-$      IDLA : Layout indicator :
-$                  1   : Read line-by-line bottom to top.
-$                  2   : Like 1, single read statement.
-$                  3   : Read line-by-line top to bottom.
-$                  4   : Like 3, single read statement.
-$      IDFM : format indicator :
-$                  1   : Free format.
-$                  2   : Fixed format with above format descriptor.
-$                  3   : Unformatted.
-$      FROM : file type parameter
-$               'UNIT' : open file by unit number only.
-$               'NAME' : open file by name and assign to unit.
-$
-$ Example for longitude-latitude grid (switch !/LLG), for Cartesian
-$ grid the unit is meters (NOT km).
-$
-  'UNST' T F
+  'UNST' T 'NONE'
 $    
     5.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' './../input/limon_ll.msh'
 $

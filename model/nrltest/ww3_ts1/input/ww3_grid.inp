@@ -16,7 +16,7 @@ $ &SLN1  RFPM = 1.0 RFHF = 0.33 /
   &MISC  XP = 0.075 /
 END OF NAMELISTS
 $
-  'RECT' T F
+  'RECT' T 'NONE'
    3   3
    1.  1.  1.E-2
   -1. -1.  1.E-2

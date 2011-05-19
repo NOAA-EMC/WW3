@@ -21,7 +21,7 @@
 # - Running without ww3-strt, should always initalize properly.             #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2002     #
-#                                                   Last Mod : Nov 2009     #
+#                                                   Last Mod : Dec 2010     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #
@@ -104,7 +104,7 @@ $ &MISC PMOVE = 0.0 /
   &PRO3 WDTHCG = 2.0, WDTHTH = 2.0 /         
 END OF NAMELISTS
 $
-  'RECT' F F
+  'RECT' F 'NONE'
   43  43
 $  0.25  0.25  1.
 $ -5.25 -5.25  1.

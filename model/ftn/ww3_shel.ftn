@@ -559,7 +559,7 @@
 !
                 CALL NEXTLN ( COMSTR , NDSI , NDSEN )
                 READ (NDSI,*,END=2001,ERR=2002) FLGRD
-		FLGR2(:)=.FALSE.
+                FLGR2(:)=.FALSE.
 !
                 IF ( IAPROC .EQ. NAPOUT ) THEN
                     FLT    = .TRUE.

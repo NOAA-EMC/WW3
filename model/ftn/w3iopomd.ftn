@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2001 : Origination.                        ( version 2.00 )
@@ -22,6 +22,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grid         ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -99,7 +102,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -113,6 +116,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -188,17 +194,17 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GSRUMD
-      USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, X0, Y0, SX, SY,     &
-                          GSU, RLGTYPE, CLGTYPE, UNGTYPE, GTYPE,      &
-                          FLAGLL,                                     &
-                          MAPSTA, MAPFS, GLOBAL, FILEXT, ZB, TRNX, TRNY
+      USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, X0, Y0, SX, SY, GSU,&
+                          RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
+                          ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
+                          MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
       USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  
       USE W3ODATMD, ONLY: W3DMO2
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
                           NOPTS, PTLOC, PTNME, GRDID, IPTINT, PTIFAC
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
-USE W3TRIAMD
+      USE W3TRIAMD
 !
       IMPLICIT NONE
 !/
@@ -419,7 +425,7 @@ USE W3TRIAMD
 !/O7a              LINE2(KX) = '+'
 !/O7a              END DO
 !
-!/O7a            IF ( GLOBAL ) THEN
+!/O7a            IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/O7a                WRITE (SCREEN,945) (1+MOD(KX+NX-1,NX),KX=IX0,IXN)
 !/O7a              ELSE
 !/O7a                WRITE (SCREEN,945) (KX,KX=IX0,IXN)
@@ -430,7 +436,7 @@ USE W3TRIAMD
 !
 !/O7a              STRING  = LINE1
 !/O7a              DO KX=IX0, IXN
-!/O7a                IF ( GLOBAL .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
+!/O7a                IF ( ICLOSE.NE.ICLOSE_NONE .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
 !/O7a                    IIX    = 1 + MOD(KX-1+NX,NX)
 !/O7a                    IS1    = MAPFS(KY,IIX)
 !/O7a                    IF ( MAPSTA(KY,IIX) .NE. 0 ) THEN
@@ -447,7 +453,7 @@ USE W3TRIAMD
 !/O7a              STRING = LINE2
 !/O7a              DO KX=IX0, IXN
 !/O7a                NNX    = 5 + (KX-IX0)*13
-!/O7a                IF ( .NOT.GLOBAL .AND. (KX.LT.1.OR.KX.GT.NX) ) THEN
+!/O7a                IF ( ICLOSE.EQ.ICLOSE_NONE .AND. (KX.LT.1.OR.KX.GT.NX) ) THEN
 !/O7a                    STRING(NNX:NNX+4) = OUT
 !/O7a                  ELSE
 !/O7a                    IIX    = 1 + MOD(KX-1+NX,NX)
@@ -462,7 +468,7 @@ USE W3TRIAMD
 !
 !/O7a              STRING  = LINE1
 !/O7a              DO KX=IX0, IXN
-!/O7a                IF ( GLOBAL .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
+!/O7a                IF ( ICLOSE.NE.ICLOSE_NONE .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
 !/O7a                    IS1    = MAPFS(KY,KX)
 !/O7a                    IIX    = 1 + MOD(KX-1+NX,NX)
 !/O7a                    IF ( MAPSTA(KY,IIX) .NE. 0 ) THEN
@@ -481,7 +487,7 @@ USE W3TRIAMD
 !
 !/O7a              END DO
 !
-!/O7a            IF ( GLOBAL ) THEN
+!/O7a            IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/O7a                WRITE (SCREEN,945) (1+MOD(KX+NX-1,NX),KX=IX0,IXN)
 !/O7a              ELSE
 !/O7a                WRITE (SCREEN,945) (KX,KX=IX0,IXN)

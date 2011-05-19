@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -33,6 +33,12 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.1 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -79,7 +85,17 @@
 !                               RLGTYPE: Rectilinear grid
 !                               CLGTYPE: Curvilinear grid
 !                               UNGTYPE: Unstructured triangular grid                       
-!      GLOBAL    Log.  Public   Flag for global grid (closed parallels).
+!      ICLOSE    Int.  Public   Parameter indicating type of index closure of grid.
+!                               ICLOSE_NONE: No grid closure
+!                               ICLOSE_SMPL: Simple grid closure
+!                                 Grid is periodic in the i-index and wraps at
+!                                 I=NX+1. In other words, (NX+1,J) => (1,J).
+!                               ICLOSE_TRPL: Tripole grid closure
+!                                 Grid is periodic in the i-index and and wraps at
+!                                 I=NX+1 and has closure at J=NY+1. In other words,
+!                                 (NX+1,J<=NY) => (1,J) and
+!                                 (I,NY+1) => (MOD(NX-I+1,NX)+1,NY). The tripole
+!                                 closure requires that NX be even.
 !      NX, NY    Int.  Public   Discrete dimensions of spatial grid.
 !      NSEA(L)   Int.  Public   Number of sea points (local for MPP).
 !      TRFLAG    Int.  Public   Flag for use of transparencies
@@ -110,7 +126,6 @@
 !      X/YGRD    R.A.  Public   Spatial grid coordinate arrays.
 !      SX/SYGRD  R.A.  Public   Spatial grid increment arrays.
 !      GINIT     Log.  Public   Flag identifying grid initialization.
-!      GLOBAL    Log.  Public   Flag for global grid (closed parallels).
 !      FLDRY     Log.  Public   Flag for 'dry' run (IO and data
 !                               processing only).
 !      FLCx      Log.  Public   Flags for prop. is different spaces.
@@ -419,6 +434,10 @@
       INTEGER, PARAMETER      :: CLGTYPE = 2
       INTEGER, PARAMETER      :: UNGTYPE = 3      
 
+      INTEGER, PARAMETER      :: ICLOSE_NONE = ICLO_NONE
+      INTEGER, PARAMETER      :: ICLOSE_SMPL = ICLO_SMPL
+      INTEGER, PARAMETER      :: ICLOSE_TRPL = ICLO_TRPL
+
       LOGICAL                 :: FLAGLL
 !/
 !/ Data structures
@@ -426,7 +445,7 @@
 !/ Grid type
       TYPE GRID
         INTEGER          :: GTYPE
-        LOGICAL          :: GLOBAL
+        INTEGER          :: ICLOSE
         INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
         INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
                             MAPFS(:,:), MAPSF(:,:)
@@ -626,7 +645,7 @@
 !/ Data aliasses for structure GRID(S)
 !/
       INTEGER, POINTER :: GTYPE
-      LOGICAL, POINTER :: GLOBAL
+      INTEGER, POINTER :: ICLOSE
       INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
       INTEGER, POINTER        :: P2MSF(:),US3DF(:)
       REAL,    POINTER        :: REFLC(:,:)
@@ -1301,7 +1320,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -1322,6 +1341,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1415,7 +1437,7 @@
 ! 3.  Set pointers in structure GRID
 !
       GTYPE  => GRIDS(IMOD)%GTYPE
-      GLOBAL => GRIDS(IMOD)%GLOBAL
+      ICLOSE => GRIDS(IMOD)%ICLOSE
 !
       NX     => GRIDS(IMOD)%NX
       NY     => GRIDS(IMOD)%NY
@@ -1450,7 +1472,6 @@
 !
       GINIT  => GRIDS(IMOD)%GINIT
       GUGINIT  => GRIDS(IMOD)%GUGINIT      
-      GLOBAL => GRIDS(IMOD)%GLOBAL
       FLDRY  => GRIDS(IMOD)%FLDRY
       FLCX   => GRIDS(IMOD)%FLCX
       FLCY   => GRIDS(IMOD)%FLCY
@@ -1742,10 +1763,16 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           T. J. Campbell          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    30-Oct-2009 : Origination.                        ( version 3.13 )
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
+!/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -1831,7 +1858,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Create grid search utility object
 !
-      GRIDS(IMOD)%GSU = W3GSUC( .FALSE., FLAGLL, GRIDS(IMOD)%GLOBAL, &
+      GRIDS(IMOD)%GSU = W3GSUC( .FALSE., FLAGLL, GRIDS(IMOD)%ICLOSE, &
                                 GRIDS(IMOD)%NX, GRIDS(IMOD)%NY, &
                                 GRIDS(IMOD)%XGRD, GRIDS(IMOD)%YGRD )
 !/T      CALL W3GSUP(GRIDS(IMOD)%GSU, NDST)
@@ -1955,22 +1982,29 @@
       END DO
 
 !
-!  Convert from degrees to radians
 !  Account for spherical metric if lat/lon grid (only if the metric
 !  is to be w.r.t. the Cartesian space)
 !     IF ( FLAGLL ) THEN
-!         DXDP = DXDP * D2R !* COS(YGRD*D2R)
-!         DXDQ = DXDQ * D2R !* COS(YGRD*D2R)
-!         DYDP = DYDP * D2R
-!         DYDQ = DYDQ * D2R
+!         DXDP = DXDP * COS(YGRD*D2R)
+!         DXDQ = DXDQ * COS(YGRD*D2R)
 !       END IF
+!  If we do this, then the COS(YGRD*D2R) factor must be removed from
+!  the HPFAC & HQFAC.
 !
 !  HPFAC: h_p = sqrt(g_pp) = sqrt( (dx/dp)^2 + (dy/dp)^2 )
-      HPFAC = SQRT( DXDP**2 + DYDP**2 )
+      IF ( FLAGLL ) THEN
+          HPFAC = SQRT( (DXDP*COS(YGRD*D2R))**2 + DYDP**2 )
+        ELSE
+          HPFAC = SQRT( DXDP**2 + DYDP**2 )
+        END IF
 !/T      WRITE(NDST,'(A,2E14.6)')'HPFAC MIN/MAX:',MINVAL(HPFAC),MAXVAL(HPFAC)
 !
 !  HQFAC: h_q = sqrt(g_qq) = sqrt( (dx/dq)^2 + (dy/dq)^2 )
-      HQFAC = SQRT( DXDQ**2 + DYDQ**2 )
+      IF ( FLAGLL ) THEN
+          HQFAC = SQRT( (DXDQ*COS(YGRD*D2R))**2 + DYDQ**2 )
+        ELSE
+          HQFAC = SQRT( DXDQ**2 + DYDQ**2 )
+        END IF
 !/T      WRITE(NDST,'(A,2E14.6)')'HQFAC MIN/MAX:',MINVAL(HQFAC),MAXVAL(HQFAC)
 !
 !  GSQRT: sqrt(g) = (dx/dp)(dy/dq) - (dx/dq)(dy/dp)

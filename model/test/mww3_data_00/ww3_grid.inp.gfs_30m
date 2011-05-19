@@ -10,7 +10,7 @@ $
 $
 END OF NAMELISTS
 $
-    'RECT' T T
+    'RECT' T 'SMPL'
     720    361
       1.     1.     2.
       0.   -90.     1.

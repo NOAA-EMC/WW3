@@ -1,0 +1,104 @@
+#!/bin/sh
+sdir=".."
+comp="gnu"
+nproc=4
+mpirun=mpirun
+
+do_tp1=1
+do_tp2=1
+do_tp3=1
+do_ts=1
+do_tps=1
+
+
+run_ww3_test ()
+{
+  t=$1
+  s=$2
+  g=$3
+  m=$4
+  wdir="work"
+  if [ "`grep MPI $t/input/$s`" ]
+  then
+    popts="-n $nproc -p $mpirun"
+  else
+    popts=""
+  fi
+  wdir="${wdir}_${s}"
+  case $g in
+    none) gopts="" ;;
+    *   ) gopts="-g $g" ; wdir="${wdir}_${g}" ;;
+  esac
+  case $m in
+    shel) mopts="" ;;
+    mult) mopts="-m none" ;;
+    *   ) echo "ERROR: bad input to run_ww3_test" 2>&1; exit 1;;
+  esac
+  wdir="${wdir}_${m}"
+  command="bin/run_test -c $comp $popts $mopts $gopts -s $s -w ${wdir} $sdir $t"
+  echo "" 2>&1
+  echo "" 2>&1
+  echo "$command" 2>&1
+  $command 2>&1 || { echo "FAILED: $command" 2>&1; exit 1; }
+}
+
+
+if [ $do_tp1 = 1 ]
+then
+  for t in ww3_tp1.1 ww3_tp1.2 ww3_tp1.3 ww3_tp1.4 ww3_tp1.5
+  do
+    for s in PR1 PR2 PR3
+    do
+      run_ww3_test $t $s none shel
+    done
+  done
+fi
+
+
+if [ $do_tp2 = 1 ]
+then
+  for t in ww3_tp2.1 ww3_tp2.2 ww3_tp2.3 ww3_tp2.4 ww3_tp2.5
+  do
+    for s in PR1 PR1_MPI PR2 PR2_MPI PR3 PR3_MPI
+    do
+      run_ww3_test $t $s none shel
+      if [ $t = ww3_tp2.1 || $t = ww3_tp2.2 ]
+      then
+        run_ww3_test $t $s none mult
+      fi
+    done
+  done
+fi
+
+
+if [ $do_tp3 = 1 ]
+then
+  for t in ww3_tp3.1
+  do
+    for s in ST0 ST4
+    do
+      run_ww3_test $t $s none shel
+    done
+  done
+fi
+
+
+if [ $do_ts = 1 ]
+then
+  run_ww3_test ww3_ts1 ST1_RWND none shel
+  run_ww3_test ww3_ts1 ST2      none shel
+  run_ww3_test ww3_ts1 ST3      none shel
+  run_ww3_test ww3_ts1 ST4      none shel
+  run_ww3_test ww3_ts2 ST1      none shel
+  run_ww3_test ww3_ts3 ST1_RWND none shel
+fi
+
+
+if [ $do_tps = 1 ]
+then
+  run_ww3_test ww3_tps4 default  default shel
+  run_ww3_test ww3_tps4 ST3      ST3     shel
+  run_ww3_test ww3_tps4 ST4      ST4     shel
+  run_ww3_test ww3_tps4 ST4      441r    shel
+  run_ww3_test ww3_tps4 ST4_SHRD ST4     shel
+fi

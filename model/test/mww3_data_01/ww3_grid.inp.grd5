@@ -14,7 +14,7 @@ END OF NAMELISTS
 $
 $ This grid is defined by the bathymetry only, no obstructions.
 $
-    'RECT' T F
+    'RECT' T 'NONE'
     417    228
       0.009  0.0045 1.
       7.5   63.08   1.

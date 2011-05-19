@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination                         ( version 2.00 )
@@ -21,6 +21,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -76,13 +79,16 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Jan-2007 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    19-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
 !/    14-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    20-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    10-Jan-2007 : Clean-up FACVX/Y compute.           ( version 3.10 )
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -129,7 +135,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NTH, NSPEC, NX, NY, GLOBAL
+      USE W3GDATMD, ONLY: NTH, NSPEC, NX, NY, ICLOSE,                 &
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
       USE W3ADATMD, ONLY: IS0, IS2, FACVX, FACVY
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
@@ -173,7 +180,7 @@
           END DO
         END DO
 !
-      IF ( GLOBAL ) THEN
+      IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
           DO IY=2, NY-1
             IXY    = IY +(NX-1)*NY
             IF ( MAPSTA(IXY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
@@ -215,7 +222,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -229,6 +236,9 @@
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -322,7 +332,8 @@
       USE W3TIMEMD, ONLY: DSEC21
 !
       USE W3GDATMD, ONLY: NK, NTH, SIG, ECOS, ESIN, NX, NY, NSEA,     &
-                          MAPSF, DTCFL, GLOBAL, CLATS, FLCX, FLCY,   &
+                          MAPSF, DTCFL, ICLOSE, CLATS, FLCX, FLCY,    &
+                          ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL,      &
                           FLAGLL, DPDX, DPDY, DQDX, DQDY, GSQRT
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, FACVX, FACVY
@@ -464,7 +475,7 @@
           ENDIF
 
 !
-        IF ( GLOBAL ) THEN
+        IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/T1            WRITE (NDST,9024)
             IY0    = NY*NX
 !/C90/!DIR$ IVDEP
@@ -492,7 +503,7 @@
                     + MIN ( VCB , 0. ) * FIELD(IXY+NY)
           END DO
 !
-        IF ( GLOBAL ) THEN
+        IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/T2            WRITE (NDST,9032)
             IY0    = (NX-1)*NY
             DO IY=1, NY

@@ -23,13 +23,13 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
-  ww3_env='.wwatch3.env'   # setup file
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
-  cd
   if [ -f $ww3_env ]
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift
@@ -84,7 +84,7 @@
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection
+              mgwind mgprop mggse nnt mprf reflection mcp
   do
     case $type in
       mach   ) TY='one'
@@ -212,6 +212,10 @@
                ID='wave reflexions'
                TS='REF1'
                OK='REF1' ;;
+      mcp    ) TY='upto1'
+               ID='model coupling protocol'
+               TS='NOPA'
+               OK='NOPA PALM' ;;
     esac
 
     n_found='0'
@@ -288,6 +292,7 @@
       s_bs   ) s_bs=$sw ;;
       s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
+      mcp    ) mcp=$sw ;;
         *    ) ;;
     esac
   done
@@ -396,7 +401,7 @@
   case $s_nl in
    NL0) nl=$NULL
         nlx=$NULL ;;
-   NL1) nl='w3snl1md' 
+   NL1) nl='w3snl1md'
         nlx='w3snl1md' ;;
    NL2) nl='w3snl2md mod_xnl4v5 serv_xnl4v5 mod_constants mod_fileio'
         nlx="$nl" ;;

@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -64,7 +64,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = 'III  4.00 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = 'III  4.01 '
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -80,7 +80,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -119,6 +119,9 @@
 !/    23-Jun-2010 : Addition of US3DF namelists         ( version 3.14 )
 !/    31-Oct-2010 : Implement unstructured grids        ( version 3.14 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -240,6 +243,7 @@
                                  FNAME4, FNAME5, FNAME6, FNAME7,      &
                                  FNAMEP, FNAMEF
       CHARACTER(LEN=35)       :: IDTST
+      LOGICAL                 :: GLOBAL
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -455,7 +459,7 @@
       IF ( WRITE ) THEN
           MAPTMP = MAPSTA + 8*MAPST2
           WRITE (NDSM)                                                &
-               GTYPE, FLAGLL, GLOBAL
+               GTYPE, FLAGLL, ICLOSE
 !
 ! Writes different kind of information depending on grid type
 !
@@ -488,7 +492,7 @@
 !/COU          COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-               GTYPE, FLAGLL, GLOBAL
+               GTYPE, FLAGLL, ICLOSE
           IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
 !
 ! Reads different kind of information depending on grid type
@@ -542,7 +546,7 @@
 !/COU          COUG_2D, COUG_RAD3D, COUG_US3D
         END IF
 !
-!/T      WRITE (NDST,9010) GTYPE, FLAGLL, GLOBAL, SX, SY, X0, Y0, TRFLAG
+!/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
 !/T      WRITE (NDST,9011) 'MAPSTA'
 !/T      DO IY=MIN(NY,20), 1, -1
 !/T        WRITE (NDST,9012) (MAPSTA(IY,IX),IX=1,MIN(NX,30))
@@ -954,7 +958,7 @@
 !/T 9010 FORMAT (' TEST W3IOGR : MODULE W3GDATMD GRID'/               &
 !/T              '      GTYPE  : ',I9/                                &
 !/T              '      FLAGLL : ',L9/                                &
-!/T              '      GLOBAL : ',L9/                                &
+!/T              '      ICLOSE : ',I9/                                &
 !/T              '      SX, SY : ',2F12.2/                            &
 !/T              '      X0, Y0 : ',2F12.2/                            &
 !/T              '      TRFLAG : ',I9)

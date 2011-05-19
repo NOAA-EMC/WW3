@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Aug-2010 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -14,6 +14,9 @@
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.    ( version 3.14.5 )
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -67,7 +70,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Aug-2010 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -85,6 +88,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.    ( version 3.14.5 )
 !/    21-Sep-2010 : Adding coupling output              ( version 3.14-Ifremer)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -288,7 +294,7 @@
       USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
-      USE W3GDATMD, ONLY: FLAGLL, GTYPE, GLOBAL, NX, NY,              &
+      USE W3GDATMD, ONLY: FLAGLL, GTYPE, ICLOSE, NX, NY,              &
                           X0, Y0, SX, SY,                             &
                           FILEXT, NSEA, NSEAL, NK, NTH, XFR, FR1, TH, &
                           DTMAX, DTCFL, FLAGST
@@ -2132,7 +2138,7 @@
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( GTYPE, 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            CALL MPI_BCAST ( GLOBAL,1, MPI_LOGICAL, 0,           &
+!/MPI            CALL MPI_BCAST ( ICLOSE,1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( NX   , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
