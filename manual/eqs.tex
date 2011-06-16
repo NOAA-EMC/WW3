@@ -1298,11 +1298,117 @@ positive feedback on the wind input via $z_1$. This sensitivity is exacerbated
 by the sensitivity of the high frequency spectral level to the presence of
 swell via the dissipation term.
 
-In the present implementation, an optional ad hoc reduction of $u_\star$ is
+A linear damping of swells was introduced in the operational ECWAM model in September 2009. It takes 
+the form given by \cite{bk:Jan04} 
+
+\begin{equation}
+S_{out}(k,\theta)= 2 s_1  \kappa \frac{\rho_a }{\rho_w} \left(\frac{u_\star}{C}\right)^2 
+\left[\cos \left(\theta - \theta_u\right) - \frac{\kappa C}{u_\star \log(k z_0)}\right]
+\end{equation}
+
+\noindent where $s_1$ is set to 1 when this damping is used and 0 otherwise. For $s_1=0$ 
+the parameterization is the WAM4 or BAJ parameterization (see table below). 
+
+Due to the increase in high frequency input compared to WAM3, the dissipation
+function was adapted by Janssen (1994) from the WAM3 dissipation, and later
+reshaped by \cite{rep:Bea05}. That later modification is referred to as "BAJ".
+
+\noindent
+The generic form of the WAM4 dissipation term is,
+
+\begin{equation}
+S_{ds}\left(k,\theta\right)^{\mathrm{WAM}} = C_{ds} \overline{\alpha}^2
+ \overline{\sigma} \left[\delta_1 \frac{k}{\overline{k}} + \delta_2
+\left(\frac{k}{\overline{k}}\right)^2\right]\label{eq:SdsWAM4}
+N\left(k,\theta\right)
+\end{equation}
+
+\noindent
+where $C_{ds}$ is a non-dimensional constant $\delta_1$ and $\delta_2$ are
+weight parameters,
+
+\begin{equation}
+\overline{k}=\left[\frac{\int k^p N\left(k,\theta\right) {\mathrm d}
+\theta}{\int N\left(k,\theta\right) {\mathrm d} \theta}\right]^{1/p}
+\end{equation}
+
+\noindent
+with $p$ a constant power. Similarly the mean frequency is defined as
+
+\begin{equation}
+\overline{\sigma}=\left[\frac{\int \sigma^p N\left(k,\theta\right) {\mathrm d}
+\theta}{ \int N\left(k,\theta\right) {\mathrm d} \theta}\right]^{1/p},
+\end{equation}
+
+\noindent
+so that the mean steepness is $\overline{\alpha}=E \overline{k}^2$.
+
+The mean frequency also occurs in the definition of the maximum frequency of
+prognostic integration of the source terms. Since the definition of that
+frequency may be different from that of the source term it is defined with
+another exponent $p_{\mathrm{tail}}$.
+
+Unfortunately these parameterizations are sensitive to swell. An increase in
+swell height typically reduces dissipation at the windsea peak (the first
+factor is reduced) and increases dissipation at high frequencies (the second
+factor is reduced). For $p< 2$, as in the WAM-Cycle 4 and BAJ
+parameterizations, this sensitivity is much larger than the expected effect of
+short wave modulation by long waves.
+
+The source term code was thus generalized to
+allow the use of WAM4, BAJ or others ECWAM parameterization, via a simple change of
+the parameters in the namelists SIN3 and SDS3. At present, the default values of the namelist
+parameters correspond to BAJ \citep{rep:Bea05}.
+
+\begin{table} \begin{center}
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var.           & namelist & WAM4 & BAJ   & ECWAM 2009 \\
+\hline
+  $z_u$ &  ZWND                       & SIN3 & 10.0    & 10.0   & 10.0   \\
+  $\alpha_0$ &  ALPHA0                & SIN3 & 0.01    & 0.0095 &  0.0095 \\
+  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN3 & 1.2     & 1.2    & 1.2  \\
+  $p_{\mathrm{in}}$ &  SINTHP         & SIN3 & 2       & 2      & 2  \\
+  $z_\alpha$ &  ZALP                  & SIN3 & 0.0110  & 0.0110 &  0.0110 \\
+  $s_1$ &  SWELLF                     & SIN3 & 0.0     & 0.0    & 1.0   \\
+\hline
+\end{tabular} \end{center}
+\caption{Parameter values for WAM4, BAJ and the 2009 update in the ECWAM model. Source term
+parameterizations that can be reset via the SIN3 and SDS3 namelist. BAJ is
+generally better than WAM4. The default parameters in ST3 corresponds to BAJ. Please
+note that the name of the variables only apply to the namelists. In the source
+term module the names are slightly different, with a doubled first letter, in
+order to differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSIN}
+\end{table}
+
+\begin{table} \begin{center}
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Par.                               &  WWATCH var.         & namelist & WAM4 & BAJ   & ECWAM 2009  \\
+\hline
+  $C_{\mathrm{ds}}$                 &  SDSC1          & SDS3 & -4.5 & -2.1& -2.1             \\
+  $p$                               &  WNMEANP        & SDS3 & -0.5 & 0.5 &  0.5                \\
+  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS3 & -0.5 & 0.5 &  0.5                 \\
+  $\delta_1$                        &  SDSDELTA1      & SDS3 & 0.5  & 0.4 &  0.4                  \\
+  $\delta_2$                        &  SDSDELTA2      & SDS3 & 0.5  & 0.6 &  0.6 \\
+  \hline \hline
+\end{tabular} \end{center}
+\caption{Parameter values for WAM4, BAJ and the 2009 ECWAM update. Source term
+parameterizations that can be reset via the SDS3 namelist. BAJ is generally
+better than WAM4. Please note that the
+name of the variables only apply to the namelists. In the source term module
+the names are slightly different, with a doubled first letter, in order to
+differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSDS}
+\end{table}
+
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{~Input and dissipation (ST4) \hfill {\rm (F. Ardhuin)}} \label{sec:wam4}
+\vsssub
+
+This parameterization for the positive part of the wind input is identical to ST3. An ad hoc reduction of $u_\star$ is
 implemented in order to allow a balance with a saturation-based dissipation.
-This correction also reduces the drag coefficient at high winds. Essentially,
-the wind input is reduced for high frequencies and high winds. This is
-performed by replacing $u_\star$ in eq. (\ref{eq:SinWAM4}) with $u_\star '(k)$
+This correction also reduces the drag coefficient at high winds. This is done by reducing 
+the wind input for high frequencies and high winds. For this,  $u_\star$ in eq. (\ref{eq:SinWAM4}) is replaced 
+by $u_\star '(k)$
 defined for each frequency as
 
 \begin{equation}
@@ -1350,7 +1456,55 @@ The significant surface orbital velocity is defined by
 \noindent
 The first equation (\ref{eq:Dore}) is the linear viscous decay by
 \cite{art:Dore78}, with $\nu_a$ the air viscosity and $s_5$ is an $O(1)$
-tuning parameter. Eq. (\ref{eq:swell_turb}) is a parameterization for the
+tuning parameter. A few tests have indicated that a threshold Re$_{c}=2 \times 10^5$~m$(4/H_s)^(1-s_6)$ provides reasonable result with 
+$s_6=0$, although it may also be a function of the wind speed, and we have no explanation for the dependence on $H_s$. 
+A constant threshold, with $s_6=1$, close to $2 \times 10^5$ provides similar -- but less accurate -- results. 
+
+
+\begin{landscape}
+\begin{table} \begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var.       & namelist & TEST441b & TEST441f & TEST405  & TEST500 \\
+\hline
+  $z_u$ &  ZWND                       & SIN4 & 10.0    & 10.0    & 10.0      & 10.0 \\
+  $\alpha_0$ &  ALPHA0                & SIN4 & 0.0095  & 0.0095   & 0.0095    &  0.0095 \\
+  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN4 & 1.52    &\textbf{1.33}& \textbf{1.55}    &  1.52   \\
+  $p_{\mathrm{in}}$ &  SINTHP         & SIN4 & 2       & 2       & 2         &  2      \\
+  $z_\alpha$ &  ZALP                  & SIN4 & 0.006   & 0.006   & 0.006     &  0.006 \\
+  $s_u$ &  TAUWSHELTER                & SIN4 & 1.0     & 1.0     & \textbf{0.0} & 1.0   \\
+  $s_0$ &  SWELLFPAR                  & SIN4 & 3       & 3       & 3         &  3   \\
+  $s_1$ &  SWELLF                     & SIN4 & 0.8     & 0.8     & 0.8       &  0.8 \\
+  $s_2$ &  SWELLF2                    & SIN4 & -0.018  & -0.018  & -0.018    &  -0.018 \\
+  $s_3$ &  SWELLF3                    & SIN4 &  0.015  &  0.015  &  0.015    &  0.015 \\
+  $s_3$ &  SWELLF4                    & SIN4 & $10^5$  & $10^5$  & $10^5$    & $10^5$  \\
+  $s_5$ &  SWELLF5                    & SIN4 & 1.2     & 1.2     & 1.2       &  1.2 \\
+  $s_6$ &  SWELLF6                    & SIN4 & 0.0     & 0.0     & 0.0       &  0.0 \\
+  $z_r$ &  Z0RAT                      & SIN4 & 0.04    & 0.04    & 0.04      &  0.04 \\
+  $z_{0,\max}$ &  Z0MAX               & SIN4 & 1.002   & 1.002   &\textbf{0.002}&  0.002 \\
+\hline
+\end{tabular}
+ \end{center}
+\caption{Parameter values for TEST441b, TEST441f, TEST405 and TEST500 source term
+parameterizations that can be reset via the SIN4 namelist. TEST441b generally provides the best 
+results at global scale when using ECMWF winds, with the only serious problem being a low bias for $H_s > 8$~m. 
+TEST441f corresponds to a retuning for CSFR wind reanalysis from NCEP/NCAR \citep{art:CFSR10}, and 
+has almost no bias all the way to $H_s = 15$~m.
+TEST405 
+is slightly superior for short fetches, and TEST500 is intermediate in terms of quality 
+but it also includes depth-induced breaking in the same formulation, 
+and thus may be more appropriate for depth-limited conditions.
+ Please
+note that the name of the variables only apply to the namelists. In the source
+term module the names are slightly different, with a doubled first letter, in
+order to differentiate the variables from the pointers to these variables, and
+the SWELLFx are combined in one array SSWELLF.Bold values are different from the 
+default values set by ww3\_grid.} \label{tab:ST4_parSIN}
+\end{table}
+\end{landscape}
+
+
+
+Eq. (\ref{eq:swell_turb}) is a parameterization for the
 nonlinear turbulent decay. When comparing model results to observations, it
 was found that the model tended to underestimate large swells and overestimate
 small swells, with regional biases. This defect is likely due, in part, to
@@ -1370,7 +1524,7 @@ the wind $z_1$. The coefficients $s_1$ is an $O(1)$ tuning parameter, and the
 coefficients $s_2$ and $s_3$ are two other adjustable parameters for the
 effect of the wind on the oscillatory air-sea boundary layer. When $s_2 < 0$,
 wind opposing swells are more dissipated than following swells. Further, if
-$s_3 > 0$ $\cS_{out}$ is applied to the entire spectrum and not just the
+$s_3 > 0$, $\cS_{out}$ is applied to the entire spectrum and not just the
 swell.
 
 Due to the increase in high frequency input compared to WAM3, the dissipation
@@ -1378,8 +1532,10 @@ function was adapted by Janssen (1994) from the WAM3 dissipation, and later
 reshaped by \cite{rep:Bea05}. That later modification is referred to as "BAJ".
 
 \noindent
-The generic form of the WAM4 dissipation term is,
-
+The dissipation term is parameterized from the wave spectrum saturation. Because the directional wave spectrum 
+were too narrow when using a 
+saturation spectrum integrated over the full circle \citep{art:AL06},
+we restricted the integration over a sector of half-width $\Delta_\theta$, 
 \begin{equation}
 S_{ds}\left(k,\theta\right)^{\mathrm{WAM}} = C_{ds} \overline{\alpha}^2
  \overline{\sigma} \left[\delta_1 \frac{k}{\overline{k}} + \delta_2
@@ -1582,6 +1738,12 @@ u_\star^2}{g \rho_w}  N\left(k,\theta\right) .
 The coefficient $C_{\mathrm{turb}}$ is of order 1 and can be used to adjust for
 ocean stratification and wave groupiness.
 
+\noindent
+All relevant source term parameters can be set via the namelists SIN4 and SDS4
+to yield parameterizations TEST441b, TEST405, 
+both described by \cite{art:Aea10}  or TEST500 described by \cite{art:FA11}. Please note that 
+the DIA constant $C$ has been slightly adjusted in TEST441b, $C=2.5\times 10^7$. TEST441f corresponds 
+to a re-tuned wind input formulation when using NCEP/NCAR winds. 
 
 % -------------------------------------------------------------
 \vsssub

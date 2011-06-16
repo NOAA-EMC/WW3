@@ -201,6 +201,8 @@
 !/    31-Mar-2010 : Add reflections                     ( version 3.14.4 )
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    06-Mar-2011 : Output of max. CFL (F.Ardhuin)      ( version 3.14.4 )
+!/    05-Apr-2011 : Implement iteration for DTMAX <1s   ( version 3.14.4 )
 !/
 !  1. Purpose :
 !
@@ -354,6 +356,7 @@
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(4), IK, ITH, IS
+!/SEC1      INTEGER                 :: ISEC1
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
@@ -361,13 +364,14 @@
                                  FAC, VGX, VGY, FACK, FACTH,          &
                                  FACX, FACY, SXM, SYM, XXX, REFLEC(4),&
                                  DELX, DELY, DELA, DEPTH
+!/SEC1     REAL                    :: DTGTEMP
       REAL, ALLOCATABLE       :: FIELD(:)
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
                                  SKIP_O, FLAG_O, FLDDIR, READBC,      &
                                  FLAG0=.FALSE., FLOUTG, FLPFLD,       &
                                  FLPART, LOCAL, FLOUTG2
 !/MPI      LOGICAL                 :: FLGMPI(6)
-      LOGICAL                 :: UGDTUPDATE
+      LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=11)       :: IDACT 
       CHARACTER(LEN=13)       :: OUTID
@@ -431,13 +435,12 @@
         END IF
 !
       ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
-      FIELD = 0.
+      FIELD(:) = 0.
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
 !/SBS      NDSOFLG = 99
 !
-
 !
 ! 0.d Test output
 !
@@ -556,6 +559,7 @@
 !
 ! ==================================================================== /
 !/PALM! write(*,*)'itime',itime
+!
 ! 3.  Loop over time steps
 !
         DTRES  = 0.
@@ -622,7 +626,7 @@
 !/PALM ! End of current and water level update from coupler
 !/PALM !
 !/PALM IF (PALMED.EQ.0) THEN
-               CALL W3UCUR ( FLFRST )
+              CALL W3UCUR ( FLFRST )
 !/PALM ENDIF
            IF (GTYPE .NE. UNGTYPE) THEN       
              CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
@@ -651,7 +655,7 @@
 !
           IF ( FLIWND .AND. LOCAL ) CALL W3UINI ( VA )
 !
-! 3.2 Update boundary conditions.
+! 3.2 Update boundary conditions if boundary flag is true (FLBPI)
 !
           IF ( FLBPI .AND. LOCAL ) THEN
 !
@@ -727,7 +731,7 @@
 !
             END IF
 !
-! 3.5 Update maps and dirivatives.
+! 3.5 Update maps and derivatives.
 !
           IF ( FLMAP ) THEN
 !/PR1              CALL W3MAP1 ( MAPSTA )
@@ -765,11 +769,16 @@
 ! 3.6 Perform Propagation = = = = = = = = = = = = = = = = = = = = = = =
 ! 3.6.1 Preparations
 !
+!/SEC1      DTGTEMP=DTG
+!/SEC1      DTG=DTG/NITERSEC1
+
+!/SEC1      DO ISEC1=1,NITERSEC1
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
-          ITLOCH = ( NTLOC + 1 - MOD(ITIME,2) ) / 2
+!/SEC1        WRITE(6,*) 'ITER:',ISEC1,NITERSEC1, DTG*ISEC1,DTMAX,DTGTEMP
 !
-          FACTH  = DTG / DTH / REAL(NTLOC)
+          FACTH  = DTG / (DTH*REAL(NTLOC))
           FACK   = DTG / REAL(NTLOC)
+          ITLOCH = ( NTLOC + 1 - MOD(ITIME,2) ) / 2
 !
 ! 3.6.2 Intra-spectral part 1
 !
@@ -797,7 +806,8 @@
 !/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
+!/PR3                           CFLTHMAX(ISEA) )  
 !/PRX                      CALL W3KTPX
                     END IF
                   END DO
@@ -827,23 +837,23 @@
 !/OMP0/!$OMP PARALLEL DO PRIVATE (ISPEC,FIELD) SCHEDULE (DYNAMIC,1)
               DO ISPEC=1, NSPEC
                 IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
-                    CALL W3GATH ( ISPEC, FIELD )
-              IF (GTYPE .NE. UNGTYPE) THEN
-!/PR1                CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
-!/PR2                CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-!/PR3                CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
-!/PRX                CALL W3XYPX
-                ELSE IF (GTYPE .EQ. 3) THEN
-!/PR1                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+                  CALL W3GATH ( ISPEC, FIELD )
+                  IF (GTYPE .NE. UNGTYPE) THEN
+!/PR1               CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
+!/PR2               CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+!/PR3               CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+!/PRX               CALL W3XYPX
+                  ELSE IF (GTYPE .EQ. UNGTYPE) THEN
+!/PR1               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
 !/PR1                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-!/PR2                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PR2               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
 !/PR2                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-!/PR3                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PR3               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
 !/PR3                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-!/PRX                  CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
+!/PRX               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
 !/PRX                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-                ENDIF
-                     CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
+                    END IF
+                  CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
                   END IF
                 END DO
 !
@@ -855,8 +865,6 @@
 !/MPI                                    IERR_MPI)
 !/MPI                  DEALLOCATE ( STATCO )
 !/MPI                END IF
-!
-         UGDTUPDATE = .FALSE.
 !
 ! End of test FLCX.OR.FLCY
 !
@@ -888,12 +896,27 @@
 !/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
+!/PR3                           CFLTHMAX(ISEA) )
 !/PRX                      CALL W3KTPX
+!
+! Estimation of the local maximum CFL for XY propagation
+!
+                    IF ( FLOGRD(27).AND. UGDTUPDATE ) THEN 
+!/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
+!/PR3                        CALL W3CFLUG ( ISEA, FACX, FACY, DTG, MAPSTA, &
+!/PR3                             MAPFS,  CFLXYMAX(ISEA), VGX, VGY )
+!/PR3                      ELSE 
+!/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
+!/PR3                                       CFLXYMAX(ISEA), VGX, VGY )
+!/PR3                        END IF
+                      END IF
                     END IF
                   END DO
                 END DO
             END IF
+!
+          UGDTUPDATE = .FALSE.
 !
 ! 3.6 End propapgation  = = = = = = = = = = = = = = = = = = = = = = = =
 !
@@ -957,6 +980,12 @@
 !!/MPI              CALL MPI_BARRIER (MPI_COMM_WCMP,IERR_MPI)
 !
             END IF
+!
+! End of interations for DTMAX < 1s
+!
+!/SEC1       END DO
+!/SEC1       DTG=DTGTEMP
+
 !
 ! 3.8 Update global time step.
 !     (Branch point FLDRY, IT=0)

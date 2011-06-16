@@ -24,6 +24,7 @@
 !     ----------------------------------------------------------------
 !      W3XYPUG       Subr. Public   Generic fluctuation splitting operations 
 !      W3XYPFSN2     Subr. Public   advection with N scheme (Csik et al. 2002)
+!      W3XYPFSPSI    Subr. Public   advection with FCT scheme
 !      W3XYPFSFCT2   Subr. Public   advection with FCT scheme
 !     ----------------------------------------------------------------
 !
@@ -50,9 +51,9 @@
    SUBROUTINE W3XYPUG ( ISP, FACX, FACY, DTG, MAPSTA, MAPFS, VQ,    &
                           VGX, VGY, LCALC )    
 !/
-!/                  +-------W3XYPFSFCT2----------------------------+
+!/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           Aron Roland             |
+!/                  |            Aron Roland            |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         10-Jan-2011 |
 !/                  +-----------------------------------+
@@ -129,7 +130,7 @@
 
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
-      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
       USE W3IDATMD, ONLY: FLCUR
 !      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
 !                          ISBPI, BBPI0, BBPIN
@@ -228,7 +229,7 @@
         END DO
       END IF  
 !
-!3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
+! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
 !
       DO IX=1,NX
         AC(IX) = VQ(IX)  
@@ -273,6 +274,211 @@
 !        IF ( MAPSTA(IXY) .GT. 0 ) THEN
             VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
 !          END IF
+        END DO
+!
+      RETURN    
+ END SUBROUTINE     
+!/ ------------------------------------------------------------------- /
+   SUBROUTINE W3CFLUG ( ISEA, FACX, FACY, DT, MAPSTA, MAPFS, CFLXYMAX,    &
+                          VGX, VGY )    
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            Aron Roland            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         01-Mar-2011 |
+!/                  +-----------------------------------+
+!/
+!/    01-Mar-2011 : Origination.                        ( version 3.14.4 )
+!/
+!  1. Purpose :
+!
+!     Computes the max CFL number for output purposes
+!
+!  2. Method :
+!
+!     
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       ISEA     Int.   I   Index of sea point
+!       FACX/Y   Real   I   Factor in propagation velocity.
+!                          ( 1 or 0 * DT / DX )
+!       DT       Real   I   Time step.
+!       MAPSTA   I.A.   I   Grid point status map.
+!       MAPFS    I.A.   I   Storage map.
+!       CFLXYMAX Real       Maxmimum CFL for spatial advection
+!       VGX/Y    Real   I   Speed of grid.
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+!       VCFL0X  R.A.  Local courant numbers for absolute group vel.
+!                     using local X-grid step.
+!       VCFL0Y  R.A.  Id. in Y.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+
+!  5. Called by :
+!
+!       W3WAVE   Wave model routine.
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!              make the interface between the WAVEWATCH and the WWM code. 
+!
+!  8. Structure :
+!
+!
+!  9. Switches :
+!
+!       !/S     Enable subroutine tracing.
+!
+!
+! 10. Source code :     
+!/ ------------------------------------------------------------------- /
+!/
+!
+      USE CONSTANTS
+!
+      USE W3TIMEMD, ONLY: DSEC21
+!
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
+                          FLCX, FLCY, NK, NTH, DTH, XFR,              &
+                          ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
+                          NTRI, TRIGP, CCON , TRIA03,                 &
+                          IE_CELL, POS_CELL, COUNTRI, SI
+
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME
+      USE W3IDATMD, ONLY: FLCUR
+!/T      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
+!/T                          ISBPI, BBPI0, BBPIN
+!/S      USE W3SERVMD, ONLY: STRACE
+      
+      IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: ISEA, MAPSTA(NY*NX), MAPFS(NY*NX)
+      REAL, INTENT(IN)        :: FACX, FACY, DT, VGX, VGY
+      REAL, INTENT(INOUT)     :: CFLXYMAX
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: ITH, IK    
+      INTEGER                 :: IP, IP2, ISEA2, I, J, IE, IV, I1, I2, I3
+      REAL                    :: CCOS, CSIN, CCURX, CCURY
+      REAL                    :: C(NX,2)
+      REAL                    :: RD1, RD2
+      INTEGER                 :: COUNTSEACON
+      REAL*8                  :: KELEM(3), KTMP(3), LAMBDA(2)
+      REAL*8                  :: KKSUM, DTMAXEXP
+!/
+!/  Velocities 
+!/
+      REAL                    :: VLCFLX, VLCFLY
+      REAL*8,  PARAMETER      :: ONESIXTH  = 1.0d0/6.0d0
+
+!/ ------------------------------------------------------------------- /				     
+!
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Set constants
+!      
+      
+!/S      CALL STRACE (IENT, 'W3CFLUG')      
+      CCURX  = FACX 
+      CCURY  = FACY  
+      CFLXYMAX=0.
+!
+! Loop over spectral components
+!
+      IP = MAPSF(ISEA,3)
+      DO IK=1,NK
+        DO ITH=1,NTH
+          CCOS   = FACX * ECOS(ITH) 
+          CSIN   = FACY * ESIN(ITH) 
+          C(:,:)=0.
+
+!
+! 2.1  Calculate advection velocities: group speed ---------------- *
+! 
+          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
+            IV=POS_CELL(I)
+            DO J=1,3
+              IP2=TRIGP(IE,J)
+              ISEA2=MAPFS(IP2)
+              C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
+              C(IP2,2) = CSIN * CG(IK,ISEA2)
+!/MGP              C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
+!/MGP              C(IP2,2) = C(IP2,2) - CCURY*VGY
+              END DO
+            END DO
+!
+! 2.1  Calculate advection velocities: current --------------------- *
+! 
+          IF ( FLCUR ) THEN   
+            COUNTSEACON=0
+            J = 0
+            DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+              IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
+              IV=POS_CELL(I)
+              IF ((TRIGP(IE,1).NE.IP).AND.MAPSTA(TRIGP(IE,1)).GT.0) COUNTSEACON=COUNTSEACON+1
+              IF ((TRIGP(IE,2).NE.IP).AND.MAPSTA(TRIGP(IE,2)).GT.0) COUNTSEACON=COUNTSEACON+1
+              IF ((TRIGP(IE,3).NE.IP).AND.MAPSTA(TRIGP(IE,3)).GT.0) COUNTSEACON=COUNTSEACON+1
+              END DO
+!
+! Currents are not included on coastal boundaries (COUNTSEACON .NE. 2.*CCON(IP))
+! WARNING: not fully consistent with adevection scheme: boundary status is not determined 
+! for the neighbors
+!
+            IF ((COUNTSEACON.EQ. 2*CCON(IP)).OR.(MAPSTA(IP).EQ.2)) THEN 
+              C(IP,1) = C(IP,1) + CCURX*CX(ISEA)/CLATS(ISEA)
+              C(IP,2) = C(IP,2) + CCURY*CY(ISEA)
+              END IF    
+!
+! Adds current for all neighbors (irrespective of boundary status ... this is the inconsistency)
+! 
+            DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+              IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
+              IV=POS_CELL(I)
+              IP2=TRIGP(IE,IV)
+              C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA)/CLATS(ISEA)
+              C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA)
+              END DO
+!
+            END IF  ! end of ( FLCUR )
+!
+!3.     Calculate K-Values and contour based quantities ...
+!
+          KKSUM = 0.d0
+          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
+            IV=POS_CELL(I)
+            I1 = TRIGP(IE,1) 
+            I2 = TRIGP(IE,2)
+            I3 = TRIGP(IE,3)
+            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Advection speed in X direction
+            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2)) ! Advection speed in Y direction
+            KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
+            KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
+            KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
+            KTMP        = KELEM(:) ! Copy
+            KELEM(:) = MAX(0.d0,KTMP)
+            KKSUM = KKSUM  + KELEM(IV)
+            END DO ! COUNTRI
+!
+          DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM)
+          CFLXYMAX = MAX(DBLE(DT)/DTMAXEXP,DBLE(CFLXYMAX))
+          END DO
         END DO
 !
       RETURN    
@@ -331,7 +537,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, XYB
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -429,6 +635,7 @@
            FLALL(1,IE) = (FL311 + FL212) * ONESIXTH + KELEM(1,IE)
            FLALL(2,IE) = (FL111 + FL312) * ONESIXTH + KELEM(2,IE)
            FLALL(3,IE) = (FL211 + FL112) * ONESIXTH + KELEM(3,IE)
+           ! IF (I1.EQ.1.OR.I2.EQ.1.OR.I3.EQ.1) WRITE(6,*) 'TEST N1 :',IK,ITH,IP,IE,KELEM(:,IE),'##',LAMBDA
          END DO ! NTRI
 
            IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
@@ -436,12 +643,14 @@
              DO IE = 1, NTRI
                NI = TRIGP(IE,:)
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
+          !  IF (NI(1).EQ.1.OR.NI(2).EQ.1.OR.NI(3).EQ.1) WRITE(6,*) 'TEST N2:',IK,ITH,NI,IE,KELEM(:,IE),'##',KKSUM(NI)
              END DO ! IE
              DO IP = 1, NX
 !               DTMAXEXP = MAX( ABS(DBLE(IOBP(IP))*DBLE(10.E10)),SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*DBLE(IOBPD(ITH,IP)))) 
 ! This corrects the CFL on the boundary ... 
 ! I have omitted this by now due to increased oscillations when using all physics ...
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
+!               IF (IP.LE.10) WRITE(6,*) 'TEST N3:',IK,ITH,IP,DBLE(DT)/REAL(DTMAXEXP), DBLE(DT)/REAL(DTMAXGL),KKSUM(IP)
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
 !/T             DO IP = 1, NX
@@ -1027,7 +1236,6 @@
            WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
            WRITE(*,*) 'ASPAR, JAA, IAA',SUM(ASPAR), SUM(IAA), SUM(JAA)
            WRITE(*,*) 'AU, FLJAU, FLJU',SUM(AU), SUM(FLJAU), SUM(FLJU)
-           PAUSE
          END IF
 
           INIU = U 

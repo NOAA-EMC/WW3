@@ -230,7 +230,7 @@
           CNTIPART=CNTIPART+1
         END IF
       END DO
-      write (*,*) TABIPART
+write (*,*) TABIPART
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) TOGETHER
 
@@ -512,9 +512,7 @@
                                  idim, ivar1, idvarout, start(4),count(4),     &
                                  dimln(6),start1D(2), count1D(2), dimfield(3), &
                                  deflate=1, iyc, imc, idc, ihc, iminc, isc,    &
-                                 Jday, Jday0, IP
-
-     INTEGER(KIND=4)          :: VMIN, VMAX
+                                 Jday, Jday0, VMIN, VMAX, IP
 
       INTEGER(KIND=4), ALLOCATABLE       :: TRIGP2(:,:)
 
@@ -540,8 +538,8 @@
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLONE
       CHARACTER               :: OLDTID*8, FNAME*16, FNAMENC*50,      &
-                                 ENAME*4,ENAME2*4,FORMF*11, UNITS*10, &
-                                 UNITS2*10
+                  ENAME*4,ENAME2*4,FORMF*11, UNITS*10, &
+             UNITS2*10
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
 !/
@@ -672,8 +670,8 @@
             varnl(2)='northward_current'
             varns(1)='eastward_current'
             varns(2)='northward_current'
-            vmin = -990
-            vmax =  990
+            vmin = -9900 
+            vmax =  9900
 !
           ELSE IF ( J .EQ.  3 ) THEN
             FLONE  = .FALSE.
@@ -705,8 +703,8 @@
             varnl(2)='northward_wind'
             varns(1)='eastward_wind'
             varns(2)='northward_wind'
-            vmin = -990
-            vmax =  990
+            vmin = -9900 
+            vmax =  9900
 !
           ELSE IF ( J .EQ.  4 ) THEN
             FLONE  = .TRUE.
@@ -719,7 +717,7 @@
             varnl(1)='air_sea_temperature_difference'
             varns(1)='air_sea_temperature_difference'
             vmin = 0    
-            vmax = 4000
+            vmax = 40000
 !
           ELSE IF ( J .EQ.  5 ) THEN
             FLONE  = .TRUE.
@@ -786,7 +784,7 @@
             varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
 					  spectral_density_second_frequency_moment'
             vmin = 0
-            vmax = 5000
+            vmax = 50000
 !
           ELSE IF ( J .EQ. 10 ) THEN
             FLONE  = .TRUE.
@@ -795,12 +793,12 @@
             ENAME  = '.t'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN, MAPSF, X1 )
             NFIELD=1
-            varnm(1)='t'
+            varnm(1)='tm0m1'
             varnl(1)='mean_period_Tm01'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					  _spectral_density_first_frequency_moment' 
             vmin = 0 
-            vmax = 5000
+            vmax = 50000
 !
           ELSE IF ( J .EQ. 11 ) THEN
             FLONE  = .TRUE.
@@ -809,12 +807,12 @@
             ENAME  = '.tm1'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN   , MAPSF, X1 )
             NFIELD=1
-            varnm(1)='tm0m1'
+            varnm(1)='t'
             varnl(1)='mean_period_Tm0-1'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					  _spectral_density_inverse_frequency_moment'
             vmin = 0
-            vmax = 5000
+            vmax = 50000
 !
           ELSE IF ( J .EQ. 12 ) THEN
             FLONE  = .TRUE.
@@ -1787,7 +1785,7 @@
                   iret=nf90_put_att(ncid,NF90_GLOBAL, &
                                        'longitude_resolution','n/a')
                   END IF
-! 
+!
 ! Finishes declaration part in file by adding geographical bounds
 !
                 IF (GTYPE.NE.UNGTYPE) THEN 
@@ -2271,8 +2269,8 @@
       
 
 
-      REAL, INTENT(IN)                  :: FSC
-      INTEGER, INTENT(IN)               :: vmin,vmax,extradim
+      REAL            , INTENT(IN)      :: FSC
+      INTEGER         , INTENT(IN)      :: vmin,vmax,extradim
       INTEGER, INTENT(IN)               :: MFILL, NCTYPE
       character*(*), INTENT(IN)         :: ncfile,name(3),varnl(3), &
                                            varns(3),UNITVAR(3)
@@ -2287,7 +2285,7 @@
       INTEGER                           :: I,ivar,iret,dimtri(2), deflate=1
       CHARACTER                         :: attname*120,attval*120
       INTEGER                           :: icode,strl,strl2
-      REAL,DIMENSION(:,:), ALLOCATABLE  :: lon1, lat1
+      REAL,DIMENSION(:,:),  ALLOCATABLE :: lon1, lat1
 
 
 !      
@@ -2475,6 +2473,8 @@
       CLOSE(994)
       iret=nf90_put_att(ncid,NF90_GLOBAL,'product_name' ,TRIM(ncfile))   
       iret=nf90_put_att(ncid,NF90_GLOBAL,'area',TRIM(GNAME))
+      iret=nf90_put_att(ncid,NF90_GLOBAL,'data_type','OCO unstructured grid')
+      iret=nf90_put_att(ncid,NF90_GLOBAL,'format_version','1.1')
       return
       END SUBROUTINE W3CRNC 
 

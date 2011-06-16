@@ -212,7 +212,7 @@
                ID='wave reflexions'
                TS='REF1'
                OK='REF1' ;;
-      mcp    ) TY='upto1'
+      mcp    ) TY='one'
                ID='model coupling protocol'
                TS='NOPA'
                OK='NOPA PALM' ;;
@@ -464,7 +464,7 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
-  progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_sbs1
+  progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
          ww3_ounp ww3_gint'
 
@@ -486,6 +486,13 @@
                  IO='w3iogrmd w3iorsmd'
                 aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_prep) IDstring='Field preprocessor'
+               core='w3fldsmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=

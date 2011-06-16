@@ -315,7 +315,7 @@
                           NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
                           NAPPRT, TOFRST, DTOUT, TONEXT, TOLAST,      &
                           FLOUT, NOGRD, FLOGRD, FLBPO, NOPTS, PTNME,  &
-                          PTLOC, IPTINT, PTIFAC, UNDEF, IDOUT,        &
+                          PTLOC, IPTINT, PTIFAC, UNDEF, IDOUT, FLBPI, &
                           OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN,    &
                           IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE,&
                           FLOGR2
@@ -648,6 +648,7 @@
 ! 3.  Model initialization ------------------------------------------- /
 ! 3.a Read restart file
 !
+      VA(:,:) = 0.
       CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )
       FLCOLD = INTYPE.LE.1  .OR. INTYPE.EQ.4
       IF ( IAPROC .EQ. NAPLOG ) THEN
@@ -681,7 +682,7 @@
 ! 3.d Initialization with calm conditions
 !
       IF ( INTYPE .EQ. 4 ) THEN
-          VA     = 0.
+          VA(:,:) = 0.
 !/T          WRITE (NDST,9031)
         END IF
 !

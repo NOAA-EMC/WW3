@@ -1,0 +1,45 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid output post-processing                            $
+$--------------------------------------------------------------------- $
+$ Time, time increment and number of outputs
+$
+ 19800101 120000  100  10000  4
+$
+$ Request flags identifying fields as in ww3_shel input and
+$ section 2.4 fo the manual.
+$
+$
+$D C W D W  I H L T T  T C F D S  D H T L T  S W W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$P U N T L  C S   0    M G P I P  P S P P H  I S S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$T R D   V  E     2    1 E   R R    P P P P  P P F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$
+ F F T F T  T T F T T  T T F F F  F F F F F  F F F T T  F F F F T  T F F F F  F T T T T  F T F T F  F F F F F  F F F 
+$
+$ NetCDF type [3 4]
+$
+  3 
+$
+$ List of partition numbers
+$
+  0 1 2 
+$
+$ All fields in one file ( T or F )
+$
+  F
+$ -------------------------------------------------------------------- $
+$ ITYPE = 3 or 4, Netcdf Files
+$            S3: number of characters in date
+$            IX, IY range
+$
+ww3.
+6
+ 2 11 2 11 
+$ For each field and time a new file is generated with the file name
+$ ww3.date_xxx.nc , where date is a conventional time idicator with S3
+$ characters,
+$ and xxx is a field identifier.
+$
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

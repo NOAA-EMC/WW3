@@ -546,9 +546,9 @@
             UBA(ISEA) = UBR(JSEA)
             CGE(ISEA) = DWAT*GRAV*ETF(JSEA) 
             IF ( ET(JSEA) .GT. 1.E-7 ) THEN
-              T02(ISEA) = SQRT(ET02(JSEA) / ET(JSEA)) / TPI
+              T02(ISEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) ) 
             ELSE
-              T02(ISEA) = SIG(NK) / TPI
+              T02(ISEA) = TPI / SIG(NK)
               ENDIF
             MSSX(ISEA) = 100.*SQRT(ETMSSX(JSEA)) 
             MSSY(ISEA) = 100.*SQRT(ETMSSY(JSEA)) 
@@ -720,7 +720,8 @@
         DO JSEA=1, NSEAL
 !/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA   = JSEA
-          IF ( FP0(ISEA).NE.UNDEF) THEN
+!FA commented on 2011/04/05          IF ( FP0(ISEA).NE.UNDEF) THEN
+          IF (IKP0(JSEA).NE.0) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
             END IF

@@ -333,7 +333,7 @@ NX = J
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           A. Roland              |
+!/                  |           A. Roland               |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          15-May-2008|
 !/                  +-----------------------------------+
@@ -886,7 +886,7 @@ END SUBROUTINE
          INTEGER :: I, J, K
          INTEGER :: IP, IE, POS, POS_I, POS_J, POS_K, IP_I, IP_J, IP_K
          INTEGER :: I1, I2, I3
-         INTEGER :: TMP(NX),CELLVERTEX(NX,COUNTRI,2)
+         INTEGER :: TMP(NX), CELLVERTEX(NX,COUNTRI,2)
          INTEGER :: VNEIGH(NX,2*COUNTRI), COUNT_MAX
          INTEGER, ALLOCATABLE :: PTABLE(:,:)
 !/S        INTEGER                      ::  IENT = 0  	
@@ -897,7 +897,8 @@ END SUBROUTINE
          SI(:) = 0.
 !
 ! calculate the number of triangle connected to a point and reckon the surface of a dual cell
-!        
+! Ask Aron: Should be uptated with water levels ???         
+!
          DO IP = 1, NX
            COUNTER = 0
            DO IE = 1, NTRI  
@@ -970,12 +971,14 @@ END SUBROUTINE
 ! abide by the conservation of the 2 loop algorithm (points + connected triangles)
 ! AR: I will change this now to pointers in order to omit fix loop structure for the LTS stuff ...
 !	   
+         INDEX_CELL(1)=1
          DO IP = 1, NX
            DO I = 1, CCON(IP)
              J = J + 1
              IE_CELL(J)  = CELLVERTEX(IP,I,1)
              POS_CELL(J) = CELLVERTEX(IP,I,2) 
            END DO
+           INDEX_CELL(IP+1)=J+1
          END DO
 
          J = 0
@@ -1059,21 +1062,21 @@ END SUBROUTINE
            JAA    = 0
            DO IP = 1, NX ! Run through all rows 
              TMP(:)=0
-             DO I = 1, CCON(IP) ! Check how many entries there are ...
-               J = J + 1
+             DO I = 1, CCON(IP)         ! Check how many entries there are ...
+               J = J + 1                ! this is the same J index as in IE_CELL
                IP_J  = PTABLE(J,2)
                IP_K  = PTABLE(J,3)
                TMP(IP)   = 1
                TMP(IP_J) = 1
                TMP(IP_K) = 1
              END DO
-             DO I = 1, NX ! Run through all columns 
-               IF (TMP(I) .GT. 0) THEN
-                 K = K + 1
+             DO I = 1, NX               ! Run through all columns 
+               IF (TMP(I) .GT. 0) THEN  ! this is true only for the connected points
+                 K = K + 1              
                  JAA(K) = I
                END IF
              END DO
-             IAA(IP + 1) = K + 1
+             IAA(IP + 1) = K + 1    
            END DO
 
            POSI = 0
@@ -1259,7 +1262,7 @@ END SUBROUTINE
 !PRINT*, TRIGP(ITOUT,3), MAPSTA(1,TRIGP(ITOUT,3))
 ! Second step: calculate interpolation coefficient from the vertices.
       IF(ITOUT .EQ. 0)  THEN 
-         WRITE(NDSE, 800)
+         WRITE(NDSE, 800 )   XPT, YPT
   CALL EXTCDE( 1 )
   ELSE  
             xx1=XYB(TRIGP(itout,1),1)*FACT
@@ -1286,7 +1289,7 @@ END SUBROUTINE
 !
   800 FORMAT (/' *** WAVEWATCH III ERROR IN INTERPOLATION :'/                &
                '     NO TRIANGLE FOUND FOR OUTPUT POINT    '/                &
-               '     CHECK THE OUTPUT POINT COORDINATES   ')
+               '     CHECK THE OUTPUT POINT COORDINATES :  ',2F12.6)
   900 FORMAT (/' *** WAVEWATCH III ERROR IN INTERPOLATION :'/                &
                '     FLAT TRIANGLE FOUND ')
       RETURN
@@ -1410,7 +1413,7 @@ END SUBROUTINE
     REAL, INTENT(IN)         :: DISTMIN
     LOGICAL, INTENT(INOUT)         :: FLOK
 
-    INTEGER                   :: I, J, IS, IX,  N, IX1(NBI)
+    INTEGER                   :: I, J, JMEMO, IS, IX,  N, IX1(NBI)
     REAL                      :: DIST, DIST0
 !
     N = 0 
@@ -1425,34 +1428,45 @@ END SUBROUTINE
       IF (ABS(MAPSTA (1,IX)) .EQ. 2) THEN
         N = N + 1 
         IX1(N) = IX
+!/T        WRITE(NDSE ,*)'ADDING BOUNDARY POINT:',N,IX
         END IF
       END DO
-
-    IF ( N .NE. NBI) WRITE(NDSE ,900)
-      DO I = 1, NBI 
+!
+!2. Matches the model grid points (where MAPSTA = 2) with the points in nest.ww3
+!   For this, we use the nearest point in the nest file.
+!
+    DO I = 1, NBI 
 !FA: This will not work with FLAGLL=.F.  (XY grid)
-      DIST0 = 360
+      DIST0 = 360**2
       IS=1
       DO J = 1, N
         DIST=(XBPI(I)-XYB(IX1(J),1))**2+(YBPI(I)-XYB(IX1(J),2))**2
         IF (DIST.LT.DIST0) THEN 
           IS = MAPFS(1,IX1(J))
           DIST0=DIST
+          JMEMO=J
           END IF
         END DO
       DIST0=SQRT(DIST0)
       IF (DIST0.LE.DISTMIN) THEN          
-        ISBPI(I)=IS 
-      ELSE
+        ISBPI(I)=IS
+!/T        WRITE(NDSE ,'(A,I6,A,I7,A,I6)') 'MATCHED BOUNDARY POINT:',I,'GRID POINT:', &
+!/T                                         MAPSF(IS,1),'INDEX IN nest.ww3:', JMEMO
+     ELSE
         FLOK=.TRUE.
         END IF
       END DO  
-       
-       
- 
+    IF ( N .NE. NBI) THEN 
+      WRITE(NDSE ,900) N, NBI
+      DO J=1,N
+        WRITE(6,*) 'THIS POINT HAS MAPSTA=2:',ISBPI(J)  
+        END DO
+      ISBPI(N+1:NBI)=ISBPI(1)
+      END IF
+      
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/                &
-             '     ILEGAL BOUNDARY POINT NUMBER    '/                &
-             '     CHECK nest.ww3 AND ww3_grid.inp '/)
+             '     NUMBER OF MAPSTA=2 DIFFERS FROM NUMBER IN nest.ww3    '/                &
+             '     CHECK nest.ww3 AND ww3_grid.inp ',2I8/)
 END SUBROUTINE
 
 !/ ------------------------------------------------------------------- 

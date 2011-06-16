@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Dec-2010 |
+!/                  | Last update :         05-Apr-2011 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -39,6 +39,8 @@
 !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    05-Apr-2011 : Implement interations for DTMAX < 1s( version 3.14.1 )
+!/                  (F. Ardhuin) 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -113,7 +115,7 @@
 !      DTCFLI    Real  Public   Id. intra-spectral.
 !      DTMAX     Real  Public   Maximum overall time step.
 !      DTMIN     Real  Public   Minimum dynamic time step for source
-!                               term integration.
+!      NITERSEC1 Real  Public   Number of interations when DTMAX < 1s
 !      DMIN      Real  Public   Minimum water depth.
 !      CTMAX     Real  Public   Maximum CFL number for depth refr.
 !      FICE0/N   Real  Public   Cut-off ice conc. for ice coverage.
@@ -447,6 +449,7 @@
         INTEGER          :: GTYPE
         INTEGER          :: ICLOSE
         INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
+!/SEC1     INTEGER          :: NITERSEC1
         INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
                             MAPFS(:,:), MAPSF(:,:)
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
@@ -492,7 +495,7 @@
         INTEGER               :: COUNTRI,COUNTOT,NNZ
         INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:),   &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),   &
-                                 IAA(:), JAA(:), POSI(:,:)
+                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:)
         REAL, POINTER         :: TRIA(:), TRIA03(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
 ! Coupling data
@@ -663,7 +666,7 @@
       REAL, POINTER           :: ANGLE(:,:)
       INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),    &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),     &
-                                 IAA(:), JAA(:), POSI(:,:)
+                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:)
       REAL, POINTER           :: TRIA(:), TRIA03(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
@@ -674,6 +677,7 @@
       REAL,    POINTER        :: REFPARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
+!/SEC1      INTEGER, POINTER        :: NITERSEC1
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                                  DTMAX, DTMIN, DMIN, CTMAX,           &
                                  FICE0, FICEN, PFMOVE
@@ -1033,7 +1037,7 @@
         END IF
 !
       IF ( MX.LT.3 .OR. (MY.LT.3.AND.GTYPE.NE.UNGTYPE) .OR. MSEA.LT.1 ) THEN
-        WRITE (NDSE,1003) MX, MY, NSEA, NSEAL
+        WRITE (NDSE,1003) MX, MY, MSEA, GTYPE
         CALL EXTCDE (3)
         END IF
 !
@@ -1114,7 +1118,7 @@
                '                    NAUXGR = ',I10/                   &
                '                    NGRIDS = ',I10/)
  1003 FORMAT (/' *** ERROR W3DIMX : ILLEGAL GRID DIMENSION(S) *** '/  &
-               '                    INPUT = ',I10/)
+               '                    INPUT = ',4I10 /)
  1004 FORMAT (/' *** ERROR W3DIMX : ARRAY(S) ALREADY ALLOCATED *** ')
 !
 !/T 9000 FORMAT (' TEST W3DIMX : MODEL ',I4,' DIM. AT ',2I5,I7)
@@ -1465,6 +1469,7 @@
       DTMAX  => GRIDS(IMOD)%DTMAX
       DTMIN  => GRIDS(IMOD)%DTMIN
       DMIN   => GRIDS(IMOD)%DMIN
+!/SEC1      NITERSEC1  => GRIDS(IMOD)%NITERSEC1
       CTMAX  => GRIDS(IMOD)%CTMAX
       FICE0  => GRIDS(IMOD)%FICE0
       FICEN  => GRIDS(IMOD)%FICEN
@@ -1492,6 +1497,7 @@
       ANGLE     => GRIDS(IMOD)%ANGLE 
       CCON     => GRIDS(IMOD)%CCON
       COUNTCON     => GRIDS(IMOD)%COUNTCON
+      INDEX_CELL  => GRIDS(IMOD)%INDEX_CELL
       IE_CELL     => GRIDS(IMOD)%IE_CELL
       POS_CELL     => GRIDS(IMOD)%POS_CELL
       IOBP     => GRIDS(IMOD)%IOBP
@@ -2179,11 +2185,12 @@
                  GRIDS(IMOD)%ANGLE(MTRI,3),                         &
                  GRIDS(IMOD)%CCON(MX),                              &
                  GRIDS(IMOD)%COUNTCON(MX),                          &
+                 GRIDS(IMOD)%INDEX_CELL(MX+1),                      &
                  GRIDS(IMOD)%IE_CELL(COUNTOTA),                     &
                  GRIDS(IMOD)%POS_CELL(COUNTOTA),                    &
-                 GRIDS(IMOD)%IAA(NX+1),                    &
-                 GRIDS(IMOD)%JAA(NNZ),                    &
-                 GRIDS(IMOD)%POSI(3,COUNTOTA),                    &
+                 GRIDS(IMOD)%IAA(NX+1),                             &
+                 GRIDS(IMOD)%JAA(NNZ),                              &
+                 GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX) )
                  

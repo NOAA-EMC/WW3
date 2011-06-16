@@ -178,6 +178,7 @@
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF ,SSWELLFPAR
 !/T      USE W3ODATMD, ONLY: NDST
+!/T      USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
 !/
@@ -1681,7 +1682,8 @@ END DO
       REAL                    :: GAM, XT, M1
       REAL                    ::  DK(NK), HS(NK), KBAR(NK), DCK(NK), QB(NK)
       REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
-      REAL                    :: IKSUP(NK), Q1(NK) 
+      INTEGER                 :: IKSUP(NK)
+      REAL                    :: Q1(NK) 
       REAL                    :: FACSAT, DKHS
       REAL                    :: BTH0(NK)     !saturation spectrum 
       REAL                    :: BTH(NSPEC)   !saturation spectrum 

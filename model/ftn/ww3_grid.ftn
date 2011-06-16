@@ -2081,6 +2081,9 @@
                       IY     = IY + IDY
                       IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
                           TMPSTA(IY,IX) = NSTAT
+                      ELSE 
+                         WRITE(NDSO,*) 'WARNING: POINT (',IX,',',IY,  &
+                                  ') CANNOT BE GIVEN THE STATUS ',NSTAT
                         END IF
                       END DO
                     IX     = IX + IDX
@@ -2205,8 +2208,7 @@
 ! the logical CONTOUR enables to choose whether the contour is excluded from computation 
 ! the available criterion to spot contour points is that such points have more connections than
 ! surrounding connected triangles.
-                WRITE(6,*) 'CONTOUR:',UGCONT,NX
-
+!
                 IF (UGCONT) THEN 
                     J = 0
                     DO IX= 1, NX

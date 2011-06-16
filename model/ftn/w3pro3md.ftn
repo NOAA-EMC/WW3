@@ -1194,7 +1194,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
                           DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
-                          DCYDX, DCYDY, VA )
+                          DCYDX, DCYDY, VA, CFLTHMAX )
 !/
 !/    *** THIS ROUTINE SHOULD BE IDENTICAL TO W3KTP2 ***
 !/
@@ -1202,11 +1202,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Dec-2004 |
+!/                  | Last update :         06-Mar-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Feb-2000 : Origination.                        ( version 2.08 )
 !/    17-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    06-Mar-2011 : Output of maximum CFL  (F. Ardhuin) ( version 3.14 )
 !/
 !  1. Purpose :
 !
@@ -1319,7 +1320,7 @@
       REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
                                  WN(0:NK+1), DEPTH, DDDX, DDDY,       &
                                  CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
-      REAL, INTENT(INOUT)     :: VA(NSPEC)
+      REAL, INTENT(INOUT)     :: VA(NSPEC), CFLTHMAX
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1327,7 +1328,8 @@
       INTEGER                 :: ITH, IK, ISP
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FDDMAX, FDG, FKD, FKD0, DCYX,        &
-                                 DCXXYY, DCXY, DCXX, DCXYYX, DCYY
+                                 DCXXYY, DCXY, DCXX, DCXYYX, DCYY,    &
+                                 VELNOFILT
       REAL                    :: DSDD(0:NK+1), FRK(NK), FRG(NK),      &
                                  FKC(NTH), VQ(-NK-1:NK2*(NTH+2)),     &
                                  DB(NK2,NTH+1), DM(NK2,0:NTH+1),      &
@@ -1376,6 +1378,9 @@
 !
 ! 3.a Set slope filter for depth refraction
 !
+! N.B.:  FACTH = DTG / DTH / REAL(NTLOC)  (value set in w3wavemd)
+!        namely, FACTH*VC=1 corresponds to CFL=1
+!
           FDDMAX = 0.
           FDG    = FACTH * CTHG0
 !
@@ -1383,20 +1388,17 @@
             FDDMAX = MAX(FDDMAX,ABS(ESIN(ITH)*DDDX-ECOS(ITH)*DDDY))
             END DO
 !
+          CFLTHMAX = 0.
           DO IK=1, NK
             FRK(IK) = FACTH * DSDD(IK) / WN(IK)
-            FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+!
+! Removes the filtering that was done at that stage (F. Ardhuin 2011/03/06)
+!
+!            FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
             FRG(IK) = FDG * CG(IK)
             END DO
 !
-! 3.b Depth refraction and great-circle propagation
-!
-          DO ISP=1, NSPEC
-            VCFLT(MAPTH2(ISP)) = FRG(MAPWN(ISP)) * ECOS(ISP)          &
-             + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
-            END DO
-!
-! 3.c Current refraction
+! 3.b Current refraction
 !
           IF ( FLCUR ) THEN
 !
@@ -1405,12 +1407,29 @@
               DCXY   = FACTH *   DCXDY
 !
               DO ISP=1, NSPEC
-                VCFLT(MAPTH2(ISP)) = VCFLT(MAPTH2(ISP)) +             &
-                  ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
-                  END DO
+                VCFLT(MAPTH2(ISP)) = ES2(ISP)*DCYX  +     &
+                                     ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+                END DO
 !
+          ELSE
+            VCFLT(:)=0.
             END IF
 !
+!
+! 3.c Depth refraction and great-circle propagation
+!
+          DO ISP=1, NSPEC
+            VELNOFILT = VCFLT(MAPTH2(ISP))       &
+               + FRG(MAPWN(ISP)) * ECOS(ISP)              &
+               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+            CFLTHMAX = MAX(CFLTHMAX, ABS(VELNOFILT))
+!
+! Puts filtering on total velocity (including currents and great circle effects)
+! the filtering limits VCFLT to be less than CTMAX 
+! this modification was proposed by F. Ardhuin 2011/03/06
+!             
+            VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
+            END DO
         END IF
 !
 ! 4.  Wavenumber shift velocities ------------------------------------ *
@@ -1514,6 +1533,168 @@
 !/ End of W3KTP3 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3KTP3
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS, CFLXYMAX, VGX, VGY )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         31-Oct-2010 |
+!/                  +-----------------------------------+
+!/
+!/    07-Mar-2011 : Origination.                        ( version 3.14 )
+!/
+!  1. Purpose :
+!
+!     Computes the maximum CFL number for spatial advection. Used for diagnostic
+!     purposes. (Could be used to define a local time step ...)
+!
+!  2. Method :
+!
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       ISEA    Int.   I   Index of grid point.
+!       DTG     Real   I   Total time step.
+!       MAPSTA  I.A.   I   Grid point status map.
+!       MAPFS   I.A.   I   Storage map.
+!       CFLXYMAX Real  O   Maximum CFL number for XY propagation.
+!       VGX/Y   Real   I   Speed of grid.
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+!       NTLOC   Int   Number of local time steps.
+!       DTLOC   Real  Local propagation time step.
+!       VCFL0X  R.A.  Local courant numbers for absolute group vel.
+!                     using local X-grid step.
+!       VCFL0Y  R.A.  Id. in Y.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       STRACE   Service routine.
+!
+!  5. Called by :
+!
+!       W3WAVE   Wave model routine.
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!     - Curvilinear grid implementation. Variables FACX, FACY, CCOS, CSIN,
+!       CCURX, CCURY are not needed and have been removed.  FACX is accounted
+!       for as approriate in this subroutine.  FACX is also accounted for in
+!       the case of .NOT.FLCX.  Since FACX is removed, there is now a check for
+!       .NOT.FLCX in this subroutine.  In CFL calcs dx and dy are omitted,
+!       since dx=dy=1 in index space.  Curvilinear grid derivatives
+!       (DPDY, DQDX, etc.) and metric (GSQRT) are brought in via W3GDATMD.
+!
+!  8. Structure :
+!
+!     ---------------------------------------------
+!     ---------------------------------------------
+!
+!  9. Switches :
+!
+!       !/S     Enable subroutine tracing.
+!
+!       !/MGP   Moving grid corrections.
+!       !/MGG   Moving grid corrections.
+!
+!       !/T     Enable general test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+!
+      USE W3TIMEMD, ONLY: DSEC21
+!
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,      &
+                          FLCX, FLCY, NK, NTH, DTH, XFR,          &
+                          ECOS, ESIN, SIG, WDCG, WDTH, PFMOVE,    &
+                          FLAGLL, DPDX, DPDY, DQDX, DQDY, GSQRT
+      USE W3WDATMD, ONLY: TIME
+      USE W3ADATMD, ONLY: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2, NACT,   &
+                          NCENT, MAPX2, MAPY2, MAPAXY, MAPCXY,        &
+                          MAPTRN, CG, CX, CY, ATRNX, ATRNY, ITIME
+      USE W3IDATMD, ONLY: FLCUR
+      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
+                          ISBPI, BBPI0, BBPIN
+!/S      USE W3SERVMD, ONLY: STRACE
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: ISEA, MAPSTA(NY*NX), MAPFS(NY*NX)
+      REAL, INTENT(IN)        :: DTG, VGX, VGY
+      REAL, INTENT(INOUT)     :: CFLXYMAX
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: ITH, IK, IXY, IP
+      INTEGER                 :: IX, IY, IXC, IYC, IBI
+!/S      INTEGER, SAVE           :: IENT = 0
+      REAL                    :: CG0, CGA, CGN, CGX, CGY, CXC, CYC,   &
+                                 CXMIN, CXMAX, CYMIN, CYMAX
+      REAL                    :: CGC, FGSE = 1.
+      REAL                    :: FTH, FTHX, FTHY, FCG, FCGX, FCGY
+      REAL                    :: CP, CQ
+!/
+!/ Automatic work arrays
+!/
+      REAL                    :: VLCFLX, VLCFLY
+      REAL                    :: CXTOT, CYTOT
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3XYCFL')
+!
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Set constants
+!
+!
+      CFLXYMAX=0.
+      IX  = MAPSF(ISEA,1)
+      IY  = MAPSF(ISEA,2)
+      IXY = MAPSF(ISEA,3)
+      DO IK=1,NK
+        DO ITH=1,NTH
+          CXTOT = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+          CYTOT = ESIN(ITH) * CG(IK,ISEA)
+!/MGP          CXTOT = CXTOT - VGX/CLATS(ISEA)
+!/MGP          CYTOT = CYTOT - VGY
+
+
+          IF ( FLCUR ) THEN
+            CXTOT = CXTOT + CX(ISEA)/CLATS(ISEA)
+            CYTOT = CYTOT + CY(ISEA)
+            END IF
+
+          CP = CXTOT*DPDX(IY,IX) + CYTOT*DPDY(IY,IX)
+          CQ = CXTOT*DQDX(IY,IX) + CYTOT*DQDY(IY,IX)
+          VLCFLX = CP*DTG
+          VLCFLY = CQ*DTG
+          CFLXYMAX = MAX(VLCFLX,VLCFLY,CFLXYMAX)
+          END DO
+        END DO
+
+      RETURN
+!/
+!/ End of W3XYCFL ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3CFLXY
+
 !/
 !/ End of module W3PRO3MD -------------------------------------------- /
 !/

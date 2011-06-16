@@ -591,7 +591,8 @@
 !/MPI                      CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
                       OPEN (NDSS,FILE=FNMPRE(:JJ)//'ww3_shel.scratch')
                       REWIND (NDSS)
-                      ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+!AF: Added IF test 2011/04/04
+                      IF (NPTS.GT.0) ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
                     END IF
 !
                   NPTS   = 0
