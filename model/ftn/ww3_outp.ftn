@@ -654,7 +654,7 @@
 ! ... ITYPE=4 & OTYPES=[2,4] requires adding lines at bottom of
 !     bulletin output for compatibility with version 2.22
 !
-      IF (ITYPE .EQ. 4 .AND. OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
+      IF (ITYPE .EQ. 4 .AND. ( OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) ) THEN
         DO IJ = 1,NOPTS
           IF (FLREQ(IJ)) THEN
             NDSBUL = NDSTAB + (IJ - 1)
