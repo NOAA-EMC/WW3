@@ -31,6 +31,9 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/     1-Apr-2011 : Fix bug GLOBX forcing with unst.    ( version 3.14.4 )
+!/    25-Jun-2011 : Fix bug prep forcing with unst.     ( version 4.01 )
+
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -200,6 +203,7 @@
                                  IDLAF(2), IDFMF(2), TIME2(2),        &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
                                  NDAT, NDATMX, JJ, IS(4), JS(4)
+      INTEGER                 :: NYB
       INTEGER                 :: ILAND = -999
 !/O15      INTEGER                 :: NDSTIME
       INTEGER, ALLOCATABLE    :: IX21(:,:), IX22(:,:),                &
@@ -402,6 +406,9 @@
           ALLOCATE ( MASK(NXI,NYI) )
           MASK   = 1
           IF(GTYPE .EQ. UNGTYPE) THEN
+!
+!  X0, Y0 are the coordinates of the lower-left point in mesh
+!
               RW(1) = FACTOR*X0        ; RW(2) = FACTOR*MAXX
               RW(3) = FACTOR*Y0        ; RW(4) = FACTOR*MAXY
             ELSE
@@ -503,6 +510,7 @@
 ! ... construct interpolation data
 !
 !/T1              WRITE (NDST,9045)
+            IF (GTYPE .NE. UNGTYPE) THEN
               DO IY=1,NY
                 DO IX=1,NX
                   INGRID = W3GRMP( GSI, XGRD(IY,IX), YGRD(IY,IX),      &
@@ -524,8 +532,51 @@
 !/T1                    RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
                   END DO
                 END DO
+            ELSE 
+            DO IX=1, NX
+              X = XYB(IX,1)
+              Y = XYB(IX,2)
+ 
+
+                IX21(IX,1) =   1 + INT((X-X0I)/SXI)
+                IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
+                IX22(IX,1) =   IX21(IX,1) + 1
+                IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
+		IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
+                IY22(IX,1) =   IY21(IX,1) + 1
 !
-! ... clean up
+		RW(1) =  (X-X0I)/SXI - REAL(IX21(IX,1)-1)
+		RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
+		
+		IF (IY21(IX,1).EQ.1 .AND. RW(2).LT.ACC) THEN
+                IF (RW(2).LT.-ACC) THEN
+                  WRITE (NDSO,1044) Y
+                ELSE IF (RW(2).LT.0.) THEN
+                  RW(2) = 0.
+!/T                  FLMOD  = .TRUE.
+                  END IF
+                END IF
+!
+              IF (IY21(IX,1).EQ.NYI .AND. RW(2).GT.1.-ACC) THEN
+                IF (RW(2).GT.1.+ACC) THEN
+                  WRITE (NDSO,1044) Y
+                ELSE IF (RW(2).GT.1.) THEN
+                  RW(2) = 1.
+!/T                       FLMOD  = .TRUE.
+                  END IF
+                END IF
+		
+                EFAC       = SQRT ( MAX(0.,ABS(RW(1)-0.5)-0.5)**2 +  &
+                                    MAX(0.,ABS(RW(2)-0.5)-0.5)**2 )
+                EFAC        = 1. / ( 1. + 0.25*EFAC**2 )
+                
+
+                RD11(IX,1) = EFAC * (1.-RW(1)) * (1.-RW(2))
+                RD21(IX,1) = EFAC *    RW(1)   * (1.-RW(2))
+                RD12(IX,1) = EFAC * (1.-RW(1)) *    RW(2)
+                RD22(IX,1) = EFAC *    RW(1)   *    RW(2)
+                END DO 
+              END IF ! GTYPE .NE. UNGTYPE
 !
               CALL W3GSUD( GSI )
               DEALLOCATE ( ALA, ALO )
@@ -1362,6 +1413,12 @@
  1042 FORMAT (/' *** WAVEWATCH-III WARNING W3PREP : '/                &
                '     GRID POINT ',2I6,2F7.2,/                         &
                ' NOT COVERED BY INPUT GRID.'/)
+ 1043 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
+               '     X = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
+ 1044 FORMAT (/' *** WAVEWATCH III WARNING W3PREP : '/                &
+               '     Y = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
+!
+
 !
  1045 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ERROR IN OPENING LAT-LONG DATA FILE'/            &

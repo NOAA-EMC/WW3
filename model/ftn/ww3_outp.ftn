@@ -397,7 +397,10 @@
                   WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
                                   NK, NTH, NREQ, GNAME
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
-                  WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+!
+! conversion of directions from trignonmetric to nautical (still uses directions TO ) 
+! 
+                 WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
 
                 ELSE
                   WRITE (NDSO,1943) TFNAME, 'FORMATTED'
@@ -822,7 +825,7 @@
 !/                  |            F. Ardhuin             |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Apr-2008 |
+!/                  | Last update :          1-Jul-2011 |
 !/                  +-----------------------------------+
 !/
 !/    08-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -848,6 +851,7 @@
 !/    09-Apr-2008 : Adding an additional output for     ( version 3.12 )
 !/                  WMO standard (A. Chawla)
 !/    29-Apr-2008 : Adjust format partition output.     ( version 3.14 )
+!/     1-Jul-2011 : Adding BT4                          ( version 4.01 )
 !/
 !  1. Purpose :
 !
@@ -933,6 +937,7 @@
 !/NLX      USE W3SNLXMD
 !/BT1      USE W3SBT1MD
 !/BT2      USE W3SBT2MD
+!/BT4      USE W3SBT4MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
@@ -970,8 +975,9 @@
 !/ST3      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
 !/ST3                                 TAUWNX, TAUWNY
 !/ST4      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
-!/ST4                                 TAUWNX, TAUWNY
+!/ST4                                 TAUWNX, TAUWNY, FMEAN1
 !/BS1      REAL                    :: TAUSCX, TAUSCY
+!/BT4      REAL                    :: D50, BEFORM(2), TAUBBL(2)
            REAL                    :: ICE
 !/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
 !/STAB2                                 THARG1, THARG2
@@ -1280,7 +1286,7 @@
 !/ST3                CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
 !/ST3                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST3                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,        &
+!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 
@@ -1309,7 +1315,7 @@
 !/ST4                  CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
 !/ST4                               ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
 !/ST4                               TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
-!/ST4                  CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,      &
+!/ST4                  CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 !/FLX2                  CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
@@ -1388,7 +1394,7 @@
 !/ST3                CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
 !/ST3                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST3                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,        &
+!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 !
@@ -1410,7 +1416,7 @@
 !/ST3                  CALL W3SIN3 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
 !/ST3                                ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
 !/ST3                                TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
-!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,       &
+!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,        &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 !/ST4                  CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
@@ -1467,7 +1473,10 @@
 !/BT1                    CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
 !/BT2                    SBTC2 = 2. * -0.067 / GRAV
 !/BT2                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
-!/BTX                    CALL W3SBTX
+!/BT4 ! How do we get the D50 here ???  Use IX and IY ? 
+!/BT4                    D50=0.0002  ! to be fixed later
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, TAUBBL,   & 
+!/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 !
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &
 !/BS1                           CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)), &

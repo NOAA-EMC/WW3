@@ -269,7 +269,7 @@ END MODULE c_caldat
       REAL, POINTER           :: ALA(:,:), ALO(:,:)
       REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
       LOGICAL                 :: INGRID
-      LOGICAL                 :: FLSTAB, FLBERG, GLOBX, CLO(2),       &
+      LOGICAL                 :: FLSTAB, FLBERG, CLO(2),       &
                                  FLTIME, FLHDR
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
@@ -278,6 +278,7 @@ END MODULE c_caldat
       CHARACTER*12            :: IDSTR1(5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*20            :: IDSTR2(5)
+      INTEGER                 :: ICLO
       INTEGER                 :: GTYPEDUM = 0
 !
       INTEGER               :: ncid, stat, dimid(4), dimln(4)
@@ -576,11 +577,12 @@ END MODULE c_caldat
 !
         SXI    = (XNI-X0I)/REAL(NXI-1)
         SYI    = (YNI-Y0I)/REAL(NYI-1)
+        ICLO   = ICLOSE_NONE
         IF (GTYPE .LT. UNGTYPE) THEN
           IF (FLAGLL) THEN
-            GLOBX  = (ABS(ABS(REAL(NXI)*SXI)-360.) .LT. 0.1*ABS(SXI))
-          ELSE
-            GLOBX  = .FALSE.
+            IF ( ABS(ABS(REAL(NXI)*SXI)-360.) .LT. 0.1*ABS(SXI) ) THEN 
+              ICLO = ICLOSE_SMPL
+              END IF
             END IF
           END IF
         IF ( ASSOCIATED(ALA) ) THEN
@@ -597,11 +599,11 @@ END MODULE c_caldat
 !
 ! ... create grid search utility
 !
-        GSI = W3GSUC( .TRUE., FLAGLL, GLOBX, NXI, NYI, ALO, ALA )
+        GSI = W3GSUC( .TRUE., FLAGLL, ICLO, NXI, NYI, ALO, ALA )
 !
         IF (FLAGLL) THEN
           IF (ABS(X0I-XNI) .GT. 360.+0.5*ABS(SXI)) GOTO 840
-          IF ( GLOBX ) THEN
+          IF ( ICLO.EQ.1 ) THEN
             XDIF   = X0 - X0I
             IF ( XDIF .GE. 0. ) THEN
               ADD    = REAL(INT(XDIF/360.))
@@ -612,7 +614,7 @@ END MODULE c_caldat
             XDIF   = - 0.5*(XNI+X0I) + 0.5*(2.*X0+REAL(NX-1)*SX)
             IF (GTYPE .EQ. 3)  XDIF   = - 0.5*(XNI+X0I) + 0.5*(2.*MAXX)
             ADD    = REAL(NINT(XDIF/360.))
-            END IF  ! GLOBX
+            END IF  ! ICLO.EQ.1
 !
           ADD    = ADD * 360.
           X0I    = X0I + ADD
@@ -620,13 +622,13 @@ END MODULE c_caldat
           IF (Y0I.LT.-90 .OR. YNI.GT.90.) GOTO 841
           END IF ! FLAGLL 
 !
-!/T              WRITE (NDST,9040) X0I, XNI, SXI, GLOBX, Y0I, YNI, SYI
+!/T              WRITE (NDST,9040) X0I, XNI, SXI, ICLO, Y0I, YNI, SYI
 !
 ! ... Calculate 1-D interpolation data longitudes
 !
 !/T              WRITE (NDST,9041) 'LON / X'
 !
-        IF ( GLOBX ) THEN
+        IF ( ICLO.EQ.1 ) THEN
 !
 !FA This is not consistent with curviliear grids: should have a double loop on IX and IY
 !   and use X=XGRD and Y=YGRD ... 
@@ -650,7 +652,8 @@ END MODULE c_caldat
 !/T                                      FACTOR*(X0I+REAL(IX2(IX)-1)*SXI),&
 !/T                                      RX2(IX), ' '
             END DO
-        ELSE ! GLOBX 
+        END IF ! ICLO.EQ.1
+        IF ( ICLO.EQ.0 ) THEN
 !
 !FA This is not consistent with curviliear grids: should have a double loop on IX and IY
 !
@@ -692,7 +695,7 @@ END MODULE c_caldat
 !/T                                       RX2(IX), '<-- MOD'
 !
             END DO
-          END IF ! GLOBX
+          END IF ! ICLO.EQ.0
 !
 ! ... Calculate 1-D interpolation data latitudes
 !

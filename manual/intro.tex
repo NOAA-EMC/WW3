@@ -62,10 +62,16 @@ Slot for new grids (model version 4.02)
 
 \end{list}
 
-\vspace{\baselineskip} \noindent 
-A note of caution. \ws\ includes wave-current interactions. The implementation
-of these interactions has only been tested in idealized test cases. Only
-limited tests in realistic conditions have been performed.
+%\vspace{\baselineskip} \noindent 
+%A note of caution. \ws\ includes wave-current interactions. The implementation
+%of these interactions has only been tested in idealized test cases. Only
+%limited tests in realistic conditions have been performed.
+%
+% Note from FA: SHOM and Ifremer have been using it routinely with currents and water levels for 
+% forecasts. There used to be a few bugs but they have now been fixed, and the result improvement is
+% spectacular. We are now investigating the details, and things may still be a bit strange close to blocking 
+% conditions, but not worse than other things (spectral shapes in shallow water ...) So I think this 
+% note of caution can be removed. 
 
 \vspace{\baselineskip} \noindent 
 Up to date information on this model can be found (including bugs and bug
@@ -184,9 +190,8 @@ order) :
 \begin{list}{\ldots}{ }
 \item [Henrique Alves] (Metocean Engineers, Australia) \\
 Support of code development while at NCEP, shallow water physics packages.
-\item [Fabrice Ardhuin] (Service Hydrographique et Oc\'{e}anographique de la
-Marine, France) \\
-Various  physics packages.
+\item [Fabrice Ardhuin] (Ifremer, France, previously at SHOM, France) \\
+Various  physics packages, interface with unstructured grid schemes.
 \item [Nico Booij] (Delft University of Technology, The Netherlands) \\
 Original design of source code pre-processor ({\code w3adc}), basic method of
 documentation and other programming habits. Spatially varying wavenumber grid.
@@ -198,6 +203,8 @@ software \citep{tol:MMAB07a, tol:OMOD08a}.
 %\item [Vladimir Krasnopolsky] (Science Applications International Corporation,
 %  USA) \\
 %Neural Network nonlinear interaction approaches.
+\item [Aron Roland] (T. U. Darmstadt, Germany) \\
+Advection on unstructured (triangle-based) grids and meshing tools
 \item [Barbara Tracy] (US Army Corps of Engineers, ERDC-CHL, USA) \\
 Spectral partitioning
 \item [Gerbrant Ph. van Vledder] (Alkyon Hydraulic Consultancy \& Research,

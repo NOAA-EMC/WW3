@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         05-Jul-2011 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -24,6 +24,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    31-Oct-2010 : Implement unstructured grid         ( version 3.14 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    05-Jul-2011 : Revert to X-Y gaussian shape        ( version 4.01 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -441,6 +442,11 @@
             IY     = MAPSF(ISEA,2)
          ENDIF 	    
             RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
+            IF (GTYPE .EQ. RLGTYPE)  THEN 
+              X      = X0 + REAL(IX-1)*SX
+              Y      = Y0 + REAL(IY-1)*SY
+              RDSQR  = ((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+              END IF 
             IF ( RDSQR .GT. 40. ) THEN
                 FACTOR = 0.
               ELSE

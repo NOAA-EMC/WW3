@@ -534,7 +534,7 @@
 !/T 9012 FORMAT (' TEST W3IOPP : INT. DATA: ',2I6,1F8.2)
 !/T 9013 FORMAT (' TEST W3IOPP : INT. DATA B): ',4I4,2F8.2)
 !/T 9020 FORMAT (' TEST W3IOPP : PREPROCESSED DATA',I4,2X,A,2X,2F12.2, &
-!/T           4(/'             ',2I5,F6.3))
+!/T           4(/'             ',2I5,2F6.3))
 !/T 9021 FORMAT (' TEST W3IOPP : PREPROCESSED DATA',I4,2X,A,2X,2F12.2, &
 !/T           4(/'             ',2I5,F6.3))
 !/

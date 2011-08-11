@@ -581,19 +581,19 @@
 ! Formats
 !
   900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
-               '     ILEGAL INXOUT VALUE: ',A/)
+               '     ILLEGAL INXOUT VALUE: ',A/)
   901 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
-               '     ILEGAL IDSTR, READ : ',A/                        &
+               '     ILLEGAL IDSTR, READ : ',A/                       &
                '                  CHECK : ',A/)
   902 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
-               '     ILEGAL VEROGR, READ : ',A/                       &
+               '     ILLEGAL VEROGR, READ : ',A/                      &
                '                   CHECK : ',A/)
 !
   909 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
                '     POINT',2I4,' NOT ACTIVE SEA POINT (',I1,')')
   910 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
                '     POINT',2I4,' NOT LOCATED IN GRID')
-  911 FORMAT ( ' *** WAVEWATCH III WARNING : POINT',2I4,              &
+  911 FORMAT ( ' *** WAVEWATCH III WARNING : POINT',2I7,              &
                    ' WILL NOT BE UPDATED')
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &

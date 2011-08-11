@@ -228,7 +228,7 @@ code.
 \vspace{\baselineskip} \noindent
 Note that bottom and obstruction data may be in same file.
 
-\inpfile{ww3_grid.tex}
+\inpfile{inp_grid.tex}
 
 
 \pb
@@ -243,7 +243,7 @@ Note that bottom and obstruction data may be in same file.
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{restart.ww3}{Restart file in \ws\ format.}{20}
 
-\inpfile{ww3_strt.tex}
+\inpfile{inp_strt.tex}
 
 
 \pb
@@ -266,7 +266,7 @@ Note that bottom and obstruction data may be in same file.
 \proddefa{data1.ww3\opt}{Assimilation data (`1-D spectra').}{12}
 \proddefa{data2.ww3\opt}{Assimilation data (`2-D spectra').}{12}
 
-\inpfile{ww3_prep.tex}
+\inpfile{inp_prep.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -310,7 +310,7 @@ reference if made to this routine.
 \proddefa{track\_o.ww3\opt}{Raw output of spectra along tracks.}{23}
 \proddeff{Scratch}{ww3\_shel.scratch}{Formatted scratch file.}{90}
 
-\inpfile{ww3_shel.tex}
+\inpfile{inp_shel.tex}
 
 
 \pb
@@ -333,7 +333,7 @@ where file extensions {\file .ww3} are replaced by an identifier for a
 specific grid. Note that all files are opened by name, and that the unit
 number assignment is dynamic and automatic.
 
-\inpfile{ww3_multi.tex}
+\inpfile{inp_multi.tex}
 
 \pb
 % -------------------------------------------------------------
@@ -349,12 +349,35 @@ post-processor.}{10}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{\ldots \opt}{Transfer file.}{50}
 
-\inpfile{ww3_outf.tex}
+\inpfile{inp_outf.tex}
 
 \vspace{\baselineskip} 
 \noindent
 The extension of the file name of transfer files for {\F itype = 3} identifies
 the content of the file. The file extension for each data type is given in
+Table~\ref{tab:fields} on page~\pageref{tab:fields}.
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Gridded NetCDF output post-processor} \label{sec:post_ncf}
+\vsssub
+
+\proddefH{ww3\_ounf}{w3ounf}{ww3\_ounf.ftn}
+\proddeff{Input}{ww3\_ounf.inp}{Input file for gridded output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_grd.ww3}{Raw gridded output data.}{20}
+\proddefa{NC\_globatt.inp}{Additional global attributes.}{994}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{\opt  .nc}{NetCDF file}{}
+
+\inpfile{inp_ounf.tex}
+
+\vspace{\baselineskip} 
+\noindent
+When a single field is put in the file, 
+the abbreviated field name (file extensions from ww3\_outf) for each data type is given in
 Table~\ref{tab:fields} on page~\pageref{tab:fields}.
 
 
@@ -369,12 +392,13 @@ Table~\ref{tab:fields} on page~\pageref{tab:fields}.
 post-processor.}{10}
 \proddefa{mod\_def.ww3}{Model definition file.}{20}
 \proddefa{out\_pnt.ww3}{Raw point output data.}{20}
+\proddefa{NC\_globatt.inp}{Additional global attributes.}{994}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{tab{\sl{nn}}.ww3 \opt}{Table of mean parameters where
 {\file{\sl{nn}}} is a two-digit integer.}{\sl nn}
 \proddefa{\ldots \opt}{Transfer file.}{user}
 
-\inpfile{ww3_outp.tex}
+\inpfile{inp_outp.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -394,6 +418,26 @@ standard input (no comment lines allowed) :
 \noindent
 All above strings are read as characters using free format, and therefore need
 to be enclosed in quotes.
+
+
+\pb
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Point output NetCDF post-processor} \label{sec:post_ncp}
+\vsssub
+
+\proddefH{ww3\_ounp}{w3ounp}{ww3\_ounp.ftn}
+\proddeff{Input}{ww3\_ounp.inp}{Input file for point output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_pnt.ww3}{Raw point output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{\ldots \opt}{Transfer file.}{user}
+
+\inpfile{inp_ounp.tex}
+
+\vspace{\baselineskip} 
+\noindent 
 
 
 \pb
@@ -450,7 +494,7 @@ post-processor.}{10}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{gribfile}{GRIB file.}{50}
 
-\inpfile{ww3_grib.tex}
+\inpfile{inp_grib.tex}
 
 \vspace{\baselineskip} 
 \noindent
@@ -512,7 +556,7 @@ post-processor.}{10}
 \proddefa{ww3.grads}{GrADS data file.}{50}
 \proddefa{ww3.ctl}{GrADS control file.}{51}
 
-\inpfile{gx_outf.tex}
+\inpfile{inpg_outf.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -539,7 +583,7 @@ post-processor.}{10}
 \proddefa{ww3.mean.grads}{File with mean wave parameters.}{31}
 \proddefa{ww3.spec.ctl}{GrADS control file.}{32}
 
-\inpfile{gx_outp.tex}
+\inpfile{inpg_outp.tex}
 
 \vspace{\baselineskip} 
 \noindent

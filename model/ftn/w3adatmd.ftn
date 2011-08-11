@@ -754,6 +754,7 @@
 !/COU            IF (COUG_US3D) WADATS(IMOD)%US3D(:,:)=0.
 !
       WADATS(IMOD)%USERO = UNDEF
+      WADATS(IMOD)%BEDFORMS = 0.
 !
       ALLOCATE ( WADATS(IMOD)%PHS(NXXX,0:NOSWLL),                     &
                  WADATS(IMOD)%PTP(NXXX,0:NOSWLL),                     &

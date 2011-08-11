@@ -56,6 +56,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Mar-2010 : Adding coupling, ice in W3SRCE.     ( version 3.14_SHOM )
 !/    16-May-2010 : Adding transparencies in W3SCRE     ( version 3.14_SHOM )
+!/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -363,7 +364,7 @@
                                  DTL0, DTI0, DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
                                  FACX, FACY, SXM, SYM, XXX, REFLEC(4),&
-                                 DELX, DELY, DELA, DEPTH
+                                 DELX, DELY, DELA, DEPTH, D50
 !/SEC1     REAL                    :: DTGTEMP
       REAL, ALLOCATABLE       :: FIELD(:)
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
@@ -381,6 +382,9 @@
 !/PALM real ::vecta(1:NSEAL),vectb(1:NSEAL)
 !/PALM real ::vectg(1:NSEAL),vecth(1:NSEAL),vecti(1:NSEAL)
 !/PALM real ::vectj(1:NSEAL),vectk(1:NSEAL),vectl(1:NSEAL)
+!/PALM real ::vectm(1:NSEAL),vectn(1:NSEAL),vectp(1:NSEAL)
+!/PALM real ::vectq(1:NSEAL),vectr(1:NSEAL),vects(1:NSEAL)
+!/PALM real ::vectdw(1:NSEAL),vectwlm(1:NSEAL)
 !/PALM  CHARACTER(LEN=PL_LNAME) :: cl_object, cl_space
 !/PALM  INTEGER                :: PALMED
 !/PALM  LOGICAL :: MEL03
@@ -610,11 +614,15 @@
 !/PALM if (iaproc==1)write(*,*)'PALM:ww will get cx cy',palm_time_a,itime
 !/PALM  cl_space  = 'vect1d'
 !/PALM  cl_object = 'vectcx'
-!/PALM  CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cx, il_err)
+!
+!/PALM CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cx, il_err)
+!
 !/PALM! get du cy
 !/PALM  cl_space  = 'vect1d'
 !/PALM  cl_object = 'vectcy'
-!/PALM  CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cy, il_err)
+!
+!/PALM CALL PALM_GET(cl_space, cl_object, palm_time_a, PL_NO_TAG, cy, il_err)
+!
 !/PALM if(iaproc==1)write(*,*)'PALM:ww got cx',palm_time_a,itime,cx(100),cy(100)
 !/PALM! get du wlv
 !/PALM  cl_space  = 'vect1d'
@@ -933,6 +941,9 @@
               SXM    = SX
               SYM    = SY
               END IF
+            D50=0.0002
+            REFLEC(:)=0.
+            REFLED(:)=0.
 !
               DO JSEA=1, NSEAL
 !/DIST                ISEA   = IAPROC + (JSEA-1)*NAPROC
@@ -942,10 +953,11 @@
                 DELX=SXM*CLATS(ISEA)
                 DELY=SYM
                 DELA=DELX*DELY
-                REFLEC=REFLC(:,ISEA)
-                REFLEC(4)=BERG(ISEA)*REFLEC(4)
-                REFLED=REFLD(:,ISEA)
+!/REF1                REFLEC=REFLC(:,ISEA)
+!/REF1          REFLEC(4)=BERG(ISEA)*REFLEC(4)
+!/REF1                REFLED=REFLD(:,ISEA)
                 DEPTH  = MAX ( DMIN , DW(ISEA) )
+!/BT4           D50=SED_D50(ISEA)
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
@@ -963,7 +975,7 @@
                           TAUWIY(ISEA), TAUWNX(ISEA),                 &
                           TAUWNY(ISEA),  PHIAW(ISEA), CHARN(ISEA),    &
                           PHIOC(ISEA), WHITECAP(ISEA,1:4),              & 
-                          BEDFORMS(ISEA,1:2), PHIBBL(ISEA), TAUBBL(ISEA,1:2))
+                          D50, BEDFORMS(ISEA,1:2), PHIBBL(ISEA), TAUBBL(ISEA,1:2))
                   ELSE
                     UST   (ISEA) = UNDEF
                     USTDIR(ISEA) = UNDEF
@@ -985,7 +997,146 @@
 !
 !/SEC1       END DO
 !/SEC1       DTG=DTGTEMP
+!
+!
+! PALM COUPLER Calls
+!
 
+!/PALM  DO JSEA=1, NSEAL
+!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM!  vecta(JSEA)=ust(ISEA)
+!/PALM!  vectb(JSEA)=ustdir(ISEA)
+!/PALM  vecta(JSEA)=0.0
+!/PALM  vectb(JSEA)=0.0
+!/PALM  END DO
+!
+!/PALM write(*,*)'suis dans w3wavemd, print iaproc,vecta,vectb',iaproc
+!/PALM write(*,*)'PALM:ww this is where you send vecta',itime
+! this may be the mistake
+!modif ac 060410
+!/PALM  palm_time_b=ITIME
+!fin modif ac
+!/PALM if (iaproc==1) write(*,*)'palm_time_b,min_palm_time_b,max_palm_time_b',palm_time_b,min_palm_time_b,max_palm_time_b
+!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
+!/PALM if (iaproc==1) write(*,*)'send ust plam_time_b iaproc',palm_time_b,iaproc
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vecta'
+!/PALM if (iaproc==1) write(*,*)'PALM:ww will send vecta',palm_time_b,itime
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecta, il_err)
+!/PALM if (iaproc==1) write(*,*)'PALM:ww sent vecta',palm_time_b,itime
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectb'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectb, il_err)
+!/PALM if (iaproc==1)write(*,*)'PALM:ww sent vectb',palm_time_b,itime
+!/PALM  endif
+!
+!
+!
+!/PALM !modif ac pour tester avec ma version de mellor 2003
+!/PALM  MEL03=.FALSE.
+!/PALM  if (iaproc==1)write(*,*)'PALM:ww coucou here calculating vect g,h,i,j,k,l at itime=',itime,iaproc
+!/PALM  if (iaproc==1)write(*,*)'PALM:ww this is where you send vect g,h,i,j,k,l',itime,palm_time_b,iaproc
+!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
+!/PALM  IF (MEL03) THEN
+!/PALM  if (iaproc==1) write(*,*)'je suis dans le if de MEL03'
+!/PALM  DO JSEA=1, NSEAL
+!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM  vectg(JSEA)=WLV(ISEA)
+!/PALM  vecth(JSEA)=TMN(ISEA)
+!/PALM  vecti(JSEA)=HS(ISEA)
+!/PALM  vectj(JSEA)=THM(ISEA)
+!/PALM  vectk(JSEA)=TAUWX(ISEA)
+!/PALM  vectl(JSEA)=TAUWY(ISEA)
+!/PALM  !if ((TAUWY(ISEA).ne.0).and.(iaproc.eq.1)) then
+!/PALM  !write(*,*)'TAUWY non nul pour ISEA',ISEA
+!/PALM  !else if ((TAUOY(ISEA).ne.0).and.(iaproc.eq.1)) then
+!/PALM  !write(*,*)'TAUOY non nul pour ISEA',ISEA
+!/PALM  !else if ((JSMITH(ISEA).ne.0).and.(iaproc.eq.1)) then
+!/PALM  !write(*,*)'JSMITH non nul pour ISEA',ISEA
+!/PALM  !end if
+!/PALM  END DO
+!/PALM  ELSE
+!/PALM  if (iaproc==1) write(*,*)'je suis dans le else de MEL03'
+!/PALM  DO JSEA=1, NSEAL
+!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM  vectg(JSEA)=WLV(ISEA)
+!/PALM  vecth(JSEA)=TMN(ISEA)
+!/PALM  vecti(JSEA)=HS(ISEA)
+!/PALM  vectj(JSEA)=THM(ISEA)
+!/PALM  vectk(JSEA)=JSMITH(ISEA)
+!/PALM  vectl(JSEA)=TAUOX(ISEA)
+!/PALM  vectm(JSEA)=TAUOY(ISEA)
+!/PALM  vectn(JSEA)=TAUWX(ISEA)
+!/PALM  vectp(JSEA)=TAUWY(ISEA)
+!/PALM  vectq(JSEA)=UBA(ISEA)
+!/PALM  vectr(JSEA)=UBD(ISEA)
+!/PALM  vects(JSEA)=PHIOC(ISEA)
+!/PALM  vectdw(JSEA)=DW(ISEA)
+!/PALM  vectwlm(JSEA)=WLM(ISEA)
+!/PALM  END DO
+!/PALM  END IF
+!/PALM  end if
+!/PALM  if (iaproc==1) write(*,*)'HS: 1933-2008',HS(1933:2008)
+!/PALM !fin modif ac
+!/PALM !
+!/PALM !do JSEA=1, NSEAL
+!/PALM !   ISEA      = IAPROC + (JSEA-1)*NAPROC
+!/PALM !if (iaproc.eq.1) then
+!/PALM !if (JSMITH(ISEA).ne.0) write(*,*)'ISEA, JSMITH',ISEA,JSMITH(ISEA)
+!/PALM !end if
+!/PALM !end do
+!/PALM ! Rajouter: WN(IK,ISEA),  US3D  et/ou  SXX3D 
+!/PALM !
+!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectg'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectg, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vecth'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecth, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vecti'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecti, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectj'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectj, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectk'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectk, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectl'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectl, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectm'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectm, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectn'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectn, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectp'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectp, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectq'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectq, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectr'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectr, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vects'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vects, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectdw'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectdw, il_err)
+!/PALM  cl_space  = 'vect1d'
+!/PALM  cl_object = 'vectwlm'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectwlm, il_err)
+!/PALM  if (iaproc==1) write(*,*)'PALM:ww sent vect g...rs dw wlm',palm_time_b,itime,iaproc
+!/PALM  endif
+!/PALM !
+!/PALM !
+!/PALM ! END of PALM COUPLER Calls
+!/PALM !
+!
 !
 ! 3.8 Update global time step.
 !     (Branch point FLDRY, IT=0)
@@ -1149,96 +1300,7 @@
 !/MPI                                 ( NRQGO, IRQGO, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
 !
-! PALM COUPLER calls 
-!
-!/PALM  DO JSEA=1, NSEAL
-!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/PALM!  vecta(JSEA)=ust(ISEA)
-!/PALM!  vectb(JSEA)=ustdir(ISEA)
-!/PALM  vecta(JSEA)=0.0
-!/PALM  vectb(JSEA)=0.0
-!/PALM  END DO
-!
-!/PALM if(iaproc==1)write(*,*)'PALM:ww this is where you send vecta',itime
-! this may be the mistake
-!/PALM  palm_time_b=ITIME
-!/PALM if(iaproc==1)write(*,*)'ww palm_time_b,min_palm_time_b,max_palm_time_b',palm_time_b,min_palm_time_b,max_palm_time_b
-!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
-!/PALM if(iaproc==1)write(*,*)'send ust plam_time_b iaproc',palm_time_b,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vecta'
-!/PALM if(iaproc==1)write(*,*)'PALM:ww will send vecta',palm_time_b,itime
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecta, il_err)
-!/PALM if(iaproc==1)write(*,*)'PALM:ww sent vecta',palm_time_b,itime
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectb'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectb, il_err)
-!/PALM if(iaproc==1)write(*,*)'PALM:ww sent vectb',palm_time_b,itime
-!/PALM  endif
-!
-!
-!/PALM  !palm_time_b=ITIME+1
-!/PALM  !if(ITIME.eq.0) palm_time_b=2
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww coucou here calculating vectc at itime=',itime,iaproc
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww this is where you send vectc',itime,palm_time_b,iaproc
-!/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
-!/PALM  DO JSEA=1, NSEAL
-!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/PALM  vectg(JSEA)=WLV(ISEA) 
-!/PALM  vecth(JSEA)=JSMITH(ISEA) 
-!/PALM  vecti(JSEA)=TAUOX(ISEA) 
-!/PALM  vectj(JSEA)=TAUOY(ISEA) 
-!/PALM  vectk(JSEA)=TAUWX(ISEA) 
-!/PALM  vectl(JSEA)=TAUWY(ISEA)
-!/PALM  END DO 
-!
-!modif ac pour tester avec ma version de mellor 2003
-!/PALM  MEL03=.TRUE.
-!/PALM  IF (MEL03) THEN
-!/PALM  DO JSEA=1, NSEAL
-!/PALM        ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/PALM  vecth(JSEA)=TMN(ISEA)
-!/PALM  vecti(JSEA)=HS(ISEA)
-!/PALM  vectj(JSEA)=THM(ISEA)
-!/PALM  END DO
-!/PALM  END IF
-!fin modif ac
-!
-! Rajouter: WN(IK,ISEA),  US3D  et/ou  SXX3D 
-!
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectg'
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectg',palm_time_b,itime,iaproc
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectg, il_err)
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectg',palm_time_b,itime,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vecth'
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vecth',palm_time_b,itime,iaproc
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecth, il_err)
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vecth',palm_time_b,itime,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vecti'
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vecti',palm_time_b,itime,iaproc
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vecti, il_err)
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vecti',palm_time_b,itime,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectj'
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectj',palm_time_b,itime,iaproc
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectj, il_err)
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectj',palm_time_b,itime,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectk'
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectk',palm_time_b,itime,iaproc
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectk, il_err)
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectk',palm_time_b,itime,iaproc
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectl'
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww send vectl',palm_time_b,itime,iaproc
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectl, il_err)
-!/PALM  if(iaproc==1)write(*,*)'PALM:ww sent vectl',palm_time_b,itime,iaproc
-!/PALM  endif
-!
-! End of PALM COUPLER calls
+!    WARNING: COUPLER CALLS SHOULD BE HERE ... 
 !
                             END IF
                         ELSE IF ( J .EQ. 2 ) THEN

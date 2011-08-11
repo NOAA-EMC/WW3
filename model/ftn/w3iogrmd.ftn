@@ -201,8 +201,8 @@
 !/ST2      USE W3SRC2MD, ONLY: INPTAB
 !/ST3      USE W3SRC3MD, ONLY: INSIN3
 !/ST4      USE W3SRC4MD, ONLY: INSIN4, TAUT, TAUHFT, TAUHFT2, &
-!/ST4                          SWELLFT, DELU, DELTAUW, DELUST, &
-!/ST4                          DELALP, DELTAIL, DELAB, &
+!/ST4                          DELU, DELTAUW, DELUST, &
+!/ST4                          DELALP, DELTAIL, &
 !/ST4                          DIKCUMUL 
 !/NL1      USE W3SNL1MD, ONLY: INSNL1
 !/NL2      USE W3SNL2MD, ONLY: INSNL2
@@ -278,6 +278,7 @@
 !/NLX      TNAME2 = 'Experimental                  '
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
+!/BT4      TNAME3 = 'SHOWEX                        '
 !/BTX      TNAME3 = 'Experimental                  '
 !/DB0      TNAME4 = 'Not defined                   '
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
@@ -485,9 +486,9 @@
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
           WRITE (NDSM)                                                &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-               FICE0, FICEN, PFMOVE, FLDRY, FLCX, FLCY, FLCTH,        &
+               FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
-
+!/SEC1              WRITE (NDSM) NITERSEC1
 !/COU     WRITE(NDSM)                                                 &
 !/COU          COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
@@ -539,9 +540,10 @@
             END IF
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-               FICE0, FICEN, PFMOVE, FLDRY, FLCX, FLCY,               &
+               FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
-
+!/SEC1              READ (NDSM) NITERSEC1
+!
 !/COU     READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
 !/COU          COUG_2D, COUG_RAD3D, COUG_US3D
         END IF
@@ -573,7 +575,7 @@
       DEALLOCATE ( MAPTMP )
 !
 !/T      WRITE (NDST,9015) DTCFL, DTCFLI, DTMAX, DTMIN,               &
-!/T                        DMIN, CTMAX, FICE0, FICEN, PFMOVE
+!/T                        DMIN, CTMAX, FICE0, FICEN, FICEL, PFMOVE
 !/T      WRITE (NDST,9016) FLDRY, FLCX, FLCY, FLCTH, FLCK,            &
 !/T                        FLSOU, FLBPI, FLBPO
 !/T      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,1),                    &
@@ -646,17 +648,21 @@
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FLICES, RREF, REFPARS, REFLC, REFLD,        &
-                P2MSF, US3DF
+                FLICES,                                               &
+                P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
+!/REF1          WRITE (NDSM)                                                &
+!/REF1                RREF, REFPARS, REFLC, REFLD
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FLICES, RREF, REFPARS, REFLC, REFLD,        &
-                P2MSF, US3DF
+                FLICES,                                               &
+                P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
+!/REF1         READ   (NDSM)                                                &
+!/REF1                RREF, REFPARS, REFLC, REFLD
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
@@ -756,8 +762,8 @@
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
 !/ST4                SSDSPBK, SSDSBINT, &
 !/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
-!/ST4                DELU, DELALP, DELAB, TAUT, TAUHFT, TAUHFT2,      &
-!/ST4                SWELLFT, IKTAB, DCKI, SATINDICES, SATWEIGHTS, &
+!/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
+!/ST4                IKTAB, DCKI, SATINDICES, SATWEIGHTS,             &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        ELSE
 !/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
@@ -770,8 +776,8 @@
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
 !/ST4                SSDSPBK, SSDSBINT, &
 !/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
-!/ST4                DELU, DELALP, DELAB, TAUT, TAUHFT, TAUHFT2,      &
-!/ST4                SWELLFT, IKTAB, DCKI, SATINDICES, SATWEIGHTS, &
+!/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
+!/ST4                IKTAB, DCKI, SATINDICES, SATWEIGHTS,             &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        END IF
 !
@@ -827,6 +833,17 @@
 !/BT1        ELSE
 !/BT1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
 !/BT1        END IF
+!
+!/BT1      IF ( FLTEST ) WRITE (NDST,9052) SBTC1
+!
+!
+!/BT4      IF ( WRITE ) THEN
+!/BT4          WRITE (NDSM)                                          &
+!/BT4                SBTCX, SED_D50
+!/BT4        ELSE
+!/BT4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+!/BT4                SBTCX, SED_D50
+!/BT4        END IF
 !
 !/BT1      IF ( FLTEST ) WRITE (NDST,9052) SBTC1
 !
@@ -969,6 +986,7 @@
 !/T 9015 FORMAT ('      STEPS  : ',4F8.1/                             &
 !/T              '      DEPTH  : ',F8.1,F10.3/                        &
 !/T              '      FICE0/N: ',F9.2,F8.2/                         &
+!/T              '      FICEL  : ',F9.1 /                             &
 !/T              '      PFMOVE : ',F9.2)
 !
 !/T 9016 FORMAT ('      FLAGS  : ',8L2)

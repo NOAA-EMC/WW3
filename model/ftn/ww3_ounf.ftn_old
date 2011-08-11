@@ -230,7 +230,7 @@
           CNTIPART=CNTIPART+1
         END IF
       END DO
-write (*,*) TABIPART
+      write (*,*) TABIPART
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) TOGETHER
 
@@ -512,7 +512,9 @@ write (*,*) TABIPART
                                  idim, ivar1, idvarout, start(4),count(4),     &
                                  dimln(6),start1D(2), count1D(2), dimfield(3), &
                                  deflate=1, iyc, imc, idc, ihc, iminc, isc,    &
-                                 Jday, Jday0, VMIN, VMAX, IP
+                                 Jday, Jday0, IP
+
+     INTEGER(KIND=4)          :: VMIN, VMAX
 
       INTEGER(KIND=4), ALLOCATABLE       :: TRIGP2(:,:)
 
@@ -538,8 +540,8 @@ write (*,*) TABIPART
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLONE
       CHARACTER               :: OLDTID*8, FNAME*16, FNAMENC*50,      &
-                  ENAME*4,ENAME2*4,FORMF*11, UNITS*10, &
-             UNITS2*10
+                                 ENAME*4,ENAME2*4,FORMF*11, UNITS*15, &
+                                 UNITS2*15
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
 !/
@@ -670,8 +672,8 @@ write (*,*) TABIPART
             varnl(2)='northward_current'
             varns(1)='eastward_current'
             varns(2)='northward_current'
-            vmin = -9900 
-            vmax =  9900
+            vmin = -990
+            vmax =  990
 !
           ELSE IF ( J .EQ.  3 ) THEN
             FLONE  = .FALSE.
@@ -703,8 +705,8 @@ write (*,*) TABIPART
             varnl(2)='northward_wind'
             varns(1)='eastward_wind'
             varns(2)='northward_wind'
-            vmin = -9900 
-            vmax =  9900
+            vmin = -990
+            vmax =  990
 !
           ELSE IF ( J .EQ.  4 ) THEN
             FLONE  = .TRUE.
@@ -717,7 +719,7 @@ write (*,*) TABIPART
             varnl(1)='air_sea_temperature_difference'
             varns(1)='air_sea_temperature_difference'
             vmin = 0    
-            vmax = 40000
+            vmax = 4000
 !
           ELSE IF ( J .EQ.  5 ) THEN
             FLONE  = .TRUE.
@@ -784,7 +786,7 @@ write (*,*) TABIPART
             varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
 					  spectral_density_second_frequency_moment'
             vmin = 0
-            vmax = 50000
+            vmax = 5000
 !
           ELSE IF ( J .EQ. 10 ) THEN
             FLONE  = .TRUE.
@@ -793,12 +795,12 @@ write (*,*) TABIPART
             ENAME  = '.t'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN, MAPSF, X1 )
             NFIELD=1
-            varnm(1)='tm0m1'
+            varnm(1)='t'
             varnl(1)='mean_period_Tm01'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					  _spectral_density_first_frequency_moment' 
             vmin = 0 
-            vmax = 50000
+            vmax = 5000
 !
           ELSE IF ( J .EQ. 11 ) THEN
             FLONE  = .TRUE.
@@ -807,12 +809,12 @@ write (*,*) TABIPART
             ENAME  = '.tm1'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN   , MAPSF, X1 )
             NFIELD=1
-            varnm(1)='t'
+            varnm(1)='tm0m1'
             varnl(1)='mean_period_Tm0-1'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					  _spectral_density_inverse_frequency_moment'
             vmin = 0
-            vmax = 50000
+            vmax = 5000
 !
           ELSE IF ( J .EQ. 12 ) THEN
             FLONE  = .TRUE.
@@ -1569,21 +1571,22 @@ write (*,*) TABIPART
             IF ( P2MSF(1).GT.0) THEN
               NFILE=2
               NFIELD2=1
-              FSC2    = 0.01
+              FSC2    = 0.0002
               varnm2(1)='Fp3D'
-              varnl2(1)='power_spectral_density_of_equivalent_surface_pressure'
-              UNITS2  = 'm4s'
-              ENAME2  = '.p2f'
+              varnl2(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+              UNITS2  = 'log10(m4s+0.01)'
+              ENAME2  = '.p2l'
               I1F=P2MSF(2)
               I2F=P2MSF(3)
               DO IK=P2MSF(2),P2MSF(3)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,P2SMS(:,IK),MAPSF, XX )
-                XK(:,:,IK)=XX
+!                XK(:,:,IK)=XX
+                XK(:,:,IK)=ALOG10(XX+0.01)
                 END DO
               END IF
 
             NFIELD=2
-            FSC    = 0.001
+            FSC    = 0.01
             ENAME  = '.p2s'
             UNITS  = 'm4'
             varnm(1)='Fp2D'
@@ -1592,8 +1595,8 @@ write (*,*) TABIPART
             varnl(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
             varns(1)='power_spectral_density_of_equivalent_surface_pressure'
             varns(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
-            vmin = 0 
-            vmax = 40000
+            vmin = -15000 
+            vmax = 32000
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PRMS(1:NSEA)        &
                                                       , MAPSF, XX )
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TPMS(1:NSEA)        &
@@ -1698,6 +1701,7 @@ write (*,*) TABIPART
               varnm=varnm2
               varnl=varnl2
               UNITS=UNITS2
+              UNITVAR(:)=UNITS
               dimln(4)=I2F-I1F+1
 !
 !  These files (IFILE=2) have one extra dimension: frequency
@@ -1785,7 +1789,7 @@ write (*,*) TABIPART
                   iret=nf90_put_att(ncid,NF90_GLOBAL, &
                                        'longitude_resolution','n/a')
                   END IF
-!
+! 
 ! Finishes declaration part in file by adding geographical bounds
 !
                 IF (GTYPE.NE.UNGTYPE) THEN 
@@ -2269,8 +2273,8 @@ write (*,*) TABIPART
       
 
 
-      REAL            , INTENT(IN)      :: FSC
-      INTEGER         , INTENT(IN)      :: vmin,vmax,extradim
+      REAL, INTENT(IN)                  :: FSC
+      INTEGER, INTENT(IN)               :: vmin,vmax,extradim
       INTEGER, INTENT(IN)               :: MFILL, NCTYPE
       character*(*), INTENT(IN)         :: ncfile,name(3),varnl(3), &
                                            varns(3),UNITVAR(3)
@@ -2285,7 +2289,7 @@ write (*,*) TABIPART
       INTEGER                           :: I,ivar,iret,dimtri(2), deflate=1
       CHARACTER                         :: attname*120,attval*120
       INTEGER                           :: icode,strl,strl2
-      REAL,DIMENSION(:,:),  ALLOCATABLE :: lon1, lat1
+      REAL,DIMENSION(:,:), ALLOCATABLE  :: lon1, lat1
 
 
 !      
@@ -2473,8 +2477,6 @@ write (*,*) TABIPART
       CLOSE(994)
       iret=nf90_put_att(ncid,NF90_GLOBAL,'product_name' ,TRIM(ncfile))   
       iret=nf90_put_att(ncid,NF90_GLOBAL,'area',TRIM(GNAME))
-      iret=nf90_put_att(ncid,NF90_GLOBAL,'data_type','OCO unstructured grid')
-      iret=nf90_put_att(ncid,NF90_GLOBAL,'format_version','1.1')
       return
       END SUBROUTINE W3CRNC 
 

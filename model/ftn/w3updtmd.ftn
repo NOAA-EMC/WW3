@@ -1541,7 +1541,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPSF,                &
-                          TRFLAG, FICE0, FICEN,                       &
+                          TRFLAG, FICE0, FICEN, FICEL,                &
                           RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
                           HPFAC, HQFAC, REFPARS
       USE W3WDATMD, ONLY: ICE, BERG
@@ -1730,16 +1730,21 @@
                 TRIY(IXY)=1.
               END IF
             ELSE
-!
+!              LICE0  = FICE0*MIN(DX,DY)
+!              LICEN  = FICEN*MIN(DX,DY)
+              IF (FICEL.GT.0.) THEN
+                TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
+                TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
+              ELSE 
 ! Otherwise: original Tolman expression (Tolman 2003)
-!
-              LICE0  = FICE0*MIN(DX,DY)
-              LICEN  = FICEN*MIN(DX,DY)
-!             TRIX(IXY) = MAX ( 0. , MIN ( 1. , 1.5-ICE(ISEA)*DX/LICE ) )
-!             TRIY(IXY) = MAX ( 0. , MIN ( 1. , 1.5-ICE(ISEA)*DY/LICE ) )
-              TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+                LICE0  = FICE0*DX
+                LICEN  = FICEN*DX
+                TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+                LICE0  = FICE0*DY
+                LICEN  = FICEN*DY
+                TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
+                END IF
               TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
-              TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
               TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
 !
 !  Adding iceberg attenuation

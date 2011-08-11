@@ -540,8 +540,8 @@
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLONE
       CHARACTER               :: OLDTID*8, FNAME*16, FNAMENC*50,      &
-                                 ENAME*4,ENAME2*4,FORMF*11, UNITS*10, &
-                                 UNITS2*10
+                                 ENAME*4,ENAME2*4,FORMF*11, UNITS*15, &
+                                 UNITS2*15
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
 !/
@@ -600,7 +600,7 @@
       FNAMENC(1:S1)=FILEPREFIX(1:S1)
       IF (S4.GT.0) FNAMENC(S1+1:S1+S4) = TIMEID(1:S4)
       ENAME2=''
-      !END IF
+
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Loop over output fields.
@@ -857,7 +857,7 @@
             NFIELD=1
             varnm(1)='dir'
             varnl(1)='wave_mean_direction'
-            varns(1)='sea_surface_wave_to_direction'
+            varns(1)='sea_surface_wave_from_direction'
             vmin = 0
             vmax = 3600
 !
@@ -945,7 +945,7 @@
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'th',IPART 
             WRITE(varnl(1),'(A,I1)') 'mean_direction_swell_partition_',IPART 
-            WRITE(varns(1),'(A,I1,A)') 'sea_surface_swell_',IPART,'_wave_to_mean_direction'
+            WRITE(varns(1),'(A,I1,A)') 'sea_surface_swell_',IPART,'_wave_from_mean_direction'
             vmin = 0 
             vmax = 360
 !
@@ -1419,11 +1419,11 @@
 !
           ELSE IF ( J .EQ. 46 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.1
+            FSC    = 0.2
             UNITS  = 'W/m2'
             ENAME  = '.foc'
             DO ISEA=1, NSEA
-               PHIOC(ISEA)=MIN(99.98,PHIOC(ISEA))
+               PHIOC(ISEA)=MIN(6000.,PHIOC(ISEA))
                END DO
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIOC(1:NSEA)    &
                                                       , MAPSF, X1 )
@@ -1571,21 +1571,22 @@
             IF ( P2MSF(1).GT.0) THEN
               NFILE=2
               NFIELD2=1
-              FSC2    = 0.01
+              FSC2    = 0.0002
               varnm2(1)='Fp3D'
-              varnl2(1)='power_spectral_density_of_equivalent_surface_pressure'
-              UNITS2  = 'm4s'
-              ENAME2  = '.p2f'
+              varnl2(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+              UNITS2  = 'log10(m4s+0.01)'
+              ENAME2  = '.p2l'
               I1F=P2MSF(2)
               I2F=P2MSF(3)
               DO IK=P2MSF(2),P2MSF(3)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,P2SMS(:,IK),MAPSF, XX )
-                XK(:,:,IK)=XX
+!                XK(:,:,IK)=XX
+                XK(:,:,IK)=ALOG10(XX+0.01)
                 END DO
               END IF
 
             NFIELD=2
-            FSC    = 0.001
+            FSC    = 0.01
             ENAME  = '.p2s'
             UNITS  = 'm4'
             varnm(1)='Fp2D'
@@ -1594,8 +1595,8 @@
             varnl(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
             varns(1)='power_spectral_density_of_equivalent_surface_pressure'
             varns(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
-            vmin = 0 
-            vmax = 40000
+            vmin = -15000 
+            vmax = 32000
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PRMS(1:NSEA)        &
                                                       , MAPSF, XX )
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TPMS(1:NSEA)        &
@@ -1700,6 +1701,7 @@
               varnm=varnm2
               varnl=varnl2
               UNITS=UNITS2
+              UNITVAR(:)=UNITS
               dimln(4)=I2F-I1F+1
 !
 !  These files (IFILE=2) have one extra dimension: frequency
@@ -2259,6 +2261,9 @@
 !/
       END SUBROUTINE W3EXNC
 
+
+
+
 !--------------------------------------------------------------------------    
       SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid, name,varnl,varns,fsc, &
                            MFILL,UNITVAR,vmin,vmax,COORDTYPE,  &
@@ -2460,7 +2465,7 @@
 !
 ! Global attributes
 !
-      open(unit=994,file='NetCDF_attributes.inp',status='old',iostat=icode)
+      open(unit=994,file='NC_globatt.inp',status='old',iostat=icode)
       IF (ICODE.EQ.0) THEN
       DO WHILE (icode.EQ.0)
        read(994,'(a)',iostat=icode) attname

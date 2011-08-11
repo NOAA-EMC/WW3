@@ -56,14 +56,14 @@
                           CD, Z0, DTDYN, FCUT, DTG, TAUWX, TAUWY,     &
                           TAUOX, TAUOY, TAUWIX, TAUWIY,               &
                           TAUWNX, TAUWNY, PHIAW, CHARN, PHIOC,        &
-                          WHITECAP, BEDFORM , PHIBBL, TAUBBL ) 
+                          WHITECAP,  D50, BEDFORM , PHIBBL, TAUBBL ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Feb-2011 |
+!/                  | Last update :         01-Jul-2011 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -90,6 +90,8 @@
 !/                  consistent with the rest of the model.
 !/    31-Mar-2010 : Adding ice conc. and reflections    ( version 3.14.4 )
 !/    15-May-2010 : Adding transparencies               ( version 3.14.4 ) 
+!/    01-Jun-2011 : Movable bed bottom friction in BT4  ( version 4.01 ) 
+!/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 ) 
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -164,16 +166,24 @@
 !       REFLED  I.A.   I   reflection direction           ( !/BS1 )
 !       TRNX-Y  Real   I   Grid transparency in X and Y   ( !/BS1 )
 !       CX-Y    Real.  I   Current velocity components.   ( !/BS1 )
+!       DELX    Real.  I   grid cell size in X direction  ( !/BS1 )
+!       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )
+!       DELA    Real.  I   grid cell area                 ( !/BS1 )
 !       EMEAN   Real. I/O  Mean energy.                   ( !/ST1 )
-!       FMEAN   Real. I/O  Mean frequency.                ( !/ST1 )
+!       FMEAN   Real. I/O  Mean frequency.                
 !       WNMEAN  Real. I/O  Mean wavenumber.       ( !/ST1 , !/ST2 )
 !       AMAX    Real.  O   Maximum energy.        ( !/ST1 , !/ST2 )
 !       FPI     Real  I/O  Peak-input frequency.          ( !/ST2 )
 !       CD      Real  I/O  Drag coefficient.              ( !/ST2 )
 !       Z0      Real  I/O  Roughness length.              ( !/ST2 )
+!      WHITECAP R.A.   O   Whitecap statisics             ( !/ST4 )
 !       DTDYN   Real   O   Average dynamic time step.
 !       FCUT    Real   O   Cut-off frequency for tail.
 !       DTG     Real   I   Global time step.
+!       D50     Real   I   Sand grain size                ( !/BT4 )
+!       BEDFORM R.A.  I/O  Bedform parameters             ( !/BT4 )
+!       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
+!       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx ) 
 !     ----------------------------------------------------------------
 !       Note: several pars are set to I/O to avoid compiler warnings.
 !
@@ -263,6 +273,8 @@
 !
 !     !/BT0   No bottom friction.                        ( Choose one )
 !     !/BT1   JONSWAP bottom friction.
+!     !/BT4   Bottom friction using movable bed roughness 
+!                  (Tolman 1994, Ardhuin & al. 2003)
 !     !/BTX   User-defined bottom friction.
 !
 !     !/DB0   No depth-limited breaking.                 ( Choose one )
@@ -318,6 +330,7 @@
 !/NL2      USE W3SNL2MD
 !/NLX      USE W3SNLXMD
 !/BT1      USE W3SBT1MD
+!/BT4      USE W3SBT4MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
@@ -336,7 +349,7 @@
 !/
       INTEGER, INTENT(IN)     :: IX, IY, IMOD
       REAL, INTENT(IN)        :: WN1(NK), CG1(NK), D_INP, U10ABS,     &
-                                 U10DIR, AS, ICE, CX, CY, DTG
+                                 U10DIR, AS, ICE, CX, CY, DTG, D50
       INTEGER, INTENT(IN)     :: REFLED(4)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG
@@ -344,7 +357,7 @@
                                  FMEAN, WNMEAN, USTAR, USTDIR, FPI,   &
                                  CD, Z0, TAUOX, TAUOY,                &
                                  TAUWX, TAUWY, PHIAW, PHIOC,          &
-                                 CHARN, BEDFORM(2), PHIBBL,  &
+                                 CHARN, BEDFORM(2), PHIBBL,           &
                                  TAUBBL(2), WHITECAP(4),              &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY
       REAL, INTENT(OUT)       :: AMAX, DTDYN, FCUT
@@ -368,7 +381,7 @@
 !/NNT      REAL                    :: FACNN
 !/T      REAL                    :: DTRAW
       REAL                    :: EBAND, EINIT, EFINISH, HSTOT, PHINL, &
-                                 FMEANWS, MWXINIT, MWYINIT,           &
+                                 FMEAN1, FMEANWS, MWXINIT, MWYINIT,   &
                                  FACTOR, DRAT, TAUWAX, TAUWAY,        &
                                  MWXFINISH, MWYFINISH, A1BAND, B1BAND
       REAL                    :: DAM (NSPEC), WN2 (NSPEC),            &
@@ -445,12 +458,14 @@
       PHIAW  = 0.
       CHARN  = 0.
       PHINL  = 0.
+      PHIBBL = 0.
       TAUWIX = 0.
       TAUWIY = 0.
       TAUWNX = 0.
       TAUWNY = 0.
       TAUSCX = 0.
       TAUSCY = 0.
+      TAUBBL(:)= 0.
 !
 ! 1.c Set mean parameters
 !
@@ -487,14 +502,14 @@
 !/ST4          USTAR=0.
 !/ST4          USTDIR=0.
 !/ST4      ELSE
-!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, &
-!/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
+!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
+!/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,   &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,   &
 !/ST4                 ICE, VSIN, VDIN, LLWS, IX, IY )
 !/ST4        END IF
-!/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, &
+!/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !
@@ -536,7 +551,7 @@
 !/ST1      IF (FLTEST) WRITE (NDST,9004) FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV
 !/ST2      FHIGH  = XFC * FPI
 !/ST3      FHIGH  = MAX(FFXFM * MAX(FMEAN,FMEANWS),FFXPM / USTAR)
-!/ST4      FHIGH  = MAX(FFXFM * MAX(FMEAN,FMEANWS),FFXPM / USTAR)
+!/ST4      FHIGH  = MAX(FFXFM * MAX(FMEAN1,FMEANWS),FFXPM / USTAR)
 
 !
 ! 1.f Prepare output file for !/NNT option
@@ -603,6 +618,8 @@
 ! 2.d Bottom interactions.
 !
 !/BT1        CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
+!/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, TAUBBL, BEDFORM,    &
+!/BT4                                                VSBT, VDBT, IX, IY )
 !/BTX        CALL W3SBTX
 !
 !/BS1        CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
@@ -681,6 +698,7 @@
         DT     = MAX ( DT , MIN (DTMIN,DTG-DTTOT) )
         HDT    = OFFSET * DT
         DTTOT  = DTTOT + DT
+
 !
 !/T        WRITE (NDST,9040) DTRAW, DT, SHAVE
 !
@@ -703,7 +721,9 @@
 !
           END IF
 !
-! 5.b  Computes atmos->wave flux PHIAW-------------------------------- *
+! 5.b  Computes 
+!              atmos->wave flux PHIAW-------------------------------- *
+!              wave ->BBL  flux PHIBBL------------------------------- *
 ! 
        WHITECAP(4)=0.
        HSTOT=0.
@@ -716,6 +736,9 @@
            IS   = (IK-1)*NTH + ITH
            PHIAW = PHIAW + (VSIN(IS))* DT * FACTOR                    &
              / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
+           
+           PHIBBL= PHIBBL- (VSBT(IS))* DT * FACTOR                    &
+             / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
            PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
              / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
            IF (VSIN(IS).GT.0.) THEN 
@@ -747,7 +770,7 @@
 !/ST3        CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS,        &
 !/ST3                     WNMEAN, AMAX, U10ABS, U10DIR, USTAR, USTDIR, &
 !/ST3                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN,        &
+!/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,           &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !
@@ -781,7 +804,7 @@
 !/ST3        IF ( FLTEST ) WRITE (NDST,9062)                           &
 !/ST3                      FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 !
-!/ST4        FH1    = FFXFM * FMEAN
+!/ST4        FH1    = FFXFM * FMEAN1
 !/ST4        FH2    = FFXPM / USTAR
 !/ST4        FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
 !/ST4        NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
@@ -791,7 +814,7 @@
 !     Last time step only !
 !
 !/MLIM        IF ( DTTOT .GE. 0.9999*DTG ) THEN
-!/MLIM            HM     = FHMAX / WNMEAN * TANH(WNMEAN*MAX(0.,DEPTH))
+!/MLIM            HM     = FHMAX / MAX(1.E-4,WNMEAN * TANH(WNMEAN*MAX(0.,DEPTH)))
 !/MLIM            EM     = HM * HM / 16.
 !/MLIM            IF ( EMEAN.GT.EM .AND. EMEAN.GT.1.E-30 ) THEN
 !/MLIM                SPEC   = SPEC / EMEAN * EM
@@ -862,7 +885,9 @@
 !
 ! 9.  Computes PHIOC------------------------------------------ *
 !     The wave to ocean flux is the difference between initial energy 
-!     and final energy plus wind input plus the SNL flux to high freq.
+!     and final energy, plus wind input plus the SNL flux to high freq., 
+!     minus the energy lost to the bottom boundary layer (BBL) 
+!
       EFINISH  = 0.
       MWXFINISH  = 0.
       MWYFINISH  = 0.
@@ -881,24 +906,29 @@
         MWYFINISH  = MWYFINISH  + B1BAND * DDEN(IK) / CG1(IK)        &
                   * WN1(IK)/SIG(IK)
         END DO
-      ! Transformation in momentum flux in m^2 / s^2 
-      TAUOX=(GRAV*(MWXINIT-MWXFINISH)+TAUWIX)/DTG
-      TAUOY=(GRAV*(MWYINIT-MWYFINISH)+TAUWIY)/DTG
+!
+! Transformation in momentum flux in m^2 / s^2 
+!
+      TAUOX=(GRAV*(MWXINIT-MWXFINISH)+TAUWIX-TAUBBL(1)/DRAT)/DTG
+      TAUOY=(GRAV*(MWYINIT-MWYFINISH)+TAUWIY-TAUBBL(2)/DRAT)/DTG
       TAUWIX=TAUWIX/DTG
       TAUWIY=TAUWIY/DTG
       TAUWNX=TAUWNX/DTG
       TAUWNY=TAUWNY/DTG
+      TAUBBL(:)=TAUBBL(:)/DTG
       ! Transformation in wave energy flux in W/m^2=kg / s^3 
-      PHIOC=DWAT*GRAV*(EINIT-EFINISH+PHIAW)/DTG 
-      PHIAW=DWAT*GRAV*PHIAW/DTG        
-      PHINL=DWAT*GRAV*PHINL/DTG  
+      PHIOC =DWAT*GRAV*(EINIT-EFINISH+PHIAW-PHIBBL)/DTG 
+      PHIAW =DWAT*GRAV*PHIAW /DTG        
+      PHINL =DWAT*GRAV*PHINL /DTG  
+      PHIBBL=DWAT*GRAV*PHIBBL/DTG        
+      
 !
 ! 10 includes reflection --------------------------------------------- *
 !
 !/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.REFLEC(4).GT.0) THEN 
-!/REF1          CALL W3SREF ( SPEC, CG1, WN1, DEPTH, CX, CY,  REFLEC,        &
-!/REF1                        REFLED, DELX, DELY, DELA, TRNX, TRNY, BERG,    &
-!/REF1                           DTG,  VREF )
+!/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
+!/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
+!/REF1                        BERG, DTG,  VREF )
 !/REF1          SPEC(:) = SPEC(:)+DTG*VREF(:) 
 !/REF1          END IF
 !

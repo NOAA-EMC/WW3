@@ -58,17 +58,18 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SREF(A, CG, WN, DEPTH, CX1, CY1, REFLC, REFLD,     &
+      SUBROUTINE W3SREF(A, CG, WN, EMEAN, FMEAN, DEPTH, CX1, CY1, REFLC, REFLD,     &
                          DELX, DELY, DELA, TRNX, TRNY, BERG, DT,  S)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Jun-2006 |
+!/                  | Last update :         31-May-2011 |
 !/                  +-----------------------------------+
 !/
-!/    06-May-2010 : Origination.                        ( version 3.14-Ifremer )
+!/    06-May-2010 : Origination.                          ( version 3.14-Ifremer )
+!/    31-May-2011 : Introduction of amplitude-dependent R (version 4.xx)
 !/
 !  1. Purpose :
 !
@@ -137,7 +138,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH
+      REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, EMEAN, FMEAN
       REAL, INTENT(IN)        :: A(NTH,NK)
       REAL, INTENT(IN)        :: CX1, CY1, DT
       INTEGER, INTENT(IN)     :: REFLD(4)
@@ -153,7 +154,7 @@
       LOGICAL, SAVE   :: FIRST = .TRUE.
        
       REAL            :: R0, R1, R2, R3, R4, R2X, R2Y
-    REAL            :: FAC1, FAC2, FAC3, FAC4
+      REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, MICHEFAC
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -174,13 +175,30 @@
       FAC3=2.6/(0.5*REAL(NTH))
       FAC4=1.
       R0=ABS(ECOS(REFLD(1)))
+      IF (REFPARS(6).GT.0) THEN 
+!
+! This is the Miche parameter for a beach slope of REFPARS(7)  (default is 0.25)
+!
+        MICHEFAC=0.0001*GRAV**2*(REFPARS(7)**5)/(EMEAN*FMEAN**4)
+        RAMP0=MIN(0.35*(ALOG10(MICHEFAC)+5)+0.2*MICHEFAC,1.2)  ! IF REFLC(1)=1, 0.30 should be 0.001
+      ELSE 
+        RAMP0=1.
+        ENDIF
       DO IK=1, NK
+!
+! Includes linear frequency dependence (see Elgar et al. JPO 1994)
+!       
+        IF (REFPARS(6).GT.0) THEN
+          RAMP=MIN(1.0,TPI*FMEAN/SIG(IK))*RAMP0
+        ELSE
+          RAMP=RAMP0
+          END IF
         DO ITH=1, NTH
 !
 !   ITH is the incident wave direction
 !
           R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
-          R2=REFLC(1)*A(ITH,IK)
+          R2=REFLC(1)*RAMP*A(ITH,IK)
           IF (R1.GT.0.AND.R2.GT.0) THEN 
             DO ITH2=1,NTH
 !
@@ -194,11 +212,10 @@
 !
                 ITH3=1+MOD(NTH/2+NTH+2*REFLD(1)-ITH-1,NTH)
                 R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))
-!               WRITE(6,'(A,5I4,F7.3)') 'TEST:',NTH,ITH,REFLD(1),ITH3,ITH2,R4
                 IF (R4.GT.0.) THEN 
 !
 ! Tests the type of shoreline geometry
-!
+! NB: REFLD(3) or REFLD(4) is equal to 1 if the sea point is between two land points 
                   SELECT CASE (REFLD(2))
                     CASE (0)
                    ! Sharp corner: broad reflection
@@ -220,32 +237,24 @@
                    ! straight coast: narrow reflection
 !
 ! Specular for tests 
-!                  IF (ITH2.EQ.ITH3) THEN               
-           !
-           !  According to the shoreline direction, changes the 
-           !  numerical schemes (due to neighbors) in order to 
-           !  account for along-coast advection
-           !         
-!                      IF (R0.GT.0.7) THEN 
+!               
+!
+!  According to the shoreline direction, changes the 
+!  numerical schemes (due to neighbors) in order to 
+!  account for along-coast advection
+!         
                       IF (REFLD(3).EQ.0)      & 
 !
 ! Specular for tests 
-!                       S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX)
+!                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX)
                         S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
                                               *(R4**4) *FAC3
-!                      ELSE
 !
 ! Specular for tests 
 !                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
                       IF (REFLD(4).EQ.0)      & 
                         S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
                                               *(R4**4) *FAC3
-!                        ENDIF   
-              !IF (IK.EQ.6) &
-              !    WRITE(6,*) 'TEST:',ITH,ITH2,ITH3, &
-              !  REFPARS(1), R4, R2, A(ITH2,IK),  &
-              !    S(ISPEC), S(ISPEC)*DT, DELX, DELY, R0, REFLD(1)
-              !   END IF
                END SELECT
               END IF  
                 END IF
@@ -259,10 +268,10 @@
 !
       IF (    ((REFPARS(2).GT.0.).AND.((TRNX+TRNY).LT.2))     &
         .OR.((REFPARS(4).GT.0.).AND.(BERG.GT.0)       )   ) THEN 
-        R2X=  REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
-            + REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
-        R2Y=  REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
-            + REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
+        R2X=  RAMP*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
+            + RAMP*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
+        R2Y=  RAMP*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
+            + RAMP*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
       FAC1=1/(0.5*REAL(NTH))
         DO IK=1, NK
           DO ITH=1, NTH

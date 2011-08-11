@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Apr-2011 |
+!/                  | Last update :         01-Jul-2011 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -41,6 +41,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    05-Apr-2011 : Implement interations for DTMAX < 1s( version 3.14.1 )
 !/                  (F. Ardhuin) 
+!/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -119,6 +120,7 @@
 !      DMIN      Real  Public   Minimum water depth.
 !      CTMAX     Real  Public   Maximum CFL number for depth refr.
 !      FICE0/N   Real  Public   Cut-off ice conc. for ice coverage.
+!      FICEL     Real  Public   Length scale for sea ice damping
 !      PFMOVE    Real  Public   Tunable parameter in GSE correction
 !                               for moving grids.
 !      ZB        R.A.  Public   Bottom levels on storage grid.
@@ -134,6 +136,8 @@
 !      FLSOU     Log.  Public   Flag for source term calcualtion.
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
+!       
+!
 !      GNAME     C*30  Public   Grid name.
 !      FILEXT    C*10  Public   Extension of WAVEWATCH III file names
 !                               default in 'ww3'.
@@ -339,6 +343,7 @@
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
 !      SBTC1     Real  Public   Proportionality constant.    (!/BT1)
+!      SBTCX     R.A.  Public   Parameters for bottom fric.  (!/BT4)
 !     ----------------------------------------------------------------
 !
 !     The structure SDBP contains parameters for the depth incduced
@@ -445,7 +450,7 @@
 !/ Data structures
 !/
 !/ Grid type
-      TYPE GRID
+      TYPE GRID          ! this is the geographical grid with all associated parameters 
         INTEGER          :: GTYPE
         INTEGER          :: ICLOSE
         INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
@@ -454,7 +459,7 @@
                             MAPFS(:,:), MAPSF(:,:)
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                             DTMAX, DTMIN, DMIN, CTMAX,           &
-                            FICE0, FICEN, PFMOVE
+                            FICE0, FICEN, FICEL, PFMOVE
 
         REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
         REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
@@ -482,6 +487,11 @@
 !
         TYPE(T_GSU) :: GSU ! Grid search utility object
 !
+        LOGICAL               :: FLICES   ! flag for source terms in sea ice
+!/BT4        REAL, POINTER         :: SED_D50(:), SED_PORO(:)
+!/REF1        LOGICAL, POINTER      :: RREF(:)
+!/REF1        REAL,    POINTER      :: REFPARS(:)
+!
 ! unstructured data	
 !
         LOGICAL               :: CONTOUR
@@ -500,12 +510,9 @@
         REAL, POINTER         :: CROSSDIFF(:,:)
 ! Coupling data
 !/COU  LOGICAL                :: COUG_2D, COUG_RAD3D, COUG_US3D
-        LOGICAL               :: FLICES   ! flag for source terms in sea ice
-        LOGICAL, POINTER      :: RREF(:)
-        REAL,    POINTER      :: REFPARS(:)
       END TYPE GRID
 !
-      TYPE SGRD
+      TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction
         INTEGER               :: NK, NK2, NTH, NSPEC
         INTEGER, POINTER      :: MAPWN(:), MAPTH(:)
         REAL                  :: DTH, XFR, FR1, FTE, FTF, FTWN, FTTR, &
@@ -591,7 +598,7 @@
       TYPE SBTP
 !/BT0        REAL                  :: DUMMY
 !/BT1        REAL                  :: SBTC1
-!/BTX        REAL                  :: DUMMY
+!/BT4        REAL                  :: SBTCX(10)
       END TYPE SBTP
 !
       TYPE SDBP
@@ -673,14 +680,15 @@
       LOGICAL, POINTER        :: GUGINIT       
 !
       LOGICAL, POINTER        :: COUG_2D, COUG_RAD3D, COUG_US3D
-      LOGICAL, POINTER        :: FLICES, RREF(:)
+      LOGICAL, POINTER        :: FLICES
+!/REF1      LOGICAL, POINTER        ::  RREF(:)
       REAL,    POINTER        :: REFPARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !/SEC1      INTEGER, POINTER        :: NITERSEC1
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                                  DTMAX, DTMIN, DMIN, CTMAX,           &
-                                 FICE0, FICEN, PFMOVE
+                                 FICE0, FICEN, FICEL, PFMOVE
       REAL, POINTER           :: ZB(:), CLATS(:)
       REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
       REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
@@ -694,6 +702,7 @@
       REAL   , POINTER :: GSQRT(:,:) ! SQRT(G) DEFINED ON IX,IY
       REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
       REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
+!/BT4        REAL, POINTER         :: SED_D50(:), SED_PORO(:)
 
       LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
       LOGICAL, POINTER :: FLAGST(:)
@@ -780,6 +789,7 @@
 !/ Data aliasses for structure SBTP(S)
 !/
 !/BT1      REAL, POINTER           :: SBTC1
+!/BT4        REAL, POINTER         :: SBTCX(:)
 !/
 !/ Data aliasses for structure SDBP(S)
 !/
@@ -1077,18 +1087,21 @@
                    GRIDS(IMOD)%GSQRT(MY,MX),   &
                    GRIDS(IMOD)%HPFAC(MY,MX),   &
                    GRIDS(IMOD)%HQFAC(MY,MX)    )
+!/BT4    ALLOCATE ( GRIDS(IMOD)%SED_D50(0:MSEA), &
+!/BT4               GRIDS(IMOD)%SED_PORO(0:MSEA))
+
 !
       GRIDS(IMOD)%FLAGST = .TRUE.
       GRIDS(IMOD)%GINIT  = .TRUE.
       GRIDS(IMOD)%CLATS(0)=1.
       GRIDS(IMOD)%CLATIS(0)=1.
 !
-      ALLOCATE ( GRIDS(IMOD)%RREF(4)  )
-      ALLOCATE ( GRIDS(IMOD)%REFPARS(6) )
-      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA))
-      ALLOCATE ( GRIDS(IMOD)%REFLD(4,0:NSEA))
-      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
-      GRIDS(IMOD)%REFLD(:,:)=0
+!/REF1      ALLOCATE ( GRIDS(IMOD)%RREF(4)  )
+!/REF1      ALLOCATE ( GRIDS(IMOD)%REFPARS(6) )
+!/REF1      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA))
+!/REF1      ALLOCATE ( GRIDS(IMOD)%REFLD(4,0:NSEA))
+!/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
+!/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
@@ -1457,8 +1470,8 @@
 !/COU     COUG_RAD3D  => GRIDS(IMOD)%COUG_RAD3D
 !/COU     COUG_US3D   => GRIDS(IMOD)%COUG_US3D
       FLICES => GRIDS(IMOD)%FLICES
-      RREF   => GRIDS(IMOD)%RREF
-      REFPARS=> GRIDS(IMOD)%REFPARS
+!/REF1      RREF   => GRIDS(IMOD)%RREF
+!/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0
@@ -1473,6 +1486,7 @@
       CTMAX  => GRIDS(IMOD)%CTMAX
       FICE0  => GRIDS(IMOD)%FICE0
       FICEN  => GRIDS(IMOD)%FICEN
+      FICEL  => GRIDS(IMOD)%FICEL
       PFMOVE => GRIDS(IMOD)%PFMOVE
 !
       GINIT  => GRIDS(IMOD)%GINIT
@@ -1542,6 +1556,9 @@
           GSQRT  => GRIDS(IMOD)%GSQRT
           HPFAC  => GRIDS(IMOD)%HPFAC
           HQFAC  => GRIDS(IMOD)%HQFAC
+!
+!/BT4          SED_D50  => GRIDS(IMOD)%SED_D50
+!/BT4          SED_PORO => GRIDS(IMOD)%SED_PORO
 !
           GSU  => GRIDS(IMOD)%GSU
 !
@@ -1734,6 +1751,7 @@
 !     Structure SBTPS
 !
 !/BT1      SBTC1  => MPARS(IMOD)%SBTPS%SBTC1
+!/BT4      SBTCX  => MPARS(IMOD)%SBTPS%SBTCX
 !
 !     Structure SDBPS
 !

@@ -6,10 +6,11 @@
 !/                  |           J. H. Alves             |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-APR-2010 |
+!/                  | Last update :         25-Jun-2011 |
 !/                  +-----------------------------------+
 !/
 !/    01-APR-2010 : Origination.                        ( version 3.14 )
+!/    25-Jun-2011 : Temporary change of HSMIN           ( version 4.05 )
 !/
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: GNAME, NK, NTH, NSPEC
@@ -19,7 +20,10 @@
       USE W3TIMEMD, ONLY: DSEC21
       PUBLIC
       INTEGER, PARAMETER   :: NPTAB = 6, NFLD = 50, NPMAX = 80
-      REAL, PARAMETER      :: HSMIN = 0.15, HSDROP = 0.05
+!
+! The value of 0.15 was changed by FA on 2011/05/18 to allow lab test cases
+! because it is used by ww3_outp.ftn : otherwise Hs is zero in spectra output
+      REAL, PARAMETER      :: HSMIN = 0.01, HSDROP = 0.05
       REAL                 :: HST(NPTAB,2), TPT(NPTAB,2),     &
                                       DMT(NPTAB,2)
       CHARACTER*129        :: ASCBLINE 

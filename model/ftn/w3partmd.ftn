@@ -1057,7 +1057,7 @@
 !
       DO IP=0, NPI
 !
-        HS     = 4. * SQRT ( SUME(IP) * DTH * TPIINV )
+        HS     = 4. * SQRT ( MAX(SUME(IP) * DTH * TPIINV,0.) )
         IF ( HS .LT. HSPMIN ) CYCLE
 !
         XL     = 1./XFR - 1.

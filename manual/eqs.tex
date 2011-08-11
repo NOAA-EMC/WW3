@@ -54,7 +54,7 @@ crests is conserved \citep[see, e.g.,][]{bk:Phi77,bk:Mei83}
 \end{equation}
 
 \noindent
->From Eqs.~(\ref{eq:disp}) through (\ref{eq:wnconv}) the rates of change of the
+From Eqs.~(\ref{eq:disp}) through (\ref{eq:wnconv}) the rates of change of the
 phase parameters can be calculated \citep[e.g.,][equations not reproduced
 here]{rep:Chr82,bk:Mei83,tol:JPO90}.
 
@@ -132,8 +132,8 @@ the model. Wave propagation then is described by
 where $D/Dt$ represents the total derivative (moving with a wave component)
 and $S$ represents the net effect of sources and sinks for the spectrum
 $F$. Because the left side of Eq.~(\ref{eq:balance0}) generally considers
-linear propagation, effects of nonlinear wave propagation (i.e., wave-wave
-interactions) arise in $S$. Propagation and source terms will be discussed
+linear propagation without scattering, effects of nonlinear wave propagation (i.e., wave-wave
+interactions) and partial wave reflections arise in $S$. Propagation and source terms will be discussed
 separately in the following sections.
 
 % -------------------------------------------------------------
@@ -253,7 +253,7 @@ In shallow water additional processes have to be considered, most notably
 wave-bottom interactions $S_{bot}$ \cite[e.g.,][]{pro:Sea78}. In extremely
 shallow water, depth-induced breaking ($S_{db}$) and triad wave-wave
 interactions ($S_{tr}$) become important. Also available in \ws\ are source
-terms for scattering of waves by bottom features ($S_{sc}$) and a general
+terms for scattering of waves by bottom features ($S_{sc}$), reflection off shorelines or floating objects such as icebergs ($S_{ref}$) and a general
 purpose slot for additional, user defined source terms ($S_{xx}$
 
 This defines the general source terms used in \ws\ as
@@ -264,7 +264,7 @@ This defines the general source terms used in \ws\ as
 % eq:general_st
 
 \begin{equation}
-S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} + S_{sc} +
+S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} + S_{sc} + S_{ref} +
     S_{xx}\: .
 \label{eq:general_st}
 \end{equation}
@@ -1192,10 +1192,11 @@ be redefined by the user in the program input files.
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Input and dissipation (\wam-4 and variants) \hfill {\rm (F. Ardhuin)}} \label{sec:wam4}
+\subsubsection{~Input and dissipation (\wam-4 and ECWAM updates) \\
+\hfill {\rm (F. Ardhuin)}} \label{sec:wam4}
 \vsssub
 
-The wind-wave interaction source terms used here are based on the wave growth
+The wind-wave interaction source terms described here are based on the wave growth
 theory of \cite{art:Miles57}, modified by \cite{art:Jan82}. The pressure-slope
 correlations that give rise to part of the wave generation are parameterized
 following \cite{art:Jan91}. A wave dissipation term due to shear stresses
@@ -1207,14 +1208,15 @@ account a stronger gustiness in unstable atmospheric conditions. This effect is
 included in the present parameterization and is activated with the {\code
 !/STAB3} switch. Efforts have been made to make the present implementation as
 close as possible to the one in the ECWAM model \citep{rep:Bea05}, in
-particular the stress lookup tables were verified to be identical. Some minor
-differences remain which are under investigation. The source term reads
-\citep{art:Jan91}
+particular the stress lookup tables were verified to be identical. 
+Later modifications include the addition of a negative part in the wind input 
+to represent swell dissipation.
 
+The source term reads \citep{bk:Jan04}
 \begin{equation}
 \cS_{in}(k,\theta) =
 \frac{\rho_a}{\rho_w}\frac{\beta_{\mathrm{max}}}{\kappa^2}{\mathrm e}^{Z}Z^4
-\left(\frac{u_\star}{C}\right)^2 \cos^{p_{in}}(\theta - \theta_u) \sigma N
+\left(\frac{u_\star}{C}+z_\alpha\right)^2 \cos^{p_{in}}(\theta - \theta_u) \sigma N
 \left(k,\theta\right) + S_{out}(k,\theta),\label{eq:SinWAM4}
 \end{equation}
 
@@ -1292,7 +1294,7 @@ z_\alpha \right),20\right\}.
 \end{equation}
 
 \noindent
-This parameterization is highly sensitive to the spectral level at $k_{\max}$.
+This parameterization is sensitive to the spectral level at $k_{\max}$.
 A higher spectral level will lead to a larger value of $u_\star$ and thus
 positive feedback on the wind input via $z_1$. This sensitivity is exacerbated
 by the sensitivity of the high frequency spectral level to the presence of
@@ -1427,8 +1429,7 @@ tail in eq. (\ref{eq:tauhfint}), which requires the estimation of a
 3-dimensional look-up table for the high frequency stress, the third parameter
 being the energy level of the tail.
 
-The swell dissipation part is activated by setting $s_0$ to a non-zero value.
-The parameterization of \cite{art:ACC08} is chosen with $s_0=3$, and is given
+The swell dissipation parameterization of \cite{art:ACC08} is activated by setting $s_0$ to a non-zero integer value, and is given
 by
 
 \begin{equation}
@@ -1437,11 +1438,11 @@ by
 \end{equation}
 
 \noindent
-if the air-sea boundary layer significant Reynolds number $Re = 2
-u_{\mathrm{orb},s} H_s / \nu_{a}$ is smaller than $Re_c$, and otherwise
+if the air-sea boundary layer significant Reynolds number $\mathrm{Re} = 2
+u_{\mathrm{orb},s} H_s / \nu_{a}$ is smaller than a threshold $\mathrm{Re}_c$, and otherwise
 
 \begin{equation}
-\cS_{out} \left(f,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
+\cS_{out} \left(k,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
 \sigma^2 u_{\mathrm{orb},s} / g \right\}
  N\left(k,\theta\right) \label{Sds_visc}.\label{eq:swell_turb}
 \end{equation}
@@ -1450,15 +1451,15 @@ u_{\mathrm{orb},s} H_s / \nu_{a}$ is smaller than $Re_c$, and otherwise
 The significant surface orbital velocity is defined by
 
 \begin{equation} u_{\mathrm{orb},s} = 2 \left [  \int \!\!\!\! \int
-      \sigma^2 \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
+      \sigma^3 \: N(k,\theta) \: dk d\theta \right ] ^{1/2}
       \: . \label{eq:ub_orbs} \end{equation}
 
 \noindent
 The first equation (\ref{eq:Dore}) is the linear viscous decay by
 \cite{art:Dore78}, with $\nu_a$ the air viscosity and $s_5$ is an $O(1)$
-tuning parameter. A few tests have indicated that a threshold Re$_{c}=2 \times 10^5$~m$(4/H_s)^(1-s_6)$ provides reasonable result with 
+tuning parameter. A few tests have indicated that a threshold Re$_{c}=2 \times 10^5 \times (4~\mathrm{m}/H_s)^{(1-s_6)}$ provides reasonable result with 
 $s_6=0$, although it may also be a function of the wind speed, and we have no explanation for the dependence on $H_s$. 
-A constant threshold, with $s_6=1$, close to $2 \times 10^5$ provides similar -- but less accurate -- results. 
+With $s_6=1$, a constant threshold close to $2 \times 10^5$ provides similar -- but less accurate -- results. 
 
 
 \begin{landscape}
@@ -1497,7 +1498,7 @@ and thus may be more appropriate for depth-limited conditions.
 note that the name of the variables only apply to the namelists. In the source
 term module the names are slightly different, with a doubled first letter, in
 order to differentiate the variables from the pointers to these variables, and
-the SWELLFx are combined in one array SSWELLF.Bold values are different from the 
+the SWELLFx are combined in one array SSWELLF. Bold values are different from the 
 default values set by ww3\_grid.} \label{tab:ST4_parSIN}
 \end{table}
 \end{landscape}
@@ -1527,209 +1528,124 @@ wind opposing swells are more dissipated than following swells. Further, if
 $s_3 > 0$, $\cS_{out}$ is applied to the entire spectrum and not just the
 swell.
 
-Due to the increase in high frequency input compared to WAM3, the dissipation
-function was adapted by Janssen (1994) from the WAM3 dissipation, and later
-reshaped by \cite{rep:Bea05}. That later modification is referred to as "BAJ".
-
 \noindent
 The dissipation term is parameterized from the wave spectrum saturation. Because the directional wave spectrum 
 were too narrow when using a 
 saturation spectrum integrated over the full circle \citep{art:AL06},
 we restricted the integration over a sector of half-width $\Delta_\theta$, 
 \begin{equation}
-S_{ds}\left(k,\theta\right)^{\mathrm{WAM}} = C_{ds} \overline{\alpha}^2
- \overline{\sigma} \left[\delta_1 \frac{k}{\overline{k}} + \delta_2
-\left(\frac{k}{\overline{k}}\right)^2\right]\label{eq:SdsWAM4}
-N\left(k,\theta\right)
+B'\left(k,\theta\right)=
+\int_{\theta-\Delta_\theta}^{\theta+\Delta_\theta} \sigma k^3 cos^{\mathrm{sB}}\left(\theta-
+\theta^{\prime}\right) N(k,\theta^{\prime}) \mathrm d
+\theta^{\prime} \label{defBofkprime},
 \end{equation}
+As a result, a sea state with two systems of same energy but opposite direction will typically produce less dissipation than a sea state 
+with all the energy radiated in the same direction. 
 
-\noindent
-where $C_{ds}$ is a non-dimensional constant $\delta_1$ and $\delta_2$ are
-weight parameters,
-
+We finally define our dissipation term as the sum of the saturation-based term and a cumulative breaking term
+$S_{\mathrm{bk,cu}}$, 
+\begin{eqnarray}
+\cS_{ds}(k,\theta)& =&  \sigma
+ \frac{C_{\mathrm{ds}}^{\mathrm{sat}}}{B^2_r} \left[ \delta_d
+\max\left\{ B\left(k\right) -
+B_r,0\right\}^2 \right.
+\nonumber \\
+  & & +  \left(1-\delta_d \right) \left. \max\left\{B'\left(k,\theta \right)- B_r
+ ,0\right\}^2\right]N(k,\theta)  \nonumber \\
+ & & + \cS_{\mathrm{bk,cu}}(k,\theta) + \cS_{\mathrm{turb}}(k,\theta) \label{Sds_all}.
+\end{eqnarray}
+where
 \begin{equation}
-\overline{k}=\left[\frac{\int k^p N\left(k,\theta\right) {\mathrm d}
-\theta}{\int N\left(k,\theta\right) {\mathrm d} \theta}\right]^{1/p}
+B\left(k \right)=\max\left\{B'(k,\theta), \theta \in [0,2
+\pi[\right\} \label{defBof}.
 \end{equation}
+The combination of an isotropic part (the term that multiplies $ \delta_d$) and a direction-dependent part (the term with  $1-\delta_d$) was intended
+ to allow some control of the directional spread in resulting spectra. 
 
-\noindent
-with $p$ a constant power. Similarly the mean frequency is defined as
-
+The cumulative breaking term $\cS_{\mathrm{bk,cu}}$ represents the smoothing of the
+surface by big breakers with celerity $C'$ that wipe out smaller
+waves of phase speed $C$. Due to
+uncertainties in the estimation of this effect in various observations,
+we use the theoretical model of \cite{art:Aea09}. Briefly,
+the relative velocity of the crests is the norm of the vector
+difference, $\Delta_C =\left|\mathbf{C}-\mathbf{C}'\right|$, and
+the dissipation rate of short wave is simply the rate of passage
+of the large breaker over short waves, i.e. the integral of
+$\Delta_C \Lambda(\mathbf{C}) d\mathbf{C}$, where $\Lambda
+(\mathbf{C}) d\mathbf{C}$ is the length of breaking crests per
+unit surface that have velocity components between $C_x$ and
+$C_x+dC_x$, and between $C_y$ and $C_y+dC_y$ \citep{art:Phi85}.
+Here $\Lambda$ is inferred from breaking
+probabilities. Based on  Banner et al. (2000, figure 6, $b_T=22 \left(\varepsilon-0.055\right)^2$)\nocite{art:BBY00}, and
+taking their saturation parameter $\varepsilon$ to be of the order
+of $1.6 \sqrt{B'(k,\theta)}$, the breaking probability of dominant waves
+waves is approximately
 \begin{equation}
-\overline{\sigma}=\left[\frac{\int \sigma^p N\left(k,\theta\right) {\mathrm d}
-\theta}{ \int N\left(k,\theta\right) {\mathrm d} \theta}\right]^{1/p},
+P=56.8\left(\max\{\sqrt{B'(k,\theta)}-\sqrt{B'_r},0\}\right)^2.\label{PBanner}
 \end{equation}
+However, because they used a zero-crossing analysis, 
+for a given wave scale, there are many times when waves are not counted because the record is dominated by another scale: in their analysis there is only one wave at any given time.
+This tends to overestimate the breaking probability by a factor of 2 \citep{art:FAB10}, compared to the present approach in which we consider that several waves (of different scales) 
+may be present at the same place and time. We correct for this effect simply, dividing 
+$P$ by 2. 
 
-\noindent
-so that the mean steepness is $\overline{\alpha}=E \overline{k}^2$.
-
-The mean frequency also occurs in the definition of the maximum frequency of
-prognostic integration of the source terms. Since the definition of that
-frequency may be different from that of the source term it is defined with
-another exponent $p_{\mathrm{tail}}$.
-
-Unfortunately these parameterizations are sensitive to swell. An increase in
-swell height typically reduces dissipation at the windsea peak (the first
-factor is reduced) and increases dissipation at high frequencies (the second
-factor is reduced). For $p< 2$, as in the WAM-Cycle 4 and BAJ
-parameterizations, this sensitivity is much larger than the expected effect of
-short wave modulation by long waves.
-
-The evidence of a threshold behavior of the wave breaking process, the
-underestimation of swell dissipation \citep{tol:OMB02a}, the very strong
-dissipation at high frequency given by eq. (\ref{eq:SdsWAM4}), and the known
-deficiencies of WAM4 and BAJ source terms in the presence of swell has lead to
-several new parameterizations. The source term code was thus generalized to
-allow the use of WAM4, BAJ or others parameterization, via a simple change of
-the parameters in the namelists SIN3 and SDS3. The overall best
-parameterization found so far is described by \cite{art:ACC08}, and is referred
-to as "ACC350". Modifications and further tuning are likely to further reduce
-the model errors. Nevertheless, at present, the default values of the namelist
-parameters correspond to BAJ.
-
-The general form of the dissipation source terms computed with the ST3 switch
-thus takes the form of a combination of a WAM4-type term and a saturation-based
-term,
-
+With this approach the spectral density of crest length (breaking or not)  per unit surface
+$l(\mathbf{k})$ such that $\int l(\mathbf{k}) \mathrm{d}k_x \mathrm{d}k_y$, we take
 \begin{equation}
- S_{\mathrm{ds}} =S_{\mathrm{ds}}^{\mathrm{SAT}}+S_{\mathrm{ds}}^{\mathrm{TURB}} +
-C_{\mathrm{lf}} \frac{1-S}{2} S_{\mathrm{ds}}^{\mathrm{WAM4}}+
-C_{\mathrm{hf}} \frac{1+S}{2} S_{\mathrm{ds}}^{\mathrm{WAM4}}.
+l(\mathbf{k})= 1/(2\pi^2 k),
 \end{equation}
-
-\noindent
-The switch coefficients $C_{\mathrm{lf}}$ and $C_{\mathrm{hf}}$ allow the
-switching on and off of either the low (unsaturated) and/or high (saturated)
-part of the WAM4 dissipation term. The saturation level is given by,
-
+and the spectral density of breaking crest length per unit surface is 
+$\Lambda(\mathbf{k})=l(\mathbf{k})P(\mathbf{k})$. 
+Assuming that any breaking wave instantly dissipates all the energy of all waves with frequencies higher by a factor $r_{\mathrm{cu}}$ or more,
+the cumulative dissipation rate is simply given by the rate at which these shorter waves are taken over by larger breaking waves, times the spectral density, namely 
 \begin{equation}
-S=\tanh\left[10
-\left(\frac{B'\left(k,\theta\right)}{B_r}\right)^{0.5}-B_{r2}\right] ,
+\cS_{\mathrm{bk,cu}}(k,\theta) = -C_{\mathrm{cu}}  N \left(k,\theta\right) \int_{f' < r_{\mathrm{cu}} f } \Delta_C \Lambda(\mathbf{k'}) \mathrm{d\mathbf{k'}},
+\label{Sds_cu1}
 \end{equation}
-
-\noindent
-with the saturation spectrum partially integrated over directions
-
-\begin{equation}
-B'\left(k,\theta \right)=\int_{\theta-\Delta_\theta}^{\theta+\Delta_\theta}
-\sigma k^3 A(k,\theta) \mathrm d \theta' \label{eq:defBofk},
-\end{equation}
-
-\noindent
-All relevant source term parameters can be set via the namelists SIN3 and SDS3
-to yield either the original WAM4 source terms or the BAJ form as modified by
-\cite{rep:Bea05}.
-
+where $r_{\mathrm{cu}}$ defines the maximum ratio of the frequencies of long waves that will wipe out short waves. 
+This  gives the
+source term, 
+\begin{eqnarray}
+\cS_{\mathrm{bk,cu}}(k,\theta) &=&  \frac{-14.2 C_{\mathrm{cu}}}{\pi^2}  N \left(k,\theta\right)
+ \nonumber \\
+& &\int_0^{ r^2_{\mathrm{cu}} k }\int_0^{2\pi}
+\max \left\{\sqrt{B(f',\theta')}-\sqrt{B_r},0\right\}^2
+\mathrm{d}\theta' \mathrm{d}k'.
+\label{Sds_sat_isotropic}
+\end{eqnarray}
+We shall 
+take $r_{\mathrm{cu}}=0.5$, and $C_{\mathrm{cu}}$ is a tuning coefficient expected to be of order 1, which also corrects for errors in the estimation of $l$. 
 \begin{table} \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var. & namelist & WAM4 & BAJ  & ACC350 \\
+Par.         &  WWATCH var. & namelist & TEST441b & TEST405  & TEST500 \\
 \hline
-  $z_u$ &  ZWND                       & SIN3 & 10.0    & 10.0   & 10.0 \\
-  $\alpha_0$ &  ALPHA0                & SIN3 & 0.01    & 0.0095 &  0.0095 \\
-  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN3 & 1.2     & 1.2    &  1.75 \\
-  $p_{\mathrm{in}}$ &  SINTHP         & SIN3 & 2       & 2      &  1.7 \\
-  $z_\alpha$ &  ZALP                  & SIN3 & 0.0110  & 0.0110 &  0.005 \\
-  $s_u$ &  TAUWSHELTER                & SIN3 & 0.0     & 0.0    & -1   \\
-  $s_0$ &  SWELLFPAR                  & SIN3 & 0.0     & 0.0    &  3   \\
-  $s_1$ &  SWELLF                     & SIN3 & 0.0     & 0.0    &  0.7 \\
-  $s_2$ &  SWELLF2                    & SIN3 & 0.0     & 0.0    &  -0.18 \\
-  $s_3$ &  SWELLF3                    & SIN3 & 0.0     & 0.0    &  -0.15 \\
-  $Re_c$&  SWELLF4                    & SIN3 & 0.0     & 0.0    &  100000 \\
-  $s_5$ &  SWELLF5                    & SIN3 & 0.0     & 0.0    &  1.2 \\
-  $z_r$ &  Z0RAT                      & SIN3 & 0.0     & 0.0    &  0.04 \\
-\hline
-\end{tabular} \end{center}
-\caption{Parameter values for WAM4, BAJ and ACC350 source term
-parameterizations that can be reset via the SIN3 and SDS3 namelist. BAJ is
-generally better than WAM4, and the ACC350 combination was found to perform
-better than BAJ in all conditions except very high waves ($H_s > 11$~m, work in
-progress). However, the default parameters still corresponds to BAJ. Please
-note that the name of the variables only apply to the namelists. In the source
-term module the names are slightly different, with a doubled first letter, in
-order to differentiate the variables from the pointers to these variables, and
-the SWELLFx are combined in one array SSWELLF.} \label{tab:WAM4_parSIN}
-\end{table}
-
-\begin{table} \begin{center}
-\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var. & namelist & WAM4 & BAJ  & ACC350 \\
-\hline
-  $C_{\mathrm{ds}}$                 &  SDSC1          & SDS3 & -4.5 & -2.1&  0.0 \\
-  $p$                               &  WNMEANP        & SDS3 & -0.5 & 0.5 &  0.5    \\
-  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS3 & -0.5 & 0.5 &  0.5 \\
-  $\delta_1$                        &  SDSDELTA1      & SDS3 & 0.5  & 0.4 &  0.0 \\
-  $\delta_2$                        &  SDSDELTA2      & SDS3 & 0.5  & 0.6 &  0.0 \\
-  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS3 & 0.0  & 0.0 & $-2.4\times 10^{-5}$\\
-  $C_{\mathrm{lf}}$                 &  SDSLF          & SDS3 & 1.0  & 1.0 &  0.0 \\
-  $C_{\mathrm{hf}}$                 &  SDSHF          & SDS3 & 1.0  & 1.0 &  0.0 \\
-  $\Delta_\theta$                   &  SDSDTH         & SDS3 & 0.0  & 0.0 & 70  \\
-  $B_r$                             &  SDSBR          & SDS3 & 0.0  & 0.0 & $1.2\times 10^{-3}$  \\
-  $B_{r2}$                          &  SDSBR2         & SDS3 & 1.0  & 1.0 & 0.8  \\
-  $B_0$                             &  SDSC4          & SDS3 & 0.0  & 0.0 & 1.0   \\
-  $p^{\mathrm{sat}}$                &  SDSP           & SDS3 & 0.0  & 0.0 &  2.0   \\
-  $C_{\mathrm{turb}}$               & SDSC5           & SDS3  & 0.0 & 0.0 &  0.0   \\
-  $C_{\mathrm{ds},6}$               & SDSC6           & SDS3  & 0.0 & 0.0 &  0.25 \\
-  $s_{m0}$                          & SDSBM0          & SDS3  & 1.0 & 1.0 &  1.0  \\
-  $s_{m1}$                          & SDSBM1          & SDS3  & 0.0 & 0.0 &  0.0  \\
-  $s_{m2}$                          & SDSBM2          & SDS3  & 0.0 & 0.0 &  0.0  \\
-  $s_{m3}$                          & SDSBM3          & SDS3  & 0.0 & 0.0 &  0.0  \\
-  $s_{m4}$                          & SDSBM4          & SDS3  & 0.0 & 0.0 &  0.0  \\
+  $p$                               &  WNMEANP        & SDS4 & 0.5                   & 0.5 &  0.5    \\
+  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5                   & 0.5 &  0.5 \\
+  $f_{\mathrm{FM}}$                 &  FXFM3          & SDS4 & 9.9                   & \textbf{2.5} &  9.9  \\
+  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4 & $-2.4\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
+  $C_{\mathrm{ds}}^{\mathrm{BCK}}$  & SDSBCK          & SDS4 & 0                     & 0  & \textbf{0.185} \\
+  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 0  & \textbf{1.5} \\
+  $\Delta_\theta$                   &  SDSDTH         & SDS4 & 80                    & 80 & \textbf{0.0}  \\
+  $B_r$                             &  SDSBR          & SDS4 & 0.0009                & \textbf{0.00085} & 0.0009    \\
+  $2*C_{\mathrm{cu}}$               & SDSC3           & SDS4 & -0.8                  & \textbf{0.0}    & -0.8    \\
+  ${\mathrm{s_B}}$                  & SDSCOS           &SDS4 & 2.0                   &  0.0 & 2.0 \\
+   $B_0$                             &  SDSC4          & SDS4 & 1.0                  & 1.0 & 1.0   \\
+  $p^{\mathrm{sat}}$                &  SDSP           & SDS4 & 2.0  & 2.0 &  2.0   \\
+  $C_{\mathrm{turb}}$               & SDSC5           & SDS4  & 0.0 & 0.0 &  0.0   \\
+  $\delta_d$                        & SDSC6           & SDS4  & 0.3 & 0.3 &  0.3   \\
+  $C$                               & NLPROP          & SNL1  & $\mathbf{2.5\times 10^7}$ & $2.7\times 10^7$  & $\mathbf{2.5\times 10^7}$   \\
  \hline \hline
 \end{tabular} \end{center}
-\caption{Parameter values for WAM4, BAJ and ACC350 source term
-parameterizations that can be reset via the SDS3 namelist. BAJ is generally
-better than WAM4, and the ACC350 combination was found to perform better than
-BAJ in all conditions except very high waves ($H_s > 11$~m, work in progress),
-with a general underestimation of the directional spread at high frequencies.
-However, the default parameters still corresponds to BAJ. Please note that the
-name of the variables only apply to the namelists. In the source term module
-the names are slightly different, with a doubled first letter, in order to
-differentiate the variables from the pointers to these variables, and the SDSMx
-are combined in one array SSDSM.} \label{tab:WAM4_parSDS}
+\caption{Same as table \ref{tab:ST4_parSIN}, for the SDS4 and SNL1 namelists. Bold values are different from the 
+default values set by ww3\_grid.} \label{tab:ST4_parSDS}
 \end{table}
 
-The saturation term is given by,
 
-\begin{eqnarray}
-S_{\mathrm{ds}}^{\mathrm{SAT}}\left(k,\theta\right) = \sigma
- C_{\mathrm{ds}}^{\mathrm{SAT}}\left\{
-C_{\mathrm{ds},6} \left[ \max\left\{\frac{B\left(k\right)}{B_r P(k D)} - B_0
- ,0\right\}\right]^{p^{\mathrm{sat}}} \right. \nonumber \\
- +\left.\left(1-C_{\mathrm{ds},6}\right) \left[
-\max\left\{\frac{B'\left(k,\theta\right)}{B_r P(k D)} - B_0
- ,0\right\}\right]^{p^{\mathrm{sat}}} \right\} \label{eq:Sds_sat}
-N\left(k,\theta\right) .
-\end{eqnarray}
-
-\noindent 
-This form loosely follows the proposed saturation form of \cite{art:Phi84},
-with the use of a partially integrated saturation spectrum $B'$, defined by
-eq. (\ref{eq:defBofk}), and its full integration $B$ instead of Phillips'
-original non-integrated form. $B$ is defined as
-
-\begin{equation}
-B\left(k\right)=\int_{0}^{2 \pi} \sigma k^3 A(k,\theta) \mathrm d \theta
-\label{eq:defBofkint}.
-\end{equation}
-
-\noindent
-Using $B'$ is generally consistent with the lower saturation for broader
-spectra found by \cite{art:BGM02}, and allows a better fit to observed
-directional spectra.
-
-This form thus differs from those proposed by \cite{art:ABJ03} and
-\cite{art:Wea07}. The $P(kD)$ factor in the denominator mimics the change in
-maximum wave steepness from deep to shallow water as given by
-\cite{art:Miche44}. The function $P(x)=1$ if $s_{m0}=1$ and otherwise,
-$P(x)=\left[x/\left(s_{m1}+s_{m2}x+s_{m3}x^2+s_{m4}x^3\right)\right]^2$. Using
-this form may lead in a double counting of dissipation when depth-induced
-breaking is parameterized separately.
-
-The wave-turbulence interaction term of \cite{art:TB02} and \cite{art:AJ06}),
+Finally, the wave-turbulence interaction term of \cite{art:TB02} and \cite{art:AJ06}),
 is given by
 
 \begin{equation}
-S_{\mathrm{ds}}^{\mathrm{TURB}}\left(k,\theta\right) = - 2
+\cS_{\mathrm{ds}}^{\mathrm{TURB}}\left(k,\theta\right) = - 2
 C_{\mathrm{turb}} \sigma \cos(\theta_u - \theta) k \frac{\rho_a
 u_\star^2}{g \rho_w}  N\left(k,\theta\right) .
 \end{equation}
@@ -1737,6 +1653,7 @@ u_\star^2}{g \rho_w}  N\left(k,\theta\right) .
 \noindent
 The coefficient $C_{\mathrm{turb}}$ is of order 1 and can be used to adjust for
 ocean stratification and wave groupiness.
+
 
 \noindent
 All relevant source term parameters can be set via the namelists SIN4 and SDS4
@@ -1915,7 +1832,7 @@ dissipation source function is obtained
 % eq:BJ78
 
 \begin{equation}
-S_{db} (k,\theta) = - \alpha \frac{\delta}{E} F(k,\theta)
+\cS_{db} (k,\theta) = - \alpha \frac{\delta}{E} F(k,\theta)
        = - 0.25 \: \alpha \: Q_b \: f_m \frac{H_{\max}^2}{E} F(k,\theta)
 \:\:\: , \label{eq:BJ78}
 \end{equation}
@@ -1952,7 +1869,7 @@ accuracy up to $\Delta d / d \simeq 0.6$ \citep{art:AM07}. The source term
 reads,
 
 \begin{equation}
- S_{\mathrm{sc}}({\bk}) =
+\cS_{\mathrm{sc}}({\bk}) =
 \frac{\pi}{2}\int_{0}^{2 \pi}
  \frac{k'^2 M^2({\bk},\textbf{k}')}{\sigma \sigma' \left(k' C'_g +
 {\bk}  \cdot {\bf U}  \right)}
@@ -2014,6 +1931,38 @@ would increase the overhead cost by at least one order of magnitude. In the
 present implementation, the interaction integration is recomputed at every
 source term call.
 
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{Reflection by shoreline and icebergs  \hfill {\rm (F. Ardhuin)}} 
+\label{sec:ref}
+\vsssub
+Wave reflection at the shoreline varies from a fraction of a percent to about 30\% of the incoming 
+wave energy, and may have important consequences for the directional wave spectrum, and hence the 
+generation of seismic noise by ocean waves, and the wave climate in otherwise sheltered locations \citep{pro:ORe99}. 
+
+Because reflection involve wave trains with different directions, in a model like WWATCH, their interaction can only be 
+represented through a source term in the right hand side. Nevertheless, this is physically linked to propagation. 
+In practice, the reflection source term puts into the reflected wave directions the proper amount of energy that will be taken away by propagation 
+at the next time step. When neglecting the cross-shore current, this is 
+
+\begin{equation} 
+\cS_{ref}(k,\theta) = 
+\int R^2(k,\theta,\theta') \frac{C_g(k)}{\Delta A} \left[\cos \theta \Delta y \sin \theta  \Delta x \right] N(k,\theta') \mathrm{d} \theta'
+\end{equation}
+where $R^2$ is  an energy reflection coefficient, and $\Delta x$ and $\Delta y$ are the grid spacing along the two axes, and
+$\Delta A$ is the cell area. In the 
+case of unstructured grids, $\Delta A$ is the median dwell cell area and $\left[\cos \theta \Delta y \sin \theta  \Delta x \right]$ 
+is replaced by the sum of triangle edges projected on the perpendicular to the wave propagation direction. 
+This can be put in the same form,  $\left[\cos \theta \Delta y \sin \theta  \Delta x \right]$ by properly defining 
+$\Delta y$ and $\Delta x$ from the triangle edges. 
+
+The reflection coefficient $R^2$ is taken to be non-zero only for the directions such as $\cos(\theta-\theta')$, and its magnitude 
+is the product of a reflection coefficient $R_0^2(k)$, integrated over the scattered directions $\theta$, 
+and a directional distribution around the specular direction $R_2(\theta,\theta')$,  
+\begin{equation} 
+R^2(k,\theta,\theta')  =  R_0^2(k) R_2(\theta,\theta').
+\end{equation}
+
 
 % -------------------------------------------------------------
 \vsssub
@@ -2042,18 +1991,27 @@ selected points. For activation of the output see \para\ref{sec:shell}
       speed as input to the model, i.e., is not corrected for the current
       speed.
 \item The air-sea temperature difference ($^\circ$C).
-\item The friction velocity $u_\ast$ (scalar). Definition depends on
-      selected source term parameterization (m/s). An alternative vector version
-      of the stresses is available for research (requires user intervention in
-      the code).
+\item Water level.
+\item Ice concentration.
 \item Significant wave height (m) [see Eq.~(\ref{eq:etot})]
       \begin{equation} H_s = 4 \sqrt{E} \: . \label{eq:Hs} \end{equation}
 \item Mean wave length (m) [see Eq.~(\ref{eq:zbar})]
       \begin{equation} L_m = 2\pi \overline{k^{-1}}
       \: . \label{eq:Lm} \end{equation}
-\item Mean wave period (s)
-      \begin{equation} T_m = 2\pi \overline{\sigma^{-1}}
+\item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
+      \begin{equation} T_{m02} = 2\pi /\sqrt{\overline{\sigma^{2}}}
+      \: . \label{eq:Tm02} \end{equation}
+\item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
+      \begin{equation} T_{m0,-1} = 2\pi \overline{\sigma^{-1}}
+      \: . \label{eq:Tm0m1} \end{equation}
+\item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
+      \begin{equation} T_{m0,-1} = 2\pi \overline{\sigma^{-1}}
       \: . \label{eq:Tm} \end{equation}
+\item Energy flux (W/m)
+      \begin{equation} C_g E =  \rho_w g \overline{C_g} E
+      \: . \label{eq:CgE} \end{equation}
+\item Peak frequency (Hz), calculated from the one-dimensional frequency
+      spectrum using a parabolic fit around the discrete peak.
 \item Mean wave direction (degr., meteorological convention)
       \begin{equation} \theta_m = \mbox{atan} \left ( \frac{b}{a} \right )
       \: , \label{eq:theta_m} \end{equation} \begin{equation}
@@ -2065,20 +2023,9 @@ selected points. For activation of the output see \para\ref{sec:shell}
       \begin{equation} \sigma_\theta = \left [ 2 \left \{ 1 - \left (
       \frac{a^2+b^2}{E^2} \right )^{1/2} \right \} \right ]^{1/2}
       \: , \label{eq:sig_th} \end{equation}
-\item Peak frequency (Hz), calculated from the one-dimensional frequency
-      spectrum using a parabolic fit around the discrete peak.
 \item Peak direction (degr.), defined like the mean direction, using the
       frequency/wavenumber bin containing of the spectrum $F(k)$ that
       contains the peak frequency only.
-\item Peak frequency of the wind sea part of the spectrum. For \wam-3
-      input, this is the highest local peak in the one-dimensional spectrum,
-      if this frequency is higher than half the PM frequency and smaller
-      than 0.75 times the maximum discrete frequency (otherwise undefined).
-      For the Tolman and Chalikov input, it is calculated using
-      Eqs.~(\ref{eq:fp_ir}) and (\ref{eq:fp_fpi}). \label{out:old_fpw}
-\item Wind sea direction (degr.), defined like the mean direction, using the
-      frequency/wavenumber bin containing the peak frequency of the wind
-      sea only. \label{out:old_thw}
 \item Wave heights $H_s$ of partitions of the spectrum (see
       below). \label{out:first_part}
 \item Peak (relative) periods of partitions of the spectrum (parabolic fit).
@@ -2092,8 +2039,21 @@ selected points. For activation of the output see \para\ref{sec:shell}
 \item Average time step in the source term integration (s).
 \item Cut-off frequency $f_c$ (Hz, depends on parameterization of
       input and dissipation).
-\item Ice concentration.
-\item Water level.
+\item Maximum CFL number for spatial advection 
+\item Maximum CFL number for spectral advection 
+\item The friction velocity $u_\ast$ (scalar). Definition depends on
+      selected source term parameterization (m/s). An alternative vector version
+      of the stresses is available for research (requires user intervention in
+      the code).
+\item Charnock parameter for air-sea friction (without dimensions)
+\item Wind to wave energy flux
+\item Net wave-supported stress (wind to wave momentum flux) 
+\item Wave to wind momentum flux
+\item Whitecap coverage (without dimensions) (NOT PLUGGED YET)
+\item Whitecap mean thickness (m) (NOT PLUGGED YET)
+\item Mean breaking wave height (m) (NOT PLUGGED YET)
+\item Moment of whitecap distribution (?) (NOT PLUGGED YET)
+
 \item Near-bottom rms excursion amplitude
       \begin{equation} a_{b,rms} = \left [ 2 \int \!\!\!\! \int
       \frac{1}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
@@ -2102,6 +2062,9 @@ selected points. For activation of the output see \para\ref{sec:shell}
       \begin{equation} u_{b,rms} = \left [ 2 \int \!\!\!\! \int
       \frac{\sigma^2}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
       \: . \label{eq:ub_rms} \end{equation}
+\item Bedform parameters  
+\item Energy dissipation in WBBL 
+\item Momentum loss in WBBL 
 \item Radiation stresses
       \begin{equation} S_{xx} = \rho_w g \int \!\!\!\! \int \left
         ( n - 0.5 + n \cos^2 \theta \right )  \: F(k,\theta) \: dk d\theta
@@ -2115,6 +2078,19 @@ selected points. For activation of the output see \para\ref{sec:shell}
       where
       \begin{equation} n = \frac{1}{2} + \frac{kd}{\sinh 2kd}
       \: . \label{eq:n} \end{equation}
+\item Wave to ocean energy flux
+\item Bernoulli head
+\item Wave to ocean momentum flux
+\item Stokes volume transport (m$^2$/s)
+\item Stokes drift at the sea surface (m/s)
+\item Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
+\item Spectral tail level (without dimensions) 
+\item Second order pressure variance (m$^2$) and peak period of this pressure (s) which contributes to acoustic and seismic noise, 
+      \begin{equation} F_{p2D} = \int_0^{\infty} \frac{4 \sigma}{C_g} \int_0^{\pi}  F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta dk
+      \: , \label{eq:Sxx} \end{equation}
+      \begin{equation} S_{xy} =\rho_w g \int \!\!\!\! \int
+        n \sin \theta \cos \theta  \: F(k,\theta) \: dk d\theta
+      \: , \label{eq:Syy} \end{equation}
 \item Slot for user defined parameter (requires modification of code).
 \item Idem.
 \end{list}
@@ -2143,13 +2119,13 @@ U_p = C_{mult} U_{10} \cos ( \theta - \theta_w )  \:\:\: . \label{eq:Up}
 \end{equation}
 
 \noindent
-The multiplier can be set by the user. The default value is $C_{mult} = 1.7$
+The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
 
+THESE TWO PARAMETERS WILL BE PUT BACK. 
 Old output types \ref{out:old_fpw} and \ref{out:old_thw} have become obsolete
 with the introduction of the partitioned output types \ref{out:first_part}
 through \ref{out:last_part}. However, they are retained in the present model
 release to provide required downward compatibility with model version 1.18 at
 NCEP. These output types are likely to be retired in upcoming versions of \ws.
-
 
 %\bpage

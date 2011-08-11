@@ -1031,7 +1031,7 @@
       USE W3ADATMD, ONLY: W3SETA, W3DIMA
       USE W3ODATMD, ONLY: W3SETO
 !/
-      USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, UST, USTDIR, ASF
+      USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, BERG, UST, USTDIR, ASF
       USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, HS, WLM,     &
                           TMN, THM, THS, FP0, THP0, FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,    &
@@ -1434,7 +1434,7 @@
                     IF (P2MSF(1).GT.0)         &
                       WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
                   ELSE IF ( IO .EQ. 52 ) THEN
-                    WRITE ( NDSOG ) USERO(1:NSEA,1)
+                    WRITE ( NDSOG ) BERG(1:NSEA) !USERO(1:NSEA,1)
                   ELSE IF ( IO .EQ. 53 ) THEN
                     WRITE ( NDSOG ) USERO(1:NSEA,2)
                   ELSE
@@ -1618,7 +1618,7 @@
                       END IF
                   ELSE IF ( IO .EQ. 52 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       USERO(1:NSEA,1)
+                                                       BERG(1:NSEA) !USERO(1:NSEA,1)
                   ELSE IF ( IO .EQ. 53 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        USERO(1:NSEA,2)

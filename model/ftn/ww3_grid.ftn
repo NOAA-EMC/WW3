@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         25-Jun-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -69,6 +69,7 @@
 !/                  specify index closure for a grid. Change GLOBAL
 !/                  input in ww3_grid.inp to CSTRG.     ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    25-Jun-2011 : Adding movable bed friction         ( version 4.01 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -326,6 +327,8 @@
 !
 !     !/BT0   No bottom friction included.
 !     !/BT1   JONSWAP bottom friction package.
+!     !/BT4   SHOWEX bottom friction using movable bed roughness 
+!                  (Tolman 1994, Ardhuin & al. 2003)
 !     !/BTX   Open slot.
 !
 !     !/DB0   No depth-induced breaking included.
@@ -399,6 +402,7 @@
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
                                  IST, NKI, NTHI,                      &
                                  IDFT, NSTAT, NBT, NLAND
+!/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
 !/O1      INTEGER             :: IBI, IP0, IPN, IPH, IPI
       INTEGER                 :: NCOL =  78
@@ -430,6 +434,9 @@
       REAL, ALLOCATABLE       :: XGRDIN(:,:), YGRDIN(:,:)
       REAL, ALLOCATABLE       :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
       REAL, ALLOCATABLE       :: REFD(:,:), REFD2(:,:), REFS(:,:)
+!/BT4      REAL, ALLOCATABLE  :: SED_D50FILE(:,:), SED_POROFILE(:,:)
+!/BT4      LOGICAL            :: SEDMAPD50, SEDMAPPORO
+!/BT4      REAL               :: SED_D50_UNIFORM, SED_DSTAR, RIPFAC1, RIPFAC2, RIPFAC3, RIPFAC4
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
                                  FLTR, FLBS, FLXX, FLPROP,            &
                                  FIRST, CONNCT, FLNEW, INGRID
@@ -437,10 +444,9 @@
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
       LOGICAL                 :: FLAGICESOURCE
-      REAL                    :: REFCOAST, REFFREQ,                  &
-                                 REFSUBGRID,  BSBOTTOM,              &
+      REAL                    :: REFCOAST, REFFREQ, REFBETA, REFMAP,  &
+                                 REFSUBGRID,  BSBOTTOM,               &
                                  REFICEBERG, FACBERG
-      INTEGER                 :: REFMAP
 !
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -460,7 +466,7 @@
 !/
       INTEGER                 :: FLAGTR, IHM
       REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,   &
-                                 XSEED, XR, HSPM, WSM, WSC
+                                 LICE, XSEED, XR, HSPM, WSM, WSC
       LOGICAL                 :: FLC
 !/FLX3      INTEGER                 :: CTYPE
 !/FLX3      REAL                    :: CDMAX
@@ -524,6 +530,7 @@
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
 !/BT1      NAMELIST /SBT1/ GAMMA
+!/BT4      NAMELIST /SBT4/ SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1      NAMELIST /SDB1/ BJALFA, BJGAM, BJFLAG
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
@@ -531,11 +538,11 @@
            NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,&
                            IMPFSNIMP, TSTC
 !/COU      NAMELIST /COU/  COU_2D, COU_RAD3D, COU_US3D
-           NAMELIST /MISC/ CICE0, CICEN, XSEED, FLAGTR, XP, XR, XFILT,&
-                      PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE,        &
+           NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
+                      XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
                       US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
-                      REFCOAST, REFFREQ, REFMAP, REFSUBGRID,          &
+                      REFCOAST, REFFREQ, REFBETA, REFMAP, REFSUBGRID, &
                       BSBOTTOM, REFICEBERG, FACBERG
 !/
 !/ ------------------------------------------------------------------- /
@@ -571,9 +578,14 @@
       WRITE (NDSO,900)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 3.  Interpolation table for dispersion relation.
+! 3.a Interpolation table for dispersion relation.
 !
       CALL DISTAB
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 3.a Table for friction factors
+!
+      CALL TABU_FW
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4   Read and process input file up to spectrum
@@ -701,6 +713,13 @@
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=2001,ERR=2002) DTMAX, DTCFL, DTCFLI, DTMIN
+!/SEC1      IF (DTMAX.LT.1.) THEN 
+!/SEC1        NITERSEC1=CEILING(1./DTMAX)
+!/SEC1        WRITE (NDSO,913) NITERSEC1
+!/SEC1      ELSE 
+!/SEC1        NITERSEC1=1
+!/SEC1        END IF
+
       DTMAX  = MAX ( 1. , DTMAX )
 !
 ! Commented to allow very high resolution zooms
@@ -754,6 +773,7 @@
 !/BT0      NRBT   = NRBT + 1
 !/BT0      FLBT   = .FALSE.
 !/BT1      NRBT   = NRBT + 1
+!/BT4      NRBT   = NRBT + 1
 !/BTX      NRBT   = NRBT + 1
 !
 !/DB0      NRDB   = NRDB + 1
@@ -1205,6 +1225,7 @@
 ! 6.g Define Sbt.
 !
 !/BT0      WRITE (NDSO,926)
+!/BT4      WRITE (NDSO,926)
 !/BTX      WRITE (NDSO,926)
 !
 !/BT1      GAMMA  = -0.067
@@ -1213,6 +1234,22 @@
 !/BT1      WRITE (NDSO,926) STATUS
 !/BT1      WRITE (NDSO,927) GAMMA
 !/BT1      SBTC1  = 2. * GAMMA / GRAV
+!
+!/BT4      SEDMAPD50=.FALSE.
+!/BT4      SEDMAPPORO=.FALSE.
+!/BT4      SED_D50_UNIFORM=2.E-4  ! default grain size: medium sand 200 microns
+!/BT4      RIPFAC1=1.5    ! A1 in Ardhuin et al. 2003
+!/BT4      RIPFAC2=-2.5   ! A2 in Ardhuin et al. 2003
+!/BT4      RIPFAC3=1.2    ! A3 in Ardhuin et al. 2003
+!/BT4      RIPFAC4=0.05   ! A4 in Ardhuin et al. 2003
+!/BT4      CALL READNL ( NDSS, 'SBT4', STATUS )
+!/BT4      WRITE (NDSO,926) STATUS
+!/BT4      WRITE (NDSO,927) SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
+!/BT4      SBTCX(1)=RIPFAC1
+!/BT4      SBTCX(2)=RIPFAC2
+!/BT4      SBTCX(3)=RIPFAC3
+!/BT4      SBTCX(4)=RIPFAC4
+!        
 !
 ! 6.h Define Sdb.
 !
@@ -1355,6 +1392,7 @@
 !
       CICE0  = 0.5
       CICEN  = 0.5
+      LICE   = 0.
       PMOVE  = 0.5
       XSEED  = 1.
       FLAGTR = 0
@@ -1375,8 +1413,9 @@
       I2US3D_OUNF=30
       FLAGICESOURCE=.FALSE.
       REFCOAST=0.
-      REFMAP=0
+      REFMAP=0.
       REFFREQ=0.
+      REFBETA=0.25
       REFSUBGRID=0.
       BSBOTTOM=0.
       REFICEBERG=0.
@@ -1390,6 +1429,7 @@
       FICEN  = CICEN
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
       FICE0  = CICE0
+      FICEL  = LICE
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
       IF ( FLAGTR .LT. 3 ) CICE0 = CICEN
@@ -1416,10 +1456,10 @@
       WSCUT  = MIN ( 1.0001 , MAX ( 0. , WSC ) )
       FLCOMB = FLC
       IF ( FLCOMB ) THEN
-          J      = 1
-        ELSE
-          J      = 2
-        END IF
+        J      = 1
+      ELSE
+		  J      = 2
+		END IF
       WRITE (NDSO,966) IHMAX, HSPMIN, WSMULT, WSCUT, YESXNO(J)
 !
       FHMAX  = MAX ( 0.01 , FMICHE )
@@ -1461,16 +1501,16 @@
       CLOSE (NDSS,STATUS='DELETE')
 !
       IF ( FLNMLO ) THEN
-          WRITE (NDSO,917)
+        WRITE (NDSO,917)
 !/FLX3          WRITE (NDSO,2810) CDMAX*1.E3, CTYPE
 !/LN1          WRITE (NDSO,2820) CLIN, RFPM, RFHF
 !/ST1          WRITE (NDSO,2920) CINP
-          IF ( .NOT. FLSTB2 ) THEN
+        IF ( .NOT. FLSTB2 ) THEN
 !/ST2              WRITE (NDSO,2920) ZWND, SWELLF
-            ELSE
+        ELSE
 !/STAB2              WRITE (NDSO,2921) ZWND, SWELLF, STABSH, STABOF,  &
 !/STAB2                                CNEG, CPOS, FNEG
-            END IF
+          END IF
 !
 !/ST3          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
 !/ST3            SWELLF
@@ -1500,6 +1540,7 @@
 !/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
 !/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
 !/BT1          WRITE (NDSO,2926) GAMMA
+!/BT4          WRITE (NDSO,2926) SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -1508,25 +1549,25 @@
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
-              WRITE (NDSO,2956) UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
-          IF ( FLCOMB ) THEN
-              WRITE (NDSO,2966) CICE0, CICEN, PMOVE, XSEED, FLAGTR,   &
+        WRITE (NDSO,2956) UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
+        IF ( FLCOMB ) THEN
+          WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.TRUE.', FHMAX, RWNDC,        &
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                REFCOAST, REFFREQ, REFMAP,            &
+                                REFCOAST, REFFREQ, REFBETA, REFMAP,   &
                                 REFSUBGRID, BSBOTTOM, REFICEBERG,     &
                                 FACBERG
             ELSE
-              WRITE (NDSO,2966) CICE0, CICEN, PMOVE, XSEED, FLAGTR,   &
+              WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', FHMAX, RWNDC,       &
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                REFCOAST, REFFREQ, REFMAP,            &
+                                REFCOAST, REFFREQ, REFBETA, REFMAP,   &
                                 REFSUBGRID, BSBOTTOM, REFICEBERG,     &
                                 FACBERG
             END IF
@@ -2366,17 +2407,17 @@
 ! 8.g Activation of reflections and scattering 
 !
       FLICES = FLAGICESOURCE
-      REFPARS(1)=REFCOAST
-      REFPARS(2)=REFSUBGRID
-      REFPARS(3)=BSBOTTOM
-      REFPARS(4)=REFICEBERG
-      REFPARS(5)=FACBERG
-      REFPARS(6)=REFFREQ
-      RREF(:)=.FALSE.
-      IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
-      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
-      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
-      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
+!/REF1      REFPARS(1)=REFCOAST
+!/REF1      REFPARS(2)=REFSUBGRID
+!/REF1      REFPARS(3)=BSBOTTOM
+!/REF1      REFPARS(4)=REFICEBERG
+!/REF1      REFPARS(5)=FACBERG
+!/REF1      REFPARS(6)=REFFREQ
+!/REF1      RREF(:)=.FALSE.
+!/REF1      IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
+!/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
+!/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
+!/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
 
       IF (GTYPE.NE.UNGTYPE) THEN
         DO IY=1, NY
@@ -2585,7 +2626,7 @@
 ! 
 !  9.a Reads shorline direction and slope
 !
-      IF ( REFMAP .NE. 0 ) THEN
+      IF ( REFMAP .GT. 0 ) THEN
         ALLOCATE ( REFD(NX,NY), REFD2(NX,NY), REFS(NX,NY) )
 
 !
@@ -2641,7 +2682,7 @@
                 END IF
             END IF
 !
-! 7.e.3 Read the data
+! 9.d Read the data
 !
           CALL INA2R ( REFD, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
                        IDFM, RFORM, IDLA, VSC, VOF)
@@ -2659,125 +2700,206 @@
 !
 ! 8.h Estimates shoreline direction for scattering 
 !
-      IF (GTYPE.NE.UNGTYPE) THEN
-        DO IY=2, NY-1
-          DO IX=2, NX-1
-            IF (TMPSTA(IY,IX).EQ.1) THEN
-!
-! Prepares for reflection from subgrid islands
-!
-            IF (RREF(2)) &
-              REFLC(2,MAPFS(IY,IX))= OBSX(IX,IY)+OBSY(IX,IY)
-!
-! Prepares for iceberg reflections
-!
-            IF (RREF(4)) &
-              REFLC(4,MAPFS(IY,IX))= 1.
-
-!
-! resolved shoreline reflection
-!
-            IF (RREF(1)) THEN 
-!
-! Search for neighboring coastline.        3 2 1 
-! around X. These are the neighbors of X:  4 X 0
-!                                          5 6 7
-!
-!
-              NEIGH1(0)=TMPSTA(IY,IX+1)
-              NEIGH1(1:3)=TMPSTA(IY+1,IX+1:IX-1:-1)
-              NEIGH1(4)=TMPSTA(IY,IX-1)
-              NEIGH1(5:7)=TMPSTA(IY-1,IX-1:IX+1)
-              IF ((NEIGH1(0).EQ.1).AND.(NEIGH1(4).EQ.1)) THEN 
-                REFLD(3,MAPFS(IY,IX))=1
-              ELSE
-                REFLD(3,MAPFS(IY,IX))=0
-                END IF
-              IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).EQ.1)) THEN 
-                REFLD(4,MAPFS(IY,IX))=1
-              ELSE
-                REFLD(4,MAPFS(IY,IX))=0
-                END IF
-!
-! Test if one of the surrounding points is land
-!              
-              IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN 
-!
-! Looks for a locally straight coast in all 8 orientations 
-! It will be fun to adapt this for curvilinear grids ;-) 
-!
-                J=0
-                REFLD(1,MAPFS(IY,IX))=0
-                COSAVG=0
-                SINAVG=0
-                DO K=0,7
-                  IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
-                    .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
-                    .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
-                    REFLC(1,MAPFS(IY,IX))= REFCOAST
-!
-! Defines direction index for specular reflection (normal to coast)
-!
-!  for example, if we have this layout   001
-!                                        0X1
-!                                        001
-!
-!  then there is only a coastline detection for K=0, giving J=1 
-!  and the final result will be REFLD(1,MAPFS(IY,IX))=1
-!
-                    REFLD(2,MAPFS(IY,IX))= 2
-                    COSAVG=COSAVG+ECOS(1+(K*NTH)/8)
-                    SINAVG=SINAVG+ESIN(1+(K*NTH)/8)
-                    J=J+1
-                    ENDIF
-                  END DO
-                IF (J.GT.0) THEN 
-                  THAVG=ATAN2(SINAVG,COSAVG)
-!/T        WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
-                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
-                ELSE
-
-!                             1 1 1 
-! Looks for mild corners like 1 1 1
-!                             1 0 0          
-                  DO K=0,7
-                    IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
-                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
-                      REFLC(1,MAPFS(IY,IX))= REFCOAST
-                      REFLD(1,MAPFS(IY,IX))= 1+(K*NTH+(K+1)*NTH)/16
-                      REFLD(2,MAPFS(IY,IX))= 1
-                      !WRITE(6,*) 'NEIGH2:',IX,IY,K,NEIGH1,K*(NTH/8)
-                      ENDIF
-                    END DO
-!                              1 1 1                        1 1 1
-! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
-!                              1 0 1                        1 1 0          
-                  IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN 
-                    DO K=0,7,2
-                      IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
-                        REFLC(1,MAPFS(IY,IX))= REFCOAST
-                        REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
-                        REFLD(2,MAPFS(IY,IX))= 0
-                        !WRITE(6,*) 'NEIGH3:',IX,IY,K,NEIGH1,K*(NTH/8)
-                        END IF
-                      END DO
-                    END IF
-                  END IF
-! End of test if surrounding point is land
-                END IF
-!/T                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  &
-!/T        WRITE (NDST,*) 'COASTAL REFLECTION:',IX,IY, &
-!/T                    REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
-! End of test if local point is sea
-              END IF
-            END IF
-          END DO
-        END DO
-      ELSE IF (GTYPE.EQ.UNGTYPE) THEN
-! To do: reflections for for Unstr. and curvi     
-      ENDIF
+!/REF1      IF (GTYPE.NE.UNGTYPE) THEN
+!/REF1        DO IY=2, NY-1
+!/REF1          DO IX=2, NX-1
+!/REF1            IF (TMPSTA(IY,IX).EQ.1) THEN
+!/REF1!
+!/REF1! Prepares for reflection from subgrid islands
+!/REF1!
+!/REF1            IF (RREF(2)) &
+!/REF1              REFLC(2,MAPFS(IY,IX))= OBSX(IX,IY)+OBSY(IX,IY)
+!/REF1!
+!/REF1! Prepares for iceberg reflections
+!/REF1!
+!/REF1            IF (RREF(4)) &
+!/REF1              REFLC(4,MAPFS(IY,IX))= 1.
+!/REF1!
+!/REF1! resolved shoreline reflection
+!/REF1!
+!/REF1            IF (RREF(1)) THEN 
+!/REF1!
+!/REF1! Search for neighboring coastline.        3 2 1 
+!/REF1! around X. These are the neighbors of X:  4 X 0
+!/REF1!                                          5 6 7
+!/REF1!
+!/REF1!
+!/REF1              NEIGH1(0)=TMPSTA(IY,IX+1)
+!/REF1              NEIGH1(1:3)=TMPSTA(IY+1,IX+1:IX-1:-1)
+!/REF1              NEIGH1(4)=TMPSTA(IY,IX-1)
+!/REF1              NEIGH1(5:7)=TMPSTA(IY-1,IX-1:IX+1)
+!/REF1              IF ((NEIGH1(0).EQ.1).AND.(NEIGH1(4).EQ.1)) THEN 
+!/REF1                REFLD(3,MAPFS(IY,IX))=1
+!/REF1              ELSE
+!/REF1                REFLD(3,MAPFS(IY,IX))=0
+!/REF1                END IF
+!/REF1              IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).EQ.1)) THEN 
+!/REF1                REFLD(4,MAPFS(IY,IX))=1
+!/REF1              ELSE
+!/REF1                REFLD(4,MAPFS(IY,IX))=0
+!/REF1                END IF
+!/REF1!
+!/REF1! Test if one of the surrounding points is land
+!/REF1!              
+!/REF1              IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN 
+!/REF1!
+!/REF1! Looks for a locally straight coast in all 8 orientations 
+!/REF1! It will be fun to adapt this for curvilinear grids ;-) 
+!/REF1!
+!/REF1                J=0
+!/REF1                REFLD(1,MAPFS(IY,IX))=0
+!/REF1                COSAVG=0
+!/REF1                SINAVG=0
+!/REF1                DO K=0,7
+!/REF1                  IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
+!/REF1                    .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+!/REF1                    .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                    REFLC(1,MAPFS(IY,IX))= REFCOAST
+!/REF1!
+!/REF1! Defines direction index for specular reflection (normal to coast)
+!/REF1!
+!/REF1!  for example, if we have this layout   001
+!/REF1!                                        0X1
+!/REF1!                                        001
+!/REF1!
+!/REF1!  then there is only a coastline detection for K=0, giving J=1 
+!/REF1!  and the final result will be REFLD(1,MAPFS(IY,IX))=1
+!/REF1!
+!/REF1                    REFLD(2,MAPFS(IY,IX))= 2
+!/REF1                    COSAVG=COSAVG+ECOS(1+(K*NTH)/8)
+!/REF1                    SINAVG=SINAVG+ESIN(1+(K*NTH)/8)
+!/REF1                    J=J+1
+!/REF1                    ENDIF
+!/REF1                  END DO
+!/REF1                IF (J.GT.0) THEN 
+!/REF1                  THAVG=ATAN2(SINAVG,COSAVG)
+!/REFT        WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/REF1                ELSE
+!/REF1
+!/REF1!                             1 1 1 
+!/REF1! Looks for mild corners like 1 1 1
+!/REF1!                             1 0 0          
+!/REF1                  DO K=0,7
+!/REF1                    IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+!/REF1                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                      REFLC(1,MAPFS(IY,IX))= REFCOAST
+!/REF1                      REFLD(1,MAPFS(IY,IX))= 1+(K*NTH+(K+1)*NTH)/16
+!/REF1                      REFLD(2,MAPFS(IY,IX))= 1
+!/REF1                      !WRITE(6,*) 'NEIGH2:',IX,IY,K,NEIGH1,K*(NTH/8)
+!/REF1                      ENDIF
+!/REF1                    END DO
+!/REF1!                              1 1 1                        1 1 1
+!/REF1! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
+!/REF1!                              1 0 1                        1 1 0          
+!/REF1                  IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN 
+!/REF1                    DO K=0,7,2
+!/REF1                      IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                        REFLC(1,MAPFS(IY,IX))= REFCOAST
+!/REF1                        REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
+!/REF1                        REFLD(2,MAPFS(IY,IX))= 0
+!/REF1                        !WRITE(6,*) 'NEIGH3:',IX,IY,K,NEIGH1,K*(NTH/8)
+!/REF1                        END IF
+!/REF1                      END DO
+!/REF1                    END IF
+!/REF1                  END IF
+!/REF1! End of test if surrounding point is land
+!/REF1                END IF
+!/REFT                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  &
+!/REFT        WRITE (NDST,*) 'COASTAL REFLECTION:',IX,IY, &
+!/REFT                    REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
+!/REF1! End of test if local point is sea
+!/REF1              END IF
+!/REF1            END IF
+!/REF1          END DO
+!/REF1        END DO
+!/REF1      ELSE IF (GTYPE.EQ.UNGTYPE) THEN
+!/REF1! To do: reflections for for Unstr. and curvi     
+!/REF1      ENDIF
 !
       DEALLOCATE ( ZBIN, TMPSTA, TMPMAP )
+!
+! 9.e Reads bottom information from file
+!
+!/BT4      ALLOCATE ( SED_D50FILE(NX,NY))
+!/BT4      IF ( SEDMAPD50 ) THEN
+!/BT4
+!/BT4!
+!/BT4!  9.e.1 Info from input file
+!/BT4!
+!/BT4          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/BT4          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+!/BT4                                          FROM, TNAME
+!/BT4!
+!/BT4          IF (   ABS(VSC) .LT. 1.E-7  ) THEN 
+!/BT4            VSC    = 1.
+!/BT4          ELSE 
+!/BT4! WARNING TO BE ADDED ... 
+!/BT4            END IF
+!/BT4          IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+!/BT4          IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+!/BT4!
+!/BT4          WRITE (NDSO,977) NDSTR, VSC, IDLA, IDFT
+!/BT4          IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+!/BT4          IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
+!/BT4!
+!/BT4! 9.e.2  Open file and check if necessary
+!/BT4!
+!/BT4          IF ( NDSTR .EQ. NDSI ) THEN
+!/BT4              IF ( IDFT .EQ. 3 ) THEN
+!/BT4                  WRITE (NDSE,1004) NDSTR
+!/BT4                  CALL EXTCDE (23)
+!/BT4                ELSE
+!/BT4                  CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/BT4                END IF
+!/BT4            ELSE IF ( NDSTR .EQ. NDSG ) THEN
+!/BT4              IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
+!/BT4                   ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
+!/BT4                  WRITE (NDSE,1005) IDFM, IDFT
+!/BT4                  CALL EXTCDE (24)
+!/BT4                END IF
+!/BT4            ELSE
+!/BT4              IF ( IDFT .EQ. 3 ) THEN
+!/BT4                  IF (FROM.EQ.'NAME') THEN
+!/BT4                      J      = LEN_TRIM(FNMPRE)
+!/BT4                      OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
+!/BT4                            FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+!/BT4                            IOSTAT=IERR)
+!/BT4                    ELSE
+!/BT4                      OPEN (NDSTR,           FORM='UNFORMATTED',      &
+!/BT4                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+!/BT4                    END IF
+!/BT4                ELSE
+!/BT4                  IF (FROM.EQ.'NAME') THEN
+!/BT4                      J      = LEN_TRIM(FNMPRE)
+!/BT4                      OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
+!/BT4                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+!/BT4                    ELSE
+!/BT4                      OPEN (NDSTR,                                    &
+!/BT4                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
+!/BT4                    END IF
+!/BT4                END IF
+!/BT4            END IF
+!/BT4!
+!/BT4! 9.e.3 Read the data
+!/BT4!
+!/BT4          CALL INA2R ( SED_D50FILE, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+!/BT4                       IDFM, RFORM, IDLA, VSC, VOF)
+!/BT4!
+!/BT4          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/BT4!
+!/BT4          WRITE (NDSO,*)
+!/BT4!
+!/BT4      ELSE 
+!/BT4        SED_D50FILE(:,:)=SED_D50_UNIFORM
+!/BT4        END IF
+!/BT4!
+!/BT4      DO IY=1, NY
+!/BT4        DO IX=1, NX
+!/BT4          ISEA = MAPFS (IY,IX)
+!/BT4          SED_D50(ISEA)       = SED_D50FILE(IX,IY)
+!/BT4          END DO
+!/BT4        END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 10.  Prepare output boundary points.
@@ -3089,6 +3211,7 @@
                '       Maximum CFL time step X-Y     (s) :',F8.2/     &
                '       Maximum CFL time step k-theta (s) :',F8.2/     &
                '       Miminum source term time step (s) :',F8.2/)
+  913 FORMAT (/ '  WARNING, TIME STEP LESS THAN 1 s, NITER:',I8 /)
   915 FORMAT ( '  Preprocessing namelists ...')
   916 FORMAT ( '  Preprocessing namelists finished.'/)
   917 FORMAT (/'  Equivalent namelists ...'/)
@@ -3272,7 +3395,14 @@
 !/BT1  927 FORMAT ( '       gamma                       :',F8.4/)
 !/BT1 2926 FORMAT ( '  &SBT1 GAMMA =',E12.4,' /')
 !
-!/BTX  926 FORMAT (/'  Experimental bottom friction.'/)
+!/BT4  926 FORMAT (/'  Bottom friction  (SHOWEX)  ',A/                 &
+!/BT4               ' --------------------------------------------------')
+!/BT4  927 FORMAT ( '       SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM  :',A,1X,A,1X,F8.6/    &
+!/BT4               '       RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4       :',4F8.4/)      
+!/BT4 2926 FORMAT ( '  &SBT4 SEDMAPD50 =',A,', SEDMAPPORO =',A,       &
+!/BT4               ', SED_D50_UNIFORM =',F8.6,','/                   &
+!/BT4               '        RIPFAC1 =',F8.4,', RIPFAC2 =',F8.4,      &
+!/BT4               ', RIPFAC3 =',F8.4,', RIPFAC4 =',F8.4,' /')
 !
 !/DB0  928 FORMAT (/'  Surf breaking not defined.'/)
 !
@@ -3343,7 +3473,7 @@
                '       Limiter activated           :  ',A)
   968 FORMAT ( '          *** FACTOR DANGEROUSLY LOW ***')
 !
- 2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
+ 2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,', LICE = ',F8.1, &
                ', PMOVE =',F6.3, ', XSEED =',F6.3,', FLAGTR = ', I1,  &
                ','/'        XP =',F6.3,', XR =',F6.3,', XFILT =',     &
                F6.3,', IHM =',I5,', HSPM =',F6.3,','/                 &
@@ -3353,8 +3483,8 @@
                ', P2SF =',I1,', I1P2SF =',I2,', I2P2SF =',I2,         &
                ', US3D_OUNF =',I1,', I1US3D_OUNF =',I2,               &
                ', I2US3D_OUNF =',I2,','/                              &
-               '     REFCOAST =',F4.1,', REFFREQ =',F4.1,             &
-               ', REFMAP =',I1, ', REFSUBGRID =',F4.1,                &
+               '     REFCOAST =',F4.1,', REFFREQ =',F4.1,', REFBETA =',F4.2, &
+               ', REFMAP =',F4.1, ', REFSUBGRID =',F4.1,                &
                ', BSBOTTOM =',F4.1,', REFICEBERG =',F4.1,', FACBERG =',F4.1,' /')
 !/COU  2969 FORMAT ( '  &COU  COU_2D =',L3,', COU_RAD3D =',L3,         &
 !/COU               ', COU_US3D =',L3,' /')
@@ -3699,6 +3829,8 @@
 !/ST4                          READ (NDS,NML=SDS4,END=801,ERR=802,IOSTAT=J)
 !/BT1                        CASE('SBT1')
 !/BT1                          READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
+!/BT4                        CASE('SBT4')
+!/BT4                          READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
 !/DB1                        CASE('SDB1')
 !/DB1                          READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
 !/PR1                        CASE('PRO1')
