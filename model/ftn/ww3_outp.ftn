@@ -163,7 +163,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE
-      USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, HSMIN, HSDROP, IYY,    &
+      USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP, IYY,  &
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
 !/NCO       USE W3BULLMD, ONLY: CASCBLINE
 !/O14      USE W3ODATMD, ONLY: GRDID
@@ -662,7 +662,7 @@
           IF (FLREQ(IJ)) THEN
             NDSBUL = NDSTAB + (IJ - 1)
             WRITE(NDSBUL,971) 
-            WRITE(NDSBUL,974) HSDROP, HSMIN 
+            WRITE(NDSBUL,974) BHSDROP, BHSMIN 
 !/NCO             NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
 !/NCO             WRITE(NDSCBUL,961)
           ENDIF
@@ -981,7 +981,7 @@
            REAL                    :: ICE
 !/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
 !/STAB2                                 THARG1, THARG2
-!      REAL, SAVE              :: HSMIN  = 0.05
+      REAL, SAVE              :: HSMIN  = 0.05
       REAL                    :: WN(NK), CG(NK)
       REAL                    :: E(NK,NTH), E1(NK), APM(NK),          &
                                  THBND(NK), SPBND(NK), A(NTH,NK),     &

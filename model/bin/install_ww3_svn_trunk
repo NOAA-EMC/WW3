@@ -1,7 +1,7 @@
 #!/bin/sh
 # --------------------------------------------------------------------------- #
-# install_ww3_svn : install WAVEWATCH III in the present directory.           #
-#                   Working from svn server.                                  #
+# install_ww3_svn_trunk : install WAVEWATCH III svn trunk (complete) in the   #
+#                     current directory. Copies entire trunk from svn server. #
 #                                                                             #
 # -remarks :                                                                  #
 #                                                                             #
@@ -11,7 +11,8 @@
 #    for this script to work.                                                 #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      August 2009            #
+#                                                      Jose-Henrique Alves    #
+#                                                      August 2011            #
 #                                                                             #
 #    Copyright 2009 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -310,28 +311,17 @@
 
     if [ "$OK" = 'y' ]
     then
-      echo -n "svn archive relative to $svn_arc (no 'model') : "
+      echo -n "svn archive relative to $svn_arc : "
       read address
-      echo -n "$svn_arc/$address/model OK [y/-] ? "
+      echo -n "$svn_arc/$address OK [y/-] ? "
       read OK
 
       if [ "$OK" = 'y' ]
       then
 
-        echo ' ' ; echo -n "Download all trunk [y] or only model [n] ? "
-        read allcode
-        echo ' '
- 
-        if [ "$allcode" = 'y' ]
-        then 
           set -e
           svn checkout $svn_arc/$address svn
           set +e
-        else  
-          set -e
-          svn checkout $svn_arc/$address/model/ svn
-          set +e
-        fi
 # 2.c Nothing there to continue with
 
       else
@@ -444,19 +434,6 @@
     fi
     chmod 644 ww3_*
 
-# Include nrltest in the loop
-#    cd $main_dir/svn/model/nrltest/mww3_data_$dir
-#    if [ "$dir" = '00' ]
-#    then
-#      chmod 644 gfs*
-#      chmod 644 ice*
-#    else
-#      chmod 644 *.bot
-#      chmod 644 *.obs*
-#      chmod 644 *.mask
-#      chmod 644 *.gs
-#    fi
-#    chmod 644 ww3_*
   done
 
 # --------------------------------------------------------------------------- #
@@ -1005,20 +982,20 @@
 # 8.d hook in present script
 
   cd $main_dir
-  if [ ! -f install_ww3_svn ]
+  if [ ! -f install_ww3_svn_trunk ]
   then
     echo "Install script not in main directory, create link."
-    ln -sf ./bin/install_ww3_svn .
+    ln -sf ./bin/install_ww3_svn_trunk .
   else
-    lch=`ls -l install_ww3_svn | cut -c1-1`
+    lch=`ls -l install_ww3_svn_trunk | cut -c1-1`
     if [ "$lch" != 'l' ]
     then
       echo "Install script not a link ..."
-      difft=`diff install_ww3_svn ./svn/model/bin/.`
+      difft=`diff install_ww3_svn_trunk ./svn/model/bin/.`
       if [ -z "$difft" ]
       then
         echo "   Install script identical to svn version, replace by link."
-        ln -sf ./svn/model/bin/install_ww3_svn .
+        ln -sf ./svn/model/bin/install_ww3_svn_trunk .
       else
         echo "   Install script different from svn version."
         echo "   Please update manually."                          

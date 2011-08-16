@@ -11,6 +11,7 @@
 !/
 !/    01-APR-2010 : Origination.                        ( version 3.14 )
 !/    25-Jun-2011 : Temporary change of HSMIN           ( version 4.05 )
+!/    15-Aug-2011 : Changing HSMIN to BHSMIN bugfix     ( version 4.05 )
 !/
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: GNAME, NK, NTH, NSPEC
@@ -21,9 +22,7 @@
       PUBLIC
       INTEGER, PARAMETER   :: NPTAB = 6, NFLD = 50, NPMAX = 80
 !
-! The value of 0.15 was changed by FA on 2011/05/18 to allow lab test cases
-! because it is used by ww3_outp.ftn : otherwise Hs is zero in spectra output
-      REAL, PARAMETER      :: HSMIN = 0.01, HSDROP = 0.05
+      REAL, PARAMETER      :: BHSMIN = 0.15, BHSDROP = 0.05
       REAL                 :: HST(NPTAB,2), TPT(NPTAB,2),     &
                                       DMT(NPTAB,2)
       CHARACTER*129        :: ASCBLINE 
@@ -231,7 +230,7 @@
       DMP = MOD( XPART(4,1:NPART) + 180., 360.)
 
       NZERO = 0
-      NZERO = COUNT( HSP <= HSMIN .AND. HSP /= 0.  )
+      NZERO = COUNT( HSP <= BHSMIN .AND. HSP /= 0.  )
 !
 ! 4.  Process all partial fields ------------------------------------- *
 !
@@ -292,7 +291,7 @@
 ! 5.b Switch off peak with too low wave height
 !
       DO IP=1, NPART
-        FLAG(IP) = HSP(IP) .GT. HSMIN
+        FLAG(IP) = HSP(IP) .GT. BHSMIN
       ENDDO
 !
 ! 5.c Find next highest wave height
