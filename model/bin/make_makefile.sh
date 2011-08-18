@@ -362,9 +362,12 @@
 
   if [ "$stab" = 'STAB3' ] && [ "$s_inds" != 'ST3' ]
   then
-      echo ' '
-      echo "   *** !/STAB3 has to be used in combination with !/ST3"
-      echo ' ' ; exit 6
+      if [ "$s_inds" != 'ST4' ]
+      then
+        echo ' '
+        echo "   *** !/STAB3 has to be used in combination with !/ST3 or !/ST4"
+        echo ' ' ; exit 6
+      fi
   fi
 
   if [ "$s_inds" = 'ST1' ] && [ "$str_st1" = 'no' ]
