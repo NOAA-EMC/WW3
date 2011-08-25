@@ -85,6 +85,8 @@ DEPFILES = $(TEXFILES) $(INPFILES) $(BIBFILES) $(BSTFILES) $(STYFILES) $(GFXFILE
 
 $(TARGET): $(TARGET).dvi $(TARGET).pdf
 
+inp : $(INPFILES)
+
 clean:
 	\rm -f $(INPFILES)
 	\rm -f *.log *.aux *.bbl *.blg *.toc
