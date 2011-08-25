@@ -26,7 +26,7 @@ DEPFILES = $(TEXFILES) $(BIBFILES) $(BSTFILES) $(STYFILES)
 $(TARGET): $(TARGET).dvi $(TARGET).pdf
 
 clean:
-	\rm -f *.log *.aux *.bbl *.blg *.toc
+	\rm -f *.log *.aux *.bbl *.blg *.toc *.out
 	\rm -f *.dvi *.pdf
 
 $(TARGET).dvi: $(DEPFILES)
