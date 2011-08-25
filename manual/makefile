@@ -56,6 +56,8 @@ ww3_shel.tex \
 ww3_multi.tex \
 ww3_outf.tex \
 ww3_outp.tex \
+ww3_ounf.tex \
+ww3_ounp.tex \
 ww3_grib.tex \
 gx_outf.tex \
 gx_outp.tex
