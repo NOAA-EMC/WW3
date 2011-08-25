@@ -279,7 +279,7 @@ mkdir -p $path_w
 cd $path_w
 if [ $exec_p = "none" ]
 then
-  rm -f *.inp *.ww3 *.out
+  \rm -f *.inp *.ww3 *.out
 fi
 
 # 3.b Header
@@ -312,7 +312,7 @@ then
   then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
-    cp -f $file_c $path_b/switch
+    \cp -f $file_c $path_b/switch
   fi
   if $path_b/w3_make $prog
   then :
@@ -348,13 +348,13 @@ then
       exit 1
     fi
 
-    rm -f $prog.inp
-    ln -s $ifile $prog.inp
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
     if $path_e/$prog > $ofile
     then
-      rm -f $prog.inp
+      \rm -f $prog.inp
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
@@ -393,7 +393,7 @@ then
   then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
-    cp -f $file_c $path_b/switch
+    \cp -f $file_c $path_b/switch
   fi
   if $path_b/w3_make $prog
   then :
@@ -420,20 +420,20 @@ then
 
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
-    rm -f $prog.inp
-    ln -s $ifile $prog.inp
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
     if [ $multi -eq 2 ]
     then
-      rm -f mod_def.ww3
-      ln -s mod_def.$g mod_def.ww3
+      \rm -f mod_def.ww3
+      \ln -s mod_def.$g mod_def.ww3
     fi
     if $path_e/$prog > $ofile
     then
-      rm -f $prog.inp
+      \rm -f $prog.inp
       if [ $multi -eq 2 ]
       then
         mv restart.ww3 restart.$g
-        rm -f mod_def.ww3
+        \rm -f mod_def.ww3
       fi
     else
       errmsg "Error occured during $path_e/$prog execution"
@@ -471,7 +471,7 @@ then
   then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
-    cp -f $file_c $path_b/switch
+    \cp -f $file_c $path_b/switch
   fi
   if $path_b/w3_make $prog
   then :
@@ -494,30 +494,33 @@ then
       gu="_$g"
     fi
 
-    for ifile in $inputs; do
+    for ifile in $inputs
+    do
+
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`.out"
       echo "   Processing $ifile"
       echo "   Screen output routed to $ofile"
-      rm -f $prog.inp
-      ln -s $ifile $prog.inp
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
       if [ $multi -eq 2 ]
       then
-        rm -f mod_def.ww3
-        ln -s mod_def.$g mod_def.ww3
+        \rm -f mod_def.ww3
+        \ln -s mod_def.$g mod_def.ww3
       fi
       if $path_e/$prog > $ofile
       then
-        rm -f $prog.inp
+        \rm -f $prog.inp
         if [ $multi -eq 2 ]
         then
-          rm -f mod_def.ww3
+          \rm -f mod_def.ww3
           mv $otype.ww3 $otype.$g
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
         exit 1
       fi
+
     done
 
   done
@@ -545,8 +548,8 @@ then
 ifile="`ls $path_i/track_i.ww3 2>/dev/null`"
 if [ $? = 0 ]
 then
-  rm -f track_i.ww3
-  ln -s $ifile
+  \rm -f track_i.ww3
+  \ln -s $ifile
 fi
 
 if [ $multi -eq 2 ]
@@ -564,7 +567,7 @@ then
   echo '+--------------------+'
   echo ' '
 
-  cp -f $file_c $path_b/switch
+  \cp -f $file_c $path_b/switch
   if $path_b/w3_make $prog
   then :
   else
@@ -580,8 +583,8 @@ then
 
   ofile="$path_w/$prog.out"
 
-  rm -f $prog.inp
-  ln -s $ifile $prog.inp
+  \rm -f $prog.inp
+  \ln -s $ifile $prog.inp
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
   if [ $pmpi ]
@@ -593,8 +596,8 @@ then
   fi
   if $runcmd $path_e/$prog | tee $ofile
   then
-    rm -f track_i.ww3
-    rm -f $prog.inp
+    \rm -f track_i.ww3
+    \rm -f $prog.inp
   else
     errmsg "Error occured during $path_e/$prog execution"
     exit 1
@@ -629,7 +632,7 @@ then
   then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
-    cp -f $file_c $path_b/switch
+    \cp -f $file_c $path_b/switch
   fi
   if $path_b/w3_make $prog
   then :
@@ -656,46 +659,38 @@ then
       gu="_$g"
     fi
 
-    for ifile in $inputs; do
+    for ifile in $inputs
+    do
+
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`${gu}.out"
       echo "   Processing $ifile"
       echo "   Screen output routed to $ofile"
-      rm -f $prog.inp
-      ln -s $ifile $prog.inp
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
       if [ $multi -eq 2 ]
       then
-        rm -f mod_def.ww3
-        rm -f out_grd.ww3
-        ln -s mod_def.$g mod_def.ww3
-        ln -s out_grd.$g out_grd.ww3
+        \rm -f mod_def.ww3
+        \rm -f out_grd.ww3
+        \ln -s mod_def.$g mod_def.ww3
+        \ln -s out_grd.$g out_grd.ww3
+        \rm -f ww3.????????.*
+        \rm -fr ${otype}_$g
       fi
       if $path_e/$prog > $ofile
-
-#WER: changed here so that .hs files from each grid are saved
-#WER: limitation of this approach: we are only saving the .hs files, though there are other possible output files to save
-      echo g: $g          #WER : $g necessary for distinguising between multiple grids, for multi-grid cases (but will be "none" for multi-grid cases)
-      echo otype : $otype #WER : $otype necessary for distinguishing between multiple outf.inp files, e.g. for single-grid cases
-      if [ ! -d $otype\_$g ]
       then
-	  echo mkdir $otype\_$g
-	  mkdir $otype\_$g #WER: problem : this directory is created even if there are no .hs files to store
-      fi
-      rm -f ./$otype\_$g/*.hs #WER problem: gives untidy screen output if *.hs does not exist
-      mv *.hs ./$otype\_$g/. #WER problem: gives untidy screen output if *.hs does not exist
-      echo files moved   #WER script gives error without this "echo" line (?)
-
-      then
-        rm -f $prog.inp
+        \rm -f $prog.inp
         if [ $multi -eq 2 ]
         then
-
-#WER	  echo "this is a bug"
-#WER      mv $otype.ww3 $otype.$g
-#WER	  echo mv $otype.ww3 $otype.$g
-
-          rm -f mod_def.ww3
-          rm -f out_grd.ww3
+          \rm -f mod_def.ww3
+          \rm -f out_grd.ww3
+          ofiles="`ls ww3.????????.* 2>/dev/null`"
+          if [ $? = 0 ]
+          then
+            mkdir ${otype}_$g
+            mv -f $ofiles ${otype}_$g/.
+            echo "   Output files moved to ${otype}_$g"
+          fi
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
@@ -735,7 +730,7 @@ then
   then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
-    cp -f $file_c $path_b/switch
+    \cp -f $file_c $path_b/switch
   fi
   if $path_b/w3_make $prog
   then :
@@ -762,37 +757,35 @@ then
       gu="_$g"
     fi
 
-    for ifile in $inputs; do
+    for ifile in $inputs
+    do
+
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`${gu}.out"
       echo "   Processing $ifile"
       echo "   Screen output routed to $ofile"
-      rm -f $prog.inp
-      ln -s $ifile $prog.inp
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
       if [ $multi -eq 2 ]
       then
-        rm -f mod_def.ww3
-        rm -f out_pnt.ww3
-        ln -s mod_def.$g mod_def.ww3
-        ln -s out_pnt.$g out_pnt.ww3
+        \rm -f mod_def.ww3
+        \rm -f out_pnt.ww3
+        \ln -s mod_def.$g mod_def.ww3
+        \ln -s out_pnt.$g out_pnt.ww3
       fi
       if $path_e/$prog > $ofile
       then
-        rm -f $prog.inp
+        \rm -f $prog.inp
         if [ $multi -eq 2 ]
         then
-
-#WER	  echo "this is a bug"
-#WER      mv $otype.ww3 $otype.$g
-#WER	  echo mv $otype.ww3 $otype.$g
-
-          rm -f mod_def.ww3
-          rm -f out_pnt.ww3
+          \rm -f mod_def.ww3
+          \rm -f out_pnt.ww3
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
         exit 1
       fi
+
     done
 
   done
@@ -916,7 +909,7 @@ then
   then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
-    cp -f $file_c $path_b/switch
+    \cp -f $file_c $path_b/switch
   fi
   if $path_b/w3_make $prog
   then :
@@ -933,13 +926,13 @@ then
 
   ofile="$path_w/`basename $ifile .inp`.out"
 
-  rm -f $prog.inp
-  ln -s $ifile $prog.inp
+  \rm -f $prog.inp
+  \ln -s $ifile $prog.inp
   echo "   Processing $ifile"
   echo "   Screen output routed to $ofile"
   if $path_e/$prog > $ofile
   then
-    rm -f $prog.inp
+    \rm -f $prog.inp
   else
     errmsg "Error occured during $path_e/$prog execution"
     exit 1
