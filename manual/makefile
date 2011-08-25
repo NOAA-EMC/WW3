@@ -89,7 +89,7 @@ inp : $(INPFILES)
 
 clean:
 	\rm -f $(INPFILES)
-	\rm -f *.log *.aux *.bbl *.blg *.toc
+	\rm -f *.log *.aux *.bbl *.blg *.toc *.out
 	\rm -f *.dvi *.pdf
 
 %.tex : $(WWATCH3_DIR)/inp/%.inp
