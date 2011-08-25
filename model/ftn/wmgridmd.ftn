@@ -718,6 +718,9 @@
 !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    07-Jul-2011 : Bug fix for IX bounds with wrapping ( version 3.14+)
+!/                  grids (see use of "IDSTLA" below)
+!/                  (W. E. Rogers, NRL)
 !/
 !  1. Purpose :
 !
@@ -793,7 +796,7 @@
                                  JX, JY, JXL, JXH, JYL, JYH, NIT,     &
                                  NRTOT, NROK, NR0, NR1, NR2, NRL,     &
                                  JF, JR, NLMAX, NLOC, ISPROC, ISPRO2, &
-                                 IREC, ISND
+                                 IREC, ISND, IDSTLA, IDSTHA
 !/DIST      INTEGER                 :: LTAG0
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: IXL(:), IXH(:), IYL(:), IYH(:),      &
@@ -1278,9 +1281,19 @@
 !/PR2            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 !/PR3            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 !
+
+            IDSTLA=2
+            IDSTHA=NX-1
+!...........notes: bug fix: in official release 3.14, the if-then and 
+!..................do loop below was missing. 
+            IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
+               IDSTLA=1
+               IDSTHA=NX
+            ENDIF
+
             DO J=1, NIT
               MASKI  = .FALSE.
-              DO IX=2, NX-1
+              DO IX=IDSTLA,IDSTHA
                 DO IY=2, NY-1
                   IF ( .NOT. STMASK(IY,IX) .AND. (                    &
                       STMASK(IY+1,IX+1) .OR.  STMASK(IY+1,IX  ) .OR.  &

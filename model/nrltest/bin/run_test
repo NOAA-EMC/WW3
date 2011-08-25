@@ -656,14 +656,6 @@ then
       gu="_$g"
     fi
 
-#WER: Identified problem: for multi-grid case, field output, e.g. 2011051300.hs,
-#WER        is broken, since the output files of each grid will overwrite those
-#WER        of the previous grid. I address this in the nrl repository by 
-#WER        sending the files to subdirectories, e.g. 
-#WER        mkdir $otype\_$g
-#WER        I expect Tim can do a better job here, though, so I don't try to 
-#WER        make the change here.
-
     for ifile in $inputs; do
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`${gu}.out"
@@ -679,14 +671,29 @@ then
         ln -s out_grd.$g out_grd.ww3
       fi
       if $path_e/$prog > $ofile
+
+#WER: changed here so that .hs files from each grid are saved
+#WER: limitation of this approach: we are only saving the .hs files, though there are other possible output files to save
+      echo g: $g          #WER : $g necessary for distinguising between multiple grids, for multi-grid cases (but will be "none" for multi-grid cases)
+      echo otype : $otype #WER : $otype necessary for distinguishing between multiple outf.inp files, e.g. for single-grid cases
+      if [ ! -d $otype\_$g ]
+      then
+	  echo mkdir $otype\_$g
+	  mkdir $otype\_$g #WER: problem : this directory is created even if there are no .hs files to store
+      fi
+      rm -f ./$otype\_$g/*.hs #WER problem: gives untidy screen output if *.hs does not exist
+      mv *.hs ./$otype\_$g/. #WER problem: gives untidy screen output if *.hs does not exist
+      echo files moved   #WER script gives error without this "echo" line (?)
+
       then
         rm -f $prog.inp
         if [ $multi -eq 2 ]
         then
 
-#WER...This is a bug, e.g. ww3_outf.ww3 is not a proper file
+#WER	  echo "this is a bug"
+#WER      mv $otype.ww3 $otype.$g
+#WER	  echo mv $otype.ww3 $otype.$g
 
-          mv $otype.ww3 $otype.$g
           rm -f mod_def.ww3
           rm -f out_grd.ww3
         fi
@@ -694,6 +701,7 @@ then
         errmsg "Error occured during $path_e/$prog execution"
         exit 1
       fi
+
     done
 
   done
@@ -774,9 +782,10 @@ then
         if [ $multi -eq 2 ]
         then
 
-#WER...This is a bug, e.g. ww3_outp.ww3 is not a proper file
+#WER	  echo "this is a bug"
+#WER      mv $otype.ww3 $otype.$g
+#WER	  echo mv $otype.ww3 $otype.$g
 
-          mv $otype.ww3 $otype.$g
           rm -f mod_def.ww3
           rm -f out_pnt.ww3
         fi

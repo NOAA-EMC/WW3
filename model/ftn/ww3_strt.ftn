@@ -114,9 +114,10 @@
 !     - While reading the restart file W3IORS will recognize the
 !       need for checking the time, as the restart file contains
 !       information on the origine of the file ("cold" or "hot").
-!     - User input for x-wise gaussian spread control, SIX, is disregarded
-!       (option for SIX.NE.SIY is removed, and user intervention to create
-!       a circular distribution is no longer needed.)
+!     - User input for x-wise gaussian spread control, SIX, is 
+!       now available again (option for SIX.NE.SIY available.) 
+!       If user desires a distribution that is circular in real 
+!       distances, user should input a negative number for SIX.
 !
 !  8. Structure :
 !
@@ -208,12 +209,12 @@
                                  CHSIP, FRREL, ETOT, E1I, FACTOR, X,  &
                                  Y, RDSQR, ALFA, GAMMA, SIGA, SIGB,   &
                                  YLN, FR, BETA, FRR, S, SUMD, ANG,    &
-                                 ARG, FACS, DEPTH, WN, CG, HQMAX
+                                 ARG, FACS, DEPTH, WN, CG, HPQMAX
       REAL, ALLOCATABLE       :: E1(:), DD(:), E2(:,:), E21(:), FINP(:,:)
 !/O5      REAL, ALLOCATABLE       :: E2OUT(:,:)
 !/O6      REAL, ALLOCATABLE       :: HSIG(:,:)
       CHARACTER               :: COMSTR*1, INXOUT*4
-      LOGICAL                 :: FLONE
+      LOGICAL                 :: FLONE,NOSIX
 !/
 !/ ------------------------------------------------------------------- /
 !
@@ -319,19 +320,35 @@
           THM    = MOD ( THM , 360. )
           NCOS   = MAX ( 2 , 2*(NCOS/2) )
 
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+          NOSIX=.FALSE.
+          IF(SIX.LT.0.0)THEN
+             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+             NOSIX=.TRUE.
+          END IF
 
-          HQMAX=-999.0
+          HPQMAX=-999.0
           DO JSEA=1, NSEAL
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
-            IF(HQFAC(IY,IX).GT.HQMAX)THEN
-               HQMAX=HQFAC(IY,IX)
+            IF(HPFAC(IY,IX).GT.HPQMAX)THEN
+               HPQMAX=HPFAC(IY,IX)
             ENDIF
           END DO
-          SIY = MAX(0.01*HQMAX,SIY)
+          SIX = MAX(0.01*HPQMAX,SIX)
+
+          HPQMAX=-999.0
+          DO JSEA=1, NSEAL
+!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD            ISEA   = JSEA
+            IX     = MAPSF(ISEA,1)
+            IY     = MAPSF(ISEA,2)
+            IF(HQFAC(IY,IX).GT.HPQMAX)THEN
+               HPQMAX=HQFAC(IY,IX)
+            ENDIF
+          END DO
+          SIY = MAX(0.01*HPQMAX,SIY)
 
           HMAX   = MAX ( 0. , HMAX )
 !
@@ -425,6 +442,7 @@
 !
 ! 4.e Distribute over grid.
 !
+
           DO IK=1, NK
             E21(1+(IK-1)*NTH:IK*NTH) = E2(:,IK)
             END DO
@@ -433,15 +451,21 @@
 !
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
-         IF (GTYPE .EQ. UNGTYPE) THEN 
-            IX     = MAPSF(ISEA,1)
-            X      = XYB(IX,1)
-            Y      = XYB(IX,2)
-         ELSE
-            IX     = MAPSF(ISEA,1)
-            IY     = MAPSF(ISEA,2)
-         ENDIF 	    
-            RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
+            IF (GTYPE .EQ. UNGTYPE) THEN 
+               IX     = MAPSF(ISEA,1)
+               X      = XYB(IX,1)
+               Y      = XYB(IX,2)
+            ELSE
+               IX     = MAPSF(ISEA,1)
+               IY     = MAPSF(ISEA,2)
+               X      = XGRD(IY,IX)
+               Y      = YGRD(IY,IX)
+            ENDIF
+            IF(NOSIX)THEN
+               RDSQR  =(W3DIST(FLAGLL,X,Y,XM,YM)/SIY)**2
+            ELSE
+               RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+            ENDIF
             IF (GTYPE .EQ. RLGTYPE)  THEN 
               X      = X0 + REAL(IX-1)*SX
               Y      = Y0 + REAL(IY-1)*SY
@@ -476,19 +500,35 @@
           FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
           FP     = MIN ( TPIINV * SIG(NK) , FP )
 
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+          NOSIX=.FALSE.
+          IF(SIX.LT.0.0)THEN
+             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+             NOSIX=.TRUE.
+          END IF
 
-          HQMAX=-999.0
+          HPQMAX=-999.0
           DO JSEA=1, NSEAL
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
-            IF(HQFAC(IY,IX).GT.HQMAX)THEN
-               HQMAX=HQFAC(IY,IX)
+            IF(HPFAC(IY,IX).GT.HPQMAX)THEN
+               HPQMAX=HPFAC(IY,IX)
             ENDIF
           END DO
-          SIY = MAX(0.01*HQMAX,SIY)
+          SIX = MAX(0.01*HPQMAX,SIX)
+
+          HPQMAX=-999.0
+          DO JSEA=1, NSEAL
+!/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD            ISEA   = JSEA
+            IX     = MAPSF(ISEA,1)
+            IY     = MAPSF(ISEA,2)
+            IF(HQFAC(IY,IX).GT.HPQMAX)THEN
+               HPQMAX=HQFAC(IY,IX)
+            ENDIF
+          END DO
+          SIY = MAX(0.01*HPQMAX,SIY)
 
           DO
             IF ( THM .LT. 0. ) THEN
@@ -567,25 +607,31 @@
 !
 ! 5.d Distribute over grid.
 !
+
           DO IK=1, NK
             E21(1+(IK-1)*NTH:IK*NTH) = E2(:,IK)
             END DO
+!
 !
           DO JSEA=1, NSEAL
 !
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
-
-     IF (GTYPE .EQ. UNGTYPE) THEN 
-         IX     = MAPSF(ISEA,1)
-         X      = XYB(IX,1)
-         Y      = XYB(IX,2)
-       ELSE
-         IX     = MAPSF(ISEA,1)
-         IY     = MAPSF(ISEA,2)
-       ENDIF 	    
-            RDSQR=(W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX),XM,YM)/SIY)**2
-
+            IF (GTYPE .EQ. UNGTYPE) THEN 
+               IX     = MAPSF(ISEA,1)
+               X      = XYB(IX,1)
+               Y      = XYB(IX,2)
+            ELSE
+               IX     = MAPSF(ISEA,1)
+               IY     = MAPSF(ISEA,2)
+               X      = XGRD(IY,IX)
+               Y      = YGRD(IY,IX)
+            ENDIF
+            IF(NOSIX)THEN
+               RDSQR  =(W3DIST(FLAGLL,X,Y,XM,YM)/SIY)**2
+            ELSE
+               RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+            ENDIF
             IF ( RDSQR .GT. 40. ) THEN
                 FACTOR = 0.
               ELSE
@@ -732,11 +778,9 @@
                15X,'==============================================='/)
   901 FORMAT ( '  Comment character is ''',A,''''/)
   902 FORMAT ( '  Grid name : ',A/)
-  903 FORMAT ( '  NOTE: User input for x-wise gaussian spread'/       &
-               '  control, SIX, is disregarded (option for' /         &
-               '  SIX.NE.SIY is removed, and user intervention' /     &
-               '  to create a circular distribution is no longer' /   &
-               '  needed.)')
+  903 FORMAT ( '  Negative SIX was provided by user.         '/       &
+               '  WW3 will create a gaussian distribution    '/       &         
+               '  that is circular in real space. ')
 !
   930 FORMAT (/'  Initial field ITYPE =',I2/                          &
                ' --------------------------------------------------')
