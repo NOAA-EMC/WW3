@@ -762,7 +762,7 @@ preprocessor (see following chapter).
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Shoreline reflection} \label{sec_refl}
+\subsubsection{~Shoreline reflection \hfill {\rm (F. Ardhuin)}} \label{sec_refl}
 \vsssub
 In the case of  icebergs and subgrid islands, the reflected energy is redistributed evenly in all directions within 90$^\circ$ of the direction opposite to 
 the incoming waves. This corresponds to a Lambertian surface approximation, which is used for electromagnetic wave scattering from rough surfaces. 
@@ -795,13 +795,23 @@ treatment should use the distribution of the shoreline orientation at at the sca
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Propagation on unstructured grids} \label{sec_prug}
+\subsubsection{~Propagation on irregular grids \hfill {\rm (Rogers and Campbell)}} \label{sec_irreg}
+\vsssub
+
+Computations may be made on irregular grids within \ws\ . This makes it possible to run the model on alternate grid projections (e.g. Lambert conformal conic), rotated grids, or shoreline-following grids with higher resolution near shore, though the restrictions on time step from the conditionally stable schemes still apply. The same propagation schemes are utilized for irregular grids as for regular grids (first order upwind explicit or ULTIMATE QUICKEST).
+
+Regarding the method: the implementation is described in \citep{RogCamp:NRLrep09}, summarized here: a Jacobian is used to convert the entire domain between the normal, curving space, and a straightened space. This conversion is performed only within the propagation routine, rather than integrating the entired model in straightened space. A simple, three step process is used every time the propagation subroutine is call (i.e. every time step and every spectral component): first, the dependent variable (wave action density) is converted to straightened space using a Jacobian; second, the wave action density is propagated via subroutine calls for each (of two) grid axes; third, the wave action density is converted back to normal, curved space. The actual flux computation is not significantly modified from its original, regular grid form. The same process occurs, regardless of grid type (regular or irregular); for regular grids, the Jacobian is unity.
+
+Regarding the user interface: in {\file ww3\_grid.inp}, a string is used to indicate the grid type. In cases where this grid string is `{\F RECT}', the model processes input for a regular grid. In case where this grid string is `{\F CURV}' , the model processes input for an irregular grid. [Note that with \ws\ version 4.00, the coordinate system (i.e. degrees vs. meters) and the closure type (e.g. global/wrapping grid) are also specified in  {\file ww3\_grid.inp} ; the switches LLG and XYG are deprecated.] 
+
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{~Propagation on unstructured grids \hfill {\rm (A. Roland)}} \label{sec_prug}
 \vsssub
 
 The numerical schemes on unstructured grids are contour residual distribution schemes \citep[][for a review]{PhD:Rol}. Four schemes have been implemented, and the choice 
 of one or the other is done with the UG namelist. These are the N scheme, the PSI scheme, the FCT scheme, and one implicit scheme. The choice of scheme is made via the 
 UG namelist. 
-
 
 % -------------------------------------------------------------
 \vssub
