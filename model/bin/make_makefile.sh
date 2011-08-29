@@ -302,8 +302,6 @@
     esac
   done
 
-echo "NCLIB .............................:" $nclib 
-
   if [ "$nr_thr" != '0' ] && [ "$shared" != 'SHRD' ]
   then
       echo ' '
