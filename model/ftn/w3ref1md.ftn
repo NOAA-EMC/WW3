@@ -2,15 +2,15 @@
       MODULE W3REF1MD
 !/
 !/                  +-----------------------------------+
-!/                  | WAVEWATCH III                SHOM |
+!/                  | WAVEWATCH III                     |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Mar-2010 |
+!/                  | Last update :         31-May-2011 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 3.14.IFREMER )
 !/    03-Sep-2010 : Clean up                            ( version 3.14.IFREMER )
-!/    14-Nov-2010 : Adding variable reflections         ( version 4.04.IFREMER )
+!/    31-May-2011 : Adding variable reflections         ( version 4.01 )
 !/ 
 !  1. Purpose :
 !

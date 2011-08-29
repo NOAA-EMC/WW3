@@ -1103,6 +1103,7 @@
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    15-Jul-2005 : Adding drying out of points.        ( version 3.07 )
 !/    11-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+!/    23-Aug-2011 : Bug fix for UG grids : new boundary ( version 4.04 )
 !/
 !  1. Purpose :
 !
@@ -1171,12 +1172,13 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
                           ZB, DMIN, NK, NTH, NSPEC, SIG, DSIP,        &
-                          MAPWN, MAPTH, FACHFA
+                          MAPWN, MAPTH, FACHFA, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME, TLEV, WLV
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3IDATMD, ONLY: TLN, WLEV
       USE W3SERVMD, ONLY: EXTCDE
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
+      USE W3TRIAMD, ONLY: SETUGIOBP
 !/T3      USE W3ARRYMD, ONLY: PRT2DS
 !/
       IMPLICIT NONE
@@ -1449,6 +1451,10 @@
 ! 3.  Reconstruct new MAPST2 ----------------------------------------- *
 !
       MAPST2 = MAPST2 + 2*MAPDRY
+!
+! 4. Re-generates the boundary data ---------------------------------- *
+!
+      IF (GTYPE.EQ.UNGTYPE) CALL SETUGIOBP
 !
       RETURN
 !

@@ -294,7 +294,7 @@ work directory are
 \begin{center}
 \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
 \vspace{\baselineskip}
-\parbox{120mm}{The auxiliary scripts {\file w3\_make} etc. us the {\file
+\parbox{120mm}{The auxiliary scripts {\file w3\_make} etc. use the {\file
   switch}, {\file comp} and {\file link} files from the {\file ./bin}
   directory under the \ws\ home directory, {\it NOT} from the local
   directory.} \\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} WARNING
@@ -414,6 +414,13 @@ Word length used to determine record length in direct access files
 \sit{lrb8}{8 byte words.}
 \end{slist}
 
+\noindent
+Compilation as a subroutine (called by a coupled model system) or a stand-alone program
+\begin{slist}
+\sit{nopa}{Compilation as a subroutine }
+\sit{palm}{Compilation as a stand-alone program}
+\end{slist}
+ 
 \pb \noindent
 Selection of grid type (NOTE: this is obsolete in v4.00; {\sc xyg} and {\sc llg} are now specified in {\file ww3\_grid.inp}):
 \begin{slist}
@@ -467,6 +474,7 @@ Selection of input and dissipation:
 \sit{st3} {\wam\-4 and variants source term package.}
 \sit{stab3}{Enable stability correction from \cite{rep:AB02}
             for \wam\-4 source term package.}
+\sit{st4} {\cite{art:Aea10} source term package.}
 \sit{stx} {Experimental (user supplied).}
 \end{slist}
 
@@ -612,6 +620,7 @@ simultaneously.
 Furthermore the following miscellaneous switches are available:
 \begin{slist}
 \sit{c90} {Compiler directives for Cray C90 (vectorization).}
+\sit{cou} {Activates the calculation of variables required for coupling}
 \sit{dss0}{Switch off frequency dispersion in diffusive
            dispersion correction.}
 \sit{mgg }{Activate GSE alleviation correction in
@@ -624,11 +633,14 @@ Furthermore the following miscellaneous switches are available:
 \sit{mpit}{Test output for \mpi\ initializations.}
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
 \sit{nec} {Compiler directives for NEC SX6/SX8 (vectorization).}
+\sit{nc3} {Activates the possibility to use on NetCDF3 for input or output}
+\sit{nc4} {Activates the possibility to use on NetCDF4 for input or output}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
 \sit{nnt} {Generate file test\_data\_{\it{nnn}}.ww3 with spectra and 
            nonlinear interactions for training and testing of NNIA}.
+\sit{ref1} {Enables reflection of shorelines and icebergs}
 \sit{rwnd}{Correct wind speed for current velocity.}
 \sit{s}   {Enable subroutine tracing in the main \ws\
            subroutines by activating calls to the
@@ -646,7 +658,10 @@ Furthermore the following miscellaneous switches are available:
 \vsssub
 \subsubsection{~Default model settings} \label{sub:opt_default}
 \vsssub
-
+%
+% Note by F.A.: I guess the ``default'' is what is used as NCEP...
+% I guess this may thus evolve ?
+%
 The default \ws\ is defined by the following selection of mandatory and
 optional switches. Mandatory switch groups for which no option is listed here
 do not influence model results, and their setting is therefore irrelevant with
@@ -676,7 +691,7 @@ defined by using the following switches :
 
 \noindent
 The optional switches {\sc o8}, {\sc o9}, {\sc dss0}, {\sc mgp}, {\sc mgw},
-{\sc tdyn}, {\sc xw0} and {\sc xw1} modify model behavior and are {\it not}
+{\sc ref1}, {\sc tdyn}, {\sc xw0} and {\sc xw1} modify model behavior and are {\it not}
 used in the default version of \ws. All optional switches not explicitly
 mentioned in this section do not influence model behavior and their setting is
 therefore irrelevant for the definition of the default model.

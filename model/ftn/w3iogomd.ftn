@@ -216,7 +216,7 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           TAUWNX,  TAUWNY, JSMITH, P2SMS,             &
                           CGE, T02, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,&
-                          CFLXYMAX, CFLTHMAX
+                          CFLXYMAX, CFLTHMAX, CFLKMAX
 !/COU      USE W3ADATMD, ONLY: US3D, SXX3D
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, ICPRT, DTPRT,  &
                           WSCUT, NOSWLL, FLOGRD, FLOGR2
@@ -1041,7 +1041,7 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY,         &
                           TAUWNX, TAUWNY, CHARN, JSMITH, P2SMS,       &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE,    &
-                          T02, TM0M1, CFLXYMAX, CFLTHMAX
+                          T02, TM0M1, CFLXYMAX, CFLTHMAX, CFLKMAX
 !/COU      USE W3ADATMD, ONLY: US3D
       USE W3ODATMD, ONLY: NOGRD, IDOUT, UNDEF, NDST, NDSE, FLOGRD,    &
                           IPASS => IPASS1, WRITE => WRITE1, FNMPRE,   &

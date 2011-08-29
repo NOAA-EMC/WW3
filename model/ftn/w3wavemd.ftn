@@ -56,7 +56,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Mar-2010 : Adding coupling, ice in W3SRCE.     ( version 3.14_SHOM )
 !/    16-May-2010 : Adding transparencies in W3SCRE     ( version 3.14_SHOM )
-!/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.01 )
+!/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -634,7 +634,9 @@
 !/PALM ! End of current and water level update from coupler
 !/PALM !
 !/PALM IF (PALMED.EQ.0) THEN
+
               CALL W3UCUR ( FLFRST )
+
 !/PALM ENDIF
            IF (GTYPE .NE. UNGTYPE) THEN       
              CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
@@ -729,7 +731,9 @@
                 END IF
 !
               IF ( IDACT(5:5).NE.' ' ) THEN
+
                   CALL W3ULEV ( VA, VA )
+
                   UGDTUPDATE=.TRUE.
                   DTL0   = 0.
                   FLACT  = .TRUE.
@@ -815,7 +819,7 @@
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
-!/PR3                           CFLTHMAX(ISEA) )  
+!/PR3                           CFLTHMAX(ISEA), CFLKMAX(ISEA) )  
 !/PRX                      CALL W3KTPX
                     END IF
                   END DO
@@ -852,14 +856,14 @@
 !/PR3               CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
 !/PRX               CALL W3XYPX
                   ELSE IF (GTYPE .EQ. UNGTYPE) THEN
-!/PR1               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PR1                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-!/PR2               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PR2                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-!/PR3               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PR3                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
-!/PRX               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG, MAPSTA, &
-!/PRX                                  MAPFS,  FIELD, VGX, VGY, UGDTUPDATE )
+!/PR1               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PR1                                  FIELD, VGX, VGY, UGDTUPDATE )
+!/PR2               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PR2                                  FIELD, VGX, VGY, UGDTUPDATE )
+!/PR3               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PR3                                  FIELD, VGX, VGY, UGDTUPDATE )
+!/PRX               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PRX                                  FIELD, VGX, VGY, UGDTUPDATE )
                     END IF
                   CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
                   END IF
@@ -905,14 +909,14 @@
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
 !/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
-!/PR3                           CFLTHMAX(ISEA) )
+!/PR3                           CFLTHMAX(ISEA), CFLKMAX(ISEA) )
 !/PRX                      CALL W3KTPX
 !
 ! Estimation of the local maximum CFL for XY propagation
 !
                     IF ( FLOGRD(27).AND. UGDTUPDATE ) THEN 
 !/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
-!/PR3                        CALL W3CFLUG ( ISEA, FACX, FACY, DTG, MAPSTA, &
+!/PR3                        CALL W3CFLUG ( ISEA, FACX, FACY, DTG,         &
 !/PR3                             MAPFS,  CFLXYMAX(ISEA), VGX, VGY )
 !/PR3                      ELSE 
 !/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
@@ -953,15 +957,15 @@
                 DELX=SXM*CLATS(ISEA)
                 DELY=SYM
                 DELA=DELX*DELY
-!/REF1                REFLEC=REFLC(:,ISEA)
+!/REF1          REFLEC=REFLC(:,ISEA)
 !/REF1          REFLEC(4)=BERG(ISEA)*REFLEC(4)
-!/REF1                REFLED=REFLD(:,ISEA)
-                DEPTH  = MAX ( DMIN , DW(ISEA) )
+!/REF1          REFLED=REFLD(:,ISEA)
 !/BT4           D50=SED_D50(ISEA)
+
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
-                          CG(1:NK,ISEA), DEPTH,    U10(ISEA),         &
+                          CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
                           U10D(ISEA), AS(ISEA), UST(ISEA),            &
                           USTDIR(ISEA), ICE(ISEA), CX(ISEA), CY(ISEA),&
                           REFLEC, REFLED, DELX, DELY, DELA,           &
@@ -982,6 +986,7 @@
                     DTDYN (ISEA) = UNDEF
                     FCUT  (ISEA) = UNDEF
                   END IF
+
                 END DO
 !
 ! This barrier is from older code versions. It has been removed in 3.11
@@ -1423,6 +1428,7 @@
 !
         DTTST  = DSEC21 ( TIME, TEND )
         IF ( DTTST .EQ. 0. ) EXIT
+
         END DO
 !
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)

@@ -148,6 +148,7 @@ Define model grids and parameter settings \hfill {\file w3gdatmd.ftn}
 \fit{w3nmod}{Set number of grids to be considered.}
 \fit{w3dimx}{Set dimensions for spatial grid and allocate storage.}
 \fit{w3dims}{Set dimensions for spectral grid and allocate storage.}
+\fit{w3dimug}{Set dimensions for arrays specific to the triangle-based grids (grid connectivity ...).}
 \fit{w3setg}{Set pointers to selected grid.}
 \end{flisti}
 
@@ -190,9 +191,11 @@ Model input \hfill {\file w3idatmd.ftn}
 \end{flisti}
 
 \noindent
-There are presently four propagation schemes available, as well as a 'slot'
-for a user supplied propagation routine. The propagation schemes are packaged
-in the following modules.
+There are presently four propagation schemes available for 
+rectangular and curvilinear grids, as well as a 'slot'
+for a user supplied propagation routine, and there 
+are four schemes for triangle-baseed grids. The propagation schemes are packaged
+in the following modules. 
 
 \vspace{\baselineskip} \noindent
 Propagation module (first order) \hfill {\file w3pro1md.ftn}
@@ -248,6 +251,22 @@ w3proxmd.ftn}
 \fit{w3xypx}{Propagation in physical space.}
 \fit{w3ktpx}{Propagation in spectral space.}
 \end{flisti}
+
+\noindent
+Triangle-based propagation schemes \hfill {\file w3profsmd.ftn}
+
+\begin{flisti}
+\fit{w3xypug}{Interface to the unstructured propagation schemes}
+\fit{w3cflug}{Computes the maximum CFL number for spatial propagation}
+\fit{w3xypfsn2}{N-scheme}
+\fit{w3xypfspsi2}{PSI-scheme}
+\fit{w3xypfspsi2}{PSI-scheme}
+\fit{w3xypfsnimp}{Implicit version of the N-scheme}
+\fit{w3xypfsfct2}{FCT-scheme}
+\fit{bcgstab}{Part of the iterative SPARSKIT solver, used for the implicit scheme}
+
+\end{flisti}
+
    
 % fig:w3init
 \input{fig_w3init}
@@ -337,7 +356,7 @@ Input and dissipation module \citep{tol:JPO96} \hfill {\file w3src2md.ftn}
 \end{flisti}
 
 \noindent
-Input and dissipation module \citep[\wam-4 and variants,][]{art:ACC08} \hfill {\file w3src3md.ftn}
+Input and dissipation module \citep[\wam-4 and ECWAM,][]{rep:Bea05} \hfill {\file w3src3md.ftn}
 
 \begin{flisti}
 \fit{w3spr3}{Calculation of mean wave parameters (single grid point).}
@@ -348,9 +367,20 @@ Input and dissipation module \citep[\wam-4 and variants,][]{art:ACC08} \hfill {\
 \fit{tabu\_tauhf2}{Tabulation of the short waves-supported stress with sheltering}
 \fit{tabu\_swellft}{Tabulation of oscillatory friction factor}
 \fit{calc\_ustar}{Computes friction velocity using stress table}
-\fit{inptab}{Same as in w3src2md.ftn.}
-\fit{kzeone}{Pre-calculation for Kelvin functions}
-\fit{kerkei}{Calculation of Kelvin functions}
+\end{flisti}
+
+\noindent
+Input and dissipation module \citep{art:Aea09;art:Aea10} \hfill {\file w3src4md.ftn}
+
+\begin{flisti}
+\fit{w3spr4}{Calculation of mean wave parameters (single grid point).}
+\fit{w3sin4}{Calculation of $S_{in}$.}
+\fit{w3sds4}{Calculation of $S_{ds}$.}
+\fit{tabu\_stress}{Tabulation of wind stress as a function of $U_{10}$ and $\tau_w$}
+\fit{tabu\_tauhf}{Tabulation of the short waves-supported stress}
+\fit{tabu\_tauhf2}{Tabulation of the short waves-supported stress with sheltering}
+\fit{tabu\_swellft}{Tabulation of oscillatory friction factor for negative part of $S_{in}$.}
+\fit{calc\_ustar}{Computes friction velocity using stress table}
 \end{flisti}
 
 \noindent
@@ -395,6 +425,9 @@ w3snlxmd.ftn}
 \noindent
 Bottom friction module (\js) \hfill {\file w3sbt1md.ftn}
 
+\noindent
+Bottom friction module  \citep[SHOWEX][]{art:Aea03}  \hfill {\file w3sbt4md.ftn}
+
 \begin{flisti}
 \fit{w3bt1}{Calculation of $S_{bot}$.}
 \end{flisti}
@@ -402,6 +435,12 @@ Bottom friction module (\js) \hfill {\file w3sbt1md.ftn}
 \noindent
 Bottom friction module (slot for user supplied routines) \hfill {\file
 w3sbtxmd.ftn}
+
+\begin{flisti}
+\fit{w3sbt4}{Calculation of $S_{bot}$, and energy and momentum fluxes to the 
+bottom boundary layer.}
+\end{flisti}
+
 
 \begin{flisti}
 \fit{w3sbtx}{Calculation of $S_{bot}$.}
@@ -432,6 +471,24 @@ w3strxmd.ftn}
 \fit{w3strx}{Calculation of $S_{tr}$.}
 \fit{instrx}{Initialization of $S_{tr}$.}
 \end{flisti}
+
+\noindent
+Bottom scattering module \hfill {\file
+w3sbs1md.ftn}
+
+\begin{flisti}
+\fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the bottom.}
+\fit{insbs1}{Initialization of $S_{bs}$.}
+\end{flisti}
+
+\noindent
+Shoreline reflection \hfill {\file w3ref1md.ftn}
+
+\begin{flisti}
+\fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the bottom.}
+\fit{insbs1}{Initialization of $S_{bs}$.}
+\end{flisti}
+
 
 \noindent
 Bottom scattering module (slot for user supplied routines) \hfill {\file
@@ -538,7 +595,13 @@ the actual contents of the service modules see the documentation in the source
 code files.
 
 \begin{flist}
-\fit{constants.ftn}{Physical and mathematical constants}
+\fit{constants.ftn}{Physical and mathematical constants and Kelvin functions.}
+\begin{flisti}
+\fit{kzeone}{Pre-calculation for Kelvin functions}
+\fit{kerkei}{Calculation of Kelvin functions}
+\end{flisti}
+
+
 \fit{w3arrymd.ftn}{Array manipulation routines including
                    'print plot' routines.}
 \fit{w3cspcmd.ftn}{Conversion of spectral discretization.}
@@ -547,6 +610,8 @@ code files.
 \fit{w3partmd.ftn}{Perform spectral partitioning for a single spectrum.}
 \fit{w3servmd.ftn}{General service routines.}
 \fit{w3timemd.ftn}{Time management routines.}
+\fit{w3triamd.ftn}{Basic routines for triangle-based grids: reading, interpolation, 
+definition of miscellaneous arrays.}
 \end{flist}
 
 \noindent
@@ -740,6 +805,9 @@ Initial conditions program \hfill {\file ww3\_strt.ftn}
 \noindent
 Input field pre-processing program \hfill {\file ww3\_prep.ftn}
 
+\noindent
+Input field pre-processing program from NetCDF files \hfill {\file ww3\_prnc.ftn}
+
 \begin{flisti}
 \fit{w3prep}{Pre-processor for the input fields for the generic shell.}
 \end{flisti}
@@ -774,6 +842,26 @@ Point post-processing program \hfill {\file ww3\_outp.ftn}
 \fit{w3outp}{The post-processing program output at selected locations.}
 \fit{w3expo}{Actual output routine (internal).}
 \end{flisti}
+
+\pb \noindent
+Gridded data post-processing program using NetCDF \hfill {\file ww3\_ounf.ftn}
+
+\begin{flisti}
+\fit{w3ounf}{The post-processing program for gridded
+                    fields of mean wave parameters, using NetCDF3 or NetCDF4 libraries for Fortran90.}
+\fit{w3crnc}{Creation of NetCDF files, definition of dimensions and header data.}
+\fit{w3exnc}{Actual output routine (internal).}
+\end{flisti}
+
+\noindent
+Point post-processing program \hfill {\file ww3\_ounp.ftn}
+
+\begin{flisti}
+\fit{w3ounp}{The post-processing program output at selected locations.}
+\fit{w3crnc}{Creation of NetCDF files, definition of dimensions and header data.}
+\fit{w3exnc}{Actual output routine (internal).}
+\end{flisti}
+
 
 \noindent
 Track output post-processing program \hfill {\file ww3\_trck.ftn}
@@ -870,8 +958,9 @@ For convenience and economy of programming, spatial and spectral grids are
 considered separately. This approach is inspired by the splitting technique
 described in chapter~\ref{chapt:num}. For spatial propagation, a simple
 `rectangular' spatial grid is used, as is illustrated in
-Fig.~\ref{fig:grids_1}. The grid can either be a Cartesian `$(x,y)$' grid or a
-spherical grid. In a spherical grid, the longitudes are denoted throughout the
+Fig.~\ref{fig:grids_1}. The grid can either be a Cartesian `$(x,y)$' grid, a
+spherical grid (with regular steps on latitude and longitude), a curvilinear grid, 
+or a triangle-based grid. In a spherical grid, the longitudes are denoted throughout the
 program by the counter {\F ix}, and latitudes by the counter {\F iy}, and the
 corresponding grid dimensions {\F (nx,ny)}. All spatial field arrays are
 dynamically allocated within the code, corresponding work arrays are usually
@@ -880,7 +969,9 @@ global applications is handled within the model, and does not require user
 intervention. To simplify the calculation of derivatives of in particular the
 current, the outer grid points ({\F ix=1,nx}, unless the grid is global) and
 ({\F iy=1,ny}) will be considered as land points, inactive points or active
-boundary points. The minimum grid size therefore is {\F nx=3, ny=3}. Input
+boundary points. The minimum grid size therefore is {\F nx=3, ny=3}, except for 
+triangle-based grids. In that latter case, all the nodes are listed as a long 
+vector of dimension nx, while ny=1, allowing to keep the same code structure. Input
 arrays are typically assumed to be of the form
 
 \vspace{\baselineskip} \centerline{\F array(nx,ny) ,} \vspace{\baselineskip}
@@ -998,7 +1089,8 @@ into a single map {\F maptmp}
 \vspace{\baselineskip}
 
 \noindent
-considering that only the first few bits of {\F mapsta} contain data. the
+considering that only the first few bits of {\F mapsta} contain data.
+It is this map MAPTMP that is saved in NetCDF files.  The
 original maps can be recovered as
 
 \vspace{\baselineskip}
@@ -1573,33 +1665,11 @@ associated switches again displayed on the right.
 \vit{sswellfpar }{}{}
 \vit{    }{i }{Choice of negative input parameterization.
                                                    \hfill ({\F !/st3})}
-\vit{sswellf}{r }{Reduction factor of negative input for swell.
-                                                   \hfill ({\F !/st3})}
-\vit{sswellf2}{r }{Extra parameter for negative input.
-                                                   \hfill ({\F !/st3})}
 \vit{ssdsc1}{r }{Constant for WAM4-part of dissipation.
                                                    \hfill ({\F !/st3})}
 \vit{ddelta1}{r }{Weight of $k$ part in WAM4 dissipation.
                                                    \hfill ({\F !/st3})}
 \vit{ddelta2}{r }{Weight of $k^2$ part in WAM4 dissipation.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdslf}{r }{WAM4 switch  in non-saturated part.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdshf}{r }{WAM4 switch in saturated part of spectrum.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsc2}{r }{Constant for SAT-part of dissipation.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsc3}{r }{Modification parameter for saturation power.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsc4}{r }{Hard relative threshold for saturation.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsc5}{r }{Constant for wave-turbulence term.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsbr}{r }{Saturation threshold for wave breaking.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsp}{r }{Base value of power of saturation.
-                                                   \hfill ({\F !/st3})}
-\vit{ssdsdth}{r }{Directional window for saturation.
                                                    \hfill ({\F !/st3})}
 \vit{wwnmeanp}{r }{Mean wavenumber power for $S_{\mathrm{ds}}$.
                                                    \hfill ({\F !/st3})}
@@ -1608,6 +1678,24 @@ associated switches again displayed on the right.
 \vit{sstxftwn,sstxftf,sstxftftail }{}{}
 \vit{    }{r }{Tail coefficients for mean wavenumber.
                                                    \hfill ({\F !/st3})}
+\vit{sswellf}{r }{Reduction factor of negative input for swell.
+                                                   \hfill ({\F !/st4})}
+\vit{sswellf2}{r }{Extra parameter for negative input.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsc2}{r }{Constant for dissipation.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsc3}{r }{Modification parameter for saturation power.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsc4}{r }{Hard relative threshold for saturation.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsc5}{r }{Constant for wave-turbulence term.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsbr}{r }{Saturation threshold for wave breaking.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsp}{r }{Base value of power of saturation.
+                                                   \hfill ({\F !/st4})}
+\vit{ssdsdth}{r }{Directional window for saturation.
+                                                   \hfill ({\F !/st4})}
 \end{vlist}
 
 \noindent
@@ -1698,6 +1786,7 @@ same name, as in {\F w3gdatmd}.  These variables are:
 \vit{va    }{ra}{Storage array for spectra.}
 \vit{wlv   }{ra}{Water levels.}
 \vit{ice   }{ra}{Ice coverage.}
+\vit{berg  }{ra}{Iceberg damping coefficient.}
 \vit{ust   }{ra}{Friction velocities (absolute value).}
 \vit{ustdir}{ra}{Friction velocities (direction).}
 \vit{asf   }{ra}{Stability correction factor.}

@@ -765,7 +765,7 @@ preprocessor (see following chapter).
 \subsubsection{~Shoreline reflection \hfill {\rm (F. Ardhuin)}} \label{sec_refl}
 \vsssub
 In the case of  icebergs and subgrid islands, the reflected energy is redistributed evenly in all directions within 90$^\circ$ of the direction opposite to 
-the incoming waves. This corresponds to a Lambertian surface approximation, which is used for electromagnetic wave scattering from rough surfaces. 
+the incoming waves. 
 For resolved lands,  a mean direction perpendicular to shore $\theta_n$ was defined 
 from the land or sea status of the 8 grid points surrounding the local point (Fig. \ref{fig:refl}). 
 
@@ -789,29 +789,74 @@ For `mild' corners and straight coasts, the estimated shoreline orientation (das
 For this purpose we distinguish three different shoreline geometries relative to the local point as illustrated by 
 figure \ref{fig:refl}: we set  $n=2$ for a straight coast (three connected land points 
 among the neighbors), $n=1$ for a mild corner (two land points 
-among the neighbors) , and $n=0$ at a sharp corner (only one land point, among the 4 closest neighbors) which corresponds to the 
-same treatment done for subgrid islands and icebergs. Changing these values of $n$ in the range $0$ to $2$  has little effects on our results. A more rigorous 
+among the neighbors), and $n=0$ at a sharp corner (only one land point, among the 4 closest neighbors) which corresponds to the 
+same treatment done for subgrid islands and icebergs. Changing these values of $n$ in the range $0$ to $2$  has little effects on our results. 
+$n=1$ corresponds to a Lambertian surface approximation, which is used for electromagnetic wave scattering from rough surfaces. A pure 
+specular reflection would be obtained with $n$ infinite. 
+A more rigorous 
 treatment should use the distribution of the shoreline orientation at at the scale of the ocean wavelength, namely of the order of 100~m. 
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Propagation on irregular grids \hfill {\rm (Rogers and Campbell)}} \label{sec_irreg}
+\subsubsection{~Propagation on curvilinear grids \hfill {\rm (Rogers and Campbell)}} \label{sec_irreg}
 \vsssub
 
-Computations may be made on irregular grids within \ws\ . This makes it possible to run the model on alternate grid projections (e.g. Lambert conformal conic), rotated grids, or shoreline-following grids with higher resolution near shore, though the restrictions on time step from the conditionally stable schemes still apply. The same propagation schemes are utilized for irregular grids as for regular grids (first order upwind explicit or ULTIMATE QUICKEST).
+Computations may be made on curvilinear grids within \ws\ . This makes it possible to run the model on alternate grid projections 
+(e.g. Lambert conformal conic), rotated grids, or shoreline-following grids with higher resolution near shore, though the 
+restrictions on time step from the conditionally stable schemes still apply. The same propagation schemes are utilized for 
+irregular grids as for regular grids (first order upwind explicit or ULTIMATE QUICKEST).
 
-Regarding the method: the implementation is described in \citep{RogCamp:NRLrep09}, summarized here: a Jacobian is used to convert the entire domain between the normal, curving space, and a straightened space. This conversion is performed only within the propagation routine, rather than integrating the entired model in straightened space. A simple, three step process is used every time the propagation subroutine is call (i.e. every time step and every spectral component): first, the dependent variable (wave action density) is converted to straightened space using a Jacobian; second, the wave action density is propagated via subroutine calls for each (of two) grid axes; third, the wave action density is converted back to normal, curved space. The actual flux computation is not significantly modified from its original, regular grid form. The same process occurs, regardless of grid type (regular or irregular); for regular grids, the Jacobian is unity.
+Regarding the method: the implementation is described in \citep{RogCamp:NRLrep09}, summarized here: a Jacobian is used to convert 
+the entire domain between the normal, curving space, and a straightened space. This conversion is performed only within the 
+propagation routine, rather than integrating the entired model in straightened space. A simple, three step process is used every 
+time the propagation subroutine is call (i.e. every time step and every spectral component): first, the dependent variable 
+(wave action density) is converted to straightened space using a Jacobian; second, the wave action density is propagated via 
+subroutine calls for each (of two) grid axes; third, the wave action density is converted back to normal, curved space. The actual 
+flux computation is not significantly modified from its original, regular grid form. The same process occurs, regardless of grid 
+type (regular or irregular); for regular grids, the Jacobian is unity.
 
-Regarding the user interface: in {\file ww3\_grid.inp}, a string is used to indicate the grid type. In cases where this grid string is `{\F RECT}', the model processes input for a regular grid. In case where this grid string is `{\F CURV}' , the model processes input for an irregular grid. [Note that with \ws\ version 4.00, the coordinate system (i.e. degrees vs. meters) and the closure type (e.g. global/wrapping grid) are also specified in  {\file ww3\_grid.inp} ; the switches LLG and XYG are deprecated.] 
+Regarding the user interface: in {\file ww3\_grid.inp}, a string is used to indicate the grid type. In cases where this grid 
+string is `{\F RECT}', the model processes input for a regular grid. In case where this grid string is `{\F CURV}' , the model 
+processes input for an irregular grid. [Note that with \ws\ version 4.00, the coordinate system (i.e. degrees vs. meters) and 
+the closure type (e.g. global/wrapping grid) are also specified in  {\file ww3\_grid.inp} ; the switches LLG and XYG are deprecated.] 
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Propagation on unstructured grids \hfill {\rm (A. Roland)}} \label{sec_prug}
+\subsubsection{~Use of triangle-based unstructured grids \hfill {\rm (Roland and Ardhuin)}} \label{sec_prug}
 \vsssub
+Triangle-based grids can be used in \ws\ with numerical schemes based on contour residual distribution \citep[][for a review]{PhD:Rol}. 
+This option is activated by setting the  grid string to `{\F UNST}' in {\file ww3\_grid.inp}.
+Four schemes have been implemented, and the choice of one or the other is done with the UG namelist. 
+These are the N scheme, the PSI scheme, the FCT scheme, and one implicit scheme. The default is the faster but more diffusive N scheme. 
 
-The numerical schemes on unstructured grids are contour residual distribution schemes \citep[][for a review]{PhD:Rol}. Four schemes have been implemented, and the choice 
-of one or the other is done with the UG namelist. These are the N scheme, the PSI scheme, the FCT scheme, and one implicit scheme. The choice of scheme is made via the 
-UG namelist. 
+In practice the grid can be easily generated, using the Polymesh interface (software developed by T.U. Darmstadt), 
+from a shoreline polygons database \citep[e.g.][]{art:WS96} and a list of depth soundings, regular
+or irregular. 
+
+Regarding the method: the evolution of the spectrum at the nodes, where it is evaluated, is based on the redistribution over the nodes of
+the flux convergence into the median dual cells associated with the nodes (see figure \ref{fig:triangles}).
+\begin{figure} \begin{center}
+\epsfig{file=./grid_triangles.eps,angle=0,width=6in}
+\caption{Example of a region of a triangle-based mesh, with in this case the small Island of Bannec, France. If the depth is greater than 
+the minimum depth, the nodes of the shoreline are active. These are characterized by a larger number of neighbor nodes (6 in the example chosen) 
+than neighbor triangles (5 in the same example). 
+}
+\label{fig:triangles} \botline
+\end{center}
+\end{figure}
+ For any  spectral component, the advection equation (\ref{eq:step_xy_prop}) is solved on the median dwell cells: the incoming flux into a
+cell gives the rate of change of the wave action at the corresponding node. The various schemes implemented have 
+different discretizations for the estimation of this flux. 
+
+ The boundary condition at the shoreline depends on the 
+wave direction relative to the shoreline orientation. This particular treatment is enforced using the `{\F IOBPD}' array 
+which is updated whenever the grid points status map `{\F MAPSTA}' changes. The grid geometry is also used to define 
+local gradients of the water depth and currents. All other operations, such as interpolation of the forcing 
+on the grid and interpolation from the grid onto output locations, is performed using linear interpolation in triangles. 
+
+All the triangle geometry operations assume a locally flat Earth. 
+
+
 
 % -------------------------------------------------------------
 \vssub
@@ -854,27 +899,32 @@ points only are used.
 
 Propagation in $\theta$-space can cause practical problems in an explicit
 numerical scheme, as the refraction velocity can become extreme for long waves
-in extremely shallow water. To avoid the need of extremely small time steps
-due to refraction, the propagation velocity in $\theta$-space
-(\ref{eq:theta_dot}) is filtered with respect to the depth refraction term
+in extremely shallow water or due to strong current shears. Similarly, 
+the propagation in $k$-space suffers from similar problems in very shallow water. 
+To avoid the need of extremely small time steps
+due to refraction, the propagation velocities in $\theta$-space and $k$-space
+(\ref{eq:theta_dot}) are filtered,
 
 % eq:theta_filter
 
 \begin{equation}
-\dot{\theta} = X_{rd}(\lambda,\phi,k) \dot{\theta_d} + 
-\dot{\theta_c} \: , \label{eq:theta_filter} \end{equation}
+\dot{\theta} = X_{rd}(\lambda,\phi,k)\left( \dot{\theta_d} + 
+\dot{\theta_c} + \dot{\theta_g} \right)\: , \label{eq:theta_filter} \end{equation}
 
 \noindent
-where the indices d and c refer to the depth and current related fraction of
+where the indices d, c and g refer to the depth, current and great-circle related fraction of
 the refraction velocity in (\ref{eq:theta_dot}). The filter factor $X_{rd}$ is
 calculated for every wavenumber and location separately, and is determined so
 that the \cfl\ number for propagation in $\theta$-space due to the {\em depth}
 refraction term cannot exceed a pre-set (user defined) value (default
 0.7). This corresponds to a reduction of the bottom slope for some low
-frequency wave components. The effected components are expected to carry
+frequency wave components. For mid-latitudes, the effected components are expected to carry
 little energy because they are in extremely shallow water. Long wave
 components carrying significant energy are usually traveling toward the coast,
-where their energy is dissipated anyway.
+where their energy is dissipated anyway. This filtering is also important for short waves, 
+and close to the pole. The effect of this filter can be tested by reducing the time steps for
+intraspectral refraction and by looking at the maximum CFL numbers in the output of the model. 
+These are computed just before the filter is applied. 
 
 \vspace{\baselineskip} \noindent 
 As with the propagation in physical space, a first order and an \uq\ scheme

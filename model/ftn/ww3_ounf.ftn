@@ -576,6 +576,8 @@
 !
 !  S5 is the string length for the time
 !
+      IF (S3.LT.4) S3=4 
+      IF (S3.GT.10) S3=10 
       S5=S3-8
       S4=S3
       IF (S5.GT.0) THEN 
@@ -1206,7 +1208,7 @@
 !
           ELSE IF ( J .EQ. 36 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.0001
+            FSC    = 0.002 
             UNITS  = 'm'
             ENAME  = '.wch'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
@@ -1216,7 +1218,7 @@
             varnl(1)='significant_breaking_wave_height'
             varns(1)='significant_breaking_wave_height'
             vmin = 0
-            vmax = 10000
+            vmax = 32000
 !
           ELSE IF ( J .EQ. 37 ) THEN
             FLONE  = .TRUE.
@@ -1419,11 +1421,11 @@
 !
           ELSE IF ( J .EQ. 46 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.2
+            FSC    = 0.1
             UNITS  = 'W/m2'
             ENAME  = '.foc'
             DO ISEA=1, NSEA
-               PHIOC(ISEA)=MIN(6000.,PHIOC(ISEA))
+               PHIOC(ISEA)=MIN(1000.,PHIOC(ISEA))
                END DO
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIOC(1:NSEA)    &
                                                       , MAPSF, X1 )
@@ -1604,7 +1606,7 @@
 !
           ELSE IF ( J .EQ. 52 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.1           !0.01
+            FSC    = 0.01
             UNITS  = 'TBD'
             ENAME  = '.us1'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,1)        &
@@ -1904,13 +1906,13 @@
                     ivar=ivar1+I
                     IF (COORDTYPE.EQ.1) THEN
                       iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
-                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
                     ELSE
                       dimfield(1)=dimid(2)
                       dimfield(2)=dimid(4)
                       dimfield(3)=dimid(5)
                       iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
-                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
                       END IF
 
                     call check_err(iret)
@@ -1992,13 +1994,13 @@
                     ivar=ivar1+I
                     IF (COORDTYPE.EQ.1) THEN
                       iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
-                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
                     ELSE
                       dimfield(1)=dimid(2)
                       dimfield(2)=dimid(4)
                       dimfield(3)=dimid(5)
                       iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
-                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
                       END IF
                     call check_err(iret)
 
@@ -2300,7 +2302,7 @@
 !
 
       IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_CLOBBER, ncid)
-      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
+!/NC4      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
       call check_err(iret)
 !
 ! Define dimensions
@@ -2352,7 +2354,7 @@
       IF (FLAGLL) THEN 
 !longitude
         iret = nf90_def_var(ncid, 'longitude', nf90_float, dimid(2), varid(1))
-        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
+!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
         iret=nf90_put_att(ncid,varid(1),'units','degree_east')
         iret=nf90_put_att(ncid,varid(1),'long_name','longitude')
         iret=nf90_put_att(ncid,varid(1),'standard_name','longitude')
@@ -2361,10 +2363,10 @@
 !latitude
         IF (coordtype.EQ.1) THEN
           iret = nf90_def_var(ncid, 'latitude', nf90_float, dimid(3), varid(2))
-          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
         ELSE
           iret = nf90_def_var(ncid, 'latitude', nf90_float, dimid(2), varid(2))
-          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
           END IF
         iret=nf90_put_att(ncid,varid(2),'units','degree_north')
         iret=nf90_put_att(ncid,varid(2),'long_name','latitude')
@@ -2376,16 +2378,16 @@
       ELSE 
 !x
         iret = nf90_def_var(ncid, 'x', nf90_float, dimid(2), varid(1))
-        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
+!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
         iret=nf90_put_att(ncid,varid(1),'units','m')
         iret=nf90_put_att(ncid,varid(1),'long_name','x')
 !y
         IF (coordtype.EQ.1) THEN
           iret = nf90_def_var(ncid, 'y', nf90_float, dimid(3), varid(2))
-          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
         ELSE
           iret = nf90_def_var(ncid, 'y', nf90_float, dimid(2), varid(2))
-          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(2), 1, 1, deflate)
           END IF
         iret=nf90_put_att(ncid,varid(2),'units','m')
         iret=nf90_put_att(ncid,varid(2),'long_name','y')
@@ -2400,7 +2402,7 @@
 !
       if (extradim.EQ.1) THEN
         iret = nf90_def_var(ncid, 'f', nf90_float, dimid(4), varid(3))
-        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(3), 1, 1, deflate)
+!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(3), 1, 1, deflate)
         CALL check_err(iret)
         iret=nf90_put_att(ncid,varid(3),'long_name','wave_frequency')
         call check_err(iret)
@@ -2417,7 +2419,7 @@
 !  time
 !
       iret = nf90_def_var(ncid, 'time', nf90_double, dimid(4+extradim), varid(3+extradim))
-      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(3+extradim), 1, 1, deflate)
+!/NC4      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(3+extradim), 1, 1, deflate)
       call check_err(iret)
       iret=nf90_put_att(ncid,varid(3+extradim),'long_name','julian day (UT)')
       call check_err(iret)
@@ -2438,7 +2440,7 @@
         dimtri(1)=dimid(4+extradim+1)
         dimtri(2)=dimid(3)
         iret = nf90_def_var(ncid, 'tri', nf90_int, dimtri, varid(ivar))
-        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
         END IF
 !
 !  Status map: useful for grid combination
@@ -2447,10 +2449,10 @@
         ivar=3+extradim+(COORDTYPE-1)+1
         IF (COORDTYPE.EQ.1) THEN ! structured
           iret = nf90_def_var(ncid,'MAPSTA', nf90_short,(/ dimid(2) , dimid(3) /), varid(ivar)) 
-          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
         ELSE
           iret = nf90_def_var(ncid,'MAPSTA', nf90_short,(/ dimid(2) /), varid(ivar)) 
-          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+!/NC4          IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
           END IF
         iret=nf90_put_att(ncid,varid(ivar),'long_name','status map')
         iret=nf90_put_att(ncid,varid(ivar),'standard_name','status map')
@@ -2492,7 +2494,7 @@
       USE NETCDF
 
       implicit none
-      
+
       integer iret
 
       if (iret .ne. NF90_NOERR) then

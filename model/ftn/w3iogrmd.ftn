@@ -473,11 +473,11 @@
                    XGRD, YGRD
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
-                FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, NNZ
+                FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
               WRITE (NDSM)                                            &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
                 CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY,   &
-                DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,          &
+                DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPD, IAA, JAA, POSI
             END SELECT !GTYPE
 !
@@ -515,15 +515,15 @@
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
             CASE (UNGTYPE) 
-              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               & 
-                FSN,FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT,NNZ
+              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
+                FSN,FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
               IF (.NOT. GUGINIT) THEN
                 CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
                 END IF
-              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,           &
-                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY, &
-                DXYMAX, INDEX_CELL, CCON,COUNTCON, IE_CELL,         &
+              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY,   &
+                DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPD, IAA, JAA, POSI
                 XGRD(1,:)=XYB(:,1)
                 YGRD(1,:)=XYB(:,2)

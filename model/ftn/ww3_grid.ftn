@@ -454,13 +454,13 @@
       CHARACTER(LEN=6)        :: YESXNO(2)
 !/FLX3      CHARACTER(LEN=18)       :: TYPEID
 !
-! Variables for unstructured grids
+! Variables for shoreline reflection and unstr. grids
+! ANGLETOT business should be moved to W3TRIAMD ... 
 !
       INTEGER                 :: IE, I1, I2, I3
       INTEGER, ALLOCATABLE    :: TRILAND(:),MAPBORD(:)
       REAL, ALLOCATABLE       :: ANGLETOT(:), ANGLETOTINV(:)
-      INTEGER                 :: K
-      INTEGER                 :: NEIGH1(0:7)
+      INTEGER                 :: K, NEIGH1(0:7)
 !/ ------------------------------------------------------------------- /
 !/ Namelists
 !/
@@ -1127,9 +1127,9 @@
 !/ST4      SDSBRFDF  = 0
 !/ST4      SDSBRF1   = 0.5
 !/ST4      SDSBRF2   = 0.
-!/ST4      SDSP      = 2.
+!/ST4      SDSP      = 2.   ! this is now fixed in w3sds4 
 !/ST4      SDSDTH    = 80.
-!/ST4      SDSCOS    = 2.
+!/ST4      SDSCOS    = 2.   
 !/ST4      SDSISO    = 2
 !/ST4      SDSBM0    = 1.
 !/ST4      SDSBM1    = 0.
@@ -2511,9 +2511,12 @@
 !/O2        END DO
 !/O2      WRITE (NDSO,1102)
 !
-! MAP FOR LAND POINTS    
+! Defines the shoreline treatment for unstructured grids 
 ! 
      IF (GTYPE.EQ.UNGTYPE) THEN
+!
+! MAP FOR LAND POINTS    
+! 
        ALLOCATE( TRILAND(NTRI), ANGLETOT(NX), ANGLETOTINV(NX))
        TRILAND(:) = 0
        K = 0
@@ -2577,7 +2580,8 @@
 !      
       DEALLOCATE(TRILAND, ANGLETOT, ANGLETOTINV)
 !      
-      END IF ! GTYPE .EQ. UNGTYPE
+       CALL SETUGIOBP 
+       END IF 
 
 !/O2a      J      = LEN_TRIM(FNMPRE)
 !/O2a      OPEN (NDSM,FILE=FNMPRE(:J)//'mask.ww3')

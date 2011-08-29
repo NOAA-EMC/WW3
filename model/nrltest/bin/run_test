@@ -198,7 +198,7 @@ then
   exit 1
 fi
 
-# 2.j If parallel execution, then check for proper switches
+# 2.j;1 If parallel execution, then check for proper switches
 #     Also, set default run command
 if [ $pmpi ]
 then
@@ -210,6 +210,18 @@ then
   fi
 else
   runcmd=''
+fi
+
+# 2.j.2 If NetCDF switch is present use NetCDF output
+#     Also, set default run command
+ncout='NO'
+if [ "`grep NC3 $file_c`" ]
+  then
+  ncout='NC3'
+fi
+if [ "`grep NC4 $file_c`" ]
+  then
+  ncout='NC4'
 fi
 
 # 2.k Setup for multi-model (and defaults for non-multi-model)
@@ -800,7 +812,8 @@ then
 fi
 
 # 3.h.2 NC Point output ---------------------------------------------------------- #
-
+if  [ $ncout != 'NO' ]
+then
 prog=ww3_ounp
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
@@ -845,8 +858,8 @@ then
       fi
       gu="_$g"
     fi
-
-    for ifile in $inputs; do
+    for ifile in $inputs
+    do
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`${gu}.out"
       echo "   Processing $ifile"
@@ -865,10 +878,6 @@ then
         rm -f $prog.inp
         if [ $multi -eq 2 ]
         then
-
-#WER...This is a bug, e.g. ww3_outp.ww3 is not a proper file
-
-          mv $otype.ww3 $otype.$g
           rm -f mod_def.ww3
           rm -f out_pnt.ww3
         fi
@@ -888,6 +897,7 @@ if [ $exit_p = $prog ]
 then
   exit
 fi
+fi  # end of test on $ncout 
 
 # 3.i Track output ---------------------------------------------------------- #
 

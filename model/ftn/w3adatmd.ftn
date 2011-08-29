@@ -284,7 +284,8 @@
                                  MSSX(:), MSSY(:), MSCX(:), MSCY(:),  &
                                  PRMS(:), TPMS(:), JSMITH(:),         &
                                  BEDFORMS(:,:), WHITECAP(:,:),        &
-                                 CFLXYMAX(:), CFLTHMAX(:), TAUBBL(:,:), &
+                                 CFLXYMAX(:), CFLTHMAX(:),            &
+                                 CFLKMAX(:), TAUBBL(:,:),             &
                                  PHIBBL(:), T02(:), CGE(:), TM0M1(:) 
         REAL, POINTER         :: P2SMS(:,:)
 !/COU        REAL, POINTER         :: SXX3D(:,:), US3D(:,:)
@@ -371,7 +372,8 @@
                                  MSSX(:), MSSY(:), MSCX(:), MSCY(:),  &
                                  PRMS(:), TPMS(:), JSMITH(:),         &
                                  BEDFORMS(:,:), WHITECAP(:,:),        &
-                                 CFLXYMAX(:), CFLTHMAX(:), TAUBBL(:,:), &
+                                 CFLXYMAX(:), CFLTHMAX(:),            &
+                                 CFLKMAX(:),TAUBBL(:,:),              &
                                  PHIBBL(:), T02(:), CGE(:), TM0M1(:)
       REAL, POINTER           :: P2SMS(:,:)
 !/COU        REAL, POINTER         :: SXX3D(:,:), US3D(:,:)
@@ -716,6 +718,7 @@
                  WADATS(IMOD)%WHITECAP(0:NSEA,4)                    , &
                  WADATS(IMOD)%CFLXYMAX(NXXX)                        , &
                  WADATS(IMOD)%CFLTHMAX(NXXX)                        , &
+                 WADATS(IMOD)%CFLKMAX(NXXX)                         , &
                  WADATS(IMOD)%TUSX(NXXX) , WADATS(IMOD)%TUSY(NXXX)  , &
                  WADATS(IMOD)%USSX(NXXX) , WADATS(IMOD)%USSY(NXXX)  , &
                  WADATS(IMOD)%MSSX(NXXX) , WADATS(IMOD)%MSSY(NXXX)  , &
@@ -750,6 +753,7 @@
                  WADATS(IMOD)%PHIBBL(:)=0.
                  WADATS(IMOD)%CFLXYMAX(:)=0.
                  WADATS(IMOD)%CFLTHMAX(:)=0.
+                 WADATS(IMOD)%CFLKMAX(:)=0.
 !/COU            IF (COUG_RAD3D) WADATS(IMOD)%SXX3D(:,:)=0.
 !/COU            IF (COUG_US3D) WADATS(IMOD)%US3D(:,:)=0.
 !
@@ -1283,6 +1287,7 @@
           PHIBBL  =>  WADATS(IMOD)%PHIBBL
           CFLXYMAX =>  WADATS(IMOD)%CFLXYMAX
           CFLTHMAX =>  WADATS(IMOD)%CFLTHMAX
+          CFLKMAX =>  WADATS(IMOD)%CFLKMAX
           TUSX   => WADATS(IMOD)%TUSX
           TUSY   => WADATS(IMOD)%TUSY
           USSX   => WADATS(IMOD)%USSX

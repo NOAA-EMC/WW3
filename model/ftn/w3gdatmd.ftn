@@ -503,9 +503,9 @@
         REAL                  :: MAXX, MAXY, DXYMAX
         REAL, POINTER         :: ANGLE(:,:)
         INTEGER               :: COUNTRI,COUNTOT,NNZ
-        INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:),   &
+        INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), VNEIGH(:,:),  &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),   &
-                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:)
+                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
         REAL, POINTER         :: TRIA(:), TRIA03(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
 ! Coupling data
@@ -673,7 +673,8 @@
       REAL, POINTER           :: ANGLE(:,:)
       INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),    &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),     &
-                                 IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:)
+                                 IAA(:), JAA(:), POSI(:,:),            &
+                                 VNEIGH(:,:), INDEX_CELL(:)
       REAL, POINTER           :: TRIA(:), TRIA03(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
@@ -1511,6 +1512,7 @@
       ANGLE     => GRIDS(IMOD)%ANGLE 
       CCON     => GRIDS(IMOD)%CCON
       COUNTCON     => GRIDS(IMOD)%COUNTCON
+      VNEIGH       => GRIDS(IMOD)%VNEIGH
       INDEX_CELL  => GRIDS(IMOD)%INDEX_CELL
       IE_CELL     => GRIDS(IMOD)%IE_CELL
       POS_CELL     => GRIDS(IMOD)%POS_CELL
@@ -2203,6 +2205,7 @@
                  GRIDS(IMOD)%ANGLE(MTRI,3),                         &
                  GRIDS(IMOD)%CCON(MX),                              &
                  GRIDS(IMOD)%COUNTCON(MX),                          &
+                 GRIDS(IMOD)%VNEIGH(MX,2*COUNTRI),                  &
                  GRIDS(IMOD)%INDEX_CELL(MX+1),                      &
                  GRIDS(IMOD)%IE_CELL(COUNTOTA),                     &
                  GRIDS(IMOD)%POS_CELL(COUNTOTA),                    &

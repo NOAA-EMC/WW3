@@ -228,7 +228,7 @@ code.
 \vspace{\baselineskip} \noindent
 Note that bottom and obstruction data may be in same file.
 
-\inpfile{ww3_grid.tex}
+\inpfile{inp_grid.tex}
 
 
 \pb
@@ -243,7 +243,7 @@ Note that bottom and obstruction data may be in same file.
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{restart.ww3}{Restart file in \ws\ format.}{20}
 
-\inpfile{ww3_strt.tex}
+\inpfile{inp_strt.tex}
 
 
 \pb
@@ -266,7 +266,7 @@ Note that bottom and obstruction data may be in same file.
 \proddefa{data1.ww3\opt}{Assimilation data (`1-D spectra').}{12}
 \proddefa{data2.ww3\opt}{Assimilation data (`2-D spectra').}{12}
 
-\inpfile{ww3_prep.tex}
+\inpfile{inp_prep.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -310,7 +310,7 @@ reference if made to this routine.
 \proddefa{track\_o.ww3\opt}{Raw output of spectra along tracks.}{23}
 \proddeff{Scratch}{ww3\_shel.scratch}{Formatted scratch file.}{90}
 
-\inpfile{ww3_shel.tex}
+\inpfile{inp_shel.tex}
 
 
 \pb
@@ -333,7 +333,7 @@ where file extensions {\file .ww3} are replaced by an identifier for a
 specific grid. Note that all files are opened by name, and that the unit
 number assignment is dynamic and automatic.
 
-\inpfile{ww3_multi.tex}
+\inpfile{inp_multi.tex}
 
 \pb
 % -------------------------------------------------------------
@@ -349,7 +349,7 @@ post-processor.}{10}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{\ldots \opt}{Transfer file.}{50}
 
-\inpfile{ww3_outf.tex}
+\inpfile{inp_outf.tex}
 
 \vspace{\baselineskip} 
 \noindent
@@ -372,7 +372,7 @@ post-processor.}{10}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{\opt  .nc}{NetCDF file}{}
 
-\inpfile{ww3_ounf.tex}
+\inpfile{inp_ounf.tex}
 
 \vspace{\baselineskip} 
 \noindent
@@ -398,7 +398,7 @@ post-processor.}{10}
 {\file{\sl{nn}}} is a two-digit integer.}{\sl nn}
 \proddefa{\ldots \opt}{Transfer file.}{user}
 
-\inpfile{ww3_outp.tex}
+\inpfile{inp_outp.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -434,7 +434,7 @@ post-processor.}{10}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{\ldots \opt}{Transfer file.}{user}
 
-\inpfile{ww3_ounp.tex}
+\inpfile{inp_ounp.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -494,7 +494,7 @@ post-processor.}{10}
 \proddeff{Output}{standard out}{Formatted output of program.}{6}
 \proddefa{gribfile}{GRIB file.}{50}
 
-\inpfile{ww3_grib.tex}
+\inpfile{inp_grib.tex}
 
 \vspace{\baselineskip} 
 \noindent
@@ -556,7 +556,7 @@ post-processor.}{10}
 \proddefa{ww3.grads}{GrADS data file.}{50}
 \proddefa{ww3.ctl}{GrADS control file.}{51}
 
-\inpfile{gx_outf.tex}
+\inpfile{inpg_outf.tex}
 
 \vspace{\baselineskip} 
 \noindent 
@@ -583,7 +583,7 @@ post-processor.}{10}
 \proddefa{ww3.mean.grads}{File with mean wave parameters.}{31}
 \proddefa{ww3.spec.ctl}{GrADS control file.}{32}
 
-\inpfile{gx_outp.tex}
+\inpfile{inpg_outp.tex}
 
 \vspace{\baselineskip} 
 \noindent
@@ -612,8 +612,8 @@ should not contain spaces.
 
 \begin{table} \begin{center}
 \begin{tabular}{|c|c|c|c|c|} \hline
-field & description &  file     & GRIB1 & GRIB2  \\
-     &             &  extension & data  & data   \\ \hline \hline
+field & description                  &  file        & GRIB1 & GRIB2   \\
+      &                              &  extension   & data  & data    \\ \hline \hline
  1 & depth                           & {\file .dpt} &  --  &    --    \\
  2 & mean current components         & {\file .cur} &  --  &    --    \\
  3 & wind speed                      & {\file .wnd} &  32  &  0,2,1   \\
@@ -621,36 +621,70 @@ field & description &  file     & GRIB1 & GRIB2  \\
    &  wind $u$                       &              &  33  &  0,2,2   \\
    &  wind $v$                       &              &  34  &  0,2,3   \\
  4 & air-sea temp. dif.              & {\file .dt}  &  --  &    --    \\
- 5 & friction velocity comp.         & {\file .ust} &  --  &    --    \\
- 6 & wave height $H_s$               & {\file .hs}  & 100  &  10,0,3  \\
- 7 & mean wave length                & {\file .l}   &  --  &    --    \\
- 8 & mean wave period $T_m$          & {\file .t}   & 103  &    --    \\
- 9 & mean wave direction $\theta_m$  & {\file .dir} & 101  &    --    \\
-10 & directional spread $\sigma$     & {\file .spr} &  --  &    --    \\
-11 & peak period $T_p$               & {\file .fp}  & 108  &  10,0,11 \\
-12 & peak direction $\theta_p$       & {\file .dp}  & 107  &  10,0,10 \\
-13 & wind sea period $T_w$           & {\file .fpl} & 110  &    --    \\
-14 & wind sea direction $\theta_w$   & {\file .dpl} & 109  &    --    \\
-15 & $H_s$ of partition              & {\file .phs} & 102,105 & 10,0,5/8 \\
-16 & $T_p$ of partition              & {\file .ptp} & 103,106 & 10,0,6/9\\
-17 & $L_p$ of partition              & {\file .plp} &  --  &    --    \\
-18 & $\theta_m$ of partition         & {\file .pth} & 101,104 & 10,0,4/7 \\
-19 & $\sigma$ of partition           & {\file .psi} &  --  &    --    \\
-20 & wind sea fraction of part.      & {\file .pws} &  --  &    --    \\
-21 & total wind sea fraction         & {\file .wsf} &  --  &    --    \\
-22 & number of partitions            & {\file .pnr} &  --  &    --    \\
-23 & average time step               & {\file .dtd} &  --  &    --    \\
-24 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
-25 & ice coverage                    & {\file .ice} &  91  &  10,2,0  \\
-26 & water level                     & {\file .wlv} &  --  &  10,3,1  \\
-27 & near-bottom amplitude           & {\file .abr} &  --  &    --    \\
-28 & near-bottom velocity            & {\file .ubr} &  --  &    --    \\
-29 & radiation stress                & {\file .Sxy} &  --  &    --    \\
-30 & user defined \#1                & {\file .us1} &  --  &    --    \\
-31 & user defined \#2                & {\file .us2} &  --  &    --    \\ \hline
-
+ 5 & water level                     & {\file .wlv} &  --  &  10,3,1  \\
+ 6 & ice coverage                    & {\file .ice} &  91  &  10,2,0  \\
+ 7 & wave height $H_s$               & {\file .hs}  & 100  &  10,0,3  \\
+ 8 & mean wave length                & {\file .l}   &  --  &    --    \\
+ 9 & mean wave period $T_{m0,2}$     & {\file .t02} &  ?   &    --    \\
+10 & mean wave period $T_{m0,1}$     & {\file .t}   & 103  &    --    \\
+11 & mean wave period $T_{m0,-1}$    & {\file .tm1} &  ?   &    --    \\
+12 & Energy flux $\int C_g E(f) df$  & {\file .CgE} &  ?   &    --    \\
+13 & peak frequency $f_p$            & {\file .fp}  &  ?   &     ?    \\
+14 & mean wave direction $\theta_m$  & {\file .dir} & 101  &    --    \\
+15 & directional spread $\sigma$     & {\file .spr} &  --  &    --    \\
+16 & peak direction $\theta_p$       & {\file .dp}  & 107  &  10,0,10 \\
+17 & $H_s$ of partition              & {\file .phs} & 102,105 & 10,0,5/8 \\
+18 & $T_p$ of partition              & {\file .ptp} & 103,106 & 10,0,6/9\\
+19 & $L_p$ of partition              & {\file .plp} &  --  &    --    \\
+20 & $\theta_m$ of partition         & {\file .pth} & 101,104 & 10,0,4/7 \\
+21 & $\sigma$ of partition           & {\file .psi} &  --  &    --    \\
+22 & wind sea fraction of part.      & {\file .pws} &  --  &    --    \\
+23 & total wind sea fraction         & {\file .wsf} &  --  &    --    \\
+24 & number of partitions            & {\file .pnr} &  --  &    --    \\
+25 & average time step               & {\file .dtd} &  --  &    --    \\
+26 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
+27 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
+27 & maximum CFL for X-Y advection   & {\file .cfx} &  --  &    --    \\
+28 & maximum CFL for $\theta$ advection & {\file .cfd} &  --  &    --    \\
+%29 & maximum CFL for $k$ advection   & {\file .cfk} &  --  &    --    \\
+29 & friction velocity comp.         & {\file .ust} &  --  &    --    \\
+30 & Charnock parameter for air side & {\file .cha} &  --  &    --    \\
 \end{tabular} \end{center}
 \caption{~Field output post processors ancillary data.} \label{tab:fields}
+\vspace{0.5in}
+\end{table}
+\begin{table} \begin{center}
+\begin{tabular}{|c|c|c|c|c|} \hline
+field & description                  &  file        & GRIB1 & GRIB2   \\
+      &                              &  extension   & data  & data    \\ \hline \hline
+31 & Wind to wave energy flux        & {\file .faw} &  --  &    --    \\
+32 & Wave-supported stress           & {\file .taw} &  --  &    --    \\
+33 & Upward wave-supported stress    & {\file .twa} &  --  &    --    \\
+34 & Whitecap coeverage              & {\file .wcc} &  --  &    --    \\
+35 & Average whitecap foam thickness & {\file .wcf} &  --  &    --    \\
+36 & Significant breaking wave height& {\file .wch} &  --  &    --    \\
+37 & Whitecap moment                 & {\file .wcm} &  --  &    --    \\
+38 & near-bottom amplitude           & {\file .cfd} &  --  &    --    \\
+39 & near-bottom velocity            & {\file .ubr} &  --  &    --    \\
+40 & bedform parameters              & {\file .bed} &  --  &    --    \\
+41 & Energy flux to bot. boundary layer & {\file .fbb} &  --  &    --    \\
+42 & Momentum flux to bot. boundary layer & {\file .tbb} &  --  &    --    \\
+43 & radiation stress                & {\file .Sxy} &  --  &    --    \\
+44 & Breaking wave momentum flux     & {\file .two} &  --  &    --    \\
+45 & Bernoulli head                  & {\file .J} &  --  &    --    \\
+46 & Breaking wave energy flux       & {\file .foc} &  --  &    --    \\
+47 & Stokes transport                & {\file .tus} &  --  &    --    \\
+48 & Surface Stokes drift            & {\file .uss} &  --  &    --    \\
+49 & mean square slopes              & {\file .mss} &  --  &    --    \\
+50 & Phillips constant               & {\file .msc} &  --  &    --    \\
+51 & Second order pressure at $k=0$  & {\file .p2s} &  --  &    --    \\
+52 & user defined \#1                & {\file .us1} &  --  &    --    \\
+53 & user defined \#2                & {\file .us2} &  --  &    --    \\ \hline
+%13 & wind sea period $T_w$           & {\file .fpl} & 110  &    --    \\
+%14 & wind sea direction $\theta_w$   & {\file .dpl} & 109  &    --    \\
+
+\end{tabular} \end{center}
+\caption{~Field output post processors ancillary data (Continued).} \label{tab:fields_part2}
 \vspace{0.5in}
 \end{table}
 

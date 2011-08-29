@@ -2,12 +2,13 @@ MODULE W3TRIAMD
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           F. Ardhuin              |
+!/                  |       F. Ardhuin and A. Roland    |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :          25-Aug-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
+!/    25-Aug-2011 : Modification of boundary treatment  ( version 4.04 )
 !/
 !
 !  1. Purpose :
@@ -100,15 +101,17 @@ SUBROUTINE READMSH(NDS,FNAME)
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :          25-Aug-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-Feb-2008 : Origination.                        ( version 3.13 )
+!/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
 !/
 !
 !  1. Purpose :
 !
 !      Reads triangle and unstructured grid information from GMSH files
+!      Calls the subroutines needed to compute grid connectivity
 !
 !  2. Method :
 !
@@ -160,10 +163,11 @@ SUBROUTINE READMSH(NDS,FNAME)
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-        USE W3ODATMD, ONLY: NDSE, NDST, NDSO
-        USE W3GDATMD
-        USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
-IMPLICIT NONE
+      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+      USE W3GDATMD
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+!
+      IMPLICIT NONE
 !/
 !/ Parameter list
 !/
@@ -172,113 +176,119 @@ IMPLICIT NONE
 !/
 !/ local parameters 
 !/      
-INTEGER                            :: i,j,k, NODES, NELTS, ID, KID
-INTEGER                            :: ID1, ID2, KID1
-INTEGER                            :: I1, I2, I3
-INTEGER(KIND=4)                    :: Ind,eltype,ntag, INode
-CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
-INTEGER, ALLOCATABLE               :: TAGS(:)
-CHARACTER(LEN=64), ALLOCATABLE     :: ELS(:)
-CHARACTER(LEN=120)                 :: LINE
-CHARACTER(LEN=50)                  :: CHTMP
-CHARACTER(LEN=10)                  :: A, B, C
-INTEGER,ALLOCATABLE                :: NELS(:), TRIGPTMP1(:,:), TRIGPTMP2(:,:)
-INTEGER,ALLOCATABLE                :: IFOUND(:), VERTEX(:)
-DOUBLE PRECISION, ALLOCATABLE                :: XYBTMP1(:,:),XYBTMP2(:,:)
-REAL                             :: z, FACTOR
+      INTEGER                            :: i,j,k, NODES, NELTS, ID, KID
+      INTEGER                            :: ID1, ID2, KID1
+      INTEGER                            :: I1, I2, I3
+      INTEGER(KIND=4)                    :: Ind,eltype,ntag, INode
+      CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
+      INTEGER, ALLOCATABLE               :: TAGS(:)
+      CHARACTER(LEN=64), ALLOCATABLE     :: ELS(:)
+      CHARACTER(LEN=120)                 :: LINE
+      CHARACTER(LEN=50)                  :: CHTMP
+      CHARACTER(LEN=10)                  :: A, B, C
+      INTEGER,ALLOCATABLE                :: NELS(:), TRIGPTMP1(:,:), TRIGPTMP2(:,:)
+      INTEGER,ALLOCATABLE                :: IFOUND(:), VERTEX(:)
+      DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
+      REAL                               :: z
 
-!/LLG      FACTOR = 1.
-!/XYG      FACTOR = 1.E-3
-
-
-OPEN(NDS,FILE = FNAME,STATUS='old')
-READ (NDS,'(A)') COMSTR
-IF (COMSTR.EQ.' ') COMSTR = '$'
-CALL NEXTLN(COMSTR, NDS, NDSE)
-READ(NDS,*) i,j,k
-CALL NEXTLN(COMSTR, NDS, NDSE)
-! read number of nodes from Gmsh files
-READ(NDS,*) NODES
-ALLOCATE(XYBTMP1(NODES,3))
- DO I= 1, NODES
-      READ(NDS,*) j, XYBTMP1(I,1), XYBTMP1(I,2), XYBTMP1(I,3)
-ENDDO
-CALL NEXTLN(COMSTR, NDS, NDSE)
-READ(NDS,*) NELTS
-ALLOCATE(TRIGPTMP1(NELTS, 3))
+      OPEN(NDS,FILE = FNAME,STATUS='old')
+      READ (NDS,'(A)') COMSTR
+      IF (COMSTR.EQ.' ') COMSTR = '$'
+      CALL NEXTLN(COMSTR, NDS, NDSE)
+      READ(NDS,*) i,j,k
+      CALL NEXTLN(COMSTR, NDS, NDSE)
+!
+! read number of nodes and nodes from Gmsh files
+!
+      READ(NDS,*) NODES
+      ALLOCATE(XYBTMP1(NODES,3))
+      DO I= 1, NODES
+        READ(NDS,*) j, XYBTMP1(I,1), XYBTMP1(I,2), XYBTMP1(I,3)
+        END DO
+!
+! read number of elements and elements from Gmsh files
+!
+      CALL NEXTLN(COMSTR, NDS, NDSE)
+      READ(NDS,*) NELTS
+      ALLOCATE(TRIGPTMP1(NELTS, 3))
       J = 0 
- DO I= 1, NELTS
+      DO I= 1, NELTS
+        READ(NDS,'(A100)') LINE
+        READ(LINE,*) Ind,eltype,ntag
+        ALLOCATE(TAGS(ntag))
+        SELECT CASE (eltype) 
+!
+! eltype = 15 : boundary points
+!
+        CASE(15)
+          READ(LINE,*) Ind,eltype,ntag,tags,Inode
+!
+! eltype = 2 : triangles
+!
+        CASE (2)
+          READ(LINE,*)  Ind,eltype,ntag,tags,I1, I2, I3
+          J = J+ 1
+          TRIGPTMP1(J,1)=I1
+          TRIGPTMP1(J,2)=I2
+          TRIGPTMP1(J,3)=I3
+          END SELECT
 
-READ(NDS,'(A100)') LINE
-READ(LINE,*) Ind,eltype,ntag
-ALLOCATE(TAGS(ntag))
-SELECT CASE (eltype) 
-
-CASE(15)
-READ(LINE,*) Ind,eltype,ntag,tags,Inode
-
-CASE (2)
-READ(LINE,*)  Ind,eltype,ntag,tags,I1, I2, I3
-J = J+ 1
-TRIGPTMP1(J,1)=I1
-TRIGPTMP1(J,2)=I2
-TRIGPTMP1(J,3)=I3
-END SELECT
-
-DEALLOCATE(TAGS)
-ENDDO
-
- NTRI = J 
+        DEALLOCATE(TAGS)
+        END DO
+!
+! organizes the grid data structure 
+!
+      NTRI = J 
   
-ALLOCATE(IFOUND(NODES))
+      ALLOCATE(IFOUND(NODES))
  
- IFOUND = 0
- 
- DO K = 1, NTRI
-    I1 = TRIGPTMP1(K,1)
-    I2 = TRIGPTMP1(K,2)
-    I3 = TRIGPTMP1(K,3)
+      IFOUND = 0
+!
+! Verifies that the nodes are used in at least one triangle
+! 
+      DO K = 1, NTRI
+        I1 = TRIGPTMP1(K,1)
+        I2 = TRIGPTMP1(K,2)
+        I3 = TRIGPTMP1(K,3)
     
-    IFOUND(I1)= IFOUND(I1) + 1
-    IFOUND(I2)= IFOUND(I2) + 1
-    IFOUND(I3)= IFOUND(I3) + 1
- ENDDO
+        IFOUND(I1)= IFOUND(I1) + 1
+        IFOUND(I2)= IFOUND(I2) + 1
+        IFOUND(I3)= IFOUND(I3) + 1
+        END DO
  
- J = 0
+      J = 0
  
-ALLOCATE(TRIGPTMP2(NTRI,3),VERTEX(NODES),XYBTMP2(NODES,3)) 
-VERTEX(:)=0
-XYBTMP2 = 0
+      ALLOCATE(TRIGPTMP2(NTRI,3),VERTEX(NODES),XYBTMP2(NODES,3)) 
+      VERTEX(:)=0
+      XYBTMP2 = 0
 
- DO I = 1, NODES
-    IF( IFOUND(I) .GT. 0) THEN
-    J = J+1
-    XYBTMP2(J,:) = XYBTMP1(I,:) 
-    VERTEX(I) = J
-    
-    ENDIF
-ENDDO
-
-
-NX = J 
-
- DO I = 1, NTRI
-    I1 = TRIGPTMP1(I,1)
-    I2 = TRIGPTMP1(I,2)
-    I3 = TRIGPTMP1(I,3)
- 
-    TRIGPTMP2(I,1)= VERTEX(I1)
-    TRIGPTMP2(I,2)= VERTEX(I2)
-    TRIGPTMP2(I,3)= VERTEX(I3)
- ENDDO   
-
- DEALLOCATE( XYBTMP1, IFOUND,TRIGPTMP1)
- DEALLOCATE(VERTEX)
+      DO I = 1, NODES
+        IF( IFOUND(I) .GT. 0) THEN
+          J = J+1
+          XYBTMP2(J,:) = XYBTMP1(I,:) 
+          VERTEX(I) = J
+          END IF
+        END DO
+!
+! Number of nodes after clean up 
+! 
+      NX = J  
+!
+      DO I = 1, NTRI
+        I1 = TRIGPTMP1(I,1)
+        I2 = TRIGPTMP1(I,2)
+        I3 = TRIGPTMP1(I,3)
+        TRIGPTMP2(I,1)= VERTEX(I1)
+        TRIGPTMP2(I,2)= VERTEX(I2)
+        TRIGPTMP2(I,3)= VERTEX(I3)
+        END DO   
+!
+      DEALLOCATE( XYBTMP1, IFOUND,TRIGPTMP1)
+      DEALLOCATE(VERTEX)
 !
 !count points connections to allocate array in W3DIMUG 
 !
       CALL COUNT(TRIGPTMP2)
-
       CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST ) 
 !
 ! fills arrays
@@ -302,10 +312,9 @@ NX = J
      CALL COORDMAX
 !AR: Check for Multigrid 
      CALL AREA_SI(1)
-     CALL FIND_OPENBND_ISLANDS
-!     WRITE (NDSO,969) NX, NY, SX*FACTOR,DXYMAX*FACTOR,     &
-!                      X0*FACTOR, MAXX*FACTOR,                  &
-!                      Y0*FACTOR, MAXY*FACTOR
+!     WRITE (NDSO,969) NX, NY, SX,DXYMAX,     &
+!                      X0, MAXX,                  &
+!                      Y0, MAXY
 !
 ! Formats
 !
@@ -830,12 +839,13 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           A. Roland              |
+!/                  |           A. Roland               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :          23-Aug-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-May-2007 : Origination: adjustment from the WWM code       ( version 3.13 )
+!/    23-Aug-2011 : Removes double entries in VNEIGH                ( version 4.04 )
 !/  
 !
 !  1. Purpose :
@@ -882,12 +892,12 @@ END SUBROUTINE
 
 !/ local parameters   
 
-         INTEGER :: COUNTER,ifound
+         INTEGER :: COUNTER,ifound,alreadyfound
          INTEGER :: I, J, K
          INTEGER :: IP, IE, POS, POS_I, POS_J, POS_K, IP_I, IP_J, IP_K
-         INTEGER :: I1, I2, I3
+         INTEGER :: I1, I2, I3, IP2
          INTEGER :: TMP(NX), CELLVERTEX(NX,COUNTRI,2)
-         INTEGER :: VNEIGH(NX,2*COUNTRI), COUNT_MAX
+         INTEGER :: COUNT_MAX
          INTEGER, ALLOCATABLE :: PTABLE(:,:)
 !/S        INTEGER                      ::  IENT = 0  	
 !/ ------------------------------------------------------------------- /      
@@ -906,50 +916,69 @@ END SUBROUTINE
                COUNTER = COUNTER + 1
                CCON(IP) = COUNTER
                SI(IP) = SI(IP) +  1./3. * TRIA(IE) 
-             END IF
-           END DO
-         END DO 
+               END IF
+             END DO
+           END DO 
               
          CELLVERTEX(:,:,:) = 0
+         VNEIGH(:,:) = 0
+!
           DO IP = 1, NX
-           COUNTER = 0. 
-           ifound = 0.
+            COUNTER = 0
+            ifound = 0
  !
  ! first step of the storage, for a given vertex, the triangle it belongs to and the vertex position
  ! are stored  
  !
-           DO IE = 1, NTRI
-             IF (IP == TRIGP(IE,1)) THEN
-               COUNTER = COUNTER + 1
-               CELLVERTEX(IP,COUNTER,1) = IE
-               CELLVERTEX(IP,COUNTER,2) = 1
-               ifound=ifound+1
-               VNEIGH(IP,ifound)=TRIGP(IE,2)
-               ifound=ifound+1
-               VNEIGH(IP,ifound)=TRIGP(IE,3)
-             END IF
+            DO IE = 1, NTRI
+              IF (IP == TRIGP(IE,1)) THEN
+                COUNTER = COUNTER + 1
+                CELLVERTEX(IP,COUNTER,1) = IE
+                CELLVERTEX(IP,COUNTER,2) = 1
+                DO IP2=2,3
+                  alreadyfound = 0
+                  DO I=1,ifound
+                    IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
+                    END DO
+                  IF (alreadyfound.EQ.0) THEN 
+                    ifound=ifound+1
+                    VNEIGH(IP,ifound)=TRIGP(IE,IP2)
+                    END IF
+                  END DO
+               END IF
               
              IF (IP == TRIGP(IE,2)) THEN
                COUNTER = COUNTER + 1
                CELLVERTEX(IP,COUNTER,1) = IE
                CELLVERTEX(IP,COUNTER,2) = 2
-               ifound=ifound+1
-               VNEIGH(IP,ifound)=TRIGP(IE,1)
-               ifound=ifound+1
-               VNEIGH(IP,ifound)=TRIGP(IE,3)
-             END IF
+                DO IP2=3,4
+                  alreadyfound = 0
+                  DO I=1,ifound
+                    IF (VNEIGH(IP,I).EQ.TRIGP(IE,MOD(IP2-1,3)+1)) alreadyfound=alreadyfound+1
+                    END DO
+                  IF (alreadyfound.EQ.0) THEN 
+                    ifound=ifound+1
+                    VNEIGH(IP,ifound)=TRIGP(IE,MOD(IP2-1,3)+1)
+                    END IF
+                  END DO
+                END IF
               
              IF (IP == TRIGP(IE,3)) THEN
                COUNTER = COUNTER + 1
                CELLVERTEX(IP,COUNTER,1) = IE
                CELLVERTEX(IP,COUNTER,2) = 3
-               ifound=ifound+1
-               VNEIGH(IP,ifound)=TRIGP(IE,1)
-               ifound=ifound+1
-               VNEIGH(IP,ifound)=TRIGP(IE,2)
-             END IF
-           
-           END DO
+                DO IP2=1,2
+                  alreadyfound = 0
+                  DO I=1,ifound
+                    IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
+                    END DO
+                  IF (alreadyfound.EQ.0) THEN 
+                    ifound=ifound+1
+                    VNEIGH(IP,ifound)=TRIGP(IE,IP2)
+                    END IF
+                  END DO
+                END IF
+             END DO
 !
 ! COUNTCON is a counter on connected points. In comparison with the number of connected triangle
 ! CCON, it will enable to spot whether a point belong to the contour
@@ -958,7 +987,10 @@ END SUBROUTINE
           
            do I=2,ifound
               do J=1,i-1
-              if (VNEIGH(IP,J).EQ. VNEIGH(IP,I)) COUNTCON(IP)=COUNTCON(IP)-1
+              if (VNEIGH(IP,J).EQ. VNEIGH(IP,I)) THEN 
+                 COUNTCON(IP)=COUNTCON(IP)-1
+                 WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,J),VNEIGH(IP,I)
+                 END IF
               enddo
            enddo
           
@@ -1469,167 +1501,213 @@ END SUBROUTINE
              '     CHECK nest.ww3 AND ww3_grid.inp ',2I8/)
 END SUBROUTINE
 
-!/ ------------------------------------------------------------------- 
+!/ ------------------------------------------------------------------- /
+   SUBROUTINE SETUGIOBP ( )    
+!/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           A. Roland              |
+!/                  |        Fabrice Ardhuin            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :         23-Aug-2011 |
 !/                  +-----------------------------------+
 !/
-!/    15-May-2007 : Origination WWMII (Roland, 2009), find island (IOBP(IP) = -1) and open boundary (IOBP(IP) = 1) using Burkardt's code (will be replaced) 
-!/                : - Sets boundary pointer for incoming and outgoing directions depending on the chosen boundary condition. 
-!/                : 
-!
+!/    23-Aug-2011 : Origination.                        ( version 4.04 )
+!/
 !  1. Purpose :
 !
-!      Define optimized connection arrays (points and triangles) for spatial propagation schemes.
+!     Redefines the values of the boundary points and angle pointers
+!     based on the MAPSTA array
 !
 !  2. Method :
+!
 !     
+!
 !  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!     Local variables.
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
 !
+
 !  5. Called by :
 !
-!       Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      READTRI    Subr. Internal  Unstructured mesh definition.
-!     ----------------------------------------------------------------
+!       WW3_GRID
+!       W3UPTD??   forcing field update
 !
 !  6. Error messages :
 !
+!       None.
+!
 !  7. Remarks :
-!      
-!/   Mainy the pointer IOBPD is constructucted that sets incoming energy to zero at the open boundary and islands
-!/   except for the wave boundary nodes (IOBP(IP) = 2), where spectral propagation and source terms should be omitted in order to 
-!/   a well posed problem. Neumann boundary condition can be used for Open boundary (IOBP(IP) = 3) then everything is computed.  
-!     
+!
 !  8. Structure :
+!
 !
 !  9. Switches :
 !
-! 10. Source code :
+!       !/S     Enable subroutine tracing.
 !
-!/ ------------------------------------------------------------------- /      
-      SUBROUTINE FIND_OPENBND_ISLANDS()
+!
+! 10. Source code :     
+!/ ------------------------------------------------------------------- /
+!/
+!
+      USE CONSTANTS
+!
+      USE W3TIMEMD, ONLY: DSEC21
+!
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL,          &
+                          NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
+                          ECOS, ESIN, SIG,  PFMOVE,IEN, COUNTOT,      &
+                          NTRI, TRIGP, CCON , TRIA03, VNEIGH,         &
+                          IE_CELL, POS_CELL, IOBP,IOBPD, XYB, TH                      
 
-        USE CONSTANTS
-        USE W3GDATMD!, ONLY : NX, TH, IOBP, IOBP
+      USE W3WDATMD, ONLY: TIME
+      USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
+      USE W3IDATMD, ONLY: FLCUR
+!      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
+!                          ISBPI, BBPI0, BBPIN
+!/S      USE W3SERVMD, ONLY: STRACE
+      
+      IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: ITH, IK, ISEA, IXY, IBI    
+      INTEGER                 :: IX, IY, I, J, IP, IP0, IP2, IPB, IE
+      REAL                    :: CCOS, CSIN, CCURX, CCURY, THTEST 
+      REAL (KIND = 8)         :: DIRMIN, DIRMAX, SHIFT, TEMPO
+      REAL                    :: C(NX,2)
+      REAL                    :: RD1, RD2
+      REAL (KIND = 8)         :: X1, X2, X3, Y1, Y2, Y3
+      INTEGER                 :: SEACCON(NX), SEANEIGH(NX), SEA_CELL(COUNTOT)
+      INTEGER                 ::  COUNT_MAX
 
-        IMPLICIT NONE
+!/
+!/ Automatic work arrays
+!/
+      REAL                    :: VLCFLX((NX+1)*NY), VLCFLY(NX*NY)
+      REAL                    ::  AQ(NX)                        
+      ! AQ(1-NY:NY*(NX+2)) 
+      REAL                    :: AC(NX)
+!/ ------------------------------------------------------------------- /				     
+!
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Set constants
+!      
+      
+!/S      CALL STRACE (IENT, 'SETUGIOBP')      
+!
+! Counts the number of wet neighbor nodes
+!
+        SEANEIGH(1:NX)=0
+        SEA_CELL(:)=0
+        J = 0
+        DO IX = 1, NX
+          DO I = 1, 2*COUNTRI
+            IF (VNEIGH(IX,I).NE.0) THEN 
+              IF (MAPSTA(1,VNEIGH(IX,I)).GT.0) SEANEIGH(IX)=SEANEIGH(IX)+1  ! Loop over all connected points
+              !WRITE(995,*) 'TEST BOUNDARY 1:',IX,VNEIGH(IX,I),SEANEIGH(IX),CCON(IX)
+              END IF 
+            END DO         
+          END DO
+!
+! Counts the number of wet neighbor triangles
+!
+        SEACCON(1:NX)=0
+        J = 0
+        DO IX = 1, NX
+          DO I = 1, CCON(IX)                  ! Loop over all connected Elements
+             J = J + 1
+             IE    = IE_CELL(J)                ! Connected Element Number
+             IF (MAPSTA(1,TRIGP(IE,1)).GT.0.AND. &
+                 MAPSTA(1,TRIGP(IE,2)).GT.0.AND. &
+                 MAPSTA(1,TRIGP(IE,3)).GT.0) THEN 
+               SEACCON(IX)=SEACCON(IX)+1
+               SEA_CELL(J)=1
+               END IF
+             !WRITE(995,*) 'TEST BOUNDARY 2:',IX,IE,VNEIGH(IX,I),SEACCON(IX)
+             END DO         
+          END DO
+! 
 
-        INTEGER :: IP, IE, I, ITH
-        REAL    :: DIR, DIRMIN, DIRMAX
-
-        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
-        REAL,    PARAMETER :: THR       = TINY(1.0)
-
-        IOBPD(:,:) = 1 
-
-        CALL TRIANGULATION_MESH_BOUNDARY()
-
-        DO I = 1, BOUND_EDGE_NUM
-
-          IP = BOUNDARY_NODE_INDEX(I) 
-
-            IF (  IOBP(IP) == 1  ) THEN ! ... set the incoming energy to zero at the mesh boundary points
-
-              DIRMIN = REAL( EDGE_ANGLE(1,I) )
-              DIRMAX = REAL( EDGE_ANGLE(2,I) )
-
-              IF (DIRMAX < DIRMIN) THEN
-                DO ITH = 1, NTH
-                  IF ((TH(ITH) > DIRMIN) .AND. (TH(ITH) < DIRMAX+2.0*PI)) THEN
-                    IOBPD(ITH,IP) = 1 
-                  END IF
-                END DO
-                DO ITH = 1, NTH
-                  DIR = TH(ITH) + 2.0 * PI
-                  IF ((DIR > DIRMIN) .AND. (DIR < DIRMAX+2.0*PI)) THEN
-                    IOBPD(ITH,IP) = 1 
-                  END IF
-                END DO
-              ELSE
-                DO ITH = 1, NTH
-                  IF ((TH(ITH) > DIRMIN) .AND. (TH(ITH) < DIRMAX)) THEN
-                    IOBPD(ITH,IP) = 1  
-                  END IF
-                END DO
-              END IF
-              DO ITH = 1, NTH
-                IF (ABS(TH(ITH) - DIRMIN) < THR) IOBPD(ITH,IP) = 0 
-                IF (ABS(TH(ITH) - DIRMAX) < THR) IOBPD(ITH,IP) = 0 
-              END DO
-
-!              DO ITH = 1, NTH
-!                WRITE(*,'(A10,4I10,3F15.4,I10)') 'BOUNDARY', IP, ITH, IOBP(IP), IOBP(IP), DIRMIN, DIRMAX, TH(ITH), IOBPD(ITH,IP)
-!              END DO
-
-            ELSE IF ( IOBP(IP) == -1 ) THEN ! If this is not a mesh boundary point it means it is an island then we set the opposite direction zero which are incoming
-
-              DIRMAX = REAL( EDGE_ANGLE(1,I) )
-              DIRMIN = REAL( EDGE_ANGLE(2,I) )
-
-              IF (DIRMAX < DIRMIN) THEN
-                DO ITH = 1, NTH
-                  IF ( (TH(ITH) > DIRMIN) .AND. (TH(ITH) < DIRMAX+2.0*PI)) THEN
-                    IOBPD(ITH,IP) = 0 
-                  END IF
-                END DO
-                DO ITH = 1, NTH
-                  DIR = TH(ITH) + 2.0 * PI
-                  IF ( (DIR > DIRMIN) .AND. (DIR < DIRMAX+2.0*PI)) THEN
-                    IOBPD(ITH,IP) = 0 
-                  END IF
-                END DO
-              ELSE
-                DO ITH = 1, NTH
-                  IF ( (TH(ITH) > DIRMIN) .AND. (TH(ITH) < DIRMAX)) THEN
-                    IOBPD(ITH,IP) = 0 
-                  END IF
-                END DO
-              END IF
-
-!              DO ITH = 1, NTH
-!                IF ( ABS(TH(ITH)-DIRMIN) < THR) IOBPD(ITH,IP) = 0 
-!                IF ( ABS(TH(ITH)-DIRMAX) < THR) IOBPD(ITH,IP) = 0 
-!              END DO
-
-!/T              DO ITH = 1, NTH
-!/T                WRITE(*,'(A10,4I10,3F15.4,I10)') 'ISLAND', IP, ITH, IOBP(IP), IOBP(IP), DIRMIN, DIRMAX, TH(ITH), IOBPD(ITH,IP)
-!/T              END DO
-
+        IOBP(:)=1
+        IOBPD(:,:)=1
+!
+! Counts the number of boundary points
+! 
+        DO IX = 1, NX
+          IF (MAPSTA(1,IX).LE.0) THEN 
+            IOBP(IX)=0
+            IOBPD(:,IX)=0
             END IF
+          IF (SEACCON(IX) .LT. SEANEIGH(IX).AND.MAPSTA(1,IX).NE.2) THEN 
+            IOBP(IX)=0
+            !WRITE(995,*) '@@@@ TRUE BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
+          !ELSE
+          !  WRITE(995,*) '       NO BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
+            END IF    
+          END DO     
 !
-!          IP = EDGE_INDEX(1,I)
-!          IE = MAX(1,MOD(EDGE(3,IP),TRIANGLE_NUM))
-
-        END DO
+! Now looks for excluded angles
 !
-! 0 - Node in the Domain !  do all 
-! 1 - Island Boundary (Hole in the Mesh which is not dry) do all except advection ... consider IOBPD ! 
-! 2 - Mesh Boundary Node ! do all except advection ... consider IOBPD !
-! 3 - Active boundary point or Wave boundary condition ! do all except sources and refraction/current shift 
-! 4 - Neumann boundary condition ...! do all 
+        J = 0
+        DO IX = 1, NX
+          DO I = 1, CCON(IX)                  ! Loop over all connected Elements
+             J = J + 1
+             IF ((IOBP(IX).EQ.0).AND.(SEA_CELL(J).EQ.1)) THEN 
+               IE    = IE_CELL(J)                ! Connected Element Number
+               IP0 = POS_CELL(J)
+               IP=MOD(IP0,3)+1
+               IPB=MOD(IP0+1,3)+1
+               IOBPD(:,IX)=0
+               !WRITE(995,*) '##### IOBP TEST:',IX,J,IOBP(IX),IP0,IE,'##',TRIGP(IE,:),MAPSTA(1,TRIGP(IE,:))
 !
-        DO IP = 1, NX
-!          IF ( (LBCWA .OR. LBCSP) ) THEN
-            IF (IOBP(IP) == 2) THEN ! If Wave boundary is given set IOBP to 3
-              IOBPD(:,IP) = 1  ! Do not update the wave boundary nodes ...
-            END IF
-!          END IF
-!          IF ( IOBP(IP) == 3 ) THEN ! If Neumann boundary condition is given set IOBP to 4
-!            IOBPD(:,IP) = 1 ! Update Neumann nodes ...
-!          END IF
-        END DO
+!  We are now dealing with an excluded point that is a neighbor of a boundary point
+!
+               X1=DBLE(XYB(TRIGP(IE,IP0),1))
+               Y1=DBLE(XYB(TRIGP(IE,IP0),2))
+               X2=DBLE(XYB(TRIGP(IE,IP ),1))
+               Y2=DBLE(XYB(TRIGP(IE,IP ),2))
+               X3=DBLE(XYB(TRIGP(IE,IPB),1))
+               Y3=DBLE(XYB(TRIGP(IE,IPB),2))
+               CALL line_angle( x2, y2, x1, y1, DIRMIN )
+               CALL line_angle( x3, y3, x1, y1, DIRMAX )
+               IF (DIRMAX.LT.DIRMIN) CALL d_swap(DIRMIN,DIRMAX)
+               SHIFT=0
+               IF (ABS(DIRMAX-DIRMIN).GT.PI) THEN 
+                 TEMPO=DIRMAX
+                 DIRMAX=DIRMIN+DBLE(PI)
+                 DIRMIN=TEMPO-DBLE(PI)
+                 SHIFT=PI
+                 END IF
+               DO ITH=1, NTH
+                 THTEST=DBLE(MOD(TH(ITH)+SHIFT,TPI))
+                 IF ((THTEST.GE.DIRMIN) .AND.   &
+                     (THTEST.LE.DIRMAX)) THEN
+                   IOBPD(ITH,IX) = 1
+                   !WRITE(995,*) 'IOBPD OUT:',IX,IE,ITH,TH(ITH)*RADE,DIRMIN*RADE,DIRMAX*RADE
+                   END IF
+                 END DO 
+               END IF
+             END DO         
+         END DO
 
-        DEALLOCATE( NODE_XY, TRIANGLE_NODE)
-        CALL DEALLOC_TRIANG_BOUND()
+      RETURN    
+ END SUBROUTINE     
 
-        RETURN
-      END SUBROUTINE
+
 !/ ------------------------------------------------------------------- /      
         SUBROUTINE W3IOPENS ( A )
 !/
@@ -1637,7 +1715,7 @@ END SUBROUTINE
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Nov-2004 |
+!/                  | Last update :         15-MAy-2008 |
 !/                  +-----------------------------------+
 !/
 !/    15-May-2008 : Origination from W3IOPE.                      ( version 3.14 )
@@ -1868,6 +1946,7 @@ END SUBROUTINE
 !/MPI        IOFF   = 1 + 4*(I-1)
 !/MPI        CALL MPI_STARTALL ( 4, IRQPO2(IOFF), IERR_MPI )
 !/MPI        CALL MPI_WAITALL  ( 4, IRQPO2(IOFF), STAT, IERR_MPI )
+!
 ! Interpolate spectrum
 !
         DO IK=1, NK

@@ -1562,7 +1562,8 @@ END DO
       INTEGER                 :: IK, ITH, I_INT, IK2, ITH2, IKIND, L,& 
                                  IKHS, IKD, SDSNTH   
       INTEGER                 :: NSMOOTH(NK)
-      REAL                    :: FACTOR, COSWIND, ASUM
+      REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO,    &
+      REAL                    :: COEFFICIENT1, COEFFICIENT2
       REAL                    :: ALFAMEAN, KB
       REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
@@ -1599,8 +1600,6 @@ END DO
       IF (SSDSBCK.GT.0) THEN 
         E1=0.
         HS =0.  
-        S=0.
-        D=0.
 !----------The  number and size of the windows depends on the depth----------
  
         ID=MIN(NINT(DEPTH),ND)   ! This is rather bad: better to tabulate as a function of KD
@@ -1814,7 +1813,21 @@ END DO
           X=TANH(MIN(K(IK)*DEPTH,10.))
           MICHE=(X*(SSDSBM(1)+X*(SSDSBM(2)+X*(SSDSBM(3)+X*SSDSBM(4)))))**2
           END IF
-        DO ITH=1,NTH       
+!
+!  Computes isotropic part
+!
+!             Old expression takes too much CPU time: 
+!             D(IS)=D(IS) + SSDSC2 * SIG(IK)                                           &
+!                 * ( SSDSC6*(MAX(0.,BTH0(IK)/(SSDSBR*MICHE)-1.))**SSDSP     &
+!                    +(1-SSDSC6)*(MAX(0.,BTH(IS)/(SSDSBR*MICHE)-1.))**SSDSP) 
+!  Now using this: 
+!             D(IS)=D(IS) + SDIAGISO + 
+!                    +COEFFICIENT2*((MAX(0.,BTH(IS)-COEFFICIENT1))**2) 
+        SDIAGISO=SSDSC2 * SIG(IK)*SSDSC6*(MAX(0.,BTH0(IK)/(SSDSBR*MICHE)-1.))**2
+        COEFFICIENT1=(SSDSBR*MICHE)**2
+        COEFFICIENT2=SSDSC2 * SIG(IK)*(1-SSDSC6)/COEFFICIENT1
+ !
+       DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
 !
 !  Cumulative effect based on lambda   (breaking probability is
@@ -1843,11 +1856,9 @@ END DO
           COSWIND=(ECOS(IS)*COS(USDIR)+ESIN(IS)*SIN(USDIR))
           DTURB=-2.*SIG(IK)*K(IK)*FACTURB*COSWIND  ! Theory -> stress direction
            
-          IF (SSDSC2.NE.0) THEN 
-            D(IS)=D(IS) + SSDSC2 * SIG(IK)                                           &
-                 * ( SSDSC6*(MAX(0.,BTH0(IK)/(SSDSBR*MICHE)-1.))**SSDSP     &
-                    +(1-SSDSC6)*(MAX(0.,BTH(IS)/(SSDSBR*MICHE)-1.))**SSDSP) 
-            END IF
+             D(IS)=D(IS) + SDIAGISO + 
+                    +COEFFICIENT2*((MAX(0.,BTH(IS)-COEFFICIENT1))**2) 
+          
 !  ADDS cumulative effect and wave-turbulence interaction
 
 
