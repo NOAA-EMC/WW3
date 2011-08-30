@@ -118,7 +118,7 @@
                                  NDSTRC, NTRACE, IERR, I, J, I1F, I2F,   &
                                  TOUT(2), TDUM(2), IOTEST, NOUT,         &
                                  NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,   &
-                                 IDLA, IDFM, IOUT, S3, S4, S5, IP,       &
+                                 IDFM, IOUT, S3, S4, S5, IP,       &
                                  NBIPART, CNTIPART
       INTEGER, ALLOCATABLE    :: TABIPART(:)
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -251,15 +251,14 @@
       READ (NDSI,*,END=801,ERR=802) S3
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802)                               &
-            IX1, IXN, IY1, IYN, IDLA, IDFM
+            IX1, IXN, IY1, IYN, IDFM
       IX1    = MAX ( IX1 , 1 )
       IXN    = MIN ( IXN , NX )
       IY1    = MAX ( IY1 , 1 )
       IYN    = MIN ( IYN , NY )
-      IF (IDLA.LT.1 .OR. IDLA.GT.5) IDLA   = 1
-      IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
+!      IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
       VECTOR = .TRUE.
-      WRITE (NDSO,3940) IX1, IXN, IY1, IYN, IDLA, IDFM
+      WRITE (NDSO,3940) IX1, IXN, IY1, IYN, IDFM
 
 !
 ! ... Output of output fields

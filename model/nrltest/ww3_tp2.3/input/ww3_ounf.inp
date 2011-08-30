@@ -24,15 +24,15 @@ $            maximum value (otherwise fixed scaling),
 $            vector component flag (dummy for scalar quantities).
 $  1 226 1 1 331 1 T F F
 $
-$ Output type 4 [3,4]       (version netCDF)
-$ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)
-$ variables T [T] or not [F] in the same file
+$ -------------------------------------------------------------------- $
+$ NetCDF file version [3,4]      
+$  [0,1,2,3,4,5]   (swell partitions)
+$ TOGETHER [T] or not [F] in the same file
 $
   3
   0 1 2
   F
 $ -------------------------------------------------------------------- $
-$ ITYPE = 3, transfer files.
 $            IX, IY range, IDLA and IDFM as in ww3_grid.inp.
 $            The additional option IDLA=5 gives ia longitude, lattitude 
 $            and parameter value(s) per record (defined points only).
@@ -41,7 +41,7 @@ $ It appears that if you put in a nx ny that is larger than the comp grid nx ny,
 $
 ww3.
  6
- 1 999 1 999 1 1
+ 1 999 1 999 1  
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

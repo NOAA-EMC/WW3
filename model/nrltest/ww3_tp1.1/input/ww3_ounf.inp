@@ -6,8 +6,14 @@ $     F F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F 
 $     F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F  (OLD form)
      F F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F (New with Ifremer code +17 Fs)
 $
-  4 0
+$ -------------------------------------------------------------------- $
+$ NetCDF file version [3,4]      
+$  [0,1,2,3,4,5]   (swell partitions)
+$ TOGETHER [T] or not [F] in the same file
 $
+  3
+  0 1 2
+  F
 ww3.
  6
- 1 360 2 2 3 1 T F F
+ 1 360 2 2 1
