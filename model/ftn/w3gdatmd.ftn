@@ -509,7 +509,7 @@
         REAL, POINTER         :: TRIA(:), TRIA03(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
 ! Coupling data
-!/COU  LOGICAL                :: COUG_2D, COUG_RAD3D, COUG_US3D
+        LOGICAL               :: COUG_2D, COUG_RAD3D, COUG_US3D
       END TYPE GRID
 !
       TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction
@@ -1467,9 +1467,9 @@
       REFLC  => GRIDS(IMOD)%REFLC
       REFLD  => GRIDS(IMOD)%REFLD
       CONTOUR    => GRIDS(IMOD)%CONTOUR
-!/COU     COUG_2D     => GRIDS(IMOD)%COUG_2D
-!/COU     COUG_RAD3D  => GRIDS(IMOD)%COUG_RAD3D
-!/COU     COUG_US3D   => GRIDS(IMOD)%COUG_US3D
+      COUG_2D     => GRIDS(IMOD)%COUG_2D
+      COUG_RAD3D  => GRIDS(IMOD)%COUG_RAD3D
+      COUG_US3D   => GRIDS(IMOD)%COUG_US3D
       FLICES => GRIDS(IMOD)%FLICES
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS

@@ -489,8 +489,8 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 !/SEC1              WRITE (NDSM) NITERSEC1
-!/COU     WRITE(NDSM)                                                 &
-!/COU          COUG_2D, COUG_RAD3D, COUG_US3D
+          WRITE(NDSM)                                                 &
+               COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, ICLOSE
@@ -544,8 +544,8 @@
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 !/SEC1              READ (NDSM) NITERSEC1
 !
-!/COU     READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-!/COU          COUG_2D, COUG_RAD3D, COUG_US3D
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+               COUG_2D, COUG_RAD3D, COUG_US3D
         END IF
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG

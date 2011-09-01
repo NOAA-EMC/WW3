@@ -288,7 +288,7 @@
                                  CFLKMAX(:), TAUBBL(:,:),             &
                                  PHIBBL(:), T02(:), CGE(:), TM0M1(:) 
         REAL, POINTER         :: P2SMS(:,:)
-!/COU        REAL, POINTER         :: SXX3D(:,:), US3D(:,:)
+        REAL, POINTER         :: SXX3D(:,:), US3D(:,:)
         REAL, POINTER         :: PHS(:,:), PTP(:,:), PLP(:,:),        &
                                  PTH(:,:), PSI(:,:), PWS(:,:),        &
                                  PWST(:), PNR(:)
@@ -376,7 +376,7 @@
                                  CFLKMAX(:),TAUBBL(:,:),              &
                                  PHIBBL(:), T02(:), CGE(:), TM0M1(:)
       REAL, POINTER           :: P2SMS(:,:)
-!/COU        REAL, POINTER         :: SXX3D(:,:), US3D(:,:)
+      REAL, POINTER           :: SXX3D(:,:), US3D(:,:)
       REAL, POINTER           :: PHS(:,:), PTP(:,:), PLP(:,:),        &
                                  PTH(:,:), PSI(:,:), PWS(:,:),        &
                                  PWST(:), PNR(:)
@@ -621,7 +621,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
                           NSEAL, NSPEC, NTH, P2MSF, GTYPE, UNGTYPE
-!/COU  USE W3GDATMD, ONLY: COUG_2D, COUG_RAD3D, COUG_US3D
+      USE W3GDATMD, ONLY: COUG_2D, COUG_RAD3D, COUG_US3D
       USE W3ODATMD, ONLY: NAPROC, NOSWLL, NOEXTR, UNDEF
       USE W3IDATMD, ONLY: FLCUR, FLWIND
       USE W3SERVMD, ONLY: EXTCDE
@@ -726,8 +726,8 @@
                  WADATS(IMOD)%PRMS(NXXX) , WADATS(IMOD)%TPMS(NXXX)  , &
                  WADATS(IMOD)%T02(NXXX)  , WADATS(IMOD)%CGE(NXXX)   , &
                  WADATS(IMOD)%TM0M1(NXXX) )
-!/COU IF (COUG_RAD3D) ALLOCATE (WADATS(IMOD)%SXX3D(NXXX,NK*3))
-!/COU IF (COUG_US3D) ALLOCATE (WADATS(IMOD)%US3D(NXXX,NK*2))
+      IF (COUG_RAD3D) ALLOCATE (WADATS(IMOD)%SXX3D(NXXX,NK*3))
+      IF (COUG_US3D) ALLOCATE (WADATS(IMOD)%US3D(NXXX,NK*2))
                  IF (P2MSF(1).GT.0) THEN 
                    ALLOCATE(WADATS(IMOD)%P2SMS(NXXX,P2MSF(2):P2MSF(3)))
                    WADATS(IMOD)%P2SMS(:,P2MSF(2):P2MSF(3))=0.
@@ -754,8 +754,8 @@
                  WADATS(IMOD)%CFLXYMAX(:)=0.
                  WADATS(IMOD)%CFLTHMAX(:)=0.
                  WADATS(IMOD)%CFLKMAX(:)=0.
-!/COU            IF (COUG_RAD3D) WADATS(IMOD)%SXX3D(:,:)=0.
-!/COU            IF (COUG_US3D) WADATS(IMOD)%US3D(:,:)=0.
+                 IF (COUG_RAD3D) WADATS(IMOD)%SXX3D(:,:)=0.
+                 IF (COUG_US3D) WADATS(IMOD)%US3D(:,:)=0.
 !
       WADATS(IMOD)%USERO = UNDEF
       WADATS(IMOD)%BEDFORMS = 0.
@@ -1299,8 +1299,8 @@
           PRMS   => WADATS(IMOD)%PRMS
           TPMS   => WADATS(IMOD)%TPMS
           IF (P2MSF(1).GT.0) P2SMS => WADATS(IMOD)%P2SMS
-!/COU      	  SXX3D   => WADATS(IMOD)%SXX3D
-!/COU      	  US3D   => WADATS(IMOD)%US3D
+          SXX3D   => WADATS(IMOD)%SXX3D
+          US3D   => WADATS(IMOD)%US3D
 !	  
           IF ( FL_ALL ) THEN
 !

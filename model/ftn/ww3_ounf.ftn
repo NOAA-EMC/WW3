@@ -481,7 +481,7 @@
       USE W3SERVMD, ONLY : W3S2XY
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
       USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2, GNAME
-!/COU      USE W3ADATMD, ONLY: US3D
+      USE W3ADATMD, ONLY: US3D
       USE NETCDF
       IMPLICIT NONE
 
@@ -1469,25 +1469,25 @@
 !
 ! Information for spectral distribution of surface Stokes drift (2nd file)
 !
-!/COU                IF ( US3DF(1).GT.0) THEN
-!/COU                  NFILE=2
-!/COU                  NFIELD2=2
-!/COU                  FSC2    = 0.0001
-!/COU                  varnm2(1)='uusf'
-!/COU                  varnl2(1)='eastward_spectral_variance_of_surface_Stokes_drift'
-!/COU                  varnm2(2)='vusf'
-!/COU                  varnl2(2)='northward_spectral_variance_of_surface_Stokes_drift'
-!/COU                  UNITS2  = 'm/s'
-!/COU                  ENAME2  = '.usf'
-!/COU                  I1F=US3DF(2)
-!/COU                  I2F=US3DF(3)
-!/COU                  DO IK= I1F,I2F
-!/COU                    CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,IK), MAPSF, XX )
-!/COU                    XXK(:,:,IK)=XX
-!/COU                    CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,NK+IK), MAPSF, XY )
-!/COU                    XYK(:,:,IK)=XY
-!/COU                    END DO
-!/COU                  END IF
+                IF ( US3DF(1).GT.0) THEN
+                  NFILE=2
+                  NFIELD2=2
+                  FSC2    = 0.0001
+                  varnm2(1)='uusf'
+                  varnl2(1)='eastward_spectral_variance_of_surface_Stokes_drift'
+                  varnm2(2)='vusf'
+                  varnl2(2)='northward_spectral_variance_of_surface_Stokes_drift'
+                  UNITS2  = 'm/s'
+                  ENAME2  = '.usf'
+                  I1F=US3DF(2)
+                  I2F=US3DF(3)
+                  DO IK= I1F,I2F
+                    CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,IK), MAPSF, XX )
+                    XXK(:,:,IK)=XX
+                    CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,NK+IK), MAPSF, XY )
+                    XYK(:,:,IK)=XY
+                    END DO
+                  END IF
 
             
             FLONE  = .TRUE.
@@ -1545,24 +1545,20 @@
 !
           ELSE IF ( J .EQ. 50 ) THEN
             FLONE  = .FALSE.
-            FSC    = 0.001
+            FSC    = 0.00001
             ENAME  = '.msc'
             UNITS  = '1'
             CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCX,MAPSF, XX )
             CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCY,MAPSF, XY )
-! found bug here ..???
-            XX=XX*0.01
-            XY=XY*0.01
-           NFIELD=2
-           varnm(1)='mscx'
-           varnm(2)='mscy'
-           varnl(1)='east_west_Phillips_constant'
-           varnl(2)='south_north_Phillips_constant'
-           varns(1)='east_west_Phillips_constant'
-           varns(2)='south_north_Phillips_constant'
-           vmin = 0 
-           vmax = 30000
-           FSC=0.00001
+            NFIELD=2
+            varnm(1)='mscx'
+            varnm(2)='mscy'
+            varnl(1)='east_west_Phillips_constant'
+            varnl(2)='south_north_Phillips_constant'
+            varns(1)='east_west_Phillips_constant'
+            varns(2)='south_north_Phillips_constant'
+            vmin = 0 
+            vmax = 30000
 !
           ELSE IF ( J .EQ. 51 ) THEN
             FLONE  = .FALSE.

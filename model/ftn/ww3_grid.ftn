@@ -371,7 +371,6 @@
       USE CONSTANTS
 !/
       USE W3TRIAMD
-!!/COU  USE W3GDATMD, ONLY: COUG_2D, COUG_RAD3D, COUG_US3D
       USE W3GSRUMD, ONLY: W3GRMP
       USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
       USE W3IOGRMD, ONLY: W3IOGR
@@ -500,7 +499,7 @@
 !/PR3      REAL                    :: WDTHCG, WDTHTH
            LOGICAL                 :: UGCONT, EXPFSN, EXPFSPSI,     &
                                       EXPFSFCT,IMPFSNIMP,TSTC
-!/COU      LOGICAL                 :: COU_2D, COU_RAD3D, COU_US3D 
+           LOGICAL                 :: COU_2D, COU_RAD3D
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
@@ -532,15 +531,15 @@
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
-           NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,&
+           NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,        &
                            IMPFSNIMP, TSTC
-!/COU      NAMELIST /COU/  COU_2D, COU_RAD3D, COU_US3D
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
                       US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
                       REFCOAST, REFFREQ, REFBETA, REFMAP, REFSUBGRID, &
-                      BSBOTTOM, REFICEBERG, FACBERG
+                      BSBOTTOM, REFICEBERG, FACBERG, COU_2D,          &
+                      COU_RAD3D
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1406,8 +1405,9 @@
       P2SF   = 0
       I1P2SF = 1
       I2P2SF = 15
+      US3D_OUNF=1 
       I1US3D_OUNF=1
-      I2US3D_OUNF=30
+      I2US3D_OUNF=NK
       FLAGICESOURCE=.FALSE.
       REFCOAST=0.
       REFMAP=0.
@@ -1417,6 +1417,8 @@
       BSBOTTOM=0.
       REFICEBERG=0.
       FACBERG=1.
+      COU_2D=.FALSE.
+      COU_RAD3D=.FALSE.
 !
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
@@ -1479,17 +1481,12 @@
       US3DF(3) = I2US3D_OUNF
       US3DF(2)= MAX( 1 , MIN(NK,US3DF(2)) )
       US3DF(3)= MAX( 1 , MIN(NK,US3DF(3)) )
-!
-! 6.n2 Coupling parameters
-!
-!/COU           COU_2D=.TRUE.
-!/COU           COU_RAD3D=.FALSE.
-!/COU           COU_US3D=.TRUE.
-!/COU      CALL READNL ( NDSS, 'COU ', STATUS )
-!/COU      COUG_2D     = COU_2D
-!/COU      COUG_RAD3D  = COU_RAD3D
-!/COU      COUG_US3D   = COU_US3D
-!    !/COU      WRITE (NDSO,969) STATUS
+      COUG_2D=COU_2D
+      COUG_RAD3D=COU_RAD3D
+      COUG_US3D=.FALSE.
+      IF (US3D_OUNF.GT.0) COUG_US3D=.TRUE.
+
+WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
 
 
 !
@@ -1554,7 +1551,8 @@
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                REFCOAST, REFFREQ, REFBETA, REFMAP,   &
+                                COU_RAD3D, COU_2D, REFCOAST, REFFREQ, & 
+                                REFBETA, REFMAP,                      &
                                 REFSUBGRID, BSBOTTOM, REFICEBERG,     &
                                 FACBERG
             ELSE
@@ -1564,11 +1562,11 @@
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                REFCOAST, REFFREQ, REFBETA, REFMAP,   &
+                                COU_RAD3D, COU_2D, REFCOAST, REFFREQ, & 
+                                REFBETA, REFMAP,                      &
                                 REFSUBGRID, BSBOTTOM, REFICEBERG,     &
-                                FACBERG
+                                FACBERG, COU_RAD3D
             END IF
-!/COU           WRITE (NDSO,2969) COU_2D, COU_RAD3D, COU_US3D
           WRITE (NDSO,918)
         END IF
 
@@ -3393,12 +3391,10 @@
                '        FLAGICESOURCE =',L3,                          &
                ', P2SF =',I1,', I1P2SF =',I2,', I2P2SF =',I2,         &
                ', US3D_OUNF =',I1,', I1US3D_OUNF =',I2,               &
-               ', I2US3D_OUNF =',I2,','/                              &
+               ', I2US3D_OUNF =',I2,'COU_2D =',L3,', COU_RAD3D =',L3, ','/                              &
                '     REFCOAST =',F4.1,', REFFREQ =',F4.1,', REFBETA =',F4.2, &
                ', REFMAP =',F4.1, ', REFSUBGRID =',F4.1,                &
                ', BSBOTTOM =',F4.1,', REFICEBERG =',F4.1,', FACBERG =',F4.1,' /')
-!/COU  2969 FORMAT ( '  &COU  COU_2D =',L3,', COU_RAD3D =',L3,         &
-!/COU               ', COU_US3D =',L3,' /')
 !
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &
