@@ -1618,7 +1618,7 @@
                       END IF
                   ELSE IF ( IO .EQ. 52 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       BERG(1:NSEA) !USERO(1:NSEA,1)
+                                                       USERO(1:NSEA,1)
                   ELSE IF ( IO .EQ. 53 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        USERO(1:NSEA,2)

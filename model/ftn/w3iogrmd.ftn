@@ -476,7 +476,7 @@
                 FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
               WRITE (NDSM)                                            &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
-                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY,   &
+                CROSSDIFF, LEN, IEN, ANGLE0, ANGLE, TRIA03, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPD, IAA, JAA, POSI
             END SELECT !GTYPE
@@ -522,7 +522,7 @@
                 END IF
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
-                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY,   &
+                CROSSDIFF, LEN, IEN, ANGLE0, ANGLE, TRIA03, SI, MAXX, MAXY,   &
                 DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPD, IAA, JAA, POSI
                 XGRD(1,:)=XYB(:,1)

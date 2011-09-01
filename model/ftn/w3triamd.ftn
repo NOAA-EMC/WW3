@@ -342,17 +342,19 @@ SUBROUTINE READMSH(NDS,FNAME)
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           A. Roland               |
+!/                  |      A. Roland  and F. Ardhuin    |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :          31-Aug-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-May-2007 : Origination: adjustment from the WWM code       ( version 3.13 )
+!/    31-Aug-2011 : Simplfies the cross products                    ( version 4.05 )
 !/
 !
 !  1. Purpose :
 !
-!      Calculates triangles surfaces.
+!      Calculates triangle areas and reorders the triangles to have them 
+!      oriented counterclockwise 
 !
 !  2. Method :
 !
@@ -403,12 +405,10 @@ SUBROUTINE READMSH(NDS,FNAME)
 !
 ! cross product of edge-vector  (orientated anticlockwise)
 !                                   
-                   TRIA(K) = REAL((XYB(I2,1)*XYB(I3,2)          &
-                                + XYB(I1,1)*XYB(I2,2)          &
-                                + XYB(I3,1)*XYB(I1,2)          &
-                                - XYB(I3,1)*XYB(I2,2)          &
-                                - XYB(I1,1)*XYB(I3,2)          &
-                                - XYB(I2,1)*XYB(I1,2))*0.5)
+                   TRIA(K) = REAL( (XYB(I2,2)-XYB(I1,2))      &     !  (Y2-Y1)
+                                  *(XYB(I1,1)-XYB(I3,1))      &     ! *(X1-X3)
+                                  +(XYB(I3,2)-XYB(I1,2))      &     !  (Y3-Y1)*(X2-X1)
+                                  *(XYB(I2,1)-XYB(I1,1))      )*0.5
 !
 ! test on negative triangle area, which means that the orientiation is not as assumed to be anticw. 
 ! therefore we swap the nodes !!! 
@@ -431,7 +431,7 @@ SUBROUTINE READMSH(NDS,FNAME)
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           F. Ardhuin              |
+!/                  |           A. Roland               |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          15-May-2007|
 !/                  +-----------------------------------+
@@ -446,6 +446,12 @@ SUBROUTINE READMSH(NDS,FNAME)
 !  2. Method :
 !
 !     The interpolation coefficient are inspired by cross product.
+!     The estimation uses Gauss' formula: the area integral of the gradient
+!       is equal to the flux through the boundary. This formula is applied 
+!       on individual triangles. 
+!     The gradient at each grid node is then the angle-weighted sum of the 
+!       gradients in each triangle. 
+!       
 !
 !  3. Parameters :
 !
@@ -488,16 +494,15 @@ SUBROUTINE READMSH(NDS,FNAME)
 !local parameter 
 !
          INTEGER           :: I1, I2, I3
-	 REAL              :: X1(3), X2(3), X3(3)
+         REAL              :: X1(3), X2(3), X3(3)
          INTEGER           :: K
-	 REAL              :: FACT
+         REAL              :: FACT
 !/S        INTEGER                      ::  IENT = 0 
 !/ ------------------------------------------------------------------- /       
 
 !/S      CALL STRACE (IENT, 'DIFFERENCE')
 
    DO K = 1, NTRI 
-     FACT  = 2.
      I1 = TRIGP(K,1)
      I2 = TRIGP(K,2)
      I3 = TRIGP(K,3)
@@ -524,10 +529,12 @@ SUBROUTINE READMSH(NDS,FNAME)
         X2(:) = 0. 
         X3(:) = 0.
         END IF
-      FACT = FACT * TRIA(K)
-      FACT = 1./ FACT
+
+      FACT = 1./(2*TRIA(K))
 !
-! interpolation coefficient
+! interpolation coefficient: these are the components of the normals to the 
+! triangle sides, multiplied by the side length and divided by 2 times the 
+! triangle area
 !		   		   
       CROSSDIFF(1,K) = REAL(X2(2) - X3(2)) * FACT
       CROSSDIFF(2,K) = REAL(X3(2) - X1(2)) * FACT
@@ -535,6 +542,7 @@ SUBROUTINE READMSH(NDS,FNAME)
       CROSSDIFF(4,K) = REAL(X3(1) - X2(1)) * FACT
       CROSSDIFF(5,K) = REAL(X1(1) - X3(1)) * FACT
       CROSSDIFF(6,K) = REAL(X2(1) - X1(1)) * FACT
+
       END DO
 END SUBROUTINE
 
@@ -583,6 +591,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /       
     USE W3GDATMD
+    USE CONSTANTS
 
          IMPLICIT NONE
 	 
@@ -659,9 +668,10 @@ END SUBROUTINE
 !
 !  angles used in gradients computation 
 !     
-            ANGLE(IE,1) = ACOS(TMP(1))
-            ANGLE(IE,2) = ACOS(TMP(2))
-            ANGLE(IE,3) = ACOS(TMP(3))	    
+            ANGLE0(IE,1) = ACOS(TMP(1))
+            ANGLE0(IE,2) = ACOS(TMP(2))
+            ANGLE0(IE,3) = ACOS(TMP(3))
+            !WRITE(997,*) 'IE, ANGLE:',IE,ANGLE0(IE,1:3)*RADE
             !TRIA03(IE)=TRIA(IE)*1./3.
          END DO
  
@@ -1057,7 +1067,7 @@ END SUBROUTINE
              END DO
            END DO
 
-           WRITE(*,'("+TRACE......",A)') 'SET UP SPARSE MATRIX POINTER ... COUNT NONZERO ENTRY'
+!           WRITE(*,'("+TRACE......",A)') 'SET UP SPARSE MATRIX POINTER ... COUNT NONZERO ENTRY'
 
            J = 0
            K = 0
@@ -1079,7 +1089,7 @@ END SUBROUTINE
 
           NNZ = K
 
-          WRITE(*,'("+TRACE......",A)') 'SET UP SPARSE MATRIX POINTER ... SETUP POINTER'
+!          WRITE(*,'("+TRACE......",A)') 'SET UP SPARSE MATRIX POINTER ... SETUP POINTER'
 
           ALLOCATE (GRIDS(IMOD)%JAA(NNZ))
           ALLOCATE (GRIDS(IMOD)%IAA(NX+1))
@@ -1566,7 +1576,8 @@ END SUBROUTINE
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, COUNTOT,      &
                           NTRI, TRIGP, CCON , TRIA03, VNEIGH,         &
-                          IE_CELL, POS_CELL, IOBP,IOBPD, XYB, TH                      
+                          IE_CELL, POS_CELL, IOBP,IOBPD, XYB, TH,     &
+                          ANGLE0, ANGLE                     
 
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
@@ -1584,6 +1595,7 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+      LOGICAL                 :: REDO_ANGLE
       INTEGER                 :: ITH, IK, ISEA, IXY, IBI    
       INTEGER                 :: IX, IY, I, J, IP, IP0, IP2, IPB, IE
       REAL                    :: CCOS, CSIN, CCURX, CCURY, THTEST 
@@ -1593,6 +1605,9 @@ END SUBROUTINE
       REAL (KIND = 8)         :: X1, X2, X3, Y1, Y2, Y3
       INTEGER                 :: SEACCON(NX), SEANEIGH(NX), SEA_CELL(COUNTOT)
       INTEGER                 ::  COUNT_MAX
+      INTEGER                 :: K, I1, I2, I3
+      INTEGER                 :: TRILAND(NTRI)
+      REAL                    :: ANGLETOT(NX), ANGLETOTINV(NX)
 
 !/
 !/ Automatic work arrays
@@ -1645,7 +1660,7 @@ END SUBROUTINE
         IOBP(:)=1
         IOBPD(:,:)=1
 !
-! Counts the number of boundary points
+! Searches for boundary points
 ! 
         DO IX = 1, NX
           IF (MAPSTA(1,IX).LE.0) THEN 
@@ -1654,7 +1669,7 @@ END SUBROUTINE
             END IF
           IF (SEACCON(IX) .LT. SEANEIGH(IX).AND.MAPSTA(1,IX).NE.2) THEN 
             IOBP(IX)=0
-            !WRITE(995,*) '@@@@ TRUE BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
+          !  WRITE(995,*) '@@@@ TRUE BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
           !ELSE
           !  WRITE(995,*) '       NO BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
             END IF    
@@ -1703,6 +1718,77 @@ END SUBROUTINE
                END IF
              END DO         
          END DO
+
+
+
+!
+! Recomputes the angles used in the gradients estimation 
+!
+!REDO_ANGLE = 1
+!      IF (REDO_ANGLE) THEN 
+!
+! MAP FOR LAND POINTS    
+! 
+       TRILAND(:) = 0
+       K = 0
+       DO IE = 1, NTRI
+         I1 = TRIGP(IE,1)
+         I2 = TRIGP(IE,2)
+         I3 = TRIGP(IE,3)
+!
+!! MAP FOR TRIANGLE STATUS: 
+!     TRILAND=0     ->sea triangle
+!     TRILAND=1 , 2 -> contour
+!     TRILAND=3     -> land
+
+     
+          IF ((MAPSTA(1,I1).LE.0))  TRILAND(IE) = TRILAND(IE) + 1
+          IF ((MAPSTA(1,I2).LE.0))  TRILAND(IE) = TRILAND(IE) + 1
+          IF ((MAPSTA(1,I3).LE.0))  TRILAND(IE) = TRILAND(IE) + 1
+          END DO
+!
+! Now calculate the angle of action of a vertex (see gradients in w3updtmd.ftn)
+! If a triangle is connected to the contour, the angle of each vertex is not
+! taken into account when interpolating gradients.
+!
+        ANGLETOT(:) = 0. ! TPI
+        DO IE = 1, NTRI 
+          TRILAND(IE)=MIN(TRILAND(IE),1)
+          I1 = TRIGP(IE,1)
+          I2 = TRIGP(IE,2)
+          I3 = TRIGP(IE,3) 
+          IF (TRILAND(IE) .EQ. 0) THEN  
+            ANGLETOT(I1) = ANGLETOT(I1) + ANGLE0(IE,1)
+            ANGLETOT(I2) = ANGLETOT(I2) + ANGLE0(IE,2)
+            ANGLETOT(I3) = ANGLETOT(I3) + ANGLE0(IE,3)
+            END IF
+          END DO
+
+      DO IP = 1, NX
+        IF (ANGLETOT(IP) .NE. 0)  THEN 
+           ANGLETOTINV(IP) = 1./ANGLETOT(IP)
+        ELSE 
+          ANGLETOTINV(IP) = 0.
+          END IF
+        END DO
+!
+      DO IE = 1, NTRI
+        I1 = TRIGP(IE,1)
+        I2 = TRIGP(IE,2)
+        I3 = TRIGP(IE,3) 
+!
+! Angles for land triangles are set to zero
+!
+        ANGLE(IE,1) = ANGLE0(IE,1)*ANGLETOTINV(I1)*(1-TRILAND(IE))
+        ANGLE(IE,2) = ANGLE0(IE,2)*ANGLETOTINV(I2)*(1-TRILAND(IE))
+        ANGLE(IE,3) = ANGLE0(IE,3)*ANGLETOTINV(I3)*(1-TRILAND(IE))
+        !WRITE(998,*) 'IE, ANGLE:',IE,I1,I2,I3,ANGLE(IE,1:3),ANGLETOT(I1)*RADE,TRILAND(IE)
+
+        END DO
+
+!       END IF
+
+      CALL DIFFERENCE
 
       RETURN    
  END SUBROUTINE     

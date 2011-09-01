@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Jun-2011 |
+!/                  | Last update :         25-Aug-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -70,6 +70,7 @@
 !/                  input in ww3_grid.inp to CSTRG.     ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    25-Jun-2011 : Adding movable bed friction         ( version 4.01 )
+!/    25-Aug-2001 : Clean up.                           ( version 4.05 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -454,12 +455,8 @@
       CHARACTER(LEN=6)        :: YESXNO(2)
 !/FLX3      CHARACTER(LEN=18)       :: TYPEID
 !
-! Variables for shoreline reflection and unstr. grids
-! ANGLETOT business should be moved to W3TRIAMD ... 
+! Variables for shoreline reflection on structured grids
 !
-      INTEGER                 :: IE, I1, I2, I3
-      INTEGER, ALLOCATABLE    :: TRILAND(:),MAPBORD(:)
-      REAL, ALLOCATABLE       :: ANGLETOT(:), ANGLETOTINV(:)
       INTEGER                 :: K, NEIGH1(0:7)
 !/ ------------------------------------------------------------------- /
 !/ Namelists
@@ -1129,7 +1126,7 @@
 !/ST4      SDSBRF2   = 0.
 !/ST4      SDSP      = 2.   ! this is now fixed in w3sds4 
 !/ST4      SDSDTH    = 80.
-!/ST4      SDSCOS    = 2.   
+!/ST4      SDSCOS    = 2.
 !/ST4      SDSISO    = 2
 !/ST4      SDSBM0    = 1.
 !/ST4      SDSBM1    = 0.
@@ -2245,25 +2242,6 @@
                         IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
                       END DO
                   END IF
-              ELSE  
-! the logical CONTOUR enables to choose whether the contour is excluded from computation 
-! the available criterion to spot contour points is that such points have more connections than
-! surrounding connected triangles.
-!
-                IF (UGCONT) THEN 
-                    J = 0
-                    DO IX= 1, NX
-                        IF (COUNTCON(IX) .GT. CCON(IX)) THEN
-                            J = J+1
-                            TMPSTA(1,IX) = NSTAT 
-                          END IF
-                      END DO 
-                  ELSE
-                    ALLOCATE(MAPBORD(NX))  
-                    DO IX= 1, NX
-                        IF (COUNTCON(IX) .GT. CCON(IX))  MAPBORD(IX) = 1
-                      END DO
-                  END IF ! UGCONT
 !
               END IF ! GTYPE
 !
@@ -2514,72 +2492,6 @@
 ! Defines the shoreline treatment for unstructured grids 
 ! 
      IF (GTYPE.EQ.UNGTYPE) THEN
-!
-! MAP FOR LAND POINTS    
-! 
-       ALLOCATE( TRILAND(NTRI), ANGLETOT(NX), ANGLETOTINV(NX))
-       TRILAND(:) = 0
-       K = 0
-       DO IE = 1, NTRI
-         I1 = TRIGP(IE,1)
-         I2 = TRIGP(IE,2)
-         I3 = TRIGP(IE,3)
-!
-!! MAP FOR TRIANGLE STATUS: 
-!     0->sea triangle,  
-!     1->contour vertex, 
-!     2->contour vertices , 
-!     3->Contour triangle  
-     
-          IF ((MAPSTA(1,I1).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
-          IF ((MAPSTA(1,I2).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
-          IF ((MAPSTA(1,I3).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
-          END DO
-!
-! Now calculate the angle of action of a vertex (see gradients in w3updtmd.ftn)
-! If a triangle is connected to the contour, the angle of each vertex is not
-! taken into account when interpolating gradients.
-!
-        ANGLETOT(:) = TPI
-        DO IE = 1, NTRI 
-          I1 = TRIGP(IE,1)
-          I2 = TRIGP(IE,2)
-          I3 = TRIGP(IE,3) 
-          IF (TRILAND(IE).EQ. 1 ) THEN  
-            ANGLETOT(I1) = ANGLETOT(I1) - ANGLE(IE,1)/2
-            ANGLETOT(I2) = ANGLETOT(I2) - ANGLE(IE,2)/2
-            ANGLETOT(I3) = ANGLETOT(I3) - ANGLE(IE,3)/2
-            END IF
-          IF (TRILAND(IE) .GE. 2) THEN  
-            ANGLETOT(I1) = ANGLETOT(I1) - ANGLE(IE,1)
-            ANGLETOT(I2) = ANGLETOT(I2) - ANGLE(IE,2)
-            ANGLETOT(I3) = ANGLETOT(I3) - ANGLE(IE,3)
-            END IF
-          END DO
-!
-!If contour is included in computation, contour vertices has an angle action of pi 
-! 
-        IF (.NOT.UGCONT) THEN
-          DO IX = 1,NX
-            IF (MAPBORD(IX) .EQ. 1) ANGLETOT(IX) = PI
-            END DO 
-          END IF   
-
-      DO IP = 1, NX
-        IF (ANGLETOT(IP) .NE. 0)  ANGLETOTINV(IP) = 1./ANGLETOT(IP)
-        END DO
-!
-      DO IE = 1, NTRI
-        I1 = TRIGP(IE,1)
-        I2 = TRIGP(IE,2)
-        I3 = TRIGP(IE,3) 
-        ANGLE(IE,1) = ANGLE(IE,1)*ANGLETOTINV(I1)
-        ANGLE(IE,2) = ANGLE(IE,2)*ANGLETOTINV(I2)
-        ANGLE(IE,3) = ANGLE(IE,3)*ANGLETOTINV(I3)
-        END DO
-!      
-      DEALLOCATE(TRILAND, ANGLETOT, ANGLETOTINV)
-!      
        CALL SETUGIOBP 
        END IF 
 
@@ -2622,11 +2534,6 @@
 !/O2c      CLOSE (NDSM)
 !
 
-       IF (GTYPE .EQ. UNGTYPE .AND. .NOT. UGCONT) DEALLOCATE(MAPBORD)     
-!
-! Calculate interpolation info which are to be used in gradients computation (w3updtmd.ftn)  
-!   
-      CALL DIFFERENCE
 ! 
 !  9.a Reads shorline direction and slope
 !
