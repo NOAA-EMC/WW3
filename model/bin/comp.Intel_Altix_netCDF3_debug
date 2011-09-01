@@ -104,13 +104,9 @@
 #
 # NetCDF library
 #
-#
-# NetCDF library
-#
-  if [ "$name" = 'ww3_ounf' ]
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ]  || [ "$name" = 'ww3_prnc' ]
   then
-     pathI='/export/home/services/bibli/netcdf-3.6.3-intel-11.1.073/'
-     opt="$opt -I${pathI}include/"
+      opt="$opt -I${NETCDF_INCDIR}/"
   fi
 
 

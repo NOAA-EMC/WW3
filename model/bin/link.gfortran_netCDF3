@@ -117,10 +117,10 @@
 # 
 # NetCDF library
 # 
-  if [ "$prog" = 'ww3_ounf' ]
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ]  || [ "$name" = 'ww3_prnc' ]
   then
-     pathI='/usr/'
-     opt="$opt -L${pathI}lib  -lnetcdff -lnetcdf" 
+     pathI="${NETCDF_LIBDIR}/"
+     opt="$opt -L${pathI}  -lnetcdff -lnetcdf" 
   fi
 # 3.b Link
   $comp $opt $objects                               > link.out 2> link.err

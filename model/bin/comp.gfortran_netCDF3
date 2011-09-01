@@ -103,10 +103,10 @@
 #
 # NetCDF library
 #
-  if [ "$name" = 'ww3_ounf' ]
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ]  || [ "$name" = 'ww3_prnc' ]
   then
-     pathI='/usr/'
-     opt="$opt -I${pathI}include"
+     pathI=$NETCDF_INCDIR
+     opt="$opt -I${pathI}/"
   fi
 echo $opt
 # 2.b.2 Compile

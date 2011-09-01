@@ -143,7 +143,7 @@
                OK='NL0 NL1 NL2 NLX' ;;
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BTX' ;;
+               OK='BT0 BT1 BT4 BTX' ;;
       s_db   ) TY='one'
                ID='depth-induced breaking'
                OK='DB0 DB1 DBX' ;;
@@ -704,7 +704,7 @@
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRCXMD \
                W3SNL1MD W3SNL2MD W3SNLXMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
-               W3SBT1MD W3SBTXMD W3SDB1MD W3SDBXMD \
+               W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
@@ -751,6 +751,7 @@
          'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
          'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
+         'W3SBT4MD'     ) modtest=w3sbt4md.o ;;
          'm_btffac'     ) modtest=mod_btffac.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
