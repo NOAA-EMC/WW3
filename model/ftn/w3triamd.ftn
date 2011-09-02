@@ -1679,7 +1679,7 @@ END SUBROUTINE
 !
         J = 0
         DO IX = 1, NX
-          IOBPD(:,IX)=0
+          IF (IOBP(IX).EQ.0) IOBPD(:,IX)=0
           DO I = 1, CCON(IX)                  ! Loop over all connected Elements
              J = J + 1
              IF ((IOBP(IX).EQ.0).AND.(SEA_CELL(J).EQ.1)) THEN 
