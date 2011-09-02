@@ -640,7 +640,6 @@
 ! IOBPD is the switch for removing energy coming from the shoreline 
 !
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) 
-               !IF (IK.EQ.1.AND.IOBPD(ITH,IP).EQ.1.AND.IOBP(IP).EQ.0.AND.IT.EQ.1) WRITE(996,*) 'IOBPD=0 :',IP, ITH
                END DO
              AC = REAL(U)
 !

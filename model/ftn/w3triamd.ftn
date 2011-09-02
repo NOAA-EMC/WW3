@@ -1679,6 +1679,7 @@ END SUBROUTINE
 !
         J = 0
         DO IX = 1, NX
+          IOBPD(:,IX)=0
           DO I = 1, CCON(IX)                  ! Loop over all connected Elements
              J = J + 1
              IF ((IOBP(IX).EQ.0).AND.(SEA_CELL(J).EQ.1)) THEN 
@@ -1686,7 +1687,6 @@ END SUBROUTINE
                IP0 = POS_CELL(J)
                IP=MOD(IP0,3)+1
                IPB=MOD(IP0+1,3)+1
-               IOBPD(:,IX)=0
                !WRITE(995,*) '##### IOBP TEST:',IX,J,IOBP(IX),IP0,IE,'##',TRIGP(IE,:),MAPSTA(1,TRIGP(IE,:))
 !
 !  We are now dealing with an excluded point that is a neighbor of a boundary point
@@ -1712,15 +1712,12 @@ END SUBROUTINE
                  IF ((THTEST.GE.DIRMIN) .AND.   &
                      (THTEST.LE.DIRMAX)) THEN
                    IOBPD(ITH,IX) = 1
-                   !WRITE(995,*) 'IOBPD OUT:',IX,IE,ITH,TH(ITH)*RADE,DIRMIN*RADE,DIRMAX*RADE
+                   ! WRITE(995,*) 'IOBPD OUT:',IX,IE,ITH,IOBP(IX),TH(ITH)*RADE,DIRMIN*RADE,DIRMAX*RADE
                    END IF
                  END DO 
                END IF
              END DO         
          END DO
-
-
-
 !
 ! Recomputes the angles used in the gradients estimation 
 !
