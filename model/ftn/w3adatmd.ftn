@@ -732,33 +732,36 @@
                    ALLOCATE(WADATS(IMOD)%P2SMS(NXXX,P2MSF(2):P2MSF(3)))
                    WADATS(IMOD)%P2SMS(:,P2MSF(2):P2MSF(3))=0.
                    END IF
-                 WADATS(IMOD)%CX(:)=0.
-                 WADATS(IMOD)%CY(:)=0.     
-                 WADATS(IMOD)%DW(:)=0.            
-                 WADATS(IMOD)%TAUWX(:)=0.
-                 WADATS(IMOD)%TAUWY(:)=0.
-                 WADATS(IMOD)%TAUWIX(:)=0.
-                 WADATS(IMOD)%TAUWIY(:)=0.
-                 WADATS(IMOD)%TAUWNX(:)=0.
-                 WADATS(IMOD)%TAUWNY(:)=0.
-                 WADATS(IMOD)%TAUOX(:)=0.
-                 WADATS(IMOD)%TAUOY(:)=0.
-                 WADATS(IMOD)%JSMITH(:)=0.
-                 WADATS(IMOD)%PHIAW(:)=0.
-                 WADATS(IMOD)%CHARN(:)=0.
-                 WADATS(IMOD)%PHIOC(:)=0.
-                 WADATS(IMOD)%BEDFORMS(:,:)=0.
-                 WADATS(IMOD)%WHITECAP(:,:)=0.
-                 WADATS(IMOD)%TAUBBL(:,:)=0.
-                 WADATS(IMOD)%PHIBBL(:)=0.
-                 WADATS(IMOD)%CFLXYMAX(:)=0.
+!
+! Initialize arrays to zero
+!
+      WADATS(IMOD)%FCUT(:)=0.
+      WADATS(IMOD)%CX(:)=0.
+      WADATS(IMOD)%CY(:)=0.     
+      WADATS(IMOD)%DW(:)=0.            
+      WADATS(IMOD)%TAUWX(:)=0.
+      WADATS(IMOD)%TAUWY(:)=0.
+      WADATS(IMOD)%TAUWIX(:)=0.
+      WADATS(IMOD)%TAUWIY(:)=0.
+      WADATS(IMOD)%TAUWNX(:)=0.
+      WADATS(IMOD)%TAUWNY(:)=0.
+      WADATS(IMOD)%TAUOX(:)=0.
+      WADATS(IMOD)%TAUOY(:)=0.
+      WADATS(IMOD)%JSMITH(:)=0.
+      WADATS(IMOD)%PHIAW(:)=0.
+      WADATS(IMOD)%CHARN(:)=0.
+      WADATS(IMOD)%PHIOC(:)=0.
+      WADATS(IMOD)%BEDFORMS(:,:)=0.
+      WADATS(IMOD)%WHITECAP(:,:)=0.
+      WADATS(IMOD)%TAUBBL(:,:)=0.
+      WADATS(IMOD)%PHIBBL(:)=0.
+      WADATS(IMOD)%CFLXYMAX(:)=0.
                  WADATS(IMOD)%CFLTHMAX(:)=0.
                  WADATS(IMOD)%CFLKMAX(:)=0.
                  IF (COUG_RAD3D) WADATS(IMOD)%SXX3D(:,:)=0.
                  IF (COUG_US3D) WADATS(IMOD)%US3D(:,:)=0.
 !
       WADATS(IMOD)%USERO = UNDEF
-      WADATS(IMOD)%BEDFORMS = 0.
 !
       ALLOCATE ( WADATS(IMOD)%PHS(NXXX,0:NOSWLL),                     &
                  WADATS(IMOD)%PTP(NXXX,0:NOSWLL),                     &
