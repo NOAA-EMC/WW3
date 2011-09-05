@@ -24,7 +24,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:eg:hi:m:n:p:q:r:s:w:"  #option string for getopt function
+optstr="a:c:eg:hi:m:n:p:o:q:r:s:w:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -50,6 +50,13 @@ Options:
   -n nproc         : specify <nproc> processors for parallel run
                    :   *some <runcmd> programs do not require <nproc>
                    :   *ignored if -p <runcmd> is not specified
+  -o outopt        : limit output post-processing based on <outopt>
+                   :   native : post-process only native output
+                   :   netcdf : post-process only NetCDF output
+                   :   both   : post-process both native and NetCDF output
+                   :   * default is native
+                   :   * note that required input files must be present for
+                   :     selected output post-processing to occur
   -p runcmd        : run in parallel using <runcmd> to start program
                    :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
                    :   *IBM with Loadleveler: poe (no <nproc> required)
@@ -81,6 +88,7 @@ exit_p=none
 exec_p=none
 multi=0
 inpdir=input
+outopt=native
 while :
 do
   case "$1" in
@@ -98,6 +106,7 @@ do
         multi=2
       fi ;;
   -n) shift; nproc="$1" ;;
+  -o) shift; outopt="$1" ;;
   -p) shift; runcmd="$1" ; pmpi=1 ;;
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
@@ -118,6 +127,10 @@ if [ ! $exec_p = "none" ]
 then
   exit_p=$exec_p
 fi
+case $outopt in
+  native|netcdf|both) ;;
+  *) errmsg "outopt = $outopt not supported" ; usage ; exit 1 ;;
+esac
 
 # 2.c Get required arguments
 if [ ! $# = 0 ]
@@ -198,7 +211,7 @@ then
   exit 1
 fi
 
-# 2.j;1 If parallel execution, then check for proper switches
+# 2.j If parallel execution, then check for proper switches
 #     Also, set default run command
 if [ $pmpi ]
 then
@@ -210,18 +223,6 @@ then
   fi
 else
   runcmd=''
-fi
-
-# 2.j.2 If NetCDF switch is present use NetCDF output
-#     Also, set default run command
-ncout='NO'
-if [ "`grep NC3 $file_c`" ]
-  then
-  ncout='NC3'
-fi
-if [ "`grep NC4 $file_c`" ]
-  then
-  ncout='NC4'
 fi
 
 # 2.k Setup for multi-model (and defaults for non-multi-model)
@@ -291,7 +292,7 @@ mkdir -p $path_w
 cd $path_w
 if [ $exec_p = "none" ]
 then
-  \rm -f *.inp *.ww3 *.out *.nc 
+  \rm -f *.inp *.ww3 *.out *.nc *.txt
 fi
 
 # 3.b Header
@@ -626,7 +627,21 @@ fi
 
 # 3.g Gridded output -------------------------------------------------------- #
 
-prog=ww3_outf
+case $outopt in
+  native) out_progs="ww3_outf" ;;
+  netcdf) out_progs="ww3_ounf" ;;
+  both)   out_progs="ww3_outf ww3_ounf" ;;
+  *)      out_progs="" ;;
+esac
+for prog in $out_progs
+do
+
+rline='|   Gridded output   |'
+if [ $prog = ww3_ounf ]
+then
+  rline='| NC Gridded output  |'
+fi
+
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
@@ -636,7 +651,7 @@ then
 
   echo ' '
   echo '+--------------------+'
-  echo '|   Gridded output   |'
+  echo "$rline"
   echo '+--------------------+'
   echo ' '
 
@@ -724,7 +739,21 @@ fi
 
 # 3.h Point output ---------------------------------------------------------- #
 
-prog=ww3_outp
+case $outopt in
+  native) out_progs="ww3_outp" ;;
+  netcdf) out_progs="ww3_ounp" ;;
+  both)   out_progs="ww3_outp ww3_ounp" ;;
+  *)      out_progs="" ;;
+esac
+for prog in $out_progs
+do
+
+rline='|    Point output    |'
+if [ $prog = ww3_ounp ]
+then
+  rline='| NC Point output    |'
+fi
+
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
@@ -810,191 +839,7 @@ if [ $exit_p = $prog ]
 then
   exit
 fi
-# 3.h.2 NC Point output ---------------------------------------------------------- #
-if  [ $ncout != 'NO' ]
-then
-prog=ww3_ounf
-if [ $exec_p = $prog -o $exec_p = "none" ]
-then
 
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+--------------------+'
-  echo '| Gridded NC output  |'
-  echo '+--------------------+'
-  echo ' '
-
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $model_grids
-  do
-
-    if [ $multi -eq 2 ]
-    then
-      if [ ! -e out_grd.$g ]
-      then
-        continue
-      fi
-      gu="_$g"
-    fi
-
-    for ifile in $inputs
-    do
-
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
-      if [ $multi -eq 2 ]
-      then
-        \rm -f mod_def.ww3
-        \rm -f out_grd.ww3
-        \ln -s mod_def.$g mod_def.ww3
-        \ln -s out_grd.$g out_grd.ww3
-        \rm -f ww3.????????.*
-        \rm -fr ${otype}_$g
-      fi
-      if $path_e/$prog > $ofile
-      then
-        \rm -f $prog.inp
-        if [ $multi -eq 2 ]
-        then
-          \rm -f mod_def.ww3
-          \rm -f out_grd.ww3
-          ofiles="`ls ww3.????????.* 2>/dev/null`"
-          if [ $? = 0 ]
-          then
-            mkdir ${otype}_$g
-            mv -f $ofiles ${otype}_$g/.
-            echo "   Output files moved to ${otype}_$g"
-          fi
-        fi
-      else
-        errmsg "Error occured during $path_e/$prog execution"
-        exit 1
-      fi
-
-    done
-
-  done
-
-fi
-
-fi
-
-if [ $exit_p = $prog ]
-then
-  exit
-fi
-
-
-prog=ww3_ounp
-
-if [ $exec_p = $prog -o $exec_p = "none" ]
-then
-
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
-if [ $? = 0 ]
-then
-
-  echo ' '
-  echo '+--------------------+'
-  echo '| NC Point output    |'
-  echo '+--------------------+'
-  echo ' '
-
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
-  else
-    cp -f $file_c $path_b/switch
-  fi
-  if $path_b/w3_make $prog
-  then :
-  else
-    errmsg "Error occured during WW3 $prog build"
-    exit 1
-  fi
-
-  if [ ! -f $path_e/$prog ]
-  then
-    errmsg "$path_e/$prog not found"
-    exit 1
-  fi
-
-  for g in $point_grids
-  do
-
-    if [ $multi -eq 2 ]
-    then
-      if [ ! -e out_pnt.$g ]
-      then
-        continue
-      fi
-      gu="_$g"
-    fi
-    for ifile in $inputs
-    do
-      otype="`basename $ifile .inp | sed s/^${prog}_//`"
-      ofile="$path_w/`basename $ifile .inp`${gu}.out"
-      echo "   Processing $ifile"
-      echo "   Screen output routed to $ofile"
-      rm -f $prog.inp
-      ln -s $ifile $prog.inp
-      if [ $multi -eq 2 ]
-      then
-        rm -f mod_def.ww3
-        rm -f out_pnt.ww3
-        ln -s mod_def.$g mod_def.ww3
-        ln -s out_pnt.$g out_pnt.ww3
-      fi
-      if $path_e/$prog > $ofile
-      then
-        rm -f $prog.inp
-        if [ $multi -eq 2 ]
-        then
-          rm -f mod_def.ww3
-          rm -f out_pnt.ww3
-        fi
-      else
-        errmsg "Error occured during $path_e/$prog execution"
-        exit 1
-      fi
-    done
-
-  done
-
-fi
-
-fi
-
-if [ $exit_p = $prog ]
-then
-  exit
-fi
-fi  # end of test on $ncout 
 
 # 3.i Track output ---------------------------------------------------------- #
 

@@ -5,18 +5,19 @@
 !/                  | WAVEWATCH III                SHOM |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Nov-2010 |
+!/                  | Last update :         02-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Origination.                        ( version 3.14-Ifremer )
 !/    02-Nov-2010 : Addding fudge factor for low freq.  ( version 4.03 )
+!/    02-Sep-2011 : Clean up and time optimization      ( version 4.04 )
 !/
 !  1. Purpose :
 !
 !     The 'SHOM/Ifremer' source terms based on P.A.E.M. Janssen's wind input
 !     and dissipation functions by Ardhuin et al. (2009,2010) and Filipot & Ardhuin (2010)
 !     The wind input is converted from the original
-!     WAM codes 
+!     WAM codes, courtesy of P.A.E.M. Janssen and J. Bidlot 
 !
 !
 !  2. Variables and types :
@@ -415,7 +416,7 @@
                                  CM,ZCO,UCO,UCN,ZCN, &
                                  Z0VISC, Z0NOZ, EB,  &
                                  EBX, EBY, AORB, AORB1, FW, UORB, M2, TH2, &
-                                 RE, FU, FUD
+                                 RE, FU, FUD, SWELLCOEFV, SWELLCOEFT
       REAL                   :: HSBLOW, ABJSEA, FACTOR
       REAL XI,DELI1,DELI2
       REAL XJ,DELJ1,DELJ2
@@ -535,6 +536,12 @@
         ZCN=ALOG(K(IS)*Z0)
            ! below is the original WAM version (OK for deep water)  g*z0/C^2
            ! ZCN=ALOG(G*Z0b(I)*CM(I)**2)
+!
+! precomputes swell factors
+!
+        SWELLCOEFV=-SSWELLF(5)*DRAT*2*K(IS)*SQRT(2*NU_AIR*SIG2(IS)) 
+        SWELLCOEFT=-DRAT*SSWELLF(1)*16*SIG2(IS)**2/GRAV
+!
         DO ITH=1,NTH
           IS=ITH+(IK-1)*NTH
           COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
@@ -550,7 +557,8 @@
             IF (ZLOG.LT.0.) THEN
               ! The source term Sp is beta * omega * X**2
               ! as given by Janssen 1991 eq. 19
-              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN**2*COSWIND**SSINTHP
+              ! for a faster performance EXP(X)*X**4 should be tabulated   
+              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN*UCN*COSWIND**SSINTHP 
               LLWS(IS)=.TRUE.
             ELSE
               DSTAB(ISTAB,IS) = 0.
@@ -569,8 +577,8 @@
           IF ((SSWELLF(1).NE.0.AND.DSTAB(ISTAB,IS).LT.1E-7*SIG2(IS)) &
               .OR.SSWELLF(3).GT.0) THEN  
 !
-              DVISC=-SSWELLF(5)*DRAT*2*K(IS)*SQRT(2*NU_AIR*SIG2(IS))  ! + SSWELLF(7)/SIG2(IS)   ! fudge for low frequency
-              DTURB=-DRAT*SSWELLF(1)*(FW*UORB+(FU+FUD*COSWIND)*USTP)*16*SIG2(IS)**2/GRAV
+              DVISC=SWELLCOEFV                                        ! + SSWELLF(7)/SIG2(IS)   ! fudge for low frequency
+              DTURB=SWELLCOEFT*(FW*UORB+(FU+FUD*COSWIND)*USTP)
 !
             IF (SSWELLF(4).GT.0) THEN 
               IF (SSWELLF(7).GT.0.) THEN 
@@ -772,14 +780,14 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-    INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 
-    INTEGER  IKL, ID, ICON, IKD, IKHS, IKH, TOTO
-    REAL     C, C2
-    REAL     DIFF1, DIFF2, K_SUP(NK), BINF, BSUP, K(NK), CGG, PROF
-    REAL     KIK, DHS, KD, KHS, KH, B, XT, GAM, DKH, PR, W, EPS
-    REAL     DKD, DELTAFIT, NHI, H, IH, DH
-    REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
-    REAL, DIMENSION(:,:)   , ALLOCATABLE :: K1, K2
+      INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 
+      INTEGER  IKL, ID, ICON, IKD, IKHS, IKH, TOTO
+      REAL     C, C2
+      REAL     DIFF1, DIFF2, K_SUP(NK), BINF, BSUP, K(NK), CGG, PROF
+      REAL     KIK, DHS, KD, KHS, KH, B, XT, GAM, DKH, PR, W, EPS
+      REAL     DKD, DELTAFIT, NHI, H, IH, DH
+      REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
+      REAL, DIMENSION(:,:)   , ALLOCATABLE :: K1, K2
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -802,24 +810,25 @@
         IF (TTAUWSHELTER.GT.0) THEN
           CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress
           END IF
-	END IF
+        END IF
 !
 ! Precomputes the indices for integrating the spectrum to get saturation
 !
       IF (SSDSDTH.LT.180) THEN
-	SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
-         SATINDICES(:,:)=1
-         SATWEIGHTS(:,:)=0.
+        SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
+        SATINDICES(:,:)=1
+        SATWEIGHTS(:,:)=0.
         DO ITH=1,NTH
           DO I_INT=ITH-SDSNTH, ITH+SDSNTH       
-             J_INT=I_INT
-             IF (I_INT.LT.1)  J_INT=I_INT+NTH
-             IF (I_INT.GT.NTH) J_INT=I_INT-NTH
-             SATINDICES(ITH,I_INT-(ITH-SDSNTH)+1)=J_INT
-             SATWEIGHTS(ITH,I_INT-(ITH-SDSNTH)+1)=          &
+            J_INT=I_INT
+            IF (I_INT.LT.1)  J_INT=I_INT+NTH
+            IF (I_INT.GT.NTH) J_INT=I_INT-NTH
+            SATINDICES(I_INT-(ITH-SDSNTH)+1,ITH)=J_INT
+            SATWEIGHTS(I_INT-(ITH-SDSNTH)+1,ITH)=          &
                    COS(TH(ITH)-TH(J_INT))**SSDSCOS
+!  in order to speed up this cosine should use a tabulation
             END DO
-	  END DO
+          END DO
       ELSE
         SATINDICES(:,:)=1
         SATWEIGHTS(:,:)=1.
@@ -839,7 +848,7 @@
             DO IK2=1,IK-DIKCUMUL
               C2=GRAV/SIG(IK2)
               DO ITH2=1,NTH
-                CUMULW(IK,ITH,IK2,ITH2)=SQRT(C**2+C2**2 &
+                CUMULW(ITH2,IK2,ITH,IK)=SQRT(C**2+C2**2 &
                                            -2*C*C2*ECOS(1+ABS(ITH2-ITH))) &
                                             *DSIP(IK2)/(0.5*C2) 
                 END DO
@@ -853,94 +862,94 @@
 ! 1.6 is the ratio between Banner's epsilon and SQRT(B)
 !
 !
-          CUMULW(:,:,:,:)=CUMULW*(2*TPIINV*2.26*DTH)
-        ELSE 
-          CUMULW(:,:,:,:)=0.
-          END IF
+        CUMULW(:,:,:,:)=CUMULW*(2*TPIINV*2.26*DTH)
+      ELSE 
+        CUMULW(:,:,:,:)=0.
+        END IF
 !
 ! Precomputes the indices for integrating the spectrum over frequency bandwidth
 !
-        IF (SSDSBCK.GT.0) THEN 
+      IF (SSDSBCK.GT.0) THEN 
 !
 ! Precomputes the indices for integrating the spectrum over frquency bandwidth
 !
-          BINF=(1-SSDSBINT) ! Banner et al 2002: Hp=4*sqrt(int_0.7^1.3fp E df), SSDSBINT=0.3
-          BSUP=(1+SSDSBINT)
-          KIK=0.
+        BINF=(1-SSDSBINT) ! Banner et al 2002: Hp=4*sqrt(int_0.7^1.3fp E df), SSDSBINT=0.3
+        BSUP=(1+SSDSBINT)
+        KIK=0.
 ! 
 ! High frequency tail for convolution calculation 
 !
-          ALLOCATE(K1(NK,ND))
-          ALLOCATE(K2(NK,ND))
-          ALLOCATE(SIGTAB(NK,ND))
+        ALLOCATE(K1(NK,ND))
+        ALLOCATE(K2(NK,ND))
+        ALLOCATE(SIGTAB(NK,ND))
 
-          SIGTAB=0. !contains frequency for upper windows boundaries
-          IKTAB=0  ! contains indices for upper windows boundaries
+        SIGTAB=0. !contains frequency for upper windows boundaries
+        IKTAB=0  ! contains indices for upper windows boundaries
     
-          DO ID=1,ND
-            TOTO=0 
-            PROF=REAL(ID)
-            DO IKL=1,NK ! last window starts at IK=NK 
-              CALL WAVNU2(SIG(IKL), PROF, KIK, CGG, 1E-7, 15, ICON)
-              K1(IKL,ID)=KIK  ! wavenumber lower boundary (is directly related to the frequency indices, IK)
-              K2(IKL,ID)=((BSUP/BINF)**2.)*K1(IKL,ID)! wavenumber upper boundary
-              SIGTAB(IKL,ID)=SQRT(G*K2(IKL,ID)*TANH(K2(IKL,ID)*ID)) ! corresponding frequency upper boundary
-              IF(SIGTAB(IKL,ID) .LE. SIG(1)) THEN
-                IKTAB(IKL,ID)=1
-                END IF
-              IF(SIGTAB(IKL,ID) .GT. SIG(NK)) THEN 
-                IKTAB(IKL,ID)=NK+TOTO       ! in w3sds4 only windows with IKSUP<=NK will be kept
-                TOTO=1 
+        DO ID=1,ND
+          TOTO=0 
+          PROF=REAL(ID)
+          DO IKL=1,NK ! last window starts at IK=NK 
+            CALL WAVNU2(SIG(IKL), PROF, KIK, CGG, 1E-7, 15, ICON)
+            K1(IKL,ID)=KIK  ! wavenumber lower boundary (is directly related to the frequency indices, IK)
+            K2(IKL,ID)=((BSUP/BINF)**2.)*K1(IKL,ID)! wavenumber upper boundary
+            SIGTAB(IKL,ID)=SQRT(G*K2(IKL,ID)*TANH(K2(IKL,ID)*ID)) ! corresponding frequency upper boundary
+            IF(SIGTAB(IKL,ID) .LE. SIG(1)) THEN
+              IKTAB(IKL,ID)=1
+              END IF
+            IF(SIGTAB(IKL,ID) .GT. SIG(NK)) THEN 
+              IKTAB(IKL,ID)=NK+TOTO       ! in w3sds4 only windows with IKSUP<=NK will be kept
+              TOTO=1 
+              END IF  
+            DO IK=1,NK-1
+              DIFF1=0.
+              DIFF2=0.
+              IF(SIG(IK)<SIGTAB(IKL,ID) .AND. SIG(IK+1)>=SIGTAB(IKL,ID)) THEN
+                DIFF1=SIGTAB(IKL,ID)-SIG(IK)   ! seeks the indices of the upper boundary
+                DIFF2=SIG(IK+1)-SIGTAB(IKL,ID)! the indices of lower boudary = IK
+                IF (DIFF1<DIFF2) THEN
+                  IKTAB(IKL,ID)=IK 
+                ELSE
+                  IKTAB(IKL,ID)=IK+1 
+                  END IF
                 END IF  
-              DO IK=1,NK-1
-                DIFF1=0.
-                DIFF2=0.
-                IF(SIG(IK)<SIGTAB(IKL,ID) .AND. SIG(IK+1)>=SIGTAB(IKL,ID)) THEN
-                  DIFF1=SIGTAB(IKL,ID)-SIG(IK)   ! seeks the indices of the upper boundary
-                  DIFF2=SIG(IK+1)-SIGTAB(IKL,ID)! the indices of lower boudary = IK
-                  IF (DIFF1<DIFF2) THEN
-                    IKTAB(IKL,ID)=IK 
-                  ELSE
-                    IKTAB(IKL,ID)=IK+1 
-                    END IF
-                  END IF  
-                END DO
               END DO
             END DO
+          END DO
 !       
 !----------------------TABULATION OF DCK------------------------------------------------------
 !   
-      DHS=KHSMAX/NKHS ! max value of KHS=KHSMAX
-      DKH=KHMAX/NKHI ! max value of KH=KHMAX 
-      DKD=KDMAX/NKD
-      ALLOCATE(DCKI(NKHS,NKD))
-      DCKI=0.
-      DO IKD=1,NKD
-        KHS=0.
-        KD=(FAC_KD1**(IKD-FAC_KD2))
-        XT=TANH(KD)
-        GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
-        GAM=GAM/2.15
-        DO IKHS=1,NKHS  ! max value of KHS=1.
-          KH=0.
-          KHS=KHS+DHS
-          DO IKH=1,NKHI
-            KH=KH+DKH
-            PR=(4.*KH/(KHS**2.))*exp(-(2*((KH/KHS)**2.)))
+        DHS=KHSMAX/NKHS ! max value of KHS=KHSMAX
+        DKH=KHMAX/NKHI ! max value of KH=KHMAX 
+        DKD=KDMAX/NKD
+        ALLOCATE(DCKI(NKHS,NKD))
+        DCKI=0.
+        DO IKD=1,NKD
+          KHS=0.
+          KD=(FAC_KD1**(IKD-FAC_KD2))
+          XT=TANH(KD)
+          GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
+          GAM=GAM/2.15
+          DO IKHS=1,NKHS  ! max value of KHS=1.
+            KH=0.
+            KHS=KHS+DHS
+            DO IKH=1,NKHI
+              KH=KH+DKH
+              PR=(4.*KH/(KHS**2.))*exp(-(2*((KH/KHS)**2.)))
 !            W=1.5*(((KHS)/(SQRT(2.)*GAM*XT))**2.)*(1-exp(-(((KH)/(GAM*XT))**4.))) !CK2002 parameterization
-            W=SSDSABK*(((KHS)/(SQRT(2.)*GAM*XT))**2.)*(1-exp(-(((KH)/(GAM*XT))**SSDSPBK))) 
-            EPS=-((((SSDSBCK/(XT**SSDSHCK))*KH)**3.)/4)*SQRT(G/XT)
-            DCKI(IKHS, IKD)=DCKI(IKHS, IKD)+PR*W*EPS*DKH
+              W=SSDSABK*(((KHS)/(SQRT(2.)*GAM*XT))**2.)*(1-exp(-(((KH)/(GAM*XT))**SSDSPBK))) 
+              EPS=-((((SSDSBCK/(XT**SSDSHCK))*KH)**3.)/4)*SQRT(G/XT)
+              DCKI(IKHS, IKD)=DCKI(IKHS, IKD)+PR*W*EPS*DKH
+              END DO
             END DO
-END DO
-     END DO
+          END DO
   
-   DEALLOCATE(K1,K2)
-   DEALLOCATE(SIGTAB)
-   ELSE 
-      IKTAB(:,:)=1
-      DCKI(:,:)=0.
-   END IF
+        DEALLOCATE(K1,K2)
+        DEALLOCATE(SIGTAB)
+      ELSE 
+        IKTAB(:,:)=1
+        DCKI(:,:)=0.
+        END IF
 
 !/
 !/ End of INSIN4 ----------------------------------------------------- /
@@ -1045,11 +1054,11 @@ END DO
                X   = ZTAUW/TAUOLD
                UST = SQRT(TAUOLD)
                ZZ00=AALPHA*TAUOLD/GRAV
-	       IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
+               IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
                ! Corrects roughness ZZ00 for quasi-linear effect
-	       ZZ0 = ZZ00/(1.-X)**XM
-	       !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
-          !ZZ0 = MAX(ZNU,ZZ0)
+               ZZ0 = ZZ00/(1.-X)**XM
+               !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
+               !ZZ0 = MAX(ZNU,ZZ0)
                F   = UST-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))
                DELF= 1.-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))**2*2./UST &
                         *(1.-(XM+1)*X)/(1.-X)  
@@ -1563,7 +1572,7 @@ END DO
                                  IKHS, IKD, SDSNTH   
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO
-      REAL                    :: COEF1, COEF2, COEF3
+      REAL                    :: COEF1, COEF2, COEF3, BCUM
       REAL                    :: ALFAMEAN, KB
       REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
@@ -1732,8 +1741,8 @@ END DO
 ! partial integration
           DO ITH=1,NTH       
             IS=ITH+(IK-1)*NTH
-            BTH(IS)=SUM(  SATWEIGHTS(ITH,:)*         &
-                   A(IS0+SATINDICES(ITH,:)) )*FACSAT
+            BTH(IS)=DOT_PRODUCT(  SATWEIGHTS(:,ITH),         &
+                   A(IS0+SATINDICES(:,ITH)) )*FACSAT
             END DO
           IF (SSDSISO.EQ.1) THEN
             BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
@@ -1842,8 +1851,9 @@ END DO
                 IF (BTH0(IK2).GT.SSDSBR) THEN
                   DO ITH2=1,NTH
                     IS2=ITH2+(IK2-1)*NTH
+                    BCUM=(MAX(SQRT(BTH(IS2))-EPSR,0.))
                     RENEWALFREQ=RENEWALFREQ+ &
-                         CUMULW(IK,ITH,IK2,ITH2)*(MAX(SQRT(BTH(IS2))-EPSR,0.))**2
+                         CUMULW(ITH2,IK2,ITH,IK)*BCUM*BCUM
                     END DO
                   END IF
                 END DO
