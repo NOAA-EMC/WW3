@@ -930,7 +930,7 @@
 !/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.REFLEC(4).GT.0) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
 !/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
-!/REF1                        BERG, DTG,  VREF )
+!/REF1                        BERG, DTG, IX, IY,  VREF )
 !/REF1          SPEC(:) = SPEC(:)+DTG*VREF(:) 
 !/REF1          END IF
 !
