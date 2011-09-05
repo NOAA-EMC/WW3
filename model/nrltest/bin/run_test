@@ -737,6 +737,8 @@ then
   exit
 fi
 
+done
+
 # 3.h Point output ---------------------------------------------------------- #
 
 case $outopt in
@@ -763,7 +765,7 @@ then
 
   echo ' '
   echo '+--------------------+'
-  echo '|    Point output    |'
+  echo "$rline"
   echo '+--------------------+'
   echo ' '
 
@@ -840,6 +842,7 @@ then
   exit
 fi
 
+done    # end of loop on progs
 
 # 3.i Track output ---------------------------------------------------------- #
 
