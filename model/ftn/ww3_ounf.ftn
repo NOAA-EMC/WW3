@@ -1196,7 +1196,7 @@
             FSC    = 0.001
             UNITS  = 'm'
             ENAME  = '.wcf'
-            CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
+            CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,2) &
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wcf'
@@ -1210,7 +1210,7 @@
             FSC    = 0.002 
             UNITS  = 'm'
             ENAME  = '.wch'
-            CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
+            CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,3) &
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wch'
@@ -1224,7 +1224,7 @@
             FSC    = 0.0001
             UNITS  = '1'
             ENAME  = '.wcm'
-            CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
+            CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,4) &
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wcm'

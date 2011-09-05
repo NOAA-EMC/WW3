@@ -1534,13 +1534,13 @@
                                                    WHITECAP(1:NSEA,1)
                   ELSE IF ( IO .EQ. 35 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                   WHITECAP(1:NSEA,1)
+                                                   WHITECAP(1:NSEA,2)
                   ELSE IF ( IO .EQ. 36 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                   WHITECAP(1:NSEA,1)
+                                                   WHITECAP(1:NSEA,3)
                   ELSE IF ( IO .EQ. 37 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                   WHITECAP(1:NSEA,1)
+                                                   WHITECAP(1:NSEA,4)
                   ELSE IF ( IO .EQ. 38 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ABA(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ABD(1:NSEA)
