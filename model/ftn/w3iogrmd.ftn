@@ -755,29 +755,29 @@
 !/ST4          WRITE (NDSM)                                           &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
-!/ST4                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
+!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
 !/ST4                SSDSPBK, SSDSBINT, &
 !/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-!/ST4                IKTAB, DCKI, SATINDICES, SATWEIGHTS,             &
+!/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        ELSE
 !/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
-!/ST4                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
+!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
 !/ST4                SSDSPBK, SSDSBINT, &
 !/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-!/ST4                IKTAB, DCKI, SATINDICES, SATWEIGHTS,             &
+!/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        END IF
 !

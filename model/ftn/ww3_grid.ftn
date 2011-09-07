@@ -482,8 +482,8 @@
 !/ST4                                 SWELLF, SWELLF2,SWELLF3,SWELLF4, SWELLF5,&
 !/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3, &
 !/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF, STXFTWN
-!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSC3,     &
-!/ST4                                 SDSC4, SDSC5, SDSC6, SDSBR, SDSP,    &
+!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,     &
+!/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH, SDSBR, SDSP,    &
 !/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK, SDSPBK, &
 !/ST4                                 SDSBINT, SDSHCK,  &               
 !/ST4                                 SDSBR2, SDSBRF1, SDSBRF2,            &
@@ -520,11 +520,11 @@
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, FXPM3, FXFM3,    &
-!/ST4                      SDSC2, SDSC3, SDSC4,  &
+!/ST4                      SDSC2, SDSCUM, SDSC4,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
-!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
 !/BT1      NAMELIST /SBT1/ GAMMA
 !/BT4      NAMELIST /SBT4/ SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1      NAMELIST /SDB1/ BJALFA, BJGAM, BJFLAG
@@ -1115,7 +1115,7 @@
 !/ST4      FXPM3 = 4.
 !/ST4      WNMEANPTAIL = -0.5 
 !/ST4      SDSC2     = -2.2E-5
-!/ST4      SDSC3     = -0.80
+!/ST4      SDSCUM     = -0.40344
 !/ST4      SDSC4     = 1.
 !/ST4      SDSC5     = 0. 
 !/ST4      SDSC6     = 0.3
@@ -1138,6 +1138,7 @@
 !/ST4      SDSPBK    = 4.
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.
+!/ST4      WHITECAPWIDTH = 0.8
 !
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
@@ -1187,13 +1188,14 @@
 !
 !/ST4      CALL READNL ( NDSS, 'SDS4', STATUS )
 !/ST4      WRITE (NDSO,924) STATUS
-!/ST4      WRITE (NDSO,925) SDSC1, SDSC2, SDSC3, WNMEANP 
-!/ST4      SSDSC1   = SDSC1
-!/ST4      SSDSC2   = SDSC2
-!/ST4      SSDSC3   = SDSC3
-!/ST4      SSDSC4   = SDSC4
-!/ST4      SSDSC5   = SDSC5
-!/ST4      SSDSC6   = SDSC6
+!/ST4      WRITE (NDSO,925) SDSC2, SDSBCK, SDSCUM, WNMEANP 
+!/ST4      SSDSC(1)   = SDSC1
+!/ST4      SSDSC(2)   = SDSC2
+!/ST4      SSDSC(3)   = SDSCUM
+!/ST4      SSDSC(4)   = SDSC4
+!/ST4      SSDSC(5)   = SDSC5
+!/ST4      SSDSC(6)   = SDSC6
+!/ST4      SSDSC(7)   = WHITECAPWIDTH
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
 !/ST4      SSDSBRF2 = SDSBRF2
@@ -1527,12 +1529,12 @@ WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
-!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSC3, SDSC4, SDSC5, SDSC6, &
+!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
 !/ST4                    WNMEANP, FXPM3, FXFM3,                            &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
 !/ST4                    SDSBR, SDSBR2, SDSP, SDSISO, SDSCOS, SDSDTH,      &
 !/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
-!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH 
 !/BT1          WRITE (NDSO,2926) GAMMA
 !/BT4          WRITE (NDSO,2926) SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1          IF ( BJFLAG ) THEN
@@ -3275,10 +3277,10 @@ WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
 !
 !/ST4  924 FORMAT (/' Dissipation (Ardhuin et al. 2010) ',A/          &
 !/ST4        ' --------------------------------------------------')
-!/ST4  925 FORMAT ( '       SDSC1, SDSC2, SDSC3         :',3E11.3/    &
+!/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
 !/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSC3 =',E12.4,','/                            &
+!/ST4               ', SDSCUM =',E12.4,','/                            &
 !/ST4               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
@@ -3293,7 +3295,7 @@ WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
 !/ST4               ', SDSBRFDF =',I2,', '/                           &
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
-!/ST4               F5.2,' /')
+!/ST4               F5.2,', WHITECAPWIDTH =',F5.2,' /')
 !
 !/STX  924 FORMAT (/'  Experimental dissipation.'/)
 !
