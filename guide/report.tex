@@ -777,6 +777,14 @@ Options:
                    :   *IBM with Loadleveler: poe (no <nproc> required)
                    :   *LSF: mpirun.lsf (no <nproc> required)
 
+  -o outopt        : limit output post-processing based on <outopt>
+                   :   native : post-process only native output
+                   :   netcdf : post-process only NetCDF output
+                   :   both   : post-process both native and NetCDF output
+                   :   * default is native
+                   :   * note that required input files must be present for
+                   :     selected output post-processing to occur
+
   -q program       : Exit script after program <program> executes
 
   -r program       : Only execute program <program>
