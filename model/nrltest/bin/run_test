@@ -24,7 +24,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:eg:hi:m:n:p:o:q:r:s:w:"  #option string for getopt function
+optstr="a:c:eg:hi:m:n:o:p:q:r:s:w:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -737,7 +737,7 @@ then
   exit
 fi
 
-done
+done # end of loop on progs
 
 # 3.h Point output ---------------------------------------------------------- #
 
@@ -842,7 +842,7 @@ then
   exit
 fi
 
-done    # end of loop on progs
+done # end of loop on progs
 
 # 3.i Track output ---------------------------------------------------------- #
 
