@@ -772,11 +772,6 @@ Options:
                    :   *some <runcmd> programs do not require <nproc>
                    :   *ignored if -p <runcmd> is not specified
 
-  -p runcmd        : Run in parallel using <runcmd> to start program
-                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
-                   :   *IBM with Loadleveler: poe (no <nproc> required)
-                   :   *LSF: mpirun.lsf (no <nproc> required)
-
   -o outopt        : limit output post-processing based on <outopt>
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
@@ -784,6 +779,11 @@ Options:
                    :   * default is native
                    :   * note that required input files must be present for
                    :     selected output post-processing to occur
+
+  -p runcmd        : Run in parallel using <runcmd> to start program
+                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
+                   :   *IBM with Loadleveler: poe (no <nproc> required)
+                   :   *LSF: mpirun.lsf (no <nproc> required)
 
   -q program       : Exit script after program <program> executes
 
