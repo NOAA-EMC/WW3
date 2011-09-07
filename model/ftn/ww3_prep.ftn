@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Apr-2011 |
+!/                  | Last update :         07-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -33,6 +33,7 @@
 !/                  (T. J. Campbell, NRL)
 !/     1-Apr-2011 : Fix bug GLOBX forcing with unst.    ( version 3.14.4 )
 !/    25-Jun-2011 : Fix bug prep forcing with unst.     ( version 4.01 )
+!/    07-Sep-2011 : Fix bug prep forcing with unst.     ( version 4.04 )
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -533,26 +534,25 @@
                   END DO
                 END DO
             ELSE 
-            DO IX=1, NX
-              X = XYB(IX,1)
-              Y = XYB(IX,2)
+              DO IX=1, NX
+                X = XYB(IX,1)
+                Y = XYB(IX,2)
  
-
-                IX21(IX,1) =   1 + INT((X-X0I)/SXI)
+                IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
                 IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
                 IX22(IX,1) =   IX21(IX,1) + 1
                 IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
-		IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
+                IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
                 IY22(IX,1) =   IY21(IX,1) + 1
 !
-		RW(1) =  (X-X0I)/SXI - REAL(IX21(IX,1)-1)
-		RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
+                RW(1) =  MOD(360.+(X-X0I),360.)/SXI - REAL(IX21(IX,1)-1)
+                RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
 		
-		IF (IY21(IX,1).EQ.1 .AND. RW(2).LT.ACC) THEN
-                IF (RW(2).LT.-ACC) THEN
-                  WRITE (NDSO,1044) Y
-                ELSE IF (RW(2).LT.0.) THEN
-                  RW(2) = 0.
+                IF (IY21(IX,1).EQ.1 .AND. RW(2).LT.ACC) THEN
+                  IF (RW(2).LT.-ACC) THEN
+                    WRITE (NDSO,1044) Y
+                  ELSE IF (RW(2).LT.0.) THEN
+                    RW(2) = 0.
 !/T                  FLMOD  = .TRUE.
                   END IF
                 END IF
