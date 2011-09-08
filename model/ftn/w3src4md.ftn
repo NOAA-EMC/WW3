@@ -5,17 +5,19 @@
 !/                  | WAVEWATCH III                SHOM |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Sep-2011 |
+!/                  | Last update :         08-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Origination.                        ( version 3.14-Ifremer )
 !/    02-Nov-2010 : Addding fudge factor for low freq.  ( version 4.03 )
 !/    02-Sep-2011 : Clean up and time optimization      ( version 4.04 )
+!/    04-Sep-2011 : Estimation of whitecap stats.       ( version 4.04 )
 !/
 !  1. Purpose :
 !
 !     The 'SHOM/Ifremer' source terms based on P.A.E.M. Janssen's wind input
-!     and dissipation functions by Ardhuin et al. (2009,2010) and Filipot & Ardhuin (2010)
+!     and dissipation functions by Ardhuin et al. (2009,2010) 
+!     and Filipot & Ardhuin (2010)
 !     The wind input is converted from the original
 !     WAM codes, courtesy of P.A.E.M. Janssen and J. Bidlot 
 !
@@ -1613,27 +1615,24 @@
 !
 !---------------------------------------------------------------------- 
 !
-! 2.  Source term
+! 1.  Initialization and numerical factors
 !
       FACTURB=SSDSC(5)*USTAR**2/GRAV*DAIR/DWAT
       BREAKFRACTION=0.
       RENEWALFREQ=0.
 !
-!/ ------------------------------------------------------------------- /
-!                        SPONTANEOUS BREAKING
-!/ ------------------------------------------------------------------- /
+! 2.   Estimation of spontaneous breaking 
 !
-!//////////////////////////////////////////////////////////////////////
-!//////////////// Computes spontaneous breaking for T441 //////////////
-!//////////////////////////////////////////////////////////////////////
+      IF ( (SSDSBCK-SSDSC(1)).LE.0 ) THEN 
 !
-      IF ( (SSDSBCK-SSDSC(1)).LE.0 ) THEN ! Condition for (Ardhuin et al. 2010)'s dissipation source term
+! 2.a  Case of a direction-dependent breaking term (TEST441) 
+!
         S  =0.
         D  =0.
         PB =0.
         EPSR=SQRT(SSDSBR)
 !
-! Computes saturation
+! 2.a.1 Computes saturation
 !
         SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
         DO  IK=1, NK
@@ -1715,7 +1714,7 @@
             END DO 
           END IF
 ! 
-!  Computes spontaneous breaking dissipation
+!  2.a.2  Computes spontaneous breaking dissipation rate
 ! 
         DO  IK=1, NK
 !
@@ -1754,9 +1753,7 @@
 !/
         END IF ! End of test for (Ardhuin et al. 2010)'s spontaneous dissipation source term
 !
-!//////////////////////////////////////////////////////////////////////
-!//////////////// Computes spontaneous breaking for T500 //////////////
-!//////////////////////////////////////////////////////////////////////
+! 2.b             Computes spontaneous breaking for T500 //////////////
 !
       IF (SSDSBCK.GT.0) THEN ! test for (Filipot et al. 2010)'s disspation source term
         E1 =0.
@@ -1795,14 +1792,15 @@
         DO IKL=1,NK 
           IKSUP(IKL)=IKTAB(IKL,ID)
           IF (IKSUP(IKL) .LE. NK) THEN
-            EFDF(IKL) = DOT_PRODUCT(E1(IKL:IKSUP(IKL)-1),DK(IKL:IKSUP(IKL)-1))             
+            EFDF(IKL) = DOT_PRODUCT(E1(IKL:IKSUP(IKL)-1),DK(IKL:IKSUP(IKL)-1))
             IF (EFDF(IKL) .NE. 0) THEN
               KBAR(IKL) = DOT_PRODUCT(K(IKL:IKSUP(IKL)-1)*E1(IKL:IKSUP(IKL)-1), &
-                                      DK(IKL:IKSUP(IKL)-1)) / EFDF(IKL)         
+                                      DK(IKL:IKSUP(IKL)-1)) / EFDF(IKL) 
             ELSE 
               KBAR(IKL)=0. 
               END IF
-            HS(IKL) = 4*SQRT(EFDF(IKL)) ! Significant wave height of a given scale
+! estimation of Significant wave height of a given scale
+            HS(IKL) = 4*SQRT(EFDF(IKL)) 
             NKL = NKL+1
             END IF
           END DO
@@ -1836,8 +1834,9 @@
             GAM=1.0314*(XT**3)-1.9958*(XT**2)+1.5522*XT+0.1885 
 !
 ! Computes the energy dissipated for the scale IKL
+! using DCKI which is tabulated in INSIN4
 !
-            DCK(IKL)=((KBAR(IKL)**(-2.5))*(KBAR(IKL)/(2*PI)))*DCKI(IKHS,IKD)    ! DCKI is tabulated in INSIN4
+            DCK(IKL)=((KBAR(IKL)**(-2.5))*(KBAR(IKL)/(2*PI)))*DCKI(IKHS,IKD)
 !
 ! Get the breaking probability for the scale IKL
 !
@@ -1887,19 +1886,17 @@
             FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = 0.
             END IF  
           END DO   
-!/
-        PB = (SSDSC(1)-1)*PB2*A + SSDSC(1)*PB
-!/
+!
+        PB = (1-SSDSC(1))*PB2*A + SSDSC(1)*PB
+!
         END IF   ! END OF TEST ON SSDSBCK
-!/
 !
-! End of computes spontaneous breaking for T500
 !
-!/ ------------------------------------------------------------------- /
-!             Computes Lambda from breaking probability
-!/ ------------------------------------------------------------------- /
 !
-! Compute Lambda = PB* l(k,th) with l(k,th)=1/(2*pi²)= the breaking crest density
+! 3.   Computes Lambda from breaking probability
+!
+! Compute Lambda = PB* l(k,th) 
+! with l(k,th)=1/(2*pi²)= the breaking crest density
 !
       LAMBDA = PB / (2.*PI**2.)
 !
@@ -1914,7 +1911,7 @@
         DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
 !
-! Computes cumulative effect according with Breaking probability (TEST 441 and 500)
+! Computes cumulative effect from Breaking probability
 !
          IF (SSDSC(3).NE.0 .AND. IK.GT.DIKCUMUL) THEN
             IS2MAX = (IK-DIKCUMUL)*NTH
@@ -1944,13 +1941,14 @@
 !                     COMPUTES WHITECAP PARAMETERS
 !/ ------------------------------------------------------------------- /
 !
-      IF ( .NOT. (FLOGRD(34).OR.FLOGRD(35).OR.FLOGRD(36).OR.FLOGRD(37)) ) THEN
+      IF ( .NOT. (FLOGRD(34).OR.FLOGRD(35) ) THEN
         RETURN
         END IF
 !/
-      WHITECAP(1:4) = 0.
+      WHITECAP(1:2) = 0.
 !
-! precomputes integration of Lambda over direction times wavelength times a (=5, Reul&Chapron) times dk
+! precomputes integration of Lambda over direction 
+! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
 !
       DO IK=1,NK
         COEF4(IK) = SUM(LAMBDA((IK-1)*NTH+1:IK*NTH) * DTH) *(2*PI/K(IK)) *  &
@@ -1986,7 +1984,7 @@
             END DO
           MFT = MFT / TMAX
 !
-! Computes foam-layer thinkness (Reul and Chapron, 2003)
+! Computes foam-layer thickness (Reul and Chapron, 2003)
 !
           WHITECAP(2) = WHITECAP(2) + COEF4(IK) * MFT
           END DO
