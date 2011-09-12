@@ -1,10 +1,26 @@
-# Latex commands (assumed to be in user path)
+# Set default shell
+SHELL = /bin/sh
+
+# Target document
+TARGET = manual
+
+# External programs required (assumed to be in user path)
 LATEX = latex
 BIBTEX = bibtex
 DVIPDF = dvipdf
 
-# Target document
-TARGET = report
+# Make sure external programs are found
+ifneq ($(MAKECMDGOALS),clean)
+  ifeq ($(shell if [ -z "`which $(LATEX) 2>/dev/null`" ]; then echo 1; fi),1)
+    $(error $(LATEX): command not found.  The $(LATEX) command is required)
+  endif
+  ifeq ($(shell if [ -z "`which $(BIBTEX) 2>/dev/null`" ]; then echo 1; fi),1)
+    $(error $(BIBTEX): command not found.  The $(BIBTEX) command is required)
+  endif
+  ifeq ($(shell if [ -z "`which $(DVIPDF) 2>/dev/null`" ]; then echo 1; fi),1)
+    $(error $(DVIPDF): command not found.  The $(DVIPDF) command is required)
+  endif
+endif
 
 # TeX files in this directory
 TEXFILES = report.tex
