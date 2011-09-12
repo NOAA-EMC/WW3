@@ -217,7 +217,7 @@
                TS='NOPA'
                OK='NOPA PALM' ;;
       netcdf ) TY='upto1'
-               ID='model coupling protocol'
+               ID='netcdf api type'
                TS='NC0'
                OK='NC3 NC4' ;;
     esac
