@@ -16,10 +16,8 @@
 !/
 !  1. Purpose :
 !
-!     This module computes a scattering term that combines : 
-!        - shoreline reflection 
-!        - unresolved islands and iceberg reflections
-!        - bottom scattering based on the theory by Ardhuin and Magne (JFM 2007)
+!     This module computes a scattering term 
+!     based on the theory by Ardhuin and Magne (JFM 2007)
 !
 !  2. Variables and types :
 !
@@ -260,7 +258,7 @@
         ELSE
 ! 3.b
 !  Case with current (Ardhuin and Magne JFM 2007)
-! Compute k' (WN2) from k (WN), U (CX1, CY1), 
+! Compute k' (WN2) from k (WN) and U (CX1, CY1)
 ! using : k'=(Cg+k.U/k)/(Cg+k'.U/k') 
 !
          DO ITH2=1, NTH

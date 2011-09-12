@@ -2,15 +2,15 @@
       MODULE W3REF1MD
 !/
 !/                  +-----------------------------------+
-!/                  | WAVEWATCH III                SHOM |
+!/                  | WAVEWATCH III                     |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Mar-2010 |
+!/                  | Last update :         31-May-2011 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 3.14.IFREMER )
 !/    03-Sep-2010 : Clean up                            ( version 3.14.IFREMER )
-!/    14-Nov-2010 : Adding variable reflections         ( version 4.04.IFREMER )
+!/    31-May-2011 : Adding variable reflections         ( version 4.01 )
 !/ 
 !  1. Purpose :
 !
@@ -59,7 +59,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SREF(A, CG, WN, EMEAN, FMEAN, DEPTH, CX1, CY1, REFLC, REFLD,     &
-                         DELX, DELY, DELA, TRNX, TRNY, BERG, DT,  S)
+                         DELX, DELY, DELA, TRNX, TRNY, BERG, DT,  IX, IY,S)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -141,7 +141,7 @@
       REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, EMEAN, FMEAN
       REAL, INTENT(IN)        :: A(NTH,NK)
       REAL, INTENT(IN)        :: CX1, CY1, DT
-      INTEGER, INTENT(IN)     :: REFLD(4)
+      INTEGER, INTENT(IN)     :: REFLD(4), IX, IY
       REAL, INTENT(IN)        :: REFLC(4), DELX, DELY, DELA, TRNX, &
                                  TRNY, BERG
       REAL, INTENT(OUT)       :: S(NSPEC)
@@ -166,6 +166,20 @@
 ! 1.  Sets scattering term to zero
 !
       S = 0.
+
+      RAMP0=1.
+      RAMP=RAMP0
+      IF (REFPARS(6).GT.0) THEN
+!
+! This is the Miche parameter for a beach slope of REFPARS(7)  (default is 0.25)
+!
+        MICHEFAC=0.0001*GRAV**2*(REFPARS(7)**5)/(EMEAN*FMEAN**4)
+        RAMP0=MIN(0.35*(ALOG10(MICHEFAC)+5)+0.2*MICHEFAC,1.2)  ! IF REFLC(1)=1, 0.30 should be 0.001
+      ELSE
+        RAMP0=1.
+        ENDIF
+
+
 !
 ! 2.  Shoreline reflection =============================================== *
 !
@@ -175,19 +189,12 @@
       FAC3=2.6/(0.5*REAL(NTH))
       FAC4=1.
       R0=ABS(ECOS(REFLD(1)))
-      IF (REFPARS(6).GT.0) THEN 
 !
-! This is the Miche parameter for a beach slope of REFPARS(7)  (default is 0.25)
-!
-        MICHEFAC=0.0001*GRAV**2*(REFPARS(7)**5)/(EMEAN*FMEAN**4)
-        RAMP0=MIN(0.35*(ALOG10(MICHEFAC)+5)+0.2*MICHEFAC,1.2)  ! IF REFLC(1)=1, 0.30 should be 0.001
-      ELSE 
-        RAMP0=1.
-        ENDIF
       DO IK=1, NK
 !
 ! Includes linear frequency dependence (see Elgar et al. JPO 1994)
 !       
+
         IF (REFPARS(6).GT.0) THEN
           RAMP=MIN(1.0,TPI*FMEAN/SIG(IK))*RAMP0
         ELSE
@@ -272,12 +279,12 @@
             + RAMP*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
         R2Y=  RAMP*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
             + RAMP*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
-      FAC1=1/(0.5*REAL(NTH))
+        FAC1=1/(0.5*REAL(NTH))
         DO IK=1, NK
           DO ITH=1, NTH
             IF (A(ITH,IK).GT.0.) THEN 
               R0=ABS(ECOS(ITH))
-             R2=A(ITH,IK)
+              R2=A(ITH,IK)
 
               DO ITH2=1,NTH
                 ISPEC=ITH2+(IK-1)*NTH

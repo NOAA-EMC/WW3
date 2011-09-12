@@ -473,11 +473,11 @@
                    XGRD, YGRD
             CASE (UNGTYPE) 
               WRITE (NDSM)                                            &
-                FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, NNZ
+                FSN, FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
               WRITE (NDSM)                                            &
                 X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
-                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY,   &
-                DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,          &
+                CROSSDIFF, LEN, IEN, ANGLE0, ANGLE, TRIA03, SI, MAXX, MAXY,   &
+                DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPD, IAA, JAA, POSI
             END SELECT !GTYPE
 !
@@ -489,8 +489,8 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 !/SEC1              WRITE (NDSM) NITERSEC1
-!/COU     WRITE(NDSM)                                                 &
-!/COU          COUG_2D, COUG_RAD3D, COUG_US3D
+          WRITE(NDSM)                                                 &
+               COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, ICLOSE
@@ -515,15 +515,15 @@
               X0 = HUGE(X0); Y0 = HUGE(Y0)
               SX = HUGE(SX); SY = HUGE(SY)
             CASE (UNGTYPE) 
-              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               & 
-                FSN,FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT,NNZ
+              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
+                FSN,FSPSI,FSFCT,FSNIMP,NTRI,COUNTOT, COUNTRI, NNZ
               IF (.NOT. GUGINIT) THEN
                 CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
                 END IF
-              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,           &
-                CROSSDIFF, LEN, IEN, ANGLE, TRIA03, SI, MAXX, MAXY, &
-                DXYMAX, INDEX_CELL, CCON,COUNTCON, IE_CELL,         &
+              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+                X0, Y0, SX, SY, DXYMAX, XYB, TRIGP, TRIA,             &
+                CROSSDIFF, LEN, IEN, ANGLE0, ANGLE, TRIA03, SI, MAXX, MAXY,   &
+                DXYMAX, INDEX_CELL, CCON, VNEIGH, COUNTCON, IE_CELL,  &
                 POS_CELL, IOBP, IOBPD, IAA, JAA, POSI
                 XGRD(1,:)=XYB(:,1)
                 YGRD(1,:)=XYB(:,2)
@@ -544,8 +544,8 @@
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 !/SEC1              READ (NDSM) NITERSEC1
 !
-!/COU     READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-!/COU          COUG_2D, COUG_RAD3D, COUG_US3D
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+               COUG_2D, COUG_RAD3D, COUG_US3D
         END IF
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
@@ -755,29 +755,29 @@
 !/ST4          WRITE (NDSM)                                           &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
-!/ST4                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
+!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
 !/ST4                SSDSPBK, SSDSBINT, &
 !/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-!/ST4                IKTAB, DCKI, SATINDICES, SATWEIGHTS,             &
+!/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        ELSE
 !/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC1, SSDSC2, SSDSC3, SSDSC4, SSDSC5,  &
-!/ST4                SSDSC6, SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
+!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
 !/ST4                SSDSPBK, SSDSBINT, &
 !/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-!/ST4                IKTAB, DCKI, SATINDICES, SATWEIGHTS,             &
+!/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        END IF
 !

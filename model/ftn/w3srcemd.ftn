@@ -92,6 +92,7 @@
 !/    15-May-2010 : Adding transparencies               ( version 3.14.4 ) 
 !/    01-Jun-2011 : Movable bed bottom friction in BT4  ( version 4.01 ) 
 !/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 ) 
+!/    24-Aug-2011 : Uses true depth for depth-induced   ( version 4.04 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -608,7 +609,7 @@
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
 !/ST4        CALL W3SDS4 ( SPEC, WN1, CG1,              &
-!/ST4                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
+!/ST4                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY, WHITECAP )
 !/STX        CALL W3SDSX
 !
 !/DB1        CALL W3SDB1 ( SPEC, WN2, DEPTH, EMEAN, FMEAN, WNMEAN,        &
@@ -725,7 +726,7 @@
 !              atmos->wave flux PHIAW-------------------------------- *
 !              wave ->BBL  flux PHIBBL------------------------------- *
 ! 
-       WHITECAP(4)=0.
+       WHITECAP(3)=0.
        HSTOT=0.
        DO IK=1, NK
          FACTOR=DDEN(IK)/CG1(IK) !&       !Jacobian to get energy in band
@@ -742,7 +743,7 @@
            PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
              / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
            IF (VSIN(IS).GT.0.) THEN 
-             WHITECAP(4) = WHITECAP(4) + SPEC(IS)  * FACTOR
+             WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
            ELSE
            ! computes the upward energy flux (counted > 0 upward)
              CHARN = CHARN - (VSIN(IS))* DT * FACTOR                    &
@@ -751,7 +752,7 @@
            HSTOT = HSTOT + SPEC(IS) * FACTOR
            END DO
          END DO
-       WHITECAP(4)=4.*SQRT(WHITECAP(4))
+       WHITECAP(3)=4.*SQRT(WHITECAP(3))
        HSTOT=4.*SQRT(HSTOT)
        TAUWIX= TAUWIX+ TAUWX * DRAT *DT
        TAUWIY= TAUWIY+ TAUWY * DRAT *DT
@@ -812,9 +813,10 @@
 !
 ! 6.b Limiter for shallow water or Miche style criterion
 !     Last time step only !
+!     uses true depth (D_INP) instead of limited depth 
 !
 !/MLIM        IF ( DTTOT .GE. 0.9999*DTG ) THEN
-!/MLIM            HM     = FHMAX / MAX(1.E-4,WNMEAN * TANH(WNMEAN*MAX(0.,DEPTH)))
+!/MLIM            HM     = FHMAX / MAX(1.E-4,WNMEAN * TANH(WNMEAN*MAX(0.,D_INP)))
 !/MLIM            EM     = HM * HM / 16.
 !/MLIM            IF ( EMEAN.GT.EM .AND. EMEAN.GT.1.E-30 ) THEN
 !/MLIM                SPEC   = SPEC / EMEAN * EM
@@ -928,7 +930,7 @@
 !/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.REFLEC(4).GT.0) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
 !/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
-!/REF1                        BERG, DTG,  VREF )
+!/REF1                        BERG, DTG, IX, IY,  VREF )
 !/REF1          SPEC(:) = SPEC(:)+DTG*VREF(:) 
 !/REF1          END IF
 !

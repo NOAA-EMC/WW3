@@ -216,8 +216,7 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           TAUWNX,  TAUWNY, JSMITH, P2SMS,             &
                           CGE, T02, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,&
-                          CFLXYMAX, CFLTHMAX
-!/COU      USE W3ADATMD, ONLY: US3D, SXX3D
+                          CFLXYMAX, CFLTHMAX, CFLKMAX, US3D, SXX3D
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, ICPRT, DTPRT,  &
                           WSCUT, NOSWLL, FLOGRD, FLOGR2
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -256,6 +255,7 @@
                                  ETMSSL(NSEAL), ETMSSCL(NSEAL),       &
                                  ETPRMS(NSEAL), ETTPMS(NSEAL), ETTPMM(NSEAL), &
                                  ETF(NSEAL), JS(NSEAL)
+      REAL                       USSCO
       REAL, SAVE              :: HSMIN = 0.05
 !/
 !/ ------------------------------------------------------------------- /
@@ -433,32 +433,25 @@
             UBR(JSEA) = UBR(JSEA) + AB(JSEA) * SIG(IK)**2 * FKD
             UBA(ISEA) = UBA(ISEA) + ABX(JSEA) * SIG(IK)**2 * FKD
             UBD(ISEA) = UBD(ISEA) + ABY(JSEA) * SIG(IK)**2 * FKD
-            ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FKD*SIG(IK) &
-                 *WN(IK,ISEA)*COSH(2.*KD )                           
-            ETUSSY(JSEA)  = ETUSSY(JSEA) + ABY(JSEA)*FKD*SIG(IK) &
-                 *WN(IK,ISEA)*COSH(2.*KD )          
+            USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD )                        
             JS(JSEA) = JS(JSEA) + GRAV*WN(IK,ISEA)*EBD(IK,JSEA) &
                                   /(SINH(2.*KD))                     
           ELSE 
-            ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
-                     *2.*WN(IK,ISEA)
-            ETUSSY(JSEA)  = ETUSSY(JSEA) + ABY(JSEA)*FACTOR*SIG(IK) &
-                     *2.*WN(IK,ISEA)
+            USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
             END IF
+!
+          ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*USSCO               
+          ETUSSY(JSEA)  = ETUSSY(JSEA) + ABY(JSEA)*USSCO         
+!
+! Fills the 3D Stokes drift spectrum array
+!
+            IF (COUG_US3D) THEN 
+               US3D(ISEA,IK)    =  ABX(JSEA)*USSCO    
+               US3D(ISEA,NK+IK) =  ABY(JSEA)*USSCO    
+               END IF
 !
 ! Computes spectral distribution of Stokes drift
 !
-!/COU        IF (COUG_US3D.AND.FLOUTG2) THEN 
-!/COU          IF ( KD .LT. 6. ) THEN
-!/COU            US3D(ISEA,IK)   =  ABX(JSEA)*FKD*SIG(IK)           &
-!/COU                *WN(IK,ISEA)*COSH(2.*KD)                            
-!/COU            US3D(ISEA,NK+IK)=  ABY(JSEA)*FKD*SIG(IK)           &
-!/COU                *WN(IK,ISEA)*COSH(2.*KD)                             
-!/COU          ELSE
-!/COU            US3D(ISEA,IK)   =  ABX(JSEA)*FACTOR*SIG(IK)*2*WN(IK,ISEA) 
-!/COU            US3D(ISEA,NK+IK)=  ABY(JSEA)*FACTOR*SIG(IK)*2*WN(IK,ISEA)
-!/COU            END IF 
-!/COU          END IF
 !/COU        IF (COUG_RAD3D.AND.FLOUTG2) THEN 
 !/COU  ! These are a1(f), b(f) and E(f)  for later use.
 !/COU          SXX3D(ISEA,IK)   =  ABX2(JSEA)*FACTOR
@@ -1041,8 +1034,9 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY,         &
                           TAUWNX, TAUWNY, CHARN, JSMITH, P2SMS,       &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE,    &
-                          T02, TM0M1, CFLXYMAX, CFLTHMAX
-!/COU      USE W3ADATMD, ONLY: US3D
+                          T02, TM0M1, CFLXYMAX, CFLTHMAX, CFLKMAX,    &
+                          US3D
+!
       USE W3ODATMD, ONLY: NOGRD, IDOUT, UNDEF, NDST, NDSE, FLOGRD,    &
                           IPASS => IPASS1, WRITE => WRITE1, FNMPRE,   &
                           NOSWLL, NOEXTR
@@ -1419,8 +1413,8 @@
                     WRITE ( NDSOG ) USSX(1:NSEA)
                     WRITE ( NDSOG ) USSY(1:NSEA)
                     IF (US3DF(1).GT.0) THEN
-!/COU                       WRITE ( NDSOG ) US3D(1:NSEA,   US3DF(2):US3DF(3))
-!/COU                       WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
+                      WRITE ( NDSOG ) US3D(1:NSEA,   US3DF(2):US3DF(3))
+                      WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
                       END IF
                   ELSE IF ( IO .EQ. 49 ) THEN
                     WRITE ( NDSOG ) MSSX(1:NSEA)
@@ -1436,7 +1430,7 @@
                   ELSE IF ( IO .EQ. 52 ) THEN
                     WRITE ( NDSOG ) BERG(1:NSEA) !USERO(1:NSEA,1)
                   ELSE IF ( IO .EQ. 53 ) THEN
-                    WRITE ( NDSOG ) USERO(1:NSEA,2)
+                    WRITE ( NDSOG ) CFLTHMAX(1:NSEA) !USERO(1:NSEA,2)
                   ELSE
                     WRITE (NDSE,999)
                     CALL EXTCDE ( 30 )
@@ -1540,13 +1534,13 @@
                                                    WHITECAP(1:NSEA,1)
                   ELSE IF ( IO .EQ. 35 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                   WHITECAP(1:NSEA,1)
+                                                   WHITECAP(1:NSEA,2)
                   ELSE IF ( IO .EQ. 36 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                   WHITECAP(1:NSEA,1)
+                                                   WHITECAP(1:NSEA,3)
                   ELSE IF ( IO .EQ. 37 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                   WHITECAP(1:NSEA,1)
+                                                   WHITECAP(1:NSEA,4)
                   ELSE IF ( IO .EQ. 38 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ABA(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ABD(1:NSEA)
@@ -1591,12 +1585,12 @@
                                                        USSX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        USSY(1:NSEA)
-!/COU                    IF (US3DF(1).GT.0) THEN
-!/COU                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
-!/COU                                     US3D(1:NSEA,US3DF(2):US3DF(3))
-!/COU                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
-!/COU                                     US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
-!/COU                      END IF
+                  IF (US3DF(1).GT.0) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   US3D(1:NSEA,US3DF(2):US3DF(3))
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
+                    END IF
                   ELSE IF ( IO .EQ. 49 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        MSSX(1:NSEA)
@@ -1618,7 +1612,7 @@
                       END IF
                   ELSE IF ( IO .EQ. 52 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       BERG(1:NSEA) !USERO(1:NSEA,1)
+                                                       USERO(1:NSEA,1)
                   ELSE IF ( IO .EQ. 53 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        USERO(1:NSEA,2)

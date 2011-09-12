@@ -24,7 +24,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:eg:hi:m:n:p:o:q:r:s:w:"  #option string for getopt function
+optstr="a:c:eg:hi:m:n:o:p:q:r:s:w:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -50,10 +50,6 @@ Options:
   -n nproc         : specify <nproc> processors for parallel run
                    :   *some <runcmd> programs do not require <nproc>
                    :   *ignored if -p <runcmd> is not specified
-  -p runcmd        : run in parallel using <runcmd> to start program
-                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
-                   :   *IBM with Loadleveler: poe (no <nproc> required)
-                   :   *LSF: mpirun.lsf (no <nproc> required)
   -o outopt        : limit output post-processing based on <outopt>
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
@@ -61,6 +57,10 @@ Options:
                    :   * default is native
                    :   * note that required input files must be present for
                    :     selected output post-processing to occur
+  -p runcmd        : run in parallel using <runcmd> to start program
+                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
+                   :   *IBM with Loadleveler: poe (no <nproc> required)
+                   :   *LSF: mpirun.lsf (no <nproc> required)
   -q program       : exit script after program <program> executes
   -r program       : only execute program <program>
   -s switch_string : use switch_<switch_string>
@@ -106,8 +106,8 @@ do
         multi=2
       fi ;;
   -n) shift; nproc="$1" ;;
-  -p) shift; runcmd="$1" ; pmpi=1 ;;
   -o) shift; outopt="$1" ;;
+  -p) shift; runcmd="$1" ; pmpi=1 ;;
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
@@ -292,7 +292,7 @@ mkdir -p $path_w
 cd $path_w
 if [ $exec_p = "none" ]
 then
-  \rm -f *.inp *.ww3 *.out
+  \rm -f *.inp *.ww3 *.out *.nc *.txt
 fi
 
 # 3.b Header
@@ -737,7 +737,7 @@ then
   exit
 fi
 
-done
+done # end of loop on progs
 
 # 3.h Point output ---------------------------------------------------------- #
 
@@ -842,7 +842,7 @@ then
   exit
 fi
 
-done
+done # end of loop on progs
 
 # 3.i Track output ---------------------------------------------------------- #
 

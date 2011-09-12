@@ -1043,7 +1043,7 @@
         43X,'  |-------------|---------------|'/                        &
          8X,'   step | pass |    date      time   | b w l c i d |',   &
               ' g p t r b f c |'/                                     &
-         8X,'--------|------|---------------------|---------------|',   &
+         8X,'--------|------|--------------------|----------------|',   &
               '-------------|'/                                       &
          8X,'--------+------+---------------------+---------------+',   &
               '-------------+')
@@ -1482,8 +1482,8 @@
 !/MPI                          TAUWNX, TAUWNY, JSMITH, P2SMS, T02, CGE, &
 !/MPI                          CFLXYMAX, CFLTHMAX, WHITECAP, BEDFORMS, & 
 !/MPI                          PHIBBL, TAUBBL, TM0M1
-!/COU      USE W3ADATMD, ONLY: SXX3D, US3D
-!/COU      USE W3GDATMD, ONLY: COUG_RAD3D,COUG_US3D,NK
+!/MPI      USE W3ADATMD, ONLY: SXX3D, US3D
+!/MPI      USE W3GDATMD, ONLY: COUG_RAD3D,COUG_US3D,NK
 !/MPI      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
 !/MPI                          NOGRD, NAPFLD, NAPPNT, NAPRST, NAPBPT, &
 !/MPI                          NAPTRK
@@ -1508,7 +1508,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NSEALM
-!/COUMPI      INTEGER                 :: IK
+!/MPI      INTEGER                 :: IK
 !/MPI      INTEGER                 :: IH, IT0, IROOT, IT, IERR, I0,   &
 !/MPI                                 IFROM, IX(4), IY(4), IS(4),     &
 !/MPI                                 IP(4), I, J, JSEA, ITARG, IB,   &
@@ -1538,8 +1538,8 @@
 !/MPI            ELSE
 !/MPI              NRQMAX = 46 + NOEXTR + 6*NOSWLL
 !/MPI              IF (P2MSF(1).GT.0) NRQMAX = NRQMAX + P2MSF(3) - P2MSF(2) + 1
-!/COUMPI              IF (COUG_RAD3D) NRQMAX = NRQMAX+3*NK
-!/COUMPI              IF (COUG_US3D) NRQMAX = NRQMAX+2*NK
+!/MPI              IF (COUG_RAD3D) NRQMAX = NRQMAX+3*NK
+!/MPI              IF (COUG_US3D) NRQMAX = NRQMAX+2*NK
 !/MPI              IF ( IAPROC .EQ. NAPFLD ) THEN
 !/MPI                  IF ( IAPROC .LE. NAPROC ) THEN
 !/MPI                      NRQMAX = NRQMAX * (NAPROC-1)
@@ -2038,24 +2038,24 @@
 !/MPIT      WRITE (NDST,9011) IH, 'S 53', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
 !
-!/COUMPI       IF (COUG_RAD3D) THEN 
-!/COUMPI         DO IK=1,3*NK
-!/COUMPI              IH     = IH + 1
-!/COUMPI              IT     = IT + 1
-!/COUMPI              CALL MPI_SEND_INIT (SXX3D(IAPROC,IK),1,WW3_FIELD_VEC,&
-!/COUMPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPI       IF (COUG_RAD3D) THEN 
+!/MPI         DO IK=1,3*NK
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (SXX3D(IAPROC,IK),1,WW3_FIELD_VEC,&
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !   !/MPIT      WRITE (NDST,9011) IH, 'S R3', IROOT, IT, IRQGO(IH), IERR
-!/COUMPI            END DO
-!/COUMPI          END IF
-!/COUMPI       IF (COUG_US3D) THEN 
-!/COUMPI         DO IK=1,2*NK
-!/COUMPI              IH     = IH + 1
-!/COUMPI              IT     = IT + 1
-!/COUMPI              CALL MPI_SEND_INIT (US3D(IAPROC,IK),1,WW3_FIELD_VEC,&
-!/COUMPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPI            END DO
+!/MPI          END IF
+!/MPI       IF (COUG_US3D) THEN 
+!/MPI         DO IK=1,2*NK
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_SEND_INIT (US3D(IAPROC,IK),1,WW3_FIELD_VEC,&
+!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !   !/MPIT      WRITE (NDST,9011) IH, 'S U3', IROOT, IT, IRQGO(IH), IERR
-!/COUMPI            END DO
-!/COUMPI          END IF
+!/MPI            END DO
+!/MPI          END IF
 
 !
 !/MPI        ELSE IF ( IAPROC .EQ. NAPFLD ) THEN
@@ -2536,24 +2536,24 @@
 !/MPIT      WRITE (NDST,9011) IH, 'R 53', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF
 !
-!/COUMPI       IF (COUG_RAD3D) THEN 
-!/COUMPI         DO IK=1,3*NK
-!/COUMPI              IH     = IH + 1
-!/COUMPI              IT     = IT + 1
-!/COUMPI              CALL MPI_RECV_INIT (SXX3D(I0,IK),1,WW3_FIELD_VEC,&
-!/COUMPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPI       IF (COUG_RAD3D) THEN 
+!/MPI         DO IK=1,3*NK
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_RECV_INIT (SXX3D(I0,IK),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !   !/MPIT      WRITE (NDST,9011) IH, 'R X3', IROOT, IT, IRQGO(IH), IERR
-!/COUMPI            END DO
-!/COUMPI          END IF
-!/COUMPI       IF (COUG_US3D) THEN 
-!/COUMPI         DO IK=1,2*NK
-!/COUMPI              IH     = IH + 1
-!/COUMPI              IT     = IT + 1
-!/COUMPI              CALL MPI_RECV_INIT (US3D(I0,IK),1,WW3_FIELD_VEC,&
-!/COUMPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
+!/MPI            END DO
+!/MPI          END IF
+!/MPI       IF (COUG_US3D) THEN 
+!/MPI         DO IK=1,2*NK
+!/MPI              IH     = IH + 1
+!/MPI              IT     = IT + 1
+!/MPI              CALL MPI_RECV_INIT (US3D(I0,IK),1,WW3_FIELD_VEC,&
+!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !   !/MPIT      WRITE (NDST,9011) IH, 'R U3', IROOT, IT, IRQGO(IH), IERR
-!/COUMPI            END DO
-!/COUMPI          END IF
+!/MPI            END DO
+!/MPI          END IF
 
 !/MPI              END IF
 !/MPI            END DO

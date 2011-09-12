@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Jun-2011 |
+!/                  | Last update :         25-Aug-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -70,6 +70,7 @@
 !/                  input in ww3_grid.inp to CSTRG.     ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    25-Jun-2011 : Adding movable bed friction         ( version 4.01 )
+!/    25-Aug-2011 : Clean up.                           ( version 4.05 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -370,7 +371,6 @@
       USE CONSTANTS
 !/
       USE W3TRIAMD
-!!/COU  USE W3GDATMD, ONLY: COUG_2D, COUG_RAD3D, COUG_US3D
       USE W3GSRUMD, ONLY: W3GRMP
       USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
       USE W3IOGRMD, ONLY: W3IOGR
@@ -454,13 +454,9 @@
       CHARACTER(LEN=6)        :: YESXNO(2)
 !/FLX3      CHARACTER(LEN=18)       :: TYPEID
 !
-! Variables for unstructured grids
+! Variables for shoreline reflection on structured grids
 !
-      INTEGER                 :: IE, I1, I2, I3
-      INTEGER, ALLOCATABLE    :: TRILAND(:),MAPBORD(:)
-      REAL, ALLOCATABLE       :: ANGLETOT(:), ANGLETOTINV(:)
-      INTEGER                 :: K
-      INTEGER                 :: NEIGH1(0:7)
+      INTEGER                 :: K, NEIGH1(0:7)
 !/ ------------------------------------------------------------------- /
 !/ Namelists
 !/
@@ -486,8 +482,8 @@
 !/ST4                                 SWELLF, SWELLF2,SWELLF3,SWELLF4, SWELLF5,&
 !/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3, &
 !/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF, STXFTWN
-!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSC3,     &
-!/ST4                                 SDSC4, SDSC5, SDSC6, SDSBR, SDSP,    &
+!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,     &
+!/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH, SDSBR, SDSP,    &
 !/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK, SDSPBK, &
 !/ST4                                 SDSBINT, SDSHCK,  &               
 !/ST4                                 SDSBR2, SDSBRF1, SDSBRF2,            &
@@ -503,7 +499,7 @@
 !/PR3      REAL                    :: WDTHCG, WDTHTH
            LOGICAL                 :: UGCONT, EXPFSN, EXPFSPSI,     &
                                       EXPFSFCT,IMPFSNIMP,TSTC
-!/COU      LOGICAL                 :: COU_2D, COU_RAD3D, COU_US3D 
+           LOGICAL                 :: COU_2D, COU_RAD3D
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
@@ -524,26 +520,26 @@
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, FXPM3, FXFM3,    &
-!/ST4                      SDSC2, SDSC3, SDSC4,  &
+!/ST4                      SDSC2, SDSCUM, SDSC4,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
-!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
 !/BT1      NAMELIST /SBT1/ GAMMA
 !/BT4      NAMELIST /SBT4/ SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1      NAMELIST /SDB1/ BJALFA, BJGAM, BJFLAG
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
-           NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,&
+           NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,        &
                            IMPFSNIMP, TSTC
-!/COU      NAMELIST /COU/  COU_2D, COU_RAD3D, COU_US3D
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
                       US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
                       REFCOAST, REFFREQ, REFBETA, REFMAP, REFSUBGRID, &
-                      BSBOTTOM, REFICEBERG, FACBERG
+                      BSBOTTOM, REFICEBERG, FACBERG, COU_2D,          &
+                      COU_RAD3D
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1119,7 +1115,7 @@
 !/ST4      FXPM3 = 4.
 !/ST4      WNMEANPTAIL = -0.5 
 !/ST4      SDSC2     = -2.2E-5
-!/ST4      SDSC3     = -0.80
+!/ST4      SDSCUM     = -0.40344
 !/ST4      SDSC4     = 1.
 !/ST4      SDSC5     = 0. 
 !/ST4      SDSC6     = 0.3
@@ -1127,7 +1123,7 @@
 !/ST4      SDSBRFDF  = 0
 !/ST4      SDSBRF1   = 0.5
 !/ST4      SDSBRF2   = 0.
-!/ST4      SDSP      = 2.
+!/ST4      SDSP      = 2.   ! this is now fixed in w3sds4 
 !/ST4      SDSDTH    = 80.
 !/ST4      SDSCOS    = 2.
 !/ST4      SDSISO    = 2
@@ -1142,6 +1138,7 @@
 !/ST4      SDSPBK    = 4.
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.
+!/ST4      WHITECAPWIDTH = 0.8
 !
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
@@ -1191,13 +1188,14 @@
 !
 !/ST4      CALL READNL ( NDSS, 'SDS4', STATUS )
 !/ST4      WRITE (NDSO,924) STATUS
-!/ST4      WRITE (NDSO,925) SDSC1, SDSC2, SDSC3, WNMEANP 
-!/ST4      SSDSC1   = SDSC1
-!/ST4      SSDSC2   = SDSC2
-!/ST4      SSDSC3   = SDSC3
-!/ST4      SSDSC4   = SDSC4
-!/ST4      SSDSC5   = SDSC5
-!/ST4      SSDSC6   = SDSC6
+!/ST4      WRITE (NDSO,925) SDSC2, SDSBCK, SDSCUM, WNMEANP 
+!/ST4      SSDSC(1)   = SDSC1
+!/ST4      SSDSC(2)   = SDSC2
+!/ST4      SSDSC(3)   = SDSCUM
+!/ST4      SSDSC(4)   = SDSC4
+!/ST4      SSDSC(5)   = SDSC5
+!/ST4      SSDSC(6)   = SDSC6
+!/ST4      SSDSC(7)   = WHITECAPWIDTH
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
 !/ST4      SSDSBRF2 = SDSBRF2
@@ -1409,8 +1407,9 @@
       P2SF   = 0
       I1P2SF = 1
       I2P2SF = 15
+      US3D_OUNF=1 
       I1US3D_OUNF=1
-      I2US3D_OUNF=30
+      I2US3D_OUNF=NK
       FLAGICESOURCE=.FALSE.
       REFCOAST=0.
       REFMAP=0.
@@ -1420,6 +1419,8 @@
       BSBOTTOM=0.
       REFICEBERG=0.
       FACBERG=1.
+      COU_2D=.FALSE.
+      COU_RAD3D=.FALSE.
 !
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
@@ -1482,17 +1483,12 @@
       US3DF(3) = I2US3D_OUNF
       US3DF(2)= MAX( 1 , MIN(NK,US3DF(2)) )
       US3DF(3)= MAX( 1 , MIN(NK,US3DF(3)) )
-!
-! 6.n2 Coupling parameters
-!
-!/COU           COU_2D=.TRUE.
-!/COU           COU_RAD3D=.FALSE.
-!/COU           COU_US3D=.TRUE.
-!/COU      CALL READNL ( NDSS, 'COU ', STATUS )
-!/COU      COUG_2D     = COU_2D
-!/COU      COUG_RAD3D  = COU_RAD3D
-!/COU      COUG_US3D   = COU_US3D
-!    !/COU      WRITE (NDSO,969) STATUS
+      COUG_2D=COU_2D
+      COUG_RAD3D=COU_RAD3D
+      COUG_US3D=.FALSE.
+      IF (US3D_OUNF.GT.0) COUG_US3D=.TRUE.
+
+WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
 
 
 !
@@ -1533,12 +1529,12 @@
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
-!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSC3, SDSC4, SDSC5, SDSC6, &
+!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
 !/ST4                    WNMEANP, FXPM3, FXFM3,                            &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
 !/ST4                    SDSBR, SDSBR2, SDSP, SDSISO, SDSCOS, SDSDTH,      &
 !/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
-!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH 
 !/BT1          WRITE (NDSO,2926) GAMMA
 !/BT4          WRITE (NDSO,2926) SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1          IF ( BJFLAG ) THEN
@@ -1557,7 +1553,8 @@
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                REFCOAST, REFFREQ, REFBETA, REFMAP,   &
+                                COU_RAD3D, COU_2D, REFCOAST, REFFREQ, & 
+                                REFBETA, REFMAP,                      &
                                 REFSUBGRID, BSBOTTOM, REFICEBERG,     &
                                 FACBERG
             ELSE
@@ -1567,11 +1564,11 @@
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                REFCOAST, REFFREQ, REFBETA, REFMAP,   &
+                                COU_RAD3D, COU_2D, REFCOAST, REFFREQ, & 
+                                REFBETA, REFMAP,                      &
                                 REFSUBGRID, BSBOTTOM, REFICEBERG,     &
-                                FACBERG
+                                FACBERG, COU_RAD3D
             END IF
-!/COU           WRITE (NDSO,2969) COU_2D, COU_RAD3D, COU_US3D
           WRITE (NDSO,918)
         END IF
 
@@ -2245,25 +2242,6 @@
                         IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
                       END DO
                   END IF
-              ELSE  
-! the logical CONTOUR enables to choose whether the contour is excluded from computation 
-! the available criterion to spot contour points is that such points have more connections than
-! surrounding connected triangles.
-!
-                IF (UGCONT) THEN 
-                    J = 0
-                    DO IX= 1, NX
-                        IF (COUNTCON(IX) .GT. CCON(IX)) THEN
-                            J = J+1
-                            TMPSTA(1,IX) = NSTAT 
-                          END IF
-                      END DO 
-                  ELSE
-                    ALLOCATE(MAPBORD(NX))  
-                    DO IX= 1, NX
-                        IF (COUNTCON(IX) .GT. CCON(IX))  MAPBORD(IX) = 1
-                      END DO
-                  END IF ! UGCONT
 !
               END IF ! GTYPE
 !
@@ -2511,73 +2489,11 @@
 !/O2        END DO
 !/O2      WRITE (NDSO,1102)
 !
-! MAP FOR LAND POINTS    
+! Defines the shoreline treatment for unstructured grids 
 ! 
      IF (GTYPE.EQ.UNGTYPE) THEN
-       ALLOCATE( TRILAND(NTRI), ANGLETOT(NX), ANGLETOTINV(NX))
-       TRILAND(:) = 0
-       K = 0
-       DO IE = 1, NTRI
-         I1 = TRIGP(IE,1)
-         I2 = TRIGP(IE,2)
-         I3 = TRIGP(IE,3)
-!
-!! MAP FOR TRIANGLE STATUS: 
-!     0->sea triangle,  
-!     1->contour vertex, 
-!     2->contour vertices , 
-!     3->Contour triangle  
-     
-          IF ((MAPSTA(1,I1).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
-          IF ((MAPSTA(1,I2).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
-          IF ((MAPSTA(1,I3).EQ.0))  TRILAND(IE) = TRILAND(IE) + 1
-          END DO
-!
-! Now calculate the angle of action of a vertex (see gradients in w3updtmd.ftn)
-! If a triangle is connected to the contour, the angle of each vertex is not
-! taken into account when interpolating gradients.
-!
-        ANGLETOT(:) = TPI
-        DO IE = 1, NTRI 
-          I1 = TRIGP(IE,1)
-          I2 = TRIGP(IE,2)
-          I3 = TRIGP(IE,3) 
-          IF (TRILAND(IE).EQ. 1 ) THEN  
-            ANGLETOT(I1) = ANGLETOT(I1) - ANGLE(IE,1)/2
-            ANGLETOT(I2) = ANGLETOT(I2) - ANGLE(IE,2)/2
-            ANGLETOT(I3) = ANGLETOT(I3) - ANGLE(IE,3)/2
-            END IF
-          IF (TRILAND(IE) .GE. 2) THEN  
-            ANGLETOT(I1) = ANGLETOT(I1) - ANGLE(IE,1)
-            ANGLETOT(I2) = ANGLETOT(I2) - ANGLE(IE,2)
-            ANGLETOT(I3) = ANGLETOT(I3) - ANGLE(IE,3)
-            END IF
-          END DO
-!
-!If contour is included in computation, contour vertices has an angle action of pi 
-! 
-        IF (.NOT.UGCONT) THEN
-          DO IX = 1,NX
-            IF (MAPBORD(IX) .EQ. 1) ANGLETOT(IX) = PI
-            END DO 
-          END IF   
-
-      DO IP = 1, NX
-        IF (ANGLETOT(IP) .NE. 0)  ANGLETOTINV(IP) = 1./ANGLETOT(IP)
-        END DO
-!
-      DO IE = 1, NTRI
-        I1 = TRIGP(IE,1)
-        I2 = TRIGP(IE,2)
-        I3 = TRIGP(IE,3) 
-        ANGLE(IE,1) = ANGLE(IE,1)*ANGLETOTINV(I1)
-        ANGLE(IE,2) = ANGLE(IE,2)*ANGLETOTINV(I2)
-        ANGLE(IE,3) = ANGLE(IE,3)*ANGLETOTINV(I3)
-        END DO
-!      
-      DEALLOCATE(TRILAND, ANGLETOT, ANGLETOTINV)
-!      
-      END IF ! GTYPE .EQ. UNGTYPE
+       CALL SETUGIOBP 
+       END IF 
 
 !/O2a      J      = LEN_TRIM(FNMPRE)
 !/O2a      OPEN (NDSM,FILE=FNMPRE(:J)//'mask.ww3')
@@ -2618,11 +2534,6 @@
 !/O2c      CLOSE (NDSM)
 !
 
-       IF (GTYPE .EQ. UNGTYPE .AND. .NOT. UGCONT) DEALLOCATE(MAPBORD)     
-!
-! Calculate interpolation info which are to be used in gradients computation (w3updtmd.ftn)  
-!   
-      CALL DIFFERENCE
 ! 
 !  9.a Reads shorline direction and slope
 !
@@ -3366,10 +3277,10 @@
 !
 !/ST4  924 FORMAT (/' Dissipation (Ardhuin et al. 2010) ',A/          &
 !/ST4        ' --------------------------------------------------')
-!/ST4  925 FORMAT ( '       SDSC1, SDSC2, SDSC3         :',3E11.3/    &
+!/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
 !/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSC3 =',E12.4,','/                            &
+!/ST4               ', SDSCUM =',E12.4,','/                            &
 !/ST4               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
@@ -3384,7 +3295,7 @@
 !/ST4               ', SDSBRFDF =',I2,', '/                           &
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
-!/ST4               F5.2,' /')
+!/ST4               F5.2,', WHITECAPWIDTH =',F5.2,' /')
 !
 !/STX  924 FORMAT (/'  Experimental dissipation.'/)
 !
@@ -3482,12 +3393,10 @@
                '        FLAGICESOURCE =',L3,                          &
                ', P2SF =',I1,', I1P2SF =',I2,', I2P2SF =',I2,         &
                ', US3D_OUNF =',I1,', I1US3D_OUNF =',I2,               &
-               ', I2US3D_OUNF =',I2,','/                              &
+               ', I2US3D_OUNF =',I2,'COU_2D =',L3,', COU_RAD3D =',L3, ','/                              &
                '     REFCOAST =',F4.1,', REFFREQ =',F4.1,', REFBETA =',F4.2, &
                ', REFMAP =',F4.1, ', REFSUBGRID =',F4.1,                &
                ', BSBOTTOM =',F4.1,', REFICEBERG =',F4.1,', FACBERG =',F4.1,' /')
-!/COU  2969 FORMAT ( '  &COU  COU_2D =',L3,', COU_RAD3D =',L3,         &
-!/COU               ', COU_US3D =',L3,' /')
 !
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &

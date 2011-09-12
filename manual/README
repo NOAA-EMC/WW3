@@ -1,0 +1,16 @@
+WAVEWATCH III User manual and system documentation
+
+A makefile is provided to compile the manual.  The default make
+target will compile a PDF version of the manual (manual.pdf).
+Other make targets available are: "inp" (create LaTeX versions in
+current directory of the ww3_*.inp and gx_*.inp input files),
+"clean" (remove all files created during compile of manual).
+
+The following external programs are required and must be found
+in the user PATH: latex, bibtex and dvipdf.
+
+The compile requires that the make variable INPDIR be specified
+to point to the location of the ww3_*.inp and gx_*.inp input files
+that are used for documentation.  The default value of INPDIR,
+"../inp", can be overridden by specifying INPDIR on the make
+command-line or in the user environment.

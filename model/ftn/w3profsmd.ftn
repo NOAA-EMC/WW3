@@ -48,8 +48,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-   SUBROUTINE W3XYPUG ( ISP, FACX, FACY, DTG, MAPSTA, MAPFS, VQ,    &
-                          VGX, VGY, LCALC )    
+   SUBROUTINE W3XYPUG ( ISP, FACX, FACY, DTG, VQ, VGX, VGY, LCALC )    
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -78,8 +77,6 @@
 !       FACX/Y  Real   I   Factor in propagation velocity.
 !                          ( 1 or 0 * DT / DX )
 !       DTG     Real   I   Total time step.
-!       MAPSTA  I.A.   I   Grid point status map.
-!       MAPFS   I.A.   I   Storage map.
 !       VQ      R.A.  I/O  Field to propagate.
 !       VGX/Y   Real   I   Speed of grid.
 !     ----------------------------------------------------------------
@@ -125,7 +122,7 @@
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN,               &
                           NTRI, TRIGP, CCON , TRIA03,                 &
-                          IE_CELL, POS_CELL,                          &
+                          IE_CELL, POS_CELL, IOBP, IOBPD,             &
                           FSN, FSPSI, FSFCT, FSNIMP
 
       USE W3WDATMD, ONLY: TIME
@@ -140,7 +137,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: ISP, MAPSTA(NY*NX), MAPFS(NY*NX)
+      INTEGER, INTENT(IN)     :: ISP
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
       REAL, INTENT(INOUT)     :: VQ(1-NY:NY*(NX+2))
       LOGICAL, INTENT(IN)     :: LCALC
@@ -154,7 +151,6 @@
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
       REAL                    :: RD1, RD2
-      INTEGER                 :: MAPSTA2(NY*NX), COUNTSEACON(NX)
 !/
 !/ Automatic work arrays
 !/
@@ -176,7 +172,7 @@
       CSIN   = FACY * ESIN(ITH) 
       CCURX  = FACX 
       CCURY  = FACY  
-
+!
 ! 1.b Initialize arrays
 !
       VLCFLX = 0.
@@ -194,40 +190,20 @@
       END DO  
 
       IF ( FLCUR ) THEN   
-        COUNTSEACON(1:NX)=0
-        J = 0
-        DO IX = 1, NX
-          DO I = 1, CCON(IX)                  ! Loop over all connected Elements
-             J = J + 1
-             IE    = IE_CELL(J)                ! Connected Element Number
-             IF ((TRIGP(IE,1).NE.IX).AND.MAPSTA(TRIGP(IE,1)).GT.0) COUNTSEACON(IX)=COUNTSEACON(IX)+1
-             IF ((TRIGP(IE,2).NE.IX).AND.MAPSTA(TRIGP(IE,2)).GT.0) COUNTSEACON(IX)=COUNTSEACON(IX)+1
-             IF ((TRIGP(IE,3).NE.IX).AND.MAPSTA(TRIGP(IE,3)).GT.0) COUNTSEACON(IX)=COUNTSEACON(IX)+1
-             END DO         
-
-          END DO
-! 
         DO ISEA=1, NSEA
           IXY =  MAPSF(ISEA,3)
 !
 ! Currents are not included on coastal boundaries (COUNTSEACON(IXY) .NE. CCON(IXY))
 !
-          IF ((COUNTSEACON(IXY) .EQ. 2*CCON(IXY)).OR.(MAPSTA(IXY).EQ.2)) THEN 
+          IF (IOBP(IXY) .EQ. 1) THEN                                  
             VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
             VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
-    !      ELSE
-    !        WRITE(6,*) 'EXCLUDED POINT FOR CURRENTS:',IXY,ISEA,COUNTSEACON(IXY), CCON(IXY)
+          !ELSE
+          !  IF (ISP.EQ.1) WRITE(6,*) 'EXCLUDED POINT FOR CURRENTS:',IXY,ISEA,IOBP(IXY)
             END IF    
-        END DO     
-      END IF
-  
-      IF ( FLCUR ) THEN   
-        DO ISEA=1, NSEA
-          IXY =  MAPSF(ISEA,3)
-          VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
-          VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
-        END DO
-      END IF  
+          END DO     
+        END IF
+
 !
 ! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
 !
@@ -237,7 +213,6 @@
         C(IX,1)  = VLCFLX(IX)
         C(IX,2)  = VLCFLY(IX)
       ENDDO
-      MAPSTA2 = MAPSTA
 !
 ! 4. Prepares boundary update
 !
@@ -252,13 +227,13 @@
 ! 4. propagate using the selected scheme 
 !      
        IF (FSN) THEN
-         CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC, MAPSTA2, AQ)
+         CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
        ELSE IF (FSPSI) THEN
-         CALL W3XYPFSPSI2 (ISP, C, LCALC, RD1, RD2, DTG, AC, MAPSTA2, AQ)
+         CALL W3XYPFSPSI2 (ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
        ELSE IF (FSFCT) THEN
-         CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC, MAPSTA2, AQ)
+         CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
        ELSE IF (FSNIMP) THEN
-         CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC, MAPSTA2, AQ)
+         CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
        ENDIF  
 !
        DO IX=1,NX
@@ -271,15 +246,13 @@
 !
       DO ISEA=1, NSEA
         IXY   = MAPSF(ISEA,3)
-!        IF ( MAPSTA(IXY) .GT. 0 ) THEN
             VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
-!          END IF
         END DO
 !
       RETURN    
- END SUBROUTINE     
+ END SUBROUTINE W3XYPUG   
 !/ ------------------------------------------------------------------- /
-   SUBROUTINE W3CFLUG ( ISEA, FACX, FACY, DT, MAPSTA, MAPFS, CFLXYMAX,    &
+   SUBROUTINE W3CFLUG ( ISEA, FACX, FACY, DT, MAPFS, CFLXYMAX,    &
                           VGX, VGY )    
 !/
 !/                  +-----------------------------------+
@@ -307,7 +280,6 @@
 !       FACX/Y   Real   I   Factor in propagation velocity.
 !                          ( 1 or 0 * DT / DX )
 !       DT       Real   I   Time step.
-!       MAPSTA   I.A.   I   Grid point status map.
 !       MAPFS    I.A.   I   Storage map.
 !       CFLXYMAX Real       Maxmimum CFL for spatial advection
 !       VGX/Y    Real   I   Speed of grid.
@@ -354,7 +326,7 @@
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
                           NTRI, TRIGP, CCON , TRIA03,                 &
-                          IE_CELL, POS_CELL, COUNTRI, SI
+                          IE_CELL, POS_CELL, COUNTRI, SI, IOBP
 
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME
       USE W3IDATMD, ONLY: FLCUR
@@ -366,7 +338,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: ISEA, MAPSTA(NY*NX), MAPFS(NY*NX)
+      INTEGER, INTENT(IN)     :: ISEA, MAPFS(NY*NX)
       REAL, INTENT(IN)        :: FACX, FACY, DT, VGX, VGY
       REAL, INTENT(INOUT)     :: CFLXYMAX
 !/
@@ -426,35 +398,13 @@
 ! 2.1  Calculate advection velocities: current --------------------- *
 ! 
           IF ( FLCUR ) THEN   
-            COUNTSEACON=0
-            J = 0
-            DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-              IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
-              IV=POS_CELL(I)
-              IF ((TRIGP(IE,1).NE.IP).AND.MAPSTA(TRIGP(IE,1)).GT.0) COUNTSEACON=COUNTSEACON+1
-              IF ((TRIGP(IE,2).NE.IP).AND.MAPSTA(TRIGP(IE,2)).GT.0) COUNTSEACON=COUNTSEACON+1
-              IF ((TRIGP(IE,3).NE.IP).AND.MAPSTA(TRIGP(IE,3)).GT.0) COUNTSEACON=COUNTSEACON+1
-              END DO
 !
-! Currents are not included on coastal boundaries (COUNTSEACON .NE. 2.*CCON(IP))
-! WARNING: not fully consistent with adevection scheme: boundary status is not determined 
-! for the neighbors
+! Currents are not included on coastal boundaries 
 !
-            IF ((COUNTSEACON.EQ. 2*CCON(IP)).OR.(MAPSTA(IP).EQ.2)) THEN 
+            IF (IOBP(IP) .EQ. 1) THEN                                  
               C(IP,1) = C(IP,1) + CCURX*CX(ISEA)/CLATS(ISEA)
               C(IP,2) = C(IP,2) + CCURY*CY(ISEA)
               END IF    
-!
-! Adds current for all neighbors (irrespective of boundary status ... this is the inconsistency)
-! 
-            DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-              IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
-              IV=POS_CELL(I)
-              IP2=TRIGP(IE,IV)
-              C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA)/CLATS(ISEA)
-              C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA)
-              END DO
-!
             END IF  ! end of ( FLCUR )
 !
 !3.     Calculate K-Values and contour based quantities ...
@@ -482,10 +432,10 @@
         END DO
 !
       RETURN    
- END SUBROUTINE     
+ END SUBROUTINE W3CFLUG    
 !/ ------------------------------------------------------------------- /
 
-      SUBROUTINE W3XYPFSN2 ( ISP, C, LCALC, RD10, RD20, DT, AC, MAPSTA2, AQ)
+      SUBROUTINE W3XYPFSN2 ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
      
 !/
 !/
@@ -494,8 +444,12 @@
 !/                  |  by Aron Roland                   |
 !/                  |  for use in WWIII                 |
 !/                  |  GPL License                      |
-!/                  |  Last update :        19-Dec-2007 |
+!/                  |  Last update :        25-Aug-2011 |
 !/                  +-----------------------------------+
+!/
+!/    19-Dec-2007 : Origination.                        ( version 3.13 )
+!/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+!/
 !/
 !  1. Purpose :
 !     Advection of a scalar in a arbitary velocity field on unstructured meshes
@@ -550,7 +504,6 @@
        REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       INTEGER, INTENT(INOUT) :: MAPSTA2(:)
        REAL,    INTENT(INOUT) :: AQ(:)
 !/
 !/ ------------------------------------------------------------------- /
@@ -643,14 +596,12 @@
              DO IE = 1, NTRI
                NI = TRIGP(IE,:)
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
-          !  IF (NI(1).EQ.1.OR.NI(2).EQ.1.OR.NI(3).EQ.1) WRITE(6,*) 'TEST N2:',IK,ITH,NI,IE,KELEM(:,IE),'##',KKSUM(NI)
-             END DO ! IE
+               END DO ! IE
              DO IP = 1, NX
 !               DTMAXEXP = MAX( ABS(DBLE(IOBP(IP))*DBLE(10.E10)),SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*DBLE(IOBPD(ITH,IP)))) 
 ! This corrects the CFL on the boundary ... 
 ! I have omitted this by now due to increased oscillations when using all physics ...
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
-!               IF (IP.LE.10) WRITE(6,*) 'TEST N3:',IK,ITH,IP,DBLE(DT)/REAL(DTMAXEXP), DBLE(DT)/REAL(DTMAXGL),KKSUM(IP)
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
 !/T             DO IP = 1, NX
@@ -685,19 +636,15 @@
              END DO ! IE
 
              DO IP = 1, NX
-               IF (MAPSTA2(IP) .EQ. 1) THEN
-                 U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) ! Add dry/wet flag ... 
-               ELSE IF (MAPSTA2(IP) .EQ. 2) THEN 
-                 U(IP) = AQ(IP)
-               ELSE IF (MAPSTA2(IP) .EQ. -1) THEN ! DRY/WET
-                 U(IP) = 0.d0
-               END IF
-             END DO
-             AC = REAL(U)
-!             CALL INCIDENTWAVEFLUCT(MAPSTA2,AQ,AC)
-!             U = REAL(AC)
 !
-! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
+! IOBPD is the switch for removing energy coming from the shoreline 
+!
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) 
+               END DO
+             AC = REAL(U)
+!
+! 5 Update boundaries ... would be better to omit any if clause in this loop ...
+!   a possibility would be to use NBI = 0 when FLBPI is FALSE and loop on IBI whatever the value of NBI
 !
             IF ( FLBPI ) THEN 
              RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
@@ -721,7 +668,6 @@
                              / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
                ENDDO
              END IF  
-!          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
            U = REAL(AC)
 
            END DO ! IT        
@@ -729,10 +675,10 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE W3XYPFSN2
       
 !/ ------------------------------------------------------------------- /  
-      SUBROUTINE W3XYPFSPSI2 ( ISP, C, LCALC, RD10, RD20, DT, AC, MAPSTA2, AQ)
+      SUBROUTINE W3XYPFSPSI2 ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
      
 !/
 !/
@@ -797,7 +743,6 @@
        REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       INTEGER, INTENT(INOUT) :: MAPSTA2(:)
        REAL,    INTENT(INOUT) :: AQ(:)
 !/
 !/ ------------------------------------------------------------------- /
@@ -942,18 +887,10 @@
 !             END DO
 
              DO IP = 1, NX
-               IF (MAPSTA2(IP) .EQ. 1) THEN
-                 U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) ! Add dry/wet flag ... 
-               ELSE IF (MAPSTA2(IP) .EQ. 2) THEN
-                 U(IP) = AQ(IP)
-               ELSE IF (MAPSTA2(IP) .EQ. -1) THEN ! DRY/WET
-                 U(IP) = 0.d0
-               END IF
-             END DO
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) ! Add dry/wet flag ... 
+               END DO
 
              AC = REAL(U)
-!             CALL INCIDENTWAVEFLUCT(MAPSTA2,AQ,AC)
-!             U = REAL(AC)
 !
 ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
@@ -987,10 +924,10 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE W3XYPFSPSI2
       
 !/ ------------------------------------------------------------------- /  
-      SUBROUTINE W3XYPFSNIMP ( ISP, C, LCALC, RD10, RD20, DT, AC, MAPSTA2, AQ)
+      SUBROUTINE W3XYPFSNIMP ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
      
 !/
 !/
@@ -1056,7 +993,6 @@
        REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       INTEGER, INTENT(INOUT) :: MAPSTA2(:)
        REAL,    INTENT(INOUT) :: AQ(:)
 !/
 !/ ------------------------------------------------------------------- /
@@ -1254,14 +1190,8 @@
          END IF
 
           DO IP = 1,NX
-            IF (MAPSTA2(IP) .EQ. 1) THEN
-              U(IP) =  MAX(0.d0,X(IP)) * DBLE(IOBPD(ITH,IP))
-            ELSE IF (MAPSTA2(IP) .EQ. 2) THEN
-              U(IP) = AQ(IP)
-            ELSE IF (MAPSTA2(IP) .EQ. -1) THEN
-              U(IP) = 0.d0
-            END IF
-          END DO
+            U(IP) =  MAX(0.d0,X(IP)) * DBLE(IOBPD(ITH,IP))
+            END DO
 
 !        IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) THEN
         IF (.FALSE.) THEN
@@ -1294,10 +1224,10 @@
 ! Why this difference ?
 !
                DO IBI=1, NBI
-                     IP    = MAPSF(ISBPI(IBI),1)
-                     AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                 IP    = MAPSF(ISBPI(IBI),1)
+                 AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                              / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-               ENDDO
+                 END DO
              END IF  
 !          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
 
@@ -1305,11 +1235,11 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE W3XYPFSNIMP
       
 !/ ------------------------------------------------------------------- /  
 
-      SUBROUTINE W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC, MAPSTA2, AQ)
+      SUBROUTINE W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
      
 !/
 !/
@@ -1324,7 +1254,6 @@
 !  1. Purpose :
 !     Advection of a scalar in a arbitary velocity field on unstructured meshes
 !     for the conservative hyperbolic equation N,t + (c*N),xy = 0 in spatial space
-!     This is the standard explicit N-Scheme from Roe as formulated in Abgrall
 !
 !  2. Method :
 !
@@ -1374,7 +1303,6 @@
        REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary condition
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       INTEGER, INTENT(INOUT) :: MAPSTA2(:)
        REAL,    INTENT(INOUT) :: AQ(:)
 !/
 !/ ------------------------------------------------------------------- /
@@ -1526,14 +1454,8 @@
 !            UL          = MAX(0.d0,U-ST)*DBLE(IOBPD(ITH,:))!*DBLE(IOBDP(:)) ... add for IOBDP dry/wet flag.
 
             DO IP = 1,NX
-              IF (MAPSTA2(IP) .EQ. 1) THEN
-                UL(IP) = MAX(0.d0,U(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))!*DBLE(IOBDP(:)) ... add for IOBDP dry/wet flag.
-              ELSE IF (MAPSTA2(IP) .EQ. 2) THEN 
-                UL(IP) = AQ(IP)
-              ELSE IF (MAPSTA2(IP) .EQ. -1) THEN
-                UL(IP) = 0.d0
-              END IF
-            END DO
+              UL(IP) = MAX(0.d0,U(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
+              END DO
 
             USTARI(1,:) = MAX(UL,U)
             USTARI(2,:) = MIN(UL,U)
@@ -1568,21 +1490,16 @@
               ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
             END DO
 
-!            U = MAX(0.d0,UL-ST)*DBLE(IOBPD(ITH,:))!*DBLE(IOBDP(IP)) ... add dry/wet flag ...
-
             DO IP = 1,NX
-              IF (MAPSTA2(IP) .EQ. 1) THEN
-                U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))!*DBLE(IOBDP(:)) ... add for IOBDP dry/wet flag.
-              ELSE IF (MAPSTA2(IP) .EQ. 2) THEN
-                U(IP) = AQ(IP)
-              ELSE IF (MAPSTA2(IP) .EQ. -1) THEN
-                U(IP) = 0.d0
-              END IF
+!
+! IOBPD is the switch for removing energy coming from the shoreline 
+!
+              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
             END DO
 
             AC = REAL(U)
 !
-! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
+! 5 Update open boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
             IF ( FLBPI ) THEN 
              RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
@@ -1615,156 +1532,9 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE W3XYPFSFCT2 
 
 !/ ------------------------------------------------------------------- /
-     SUBROUTINE INCIDENTWAVEFLUCT(MAPSTA,AQ,VQ)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         -Jan-2007 |
-!/                  +-----------------------------------+
-!/
-!/
-!  1. Purpose :
-!
-!  2. Method :
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!       
-!
-!  5. Called by :
-!
-!       
-!
-!  6. Error messages :
-!
-!       None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-!/     
-
- USE CONSTANTS
- USE W3GDATMD, ONLY: MAPSF, NSEA, CLATS,NTH
- USE W3WDATMD, ONLY: VA
- USE W3ADATMD, ONLY: CG
-
-!
-!parameter list
-INTEGER, INTENT(IN)    :: MAPSTA(:)
-REAL,  INTENT(IN)      :: AQ(:)
-REAL,  INTENT(INOUT)   :: VQ(:)
-
-!
-!local parameters
-!
-INTEGER                :: ISEA,IX
-
-!/
-!/ ------------------------------------------------------------------- /
-!/
-
-    DO ISEA = 1, NSEA
-      IX = MAPSF(ISEA,1)
-      IF (MAPSTA(IX) .EQ. 2) VQ(IX) = DBLE(AQ(IX))	
-    ENDDO
-
- RETURN 
-      
-      END SUBROUTINE
-!/ ------------------------------------------------------------------- /
-
-    SUBROUTINE OPENBOUNDARYFLUCT(MAPSTA,AC)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         -Jan-2007 |
-!/                  +-----------------------------------+
-!/
-!/
-!  1. Purpose :
-!
-!  2. Method :
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!       
-!
-!  5. Called by :
-!
-!       
-!
-!  6. Error messages :
-!
-!       None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-!/     
-       
-         USE W3GDATMD, ONLY: NX
-         IMPLICIT NONE
-! 
-!parameter list         
-!         
-          INTEGER, INTENT(IN) :: MAPSTA(:)
-          REAL,  INTENT(INOUT) :: AC(:)
-!
-!local parameters
-!	  
-         INTEGER             :: IP 
-	 
-!/ ------------------------------------------------------------------- /	 
-         DO IP = 1, NX
-            IF (MAPSTA(IP) .EQ. 0) THEN 
-	       AC(IP) = 0.
-	    ENDIF
-         END DO  	      
-         RETURN
-	 
-      END SUBROUTINE
-      
- !/ ------------------------------------------------------------------- /
  	
 END MODULE W3PROFSMD 
 

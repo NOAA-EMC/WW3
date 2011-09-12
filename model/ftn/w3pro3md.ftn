@@ -1192,9 +1192,9 @@
 !/
       END SUBROUTINE W3XYP3
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
+      SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
                           DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
-                          DCYDX, DCYDY, VA, CFLTHMAX )
+                          DCYDX, DCYDY, VA, CFLTHMAX, CFLKMAX )
 !/
 !/    *** THIS ROUTINE SHOULD BE IDENTICAL TO W3KTP2 ***
 !/
@@ -1208,6 +1208,8 @@
 !/    14-Feb-2000 : Origination.                        ( version 2.08 )
 !/    17-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    06-Mar-2011 : Output of maximum CFL  (F. Ardhuin) ( version 3.14 )
+!/    24-Aug-2011 : Limiter on k advection (F. Ardhuin) ( version 4.04 )
+!/    25-Aug-2011 : DEPTH  = MAX ( DMIN, DW(ISEA) )     ( version 4.04 )
 !/
 !  1. Purpose :
 !
@@ -1238,7 +1240,7 @@
 !       MAPxx2  I.A.   I   Propagation and storage maps.
 !       CG      R.A.   I   Local group velocities.
 !       WN      R.A.   I   Local wavenumbers.
-!       DEPTH   R.A.   I   Depth.
+!       DW      R.A.   I   Depth.
 !       DDDx    Real   I   Depth gradients.
 !       CX/Y    Real   I   Current components.
 !       DCxDx   Real   I   Current gradients.
@@ -1304,7 +1306,7 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
                           EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-                          CTMAX
+                          CTMAX, DMIN
       USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITIME
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST
@@ -1318,9 +1320,10 @@
 !/
       INTEGER, INTENT(IN)     :: ISEA
       REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
-                                 WN(0:NK+1), DEPTH, DDDX, DDDY,       &
+                                 WN(0:NK+1), DW, DDDX, DDDY,       &
                                  CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
-      REAL, INTENT(INOUT)     :: VA(NSPEC), CFLTHMAX
+      REAL, INTENT(INOUT)     :: VA(NSPEC)
+      REAL, INTENT(OUT)       :: CFLTHMAX, CFLKMAX
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1329,7 +1332,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FDDMAX, FDG, FKD, FKD0, DCYX,        &
                                  DCXXYY, DCXY, DCXX, DCXYYX, DCYY,    &
-                                 VELNOFILT
+                                 VELNOFILT, VELFAC, DEPTH
       REAL                    :: DSDD(0:NK+1), FRK(NK), FRG(NK),      &
                                  FKC(NTH), VQ(-NK-1:NK2*(NTH+2)),     &
                                  DB(NK2,NTH+1), DM(NK2,0:NTH+1),      &
@@ -1342,7 +1345,10 @@
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Initialize arrays
 !
-      IF ( FLCK ) VQ = 0.
+     DEPTH  = MAX ( DMIN, DW )  
+     IF ( FLCK ) VQ = 0.
+     CFLTHMAX = 0.
+     CFLKMAX  = 0.
 !
 !/T      WRITE (NDST,9000) FLCTH, FLCK, FACTH, FACK, CTMAX
 !/T      WRITE (NDST,9010) ISEA, DEPTH, CX, CY, DDDX, DDDY,           &
@@ -1388,7 +1394,6 @@
             FDDMAX = MAX(FDDMAX,ABS(ESIN(ITH)*DDDX-ECOS(ITH)*DDDY))
             END DO
 !
-          CFLTHMAX = 0.
           DO IK=1, NK
             FRK(IK) = FACTH * DSDD(IK) / WN(IK)
 !
@@ -1433,7 +1438,8 @@
         END IF
 !
 ! 4.  Wavenumber shift velocities ------------------------------------ *
-!     FACK is just the time step, which is accounted for in W3QCK2
+! N.B.:  FACK = DTG / REAL(NTLOC)  (value set in w3wavemd)
+!        namely, FACK*VC/DK=1 corresponds to CFL=1
 !
       IF ( FLCK ) THEN
 !
@@ -1449,16 +1455,7 @@
                        ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
             END DO
 !
-! 4.b Velocities
-!
-          DO IK=0, NK+1
-            FKD0   = FKD / CG(IK) * DSDD(IK)
-            DO ITH=1, NTH
-              CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)
-              END DO
-            END DO
-!
-! 4.c Band widths
+! 4.b Band widths
 !
           DO IK=0, NK
             DB(IK+1,1) = DSIP(IK) / CG(IK)
@@ -1474,13 +1471,29 @@
               END DO
             END DO
 !
+! 4.c Velocities
+!
+          DO IK=0, NK+1
+            FKD0   = FKD / CG(IK) * DSDD(IK)
+            VELFAC =  FACK/DB(IK+1,1) 
+            DO ITH=1, NTH
+!
+! Puts filtering on velocity (needs the band widths) 
+!             
+              VELNOFILT = ( FKD0 + WN(IK)*FKC(ITH) ) * VELFAC   ! this is velocity * DT / DK 
+              CFLKMAX = MAX(CFLKMAX, ABS(VELNOFILT))
+              CFLK(IK+1,ITH) = SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)/VELFAC
+              !CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)          ! this was without the limiter ... 
+              END DO
+            END DO
+!
         END IF
 !
 ! 5.  Propagate ------------------------------------------------------ *
 !
       IF ( MOD(ITIME,2) .EQ. 0 ) THEN
-          IF ( FLCK ) THEN
-              DO ITH=1, NTH
+        IF ( FLCK ) THEN
+          DO ITH=1, NTH
                 VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
                 END DO
               CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
@@ -1499,8 +1512,8 @@
                             NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
                             NSPEC, NDSE, NDST )
             END IF
-          IF ( FLCK )  THEN
-              DO ITH=1, NTH
+          IF ( FLCK ) THEN
+            DO ITH=1, NTH
                 VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
                 END DO
               CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &

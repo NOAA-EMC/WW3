@@ -1192,7 +1192,7 @@ be redefined by the user in the program input files.
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Input and dissipation (\wam-4 and ECWAM updates) \\
+\subsubsection{~Input and dissipation (\wam-4 - ECWAM) \\
 \hfill {\rm (F. Ardhuin)}} \label{sec:wam4}
 \vsssub
 
@@ -1403,10 +1403,10 @@ differentiate the variables from the pointers to these variables.} \label{tab:WA
 
 % -------------------------------------------------------------
 \vsssub
-\subsubsection{~Input and dissipation (ST4) \hfill {\rm (F. Ardhuin)}} \label{sec:wam4}
+\subsubsection{~Input and dissipation (Ardhuin et al. 2010)} \label{sec:wam4}
 \vsssub
 
-This parameterization for the positive part of the wind input is identical to ST3. An ad hoc reduction of $u_\star$ is
+This parameterization uses a positive part of the wind input that is takem from WAM4, with an ad hoc reduction of $u_\star$ is
 implemented in order to allow a balance with a saturation-based dissipation.
 This correction also reduces the drag coefficient at high winds. This is done by reducing 
 the wind input for high frequencies and high winds. For this,  $u_\star$ in eq. (\ref{eq:SinWAM4}) is replaced 
@@ -1627,7 +1627,7 @@ Par.         &  WWATCH var. & namelist & TEST441b & TEST405  & TEST500 \\
   $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 0  & \textbf{1.5} \\
   $\Delta_\theta$                   &  SDSDTH         & SDS4 & 80                    & 80 & \textbf{0.0}  \\
   $B_r$                             &  SDSBR          & SDS4 & 0.0009                & \textbf{0.00085} & 0.0009    \\
-  $2*C_{\mathrm{cu}}$               & SDSC3           & SDS4 & -0.8                  & \textbf{0.0}    & -0.8    \\
+  $2*C_{\mathrm{cu}}$               & SDSCUM         & SDS4 & -0.40344               & \textbf{0.0}    & -0.40344     \\
   ${\mathrm{s_B}}$                  & SDSCOS           &SDS4 & 2.0                   &  0.0 & 2.0 \\
    $B_0$                             &  SDSC4          & SDS4 & 1.0                  & 1.0 & 1.0   \\
   $p^{\mathrm{sat}}$                &  SDSP           & SDS4 & 2.0  & 2.0 &  2.0   \\
@@ -1956,7 +1956,7 @@ is replaced by the sum of triangle edges projected on the perpendicular to the w
 This can be put in the same form,  $\left[\cos \theta \Delta y \sin \theta  \Delta x \right]$ by properly defining 
 $\Delta y$ and $\Delta x$ from the triangle edges. 
 
-The reflection coefficient $R^2$ is taken to be non-zero only for the directions such as $\cos(\theta-\theta')$, and its magnitude 
+The reflection coefficient $R^2$ is taken to be non-zero only for the directions for which  $\cos(\theta-\theta')<0$, and its magnitude 
 is the product of a reflection coefficient $R_0^2(k)$, integrated over the scattered directions $\theta$, 
 and a directional distribution around the specular direction $R_2(\theta,\theta')$,  
 \begin{equation} 

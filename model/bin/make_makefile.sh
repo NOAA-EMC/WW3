@@ -84,7 +84,7 @@
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection mcp
+              mgwind mgprop mggse nnt mprf reflection mcp netcdf
   do
     case $type in
       mach   ) TY='one'
@@ -143,7 +143,7 @@
                OK='NL0 NL1 NL2 NLX' ;;
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BTX' ;;
+               OK='BT0 BT1 BT4 BTX' ;;
       s_db   ) TY='one'
                ID='depth-induced breaking'
                OK='DB0 DB1 DBX' ;;
@@ -213,9 +213,13 @@
                TS='REF1'
                OK='REF1' ;;
       mcp    ) TY='one'
-               ID='model coupling protocol'
+               ID='model as program / subroutine'
                TS='NOPA'
                OK='NOPA PALM' ;;
+      netcdf ) TY='upto1'
+               ID='netcdf api type'
+               TS='NC0'
+               OK='NC3 NC4' ;;
     esac
 
     n_found='0'
@@ -293,6 +297,7 @@
       s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
       mcp    ) mcp=$sw ;;
+      netcdf ) nclib=$sw;;
         *    ) ;;
     esac
   done
@@ -467,9 +472,8 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
-  progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
-         ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
-         ww3_ounp ww3_gint'
+  progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_sbs1
+         ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_gint'
 
   for prog in $progs
   do
@@ -489,13 +493,6 @@
                  IO='w3iogrmd w3iorsmd'
                 aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_prep) IDstring='Field preprocessor'
-               core='w3fldsmd'
-               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
-               prop=
-             source="w3triamd $stx $nlx $btx"
-                 IO='w3iogrmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
-     ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
@@ -537,21 +534,7 @@
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
-     ww3_ounf) IDstring='Gridded NetCDF output'
-               core=
-               data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop=
-             source="w3triamd $stx $nlx $btx"
-                 IO='w3iogrmd w3iogomd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_outp) IDstring='Point output'
-               core=
-               data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop=
-             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
-                 IO='w3bullmd w3iogrmd w3iopomd w3partmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
-     ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
@@ -594,7 +577,6 @@
                  IO='w3iogrmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
     esac
-
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
     files="$aux $core $data $prop $source $IO $prog"
     filesl="$prog $data $core $prop $source $IO $aux"
@@ -610,6 +592,54 @@
     echo ' '                                     >> makefile
   done
 
+#
+# Programs with NetCDF libraries
+#
+  if [ "$nclib" != '' ] 
+  then 
+    progs='ww3_prnc ww3_ounf ww3_ounp'
+
+    for prog in $progs
+    do
+      case $prog in
+        ww3_prnc) IDstring='NetCDF field preprocessor'
+               core='w3fldsmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+        ww3_ounf) IDstring='Gridded NetCDF output'
+               core=
+               data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd w3iogomd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+        ww3_ounp) IDstring='Point NetCDF output'
+               core=
+               data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
+                 IO='w3bullmd w3iogrmd w3iopomd w3partmd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+      esac
+
+      d_string='$(aPe)/'"$prog"' : $(aPo)/'
+      files="$aux $core $data $prop $source $IO $prog"
+      filesl="$prog $data $core $prop $source $IO $aux"
+
+      echo "# $IDstring"                           >> makefile
+      echo ' '                                     >> makefile
+      for file in $files
+      do
+        echo "$d_string$file.o"                    >> makefile
+        echo "$file"                               >> filelist.tmp
+      done
+      echo '	@$(aPb)/link '"$filesl"          >> makefile
+      echo ' '                                     >> makefile
+    done  
+  fi
   sort -u filelist.tmp                            > filelist
   rm -f filelist.tmp
 
@@ -674,7 +704,7 @@
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRCXMD \
                W3SNL1MD W3SNL2MD W3SNLXMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
-               W3SBT1MD W3SBTXMD W3SDB1MD W3SDBXMD \
+               W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
@@ -721,6 +751,7 @@
          'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
          'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
+         'W3SBT4MD'     ) modtest=w3sbt4md.o ;;
          'm_btffac'     ) modtest=mod_btffac.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
