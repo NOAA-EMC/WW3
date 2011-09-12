@@ -70,7 +70,7 @@
 !/                  input in ww3_grid.inp to CSTRG.     ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    25-Jun-2011 : Adding movable bed friction         ( version 4.01 )
-!/    25-Aug-2001 : Clean up.                           ( version 4.05 )
+!/    25-Aug-2011 : Clean up.                           ( version 4.05 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
