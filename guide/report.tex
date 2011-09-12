@@ -935,16 +935,20 @@ files. Because the manual is rather large, it has been stored in several
 \end{flist}
 
 \vspace{\baselineskip} \noindent
-A {\file makefile} is provided for compiling a PDF version of the manual.
-Use "make" or "make manual" to compile the manual.
-Use "make clean" to remove the files generated during the compile.
+A {\file makefile} is provided to compile the manual.  The default make
+target will compile a PDF version of the manual (manual.pdf).  Other make
+targets available are: "inp" (create \LaTeX versions in current directory
+of the {\file ww3\_*.inp} and {\file gx\_*.inp} input files),
+"clean" (remove all files created during compile of manual).
+The following external programs are required and must
+be found in the user PATH: {\file latex}, {\file bibtex} and {\file dvipdf}.
 
 \vspace{\baselineskip} \noindent
-The example input files ({\file ww3\_{\it{XXXX}}.tex} and {\file gx\_{\it{XXXX}}.tex})
+The example input files ({\file ww3\_*.tex} and {\file gx\_*.tex})
 required for the programs described in {\file run.tex} are automatically generated
 during compilation of the manual. The source input files are copied from
-{\file \$(WWATCH3\_DIR)/inp}.  The default setting for {\file WWATCH3\_DIR},
-"../model", can be overridden by setting {\file WWATCH3\_DIR} either on the make
+{\file \$(INPDIR)}.  The default setting for {\file INPDIR},
+"../inp", can be overridden by setting {\file INPDIR} either on the make
 command-line or in the environment. This method assures that the example input files
 provided with the code are the files displayed in the manual.
 
