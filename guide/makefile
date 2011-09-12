@@ -2,7 +2,7 @@
 SHELL = /bin/sh
 
 # Target document
-TARGET = manual
+TARGET = report
 
 # External programs required (assumed to be in user path)
 LATEX = latex
