@@ -1941,7 +1941,7 @@
 !                     COMPUTES WHITECAP PARAMETERS
 !/ ------------------------------------------------------------------- /
 !
-      IF ( .NOT. (FLOGRD(34).OR.FLOGRD(35) ) THEN
+      IF ( .NOT. (FLOGRD(34).OR.FLOGRD(35) ) ) THEN
         RETURN
         END IF
 !/
