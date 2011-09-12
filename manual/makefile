@@ -1,15 +1,39 @@
-# Wavewatch III model directory
-# The default can be overridden by specifying WWATCH3_DIR on the make
-# command-line or in the environment.
-WWATCH3_DIR ?= ../model
+# Set default shell
+SHELL = /bin/sh
 
-# Latex commands (assumed to be in user path)
+# Target document
+TARGET = manual
+
+# External programs required (assumed to be in user path)
 LATEX = latex
 BIBTEX = bibtex
 DVIPDF = dvipdf
 
-# Target document
-TARGET = manual
+# Make sure external programs are found
+ifneq ($(MAKECMDGOALS),clean)
+  ifeq ($(shell if [ -z "`which $(LATEX) 2>/dev/null`" ]; then echo 1; fi),1)
+    $(error $(LATEX): command not found.  The $(LATEX) command is required)
+  endif
+  ifeq ($(shell if [ -z "`which $(BIBTEX) 2>/dev/null`" ]; then echo 1; fi),1)
+    $(error $(BIBTEX): command not found.  The $(BIBTEX) command is required)
+  endif
+  ifeq ($(shell if [ -z "`which $(DVIPDF) 2>/dev/null`" ]; then echo 1; fi),1)
+    $(error $(DVIPDF): command not found.  The $(DVIPDF) command is required)
+  endif
+endif
+
+# INPDIR: location of ww3_*.inp input files used for documentation.
+# The default can be overridden by specifying INPDIR on the make
+# command-line or in the environment.
+INPDIR ?= ../inp
+
+# Make sure INPDIR exists (if not clean)
+ifneq ($(MAKECMDGOALS),clean)
+  ifeq ($(shell if [ ! -e $(INPDIR) ]; then echo 1; fi),1)
+    $(error INPDIR=$(INPDIR) does not exist.  INPDIR must point to the \
+      location of the ww3_*.inp input files used for documentation)
+  endif
+endif
 
 # TeX files in this directory
 TEXFILES = \
@@ -47,7 +71,7 @@ sys.tex \
 test.tex \
 tstep.tex
 
-# TeX files generated from $(WWATCH3_DIR)/inp files
+# TeX files generated from $(INPDIR) files
 INPFILES = \
 ww3_grid.tex \
 ww3_strt.tex \
@@ -67,7 +91,7 @@ BIBFILES = manual.bib
 BSTFILES = jas.bst
 
 # Style inputs
-STYFILES =
+STYFILES = svn.sty
 
 # Graphics inputs
 GFXFILES = \
@@ -92,7 +116,7 @@ clean:
 	\rm -f *.log *.aux *.bbl *.blg *.toc *.out
 	\rm -f *.dvi *.pdf
 
-%.tex : $(WWATCH3_DIR)/inp/%.inp
+%.tex : $(INPDIR)/%.inp
 	-@echo "Processing $<"
 	-@if [ ! -e $< ]; then echo "ERROR: $< not found"; exit 1; fi
 	-@\rm -f $@
