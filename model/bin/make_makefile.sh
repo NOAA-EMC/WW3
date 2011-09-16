@@ -6,7 +6,7 @@
 #                    not print header information.                            #
 #                                                                             #
 # programs used : w3_new  Touches the correct files if compiler switches      #
-#                         have been chsnged.                                  #
+#                         have been changed.                                  #
 #                                                                             #
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
@@ -217,7 +217,7 @@
                TS='NOPA'
                OK='NOPA PALM' ;;
       netcdf ) TY='upto1'
-               ID='netcdf api type'
+               ID='model coupling protocol'
                TS='NC0'
                OK='NC3 NC4' ;;
     esac
