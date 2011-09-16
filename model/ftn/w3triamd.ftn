@@ -1570,7 +1570,6 @@ END SUBROUTINE
 !
       USE CONSTANTS
 !
-      USE W3TIMEMD, ONLY: DSEC21
 !
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL,          &
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
@@ -1579,7 +1578,6 @@ END SUBROUTINE
                           IE_CELL, POS_CELL, IOBP,IOBPD, XYB, TH,     &
                           ANGLE0, ANGLE                     
 
-      USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
       USE W3IDATMD, ONLY: FLCUR
@@ -1708,7 +1706,7 @@ END SUBROUTINE
                  SHIFT=PI
                  END IF
                DO ITH=1, NTH
-                 THTEST=DBLE(MOD(TH(ITH)+SHIFT,TPI))
+                 THTEST=MOD(TH(ITH)+SHIFT,DBLE(TPI))
                  IF ((THTEST.GE.DIRMIN) .AND.   &
                      (THTEST.LE.DIRMAX)) THEN
                    IOBPD(ITH,IX) = 1
