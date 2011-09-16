@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Aug-2011 |
+!/                  | Last update :         16-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -70,7 +70,7 @@
 !/                  input in ww3_grid.inp to CSTRG.     ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    25-Jun-2011 : Adding movable bed friction         ( version 4.01 )
-!/    25-Aug-2011 : Clean up.                           ( version 4.05 )
+!/    16-Sep-2011 : Clean up.                           ( version 4.05 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1407,7 +1407,7 @@
       P2SF   = 0
       I1P2SF = 1
       I2P2SF = 15
-      US3D_OUNF=1 
+      US3D_OUNF=0 
       I1US3D_OUNF=1
       I2US3D_OUNF=NK
       FLAGICESOURCE=.FALSE.
@@ -1487,9 +1487,6 @@
       COUG_RAD3D=COU_RAD3D
       COUG_US3D=.FALSE.
       IF (US3D_OUNF.GT.0) COUG_US3D=.TRUE.
-
-WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
-
 
 !
 ! 6.o End of namelist processing
@@ -2609,7 +2606,10 @@ WRITE(6,*) 'COUCOU :',COUG_2D,COUG_US3D
 !
         END IF
 !
-! 8.h Estimates shoreline direction for scattering 
+! 8.h Estimates shoreline direction for scattering for structured grids
+! NB: this should be updated with moving water levels, and thus
+! this entire section should be moved to another module 
+! (see w3triamd.ftn for the unstructured grids) 
 !
 !/REF1      IF (GTYPE.NE.UNGTYPE) THEN
 !/REF1        DO IY=2, NY-1
