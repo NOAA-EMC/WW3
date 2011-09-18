@@ -1578,7 +1578,7 @@
               DO IK=P2MSF(2),P2MSF(3)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,P2SMS(:,IK),MAPSF, XX )
 !                XK(:,:,IK)=XX
-                XK(:,:,IK)=ALOG10(XX+0.01)
+                WHERE ( XX.GE.0.) XX = ALOG10(XX+0.01)
                 END DO
               END IF
 

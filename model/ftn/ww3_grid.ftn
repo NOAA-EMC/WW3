@@ -443,6 +443,7 @@
       LOGICAL                 :: FLTC96 = .FALSE.
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
+      LOGICAL                 :: FLST4  = .FALSE.
       LOGICAL                 :: FLAGICESOURCE
       REAL                    :: REFCOAST, REFFREQ, REFBETA, REFMAP,  &
                                  REFSUBGRID,  BSBOTTOM,               &
@@ -758,6 +759,7 @@
 !/ST2      FLTC96 = .TRUE.
 !/ST3      NRSRCE = NRSRCE + 1
 !/ST4      NRSRCE = NRSRCE + 1
+!/ST4      FLST4  = .TRUE.
 !/STX      NRSRCE = NRSRCE + 1
 !
 !/NL0      NRNL   = NRNL + 1
@@ -1019,6 +1021,12 @@
 !/NL1        ELSE
 !/NL1          NLPROP =  2.78E7
 !/NL1        END IF
+!/NL1      IF ( FLST4 ) THEN
+!/NL1          NLPROP =  2.50E7
+!/NL1        ELSE
+!/NL1          NLPROP =  2.78E7
+!/NL1        END IF
+!
 !/NL1      KDCONV =  0.75
 !/NL1      KDMIN  =  0.50
 !/NL1      SNLCS1 =  5.5
