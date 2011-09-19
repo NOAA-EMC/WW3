@@ -1,0 +1,247 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# control.cycle: Manage the GMD optimization from initialization to the final  #
+#                processing of the final generation by repeatedly running      #
+#                control.sh                                                    #
+#                                                                              #
+# usage: control.cycle                                                         #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 02-Jan-2009 : Origination.                                                   #
+# 01-Oct-2009 : Output file number from existing files.                        #
+# 02-Nov-2009 : Work with control.status file to stop if needed.               #
+#                                                                              #
+#    Copyright 2009-2010 National Weather Service (NWS),                       #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 1. Initialization
+
+  set -e
+
+  echo ' '
+  echo 'control.cycle : '`date`
+  echo '------------------------------------------------'
+  echo '   managing GMD genetic optimization experiments'
+  echo ' '
+
+  setup='.genes.env'
+  sleep=1
+
+# ---------------------------------------------------------------------------- #
+# 2. Get base setup for the runs
+
+  if [ -f ~/$setup ]
+  then
+    echo "   Setup file $setup found."
+    . ~/$setup
+  else
+    echo "   Setup file $setup NOT found (abort)."
+    exit 2
+  fi
+  all_cases=`$genes_main/ush/get_cases.sh`
+
+  echo "   Save directory  : $genes_data/$genes_exp1/$genes_exp2"
+  echo "   Cases to run    : $all_cases"
+  echo "   Testing directories and files ..."
+  echo ' '
+
+# ---------------------------------------------------------------------------- #
+# 3.  Checking directories and files.
+# 3.a General data directory
+
+  if [ ! -d "$genes_data" ]
+  then
+    echo "   Main data directory $genes_data not found (abort) *** "
+    exit 3 
+  fi
+
+  cd $genes_data
+
+# 3.b First level experiment directory
+
+  if [ ! -d "$genes_exp1" ]
+  then
+    echo -n "   Experiment directory $genes_exp1 not found, create [y/-] ? "
+    read OK
+    if [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
+    then
+      mkdir $genes_exp1
+    else
+      echo "   *** aborting script ***" ; exit 4
+    fi
+  fi
+
+  cd $genes_exp1
+
+# 3.c Second level experiment directory
+
+  if [ ! -d "$genes_exp2" ]
+  then
+    echo -n "   Experiment directory $genes_exp2 not found, create [y/-] ? "
+    read OK
+    if [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
+    then
+      mkdir $genes_exp2
+    else
+      echo "   *** aborting script ***" ; exit 5
+    fi
+  fi
+
+  cd $genes_exp2
+
+# 3.d Experiment setup file
+
+  if [ -f "genes.expdef.env" ]
+  then
+    . genes.expdef.env
+  else
+    echo "   Experiment definition file not found :"
+    echo -n "      Number of quadruplets    : " ; read genes_nq
+    echo -n "      Size of first genetation : " ; read genes_npop0
+    echo -n "      Size of next generations : " ; read genes_npop
+    echo -n "      Number of generations    : " ; read genes_ngen
+    echo -n "      Initial random seed      : " ; read genes_seed
+
+    echo ' '
+    echo 'New file genes.expdef.env : '
+    echo '----------------------------------------------------'
+    echo "#!/bin/sh"
+    echo "# genes.expdef.env : setup file "
+    echo ' '
+    echo "  export    genes_nq=$genes_nq"
+    echo "  export genes_npop0=$genes_npop0"
+    echo "  export  genes_npop=$genes_npop"
+    echo "  export  genes_ngen=$genes_ngen"
+    echo "  export  genes_seed=$genes_seed"
+    echo '----------------------------------------------------'
+    echo -n "Save this file [y/-] ? " ; read OK
+
+    if [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
+    then
+      echo "#!/bin/sh"                                   > genes.expdef.env
+      echo "# genes.expdef.env : setup file "           >> genes.expdef.env
+      echo ' '                                          >> genes.expdef.env
+      echo "  export    genes_nq=$genes_nq"             >> genes.expdef.env
+      echo "  export genes_npop0=$genes_npop0"          >> genes.expdef.env
+      echo "  export  genes_npop=$genes_npop"           >> genes.expdef.env
+      echo "  export  genes_ngen=$genes_ngen"           >> genes.expdef.env
+      echo "  export  genes_seed=$genes_seed"           >> genes.expdef.env
+    else
+      echo "   *** aborting script ***" ; exit 6
+    fi
+  fi
+
+  . genes.expdef.env
+
+  echo "   Number of quadruplets : $genes_nq"
+  echo "   Size of population    : $genes_npop [$genes_npop0]"
+  echo "   Number of generations : $genes_ngen"
+  echo "   Initial random seed   : $genes_seed"
+  echo ' '
+
+  data_dir=`pwd`
+  cd $genes_main
+
+# ---------------------------------------------------------------------------- #
+# 4.  Looping over control.sh
+# 4.a Initialization
+
+  iloop=1
+  nlmax=9999
+  idmax=2
+
+  set +e
+  outfiles=`ls control.????.out 2> /dev/null`
+  set -e
+
+  if [ -n "$outfiles" ]
+  then
+    outfile=`ls control.????.out | tail -1 | sed 's/\./ /g' | awk '{print $2}'`
+    iloop=`expr $outfile + 1`
+  fi
+
+  ogen='undefined'
+  done='no'
+  idup='1'
+
+# 4.b Loop control
+
+  rm -f $genes_main/control.status
+
+  while [ "$iloop" -le "$nlmax" ] && [ "$done" != 'yes' ]
+  do
+
+    if [ -f $genes_main/control.status ]
+    then
+      . $genes_main/control.status
+      if [ "$status" = 'stop' ]
+      then
+        echo '   status = stop *** ABORT ***'
+        echo ' '
+        echo 'Out of control.cycle '`date`
+        exit 00
+      fi
+    fi
+
+    if [ "$iloop" -lt '10' ]
+    then
+      iloop="000$iloop"
+    else
+      if [ "$iloop" -lt '100' ]
+      then
+        iloop="00$iloop"
+      else
+        if [ "$iloop" -lt '1000' ]
+        then
+          iloop="0$iloop"
+        fi
+      fi
+    fi
+
+    cd $data_dir
+    set +e
+    ngen=`ls -d gen???? 2> /dev/null | wc -w | awk '{ print $1 }'`
+    set -e
+    if [ "$ngen" = '0' ]
+    then
+      gen='absent'
+    else
+      gen=`ls -d gen???? | tail -1 | awk '{ print $1 }'`
+    fi
+    cd $genes_main
+
+    if [ "$ogen" = "$gen" ]
+    then
+      idup=`expr $idup + 1`
+    else
+      idup='1'
+      ogen=$gen
+    fi
+
+    if [ "$idup" -le "$idmax" ]
+    then
+      ofile="control.$iloop.out"
+      echo "   Running control.sh on generation $gen [$ofile]."
+      set +e
+      ./control.sh > $ofile 2>&1
+      set -e
+    else
+      echo "   Too many tries for same generation [$gen] ..."
+      done='yes'
+    fi
+
+    iloop=`expr $iloop + 1`
+
+  done
+  
+# ---------------------------------------------------------------------------- #
+# 5. End of script
+
+  echo ' '
+  echo 'Out of control.cycle '`date`
+
+# End of control.cycle ------------------------------------------------------- #

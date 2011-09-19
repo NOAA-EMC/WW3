@@ -1,0 +1,1246 @@
+\documentclass[12pt]{article}
+
+\oddsidemargin=0.4in
+\evensidemargin=0.4in
+\textwidth=5.7in
+\topmargin=-0.6in
+\textheight=8.5in
+
+\usepackage{psfig}
+\usepackage{natbib}
+\usepackage{svn}
+
+\SVN $Revision$
+
+%\newcommand{\pstyle}{myheadings}
+\newcommand{\pstyle}{plain}
+\newfont{\ff}{cmsl12}
+
+\newcommand{\wwt}{WAVEWATCH III$\:$\textsuperscript\textregistered}
+\newcommand{\ww}{WAVEWATCH III}
+\newcommand{\ws}{WW3}
+\newcommand{\gmd}{GMD}
+\newcommand{\refs}{(\ldots references \ldots)}
+\newcommand{\p}{\partial}
+\newcommand{\degree}{^{\circ}}
+\newcommand{\bk}{\mbox{\boldmath $k$}}
+\newcommand{\bc}{\mbox{\boldmath $c$}}
+\newcommand{\lae}{$\lambda =$}
+\newcommand{\mue}{$\mu =$}
+\newcommand{\CCe}{$C =$}
+
+\newcommand{\file}{\sf}
+\newcommand{\code}{\tt}
+\newcommand{\dir}{\sf}
+\newcommand{\F}{\sc}
+
+\newcommand{\pb}{\strut \vfill \pagebreak}
+\newcommand{\bpage}{\vfill \pagebreak \strut
+
+\vspace{2.5in} \centerline{This page is intentionally left blank.}}
+\newcommand{\bpagea}{\strut
+
+\vspace{2.5in} \centerline{This page is intentionally left blank.}}
+
+\newcommand{\newsec}{\setcounter{equation}{0}
+                      \setcounter{myfigno}{0}
+                      \setcounter{mytabno}{0}}
+
+\newenvironment{flist}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 35mm \labelwidth 25mm
+            \rightmargin 10mm}}{\end{list}}
+\newenvironment{flist2}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 45mm \labelwidth 35mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\fit}[2]{\item[{\file{#1}}\hfill]{#2}}
+
+\newenvironment{plist}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 35mm \labelwidth 25mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\pit}[2]{\item[{\code{#1}}\hfill]{#2}}
+
+\newcounter{myfigno}[section]
+\newenvironment{myfig}[1]{\begin{figure}[#1]
+                         \refstepcounter{myfigno}}                       
+                        {\end{figure}}
+\newenvironment{myfigx}[1]{\begin{figure}[#1]}                       
+                        {\end{figure}}
+\newcommand{\myfcap}[1]{\begin{list}{\ff Fig. \themyfigno\ :~\hfill}
+                       {\rightmargin 8mm \labelsep 0mm
+                        \labelwidth 8mm \leftmargin 8mm
+                        \topsep 0mm \parskip 0mm \partopsep 0mm }
+                        \item \ff #1 \end{list}}
+\newcommand{\myfcapc}[1]{\begin{center} \ff Fig. \themyfigno\ :~ #1
+                         \end{center}}
+\newcommand{\myfcapx}[1]{\begin{center} \ff #1 \end{center}}
+
+\newcounter{mytabno}[section]
+\newenvironment{mytab}[1]{\begin{table}[#1]
+                         \refstepcounter{mytabno}}                       
+                        {\end{table}}
+\newcommand{\mytcap}[1]{\begin{list}{\ff Table \themytabno :~\hfill}
+                       {\rightmargin 8mm \labelsep 0mm
+                        \labelwidth 8mm \leftmargin 8mm
+                        \topsep 0mm \parskip 0mm \partopsep 0mm }
+                        \item \ff #1 \end{list}
+                        \vspace{\baselineskip}}
+\newcommand{\mytcapc}[1]{\begin{center} \ff Table \themytabno : #1
+                         \end{center} \vspace{\baselineskip}}
+
+\renewcommand{\themyfigno}{\thesection.\arabic{myfigno}}
+\renewcommand{\themytabno}{\thesection.\arabic{mytabno}}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+
+\newcounter{mylistno}
+
+\newcommand{\topline}{\rule{137mm}{0.5mm}}
+\newcommand{\botline}{\vspace{1 mm}\rule{137mm}{0.5mm}}
+
+\begin{document}
+
+%--------------------------------------------------------------%
+%           Title page                                         %
+%--------------------------------------------------------------%
+
+\pagestyle{empty}
+
+\strut \vspace{5mm}
+
+\begin{center} 
+U. S. Department of Commerce \\
+National Oceanic and Atmospheric Administration \\
+National Weather Service \\
+National Centers for Environmental Prediction \\
+5200 Auth Road Room 207 \\
+Camp Springs, MD 20746
+
+\vspace{15mm}
+
+{\bf Technical Note}
+
+\vspace{15mm}
+
+{\large A genetic optimization package for the Generalized \\ Multiple DIA in
+  \wwt\ $^\dag$.}
+
+\vspace{20mm}
+
+Hendrik l. Tolman$^\ddag$
+\\
+Environmental Modeling Center \\
+Marine Modeling and Analysis Branch
+
+\vspace{25mm}
+
+%\today\ (DRAFT, Revision: \SVNRevision)
+Version 1.0, December 2010
+
+\vfill {\sc this is an unreviewed manuscript, primarily
+intended for informal exchange of information among ncep staff
+members}
+
+\end{center}
+\noindent \rule{140mm}{0.5mm} \\
+{\small $^\dag$ MMAB Contribution No.~289. \\
+$^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\
+
+\bpage
+
+\pagebreak
+
+\markright{\fbox{\rm{DRAFT}} \hspace{2mm} \today}
+\pagestyle{\pstyle}
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+%--------------------------------------------------------------%
+%            Abstract                                          %
+%--------------------------------------------------------------%
+\addtocontents{toc}{\vspace{\baselineskip}}
+\addcontentsline{toc}{subsection}{Abstract}
+
+\begin{abstract}
+This report describes a genetic optimization package for the Generalized
+Multiple DIA (GMD) in the \ww\ modeling framework. This report will be updated
+as needed, depending upon development of this package or of the underlying
+wave model.
+\end{abstract}
+
+\vspace{\baselineskip}
+\vspace{\baselineskip}
+\vspace{\baselineskip}
+
+\begin{center}
+{\bf Change log} \\
+\vspace{\baselineskip}
+\begin{tabular}{|c|c|c|c|l|} \hline
+ver. & WW   & rev. $^*$   & date    & comment    \\ \hline \hline
+ 1.0 & 3.15 &  11596 & December 23, 2010 & Initial MMAB No. 289.        \\
+     &      &        &                   & Experimental WW version      \\
+     &      &        &                   & used for \cite{tol:MMAB10d}. \\
+% n.n & a.bb & \SVNRevision & \today      & Draft work version           \\
+\hline \end{tabular}
+\end{center}
+\hfill $^*$) svn revision number refers to manual and software package.
+
+\vfill \pagebreak
+
+%--------------------------------------------------------------%
+%            Acknowledgements                                  %
+%--------------------------------------------------------------%
+
+\addcontentsline{toc}{subsection}{Acknowledgments}
+
+{\it Acknowledgments.} Code management for \wwt\ is provided by NCEP. Arun
+Chawla provided a first filter for this report.
+
+\vspace{\baselineskip} \noindent
+This report is available as a pdf file from
+
+\vspace{\baselineskip}
+\centerline{http://polar.ncep.noaa.gov/mmab/notes.shtml}
+
+
+\vfill \pagebreak
+%--------------------------------------------------------------%
+%            Contents                                          %
+%--------------------------------------------------------------%
+\addcontentsline{toc}{subsection}{Table of contents}
+
+\tableofcontents
+
+\pb
+\pagestyle{empty}
+
+\bpagea
+
+
+\pb
+\pagestyle{\pstyle}
+\pagenumbering{arabic}
+%--------------------------------------------------------------%
+% Section : Introduction                                       %
+%--------------------------------------------------------------%
+\section{Introduction} \label{sec:intro}
+\newsec
+
+\noindent
+This report describes a portable package of scripts and {\F fortran} programs
+that has been designed to work transparently with the \wwt\ wave modeling
+framework \citep[model henceforth denoted as \ws]{tol:MMAB09a} to perform the
+genetic optimization \citep[e.g.,][]{bk:ES03} of the Generalized Multiple DIA
+\citep[\gmd,][]{tol:MMAB10d}.  In this report, fonts as used in the \ws\
+manual are used, with the {\file file, program and directory names}, {\code
+code and variables in scripts and command lines}, and {\F fortran} source code
+identified by the fonts used here. Familiarity with the \ws\ code and manuals
+is assumed.
+
+Section~\ref{sec:pack_desc} describes elements of the packages, and
+Section~\ref{sec:pack_use} describes how to use this package.
+Section~\ref{sec:pack_graph} presents several graphical tools provided with
+this package.
+
+
+\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Description                                        %
+%--------------------------------------------------------------%
+\section{Description of package} \label{sec:pack_desc}
+\newsec
+
+The genetic optimization package for the \gmd\ assumes an implementation of
+the \ws\ model in a conventional way, with access to all different wave model
+executables through the default search path of the operating system. It should
+be noted that the wave model needs to be set up separately for producing
+either the baseline conditions to which the \gmd\ is tuned (typically a full
+solution to the nonlinear interactions with the {\code !/NL2} switch), or the
+actual \gmd\ model when tuning this model, or any other $S_{nl}$ approach to
+be run for direct comparison.
+
+The optimization package uses three main directories.  The first is the main
+directory ({\code \$genes\_main}) that contains the scripts and files with
+data necessary to run the genetic optimization of the \gmd. These are isolated
+in their own directory for easy maintenance and portability of the package.
+The second is the data directory ({\code \$genes\_data}) where model data are
+stored. Such data include baseline data to which the \gmd\ based model is
+tuned, generational information as developed inside the genetic optimization
+routine, and model results for display and documentation of model behavior
+through the optimization procedure.  The third is the work directory ({\code
+\$genes\_work}), which provides temporary storage used during (test)
+computations only. Note that most of the optimization work is performed in the
+data directories in which the generational data is stored, as will be
+illustrated below.
+
+The main package as stored in the {\code \$genes\_main} directory consists of
+several sets of scripts, programs and files. At the core of the package are
+the actual test cases, stored in {\code \$genes\_main/tests}:
+
+\begin{flist}
+\fit{test\_01}{Deep water time-limited growth test (single point) with
+               constants wind speed and direction.}
+\fit{test\_0X}{like {\file test\_01} but with much larger minimum source term
+               time step, used for quick and dirty assessment if GMD
+               configuration is viable (not to be used in error computation).}
+\fit{test\_02}{Deep water fetch-limited growth test with constant wind speed
+               and direction.}
+\fit{test\_03}{Deep water 'homogeneous front' case of \cite{tol:JPO92},
+               Fig.~5.} 
+\fit{test\_04}{Deep water homogeneous rotating wind case.}
+\fit{test\_05}{Deep water slanting fetch case.}
+\fit{test\_06}{Like {\file test\_01} with background swell field added.}
+\fit{test\_11}{Time-limited growth is shallow water with reducing depth.}
+\fit{test\_12}{Wind sea breaking on beach.}
+\fit{test\_13}{Swell breaking on beach.}
+\end{flist}
+
+\noindent
+For final independent testing of GMD configurations using more realistic
+conditions, two ``real-world'' test have been added. These test are used only
+for comparison, not in the actual optimization.
+
+\begin{flist}
+\fit{test\_hr}{A synthetic moving hurricane based on {\file
+               mww3\_test\_05} as distributed with \ws.}
+\fit{test\_LM}{A storm case on Lake Michigan.}
+\end{flist}
+
+\noindent
+Unlike the test used for optimization, the latter two tests require ancillary
+information such as two-dimensional model grids and evolving wind fields. Such
+data are stored in the directories \\
+\centerline{\code \$genes\_main/tests/test\_hr.data}
+\noindent and \\
+\centerline{\code \$genes\_main/tests/test\_LM.data}.
+
+\vspace{\baselineskip}
+\noindent
+All test cases run exclusively in the work directory from which the script is
+called, and all produce full spectral and source term output for a selected
+set of locations and/or times (depending on the actual test). These test are
+typically not run independently, but inside a scripting environment. The
+corresponding scripts are found in the main directory ({\code \$genes\_main}),
+which also includes setup and cleanup scripts. The following scripts are found
+in this directory:
+
+\begin{flist}
+\fit{run\_setup.sh}
+    {Setup basic system and system shell scripts variables such as {\code
+     \$genes\_main}.} 
+\fit{run\_clean.sh}
+    {Clean up main and work directories. Optionally clean up programs and
+     executables directories.}
+\fit{run\_make.sh}
+    {Compile or recompile all auxiliary programs. Note that the user needs to
+     set up the compiler options inside this script.}
+\fit{run\_test.sh}
+    {Run a single test script and put the test results in the main directory
+     for inspection.}
+\fit{run\_base.sh}
+    {Run a set of test as identified in {\file genes.cases.env} and store the
+     test data in {\code \$genes\_data} for later use as benchmark or for
+     model intercomparison.}
+\fit{run\_comp.sh}
+    {Process raw data files of a run to produce secondary data files for
+     display and (optionally) compute errors against a baseline data set.}
+\fit{run\_comp.all}
+    {Run {\file run\_comp.sh} for a set of runs at once.}
+\fit{control.sh}
+    {General management script for genetic \gmd\ optimization.}
+\fit{control.cycle}
+    {Run {\file control.sh} until the optimization is finished, or until a
+    problem in the optimization has stopped progress (i.e., generation of new
+    generations as expected).}
+\fit{control.stop}
+    {Gracefully shut down {\file control.sh} and {\file control.cycle} (does
+    not influence {\file control.cron} below).}
+%\fit{control.cron} {Run and/or check on existence of {\file control.cycle},
+%    set up to run from Unix/Linux cron environment.}
+\fit{descent.sh}
+    {General management script for steepest descent \gmd\ optimization,
+    starting from a member of a population of the genetic optimization.}
+\fit{descent\_sort.sh}
+    {Convert quadruplets resulting from descent algorithm to sorted form.}
+\fit{map\_it.sh}
+    {Map error in parameter space by generating a regular discrete grid of
+    parameters to be optimized.}
+\fit{reset.sh}{Reset environment parameters and files to those selected for an
+    existing experiment.}
+\fit{convert\_hr.sh}{Auxiliary program to convert GrADS files at NCEP from big
+    (IBM) to little endian (Linux) format, and to set up difference fields for
+    hurricane test.}
+\fit{convert\_LM.sh}{Idem for Lake Michigan test case.}
+\end{flist}
+
+\noindent
+To assure consistency of model setup across test and run scripts, and to allow
+for flexibility of operations within scripts, several setup or environment
+files are maintained. These files are kept at different locations and
+maintained in different ways, as indicated in Table~\ref{tab:genes_env}. 
+
+
+\begin{mytab}{tbp}
+\begin{center}
+\mytcap{Setup and environment files used by the genetic optimization algorithm
+        for the \gmd. See also Fig.~\ref{fig:genes_dirs} for storage
+        locations.} \label{tab:genes_env}
+\begin{tabular}{|l|l|l|l|} \hline
+File   & Location  & Maintained by & Description  \\ \hline \hline
+{\file .genes.env}      & {\code \$home}   & {\file run\_setup.sh}  &
+Maintain basic setup \\
+{\file genes.spec.env}  & {\code \$genes\_main}   & User  &
+Spectral grid settings\\
+{\file genes.source.env}  & {\code \$genes\_main}   & User  &
+Source term settings\\
+{\file genes.snl.env}  & {work dir.}   & User/scripts  &
+$S_{nl}$ (\gmd) settings\\
+{\file genes.cases.env}  & {\code \$genes\_main}   & User  &
+Test cases to use\\
+{\file genes.w\_{\it nnn}.env}  & {\code \$genes\_main}   & User  &
+Weights for errors\\
+  &  &  & for case {\file test\_{\it nnn}} \\
+{\file genes.weights.env}  & {\code \$genes\_main}   & User  &
+Default error weights \\
+{\file genes.stats.env}  & {\code \$genes\_main}   & User  &
+Stats for opt. \\
+{\file genes.mask.env}  & {\code \$genes\_main}   & User  &
+Mask for opt. pars. \\
+{\file genes.expdef.env}  & {\code \$genes\_main}   & {\file control.sh}  &
+Base setup of exp. \\
+{\file genes.maps.env}  & {\code \$genes\_main}   & User  &
+Setup for error mapping \\
+{\file genes.terr.env}  & {generation dir.}   & {\file control.sh}  &
+Set filter error level \\
+\hline
+\end{tabular}
+\end{center}
+\end{mytab}
+
+
+The main run time scripts described above use utility scripts and {\F fortran}
+codes for their operation. Utility scripts are gathered in {\code
+\$genes\_main/ush}. Note that these scripts are not intended to be run
+independently.
+
+\begin{flist}
+\fit{get\_cases.sh}{Evaluate the contents of file {\file genes.cases.env}.}
+\fit{get\_err\_test.sh}{Get combined error for single test case.}
+\fit{get\_err\_tot.sh}{Get combined error for all test cases.}
+\fit{get\_err\_par.sh}{Get combined error per parameter for active test cases.}
+\fit{get\_terr.sh}{Get/set filter error level.}
+\fit{make\_init.sh}{Generate first population.}
+\fit{make\_next.sh}{Make next generation.}
+\fit{run\_thread.sh}{Master execution script for a thread in the engine.}
+\fit{run\_one.sh}{Sub-script in {\file run\_thread.sh} to get the errors for a
+                  single member of the population.}
+\fit{thread\_start.sh}{Start the computational engine for computing errors.}
+\fit{thread\_stop.sh}{Stop the computational engine for computing errors.}
+\fit{thread\_wait.sh}{Wait for the computational engine to finish.}
+\fit{thread\_check.sh}{Background check on health of engine.}
+\fit{}{These four scripts are kept for different machine setups in the files
+        {\file thread\_start.sh.}{\code \$genes\_engn} etc., and are linked to
+        the above file names in the script {\file control.sh}.}
+\fit{make\_maps.sh}{Creates population for error mapping..}
+\fit{colorset.gs}{GrADS color table setup script.}
+\fit{spec.gs}{GrADS script for plotting of spectra.}
+\fit{source.gs}{GrADS script for plotting of source terms.}
+\fit{1source.gs}{GrADS script for plotting of single source term or spectrum
+        (including preset copies for various tests).}
+\fit{map\_hr.gs}{GrADS script for map plotting for hurricane test.}
+\fit{map\_LM.gs}{GrADS script for map plotting for Lake Michigan test.}
+\end{flist}
+
+\noindent
+Note that for most GrADS script links are provided in the main directory for
+easy interactive use.  Source codes for programs used specifically for this
+package are gathered in {\code \$genes\_main/progs}, and their executables
+(replacing file name extension {\file f90} with {\file x}) are stored in
+{\code \$genes\_main/exe}:
+
+\begin{flist}
+\fit{constants.f90, w3timemd.f90, w3dispmd.f90, w3arrymd.f90}{}
+\fit{}{Service routines from the \ws\ code used in the optimization package.}
+\fit{random.f90}{Subroutines for random number generation.}
+\fit{cgaussmd.f90}{Subroutines for processing normal distributions.}
+\fit{qtoolsmd.f90}{Tools for quadruplet processing (subr.).}
+\fit{restart\_co.f90}{Combine two restart files.}
+\fit{process.f90}{Process raw data from one or two runs to get a data set that
+                  is readable by, for instance Matlab (single case use), or
+                  get individual error estimates (two case use).}
+\fit{err\_test.f90}{Combine errors per test.}
+\fit{err\_tot.f90}{Get overall error.}
+\fit{err\_par.f90}{Combine errors per parameter for active tests.}
+\fit{testerr.f90}{Set filter error level based on current population.}
+\fit{reseed.f90}{Get a new random seed.}
+\fit{initgen.f90}{Set up first generation.}
+\fit{chckgen.f90}{Process generation for the purpose of computing and
+                  including errors.}
+\fit{sortgen.f90}{Final sorting of generation by error. Also produces the
+                  clean-up population file (sorted quadruplets).}
+\fit{nextgen.f90}{Make next generation.}
+\fit{getmember.f90}{Extract member information from population file.}
+\fit{descent{\it{N}}.f90}{Auxiliary programs for steepest descent
+                          optimization.}
+\fit{mapsgen.f90}{Make generation for error mapping.}
+\end{flist}
+
+
+\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Description                                        %
+%--------------------------------------------------------------%
+\section{Using the package} \label{sec:pack_use}
+\newsec
+
+The first step of setting up the genetic optimization package is to set up the
+underlying wave model, taking into account which physics options the model
+\gmd\ is to be tuned to, and selecting Cartesian grid options ({\code
+!/XYG})\footnote{~Except for {\file test\_LM}, which requires the {\code
+!/LLG} switch.}. For this reference is made to the system manual of \ws\
+\citep{tol:MMAB09a}. The second step is to install the basic package by
+unpacking the tar file {\file genes.tar}. When the tar file is unpack by
+executing
+\begin{center}
+{\file tar -xvf genes.tar}
+\end{center}
+\noindent
+a new directory {\file ./genes} is automatically generated. This should be the
+main directory {\file \$genes\_main} in the package. If another directory name
+is desired, this directory name needs to be modified before the next step of
+the initialization. Co-developers of \ws\ can alternatively obtain this
+directory with its contents from the subversion repository at
+NCEP\footnote{~The tar file is created from the ./utilities/genes\_gmd/package
+directory under the trunk.}.  The basic setup of the package is finished by
+executing
+\begin{center}
+{\file run\_setup.sh}
+\end{center}
+\noindent
+This will take the user through an interactive process that sets several
+environmental parameters for the package. This script will set the following
+shell script variables:
+
+\begin{plist}
+\pit{\$genes\_main}{Main directory}
+\pit{\$genes\_data}{Directory where all data are stored, including benchmark,
+                    and optimization data, as well as validation data for
+		    documenting model behavior.}
+\pit{\$genes\_work}{Work space for scripts (scratch).}
+\pit{\$genes\_expN}{Identifiers for the optimization experiment that is worked
+                    on presently. These represents subdirectories under the
+                    work directory (see below).}
+\pit{\$genes\_base}{Base run identifier used in optimization (typically {\code
+                    WRT}).}
+\pit{\$genes\_engn}{Identifier for type of engine used to compute the errors
+                    of a population member. The default is {\code single},
+                    which uses a single threaded engine that can be used
+                    anywhere. Examples of other multi-threaded engines are
+                    also provided (see below).}
+\end{plist}
+
+\noindent
+These variables are stored in the setup file {\file .genes.env} (see
+Table~\ref{tab:genes_env}), which is used by virtually all executable scripts.
+The experiment identifiers can be reset by rerunning the setup code.  Note
+that the setup file can also be edited manually. The next step is to compile
+all auxiliary programs used by the package by executing
+\begin{center}
+{\file run\_make.sh}
+\end{center}
+\noindent
+Note that the user will need to provide the proper compiler commands and
+settings in the header of this script, before executing it. Note that the
+corresponding directories ({\file \$genes\_main/progs} and ({\file
+\$genes\_main/exe}) can be cleaned up (listings and executables removed) by
+executing
+\begin{center}
+{\file run\_clean.sh}
+\end{center}
+\noindent
+and answering affirmative to the appropriate questions. The latter script
+automatically cleans up the main and work directories {\file \$genes\_main}
+and {\file \$genes\_work}. This completes the initial setup of the package. It
+is now prudent to test some of the test cases by running the {\file
+run\_test.sh} script. This script executes a single test case and puts output
+including GrADS data files in the main directory {\file \$genes\_main}. For
+instance, the first test case is run in this way by executing
+\begin{center}
+{\file run\_test.sh test\_01}
+\end{center}
+\noindent
+Note that {\file run\_clean.sh} should be executed between test runs to assure
+that the test starts with a clean environment.
+
+After this initial testing, benchmark or baseline datasets need to be
+generated. These data set can be used both in the optimization of the \gmd\
+(e.g., the exact interaction), or to identify progress (e.g., the DIA). Before
+the benchmark datasets can be generated, the \ws\ model has to be compiled
+with the appropriate switch settings and other options as needed, and the
+appropriate namelist options need to be set in the file {\file
+genes.srce.env}.  Furthermore, test cases for which benchmark data needs to be
+generated need to be identified in {\file genes.cases.env}. The example
+versions of these files as provided with the package are internally documented
+with respect to the data format in the files.  After these preparations,
+benchmark data is generated by running the command
+\begin{center}
+{\file run\_base.sh baseID yes}
+\end{center}
+\noindent
+For each test case, a directory {\file \$genes\_data/baseID/test\_{\it nn}} is
+generated, where the files {\file log.ww3}, {\file spec.ww3}, {\file
+srce.ww3}, and {\file part.ww3} are stored. These files contain spectral,
+source term ($s_{nl}$) and partitioned wave data, respectively.  The first
+command line argument of this script identifies the subdirectory for the
+baseline datasets. The second command line parameter is optional, and
+identifies if GrADS data sets are to be saved with the general baseline data.
+
+The above commands only generate raw test data, with the exception of the
+optional GrADS data that can be used to get a quick look at full
+two-dimensional spectra $F(f,\theta)$ and source terms $s_{nl}(f,\theta)$.
+Detailed diagnostics files ({\file all\_data.ww3} in data directories),
+specifically for processing with Matlab, can be generated with the command
+\begin{center}
+{\file run\_comp.sh test\_01 DIA}
+\end{center}
+\noindent
+which processes DIA results for test case {\file test\_01}. Errors for this
+case against WRT results are generated by running
+\begin{center}
+{\file run\_comp.sh test\_01 DIA WRT}
+\end{center}
+\noindent
+which generates an error file {\file errors.test\_01.DIA.WRT} in the work
+directory. To run this script for all tests for a given model setup the
+command
+\begin{center}
+{\file run\_comp.all none DIA WRT}
+\end{center}
+\noindent
+can be used, generating raw data files for the DIA and WRT model runs. To
+generate errors for WAM and WW3 runs against the WRT runs, this command is
+executed as
+\begin{center}
+{\file run\_comp.all WRT WAM WW3}
+\end{center}
+\noindent
+Note that the {\file run\_comp.sh} or {\file run\_comp.all} scripts together
+with several Matlab scripts have been used to generate most of the graphics in
+\cite{tol:MMAB10d}.
+
+
+\begin{myfig}{tbp}
+\setlength{\unitlength}{0.1mm}
+
+\begin{center} \begin{picture}(1370,1860)(0,-1840)
+
+\put(   0, -1840){\framebox(1370,1860)[c]{}}
+
+\put(  20,  -60){\makebox(0,80)[l]{{\code \$genes\_data}}}
+\put(   0,  -60){\line(1,0){300}}
+\put(  50,  -60){\line(0,-1){300}}
+
+\put(  50, -120){\line(1,0){50}}
+\put( 120, -160){\makebox(0,80)[l]{{\file WRT}}}
+%\put( 670, -160){\makebox(0,80)[l]{Base line data from {\file run\_base.sh}.}}
+
+\put(  50, -180){\line(1,0){50}}
+\put( 120, -220){\makebox(0,80)[l]{{\file WAM}}}
+\put( 670, -220){\makebox(0,80)[l]{Base line data from {\file run\_base.sh}.}}
+
+\put(  50, -240){\line(1,0){50}}
+\put( 120, -280){\makebox(0,80)[l]{{\file WW3}}}
+%\put( 670, -280){\makebox(0,80)[l]{Base line data from {\file run\_base.sh}.}}
+
+\put(  50, -300){\line(1,0){50}}
+\put( 120, -340){\makebox(0,80)[l]{{\file \ldots}}}
+%\put( 670, -340){\makebox(0,80)[l]{Base line data from {\file run\_base.sh}.}}
+
+\put(  50, -360){\line(1,0){50}}
+\put( 120, -400){\makebox(0,80)[l]{{\code \$genes\_exp1}}}
+\put( 100, -400){\line(1,0){300}}
+\put( 150, -400){\line(0,-1){60}}
+
+\put( 150, -460){\line(1,0){50}}
+\put( 220, -500){\makebox(0,80)[l]{{\code \$genes\_exp2}}}
+\put( 200, -500){\line(1,0){300}}
+\put( 250, -500){\line(0,-1){720}}
+
+\put( 250, -560){\line(1,0){50}}
+\put( 320, -600){\makebox(0,80)[l]{{\file genes.expdef.env}}}
+\put( 670, -600){\makebox(0,80)[l]{Parameters defining exp.}}
+
+\put( 250, -620){\line(1,0){50}}
+\put( 320, -660){\makebox(0,80)[l]{{\file genes.stats.env}}}
+\put( 670, -660){\makebox(0,80)[l]{Statistical info.}}
+\put(1300, -660){\makebox(0,80)[l]{(c)}}
+
+\put( 250, -680){\line(1,0){50}}
+\put( 320, -720){\makebox(0,80)[l]{{\file genes.mask.env}}}
+\put( 670, -720){\makebox(0,80)[l]{Mask for pars. to optimize.}}
+\put(1300, -720){\makebox(0,80)[l]{(c)}}
+
+\put( 250, -740){\line(1,0){50}}
+\put( 320, -780){\makebox(0,80)[l]{{\file genes.spec.env}}}
+\put( 670, -780){\makebox(0,80)[l]{Spectral discretization.}}
+\put(1300, -780){\makebox(0,80)[l]{(c)}}
+
+\put( 250, -800){\line(1,0){50}}
+\put( 320, -840){\makebox(0,80)[l]{{\file genes.source.env}}}
+\put( 670, -840){\makebox(0,80)[l]{Source term options.}}
+\put(1300, -840){\makebox(0,80)[l]{(c)}}
+
+\put( 250, -860){\line(1,0){50}}
+\put( 320, -900){\makebox(0,80)[l]{{\file genes.cases.env}}}
+\put( 670, -900){\makebox(0,80)[l]{Case selection.}}
+\put(1300, -900){\makebox(0,80)[l]{(c)}}
+
+\put( 250, -920){\line(1,0){50}}
+\put( 320, -960){\makebox(0,80)[l]{{\file genes.w\_{\it nn}.env}}}
+\put( 670, -960){\makebox(0,80)[l]{Weight arrays.}}
+\put(1300, -960){\makebox(0,80)[l]{(c)}}
+
+\put( 250, -980){\line(1,0){50}}
+\put( 320,-1020){\makebox(0,80)[l]{{\file genes.maps.env}}}
+\put( 670,-1020){\makebox(0,80)[l]{Parameters for error mapping.}}
+\put(1300,-1020){\makebox(0,80)[l]{(c)}}
+
+\put( 250,-1040){\line(1,0){50}}
+\put( 320,-1080){\makebox(0,80)[l]{{\file mapping}}}
+\put( 670,-1080){\makebox(0,80)[l]{Population for error mapping.}}
+
+\put( 250,-1100){\line(1,0){50}}
+\put( 320,-1140){\makebox(0,80)[l]{{\file mapping.test}}}
+\put( 670,-1140){\makebox(0,80)[l]{Mapped errors per test.}}
+
+\put( 250,-1160){\line(1,0){50}}
+\put( 320,-1200){\makebox(0,80)[l]{{\file mapping.pars}}}
+\put( 670,-1200){\makebox(0,80)[l]{Mapper errors per par.}}
+
+\put( 250,-1220){\line(1,0){50}}
+\put( 320,-1260){\makebox(0,80)[l]{{\file gen{\it NNNN}}}}
+\put( 670,-1260){\makebox(0,80)[l]{Directory for generation {\it NNNN}.}}
+\put( 300,-1260){\line(1,0){300}}
+\put( 350,-1260){\line(0,-1){420}}
+
+\put( 350,-1320){\line(1,0){50}}
+\put( 420,-1360){\makebox(0,80)[l]{{\file seed.env}}}
+\put( 670,-1360){\makebox(0,80)[l]{Random seed for next generation.}}
+
+\put( 350,-1380){\line(1,0){50}}
+\put( 420,-1420){\makebox(0,80)[l]{{\file population}}}
+\put( 670,-1420){\makebox(0,80)[l]{What it says \ldots.}}
+
+\put( 350,-1440){\line(1,0){50}}
+\put( 420,-1480){\makebox(0,80)[l]{{\file pop\_clean}}}
+\put( 670,-1480){\makebox(0,80)[l]{Sorted quadruplets.}}
+
+\put( 350,-1500){\line(1,0){50}}
+\put( 420,-1540){\makebox(0,80)[l]{{\file errors.test}}}
+\put( 670,-1540){\makebox(0,80)[l]{Sorted errors per test.}}
+
+\put( 350,-1560){\line(1,0){50}}
+\put( 420,-1600){\makebox(0,80)[l]{{\file errors.pars}}}
+\put( 670,-1600){\makebox(0,80)[l]{Sorted error per parameter.}}
+
+\put( 350,-1620){\line(1,0){50}}
+\put( 420,-1655){\makebox(0,80)[l]{{\file descent.{\it n}}}}
+\put( 670,-1660){\makebox(0,80)[l]{Steepest desc. res. for member {\it n}.}}
+
+\put( 350,-1680){\line(1,0){50}}
+\put( 420,-1720){\makebox(0,80)[l]{\ldots}}
+\put( 670,-1720){\makebox(0,80)[l]{Work files and directories depending}}
+\put( 670,-1780){\makebox(0,80)[l]{on progress of processing, output req.}}
+\put( 670,-1840){\makebox(0,80)[l]{and hardware setup.}}
+
+\end{picture} \end{center}
+
+\myfcap{Layout of directories with data for the \gmd\ optimization. (c)
+        identifies copy of file with file used stored in {\code
+        \$genes\_main},}
+        \label{fig:genes_dirs}
+\end{myfig}
+
+
+\vspace{\baselineskip}
+\noindent
+This completes the setup of the test environment. the next step is to set up
+the \gmd\ model for optimization. Before this is discussed, it is important to
+understand the file and directory structure used to perform the optimization
+and to save the relevant intermediate and final data. The directory and file
+structure is outlined in Fig.~\ref{fig:genes_dirs}. In the setup steps
+performed so far, the three main directories have been defined by running
+{\file run\_setup.sh}, and can be redefined by rerunning this script or by
+manually editing the file {\file .genes.env} in the users home directory. The
+directories with baseline information (identified here as {\file WRT}, {\file
+WAM} and {\file WW3}, actual names set by used) have already been created and
+filled by running {\file run\_base.sh} and either {\file run\_comp.sh} or
+{\file run\_comp.all}. There are two levels of directories to hold the actual
+generational, descent and error mapping data from the optimization approach
+({\code \$genes\_epx1} and {\code \$genes\_exp2}). The first is intended to
+hold all data for a general \gmd\ layout. For instance, all experiments with a
+single component \gmd\ with a traditional quadruplet layout could be saved
+under a single directory {\code \$genes\_epx1}. Several directories {\code
+\$genes\_epx2} then can hold experiments for deep versus shallow optimization,
+different initial optimization seeds etc. Files identified with `(c)' are kept
+in the directory for documentation only, the actual files used by the package
+are stored in the main directory {\code \$genes\_main}.
+
+The main script controlling the optimization is the script {\file control.sh}.
+This script is designed to incrementally execute the model optimization,
+including the initial setup for the optimization process. The layout of the
+script is illustrated in Fig.~\ref{fig:control}. Running the command
+\begin{center}
+{\file control.sh}
+\end{center}
+\noindent
+will get the optimization procedure started, or will continue it. When
+starting a new (part of an) experiment, this script should be run
+interactively first to set up the necessary directories and files. If the
+script is run to start a new experiment, {\file run\_setup.sh} should be run
+first to set up the proper data directories.
+
+Note that if work is to be continued on an existing experiment, the
+environment of the experiment can be restored by running
+\begin{center}
+{\file reset.sh} {\code \$genes\_exp1} {\code \$genes\_exp2}
+\end{center}
+\noindent
+which resets {\file .genes.env} and restores all other environment files as
+used with the selected experiment.
+
+After processing the general setup file {\file .genes.env} in the users home
+directory, the first thing {\file control.sh} does is checking the existence
+of the file {\file genes.expdef.env} (see Fig.~\ref{fig:genes_dirs}). If this
+file does not exist, it is generated from interactive information provided to
+{\file control.sh}. The setup file sets the following shell script variables:
+
+\begin{plist}
+\pit{\$genes\_nq   }{Number of representative quadruplets.}
+\pit{\$genes\_npop0}{Size of initial population.}
+\pit{\$genes\_npop }{Size of subsequent population.}
+\pit{\$genes\_ngen }{Number of generations to be considered.}
+\pit{\$genes\_seed }{Initial random seed. Note that the package contains its
+                     own random number generator, making genetic optimization
+		     experiments reproducible as long as the same random seed
+		     is used.}
+\end{plist}
+
+\noindent
+After this file is initially generated, it can only be modified by hand. The
+only parameter to modify in such a way is the requested number of generations
+or possibly the random seed. Modifying the other parameters will result in
+failure of an ongoing optimization, and will require the removal of all
+generational directories {\file gen{\it NNNN}}.
+
+The second step is to copy in all the environment files as indicated in
+Fig.~\ref{fig:genes_dirs}, or, if these files are already there, to compare
+them against the corresponding files in the main directory ({\code
+\$genes\_main}). This step is added to assure that the experiment is not
+accidentally continued with modified settings of the \gmd\ or of the
+optimization experiment. It also allows for a simple way to redo an experiment
+or to expand on an experiment by copying all setup files that are expected in
+the main directory (marked with '(c)' in Fig.~\ref{fig:genes_dirs}) back to
+the main directory {\code \$genes\_main} (see command {\file reset.sh} as
+discussed above).
+
+The next step is to check if the experiment has been started by generating an
+initial generation. If this generation is not present, the script {\file
+make\_init.sh} using the program {\file initgen.x} is used to produce the
+first generation. Note only the \gmd\ setup according to information in the
+setup ({\file *.env} file) is produced, but that errors are not yet. To
+indicate this, errors are set to 999.999.
+
+Following this, the program {\file chckgen.x} checks the population for cases
+for which the error still needs to be evaluated. For each such population
+member {\file \it nnnn}, a file with the \gmd\ namelist information is created
+as the file {\file snl.{\it nnnn}}. Computing the corresponding error files
+{\file err.{\it nnnn}} represents the main effort of the optimization
+procedure, and is performed by the computational `engine' as will be described
+below. After all errors have been evaluated, the program {\file chckgen.x} is
+run again to include the errors from the error files in the population data
+set {\file population}. Note that in its first call in the script, {\file
+chckgen.x} processes all error files {\file err.{\it nnnn}} from previously
+aborted runs of {\file control.sh}, hence avoiding duplication of work already
+performed.
+
+
+\begin{myfig}{tbp}
+\setlength{\unitlength}{0.1mm}
+
+\begin{center} \begin{picture}(1200,935)(0,-935)
+
+% outer box
+
+\put(  20,  -60){\makebox(0,80)[l]{\file control.sh}}
+\put(   0, -935){\framebox(1200,885)[c]{}}
+
+% initializations
+
+\put(  20, -130){\makebox(0,80)[l]{Process setup file {\file .genes.env}}}
+\put(  20, -180){\makebox(0,80)[l]{Test or generate {\code \$genes\_exp1/\$genes\_epx2}}}
+\put(  20, -230){\makebox(0,80)[l]{Process or generate {\file genes.expdef.env}}}
+\put(  20, -280){\makebox(0,80)[l]{Copy or test other setup files}}
+\put(   0, -275){\line(1,0){1200}}
+
+% initial population
+
+\put(  20, -350){\makebox(0,80)[l]{If necessary, make first generation}}
+\put(1180, -350){\makebox(0,80)[r]{({\file make\_init.sh})}}
+\put(   0, -345){\line(1,0){1200}}
+
+% check population
+
+\put(  20, -420){\makebox(0,80)[l]{Check generation, for all members do}}
+\put(1180, -420){\makebox(0,80)[r]{({\file chckgen.x})}}
+\put(  70, -490){\makebox(0,80)[l]{If error not processed, make file {\file
+                                   snl.{\it nnnn}}}}
+\put(  70, -540){\makebox(0,80)[l]{with \gmd\ setup for wave model.}}
+\put(  50, -415){\line(1,0){1150}}
+\put(  50, -415){\line(0,-1){120}}
+\put(   0, -535){\line(1,0){1200}}
+
+% Process errors
+
+\put(  20, -610){\makebox(0,80)[l]{For all files {\file snl.{\it nnnn}} do}}
+\put(  70, -680){\makebox(0,80)[l]{Compute error file {\file err.{\it nnnn}}}}
+\put(1180, -680){\makebox(0,80)[r]{`computational engine'}}
+\put(  50, -605){\line(1,0){1150}}
+\put(  50, -605){\line(0,-1){70}}
+\put(   0, -675){\line(1,0){1200}}
+
+% recheck population
+
+\put(  20, -750){\makebox(0,80)[l]{Check generation, if all errors present do:}}
+\put(1180, -750){\makebox(0,80)[r]{({\file chckgen.x})}}
+\put(  50, -745){\line(1,0){1150}}
+\put(  50, -745){\line(0,-1){70}}
+
+% sort population
+
+\put(  70, -820){\makebox(0,80)[l]{Sort the population by total error and produce}}
+\put(  70, -870){\makebox(0,80)[l]{other population and error files.}}
+\put(1180, -870){\makebox(0,80)[r]{({\file sortgen.x})}}
+\put(  50, -745){\line(1,0){1150}}
+\put(  50, -865){\line(1,0){1150}}
+\put(  50, -745){\line(0,-1){190}}
+
+% start the next generation
+
+\put(  70, -940){\makebox(0,80)[l]{Start the next generation}}
+\put(1180, -940){\makebox(0,80)[r]{({\file make\_next.sh})}}
+\put(   0, -935){\line(1,0){1200}}
+
+\end{picture} \end{center}
+
+\myfcap{Structure of the main genetic optimization routine {\file
+        control.sh}. The `computational engine' is described in the
+        manuscript.} \label{fig:control}
+\end{myfig}
+
+If all errors have been computed, the program {\file sortgen.x} sorts the
+population by ascending error into the file {\file population}, and
+furthermore generates the file {\file pop\_clean} with the same information
+but with the quadruplets sorted so that $\mu \le \lambda$ and with ascending
+order for $\lambda$ per quadruplet. Note that the latter sorted information is
+used to eliminate duplicates in the generation of the next generation. This
+program also produces the error files {\file errors.pars} and {\file
+errors.test}.  Note that the latter files are saved for later analysis, but
+are not used in the optimization process and/or {\file control.sh}.  Finally,
+the script {\file make\_next.sh} and the program {\file nextgen.x} produce the
+next population, again with dummy values for the error for new members of the
+population.
+
+This ends the description of the script {\file control.sh}. This script is not
+set up to cycle through consecutive generations. The script is cycled by the
+additional command
+\begin{center}
+{\file control.cycle}
+\end{center}
+\noindent
+which sets up {\file genes.expdef.env} interactively as needed, and then
+cycles {\file control.sh} until it works on the same generation for the third
+time. The latter indicates a failure in the optimization attempt, or reaching
+the required number of generations. Each call of {\file control.sh} has its
+own output file {\file control.{\it nnnn}.out} for later inspection. Here
+{\file {\it nnnn}} identifies the sequence number of runs of {\file
+control.sh}, not the generation number.
+
+\vspace{\baselineskip}
+\noindent
+This leaves the description of the computational engine for computing errors
+for members of the population. This engine is designed to be able to run a set
+of parallel job streams, which are dynamically fed with work to do to optimize
+load balancing. At the center of the engine is the utility script {\file
+run\_thread.sh}. This script manages a single thread of the computational
+engine. If the hardware allows for parallel threads of computation, multiple
+versions of {\file run\_thread.sh} are operating simultaneously. How this is
+achieved depends on the hardware and job scheduling software used. The
+starting and stopping of the threads of the engine is managed by the scripts
+
+\begin{flist2}
+\fit{thread\_start.sh}{Start a number of copies of {\file run\_thread.sh}.}
+\fit{thread\_stop.sh}{Stop all copies of {\file run\_thread.sh} .}
+\fit{thread\_wait.sh}{Wait for all copies of {\file run\_thread.sh} to stop.}
+\fit{thread\_check.sh}{Check health of each copy of {\file run\_thread.sh}.}
+\end{flist2}
+
+\noindent
+These scripts are actually links to scripts {\file thread\_start.sh,}{\code
+\$genes\_engn} etc., where {\code \$genes\_engn} represents a setup of the
+computational engine. Options for for the engine ({\code \$genes\_engn})
+provided with the package are:
+
+\begin{plist}
+\pit{single}{A single copy of {\file run\_thread.sh} runs in the background on
+             the present machine.}
+\pit{snits} {Many copies of {\file run\_thread.sh} on several nodes of a Linux
+             cluster (snits is Hendrik's present cluster). Note that this
+             cluster approach used background runs of the script through
+             {\file ssh} started from an interactive node, and does not use a
+             batch scheduling system. The system is also set up to run some
+             processes on the front end of the cluster if so desired.}
+\pit{IBM\_ll}{Running on an IBM supercomputer with LoadLeveler as a batch
+              processor. {\file control.sh} or {\file control.cycle} is run
+              interactively, whereas the computational engine is submitted as
+              a batch job. The package is distributed with various sizes of
+              computational engines stored as {\file
+              thread\_start.sh.IBM\_ll.{\it NNN}}, where {\it NNN} indicates
+              the number of parallel processes in the engine. The file to be
+              used is linked to {\file thread\_start.sh.IBM\_ll} to be
+              activated. }
+\end{plist}
+
+\noindent
+For each copy of {\file run\_thread.sh} with number {\it nn} the following
+files and directories are maintained in the generation directory:
+
+\begin{flist}
+\fit{thread\_{\it nnn}}{Work directory for this copy of the script.}
+\fit{thread\_{\it nnn}.out}{Output file for this copy of the script.}
+\fit{tdata.{\it nnn}.out}{File used for communication between {\file
+                         control.sh} and each individual copy of {\file
+                         run\_thread.sh} that is running.}
+\end{flist}
+
+\noindent
+All these files and directories are removed from the generation directory
+after all imputations for that directory have been completed.  The file {\file
+tdata.{\it nnn}} contains a single text string. Valid values of this string
+are
+
+\begin{plist}
+\pit{starting}      {Initial string value set by {\file thread\_start.sh}.}
+\pit{ready to go} {{\file run\_thread.sh} signaling {\file control.sh} that it
+                     is ready to accept work.}
+\pit{snl.{\it nnnn}}{{\file control.sh} signaling {\file run\_thread.sh} to
+                      work on the case as described by the file {\file snl.{\it
+                      nnnn}} in the work directory.}
+\pit{done}           {{\file control.sh} signaling {\file run\_thread.sh} to
+                     stop operations and end its execution.}
+\end{plist}
+
+\noindent
+Finally, {\file run\_thread.sh} uses the utility script {\file run\_one.sh} to
+compute the errors for the \gmd\ as described by {\file snl.{\it nnnn}}. 
+
+\vspace{\baselineskip}
+\noindent
+It should be noted that a disproportionally large part of the computational
+effort in the genetic optimization is lost for computing test cases with
+unstable model behavior. In such cases, the dynamic time step becomes
+extremely small, and hence the model run time becomes extremely long. This
+computational effort is essentially waisted, because the cases will have large
+errors and will hence have no impact on subsequent populations. To eliminate
+such useless computations, the error from case {\file test\_01} (or {\file
+test\_11} for the shallow water tests) is assessed in {\file run\_one.sh}. If
+this error is too big, other test cases are skipped, and the error of {\file
+test\_01} is used as a proxy for the error of running all tests.
+
+However, even {\file test\_01} can take up much computational effort by
+itself, due to the small minimum source term integration time step allowed
+(1~s). To speed up initial computations for unstable cases, the test case
+{\file test\_0X} has been introduced. This test case is identical to {\file
+test\_01} with the exception that the minimum source term time step is set to
+300~s. This test can give a `quick and dirty' assessment of the viability of
+the configuration of the GMD, and will run fast, independent of the viability
+of the model configuration. Note that this test is run only to check
+viability. If viability is established, {\file test\_01} will be used to
+compute errors for this configuration, and results of {\file test\_0X} will be
+ignored. In some cases the small time step in {\file test\_01} will lead to
+large model errors whereas {\file test\_0X} shows much more moderate
+errors. Therefore, a second filter test is applied to the errors produced by
+{\file test\_01}.
+
+The filtering is performed in the basic computational script {\file
+run\_one.sh}, which is used by all optimization methods (genetic, descent,
+mapping).  The filter levels are set in the script {\file get\_terr.sh} in the
+utility script directory. This script set a minimum and maximum error filter
+level, and a factor used to set the error filter level based on the best
+member of the previous population. If the minimum error is set to 999.999, no
+filtering will be performed. The latter setting should be used if error
+mapping is performed.
+
+
+\vspace{\baselineskip}
+\noindent 
+This completes the description of the genetic optimization as performed by
+{\file control.sh}. As mentioned in \cite{tol:MMAB10d}, the genetic
+optimization can be augmented with a steepest descent method starting from
+given members of given populations. This can be achieved by executing
+\begin{center}
+{\file descent.sh igen ipop}
+\end{center}
+\noindent
+where {\file igen} represents the generation number, and {\file ipop}
+represents the sequence number of the member of the sorted population from
+which the steepest descent is to start. The resulting sequence of
+incrementally improved configurations is stored in {\file descent.{\it igen}}
+in the generation directory.  The script {\file descent.sh} uses the
+computational engine designed for {\file control.sh}. Result of the steepest
+descent search are saved in the generational directory {\file gen{\it nnnn}}
+with {\it nnnn} corresponding to {\file igen} in the file {\file descent.{\it
+nnnn}}, where {\it nnnn} corresponds to {\file ipop}. This file contains a set
+of incrementally improved \gmd\ layouts, anding with the final optimal \gmd\
+for the chosen initial condition.
+\begin{center}
+{\file descent\_sort.sh igen ipop}
+\end{center}
+\noindent
+will sort the resulting best configuration from the file {\file descent.{\it
+igen}} and store the results in the file {\file descent\_sort.{\it igen}}.
+optimization,
+
+\vspace{\baselineskip}
+\noindent
+Finally, the tools developed for the genetic search algorithm also make it
+easy to develop a simple script to systematically map errors in parameter
+space. After the optimization masks are set in {\file genes.mask.env}, and
+information for discretizing the parameters spaces is set in {\file
+genes.maps.env}, the mapping of errors in the selected parameter spaces can be
+performed with the command
+\begin{center}
+{\file map\_it.sh}
+\end{center}
+\noindent
+This command generates a population {\file mapping} representing a preset grid
+in parameter space. The script then generates error for each population member
+using the computational engine developed for the script {\file
+control.sh}. Note that the population will not be sorted by error per
+population member. Once all errors are computed, error files {\file
+mapping.test} and {\file mapping.pars} are generated corresponding to the
+similar two error files generated by {\file control.sh}. Note that the script
+can be interrupted, and will take off where it stopped when restarted, as does
+{\file control.sh}. Note, furthermore, that changing the grid of the parameter
+space will require a full rerun of the script. The script could be expanded to
+incrementally generate mapping in parameter space, but such an option has not
+been implemented yet. Note, finally, that only a single mapping data set is
+produced per directory setup.
+
+
+%\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Graphic tools                                      %
+%--------------------------------------------------------------%
+\section{Graphics tools} \label{sec:pack_graph}
+\newsec
+
+Two sets of graphics packages have been used for the production of graphics in
+\cite{tol:MMAB10d}, and can be used with the optimization package. The first
+is the GrADS package, as used as a default graphics option for the \ws\
+code. Standard plotting scripts for source terms and spectra for the test
+cases are described in the Section~\ref{sec:pack_desc}, and can be found in
+the directory
+\begin{center}
+{\file \$genes\_main/ush}
+\end{center}
+\noindent
+To use these script, links are generally made to the main directory or a work
+directory, and the corresponding GrADS files are copied or linked there from
+the storage area {\file \$genes\_data} or created there by the script {\file
+run\_test.sh}.
+
+\vspace{\baselineskip}
+\noindent
+The second package used is Matlab$^{\scriptsize \textregistered}$.  All Matlab
+scripts are gathered in he directory
+\begin{center}
+{\file \$genes\_main/matlab}
+\end{center}
+\noindent 
+and Matlab should be run from this directory. Under this directory is a
+utilities directory
+\begin{center}
+{\file \$genes\_main/matlab/util}
+\end{center}
+\noindent 
+which should be added to the default directory search path for the matlab
+scripts to work properly. The utility directory contains the following utility
+scripts 
+
+\begin{flist2}
+\fit{wavnu2.m}
+    {Solve the dispersion relation for given frequency $\sigma$ and depth $d$.}
+\fit{read\_all\_data.m}
+    {Read the file {\file all\_data.ww3} for processing with Matlab.}
+\fit{read\_mapping.m}
+    {Read the files with error data form error mapping scripts.}
+\fit{read\_pop\_clean.m}
+    {Read a population file {\file pop\_clean}.}
+\fit{read\_descent.m}
+    {Read the files with error data form error mapping scripts.}
+\end{flist2}
+
+\noindent
+The main directory for Matlab files contains the scripts
+
+\begin{flist2}
+\fit{makeplots\_base.m}
+    {Make line plots for baseline cases from file {\file all\_data.ww3}.}
+\fit{makeplots\_co\_5.m}
+    {Make line plots for a number of baseline cases (originally 5) from file
+    {\file all\_data.ww3}.}
+\fit{makeplots\_maps.m}
+    {Plot error maps from file {\file mapping} and {\file mapping.pars}.}
+\fit{makeplots\_errors.m}{Plot error evolution as a function of generation.}
+
+
+\fit{maps\_extract.sh}
+    {Auxiliary script to extract mapping data from data files.}
+\fit{maps\_clean.sh}
+    {Auxiliary script to clean up temp files generated by {\file
+    maps\_extract .sh}.}    
+\fit{pop\_extract.sh}
+    {Auxiliary script to extract population counts.}
+\fit{pop\_clean.sh}
+    {Auxiliary script to clean up temp files generated by {\file
+    pop\_extract .sh}.}    
+\end{flist2}
+
+\noindent
+Note that all these (Matlab) scripts require script parameters to be set
+inside the scripts that point to the proper data files from the proper model
+runs. The shell scripts are used to effectively extract data from data files
+before reading these data into Matlab scripts.
+
+
+%\bpage
+\pb
+%--------------------------------------------------------------%
+%           References                                         %
+%--------------------------------------------------------------%
+\addtocontents{toc}{\vspace{\baselineskip}}
+\addcontentsline{toc}{subsection}{References}
+\setcounter{footnote}{0}
+
+\bibliographystyle{jas}
+%\bibliography{short,articles,books,reports,conf,mine}
+\bibliography{report}
+
+\pb
+\pagestyle{empty}
+\bpagea
+
+
+\end{document}

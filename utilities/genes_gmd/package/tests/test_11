@@ -1,0 +1,339 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------- #
+# test_11 : Shallow-water time-limited growth test with constand wind speed    #
+#           and direction.                                                     #
+#                                                                              #
+# Remarks : This script runs exclusively in the directory from which it is     #
+#           called. Managing scripts work on the storage of the output.        #
+#                                                                              #
+#                                      Author      : Hendrik L. Tolman         #
+#                                                                              #
+# 05-dec-2008 : Origination.                                                   #
+#                                                                              #
+#    Copyright 2008-2010 National Weather Service (NWS),                       #
+#       National Oceanic and Atmospheric Administration.  All rights           #
+#       reserved.  Distributed as part of WAVEWATCH III. WAVEWATCH III is a    #
+#       trademark of the NWS. No unauthorized use without permission.          #
+#                                                                              #
+# ---------------------------------------------------------------------------- #
+# 0.  Preparations :
+# 0.a General
+
+  set -e
+
+  echo ' ' ; echo ' '
+  echo '                  ======> TEST RUN WAVEWATCH III <====== '
+  echo '                    ==================================   '
+  echo '                                   homogeneous growth test test_11'
+  echo '                                   constant wind speed and direction'
+  echo '                                   restricted water depth'
+  echo ' '
+
+  ww3_env='.wwatch3.env'          # WAVEWATCH III setup file.
+    setup='.genes.env'            # Package setup file.
+     main=`pwd`                   # Main (work) directory.
+     grid=genes.spec.env          # Setup file
+     srce=genes.source.env        # Setup file
+      snl=genes.snl.env           # Setup file
+
+# 0.b WAVEWATCH setup
+
+  cd
+  if [ -f $ww3_env ]
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    path_e="$main_dir/exe"        # path for executables
+    echo "   Setup file $ww3_env found."
+    echo "   Executables directory ; $path_e"
+  else
+    echo "   Set-up file $ww3_env not found (abort)"
+    exit 1
+  fi
+
+# 0.c GMD optimization package setup
+
+  if [ -f $setup ]
+  then
+    echo "   Setup file $setup found."
+    . $setup
+    echo "   Main genes directory ; $genes_main"
+  else
+    echo "   Setup file $setup NOT found (abort)."
+    exit 2
+  fi
+
+  cd $genes_main
+
+  if [ ! -f $grid ] ; then
+    echo "   Setup file $grid not found (abort)." ; exit 3 ; fi
+
+  if [ ! -f $srce ] ; then
+    echo "   Setup file $srce not found (abort)." ; exit 4 ; fi
+
+# 0.d Initial cleanup
+
+  cd $main
+
+  if [ ! -f $snl ] ; then
+    echo "   Setup file $snl not found (OK)." ; fi
+
+  echo "   Work directory for script : `pwd`"
+
+  rm -f *.out *.inp *.ww3 ww3.*
+
+# ---------------------------------------------------------------------------- #
+# 1. Grid preprocessor
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|  Grid preprocessor |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_grid.inp << EOF 
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'test_11: Time limited growth  '
+$ 
+EOF
+cat $genes_main/$grid   >> ww3_grid.inp
+cat >> ww3_grid.inp << EOF 
+$ 
+   F F F F F T
+ 900.  900.  900.   1.
+$
+EOF
+cat $genes_main/$srce   >> ww3_grid.inp
+if [ -f "$snl" ] ; then
+  cat $snl ; fi         >> ww3_grid.inp
+cat >> ww3_grid.inp << EOF 
+  &SNL2 IQTYPE = 3, NDEPTH =  16 /
+  &ANL2 DEPTHS = 50., 48., 46., 44., 42., 40., 38., 36., 34., 32.,
+                 30., 28., 26., 24., 22., 20. /
+END OF NAMELISTS
+$ 
+   3   3
+   1.  1.  1.
+  -1. -1.  1.
+  -5. 0.10  10  -50. 3 1 '(....)' 'UNIT' 'input'
+$ 
+   1  1  1
+   1  1  1
+   1  1  1
+$  
+   10 3 1 '(....)' 'PART' 'mapsta.inp'
+   0  0  F
+   0  0  F
+   0  0
+$  
+   0. 0. 0. 0.  0
+EOF
+   
+  echo "   Screen ouput routed to ww3_grid.out"
+  $path_e/ww3_grid > ww3_grid.out
+
+  rm -f ww3_grid.inp  
+
+# 2. Initial conditions -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '| Initial conditions |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_strt.inp << EOF
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  2
+$
+  0.0  0.25  270.  2.0 0. 0. 0. 1. 0. 1.
+EOF
+
+  echo "   Screen ouput routed to ww3_strt.out"
+  $path_e/ww3_strt > ww3_strt.out
+
+  rm -f ww3_strt.inp
+
+# 3. Main program -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Main program    |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_shel.inp << EOF
+$ WAVEWATCH III shell input file
+$ ------------------------------
+   T T
+   F T
+   T T
+   F
+   F
+   F
+   F
+$  
+   19680606 000000
+   19680607 000000
+$
+   1
+$  
+   19680606 000000      0  19680608 000000
+   19680606 000000    900  19680608 000000
+     0.0   0.0  'The_point '
+     0.0   0.0  'STOPSTRING'
+   19680607 000000      0  19680608 000000
+   19680607 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+$  
+   'WND' 19680606 180000   20.   270.  -20.
+   'LEV' 19680606 140000    0.
+   'LEV' 19680606 150000   -2.
+   'LEV' 19680606 160000   -4.
+   'LEV' 19680606 170000   -6.
+   'LEV' 19680606 180000   -8.
+   'LEV' 19680606 190000  -10.
+   'LEV' 19680606 193000  -12.
+   'LEV' 19680606 200000  -14.
+   'LEV' 19680606 203000  -16.
+   'LEV' 19680606 210000  -18.
+   'LEV' 19680606 213000  -20.
+   'LEV' 19680606 220000  -22.
+   'LEV' 19680606 223000  -24.
+   'LEV' 19680606 230000  -26.
+   'LEV' 19680606 233000  -28.
+   'LEV' 19680607 000000  -30.
+   'STP'
+EOF
+
+  echo "   Screen ouput routed to ww3_shel.out"
+  $path_e/ww3_shel > ww3_shel.out
+
+  run_time=`grep 'Elapsed time' log.ww3 | awk '{ print $4}'`
+  echo "      Run time : $run_time s"
+
+  rm -f ww3_shel.inp restart.ww3 test*.ww3
+
+# 4. Gridded output ---------------------------------------------------------
+
+# echo ' '
+# echo '+--------------------+'
+# echo '|   Gridded output   |'
+# echo '+--------------------+'
+# echo ' '
+
+# 5. Point output -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Point output    |' 
+  echo '+--------------------+'
+  echo ' '
+
+# 5.a Spectral data 
+
+  echo "   Raw spectral data ..."
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 003000  1800. 9999
+$
+  1
+ -1
+$
+  1
+$
+  3  0.  0.  52  T
+EOF
+
+  echo "      Screen output routed to ww3_op_1.out"
+  $path_e/ww3_outp > ww3_op_1.out
+
+  echo "      Table file ww3.68060600.spc routed to spec.ww3"
+  mv ww3.68060600.spc spec.ww3
+  rm -f ww3_outp.inp
+
+# 5.b Source term (Snl) data
+
+  echo "   Raw source term data ..."
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 003000  1800. 9999
+$
+  1
+ -1
+$
+  3
+$
+  4  0. 0. 52   F F T F F F  0  T
+EOF
+
+  echo "      Screen output routed to ww3_op_2.out"
+  $path_e/ww3_outp > ww3_op_2.out
+
+  echo "      Table file ww3.68060600.src routed to source.ww3"
+  mv ww3.68060600.src source.ww3
+  rm -f ww3_outp.inp
+
+# 5.c Partitioned data
+
+  echo "   Partitioned data ..."
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 003000  1800. 9999
+$
+  1
+ -1
+$
+  1
+$
+  4  0.  0.  52  T
+EOF
+
+  echo "      Screen output routed to ww3_op_3.out"
+  $path_e/ww3_outp > ww3_op_3.out
+
+  echo "      Table file tab52.ww3 routed to part.ww3"
+  mv tab52.ww3 part.ww3
+  rm -f ww3_outp.inp
+
+# 5.d Grads spectra
+
+  echo '   GrADS spectra'
+
+cat > gx_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing (GrADS)
+$ --------------------------------------------------
+  19680606 000000 3600. 999
+$
+  1
+ -1
+$
+  T T T T T T
+EOF
+
+    echo "   Screen output routed to gx_outp.out"
+    $path_e/gx_outp > gx_outp.out
+
+    rm -f gx_outp.inp
+
+# ---------------------------------------------------------------------------- #
+# 6. End of script
+
+  rm -f quad*.bqf xnl4v5.*
+
+  echo ' ' ; echo ' '
+  echo '                  ======>  END OF WAVEWATCH III  <====== '
+  echo '                    ==================================   '
+  echo ' '
+  echo 'End of test_11' 
+
+# End of test_11 ------------------------------------------------------------- #
