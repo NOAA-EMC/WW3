@@ -43,17 +43,17 @@
 # --------------------------------------------------------------------------- #
 # 1.a Check and process input
 
- if [ "$#" != '1' ]
- then
-   echo "usage: comp name" ; exit 1
- fi
- name="$1"
+  if [ "$#" != '1' ]
+  then
+    echo "usage: comp name" ; exit 1
+  fi
+  name="$1"
 
-# 1.b Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.b Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
- rm -f $name.l
- rm -f $name.o
- rm -f comp.stat
+  rm -f $name.l
+  rm -f $name.o
+  rm -f comp.stat
 
 # --------------------------------------------------------------------------- #
 # 2. Compile                                                                  #
@@ -61,49 +61,58 @@
 # Add here the correct compiler call including command line options
 # Note: - do not invoke a link step
 #       - if possible, generate a listing $name.l
-#       - make sure the compiler point to the proper directory where the
+#       - make sure the compiler point to the proper directory where the 
 #         modules are stored ($m_path), see examples below.
 
-# 2.a Determine file extension - - - - - - - - - - - - - - - - - - - - - - - -
+# 2.a Determine file extension - - - - - - - - - - - - - - - - - - - - - - - - 
 #     .f90 assumes free format, .f assumes fixed format, change if necessary
 
- if [ -f $name.f90 ]
- then
-   fext='f90'
- else
-   fext='f'
- fi
+  if [ -f $name.f90 ]
+  then
+    fext='f90'
+  else
+    fext='f'
+  fi
 
-# 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #     Save compiler exit code in $OK
 #
 # Intel compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
- opt="-c CB -list -O3 -module $path_m"
+  opt="-c CB -list -O3 -module $path_m"
 
- if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
- then
-   opt="$opt -convert big_endian"
- fi
+  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
+  then
+    opt="$opt -convert big_endian"
+  fi
 
- if [ "$mpi_mod" = 'yes' ]
- then
-   comp=mpif90
- else
-   comp=ifort
- fi
+  if [ "$mpi_mod" = 'yes' ]
+  then
+    comp=mpif90
+  else
+    comp=ifort
+  fi
 
 # if [ "$omp_mod" = 'yes' ]
 # then
 #   opt="$opt -mp"
 # fi
 
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ] || [ "$name" = 'ww3_prnc' ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3) opt="$opt -I$NETCDF_INCDIR" ;;
+      NC4) comp="`$NETCDF_CONFIG --fc`"
+           opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+    esac
+  fi
+
 # 2.b.2 Compile
 
- $comp $opt                             $name.$fext > $name.out 2> $name.err
- OK="$?"
+  $comp $opt                             $name.$fext > $name.out 2> $name.err
+  OK="$?"
 
 # 2.b.2 Process listing
 
@@ -114,13 +123,16 @@
 
 # 2.b.3 Add test output to listing for later viewing
 
-## echo '------------' >> $name.l
-## echo "$comp $opt"   >> $name.l
-## echo '------------' >> $name.l
-## cat $name.out       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
-## cat $name.err       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
+# if [ -s $name.l ] 
+# then
+#   echo '------------' >> $name.l
+#   echo "$comp $opt"   >> $name.l
+#   echo '------------' >> $name.l
+#   cat $name.out       >> $name.l 2> /dev/null
+#   echo '------------' >> $name.l
+#   cat $name.err       >> $name.l 2> /dev/null
+#   echo '------------' >> $name.l
+# fi
 
 # --------------------------------------------------------------------------- #
 # 3. Postprocessing                                                           #
@@ -129,48 +141,53 @@
 #     nr_err : number of errors.
 #     nr_war : number of errors.
 
- nr_err='0'
- nr_war='0'
+  nr_err='0'
+  nr_war='0'
 
- if [ -s $name.err ]
- then
-   nr_err=`grep 'fortcom: Error:' $name.err | wc -l | awk '{ print $1 }'`
-   nr_war=`grep 'fortcom: Warning:' $name.err | wc -l | awk '{ print $1 }'`
- else
-   if [ "$OK" != '0' ]
-   then
-     nr_err='1'
-   fi
- fi
+  if [ -s $name.err ]
+  then
+    echo > /dev/null
 
-# 3.b Make file comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - -
+    nr_err=`grep 'fortcom: Error:' $name.err | wc -l | awk '{ print $1 }'`
+    nr_war=`grep 'fortcom: Warning:' $name.err | wc -l | awk '{ print $1 }'`
 
- echo "ERROR    $nr_err"   > comp.stat
- echo "WARNING  $nr_war"  >> comp.stat
+  else
+    if [ "$OK" != '0' ]
+    then
+      nr_err='1'
+    fi
+  fi
+
+# 3.b Make file comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  echo "ERROR    $nr_err"   > comp.stat
+  echo "WARNING  $nr_war"  >> comp.stat
 
 # 3.c Prepare listing  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #     if compiler does not provide listing, make listing from source code
 #     and compiler messages. Second input line for w3list identifies if
 #     comment lines are to be numbered.
 
- if [ ! -f $name.l ]
- then
-   echo "$name.$fext" > w3list.inp
-   echo "T"          >> w3list.inp
-   w3list < w3list.inp 2> /dev/null
-   rm -f w3list.inp
-   mv w3list.out $name.l
-   echo ' '      >> $name.l
-   cat $name.out >> $name.l #2> /dev/null
-   echo ' '      >> $name.l
-   cat $name.err >> $name.l #2> /dev/null
-   echo ' '      >> $name.l
- fi
+  if [ ! -f $name.l ]
+  then
+    echo "$name.$fext" > w3list.inp
+    echo "T"          >> w3list.inp
+    w3list < w3list.inp 2> /dev/null
+    rm -f w3list.inp
+    mv w3list.out $name.l
+    echo '------------' >> $name.l
+    echo "$comp $opt"   >> $name.l
+    echo '------------' >> $name.l
+    cat $name.out >> $name.l #2> /dev/null
+    echo '------------' >> $name.l
+    cat $name.err >> $name.l #2> /dev/null
+    echo '------------' >> $name.l
+  fi
 
 # 3.d Remove unwanted files  - - - - - - - - - - - - - - - - - - - - - - - - -
 #     include here unwanted files generated by the compiler
 
- rm -f $name.out
- rm -f $name.err
+  rm -f $name.out
+  rm -f $name.err
 
 # end of comp --------------------------------------------------------------- #

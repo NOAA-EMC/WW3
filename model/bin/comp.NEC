@@ -108,6 +108,15 @@
 #   opt="$opt -mp"
 # fi
 
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ] || [ "$name" = 'ww3_prnc' ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3) opt="$opt -I$NETCDF_INCDIR" ;;
+      NC4) comp="`$NETCDF_CONFIG --fc`"
+           opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+    esac
+  fi
+
 # 2.b.2 Compile
 
   eval $comp $opt                             $name.$fext > $name.out 2> $name.err
@@ -122,13 +131,16 @@
 
 # 2.b.3 Add test output to listing for later viewing
 
-## echo '------------' >> $name.l
-## echo "$omp $opt"   >> $name.l
-## echo '------------' >> $name.l
-## cat $name.out       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
-## cat $name.err       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
+# if [ -s $name.l ] 
+# then
+#   echo '------------' >> $name.l
+#   echo "$comp $opt"   >> $name.l
+#   echo '------------' >> $name.l
+#   cat $name.out       >> $name.l 2> /dev/null
+#   echo '------------' >> $name.l
+#   cat $name.err       >> $name.l 2> /dev/null
+#   echo '------------' >> $name.l
+# fi
 
 # --------------------------------------------------------------------------- #
 # 3. Postprocessing                                                           #
@@ -142,8 +154,11 @@
 
   if [ -s $name.err ]
   then
+    echo > /dev/null
+
     nr_err=`grep -i 'f[97][750]: error' $name.err | wc -l | awk '{ print $1 }'`
     nr_war=`grep -i 'f[97][750]: warn' $name.err | wc -l | awk '{ print $1 }'`
+
   else
     if [ "$OK" != '0' ]
     then
@@ -168,11 +183,13 @@
     w3list < w3list.inp 2> /dev/null
     rm -f w3list.inp
     mv w3list.out $name.l
-    echo ' '      >> $name.l
+    echo '------------' >> $name.l
+    echo "$comp $opt"   >> $name.l
+    echo '------------' >> $name.l
     cat $name.out >> $name.l #2> /dev/null
-    echo ' '      >> $name.l
+    echo '------------' >> $name.l
     cat $name.err >> $name.l #2> /dev/null
-    echo ' '      >> $name.l
+    echo '------------' >> $name.l
   fi
 
 # 3.d Remove unwanted files  - - - - - - - - - - - - - - - - - - - - - - - - -
