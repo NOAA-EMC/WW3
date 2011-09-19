@@ -1,1 +1,0 @@
-thread_check.sh.IBM_ll
