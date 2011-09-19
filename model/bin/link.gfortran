@@ -37,11 +37,11 @@
 
 # 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+  ww3_env='.wwatch3.env'   # setup file
 
 # 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
+  cd
   if [ -f $ww3_env ]
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift
@@ -114,16 +114,20 @@
 #   opt="$opt -mp"
 # fi
 
-# 
+
+#
 # NetCDF library
-# 
-  if [ "$prog" = 'ww3_ounf' ]
+#
+  if [ "$prog" = 'ww3_ounf' ] || [ "$prog" = 'ww3_ounp' ] || [ "$prog" = 'ww3_prnc' ]
   then
-     pathI='/usr/'
-     opt="$opt -L${pathI}lib  -lnetcdff -lnetcdf" 
+    case $WWATCH3_NETCDF in
+      NC3) libs="$libs -L$NETCDF3_LIBDIR -lnetcdf" ;;
+      NC4) libs="$libs `nc-config --flibs` `curl-config --libs` ";;
+    esac
   fi
+
 # 3.b Link
-  $comp $opt $objects                               > link.out 2> link.err
+  $comp $opt $objects $libs  > link.out 2> link.err
   OK="$?"
 
 # --------------------------------------------------------------------------- #

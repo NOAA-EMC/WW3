@@ -63,7 +63,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2011 |
+!/                  | Last update :         16-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -93,6 +93,7 @@
 !/    01-Jun-2011 : Movable bed bottom friction in BT4  ( version 4.01 ) 
 !/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 ) 
 !/    24-Aug-2011 : Uses true depth for depth-induced   ( version 4.04 )
+!/    16-Sep-2011 : Initialization of TAUWAX, TAUWAY    ( version 4.04 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -464,6 +465,8 @@
       TAUWIY = 0.
       TAUWNX = 0.
       TAUWNY = 0.
+      TAUWAX = 0.
+      TAUWAY = 0.
       TAUSCX = 0.
       TAUSCY = 0.
       TAUBBL(:)= 0.

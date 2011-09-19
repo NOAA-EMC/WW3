@@ -173,7 +173,7 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
-                          SSTXFTFTAIL, SSWELLF ,SSWELLFPAR
+                          SSTXFTFTAIL, SSWELLF 
 !/T      USE W3ODATMD, ONLY: NDST
 !/T      USE W3ODATMD, ONLY: NDST
 !
@@ -381,8 +381,8 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
-                          TTAUWSHELTER, SSWELLF, SSWELLFPAR,           &
-                          DDEN2, DTH, SSINTHP,ZZ0RAT, FLICES
+                          TTAUWSHELTER, SSWELLF, DDEN2, DTH, SSINTHP,  &
+                          ZZ0RAT, FLICES
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ODATMD, ONLY: NDST
@@ -765,7 +765,7 @@
       USE W3ODATMD,  ONLY: NDSE
       USE W3SERVMD,  ONLY: EXTCDE
       USE W3DISPMD,  ONLY: WAVNU2
-      USE W3GDATMD,  ONLY: SIG, DSIP, NK, NTH, TTAUWSHELTER, SSWELLFPAR, &
+      USE W3GDATMD,  ONLY: SIG, DSIP, NK, NTH, TTAUWSHELTER,             &
                            SSDSDTH, SSDSCOS, TH, DTH, XFR, ECOS, ESIN,   &
                            SSDSC,  SSDSBRF1, SSDSBCK, SSDSBINT, SSDSPBK, &
                            SSDSABK, SSDSHCK, IKTAB, DCKI, SATINDICES,    &
@@ -781,14 +781,14 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-    INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 , IS, IS2
-    INTEGER  IKL, ID, ICON, IKD, IKHS, IKH, TOTO
-    REAL     C, C2
-    REAL     DIFF1, DIFF2, K_SUP(NK), BINF, BSUP, K(NK), CGG, PROF
-    REAL     KIK, DHS, KD, KHS, KH, B, XT, GAM, DKH, PR, W, EPS
-    REAL     DKD, DELTAFIT, NHI, H, IH, DH
-    REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
-    REAL, DIMENSION(:,:)   , ALLOCATABLE :: K1, K2
+      INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 , IS, IS2
+      INTEGER  IKL, ID, ICON, IKD, IKHS, IKH, TOTO
+      REAL     C, C2
+      REAL     DIFF1, DIFF2, K_SUP(NK), BINF, BSUP, K(NK), CGG, PROF
+      REAL     KIK, DHS, KD, KHS, KH, B, XT, GAM, DKH, PR, W, EPS
+      REAL     DKD, DELTAFIT, NHI, H, IH, DH
+      REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
+      REAL, DIMENSION(:,:)   , ALLOCATABLE :: K1, K2
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -811,7 +811,7 @@
         IF (TTAUWSHELTER.GT.0) THEN
           CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress
           END IF
-	      END IF
+        END IF
 !/ ------------------------------------------------------------------- /
 !                        SPONTANEOUS BREAKING
 !/ ------------------------------------------------------------------- /
@@ -1580,7 +1580,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS, IS2MAX, IS0, IA, J, IKL, ITOT, NTOT, ID, NKL, IO
+      INTEGER                 :: IS, IS2, IS0, IS20, IA, J, IKL, ITOT, NTOT, ID, NKL, IO
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: IK, ITH, I_INT, IK2, ITH2, IKIND, L,& 
                                  IKHS, IKD, SDSNTH   
@@ -1645,8 +1645,10 @@
           ELSE
             DO ITH=1,NTH            ! partial integration
               IS=ITH+(IK-1)*NTH
-              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
+             BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
                      A(IS0+SATINDICES(:,ITH)) )*FACSAT
+!              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
+!                     A(IS0+SATINDICES(:,ITH)) )*FACSAT
               END DO
             IF (SSDSISO.EQ.1) THEN
               BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
@@ -1742,7 +1744,7 @@
 !
 ! Computes Breaking probability
 !
-        PB = (MAX(SQRT(BTH)-EPSR,0.))**SSDSP
+        PB = (MAX(SQRT(BTH)-EPSR,0.))**2     
 ! 
 ! Multiplies by 28.16 = 22.0 * 1.6² * 1/2 with  
 !  22.0 (Banner & al. 2000, figure 6) 
@@ -1885,6 +1887,11 @@
             FORALL (IS=1+(IK-1)*NTH:IK*NTH) D(IS)  = 0.
             FORALL (IS=1+(IK-1)*NTH:IK*NTH) PB2(IS) = 0.
             END IF  
+          IF (PB2(1+(IK-1)*NTH).GT.0.001) THEN 
+            BTH0(IK) = 2.*SSDSBR
+          ELSE
+            BTH0(IK) = 0. 
+            END IF
           END DO   
 !
         PB = (1-SSDSC(1))*PB2*A + SSDSC(1)*PB
@@ -1913,12 +1920,25 @@
 !
 ! Computes cumulative effect from Breaking probability
 !
-         IF (SSDSC(3).NE.0 .AND. IK.GT.DIKCUMUL) THEN
-            IS2MAX = (IK-DIKCUMUL)*NTH
-            RENEWALFREQ = DOT_PRODUCT(CUMULW(1:IS2MAX,IS),LAMBDA(1:IS2MAX))
-          ELSE
-            RENEWALFREQ = 0.
+          RENEWALFREQ = 0.
+          IF (SSDSC(3).NE.0 .AND. IK.GT.DIKCUMUL) THEN
+            DO IK2=1,IK-DIKCUMUL
+              IF (BTH0(IK2).GT.SSDSBR) THEN
+                IS2=(IK2-1)*NTH
+                RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULW(IS2+1:IS2+NTH,IS),LAMBDA(IS2+1:IS2+NTH))
+                !DO ITH2=1,NTH
+                !  IS2=ITH2+(IK2-1)*NTH
+                !  RENEWALFREQ=RENEWALFREQ+CUMULW(IS2,IS)*LAMBDA(IS2)
+                !  END DO
+                END IF
+              END DO
             END IF
+!            IS2MAX = (IK-DIKCUMUL)*NTH
+!            RENEWALFREQ = DOT_PRODUCT(CUMULW(1:IS2MAX,IS),LAMBDA(1:IS2MAX))
+!          ELSE
+!            RENEWALFREQ = 0.
+!            END IF
+
 !
 ! Computes wave turbulence interaction
 !

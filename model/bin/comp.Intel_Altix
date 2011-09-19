@@ -90,8 +90,8 @@
 
   if [ "$mpi_mod" = 'yes' ]
   then
- #  opt="-c -CB -O0 -fpe0 -traceback -assume byterecl  -convert big_endian -module   $path_m"
-   opt="-c -O3 -assume byterecl  -convert big_endian -module   $path_m"
+#    opt="-c -CB -O0 -fpe0 -traceback -assume byterecl  -convert big_endian -module   $path_m"
+    opt="-c -fast -assume byterecl  -convert big_endian -module   $path_m"
     comp=mpiifort
   else
     comp=ifort
@@ -104,15 +104,17 @@
 #
 # NetCDF library
 #
-  if [ "$name" = 'ww3_ounf' ]
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ] || [ "$name" = 'ww3_prnc' ]
   then
-     pathI='/export/home/services/bibli/netcdf-3.6.3-intel-11.1.073/'
-     opt="$opt -I${pathI}include/"
+    case $WWATCH3_NETCDF in
+      NC3) opt="$opt -I$NETCDF3_INCDIR" ;;
+      NC4) opt="$opt -I`nc-config --includedir`" ;;
+    esac
   fi
 
 
 # 2.b.2 Compile
-  $comp $opt                             $name.$fext > $name.out 2> $name.err
+  $comp $opt    $name.$fext    > $name.out 2> $name.err
   OK="$?"
 # 2.b.2 Process listing
 

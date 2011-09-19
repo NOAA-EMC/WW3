@@ -58,11 +58,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Apr-2010 |
+!/                  | Last update :         16-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    03-Jul-2006 : Origination.                        ( version 3.09 )
 !/    20-Apr-2010 : Fix INTENT of UST.                ( version 3.14.1 )
+!/    16-Sep-2011 : Add max on division by UST        ( version 4.05   )
 !/
 !  1. Purpose :
 !
@@ -170,7 +171,7 @@
       USTD   = UDIR
 !
       DO ITT=1, NITTIN
-        ALPHA  = 0.57 / ( CP / UST )**(1.5)
+        ALPHA  = 0.57 / ( CP / MAX (UST,0.0001) )**(1.5)
         RDCH   = MAX ( 0. ,                                           &
             LOG ( ( ZWIND * GRAV) / ( CINXSI * SQRT(ALPHA) * UNZ**2) ) )
         CD     = 0.001 * ( 0.021 + 10.4 / (RDCH**1.23+1.85) )

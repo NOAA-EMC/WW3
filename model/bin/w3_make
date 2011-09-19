@@ -142,13 +142,64 @@
 
     OK='n'
     checks='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_sbs1
-            ww3_outf ww3_outp ww3_trck ww3_grib ww3_gint gx_outf gx_outp ww3_ounf ww3_ounp'
+            ww3_outf ww3_outp ww3_trck ww3_grib ww3_gint gx_outf gx_outp ww3_ounf ww3_ounp ww3_prnc'
 
     for check in $checks
     do
       if test "$prog" = "$check"
       then
         OK='y'
+        if [ "$check" = 'ww3_ounf' ] || [ "$check" = 'ww3_ounp' ] || [ "$check" = 'ww3_prnc' ]
+        then
+
+          # check value of WWATCH3_NETCDF environnment variable
+          WWATCH3_NC="$(env | grep WWATCH3_NETCDF | cut -d "=" -f 2)"
+          echo  "WWATCH3_NETCDF = $WWATCH3_NC"
+
+          # NC4
+          if [ "$WWATCH3_NC" = "NC4" ]
+          then
+            # check if netCDF4 library is installed
+            if [ "$(nc-config --has-nc4)" != "yes" ]
+            then
+              echo "*** NetCDF4 library need to be compiled on your system or delete NC4 from switch file ***"
+              exit
+            fi
+
+          # NC3
+          elif [ "$WWATCH3_NC" = "NC3" ]
+          then
+            # check if NC4 is present in switch file or not
+            if [ "$(grep -o NC4 $main_dir/bin/switch)" = "NC4" ]
+            then
+              echo  "*** WWATCH3_NETCDF need to be set to NC4 or delete NC4 from switch file ***"
+              exit
+            fi
+            # NETCDF3_INCDIR
+            NC3_INCDIR="$(env | grep NETCDF3_INCDIR | cut -d "=" -f 2)"
+            if [ "$NC3_INCDIR" != "" ]
+            then
+              echo "NETCDF3_INCDIR = $NC3_INCDIR"
+            else
+              echo  "*** NETCDF3_INCDIR need to be set. [/usr/local/include] ***"
+              exit
+            fi
+            # NETCDF3_LIBDIR
+            NC3_LIBDIR="$(env | grep NETCDF3_LIBDIR | cut -d "=" -f 2)"
+            if [ "$NC3_LIBDIR" != "" ]
+            then
+              echo "NETCDF3_LIBDIR = $NC3_LIBDIR"
+            else
+              echo  "*** NETCDF3_LIBDIR need to be set. [/usr/local/lib] ***"
+              exit
+            fi
+
+          # Other
+          else
+            echo  "*** WWATCH3_NETCDF need to be set. [NC3 or NC4] ***"
+            exit
+          fi
+        fi
       fi
     done
     if test "$OK" = 'n'
