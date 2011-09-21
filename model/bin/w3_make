@@ -118,9 +118,13 @@ The nc-config utility (part of the NetCDF-4 install) is used to
 determine the appropriate compile and link flags for the
 WWATCH3_NETCDF=NC4 compile.
 
+The NetCDF-4 compile requires NetCDF version 4.1.2 or higher.
+Use "nc-config --version" to check the version of the installed
+NetCDF.
+
 Compiling with the NC4 switch requires WWATCH3_NETCDF=NC4 and the
 NetCDF-4 installation compiled with the NetCDF-4 API enabled.
-Use "nc-config --has-nc4" to check if the NetCDF installation has
+Use "nc-config --has-nc4" to check if the installed NetCDF has
 the NetCDF-4 API enabled.
 
 *****************************************************************
@@ -172,6 +176,13 @@ EOF
           if [ ! -x "$NETCDF_CONFIG" ]
           then
             echo "ERROR: $NETCDF_CONFIG does not exist or is not executable"
+            exit 1
+          fi
+          netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
+          if [ `echo $netcdf_version | tr -d .` -lt 412 ]
+          then
+            echo "ERROR: NetCDF version $netcdf_version < 4.1.2"
+            netcdf_compile_message
             exit 1
           fi
         ;;

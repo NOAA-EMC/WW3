@@ -370,9 +370,12 @@ are required.
 The nc-config utility program (part of the NetCDF-4 install) is used to
 determine the appropriate compile and link flags for the
 {\file WWATCH3\_NETCDF} = NC4 compile.
+The NetCDF-4 compile requires NetCDF version 4.1.2 or higher.
+Use "{\code nc-config --version}" to check the version of the installed
+NetCDF.
 Compiling with the {\sc NC4} switch requires {\file WWATCH3\_NETCDF} = NC4
 and the NetCDF-4 installation compiled with the NetCDF-4 API enabled.
-Use "{\code nc-config --has-nc4}" to check if the NetCDF installation has
+Use "{\code nc-config --has-nc4}" to check if the installed NetCDF has
 the NetCDF-4 API enabled.
 
 \vspace{\baselineskip} 
