@@ -155,13 +155,17 @@
 !/NCEP1                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.TRUE.  ,  &
 !/NCEP1                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE. ,  &
 !/NCEP1                    .FALSE./
-!/NCEP2      DATA FLGRIB / .FALSE.,.FALSE.,.TRUE. ,.FALSE.,.FALSE. ,  &
-!/NCEP2                    .TRUE. ,.FALSE.,.FALSE.,.FALSE.,.FALSE. ,  &
-!/NCEP2                    .TRUE. ,.TRUE. ,.FALSE.,.FALSE.,.TRUE.  ,  &
-!/NCEP2                    .TRUE. ,.FALSE.,.TRUE. ,.FALSE.,.FALSE. ,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.TRUE.  ,  &
-!/NCEP2                    .TRUE., .FALSE.,.FALSE.,.FALSE.,.FALSE. ,  &
-!/NCEP2                    .FALSE./
+!/NCEP2      DATA FLGRIB / .FALSE.,.TRUE. ,.TRUE. ,.FALSE.,.TRUE. ,  &
+!/NCEP2                    .TRUE. ,.TRUE. ,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.TRUE. ,.FALSE.,.FALSE.,  &
+!/NCEP2                    .TRUE. ,.TRUE. ,.TRUE. ,.FALSE.,.TRUE. ,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE./
 !
 !/NCO/!     CALL W3TAGB('WAVEGRIB',1998,0007,0050,'NP21   ')
 !
