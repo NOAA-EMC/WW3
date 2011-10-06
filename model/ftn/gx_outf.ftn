@@ -255,12 +255,14 @@
               END IF
           END IF
         FLREQ(I) = FLREQ(I) .AND. FLOGRD(I)
-        IF ( I.EQ.29 ) THEN
+!
+! Note: Whenever number of output parameters change, this needs updating
+!
+        IF ( I.EQ.43 ) THEN
             IF ( FLREQ(I) ) NVAR = NVAR + 3
-          ELSE IF ( I.GE.15 .AND. I.LE.20 ) THEN
+          ELSE IF ( I.GE.17 .AND. I.LE.22 ) THEN
             IF ( FLREQ(I) ) NVAR = NVAR + NOSWLL + 1
-          ELSE IF ( I.EQ.2 .OR. I.EQ.3 .OR. I.EQ.5 .OR. I.EQ.27 .OR.  &
-            I.EQ.28 ) THEN
+          ELSE IF ( I.EQ.2 .OR. I.EQ.3 .OR. I.EQ.28 ) THEN
             IF ( FLREQ(I) ) NVAR = NVAR + 2
           ELSE
             IF ( FLREQ(I) ) NVAR = NVAR + 1
@@ -1049,7 +1051,7 @@
 !
 !     3D array fields
 !
-            IF ( J.EQ.29 ) THEN
+            IF ( J.EQ.43 ) THEN
                 WRITE (NDSDAT)                                        &
                       ((X1(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
                 WRITE (NDSDAT)                                        &
@@ -1059,7 +1061,7 @@
 !
 !     Partitions parameters
 !
-              ELSE IF ( J.GE.15 .AND. J.LE.20 ) THEN
+              ELSE IF ( J.GE.17 .AND. J.LE.22 ) THEN
                 DO I=0, NOSWLL
                   WRITE (NDSDAT)                                      &
                     ((XA(IX,IY,I),IX=IX0,IXN),IY=IY0,IYN)
@@ -1067,8 +1069,7 @@
 !
 !     2D array fields
 !
-              ELSE IF ( J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.5.               &
-                .OR. J.EQ.27 .OR. J.EQ.28 ) THEN
+              ELSE IF ( J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.29 ) THEN
                 WRITE (NDSDAT)                                        &
                       ((XX(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
                 WRITE (NDSDAT)                                        &
