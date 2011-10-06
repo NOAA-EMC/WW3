@@ -165,7 +165,7 @@
 !/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
 !/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
 !/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE./
+!/NCEP2                    .FALSE.,.FALSE.,.FALSE./
 !
 !/NCO/!     CALL W3TAGB('WAVEGRIB',1998,0007,0050,'NP21   ')
 !
