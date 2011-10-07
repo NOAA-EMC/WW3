@@ -1300,7 +1300,6 @@
 !/MPI                              FLGMPI(1) = .FALSE.
                               CALL W3IOGO                             &
                                  ( 'WRITE', NDS(7), ITEST, IMOD )
-                            END IF
 !AC Generate output flag file
 !/SBS                              JJ = LEN_TRIM ( FILEXT )
 !/SBS                              CALL STME21 ( TIME, IDTIME )
