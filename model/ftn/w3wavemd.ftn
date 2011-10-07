@@ -358,6 +358,7 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(4), IK, ITH, IS
 !/SEC1      INTEGER                 :: ISEC1
+!/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
@@ -377,6 +378,7 @@
       CHARACTER(LEN=11)       :: IDACT 
       CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
+!/SBS      CHARACTER(LEN=30)       :: FOUTNAME
 !
 !/PALM integer ::il_err, palm_time_a,palm_time_b
 !/PALM real ::vecta(1:NSEAL),vectb(1:NSEAL)
@@ -1298,6 +1300,15 @@
 !/MPI                              FLGMPI(1) = .FALSE.
                               CALL W3IOGO                             &
                                  ( 'WRITE', NDS(7), ITEST, IMOD )
+                            END IF
+!AC Generate output flag file
+!/SBS                              JJ = LEN_TRIM ( FILEXT )
+!/SBS                              CALL STME21 ( TIME, IDTIME )
+!/SBS                              FOUTNAME = 'Field_done.' // IDTIME(1:4) &
+!/SBS                                       // IDTIME(6:7) // IDTIME(9:10) &
+!/SBS                                      // IDTIME(12:13) // '.' // FILEXT(1:JJ)
+!/SBS                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
+!/SBS                              CLOSE( NDSOFLG )
                             END IF
                         ELSE IF ( J .EQ. 7 ) THEN
                           IF ( IAPROC .EQ. NAPFLD ) THEN
