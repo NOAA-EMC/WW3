@@ -89,6 +89,11 @@
     fi
     shift
   done
+  if [ "$error" = 'y' ]
+  then
+    echo "*** Missing object files ***"
+    exit 3
+  fi
 
 # --------------------------------------------------------------------------- #
 # 3. Link all things                                                          #
@@ -98,6 +103,7 @@
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
+  libs=""
   opt="-o $prog"
 
   if [ "$mpi_mod" = 'yes' ]
@@ -112,9 +118,18 @@
     opt="$opt -fopenmp"
   fi
 
+  if [ "$prog" = 'ww3_ounf' ] || [ "$prog" = 'ww3_ounp' ] || [ "$prog" = 'ww3_prnc' ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
+      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+           libs="$libs `$NETCDF_CONFIG --flibs`" ;;
+    esac
+  fi
+
 # 3.b Link
 
-  $comp $opt $objects                               > link.out 2> link.err
+  $comp $opt $objects $libs                         > link.out 2> link.err
   OK="$?"
 
 # --------------------------------------------------------------------------- #
@@ -131,6 +146,7 @@
     echo ' '
     rm -f link.???
     rm -f $prog
+    exit $OK
   else
     if [ ! -f $prog ]
     then
@@ -141,6 +157,7 @@
       cat link.err
       echo ' '
       rm -f link.???
+      exit 1
     else
       mv $prog $main_dir/exe/.
       rm -f link.???
