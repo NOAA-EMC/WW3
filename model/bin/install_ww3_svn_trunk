@@ -383,6 +383,16 @@
 
   echo ' '
   echo 'Checking/making directories :'
+# First check and make manual and guide directories
+  for dir in manual guide
+  do
+    if [ ! -d ${dir} ]
+    then
+      echo "   making directory ${dir}"
+      mkdir ${dir}
+    fi
+  done
+# Now make the model directories (at same level as manual and guide)
   for dir in aux bin ftn obj mod exe inp nrltest test work
   do
     if [ ! -d $dir ]
@@ -1002,6 +1012,48 @@
       fi
     fi 
   fi
+
+# --------------------------------------------------------------------------- #
+# 6. Set-up / update inp directory                                            #
+# --------------------------------------------------------------------------- #
+
+  for newdir in manual guide
+  do
+    cd $main_dir/svn/${newdir}
+    files=`ls *`
+    cd $main_dir/${newdir}
+    echo ' '
+
+    echo ' ' ; echo ' '
+    echo ' ********************************'
+    echo '*** Set up / update directories ***'
+    echo ' *****************************************************************'
+    echo "    Directory `pwd`"
+    echo ' '
+
+    nr_old=0
+    nr_new=0
+
+    for file in $files
+    do
+      if [ -f $file ]
+      then
+        nr_old=`expr $nr_old + 1`
+      else
+        nr_new=`expr $nr_new + 1`
+        echo "   New link $file ..."
+      fi
+      ln -sf $main_dir/svn/${newdir}/$file
+    done
+    if [ "$nr_old" != '0' ]
+    then
+      echo "   $nr_old existing links found."
+    fi
+    if [ "$nr_new" != '0' ]
+    then
+      echo "   $nr_new links made."
+    fi
+  done
 
 # --------------------------------------------------------------------------- #
 # 9. The end                                                                  #
