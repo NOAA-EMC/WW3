@@ -106,6 +106,15 @@
     opt="$opt -mp"
   fi
 
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ] || [ "$name" = 'ww3_prnc' ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3) opt="$opt -I$NETCDF_INCDIR" ;;
+      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+           opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+    esac
+  fi
+
 # 2.b.2 Compile
 
   $comp $opt                             $name.$fext > $name.out 2> $name.err
@@ -120,13 +129,16 @@
 
 # 2.b.3 Add test output to listing for later viewing
 
-   echo '------------' >> $name.l
-   echo "$comp $opt"   >> $name.l
-## echo '------------' >> $name.l
-## cat $name.out       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
-## cat $name.err       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
+  if [ -s $name.l ] 
+  then
+    echo '------------' >> $name.l
+    echo "$comp $opt"   >> $name.l
+    echo '------------' >> $name.l
+    cat $name.out       >> $name.l 2> /dev/null
+    echo '------------' >> $name.l
+    cat $name.err       >> $name.l 2> /dev/null
+    echo '------------' >> $name.l
+  fi
 
 # --------------------------------------------------------------------------- #
 # 3. Postprocessing                                                           #
@@ -192,11 +204,13 @@
     w3list < w3list.inp 2> /dev/null
     rm -f w3list.inp
     mv w3list.out $name.l
-    echo ' '      >> $name.l
+    echo '------------' >> $name.l
+    echo "$comp $opt"   >> $name.l
+    echo '------------' >> $name.l
     cat $name.out >> $name.l #2> /dev/null
-    echo ' '      >> $name.l
+    echo '------------' >> $name.l
     cat $name.err >> $name.l #2> /dev/null
-    echo ' '      >> $name.l
+    echo '------------' >> $name.l
   fi
 
 # 3.d Remove unwanted files  - - - - - - - - - - - - - - - - - - - - - - - - -

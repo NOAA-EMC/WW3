@@ -96,6 +96,15 @@
     opt="$opt -fopenmp"
   fi
 
+  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ] || [ "$name" = 'ww3_prnc' ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3) opt="$opt -I$NETCDF_INCDIR" ;;
+      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+           opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
+    esac
+  fi
+
 # 2.b.2 Compile
 
   $comp $opt                             $name.$fext > $name.out 2> $name.err
@@ -103,20 +112,23 @@
 
 # 2.b.2 Process listing
 
-# if [ -s $name.lst ] 
-# then
-#    mv $name.lst $name.l
-# fi
+  if [ -s $name.lst ] 
+  then
+     mv $name.lst $name.l
+  fi
 
 # 2.b.3 Add test output to listing for later viewing
 
-## echo '------------' >> $name.l
-## echo "$comp $opt"   >> $name.l
-## echo '------------' >> $name.l
-## cat $name.out       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
-## cat $name.err       >> $name.l 2> /dev/null
-## echo '------------' >> $name.l
+  if [ -s $name.l ] 
+  then
+    echo '------------' >> $name.l
+    echo "$comp $opt"   >> $name.l
+    echo '------------' >> $name.l
+    cat $name.out       >> $name.l 2> /dev/null
+    echo '------------' >> $name.l
+    cat $name.err       >> $name.l 2> /dev/null
+    echo '------------' >> $name.l
+  fi
 
 # --------------------------------------------------------------------------- #
 # 3. Postprocessing                                                           #
@@ -132,31 +144,8 @@
   then
     echo > /dev/null
 
-    grep inform $name.err | grep warnings | grep severes > $name.err2
-    mv $name.err2 $name.err
-    err_lines=`wc -l $name.err | awk '{ print $1 }'`
-
-    nr_inf=0
-    nr_war=0
-    nr_sev=0
-    nr_fat=0
-
-    line=1
-    while [ "$line" -le "$err_lines" ]
-    do
-      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $1}'`
-      nr_inf=`expr $nr_inf + $nr_loc`
-      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $3}'`
-      nr_war=`expr $nr_war + $nr_loc`
-      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $5}'`
-      nr_sev=`expr $nr_sev + $nr_loc`
-      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $7}'`
-      nr_fat=`expr $nr_fat + $nr_loc`
-      line=`expr $line + 1`
-    done
-
-    nr_err=`expr $nr_sev + $nr_fat`
-    nr_war=`expr $nr_war + $nr_inf`
+    nr_err=`grep 'Error:' $name.err | wc -l | awk '{ print $1 }'`
+    nr_war=`grep 'Warning:' $name.err | wc -l | awk '{ print $1 }'`
 
   else
     if [ "$OK" != '0' ]

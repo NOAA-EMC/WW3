@@ -351,6 +351,34 @@ might also be useful if the compilation is unsuccessful for no apparent
 reason.
 
 \vspace{\baselineskip} 
+\noindent
+Compile of the \ws\ NetCDF pre- and post-processing programs requires the
+environment variable {\file WWATCH3\_NETCDF} be set to either
+NC3 (compile with NetCDF version 3.x) or
+NC4 (compile with NetCDF version 4.x).
+If {\file WWATCH3\_NETCDF} = NC3, then the following environment variables
+are required.
+\begin{flist}
+\fit {NETCDF\_LIBDIR} {Path to where the NetCDF-3 libraries are installed.}
+\fit {NETCDF\_INCDIR} {Path to where the NetCDF-3 include files are installed.}
+\end{flist}
+If {\file WWATCH3\_NETCDF} = NC4, then the following environment variables
+are required.
+\begin{flist}
+\fit {NETCDF\_CONFIG} {Path to the NetCDF-4 nc-config utility program.}
+\end{flist}
+The nc-config utility program (part of the NetCDF-4 install) is used to
+determine the appropriate compile and link flags for the
+{\file WWATCH3\_NETCDF} = NC4 compile.
+The NetCDF-4 compile requires NetCDF version 4.1.1 or higher.
+Use "{\code nc-config --version}" to check the version of the installed
+NetCDF.
+Compiling with the {\sc NC4} switch requires {\file WWATCH3\_NETCDF} = NC4
+and the NetCDF-4 installation compiled with the NetCDF-4 API enabled.
+Use "{\code nc-config --has-nc4}" to check if the installed NetCDF has
+the NetCDF-4 API enabled.
+
+\vspace{\baselineskip} 
 \noindent 
 Two additional remarks need to be made regarding parallel versions of the
 model (OpenMP and \mpi\ versions). First, complications may occur when
@@ -417,8 +445,8 @@ Word length used to determine record length in direct access files
 \noindent
 Compilation as a subroutine (called by a coupled model system) or a stand-alone program
 \begin{slist}
-\sit{nopa}{Compilation as a subroutine }
-\sit{palm}{Compilation as a stand-alone program}
+\sit{nopa}{Compilation as a stand-alone program}
+\sit{palm}{Compilation as a subroutine }
 \end{slist}
  
 \pb \noindent
@@ -633,8 +661,7 @@ Furthermore the following miscellaneous switches are available:
 \sit{mpit}{Test output for \mpi\ initializations.}
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
 \sit{nec} {Compiler directives for NEC SX6/SX8 (vectorization).}
-\sit{nc3} {Activates the possibility to use on NetCDF3 for input or output}
-\sit{nc4} {Activates the possibility to use on NetCDF4 for input or output}
+\sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing programs.}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
