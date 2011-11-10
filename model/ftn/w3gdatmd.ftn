@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2011 |
+!/                  | Last update :         03-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -42,6 +42,7 @@
 !/    05-Apr-2011 : Implement interations for DTMAX < 1s( version 3.14.1 )
 !/                  (F. Ardhuin) 
 !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
+!/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -919,6 +920,7 @@
 !
       DO I=NLOW, NUMBER
         GRIDS(I)%GINIT  = .FALSE.
+        GRIDS(I)%GUGINIT  = .FALSE.
         SGRDS(I)%SINIT  = .FALSE.
         MPARS(I)%PINIT  = .FALSE.
 !/NL2        MPARS(I)%SNLPS%NDPTHS = 0
@@ -2217,9 +2219,7 @@
                  GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX) )
-                 
-                 
-                                     
+!
 !/T      WRITE (NDST,9001)
 !
 !some segmentation troubles can appear, they are related with the allocation of 

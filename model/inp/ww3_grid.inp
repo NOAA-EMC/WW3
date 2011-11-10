@@ -222,6 +222,12 @@ $               'SMPL'  : Simple grid closure : Grid is periodic in the
 $                       : i-index and wraps at i=NX+1. In other words,
 $                       : (NX+1,J) => (1,J). A grid with simple closure
 $                       : may be rectilinear or curvilinear.
+$               'TRPL'  : Tripole grid closure : Grid is periodic in the
+$                       : i-index and wraps at i=NX+1 and has closure at
+$                       : j=NY+1. In other words, (NX+1,J<=NY) => (1,J)
+$                       : and (I,NY+1) => (MOD(NX-I+1,NX)+1,NY). Tripole
+$                       : grid closure requires that NX be even. A grid
+$                       : with tripole closure must be curvilinear.
 $  2 NX, NY. As the outer grid lines are always defined as land
 $    points, the minimum size is 3x3.
 $

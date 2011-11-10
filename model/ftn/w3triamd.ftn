@@ -310,7 +310,7 @@ SUBROUTINE READMSH(NDS,FNAME)
      CALL SPATIAL_GRID    
      CALL NVECTRI
      CALL COORDMAX
-!AR: Check for Multigrid 
+!AR: Check for Multigrid
      CALL AREA_SI(1)
 !     WRITE (NDSO,969) NX, NY, SX,DXYMAX,     &
 !                      X0, MAXX,                  &
@@ -1343,11 +1343,12 @@ END SUBROUTINE
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          31-Oct-2010|
+!/                  | Last update :          08-Nov-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-Nov-2007 : Origination.                        ( version 3.13 )
 !/    31-Oct-2010 : Merging of 4.03 with 3.14-Ifremer   ( version 4.04 )
+!/    08-Nov-2011 : Correction for zero grad. on contour( version 4.04 )
 !/      
 !
 !  1. purpose: calculate gradients at a point via its connection.
@@ -1383,7 +1384,7 @@ END SUBROUTINE
 ! 10. Source code :     
       USE CONSTANTS
       USE W3GDATMD, ONLY : CROSSDIFF, TRIGP, NTRI, NX, NSEA, MAPFS, CLATIS, &
-                           MAPSTA, ANGLE, FLAGLL
+                           MAPSTA, ANGLE, FLAGLL,  IOBP
       IMPLICIT NONE     
       
       
@@ -1439,7 +1440,7 @@ END SUBROUTINE
 
 ! restore 0 on the contour 
        DO IX = 1,NX
-         IF (MAPSTA(1,IX) .EQ. 0 ) THEN
+         IF (IOBP(IX).EQ. 0 ) THEN
            DIFFX(1,IX)  =  0.     
            DIFFY(1,IX)  =  0.
            END IF
@@ -1576,7 +1577,7 @@ END SUBROUTINE
                           ECOS, ESIN, SIG,  PFMOVE,IEN, COUNTOT,      &
                           NTRI, TRIGP, CCON , TRIA03, VNEIGH,         &
                           IE_CELL, POS_CELL, IOBP,IOBPD, XYB, TH,     &
-                          ANGLE0, ANGLE                     
+                          ANGLE0, ANGLE, REFPARS, REFLC, REFLD
 
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
@@ -1594,16 +1595,18 @@ END SUBROUTINE
 !/ Local parameters
 !/
       LOGICAL                 :: REDO_ANGLE
-      INTEGER                 :: ITH, IK, ISEA, IXY, IBI    
+      INTEGER                 :: ITH, IK, ISEA, IXY, IBI, FOUND    
       INTEGER                 :: IX, IY, I, J, IP, IP0, IP2, IPB, IE
       REAL                    :: CCOS, CSIN, CCURX, CCURY, THTEST 
-      REAL (KIND = 8)         :: DIRMIN, DIRMAX, SHIFT, TEMPO
+      REAL (KIND = 8)         :: DIRMIN, DIRMAX, SHIFT, TEMPO, DIRCOAST, &
+                                 DIRCOAST1, DIRCOAST2, SUMCOS1, SUMCOS2, DIRDIFF
+      INTEGER                 :: SEANEIGHP(NX,15,2)
       REAL                    :: C(NX,2)
       REAL                    :: RD1, RD2
       REAL (KIND = 8)         :: X1, X2, X3, Y1, Y2, Y3
       INTEGER                 :: SEACCON(NX), SEANEIGH(NX), SEA_CELL(COUNTOT)
       INTEGER                 ::  COUNT_MAX
-      INTEGER                 :: K, I1, I2, I3
+      INTEGER                 :: K, K2, I1, I2, I3
       INTEGER                 :: TRILAND(NTRI)
       REAL                    :: ANGLETOT(NX), ANGLETOTINV(NX)
 
@@ -1639,6 +1642,7 @@ END SUBROUTINE
 ! Counts the number of wet neighbor triangles
 !
         SEACCON(1:NX)=0
+        SEANEIGHP(:,:,:)=0
         J = 0
         DO IX = 1, NX
           DO I = 1, CCON(IX)                  ! Loop over all connected Elements
@@ -1650,7 +1654,25 @@ END SUBROUTINE
                SEACCON(IX)=SEACCON(IX)+1
                SEA_CELL(J)=1
                END IF
-             !WRITE(995,*) 'TEST BOUNDARY 2:',IX,IE,VNEIGH(IX,I),SEACCON(IX)
+!
+! Used for refraction ... 
+!
+             DO K2=1,3      
+               FOUND=0         
+               DO K=1,SEANEIGHP(IX,1,1)
+                  IF (SEANEIGHP(IX,K+1,1).EQ.TRIGP(IE,K2)) THEN 
+                    SEANEIGHP(IX,K+1,2)=SEANEIGHP(IX,K+1,2)+1
+                    FOUND=1
+                    END IF
+                  END DO
+                IF (FOUND.EQ.0) THEN
+                  SEANEIGHP(IX,1,1)=SEANEIGHP(IX,1,1)+1
+                  K=SEANEIGHP(IX,1,1)
+             !    IF (K.GT.13) WRITE(6,*) 'SEANEIGHP :',IX,K,K2,TRIGP(IE,K2)
+                  SEANEIGHP(IX,K+1,1)=TRIGP(IE,K2)
+                  SEANEIGHP(IX,K+1,2)=1
+                  END IF
+                END DO
              END DO         
           END DO
 ! 
@@ -1660,6 +1682,9 @@ END SUBROUTINE
 !
 ! Searches for boundary points
 ! 
+!/REF1            REFLC(:,:)= 0.
+!/REF1            REFLD(:,:)= 0
+!
         DO IX = 1, NX
           IF (MAPSTA(1,IX).LE.0) THEN 
             IOBP(IX)=0
@@ -1667,6 +1692,7 @@ END SUBROUTINE
             END IF
           IF (SEACCON(IX) .LT. SEANEIGH(IX).AND.MAPSTA(1,IX).NE.2) THEN 
             IOBP(IX)=0
+!/REF1            REFLC(1,MAPFS(1,IX))= REFPARS(1)
           !  WRITE(995,*) '@@@@ TRUE BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
           !ELSE
           !  WRITE(995,*) '       NO BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
@@ -1677,45 +1703,99 @@ END SUBROUTINE
 !
         J = 0
         DO IX = 1, NX
+          DIRCOAST1=-999.
+          DIRCOAST2=-999.
           IF (IOBP(IX).EQ.0) IOBPD(:,IX)=0
           DO I = 1, CCON(IX)                  ! Loop over all connected Elements
-             J = J + 1
-             IF ((IOBP(IX).EQ.0).AND.(SEA_CELL(J).EQ.1)) THEN 
-               IE    = IE_CELL(J)                ! Connected Element Number
-               IP0 = POS_CELL(J)
-               IP=MOD(IP0,3)+1
-               IPB=MOD(IP0+1,3)+1
-               !WRITE(995,*) '##### IOBP TEST:',IX,J,IOBP(IX),IP0,IE,'##',TRIGP(IE,:),MAPSTA(1,TRIGP(IE,:))
+            J = J + 1
+            IF ((IOBP(IX).EQ.0).AND.(SEA_CELL(J).EQ.1)) THEN 
+              IE    = IE_CELL(J)                ! Connected Element Number
+              IP0 = POS_CELL(J)
+              IP=MOD(IP0,3)+1
+              IPB=MOD(IP0+1,3)+1
 !
 !  We are now dealing with an excluded point that is a neighbor of a boundary point
 !
-               X1=DBLE(XYB(TRIGP(IE,IP0),1))
-               Y1=DBLE(XYB(TRIGP(IE,IP0),2))
-               X2=DBLE(XYB(TRIGP(IE,IP ),1))
-               Y2=DBLE(XYB(TRIGP(IE,IP ),2))
-               X3=DBLE(XYB(TRIGP(IE,IPB),1))
-               Y3=DBLE(XYB(TRIGP(IE,IPB),2))
-               CALL line_angle( x2, y2, x1, y1, DIRMIN )
-               CALL line_angle( x3, y3, x1, y1, DIRMAX )
-               IF (DIRMAX.LT.DIRMIN) CALL d_swap(DIRMIN,DIRMAX)
-               SHIFT=0
-               IF (ABS(DIRMAX-DIRMIN).GT.PI) THEN 
-                 TEMPO=DIRMAX
-                 DIRMAX=DIRMIN+DBLE(PI)
-                 DIRMIN=TEMPO-DBLE(PI)
-                 SHIFT=PI
-                 END IF
-               DO ITH=1, NTH
-                 THTEST=MOD(TH(ITH)+SHIFT,DBLE(TPI))
-                 IF ((THTEST.GE.DIRMIN) .AND.   &
+              X1=DBLE(XYB(TRIGP(IE,IP0),1))
+              Y1=DBLE(XYB(TRIGP(IE,IP0),2))
+              X2=DBLE(XYB(TRIGP(IE,IP ),1))
+              Y2=DBLE(XYB(TRIGP(IE,IP ),2))
+              X3=DBLE(XYB(TRIGP(IE,IPB),1))
+              Y3=DBLE(XYB(TRIGP(IE,IPB),2))
+ 
+              CALL line_angle( x2, y2, x1, y1, DIRMIN )
+              CALL line_angle( x3, y3, x1, y1, DIRMAX )
+                IF (DIRMAX.LT.DIRMIN) CALL d_swap(DIRMIN,DIRMAX)
+                SHIFT=0
+                IF (ABS(DIRMAX-DIRMIN).GT.PI) THEN 
+                  TEMPO=DIRMAX
+                  DIRMAX=DIRMIN+DBLE(PI)
+                  DIRMIN=TEMPO-DBLE(PI)
+                  SHIFT=PI
+                  END IF
+                DO ITH=1, NTH
+                  THTEST=MOD(TH(ITH)+SHIFT,DBLE(TPI))
+                  IF ((THTEST.GE.DIRMIN) .AND.   &
                      (THTEST.LE.DIRMAX)) THEN
-                   IOBPD(ITH,IX) = 1
-                   ! WRITE(995,*) 'IOBPD OUT:',IX,IE,ITH,IOBP(IX),TH(ITH)*RADE,DIRMIN*RADE,DIRMAX*RADE
-                   END IF
-                 END DO 
-               END IF
-             END DO         
-         END DO
+                    IOBPD(ITH,IX) = 1
+                    !WRITE(995,*) 'IOBPD OUT:',IX,IE,ITH,IOBP(IX),TH(ITH)*RADE,DIRMIN*RADE,DIRMAX*RADE
+                    END IF
+                  END DO 
+                END IF
+              END DO       !  I = 1, CCON(IX) 
+            END DO
+
+!/REF1 ! 
+!/REF1 ! Finds the shoreline direction 
+!/REF1 !
+!/REF1          DO IX = 1, NX
+!/REF1            FOUND=0
+!/REF1            DO K=1,SEANEIGHP(IX,1,1)
+!/REF1              IF (SEANEIGHP(IX,K+1,2).EQ.1) THEN 
+!/REF1                IF (FOUND.EQ.0) THEN 
+!/REF1                  IP=SEANEIGHP(IX,K+1,1)
+!/REF1                  FOUND=FOUND+1
+!/REF1                ELSE 
+!/REF1                  IPB=SEANEIGHP(IX,K+1,1)
+!/REF1                  END IF
+!/REF1                END IF
+!/REF1              END DO
+!/REF1            IF (FOUND.GT.2) WRITE(6,*) 'WARNING: POINT ',IX,'HAS MORE THAN 2 CONNECTED SHORELINE SEGMENTS.'
+!/REF1            X1=DBLE(XYB(IX,1))
+!/REF1            Y1=DBLE(XYB(IX,2))
+!/REF1            X2=DBLE(XYB(IP,1))
+!/REF1            Y2=DBLE(XYB(IP,2))
+!/REF1            X3=DBLE(XYB(IPB,1))
+!/REF1            Y3=DBLE(XYB(IPB,2))
+ 
+!/REF1            CALL line_angle( x2, y2, x1, y1, DIRCOAST1 )
+!/REF1            CALL line_angle( x3, y3, x1, y1, DIRCOAST2 )
+!
+!/REF1             SUMCOS1=0. 
+!/REF1             SUMCOS2=0. 
+!/REF1             DIRCOAST=0.5*(DIRCOAST1+DIRCOAST2)
+
+!/REF1             DO ITH=1, NTH
+!/REF1               IF (IOBPD(ITH,IX).EQ.0) THEN 
+!/REF1                 SUMCOS1=SUMCOS1+COS(DIRCOAST-TH(ITH))
+!/REF1                 SUMCOS2=SUMCOS2+COS(DIRCOAST+PI-TH(ITH))
+!/REF1        !        WRITE(995,*) 'DIR COAST:',IX,ITH,SUMCOS1, SUMCOS2, DIRCOAST
+!/REF1                 END IF
+!/REF1               END DO
+!/REF1 ! Keep the direction DIRCOAST if SUMCOS1 > SUMCOS2, otherwise adds PI
+!/REF1             IF (SUMCOS1.GT.SUMCOS2) DIRCOAST=DIRCOAST+PI
+!/REF1 ! NOTE: because the reflection was first implemented on regular grids, shoreline dirs. were discretized
+!/REF1 ! NOTE: Now, this is a pity not to use the full resolution of directions for triangle-based meshes
+!/REF1               REFLD(1,MAPFS(1,IX)) = 1+MOD(NINT(DIRCOAST/DTH),NTH)
+!/REF1               DIRDIFF=ABS(DIRCOAST1-DIRCOAST)
+!/REF1               IF (DIRDIFF.GT.PI) DIRDIFF=ABS(DIRDIFF-TPI)
+!/REF1               REFLD(2,MAPFS(1,IX)) = 4-MAX(2,NINT(DIRDIFF/(0.25*PI)))
+!/REF1               !These X and Y lengths of boundary are not used now... 
+!/REF1               !UG_BOUNDL(1,IX) = ABS(X3-X2)*0.5* DERA * RADIUS
+!/REF1               !UG_BOUNDL(2,IX) = ABS(Y3-Y2)*0.5* DERA * RADIUS
+!/REF1               !WRITE(995,'(A,3I8,4F6.1,2I4,2F10.1)') 'DIR COAST:',IX,IP,IPB,DIRCOAST*RADE,DIRCOAST1*RADE,  &
+!/REF1               !         DIRCOAST2*RADE, DIRDIFF*RADE, REFLD(1:2,MAPFS(1,IX))  !, UG_BOUNDL(1:2,IX)
+!/REF1          END DO
 !
 ! Recomputes the angles used in the gradients estimation 
 !

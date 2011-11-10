@@ -106,8 +106,8 @@
 #     No GRIB libraries for this one
 
   libs=""
-#  opt="-O3 -Zp8 -tpp7 -o $prog"
-  opt="-O2  -o $prog"
+  opt="-O3 -Zp8 -tpp7 -o $prog"
+#  opt="-O0  -o $prog"
 
   if [ "$mpi_mod" = 'yes' ]
   then
