@@ -447,7 +447,7 @@
       LOGICAL                 :: FLAGICESOURCE
       REAL                    :: REFCOAST, REFFREQ, REFBETA, REFMAP,  &
                                  REFSUBGRID,  BSBOTTOM,               &
-                                 REFICEBERG, FACBERG
+                                 REFICEBERG, FACBERG, REFCOSP_STRAIGHT
 !
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -540,7 +540,7 @@
                       US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
                       REFCOAST, REFFREQ, REFBETA, REFMAP, REFSUBGRID, &
                       BSBOTTOM, REFICEBERG, FACBERG, COU_2D,          &
-                      COU_RAD3D
+                      COU_RAD3D, REFCOSP_STRAIGHT
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1423,6 +1423,7 @@
       REFMAP=0.
       REFFREQ=0.
       REFBETA=0.25
+      REFCOSP_STRAIGHT=4.
       REFSUBGRID=0.
       BSBOTTOM=0.
       REFICEBERG=0.
@@ -2396,6 +2397,7 @@
 !/REF1      REFPARS(4)=REFICEBERG
 !/REF1      REFPARS(5)=FACBERG
 !/REF1      REFPARS(6)=REFFREQ
+!/REF1      REFPARS(8)=REFCOSP_STRAIGHT
 !/REF1      IF (GTYPE.EQ.UNGTYPE) REFPARS(2:5)=0.
 !/REF1      RREF(:)=.FALSE.
 !/REF1      IF (REFPARS(1).GT.0) RREF(1)=.TRUE.

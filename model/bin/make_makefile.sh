@@ -209,7 +209,7 @@
                TS='MPRF'
                OK='MPRF' ;;
       reflection ) TY='upto1'
-               ID='wave reflexions'
+               ID='wave reflections'
                TS='REF1'
                OK='REF1' ;;
       mcp    ) TY='one'

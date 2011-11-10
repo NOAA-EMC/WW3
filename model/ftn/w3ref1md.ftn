@@ -128,7 +128,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, RREF, &
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN,  &
                           REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
                           SIG2, DSII, IOBPD, GTYPE, UNGTYPE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -150,7 +150,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/ 
-      INTEGER         :: ISPEC, IK, ITH, ITH2, ITH3
+      INTEGER         :: ISPEC, IK, ITH, ITH2, ITH3, NRS
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE   :: FIRST = .TRUE.
        
@@ -170,6 +170,7 @@
 
       RAMP0=1.
       RAMP=RAMP0
+      NRS=NINT(REFPARS(8))
       IF (REFPARS(6).GT.0) THEN
 !
 ! This is the Miche parameter for a beach slope of REFPARS(7)  (default is 0.25)
@@ -187,7 +188,8 @@
       IF (REFLC(1).GT.0) THEN 
         FAC1=1/(0.5*REAL(NTH))
         FAC2=1.57/(0.5*REAL(NTH))
-        FAC3=2.6/(0.5*REAL(NTH))
+!           FAC3=2.6/(0.5*REAL(NTH))  ! this is for NRS=4
+        FAC3=2./SUM(ABS(ECOS(1:NTH))**NRS)
         FAC4=1.
         R0=ABS(ECOS(REFLD(1)))
 !
@@ -239,7 +241,7 @@
                       CASE (2)
                    ! straight coast: narrow reflection
                    !     IF(ITH3.EQ.ITH2) S(ISPEC)=S(ISPEC)+R2/DT  ! THIS IS FOR SPECULAR REF. 
-                         S(ISPEC)=S(ISPEC)+R2*(R4**4) *FAC3/DT
+                         S(ISPEC)=S(ISPEC)+R2*(R4**NRS) *FAC3/DT
                       END SELECT
                     END IF  ! (R4.GT.0.)
                   END IF  ! (R3.LT.0) 
@@ -305,13 +307,13 @@
 ! Specular for tests 
 !                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX)
                             S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
-                                                *(R4**4) *FAC3
+                                                *(R4**NRS) *FAC3
 !
 ! Specular for tests 
 !                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
                           IF (REFLD(4).EQ.0)      & 
                             S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
-                                               *(R4**4) *FAC3
+                                               *(R4**NRS) *FAC3
                         END SELECT
                       END IF ! (R4.GT.0.)
                     END IF  ! (R3.LT.0) 
