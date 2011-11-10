@@ -1,6 +1,6 @@
 #############################################################################
 #                                                                           #
-# ww3_tp1.1 Test script for WW-III, unstructured grid.                      #
+# ww3_tp2.7 Test script for WW-III, unstructured grid.                      #
 #           Example very small grid (only 111 nodes) with reflection        #
 #                                                                           #
 # Model should be compiled with the switches :                              #
