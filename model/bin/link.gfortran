@@ -106,21 +106,18 @@
 #     No GRIB libraries for this one
 
   libs=""
-  opt="-O3 -Zp8 -tpp7 -o $prog"
-#  opt="-O0  -o $prog"
+  opt=" -o $prog"
 
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=mpiifort
-#    opt="-O0 -Zp8 -tpp7 -o $prog"
-    opt="-O3 -o $prog"
   else
-    comp=ifort
+    comp=gfortran
   fi
 
   if [ "$omp_mod" = 'yes' ]
   then
-    opt="$opt -openmp"
+    opt="$opt -mp"
   fi
 
   if [ "$prog" = 'ww3_ounf' ] || [ "$prog" = 'ww3_ounp' ] || [ "$prog" = 'ww3_prnc' ]

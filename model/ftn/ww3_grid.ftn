@@ -447,7 +447,7 @@
       LOGICAL                 :: FLAGICESOURCE
       REAL                    :: REFCOAST, REFFREQ, REFBETA, REFMAP,  &
                                  REFSUBGRID,  BSBOTTOM,               &
-                                 REFICEBERG, FACBERG
+                                 REFICEBERG, FACBERG, REFCOSP_STRAIGHT
 !
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -540,7 +540,7 @@
                       US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
                       REFCOAST, REFFREQ, REFBETA, REFMAP, REFSUBGRID, &
                       BSBOTTOM, REFICEBERG, FACBERG, COU_2D,          &
-                      COU_RAD3D
+                      COU_RAD3D, REFCOSP_STRAIGHT
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1423,6 +1423,7 @@
       REFMAP=0.
       REFFREQ=0.
       REFBETA=0.25
+      REFCOSP_STRAIGHT=4.
       REFSUBGRID=0.
       BSBOTTOM=0.
       REFICEBERG=0.
@@ -2396,6 +2397,8 @@
 !/REF1      REFPARS(4)=REFICEBERG
 !/REF1      REFPARS(5)=FACBERG
 !/REF1      REFPARS(6)=REFFREQ
+!/REF1      REFPARS(8)=REFCOSP_STRAIGHT
+!/REF1      IF (GTYPE.EQ.UNGTYPE) REFPARS(2:5)=0.
 !/REF1      RREF(:)=.FALSE.
 !/REF1      IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
 !/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
@@ -2540,7 +2543,7 @@
 !
 
 ! 
-!  9.a Reads shorline direction and slope
+!  9.a Reads shoreline direction and slope
 !
       IF ( REFMAP .GT. 0 ) THEN
         ALLOCATE ( REFD(NX,NY), REFD2(NX,NY), REFS(NX,NY) )
@@ -2683,6 +2686,7 @@
 !/REF1!
 !/REF1!  then there is only a coastline detection for K=0, giving J=1 
 !/REF1!  and the final result will be REFLD(1,MAPFS(IY,IX))=1
+!/REF1!  Namely, the direction TH(REFLD) is the direction pointing INTO the coast
 !/REF1!
 !/REF1                    REFLD(2,MAPFS(IY,IX))= 2
 !/REF1                    COSAVG=COSAVG+ECOS(1+(K*NTH)/8)

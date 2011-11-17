@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         03-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -57,6 +57,7 @@
 !/    29-Mar-2010 : Adding coupling, ice in W3SRCE.     ( version 3.14_SHOM )
 !/    16-May-2010 : Adding transparencies in W3SCRE     ( version 3.14_SHOM )
 !/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.04 )
+!/    03-Nov-2011 : Shoreline reflection on unst. grids ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -802,6 +803,7 @@
 !/SHRD                  ISEA   = JSEA
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
+
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
@@ -892,6 +894,7 @@
 !/SHRD                  ISEA   = JSEA
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
+
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
                   IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
 !/PR1                      CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
@@ -954,9 +957,15 @@
 !/SHRD                ISEA   = JSEA
                 IX     = MAPSF(ISEA,1)
                 IY     = MAPSF(ISEA,2)
-                DELX=SXM*CLATS(ISEA)
-                DELY=SYM
-                DELA=DELX*DELY
+                IF (GTYPE.EQ.UNGTYPE) THEN 
+                  DELA=1. !SI(IX)* (DERA * RADIUS)**2*CLATS(ISEA)
+                  DELX=1. !UG_BOUNDL(1,IX)*CLATS(ISEA)
+                  DELY=1. !UG_BOUNDL(1,IY)
+                ELSE
+                  DELX=SXM*CLATS(ISEA)
+                  DELY=SYM
+                  DELA=DELX*DELY
+                  END IF
 !/REF1          REFLEC=REFLC(:,ISEA)
 !/REF1          REFLEC(4)=BERG(ISEA)*REFLEC(4)
 !/REF1          REFLED=REFLD(:,ISEA)

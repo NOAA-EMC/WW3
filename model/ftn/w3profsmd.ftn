@@ -4,10 +4,14 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           Aron Roland             |
+!/                  |         Fabrice Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Jan-2011 |
+!/                  | Last update :         03-Nov-2011 |
 !/                  +-----------------------------------+
 !/
+!/    XX-Nov-2007 : Origination.                        ( version 3.10 )
+!/    03-Nov-2011 : Adding shoreline reflection         ( version 4.04 )
+!
 !  1. Purpose :
 !
 !     Propagation schemes for unstructured grids using fluctuation splitting
@@ -118,12 +122,12 @@
 !
       USE W3TIMEMD, ONLY: DSEC21
 !
-      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL, CLATS,   &
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN,               &
                           NTRI, TRIGP, CCON , TRIA03,                 &
                           IE_CELL, POS_CELL, IOBP, IOBPD,             &
-                          FSN, FSPSI, FSFCT, FSNIMP
+                          FSN, FSPSI, FSFCT, FSNIMP, GTYPE, UNGTYPE
 
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
@@ -237,6 +241,9 @@
        ENDIF  
 !
        DO IX=1,NX
+         ISEA=MAPFS(1,IX)
+!/REF1 IF (IK.EQ.2.AND.IX.EQ.763) WRITE(6,*) 'W3XYPUG START / END:', ITH, VQ(IX), &
+!/REF1                  IOBPD(ITH,IX), MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*AC(IX) )
          VQ(IX)=AC(IX)
        ENDDO          
     
@@ -246,7 +253,7 @@
 !
       DO ISEA=1, NSEA
         IXY   = MAPSF(ISEA,3)
-            VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
+        VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
         END DO
 !
       RETURN    
@@ -257,7 +264,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |            Aron Roland            |
+!/                  |           Fabrice Ardhuin         |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         01-Mar-2011 |
 !/                  +-----------------------------------+
@@ -442,13 +449,15 @@
 !/                  +-----------------------------------+
 !/                  |  WWIII Version of the WWM FS Code |
 !/                  |  by Aron Roland                   |
+!/                  |     and Fabrice  Ardhuin          |
 !/                  |  for use in WWIII                 |
 !/                  |  GPL License                      |
-!/                  |  Last update :        25-Aug-2011 |
+!/                  |  Last update :        03-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    19-Dec-2007 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+!/    03-Nov-2011 : Addition of shoreline reflection    ( version 4.04 )
 !/
 !/
 !  1. Purpose :
@@ -518,6 +527,7 @@
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
        REAL,    PARAMETER :: THR       = TINY(1.0) 
+!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -554,6 +564,8 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
+!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
+
 
 !         IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) WRITE(*,*) SUM(AC), SUM(AQ)
 
@@ -604,11 +616,11 @@
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
-!/T             DO IP = 1, NX
-!/T               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
-!/T               IF (DTMAXEXP.LT.DTMAXGL*1.3.AND.IK.EQ.1) WRITE(6,'(A,3I8,2F8.3,3F10.4)') 'DTMAX:', IK, ITH, IP, &
-!/T                          REAL(DTMAXEXP), REAL(DTMAXGL), XYB(IP,1), XYB(IP,2), XYB(IP,3)        
-!/T             END DO ! IP
+!             DO IP = 1, NX
+!               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
+!               IF (DTMAXEXP.LT.DTMAXGL*1.3.AND.IK.EQ.1) WRITE(6,'(A,3I8,2F8.3,3F10.4)') 'DTMAX:', IK, ITH, IP, &
+!                          REAL(DTMAXEXP), REAL(DTMAXGL), XYB(IP,1), XYB(IP,2), XYB(IP,3)        
+!             END DO ! IP
 
              CFLXY = DBLE(DT)/DTMAXGL
              REST  = ABS(MOD(CFLXY,1.0d0))
@@ -625,37 +637,42 @@
              DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
            END DO
 
-           U = DBLE(AC)
-
            DO IT = 1, ITER(IK,ITH)
+             U = DBLE(AC)
+
              ST = 0.d0
              DO IE = 1, NTRI
                NI     = TRIGP(IE,:)
                UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
                ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
-             END DO ! IE
+               END DO ! IE
 
              DO IP = 1, NX
 !
-! IOBPD is the switch for removing energy coming from the shoreline 
+! IOBPD=0  : waves coming from land
+! IOBPDR=1 : waves coming from the coast
 !
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) 
                END DO
+!/REF1 !
+!/REF1 ! Setting shoreline boundary back to initial value (AC)
+!/REF1 !
+!/REF1             WHERE (IOBPDR.EQ.1) U=DBLE(AC)
              AC = REAL(U)
 !
 ! 5 Update boundaries ... would be better to omit any if clause in this loop ...
 !   a possibility would be to use NBI = 0 when FLBPI is FALSE and loop on IBI whatever the value of NBI
-!
-            IF ( FLBPI ) THEN 
-             RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
-             RD2=RD20
-             IF ( RD2 .GT. 0.001 ) THEN
+! 
+             IF ( FLBPI ) THEN 
+               RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+               RD2=RD20
+               IF ( RD2 .GT. 0.001 ) THEN
                  RD2    = MIN(1.,MAX(0.,RD1/RD2))
                  RD1    = 1. - RD2
-              ELSE
+               ELSE
                  RD1    = 0.
                  RD2    = 1.
-              END IF
+                 END IF
 !
 ! NB: this treatment of the open boundary (time interpolation) is different from
 ! the constant boundary in the structured grids ... which restores the boundary 
@@ -663,13 +680,11 @@
 ! Why this difference ?
 !
                DO IBI=1, NBI
-                     IP    = MAPSF(ISBPI(IBI),1)
-                     AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                 IP    = MAPSF(ISBPI(IBI),1)
+                 AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
                              / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-               ENDDO
-             END IF  
-           U = REAL(AC)
-
+                 END DO
+               END IF  
            END DO ! IT        
 !      CALL EXTCDE ( 99 )
 !/
@@ -744,6 +759,7 @@
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
        REAL,    INTENT(INOUT) :: AQ(:)
+!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -794,6 +810,7 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
+!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
 
 !
 !2       Propagation 
@@ -854,9 +871,8 @@
              DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
            END DO
 
-           U = DBLE(AC)
-
            DO IT = 1, ITER(IK,ITH)
+             U = DBLE(AC)
 
              ST = 0.d0
 
@@ -889,7 +905,10 @@
              DO IP = 1, NX
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) ! Add dry/wet flag ... 
                END DO
-
+!/REF1 !
+!/REF1 ! Setting shoreline boundary back to initial value (AC)
+!/REF1 !
+!/REF1             WHERE (IOBPDR.EQ.1) U=DBLE(AC)
              AC = REAL(U)
 !
 ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
@@ -917,8 +936,6 @@
                ENDDO
              END IF  
 !          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
-             U = REAL(AC)
-
            END DO ! IT        
 !      CALL EXTCDE ( 99 )
 !/
@@ -994,6 +1011,7 @@
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
        REAL,    INTENT(INOUT) :: AQ(:)
+!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1071,6 +1089,7 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
+!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
 
 !         IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) THEN 
         IF (.FALSE.) THEN
@@ -1354,12 +1373,14 @@
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX), BETA
          REAL*8  :: NM(NTRI) 
+!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 
 ! 1. initialisation
 
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
+!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
 !
 !2       Propagation 
 !2.a     Calculate K-Values and contour based quantities ...
@@ -1496,7 +1517,10 @@
 !
               U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
             END DO
-
+!/REF1 !
+!/REF1 ! Setting shoreline boundary back to initial value (AC)
+!/REF1 !
+!/REF1             WHERE (IOBPDR.EQ.1) U=DBLE(AC)
             AC = REAL(U)
 !
 ! 5 Update open boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...

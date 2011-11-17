@@ -209,7 +209,7 @@
                TS='MPRF'
                OK='MPRF' ;;
       reflection ) TY='upto1'
-               ID='wave reflexions'
+               ID='wave reflections'
                TS='REF1'
                OK='REF1' ;;
       mcp    ) TY='one'
@@ -651,6 +651,7 @@
     string3="$NULL"
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
+
     if [ -n "`grep error ad3.out`" ]
     then
       cat ad3.out

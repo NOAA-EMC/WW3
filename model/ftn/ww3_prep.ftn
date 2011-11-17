@@ -32,7 +32,7 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/     1-Apr-2011 : Fix bug GLOBX forcing with unst.    ( version 3.14.4 )
-!/    07-Sep-2011 : Fix bug prep forcing with unst.     ( version 4.04 )
+!/    19-Sep-2011 : Fix bug prep forcing with unst.     ( version 4.04 )
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -538,8 +538,16 @@
                 Y = XYB(IX,2)
  
                 IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
-                IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
-                IX22(IX,1) =   IX21(IX,1) + 1
+!
+! Manages the simple closure of the grid
+!
+                IF (ICLO.EQ.ICLOSE_NONE) THEN 
+                  IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
+                  IX22(IX,1) =   IX21(IX,1) + 1
+                ELSE
+                  IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI) )
+                  IX22(IX,1) =   MOD(IX21(IX,1),NXI)+1
+                  END IF 
                 IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
                 IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
                 IY22(IX,1) =   IY21(IX,1) + 1
@@ -1074,6 +1082,18 @@
 !
                 DO IY=1,NY
                   DO IX=1,NX
+                 IF (IY21(IX,IY).LT.1) THEN
+                    IY21(IX,IY)=1
+                    IX21(IX,IY)=1
+                    IX22(IX,IY)=1
+                  ENDIF
+                  IF (IY22(IX,IY).LT.1) IY22(IX,IY)=1
+                  IF (IY21(IX,IY).GT.MYM) IY21(IX,IY)=MYM
+                  IF (IY22(IX,IY).GT.MYM) THEN
+                     IY22(IX,IY)=MYM
+                     IX21(IX,IY)=1
+                     IX22(IX,IY)=1
+                  END IF
                     FX(IX,IY)                                         &
                           = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
                           + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
