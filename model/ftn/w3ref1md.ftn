@@ -5,12 +5,13 @@
 !/                  | WAVEWATCH III                     |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-May-2011 |
+!/                  | Last update :         02-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 3.14.IFREMER )
 !/    03-Sep-2010 : Clean up                            ( version 3.14.IFREMER )
 !/    31-May-2011 : Adding variable reflections         ( version 4.01 )
+!/    02-Nov-2011 : Compatibility with unst. grids      ( version 4.04 )
 !/ 
 !  1. Purpose :
 !
@@ -127,9 +128,9 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, RREF, &
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN,  &
                           REFPARS, ECOS, ESIN, EC2, MAPTH, MAPWN, &
-        SIG2, DSII
+                          SIG2, DSII, IOBPD, GTYPE, UNGTYPE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
 !
@@ -139,7 +140,7 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, EMEAN, FMEAN
-      REAL, INTENT(IN)        :: A(NTH,NK)
+      REAL, INTENT(INOUT)     :: A(NTH,NK)
       REAL, INTENT(IN)        :: CX1, CY1, DT
       INTEGER, INTENT(IN)     :: REFLD(4), IX, IY
       REAL, INTENT(IN)        :: REFLC(4), DELX, DELY, DELA, TRNX, &
@@ -149,7 +150,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/ 
-      INTEGER         :: ISPEC, IK, ITH, ITH2, ITH3
+      INTEGER         :: ISPEC, IK, ITH, ITH2, ITH3, NRS
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE   :: FIRST = .TRUE.
        
@@ -169,6 +170,7 @@
 
       RAMP0=1.
       RAMP=RAMP0
+      NRS=NINT(REFPARS(8))
       IF (REFPARS(6).GT.0) THEN
 !
 ! This is the Miche parameter for a beach slope of REFPARS(7)  (default is 0.25)
@@ -184,63 +186,113 @@
 ! 2.  Shoreline reflection =============================================== *
 !
       IF (REFLC(1).GT.0) THEN 
-      FAC1=1/(0.5*REAL(NTH))
-      FAC2=1.57/(0.5*REAL(NTH))
-      FAC3=2.6/(0.5*REAL(NTH))
-      FAC4=1.
-      R0=ABS(ECOS(REFLD(1)))
+        FAC1=1/(0.5*REAL(NTH))
+        FAC2=1.57/(0.5*REAL(NTH))
+!           FAC3=2.6/(0.5*REAL(NTH))  ! this is for NRS=4
+        FAC3=2./SUM(ABS(ECOS(1:NTH))**NRS)
+        FAC4=1.
+        R0=ABS(ECOS(REFLD(1)))
 !
-      DO IK=1, NK
+        DO IK=1, NK
 !
 ! Includes linear frequency dependence (see Elgar et al. JPO 1994)
 !       
-
-        IF (REFPARS(6).GT.0) THEN
-          RAMP=MIN(1.0,TPI*FMEAN/SIG(IK))*RAMP0
-        ELSE
-          RAMP=RAMP0
-          END IF
-        DO ITH=1, NTH
+          IF (REFPARS(6).GT.0) THEN
+            RAMP=MIN(1.0,TPI*FMEAN/SIG(IK))*RAMP0
+          ELSE
+            RAMP=RAMP0
+            END IF
 !
-!   ITH is the incident wave direction
+! Special treatment for unstructured grids
 !
-          R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
-          R2=REFLC(1)*RAMP*A(ITH,IK)
-          IF (R1.GT.0.AND.R2.GT.0) THEN 
-            DO ITH2=1,NTH
+          IF (GTYPE.EQ.UNGTYPE) THEN 
+            DO ITH=1, NTH
+              A(ITH,IK)=A(ITH,IK)*IOBPD(ITH,IX) !puts to zero the energy not going to coast
+              END DO
 !
-!   ITH2 is the reflected wave direction
-!
-              ISPEC=ITH2+(IK-1)*NTH
-              R3=ECOS(1+MOD(ABS(ITH2-REFLD(1)),NTH))
-              IF (R3.LT.0) THEN 
+            DO ITH=1, NTH
+              R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
+              R1=IOBPD(ITH,IX)
+              R2=REFLC(1)*RAMP*A(ITH,IK)
+              IF (R1.GT.0.AND.R2.GT.0) THEN 
 !
 ! Determines direction of specular reflection: th3=pi+2*n-th1  
-!
+! 
                 ITH3=1+MOD(NTH/2+NTH+2*REFLD(1)-ITH-1,NTH)
-                R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))
-                IF (R4.GT.0.) THEN 
+                DO ITH2=1,NTH
+!
+!  Adds energy into reflected directions (ITH2)
+!
+                  ISPEC=ITH2+(IK-1)*NTH
+                  R3=ECOS(1+MOD(ABS(ITH2-REFLD(1)),NTH))
+                  IF (R3.LT.0) THEN 
+                    R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))*(1-IOBPD(ITH2,IX))
+                    IF (R4.GT.0.) THEN 
 !
 ! Tests the type of shoreline geometry
 ! NB: REFLD(3) or REFLD(4) is equal to 1 if the sea point is between two land points 
-                  SELECT CASE (REFLD(2))
-                    CASE (0)
+                    SELECT CASE (REFLD(2))
+                      CASE (0)
                    ! Sharp corner: broad reflection
-                      IF (REFLD(3).EQ.0)      & 
-                        S(ISPEC)=S(ISPEC)+    &
-                        R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*FAC1
-                      IF (REFLD(4).EQ.0)      & 
-                        S(ISPEC)=S(ISPEC)+ &
-                        R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*FAC1
-                    CASE (1)
+                        S(ISPEC)=S(ISPEC)+R2*FAC1/DT
+                      CASE (1)
                    ! mild corner: average reflection
-                      IF (REFLD(3).EQ.0)      & 
-                        S(ISPEC)=S(ISPEC)+    &
-                        R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*ABS(R4)*FAC2
-                      IF (REFLD(4).EQ.0)      & 
-                        S(ISPEC)=S(ISPEC)+    &
-                        R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*ABS(R4)*FAC2
-                    CASE (2)
+                        S(ISPEC)=S(ISPEC)+R2*ABS(R4)*FAC2/DT
+                      CASE (2)
+                   ! straight coast: narrow reflection
+                   !     IF(ITH3.EQ.ITH2) S(ISPEC)=S(ISPEC)+R2/DT  ! THIS IS FOR SPECULAR REF. 
+                         S(ISPEC)=S(ISPEC)+R2*(R4**NRS) *FAC3/DT
+                      END SELECT
+                    END IF  ! (R4.GT.0.)
+                  END IF  ! (R3.LT.0) 
+                END DO ! ITH2=1,NTH
+              END IF  ! (R1.GT.0.AND.R2.GT.0)
+            END DO  ! ITH=1, NTH 
+          ELSE ! (GTYPE.EQ.UNGTYPE)
+!
+! This is for structured grids .... 
+!
+!
+!  Loop on  incident wave direction (ITH)
+!
+            DO ITH=1, NTH
+              R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
+              R2=REFLC(1)*RAMP*A(ITH,IK)
+              IF (R1.GT.0.AND.R2.GT.0) THEN 
+                DO ITH2=1,NTH
+!
+!  Adds energy into reflected directions (ITH2)
+!
+                  ISPEC=ITH2+(IK-1)*NTH
+                  R3=ECOS(1+MOD(ABS(ITH2-REFLD(1)),NTH))
+                  IF (R3.LT.0) THEN 
+!
+! Determines direction of specular reflection: th3=pi+2*n-th1  
+!
+                    ITH3=1+MOD(NTH/2+NTH+2*REFLD(1)-ITH-1,NTH)
+                    R4=ECOS(1+MOD(ABS(ITH2-ITH3),NTH))
+                    IF (R4.GT.0.) THEN 
+!
+! Tests the type of shoreline geometry
+! NB: REFLD(3) or REFLD(4) is equal to 1 if the sea point is between two land points 
+                      SELECT CASE (REFLD(2))
+                      CASE (0)
+                   ! Sharp corner: broad reflection
+                          IF (REFLD(3).EQ.0)      & 
+                            S(ISPEC)=S(ISPEC)+    &
+                            R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*FAC1
+                          IF (REFLD(4).EQ.0)      & 
+                            S(ISPEC)=S(ISPEC)+ &
+                            R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*FAC1
+                      CASE (1)
+                   ! mild corner: average reflection
+                          IF (REFLD(3).EQ.0)      & 
+                            S(ISPEC)=S(ISPEC)+    &
+                            R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*ABS(R4)*FAC2
+                          IF (REFLD(4).EQ.0)      & 
+                            S(ISPEC)=S(ISPEC)+    &
+                            R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*ABS(R4)*FAC2
+                      CASE (2)
                    ! straight coast: narrow reflection
 !
 ! Specular for tests 
@@ -249,29 +301,33 @@
 !  According to the shoreline direction, changes the 
 !  numerical schemes (due to neighbors) in order to 
 !  account for along-coast advection
-!         
-                      IF (REFLD(3).EQ.0)      & 
+!          
+                          IF (REFLD(3).EQ.0)      & 
 !
 ! Specular for tests 
 !                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX)
-                        S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
-                                              *(R4**4) *FAC3
+                            S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
+                                                *(R4**NRS) *FAC3
 !
 ! Specular for tests 
 !                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
-                      IF (REFLD(4).EQ.0)      & 
-                        S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
-                                              *(R4**4) *FAC3
-               END SELECT
-              END IF  
-                END IF
-              END DO
-              END IF
-            END DO   
-          END DO
+                          IF (REFLD(4).EQ.0)      & 
+                            S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
+                                               *(R4**NRS) *FAC3
+                        END SELECT
+                      END IF ! (R4.GT.0.)
+                    END IF  ! (R3.LT.0) 
+                  END DO  ! ITH2=1,NTH
+                END IF  ! (R1.GT.0.AND.R2.GT.0) 
+              END DO  ! ITH=1,NTH
+            
+            END IF  ! UNGTYPE
+
+          END DO ! loop on IK
         END IF
 !
 !  Add diffuse reflection due to subgrid islands and icebergs
+!  At present this feature is not supported for unstructured grids. 
 !
       IF (    ((REFPARS(2).GT.0.).AND.((TRNX+TRNY).LT.2))     &
         .OR.((REFPARS(4).GT.0.).AND.(BERG.GT.0)       )   ) THEN 
@@ -299,6 +355,7 @@
             END DO
           END DO
         END IF
+
 !/
 !/ End of W3SREF ----------------------------------------------------- /
 !/

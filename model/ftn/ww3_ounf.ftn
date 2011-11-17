@@ -6,10 +6,11 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Mar-2011 |
+!/                  | Last update :         07-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
+!/    07-Nov-2011 : Debug for spectral output on UNST   ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -26,7 +27,7 @@
 !     and from the file ww3_ounf.inp ( NDSI, output requests ).
 !     Model definition and raw data files are read using WAVEWATCH III
 !     subroutines. Extra global NetCDF attributes may be read from 
-!     NetCDF_attributes.inp
+!     NC_globatt.inp
 !
 !     Could be merged with ww3_outf.ftn if NOAA/NCEP agrees (hence type 4)
 !
@@ -631,7 +632,7 @@
 !
           IF ( J .EQ.  1 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.1
+            FSC    = 0.5
             UNITS  = 'm'
             NFIELD = 1
             ENAME  = '.dpt'
@@ -640,8 +641,8 @@
             varnm(1)='Depth'
             varnl(1)='water_depth'
             varns(1)='water_depth'
-            vmin = -1000 
-            vmax = 65536
+            vmin = -90000 
+            vmax = 140000
 !
           ELSE IF ( J .EQ.  2 ) THEN
             FLONE  = .FALSE.
@@ -1577,8 +1578,8 @@
               I2F=P2MSF(3)
               DO IK=P2MSF(2),P2MSF(3)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,P2SMS(:,IK),MAPSF, XX )
-!                XK(:,:,IK)=XX
                 WHERE ( XX.GE.0.) XX = ALOG10(XX+0.01)
+                XK(:,:,IK)=XX
                 END DO
               END IF
 
@@ -1715,6 +1716,8 @@
               FNAMENC(S1+2:S1+S2) = ENAME(2:S2)
               ENDIF
             FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
+! Defines index of first field variable
+            ivar1=3+extradim+(COORDTYPE-1)+MAPSTAOUT
         
 !
 ! Opens NC file
@@ -1734,18 +1737,12 @@
                 dimln(3)=NTRI
                 ENDIF
 !
-! Creates the NetCDF file (declarations ...)
-!
-
-!
-! Initializes the variable index
-!
-              
-!
               IF (J.EQ.J1.OR.IFILE.EQ.2.OR.(.NOT.TOGETHER)) THEN 
 
                 n=1
-                ivar1=3+extradim+(COORDTYPE-1)+MAPSTAOUT
+!
+! Creates the NetCDF file 
+!
                 CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid,varnm,varnl,varns,fsc, &
                              mfill,UNITVAR,vmin,vmax,COORDTYPE,   &
                              extradim,NCTYPE,MAPSTAOUT)
@@ -1869,11 +1866,10 @@
                   iret=nf90_put_var(ncid,varid(4+extradim),TRIGP2)
                   END IF
 !
-!  Writes status map array 2+1+coordtype+idim-4
+!  Writes status map array at variable index 2+1+coordtype+idim-4
 !
                 IF (MAPSTAOUT.EQ.1) THEN 
                   idvarout=varid(3+extradim+(COORDTYPE-1)+MAPSTAOUT) 
-                  !WRITE(6,*) 'MAPOUT:',idvarout,IX1,IXN,IY1,IYN,MINVAL(MAPOUT), MAXVAL(MAPOUT)
                   start(1)=1
                   start(2)=1
                   count(1)=IXN-IX1+1
@@ -1936,10 +1932,9 @@
 
 
               ELSE  ! IERR.EQ.0
-
 !
 ! Appends data to existing file
-! WARNING: no check on the previous contents of the file
+! WARNING: there is no check on the previous contents of the file
 !
                 CLOSE (NDSDAT)
                 iret=NF90_OPEN (FNAMENC, NF90_WRITE, ncid)
@@ -1976,7 +1971,6 @@
 ! new time step for existing file
 !
                 IF((J.EQ.J1.AND.TOGETHER).OR.(.NOT.TOGETHER).OR.(IFILE.EQ.2)) n=n+1
-
 !
 ! updates variable index if all variables together or if first variable
 !
@@ -2017,6 +2011,11 @@
                     END DO
                   iret = nf90_enddef(ncid)
                   call check_err(iret)
+                ELSE 
+                  DO I=1,NFIELD
+                    ivar=ivar1+I
+                    iret=NF90_INQ_VARID (ncid, varnm(I), varid(ivar))
+                    END DO              
                   END IF !   n.EQ.1
 
                 END IF  ! IERR.EQ.0
@@ -2053,11 +2052,10 @@
               start(2)=1
               start(3)=1
               start(4)=1
-              IF (GTYPE.NE.UNGTYPE) THEN
-                start(3)=n
-              ELSE
-                start(2)=n
-                ENDIF
+!
+! Sets time index 
+!
+              start(3+1-COORDTYPE+extradim)=n
               count(1)=IXN-IX1+1
               count(2)=IYN-IY1+1
               count(3)=1
@@ -2074,8 +2072,6 @@
                 iret=nf90_put_var(ncid,varid(3+extradim),timenc,(/n/))
                 call check_err(iret)
               END IF
-                  
-
 !
 ! Puts field(s) in NetCDF file
 !
@@ -2104,7 +2100,6 @@
                 iret=nf90_put_var(ncid,varid(ivar1+3),            &
                           MXY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
                 call check_err(iret)
-
 ! NFIELD=2
               ELSE IF (NFIELD.EQ.2 ) THEN 
 ! extradim=0
@@ -2128,10 +2123,9 @@
                   call check_err(iret)
 ! extradim=1
                 ELSE
-                  start(4)=start(3)
-                  start(3)=0
+                  start(3+1-COORDTYPE)=0
                   DO IK=I1F,I2F
-                    start(3)=start(3)+1
+                    start(3+1-COORDTYPE)=start(3+1-COORDTYPE)+1
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
@@ -2167,10 +2161,9 @@
                     call check_err(iret)
 ! extradim=1
                   ELSE
-                    start(4)=start(3)
-                    start(3)=0
+                    start(3+1-COORDTYPE)=0
                     DO IK=I1F,I2F
-                      start(3)=start(3)+1
+                      start(3+1-COORDTYPE)=start(3+1-COORDTYPE)+1
                       DO IX=IX1, IXN
                         DO IY=IY1, IYN
                           IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN

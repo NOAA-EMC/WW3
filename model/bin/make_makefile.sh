@@ -209,17 +209,17 @@
                TS='MPRF'
                OK='MPRF' ;;
       reflection ) TY='upto1'
-               ID='wave reflexions'
+               ID='wave reflections'
                TS='REF1'
                OK='REF1' ;;
       mcp    ) TY='one'
-               ID='model as program / subroutine'
+               ID='model coupling protocol'
                TS='NOPA'
                OK='NOPA PALM' ;;
       netcdf ) TY='upto1'
-               ID='model coupling protocol'
-               TS='NC0'
-               OK='NC3 NC4' ;;
+               ID='netcdf api type'
+               TS='NC4'
+               OK='NC4' ;;
     esac
 
     n_found='0'
@@ -297,7 +297,7 @@
       s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
       mcp    ) mcp=$sw ;;
-      netcdf ) nclib=$sw;;
+      netcdf ) netcdf=$sw;;
         *    ) ;;
     esac
   done
@@ -472,8 +472,9 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
-  progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_multi ww3_sbs1
-         ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_gint'
+  progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
+         ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
+         ww3_ounp ww3_gint'
 
   for prog in $progs
   do
@@ -493,6 +494,13 @@
                  IO='w3iogrmd w3iorsmd'
                 aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_prep) IDstring='Field preprocessor'
+               core='w3fldsmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
@@ -534,7 +542,21 @@
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_ounf) IDstring='Gridded NetCDF output'
+               core=
+               data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd w3iogomd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_outp) IDstring='Point output'
+               core=
+               data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
+                 IO='w3bullmd w3iogrmd w3iopomd w3partmd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
@@ -577,6 +599,7 @@
                  IO='w3iogrmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
     esac
+
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
     files="$aux $core $data $prop $source $IO $prog"
     filesl="$prog $data $core $prop $source $IO $aux"
@@ -592,54 +615,6 @@
     echo ' '                                     >> makefile
   done
 
-#
-# Programs with NetCDF libraries
-#
-  if [ "$nclib" != '' ] 
-  then 
-    progs='ww3_prnc ww3_ounf ww3_ounp'
-
-    for prog in $progs
-    do
-      case $prog in
-        ww3_prnc) IDstring='NetCDF field preprocessor'
-               core='w3fldsmd'
-               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
-               prop=
-             source="w3triamd $stx $nlx $btx"
-                 IO='w3iogrmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
-        ww3_ounf) IDstring='Gridded NetCDF output'
-               core=
-               data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop=
-             source="w3triamd $stx $nlx $btx"
-                 IO='w3iogrmd w3iogomd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
-        ww3_ounp) IDstring='Point NetCDF output'
-               core=
-               data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
-               prop=
-             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
-                 IO='w3bullmd w3iogrmd w3iopomd w3partmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
-      esac
-
-      d_string='$(aPe)/'"$prog"' : $(aPo)/'
-      files="$aux $core $data $prop $source $IO $prog"
-      filesl="$prog $data $core $prop $source $IO $aux"
-
-      echo "# $IDstring"                           >> makefile
-      echo ' '                                     >> makefile
-      for file in $files
-      do
-        echo "$d_string$file.o"                    >> makefile
-        echo "$file"                               >> filelist.tmp
-      done
-      echo '	@$(aPb)/link '"$filesl"          >> makefile
-      echo ' '                                     >> makefile
-    done  
-  fi
   sort -u filelist.tmp                            > filelist
   rm -f filelist.tmp
 
@@ -676,6 +651,7 @@
     string3="$NULL"
 
     $main_dir/bin/ad3 $file 0 1 > ad3.out 2>&1
+
     if [ -n "`grep error ad3.out`" ]
     then
       cat ad3.out
