@@ -10,16 +10,16 @@ $ Points requested --------------------------------------------------- $
 $ Define points for which output is to be generated. 
 $
  1
- 2
- 3
- 4
+$ 2
+$ 3
+$ 4
 $
 $ mandatory end of list
  -1
 $
 $ Output type ITYPE [0,1,2,3]
 $
-  1
+  4
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
 $            No additional input, the above time range is ignored.
@@ -35,7 +35,7 @@ $          - Unit number for transfer file, also used in table file
 $            name.
 $          - Flag for unformatted transfer file.
 $
- 3   0.  0.  33  F
+$ 3   0.  0.  33  F
 $
 $ The transfer file contains records with the following contents.
 $
@@ -125,7 +125,7 @@ $            in CSV type output (if the first field is negative, the
 $            reference time becomes the first simulation time slice)
 $          - Three-character code indicating time zone (UTC, EST etc)
 $
-$   4  1 20100928 000000 'UTC'
+   2  1 20100928 000000 'UTC'
 $
 $ The transfer file contains records with the following contents.
 $
