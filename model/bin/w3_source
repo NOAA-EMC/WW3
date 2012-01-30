@@ -27,22 +27,85 @@
 # 0. Set up                                                                   #
 # --------------------------------------------------------------------------- #
 
-  fext='f'                          # FORTRAN file extension to be used
+  if ! [ ${fext} ]
+  then
+    fext='f90'                        # FORTRAN file extension to be used
+  fi
+
   lext='lst'                        # FORTRAN listing extension
-  comp='mpxlf90'                    # compiler command
-  fflags='-qsource -O3 -qnosave'    # compiler flags, '-c' automatically 
+ 
+  if ! [ ${comp} ]
+  then
+    comp='xlf90'                      # compiler command
+  fi
+
+  fflags='-O3 -qsource -qnosave'    # compiler flags, '-c' automatically 
                                     # invoked. 
   ldflags=                          # loader (linker) flags
   libs=                             # libraries
 
+  if ! [ ${WWATCH3_DIR} ]
+  then
+    WWATCH3_DIR=`pwd`               # Location of ftn files depend on this
+                                    # User has to define this here or in  
+                                    # external call
+  fi
+
+  if ! [ ${WWATCH3_TMP} ]
+  then
+    WWATCH3_TMP=/stmp/wavepa/make_multi  # Temp directory, must set for individual 
+                                    # machine and purposes, has to be set here
+                                    # or via external call
+  fi
+
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
-# 1.a Internal variables
 
-  set -e
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+# 1.a Echo to screen choices for internal variables, directory paths etc
+#     screen output of errors
+
+  iexit=0
+
+  echo ' '
+  echo '             ***  General setting for W3_SOURCE     ***'
+  echo ' '
+
+  if [ ${fext} ]
+  then
+    echo '           File extension set to:               '$fext
+  else
+    echo ' ERROR : variable fext not set ' 
+    iexit=`expr $iexit + 1`
+  fi
+  if [ ${comp} ]
+  then
+    echo '           Compiler set to:                     '$comp
+  else
+    echo ' ERROR : no compiler defined   '
+    iexit=`expr $iexit + 1`
+  fi
+  if [ ${WWATCH3_DIR} ]
+  then
+    echo '           Root wwatch3 directory set to:       '${WWATCH3_DIR}
+  else
+    echo ' ERROR : wwatch3 directory source not defined '
+    iexit=`expr $iexit + 1`
+  fi
+    if [ ${WWATCH3_TMP} ]
+  then
+    echo '           Temporary scratch directory set to:  '${WWATCH3_TMP}
+  else
+    echo ' ERROR : temporary directory for scratch not defined '
+    iexit=`expr $iexit + 1`
+  fi
+echo ' '
+
+ if [ $iexit -gt 1 ]; then exit; fi
+
+# Set main_dir to WWATCH3_DIR
+  main_dir=${WWATCH3_DIR}
+  temp_dir=${WWATCH3_TMP}
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -64,23 +127,7 @@
     progs="$*"
   fi
 
-# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
-
-  if [ -f $ww3_env ]
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    temp_dir="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"
-    exit
-  fi
-
-  echo "Scratch directory : $temp_dir"
-  echo ' '
-
-# 1.e Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
 
   if [ ! -d $temp_dir ]
   then
@@ -95,7 +142,7 @@
   rm -f *.f90 *.$fext *.l makefile
   cd $main_dir/ftn
 
-# 1.f Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ ! -f $main_dir/bin/switch ]
   then
@@ -104,18 +151,19 @@
   fi
 
   make_prog='y'
-  if [ -f $main_dir/bin/switch.old ]
-  then
-    if [ -f $main_dir/ftn/makefile ] && \
-       [ -z "`diff $main_dir/bin/switch $main_dir/bin/switch.old`" ]
-    then
-      make_prog='n'
-    fi
-  fi
+#  if [ -f $main_dir/bin/switch.old ]
+#  then
+#    if [ -f $main_dir/ftn/makefile ] && \
+#       [ -z "`diff $main_dir/bin/switch $main_dir/bin/switch.old`" ]
+#    then
+#      make_prog='n'
+#    fi
+#  fi
 
   if [ "$make_prog" = 'y' ]
   then
     echo 'Making makefile ...'
+    export WWATCH3_DIR WWATCH3_TMP
     if $main_dir/bin/make_makefile.sh
     then
       cp $main_dir/bin/switch $main_dir/bin/switch.old
@@ -173,7 +221,7 @@
 
       for file in $files
       do
-        ad3 $file 0 1
+        ${main_dir}/bin/ad3 $file 0 1
         if [ "$fext" != 'f90' ] ; then
           mv $temp_dir/$file.f90 $temp_dir/$file.$fext ; fi
         fors="$fors $file.$fext"
