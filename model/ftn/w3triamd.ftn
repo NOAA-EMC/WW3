@@ -95,17 +95,18 @@ MODULE W3TRIAMD
   
 CONTAINS
 !/ -------------------------------------------------------------------/
-SUBROUTINE READMSH(NDS,FNAME) 
+SUBROUTINE READMSH(NDS,FNAME,REFSLOPE) 
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          25-Aug-2011|
+!/                  | Last update :          05-Dec-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-Feb-2008 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+!/    05-Dec-2011 : Adding shoreline slope in tags      ( version 4.04 )
 !/
 !
 !  1. Purpose :
@@ -171,8 +172,9 @@ SUBROUTINE READMSH(NDS,FNAME)
 !/
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)       :: NDS
-      CHARACTER(60), INTENT(IN) :: FNAME
+      INTEGER, INTENT(IN)                :: NDS
+      REAL,    INTENT(IN)                :: REFSLOPE
+      CHARACTER(60), INTENT(IN)          :: FNAME
 !/
 !/ local parameters 
 !/      
@@ -181,7 +183,7 @@ SUBROUTINE READMSH(NDS,FNAME)
       INTEGER                            :: I1, I2, I3
       INTEGER(KIND=4)                    :: Ind,eltype,ntag, INode
       CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
-      INTEGER, ALLOCATABLE               :: TAGS(:)
+      REAL, ALLOCATABLE                  :: TAGS(:)
       CHARACTER(LEN=64), ALLOCATABLE     :: ELS(:)
       CHARACTER(LEN=120)                 :: LINE
       CHARACTER(LEN=50)                  :: CHTMP
@@ -189,6 +191,7 @@ SUBROUTINE READMSH(NDS,FNAME)
       INTEGER,ALLOCATABLE                :: NELS(:), TRIGPTMP1(:,:), TRIGPTMP2(:,:)
       INTEGER,ALLOCATABLE                :: IFOUND(:), VERTEX(:)
       DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
+!/REF1      REAL,ALLOCATABLE                   :: REFSLOPEMAP(:)
       REAL                               :: z
 
       OPEN(NDS,FILE = FNAME,STATUS='old')
@@ -197,6 +200,7 @@ SUBROUTINE READMSH(NDS,FNAME)
       CALL NEXTLN(COMSTR, NDS, NDSE)
       READ(NDS,*) i,j,k
       CALL NEXTLN(COMSTR, NDS, NDSE)
+
 !
 ! read number of nodes and nodes from Gmsh files
 !
@@ -205,10 +209,13 @@ SUBROUTINE READMSH(NDS,FNAME)
       DO I= 1, NODES
         READ(NDS,*) j, XYBTMP1(I,1), XYBTMP1(I,2), XYBTMP1(I,3)
         END DO
+! Initialization of coastal reflections
+!/REF1     ALLOCATE(REFSLOPEMAP(NODES)) 
+!/REF1     REFSLOPEMAP(:)=.001
 !
 ! read number of elements and elements from Gmsh files
 !
-      CALL NEXTLN(COMSTR, NDS, NDSE)
+     CALL NEXTLN(COMSTR, NDS, NDSE)
       READ(NDS,*) NELTS
       ALLOCATE(TRIGPTMP1(NELTS, 3))
       J = 0 
@@ -221,7 +228,10 @@ SUBROUTINE READMSH(NDS,FNAME)
 ! eltype = 15 : boundary points
 !
         CASE(15)
-          READ(LINE,*) Ind,eltype,ntag,tags,Inode
+          READ(LINE,*) Ind,eltype,ntag,TAGS,INODE
+          IF (ntag.EQ.3) THEN
+!/REF1            REFSLOPEMAP(Inode)=REFSLOPE*TAGS(3)
+            END IF
 !
 ! eltype = 2 : triangles
 !
@@ -290,6 +300,7 @@ SUBROUTINE READMSH(NDS,FNAME)
 !
       CALL COUNT(TRIGPTMP2)
       CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST ) 
+!/REF1      UG_REFLC(:)=REFSLOPEMAP(1:NX)
 !
 ! fills arrays
 !
@@ -1682,7 +1693,7 @@ END SUBROUTINE
 !
 ! Searches for boundary points
 ! 
-!/REF1            REFLC(:,:)= 0.
+!/REF1            REFLC(1,:)= 0.
 !/REF1            REFLD(:,:)= 0
 !
         DO IX = 1, NX

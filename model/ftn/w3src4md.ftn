@@ -197,7 +197,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 
       REAL                    :: TAUW, EBAND, EMEANWS, RDCH, FXPMC,    &
-                                 WNP, UNZ,    FP,                      &
+                                 WNP, UNZ, FP,                         &
                                  R1, CP, EB(NK),EB2(NK),ALFA(NK)
 !/
 !/ ------------------------------------------------------------------- /
@@ -419,6 +419,7 @@
                                  EBX, EBY, AORB, AORB1, FW, UORB, M2, TH2, &
                                  RE, FU, FUD, SWELLCOEFV, SWELLCOEFT
       REAL                   :: HSBLOW, ABJSEA, FACTOR
+      REAL                   ::  PTURB, PVISC, SMOOTH
       REAL XI,DELI1,DELI2
       REAL XJ,DELJ1,DELJ2
       REAL XK,DELK1,DELK2
@@ -470,6 +471,29 @@
       UORB = 2*SQRT(UORB)             ! this is now the significant orbital amplitude
       AORB1 = 2*AORB**(1-0.5*SSWELLF(6))   ! this is now half the significant wave height ... if SWELLF(6)=1
       RE = 4*UORB*AORB1 / NU_AIR ! this is the Reynolds number 
+!
+! Defines the swell dissipation based on the "Reynolds number"
+!
+      IF (SSWELLF(4).GT.0) THEN           
+        IF (SSWELLF(7).GT.0.) THEN
+          SMOOTH = 0.5*TANH((RE-SSWELLF(4))/SSWELLF(7))
+          PTURB=(0.5+SMOOTH)
+          PVISC=(0.5-SMOOTH)
+        ELSE 
+          IF (RE.LE.SSWELLF(4)) THEN
+            PTURB =  0.
+            PVISC =  1.
+          ELSE
+            PTURB =  1.
+            PVISC =  0.
+            END IF
+          END IF
+      ELSE
+        PTURB=1.
+        PVISC=1.
+        END IF
+        
+!
       IF (SSWELLF(2).EQ.0) THEN 
         FW=MAX(ABS(SSWELLF(3)),0.)
         FU=0.
@@ -571,32 +595,18 @@
             IF (28.*CM*USTAR*COSWIND.GE.1) THEN
               LLWS(IS)=.TRUE.
               END IF
-          ELSE
+          ELSE  ! (COSWIND.LE.0.01) 
             DSTAB(ISTAB,IS) = 0.
             LLWS(IS)=.FALSE.
-            END IF
+            END IF 
+!
           IF ((SSWELLF(1).NE.0.AND.DSTAB(ISTAB,IS).LT.1E-7*SIG2(IS)) &
               .OR.SSWELLF(3).GT.0) THEN  
 !
-              DVISC=SWELLCOEFV                                        ! + SSWELLF(7)/SIG2(IS)   ! fudge for low frequency
+              DVISC=SWELLCOEFV        
               DTURB=SWELLCOEFT*(FW*UORB+(FU+FUD*COSWIND)*USTP)
 !
-            IF (SSWELLF(4).GT.0) THEN 
-              IF (SSWELLF(7).GT.0.) THEN 
-                DSTAB(ISTAB,IS) =  DSTAB(ISTAB,IS) + DVISC  
-                IF (RE.GT.SSWELLF(4)) THEN   
-                    DSTAB(ISTAB,IS) =  DSTAB(ISTAB,IS) + DTURB
-                  END IF
-              ELSE   
-                IF (RE.LE.SSWELLF(4)) THEN 
-                  DSTAB(ISTAB,IS) =  DSTAB(ISTAB,IS)+DVISC          
-                ELSE 
-                  DSTAB(ISTAB,IS) =  DSTAB(ISTAB,IS)+DTURB          
-                  END IF
-                END IF 
-            ELSE
-              DSTAB(ISTAB,IS) = DSTAB(ISTAB,IS) + MIN (DVISC,DTURB)
-              END IF 
+              DSTAB(ISTAB,IS) = DSTAB(ISTAB,IS) + PTURB*DTURB +  PVISC*DVISC
             END IF
 !
 ! Sums up the wave-supported stress

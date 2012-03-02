@@ -513,6 +513,7 @@
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),   &
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
         REAL, POINTER         :: TRIA(:), TRIA03(:)
+!/REF1       REAL, POINTER         :: UG_REFLC(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
 ! Coupling data
         LOGICAL               :: COUG_2D, COUG_RAD3D, COUG_US3D
@@ -682,6 +683,7 @@
                                  IAA(:), JAA(:), POSI(:,:),            &
                                  VNEIGH(:,:), INDEX_CELL(:)
       REAL, POINTER           :: TRIA(:), TRIA03(:)
+!/REF1      REAL, POINTER           :: UG_REFLC(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       
@@ -1104,7 +1106,7 @@
       GRIDS(IMOD)%CLATIS(0)=1.
 !
 !/REF1      ALLOCATE ( GRIDS(IMOD)%RREF(4)  )
-!/REF1      ALLOCATE ( GRIDS(IMOD)%REFPARS(8) )
+!/REF1      ALLOCATE ( GRIDS(IMOD)%REFPARS(10) )
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA))
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLD(4,0:NSEA))
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
@@ -1530,6 +1532,7 @@
       POSI     => GRIDS(IMOD)%POSI
       NNZ      => GRIDS(IMOD)%NNZ
       IOBPD     => GRIDS(IMOD)%IOBPD
+!/REF1      UG_REFLC  => GRIDS(IMOD)%UG_REFLC
       TRIA     => GRIDS(IMOD)%TRIA
       TRIA03     => GRIDS(IMOD)%TRIA03
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
@@ -2219,6 +2222,7 @@
                  GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX) )
+!/REF1       ALLOCATE ( GRIDS(IMOD)%UG_REFLC(MX) )
 !
 !/T      WRITE (NDST,9001)
 !
