@@ -1407,7 +1407,7 @@
 !
           ELSE IF ( J .EQ. 45 ) THEN
             FLONE  = .TRUE.
-            FSC    = 10
+            FSC    = 0.1
             UNITS  = 'N/m'
             ENAME  = '.J'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, JSMITH(1:NSEA)    &

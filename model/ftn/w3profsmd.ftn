@@ -242,8 +242,6 @@
 !
        DO IX=1,NX
          ISEA=MAPFS(1,IX)
-!/REF1 IF (IK.EQ.2.AND.IX.EQ.763) WRITE(6,*) 'W3XYPUG START / END:', ITH, VQ(IX), &
-!/REF1                  IOBPD(ITH,IX), MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*AC(IX) )
          VQ(IX)=AC(IX)
        ENDDO          
     
