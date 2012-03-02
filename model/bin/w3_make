@@ -29,25 +29,36 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
+# 1.a.1 Setup file
+
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
-  all_programs=""
-  all_programs="$all_programs ww3_grid"
-  all_programs="$all_programs ww3_strt"
-  all_programs="$all_programs ww3_prep"
-  all_programs="$all_programs ww3_shel"
-  all_programs="$all_programs ww3_multi"
-  all_programs="$all_programs ww3_sbs1"
-  all_programs="$all_programs ww3_outf"
-  all_programs="$all_programs ww3_outp"
-  all_programs="$all_programs ww3_trck"
-  all_programs="$all_programs ww3_grib"
-  all_programs="$all_programs ww3_gint"
-  all_programs="$all_programs gx_outf"
-  all_programs="$all_programs gx_outp"
-  all_programs="$all_programs ww3_prnc"
-  all_programs="$all_programs ww3_ounf"
-  all_programs="$all_programs ww3_ounp"
+
+# 1.a.2 Non-NetCDF programs
+
+  reg_programs="ww3_grid"
+  reg_programs="$reg_programs ww3_strt"
+  reg_programs="$reg_programs ww3_prep"
+  reg_programs="$reg_programs ww3_shel"
+  reg_programs="$reg_programs ww3_multi"
+  reg_programs="$reg_programs ww3_sbs1"
+  reg_programs="$reg_programs ww3_outf"
+  reg_programs="$reg_programs ww3_outp"
+  reg_programs="$reg_programs ww3_trck"
+  reg_programs="$reg_programs ww3_grib"
+  reg_programs="$reg_programs ww3_gint"
+  reg_programs="$reg_programs gx_outf"
+  reg_programs="$reg_programs gx_outp"
+
+# 1.a.3 NetCDF programs
+
+  cdf_programs="ww3_prnc"
+  cdf_programs="$cdf_programs ww3_ounf"
+  cdf_programs="$cdf_programs ww3_ounp"
+
+# 1.a.4 All programs
+
+  all_programs="$reg_programs $cdf_programs"
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -62,8 +73,10 @@
   if test "$#" = '0'
   then
     progs="$all_programs"
+    default_mode=1
   else
     progs="$*"
+    default_mode=0
   fi
 
 # 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -79,7 +92,7 @@
     set `grep WWATCH3_LIST $ww3_env` ; shift
     list="$*"
   else
-    echo "*** Set-up file $ww3_env not found ***"
+    echo "*** Set-up file $ww3_env not found ***"; echo ' '
     exit 1
   fi
 
@@ -88,10 +101,23 @@
   echo "Save listings     : $list"
   echo ' '
 
-# 1.e Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.e Check for switch file  - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-# 1.e.1 Define NetCDF compile message
+  switch_file=$main_dir/bin/switch
+  switch_file_old=$main_dir/bin/switch.old
+
+  if test ! -f $switch_file
+  then
+    echo "*** switch file $switch_file not found ***" ; echo ' '
+    exit 1
+  fi
+
+# 1.f Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# 1.f.1 NetCDF compile message function
+
   netcdf_compile_message () {
+
   cat 2>&1 << 'EOF'
 
 *****************************************************************
@@ -130,106 +156,135 @@ the NetCDF-4 API enabled.
 *****************************************************************
 
 EOF
+
   }
 
-# 1.e.2 Check for NetCDF compile
-  nc_compile=0
-  for nc_prog in ww3_prnc ww3_ounf ww3_ounp
-  do
-    if [ -n "`echo $progs | grep $nc_prog`" ]
-    then
-      nc_compile=1
-    fi
-  done
+# 1.f.2 NetCDF check compile environment function
 
-# 1.e.3 Check NetCDF compile environment
-  if [ $nc_compile -eq 1 ]
+  netcdf_check_compile () {
+
+  mode=$1 #must be ERROR or WARNING
+
+  if [ -z "$WWATCH3_NETCDF" ]
   then
-    if [ -z "$WWATCH3_NETCDF" ]
-    then
-      echo "ERROR: WWATCH3_NETCDF not defined"
-      netcdf_compile_message
-      exit 1
-    else
-      case $WWATCH3_NETCDF in
-        NC3)
-          if [ -z "$NETCDF_LIBDIR" ]
-          then
-            echo "ERROR: NETCDF_LIBDIR not defined"
-            netcdf_compile_message
-            exit 1
-          fi
-          if [ -z "$NETCDF_INCDIR" ]
-          then
-            echo "ERROR: NETCDF_INCDIR not defined"
-            netcdf_compile_message
-            exit 1
-          fi
-        ;;
-        NC4)
-          if [ -z "$NETCDF_CONFIG" ]
-          then
-            echo "ERROR: NETCDF_CONFIG not defined"
-            netcdf_compile_message
-            exit 1
-          fi
-          if [ ! -x "$NETCDF_CONFIG" ]
-          then
-            echo "ERROR: $NETCDF_CONFIG does not exist or is not executable"
-            exit 1
-          fi
-          netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
-          if [ `echo $netcdf_version | tr -d .` -lt 411 ]
-          then
-            echo "ERROR: NetCDF version $netcdf_version < 4.1.1"
-            netcdf_compile_message
-            exit 1
-          fi
-        ;;
-        *)
-          echo "ERROR: WWATCH3_NETCDF=$WWATCH3_NETCDF not supported"
+    netcdf_compile_message
+    echo "$mode: WWATCH3_NETCDF not defined"; echo ' '
+    return 1
+  else
+    case $WWATCH3_NETCDF in
+      NC3)
+        if [ -z "$NETCDF_LIBDIR" ]
+        then
           netcdf_compile_message
-          exit 1
-        ;;
-      esac
+          echo "$mode: NETCDF_LIBDIR not defined"; echo ' '
+          return 1
+        fi
+        if [ -z "$NETCDF_INCDIR" ]
+        then
+          netcdf_compile_message
+          echo "$mode: NETCDF_INCDIR not defined"; echo ' '
+          return 1
+        fi
+      ;;
+      NC4)
+        if [ -z "$NETCDF_CONFIG" ]
+        then
+          netcdf_compile_message
+          echo "$mode: NETCDF_CONFIG not defined"; echo ' '
+          return 1
+        fi
+        if [ ! -x "$NETCDF_CONFIG" ]
+        then
+          netcdf_compile_message
+          echo "$mode: $NETCDF_CONFIG does not exist or is not executable"; echo ' '
+          return 1
+        fi
+        netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
+        if [ `echo $netcdf_version | tr -d .` -lt 411 ]
+        then
+          netcdf_compile_message
+          echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
+          return 1
+        fi
+      ;;
+      *)
+        netcdf_compile_message
+        echo "$mode: WWATCH3_NETCDF=$WWATCH3_NETCDF not supported"; echo ' '
+        return 1
+      ;;
+    esac
+  fi
+
+  return 0
+  }
+
+# 1.f.3 NetCDF check api function
+
+  netcdf_check_api () {
+
+  mode=$1 #must be ERROR or WARNING
+
+  if [ -n "`grep NC4 $switch_file`" ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3)
+        netcdf_compile_message
+        echo "$mode: WWATCH3_NETCDF=NC3 incompatible with NC4 switch"; echo ' '
+        return 1
+      ;;
+      NC4)
+        if [ "`$NETCDF_CONFIG --has-nc4`" = 'no' ]
+        then
+          netcdf_compile_message
+          echo "$mode: NetCDF-4 API not enabled (required by NC4 switch)"; echo ' '
+          return 1
+        fi
+      ;;
+    esac
+  fi
+
+  return 0
+  }
+
+# 1.f.4 Check for NetCDF compile
+
+  if [ $default_mode -eq 1 ]
+  then
+    if ! netcdf_check_compile WARNING
+    then
+      echo "NetCDF pre- and post-processing programs ($cdf_programs)"
+      echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
+      echo "Continuing with compile of non-NetCDF programs ..."; echo ' '
+      progs="$reg_programs"
+    fi
+  else
+    nc_compile=0
+    for prog in $cdf_programs
+    do
+      if [ -n "`echo $progs | grep $prog`" ]
+      then
+        nc_compile=1
+      fi
+    done
+    if [ $nc_compile -eq 1 ]
+    then
+      if ! netcdf_check_compile ERROR
+      then
+        echo "NetCDF pre- and post-processing programs ($cdf_programs)"
+        echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
+        echo "Now exiting ..."; echo ' '
+        exit 1
+      fi
     fi
   fi
 
-# 1.e.4 Check NetCDF-4 API is required and available
-  if [ $nc_compile -eq 1 ]
-  then
-    if [ ! -f $main_dir/bin/switch ]
-    then
-      echo "ERROR: switch file not found"
-      exit 1
-    fi
-    if [ -n "`grep NC4 $main_dir/bin/switch`" ]
-    then
-      case $WWATCH3_NETCDF in
-        NC3)
-          echo "ERROR: WWATCH3_NETCDF=NC3 incompatible with NC4 switch"
-          netcdf_compile_message
-          exit 1
-        ;;
-        NC4)
-          if [ "`$NETCDF_CONFIG --has-nc4`" = 'no' ]
-          then
-            echo "ERROR: NetCDF-4 API not enabled (required by NC4 switch)"
-            netcdf_compile_message
-            exit 1
-          fi
-        ;;
-      esac
-    fi
-  fi
-
-# 1.f Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.g Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
 
   if test ! -d $temp_dir
   then
     if ! `mkdir -p $temp_dir`
     then
-      echo ' ' ; echo "      *** Cannot create $temp_dir ***" ; echo ' '
+      echo ' ' ; echo "   *** Cannot create $temp_dir ***" ; echo ' '
       exit 1
     fi
   fi
@@ -239,19 +294,13 @@ EOF
   rm -f *.l
   cd $main_dir/ftn
 
-# 1.g Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  if test ! -f $main_dir/bin/switch
-  then
-    echo ' ' ; echo "      *** switch file not found ***" ; echo ' '
-    exit 1
-  fi
+# 1.h Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   make_make='y'
-  if test -f $main_dir/bin/switch.old
+  if test -f $switch_file_old
   then
     if test -f $main_dir/ftn/makefile && \
-       test -z "`diff $main_dir/bin/switch $main_dir/bin/switch.old`"
+       test -z "`diff $switch_file $switch_file_old`"
     then
       make_make='n'
     fi
@@ -262,14 +311,14 @@ EOF
     echo 'Making makefile ...'
     if $main_dir/bin/make_makefile.sh
     then
-      cp $main_dir/bin/switch $main_dir/bin/switch.old
+      cp $switch_file $switch_file_old
     else
       exit 1
     fi
   fi
   echo ' '
 
-# 1.h Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.i Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   aPb="$main_dir/bin"     # path containing shell scripts
   aPo="$main_dir/obj"     # path containing .o files

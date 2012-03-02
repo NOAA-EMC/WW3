@@ -42,7 +42,10 @@
 
 # 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
-  if test -f $ww3_env
+  if [ ${WWATCH3_DIR} ]
+  then
+    main_dir=${WWATCH3_DIR}
+  elif test -f $ww3_env
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift
     main_dir="$*"
