@@ -665,6 +665,7 @@
             WRITE(NDSBUL,974) BHSDROP, BHSMIN 
 !/NCO             NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
 !/NCO             WRITE(NDSCBUL,961)
+!/NCO             WRITE(NDSCBUL,962)
           ENDIF
         ENDDO
       ENDIF
@@ -738,6 +739,12 @@
                ' --------------------------------------------------')
 !/NCO  961 FORMAT ('----------------------------------------',              &
 !/NCO              '---------------------------')
+!/NCO  962 FORMAT ( 'DD  = Day of Month'/                                   &
+!/NCO        'HH  = Hour of Day'/                                           &
+!/NCO        'HS  = Total Significant Wave Height (feet)'/                  &
+!/NCO        'SS  = Significant Wave Height of separate system (feet)'/     &
+!/NCO        'PP  = Peak Period of separate system (whole seconds)'/        &
+!/NCO        'DDD = Mean Direction of separate system (degrees,"from")')
   971 FORMAT (' +-------+-----------+-----------------+',             &
              '-----------------+-----------------+----',              &
              '-------------+-----------------+--------',              &
@@ -1942,9 +1949,6 @@
 
                         WRITE (NDSBUL,973) ASCBLINE
 !/NCO                         WRITE (NDSCBUL,963) CASCBLINE
-                        IF (IOUT .EQ. NOUT) WRITE (NDSBUL,971)
-!/NCO                         IF (IOUT .EQ. NOUT) WRITE (NDSCBUL,961)
- 
                      ENDIF
                       IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
                         ICSV = 0 
@@ -2017,12 +2021,6 @@
 !/NCO                       ' SS PP DDD SS PP DDD SS PP DDD')
 !/NCO  961 FORMAT ('----------------------------------------',              &
 !/NCO              '---------------------------')
-!/NCO  962 FORMAT ( 'DD  = Day of Month'/                                   &
-!/NCO        'HH  = Hour of Day'/                                           &
-!/NCO        'HS  = Total Significant Wave Height (feet)'/                  &
-!/NCO        'SS  = Significant Wave Height of separate system (feet)'/     &
-!/NCO        'PP  = Peak Period of separate system (whole seconds)'/        &
-!/NCO        'DDD = Mean Direction of separate system (degrees,"from")')
 !/NCO  963 FORMAT (A)
 !
  970 FORMAT ( '  Location : ',A,' (',F5.2,A,1X,F6.2,A,')'/            &
