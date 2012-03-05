@@ -12,6 +12,7 @@
 !/    03-Sep-2010 : Clean up                            ( version 3.14.IFREMER )
 !/    31-May-2011 : Adding variable reflections         ( version 4.01 )
 !/    02-Nov-2011 : Compatibility with unst. grids      ( version 4.04 )
+!/    24-Fev-2012 : Correction of angle in fluxes       ( version 4.05 )
 !/ 
 !  1. Purpose :
 !
@@ -155,7 +156,8 @@
       LOGICAL, SAVE   :: FIRST = .TRUE.
        
       REAL            :: R0, R1, R2, R3, R4, R2X, R2Y
-      REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, MICHEFAC
+      REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, &
+                         RAMP1, RAMP2, MICHEFAC, SLOPE
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -168,20 +170,20 @@
 !
       S = 0.
 
-      RAMP0=1.
-      RAMP=RAMP0
       NRS=NINT(REFPARS(8))
       IF (REFPARS(6).GT.0) THEN
 !
-! This is the Miche parameter for a beach slope of REFPARS(7)  (default is 0.25)
+! This is the Miche parameter for a beach slope of REFLC(3) 
 !
-        MICHEFAC=0.0001*GRAV**2*(REFPARS(7)**5)/(EMEAN*FMEAN**4)
-        RAMP0=MIN(0.35*(ALOG10(MICHEFAC)+5)+0.2*MICHEFAC,1.2)  ! IF REFLC(1)=1, 0.30 should be 0.001
+        SLOPE=MAX(0.001,REFLC(3))
+        MICHEFAC=0.0001*GRAV**2*(SLOPE**5)  &
+                   /(MAX(EMEAN,1E-4)*MAX(FMEAN,0.001)**4)
+        RAMP0=0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC  ! IF REFLC(1)=1, 0.07 should be 0.007
       ELSE
         RAMP0=1.
         ENDIF
 
-
+! WRITE(6,*) 'TEST:',IX,REFPARS,'##',REFLC,'MICHE:',MICHEFAC
 !
 ! 2.  Shoreline reflection =============================================== *
 !
@@ -198,9 +200,12 @@
 ! Includes linear frequency dependence (see Elgar et al. JPO 1994)
 !       
           IF (REFPARS(6).GT.0) THEN
-            RAMP=MIN(1.0,TPI*FMEAN/SIG(IK))*RAMP0
+            RAMP=(MAX((0.75*TPI*FMEAN/SIG(IK)),1.)**REFPARS(10))*RAMP0
+            RAMP1=MIN(REFPARS(9),REFLC(1)*RAMP)
+            RAMP2=MIN(REFPARS(9),REFLC(2)*RAMP)
           ELSE
-            RAMP=RAMP0
+            RAMP1=RAMP0*REFLC(1)
+            RAMP2=RAMP0*REFLC(2)
             END IF
 !
 ! Special treatment for unstructured grids
@@ -213,7 +218,7 @@
             DO ITH=1, NTH
               R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
               R1=IOBPD(ITH,IX)
-              R2=REFLC(1)*RAMP*A(ITH,IK)
+              R2=RAMP1*A(ITH,IK)
               IF (R1.GT.0.AND.R2.GT.0) THEN 
 !
 ! Determines direction of specular reflection: th3=pi+2*n-th1  
@@ -257,7 +262,7 @@
 !
             DO ITH=1, NTH
               R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
-              R2=REFLC(1)*RAMP*A(ITH,IK)
+              R2=RAMP1*A(ITH,IK)
               IF (R1.GT.0.AND.R2.GT.0) THEN 
                 DO ITH2=1,NTH
 !
@@ -274,46 +279,29 @@
                     IF (R4.GT.0.) THEN 
 !
 ! Tests the type of shoreline geometry
-! NB: REFLD(3) or REFLD(4) is equal to 1 if the sea point is between two land points 
+! NB: REFLD(3) or REFLD(4) is equal to 1 if the reflection is applied (real land neighbor)
                       SELECT CASE (REFLD(2))
                       CASE (0)
                    ! Sharp corner: broad reflection
-                          IF (REFLD(3).EQ.0)      & 
-                            S(ISPEC)=S(ISPEC)+    &
-                            R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*FAC1
-                          IF (REFLD(4).EQ.0)      & 
-                            S(ISPEC)=S(ISPEC)+ &
-                            R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*FAC1
+                          S(ISPEC)=S(ISPEC)+    &
+                            REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*FAC1   &
+                           +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*FAC1
                       CASE (1)
                    ! mild corner: average reflection
-                          IF (REFLD(3).EQ.0)      & 
-                            S(ISPEC)=S(ISPEC)+    &
-                            R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*ABS(R4)*FAC2
-                          IF (REFLD(4).EQ.0)      & 
-                            S(ISPEC)=S(ISPEC)+    &
-                            R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*ABS(R4)*FAC2
+!
+                          S(ISPEC)=S(ISPEC)+    &
+                            REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*ABS(R4)*FAC2 &
+                          + REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*ABS(R4)*FAC2
                       CASE (2)
                    ! straight coast: narrow reflection
-!
 ! Specular for tests 
-!               
+!                   S(ISPEC)=S(ISPEC)+REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX)  &
+!                                    +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
 !
-!  According to the shoreline direction, changes the 
-!  numerical schemes (due to neighbors) in order to 
-!  account for along-coast advection
-!          
-                          IF (REFLD(3).EQ.0)      & 
-!
-! Specular for tests 
-!                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX)
-                            S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
+                           S(ISPEC)=S(ISPEC)+REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
+                                                *(R4**NRS) *FAC3                          & 
+                                            +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
                                                 *(R4**NRS) *FAC3
-!
-! Specular for tests 
-!                   S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
-                          IF (REFLD(4).EQ.0)      & 
-                            S(ISPEC)=S(ISPEC)+R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
-                                               *(R4**NRS) *FAC3
                         END SELECT
                       END IF ! (R4.GT.0.)
                     END IF  ! (R3.LT.0) 
@@ -331,10 +319,10 @@
 !
       IF (    ((REFPARS(2).GT.0.).AND.((TRNX+TRNY).LT.2))     &
         .OR.((REFPARS(4).GT.0.).AND.(BERG.GT.0)       )   ) THEN 
-        R2X=  RAMP*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
-            + RAMP*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
-        R2Y=  RAMP*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
-            + RAMP*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
+        R2X=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
+            + RAMP2*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
+        R2Y=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
+            + RAMP2*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
         FAC1=1/(0.5*REAL(NTH))
         DO IK=1, NK
           DO ITH=1, NTH
