@@ -1431,26 +1431,39 @@ tail in eq. (\ref{eq:tauhfint}), which requires the estimation of a
 being the energy level of the tail.
 
 The swell dissipation parameterization of \cite{art:ACC08} is activated by setting $s_0$ to a non-zero integer value, and is given
-by
+by a combination of the viscous boundary layer value, 
 
 \begin{equation}
-\cS_{out}\left(k,\theta\right) = - s_5 \frac{\rho_a}{\rho_w}\left\{ 2 k \sqrt{2
+\cS_{out,vis}\left(k,\theta\right) = - s_5 \frac{\rho_a}{\rho_w}\left\{ 2 k \sqrt{2
 \nu \sigma}\right\}  N \left(k,\theta\right) \label{Sds_turb},\label{eq:Dore}
 \end{equation}
 
 \noindent
-if the air-sea boundary layer significant Reynolds number $\mathrm{Re} = 2
-u_{\mathrm{orb},s} H_s / \nu_{a}$ is smaller than a threshold $\mathrm{Re}_c$, and otherwise
-
+with the turbulent boundary layer expression 
 \begin{equation}
-\cS_{out} \left(k,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
+\cS_{out,tur} \left(k,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
 \sigma^2 u_{\mathrm{orb},s} / g \right\}
  N\left(k,\theta\right) \label{Sds_visc}.\label{eq:swell_turb}
 \end{equation}
 
 \noindent
-The significant surface orbital velocity is defined by
+giving the full term 
+\begin{equation}
+\cS_{out} \left(k,\theta\right) = r_{vis} \cS_{out,vis}\left(k,\theta\right)  + 
+ r_{tur} \cS_{out,tur}\left(k,\theta\right)  
+ \label{eq:swell_comb}
+\end{equation}
 
+\noindent
+where the two weights $ r_{vis} $ and $r_{tur}$ are defined from 
+a modified  air-sea boundary layer significant Reynolds number $\mathrm{Re} = 2
+u_{\mathrm{orb},s} H_s / \nu_{a}$ 
+
+\begin{eqnarray}
+ r_{vis} &=& 0.5 (1- \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7) \\
+ r_{tur}&=& 0.5 (1+ \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7) 
+\end{eqnarray}
+The significant surface orbital velocity is defined by
 \begin{equation} u_{\mathrm{orb},s} = 2 \left [  \int \!\!\!\! \int
       \sigma^3 \: N(k,\theta) \: dk d\theta \right ] ^{1/2}
       \: . \label{eq:ub_orbs} \end{equation}
@@ -1466,7 +1479,7 @@ With $s_6=1$, a constant threshold close to $2 \times 10^5$ provides similar -- 
 \begin{landscape}
 \begin{table} \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var.       & namelist & TEST441b & TEST441f & TEST405  & TEST500 \\
+Par.         &  WWATCH var.       & namelist & TEST451 & TEST451f & TEST405  & TEST500 \\
 \hline
   $z_u$ &  ZWND                       & SIN4 & 10.0    & 10.0    & 10.0      & 10.0 \\
   $\alpha_0$ &  ALPHA0                & SIN4 & 0.0095  & 0.0095   & 0.0095    &  0.0095 \\
@@ -1477,19 +1490,21 @@ Par.         &  WWATCH var.       & namelist & TEST441b & TEST441f & TEST405  & 
   $s_1$ &  SWELLF                     & SIN4 & 0.8     & 0.8     & 0.8       &  0.8 \\
   $s_2$ &  SWELLF2                    & SIN4 & -0.018  & -0.018  & -0.018    &  -0.018 \\
   $s_3$ &  SWELLF3                    & SIN4 &  0.015  &  0.015  &  0.015    &  0.015 \\
-  $s_3$ &  SWELLF4                    & SIN4 & $10^5$  & $10^5$  & $10^5$    & $10^5$  \\
+  $\mathrm{Re}_c$ &  SWELLF4                    & SIN4 & $10^5$  & $10^5$  & $10^5$    & $10^5$  \\
   $s_5$ &  SWELLF5                    & SIN4 & 1.2     & 1.2     & 1.2       &  1.2 \\
-  $s_6$ &  SWELLF6                    & SIN4 & 0.0     & 0.0     & 0.0       &  0.0 \\
+  $s_6$ &  SWELLF6                    & SIN4 & 0.      & 0.      & 0.        & 0.   \\
+  $s_7$ &  SWELLF7                    & SIN4 & 2.3$\times 10^5$ & 2.3$\times 10^5$  & 0.0       &  0.0 \\
   $z_r$ &  Z0RAT                      & SIN4 & 0.04    & 0.04    & 0.04      &  0.04 \\
   $z_{0,\max}$ &  Z0MAX               & SIN4 & 1.002   & 1.002   &\textbf{0.002}&  1.002 \\
 \hline
 \end{tabular}
  \end{center}
-\caption{Parameter values for TEST441b, TEST441f, TEST405 and TEST500 source term
-parameterizations that can be reset via the SIN4 namelist. TEST441b generally provides the best 
+\caption{Parameter values for TEST451, TEST451f, TEST405 and TEST500 source term
+parameterizations that can be reset via the SIN4 namelist. TEST451 generally provides the best 
 results at global scale when using ECMWF winds, with the only serious problem being a low bias for $H_s > 8$~m. 
-TEST441f corresponds to a retuning for CSFR wind reanalysis from NCEP/NCAR \citep{art:CFSR10}, and 
-has almost no bias all the way to $H_s = 15$~m.
+TEST451f corresponds to a retuning for CSFR wind reanalysis from NCEP/NCAR \citep{art:CFSR10}, and 
+has almost no bias all the way to $H_s = 15$~m. Simumations and papers prepared before March 2012, 
+used a slightly different TEST441 and TEST441f which can be recovered by setting SWELLF7 to 0. 
 TEST405 
 is slightly superior for short fetches, and TEST500 is intermediate in terms of quality 
 but it also includes depth-induced breaking in the same formulation, 
@@ -1617,7 +1632,7 @@ We shall
 take $r_{\mathrm{cu}}=0.5$, and $C_{\mathrm{cu}}$ is a tuning coefficient expected to be of order 1, which also corrects for errors in the estimation of $l$. 
 \begin{table} \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var. & namelist & TEST441b & TEST405  & TEST500 \\
+Par.         &  WWATCH var. & namelist & TEST451 & TEST405  & TEST500 \\
 \hline
   $p$                               &  WNMEANP        & SDS4 & 0.5                   & 0.5 &  0.5    \\
   $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5                   & 0.5 &  0.5 \\
