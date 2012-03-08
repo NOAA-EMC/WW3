@@ -43,6 +43,13 @@
   cd
   home_dir=`pwd`
 
+  echo 'Use default wwatch3.env (presumably in $HOME) to set isntall directory? [Y or N]'
+  echo ' (If N, install will be on the current dir independent of default wwatch3.env)'
+  read sww3dir
+
+  if [ "${sww3dir}" == "Y" ] || [ "${sww3dir}" == "y" ] 
+  then
+ 
   if [ -s $ww3_env ]
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
@@ -62,6 +69,8 @@
     cd $main_dir
     main_dir=`pwd`
     echo ' '
+  fi
+
   fi
 
   echo "Installing in $main_dir"
@@ -86,32 +95,47 @@
   echo ' '
   echo 'Setting up environment variables.'
 
-  if [ -f $home_dir/$ww3_env ]
+  if [ "${sww3dir}" == "Y" ] || [ "${sww3dir}" == "y" ] 
   then
     echo "   Setup file $ww3_env found in $home_dir"
 
     set `grep WWATCH3_LPR $home_dir/$ww3_env` ; shift
     prnt="$*"
-    echo "      Printer (listings)       : $prnt"
 
     set `grep WWATCH3_F77 $home_dir/$ww3_env` ; shift
     fort="$*"
-    echo "      FORTRAN comp. (aux only) : $fort"
 
     set `grep WWATCH3_CC  $home_dir/$ww3_env` ; shift
     cc="$*"
-    echo "      C Compiler (aux only)    : $cc"
 
     set `grep WWATCH3_TMP $home_dir/$ww3_env` ; shift
     temp_dir="$*"
-    echo "      Scratch directory        : $temp_dir"
 
     set `grep WWATCH3_SOURCE $home_dir/$ww3_env` ; shift
     s_source="$*"
-    echo "      Save source code         : $s_source"
 
     set `grep WWATCH3_LIST $home_dir/$ww3_env` ; shift
     s_list="$*"
+
+  else
+    echo '   No setup file found. Variables being set to defaults: '
+    prnt=printer
+    fort=f77
+    cc=cc
+    temp_dir=${main_dir}/tmp
+    s_source=yes
+    s_list=yes
+    do_set='n'
+
+    echo 'Creating local wwatch3.env for use in regression testing'
+    ww3_env=${main_dir}/wwatch3.env 
+  fi
+    
+    echo "      Printer (listings)       : $prnt"
+    echo "      FORTRAN comp. (aux only) : $fort"
+    echo "      C Compiler (aux only)    : $cc"
+    echo "      Scratch directory        : $temp_dir"
+    echo "      Save source code         : $s_source"
     echo "      Save listings            : $s_list"
 
     OK="$NULL"
@@ -125,28 +149,6 @@
        'n'|'N') do_set='n' ;;
       esac
     done
-  else
-    echo '   No setup file found.'
-    prnt=printer
-    fort=f77
-    cc=cc
-    temp_dir=
-    if [ -d /tmp ]
-    then
-      if [ -n "$user" ]
-      then
-        temp_dir=/tmp/$user
-      else
-        if [ -n "$USER" ]
-        then
-          temp_dir=/tmp/$USER
-        fi
-      fi
-    fi
-    s_source=no
-    s_list=no
-    do_set='y'
-  fi
 
   if [ "$do_set" = 'y' ]
   then
@@ -236,6 +238,7 @@
       echo "      Save listings            : $s_list"
       echo -n "   New settings OK ? [y/n] "
       read OK
+      ww3_env=${main_dir}/wwatch3.env 
     done
   fi
   echo ' '
@@ -348,7 +351,7 @@
 
     cd svn/model
 
-    for dir in aux bin ftn inp .svn nrltest test
+    for dir in aux bin ftn inp .svn test
     do
       if [ ! -d $dir ]
       then
@@ -383,8 +386,8 @@
 
   echo ' '
   echo 'Checking/making directories :'
-# First check and make manual and guide directories
-  for dir in manual guide
+# First check and make regtests, manual and guide directories
+  for dir in manual guide regtests
   do
     if [ ! -d ${dir} ]
     then
@@ -393,7 +396,7 @@
     fi
   done
 # Now make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp nrltest test work
+  for dir in aux bin ftn obj mod exe inp test work
   do
     if [ ! -d $dir ]
     then
@@ -424,11 +427,12 @@
   chmod 744 ww3_t* mww3_test_*
   chmod 755 mww3_data_*
 
-# Include nrltest in the loop
-  cd $main_dir/svn/model/nrltest/bin
+# Include regtests in the loop
+  cd $main_dir/svn/regtests/bin
   chmod 744 *
 #  chmod 755 mww3_data_*
 
+#Old test loop
   for dir in 00 01 02 03
   do
     cd $main_dir/svn/model/test/mww3_data_$dir
@@ -445,6 +449,25 @@
     chmod 644 ww3_*
 
   done
+
+# New regtests loop
+    for dir in 00 01 02 03
+  do
+    cd $main_dir/svn/regtests/mww3_data_$dir
+    if [ "$dir" = '00' ]
+    then
+      chmod 644 gfs*
+      chmod 644 ice*
+    else
+      chmod 644 *.bot
+      chmod 644 *.obs*
+      chmod 644 *.mask
+      chmod 644 *.gs
+    fi
+    chmod 644 ww3_*
+
+  done
+
 
 # --------------------------------------------------------------------------- #
 # 3. Set-up / update aux directory                                            #
@@ -851,26 +874,26 @@
   ln -sf $main_dir/bin/switch .
 
 # --------------------------------------------------------------------------- #
-# 7.1 Set-up / update nrltest directory                                           #
+# 7.1 Set-up / update regtests directory                                           #
 # --------------------------------------------------------------------------- #
 
-  cd $main_dir/svn/model/nrltest
+  cd $main_dir/svn/regtests
   tmp_dirs=`ls`
 
   for dir in $tmp_dirs
   do
-    if [ ! -d $main_dir/nrltest/$dir ]
+    if [ ! -d $main_dir/regtests/$dir ]
     then
-      mkdir $main_dir/nrltest/$dir
+      mkdir $main_dir/regtests/$dir
       echo "   Making directory $dir ..."
     else
       echo "   Checking directory $dir ..."
     fi
 
-    cd $main_dir/svn/model/nrltest/$dir
+    cd $main_dir/svn/regtests/$dir
     files=`ls -F | grep -v \/`
     ndirs=`ls -F | grep \/`
-    cd $main_dir/nrltest/$dir
+    cd $main_dir/regtests/$dir
     nr_old=0
 
     if [ -z "$files" ]
@@ -886,7 +909,7 @@
           nr_new=`expr $nr_new + 1`
           echo "      New link $file ..."
         fi
-        ln -sf $main_dir/svn/model/nrltest/$dir/$file
+        ln -sf $main_dir/svn/regtests/$dir/$file
         tmp_files=$all_files
         all_files=`echo $tmp_files | sed -e "s/$file//g"`
       done
@@ -898,17 +921,17 @@
 
     for ndir in $ndirs
     do
-      if [ ! -d $main_dir/nrltest/$dir/$ndir ]
+      if [ ! -d $main_dir/regtests/$dir/$ndir ]
       then
-        mkdir $main_dir/nrltest/$dir/$ndir
+        mkdir $main_dir/regtests/$dir/$ndir
         echo "   Making directory $dir/$ndir ..."
       else
         echo "   Checking directory $dir/$ndir ..."
       fi
 
-      cd $main_dir/svn/model/nrltest/$dir/$ndir
+      cd $main_dir/svn/regtests/$dir/$ndir
       files=`ls -F | grep -v \/`
-      cd $main_dir/nrltest/$dir/$ndir
+      cd $main_dir/regtests/$dir/$ndir
       nr_old=0
 
       if [ -z "$files" ]
@@ -924,7 +947,7 @@
             nr_new=`expr $nr_new + 1`
             echo "      New link $file ..."
           fi
-          ln -sf $main_dir/svn/model/nrltest/$dir/$ndir/$file
+          ln -sf $main_dir/svn/regtests/$dir/$ndir/$file
           tmp_files=$all_files
           all_files=`echo $tmp_files | sed -e "s/$file//g"`
         done
@@ -938,7 +961,7 @@
 
   done
 
-  cd $main_dir/nrltest
+  cd $main_dir/regtests
 
   chmod 744 bin/*
 
