@@ -72,6 +72,7 @@
 !/    25-Jun-2011 : Adding movable bed friction         ( version 4.01 )
 !/    16-Sep-2011 : Clean up.                           ( version 4.05 )
 !/    01-Dec-2011 : New namelist for reflection         ( version 4.05 )
+!/    01-Mar-2012 : Bug correction for NLPROP in ST2    ( version 4.05 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

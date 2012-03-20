@@ -638,27 +638,27 @@
 !/PALM !
 !/PALM IF (PALMED.EQ.0) THEN
 
-              CALL W3UCUR ( FLFRST )
+            CALL W3UCUR ( FLFRST )
 
 !/PALM ENDIF
-           IF (GTYPE .NE. UNGTYPE) THEN       
-             CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
-             CALL W3DZXY(CY(1:NSEA),'m/s',DCYDX, DCYDY) !CY GRADIENT
-           ELSE
-             CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
-             CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
-             UGDTUPDATE=.TRUE.
-             END IF      
+            IF (GTYPE .NE. UNGTYPE) THEN       
+              CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
+              CALL W3DZXY(CY(1:NSEA),'m/s',DCYDX, DCYDY) !CY GRADIENT
+            ELSE
+              CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
+              CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
+              UGDTUPDATE=.TRUE.
+              END IF      
 !
-           ELSE IF ( FLFRST ) THEN
+            ELSE IF ( FLFRST ) THEN
               UGDTUPDATE=.TRUE.
               CX = 0.
               CY = 0.
-           END IF ! FLCUR 
+              END IF ! FLCUR 
 !
           IF ( FLWIND ) THEN
-               IF ( FLFRST ) ASF = 1.
-               CALL W3UWND ( FLFRST, VGX, VGY )
+            IF ( FLFRST ) ASF = 1.
+              CALL W3UWND ( FLFRST, VGX, VGY )
             ELSE IF ( FLFRST ) THEN
               U10    = 0.01
               U10D   = 0.
@@ -789,7 +789,7 @@
 
 !/SEC1      DO ISEC1=1,NITERSEC1
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
-!/SEC1        WRITE(6,*) 'ITER:',ISEC1,NITERSEC1, DTG*ISEC1,DTMAX,DTGTEMP
+!/SEC1        WRITE(6,*) 'SUBSECOND ITERATION:',ISEC1,NITERSEC1, DTG*ISEC1,DTMAX,DTGTEMP
 !
           FACTH  = DTG / (DTH*REAL(NTLOC))
           FACK   = DTG / REAL(NTLOC)
@@ -851,6 +851,7 @@
 !/MPI                END IF
 !
 !/OMP0/!$OMP PARALLEL DO PRIVATE (ISPEC,FIELD) SCHEDULE (DYNAMIC,1)
+
               DO ISPEC=1, NSPEC
                 IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
                   CALL W3GATH ( ISPEC, FIELD )
@@ -972,7 +973,6 @@
 !/REF1          REFLEC(4)=BERG(ISEA)*REFLEC(4)
 !/REF1          REFLED=REFLD(:,ISEA)
 !/BT4           D50=SED_D50(ISEA)
-
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &

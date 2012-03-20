@@ -80,6 +80,8 @@
 #       Note that all but GrADS output is forced to big endian data
 
 # opt="-c -list -O3 -unroll -tpp7 -Zp8 -module $path_m"
+# debug
+# opt="-c -CB -O0 -fpe0 -traceback  -assume byterecl -module $path_m"
  opt="-c  -O3 -assume byterecl -module  $path_m"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
@@ -89,6 +91,7 @@
 
   if [ "$mpi_mod" = 'yes' ]
   then
+#    opt="-c -CB -O0 -fpe0 -traceback -assume byterecl  -convert big_endian -module   $path_m"
     opt="-c -fast -assume byterecl  -convert big_endian -module   $path_m"
     comp=mpiifort
   else

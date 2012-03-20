@@ -518,8 +518,8 @@
 
       INTEGER(KIND=4), ALLOCATABLE       :: TRIGP2(:,:)
 
-      CHARACTER*80            :: varnm(8),varnl(8),varnm2(8),varnl2(8)
-      CHARACTER*120           :: varns(8),str2
+      CHARACTER*80            :: varnm(8),varnm2(8),varnl(8),varnl2(8)
+      CHARACTER*120           :: varns(8),varns2(8),varnc(8),varng(8),str2
       CHARACTER*20            :: unitvar(3),FORMAT1
       CHARACTER*30            :: startdate, stopdate
 
@@ -639,8 +639,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DW(1:NSEA)        &
                                                           , MAPSF, X1 )
             varnm(1)='Depth'
-            varnl(1)='water_depth'
-            varns(1)='water_depth'
+            varnl(1)='depth'
+            varns(1)='depth'
+            varng(1)='depth'
+            varnc(1)=''
             vmin = -90000 
             vmax = 140000
 !
@@ -670,10 +672,14 @@
             NFIELD=2
             varnm(1)='U'
             varnm(2)='V'
-            varnl(1)='eastward_current'
-            varnl(2)='northward_current'
-            varns(1)='eastward_current'
-            varns(2)='northward_current'
+            varnl(1)='eastward current'
+            varnl(2)='northward current'
+            varns(1)='eastward_sea_water_velocity'
+            varns(2)='northward_sea_water_velocity'
+            varng(1)='eastward_sea_water_velocity'
+            varng(2)='northward_sea_water_velocity'
+            varnc(1)='cur=sqrt(U²+V²)'
+            varnc(2)='cur=sqrt(U²+V²)'
             vmin = -990
             vmax =  990
 !
@@ -707,6 +713,10 @@
             varnl(2)='northward_wind'
             varns(1)='eastward_wind'
             varns(2)='northward_wind'
+            varng(1)='eastward_wind'
+            varng(2)='northward_wind'
+            varnc(1)='wind=sqrt(U10²+V10²)'
+            varnc(2)='wind=sqrt(U10²+V10²)'
             vmin = -990
             vmax =  990
 !
@@ -718,8 +728,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AS(1:NSEA)        &
                                                       , MAPSF, X1 )
             varnm(1)='dt'
-            varnl(1)='air_sea_temperature_difference'
+            varnl(1)='air sea temperature difference'
             varns(1)='air_sea_temperature_difference'
+            varng(1)='air_sea_temperature_difference'
+            varnc(1)=''
             vmin = 0    
             vmax = 4000
 !
@@ -731,8 +743,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLV   , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wlv'
-            varnl(1)='water_level'
+            varnl(1)='sea surface height above sea level'
             varns(1)='sea_surface_height_above_sea_level'
+            varng(1)='sea_surface_height_above_sea_level'
+            varnc(1)=''
             vmin = 0 
             vmax = 10000
 !
@@ -744,8 +758,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
             NFIELD=1
             varnm(1)='CI'
-            varnl(1)='sea_ice_area_fraction'
+            varnl(1)='sea ice area fraction'
             varns(1)='sea_ice_area_fraction'
+            varng(1)='sea_ice_area_fraction'
+            varnc(1)=''
             vmin = 0
             vmax = 1000
 !
@@ -757,8 +773,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HS    , MAPSF, X1 )
             NFIELD=1
             varnm(1)='hs'
-            varnl(1)='significant_wave_height'
-            varns(1)='significant_height_of_wind_and_swell_waves' 
+            varnl(1)='significant height of wind and swell waves'
+            varns(1)='sea_surface_wave_significant_height' 
+            varng(1)='significant_wave_height'
+            varnc(1)=''
             vmin = 0 
             vmax = 32000
 
@@ -768,9 +786,11 @@
             UNITS  = 'm'
             ENAME  = '.l'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLM, MAPSF, X1 )
-            varnm(1)='l'
-            varnl(1)='mean_wave_length'
+            varnm(1)='wl'
+            varnl(1)='mean wave length'
             varns(1)='mean_wave_length' 
+            varng(1)='mean_wave_length' 
+            varnc(1)=''
             vmin = 0 
             vmax = 3200
 
@@ -784,9 +804,11 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T02, MAPSF, X1 )
             NFIELD=1
             varnm(1)='t02'
-            varnl(1)='mean_period_Tm02'
+            varnl(1)='mean period Tm02'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
 					  spectral_density_second_frequency_moment'
+            varng(1)='mean_period_tm02'
+            varnc(1)=''
             vmin = 0
             vmax = 5000
 !
@@ -798,9 +820,11 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN, MAPSF, X1 )
             NFIELD=1
             varnm(1)='t'
-            varnl(1)='mean_period_Tm01'
+            varnl(1)='mean period Tm01'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					  _spectral_density_first_frequency_moment' 
+            varng(1)='mean_period_tm01'
+            varnc(1)=''
             vmin = 0 
             vmax = 5000
 !
@@ -812,9 +836,11 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN   , MAPSF, X1 )
             NFIELD=1
             varnm(1)='tm0m1'
-            varnl(1)='mean_period_Tm0-1'
+            varnl(1)='mean period Tm0-1'
             varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					  _spectral_density_inverse_frequency_moment'
+            varng(1)='mean_period_tm0m1'
+            varnc(1)=''
             vmin = 0
             vmax = 5000
 !
@@ -827,8 +853,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE, MAPSF, X1 )
             NFIELD=1
             varnm(1)='CgE'
-            varnl(1)='Wave_energy_flux'
+            varnl(1)='wave energy flux'
             varns(1)='sea_surface_wind_wave_energy_flux'
+            varng(1)='wave_energy_flux'
+            varnc(1)=''
             vmin = 0
             vmax = 9990
 !
@@ -840,8 +868,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FP0   , MAPSF, X1 )
             NFIELD=1
             varnm(1)='fp'
-            varnl(1)='wave_peak_frequency'
+            varnl(1)='wave peak frequency'
             varns(1)='sea_surface_wave_peak_frequency'
+            varng(1)='dominant_wave_frequency'
+            varnc(1)=''
             vmin = 0 
             vmax = 10000
 !
@@ -858,8 +888,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM   , MAPSF, X1 )
             NFIELD=1
             varnm(1)='dir'
-            varnl(1)='wave_mean_direction'
+            varnl(1)='wave mean direction'
             varns(1)='sea_surface_wave_from_direction'
+            varng(1)='wave_from_direction'
+            varnc(1)=''
             vmin = 0
             vmax = 3600
 !
@@ -871,8 +903,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THS   , MAPSF, X1 )
             NFIELD=1
             varnm(1)='spr'
-            varnl(1)='directional_spread'
+            varnl(1)='directional spread'
             varns(1)='sea_surface_wave_directional_spread'
+            varng(1)='directional_spread'
+            varnc(1)=''
             vmin = 0
             vmax = 900
 !
@@ -889,8 +923,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THP0  , MAPSF, X1 )
             NFIELD=1
             varnm(1)='dp'
-            varnl(1)='peak_direction'
-            varns(1)='peak_direction'
+            varnl(1)='peak direction'
+            varns(1)='sea_surface_wave_peak_direction'
+            varng(1)='dominant_wave_direction'
+            varnc(1)=''
             vmin = 0 
             vmax = 360
 !
@@ -902,8 +938,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHS(:,IPART), MAPSF, X1 )
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'hs',IPART 
-            WRITE(varnl(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
-            WRITE(varns(1),'(A,I1,A)') 'sea_surface_swell_',IPART,'_wave_significant_height'
+            WRITE(varnl(1),'(A,I1)') 'wave significant height partition ',IPART 
+            WRITE(varns(1),'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
+            WRITE(varng(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
+            varnc(1)=''
             vmin = 0 
             vmax = 32000
 !
@@ -915,8 +953,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTP(:,IPART), MAPSF, X1 )
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'tp',IPART 
-            WRITE(varnl(1),'(A,I1)') 'peak_period_swell_partition_',IPART 
-            WRITE(varns(1),'(A,I1,A)') 'sea_surface_swell_',IPART,'_wave_peak_period'
+            WRITE(varnl(1),'(A,I1)') 'peak period partition ',IPART 
+            WRITE(varns(1),'(A,I1)') 'sea_surface_wave_peak_period_partition_',IPART
+            WRITE(varng(1),'(A,I1)') 'dominant_wave_period_partition_',IPART
+            varnc(1)=''
             vmin = 0 
             vmax = 10000
 !
@@ -928,8 +968,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PLP(:,IPART), MAPSF, X1 )
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'lp',IPART 
-            varnl(1)='lp'
-            varns(1)='lp'
+            WRITE(varnl(1),'(A,I1)') 'mean wave length partition ',IPART 
+            WRITE(varns(1),'(A,I1)') 'mean_wave_length_partition_',IPART
+            WRITE(varng(1),'(A,I1)') 'mean_wave_length_partition_',IPART
+            varnc(1)=''
             vmin = 0 
             vmax = 10000
 !
@@ -946,8 +988,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTH(:,IPART), MAPSF, X1 )
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'th',IPART 
-            WRITE(varnl(1),'(A,I1)') 'mean_direction_swell_partition_',IPART 
-            WRITE(varns(1),'(A,I1,A)') 'sea_surface_swell_',IPART,'_wave_from_mean_direction'
+            WRITE(varnl(1),'(A,I1)') 'wave mean direction partition ',IPART 
+            WRITE(varns(1),'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
+            WRITE(varng(1),'(A,I1)') 'wave_from_direction_partition_',IPART
+            varnc(1)=''
             vmin = 0 
             vmax = 360
 !
@@ -959,8 +1003,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSI(:,IPART), MAPSF, X1 )
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'si',IPART 
-            WRITE(varnl(1),'(A,I1)') 'directional_spread_swell_partition_',IPART 
-            WRITE(varns(1),'(A,I1,A)') 'sea_surface_swell_',IPART,'_directional_spread'
+            WRITE(varnl(1),'(A,I1)') 'directional spread partition ',IPART 
+            WRITE(varns(1),'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
+            WRITE(varng(1),'(A,I1)') 'directional_spread_partition_',IPART
+            varnc(1)=''
             vmin = 0 
             vmax = 900
 !
@@ -972,8 +1018,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART), MAPSF, X1 )
             NFIELD=1
             WRITE(varnm(1),'(A2,I1)') 'ws',IPART
-            varnl(1)='wind_sea_fraction_in_partition'
-            varns(1)='wind_sea_fraction_in_partition'
+            WRITE(varnl(1),'(A,I1)') 'wind sea fraction in partition ',IPART 
+            WRITE(varns(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
+            WRITE(varng(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
+            varnc(1)=''
             vmin = 0 
             vmax = 1000
 !
@@ -985,8 +1033,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWST(:), MAPSF, X1 )
             NFIELD=1
             varnm(1)='wsf'
-            varnl(1)='wind_sea_fraction'
+            varnl(1)='wind sea fraction'
             varns(1)='wind_sea_fraction'
+            varng(1)='wind_sea_fraction'
+            varnc(1)=''
             vmin = 0 
             vmax = 1000
 !
@@ -998,8 +1048,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PNR(:), MAPSF, X1 )
             NFIELD=1
             varnm(1)='pnr'
-            varnl(1)='number_of_partitions'
-            varns(1)='sea_surface_wave_number_of_partitions'
+            varnl(1)='number of wave partitions'
+            varns(1)='number_of_wave_partitions'
+            varng(1)='number_of_wave_partitions'
+            varnc(1)=''
             vmin = 0 
             vmax = 100
 !
@@ -1016,8 +1068,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DTDYN , MAPSF, X1 )
             NFIELD=1
             varnm(1)='dtd'
-            varnl(1)='dynamic_time_step'
+            varnl(1)='dynamic time step'
             varns(1)='dynamic_time_step'
+            varng(1)='dynamic_time_step'
+            varnc(1)=''
             vmin = 0 
             vmax = 32000
 !
@@ -1029,8 +1083,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FCUT  , MAPSF, X1 )
             NFIELD=1
             varnm(1)='fc'
-            varnl(1)='cut_off_frequency'
+            varnl(1)='cut off frequency'
             varns(1)='cut_off_frequency'
+            varng(1)='cut_off_frequency'
+            varnc(1)=''
             vmin = 0 
             vmax = 8000
 !
@@ -1042,8 +1098,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLXYMAX  , MAPSF, X1 )
             NFIELD=1
             varnm(1)='cfx'
-            varnl(1)='maximum_cfl_for_spatial_advection'
+            varnl(1)='maximum cfl for spatial advection'
             varns(1)='maximum_cfl_for_spatial_advection'
+            varng(1)='maximum_cfl_for_spatial_advection'
+            varnc(1)=''
             vmin = 0 
             vmax = 32000
 !
@@ -1055,8 +1113,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLTHMAX  , MAPSF, X1 )
             NFIELD=1
             varnm(1)='cfd'
-            varnl(1)='maximum_cfl_for_direction_advection'
+            varnl(1)='maximum cfl for direction advection'
             varns(1)='maximum_cfl_for_direction_advection'
+            varng(1)='maximum_cfl_for_direction_advection'
+            varnc(1)=''
             vmin = 0 
             vmax = 32000
 !
@@ -1092,10 +1152,14 @@
             NFIELD=2
             varnm(1)='uust'
             varnm(2)='vust'
-            varnl(1)='eastward_friction_velocity'
-            varnl(2)='northward_friction_velocity'
+            varnl(1)='eastward friction velocity'
+            varnl(2)='northward friction velocity'
             varns(1)='eastward_friction_velocity'
             varns(2)='northward_friction_velocity'
+            varng(1)='eastward_friction_velocity'
+            varng(2)='northward_friction_velocity'
+            varnc(1)='ust=sqrt(uust²+vust²)'
+            varnc(2)='ust=sqrt(uust²+vust²)'
             vmin = -9900
             vmax =  9900
 !
@@ -1107,8 +1171,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CHARN(1:NSEA), MAPSF, X1 )
             NFIELD=1
             varnm(1)='cha'
-            varnl(1)='Charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
-            varns(1)='Charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
+            varnl(1)='charnock coefficient for surface roughness length for momentum in air'
+            varns(1)='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
+            varng(1)='charnock_coefficient'
+            varnc(1)=''
             vmin = 0
             vmax = 30000
 !
@@ -1123,8 +1189,10 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA) , MAPSF, X1 )
             NFIELD=1
             varnm(1)='faw'
-            varnl(1)='wind_to_wave_energy_flux'
-            varns(1)='wind_to_wave_energy_flux'
+            varnl(1)='wind to wave energy flux'
+            varns(1)='wind_mixing_energy_flux_into_sea_water'
+            varng(1)='wind_to_wave_energy_flux'
+            varnc(1)=''
             vmin = 0
             vmax = 9990
 !
@@ -1152,10 +1220,14 @@
             NFIELD=2
             varnm(1)='utaw'
             varnm(2)='vtaw'
-            varnl(1)='eastward_wave_supported_wind_stress'
-            varnl(2)='northward_wave_supported_wind_stress'
+            varnl(1)='eastward wave supported wind stress'
+            varnl(2)='northward wave supported wind stress'
             varns(1)='eastward_wave_supported_wind_stress'
             varns(2)='northward_wave_supported_wind_stress'
+            varng(1)='eastward_wave_supported_wind_stress'
+            varng(2)='northward_wave_supported_wind_stress'
+            varnc(1)='taw=sqrt(utaw²+vtaw²)'
+            varnc(2)='taw=sqrt(utaw²+vtaw²)'
             vmin = -32000
             vmax =  32000
 !
@@ -1168,15 +1240,19 @@
                                                       , MAPSF, XX )
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)     &
                                                       , MAPSF, XY )
-           NFIELD=2
-           varnm(1)='utwa'
-           varnm(2)='vtwa'
-           varnl(1)='eastward_wave_to_wind_stress'
-           varnl(2)='northward_wave_to_wind_stress'
-           varns(1)='eastward_wave_to_wind_stress'
-           varns(2)='northward_wave_to_wind_stress'
-           vmin = -32000
-           vmax =  32000
+            NFIELD=2
+            varnm(1)='utwa'
+            varnm(2)='vtwa'
+            varnl(1)='eastward wave to wind stress'
+            varnl(2)='northward wave to wind stress'
+            varns(1)='eastward_wave_to_wind_stress'
+            varns(2)='northward_wave_to_wind_stress'
+            varng(1)='eastward_wave_to_wind_stress'
+            varng(2)='northward_wave_to_wind_stress'
+            varnc(1)='twa=sqrt(utwa²+vtwa²)'
+            varnc(2)='twa=sqrt(utwa²+vtwa²)'
+            vmin = -32000
+            vmax =  32000
 !
           ELSE IF ( J .EQ. 34 ) THEN
             FLONE  = .TRUE.
@@ -1187,8 +1263,10 @@
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wcc'
-            varnl(1)='whitecap_coverage'         
-            varns(1)='whitecap_coverage'            
+            varnl(1)='whitecap coverage'         
+            varns(1)='whitecap_coverage'
+            varng(1)='whitecap_coverage'            
+            varnc(1)=''
             vmin = 0
             vmax = 10000
 !
@@ -1201,8 +1279,10 @@
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wcf'
-            varnl(1)='whitecap_foam_thickness' 
-            varns(1)='whitecap_foam_thickness' 
+            varnl(1)='whitecap foam thickness' 
+            varns(1)='whitecap_foam_thickness'
+            varng(1)='whitecap_foam_thickness' 
+            varnc(1)=''
             vmin = 0
             vmax = 10000
 !
@@ -1215,8 +1295,10 @@
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wch'
-            varnl(1)='significant_breaking_wave_height'
+            varnl(1)='significant breaking wave height'
             varns(1)='significant_breaking_wave_height'
+            varng(1)='significant_breaking_wave_height'
+            varnc(1)=''
             vmin = 0
             vmax = 32000
 !
@@ -1229,8 +1311,10 @@
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='wcm'
-            varnl(1)='whitecap_moment'  
+            varnl(1)='whitecap moment'  
             varns(1)='whitecap_moment'   
+            varng(1)='whitecap_moment'
+            varnc(1)=''
             vmin = 0
             vmax = 10000
 !
@@ -1263,10 +1347,14 @@
             NFIELD=2
             varnm(1)='uabr'
             varnm(2)='vabr'
-            varnl(1)='rms_of_bottom_displacement_amplitude_zonal'
-            varnl(2)='rms_of_bottom_displacement_amplitude_meridional'
+            varnl(1)='rms of bottom displacement amplitude zonal'
+            varnl(2)='rms of bottom displacement amplitude meridional'
             varns(1)='rms_of_bottom_displacement_amplitude_zonal'
             varns(2)='rms_of_bottom_displacement_amplitude_meridional'
+            varng(1)='rms_of_bottom_displacement_amplitude_zonal'
+            varng(2)='rms_of_bottom_displacement_amplitude_meridional'
+            varnc(1)='abr=sqrt(uabr²+vabr²)'
+            varnc(2)='abr=sqrt(uabr²+vabr²)'
             vmin = -18000
             vmax = 18000
 !
@@ -1298,10 +1386,14 @@
             NFIELD=2
             varnm(1)='uubr'
             varnm(2)='vubr'
-            varnl(1)='rms_of_bottom_velocity_amplitude_zonal'
-            varnl(2)='rms_of_bottom_velocity_amplitude_meridional'
+            varnl(1)='rms of bottom velocity amplitude zonal'
+            varnl(2)='rms of bottom velocity amplitude meridional'
             varns(1)='rms_of_bottom_velocity_amplitude_zonal'
             varns(2)='rms_of_bottom_velocity_amplitude_meridional'
+            varng(1)='rms_of_bottom_velocity_amplitude_zonal'
+            varng(2)='rms_of_bottom_velocity_amplitude_meridional'
+            varnc(1)='ubr=sqrt(uubr²+vubr²)'
+            varnc(2)='ubr=sqrt(uubr²+vubr²)'
             vmin = -18000 
             vmax = 18000
 !
@@ -1318,13 +1410,15 @@
                                                       , MAPSF, X2 )
             NFIELD=2
             varnm(1)='ripplex'
-            varnl(1)='ripple_wavelength_projected_on_west_east_direction'
-            varns(1)='ripple_wavelength_projected_on_west_east_direction'
-            vmin = 0
-            vmax = 30000
             varnm(2)='rippley'
-            varnl(2)='ripple_wavelength_projected_on_south_north_direction'
-            varns(2)='ripple_wavelength_projected_on_south_north_direction'
+            varnl(1)='eastward ripple wavelength'
+            varnl(2)='northward ripple wavelength'
+            varns(1)='eastward_ripple_wavelength'
+            varns(2)='northward_ripple_wavelength'
+            varng(1)='eastward_ripple_wavelength'
+            varng(2)='northward_ripple_wavelength'
+            varnc(1)='ripple=sqrt(ripplex²+rippley²)'
+            varnc(2)='ripple=sqrt(ripplex²+rippley²)'
             vmin = 0
             vmax = 30000
 !
@@ -1337,9 +1431,10 @@
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='fbb'
-            varnl(1)='wave_dissipation_in_bbl'
-            varns(1)=                                             &
-                'wave_energy_dissipation_in_bottom_boundary_layer'
+            varnl(1)='wave dissipation in bbl'
+            varns(1)='wave_energy_dissipation_in_bottom_boundary_layer'
+            varng(1)='wave_dissipation_in_bbl'
+            varnc(1)=''
             vmin = 0
             vmax = 9990
 !
@@ -1355,10 +1450,14 @@
             NFIELD=2
             varnm(1)='utbb'
             varnm(2)='vtbb'
-            varnl(1)='eastward_wave_to_bbl_stress'
-            varnl(2)='northward_wave_to_bbl_stress'
+            varnl(1)='eastward wave to bbl stress'
+            varnl(2)='northward wave to bbl stress'
             varns(1)='eastward_wave_to_bottom_boundary_layer_stress'
             varns(2)='northward_wave_to_bottom_boundary_layer_stress'
+            varng(1)='eastward_wave_to_bbl_stress'
+            varng(2)='northward_wave_to_bbl_stress'
+            varnc(1)='tbb=sqrt(utbb²+vtbb²)'
+            varnc(2)='tbb=sqrt(utbb²+vtbb²)'
             vmin = -32000 
             vmax =  32000
 !
@@ -1377,12 +1476,18 @@
             varnm(1)='Sxx'
             varnm(2)='Syy'
             varnm(3)='Sxy'
-            varnl(1)='Radiation_stress_component_Sxx'
-            varnl(2)='Radiation_stress_component_Syy'
-            varnl(3)='Radiation_stress_component_Sxy'
+            varnl(1)='Radiation stress component Sxx'
+            varnl(2)='Radiation stress component Syy'
+            varnl(3)='Radiation stress component Sxy'
             varns(1)='Radiation_stress_component_Sxx'
             varns(2)='Radiation_stress_component_Syy'
             varns(3)='Radiation_stress_component_Sxy'
+            varns(1)='radiation_stress_component_sxx'
+            varns(2)='radiation_stress_component_syy'
+            varns(3)='radiation_stress_component_sxy'
+            varnc(1)='S=sqrt(Sxx²+Sxy²+Syy²)'
+            varnc(2)='S=sqrt(Sxx²+Sxy²+Syy²)'
+            varnc(3)='S=sqrt(Sxx²+Sxy²+Syy²)'
             vmin = -3000.
             vmax = 3000     
 !
@@ -1398,10 +1503,14 @@
             NFIELD=2
             varnm(1)='utwo'
             varnm(2)='vtwo'
-            varnl(1)='eastward_wave_to_ocean_stress'
-            varnl(2)='northward_wave_to_ocean_stress'
+            varnl(1)='eastward wave to ocean stress'
+            varnl(2)='northward wave to ocean stress'
             varns(1)='eastward_wave_to_ocean_stress'
             varns(2)='northward_wave_to_ocean_stress'
+            varng(1)='eastward_wave_to_ocean_stress'
+            varng(2)='northward_wave_to_ocean_stress'
+            varnc(1)='two=sqrt(utwo²+vtwo²)'
+            varnc(2)='two=sqrt(utwo²+vtwo²)'
             vmin = -32000 
             vmax =  32000
 !
@@ -1413,9 +1522,11 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, JSMITH(1:NSEA)    &
                                                       , MAPSF, X1 )
             NFIELD=1
-            varnm(1)='J'
-            varnl(1)='radiation_pressure'
+            varnm(1)='bh'
+            varnl(1)='radiation pressure (Bernouilli Head)'
             varns(1)='radiation_pressure'
+            varng(1)='radiation_pressure'
+            varnc(1)=''
             vmin = 0 
             vmax = 1000
 !
@@ -1431,8 +1542,10 @@
                                                       , MAPSF, X1 )
             NFIELD=1
             varnm(1)='foc'
-            varnl(1)='wave_to_ocean_energy_flux'
+            varnl(1)='wave to ocean energy flux'
             varns(1)='wave_to_ocean_energy_flux'
+            varng(1)='wave_to_ocean_energy_flux'
+            varnc(1)=''
             vmin = 0 
             vmax = 9990
 !
@@ -1460,10 +1573,14 @@
             NFIELD=2
             varnm(1)='utus'
             varnm(2)='vtus'
-            varnl(1)='eastward_Stokes_transport'
-            varnl(2)='northward_Stokes_transport'
-            varns(1)='eastward_Stokes_transport'
-            varns(2)='northward_Stokes_transport'
+            varnl(1)='eastward stokes transport'
+            varnl(2)='northward stokes transport'
+            varns(1)='eastward_stokes_transport'
+            varns(2)='northward_stokes_transport'
+            varng(1)='eastward_stokes_transport'
+            varng(2)='northward_stokes_transport'
+            varnc(1)='tus=sqrt(utus²+vtus²)'
+            varnc(2)='tus=sqrt(utus²+vtus²)'
             vmin = -9900 
 !
           ELSE IF ( J .EQ. 48 ) THEN
@@ -1475,9 +1592,15 @@
                   NFIELD2=2
                   FSC2    = 0.0001
                   varnm2(1)='uusf'
-                  varnl2(1)='eastward_spectral_variance_of_surface_Stokes_drift'
                   varnm2(2)='vusf'
-                  varnl2(2)='northward_spectral_variance_of_surface_Stokes_drift'
+                  varnl2(1)='eastward spectral variance of surface stokes drift'
+                  varnl2(2)='northward spectral variance of surface stokes drift'
+                  varns2(1)='eastward_spectral_variance_of_surface_stokes_drift'
+                  varns2(2)='northward_spectral_variance_of_surface_stokes_drift'
+                  varng(1)='eastward_spectral_variance_of_surface_stokes_drift'
+                  varng(2)='northward_spectral_variance_of_surface_stokes_drift'
+                  varnc(1)='usf=sqrt(uusf²+vusf²)'
+                  varnc(2)='usf=sqrt(uusf²+vusf²)'
                   UNITS2  = 'm/s'
                   ENAME2  = '.usf'
                   I1F=US3DF(2)
@@ -1518,10 +1641,14 @@
             NFIELD=2
             varnm(1)='uuss'
             varnm(2)='vuss'
-            varnl(1)='eastward_surface_Stokes_drift'
-            varnl(2)='northward_surface_Stokes_drift'
-            varns(1)='eastward_surface_Stokes_drift'
-            varns(2)='northward_surface_Stokes_drift'
+            varnl(1)='eastward surface stokes drift'
+            varnl(2)='northward surface stokes drift'
+            varns(1)='eastward_surface_stokes_drift'
+            varns(2)='northward_surface_stokes_drift'
+            varng(1)='eastward_surface_stokes_drift'
+            varng(2)='northward_surface_stokes_drift'
+            varnc(1)='uss=sqrt(uuss²+vuss²)'
+            varnc(2)='uss=sqrt(uuss²+vuss²)'
             vmin = -9900 
             vmax =  9900
 !
@@ -1537,10 +1664,14 @@
             NFIELD=2
             varnm(1)='mssx'
             varnm(2)='mssy'
-            varnl(1)='east_west_mean_square_slope'
-            varnl(2)='south_north_mean_square_slope'
-            varns(1)='east_west_mean_square_slope'
-            varns(2)='south_north_mean_square_slope'
+            varnl(1)='eastward mean square slope'
+            varnl(2)='northward mean square slope'
+            varns(1)='eastward_mean_square_slope'
+            varns(2)='northward_mean_square_slope'
+            varng(1)='eastward_mean_square_slope'
+            varng(2)='northward_mean_square_slope'
+            varnc(1)='mss=mssx+mssy'
+            varnc(2)='mss=mssx+mssy'
             vmin = 0 
             vmax = 30000
 !
@@ -1554,10 +1685,14 @@
             NFIELD=2
             varnm(1)='mscx'
             varnm(2)='mscy'
-            varnl(1)='east_west_Phillips_constant'
-            varnl(2)='south_north_Phillips_constant'
-            varns(1)='east_west_Phillips_constant'
-            varns(2)='south_north_Phillips_constant'
+            varnl(1)='eastward phillips constant'
+            varnl(2)='northward phillips constant'
+            varns(1)='eastward_phillips_constant'
+            varns(2)='northward_phillips_constant'
+            varng(1)='eastward_phillips_constant'
+            varng(2)='northward_phillips_constant'
+            varnc(1)='msc=mscx+mscy'
+            varnc(2)='msc=mscx+mscy'
             vmin = 0 
             vmax = 30000
 !
@@ -1571,7 +1706,10 @@
               NFIELD2=1
               FSC2    = 0.0002
               varnm2(1)='Fp3D'
-              varnl2(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+              varnl2(1)='base ten logarithm of power spectral density of equivalent surface pressure'
+              varns2(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+              varng(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
+              varnc(1)=''
               UNITS2  = 'log10(m4s+0.01)'
               ENAME2  = '.p2l'
               I1F=P2MSF(2)
@@ -1589,10 +1727,14 @@
             UNITS  = 'm4'
             varnm(1)='Fp2D'
             varnm(2)='p2Tp'
-            varnl(1)='power_spectral_density_of_equivalent_surface_pressure'
-            varnl(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+            varnl(1)='power spectral density of equivalent surface pressure'
+            varnl(2)='peak period of power spectral density of equivalent surface pressure'
             varns(1)='power_spectral_density_of_equivalent_surface_pressure'
             varns(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+            varng(1)='power_spectral_density_of_equivalent_surface_pressure'
+            varng(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
+            varnc(1)=''
+            varnc(2)=''
             vmin = -15000 
             vmax = 32000
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PRMS(1:NSEA)        &
@@ -1611,6 +1753,8 @@
             varnm(1)='us1'
             varnl(1)='User_defined1'
             varns(1)='User_defined1'
+            varng(1)='user_defined1'
+            varnc(1)=''
             vmin = 0
             vmax = 9990
 !
@@ -1625,6 +1769,8 @@
             varnm(1)='us2'
             varnl(1)='User_defined2'
             varns(1)='User_defined2'
+            varng(1)='user_defined2'
+            varnc(1)=''
             vmin = 0
             vmax = 9990
 !
@@ -1698,6 +1844,7 @@
               FSC=FSC2
               varnm=varnm2
               varnl=varnl2
+              varns=varns2
               UNITS=UNITS2
               UNITVAR(:)=UNITS
               dimln(4)=I2F-I1F+1
@@ -1743,7 +1890,7 @@
 !
 ! Creates the NetCDF file 
 !
-                CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid,varnm,varnl,varns,fsc, &
+                CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid,fsc, &
                              mfill,UNITVAR,vmin,vmax,COORDTYPE,   &
                              extradim,NCTYPE,MAPSTAOUT)
 
@@ -1910,6 +2057,7 @@
                     iret=nf90_put_att(ncid,varid(ivar),'long_name',varnl(I))
                     iret=nf90_put_att(ncid,varid(ivar),'standard_name',varns(I))
                     call check_err(iret)
+                    iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
                     iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
@@ -1922,6 +2070,10 @@
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'valid_max',vmax)
                     call check_err(iret)
+                    IF (varnc(I).NE.'') THEN
+                      iret=nf90_put_att(ncid,varid(ivar),'comment',varnc(I))
+                      call check_err(iret)
+                    END IF
                     END DO
                   iret = nf90_enddef(ncid)
                   call check_err(iret)
@@ -1996,6 +2148,7 @@
                     iret=nf90_put_att(ncid,varid(ivar),'long_name',varnl(I))
                     iret=nf90_put_att(ncid,varid(ivar),'standard_name',varns(I))
                     call check_err(iret)
+                    iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
                     iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
@@ -2008,6 +2161,10 @@
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'valid_max',vmax)
                     call check_err(iret)
+                    IF (varnc(I).NE.'') THEN
+                      iret=nf90_put_att(ncid,varid(ivar),'comment',varnc(I))
+                      call check_err(iret)
+                    END IF
                     END DO
                   iret = nf90_enddef(ncid)
                   call check_err(iret)
@@ -2255,7 +2412,7 @@
 
 
 !--------------------------------------------------------------------------    
-      SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid, name,varnl,varns,fsc, &
+      SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid, fsc, &
                            MFILL,UNITVAR,vmin,vmax,COORDTYPE,  &
                            extradim, NCTYPE, mapstaout )
       USE W3GDATMD
@@ -2269,8 +2426,7 @@
       REAL, INTENT(IN)                  :: FSC
       INTEGER, INTENT(IN)               :: vmin,vmax,extradim
       INTEGER, INTENT(IN)               :: MFILL, NCTYPE
-      character*(*), INTENT(IN)         :: ncfile,name(3),varnl(3), &
-                                           varns(3),UNITVAR(3)
+      character*(*), INTENT(IN)         :: ncfile,UNITVAR(3)
       integer, INTENT(OUT)              :: ncid
       integer, INTENT(OUT)              :: dimid(6)
       integer, INTENT(IN)               :: dimln(6)

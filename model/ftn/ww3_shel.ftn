@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         23-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -34,8 +34,9 @@
 !/    13-Sep-2009 : Add coupling option                 ( version 3.14_SHOM )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    29-Oct-2010 : Implement unsttuctured grids        ( version 3.14.4 )
+!/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    23-Nov-2011 : Comments clean up                   ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -54,7 +55,7 @@
 !     Files : ww3_shel.inp  Input commands for shell.
 !             level.ww3     Water level fields (optional).
 !             current.ww3   Current fields (optional).
-!             wind.ww3      Water level fields (optional).
+!             wind.ww3      Wind fields (optional).
 !             ice.ww3       Water level fields (optional).
 !             data0.ww3     Files with asiimlation data (optional).
 !             data1.ww3
