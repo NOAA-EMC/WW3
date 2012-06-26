@@ -9,7 +9,8 @@ $
 $
   &PRO2 DTIME = 7200. /
 $ &PRO3 WDTHCG = 2.5, WDTHTH = 2.5 /
-$ &MISC PMOVE = 1.0 /
+$ &MISC PMOVE = 1.0 , GSHIFT = 1.0D-14 /
+  &MISC GSHIFT = 1.0D-14 /
 END OF NAMELISTS
 $
  'RECT' F 'NONE'

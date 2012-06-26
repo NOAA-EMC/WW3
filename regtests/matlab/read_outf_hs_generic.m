@@ -1,4 +1,4 @@
-function read_outf_hs_generic(hmax,dt,units,runid,time_filename)
+function read_outf_hs_generic(hmax,dt,units,runid,time_filename,offset)
 
 % dt, time_filename:   just for filename
 
@@ -7,7 +7,7 @@ icheck=1;
 fz=14;
 set(0,'defaultaxesfontsize',fz);
 
-offset=12;
+%offset=12;
 psfile=['Hs.' runid '.ps'];
 
 for itime=1:1000
@@ -52,6 +52,7 @@ for itime=1:1000
       str=['print -dpsc2 -append ' psfile];disp(str);eval(str)
     end
       
+    disp('note to self: improve this to avoid potential problems with round-off error in dt')
     time_filename=time_filename+dt;
     height_t(:,:,itime)=height;
     

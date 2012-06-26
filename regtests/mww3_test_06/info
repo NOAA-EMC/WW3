@@ -1,0 +1,54 @@
+
+$ cat grdset_a
+MODEL: global arctic
+INPUT:
+POINT: global arctic
+6a: full blown (but progagation-only) simulation with irregular arctic grid from tp2.5, includes bathymetry from DBDB2 and the full 0.5 degree global grid
+arctic: curvilinear grid, 361 x 361
+"tps2" version includes winds from NOGAPS, ice from PIPS ; this is a 12 hour simulation.
+
+$ cat grdset_b
+MODEL: gband arcticreg
+INPUT:
+POINT: gband arcticreg
+6b,c, regular grids only
+6b uses realistic depths, taken from DBDB2
+arcticreg : regular grid, 201 x 91
+
+$ cat grdset_c
+MODEL: gbandd360 aregd360
+INPUT:
+POINT: gbandd360 aregd360
+6b,c, regular grids only
+6c uses deep water.
+aregd360: regular grid, 201 x 91
+
+$ cat grdset_d
+MODEL: gbandd360 arcticsub
+INPUT:
+POINT: gbandd360 arcticsub
+6d:  like 6a, but both grids have been reduced in size, and bathymetry omitted (deep water).
+arcticsub : curvilinear, 107 x 121
+"tps" version includes winds from an idealized cyclone
+
+$ cat grdset_e
+MODEL: gbandd_1p0 arctic_int
+INPUT:
+POINT: gbandd_1p0 arctic_int
+6e: a test case that is of intermediate computation time between 6d (fast) and 6f (slow) (with 6a also being slow)
+arctic_int : curvilinear, 361 x 128
+
+$ cat grdset_f
+MODEL: gbandd_1p0 arcticd
+INPUT:
+POINT: gbandd_1p0 arcticd
+arcticd : 361 x 361
+6f: a test case that uses the full arctic grid, deep water only, but to speed things up vs 6a, we are using a 1 deg "global band" for the global grid, rather than the full 0.5 deg global grid used in 6a. Note that adding land to this would make it run faster.
+"tps" version includes winds from an idealized cyclone
+
+summary of gridsets with curvilinear grids (context=computation time):
+6a: slow
+6d: fast
+6e: intermediate
+6f: slow (relative to 6a, computation of weights is faster but computation is slower)
+

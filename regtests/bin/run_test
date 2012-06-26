@@ -5,6 +5,12 @@
 #                                                                             #
 # --------------------------------------------------------------------------- #
 
+# Limitations:
+#  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
+#    For example, when processing ww3_grid_1.inp, it does not know that
+#    it needs to process ww3_prep_a.inp and *not* process ww3_prep_b.inp.
+#    This can be addressed in the future by adding instructions for prep
+#    to the grdset file.
 
 # --------------------------------------------------------------------------- #
 # 1. Function definitions                                                     #

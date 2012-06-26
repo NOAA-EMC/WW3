@@ -1,0 +1,67 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid output post-processing                            $
+$--------------------------------------------------------------------- $
+$ Time, time increment and number of outputs
+$
+$ 10800=Every 3 hours. Just use a large number to go all the way to end.
+$  20090525 000000 10800 999
+$ 3600=Every 1 hour. Just use a large number to go all the way to end.
+  20090525 000000 3600 999
+$ Just once (for depth)
+$  20090525 000000 10800 1
+$
+$ Request flags identifying fields as in ww3_shel input and section 2.4 of the manual.
+$-------------------------------------------------------------------------------------------------------------------
+$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$-------------------------------------------------------------------------------------------------------------------
+ F F T F F  T T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$
+$ Output type ITYPE [0,1,2,3]
+$ WER: I use "3" for field output.
+  3 0
+$ -------------------------------------------------------------------- $
+$ ITYPE = 0, inventory of file.
+$            No additional input, the above time range is ignored.
+$
+$ -------------------------------------------------------------------- $
+$ ITYPE = 1, print plots.
+$            IX,IY range and stride, flag for automatic scaling to
+$            maximum value (otherwise fixed scaling),
+$            vector component flag (dummy for scalar quantities).
+$
+$  1 360 1 1 181 1 F T
+$
+$ -------------------------------------------------------------------- $
+$ ITYPE = 2, field statistics.
+$            IX,IY range.
+$
+$ 1 360 1 181
+$
+$ -------------------------------------------------------------------- $
+$ ITYPE = 3, transfer files.
+$            IX, IY range, IDLA and IDFM as in ww3_grid.inp.
+$            The additional option IDLA=5 gives ia longitude, lattitude 
+$            and parameter value(s) per record (defined points only).
+$
+$ it appears that if you put in a nx ny that is larger than the comp grid nx ny, it just uses the comp grid nx ny, which is good, since you can just leave it at some high number if you want to output the entire grid , e.g. 1 999 1 999 1 1 
+$
+ 1 999 1 999 1 1
+$ 1 233 1 158 1 1 
+$
+$ For each field and time a new file is generated with the file name
+$ ww3.yymmddhh.xxx, where yymmddhh is a conventional time idicator,
+$ and xxx is a field identifier. The first record of the file contains
+$ a file ID (C*13), the time in yyyymmdd hhmmss format, the lowest,
+$ highest and number of longitudes (2R,I), id.  latitudes, the file
+$ extension name (C*$), a scale factor (R), a unit identifier (C*10),
+$ IDLA, IDFM, a format (C*11) and a number identifying undefined or
+$ missing values (land, ice, etc.).  The field follows as defined by
+$ IDFM and IDLA, defined as in the grid proprocessor. IDLA=5 is added
+$ and gives a set of records containing the longitude, latitude and
+$ parameter value. Note that the actual data is written as an integers.
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

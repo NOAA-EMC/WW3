@@ -1,5 +1,15 @@
 $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
+$ The first input line sets up the general multi-grid model definition
+$ by defining the follwing six parameters :
+$
+$   1) Number of wave model grids.                          ( NRGRD )
+$   2) Number of grids defining input fields.               ( NRINP )
+$   3) Flag for using unified point output file.           ( UNIPTS )
+$   4) Output server type as in ww3_shel.inp
+$   5) Flag for dedicated process for unified point output.
+$   6) Flag for grids sharing dedicated output processes.
+$
   3 0 F 1 T T
 $
 $ 'points'
