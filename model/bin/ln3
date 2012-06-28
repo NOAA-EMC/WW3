@@ -4,9 +4,9 @@
 #          directory. Now also looks in bin directory.                        #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      May 2009               #
+#                                                      February 2012          #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -68,11 +68,11 @@
         ln -s ../bin/$file .
         found=`expr $found + 1`
       fi
-      if test -f ../doc90/$file
+      if test -f ../test/$file
       then
         rm -f $file
-        echo "make link to $file in doc90 dir."
-        ln -s ../doc90/$file .
+        echo "make link to $file in test dir."
+        ln -s ../test/$file .
         found=`expr $found + 1`
       fi
     done

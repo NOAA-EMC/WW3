@@ -37,37 +37,55 @@
 #       environment with valiables MPI and proc in section 0.               #
 #    b) For IBM with poe, activale poe command lines and set environment    #
 #       variables in poe jobcards at the top of the scripts.                #
+#    c) For SGI with MPIT several environment setting are needed in the     #
+#       head of the script, as well as job cards and using the mpiexec_mpt  #
+#       to start the code to run in the parallel environment.               #
+#    d) In present form, IBM qsub directives disabled to avoid unwanted     #
+#       translation by msub on zeus.                                        #
 #                                                                           #
-#                                              Hendrik Tolman, Nov 2005     #
-#                                                   Last Mod : Dec 2010     #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                 Last Mod : March 2012     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2012 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
 #                                                                           #
 #############################################################################
 
-#@ shell=/bin/sh
-#@ job_name=mww3_test_04
-#@ output=mww3_test_04.out
-#@ error=mww3_test_04.out
-#@ notification=never
-#@ class=dev
-#@ network.MPI=csss,shared,us
-#@ total_tasks=6
-#@ node=1
-#@ job_type=parallel
-#@ wall_clock_limit=00:03:00
-#@ resources=ConsumableCpus(1) ConsumableMemory(500 MB)
-#@ account_no=WAV-T2O
-#@ queue
+# #@ shell=/bin/sh
+# #@ job_name=mww3_test_04
+# #@ output=mww3_test_04.out
+# #@ error=mww3_test_04.out
+# #@ notification=never
+# #@ class=dev
+# #@ network.MPI=csss,shared,us
+# #@ total_tasks=6
+# #@ node=1
+# #@ job_type=parallel
+# #@ wall_clock_limit=00:03:00
+# #@ resources=ConsumableCpus(1) ConsumableMemory(500 MB)
+# #@ account_no=WAV-T2O
+# #@ queue
+
+#PBS -l procs=6
+# #PBS -l mem=1G
+#PBS -q batch
+#PBS -l walltime=05:00
+#PBS -A omd
+#PBS -N mww3_test_04
+#PBS -j oe
+#PBS -o mww3_test_04.out
 
 # 0. Preparations -----------------------------------------------------------
 
   set -e
 
   ww3_env='.wwatch3.env'   # setup file
+
+#     f77=f77
+#     f77=pgf90
+      f77=ifort
 
    shoal='no '             # Use shoal in grid (otherwise deep)
     dmin=' 15.'            # Minimum depth, if <0, there be a shoal.
@@ -91,12 +109,12 @@
 # t_end='19680606 060000' ; tn='7'
 # t_end='19680606 120000' ; tn='13'
 # t_end='19680607 000000' ; tn='25'
-  t_end='19680607 120000' ; tn='37'
-  t_end='19680607 120000' ; tn='109'
+# t_end='19680607 120000' ; tn='37'
 # t_end='19680608 000000' ; tn='49'
+  t_end='19680607 120000' ; tn='109'
 
-    MPI='no'              # run ww3_shel and ww3_multi in MPI mode
-   proc=4
+    MPI='yes'              # run ww3_shel and ww3_multi in MPI mode
+   proc=4                  # used for mpirun only
 
   PRO2='  &PRO2 DTIME = 7200. /'
   PRO3='  &PRO3 WDTHCG = 1.50, WDTHTH = 1.50 /'
@@ -148,7 +166,7 @@ EOF
 
   if [ "$mode" = 'single' ]
   then
-    uni_pts='on'
+    uni_pts='no'
   fi
 
   if [ "$uni_pt" = 'yes' ]
@@ -161,6 +179,12 @@ EOF
     COMMUP='$'
     points=
   fi
+
+# zeus MPIT settings
+
+  MPI_BUFS_PER_PROC=128
+  MPI_BUFS_PER_HOST=128
+  MPI_GROUP_MAX=128
 
 # 0.a Set-up variables
 
@@ -311,7 +335,7 @@ c
       end 
 EOF
 
-  f77 grid.f
+  $f77 grid.f
 
   ./a.out
 
@@ -564,7 +588,7 @@ c
       end 
 EOF
 
-  f77 current.f
+  $f77 current.f
 
   ./a.out
 
@@ -686,7 +710,8 @@ EOF
 
     if [ "$MPI" = 'yes' ]
     then
-      mpirun -np $proc $path_e/ww3_multi # > $path_o/ww3_multi.out
+      mpiexec_mpt -np $PBS_NP $path_e/ww3_multi # > $path_o/ww3_multi.out
+#     mpirun -np $proc $path_e/ww3_multi # > $path_o/ww3_multi.out
 #     poe $path_e/ww3_multi # > $path_o/ww3_multi.out
     else
       $path_e/ww3_multi # > $path_o/ww3_multi.out
@@ -850,7 +875,8 @@ EOF
 
       if [ "$MPI" = 'yes' ]
       then
-        mpirun -np $proc $path_e/ww3_shel > $path_o/ww3_shel.$mod.out
+        mpiexec_mpt -np $PBS_NP $path_e/ww3_shel > $path_o/ww3_shel.$mod.out
+#       mpirun -np $proc $path_e/ww3_shel > $path_o/ww3_shel.$mod.out
 #       poe $path_e/ww3_shel > $path_o/ww3_shel.$mod.out
       else
         $path_e/ww3_shel > $path_o/ww3_shel.$mod.out

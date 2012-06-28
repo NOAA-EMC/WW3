@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Nov-2011 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -58,8 +58,9 @@
 !/    16-May-2010 : Adding transparencies in W3SCRE     ( version 3.14_SHOM )
 !/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.04 )
 !/    03-Nov-2011 : Shoreline reflection on unst. grids ( version 4.04 )
+!/    06-Mar-2012 : Initializing ITEST as needed.       ( version 4.07 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -685,6 +686,8 @@
                     CALL W3IOBC ( 'READ', NDS(9), TBPI0, TBPIN,       &
                                   ITEST, IMOD )
                     IF ( ITEST .NE. 1 ) CALL W3UBPT 
+                  ELSE
+                    ITEST  = 0
                   END IF
                 IF ( ITEST .LT. 0 ) IDACT(1:1) = 'L'
                 IF ( ITEST .GT. 0 ) IDACT(1:1) = ' '

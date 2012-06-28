@@ -148,24 +148,17 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/NCEP1      DATA FLGRIB / .FALSE.,.FALSE.,.TRUE. ,.FALSE.,.FALSE. ,  &
-!/NCEP1                    .TRUE. ,.FALSE.,.TRUE. ,.TRUE. ,.FALSE. ,  &
-!/NCEP1                    .TRUE. ,.TRUE. ,.TRUE. ,.TRUE. ,.TRUE.  ,  &
-!/NCEP1                    .TRUE. ,.FALSE.,.TRUE. ,.FALSE.,.FALSE. ,  &
-!/NCEP1                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.TRUE.  ,  &
-!/NCEP1                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE. ,  &
-!/NCEP1                    .FALSE./
-!/NCEP2      DATA FLGRIB / .FALSE.,.TRUE. ,.TRUE. ,.FALSE.,.TRUE. ,  &
-!/NCEP2                    .TRUE. ,.TRUE. ,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.TRUE. ,.FALSE.,.FALSE.,  &
-!/NCEP2                    .TRUE. ,.TRUE. ,.TRUE. ,.FALSE.,.TRUE. ,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
-!/NCEP2                    .FALSE.,.FALSE.,.FALSE./
+      DATA FLGRIB / .FALSE.,.TRUE. ,.TRUE. ,.FALSE.,.TRUE. ,  &
+                    .TRUE. ,.TRUE. ,.FALSE.,.FALSE.,.TRUE. ,  &
+                    .FALSE.,.FALSE.,.TRUE. ,.TRUE. ,.FALSE.,  &
+                    .TRUE. ,.TRUE. ,.TRUE. ,.FALSE.,.TRUE. ,  &
+                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+                    .FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,  &
+                    .FALSE.,.FALSE.,.FALSE./
 !
 !/NCO/!     CALL W3TAGB('WAVEGRIB',1998,0007,0050,'NP21   ')
 !
@@ -174,11 +167,6 @@
 !
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3SETG ( 1, 6, 6 )
-      IF ( GTYPE .EQ. CLGTYPE ) THEN                                    !TRAP
-      WRITE(*,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// &         !TRAP
-      'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'            !TRAP
-      STOP                                                              !TRAP
-      END IF                                                            !TRAP
       CALL W3NDAT (    6, 6 )
       CALL W3SETW ( 1, 6, 6 )
       CALL W3NAUX (    6, 6 )
@@ -207,7 +195,6 @@
 !/NCO      NDSTRC = NDSO
 !
       WRITE (NDSO,900)
-      IF ( .NOT. FLAGLL ) GOTO 810
 !
       CALL ITRACE ( NDSTRC, NTRACE )
 !/S      CALL STRACE (IENT, 'W3GRIB')
@@ -226,6 +213,14 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
+!
+      IF ( GTYPE .EQ. CLGTYPE ) THEN                                    !TRAP
+      WRITE(*,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// &         !TRAP
+      'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'            !TRAP
+      STOP                                                              !TRAP
+      END IF                                                            !TRAP
+!
+      IF ( .NOT. FLAGLL ) GOTO 810
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
@@ -997,7 +992,7 @@
 !     Partitioned peak period
 !
               ELSE IF ( J .EQ. 18 ) THEN
-!/NCEP1                KPDS5A  = 103
+!/NCEP1                KPDS5A  = 110
 !/NCEP1                KPDS5B  = 106
 !/NCEP2                KPDS5A  = 6
 !/NCEP2                KPDS5B  = 9
@@ -1025,7 +1020,7 @@
 !     Partitioned mean direction
 !
               ELSE IF ( J .EQ. 20 ) THEN
-!/NCEP1                KPDS5A  = 101
+!/NCEP1                KPDS5A  = 109
 !/NCEP1                KPDS5B  = 104
 !/NCEP2                KPDS5A  = 4
 !/NCEP2                KPDS5B  = 7

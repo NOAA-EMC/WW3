@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Apr-2011 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -27,14 +27,17 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    17-Aug-2010 : ABPI0-N(:,0) init. bug fix.       ( version 3.14.5 )
+!/    17-Aug-2010 : ABPI0-N(:,0) init. bug fix.         ( version 3.14 )
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    05-Apr-2011 : Place holder for XGR in UNGTYPE     ( version 4.XX ) 
 !/                  (A. Roland/F. Ardhuin)
+!/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
+!/                  activation of grid point.
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -894,7 +897,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2010 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -904,7 +907,10 @@
 !/    28-Jun-2005 : Adding MAPST2.                      ( version 3.07 )
 !/                  Taking out initilization.
 !/    11-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-!/    15-May-2010 : Adding second field for icebergs    ( version 3.14.4 )
+!/    15-May-2010 : Adding second field for icebergs    ( version 3.14 )
+!/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
+!/                  activation of grid point.
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -964,7 +970,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
                           NTH, NK, NSPEC, SIG, TH, DTH, FICEN
-      USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG
+      USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
 !!    USE W3ADATMD, ONLY: U10, U10D, CG
       USE W3ADATMD, ONLY: CG
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
@@ -1040,6 +1046,7 @@
         IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
 !
             MAPICE(IY,IX) = 0
+            UST(ISEA)     = 0.05
 !
             IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
                 MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
@@ -1096,7 +1103,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-May-2007 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -1106,6 +1113,9 @@
 !/    15-Jul-2005 : Adding drying out of points.        ( version 3.07 )
 !/    11-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    23-Aug-2011 : Bug fix for UG grids : new boundary ( version 4.04 )
+!/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
+!/                  activation of grid point.
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -1175,7 +1185,7 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
                           ZB, DMIN, NK, NTH, NSPEC, SIG, DSIP,        &
                           MAPWN, MAPTH, FACHFA, GTYPE, UNGTYPE
-      USE W3WDATMD, ONLY: TIME, TLEV, WLV
+      USE W3WDATMD, ONLY: TIME, TLEV, WLV, UST
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3IDATMD, ONLY: TLN, WLEV
       USE W3SERVMD, ONLY: EXTCDE
@@ -1319,6 +1329,7 @@
                         VA(:,JSEA) = 0.
                       END IF
 !
+                UST(ISEA)     = 0.05
                 IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
                     MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
 !/T2                    WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &

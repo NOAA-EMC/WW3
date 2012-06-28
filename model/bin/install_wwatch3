@@ -1,13 +1,13 @@
-#!/bin/sh
+#!/bin/sh --login
 # --------------------------------------------------------------------------- #
 # install_wwatch3 : install WAVEWATCH III in the present directory.           #
 #                   Working from tar files (and wwatch3_arc).                 #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      December 2006          #
-#                                                      July 2010              #
+#                                                      February 2012          #
 #                                                                             #
-#    Copyright 2009-2010 National Weather Service (NWS),                      #
+#    Copyright 2009-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #

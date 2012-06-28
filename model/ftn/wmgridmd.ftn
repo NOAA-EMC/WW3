@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Dec-2010 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination WMGLOW, WMGHGH, WMRSPC. ( version 3.08 )
@@ -32,8 +32,10 @@
 !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 3.14 )
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -103,7 +105,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
@@ -114,6 +116,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 4.07 )
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -240,7 +244,7 @@
 !
 !/MPI        FLBARR = FLBARR .OR. MDATAS(I)%FBCAST
 !/MPI        IF ( MDATAS(I)%FBCAST .AND.                              &
-!/MPI             MDATAS(I)%MPI_COMM_BCT.NE.-1 ) THEN
+!/MPI             MDATAS(I)%MPI_COMM_BCT.NE.MPI_COMM_NULL ) THEN
 !/MPI             NXYG   = GRIDS(I)%NX * GRIDS(I)%NY
 !/MPI             CALL MPI_BCAST ( GRIDS(I)%MAPSTA(1,1), NXYG,        &
 !/MPI                              MPI_INTEGER, 0,                    &

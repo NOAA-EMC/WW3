@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    27-Jun-2006 : Origination.                        ( version 3.09 )
@@ -19,8 +19,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Mar-2012 : Reparing test output under MPI.     ( version 4.07 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -478,7 +479,7 @@
 !/MPI                          MPI_COMM_WAVE, IERR_MPI )
 !/MPI          DTSIZ  = ICPRT(NSEAL+1,2) - 1
 !
-!/T          WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
+!/MPIT          WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
 !
 !/MPI          IT     = IT0PRT + NAPROC + IAPROC - 1
 !/MPI          IF ( DTSIZ .GT. 0 ) CALL MPI_SEND                      &
@@ -517,7 +518,7 @@
 !/MPI            JSLM   = 1 + (NSEA-JAPROC)/NAPROC
 !/MPI            DTSIZ  = ICP(JSLM+1,2) - 1
 !
-!/T            WRITE (NDST,9031)  JAPROC, DTSIZ
+!/MPIT            WRITE (NDST,9031)  JAPROC, DTSIZ
 !
 !/MPI            ALLOCATE ( PROC(JAPROC)%DTPRT(6,MAX(1,DTSIZ)) )
 !/MPI            DTP   => PROC(JAPROC)%DTPRT
@@ -640,12 +641,12 @@
 !/T 9010 FORMAT (' TEST W3IOSF : OPENING NEW FILE [',A,']')
 !/T 9020 FORMAT (' TEST W3IOSF : SENDING ICPRT FROM',I3,' TO',I3,     &
 !/T              ' WITH SIZE :',I6)
-!/T 9021 FORMAT (' TEST W3IOSF : SENDING DTPRT FROM',I3,' TO',I3,     &
-!/T              ' WITH SIZE :',I6)
+!/MPIT 9021 FORMAT (' TEST W3IOSF : SENDING DTPRT FROM',I3,' TO',I3,     &
+!/MPIT              ' WITH SIZE :',I6)
 !/T 9030 FORMAT (' TEST W3IOSF : RECEIVING ICPRT FROM',I3,            &
 !/T              ' WITH SIZE :',I6)
-!/T 9031 FORMAT (' TEST W3IOSF : RECEIVING DTPRT FROM',I3,            &
-!/T              ' WITH SIZE :',I6)
+!/MPIT 9031 FORMAT (' TEST W3IOSF : RECEIVING DTPRT FROM',I3,            &
+!/MPIT              ' WITH SIZE :',I6)
 !/
 !/ End of W3IOSF ----------------------------------------------------- /
 !/

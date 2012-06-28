@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
@@ -17,8 +17,10 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    06-Mar-2012 : Using MPI_COMM_NULL in checks.      ( version 4.07 )
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -85,7 +87,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         06-Jun-2012 !
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
@@ -95,6 +97,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    16-Mar-2012 : Using MPI_COMM_NULL in checks.      ( version 4.07 )
+!/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -191,6 +195,8 @@
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_GRD, MPI_COMM_MWAVE
 !
       IMPLICIT NONE
+!
+!/MPI      INCLUDE "mpif.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -451,7 +457,7 @@
 !
 !/MPI        CALL WMSETM ( J, MDSE, MDST )
 !
-!/MPI        IF ( MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !
 !/MPI            CALL W3SETO ( J, MDSE, MDST )
 !/MPI            CALL W3SETG ( J, MDSE, MDST )
@@ -543,11 +549,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Jun-2007 !
+!/                  | Last update :         16-Mar-2012 !
 !/                  +-----------------------------------+
 !/
 !/    09-Aug-2006 : Origination.                        ( version 3.10 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+!/    16-Mar-2012 : Using MPI_COMM_NULL in checks.      ( version 3.14 )
 !/
 !  1. Purpose :
 !
@@ -640,6 +647,7 @@
 !/
       INTEGER                 :: J, I, II, IT0, IT, ITARG, IFROM
 !/SHRD      INTEGER                 :: MPI_COMM_GRD = 1, CROOT = 1
+!/SHRD      INTEGER, PARAMETER      :: MPI_COMM_NULL = -1
 !/MPI      INTEGER                 :: IERR_MPI, NMPPNT
 !/MPI      INTEGER, ALLOCATABLE    :: STATUS(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -679,7 +687,7 @@
 !
 ! 1.b Determine if action
 !
-        IF ( MPI_COMM_GRD .EQ. -1 ) THEN
+        IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) THEN
 !/T            WRITE (MDST,9011)
             CYCLE
           END IF

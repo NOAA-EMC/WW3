@@ -31,10 +31,10 @@
 #      sec. 3.a : Provide correct error capturing.                            #
 #      sec. 3.d : Remove unnecessary files.                                   #
 #                                                                             #
-#  - This version is made for the Portland Group compilers on x86_64.         #
+#  - This version is made for the Portland pgf90 compiler versions 6 and up.  #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      February 2005          #
+#                                                      February 2012          #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -78,16 +78,9 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  ver=`pgf90 -V | grep 'pgf90 ' | awk '{print $2}' | cut -d. -f1`
+  opt="-c -Mlist -fast -module $path_m"
 
-  if [ $ver -ge 5 ]
-  then
-    opt="-c -Mlist -fastsse -module $path_m"
-  else
-    opt="-c -Mlist -fast -module $path_m"
-  fi
-
-# opt="-c -C -g -Mlist -module $path_m"
+# opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
   then

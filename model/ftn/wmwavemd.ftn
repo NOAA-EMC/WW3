@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Aug-2010 |
+!/                  | Last update :         12-Mar-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -21,6 +21,7 @@
 !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug.            ( version 3.14.6 )
+!/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -71,7 +72,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Aug-2010 |
+!/                  | Last update :         12-Mar-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -86,6 +87,7 @@
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
 !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug sec. 9.a.   ( version 3.14.6 )
+!/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
 !/
 !  1. Purpose :
 !
@@ -414,7 +416,7 @@
 !
 !/SHRD            IF ( GRSTAT(I) .EQ. 0 ) THEN
 !/MPI            IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) .AND.       &
-!/MPI                MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI                MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !
 !/MPRF                CALL PRTIME ( PRFT0 )
                 IF ( DTTST .LE. 0 ) THEN
@@ -508,13 +510,15 @@
 ! 3.b.1 Get the data
 !
 !/MPI                IF ( .NOT.FLAGOK .AND. .NOT.PREGTB(I) ) THEN
-!/MPI                    IF ( MPI_COMM_GRD.NE.-1 ) CALL WMIOBG (I,FLAG)
+!/MPI                    IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )         &
+!/MPI                         CALL WMIOBG (I,FLAG)
 !/MPI                    PREGTB(I) = .TRUE.
 !/MPI                  END IF
 !
                 IF ( FLAGOK ) THEN
 !/SHRD                    CALL WMIOBG ( I, FLAGOK )
-!/MPI                    IF ( MPI_COMM_GRD.NE.-1 ) CALL WMIOBG ( I )
+!/MPI                    IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )         &
+!/MPI                         CALL WMIOBG ( I )
 !/MPI                    PREGTB(I) = .FALSE.
                     GRSTAT(I) = 2
                     DONE      = .TRUE.
@@ -583,7 +587,8 @@
                     DO II=1, NRGRD
                       CALL W3SETW ( II, MDSE, MDST )
 !/SHRD                      IF ( TIME(1) .NE. -1 ) THEN
-!/MPI                      IF ( TIME(1).NE.-1 .AND. MPI_COMM_GRD.NE.-1 ) THEN
+!/MPI                      IF ( TIME(1).NE.-1 .AND.                   &
+!/MPI                           MPI_COMM_GRD.NE.MPI_COMM_NULL ) THEN
                           IF ( DSEC21(TIME,TSYNC(:,0)) .NE. 0 ) THEN
                               FLAGOK = .FALSE.
                               EXIT
@@ -724,13 +729,14 @@
 !
 !/SHRD            IF ( GRSTAT(I) .EQ. 3 ) THEN
 !
-!/MPI            IF ( GRSTAT(I).EQ.3 .AND. MPI_COMM_GRD .EQ. -1 ) THEN
+!/MPI            IF ( GRSTAT(I).EQ.3 .AND.                            &
+!/MPI                 MPI_COMM_GRD .EQ. MPI_COMM_NULL ) THEN
 !/MPI                CALL W3SETW ( I, MDSE, MDST )
 !/MPI                TIME      = TSYNC(:,I)
 !/MPI                GRSTAT(I) = 4
 !/MPI                DONE      = .TRUE.
 !/MPI              ELSE IF ( GRSTAT(I).EQ.3 .AND.                     &
-!/MPI                        MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI                        MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !
 !/T                WRITE (MDST,9002) I, GRSTAT(I), 'RUNNING MODEL'
 !/MPRF                CALL PRTIME ( PRFT0 )
@@ -807,13 +813,15 @@
 ! 6.b Call gathering routine, reset FLEQOK and cycle
 !
 !/MPI                IF ( .NOT.FLEQOK(I) .AND. .NOT.PREGTE(I) ) THEN
-!/MPI                    IF ( MPI_COMM_GRD.NE.-1 ) CALL WMIOEG (I,FLAG)
+!/MPI                    IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )    &
+!/MPI                         CALL WMIOEG (I,FLAG)
 !/MPI                    PREGTE(I) = .TRUE.
 !/MPI                  END IF
 !
                 IF ( FLEQOK(I) ) THEN
 !/SHRD                    CALL WMIOEG ( I )
-!/MPI                    IF ( MPI_COMM_GRD.NE.-1 ) CALL WMIOEG ( I )
+!/MPI                    IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )    &
+!/MPI                         CALL WMIOEG ( I )
 !/MPI                    PREGTE(I) = .FALSE.
                     GRSTAT(I) = 5
                     FLEQOK(I) = .FALSE.
@@ -828,7 +836,7 @@
 !
 !/SHRD                    CALL WMIOBS ( I )
 !
-!/MPI                    IF ( MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI                    IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !/MPI                        CALL WMIOBF ( I )
 !/MPI                        CALL WMIOBS ( I )
 !/MPI                      END IF
@@ -880,14 +888,15 @@
 ! 7.b Call gathering routine
 !
 !/MPI                    IF ( .NOT.FLAGOK .AND. .NOT.PREGTH(I) ) THEN
-!/MPI                        IF ( MPI_COMM_GRD.NE.-1 )                &
+!/MPI                        IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )     &
 !/MPI                             CALL WMIOHG ( I, FLAG )
 !/MPI                        PREGTH(I) = .TRUE.
 !/MPI                      END IF
 !
                     IF ( FLAGOK ) THEN
 !/SHRD                        CALL WMIOHG ( I, FLAGOK )
-!/MPI                        IF ( MPI_COMM_GRD.NE.-1 ) CALL WMIOHG ( I )
+!/MPI                        IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )     &
+!/MPI                             CALL WMIOHG ( I )
 !/MPI                        PREGTH(I) = .FALSE.
                         GRSTAT(I) = 6
                         DONE      = .TRUE.
@@ -900,7 +909,7 @@
 !/SHRD                IF ( GRSTAT(I) .EQ. 6 ) CALL WMIOHS ( I )
 !
 !/MPI                IF ( GRSTAT(I) .EQ. 6 .AND.                  &
-!/MPI                         MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI                         MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !/MPI                    CALL WMIOHF ( I )
 !/MPI                    CALL WMIOHS ( I )
 !/MPI                  END IF
@@ -961,7 +970,7 @@
 ! 9.b Perform output
 !
             IF ( GRSTAT(I) .EQ. 7 ) THEN
-!/MPI            IF ( MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI            IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !
 !!/MPRF                CALL PRTIME ( PRFT0 )
 !!/MPRF                CALL WMWOUT ( I, NRGRD, 3 )
@@ -1216,7 +1225,7 @@
 !              
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
-!/MPI        IF ( MPI_COMM_GRD .NE. -1 ) THEN
+!/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 !/MPI            CALL WMIOBF ( I )
 !/MPI            CALL WMIOHF ( I )
 !/MPI            CALL WMIOEF ( I )

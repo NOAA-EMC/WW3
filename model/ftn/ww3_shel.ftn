@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Nov-2011 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -37,8 +37,9 @@
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
 !/    23-Nov-2011 : Comments clean up                   ( version 4.04 )
+!/    06-Mar-2012 : Repairing test output.              ( version 4.07 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -285,6 +286,8 @@
       ELSE
         FACTOR = 1.E-3
       END IF
+!
+!/T      PRTFRM = .TRUE.
 !
 !/F90      CALL SYSTEM_CLOCK ( CLKT0, CLKINC, CLKMAX )
 !

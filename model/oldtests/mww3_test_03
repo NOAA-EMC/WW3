@@ -29,37 +29,55 @@
 #       environment with valiables MPI and proc in section 0.               #
 #    b) For IBM with poe, activale poe command lines and set environment    #
 #       variables in poe jobcards at the top of the scripts.                #
+#    c) For SGI with MPIT several environment setting are needed in the     #
+#       head of the script, as well as job cards and using the mpiexec_mpt  #
+#       to start the code to run in the parallel environment.               #
+#    d) In present form, IBM qsub directives disabled to avoid unwanted     #
+#       translation by msub on zeus.                                        #
 #                                                                           #
-#                                              Hendrik Tolman, Feb 2006     #
-#                                                   Last Mod : Dec 2010     #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                 Last Mod : March 2012     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2012 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
 #                                                                           #
 #############################################################################
 
-#@ shell=/bin/sh
-#@ job_name=mww3_test_03
-#@ output=mww3_test_03.out
-#@ error=mww3_test_03.out
-#@ notification=never
-#@ class=dev
-#@ network.MPI=csss,shared,us
-#@ total_tasks=6
-#@ node=1
-#@ job_type=parallel
-#@ wall_clock_limit=00:01:00
-#@ resources=ConsumableCpus(1) ConsumableMemory(500 MB)
-#@ account_no=WAV-T2O
-#@ queue
+# #@ shell=/bin/sh
+# #@ job_name=mww3_test_03
+# #@ output=mww3_test_03.out
+# #@ error=mww3_test_03.out
+# #@ notification=never
+# #@ class=dev
+# #@ network.MPI=csss,shared,us
+# #@ total_tasks=6
+# #@ node=1
+# #@ job_type=parallel
+# #@ wall_clock_limit=00:01:00
+# #@ resources=ConsumableCpus(1) ConsumableMemory(500 MB)
+# #@ account_no=WAV-T2O
+# #@ queue
+
+#PBS -l procs=6
+# #PBS -l mem=1G
+#PBS -q batch
+#PBS -l walltime=05:00
+#PBS -A omd
+#PBS -N mww3_test_03
+#PBS -j oe
+#PBS -o mww3_test_03.out
 
 # 0. Preparations -----------------------------------------------------------
 
   set -e
 
   ww3_env='.wwatch3.env'   # setup file
+
+#     f77=f77
+#     f77=pgf90
+      f77=ifort
 
    lowm='no'               # master low-res map instead of three
 
@@ -144,10 +162,16 @@
 # t_end='19680606 120000' ; tn='13'
 
     MPI='yes'              # run ww3_multi in MPI mode
-   proc=6
+   proc=6                  # used for mpirun only
 
   PROP2="$ \&PRO2 DTIME = 21600. \/"
   PROP3="$ \&PRO3 WDTHCG = 0., WDTHTH = 0. \/"
+
+# zeus MPIT settings
+
+  MPI_BUFS_PER_PROC=128
+  MPI_BUFS_PER_HOST=128
+  MPI_GROUP_MAX=128
 
 # 0.a Set-up variables
 
@@ -167,7 +191,7 @@
   path_e="$main_dir/exe"          # path for executables
   path_a="$main_dir/aux"          # path for aux files and scripts
   path_o="$main_dir/test"         # path for output files
-# path_o="$main_dir/work"
+  path_o="$main_dir/work"
 
   if [ "$lowm" = 'yes' ]
   then
@@ -383,8 +407,8 @@ $LBY         if ( mask(ix,iy) .eq. 1 ) then
       end
 EOF
 
-  f77 grid1.f -o grid1.x 2> /dev/null
-  f77 grid2.f -o grid2.x 2> /dev/null
+  $f77 grid1.f -o grid1.x # 2> /dev/null
+  $f77 grid2.f -o grid2.x # 2> /dev/null
 
   rm -f grid1.f grid2.f
 
@@ -476,19 +500,19 @@ EOF
   do
     case $mod in
      'low0') echo " 'low0'  $flags  1  1  0.00 1.00  F" >> $inp ;;
-     'low1') echo " 'low1'  $flags  1  1  0.00 0.33  F" >> $inp ;;
-     'low2') echo " 'low2'  $flags  1  1  0.33 0.67  F" >> $inp ;;
-     'low3') echo " 'low3'  $flags  1  1  0.67 1.00  F" >> $inp ;;
-#    'low1') echo " 'low1'  $flags  1  1  0.00 1.00  F" >> $inp ;;
-#    'low2') echo " 'low2'  $flags  1  1  0.00 1.00  F" >> $inp ;;
-#    'low3') echo " 'low3'  $flags  1  1  0.00 1.00  F" >> $inp ;;
+#    'low1') echo " 'low1'  $flags  1  1  0.00 0.33  F" >> $inp ;;
+#    'low2') echo " 'low2'  $flags  1  1  0.33 0.67  F" >> $inp ;;
+#    'low3') echo " 'low3'  $flags  1  1  0.67 1.00  F" >> $inp ;;
+     'low1') echo " 'low1'  $flags  1  1  0.00 1.00  F" >> $inp ;;
+     'low2') echo " 'low2'  $flags  1  1  0.00 1.00  F" >> $inp ;;
+     'low3') echo " 'low3'  $flags  1  1  0.00 1.00  F" >> $inp ;;
      'hgh0') echo " 'hgh0'  $flags  2  1  0.00 1.00  F" >> $inp ;;
-     'hgh1') echo " 'hgh1'  $flags  2  1  0.00 0.33  F" >> $inp ;;
-     'hgh2') echo " 'hgh2'  $flags  2  1  0.33 0.67  F" >> $inp ;;
-     'hgh3') echo " 'hgh3'  $flags  2  1  0.67 1.00  F" >> $inp ;;
-#    'hgh1') echo " 'hgh1'  $flags  2  1  0.00 1.00  F" >> $inp ;;
-#    'hgh2') echo " 'hgh2'  $flags  2  1  0.00 1.00  F" >> $inp ;;
-#    'hgh3') echo " 'hgh3'  $flags  2  1  0.00 1.00  F" >> $inp ;;
+#    'hgh1') echo " 'hgh1'  $flags  2  1  0.00 0.33  F" >> $inp ;;
+#    'hgh2') echo " 'hgh2'  $flags  2  1  0.33 0.67  F" >> $inp ;;
+#    'hgh3') echo " 'hgh3'  $flags  2  1  0.67 1.00  F" >> $inp ;;
+     'hgh1') echo " 'hgh1'  $flags  2  1  0.00 1.00  F" >> $inp ;;
+     'hgh2') echo " 'hgh2'  $flags  2  1  0.00 1.00  F" >> $inp ;;
+     'hgh3') echo " 'hgh3'  $flags  2  1  0.00 1.00  F" >> $inp ;;
     esac
   done
 
@@ -521,7 +545,8 @@ EOF
 
   if [ "$MPI" = 'yes' ]
   then
-    mpirun -np $proc $path_e/ww3_multi # > $path_o/ww3_multi.out
+    mpiexec_mpt -np $PBS_NP $path_e/ww3_multi # > $path_o/ww3_multi.out
+#   mpirun -np $proc $path_e/ww3_multi # > $path_o/ww3_multi.out
 #   poe $path_e/ww3_multi # > $path_o/ww3_multi.out
   else
     $path_e/ww3_multi # > $path_o/ww3_multi.out

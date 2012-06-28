@@ -6,9 +6,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      April 2010             #
-#                                                      Aug. 2010              #
+#                                                      Feb. 2012              #
 #                                                                             #
-#    Copyright 2010 National Weather Service (NWS),                           #
+#    Copyright 2010-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -60,11 +60,6 @@
     exit
   fi
 
-  if test ! -d arc
-  then
-    mkdir arc
-  fi
-
 # --------------------------------------------------------------------------- #
 # 2. Process switch files                                                     #
 # --------------------------------------------------------------------------- #
@@ -80,21 +75,21 @@
 
   cp switch.shrd switch
   w3_make ww3_grid ww3_strt ww3_prep ww3_outf ww3_outp ww3_trck ww3_grib \
-          gx_outf gx_outp
+          ww3_gint gx_outf gx_outp
 
 # --------------------------------------------------------------------------- #
 # 3. Compile MPI codes                                                        #
 # --------------------------------------------------------------------------- #
 
   cp switch.MPI switch
-  w3_make ww3_shel ww3_multi ww3_sbs1
+  w3_make ww3_shel ww3_multi # ww3_sbs1
 
 # --------------------------------------------------------------------------- #
 # 4. Reset switch file                                                        #
 # --------------------------------------------------------------------------- #
 
 # cp switch.shrd switch
-# cp switch.hold switch
+  cp switch.hold switch
 
 # --------------------------------------------------------------------------- #
 # 5. Clean up                                                                 #

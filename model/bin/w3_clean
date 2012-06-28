@@ -7,9 +7,9 @@
 #           -c: "clobber", also clean-up model directories.                   #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      May 2009               #
+#                                                      Feb. 2012              #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -95,11 +95,54 @@ EOF
 # 2. Scratch directory                                                        #
 # --------------------------------------------------------------------------- #
 
-  if [ -d $temp_dir ]
-  then
-    echo "   Clean up $temp_dir"
-    cd $temp_dir
+  cd $temp_dir
+
+  rm -f core
+  rm -f core.*
+  rm -fr coredir.*
+  rm -f *.f
+  rm -f *.f90
+  rm -f *.l
+  rm -f *.o
+  rm -f *.inp
+  rm -f *.out
+  rm -f *.err
+  rm -f *.ps
+  rm -f *.eps
+  rm -f *.ww3
+  rm -f *.mww3
+  rm -f mod_def.*
+  rm -f out_pnt.*
+  rm -f out_grd.*
+  rm -f restart*.*
+  rm -f partition*.*
+  rm -f buoy_log*.*
+  rm -f log.*
+  rm -f test.*
+  rm -f test???.*
+  rm -f w3list
+  rm -f ww3.????????.*
+  rm -f xnl4v5*
+  rm -f quad*
+  rm -f prf.*.mww3
+  rm -f plot.grads*
+  rm -f buoy.data
+  rm -f fort.*
+  rm -f times.*
+  rm -f xref.db
+
+# --------------------------------------------------------------------------- #
+# 3. Work and test directories                                                #
+# --------------------------------------------------------------------------- #
+
+# test has become oldtests, will be phased out 
+# (Will need cleanup for new regtests area)
+
+  for dir in $main_dir/work $main_dir/oldtests
+  do
+    cd $dir
     rm -f core
+    rm -f core.*
     rm -fr coredir.*
     rm -f *.f
     rm -f *.f90
@@ -130,70 +173,7 @@ EOF
     rm -f buoy.data
     rm -f fort.*
     rm -f times.*
-  else
-    echo "   Directory does not exist: $temp_dir"
-  fi
-
-# --------------------------------------------------------------------------- #
-# 3. Work and test directories                                                #
-# --------------------------------------------------------------------------- #
-
-  for dir in $main_dir/work $main_dir/test
-  do
-    if [ -d $dir ]
-    then
-      echo "   Clean up $dir"
-      cd $dir
-      rm -f core
-      rm -fr coredir.*
-      rm -f mod_def.ww3
-      rm -f restart*.ww3
-      rm -f nest*.ww3
-      rm -f partition*.ww3
-      rm -f buoy_log*.*
-      rm -f out_pnt.*
-      rm -f out_grd.*
-      rm -f level.ww3
-      rm -f current.ww3
-      rm -f wind.ww3
-      rm -f ice.ww3
-      rm -f track_o.ww3
-      rm -f track.ww3
-      rm -f test.ww3
-      rm -f test???.ww3
-      rm -f test.mod*
-      rm -f test???.mod*
-      rm -f log.*
-      rm -f tab??.*
-      rm -f *.tab
-      rm -f mask.ww3
-      rm -f mapsta.ww3
-      rm -f data?.ww3
-      rm -f *.mww3
-      rm -f *.out
-      rm -f *.ps
-      rm -f *.eps
-      rm -f gmeta
-      rm -f ww3.????????.*
-      rm -f ww3_????.f
-      rm -f ww3_????.tar
-      rm -f gx_????.f
-      rm -f gx_????.tar
-      rm -f plot.grads*
-      rm -f fort.*
-      rm -f xnl4v5*
-      rm -f quad*
-      rm -f grads.*
-      rm -f prf.*.mww3
-      rm -f buoy.data
-      rm -f buoy.all
-      rm -f *.ctl
-      rm -f ww3.*
-      rm -f *.gs_tmpl
-      rm -f times.*
-    else
-      echo "   Directory does not exist: $dir"
-    fi
+    rm -f map.gs
   done
 
 # --------------------------------------------------------------------------- #

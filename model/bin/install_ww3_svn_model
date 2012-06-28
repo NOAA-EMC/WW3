@@ -1,6 +1,6 @@
 #!/bin/sh --login
 # --------------------------------------------------------------------------- #
-# install_ww3_svn : install WAVEWATCH III in the present directory.           #
+# install_ww3_svn_model : install WAVEWATCH III in the present directory.     #
 #                   Working from svn server.                                  #
 #                                                                             #
 # -remarks :                                                                  #
@@ -882,20 +882,20 @@
 # 8.d hook in present script
 
   cd $main_dir
-  if [ ! -f install_ww3_svn ]
+  if [ ! -f install_ww3_svn_model ]
   then
     echo "Install script not in main directory, create link."
-    ln -sf ./bin/install_ww3_svn .
+    ln -sf ./bin/install_ww3_svn_model .
   else
-    lch=`ls -l install_ww3_svn | cut -c1-1`
+    lch=`ls -l install_ww3_svn_model | cut -c1-1`
     if [ "$lch" != 'l' ]
     then
       echo "Install script not a link ..."
-      difft=`diff install_ww3_svn ./svn/bin/.`
+      difft=`diff install_ww3_svn_model ./svn/bin/.`
       if [ -z "$difft" ]
       then
         echo "   Install script identical to svn version, replace by link."
-        ln -sf ./svn/bin/install_ww3_svn .
+        ln -sf ./svn/bin/install_ww3_svn_model .
       else
         echo "   Install script different from svn version."
         echo "   Please update manually."                          

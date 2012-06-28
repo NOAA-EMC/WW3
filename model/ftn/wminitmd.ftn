@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Sep-2011 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -13,14 +13,18 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.    ( version 3.14.5 )
+!/    16-Aug-2010 : Adding NTRMAX to unify NTRACE.      ( version 3.14 )
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    05-Sep-2011 : Distribute HQFAC anf HPFAC to idle processors for
 !/                  use in WMGRIDMD.                    ( version 4.05 )
+!/    07-Mar-2012 : Adding TNAMES to avoid read warn.   ( version 4.07 )
+!/                  Adjust allocation INPMAP and IDINP.
+!/    12-Mar-2012 : Fixing format 9061.                 ( version 3.14 )
+!/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
 !/
-!/    Copyright 2009-2011 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -362,7 +366,7 @@
       CHARACTER(LEN=6)        :: ACTION(9), YESXX, XXXNO
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
-      CHARACTER(LEN=10)       :: STDATE, PN, MN
+      CHARACTER(LEN=10)       :: STDATE, PN, MN, TNAMES(7)
       CHARACTER(LEN=11),                                              &
                   ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
 !/DIST      CHARACTER(LEN=12)       :: TFILE
@@ -659,8 +663,9 @@
 !
       DO I=NRGRD+1, 2*NRGRD
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-        READ (MDSI,*,END=2001,ERR=2002) MNAMES(I), INAMES(I,:),       &
+        READ (MDSI,*,END=2001,ERR=2002) MNAMES(I), TNAMES(:),         &
               TMPRNK(I), TMPGRP(I), RP1(I), RPN(I), BCDTMP(I)
+        INAMES(I,:) = TNAMES(:)
         RP1(I) = MAX ( 0. , MIN ( 1. , RP1(I) ) )
         RPN(I) = MAX ( RP1(I) , MIN ( 1. , RPN(I) ) )
         END DO
@@ -695,7 +700,7 @@
 !
 ! 3.a.5 Set input flags
 !
-      ALLOCATE ( INPMAP(NRGRD,7), IDINP(-NRINP:NRGRD,7) )
+      ALLOCATE ( INPMAP(NRGRD,8), IDINP(-NRINP:NRGRD,8) )
       INPMAP = 0
       IDINP  = '---'
 !
@@ -1896,7 +1901,7 @@
 !
         CALL WMSETM ( I, MDSE, MDST )
 !/MPI        MPI_COMM_LOC = MPI_COMM_GRD
-!/MPI        IF ( MPI_COMM_LOC .EQ. -1 ) CYCLE
+!/MPI        IF ( MPI_COMM_LOC .EQ. MPI_COMM_NULL ) CYCLE
 !
         CALL WMUGET ( MDSE, MDST, NDSFND, 'OUT' )
         CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE., DESC='Log file' )
@@ -2126,7 +2131,7 @@
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
 !/MPI        CALL W3SETG ( I, MDSE, MDST )
 !/MPI        CALL W3SETO ( I, MDSE, MDST )
-!/MPI        IF ( FBCAST .AND. MPI_COMM_BCT.NE.-1 ) THEN
+!/MPI        IF ( FBCAST .AND. MPI_COMM_BCT.NE.MPI_COMM_NULL ) THEN
 !/MPI            CALL MPI_BCAST ( TOUTP(1,I), 2, MPI_INTEGER, 0,      &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( TSYNC(1,I), 2, MPI_INTEGER, 0,      &
@@ -2164,7 +2169,7 @@
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( FILEXT, 10, MPI_CHARACTER, 0,       &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            IF ( MPI_COMM_GRD .EQ. -1 )                          &
+!/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
 !/MPI                 CALL W3DIMX  ( I, NX, NY, NSEA, MDSE, MDST )
 !/MPI            CALL MPI_BCAST ( HQFAC, NX*NY, MPI_REAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
@@ -2179,7 +2184,7 @@
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( FR1  , 1, MPI_REAL   , 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
-!/MPI            IF ( MPI_COMM_GRD .EQ. -1 )                          &
+!/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
 !/MPI                 CALL W3DIMS ( I, NK, NTH, MDSE, MDST )
 !/MPI            CALL MPI_BCAST ( TH , NTH, MPI_REAL   , 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
@@ -2317,7 +2322,7 @@
 !
 !/SHRD        IF ( .NOT. FLRBPI(I) .AND. FLBPI ) THEN
 !/MPI        IF ( .NOT. FLRBPI(I) .AND. FLBPI .AND.                   &
-!/MPI              MPI_COMM_GRD .NE. -1) THEN
+!/MPI              MPI_COMM_GRD .NE. MPI_COMM_NULL) THEN
             CALL WMUSET ( MDSE, MDST, NDS(9), .FALSE. )
             IF ( BCDUMP(I) .AND. IAPROC.EQ.NAPBPT ) THEN
                 J            = LEN_TRIM(FILEXT)
@@ -2341,19 +2346,19 @@
 !
       DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
-!/MPI        IF ( MPI_COMM_GRD .NE. -1 ) CALL WMIOBS ( I )
+!/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) CALL WMIOBS ( I )
 !/SHRD        CALL WMIOBS ( I )
         END DO
 !
       DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
-!/MPI        IF ( MPI_COMM_GRD .NE. -1 ) CALL WMIOBG ( I )
+!/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) CALL WMIOBG ( I )
 !/SHRD        CALL WMIOBG ( I )
         END DO
 !
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
-!/MPI        IF ( MPI_COMM_GRD .NE. -1 ) CALL WMIOBF ( I )
+!/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) CALL WMIOBF ( I )
 !/MPI        END DO
 !
 ! 8.d.3 Relation to same ranked grids
@@ -2400,7 +2405,7 @@
 !/MPI            CALL WMSETM ( I, MDSE, MDST )
 !/MPI            CALL W3SETG ( I, MDSE, MDST )
 !/MPI            CALL W3SETO ( I, MDSE, MDST )
-!/MPI            IF ( FBCAST .AND. MPI_COMM_BCT.NE.-1 ) THEN
+!/MPI            IF ( FBCAST .AND. MPI_COMM_BCT.NE.MPI_COMM_NULL ) THEN
 !/MPI                CALL MPI_BCAST ( NOPTS, 1, MPI_INTEGER, 0,       &
 !/MPI                                 MPI_COMM_BCT, IERR_MPI )
 !/MPI              END IF
@@ -2811,7 +2816,7 @@
 !/T 9052 FORMAT ( ' TEST WMINIT : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
 !
 !/T 9060 FORMAT ( ' TEST WMINIT : GRID MOVEMENT DATA')
-!/T 9061 FORMAT ( '             ',I3,I8.8,I7,1X,2F8.2)
+!/T 9061 FORMAT ( '             ',I8.8,I7,1X,2F8.2)
 !
 !/T 9070 FORMAT ( ' TEST WMINIT : ALLPRC ')
 !/T 9071 FORMAT ( ' ',I3,'  : ',250I3)

@@ -16,11 +16,11 @@
 #    following parts of this scripts :                                        #
 #      sec. 3 : Provide correct link command                                  #
 #                                                                             #
-#  - This version is made for the Intel ifort version 8.1 on a Pentium 4      #
+#  - This version is made for the Intel ifort version 12 on nehalem.          #
 #    processor.                                                               #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      February 2005          #
+#                                                      February 2012          #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -105,12 +105,12 @@
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
-  libs=""
-  opt="-O3 -Zp8 -tpp7 -o $prog"
+  opt="-O3 -xSSE4.2 -ip -o $prog"
+# opt="-O0 -g -traceback -check all -fpe0 -ftrapuv -o $prog"
 
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=mpif90
+    comp='ifort -lmpi'
   else
     comp=ifort
   fi

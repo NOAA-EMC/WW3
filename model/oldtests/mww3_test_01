@@ -5,7 +5,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/FLX1 !/LN0 !/ST0 !/NL0 !/BT0 !/DB1 !/TR0 !/BS0 !/XX0                  #
+#   !/FLX0 !/LN0 !/ST0 !/NL0 !/BT0 !/DB1 !/TR0 !/BS0 !/XX0                  #
 #                        Only depth breaking relevant here.                 #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7 !/O10 !/O11                     #
@@ -14,37 +14,51 @@
 # No other optional switches should be used.                                #
 #                                                                           #
 # Remarks :                                                                 #
-# - Grads scripts do not display but prodice .eps files.                    #
+# - Grads scripts do not display but produce .eps files.                    #
 # - Script set up for parallel running :                                    #
 #    a) For cluster with mpirun activate mpirun command lines and set       #
 #       environment with valiables MPI and proc in section 0.               #
 #    b) For IBM with poe, activale poe command lines and set environment    #
 #       variables in poe jobcards at the top of the scripts.                #
+#    c) For SGI with MPIT several environment setting are needed in the     #
+#       head of the script, as well as job cards and using the mpiexec_mpt  #
+#       to start the code to run in the parallel environment.               #
+#    d) In present form, IBM qsub directives disabled to avoid unwanted     #
+#       translation by msub on zeus.                                        #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                 Last Mod : March 2012     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2012 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
 #                                                                           #
 #############################################################################
 
-#@ shell=/bin/sh
-#@ job_name=mww3_test_01
-#@ output=mww3_test_01.out
-#@ error=mww3_test_01.out
-#@ notification=never
-#@ class=dev
-#@ network.MPI=csss,shared,us
-#@ total_tasks=4
-#@ node=1
-#@ job_type=parallel
-#@ wall_clock_limit=00:01:00
-#@ resources=ConsumableCpus(1) ConsumableMemory(500 MB)
-#@ account_no=WAV-T2O
-#@ queue
+# #@ shell=/bin/sh
+# #@ job_name=mww3_test_01
+# #@ output=mww3_test_01.out
+# #@ error=mww3_test_01.out
+# #@ notification=never
+# #@ class=dev
+# #@ network.MPI=csss,shared,us
+# #@ total_tasks=4
+# #@ node=1
+# #@ job_type=parallel
+# #@ wall_clock_limit=00:01:00
+# #@ resources=ConsumableCpus(1) ConsumableMemory(500 MB)
+# #@ account_no=WAV-T2O
+# #@ queue
+
+#PBS -l procs=4
+# #PBS -l mem=1G
+#PBS -q batch
+#PBS -l walltime=15:00
+#PBS -A omd
+#PBS -N mww3_test_01
+#PBS -j oe
+#PBS -o mww3_test_01.out
 
 # 0. Preparations -----------------------------------------------------------
 
@@ -53,8 +67,14 @@
   ww3_env='.wwatch3.env'   # setup file
 
   grads='yes'              # run grads scripts
-    MPI='no'              # run ww3_shel in MPI mode
-   proc=4
+    MPI='yes'              # run ww3_shel in MPI mode
+   proc=4                  # only used for mpirun
+
+# zeus MPIT settings
+
+  MPI_BUFS_PER_PROC=128
+  MPI_BUFS_PER_HOST=128
+  MPI_GROUP_MAX=128
 
 # 0.a Set-up variables
 
@@ -74,7 +94,7 @@
   path_e="$main_dir/exe"          # path for executables
   path_a="$main_dir/aux"          # path for aux files and scripts
   path_o="$main_dir/test"         # path for output files
-# path_o="$main_dir/work"
+  path_o="$main_dir/work"
 
 # 0.b Clean-up
 
@@ -339,8 +359,10 @@ $
    1
 $
    19680606 000000    450  19680607 000000
-     T T T T T  T T T T T  T T T T T  T T T T T  T T T T T
-     T T T T T  T
+     T T T T T  T T T T T  T T F F F  F F F F F  F F F F F
+     F F F F F  F
+$    T T T T T  T T T T T  T T T T T  T T T T T  T T T T T
+$    T T T T T  T
    19680606 000000    450  19680607 000000
 EOF
 cat buoy.data >> ww3_shel.inp
@@ -368,7 +390,8 @@ EOF
 
   if [ "$MPI" = 'yes' ]
   then
-    mpirun -np $proc $path_e/ww3_shel
+    mpiexec_mpt -np $PBS_NP $path_e/ww3_shel
+#   mpirun -np $proc $path_e/ww3_shel
 #   poe $path_e/ww3_shel
   else
     $path_e/ww3_shel
@@ -803,7 +826,7 @@ EOF
   echo ' ' ; echo "Files in $path_o :" ; echo ' '
   cd $path_o
   ls -l ww3_????.out gx_????.out
-  ls -l *.ww3 ww3.* *.eps
+  ls -l *.ww3 ww3.* *.eps *.gs
 
   echo ' ' ; echo ' '
   echo '                  ======>  END OF WAVEWATCH III  <====== '
