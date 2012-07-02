@@ -1265,7 +1265,7 @@
                   IXA    = IXB + IXS
                   IXB    = IXA + (NXMAX-1)*IXS
                   IXB    = MIN ( IXB , IXN )
-                  IF ( J .EQ. 29 ) THEN
+                  IF ( J .EQ. 43 ) THEN
                       CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0, FSC, &
                         IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
                       CALL PRTBLK (NDSO, NX, NY, NX+1, X2, MAP, 0, FSC, &
@@ -1381,7 +1381,7 @@
                      ENDIF 		       		       
                 END IF
 !
-                IF ( J.EQ.29) THEN 
+                IF ( J.EQ.43) THEN 
                    DO IX=IX1, IXN
                      DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
@@ -1421,10 +1421,10 @@
                           END DO
                       END IF
                 ELSE 
-                   IF (J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.5 .OR.              &
-                     J.EQ.27 .OR. J.EQ.28 .OR. J.EQ.34 .OR. J.EQ.35   &
-		     .OR. J.EQ.36 .OR. J.EQ.37 .OR. J.EQ.38           &
-		     .OR. J.EQ.39 .OR. J.EQ.43 .OR. J.EQ.44 ) THEN
+     IF (J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.29 .OR.         &
+     J.EQ.32 .OR. J.EQ.33 .OR. J.EQ.38 .OR. J.EQ.39   &
+    .OR. J.EQ.40 .OR. J.EQ.42 .OR. J.EQ.44 .OR. J.EQ.47 .OR. J.EQ.48  &
+    .OR. J.EQ.49 .OR. J.EQ.50 .OR. J.EQ.51 ) THEN
                     DO IX=IX1, IXN
                      DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &

@@ -856,6 +856,7 @@
 !/ST3            TAUWX  = 0.
 !/ST3            TAUWY  = 0.
 !/ST3            LLWS(:,:)  = .TRUE.
+                 USTAR  = 1.
 !/ST4            ZWND   = ZZWND
 !/ST4            TAUWX  = 0.
 !/ST4            TAUWY  = 0.

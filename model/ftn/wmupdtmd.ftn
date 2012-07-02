@@ -1180,6 +1180,7 @@ call extcde (99)
                 IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
               END IF
             DO J=IXS0, IXSN
+               JJ=J
               IF ( FLAGLL ) THEN
                   IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1,NXI)
                   IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
