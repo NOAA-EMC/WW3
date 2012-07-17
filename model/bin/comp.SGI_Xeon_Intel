@@ -104,7 +104,7 @@
     opt="$opt -openmp"
   fi
 
-  if [ "$name" = 'ww3_ounf' ] || [ "$name" = 'ww3_ounp' ] || [ "$name" = 'ww3_prnc' ]
+  if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
       NC3) opt="$opt -I$NETCDF_INCDIR" ;;

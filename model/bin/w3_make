@@ -355,11 +355,21 @@ EOF
 # 2.c Run make - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
     else
+
+      netcdf_compile=no
+      if [ -n "`echo $cdf_programs | grep $prog`" ]
+      then
+        netcdf_compile=yes
+      fi
+      export netcdf_compile
+
       path_m=$main_dir/mod
       export path_m
       make -f makefile $aPe/$prog
       echo ' '
+
     fi
+
   done
 
 # --------------------------------------------------------------------------- #

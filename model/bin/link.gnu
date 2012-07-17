@@ -118,7 +118,7 @@
     opt="$opt -fopenmp"
   fi
 
-  if [ "$prog" = 'ww3_ounf' ] || [ "$prog" = 'ww3_ounp' ] || [ "$prog" = 'ww3_prnc' ]
+  if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
       NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
