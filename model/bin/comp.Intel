@@ -32,9 +32,11 @@
 #      sec. 3.d : Remove unnecessary files.                                   #
 #                                                                             #
 #  - This version is made for the Intel ifort version 12 on Xeon Westmere     #
+#  - On zeus the -list option slows down the compilation time by an order     #
+#    of magnitude. For this section 1.c is added.                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      February 2012          #
+#                                                      June 2012              #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -51,6 +53,11 @@
   rm -f $name.l
   rm -f $name.o
   rm -f comp.stat
+
+# 1.c Set listing option - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  list=' -list'
+  list=
 
 # --------------------------------------------------------------------------- #
 # 2. Compile                                                                  #
@@ -78,8 +85,8 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  opt="-c -list -O3 -xSSE4.2 -ip  -module $path_m"
-# opt="-c -list -O0 -g -traceback -check all -fpe0 -ftrapuv -module $path_m"
+  opt="-c $list -O3 -xSSE4.2 -ip  -module $path_m"
+# opt="-c $list -O0 -g -traceback -check all -fpe0 -ftrapuv -module $path_m"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
   then

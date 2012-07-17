@@ -148,7 +148,7 @@ EOF
     rm -f *.f90
     rm -f *.l
     rm -f *.o
-    rm -f *.inp
+#   rm -f *.inp
     rm -f *.out
     rm -f *.err
     rm -f *.ps
