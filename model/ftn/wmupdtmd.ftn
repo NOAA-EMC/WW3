@@ -249,6 +249,16 @@
 !
 ! 2.  Using native input --------------------------------------------- /
 !
+! Notes:  I added a check here, since I was getting "Subscript out of range" 
+! ........errors in some cases. (Rogers)
+! ........(We can remove this check when root cause is addressed.)
+        IF(SIZE(INPMAP,2).LT.J.OR.SIZE(IDINP,2).LT.J)THEN
+           WRITE(*,*)'INPMAP/IDINP not sufficiently dimensioned.'
+           WRITE(*,*)'SIZE(INPMAP,2) = ',SIZE(INPMAP,2)
+           WRITE(*,*)'SIZE(IDINP,2) = ',SIZE(IDINP,2)
+           WRITE(*,*)'J = ',J
+           STOP
+        END IF
         IF ( INPMAP(IMOD,J) .EQ. 0 ) THEN
 !
 !/T            WRITE (MDST,9020)
@@ -1024,11 +1034,14 @@ call extcde (99)
 !
 !/S      CALL STRACE (IENT, 'WMUPDV')
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN
+!/T38      WRITE(*,*)'WMUPDV: 0.  Initialization'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
+
+      IF ( GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
-      ELSE IF (GTYPE .EQ. UNGTYPE) THEN
+      ELSE IF (GRIDS(JMOD)%GTYPE .EQ. UNGTYPE) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
           'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )      
@@ -1054,6 +1067,9 @@ call extcde (99)
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
 !
+!/T38      WRITE(*,*)'WMUPDV: 1. Case of identical resolution and coinciding grids'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
+
       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
            ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
@@ -1061,6 +1077,9 @@ call extcde (99)
 !
 ! 1.a Offsets
 !
+!/T38      WRITE(*,*)'WMUPDV: 1.a Offsets'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
+
           IXO    = NINT((X0-X0I)/SX)
 !
           IF ( FLAGLL ) THEN
@@ -1087,6 +1106,9 @@ call extcde (99)
 !
 ! 1.b Fill arrays for sea points only
 !
+!/T38     WRITE(*,*)'WMUPDV: 1.b Fill arrays for sea points only'
+!/T38     WRITE(*,*)'Warning: SX SY still in use!!'
+
           DO IX=IXF0, IXFN
             IF ( FLAGLL ) THEN
                 IXS    = 1 + NINT ( MOD (                             &
@@ -1109,6 +1131,8 @@ call extcde (99)
 !
 ! 2.a Interpolation / averaging data for X axis
 !
+!/T38      WRITE(*,*)'WMUPDV: 2.a Interpolation / averaging data for X axis'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
       IF ( SX/SXI .LT. 1.0001 ) THEN
           MXA    = 2
         ELSE
@@ -1219,6 +1243,8 @@ call extcde (99)
 !
 ! 2.b Interpolation / averaging data for Y axis
 !
+!/T38      WRITE(*,*)'WMUPDV: 2.b Interpolation / averaging data for Y axis'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
       IF ( SY/SYI .LT. 1.0001 ) THEN
           MYA    = 2
         ELSE
@@ -1561,11 +1587,14 @@ call extcde (99)
 !
 !/S      CALL STRACE (IENT, 'WMUPDS')
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN
+!/T38      WRITE(*,*)'WMUPDS: 0.  Initialization'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
+
+      IF ( GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
-        ELSE IF ( GTYPE .EQ. UNGTYPE) THEN
+        ELSE IF ( GRIDS(JMOD)%GTYPE .EQ. UNGTYPE) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
           'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )	  
@@ -1590,12 +1619,16 @@ call extcde (99)
 !
 ! 1. Case of identical resolution and coinciding grids --------------- /
 !
+!/T38      WRITE(*,*)'WMUPDS: 1. Case of identical resolution and coinciding grids'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
            ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
            ABS(MOD((ABS(Y0-Y0I))/SY+0.5,1.)-0.5) .LT. 1.E-2 ) THEN
 !
 ! 1.a Offsets
+!/T38      WRITE(*,*)'WMUPDS: 1.a Offsets'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
 !
           IXO    = NINT((X0-X0I)/SX)
 !
@@ -1623,6 +1656,8 @@ call extcde (99)
 !
 ! 1.b Fill arrays for sea points only
 !
+!/T38     WRITE(*,*)'WMUPDS: 1.b Fill arrays for sea points only'
+!/T38     WRITE(*,*)'Warning: SX SY still in use!!'
           IF ( FLAGLL ) THEN
               DO IX=IXF0, IXFN
                 IXS    = 1 + NINT ( MOD (                             &
@@ -1647,6 +1682,8 @@ call extcde (99)
 !
 ! 2.a Interpolation / averaging data for X axis
 !
+!/T38      WRITE(*,*)'WMUPDS: 2.a Interpolation / averaging data for X axis'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
       IF ( SX/SXI .LT. 1.0001 ) THEN
           MXA    = 2
         ELSE
@@ -1756,6 +1793,8 @@ call extcde (99)
 !
 ! 2.b Interpolation / averaging data for Y axis
 !
+!/T38      WRITE(*,*)'WMUPDS: 2.b Interpolation / averaging data for Y axis'
+!/T38      WRITE(*,*)'Warning: SX SY still in use!!'
       IF ( SY/SYI .LT. 1.0001 ) THEN
           MYA    = 2
         ELSE

@@ -194,7 +194,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GSRUMD
-      USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, X0, Y0, SX, SY, GSU,&
+      USE W3GDATMD, ONLY: NTH, NK, NSPEC, NX, NY, X0, Y0, SX, GSU,&
                           RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
                           ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
                           MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
@@ -283,6 +283,8 @@
             CYCLE
           END IF
       ELSE 
+!.......Notes: What is the meaning of SX in context of unstructured grids? 
+!..............It should be confirmed that this is not a bug.
         IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
             XPT(IPT) .GT. XN + ACC*SX .OR.                        &
             YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &
@@ -304,6 +306,7 @@
 !/T         WRITE (NDST,9012) IX(K), IY(K), RD(K)
 !/T         END DO
 !/T     ELSE 
+!.........notes: some of these variables are no longer used, so maybe we should not write them out...
 !/T       WRITE (NDST,9013) IX1, IY1, IXS, IYS, RDX, RDY
 !/T       ENDIF
 
@@ -361,17 +364,17 @@
         END IF
 !
         PTNME(NOPTS) = PNAMES(IPT)
-!/T
-        IF (GTYPE .NE. UNGTYPE) THEN
+
+!/T     IF (GTYPE .NE. UNGTYPE) THEN
 !/T        WRITE (NDST,9021) &
 !/T          NOPTS, PTNME(NOPTS), PTLOC(1,NOPTS), PTLOC(2,NOPTS), &
 !/T          (IPTINT(1,K,NOPTS),IPTINT(2,K,NOPTS),PTIFAC(K,NOPTS),K=1,4)
-        ELSE 
+!/T     ELSE 
 !/T        WRITE (NDST,9020) NOPTS, PTNME(NOPTS),                     &
 !/T                          PTLOC (1,NOPTS), PTLOC (2,NOPTS),        &
 !/T                          IPTINT(1,1,NOPTS), IPTINT(2,1,NOPTS),        &
 !/T                          PTIFAC(1,NOPTS), PTIFAC(2,NOPTS)
-          END IF
+!/T     END IF
 !
         END DO ! End loop over output points. 
 !

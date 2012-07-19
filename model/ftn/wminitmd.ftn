@@ -303,7 +303,7 @@
       USE W3GDATMD, ONLY: FLAGLL, GTYPE, ICLOSE, NX, NY,              &
                           X0, Y0, SX, SY, HQFAC, HPFAC,               &
                           FILEXT, NSEA, NSEAL, NK, NTH, XFR, FR1, TH, &
-                          DTMAX, DTCFL, FLAGST
+                          DTMAX, DTCFL, FLAGST, UNGTYPE, CLGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
       USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR, FLWIND

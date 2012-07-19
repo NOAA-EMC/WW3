@@ -212,6 +212,7 @@
                                    touch ww3_shel.ftn ;; 
      'mggse'  ) cd $main_dir/ftn ; touch w3pro3md.ftn
                                    touch ww3_shel.ftn ;;
+     'scrip'  ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
      'nnt'    ) cd $main_dir/ftn ; touch w3srcemd.ftn ;;
      'mprf'   ) cd $main_dir/ftn ; touch wmmdatmd.ftn
                                    touch wminitmd.ftn

@@ -124,6 +124,7 @@
 !      FICEL     Real  Public   Length scale for sea ice damping
 !      PFMOVE    Real  Public   Tunable parameter in GSE correction
 !                               for moving grids.
+!      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
 !      ZB        R.A.  Public   Bottom levels on storage grid.
 !      CLATS(I)  R.A.  Public   (Inverse) cosine of latitude at sea points.
 !      CTHG0S    R.A.  Public   Constant in great-circle refr. term at sea points.
@@ -466,6 +467,7 @@
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                             DTMAX, DTMIN, DMIN, CTMAX,           &
                             FICE0, FICEN, FICEL, PFMOVE
+        REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
         REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
         REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
@@ -698,6 +700,7 @@
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                                  DTMAX, DTMIN, DMIN, CTMAX,           &
                                  FICE0, FICEN, FICEL, PFMOVE
+      REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
       REAL, POINTER           :: ZB(:), CLATS(:)
       REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
       REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
@@ -1495,6 +1498,7 @@
 !/SEC1      NITERSEC1  => GRIDS(IMOD)%NITERSEC1
       CTMAX  => GRIDS(IMOD)%CTMAX
       FICE0  => GRIDS(IMOD)%FICE0
+      GRIDSHIFT  => GRIDS(IMOD)%GRIDSHIFT
       FICEN  => GRIDS(IMOD)%FICEN
       FICEL  => GRIDS(IMOD)%FICEL
       PFMOVE => GRIDS(IMOD)%PFMOVE
@@ -1806,6 +1810,11 @@
 !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    20-Jul-2011 : HPFAC and HQFAC are now calculated using W3DIST.
+!/                  Result should be very similar except near pole.
+!/                  Due to precision issues, HPFAC and HQFAC revert
+!/                  to SX and SY in case of regular grids.
+!/                  (W. E. Rogers, NRL)                 ( version 3.14 )
 !/
 !  1. Purpose :
 !
@@ -1869,6 +1878,7 @@
 !/T      REAL               :: ANGPQ(NY,NX)
 !     REAL               :: UVECPX(NY,NX), UVECPY(NY,NX)
 !     REAL               :: UVECQX(NY,NX), UVECQY(NY,NX)
+      
 !/S      INTEGER, SAVE      :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3GNTX')
@@ -1894,6 +1904,7 @@
       GRIDS(IMOD)%GSU = W3GSUC( .FALSE., FLAGLL, GRIDS(IMOD)%ICLOSE, &
                                 GRIDS(IMOD)%NX, GRIDS(IMOD)%NY, &
                                 GRIDS(IMOD)%XGRD, GRIDS(IMOD)%YGRD )
+
 !/T      CALL W3GSUP(GRIDS(IMOD)%GSU, NDST)
 !
 !/T      WRITE (NDST,9001)
@@ -1927,8 +1938,10 @@
 !  is a global grid, then the i-differences at the i=1 and i=nx boundary
 !  cells are computed with central differences using the wrapped cell
 !  x-coordinates.
-      !
-      !  Compute dx/dp & dy/dp
+
+!
+!  Compute dx/dp & dy/dp & dm/dp
+
       IX = 1
       IF(FLAGLL)THEN
          DO IY=1,NY
@@ -1941,6 +1954,10 @@
          DXDP(: ,IX) =        ( XGRD(: ,IX+1) - XGRD(: ,IX  ) )
       ENDIF
       DYDP(: ,IX) =        ( YGRD(: ,IX+1) - YGRD(: ,IX  ) )
+      DO IY=1,NY
+         HPFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX+1),YGRD(IY,IX+1), &
+              XGRD(IY,IX),YGRD(IY,IX))
+      END DO
 
       IX = NX
       IF(FLAGLL)THEN
@@ -1954,6 +1971,10 @@
          DXDP(: ,IX) =        ( XGRD(: ,IX  ) - XGRD(: ,IX-1) )
       ENDIF
       DYDP(: ,IX) =        ( YGRD(: ,IX  ) - YGRD(: ,IX-1) )
+      DO IY=1,NY
+         HPFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX), &
+              XGRD(IY,IX-1),YGRD(IY,IX-1))
+      END DO
 
       DO IX=2, NX-1
 
@@ -1969,10 +1990,15 @@
          ENDIF
 
          DYDP(: ,IX)   = HALF * ( YGRD(: ,IX+1) - YGRD(: ,IX-1) )
+         DO IY=1,NY
+            HPFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX+1),YGRD(IY,IX+1), &
+                 XGRD(IY,IX-1),YGRD(IY,IX-1))*HALF
+         END DO
 
       END DO
-      !
-      !  Compute dx/dq & dy/dq
+
+!
+!  Compute dx/dq & dy/dq & dm/dq
 
       IY = 1
       IF(FLAGLL)THEN
@@ -1986,6 +2012,10 @@
          DXDQ(IY,: )   =        ( XGRD(IY+1,: ) - XGRD(IY  ,: ) )
       ENDIF
       DYDQ(IY,: )   =        ( YGRD(IY+1,: ) - YGRD(IY  ,: ) )
+      DO IX=1,NX
+         HQFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY+1,IX),YGRD(IY+1,IX), &
+              XGRD(IY,IX),YGRD(IY,IX))
+      END DO
 
       IY = NY
       IF(FLAGLL)THEN
@@ -1999,6 +2029,10 @@
          DXDQ(IY,: )   =        ( XGRD(IY  ,: ) - XGRD(IY-1,: ) )
       ENDIF
       DYDQ(IY,: )   =        ( YGRD(IY  ,: ) - YGRD(IY-1,: ) )
+      DO IX=1,NX
+         HQFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX), &
+              XGRD(IY-1,IX),YGRD(IY-1,IX))
+      END DO
 
       DO IY=2, NY-1
          IF(FLAGLL)THEN
@@ -2012,7 +2046,26 @@
             DXDQ(IY,: ) = HALF * ( XGRD(IY+1,: ) - XGRD(IY-1,: ) )
          ENDIF
          DYDQ(IY,: ) = HALF * ( YGRD(IY+1,: ) - YGRD(IY-1,: ) )
+         DO IX=1,NX
+            HQFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY+1,IX),YGRD(IY+1,IX), &
+                 XGRD(IY-1,IX),YGRD(IY-1,IX))*HALF
+         END DO
       END DO
+
+!......notes: Though we *should* recover SX and SY using calculations on XGRD and YGRD,
+!.............it turns out that there are small differences which cause problems for 
+!.............SCRIP. Therefore, we add the if-then here to use SX and SY in case of 
+!.............regular grids, to overwrite DXDP etc. calculated above.
+!.............Note 1: that this may be unnecessary if we go to double precision.
+!.............Note 2: HQFAC calculated above is still used. Thus, we don't have the entire
+!.....................block of code above inside an "if not regular grid" 
+
+      IF(GRIDS(IMOD)%GTYPE.EQ.RLGTYPE)THEN
+         DXDP=SX
+         DXDQ=0.0D0
+         DYDP=0.0D0
+         DYDQ=SY
+      ENDIF   !    IF(GRIDS(IMOD)%GTYPE.EQ.RLGTYPE)THEN
 
 !
 !  Account for spherical metric if lat/lon grid (only if the metric
@@ -2024,22 +2077,13 @@
 !  If we do this, then the COS(YGRD*D2R) factor must be removed from
 !  the HPFAC & HQFAC.
 !
-!  HPFAC: h_p = sqrt(g_pp) = sqrt( (dx/dp)^2 + (dy/dp)^2 )
-      IF ( FLAGLL ) THEN
-          HPFAC = SQRT( (DXDP*COS(YGRD*D2R))**2 + DYDP**2 )
-        ELSE
-          HPFAC = SQRT( DXDP**2 + DYDP**2 )
-        END IF
 !/T      WRITE(NDST,'(A,2E14.6)')'HPFAC MIN/MAX:',MINVAL(HPFAC),MAXVAL(HPFAC)
-!
-!  HQFAC: h_q = sqrt(g_qq) = sqrt( (dx/dq)^2 + (dy/dq)^2 )
-      IF ( FLAGLL ) THEN
-          HQFAC = SQRT( (DXDQ*COS(YGRD*D2R))**2 + DYDQ**2 )
-        ELSE
-          HQFAC = SQRT( DXDQ**2 + DYDQ**2 )
-        END IF
 !/T      WRITE(NDST,'(A,2E14.6)')'HQFAC MIN/MAX:',MINVAL(HQFAC),MAXVAL(HQFAC)
 !
+
+!/T38     WRITE(NDST,'(A,2E14.6)')'HPFAC MIN/MAX:',MINVAL(HPFAC),MAXVAL(HPFAC)
+!/T38     WRITE(NDST,'(A,2E14.6)')'HQFAC MIN/MAX:',MINVAL(HQFAC),MAXVAL(HQFAC)
+
 !  GSQRT: sqrt(g) = (dx/dp)(dy/dq) - (dx/dq)(dy/dp)
       GSQRT = DXDP*DYDQ - DXDQ*DYDP
 !/T      WRITE(NDST,'(A,2E14.6)')'GSQRT MIN/MAX:',MINVAL(GSQRT),MAXVAL(GSQRT)

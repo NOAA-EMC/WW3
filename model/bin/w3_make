@@ -324,8 +324,9 @@ EOF
   aPo="$main_dir/obj"     # path containing .o files
   aPm="$main_dir/mod"     # path containing .mod files
   aPe="$main_dir/exe"     # path containing executables
+  aPS="$main_dir/ftn/SCRIP"   # path containing SCRIP software
 
-  export aPb aPo aPm aPe
+  export aPb aPo aPm aPe aPS
 
 # --------------------------------------------------------------------------- #
 # 2. Run make for all requests                                                #
@@ -358,6 +359,10 @@ EOF
 
       netcdf_compile=no
       if [ -n "`echo $cdf_programs | grep $prog`" ]
+      then
+        netcdf_compile=yes
+      fi
+      if [ -n "`grep SCRIP $main_dir/bin/switch`" ] &&  [ "$prog" = 'ww3_multi' ]
       then
         netcdf_compile=yes
       fi

@@ -488,6 +488,7 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
+!/SCRIP   WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
           WRITE(NDSM)                                                 &
                COUG_2D, COUG_RAD3D, COUG_US3D
@@ -542,10 +543,14 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
+
+!/SCRIP   READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
+
 !/SEC1              READ (NDSM) NITERSEC1
 !
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                COUG_2D, COUG_RAD3D, COUG_US3D
+
         END IF
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG

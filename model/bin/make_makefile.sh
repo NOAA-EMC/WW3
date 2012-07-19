@@ -18,6 +18,7 @@
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
 #                                                                             #
+
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -88,7 +89,7 @@
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection mcp netcdf
+              mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip
   do
     case $type in
       mach   ) TY='one'
@@ -224,6 +225,10 @@
                ID='netcdf api type'
                TS='NC4'
                OK='NC4' ;;
+      scrip  ) TY='upto1'
+               ID='grid to grid interpolation '
+               TS='SCRIP'
+               OK='SCRIP' ;;
     esac
 
     n_found='0'
@@ -293,6 +298,7 @@
       source ) s_inds=$sw ;;
       stab   ) stab=$sw ;;
       stress ) stress=$sw ;;
+      scrip  ) scrip=$sw ;;
       s_nl   ) s_nl=$sw ;;
       s_bot  ) s_bt=$sw ;;
       s_db   ) s_db=$sw ;;
@@ -474,6 +480,20 @@
       echo ' ' ; exit 8
   fi
 
+# Notes re: changing compilers (important)
+# ...1) run cleaner scrip to get rid of old .mod and .o and makefile files
+# ...2) edit and run makefile in SCRIP directory as appropriate
+# ...3) use -c {compiler name} in run_test
+
+# Gnu:
+#     -Idir : where to search for .mod files
+#     -Jdir or -Mdir : where to put .mod files
+
+# Portland:
+# From man pgf90 :
+#       -module directory
+#              Save/search for module files in directory
+
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
   progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
@@ -605,6 +625,7 @@
     esac
 
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
+
     files="$aux $core $data $prop $source $IO $prog"
     filesl="$prog $data $core $prop $source $IO $aux"
 
@@ -615,6 +636,13 @@
       echo "$d_string$file.o"                    >> makefile
       echo "$file"                               >> filelist.tmp
     done
+
+    if [ "$scrip" = 'SCRIP' ] && [ "$prog" = 'ww3_multi' ]
+    then
+	S_string1='$(aPS)/scrip_constants $(aPS)/scrip_grids $(aPS)/scrip_iounitsmod $(aPS)/scrip_netcdfmod $(aPS)/scrip_remap_vars $(aPS)/scrip_timers $(aPS)/scrip_errormod $(aPS)/scrip_interface $(aPS)/scrip_kindsmod $(aPS)/scrip_remap_conservative $(aPS)/scrip_remap_write'
+	filesl="$filesl $S_string1"
+    fi
+
     echo '	@$(aPb)/link '"$filesl"          >> makefile
     echo ' '                                     >> makefile
   done
@@ -777,6 +805,12 @@
       fi
     done
     rm -f check_file
+
+    if  [ "$scrip" = 'SCRIP' ] && [ "$file" = 'wmgridmd' ]
+    then
+        S_string2='$(aPS)/scrip_constants.o $(aPS)/scrip_grids.o $(aPS)/scrip_iounitsmod.o $(aPS)/scrip_netcdfmod.o $(aPS)/scrip_remap_vars.o $(aPS)/scrip_timers.o $(aPS)/scrip_errormod.o $(aPS)/scrip_interface.o $(aPS)/scrip_kindsmod.o $(aPS)/scrip_remap_conservative.o $(aPS)/scrip_remap_write.o'
+ 	string3="$string3 $S_string2"
+    fi
 
     echo "$string1$string3"                      >> makefile
     echo "$string2"                              >> makefile

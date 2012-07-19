@@ -468,6 +468,7 @@
       INTEGER                 :: FLAGTR, IHM
       REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,   &
                                  LICE, XSEED, XR, HSPM, WSM, WSC
+      REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC
 !/FLX3      INTEGER                 :: CTYPE
 !/FLX3      REAL                    :: CDMAX
@@ -1402,6 +1403,7 @@
       CICE0  = 0.5
       CICEN  = 0.5
       LICE   = 0.
+      GSHIFT = 0.0D0
       PMOVE  = 0.5
       XSEED  = 1.
       FLAGTR = 0
@@ -1445,6 +1447,7 @@
       IF ( FLAGTR.LT.0 .OR. FLAGTR.GT.6 ) FLAGTR = 0
       CICEN  = MIN ( 1. , MAX ( 0. , CICEN ) )
       FICEN  = CICEN
+      GRIDSHIFT=GSHIFT
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
       FICE0  = CICE0
       FICEL  = LICE
@@ -1457,6 +1460,7 @@
 !
 !/SEED      XSEED  =  MAX ( 1. , XSEED )
 !/SEED      WRITE (NDSO,964) XSEED
+!/SCRIP     WRITE (NDSO,963) GSHIFT
       FACSD  = XSEED
 !/RWND RWINDC = RWNDC 
 !
@@ -1885,11 +1889,19 @@
 ! ....... Check for inverted grid (can result from wrong IDLA)
           IF ( (XGRDIN(2,1)-XGRDIN(1,1))*(YGRDIN(1,2)-YGRDIN(1,1)) .LT. &
                (YGRDIN(2,1)-YGRDIN(1,1))*(XGRDIN(1,2)-XGRDIN(1,1)) ) THEN
-              WRITE (NDSE,1011) IDLA
-              CALL EXTCDE (25)
-            END IF
+             WRITE (NDSE,1011) IDLA
+!.........Notes: here, we are checking to make sure that the j axis is ~90 degrees
+!................counter-clockwise from the i axis (the standard cartesian setup).
+!................So, it is a check on the handedness of the grid.
+!................We have confirmed for one case that a left-handed grid produces
+!................errors in SCRIP. We have not confirmed that left-handed grids necessarily
+!................produce errors in single-grid simulations, or that they necessarily
+!................produce errors in all multi-grid simulations.
+!................Note that transposing or flipping a grid will generally change the handedness.
+             CALL EXTCDE (25)
+          END IF
 !
-! 7.c.3 Curvilinear grid
+! 7.c.3 Unstructured grid
 !
         CASE ( UNGTYPE )
     
@@ -3420,7 +3432,8 @@
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')
   961 FORMAT ( '       Ice concentration cut-offs  :',F8.2,F6.2)
-  962 FORMAT ( '       Moving grid GSE cor. power  :',F8.2)
+!/MGG  962 FORMAT  ( '       Moving grid GSE cor. power  :',F8.2)
+!/SCRIP  963 FORMAT( ' Grid offset for multi-grid w/SCRIP  : ',E11.3)
 !/SEED  964 FORMAT ( '       Xseed in seeding algorithm  :',F8.2)
   965 FORMAT (/'    Dynamic source term integration scheme :'/        &
                '       Xp                      (-) :',F9.3/           &
@@ -3602,8 +3615,10 @@
                '     ( USE DRY RUN FLAG TO TEMPORARILY SWITCH OFF ',  &
                'CALCULATIONS )'/)
 !
- 1011 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
-               '     INVERTED GRID -- POSSIBLE CAUSE IS WRONG IDLA:',I4)
+ 1011 FORMAT (/' *** WAVEWATCH-III WARNING IN W3GRID :'/              &
+               '     LEFT-HANDED GRID -- POSSIBLE CAUSE IS WRONG '/   &
+               '     IDLA:',I4,' . THIS MAY PRODUCE ERRORS '/         &
+               '     (COMMENT THIS EXTCDE AT YOUR OWN RISK).')
 !
  1012 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
                '     ILLEGAL GRID CLOSURE TYPE:',A4)

@@ -35,6 +35,13 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      February 2012          #
+#                                                                             #
+# Notes re: changing compilers when SCRIP is in use:                          #
+# ...1) run cleaner scrip to get rid of old .mod and .o files and             #
+#       /ftn/makefile                                                         #
+# ...2) edit and run makefile in SCRIP directory as needed                    #
+# ...3) use -c {compiler name} in run_test                                    #
+#                                                                             #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -78,7 +85,7 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  opt="-c -Mlist -fast -module $path_m"
+  opt="-c -Mlist -fast -module $path_m -I$path_S"
 
 # opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m"
 

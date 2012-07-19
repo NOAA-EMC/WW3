@@ -11,11 +11,11 @@ $
 $ The first input line sets up the general multi-grid model definition
 $ by defining the follwing six parameters :
 $
-$   1) Number of wave model grids.i                         ( NRGRD )
-$   2) Number of grids definint input fields.               ( NRINP )
+$   1) Number of wave model grids.                          ( NRGRD )
+$   2) Number of grids defining input fields.               ( NRINP )
 $   3) Flag for using unified point output file.           ( UNIPTS )
 $   4) Output server type as in ww3_shel.inp
-$   5) Flag for dedicated process for iunified point output.
+$   5) Flag for dedicated process for unified point output.
 $   6) Flag for grids sharing dedicated output processes.
 $
   3 1 T 1 T T
@@ -63,7 +63,7 @@ $                        their wind from wind.input (mod_def.input).
 $     9)   Rank number of grid (internally sorted and reassigned).
 $    10)   Group number (internally reassigned so that different
 $          ranks result in different group numbers.
-$   11-12) Define fraction of cumminicator (processes) used for this
+$   11-12) Define fraction of communicator (processes) used for this
 $          grid.
 $    13)   Flag identifying dumping of boundary data used by this
 $          grid. If true, the file nest.MODID is generated.

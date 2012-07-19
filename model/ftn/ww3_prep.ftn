@@ -67,12 +67,12 @@
 !       IDFMLL  Int.  Id. FORMAT indicator.           |
 !       FORMLL  C*16  Id. FORMAT.                     | Long-lat
 !       FROMLL  C*4   'UNIT' / 'NAME' indicator       |    file(s)
-!       NAMELL  C*20  Name of long-lat file(s)        +
+!       NAMELL  C*40  Name of long-lat file(s)        +
 !       IDLAF   I.A.   +
 !       IDFMF   I.A.   |
 !       FORMF   C.A.   | Idem. fields file(s)
 !       FROMF   C*4    |
-!       NAMEF   C*20   +
+!       NAMEF   C*40   +
 !       FORMT   C.A.  Format or time in field.
 !       XC      R.A.  Components of input vector field or first
 !                     input scalar field
@@ -233,7 +233,7 @@
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
-                                 NAMELL*20, FROMF*4, NAMEF*20
+                                 NAMELL*40, FROMF*4, NAMEF*40
       CHARACTER*12            :: IDSTR1(5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
@@ -515,10 +515,27 @@
                 DO IX=1,NX
                   INGRID = W3GRMP( GSI, XGRD(IY,IX), YGRD(IY,IX),      &
                                    IS, JS, RW )
+
                   IF ( .NOT.INGRID ) THEN
-                      WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
-                      CYCLE
-                    END IF
+
+                     WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
+
+! Notes: We need to set these variables, even if we never intend to use them. 
+!...........Especially in the case of IX?? IY??, we cannot leave them unset, 
+!...........since they will be used as array indices later.
+
+                     IX21(IX,IY) = 1
+                     IX22(IX,IY) = 1
+                     IY21(IX,IY) = 1
+                     IY22(IX,IY) = 1
+                     RD11(IX,IY) = 0.0
+                     RD21(IX,IY) = 0.0
+                     RD12(IX,IY) = 0.0
+                     RD22(IX,IY) = 0.0
+
+                     CYCLE
+                  END IF
+
                   IX21(IX,IY) = IS(1)
                   IX22(IX,IY) = IS(2)
                   IY21(IX,IY) = JS(1)

@@ -77,7 +77,16 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  opt="-c -O3 -J$path_m -fno-second-underscore"
+# Notes re: changing compilers (important)
+# ...1) run cleaner scrip to get rid of old .mod and .o files
+# ...2) change switch or remove makefile to force creation of new makefile 
+# ...3) use -c {compiler name} in run_test
+
+# Gnu:
+#     -Idir : where to search for .mod files
+#     -Jdir or -Mdir : where to put .mod files
+
+  opt="-c -O3 -J$path_m -I$path_S -fno-second-underscore"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
   then

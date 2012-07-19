@@ -2085,6 +2085,7 @@
       'W3GFCL_R8 - BUCKET SEARCH:',IB,JB,B(JB,IB)%N, &
       XMIN+(IB-1)*DXB,YMIN+(JB-1)*DYB,XMIN+IB*DXB,YMIN+JB*DYB
       CELL_LOOP: DO K=1,B(JB,IB)%N
+
 !---------setup cell corner indices
           IS(1) = B(JB,IB)%I(K)  ;  JS(1) = B(JB,IB)%J(K)  ;
           IS(2) = B(JB,IB)%I(K)+1;  JS(2) = B(JB,IB)%J(K)  ;

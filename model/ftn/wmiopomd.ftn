@@ -176,6 +176,7 @@
 !
 !/ ------------------------------------------------------------------- /
 !
+      USE W3GSRUMD
       USE W3GDATMD, ONLY: W3SETG
       USE W3ADATMD, ONLY: W3SETA
       USE W3WDATMD, ONLY: W3SETW
@@ -186,8 +187,10 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, SY, MAPSTA, GRIDS,      &
-                          FLAGLL, ICLOSE, ICLOSE_NONE
+      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, MAPSTA, GRIDS,      &
+                          FLAGLL, ICLOSE, ICLOSE_NONE, GTYPE, UNGTYPE,&
+                          CLGTYPE, GSU
+      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  ! unstructured grids
       USE W3ODATMD, ONLY: O2INIT, NOPTS, PTLOC, PTNME, GRDID, OUTPTS
 !/MPI      USE W3ODATMD, ONLY: O2IRQI
       USE WMMDATMD, ONLY: MDSE, MDST, NRGRD, MDATAS, IMPROC, NMPSCR,  &
@@ -208,7 +211,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: I, J, IX1, IY1, IXS, IYS, II
+      INTEGER                 :: IPT, J, II
+      INTEGER                 :: IX(4), IY(4)         ! created by w3grmp
+      REAL                    :: RD(4)                ! created by w3grmp
+      INTEGER                 :: itout, I1, I2, I3    ! unstructured grids
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: IERR_MPI
       REAL                    :: XN, YN, RX, RY, RDX, RDY
@@ -274,72 +280,77 @@
       DO J=1, NRGRD
 !
         CALL W3SETG ( J, MDSE, MDST )
-        XN     = X0 + REAL(NX-1)*SX
-        YN     = Y0 + REAL(NY-1)*SY
+
+        IF ( GTYPE .EQ. UNGTYPE ) THEN
+           WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
+                'UNSTRUCTURED GRID SUPPORT IN THIS ROUTINE', & 
+                'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
+                'TO WORK *** '
+        END IF
+        IF ( GTYPE .EQ. CLGTYPE ) THEN
+           WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
+                'CURVILINEAR GRID SUPPORT IN THIS ROUTINE', & 
+                'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
+                'TO WORK *** '
+        END IF
+
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        XN     = MAXX
+        YN     = MAXY
+      ENDIF 
+
 !
-        DO I=1, NOPTS
+! Loop over output points
 !
-          IF ( FLAGLL ) THEN
-              IF ( XP(I) .GT. XN+ACC*SX ) XP(I) = XP(I)              &
-                                 - 360.*REAL(1+INT((XP(I)-XN)/360.))
-              IF ( XP(I) .LT. X0-ACC*SX ) XP(I) = XP(I)              &
-                                 + 360.*REAL(1+INT((X0-XP(I))/360.))
-            END IF
+! notes.....Here, we have pulled coding for UNGTYPE and CLGTYPE from w3iopomd.ftn
+        DO IPT=1, NOPTS
+! ..........in w3iopomd.ftn, it is "DO IPT=1, NPT" but otherwise very similar
+
+!     Check if point within grid 
 !
-          IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
-              IF (YP(I) .LT. Y0 - ACC*SY .OR.                         &
-                  YP(I) .GT. YN + ACC*SY ) CYCLE
-            ELSE
-              IF (XP(I) .LT. X0 - ACC*SX .OR.                         &
-                  XP(I) .GT. XN + ACC*SX .OR.                         &
-                  YP(I) .LT. Y0 - ACC*SY .OR.                         &
-                  YP(I) .GT. YN + ACC*SY ) CYCLE
-            END IF
+           IF (GTYPE .NE. UNGTYPE) THEN 
+              INGRID(J,IPT) = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
+              IF ( .NOT.INGRID(J,IPT) ) THEN
+                 CYCLE
+              END IF
+           ELSE 
+!.......Notes: What is the meaning of SX in context of unstructured grids? 
+!..............It should be confirmed that this is intentional (or a bug)
+              IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
+                  XPT(IPT) .GT. XN + ACC*SX .OR.                        &
+                  YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &
+                  YPT(IPT) .GT. YN + ACC*SX ) THEN
+              END IF
+           END IF
+
+!     Check if point not on land
+
+           IF (GTYPE .NE. UNGTYPE) THEN
+              IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
+                   MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
+                   MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
+                   MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
+                 INGRID(J,IPT) = .FALSE.
+                 CYCLE
+              END IF
+           ELSE 
+              I1 = TRIGP(itout,1)
+              I2 = TRIGP(itout,2)
+              I3 = TRIGP(itout,3)                  
+              IF (MAPSTA (1,I1) .EQ. 0 .AND.                           & 
+                   MAPSTA (1,I2) .EQ. 0 .AND.                           & 
+                   MAPSTA (1,I3) .EQ. 0 )   THEN                         
+                 INGRID(J,IPT) = .FALSE.
+                 CYCLE
+              END IF
+           END IF ! GTYPE
+
+!.........If we've gotten to this point, then we are satisfied that 
+!................the point is in this grid. 
+
+        END DO !        DO IPT=1, NOPTS
 !
-          RX     = ( XP(I) - X0 ) / SX
-          RY     = ( YP(I) - Y0 ) / SY
-          RDX    =  MOD ( RX , 1. )
-          RDY    =  MOD ( RY , 1. )
-          IF ( RDX.LT.0. ) RDX = RDX + 1.
-          IF ( RDY.LT.0. ) RDY = RDY + 1.
-!
-          IX1    = 1 + INT(RX)
-          IY1    = 1 + INT(RY)
-          IXS    = 1
-          IYS    = 1
-!
-          IF ( RDX .LE. ACC ) THEN
-              IXS    = 0
-              RDX    = 0.
-            END IF
-          IF ( RDX .GE. 1.-ACC ) THEN
-              IXS    = 0
-              IX1    = IX1 + 1
-              RDX    = 0.
-            END IF
-          IF ( RDY .LE. ACC ) THEN
-              IYS    = 0
-              RDY    = 0.
-            END IF
-          IF ( RDY .GE. 1.-ACC ) THEN
-              IYS    = 0
-              IY1    = IY1 + 1
-              RDY    = 0.
-            END IF
-!
-          IF ( ICLOSE.NE.ICLOSE_NONE .AND. IX1 .EQ. NX ) IXS = 1-NX
-          IF (MAPSTA(  IY1  ,  IX1  ).EQ.0 .AND.                      &
-              MAPSTA(  IY1  ,IX1+IXS).EQ.0 .AND.                      &
-              MAPSTA(IY1+IYS,  IX1  ).EQ.0 .AND.                      &
-              MAPSTA(IY1+IYS,IX1+IXS).EQ.0) THEN
-              CYCLE
-            END IF
-!
-          INGRID(J,I) = .TRUE.
-!
-          END DO
-!
-        END DO
+      END DO !      DO J=1, NRGRD
 !
       DEALLOCATE ( XP, YP )
 !
@@ -347,11 +358,11 @@
 !
       MDATAS(:)%NRUPTS = 0
 !
-      DO I=1, NOPTS
-        GRDID(I) = '...none...'
+      DO IPT=1, NOPTS
+        GRDID(IPT) = '...none...'
         DO J= NRGRD, 1, -1
-          IF ( INGRID(J,I) ) THEN
-              GRDID(I) = GRIDS(J)%FILEXT
+          IF ( INGRID(J,IPT) ) THEN
+              GRDID(IPT) = GRIDS(J)%FILEXT
               MDATAS(J)%NRUPTS = MDATAS(J)%NRUPTS + 1
               EXIT
             END IF
@@ -362,14 +373,14 @@
 !
 !/O7b      IF ( IMPROC .EQ. NMPSCR ) THEN
 !/O7b          WRITE (MDSS,920) 
-!/O7b          DO I=1, NOPTS
+!/O7b          DO IPT=1, NOPTS
 !/O7b            DO J=1, NRGRD
-!/O7b              IF ( GRIDS(J)%FILEXT .EQ. GRDID(I) ) EXIT
+!/O7b              IF ( GRIDS(J)%FILEXT .EQ. GRDID(IPT) ) EXIT
 !/O7b              END DO
 !/O7b            IF ( J .GT. NRGRD ) THEN
-!/O7b                WRITE (MDSS,921) PTNME(I), PTLOC(:,I)*FACTOR
+!/O7b                WRITE (MDSS,921) PTNME(IPT), PTLOC(:,IPT)*FACTOR
 !/O7b              ELSE
-!/O7b                WRITE (MDSS,922) PTNME(I), PTLOC(:,I)*FACTOR, &
+!/O7b                WRITE (MDSS,922) PTNME(IPT), PTLOC(:,IPT)*FACTOR, &
 !/O7b                                 GRIDS(J)%FILEXT
 !/O7b              END IF
 !/O7b            END DO
@@ -378,17 +389,17 @@
 !
 ! 2.d Test output
 !
-!/T      DO I=1, NOPTS
-!/T        WRITE (MDST,9021) I, PTNME(I), GRDID(I)
+!/T      DO IPT=1, NOPTS
+!/T        WRITE (MDST,9021) IPT, PTNME(IPT), GRDID(IPT)
 !/T        END DO
 !
-!/T      I      = NOPTS
+!/T      IPT      = NOPTS
 !/T      WRITE (MDST,9022)
 !/T      DO J=1, NRGRD
 !/T        WRITE (MDST,9023) J, MDATAS(J)%NRUPTS, GRIDS(J)%FILEXT
-!/T        I      = I - MDATAS(J)%NRUPTS
+!/T        IPT      = IPT - MDATAS(J)%NRUPTS
 !/T        END DO
-!/T      WRITE (MDST,9024) I
+!/T      WRITE (MDST,9024) IPT
 !
       DEALLOCATE ( INGRID )
 !
@@ -402,33 +413,33 @@
 !
 ! 3.b (De)allocate map arrays
 !
-        I      = MAX ( 1 , MDATAS(J)%NRUPTS )
+        IPT      = MAX ( 1 , MDATAS(J)%NRUPTS )
         IF ( SETUP ) DEALLOCATE ( MDATAS(J)%UPTMAP )
-        ALLOCATE ( MDATAS(J)%UPTMAP(I) )
+        ALLOCATE ( MDATAS(J)%UPTMAP(IPT) )
 !
         IF ( MDATAS(J)%NRUPTS .EQ. 0 ) CYCLE
 !
-        ALLOCATE ( XP(I), YP(I), PN(I) )
+        ALLOCATE ( XP(IPT), YP(IPT), PN(IPT) )
 !
 ! 3.c Set up mapping and point arrays
 !
-        I      = 0
+        IPT      = 0
         DO II=1, NOPTS
           IF ( GRDID(II) .NE. GRIDS(J)%FILEXT ) CYCLE
-          I      = I + 1
-          MDATAS(J)%UPTMAP(I) = II
-          XP(I)  = PTLOC(1,II)
-          YP(I)  = PTLOC(2,II)
-          PN(I)  = PTNME(II) 
+          IPT      = IPT + 1
+          MDATAS(J)%UPTMAP(IPT) = II
+          XP(IPT)  = PTLOC(1,II)
+          YP(IPT)  = PTLOC(2,II)
+          PN(IPT)  = PTNME(II) 
           END DO
 !
-!/T        DO I=1, MDATAS(J)%NRUPTS
-!/T          WRITE (MDST,9031) I, MDATAS(J)%UPTMAP(I),XP(I),YP(I),PN(I)
+!/T        DO IPT=1, MDATAS(J)%NRUPTS
+!/T          WRITE (MDST,9031) IPT, MDATAS(J)%UPTMAP(IPT),XP(IPT),YP(IPT),PN(IPT)
 !/T          END DO
 !
 !/MPI        IF ( FLGO7a ) CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !/O7a        IF ( IMPROC.EQ.NMPSCR ) WRITE (MDSS,930)               &
-!/O7a                                         J, GRIDS(J)%FILEXT, I
+!/O7a                                         J, GRIDS(J)%FILEXT, IPT
 !
 ! 3.d Preprocessing for output
 !

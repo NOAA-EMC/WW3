@@ -125,6 +125,7 @@
   path_o="$main_dir/obj"
   path_m="$main_dir/mod"
   path_e="$main_dir/exe"
+  path_S="$main_dir/ftn/SCRIP"
 
   doc_dir=$main_dir/$doc_dir
 
@@ -309,7 +310,8 @@
 
   error='0'
 
-  export path_m
+  export path_m  # for use by comp
+  export path_S  # for use by comp
 
   if $path_b/comp $name > comp.out 2> comp.err
   then
