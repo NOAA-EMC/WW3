@@ -132,7 +132,7 @@
     iline = 6 + iloc
     line = sublin(result,iline)
     par_ID.iloc = subwrd(line,1)
-    loc_ID.iloc = substr(line,17,10)
+    loc_ID.iloc = substr(line,21,10)
     say '   location ' iloc ' is called ' loc_ID.iloc ' and stored as ' par_ID.iloc
     iloc = iloc + 1
   endwhile

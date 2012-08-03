@@ -9,10 +9,10 @@ $
 $ Points requested --------------------------------------------------- $
 $ Define points for which output is to be generated. 
 $
- 1
- 2
- 3
- 4
+$ 1
+$ 2
+  3
+$ 4
 $
 $ mandatory end of list
  -1
@@ -35,7 +35,7 @@ $          - Unit number for transfer file, also used in table file
 $            name.
 $          - Flag for unformatted transfer file.
 $
-  3   0.  0.  33  F
+  1   0.  0.  33  F
 $
 $ The transfer file contains records with the following contents.
 $

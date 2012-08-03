@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         28-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -23,6 +23,8 @@
 !/                  Adjust allocation INPMAP and IDINP.
 !/    12-Mar-2012 : Fixing format 9061.                 ( version 3.14 )
 !/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
+!/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
+!/                  Tom Durrant's fix, but moved to allocation.
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -76,7 +78,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         28-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -97,6 +99,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
+!/                  Tom Durant's fix, but moved to allocation.
 !/
 !  1. Purpose :
 !
@@ -582,6 +586,7 @@
 !
       MDS    = -1
       MDSF   = -1
+      FLGR2  = .FALSE.
 !
 ! ... Fixed and recycleable unit numbers.      
 !

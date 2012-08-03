@@ -173,6 +173,8 @@ EOF
     rm -f buoy.data
     rm -f fort.*
     rm -f times.*
+    rm -f *.grads
+    rm -f *.ctl
     rm -f map.gs
   done
 
