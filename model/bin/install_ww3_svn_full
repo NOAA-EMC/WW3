@@ -54,26 +54,26 @@
   if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ] 
   then
  
-  if [ -s $ww3_env ]
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
-  else
-    echo 'No install directory defined yet. The install directory has'
-    echo 'to be an existing directory containing the tar files.' ; echo ' '
-    main_dir=nodir.$$
-    until [ -d $main_dir ]
-    do
-      echo -n "   Directory (relative to $home_dir) : "
-      read OK
-      if [ -n "$OK" ]
-      then
-        main_dir="$OK"
-      fi
-    done
-    cd $main_dir
-    main_dir=`pwd`
-    echo ' '
-  fi
+    if [ -s $ww3_env ]
+    then
+      set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
+    else
+      echo 'No install directory defined yet. The install directory has'
+      echo 'to be an existing directory containing the tar files.' ; echo ' '
+      main_dir=nodir.$$
+      until [ -d $main_dir ]
+      do
+        echo -n "   Directory (relative to $home_dir) : "
+        read OK
+        if [ -n "$OK" ]
+        then
+          main_dir="$OK"
+        fi
+      done
+      cd $main_dir
+      main_dir=`pwd`
+      echo ' '
+    fi
 
   fi
 
@@ -99,7 +99,7 @@
   echo ' '
   echo 'Setting up environment variables.'
 
-  if [ "${sww3dir}" == "Y" ] || [ "${sww3dir}" == "y" ] 
+  if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ] 
   then
     echo "   Setup file $ww3_env found in $home_dir"
 
