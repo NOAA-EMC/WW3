@@ -714,7 +714,7 @@
                  WADATS(IMOD)%PHIAW(0:NSEA),                          &
                  WADATS(IMOD)%CHARN(0:NSEA)                         , &
                  WADATS(IMOD)%PHIOC(0:NSEA)                         , &
-                 WADATS(IMOD)%BEDFORMS(0:NSEA,2)                    , &
+                 WADATS(IMOD)%BEDFORMS(0:NSEA,3)                    , &
                  WADATS(IMOD)%WHITECAP(0:NSEA,4)                    , &
                  WADATS(IMOD)%CFLXYMAX(NXXX)                        , &
                  WADATS(IMOD)%CFLTHMAX(NXXX)                        , &

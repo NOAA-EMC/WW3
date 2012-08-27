@@ -514,38 +514,45 @@ END MODULE c_caldat
 !
       DO i=1,ndims
         IF (dimname(i) .EQ. "time") NTI = dimln(i)
-        IF ((dimname(i) .EQ. "longitude") .OR. (dimname(i) .EQ. "lon") &
-                                        .OR. (dimname(i) .EQ. "node")) NXI = dimln(i)
-        IF ((dimname(i) .EQ. "latitude") .OR. (dimname(i) .EQ. "lat") &
-                                        .OR. (dimname(i) .EQ. "node")) NYI = dimln(i)
+        IF ((dimname(i) .EQ. "longitude") .OR. (dimname(i) .EQ. "lon")) NXI = dimln(i)
+        IF ((dimname(i) .EQ. "latitude") .OR. (dimname(i) .EQ. "lat")) NYI = dimln(i)
+        IF (dimname(i) .EQ. "node") THEN
+          NXI = dimln(i)
+          NYI = dimln(i)
+        END IF
       END DO
 
-      ALLOCATE ( ALA(NXI,NYI), ALO(NXI,NYI) )
-      iret=nf90_inq_varid(ncid,"longitude",varidtmp)
-      IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lon",varidtmp)
-      call check_err(iret)
-      iret=nf90_get_var(ncid,varidtmp,X0I,start=(/1/))
-      call check_err(iret)
-      iret=nf90_get_var(ncid,varidtmp,XNI,start=(/NXI/))
-      call check_err(iret)
-      iret=nf90_get_var(ncid,varidtmp,ALO(:,1))
-      call check_err(iret)
-      DO i=1,NYI
-        ALO(:,i)=ALO(:,1)
-      END DO
 
-      iret=nf90_inq_varid(ncid,"latitude",varidtmp)
-      IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lat",varidtmp)
-      call check_err(iret)
-      iret=nf90_get_var(ncid,varidtmp,Y0I, start=(/1/))
-      call check_err(iret)
-      iret=nf90_get_var(ncid,varidtmp,YNI, start=(/NYI/))
-      call check_err(iret)
-      iret=nf90_get_var(ncid,varidtmp,ALA(1,:))
-      call check_err(iret)
-      DO i=1,NXI
-        ALA(i,:)=ALA(1,:)
-      END DO
+      IF (ITYPE.NE.1) THEN
+        ALLOCATE (ALA(NXI,NYI))
+        ALLOCATE (ALO(NXI,NYI))
+        iret=nf90_inq_varid(ncid,"longitude",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lon",varidtmp)
+        call check_err(iret)
+        iret=nf90_get_var(ncid,varidtmp,X0I,start=(/1/))
+        call check_err(iret)
+        iret=nf90_get_var(ncid,varidtmp,XNI,start=(/NXI/))
+        call check_err(iret)
+        iret=nf90_get_var(ncid,varidtmp,ALO(:,1))
+        call check_err(iret)
+        DO i=1,NYI
+          ALO(:,i)=ALO(:,1)
+        END DO
+
+        iret=nf90_inq_varid(ncid,"latitude",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lat",varidtmp)
+        call check_err(iret)
+        iret=nf90_get_var(ncid,varidtmp,Y0I, start=(/1/))
+        call check_err(iret)
+        iret=nf90_get_var(ncid,varidtmp,YNI, start=(/NYI/))
+        call check_err(iret)
+        iret=nf90_get_var(ncid,varidtmp,ALA(1,:))
+        call check_err(iret)
+        DO i=1,NXI
+          ALA(i,:)=ALA(1,:)
+        END DO
+      END IF
+
 !
 ! gets FillValue
 !
@@ -980,7 +987,7 @@ END MODULE c_caldat
           FA = 0.
           MXM = MAX ( NXJ(1), NXJ(2) )
           MYM = MAX ( NYJ(1), NYJ(2) )
-          IF (GTYPE.EQ.UNGTYPE) THEN 
+          IF (ITYPE.EQ.1) THEN 
             ALLOCATE ( XC(MXM,1), YC(MXM,1), AC(MXM,1) )
           ELSE
             ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM) )
@@ -1007,6 +1014,7 @@ END MODULE c_caldat
             iret=nf90_inq_varid(ncid,"time",varidtmp)
             call check_err(iret)
             iret=nf90_get_var(ncid,varidtmp,datecur,start=(/ITIME/))
+            call check_err(iret)
             IF (index(timeunits, "seconds").NE.0)   datecur=datecur/86400.
             datecur=dateref+datecur
             call caldat(int(datecur),dcur,mcur,ycur)
@@ -1031,7 +1039,7 @@ END MODULE c_caldat
         IF ( ITYPE .LE. 4 ) THEN
             iret=nf90_inq_varid(ncid,FIELDSNAME(1),varidtmp)
             call check_err(iret)
-            IF (GTYPE.EQ.UNGTYPE) THEN 
+            IF (ITYPE.EQ.1) THEN 
               iret=nf90_get_var(ncid,varidtmp,XC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
             call check_err(iret)
             ELSE 
@@ -1059,7 +1067,7 @@ END MODULE c_caldat
 
                 iret=nf90_inq_varid(ncid,FIELDSNAME(2),varidtmp)
                 call check_err(iret)
-                IF (GTYPE.EQ.UNGTYPE) THEN 
+                IF (ITYPE.EQ.1) THEN 
                   iret=nf90_get_var(ncid,varidtmp,YC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
                 call check_err(iret)
                 ELSE 
@@ -1087,7 +1095,7 @@ END MODULE c_caldat
 
                     iret=nf90_inq_varid(ncid,FIELDSNAME(3),varidtmp)
                     call check_err(iret)
-                    IF (GTYPE.EQ.UNGTYPE) THEN 
+                    IF (ITYPE.EQ.1) THEN 
                       iret=nf90_get_var(ncid,varidtmp,AC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
                     call check_err(iret)
                     ELSE 
@@ -1373,8 +1381,8 @@ END MODULE c_caldat
 !
       END DO
 !
-      DEALLOCATE(XC,YC,AC)
-      DEALLOCATE(ALA,ALO)
+      DEALLOCATE(XC,YC,AC)  
+      IF (ASSOCIATED(ALA)) DEALLOCATE(ALA,ALO)
       DEALLOCATE(varndims,vardimids,varname,varid,dimname,dimid,dimln)
 !
 !     End loop over input fields

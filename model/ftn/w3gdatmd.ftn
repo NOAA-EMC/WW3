@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Nov-2011 |
+!/                  | Last update :         14-Mar-2012 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -43,6 +43,7 @@
 !/                  (F. Ardhuin) 
 !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
+!/    14-Mar-2012 : Add PSIC for BT4                    ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -495,8 +496,9 @@
 !
         TYPE(T_GSU) :: GSU ! Grid search utility object
 !
-        LOGICAL               :: FLICES   ! flag for source terms in sea ice
-!/BT4        REAL, POINTER         :: SED_D50(:), SED_PORO(:)
+        LOGICAL               :: FLICES      ! flag for source terms in sea ice
+        REAL                  :: FFACBERG    ! mutiplicative factor for iceberg mask
+!/BT4   REAL, POINTER         :: SED_D50(:), SED_PSIC(:) 
 !/REF1        LOGICAL, POINTER      :: RREF(:)
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !
@@ -692,6 +694,7 @@
 !
       LOGICAL, POINTER        :: COUG_2D, COUG_RAD3D, COUG_US3D
       LOGICAL, POINTER        :: FLICES
+      REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
       REAL,    POINTER        :: REFPARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
@@ -714,7 +717,7 @@
       REAL   , POINTER :: GSQRT(:,:) ! SQRT(G) DEFINED ON IX,IY
       REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
       REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
-!/BT4        REAL, POINTER         :: SED_D50(:), SED_PORO(:)
+!/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
       LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
       LOGICAL, POINTER :: FLAGST(:)
@@ -1100,7 +1103,7 @@
                    GRIDS(IMOD)%HPFAC(MY,MX),   &
                    GRIDS(IMOD)%HQFAC(MY,MX)    )
 !/BT4    ALLOCATE ( GRIDS(IMOD)%SED_D50(0:MSEA), &
-!/BT4               GRIDS(IMOD)%SED_PORO(0:MSEA))
+!/BT4               GRIDS(IMOD)%SED_PSIC(0:MSEA) )
 
 !
       GRIDS(IMOD)%FLAGST = .TRUE.
@@ -1483,6 +1486,7 @@
       COUG_RAD3D  => GRIDS(IMOD)%COUG_RAD3D
       COUG_US3D   => GRIDS(IMOD)%COUG_US3D
       FLICES => GRIDS(IMOD)%FLICES
+      FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
       SX     => GRIDS(IMOD)%SX
@@ -1575,7 +1579,7 @@
           HQFAC  => GRIDS(IMOD)%HQFAC
 !
 !/BT4          SED_D50  => GRIDS(IMOD)%SED_D50
-!/BT4          SED_PORO => GRIDS(IMOD)%SED_PORO
+!/BT4          SED_PSIC => GRIDS(IMOD)%SED_PSIC
 !
           GSU  => GRIDS(IMOD)%GSU
 !

@@ -1367,6 +1367,7 @@
                   ELSE IF ( IO .EQ. 40 ) THEN
                     WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
                     WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)
+                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,3)
                   ELSE IF ( IO .EQ. 41 ) THEN
                     WRITE ( NDSOG ) PHIBBL(1:NSEA)
                   ELSE IF ( IO .EQ. 42 ) THEN
@@ -1552,6 +1553,8 @@
                                                     BEDFORMS(1:NSEA,1)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                     BEDFORMS(1:NSEA,2)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                    BEDFORMS(1:NSEA,3)
                   ELSE IF ( IO .EQ. 41 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        PHIBBL(1:NSEA)

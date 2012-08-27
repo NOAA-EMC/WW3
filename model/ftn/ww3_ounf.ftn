@@ -6,11 +6,12 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Nov-2011 |
+!/                  | Last update :         13-Mar-2012 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
 !/    07-Nov-2011 : Debug for spectral output on UNST   ( version 4.04 )
+!/    13-Mar-2012 : Update of NC attributes             ( version 4.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -231,7 +232,6 @@
           CNTIPART=CNTIPART+1
         END IF
       END DO
-      write (*,*) TABIPART
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) TOGETHER
 
@@ -529,7 +529,7 @@
 !     INTEGER, SAVE           :: NCOL   = 80
       INTEGER, SAVE           :: NCOL   = 132
 !/S      INTEGER, SAVE           :: IENT   =   0
-      REAL                    :: FSC, CABS, UABS, FSCA, XMIN, XMAX,   &
+      REAL                    :: FSC, FSC3, CABS, UABS, FSCA, XMIN, XMAX,   &
                                  XAVG, XSTD, YGBX, XGBX, AABS, FSC2
       REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
                                  XX(NX+1,NY), XY(NX+1,NY),            &
@@ -1399,7 +1399,7 @@
 !
           ELSE IF ( J .EQ. 40 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.01
+            FSC    = 0.001
             UNITS  = 'm'
             ENAME  = '.bed'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1)    &
@@ -1407,18 +1407,21 @@
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2)    &
                                                       , MAPSF, X2 )
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3)    &
-                                                      , MAPSF, X2 )
-            NFIELD=2
-            varnm(1)='ripplex'
-            varnm(2)='rippley'
-            varnl(1)='eastward ripple wavelength'
-            varnl(2)='northward ripple wavelength'
-            varns(1)='eastward_ripple_wavelength'
-            varns(2)='northward_ripple_wavelength'
-            varng(1)='eastward_ripple_wavelength'
-            varng(2)='northward_ripple_wavelength'
-            varnc(1)='ripple=sqrt(ripplex²+rippley²)'
-            varnc(2)='ripple=sqrt(ripplex²+rippley²)'
+                                                      , MAPSF, XY )
+            NFIELD=3
+            varnm(1)='bottom roughness'
+            varnm(2)='ripplex'
+            varnm(3)='rippley'
+            varnl(1)='bottom roughness'
+            varnl(2)='eastward sea bottom ripple wavelength'
+            varnl(3)='northward sea bottom ripple wavelength'
+            varns(2)='sea bottom roughness length'
+            varns(2)='eastward_ripple_wavelength'
+            varns(3)='northward_ripple_wavelength'
+            varng(2)='eastward_ripple_wavelength'
+            varng(3)='northward_ripple_wavelength'
+            varnc(2)='ripple_length=sqrt(ripplex²+rippley²)'
+            varnc(3)='ripple_length=sqrt(ripplex²+rippley²)'
             vmin = 0
             vmax = 30000
 !
@@ -1464,6 +1467,7 @@
           ELSE IF ( J .EQ. 43 ) THEN
             FLONE  = .TRUE.
             FSC    = 10.
+            FSC3    = 1.
             UNITS  = 'N/m'
             ENAME  = '.Sxy'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXX(1:NSEA)       &
@@ -1472,6 +1476,7 @@
                                                       , MAPSF, X2 )
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXY(1:NSEA)       &
                                                       , MAPSF, XY )
+
             NFIELD=3
             varnm(1)='Sxx'
             varnm(2)='Syy'
@@ -1485,9 +1490,9 @@
             varns(1)='radiation_stress_component_sxx'
             varns(2)='radiation_stress_component_syy'
             varns(3)='radiation_stress_component_sxy'
-            varnc(1)='S=sqrt(Sxx²+Sxy²+Syy²)'
-            varnc(2)='S=sqrt(Sxx²+Sxy²+Syy²)'
-            varnc(3)='S=sqrt(Sxx²+Sxy²+Syy²)'
+            varnc(1)=''
+            varnc(2)=''
+            varnc(3)=''
             vmin = -3000.
             vmax = 3000     
 !
@@ -1518,7 +1523,7 @@
             FLONE  = .TRUE.
             FSC    = 0.1
             UNITS  = 'N/m'
-            ENAME  = '.J'
+            ENAME  = '.JS'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, JSMITH(1:NSEA)    &
                                                       , MAPSF, X1 )
             NFIELD=1
@@ -1890,7 +1895,7 @@
 !
 ! Creates the NetCDF file 
 !
-                CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid,fsc, &
+                CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
                              mfill,UNITVAR,vmin,vmax,COORDTYPE,   &
                              extradim,NCTYPE,MAPSTAOUT)
 
@@ -2062,7 +2067,11 @@
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
                     call check_err(iret)
-                    iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
+                    IF (I.LE.2) THEN 
+                      iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
+                    ELSE
+                      iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC3)
+                      ENDIF 
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'add_offset',0.)
                     call check_err(iret)
@@ -2153,7 +2162,11 @@
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
                     call check_err(iret)
-                    iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
+                    IF (I.LE.2) THEN 
+                      iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
+                    ELSE
+                      iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC3)
+                      ENDIF 
                     call check_err(iret)
                     iret=nf90_put_att(ncid,varid(ivar),'add_offset',0.)
                     call check_err(iret)
@@ -2237,14 +2250,14 @@
               IF ( NFIELD.EQ.3 ) THEN 
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
                       MXX(IX,IY) = MFILL
                       MYY(IX,IY) = MFILL
                       MXY(IX,IY) = MFILL
                     ELSE
                       MXX(IX,IY) = NINT(X1(IX,IY)/FSC)
                       MYY(IX,IY) = NINT(X2(IX,IY)/FSC)
-                      MXY(IX,IY) = NINT(XY(IX,IY)/FSC)
+                      MXY(IX,IY) = NINT(XY(IX,IY)/FSC3)
                       END IF
                     END DO
                   END DO
@@ -2412,7 +2425,7 @@
 
 
 !--------------------------------------------------------------------------    
-      SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid, fsc, &
+      SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid,  &
                            MFILL,UNITVAR,vmin,vmax,COORDTYPE,  &
                            extradim, NCTYPE, mapstaout )
       USE W3GDATMD
@@ -2423,7 +2436,6 @@
       
 
 
-      REAL, INTENT(IN)                  :: FSC
       INTEGER, INTENT(IN)               :: vmin,vmax,extradim
       INTEGER, INTENT(IN)               :: MFILL, NCTYPE
       character*(*), INTENT(IN)         :: ncfile,UNITVAR(3)

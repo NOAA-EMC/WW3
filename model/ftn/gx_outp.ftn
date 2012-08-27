@@ -33,7 +33,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Aug-2010 : Adding ST4                          ( version 3.14 )
 !/    20-Apr-2010 : Fix initialization of USTAR.      ( version 3.14.1 )
-!/    25-Jun-2011 : Adding movable bed friction BT4     ( version 4.01 )
+!/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.07 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -653,18 +653,20 @@
 !/ST4      REAL                    :: FMEANWS, TAUWX, TAUWY, AMAX, &
 !/ST4                                 TAUWNX, TAUWNY,  FMEAN1, WHITECAP(1:4)
 !/BS1      REAL                    :: TAUSCX, TAUSCY
-!/BT3      REAL                    :: D50
-!/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1,   &
-!/STAB2                                 COR2, ASFAC
-      REAL                    :: HSMIN = 0.05
-      REAL                    :: WN(NK), CG(NK), E(NK,NTH), E1(NK),   &
-                                 APM(NK), THBND(NK), SPBND(NK),       &
-                                 A(NTH,NK), WN2(NTH,NK)
-      REAL                    :: DIA(NTH,NK), SWI(NK,NTH), SNL(NK,NTH),&
+!/BT4      REAL                    :: D50, PSIC, BEDFORM(3), TAUBBL(2)
+!/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
+!/STAB2                                 THARG1, THARG2
+      REAL, SAVE              :: HSMIN  = 0.05
+      REAL                    :: WN(NK), CG(NK)
+      REAL                    :: E(NK,NTH), E1(NK), APM(NK),          &
+                                 THBND(NK), SPBND(NK), A(NTH,NK),     &
+                                 WN2(NTH,NK)
+      REAL                    :: DIA(NTH,NK), SWN(NK,NTH), SNL(NK,NTH),&
                                  SDS(NK,NTH), SBT(NK,NTH), XLN(NTH,NK),&
                                  XWI(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
                                  XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
-                                 XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH)
+                                 XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH),&
+                                 SWI(NK,NTH)
 !/ST3      LOGICAL                :: LLWS(NTH,NK) 
 !/ST4      LOGICAL                :: LLWS(NTH,NK)
       CHARACTER               :: DTME21*23
@@ -950,8 +952,14 @@
               END IF
             IF ( FLSRCE(5) ) THEN
 !/BT1                CALL W3SBT1 ( A, CG, WN, DEPTH,             XBT, DIA )
-!/BT4                    D50=0.0002  ! to be fixed later
-!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, XBT, DIA, IX, IY )
+!/BT4                    IX=1    ! to be fixed later 
+!/BT4                    IY=1    ! to be fixed later 
+!/BT4                    ISEA=1  ! to be fixed later 
+!/BT4                    D50 = SED_D50(ISEA)
+!/BT4                    PSIC= SED_PSIC(ISEA)
+
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
+!/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 !
 !/BS1                CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
 !/BS1                              CAO(J)*SIN(CDO(J)),     &
