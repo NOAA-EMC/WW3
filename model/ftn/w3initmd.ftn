@@ -56,6 +56,7 @@
 !      CRITOS    R.P.  Public   Critical percentage of resources used
 !                               for output to trigger warning.
 !      WWVER     C*10  Public   Model version number.
+!      SWITCHES  C*256 Public   switches taken from bin/switch
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -91,6 +92,11 @@
 !/
       REAL, PARAMETER              :: CRITOS = 15.
       CHARACTER*10, PARAMETER      :: WWVER  = '4.07 '
+      CHARACTER*512, PARAMETER      :: SWITCHES  = &
+          &"PUT_SW1&
+          &PUT_SW2&
+          &PUT_SW3"
+
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /

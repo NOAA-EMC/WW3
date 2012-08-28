@@ -2767,7 +2767,9 @@
 !/REF1                IF (J.GT.0) THEN 
 !/REF1                  IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
 !/REF1                  THAVG=ATAN2(SINAVG,COSAVG)
-!/T                     WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/REFT                     WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,   &
+!/REFT                                  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH), &
+!/REFT                                  MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                ELSE
 !/REF1

@@ -91,6 +91,7 @@
       USE W3TIMEMD
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3IOGOMD, ONLY: W3IOGO
+      USE W3INITMD, ONLY: WWVER, SWITCHES
 !/
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
@@ -2623,6 +2624,12 @@
 !
 ! Global attributes
 !
+      iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
+      iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
+!/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'ST4 Namelist paramter ZWD',ZZWND)
+!/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'ST4 Namelist paramter ALPHA0',AALPHA)
+!/ST4    IF (BBETA.NE.1.52)    iret=nf90_put_att(ncid,NF90_GLOBAL,'ST4 Namelist paramter BETAMAX',BBETA)
+! ... TO BE CONTINUED ... 
       open(unit=994,file='NC_globatt.inp',status='old',iostat=icode)
       IF (ICODE.EQ.0) THEN
       DO WHILE (icode.EQ.0)

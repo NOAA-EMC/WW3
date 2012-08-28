@@ -231,6 +231,7 @@
       REAL, PARAMETER         :: ACC = 0.05
       REAL                    :: FACTOR
       INTEGER                 :: itout, I1, I2, I3  
+      REAL                    :: alphaa, beta
 !/O7a       CHARACTER(LEN=1)         :: SEA(5), LND(5), OUT(5)
 !/O7a       CHARACTER(LEN=9)         :: PARTS
 !/O7a       CHARACTER(LEN=1), ALLOCATABLE :: STRING(:), LINE1(:), LINE2(:)
@@ -270,41 +271,74 @@
 !
       IF (GTYPE .NE. UNGTYPE) THEN 
         INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
-      ELSE 
-        CALL TRIA_INTERPOLATION(IPT, XPT, YPT, itout, IX, IY, RD) 
-        IF (ITOUT.NE.0) INGRID=.TRUE.
-        END IF
 !
-      IF ( .NOT.INGRID ) THEN
-        IF ( IAPROC .EQ. NAPERR ) THEN
-          IF ( FLAGLL ) THEN
-            WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
-          ELSE
-            WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
-            END IF
+        IF ( .NOT.INGRID ) THEN
+            IF ( IAPROC .EQ. NAPERR ) THEN
+                IF ( FLAGLL ) THEN
+                    WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
+                  ELSE
+                    WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
+                  END IF
+              END IF
+            CYCLE
           END IF
-        CYCLE
+      ELSE 
+!
+! For unstructured grids SX is defined to be the shortest triangle vertex
+! see w3triamd.ftn
+!
+        IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
+            XPT(IPT) .GT. XN + ACC*SX .OR.                        &
+            YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &
+            YPT(IPT) .GT. YN + ACC*SX ) THEN
+            IF ( IAPROC .EQ. NAPERR )                             &
+                   WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
+                 CYCLE
+           END IF
         END IF
 !
-!/T     DO K = 1,4
-!/T       WRITE (NDST,9012) IX(K), IY(K), RD(K)
-!/T       END DO
+!     Calculate interpolation data
 !
+       IF (GTYPE .EQ. UNGTYPE) THEN 
+         CALL INTERPOLATION(IPT, XPT, YPT, FACTOR, itout, alphaa, beta)
+         END IF 
+!
+!/T     IF (GTYPE .NE. UNGTYPE) THEN
+!/T       DO K = 1,4
+!/T         WRITE (NDST,9012) IX(K), IY(K), RD(K)
+!/T         END DO
+!/T     ELSE 
+!/T       WRITE (NDST,9013) IX1, IY1, IXS, IYS
+!/T       ENDIF
+
 !     Check if point not on land
 !
-      IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
-           MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
-           MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
-           MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
-        IF ( IAPROC .EQ. NAPERR ) THEN
-          IF ( FLAGLL ) THEN
-            WRITE (NDSE,1002) XPT(IPT), YPT(IPT), PNAMES(IPT)
-          ELSE
-            WRITE (NDSE,1003) XPT(IPT), YPT(IPT), PNAMES(IPT)
+      IF (GTYPE .NE. UNGTYPE) THEN
+        IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
+             MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
+             MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
+             MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
+          IF ( IAPROC .EQ. NAPERR ) THEN
+            IF ( FLAGLL ) THEN
+              WRITE (NDSE,1002) XPT(IPT), YPT(IPT), PNAMES(IPT)
+            ELSE
+              WRITE (NDSE,1003) XPT(IPT), YPT(IPT), PNAMES(IPT)
+              END IF
             END IF
+          CYCLE
           END IF
-        CYCLE
-        END IF
+     ELSE 
+       I1 = TRIGP(itout,1)
+       I2 = TRIGP(itout,2)
+       I3 = TRIGP(itout,3)                  
+       IF (MAPSTA (1,I1) .EQ. 0 .AND.                           & 
+           MAPSTA (1,I2) .EQ. 0 .AND.                           & 
+           MAPSTA (1,I3) .EQ. 0 )   THEN                         
+         IF ( IAPROC .EQ. NAPERR )                                &
+           WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
+         CYCLE
+         END IF
+       END IF ! GTYPE
 !
 !     Store interpolation data
 !
@@ -313,11 +347,22 @@
         PTLOC (1,NOPTS) = XPT(IPT)
         PTLOC (2,NOPTS) = YPT(IPT)
 !
-      DO K = 1,4
-        IPTINT(1,K,NOPTS) = IX(K)
-        IPTINT(2,K,NOPTS) = IY(K)
-        PTIFAC(K,NOPTS) = RD(K)
-        END DO
+      IF (GTYPE .NE. UNGTYPE) THEN
+        DO K = 1,4
+          IPTINT(1,K,NOPTS) = IX(K)
+          IPTINT(2,K,NOPTS) = IY(K)
+          PTIFAC(K,NOPTS) = RD(K)
+          END DO
+      ELSE 
+!
+! For unstructured grids the first index is the triangle number 2nd index be always 1
+! 
+        IPTINT(1,1,NOPTS) = itout
+        IPTINT(2,1,NOPTS) = 1
+! For PTIFAC we just use the 1st two entries in the arrays that is allocated to be 4 
+        PTIFAC(1,NOPTS) = alphaa
+        PTIFAC(2,NOPTS) = beta
+        END IF
 !
         PTNME(NOPTS) = PNAMES(IPT)
 
@@ -491,6 +536,7 @@
 !/T 9010 FORMAT (' TEST W3IOPP : INPUT  : ',I4,2F12.2,2X,A)
 !/T 9011 FORMAT ('               CORR.  :     ',2F12.2)
 !/T 9012 FORMAT (' TEST W3IOPP : INT. DATA: ',2I6,1F8.2)
+!/T 9013 FORMAT (' TEST W3IOPP : INT. DATA B): ',4I4,2F8.2)
 !/T 9020 FORMAT (' TEST W3IOPP : PREPROCESSED DATA',I4,2X,A,2X,2F12.2, &
 !/T           4(/'             ',2I5,2F6.3))
 !/T 9021 FORMAT (' TEST W3IOPP : PREPROCESSED DATA',I4,2X,A,2X,2F12.2, &

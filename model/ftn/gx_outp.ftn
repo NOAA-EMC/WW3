@@ -637,7 +637,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: J, I1, I2, IK, ITH, ISPEC, IKM, IKL, &
-                                 IKH, ITT, IX, IY
+                                 IKH, ITT, IX, IY, ISEA
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: XL, XH, XL2, XH2, DEPTH, SQRTH, UDIR,&
                                  UDIRR, UABS, CDIR, SIX, R1, R2, ET,  &
@@ -653,20 +653,19 @@
 !/ST4      REAL                    :: FMEANWS, TAUWX, TAUWY, AMAX, &
 !/ST4                                 TAUWNX, TAUWNY,  FMEAN1, WHITECAP(1:4)
 !/BS1      REAL                    :: TAUSCX, TAUSCY
+!/BT3      REAL                    :: D50
 !/BT4      REAL                    :: D50, PSIC, BEDFORM(3), TAUBBL(2)
-!/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
-!/STAB2                                 THARG1, THARG2
-      REAL, SAVE              :: HSMIN  = 0.05
-      REAL                    :: WN(NK), CG(NK)
-      REAL                    :: E(NK,NTH), E1(NK), APM(NK),          &
-                                 THBND(NK), SPBND(NK), A(NTH,NK),     &
-                                 WN2(NTH,NK)
-      REAL                    :: DIA(NTH,NK), SWN(NK,NTH), SNL(NK,NTH),&
+!/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1,   &
+!/STAB2                                 COR2, ASFAC
+      REAL                    :: HSMIN = 0.05
+      REAL                    :: WN(NK), CG(NK), E(NK,NTH), E1(NK),   &
+                                 APM(NK), THBND(NK), SPBND(NK),       &
+                                 A(NTH,NK), WN2(NTH,NK)
+      REAL                    :: DIA(NTH,NK), SWI(NK,NTH), SNL(NK,NTH),&
                                  SDS(NK,NTH), SBT(NK,NTH), XLN(NTH,NK),&
                                  XWI(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
                                  XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
-                                 XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH),&
-                                 SWI(NK,NTH)
+                                 XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH)
 !/ST3      LOGICAL                :: LLWS(NTH,NK) 
 !/ST4      LOGICAL                :: LLWS(NTH,NK)
       CHARACTER               :: DTME21*23

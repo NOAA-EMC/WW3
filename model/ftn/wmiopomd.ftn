@@ -97,8 +97,6 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    27-Jan-2011 : Added tests for unstructured grid
-!/                  (M. Dutour Sikiric, IRB & Aron Roland, Z&P)
 !/    16-Mar-2012 : Using MPI_COMM_NULL in checks.      ( version 4.07 )
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/
@@ -189,15 +187,14 @@
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
-      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, MAPSTA, GRIDS,            &
-                          FLAGLL, ICLOSE, ICLOSE_NONE, GTYPE, UNGTYPE,  &
+      USE W3GDATMD, ONLY: NX, NY, X0, Y0, SX, MAPSTA, GRIDS,      &
+                          FLAGLL, ICLOSE, ICLOSE_NONE, GTYPE, UNGTYPE,&
                           CLGTYPE, GSU
-      USE W3GDATMD, ONLY: XYB, TRIGP, MAXX, MAXY, DXYMAX  ! unstructured grids
+      USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  ! unstructured grids
       USE W3ODATMD, ONLY: O2INIT, NOPTS, PTLOC, PTNME, GRDID, OUTPTS
 !/MPI      USE W3ODATMD, ONLY: O2IRQI
       USE WMMDATMD, ONLY: MDSE, MDST, NRGRD, MDATAS, IMPROC, NMPSCR,  &
                           MDSS
-      USE W3TRIAMD
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_GRD, MPI_COMM_MWAVE
 !
       IMPLICIT NONE
@@ -295,12 +292,12 @@
                 'CURVILINEAR GRID SUPPORT IN THIS ROUTINE', & 
                 'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
                 'TO WORK *** '
-          END IF
+        END IF
 
-        IF (GTYPE .EQ. UNGTYPE) THEN
-          XN     = MAXX
-          YN     = MAXY
-          END IF
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        XN     = MAXX
+        YN     = MAXY
+      ENDIF 
 
 !
 ! Loop over output points
@@ -316,10 +313,12 @@
               IF ( .NOT.INGRID(J,IPT) ) THEN
                  CYCLE
               END IF
-           ELSE
-              CALL IS_IN_UNGRID(IPT, XPT, YPT, itout)
-              IF (itout.eq.0) THEN
-                INGRID(J,IPT)=.FALSE.
+           ELSE 
+! Note: SX is the shortest triangle vertex in unstructured grids
+              IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
+                  XPT(IPT) .GT. XN + ACC*SX .OR.                        &
+                  YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &
+                  YPT(IPT) .GT. YN + ACC*SX ) THEN
               END IF
            END IF
 
@@ -333,19 +332,16 @@
                  INGRID(J,IPT) = .FALSE.
                  CYCLE
               END IF
-           ELSE
-! FA: This part was commented out by MD ... why ? 
-!              Print *, 'itout=', itout
-!              I1 = TRIGP(itout,1)
-!              I2 = TRIGP(itout,2)
-!              I3 = TRIGP(itout,3)
-
-!              IF (MAPSTA (1,I1) .EQ. 0 .AND.                           &
-!                   MAPSTA (1,I2) .EQ. 0 .AND.                           &
-!                   MAPSTA (1,I3) .EQ. 0 )   THEN
-!                 INGRID(J,IPT) = .FALSE.
-!                 CYCLE
-!              END IF
+           ELSE 
+              I1 = TRIGP(itout,1)
+              I2 = TRIGP(itout,2)
+              I3 = TRIGP(itout,3)                  
+              IF (MAPSTA (1,I1) .EQ. 0 .AND.                           & 
+                   MAPSTA (1,I2) .EQ. 0 .AND.                           & 
+                   MAPSTA (1,I3) .EQ. 0 )   THEN                         
+                 INGRID(J,IPT) = .FALSE.
+                 CYCLE
+              END IF
            END IF ! GTYPE
 
 !.........If we've gotten to this point, then we are satisfied that 

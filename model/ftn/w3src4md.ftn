@@ -175,7 +175,6 @@
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF 
 !/T      USE W3ODATMD, ONLY: NDST
-!/T      USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
 !/
