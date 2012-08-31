@@ -1066,10 +1066,8 @@
                 UNITS  = 'm'
                 ENAME  = '.bed'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1)        &
-                                                          , MAPSF, X1 )
+                                                          , MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2)        &
-                                                          , MAPSF, X2 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3)        &
                                                           , MAPSF, XY )
 !
               ELSE IF ( J .EQ. 41 ) THEN
@@ -1267,7 +1265,7 @@
                   IXA    = IXB + IXS
                   IXB    = IXA + (NXMAX-1)*IXS
                   IXB    = MIN ( IXB , IXN )
-                  IF ( J .EQ. 43 .OR. J.EQ.40 ) THEN
+                  IF ( J .EQ. 43 ) THEN
                       CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0, FSC, &
                         IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
                       CALL PRTBLK (NDSO, NX, NY, NX+1, X2, MAP, 0, FSC, &
@@ -1383,7 +1381,7 @@
                      ENDIF 		       		       
                 END IF
 !
-                IF ( J.EQ.43 .OR. J.EQ.40 ) THEN 
+                IF ( J.EQ.43) THEN 
                    DO IX=IX1, IXN
                      DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &

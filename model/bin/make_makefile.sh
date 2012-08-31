@@ -431,7 +431,6 @@
    BT0) bt=$NULL ;;
    BT1) bt='w3sbt1md' ;;
    BT2) bt='w3sbt2md mod_btffac' ;;
-   BT4) bt='w3sbt4md' ;;
    BTX) bt='w3sbtxmd' ;;
   esac
 
@@ -555,7 +554,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode" 
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd' 

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III                     |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Fev-2012 |
+!/                  | Last update :         02-Nov-2011 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 3.14.IFREMER )
@@ -141,7 +141,7 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, EMEAN, FMEAN
-      REAL, INTENT(INOUT)     :: A(NSPEC)
+      REAL, INTENT(INOUT)     :: A(NTH,NK)
       REAL, INTENT(IN)        :: CX1, CY1, DT
       INTEGER, INTENT(IN)     :: REFLD(4), IX, IY
       REAL, INTENT(IN)        :: REFLC(4), DELX, DELY, DELA, TRNX, &
@@ -151,11 +151,11 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/ 
-      INTEGER         :: ISPECI, ISPEC, IK, ITH, ITH2, ITH3, NRS
+      INTEGER         :: ISPEC, IK, ITH, ITH2, ITH3, NRS
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE   :: FIRST = .TRUE.
        
-      REAL            :: R1, R2, R3, R4, R2X, R2Y
+      REAL            :: R0, R1, R2, R3, R4, R2X, R2Y
       REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, &
                          RAMP1, RAMP2, MICHEFAC, SLOPE
 !/
@@ -166,7 +166,7 @@
 ! 0.  Initializations ------------------------------------------------ *
 !
 !
-! 1.  Sets reflection term to zero
+! 1.  Sets scattering term to zero
 !
       S = 0.
 
@@ -193,10 +193,11 @@
 !           FAC3=2.6/(0.5*REAL(NTH))  ! this is for NRS=4
         FAC3=2./SUM(ABS(ECOS(1:NTH))**NRS)
         FAC4=1.
+        R0=ABS(ECOS(REFLD(1)))
 !
         DO IK=1, NK
 !
-! Includes frequency dependence (see Elgar et al. JPO 1994)
+! Includes linear frequency dependence (see Elgar et al. JPO 1994)
 !       
           IF (REFPARS(6).GT.0) THEN
             RAMP=(MAX((0.75*TPI*FMEAN/SIG(IK)),1.)**REFPARS(10))*RAMP0
@@ -211,15 +212,13 @@
 !
           IF (GTYPE.EQ.UNGTYPE) THEN 
             DO ITH=1, NTH
-              ISPECI=ITH+(IK-1)*NTH
-              A(ISPECI)=A(ISPECI)*IOBPD(ITH,IX) !puts to zero the energy not going to coast
+              A(ITH,IK)=A(ITH,IK)*IOBPD(ITH,IX) !puts to zero the energy not going to coast
               END DO
 !
             DO ITH=1, NTH
               R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
               R1=IOBPD(ITH,IX)
-              ISPECI=ITH+(IK-1)*NTH
-              R2=RAMP1*A(ISPECI)
+              R2=RAMP1*A(ITH,IK)
               IF (R1.GT.0.AND.R2.GT.0) THEN 
 !
 ! Determines direction of specular reflection: th3=pi+2*n-th1  
@@ -263,7 +262,7 @@
 !
             DO ITH=1, NTH
               R1=ECOS(1+MOD(ABS(ITH-REFLD(1)),NTH))
-              R2=RAMP1*A(ITH+(IK-1)*NTH)
+              R2=RAMP1*A(ITH,IK)
               IF (R1.GT.0.AND.R2.GT.0) THEN 
                 DO ITH2=1,NTH
 !
@@ -327,9 +326,10 @@
         FAC1=1/(0.5*REAL(NTH))
         DO IK=1, NK
           DO ITH=1, NTH
-            R2=A(ITH+(IK-1)*NTH)
-            IF (R2.GT.0.) THEN 
- 
+            IF (A(ITH,IK).GT.0.) THEN 
+              R0=ABS(ECOS(ITH))
+              R2=A(ITH,IK)
+
               DO ITH2=1,NTH
                 ISPEC=ITH2+(IK-1)*NTH
                 R3=ECOS(1+MOD(NTH+ITH2-ITH,NTH))

@@ -1,4 +1,4 @@
-\section{~Governing equations} \label{chapt:eq}
+ep \section{~Governing equations} \label{chapt:eq}
 \newcounters
 \vssub
 \subsection{~Introduction}
@@ -1890,7 +1890,7 @@ reads,
  \frac{k'^2 M^2({\bk},\textbf{k}')}{\sigma \sigma' \left(k' C'_g +
 {\bk}  \cdot {\bf U}  \right)}
  F^B({\bk}-\textbf{k}')
-\left[N(\textbf{k}')- N(\textbf{k})\right] {\mathrm d}
+\left[N(\textbf{k}')- N(\textbf{k}')\right] {\mathrm d}
 \theta',\label{Sbscat}
 \end{equation}
 
@@ -1953,7 +1953,7 @@ source term call.
 \label{sec:ref}
 \vsssub
 Reflections by shorelines and icebergs is activated by setting namelists parameters REFCOAST, REFSUBGRID or REFBERG 
-(in namelist REF1) to non-zero values that are the target reflection coefficients $R_0^2$ for the wave energy. 
+(in namelist MISC) to non-zero values that are the target reflection coefficients $R_0^2$ for the wave energy. 
 From these values $R_0^2$ may be varied with wave height and period following a Miche-type parameter: this is 
 activated by setting REFFREQ to a non-zero value, and is  based on the field measurements of \cite{art:EHG94}. 
 These coefficients can also be made to vary spatially, by 
@@ -1994,7 +1994,7 @@ This directional distribution takes three forms:
  \item isotropic in all directions opposite to the incoming direction: this is for sub-grid islands and icebergs or sharp shoreline angles
  \item proportional to $\cos(\theta-\theta_s)^2$ for moderate shoreline angles
  \item proportional to $\cos(\theta-\theta_s)^n$ for small shoreline angles (nearly straight shoreline). Where $n=4$ by default and can be changed 
-to any value using the REFCOSP\_STRAIGHT namelist parameter in the REF1 namelist.
+to any value using the REFCOSP\_STRAIGHT namelist parameter in the MISC namelist.
 \end{itemize}
 
 

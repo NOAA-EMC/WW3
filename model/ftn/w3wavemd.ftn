@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2012 |
+!/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -59,7 +59,6 @@
 !/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.04 )
 !/    03-Nov-2011 : Shoreline reflection on unst. grids ( version 4.04 )
 !/    06-Mar-2012 : Initializing ITEST as needed.       ( version 4.07 )
-!/    02-Jul-2011 : Update for PALM coupling            ( version 4.07 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -158,7 +157,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2012 |
+!/                  | Last update :         30-Oct-2009 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -207,7 +206,6 @@
 !/                  (A. Roland and F. Ardhuin) 
 !/    06-Mar-2011 : Output of max. CFL (F.Ardhuin)      ( version 3.14.4 )
 !/    05-Apr-2011 : Implement iteration for DTMAX <1s   ( version 3.14.4 )
-!/    02-Jul-2012 : Update for PALM coupling            ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -369,7 +367,7 @@
                                  DTL0, DTI0, DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
                                  FACX, FACY, SXM, SYM, XXX, REFLEC(4),&
-                                 DELX, DELY, DELA, DEPTH, D50, PSIC
+                                 DELX, DELY, DELA, DEPTH, D50
 !/SEC1     REAL                    :: DTGTEMP
       REAL, ALLOCATABLE       :: FIELD(:)
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
@@ -390,8 +388,7 @@
 !/PALM real ::vectj(1:NSEAL),vectk(1:NSEAL),vectl(1:NSEAL)
 !/PALM real ::vectm(1:NSEAL),vectn(1:NSEAL),vectp(1:NSEAL)
 !/PALM real ::vectq(1:NSEAL),vectr(1:NSEAL),vects(1:NSEAL)
-!/PALM real ::vectwlm(1:NSEAL)
-!/PALM real ::vectt(1:NSEAL),vectu(1:NSEAL)
+!/PALM real ::vectdw(1:NSEAL),vectwlm(1:NSEAL)
 !/PALM  CHARACTER(LEN=PL_LNAME) :: cl_object, cl_space
 !/PALM  INTEGER                :: PALMED
 !/PALM  LOGICAL :: MEL03
@@ -646,8 +643,8 @@
 
 !/PALM ENDIF
             IF (GTYPE .NE. UNGTYPE) THEN       
-              CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
-              CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
+              CALL W3DZXY(CX(1:NSEA),'m/s',DCXDX, DCXDY) !CX GRADIENT
+              CALL W3DZXY(CY(1:NSEA),'m/s',DCYDX, DCYDY) !CY GRADIENT
             ELSE
               CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
               CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
@@ -768,7 +765,7 @@
 !
           IF ( FLDDIR ) THEN
             IF (GTYPE .NE. UNGTYPE) THEN  
-              CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
+              CALL W3DZXY(DW(1:NSEA),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
             ELSE
               CALL UG_GRADIENTS(DW, DDDX, DDDY)
               END IF 
@@ -960,7 +957,6 @@
             D50=0.0002
             REFLEC(:)=0.
             REFLED(:)=0.
-            PSIC=0.
 !
               DO JSEA=1, NSEAL
 !/DIST                ISEA   = IAPROC + (JSEA-1)*NAPROC
@@ -980,7 +976,6 @@
 !/REF1          REFLEC(4)=BERG(ISEA)*REFLEC(4)
 !/REF1          REFLED=REFLD(:,ISEA)
 !/BT4           D50=SED_D50(ISEA)
-!/BT4           PSIC=SED_PSIC(ISEA)
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
@@ -998,7 +993,7 @@
                           TAUWIY(ISEA), TAUWNX(ISEA),                 &
                           TAUWNY(ISEA),  PHIAW(ISEA), CHARN(ISEA),    &
                           PHIOC(ISEA), WHITECAP(ISEA,1:4),              & 
-                          D50, PSIC, BEDFORMS(ISEA,1:3), PHIBBL(ISEA), TAUBBL(ISEA,1:2))
+                          D50, BEDFORMS(ISEA,1:2), PHIBBL(ISEA), TAUBBL(ISEA,1:2))
                   ELSE
                     UST   (ISEA) = UNDEF
                     USTDIR(ISEA) = UNDEF
@@ -1095,8 +1090,7 @@
 !/PALM  vectq(JSEA)=UBA(ISEA)
 !/PALM  vectr(JSEA)=UBD(ISEA)
 !/PALM  vects(JSEA)=PHIOC(ISEA)
-!/PALM  vectt(JSEA)=TAUWIX(ISEA)
-!/PALM  vectu(JSEA)=TAUWIY(ISEA)
+!/PALM  vectdw(JSEA)=DW(ISEA)
 !/PALM  vectwlm(JSEA)=WLM(ISEA)
 !/PALM  END DO
 !/PALM  END IF
@@ -1150,15 +1144,12 @@
 !/PALM  cl_object = 'vects'
 !/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vects, il_err)
 !/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectt'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectt, il_err)
-!/PALM  cl_space  = 'vect1d'
-!/PALM  cl_object = 'vectu'
-!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectu, il_err)
+!/PALM  cl_object = 'vectdw'
+!/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectdw, il_err)
 !/PALM  cl_space  = 'vect1d'
 !/PALM  cl_object = 'vectwlm'
 !/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectwlm, il_err)
-!/PALM  if (iaproc==1) write(*,*)'PALM:ww sent vect g...rs wlm',palm_time_b,itime,iaproc
+!/PALM  if (iaproc==1) write(*,*)'PALM:ww sent vect g...rs dw wlm',palm_time_b,itime,iaproc
 !/PALM  endif
 !/PALM !
 !/PALM !

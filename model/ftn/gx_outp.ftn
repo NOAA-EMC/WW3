@@ -33,7 +33,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Aug-2010 : Adding ST4                          ( version 3.14 )
 !/    20-Apr-2010 : Fix initialization of USTAR.      ( version 3.14.1 )
-!/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.07 )
+!/    25-Jun-2011 : Adding movable bed friction BT4     ( version 4.01 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -637,7 +637,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: J, I1, I2, IK, ITH, ISPEC, IKM, IKL, &
-                                 IKH, ITT, IX, IY, ISEA
+                                 IKH, ITT, IX, IY
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: XL, XH, XL2, XH2, DEPTH, SQRTH, UDIR,&
                                  UDIRR, UABS, CDIR, SIX, R1, R2, ET,  &
@@ -654,7 +654,6 @@
 !/ST4                                 TAUWNX, TAUWNY,  FMEAN1, WHITECAP(1:4)
 !/BS1      REAL                    :: TAUSCX, TAUSCY
 !/BT3      REAL                    :: D50
-!/BT4      REAL                    :: D50, PSIC, BEDFORM(3), TAUBBL(2)
 !/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1,   &
 !/STAB2                                 COR2, ASFAC
       REAL                    :: HSMIN = 0.05
@@ -951,14 +950,8 @@
               END IF
             IF ( FLSRCE(5) ) THEN
 !/BT1                CALL W3SBT1 ( A, CG, WN, DEPTH,             XBT, DIA )
-!/BT4                    IX=1    ! to be fixed later 
-!/BT4                    IY=1    ! to be fixed later 
-!/BT4                    ISEA=1  ! to be fixed later 
-!/BT4                    D50 = SED_D50(ISEA)
-!/BT4                    PSIC= SED_PSIC(ISEA)
-
-!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
-!/BT4                                       BEDFORM, XBT, DIA, IX, IY )
+!/BT4                    D50=0.0002  ! to be fixed later
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, XBT, DIA, IX, IY )
 !
 !/BS1                CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
 !/BS1                              CAO(J)*SIN(CDO(J)),     &

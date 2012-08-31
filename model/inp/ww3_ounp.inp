@@ -4,16 +4,10 @@ $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s), 
 $ and number of output times.
 $
-  19850101 000000  3600.  1000
+  20020101 000000  3600.  1000
 $
 $ Points requested --------------------------------------------------- $
-$
-$ Define points index for which output is to be generated. 
-$ If no one defined, all points are selected
-$ One index number per line
-$ 1
-$ 2
-$ 3
+$ Define points for which output is to be generated. 
 $ mandatory end of list
  -1
 $
@@ -30,7 +24,7 @@ $ Points in same file [T] or not [F]
  T
 $
 $ Output type ITYPE [0,1,2,3]
- 1
+ 3
 $
 $ Flag for global attributes WW3 [0] or variable version [1-2-3-4]
  0
@@ -49,7 +43,7 @@ $                              4 : Spectral partitioning.
 $          - Scaling factors for 1-D and 2-D spectra Negative factor
 $            disables, output, factor = 0. gives normalized spectrum.
 $
-  3  1  0
+$  3  1  0
 $
 $ The transfer file contains records with the following contents.
 $

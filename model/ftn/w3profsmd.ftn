@@ -614,11 +614,11 @@
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
-!/T             DO IP = 1, NX
-!/T               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
-!/T               IF (DTMAXEXP.LT.DTMAXGL*1.3.AND.IK.EQ.1) WRITE(6,'(A,3I8,2F8.3,3F10.4)') 'DTMAX:', IK, ITH, IP, &
-!/T                          REAL(DTMAXEXP), REAL(DTMAXGL), XYB(IP,1), XYB(IP,2), XYB(IP,3)        
-!/T             END DO ! IP
+!             DO IP = 1, NX
+!               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
+!               IF (DTMAXEXP.LT.DTMAXGL*1.3.AND.IK.EQ.1) WRITE(6,'(A,3I8,2F8.3,3F10.4)') 'DTMAX:', IK, ITH, IP, &
+!                          REAL(DTMAXEXP), REAL(DTMAXGL), XYB(IP,1), XYB(IP,2), XYB(IP,3)        
+!             END DO ! IP
 
              CFLXY = DBLE(DT)/DTMAXGL
              REST  = ABS(MOD(CFLXY,1.0d0))

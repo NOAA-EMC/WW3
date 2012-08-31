@@ -314,7 +314,8 @@
                  CYCLE
               END IF
            ELSE 
-! Note: SX is the shortest triangle vertex in unstructured grids
+!.......Notes: What is the meaning of SX in context of unstructured grids? 
+!..............It should be confirmed that this is intentional (or a bug)
               IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
                   XPT(IPT) .GT. XN + ACC*SX .OR.                        &
                   YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &

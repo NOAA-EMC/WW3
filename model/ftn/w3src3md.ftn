@@ -367,7 +367,6 @@
                           SSWELLF,            &
                           DDEN2, DTH, SSINTHP,ZZ0RAT, FLICES
 !/S      USE W3SERVMD, ONLY: STRACE
-!/T      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
 !/T1      USE W3ARRYMD, ONLY: OUTMAT
 !
@@ -857,7 +856,6 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE, ZZ0MAX
-!/T      USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
 !/
@@ -1120,7 +1118,6 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-!/T      USE W3ODATMD, ONLY: NDST
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, DDELTA1, DDEN, DDELTA2,   &
                           SSDSC1, SIG, SSDSP, ECOS, ESIN, DTH, DSIP
 !/S      USE W3SERVMD, ONLY: STRACE

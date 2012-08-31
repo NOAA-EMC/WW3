@@ -56,7 +56,6 @@
 !      CRITOS    R.P.  Public   Critical percentage of resources used
 !                               for output to trigger warning.
 !      WWVER     C*10  Public   Model version number.
-!      SWITCHES  C*256 Public   switches taken from bin/switch
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -92,11 +91,6 @@
 !/
       REAL, PARAMETER              :: CRITOS = 15.
       CHARACTER*10, PARAMETER      :: WWVER  = '4.07 '
-      CHARACTER*512, PARAMETER      :: SWITCHES  = &
-          &"PUT_SW1&
-          &PUT_SW2&
-          &PUT_SW3"
-
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -1884,11 +1878,6 @@
 !/MPI              CALL MPI_SEND_INIT (BEDFORMS (IAPROC,2),1,WW3_FIELD_VEC, &
 !/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, 'S 40', IROOT, IT, IRQGO(IH), IERR
-!/MPI              IH     = IH + 1
-!/MPI              IT     = IT + 1
-!/MPI              CALL MPI_SEND_INIT (BEDFORMS (IAPROC,3),1,WW3_FIELD_VEC, &
-!/MPI                       IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'S 40', IROOT, IT, IRQGO(IH), IERR
 !/MPI            END IF
 !
 !/MPI          IF ( FLGRDALL(41) ) THEN
@@ -2383,11 +2372,6 @@
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
 !/MPI                    CALL MPI_RECV_INIT (BEDFORMS (I0,2),1,WW3_FIELD_VEC,&
-!/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
-!/MPIT      WRITE (NDST,9011) IH, 'R 40', IFROM, IT, IRQGO(IH), IERR
-!/MPI                    IH     = IH + 1
-!/MPI                    IT     = IT + 1
-!/MPI                    CALL MPI_RECV_INIT (BEDFORMS (I0,3),1,WW3_FIELD_VEC,&
 !/MPI                       IFROM, IT, MPI_COMM_WAVE, IRQGO(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, 'R 40', IFROM, IT, IRQGO(IH), IERR
 !/MPI                  END IF

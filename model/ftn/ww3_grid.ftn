@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mar-2012 |
+!/                  | Last update :         16-Sep-2011 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -437,12 +437,10 @@
       REAL, ALLOCATABLE       :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
       REAL, ALLOCATABLE       :: REFD(:,:), REFD2(:,:), REFS(:,:)
 !/BT4      REAL, ALLOCATABLE  :: SED_D50FILE(:,:), SED_POROFILE(:,:)
-!/BT4      LOGICAL            :: SEDMAPD50
-!/BT4      REAL               :: SED_D50_UNIFORM, SED_DSTAR, RIPFAC1, &
-!/BT4                            RIPFAC2, RIPFAC3, RIPFAC4, SIGDEPTH, &
-!/BT4                            BOTROUGHMIN, BOTROUGHFAC
+!/BT4      LOGICAL            :: SEDMAPD50, SEDMAPPORO
+!/BT4      REAL               :: SED_D50_UNIFORM, SED_DSTAR, RIPFAC1, RIPFAC2, RIPFAC3, RIPFAC4
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
-                                 FLTR, FLBS, FLXX, FLPROP, FLREF,     &
+                                 FLTR, FLBS, FLXX, FLPROP,            &
                                  FIRST, CONNCT, FLNEW, INGRID
       LOGICAL                 :: FLTC96 = .FALSE.
       LOGICAL                 :: FLNMLO = .FALSE.
@@ -534,9 +532,7 @@
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
 !/BT1      NAMELIST /SBT1/ GAMMA
-!/BT4      NAMELIST /SBT4/ SEDMAPD50, SED_D50_UNIFORM, RIPFAC1,            &
-!/BT4                      RIPFAC2, RIPFAC3, RIPFAC4, SIGDEPTH,            &
-!/BT4                      BOTROUGHMIN, BOTROUGHFAC
+!/BT4      NAMELIST /SBT4/ SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1      NAMELIST /SDB1/ BJALFA, BJGAM, BJFLAG
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
@@ -755,7 +751,6 @@
       FLDB   = .TRUE.
       FLTR   = .TRUE.
       FLBS   = .TRUE.
-      FLREF  = .FALSE.
       FLXX   = .TRUE.
 !
 !/LN0      NRLIN  = NRLIN + 1
@@ -800,15 +795,13 @@
 !/BS1      NRBS   = NRBS + 1
 !/BSX      NRBS   = NRBS + 1
 !
-!/REF1      FLREF   = .TRUE.
-!
 !/XX0      NRXX   = NRXX + 1
 !/XX0      FLXX   = .FALSE.
 !/XXX      NRXX   = NRXX + 1
 !
       IF ( .NOT.FLLIN .AND. .NOT.FLINDS .AND. .NOT.FLNL .AND.         &
             .NOT.FLBT .AND.  .NOT.FLDB .AND.  .NOT.FLTR .AND.         &
-            .NOT.FLBS .AND.  .NOT.FLXX .AND.  .NOT.FLREF .AND.  FLSOU ) THEN
+            .NOT.FLBS .AND.  .NOT.FLXX .AND.  FLSOU ) THEN
           WRITE (NDSE,1020)
           CALL EXTCDE ( 10 )
         END IF
@@ -1253,26 +1246,19 @@
 !/BT1      SBTC1  = 2. * GAMMA / GRAV
 !
 !/BT4      SEDMAPD50=.FALSE.
+!/BT4      SEDMAPPORO=.FALSE.
 !/BT4      SED_D50_UNIFORM=2.E-4  ! default grain size: medium sand 200 microns
-!/BT4      RIPFAC1=0.4    ! A1 in Ardhuin et al. 2003
+!/BT4      RIPFAC1=1.5    ! A1 in Ardhuin et al. 2003
 !/BT4      RIPFAC2=-2.5   ! A2 in Ardhuin et al. 2003
 !/BT4      RIPFAC3=1.2    ! A3 in Ardhuin et al. 2003
 !/BT4      RIPFAC4=0.05   ! A4 in Ardhuin et al. 2003
-!/BT4      SIGDEPTH=0.05
-!/BT4      BOTROUGHMIN=0.01
-!/BT4      BOTROUGHFAC=30
 !/BT4      CALL READNL ( NDSS, 'SBT4', STATUS )
 !/BT4      WRITE (NDSO,926) STATUS
-!/BT4      WRITE (NDSO,927) SEDMAPD50, SED_D50_UNIFORM, &
-!/BT4                       RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4,SIGDEPTH,  &
-!/BT4                       BOTROUGHMIN, BOTROUGHFAC
+!/BT4      WRITE (NDSO,927) SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/BT4      SBTCX(1)=RIPFAC1
 !/BT4      SBTCX(2)=RIPFAC2
 !/BT4      SBTCX(3)=RIPFAC3
 !/BT4      SBTCX(4)=RIPFAC4
-!/BT4      SBTCX(5)=SIGDEPTH
-!/BT4      SBTCX(6)=BOTROUGHMIN
-!/BT4      SBTCX(7)=BOTROUGHFAC
 !        
 !
 ! 6.h Define Sdb.
@@ -1568,9 +1554,7 @@
 !/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
 !/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH 
 !/BT1          WRITE (NDSO,2926) GAMMA
-!/BT4          WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
-!/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
-!/BT4                            BOTROUGHMIN, BOTROUGHFAC
+!/BT4          WRITE (NDSO,2926) SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM,RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -2426,10 +2410,10 @@
 ! 8.g Activation of reflections and scattering 
 !
       FLICES = FLAGICESOURCE
-      FFACBERG=FACBERG
 !/REF1      REFPARS(1)=REFCOAST
 !/REF1      REFPARS(2)=REFSUBGRID
 !/REF1      REFPARS(4)=REFICEBERG
+!/REF1      REFPARS(5)=FACBERG
 !/REF1      REFPARS(6)=REFFREQ
 !/REF1      REFPARS(7)=REFSLOPE
 !/REF1      REFPARS(8)=REFCOSP_STRAIGHT
@@ -2767,9 +2751,7 @@
 !/REF1                IF (J.GT.0) THEN 
 !/REF1                  IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
 !/REF1                  THAVG=ATAN2(SINAVG,COSAVG)
-!/REFT                     WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,   &
-!/REFT                                  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH), &
-!/REFT                                  MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/REFT        WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                ELSE
 !/REF1
@@ -2780,7 +2762,7 @@
 !/REF1                    IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
 !/REF1                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
 !/REF1                      REFLC(1,MAPFS(IY,IX))= REFCOAST
-!/REF1                      REFLD(1,MAPFS(IY,IX))= 1+MOD((K*NTH+(K+1)*NTH)/16,NTH)
+!/REF1                      REFLD(1,MAPFS(IY,IX))= 1+(K*NTH+(K+1)*NTH)/16
 !/REF1                      REFLD(2,MAPFS(IY,IX))= 1
 !/REF1                      !WRITE(6,*) 'NEIGH2:',IX,IY,K,NEIGH1,K*(NTH/8)
 !/REF1                      ENDIF
@@ -2883,7 +2865,6 @@
 !/BT4!
 !/BT4          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/BT4!
-!/BT4          WRITE (NDSO,*) 'Min and Max values of grain sizes:',MINVAL(SED_D50FILE), MAXVAL(SED_D50FILE)
 !/BT4          WRITE (NDSO,*)
 !/BT4!
 !/BT4      ELSE 
@@ -2894,14 +2875,6 @@
 !/BT4        DO IX=1, NX
 !/BT4          ISEA = MAPFS (IY,IX)
 !/BT4          SED_D50(ISEA)       = SED_D50FILE(IX,IY)
-!/BT4          SED_D50(ISEA)       = MAX(SED_D50(ISEA),1E-5)  
-!/BT4   ! Critical Shields number, Soulsby, R.L. and R J S W Whitehouse
-!/BT4   ! Threshold of sed. motion in coastal environments, Proc. Pacific Coasts and
-!/BT4   ! ports, 1997 conference, Christchurch, p149-154, University of Cantebury, NZ
-!/BT4          SED_DSTAR=(GRAV*(SED_SG-1)/nu_water**2)**(0.333333)*SED_D50(ISEA)  
-!/BT4          SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.55*(1-exp(-0.02*SED_DSTAR)) 
-
-
 !/BT4          END DO
 !/BT4        END DO
 !
@@ -3401,14 +3374,12 @@
 !
 !/BT4  926 FORMAT (/'  Bottom friction  (SHOWEX)  ',A/                 &
 !/BT4               ' --------------------------------------------------')
-!/BT4  927 FORMAT ( '       SEDMAPD50, SED_D50_UNIFORM        :',L3,1X,F8.6/ &
-!/BT4               '       RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4   :',4F8.4/      &
-!/BT4               '       SIGDEPTH, BOTROUGHMIN, BOTROUGHFAC:',3F8.4/)          
-!/BT4 2926 FORMAT ( '  &SBT4 SEDMAPD50 =',L3,', SED_D50_UNIFORM =',F8.6,','/ &
+!/BT4  927 FORMAT ( '       SEDMAPD50,SEDMAPPORO,SED_D50_UNIFORM  :',A,1X,A,1X,F8.6/    &
+!/BT4               '       RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4       :',4F8.4/)      
+!/BT4 2926 FORMAT ( '  &SBT4 SEDMAPD50 =',A,', SEDMAPPORO =',A,       &
+!/BT4               ', SED_D50_UNIFORM =',F8.6,','/                   &
 !/BT4               '        RIPFAC1 =',F8.4,', RIPFAC2 =',F8.4,      &
-!/BT4               ', RIPFAC3 =',F8.4,', RIPFAC4 =',F8.4,','/        &
-!/BT4               '        SIGDEPTH =',F8.4,', BOTROUGHMIN =',F8.4, & 
-!/BT4               ', BOTROUGHFAC =',F4.1,' /')
+!/BT4               ', RIPFAC3 =',F8.4,', RIPFAC4 =',F8.4,' /')
 !
 !/DB0  928 FORMAT (/'  Surf breaking not defined.'/)
 !
@@ -3543,7 +3514,7 @@
                '       Scale factor                :',F10.4/          &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)
- 1978 FORMAT ( '       Grain sizes                 :',I6/             &
+ 1978 FORMAT ( '       Grain sizees                :',I6/             &
                '       Scale factor                :',F10.4/          &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)
