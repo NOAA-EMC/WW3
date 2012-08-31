@@ -406,8 +406,8 @@
                '     ILLEGAL FIELD ID STRING >',A,'<'/          &
                '                   SHOULD BE >',A,'<'/)
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/         &
-         '     INCOMPATIBLE GRID DATA : ',3(1X,I4)/             &
-         '                  SHOULD BE : ',3(1X,I4)/)            
+         '     INCOMPATIBLE GRID DATA : ',3(1X,I8)/             &
+         '                  SHOULD BE : ',3(1X,I8)/)            
 !
 !/T 9000 FORMAT (' TEST W3FLDO : INXOUT : ',A/                     &
 !/T              '               IDFLD  : ',A/                     &

@@ -653,7 +653,7 @@
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FLICES,                                               &
+                FLICES, FFACBERG,                                     &
                 P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
@@ -662,7 +662,7 @@
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FLICES,                                               &
+                FLICES, FFACBERG,                                     &
                 P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
@@ -844,10 +844,10 @@
 !
 !/BT4      IF ( WRITE ) THEN
 !/BT4          WRITE (NDSM)                                          &
-!/BT4                SBTCX, SED_D50
+!/BT4                SBTCX, SED_D50, SED_PSIC
 !/BT4        ELSE
 !/BT4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-!/BT4                SBTCX, SED_D50
+!/BT4                SBTCX, SED_D50, SED_PSIC
 !/BT4        END IF
 !
 !/BT1      IF ( FLTEST ) WRITE (NDST,9052) SBTC1

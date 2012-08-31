@@ -226,7 +226,7 @@
 !/O7a                                 KX, KY, JX, IIX
       INTEGER                 :: IX(4), IY(4)
       REAL                    :: RD(4)
-      REAL                    :: XN, YN, RX, RY, RDX, RDY
+      REAL                    :: XN, YN, RX, RY
 !/O7a      REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
       REAL, PARAMETER         :: ACC = 0.05
       REAL                    :: FACTOR
@@ -283,8 +283,10 @@
             CYCLE
           END IF
       ELSE 
-!.......Notes: What is the meaning of SX in context of unstructured grids? 
-!..............It should be confirmed that this is not a bug.
+!
+! For unstructured grids SX is defined to be the shortest triangle vertex
+! see w3triamd.ftn
+!
         IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
             XPT(IPT) .GT. XN + ACC*SX .OR.                        &
             YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &
@@ -299,15 +301,14 @@
 !
        IF (GTYPE .EQ. UNGTYPE) THEN 
          CALL INTERPOLATION(IPT, XPT, YPT, FACTOR, itout, alphaa, beta)
-       ENDIF 
+         END IF 
 !
 !/T     IF (GTYPE .NE. UNGTYPE) THEN
 !/T       DO K = 1,4
 !/T         WRITE (NDST,9012) IX(K), IY(K), RD(K)
 !/T         END DO
 !/T     ELSE 
-!.........notes: some of these variables are no longer used, so maybe we should not write them out...
-!/T       WRITE (NDST,9013) IX1, IY1, IXS, IYS, RDX, RDY
+!/T       WRITE (NDST,9013) IX1, IY1, IXS, IYS
 !/T       ENDIF
 
 !     Check if point not on land
@@ -651,7 +652,7 @@
 !/MPI      INTEGER                 :: IOFF, IERR_MPI
 !/MPI      INTEGER                 :: STAT(MPI_STATUS_SIZE,4*NOPTS)
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: RDX, RDY, RD(4), RDS, RDI, FACRD,    &
+      REAL                    :: RD(4), RDS, RDI, FACRD,              &
                                  WNDX, WNDY, CURX, CURY, FAC1(NK),    &
                                  FAC2(NK), FAC3(NK), FAC4(NK)
 !/T      REAL                    :: SPTEST(NK,NTH)
@@ -675,7 +676,7 @@
         IY(:)  = IPTINT(2,:,I)
         RD(:)  = PTIFAC(:,I)
 !
-!/T        WRITE (NDST,9001) IX1, IY1, RDX, RDY, IX(2)
+!/T        WRITE (NDST,9001) IX1, IY1, IX(2)
 !
 !
 ! Correct for land and ice and get sea point counters

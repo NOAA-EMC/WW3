@@ -1086,6 +1086,7 @@
 !/NL2      USE W3SNL2MD
 !/NLX      USE W3SNLXMD
 !/BT1      USE W3SBT1MD
+!/BT4      USE W3SBT4MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
@@ -1113,7 +1114,7 @@
 !/
       INTEGER                   :: J, J1, I1, I2, ISP, IKM, IKL, IKH, ITH,  &
                                    IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
-                                   NPART, IX, IY
+                                   NPART, IX, IY, ISEA
       INTEGER, SAVE             :: IPASS  = 0
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                      :: depth, SQRTH, CDIR, SIX, R1, R2,     &
@@ -1134,6 +1135,7 @@
 !/ST4      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
 !/ST4                                 TAUWNX, TAUWNY, FMEAN1, WHITECAP(1:4)
 !/BS1      REAL                    :: TAUSCX, TAUSCY
+!/BT4      REAL                    :: D50, PSIC, BEDFORM(3), TAUBBL(2)
            REAL                    :: ICE
 !/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
 !/STAB2                                 THARG1, THARG2
@@ -1585,9 +1587,12 @@
 !/BT1                    CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
 !/BT2                    SBTC2 = 2. * -0.067 / GRAV
 !/BT2                    CALL W3SBT2 ( A, CG, WN, DEPTH, XBT, DIA, SBTC2 )
-!/BT4 ! How do we get the D50 here ???  Use IX and IY ? 
-!/BT4                    D50=0.0002  ! to be fixed later
-!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, TAUBBL,   & 
+!/BT4                    IX=1    ! to be fixed later 
+!/BT4                    IY=1    ! to be fixed later 
+!/BT4                    ISEA=1  ! to be fixed later 
+!/BT4                    D50 = SED_D50(ISEA)
+!/BT4                    PSIC= SED_PSIC(ISEA)
+!/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 !
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &

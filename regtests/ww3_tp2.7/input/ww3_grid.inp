@@ -91,7 +91,7 @@ $                                     4 : Like 2 with cont. ice.
 $                           XP, XR, XFILT
 $                                    Xp, Xr and Xf for the dynamic
 $                                    integration scheme.
-&MISC REFCOAST=0.1 /
+&REF1 REFCOAST=0.1 /
 $
 $ In the 'Out of the box' test setup we run with sub-grid obstacles 
 $ and with continuous ice treatment.

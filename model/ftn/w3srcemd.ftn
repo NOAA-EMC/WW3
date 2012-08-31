@@ -56,14 +56,14 @@
                           CD, Z0, DTDYN, FCUT, DTG, TAUWX, TAUWY,     &
                           TAUOX, TAUOY, TAUWIX, TAUWIY,               &
                           TAUWNX, TAUWNY, PHIAW, CHARN, PHIOC,        &
-                          WHITECAP,  D50, BEDFORM , PHIBBL, TAUBBL ) 
+                          WHITECAP,  D50, PSIC, BEDFORM , PHIBBL, TAUBBL ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Sep-2011 |
+!/                  | Last update :         06-Mar-2012 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -94,6 +94,7 @@
 !/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 ) 
 !/    24-Aug-2011 : Uses true depth for depth-induced   ( version 4.04 )
 !/    16-Sep-2011 : Initialization of TAUWAX, TAUWAY    ( version 4.04 )
+!/    14-Mar-2012 : Update of BT4, passing PSIC         ( version 4.04 )
 !/
 !/    Copyright 2009-2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -184,6 +185,7 @@
 !       DTG     Real   I   Global time step.
 !       D50     Real   I   Sand grain size                ( !/BT4 )
 !       BEDFORM R.A.  I/O  Bedform parameters             ( !/BT4 )
+!       PSIC    Real   I   Critical Shields               ( !/BT4 )
 !       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
 !       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx ) 
 !     ----------------------------------------------------------------
@@ -351,7 +353,7 @@
 !/
       INTEGER, INTENT(IN)     :: IX, IY, IMOD
       REAL, INTENT(IN)        :: WN1(NK), CG1(NK), D_INP, U10ABS,     &
-                                 U10DIR, AS, ICE, CX, CY, DTG, D50
+                                 U10DIR, AS, ICE, CX, CY, DTG, D50,PSIC
       INTEGER, INTENT(IN)     :: REFLED(4)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG
@@ -359,7 +361,7 @@
                                  FMEAN, WNMEAN, USTAR, USTDIR, FPI,   &
                                  CD, Z0, TAUOX, TAUOY,                &
                                  TAUWX, TAUWY, PHIAW, PHIOC,          &
-                                 CHARN, BEDFORM(2), PHIBBL,           &
+                                 CHARN, BEDFORM(3), PHIBBL,           &
                                  TAUBBL(2), WHITECAP(4),              &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY
       REAL, INTENT(OUT)       :: AMAX, DTDYN, FCUT
@@ -622,8 +624,9 @@
 ! 2.d Bottom interactions.
 !
 !/BT1        CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
-!/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, TAUBBL, BEDFORM,    &
-!/BT4                                                VSBT, VDBT, IX, IY )
+!/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL, BEDFORM,    &
+!/BT4                                      VSBT, VDBT, IX, IY         )
+                                                                  
 !/BTX        CALL W3SBTX
 !
 !/BS1        CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &

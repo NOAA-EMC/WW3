@@ -155,7 +155,14 @@
     omp_mod='no'
   fi
 
-  export mpi_mod omp_mod
+  if [ -n "`grep PALM $path_b/$switch`" ]
+  then
+    palm_mod='yes'
+  else
+    palm_mod='no'
+  fi
+
+  export mpi_mod omp_mod palm_mod
 
 # 1.e Test necessity of running w3adc - - - - - - - - - - - - - - - - - - - -
 
@@ -269,9 +276,27 @@
 
     rm -f w3adc.*
 
+# 2.e Add switches in w3initmd - - - - - - - - - - - - - - - - - - - - - -
+
+    if [ "$name" = "w3initmd" ]
+    then 
+      sw_1=''
+      cp $path_w/w3initmd.f90  $path_w/w3initmd.ft1
+      for line in 1 2 3 
+        do 
+          sw_1=`echo $sw_str  | fold -w100 | sed -n "${line}p"`
+          sw_old="PUT_SW$line"
+          echo $line  $sw_1 $sw_old
+          sed -e "s/$sw_old/$sw_1/"  $path_w/w3initmd.ft1 > $path_w/w3initmd.ft2
+          mv  $path_w/w3initmd.ft2 $path_w/w3initmd.ft1 
+        done 
+      mv $path_w/w3initmd.ft1 $path_w/w3initmd.f90
+      echo "'$path_w/$name.fts' '$name.f90'"        >> w3adc.inp
+    fi
+
   else
 
-# 2.e No w3adc, just copy file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.f No w3adc, just copy file - - - - - - - - - - - - - - - - - - - - - - - - 
 
     if [ -f $path_i/$name.f90 ]
     then
@@ -292,7 +317,7 @@
     exit 5
   fi
 
-# 2.f Stop if requested  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.g Stop if requested  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   if [ "$icmp" != '0' ]
   then
@@ -312,6 +337,7 @@
 
   export path_m  # for use by comp
   export path_S  # for use by comp
+#OLD  export ldflags # for use by link
 
   if $path_b/comp $name > comp.out 2> comp.err
   then
