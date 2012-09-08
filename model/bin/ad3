@@ -125,7 +125,10 @@
   path_o="$main_dir/obj"
   path_m="$main_dir/mod"
   path_e="$main_dir/exe"
-  path_S="$main_dir/ftn/SCRIP"
+  if [ -n "`echo $name | grep scrip 2>/dev/null`" ]
+  then
+    path_i="$path_i/SCRIP"
+  fi
 
   doc_dir=$main_dir/$doc_dir
 
@@ -140,29 +143,6 @@
       exit 3
     fi
   fi
-
-  if [ -n "`grep MPI $path_b/$switch`" ]
-  then
-    mpi_mod='yes'
-  else
-    mpi_mod='no'
-  fi
-
-  if [ -n "`grep OMP $path_b/$switch`" ]
-  then
-    omp_mod='yes'
-  else
-    omp_mod='no'
-  fi
-
-  if [ -n "`grep PALM $path_b/$switch`" ]
-  then
-    palm_mod='yes'
-  else
-    palm_mod='no'
-  fi
-
-  export mpi_mod omp_mod palm_mod
 
 # 1.e Test necessity of running w3adc - - - - - - - - - - - - - - - - - - - -
 
@@ -336,7 +316,6 @@
   error='0'
 
   export path_m  # for use by comp
-  export path_S  # for use by comp
 #OLD  export ldflags # for use by link
 
   if $path_b/comp $name > comp.out 2> comp.err

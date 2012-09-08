@@ -29,57 +29,23 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
+# 1.a.0 Set default mode and capture script arguments
+
+  if test "$#" = '0'
+  then
+    default_mode=1
+    script_args=
+  else
+    default_mode=0
+    script_args="$*"
+  fi
+
 # 1.a.1 Setup file
 
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
-# 1.a.2 Non-NetCDF programs
-
-  reg_programs="ww3_grid"
-  reg_programs="$reg_programs ww3_strt"
-  reg_programs="$reg_programs ww3_prep"
-  reg_programs="$reg_programs ww3_shel"
-  reg_programs="$reg_programs ww3_multi"
-  reg_programs="$reg_programs ww3_sbs1"
-  reg_programs="$reg_programs ww3_outf"
-  reg_programs="$reg_programs ww3_outp"
-  reg_programs="$reg_programs ww3_trck"
-  reg_programs="$reg_programs ww3_grib"
-  reg_programs="$reg_programs ww3_gint"
-  reg_programs="$reg_programs gx_outf"
-  reg_programs="$reg_programs gx_outp"
-
-# 1.a.3 NetCDF programs
-
-  cdf_programs="ww3_prnc"
-  cdf_programs="$cdf_programs ww3_ounf"
-  cdf_programs="$cdf_programs ww3_ounp"
-
-# 1.a.4 All programs
-
-  all_programs="$reg_programs $cdf_programs"
-
-# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  echo ' '
-  echo '                    *****************************'
-  echo '                  ***  compiling WAVEWATCH III  ***'
-  echo '                    *****************************'
-  echo ' '
-
-# 1.c Process/save input - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-  if test "$#" = '0'
-  then
-    progs="$all_programs"
-    default_mode=1
-  else
-    progs="$*"
-    default_mode=0
-  fi
-
-# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
   if test -f $ww3_env
   then
@@ -101,7 +67,7 @@
   echo "Save listings     : $list"
   echo ' '
 
-# 1.e Check for switch file  - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.a.3 Check for switch file  - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   switch_file=$main_dir/bin/switch
   switch_file_old=$main_dir/bin/switch.old
@@ -112,9 +78,57 @@
     exit 1
   fi
 
-# 1.f Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.a.4 Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-# 1.f.1 NetCDF compile message function
+# reg_programs = non-NetCDF programs
+  reg_programs="ww3_grid"
+  reg_programs="$reg_programs ww3_strt"
+  reg_programs="$reg_programs ww3_prep"
+  reg_programs="$reg_programs ww3_shel"
+  reg_programs="$reg_programs ww3_outf"
+  reg_programs="$reg_programs ww3_outp"
+  reg_programs="$reg_programs ww3_trck"
+  reg_programs="$reg_programs ww3_grib"
+  reg_programs="$reg_programs ww3_gint"
+  reg_programs="$reg_programs gx_outf"
+  reg_programs="$reg_programs gx_outp"
+
+# cdf_programs = NetCDF programs
+  cdf_programs="ww3_prnc"
+  cdf_programs="$cdf_programs ww3_ounf"
+  cdf_programs="$cdf_programs ww3_ounp"
+
+  if [ -n "`grep SCRIP $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_multi"
+    cdf_programs="$cdf_programs ww3_sbs1"
+  else
+    reg_programs="$reg_programs ww3_multi"
+    reg_programs="$reg_programs ww3_sbs1"
+  fi
+
+# all_programs = all possible programs
+  all_programs="$reg_programs $cdf_programs"
+
+# progs = programs requested to compile
+  if [ $default_mode -eq 1 ]
+  then
+    progs="$all_programs"
+  else
+    progs="$script_args"
+  fi
+
+# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo '                    *****************************'
+  echo '                  ***  compiling WAVEWATCH III  ***'
+  echo '                    *****************************'
+  echo ' '
+
+# 1.c Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# 1.c.1 NetCDF compile message function
 
   netcdf_compile_message () {
 
@@ -124,10 +138,9 @@
 ***         WAVEWATCH III NetCDF Compile Instructions         ***
 *****************************************************************
 
-Compile of WAVEWATCH III NetCDF pre- and post-processing programs
-requires the environment variable WWATCH3_NETCDF be set to either
-NC3 (compile with NetCDF version 3.x) or NC4 (compile with NetCDF
-version 4.x).
+Compile of WAVEWATCH III NetCDF enabled programs requires the
+environment variable WWATCH3_NETCDF be set to either NC3 (compile
+with NetCDF version 3.x) or NC4 (compile with NetCDF version 4.x).
 
 If WWATCH3_NETCDF = NC3, then the following environment variables
 are required.
@@ -159,7 +172,7 @@ EOF
 
   }
 
-# 1.f.2 NetCDF check compile environment function
+# 1.c.2 NetCDF check compile environment function
 
   netcdf_check_compile () {
 
@@ -218,7 +231,7 @@ EOF
   return 0
   }
 
-# 1.f.3 NetCDF check api function
+# 1.c.3 NetCDF check api function
 
   netcdf_check_api () {
 
@@ -246,13 +259,13 @@ EOF
   return 0
   }
 
-# 1.f.4 Check for NetCDF compile
+# 1.c.4 Check for NetCDF compile
 
   if [ $default_mode -eq 1 ]
   then
     if ! netcdf_check_compile WARNING
     then
-      echo "NetCDF pre- and post-processing programs ($cdf_programs)"
+      echo "NetCDF enabled programs ($cdf_programs)"
       echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
       echo "Continuing with compile of non-NetCDF programs ..."; echo ' '
       progs="$reg_programs"
@@ -270,7 +283,7 @@ EOF
     then
       if ! netcdf_check_compile ERROR
       then
-        echo "NetCDF pre- and post-processing programs ($cdf_programs)"
+        echo "NetCDF enabled programs ($cdf_programs)"
         echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
         echo "Now exiting ..."; echo ' '
         exit 1
@@ -278,7 +291,7 @@ EOF
     fi
   fi
 
-# 1.g Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
 
   if test ! -d $temp_dir
   then
@@ -294,7 +307,7 @@ EOF
   rm -f *.l
   cd $main_dir/ftn
 
-# 1.h Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   make_make='y'
   if test -f $switch_file_old
@@ -318,15 +331,14 @@ EOF
   fi
   echo ' '
 
-# 1.i Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.f Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   aPb="$main_dir/bin"     # path containing shell scripts
   aPo="$main_dir/obj"     # path containing .o files
   aPm="$main_dir/mod"     # path containing .mod files
   aPe="$main_dir/exe"     # path containing executables
-  aPS="$main_dir/ftn/SCRIP"   # path containing SCRIP software
 
-  export aPb aPo aPm aPe aPS
+  export aPb aPo aPm aPe
 
 # --------------------------------------------------------------------------- #
 # 2. Run make for all requests                                                #
@@ -362,11 +374,28 @@ EOF
       then
         netcdf_compile=yes
       fi
-      if [ -n "`grep SCRIP $main_dir/bin/switch`" ] &&  [ "$prog" = 'ww3_multi' ]
-      then
-        netcdf_compile=yes
-      fi
       export netcdf_compile
+
+      mpi_mod=no
+      if [ -n "`grep MPI $switch_file`" ]
+      then
+        mpi_mod=yes
+      fi
+      export mpi_mod
+
+      omp_mod=no
+      if [ -n "`grep OMP $switch_file`" ] || [ -n "`grep SCRIP $switch_file`" ]
+      then
+        omp_mod=yes
+      fi
+      export omp_mod
+
+      palm_mod=no
+      if [ -n "`grep PALM $switch_file`" ] 
+      then
+        export palm_mod='yes'
+      fi
+      export palm_mod
 
       path_m=$main_dir/mod
       export path_m

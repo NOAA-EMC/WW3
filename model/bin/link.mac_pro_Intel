@@ -54,20 +54,6 @@
     exit 2
   fi
 
-  if [ -n "`grep MPI $main_dir/bin/switch`" ]
-  then
-    export mpi_mod='yes'
-  else
-    export mpi_mod='no'
-  fi
-
-  if [ -n "`grep OMP $main_dir/bin/switch`" ]
-  then
-    export omp_mod='yes'
-  else
-    export omp_mod='no'
-  fi
-
 # 1.d Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   rm -f $main_dir/exe/$prog

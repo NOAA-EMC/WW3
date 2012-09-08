@@ -86,7 +86,7 @@
 #     -Idir : where to search for .mod files
 #     -Jdir or -Mdir : where to put .mod files
 
-  opt="-c -O3 -J$path_m -I$path_S -fno-second-underscore"
+  opt="-c -O3 -J$path_m -fno-second-underscore -ffree-line-length-none"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
   then

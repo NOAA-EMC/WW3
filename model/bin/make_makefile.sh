@@ -481,20 +481,6 @@
       echo ' ' ; exit 8
   fi
 
-# Notes re: changing compilers (important)
-# ...1) run cleaner scrip to get rid of old .mod and .o and makefile files
-# ...2) edit and run makefile in SCRIP directory as appropriate
-# ...3) use -c {compiler name} in run_test
-
-# Gnu:
-#     -Idir : where to search for .mod files
-#     -Jdir or -Mdir : where to put .mod files
-
-# Portland:
-# From man pgf90 :
-#       -module directory
-#              Save/search for module files in directory
-
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
   progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
@@ -549,7 +535,13 @@
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd'
-                aux="$aux  wmunitmd" ;;
+                aux="$aux  wmunitmd"
+                if [ "$scrip" = 'SCRIP' ]
+                then
+	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod scrip_netcdfmod"
+                  aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
+                  aux="$aux scrip_kindsmod scrip_remap_conservative scrip_remap_write"
+                fi ;;
    ww3_sbs1) IDstring='Multi-grid shell sbs version' 
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
@@ -559,7 +551,13 @@
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd' 
-                aux="$aux  wmunitmd" ;; 
+                aux="$aux  wmunitmd"
+                if [ "$scrip" = 'SCRIP' ]
+                then
+	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod scrip_netcdfmod"
+                  aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
+                  aux="$aux scrip_kindsmod scrip_remap_conservative scrip_remap_write"
+                fi ;;
      ww3_outf) IDstring='Gridded output'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -635,14 +633,11 @@
     for file in $files
     do
       echo "$d_string$file.o"                    >> makefile
+      if [ -z "`echo $file | grep scrip 2>/dev/null`" ]
+      then
       echo "$file"                               >> filelist.tmp
+      fi
     done
-
-    if [ "$scrip" = 'SCRIP' ] && [ "$prog" = 'ww3_multi' ]
-    then
-	S_string1='$(aPS)/scrip_constants $(aPS)/scrip_grids $(aPS)/scrip_iounitsmod $(aPS)/scrip_netcdfmod $(aPS)/scrip_remap_vars $(aPS)/scrip_timers $(aPS)/scrip_errormod $(aPS)/scrip_interface $(aPS)/scrip_kindsmod $(aPS)/scrip_remap_conservative $(aPS)/scrip_remap_write'
-	filesl="$filesl $S_string1"
-    fi
 
     echo '	@$(aPb)/link '"$filesl"          >> makefile
     echo ' '                                     >> makefile
@@ -809,7 +804,7 @@
 
     if  [ "$scrip" = 'SCRIP' ] && [ "$file" = 'wmgridmd' ]
     then
-        S_string2='$(aPS)/scrip_constants.o $(aPS)/scrip_grids.o $(aPS)/scrip_iounitsmod.o $(aPS)/scrip_netcdfmod.o $(aPS)/scrip_remap_vars.o $(aPS)/scrip_timers.o $(aPS)/scrip_errormod.o $(aPS)/scrip_interface.o $(aPS)/scrip_kindsmod.o $(aPS)/scrip_remap_conservative.o $(aPS)/scrip_remap_write.o'
+        S_string2='$(aPo)/scrip_constants.o $(aPo)/scrip_grids.o $(aPo)/scrip_iounitsmod.o $(aPo)/scrip_netcdfmod.o $(aPo)/scrip_remap_vars.o $(aPo)/scrip_timers.o $(aPo)/scrip_errormod.o $(aPo)/scrip_interface.o $(aPo)/scrip_kindsmod.o $(aPo)/scrip_remap_conservative.o $(aPo)/scrip_remap_write.o'
  	string3="$string3 $S_string2"
     fi
 
@@ -821,6 +816,33 @@
 
   echo '# end of WAVEWATCH III subroutines'      >> makefile
   rm -f filelist
+
+  if  [ "$scrip" = 'SCRIP' ]
+  then
+    echo ' '                                       >> makefile
+    echo ' '                                       >> makefile
+    echo '# SCRIP subroutines'                     >> makefile
+    echo '# -----------------'                     >> makefile
+    echo ' '                                       >> makefile
+
+    scrip_dir=$main_dir/ftn/SCRIP
+    if [ ! -d $scrip_dir ]
+    then
+      echo "*** SCRIPT directory $scrip_dir not found ***"
+      exit 2
+    fi
+
+    scrip_mk=$scrip_dir/SCRIP.mk
+    if [ ! -e $scrip_mk ]
+    then
+      echo "*** SCRIPT makefile fragment $scrip_mk not found ***"
+      exit 2
+    fi
+
+    cat $scrip_mk >> makefile
+
+    echo '# end of SCRIP subroutines'              >> makefile
+  fi
 
 # --------------------------------------------------------------------------- #
 # 4. Move makefile to proper place                                            #
