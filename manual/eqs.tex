@@ -1752,6 +1752,99 @@ ratio of phase velocity to group velocity given by (\ref{eq:cg}). The default
 value for $\Gamma = -0.067$ can be redefined by the user in the model input
 files.
 
+\vsssub
+\subsubsection{~Bottom friction (SHOWEX)} \label{sec:showex}
+\vsssub
+
+A more realistic parameterization for sandy bottoms is based on the eddy viscosity model 
+by \cite{art:GM79} and a roughness parameterization that includes the formation of ripples 
+and transition to sheet flow. The parameterization of \cite{tol:JPO94}, was adjusted by 
+\cite{art:AHJR03} to field measurements from the DUCK'94 and SHOWEX experiments on the 
+North Carolina continental shelf. The parameterization has been adapted to \ws by also 
+including a sub-grid parameterization for the variability of the water depth, 
+as given by  \cite{tol:CE95}. This parameterization is activated by the switch BT4. 
+
+The source term can be written as
+
+%-------------------------%
+% JONSWAP bottom friction %
+%-------------------------%
+% eq:JONSWAP_bot
+
+\begin{equation}
+\cS_{bot}(k,\theta) = - f_e u_b \: \frac{\sigma^2}{2 g \sinh^2(kd)} \: N(k,\theta)
+\: , \label{eq:SHOWEX_bot}
+\end{equation}
+
+\noindent
+where $f_e$ is a dissipation factor that is a function of the r.m.s. bottom orbital 
+displacement amplitude $a_b$ and the Nikuradse roughness length $k_N$, and 
+$u_b$ is the r.m.s. amplitude of the bottom orbital 
+velocity.
+
+The present bed roughness parameterization (\ref{eq:SHOWEX_kr})--(\ref{eq:SHOWEX_krr}) contains seven empirical
+coefficients listed in the table below. 
+
+\begin{table} \begin{center}
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var.           & namelist &  SHOWEX  &  \cite{tol:JPO94} \\
+\hline
+  $A_1$ &  RIPFAC1                    & BT4 & 0.4     & 1.5    \\
+  $A_2$ &  RIPFAC2                    & BT4 & -2.5    & -2.5   \\
+  $A_3$ &  RIPFAC3                    & BT4 & 1.2     & 1.2     \\
+  $A_4$ &  RIPFAC4                    & BT4 & 0.05    & 0.0     \\
+  $\sigma_d$ &  SIGDEPTH              & BT4 & 0.05    & user-defined  \\
+  $A_5$ &  BOTROUGHMIN                & BT4 & 0.01    & 0.0     \\
+  $A_6$ &  BOTROUGHFAC                & BT4 & 30      & 0.0     \\
+\hline
+\end{tabular} \end{center}
+\caption{Parameter values for the SHOWEX bottom friction and the original 
+parameterization by \cite{tol:JPO94}. Source term
+parameterizations that can be reset via the BT4 namelist. Please
+note that the name of the variables only apply to the namelists. In the source
+term module the seven variables are contained in the array SBTCX. } \label{tab:WAM4_parSIN}
+\end{table}
+
+The roughness $k_{N}$ is decomposed in a ripple roughness $k_{r}$ and a sheet flow roughness $k_{s}$,
+\begin{eqnarray}
+k_{r} &=&a_{b}\times A_{1}\left( \frac{\psi }{\psi _{c}}\right) ^{A_{2}}, \label{eq:SHOWEX_kr}\\
+k_{s} &=&0.57\frac{u_{b}^{2.8}}{\left[ g\left( s-1\right) \right] ^{1.4}}%
+\frac{a_{b}^{-0.4}}{\left( 2\pi \right) ^{2}}.
+\end{eqnarray}
+In (\ref{kr}) $A_1$ and $A_2$ are empirical constants,
+$s$ is the sediment specific density, $\psi$ is the Shields number determined from
+$u_b$ and the median sand grain diameter $D_{50}$,
+\begin{equation}
+\psi =f_{w}^{\prime }u_{b}^{2}/\left[g\left( s-1\right) D_{50}\right],
+\end{equation}
+with $f_{w}^{\prime }$ the friction factor of sand grains (determined in the same way as
+$f_e$ with $D_{50}$ instead of $k_r$ as the bottom roughness),
+and $\psi _{c}$ is the
+critical Shields number for the initiation of
+sediment motion under sinusoidal waves on a flat bed.
+We use an analytical fit \citep{bk:Soul97} 
+\begin{eqnarray}
+\psi _{c} &=&\frac{0.3}{1+1.2D_{*}}+0.055\left[ 1-\exp \left(
+-0.02D_{*}\right) \right]\label{Soulsby_psic} , \\
+D_{*} &=&D_{50}\left[ \frac{g\left( s-1\right) }{\nu ^{2}}\right] ^{1/3},
+\end{eqnarray}
+where $\nu $ is the kinematic viscosity of water. 
+
+When the wave motion is not strong enough to generate vortex ripples, i.e.
+for values of the Shields number less than a threshold $\psi _{{\rm rr}}$,
+$k_{N}$ is given by a relic ripple roughness $k_{{\rm rr}}$. The threshold is
+\begin{equation}
+\psi _{{\rm rr}}=A_{3}\psi _{c}.
+\end{equation}
+Below this threshold, $k_{N}$ is given by 
+\begin{equation}
+k_{{\rm rr}}=\max \left\{ A_5 {\rm m,} A_6 D_{50}, A_{4}a_{b}\right\}
+{\rm for\ }\psi <\psi _{{\rm rr}}.\label{eq:SHOWEX_krr}
+\end{equation}
+
+
+
+
 
 % -------------------------------------------------------------
 \vsssub
@@ -1955,7 +2048,8 @@ source term call.
 Reflections by shorelines and icebergs is activated by setting namelists parameters REFCOAST, REFSUBGRID or REFBERG 
 (in namelist REF1) to non-zero values that are the target reflection coefficients $R_0^2$ for the wave energy. 
 From these values $R_0^2$ may be varied with wave height and period following a Miche-type parameter: this is 
-activated by setting REFFREQ to a non-zero value, and is  based on the field measurements of \cite{art:EHG94}. 
+activated by setting REFFREQ to a non-zero value, and is  based on the field 
+measurements of \cite{art:EHG94}. 
 These coefficients can also be made to vary spatially, by 
 setting REFMAP to a non-zero value. In that case ww3\_grid will expect to find a extra line after the reading 
 of the water depths and obstructions in ww3\_grid.inp. 
@@ -1996,7 +2090,7 @@ This directional distribution takes three forms:
  \item proportional to $\cos(\theta-\theta_s)^n$ for small shoreline angles (nearly straight shoreline). Where $n=4$ by default and can be changed 
 to any value using the REFCOSP\_STRAIGHT namelist parameter in the REF1 namelist.
 \end{itemize}
-
+That parameterization is described in detail by \cite{art:AR12}. 
 
 % -------------------------------------------------------------
 \vsssub

@@ -5,13 +5,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
 !/    09-May-2002 : Switch clean up.                    ( version 2.21 )
 !/    24-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    03-Sep-2012 : Clean up of test output T0, T1      ( version 4.07 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -63,13 +64,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Dec-2004 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jun-1996 : Final FORTRAN 77                    ( version 1.18 )
 !/    04-Feb-2000 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    09-May-2002 : Switch clean up.                    ( version 2.21 )
 !/    24-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    03-Sep-2012 : Clean up of test output T0, T1      ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -228,6 +230,7 @@
                     AWG1, AWG2, AWG3, AWG4, AWG5, AWG6, AWG7, AWG8,   &
                     SWG1, SWG2, SWG3, SWG4, SWG5, SWG6, SWG7, SWG8
 !/T      USE W3ODATMD, ONLY: NDST
+!/T1      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
 !/T1      USE W3ARRYMD, ONLY: OUTMAT

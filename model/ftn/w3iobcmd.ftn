@@ -23,8 +23,8 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      VERBPT    C*10  Private  Restart file version number.
-!      IDSTR     C*32  Private  Restart file ID string.
+!      VERBPTBC  C*10  Public   Nest file version number.
+!      IDSTRBC   C*32  Public   Restart file ID string.
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -58,11 +58,11 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
-!/ Private parameter statements (ID strings)
+!/ Public variables  (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERBPT = 'III  1.03 '
-      CHARACTER(LEN=32), PARAMETER, PRIVATE ::                        &
-                          IDSTR = 'WAVEWATCH III BOUNDARY DATA FILE'
+      CHARACTER(LEN=10), PARAMETER :: VERBPTBC = 'III  1.03 '
+      CHARACTER(LEN=32), PARAMETER ::                        &
+                          IDSTRBC  = 'WAVEWATCH III BOUNDARY DATA FILE'
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -284,11 +284,11 @@
           IF ( IAPROC .EQ. NAPBPT ) THEN
               DO IFILE=1, NFBPO
                 WRITE (NDSL(IFILE))                                   &
-                      IDSTR, VERBPT, NK, NTH, XFR, FR1, TH(1),        &
+                      IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1),    &
                       NBO(IFILE)-NBO(IFILE-1)
 !
-!/T                WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTR,       &
-!/T                       VERBPT, NBO(IFILE)-NBO(IFILE-1)
+!/T                WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTRBC,       &
+!/T                       VERBPTBC, NBO(IFILE)-NBO(IFILE-1)
 !
                 WRITE (NDSL(IFILE))                                   &
                      (XBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),           &
@@ -311,9 +311,9 @@
 !
       IF ( INXOUT.EQ.'DUMP' .AND. FILED ) THEN
           IF ( IAPROC .EQ. NAPBPT ) THEN
-              WRITE (NDSB) IDSTR, VERBPT, NK, NTH, XFR, FR1, TH(1), NBI
+              WRITE (NDSB) IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1), NBI
 !
-!/T              WRITE (NDST,9002) 1, NDSB, IDSTR, VERBPT, NBI
+!/T              WRITE (NDST,9002) 1, NDSB, IDSTRBC, VERBPTBC, NBI
 !
               WRITE (NDSB) (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),      &
                            ((IPBPI(I,J),I=1,NBI),J=1,4),              &
@@ -337,14 +337,14 @@
 !
 !/T          WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
 !
-          IF ( IDTST .NE. IDSTR ) THEN
+          IF ( IDTST .NE. IDSTRBC ) THEN
               IF ( IAPROC .EQ. NAPERR )                               &
-                   WRITE (NDSE,901) IDTST, IDSTR
+                   WRITE (NDSE,901) IDTST, IDSTRBC
               CALL EXTCDE ( 10 )
             END IF
-          IF ( VERTST .NE. VERBPT ) THEN
+          IF ( VERTST .NE. VERBPTBC ) THEN
               IF ( IAPROC .EQ. NAPERR )                               &
-                   WRITE (NDSE,902) VERTST, VERBPT
+                   WRITE (NDSE,902) VERTST, VERBPTBC
               CALL EXTCDE ( 11 )
             END IF
           SPCONV = NKI.NE.NK .OR. NTHI.NE.NTH .OR.                    &
@@ -583,7 +583,7 @@
   900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
                '     ILLEGAL INXOUT VALUE: ',A/)
   901 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
-               '     ILLEGAL IDSTR, READ : ',A/                       &
+               '     ILLEGAL IDSTRBC, READ : ',A/                     &
                '                  CHECK : ',A/)
   902 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC :'/                &
                '     ILLEGAL VEROGR, READ : ',A/                      &

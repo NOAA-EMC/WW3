@@ -1026,7 +1026,7 @@ call extcde (99)
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
       REAL, POINTER           :: X0I, Y0I, SXI, SYI
       INTEGER, POINTER        :: ICLOSE
-!/T      CHARACTER(LEN=17)       :: FORMAT
+!/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initialization
@@ -1140,9 +1140,7 @@ call extcde (99)
         END IF
 !
 !/T      WRITE (MDST,9020) 'X'
-!/T1      FORMAT = '(10X,  I5,  F6.2)'
-!/T1      WRITE (FORMAT(6:7),'(I2)') MXA+1
-!/T1      WRITE (FORMAT(11:12),'(I2)') MXA+1
+!/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
       ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
@@ -1237,7 +1235,7 @@ call extcde (99)
         END IF
 !
 !/T1      DO, IX=1, NX
-!/T1        IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT)                &
+!/T1        IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
 !/T1               IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
 !/T1        END DO
 !
@@ -1252,9 +1250,8 @@ call extcde (99)
         END IF
 !
 !/T      WRITE (MDST,9020) 'Y'
-!/T1      FORMAT = '(10X,  I5,  F6.2)'
-!/T1      WRITE (FORMAT(6:7),'(I2)') MYA+1
-!/T1      WRITE (FORMAT(11:12),'(I2)') MYA+1
+!/T1      FORMAT1 = '(10X,  I5,  F6.2)'
+!/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
       ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
@@ -1320,7 +1317,7 @@ call extcde (99)
         END IF
 !
 !/T1      DO, IY=1, NY
-!/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT)                &
+!/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
 !/T1               IY, NYA(IY,1:MYA), RYA(IY,1:MYA), SUM(RYA(IY,1:MYA))
 !/T1        END DO
 !
@@ -1459,7 +1456,7 @@ call extcde (99)
 !/T               '               TARGET GRID RANGES        :',4I6/   &
 !/T               '               SOURCE GRID RANGES        :',4I6)
 !/T 9020 FORMAT ( ' TEST WMUPDV : WEIGHTS FOR ',A,' INTERPOATION')
-!/T 9021 FORMAT ( ' TEST WMUPDV : ARAY DIMENSIONED AS : ',2I6)
+!/T1 9021 FORMAT ( ' TEST WMUPDV : ARAY DIMENSIONED AS : ',2I6)
 !/T 9022 FORMAT ( ' TEST WMUPDV : RECONCILING MASKS')
 !/T 9023 FORMAT ( '               SWEEP NR ',I4)
 !/
@@ -1579,7 +1576,7 @@ call extcde (99)
       INTEGER, POINTER        :: NXI, NYI, MAP(:,:), MAPI(:,:)
       REAL, POINTER           :: X0I, Y0I, SXI, SYI
       INTEGER, POINTER        :: ICLOSE
-!/T      CHARACTER(LEN=17)       :: FORMAT
+!/T1      CHARACTER(LEN=17)       :: FORMAT1
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initialization
@@ -1691,9 +1688,8 @@ call extcde (99)
         END IF
 !
 !/T      WRITE (MDST,9020) 'X'
-!/T1      FORMAT = '(10X,  I5,  F6.2)'
-!/T1      WRITE (FORMAT(6:7),'(I2)') MXA+1
-!/T1      WRITE (FORMAT(11:12),'(I2)') MXA+1
+!/T1      FORMAT1 = '(10X,  I5,  F6.2)'
+!/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NX, MXA
 !
       ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
@@ -1787,7 +1783,7 @@ call extcde (99)
         END IF
 !
 !/T1      DO, IX=1, NX
-!/T1        IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT)                &
+!/T1        IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
 !/T1               IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
 !/T1        END DO
 !
@@ -1802,9 +1798,7 @@ call extcde (99)
         END IF
 !
 !/T      WRITE (MDST,9020) 'Y'
-!/T1      FORMAT = '(10X,  I5,  F6.2)'
-!/T1      WRITE (FORMAT(6:7),'(I2)') MYA+1
-!/T1      WRITE (FORMAT(11:12),'(I2)') MYA+1
+!/T1      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
 !/T1      WRITE (MDST,9021) NY, MYA
 !
       ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
@@ -1870,7 +1864,7 @@ call extcde (99)
         END IF
 !
 !/T1      DO, IY=1, NY
-!/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT)                &
+!/T1        IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
 !/T1               IY, NYA(IY,1:MYA), RYA(IY,1:MYA), SUM(RYA(IY,1:MYA))
 !/T1        END DO
 !
@@ -1986,7 +1980,7 @@ call extcde (99)
 !/T               '               TARGET GRID RANGES        :',4I6/   &
 !/T               '               SOURCE GRID RANGES        :',4I6)
 !/T 9020 FORMAT ( ' TEST WMUPDS : WEIGHTS FOR ',A,' INTERPOATION')
-!/T 9021 FORMAT ( ' TEST WMUPDS : ARAY DIMENSIONED AS : ',2I6)
+!/T1 9021 FORMAT ( ' TEST WMUPDS : ARAY DIMENSIONED AS : ',2I6)
 !/T 9022 FORMAT ( ' TEST WMUPDS : RECONCILING MASKS')
 !/T 9023 FORMAT ( '               SWEEP NR ',I4)
 !/

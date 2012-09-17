@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         02-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2001 : Origination.                        ( version 2.00 )
@@ -25,6 +25,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -102,7 +103,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         02-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -119,6 +120,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -224,14 +226,12 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/O7a      INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
 !/O7a                                 KX, KY, JX, IIX
-      INTEGER                 :: IX(4), IY(4)
-      REAL                    :: RD(4)
-      REAL                    :: XN, YN, RX, RY
+      INTEGER                 :: IX(4), IY(4)   ! Indices of points used in interp.
+      REAL                    :: RD(4)          ! Interpolation coefficient 
 !/O7a      REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
       REAL, PARAMETER         :: ACC = 0.05
       REAL                    :: FACTOR
-      INTEGER                 :: itout, I1, I2, I3  
-      REAL                    :: alphaa, beta
+      INTEGER                 :: ITOUT          ! Triangle index in unstructured grids
 !/O7a       CHARACTER(LEN=1)         :: SEA(5), LND(5), OUT(5)
 !/O7a       CHARACTER(LEN=9)         :: PARTS
 !/O7a       CHARACTER(LEN=1), ALLOCATABLE :: STRING(:), LINE1(:), LINE2(:)
@@ -253,10 +253,6 @@
       CALL W3DMO2 ( IMOD, NDSE, NDST, NPT )
       GRDID  = FILEXT
 !
-      IF (GTYPE .EQ. UNGTYPE) THEN
-        XN     = MAXX
-        YN     = MAXY
-        ENDIF 
       NOPTS  = 0
 !
 !   Removed by F.A. 2011/04/04  /T      CALL W3GSUP( GSU, NDST )
@@ -269,51 +265,30 @@
 !
 !     Check if point within grid and compute interpolation weights
 !
-      IF (GTYPE .NE. UNGTYPE) THEN 
-        INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
+        IF (GTYPE .NE. UNGTYPE) THEN 
+          INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
+        ELSE 
+          CALL IS_IN_UNGRID_INTERP(IPT, XPT, YPT, itout, IX, IY, RD)
+          INGRID = (ITOUT.GE.0) 
+          END IF
 !
         IF ( .NOT.INGRID ) THEN
-            IF ( IAPROC .EQ. NAPERR ) THEN
-                IF ( FLAGLL ) THEN
-                    WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
-                  ELSE
-                    WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
-                  END IF
+          IF ( IAPROC .EQ. NAPERR ) THEN
+            IF ( FLAGLL ) THEN
+              WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
+            ELSE
+              WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
               END IF
-            CYCLE
+            END IF
+          CYCLE
           END IF
-      ELSE 
 !
-! For unstructured grids SX is defined to be the shortest triangle vertex
-! see w3triamd.ftn
+!/T     DO K = 1,4
+!/T       WRITE (NDST,9012) IX(K), IY(K), RD(K)
+!/T       END DO
 !
-        IF (XPT(IPT) .LT. X0 - ACC*SX .OR.                        &
-            XPT(IPT) .GT. XN + ACC*SX .OR.                        &
-            YPT(IPT) .LT. Y0 - ACC*SX .OR.                        &
-            YPT(IPT) .GT. YN + ACC*SX ) THEN
-            IF ( IAPROC .EQ. NAPERR )                             &
-                   WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
-                 CYCLE
-           END IF
-        END IF
-!
-!     Calculate interpolation data
-!
-       IF (GTYPE .EQ. UNGTYPE) THEN 
-         CALL INTERPOLATION(IPT, XPT, YPT, FACTOR, itout, alphaa, beta)
-         END IF 
-!
-!/T     IF (GTYPE .NE. UNGTYPE) THEN
-!/T       DO K = 1,4
-!/T         WRITE (NDST,9012) IX(K), IY(K), RD(K)
-!/T         END DO
-!/T     ELSE 
-!/T       WRITE (NDST,9013) IX1, IY1, IXS, IYS
-!/T       ENDIF
-
 !     Check if point not on land
 !
-      IF (GTYPE .NE. UNGTYPE) THEN
         IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
              MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
              MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
@@ -327,18 +302,6 @@
             END IF
           CYCLE
           END IF
-     ELSE 
-       I1 = TRIGP(itout,1)
-       I2 = TRIGP(itout,2)
-       I3 = TRIGP(itout,3)                  
-       IF (MAPSTA (1,I1) .EQ. 0 .AND.                           & 
-           MAPSTA (1,I2) .EQ. 0 .AND.                           & 
-           MAPSTA (1,I3) .EQ. 0 )   THEN                         
-         IF ( IAPROC .EQ. NAPERR )                                &
-           WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
-         CYCLE
-         END IF
-       END IF ! GTYPE
 !
 !     Store interpolation data
 !
@@ -347,37 +310,15 @@
         PTLOC (1,NOPTS) = XPT(IPT)
         PTLOC (2,NOPTS) = YPT(IPT)
 !
-      IF (GTYPE .NE. UNGTYPE) THEN
         DO K = 1,4
           IPTINT(1,K,NOPTS) = IX(K)
           IPTINT(2,K,NOPTS) = IY(K)
           PTIFAC(K,NOPTS) = RD(K)
           END DO
-      ELSE 
-!
-! For unstructured grids the first index is the triangle number 2nd index be always 1
-! 
-        IPTINT(1,1,NOPTS) = itout
-        IPTINT(2,1,NOPTS) = 1
-! For PTIFAC we just use the 1st two entries in the arrays that is allocated to be 4 
-        PTIFAC(1,NOPTS) = alphaa
-        PTIFAC(2,NOPTS) = beta
-        END IF
-!
-        PTNME(NOPTS) = PNAMES(IPT)
 
-!/T     IF (GTYPE .NE. UNGTYPE) THEN
-!/T        WRITE (NDST,9021) &
-!/T          NOPTS, PTNME(NOPTS), PTLOC(1,NOPTS), PTLOC(2,NOPTS), &
-!/T          (IPTINT(1,K,NOPTS),IPTINT(2,K,NOPTS),PTIFAC(K,NOPTS),K=1,4)
-!/T     ELSE 
-!/T        WRITE (NDST,9020) NOPTS, PTNME(NOPTS),                     &
-!/T                          PTLOC (1,NOPTS), PTLOC (2,NOPTS),        &
-!/T                          IPTINT(1,1,NOPTS), IPTINT(2,1,NOPTS),        &
-!/T                          PTIFAC(1,NOPTS), PTIFAC(2,NOPTS)
-!/T     END IF
+        PTNME(NOPTS) = PNAMES(IPT)
 !
-        END DO ! End loop over output points. 
+        END DO ! End loop over output points (IPT). 
 !
 ! Diagnostic output
 !
@@ -807,7 +748,7 @@
 ! Formats
 !
 !/T 9000 FORMAT (' TEST W3IOPE : POINT NR.:',I3)
-!/T 9001 FORMAT (' TEST W3IOPE :',2I4,2F6.3,'   (',I3,')')
+!/T 9001 FORMAT (' TEST W3IOPE :',2I8,'   (',I3,')')
 !/T 9002 FORMAT (' TEST W3IOPE :',4I7,2X,4I2,2X,4F5.2)
 !/T 9003 FORMAT (' TEST W3IOPE :',40X,4F5.2)
 !/T 9004 FORMAT (' TEST W3IOPE :',F8.1,2(F7.2,F7.1))

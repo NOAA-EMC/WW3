@@ -24,7 +24,6 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
-  ww3_env='.wwatch3.env'   # setup file
   svn_arc='https://svnemc.ncep.noaa.gov/projects/ww3'
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +42,8 @@
   cd
   home_dir=`pwd`
 
+  cd $main_dir
+
   echo ' '
   echo 'Please choose the location of your wwatch3.env (configuration) file'
   echo ' Old setting, use a generic/system-wide wwatch3.env (presumably in $HOME) [G] '
@@ -53,13 +54,17 @@
 
   if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ] 
   then
+
+    ww3_env="${home_dir}/.wwatch3.env"   # setup file
  
     if [ -s $ww3_env ]
     then
       set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
+      echo "Install directory: " $main_dir
     else
-      echo 'No install directory defined yet. The install directory has'
-      echo 'to be an existing directory containing the tar files.' ; echo ' '
+      echo "Generic wwatch3.env file not found at ${home_dir}          "
+      echo 'Enter correct location of env file relative to there.' ; echo ' '
+      echo ' Alternatively, quit and choose local env file [option L] '
       main_dir=nodir.$$
       until [ -d $main_dir ]
       do
@@ -75,7 +80,23 @@
       echo ' '
     fi
 
-  fi
+  elif [ "${sww3dir}" == "L" ] || [ "${sww3dir}" == "l" ]
+  then
+
+    if [ -f wwatch3.env ]
+    then
+      echo ' Local wwatch3.env found, keep file [Y|n]? '
+      read old_env
+
+      if [ "${old_env}" == "Y" ] || [ "${old_env}" == "y" ]
+      then
+        ww3_env="${main_dir}/wwatch3.env"
+      fi
+    else
+      echo 'Creating local wwatch3.env file with default settings'
+
+    fi
+ fi
 
   echo "Installing in $main_dir"
 
@@ -99,27 +120,29 @@
   echo ' '
   echo 'Setting up environment variables.'
 
-  if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ] 
+  if [ -s ${ww3_env} ]
   then
-    echo "   Setup file $ww3_env found in $home_dir"
+    echo "   Setup file $ww3_env found"
 
-    set `grep WWATCH3_LPR $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_LPR $ww3_env` ; shift
     prnt="$*"
 
-    set `grep WWATCH3_F77 $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_F77 $ww3_env` ; shift
     fort="$*"
 
-    set `grep WWATCH3_CC  $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_CC  $ww3_env` ; shift
     cc="$*"
 
-    set `grep WWATCH3_TMP $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_TMP $ww3_env` ; shift
     temp_dir="$*"
 
-    set `grep WWATCH3_SOURCE $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_SOURCE $ww3_env` ; shift
     s_source="$*"
 
-    set `grep WWATCH3_LIST $home_dir/$ww3_env` ; shift
+    set `grep WWATCH3_LIST $ww3_env` ; shift
     s_list="$*"
+
+    newfile='no'
 
   else
     echo '   No setup file found. Variables being set to defaults: '
@@ -133,6 +156,7 @@
 
     echo 'Creating local wwatch3.env for use in regression testing'
     ww3_env=${main_dir}/wwatch3.env 
+    newfile='yes'  
   fi
     
     echo "      Printer (listings)       : $prnt"
@@ -158,6 +182,7 @@
   then
     echo ' '
     echo "Modifying set-up :"
+    newfile='yes'
     OK="$NULL"
     until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
     do
@@ -249,7 +274,10 @@
 
 # 1.e Save environment in file - - - - - - - - - - - - - - - - - - - - - - - -
 
-  cd $home_dir
+ if [ "${newfile}" == "yes" ]
+ then
+
+#  cd $home_dir
   rm -f $ww3_env
 
   echo '#'                                                    > $ww3_env
@@ -265,6 +293,8 @@
   echo "WWATCH3_SOURCE   $s_source"                          >> $ww3_env
   echo "WWATCH3_LIST     $s_list"                            >> $ww3_env
   echo ' '                                                   >> $ww3_env
+
+ fi
 
   if [ ! -d $temp_dir ]
   then

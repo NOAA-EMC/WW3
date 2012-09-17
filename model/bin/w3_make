@@ -83,6 +83,7 @@
 # reg_programs = non-NetCDF programs
   reg_programs="ww3_grid"
   reg_programs="$reg_programs ww3_strt"
+  reg_programs="$reg_programs ww3_bound"
   reg_programs="$reg_programs ww3_prep"
   reg_programs="$reg_programs ww3_shel"
   reg_programs="$reg_programs ww3_outf"

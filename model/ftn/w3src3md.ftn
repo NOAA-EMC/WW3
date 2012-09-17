@@ -6,11 +6,12 @@
 !/                  !            F. Ardhuin             !
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Oct-2007 |
+!/                  | Last update :         02-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    09-Oct-2007 : Origination.                        ( version 3.13 )
 !/    10-Oct-2010 : Adding Janssen-style swell damping  ( version 3.14)
+!/    02-Sep-2012 : Clean up test output T, T0, T1      ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -290,11 +291,12 @@
 !/                  !            F. Ardhuin             !
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-May-2010 |
+!/                  | Last update :         02-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    09-Oct-2007 : Origination.                        ( version 3.13 )
 !/    16-May-2010 : Adding sea ice                      ( version 3.14_Ifremer ) 
+!/    02-Sep-2012 : Clean up test output T, T0, T1      ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -364,10 +366,11 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
-                          SSWELLF,            &
+                          SSWELLF,                                     &
                           DDEN2, DTH, SSINTHP,ZZ0RAT, FLICES
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
+!/T1      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
 !/T1      USE W3ARRYMD, ONLY: OUTMAT
 !
@@ -407,6 +410,8 @@
       REAL DSTAB(3,NSPEC)
       REAL STRESSSTAB(3,2),STRESSSTABN(3,2)
 !/T0      REAL                    :: DOUT(NK,NTH)
+!/T0      USE W3ODATMD, ONLY: NDST
+!/T1     USE W3ODATMD, ONLY: NDST
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1120,10 +1125,11 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-!/T      USE W3ODATMD, ONLY: NDST
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, DDELTA1, DDEN, DDELTA2,   &
                           SSDSC1, SIG, SSDSP, ECOS, ESIN, DTH, DSIP
 !/S      USE W3SERVMD, ONLY: STRACE
+!/T      USE W3ODATMD, ONLY: NDST
+!/T1      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
 !/T1      USE W3ARRYMD, ONLY: OUTMAT
 !

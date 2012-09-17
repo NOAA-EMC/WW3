@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination (out of W3WAVEMD).      ( version 3.06 )
@@ -39,6 +39,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -145,6 +146,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -312,7 +314,7 @@
       USE W3ARRYMD, ONLY: PRTBLK
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSTA, MAPST2, MAPFS, &
-                          RLGTYPE, CLGTYPE, UNGTYPE, GTYPE, FLAGLL,   &
+                          FLAGLL,   &
                           ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
                           FLCK, NK, NTH, NSPEC, SIG, GNAME
       USE W3WDATMD, ONLY: TIME, TLEV, TICE, WLV, UST, USTDIR, VA
@@ -1049,8 +1051,8 @@
         43X,'  |-------------|---------------|'/                        &
          8X,'   step | pass |    date      time   | b w l c i d |',   &
               ' g p t r b f c |'/                                     &
-         8X,'--------|------|---------------------|--------------|',   &
-              '--------------|'/                                       &
+         8X,'--------|------|---------------------|-------------|',   &
+              '---------------|'/                                       &
          8X,'--------+------+---------------------+---------------+',   &
               '-------------+')
   987 FORMAT (/' Coupling output fields : '/                          &
@@ -3005,7 +3007,6 @@
 !/MPI      USE W3SERVMD, ONLY: EXTCDE
 !/
 !/MPI      USE W3GDATMD, ONLY: NX, NY, NSPEC, MAPFS
-           USE W3GDATMD, ONLY: TRIGP, GTYPE, UNGTYPE
 !/MPI      USE W3WDATMD, ONLY: VA
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, SPPNT
 !/MPI      USE W3ODATMD, ONLY: NDST, NDSE, IAPROC, NAPROC, NAPPNT, FLOUT
@@ -3058,19 +3059,10 @@
 !/MPIT      WRITE (NDST,9010) 'MPI_SEND_INIT'
 !
 !/MPI      DO I=1, NOPTS
-!/MPI        IF (GTYPE .NE. UNGTYPE) THEN
-!/MPI          DO K=1,4
-!/MPI            IX(K)=IPTINT(1,K,I)
-!/MPI            IY(K)=IPTINT(2,K,I)
-!/MPI            END DO
-!/MPI        ELSE 
-!/MPI          itout  =  IPTINT(1,1,I)
-!/MPI          IX(1)  =  TRIGP(itout,1)
-!/MPI          IX(2)  =  TRIGP(itout,2)
-!/MPI          IX(3)  =  TRIGP(itout,3)
-!/MPI          IX(4)  =  TRIGP(itout,1)
-!/MPI          IY(:)  =  1
-!/MPI          END IF
+!/MPI        DO K=1,4
+!/MPI          IX(K)=IPTINT(1,K,I)
+!/MPI          IY(K)=IPTINT(2,K,I)
+!/MPI          END DO
 ! 1.b Loop over corner points
 !
 !/MPI        DO J=1, 4
@@ -3118,19 +3110,10 @@
 !/MPIT          WRITE (NDST,9010) 'MPI_RECV_INIT'
 !
 !/MPI          DO I=1, NOPTS
-!/MPI            IF (GTYPE .NE. UNGTYPE) THEN
-!/MPI              DO K=1,4
-!/MPI                IX(K)=IPTINT(1,K,I)  
-!/MPI                IY(K)=IPTINT(2,K,I)
-!/MPI                END DO 
-!/MPI            ELSE 
-!/MPI              ITOUT  =  IPTINT(1,1,I)
-!/MPI              IX(1)  =  TRIGP(itout,1)
-!/MPI              IX(2)  =  TRIGP(itout,2)
-!/MPI              IX(3)  =  TRIGP(itout,3)
-!/MPI              IX(4)  =  TRIGP(itout,1)
-!/MPI              IY(:)  =  1
-!/MPI              END IF
+!/MPI            DO K=1,4
+!/MPI              IX(K)=IPTINT(1,K,I)  
+!/MPI              IY(K)=IPTINT(2,K,I)
+!/MPI              END DO 
 !
 !/MPI            DO J=1, 4
 !

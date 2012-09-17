@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mar-2012 |
+!/                  | Last update :         02-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -73,6 +73,7 @@
 !/    16-Sep-2011 : Clean up.                           ( version 4.05 )
 !/    01-Dec-2011 : New namelist for reflection         ( version 4.05 )
 !/    01-Mar-2012 : Bug correction for NLPROP in ST2    ( version 4.05 )
+!/    02-Sep-2012 : Clean up of reflection and UG grids ( version 4.07 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -505,8 +506,9 @@
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
 !/PR3      REAL                    :: WDTHCG, WDTHTH
-           LOGICAL                 :: UGCONT, EXPFSN, EXPFSPSI,     &
-                                      EXPFSFCT,IMPFSNIMP,TSTC
+           REAL                    :: UGOBCDEPTH
+           LOGICAL                 :: UGOBCAUTO, EXPFSN, EXPFSPSI,     &
+                                      EXPFSFCT,IMPFSNIMP
            LOGICAL                 :: COU_2D, COU_RAD3D
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
@@ -541,8 +543,9 @@
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
-           NAMELIST /UG/   UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT,        &
-                           IMPFSNIMP, TSTC
+           NAMELIST /UG/   UGOBCAUTO, UGOBCDEPTH,                     &
+                           EXPFSN, EXPFSPSI, EXPFSFCT,                &
+                           IMPFSNIMP
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
@@ -1318,12 +1321,12 @@
 !
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
-       UGCONT    = .FALSE.
+       UGOBCAUTO = .TRUE.
+       UGOBCDEPTH= -10.
        EXPFSN    = .TRUE.
        EXPFSPSI  = .FALSE.
        EXPFSFCT  = .FALSE.
        IMPFSNIMP = .FALSE.
-       TSTC      = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UG  ', STATUS ) 
                WRITE(NDSO, 950)
@@ -1579,7 +1582,8 @@
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
-        WRITE (NDSO,2956) UGCONT, EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
+        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
+                          EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
 !/REF1         WRITE(NDSO,2976) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
 !/REF1                    REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
 !/REF1                    REFICEBERG, REFCOSP_STRAIGHT
@@ -1743,23 +1747,22 @@
 ! Propagation specific to unstructured grids
 !
       IF ( GTYPE.EQ.UNGTYPE) THEN 
-          IF (UGCONT) CONTOUR = UGCONT
-          IF (EXPFSN) THEN
-              FSN = EXPFSN
-              PNAME2 = 'N Explicit (Fluctuation Splitting) '
-            END IF
-          IF (EXPFSPSI) THEN
-              FSPSI = EXPFSPSI
-              PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
-            END IF
-          IF (EXPFSFCT) THEN
-              FSFCT = EXPFSFCT
-              PNAME2 = ' Flux Corrected Transport Explicit'
-            END IF
-          IF (IMPFSNIMP) THEN
-              FSNIMP = IMPFSNIMP 
-              PNAME2 = 'N Implicit (Fluctuation Splitting) '
-            END IF
+        IF (EXPFSN) THEN
+          FSN = EXPFSN
+          PNAME2 = 'N Explicit (Fluctuation Splitting) '
+          END IF
+        IF (EXPFSPSI) THEN
+          FSPSI = EXPFSPSI
+          PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
+          END IF
+        IF (EXPFSFCT) THEN
+          FSFCT = EXPFSFCT
+          PNAME2 = ' Flux Corrected Transport Explicit'
+          END IF
+        IF (IMPFSNIMP) THEN
+          FSNIMP = IMPFSNIMP 
+          PNAME2 = 'N Implicit (Fluctuation Splitting) '
+          END IF
           WRITE (NDSO,2951) PNAME2
         END IF
 !
@@ -1988,7 +1991,7 @@
 !
 ! Reading depths on unstructured grid (this also sets number of mesh points, NX)
 !
-          CALL READMSH(NDSS,FNAME,REFSLOPE)
+          CALL READMSH(NDSS,FNAME)
           ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
           ZBIN(:,1) = VSC*XYB(:,3)
 !
@@ -2103,7 +2106,12 @@
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 8.  Finalize status maps
-! 8.a Determine where to get the data
+! 8.a Automatic OBC detection for ug grids
+!
+      IF (GTYPE.EQ.UNGTYPE.AND.UGOBCAUTO)  &
+        CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
+!
+! 8.b Determine where to get the data
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFT, RFORM,     &
@@ -2134,9 +2142,10 @@
 ! ... Check if last point reached.
 !
             IF (IX.EQ.0 .AND. IY.EQ.0) EXIT
-!
+!           
 ! ... Check if point in grid.
 !
+            IF (GTYPE.EQ.UNGTYPE.AND.UGOBCAUTO) CYCLE
             IF (IX.LT.1 .OR. IX.GT.NX .OR.  IY.LT.1 .OR. IY.GT.NY) THEN
                 WRITE (NDSO,981)
                 WRITE (NDSO,*) '       ', IX, IY
@@ -2443,10 +2452,6 @@
 !/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
 !/REF1      IF (REFMAP.EQ.0) THEN 
 !/REF1        REFLC(3,:)=REFPARS(7)
-!/REF1      ELSE
-!/REF1        IF (GTYPE.EQ.UNGTYPE) THEN 
-!/REF1          REFLC(3,:)=UG_REFLC(:)
-!/REF1          END IF
 !/REF1        END IF
 
 
@@ -2584,71 +2589,66 @@
 !
 ! Defines the shoreline treatment for unstructured grids 
 ! 
-     IF (GTYPE.EQ.UNGTYPE) THEN
-       CALL SETUGIOBP 
-       END IF 
-
+      IF (GTYPE.EQ.UNGTYPE) CALL SETUGIOBP 
 ! 
 !  9.a Reads shoreline direction and slope  (whith REF1 switch only)
 !
-!/REF1      IF ( GTYPE.NE.UNGTYPE) THEN
-!/REF1        ALLOCATE ( REFD(NX,NY), REFD2(NX,NY), REFS(NX,NY) )
-!/REF1        IF (REFMAP.EQ.0) THEN 
-!/REF1          REFS(:,:)=1.
-!/REF1        ELSE 
-!/REF1
+!/REF1      ALLOCATE ( REFD(NX,NY), REFD2(NX,NY), REFS(NX,NY) )
+!/REF1      IF (REFMAP.EQ.0) THEN 
+!/REF1        REFS(:,:)=1.
+!/REF1      ELSE 
 !/REF1!
 !/REF1!  9.b Info from input file
 !/REF1!
-!/REF1          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/REF1          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+!/REF1        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/REF1        READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
 !/REF1                                          FROM, TNAME
 !/REF1!
-!/REF1          IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
-!/REF1          IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-!/REF1          IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+!/REF1        IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
+!/REF1        IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+!/REF1        IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
 !/REF1!
-!/REF1          WRITE (NDSO,1977) NDSTR, VSC, IDLA, IDFT
-!/REF1          IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
-!/REF1          IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
+!/REF1        WRITE (NDSO,1977) NDSTR, VSC, IDLA, IDFT
+!/REF1        IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+!/REF1        IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
 !/REF1!
 !/REF1! 9;c  Open file and check if necessary
 !/REF1!
-!/REF1          IF ( NDSTR .EQ. NDSI ) THEN
-!/REF1              IF ( IDFT .EQ. 3 ) THEN
-!/REF1                  WRITE (NDSE,1004) NDSTR
-!/REF1                  CALL EXTCDE (23)
-!/REF1                ELSE
-!/REF1                  CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/REF1                END IF
-!/REF1            ELSE IF ( NDSTR .EQ. NDSG ) THEN
-!/REF1              IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
-!/REF1                   ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
-!/REF1                  WRITE (NDSE,1005) IDFM, IDFT
-!/REF1                  CALL EXTCDE (24)
+!/REF1        IF ( NDSTR .EQ. NDSI ) THEN
+!/REF1          IF ( IDFT .EQ. 3 ) THEN
+!/REF1            WRITE (NDSE,1004) NDSTR
+!/REF1            CALL EXTCDE (23)
+!/REF1          ELSE
+!/REF1            CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/REF1            END IF
+!/REF1        ELSE IF ( NDSTR .EQ. NDSG ) THEN
+!/REF1          IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
+!/REF1               ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
+!/REF1            WRITE (NDSE,1005) IDFM, IDFT
+!/REF1            CALL EXTCDE (24)
+!/REF1            END IF
+!/REF1          ELSE
+!/REF1            IF ( IDFT .EQ. 3 ) THEN
+!/REF1              IF (FROM.EQ.'NAME') THEN
+!/REF1                J      = LEN_TRIM(FNMPRE)
+!/REF1                OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,                 &
+!/REF1                        FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+!/REF1                        IOSTAT=IERR)
+!/REF1              ELSE
+!/REF1                OPEN (NDSTR,           FORM='UNFORMATTED',      &
+!/REF1                    STATUS='OLD',ERR=2000,IOSTAT=IERR)
 !/REF1                END IF
 !/REF1            ELSE
-!/REF1              IF ( IDFT .EQ. 3 ) THEN
-!/REF1                  IF (FROM.EQ.'NAME') THEN
-!/REF1                      J      = LEN_TRIM(FNMPRE)
-!/REF1                      OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
-!/REF1                            FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
-!/REF1                            IOSTAT=IERR)
-!/REF1                    ELSE
-!/REF1                      OPEN (NDSTR,           FORM='UNFORMATTED',      &
-!/REF1                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
-!/REF1                    END IF
-!/REF1                ELSE
-!/REF1                  IF (FROM.EQ.'NAME') THEN
-!/REF1                      J      = LEN_TRIM(FNMPRE)
-!/REF1                      OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
-!/REF1                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
-!/REF1                    ELSE
-!/REF1                      OPEN (NDSTR,                                    &
-!/REF1                            STATUS='OLD',ERR=2000,IOSTAT=IERR)
-!/REF1                    END IF
-!/REF1                END IF
-!/REF1            END IF
+!/REF1              IF (FROM.EQ.'NAME') THEN
+!/REF1                J      = LEN_TRIM(FNMPRE)
+!/REF1                OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
+!/REF1                    STATUS='OLD',ERR=2000,IOSTAT=IERR)
+!/REF1              ELSE
+!/REF1                OPEN (NDSTR,                                    &
+!/REF1                    STATUS='OLD',ERR=2000,IOSTAT=IERR)
+!/REF1                END IF   !end  of (FROM.EQ.'NAME')
+!/REF1              END IF     !end of ( IDFT .EQ. 3 )
+!/REF1            END IF       !end of ( NDSTR .EQ. NDSG )
 !/REF1!
 !/REF1! 9.d Read the data
 !/REF1!
@@ -2666,24 +2666,19 @@
 !/REF1          WRITE (NDSO,1105) NMAPB
 !/REF1          WRITE(6,*) 'TEST 000:',MAXVAL(REFS)
 !
-!/REF1         DO IMAPB=1, NMAPB
+!/REF1          DO IMAPB=1, NMAPB
 !/REF1            IX0    = 1 + (IMAPB-1)*NCOL
 !/REF1            IXN    = MIN ( NX , IMAPB*NCOL )
 !/REF1            DO IY=NY,1,-1
-!/REF1            DO IX=1,NX 
-!/REF1            ENDDO
 !/REF1              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)),IX=IX0,IXN)
 !/REF1              END DO
 !/REF1            WRITE (NDSO,*) ' '
 !/REF1            END DO
 !/REF1          WRITE (NDSO,1106)
-
-
 !/REF1!
 !/REF1          WRITE (NDSO,*)
 !/REF1!
-!/REF1          END IF
-!/REF1        END IF
+!/REF1          END IF         !end of (REFMAP.EQ.0)
 !
 ! 9.d Estimates shoreline direction for scattering for structured grids
 ! NB: this should be updated with moving water levels, and thus
@@ -2767,9 +2762,8 @@
 !/REF1                IF (J.GT.0) THEN 
 !/REF1                  IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
 !/REF1                  THAVG=ATAN2(SINAVG,COSAVG)
-!/REFT                     WRITE (6,*) 'COASTAL REFLEXXXXX:',IX,IY,   &
-!/REFT                                  SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH), &
-!/REFT                                  MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/T                     WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
+!/T                     SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                ELSE
 !/REF1
@@ -3455,8 +3449,9 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UG   UGCONT =',L3, ',EXPFSN =',L3,      &
-                      ',EXPFSPSI =',L3, ',EXPFSFCT =',L3,',GMSH =',L3,         / )
+ 2956 FORMAT ( '  &UG   UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3','/   &
+               '        EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
+               L3,',GMSH =',L3,         / )
 !
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')

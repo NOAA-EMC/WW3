@@ -4,11 +4,13 @@ MODULE W3TRIAMD
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |       F. Ardhuin and A. Roland    |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          25-Aug-2011|
+!/                  | Last update :          30-Aug-2012|
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Modification of boundary treatment  ( version 4.04 )
+!/    30-Aug-2012 : Automatic detection of open BC      ( version 4.07 )
+!/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/
 !
 !  1. Purpose :
@@ -90,12 +92,14 @@ MODULE W3TRIAMD
         integer,save, allocatable :: edge(:,:)
         integer,save, allocatable :: edge_index(:,:)
 
+        INTEGER, SAVE                      :: N_OUTSIDE_BOUNDARY
+        INTEGER, SAVE, ALLOCATABLE         :: OUTSIDE_BOUNDARY(:)
         real (kind = 8), save, allocatable :: node_xy(:,:)
         real (kind = 8), save, allocatable :: edge_angle(:,:)
   
 CONTAINS
 !/ -------------------------------------------------------------------/
-SUBROUTINE READMSH(NDS,FNAME,REFSLOPE) 
+      SUBROUTINE READMSH(NDS,FNAME) 
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -106,7 +110,6 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
 !/
 !/    15-Feb-2008 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
-!/    05-Dec-2011 : Adding shoreline slope in tags      ( version 4.04 )
 !/
 !
 !  1. Purpose :
@@ -133,6 +136,7 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
 !
 !      Name               Type  Module   Description
 !     ------------------------------------------------------------------------------------
+!      NEXTLN             Subr.
 !      COUNT              Subr. Internal Count connection.
 !      SPATIAL_GRID       Subr.   Id.    Calculate surfaces.
 !      NVECTRI            Subr.   Id.    Define cell normals and angles and edge length
@@ -143,8 +147,10 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
 !
 !
 !  5. Called by :
-!
-!     Program in which it is contained.
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3GRID    Prog.          Model configuration program
+!     ----------------------------------------------------------------
 !
 !  6. Error messages :
 !
@@ -173,7 +179,6 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)                :: NDS
-      REAL,    INTENT(IN)                :: REFSLOPE
       CHARACTER(60), INTENT(IN)          :: FNAME
 !/
 !/ local parameters 
@@ -189,9 +194,8 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
       CHARACTER(LEN=50)                  :: CHTMP
       CHARACTER(LEN=10)                  :: A, B, C
       INTEGER,ALLOCATABLE                :: NELS(:), TRIGPTMP1(:,:), TRIGPTMP2(:,:)
-      INTEGER,ALLOCATABLE                :: IFOUND(:), VERTEX(:)
+      INTEGER(KIND=4),ALLOCATABLE        :: IFOUND(:), VERTEX(:), BOUNDTMP(:)
       DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
-!/REF1      REAL,ALLOCATABLE                   :: REFSLOPEMAP(:)
       REAL                               :: z
 
       OPEN(NDS,FILE = FNAME,STATUS='old')
@@ -209,12 +213,11 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
       DO I= 1, NODES
         READ(NDS,*) j, XYBTMP1(I,1), XYBTMP1(I,2), XYBTMP1(I,3)
         END DO
-! Initialization of coastal reflections
-!/REF1     ALLOCATE(REFSLOPEMAP(NODES)) 
-!/REF1     REFSLOPEMAP(:)=.001
 !
 ! read number of elements and elements from Gmsh files
 !
+     ALLOCATE(BOUNDTMP(NODES))
+     N_OUTSIDE_BOUNDARY = 0
      CALL NEXTLN(COMSTR, NDS, NDSE)
       READ(NDS,*) NELTS
       ALLOCATE(TRIGPTMP1(NELTS, 3))
@@ -225,13 +228,13 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
         ALLOCATE(TAGS(ntag))
         SELECT CASE (eltype) 
 !
-! eltype = 15 : boundary points
+! eltype = 15 : boundary points  (this is used to make the difference 
+!                                between the outside polygon and islands)
 !
         CASE(15)
           READ(LINE,*) Ind,eltype,ntag,TAGS,INODE
-          IF (ntag.EQ.3) THEN
-!/REF1            REFSLOPEMAP(Inode)=REFSLOPE*TAGS(3)
-            END IF
+          N_OUTSIDE_BOUNDARY = N_OUTSIDE_BOUNDARY +1
+          BOUNDTMP(N_OUTSIDE_BOUNDARY)=INODE
 !
 ! eltype = 2 : triangles
 !
@@ -246,8 +249,10 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
         DEALLOCATE(TAGS)
         END DO
 !
-! organizes the grid data structure 
+! organizes the grid data structure
 !
+      ALLOCATE(OUTSIDE_BOUNDARY(N_OUTSIDE_BOUNDARY))
+      OUTSIDE_BOUNDARY(:)=BOUNDTMP(1:N_OUTSIDE_BOUNDARY)
       NTRI = J 
   
       ALLOCATE(IFOUND(NODES))
@@ -300,7 +305,6 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
 !
       CALL COUNT(TRIGPTMP2)
       CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST ) 
-!/REF1      UG_REFLC(:)=REFSLOPEMAP(1:NX)
 !
 ! fills arrays
 !
@@ -344,8 +348,76 @@ SUBROUTINE READMSH(NDS,FNAME,REFSLOPE)
 !/XYG               '       X min & X max          (km) :',2F12.4/     &
 !/XYG               '       Y min & Y max          (km) :',2F12.4)
       CLOSE(NDS)
-      END SUBROUTINE
+      END SUBROUTINE READMSH
 !/--------------------------------------------------------------------/
+!/ ------------------------------------------------------------------- / 
+      SUBROUTINE UG_GETOPENBOUNDARY(TMPSTA,ZBIN,ZLIM)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          30-Aug-2012|
+!/                  +-----------------------------------+
+!/
+!/    30-Aug-2012 : Adpatation from SHOM-Ifremer program( version 4.07 )
+!/      
+!
+!  1. purpose: defines open boundary points based on depth
+!  2. Method : a boundary node has more node around it than triangles
+!      
+!    
+!
+!  3. Parameters :
+!     TMPSTA: status map to be updated (for OBC, TMPSTA = 2)
+!
+!  4. Subroutines used :
+!
+!  5. Called by :
+!
+!       Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      w3GRID    Prog.          Model configuration program
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!     
+
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :     
+      USE W3GDATMD, ONLY: NX, NY, CCON , COUNTCON
+
+!/S      USE W3SERVMD, ONLY: STRACE
+      
+      IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(INOUT)  :: TMPSTA(NY,NX)
+      REAL   , INTENT(IN)     :: ZBIN(NY,NX)
+      REAL   , INTENT(IN)     :: ZLIM
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IBC,IX
+
+!/S      CALL STRACE (IENT, 'SETUGIOBP')      
+        DO IBC = 1, N_OUTSIDE_BOUNDARY
+           IX = OUTSIDE_BOUNDARY(IBC)
+           IF ((TMPSTA(1,IX).EQ.1).AND.(CCON(IX) .LT. COUNTCON(IX))  &
+               .AND.(ZBIN(1,IX).LT.ZLIM))  THEN 
+            TMPSTA(1,IX)=2
+            END IF    
+          END DO     
+!
+    END SUBROUTINE UG_GETOPENBOUNDARY
+!/ ------------------------------------------------------------------- /    
 
 
 !/----------------------------------------------------------------------
@@ -1010,7 +1082,7 @@ END SUBROUTINE
               do J=1,i-1
               if (VNEIGH(IP,J).EQ. VNEIGH(IP,I)) THEN 
                  COUNTCON(IP)=COUNTCON(IP)-1
-                 WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,J),VNEIGH(IP,I)
+                 ! WRITE(993,*) 'ERROR:',IP,I,J,VNEIGH(IP,J),VNEIGH(IP,I)
                  END IF
               enddo
            enddo
@@ -1157,17 +1229,18 @@ END SUBROUTINE
        
 !/ ------------------------------------------------------------------- /  
 
-     SUBROUTINE INTERPOLATION(IPT, XPT, YPT, FACT, itout, alphaa, beta)
+     SUBROUTINE TRIA_INTERPOLATION(IPT, XPT, YPT, itout, IVER, JVER, RD)
 
 !/ ------------------------------------------------------------------- 
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :          01-Sep-2012|
 !/                  +-----------------------------------+
 !/
 !/    15-Oct-2007 : Origination.                        ( version 3.13 )
+!/    21-Sep-2012 : Uses same interpolation as regular  ( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -1217,22 +1290,18 @@ END SUBROUTINE
  ! Parameter list
  
            INTEGER, INTENT(IN)            :: IPT
-           REAL   , INTENT(IN)            :: XPT(:), YPT(:),FACT
+           REAL   , INTENT(IN)            :: XPT(:), YPT(:)
            INTEGER, INTENT(OUT)           :: itout
-           REAL   , INTENT(OUT)           :: alphaa, beta
+     INTEGER, INTENT(OUT)           :: IVER(4), JVER(4)
+     REAL, INTENT(OUT)              :: RD(4)
  !/ ------------------------------------------------------------------- /                 
  !local parameters
  
-           DOUBLE PRECISION             :: x1, x2, x3, xg, x
-           DOUBLE PRECISION             :: y1, y2, y3, yg, y
-           DOUBLE PRECISION             :: xx1, xx2, xx3, xx
-           DOUBLE PRECISION             :: yy1, yy2, yy3, yy
-           DOUBLE PRECISION             :: d1, d2, d3
+           DOUBLE PRECISION             :: x1, x2, x3, x
+           DOUBLE PRECISION             :: y1, y2, y3, y
            DOUBLE PRECISION             :: dM1, dM2, dM3
-           DOUBLE PRECISION             :: scale1, scale2, scale3
            DOUBLE PRECISION             :: sg1, sg2, sg3
            DOUBLE PRECISION             :: s1, s2, s3
-           DOUBLE PRECISION             :: delta 
            INTEGER                      :: ITRI, I, J, K
 !/S        INTEGER                      ::  IENT = 0
 !/S      CALL STRACE (IENT, 'INTERPOLATION')
@@ -1254,100 +1323,231 @@ END SUBROUTINE
 !coordinates of the 3rd vertex C	    
               x3=XYB(TRIGP(ITRI,3),1)          
               y3=XYB(TRIGP(ITRI,3),2)
-! coordinates of center of gravity G     
-              xg=(x1+x2+x3)/3.                
-              yg=(y1+y2+y3)/3.
-!length of edges	    
-              d1=sqrt((y2-y3)**2+(x2-x3)**2)
-              d2=sqrt((y3-y1)**2+(x3-x1)**2)
-              d3=sqrt((y2-y1)**2+(x2-x1)**2)
-!evaluate length between the vertices and the output point	    
-              dM1=sqrt((y-y1)**2+(x-x1)**2)
-              dM2=sqrt((y-y2)**2+(x-x2)**2)
-              dM3=sqrt((y-y3)**2+(x-x3)**2)
+!evaluate squared length between the vertices and the output point	    
+              dM1=(y-y1)**2+(x-x1)**2
+              dM2=(y-y2)**2+(x-x2)**2
+              dM3=(y-y3)**2+(x-x3)**2
 !	    
-              IF (dM1 > dM2) THEN 
-!vector product of AB and AG
-                sg1=(yg-y1)*(x2-x1)-(xg-x1)*(y2-y1)
-!vector product of AB and AM   
-                s1=(y-y1)*(x2-x1)-(x-x1)*(y2-y1)       
-                scale1=d3*dM1
-              ELSE
-!vector product of BA and BG	    
-                sg1=(yg-y2)*(x1-x2)-(xg-x2)*(y1-y2)  
-!vector product of BA and BM	         
-                s1=(y-y2)*(x1-x2)-(x-x2)*(y1-y2)       
-                scale1=d3*dM2
-                END IF
               IF (dM2 > dM3) THEN 
-!vector product of BC and BG	    
-                sg2=(yg-y2)*(x3-x2)-(xg-x2)*(y3-y2)    
+!vector product of BC and BA	    
+                sg1=(y1-y2)*(x3-x2)-(x1-x2)*(y3-y2)    
 !vector product of BC and BM     
-                s2=(y-y2)*(x3-x2)-(x-x2)*(y3-y2)       
-                scale2=d1*dM2
+                s1= (y -y2)*(x3-x2)-(x -x2)*(y3-y2)       
               ELSE
-!vector product of CB and CG        
-                sg2=(yg-y3)*(x2-x3)-(xg-x3)*(y2-y3)    
+!vector product of CB and CA        
+                sg1=(y1-y3)*(x2-x3)-(x1-x3)*(y2-y3)    
 !vector product of CB and CM     
-                s2=(y-y3)*(x2-x3)-(x-x3)*(y2-y3)       
-                scale2=d1*dM3
+                s1= (y -y3)*(x2-x3)-(x -x3)*(y2-y3)       
                 END IF
               IF (dM3 > dM1) THEN 
-!vector product of CA and CG	    
-                sg3=(yg-y3)*(x1-x3)-(xg-x3)*(y1-y3)    
+!vector product of CA and CB	    
+                sg2=(y2-y3)*(x1-x3)-(x2-x3)*(y1-y3)    
 !vector product of CA and CM	       
-                s3=(y-y3)*(x1-x3)-(x-x3)*(y1-y3)       
-                scale3=d2*dM3
+                s2= (y -y3)*(x1-x3)-(x -x3)*(y1-y3)       
               ELSE
-!vector product of AC and AG	    
-                sg3=(yg-y1)*(x3-x1)-(xg-x1)*(y3-y1)    
+!vector product of AC and AB	    
+                sg2=(y2-y1)*(x3-x1)-(x2-x1)*(y3-y1)    
 !vector product of AC and AM	       
-                s3=(y-y1)*(x3-x1)-(x-x1)*(y3-y1)       
-                scale3=d2*dM1
+                s2= (y-y1) *(x3-x1)-(x-x1) *(y3-y1)       
                 END IF
-            
+              IF (dM1 > dM2) THEN 
+!vector product of AB and AC
+                sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
+!vector product of AB and AM   
+                s3= (y-y1) *(x2-x1)-(x-x1) *(y2-y1)       
+              ELSE
+!vector product of BA and BC	    
+                sg3=(y3-y2)*(x1-x2)-(x3-x2)*(y1-y2)  
+!vector product of BA and BM	         
+                s3= (y-y2) *(x1-x2)-(x-x2) *(y1-y2)       
+                END IF
 ! test if the point is within the triangle	    
-            IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) itout=ITRI
-            ENDDO
-!PRINT*,ITOUT 
-!PRINT*, TRIGP(ITOUT,1), MAPSTA(1,TRIGP(ITOUT,1))
-!PRINT*, TRIGP(ITOUT,2), MAPSTA(1,TRIGP(ITOUT,2))
-!PRINT*, TRIGP(ITOUT,3), MAPSTA(1,TRIGP(ITOUT,3))
-! Second step: calculate interpolation coefficient from the vertices.
-      IF(ITOUT .EQ. 0)  THEN 
-         WRITE(NDSE, 800 )   XPT, YPT
-  CALL EXTCDE( 1 )
-  ELSE  
-            xx1=XYB(TRIGP(itout,1),1)*FACT
-            yy1=XYB(TRIGP(itout,1),2)*FACT
-            xx2=XYB(TRIGP(itout,2),1)*FACT
-            yy2=XYB(TRIGP(itout,2),2)*FACT
-            xx3=XYB(TRIGP(itout,3),1)*FACT
-            yy3=XYB(TRIGP(itout,3),2)*FACT
-            xx=x*FACT
-     yy=y*FACT
-     
-      delta=((xx1-xx3)*(yy3-yy2)-(xx3-xx2)*(yy1-yy3))
-    
-      IF (delta.EQ.0) THEN 
-          WRITE (NDSE,900) 
-          CALL EXTCDE ( 2 )
-      ELSE
-         alphaa = ((xx-xx3)*(yy3-yy2)+(yy3-yy)*(xx3-xx2))/delta
-         beta  = ((xx3-xx)*(yy3-yy1)-(xx3-xx1)*(yy3-yy))/delta
-      ENDIF
-     ENDIF
-!
-! Formats
-!
-  800 FORMAT (/' *** WAVEWATCH III ERROR IN INTERPOLATION :'/                &
-               '     NO TRIANGLE FOUND FOR OUTPUT POINT    '/                &
-               '     CHECK THE OUTPUT POINT COORDINATES :  ',2F12.6)
-  900 FORMAT (/' *** WAVEWATCH III ERROR IN INTERPOLATION :'/                &
-               '     FLAT TRIANGLE FOUND ')
+            IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) THEN 
+              itout=ITRI
+              IVER(1)=TRIGP(ITRI,1)
+              IVER(2)=TRIGP(ITRI,2)
+              IVER(3)=TRIGP(ITRI,3)
+              IVER(4)=TRIGP(ITRI,1)
+              JVER(:)=1
+              RD(1)=s1/sg1    ! this is the ratio of triangles areas MBC / ABC
+              RD(2)=s2/sg2    ! this is the ratio of triangles areas MAC / ABC
+              RD(3)=1.-RD(1)-RD(2) 
+              RD(4)=0
+!PRINT*,'TRI TEST:',ITOUT 
+!PRINT*, TRIGP(ITOUT,1:3)
+!PRINT*, IVER
+!PRINT*, RD
+!PRINT*, x1,x2,x3,x
+!PRINT*, y1,y2,y3,y
+!PRINT*, sg1,s1,sg2,s2,sg3,s3
+             END IF
+           END DO
+! *
       RETURN
 
 END SUBROUTINE
+!/ ------------------------------------------------------------------- /  
+
+
+
+!/ ------------------------------------------------------------------- /  
+
+     SUBROUTINE IS_IN_UNGRID_INTERP(IPT, XPT, YPT, itout, IVER, JVER, RD)
+
+!/ ------------------------------------------------------------------- 
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          01-Sep-2012|
+!/                  +-----------------------------------+
+!/
+!/    15-Oct-2007 : Origination.                        ( version 3.13 )
+!/    21-Sep-2012 : Uses same interpolation as regular  ( version 4.08 )
+!/
+!  1. Purpose :
+!
+!      Calculate interpolation coefficient for fields on the unstructured grid.
+!
+!  2. Method :
+!      
+!     Using barycentric coordinates. Each coefficient depends on the mass of its related point in the interpolation.
+!
+!  3. Parameters :
+!
+!  4. Subroutines used :
+!
+!  5. Called by :
+!
+!       Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3IOPP    Subr. Internal  Preprocessing of point output.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!     
+!      This subroutine is adjusted from CREST code (Fabrice Ardhuin)
+!      For a given output point, the algorithm enable to glance through all the triangles 
+!      to find the one the point belong to, and then make interpolation.
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!       !/LLG   Spherical grid.
+!       !/XYG   Carthesian grid.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /       
+ 
+           USE W3GDATMD, ONLY : TRIGP, NTRI, XYB, MAPSTA
+           USE W3SERVMD, ONLY: EXTCDE
+!/S          USE W3SERVMD, ONLY: STRACE
+          USE W3ODATMD, ONLY: NDSE       
+      IMPLICIT NONE
+ 
+!/ ------------------------------------------------------------------- /       
+ ! Parameter list
+ 
+           INTEGER, INTENT(IN)            :: IPT
+           REAL   , INTENT(IN)            :: XPT(:), YPT(:)
+           INTEGER, INTENT(OUT)           :: itout
+     INTEGER, INTENT(OUT)           :: IVER(4), JVER(4)
+     REAL, INTENT(OUT)              :: RD(4)
+ !/ ------------------------------------------------------------------- /                 
+ !local parameters
+ 
+           DOUBLE PRECISION             :: x1, x2, x3, x
+           DOUBLE PRECISION             :: y1, y2, y3, y
+           DOUBLE PRECISION             :: dM1, dM2, dM3
+           DOUBLE PRECISION             :: sg1, sg2, sg3
+           DOUBLE PRECISION             :: s1, s2, s3
+           INTEGER                      :: ITRI, I, J, K
+!/S        INTEGER                      ::  IENT = 0
+!/S      CALL STRACE (IENT, 'INTERPOLATION')
+
+!
+         itout = 0 
+!
+! coordinates of the output point 	    
+!
+            x=DBLE(XPT(IPT)) 
+            y=DBLE(YPT(IPT))
+            DO ITRI= 1, NTRI
+! coordinates of the first vertex A	    
+              x1=XYB(TRIGP(ITRI,1),1) 
+              y1=XYB(TRIGP(ITRI,1),2)
+! coordinates of the 2nd vertex B 
+              x2=XYB(TRIGP(ITRI,2),1)          
+              y2=XYB(TRIGP(ITRI,2),2)
+!coordinates of the 3rd vertex C	    
+              x3=XYB(TRIGP(ITRI,3),1)          
+              y3=XYB(TRIGP(ITRI,3),2)
+!evaluate squared length between the vertices and the output point	    
+              dM1=(y-y1)**2+(x-x1)**2
+              dM2=(y-y2)**2+(x-x2)**2
+              dM3=(y-y3)**2+(x-x3)**2
+!	    
+              IF (dM2 > dM3) THEN 
+!vector product of BC and BA	    
+                sg1=(y1-y2)*(x3-x2)-(x1-x2)*(y3-y2)    
+!vector product of BC and BM     
+                s1= (y -y2)*(x3-x2)-(x -x2)*(y3-y2)       
+              ELSE
+!vector product of CB and CA        
+                sg1=(y1-y3)*(x2-x3)-(x1-x3)*(y2-y3)    
+!vector product of CB and CM     
+                s1= (y -y3)*(x2-x3)-(x -x3)*(y2-y3)       
+                END IF
+              IF (dM3 > dM1) THEN 
+!vector product of CA and CB	    
+                sg2=(y2-y3)*(x1-x3)-(x2-x3)*(y1-y3)    
+!vector product of CA and CM	       
+                s2= (y -y3)*(x1-x3)-(x -x3)*(y1-y3)       
+              ELSE
+!vector product of AC and AB	    
+                sg2=(y2-y1)*(x3-x1)-(x2-x1)*(y3-y1)    
+!vector product of AC and AM	       
+                s2= (y-y1) *(x3-x1)-(x-x1) *(y3-y1)       
+                END IF
+              IF (dM1 > dM2) THEN 
+!vector product of AB and AC
+                sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
+!vector product of AB and AM   
+                s3= (y-y1) *(x2-x1)-(x-x1) *(y2-y1)       
+              ELSE
+!vector product of BA and BC	    
+                sg3=(y3-y2)*(x1-x2)-(x3-x2)*(y1-y2)  
+!vector product of BA and BM	         
+                s3= (y-y2) *(x1-x2)-(x-x2) *(y1-y2)       
+                END IF
+! test if the point is within the triangle	    
+            IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) THEN 
+              itout=ITRI
+              IVER(1)=TRIGP(ITRI,1)
+              IVER(2)=TRIGP(ITRI,2)
+              IVER(3)=TRIGP(ITRI,3)
+              IVER(4)=TRIGP(ITRI,1)
+              JVER(:)=1
+              RD(1)=s1/sg1    ! this is the ratio of triangles areas MBC / ABC
+              RD(2)=s2/sg2    ! this is the ratio of triangles areas MAC / ABC
+              RD(3)=1.-RD(1)-RD(2) 
+              RD(4)=0
+!PRINT*,'TRI TEST:',ITOUT 
+!PRINT*, TRIGP(ITOUT,1:3)
+!PRINT*, IVER
+!PRINT*, RD
+!PRINT*, x1,x2,x3,x
+!PRINT*, y1,y2,y3,y
+!PRINT*, sg1,s1,sg2,s2,sg3,s3
+             END IF
+           END DO
+! *
+      RETURN
+      END SUBROUTINE IS_IN_UNGRID_INTERP
 !/ ------------------------------------------------------------------- / 
       SUBROUTINE UG_GRADIENTS (PARAM, DIFFX, DIFFY)
 !/                  +-----------------------------------+
@@ -1620,14 +1820,6 @@ END SUBROUTINE
       INTEGER                 :: K, K2, I1, I2, I3
       INTEGER                 :: TRILAND(NTRI)
       REAL                    :: ANGLETOT(NX), ANGLETOTINV(NX)
-
-!/
-!/ Automatic work arrays
-!/
-      REAL                    :: VLCFLX((NX+1)*NY), VLCFLY(NX*NY)
-      REAL                    ::  AQ(NX)                        
-      ! AQ(1-NY:NY*(NX+2)) 
-      REAL                    :: AC(NX)
 !/ ------------------------------------------------------------------- /				     
 !
 ! 1.  Preparations --------------------------------------------------- *
@@ -1666,7 +1858,7 @@ END SUBROUTINE
                SEA_CELL(J)=1
                END IF
 !
-! Used for refraction ... 
+! Used for reflection ... 
 !
              DO K2=1,3      
                FOUND=0         
@@ -1684,10 +1876,10 @@ END SUBROUTINE
                   SEANEIGHP(IX,K+1,2)=1
                   END IF
                 END DO
+! 
              END DO         
           END DO
 ! 
-
         IOBP(:)=1
         IOBPD(:,:)=1
 !
@@ -1877,1090 +2069,9 @@ END SUBROUTINE
       CALL DIFFERENCE
 
       RETURN    
- END SUBROUTINE     
-
-
-!/ ------------------------------------------------------------------- /      
-        SUBROUTINE W3IOPENS ( A )
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-MAy-2008 |
-!/                  +-----------------------------------+
-!/
-!/    15-May-2008 : Origination from W3IOPE.                      ( version 3.14 )
-!/    15-May-2008 : Adding non-structured related interpolation.  ( version 3.14 )
-!/
-!  1. Purpose :
-!
-!     Extract point output data from the unstructured grid and store
-!      in output COMMONs, with the same principle as W3IOPE
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       A       R.A.   I   Action spectra on storage grid.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!     See module documentation.
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!       None.
-!
-!  7. Remarks :
-!
-!     - To allow for dynamic ice edges, interpolation factors are
-!       calculated for every time step separately.
-!     - Wind current and depth data are interpolated ignoring ice,
-!       spectrum is interpolated removing ice points.
-!     - Spectra are left in par list to allow for change of shape of
-!       arrays.
-!     - IMOD is not passed to this routine. Since it is used only
-!       in W3WAVE, it is assumed that the pointer are set
-!       appropriately outside this routine.
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/SHRD  Switch for shared / distributed memory architecture.
-!     !/DIST  Id.
-!     !/MPI   Switch for message passing method.
-!
-!     !/S     Enable subroutine tracing.
-!     !/T     Test output.
-!
-! 10. Source code :
-!
+      END SUBROUTINE SETUGIOBP
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
-      USE W3GDATMD, ONLY: NK, NTH, SIG, NX, NY, NSEA, NSEAL,          &
-                          MAPSTA, MAPFS,TRIGP
-      USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY, SP => SPPNT
-      USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
-                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO
-!/MPI      USE W3ODATMD, ONLY: IRQPO2
-      USE W3SERVMD, ONLY: EXTCDE
-!/S      USE W3SERVMD, ONLY: STRACE
-!/T      USE W3ARRYMD, ONLY: PRT2DS
-!
-      IMPLICIT NONE
-!
-!/MPI      INCLUDE "mpif.h"
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-      REAL, INTENT(IN)        :: A(NTH,NK,0:NSEAL)
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-      INTEGER                 :: I, IX1, IY1, IX(4), IY(4), J, IS(4), &
-                                 IM(4), IK, ITH, ISP
-      INTEGER                 :: itout                          
-!/MPI      INTEGER                 :: IOFF, IERR_MPI
-!/MPI      INTEGER                 :: STAT(MPI_STATUS_SIZE,4*NOPTS)
-!/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: RD(4), RDS, RDI, FACRD,    &
-                                 WNDX, WNDY, CURX, CURY, FAC1(NK),    &
-                                 FAC2(NK), FAC3(NK)
-      REAL                    :: alphaa, beta                                
-!/T      REAL                    :: SPTEST(NK,NTH)
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3IOPENS')
-!
-      CX(0)  = 0.
-      CY(0)  = 0.
-      IS(:)  = 0
-      IM(:)  = 0
-!
-! Loop over spectra -------------------------------------------------- *
-!
-      DO I=1, NOPTS
-!
-!/T        WRITE (NDST,9000) I
-!
-! Unpack interpolation data
-!
-!AR: For the interpolation stuff again here we use ERIC's 3d array structure but we keep the 2nd index to 1
-   itout  =  IPTINT(1,1,I)
-   alphaa =  PTIFAC(1,I)
-   beta   =  PTIFAC(2,I)
-   
-   
-    IX(1)  =  TRIGP(itout,1)
-    IX(2)  =  TRIGP(itout,2)
-    IX(3)  =  TRIGP(itout,3)
-    IX(4)  =  TRIGP(itout,1)
 
-    IY(:)  =  1
-
-!   
-! Interpolation factors assuming sea points only
-!
-    RD(1)  =  alphaa
-    RD(2)  =  beta
-    RD(3)  =  1-alphaa-beta
-    RD(4)  =  0.
-   
-!
-! Correct for land and ice and get sea point counters
-!
-        IL(I)  = 0
-        IW(I)  = 0
-        II(I)  = 0
-        RDS    = 0.
-        RDI    = 0.
-!
-        DO J=1, 3
-          IS(J)  = MAPFS (IY(J),IX(J))
-          IM(J)  = MAPSTA(IY(J),IX(J))
-          IF ( IM(J).GT.0 ) THEN
-              IW(I)  = IW(I) + 1
-              RDS    = RDS + RD(J)
-            ELSE
-              IF ( IM(J).LT.0 ) THEN
-                  II(I)  = II(I) + 1
-                  RDI    = RDI + RD(J)
-                ELSE
-                  IL(I)  = IL(I) + 1
-                  RD(J)  = 0.
-                END IF
-            END IF
-          END DO
-!
-! Depth, wind and current, ignore ice
-!
-        IF ( RDS+RDI .GT. 1.E-7 ) THEN
-            FACRD  = 1. / (RDS+RDI)
-            RD     = RD * FACRD
-          END IF
-  
-!
-!/T        WRITE (NDST,9002) (IS(J),J=1,4), (IM(J),J=1,4), (RD(J),J=1,4)
-!
-! Interpolate depth wind and current
-!
-        DPO(I) = RD(1)*DW(IS(1)) + RD(2)*DW(IS(2)) +                  &
-                 RD(3)*DW(IS(3)) 
-    
-!
-        WNDX   = RD(1) * UA(IS(1)) * COS(UD(IS(1))) +                 &
-                 RD(2) * UA(IS(2)) * COS(UD(IS(2))) +                 &
-                 RD(3) * UA(IS(3)) * COS(UD(IS(3)))                  
-                 
-        WNDY   = RD(1) * UA(IS(1)) * SIN(UD(IS(1))) +                 &
-                 RD(2) * UA(IS(2)) * SIN(UD(IS(2))) +                 &
-                 RD(3) * UA(IS(3)) * SIN(UD(IS(3))) 
-!
-        WAO(I) = SQRT ( WNDX**2 + WNDY**2 )
-        IF ( WAO(I).GT.1.E-7 ) THEN
-            WDO(I) = ATAN2(WNDY,WNDX)
-          ELSE
-            WDO(I) = 0.
-          END IF
-!
-        ASO(I) = RD(1)*AS(IS(1)) + RD(2)*AS(IS(2)) +                  &
-                 RD(3)*AS(IS(3)) 
-!
-        CURX   = RD(1)*CX(IS(1)) + RD(2)*CX(IS(2)) +                  &
-                 RD(3)*CX(IS(3)) 
-        CURY   = RD(1)*CY(IS(1)) + RD(2)*CY(IS(2)) +                  &
-                 RD(3)*CY(IS(3)) 
-!
-        CAO(I) = SQRT ( CURX**2 + CURY**2 )
-        IF ( CAO(I).GT.1.E-7 ) THEN
-            CDO(I) = ATAN2(CURY,CURX)
-          ELSE
-            CDO(I) = 0.
-          END IF
-!
-! Interp. weights for spectra, no ice points (spectra by def. zero)
-!
-        IF ( RDS .GT. 1.E-7 ) THEN
-            FACRD  = (RDS+RDI) / RDS
-            RD     = RD * FACRD
-          END IF
-!
-!/T        WRITE (NDST,9003) (RD(J),J=1,3)
-!
-! Extract spectra, shared memory version
-!        (done in separate step for MPP compatibility)
-!
-!/SHRD        DO J=1, 3
-!/SHRD          DO IK=1, NK
-!/SHRD            DO ITH=1, NTH
-!/SHRD              SP(ITH,IK,J) = A(ITH,IK,IS(J))
-!/SHRD              END DO
-!/SHRD            END DO
-!/SHRD          END DO
-!
-! Extract spectra, distributed memory version(s)
-
-!/MPI        IOFF   = 1 + 4*(I-1)
-!/MPI        CALL MPI_STARTALL ( 4, IRQPO2(IOFF), IERR_MPI )
-!/MPI        CALL MPI_WAITALL  ( 4, IRQPO2(IOFF), STAT, IERR_MPI )
-!
-! Interpolate spectrum
-!
-        DO IK=1, NK
-          FAC1(IK) = TPI * SIG(IK) / CG(IK,IS(1))
-          FAC2(IK) = TPI * SIG(IK) / CG(IK,IS(2))
-          FAC3(IK) = TPI * SIG(IK) / CG(IK,IS(3))
-
-          END DO
-!
-        DO IK=1,NK
-          DO ITH=1,NTH
-            ISP    = ITH + (IK-1)*NTH
-            SPCO(ISP,I) = RD(1) * SP(ITH,IK,1) * FAC1(IK)             &
-                        + RD(2) * SP(ITH,IK,2) * FAC2(IK)             &
-                        + RD(3) * SP(ITH,IK,3) * FAC3(IK)          
-            END DO
-          END DO
-        END DO
-!
-      RETURN
-!
-! Formats
-!
-!/T 9000 FORMAT (' TEST W3IOPE : POINT NR.:',I3)
-!/T 9001 FORMAT (' TEST W3IOPE :',2I4,2F6.3,'   (',I3,')')
-!/T 9002 FORMAT (' TEST W3IOPE :',4I7,2X,4I2,2X,4F5.2)
-!/T 9003 FORMAT (' TEST W3IOPE :',40X,4F5.2)
-!/T 9004 FORMAT (' TEST W3IOPE :',F8.1,2(F7.2,F7.1))
-!/
-!/ End of W3IOPENS ----------------------------------------------------- /
-!/
-      END SUBROUTINE W3IOPENS
-!------------------------------------------------------------------------!
-!                           TRIANGLE MOD                                 !
-!------------------------------------------------------------------------!
-      subroutine triangulation_mesh_boundary()
-
-        use W3GDATMD, only : nx, ntri, trigp, xyb, iobp
-
-        implicit none
-        integer :: index_op
-        integer :: i, ii, i1, i2, i3
-        integer :: j, j1, j2
-        real (kind = 8) :: polygon_area        
-        real (kind = 8) :: domain_area
-!C
-        dim_num = 2
-        node_num = nx
-        triangle_num = ntri
-        triangle_order = 3
-
-        allocate( node_xy(1:dim_num, node_num) )
-        allocate( triangle_node(triangle_order,triangle_num) )
-
-        node_xy(1,:) = xyb(:,1)
-        node_xy(2,:) = xyb(:,2)
-        do i = 1, ntri
-          triangle_node(:,i) = trigp(i,:)
-        end do 
-!C
-        allocate( node_boundary(node_num) )
-        allocate( edge(3,3*triangle_num) )
-        allocate( edge_boundary(3*triangle_num) )
-!C
-        call triangulation_order3_boundary_node ( node_num, triangle_num, triangle_node, node_boundary, edge, edge_boundary )
-!C
-        bound_edge_num = 0
-
-        do i = 1, 3*triangle_num
-          if (edge_boundary(i)) bound_edge_num = bound_edge_num + 1
-        end do        
-!C
-        allocate( edge_nums(bound_edge_num) )
-        allocate( edge_index(2,bound_edge_num) )
-        allocate( edge_angle(2,bound_edge_num) )
-        allocate( boundary_node_index(bound_edge_num) )          
-!C            
-        edge_nums(:) = 0
-        edge_index(:,:) = 0
-!C          
-        call triangulation_order3_boundary_edge ( triangle_num, edge, edge_boundary, bound_edge_num, &
-     &                                            bound_num, edge_nums, edge_index )    
-!C
-        domain_area = 0.0
-        index_op = 1
-        ii = 0
-!C    
-        do i = 1, bound_num ! start loop over polygons ... 
-!C
-            polygon_area = 0.0
-
-            if (i == 1) then
-              j1 = 1
-              j2 = edge_nums(i)
-            else
-              j1 = edge_nums(i-1) + 1
-              j2 = edge_nums(i)
-            end if
-
-            do j = j1, j2, 1
-              i1 = edge_index(1,j)
-              i2 = edge_index(2,j)
-              polygon_area = polygon_area + node_xy(1,i1)*node_xy(2,i2) - node_xy(1,i2)*node_xy(2,i1)        
-            end do
-!C            
-            polygon_area = 0.5 * polygon_area  
-          
-!            write(*,*) 'polygon_area = ', abs(polygon_area), 'bound_num', i
-!C convert the clockwise order to the counterclockwise order
-!C
-            if (polygon_area < 0.0) then
-              do j = 1, int((j2-j1+1)/2), 1         
-                call i_swap( edge_index(1,j1+(j-1)), edge_index(1,j2-(j-1)) )
-                call i_swap( edge_index(2,j1+(j-1)), edge_index(2,j2-(j-1)) )                
-              end do
-              do j = j1, j2, 1
-                call i_swap( edge_index(1,j), edge_index(2,j) )
-              end do
-              polygon_area = -1.0d0 * polygon_area
-!              write(*,*) 'polygon_area corrected = ', abs(polygon_area)
-            end if
-
-!C print out the edge number
-!            do j = j1, j2, 1
-!              i1 = edge_index(1,j)
-!              i2 = edge_index(2,j)
-!              write(*,*) i1, i2
-!            end do
-            
-            if (polygon_area >= domain_area) then
-              domain_area = polygon_area
-              index_op = i         
-            end if
-
-            do j = j1, j2, 1
-
-              i1 = edge_index(1,j)
-              i2 = edge_index(2,j)
-
-              if (j == j2) then
-                i3 = edge_index(2,j1)
-              else
-                i3 = edge_index(2,j+1)
-              end if
-
-              ii = ii + 1
-              boundary_node_index(ii) = i2
-
-              call line_angle( node_xy(1,i2), node_xy(2,i2), node_xy(1,i1), node_xy(2,i1), edge_angle(2,ii) )
-              call line_angle( node_xy(1,i2), node_xy(2,i2), node_xy(1,i3), node_xy(2,i3), edge_angle(1,ii) )
-        
-            end do
-!C            
-        end do ! end loop over bounds ...
-!C            
-!       do i = 1, ii
-!         write(*,*) boundary_node_index(i), edge_angle(1,i)/(4.0d0*atan(1.0d0))*180.0d0, edge_angle(2,i)/(4.0d0*atan(1.0d0))*180.0d0
-!       end do
-!C
-        ii = 0    
-        do i = 1, bound_num ! start loop over polygons ... 
-            if (i == 1) then
-              j1 = 1
-              j2 = edge_nums(i)
-            else
-              j1 = edge_nums(i-1) + 1
-              j2 = edge_nums(i)
-            end if
-            do j = j1, j2, 1
-              i1 = edge_index(1,j)
-              i2 = edge_index(2,j)
-              ii = ii + 1
-              boundary_node_index(ii) = i2
-              if (i == index_op) then
-                if ( iobp(i2) == 0 ) iobp(i2) =  1
-              else
-                if ( iobp(i2) == 0 ) iobp(i2) = -1
-              end if
-            end do
-        end do ! end loop over bounds ...
-
-        return
-      end subroutine
-!C
-!C******************************************************************************
-!C
-     subroutine dealloc_triang_bound()
-          implicit none
-          deallocate( node_boundary )
-          deallocate( edge )
-          deallocate( edge_boundary )
-          deallocate( edge_nums )
-          deallocate( edge_index )
-          deallocate( edge_angle )
-          deallocate( boundary_node_index )
-     end subroutine
-!C
-!C******************************************************************************
-!C
-      subroutine triangulation_order3_boundary_node( node_num, &
-        triangle_num, triangle_node, node_boundary, edge, edge_boundary )
-!C
-!C  TRIANGULATION_ORDER3_BOUNDARY_NODE indicates which nodes are on the boundary.
-!C
-!C  Discussion:
-!C
-!C    This routine is given a triangulation, an abstract list of triples
-!C    of nodes.  It is assumed that the nodes in each triangle are listed
-!C    in a counterclockwise order, although the routine should work 
-!C    if the nodes are consistently listed in a clockwise order as well.
-!C
-!C    It is assumed that each edge of the triangulation is either 
-!C    * an INTERIOR edge, which is listed twice, once with positive
-!C      orientation and once with negative orientation, or;
-!C    * a BOUNDARY edge, which will occur only once.
-!C
-!C    This routine should work even if the region has holes - as long
-!C    as the boundary of the hole comprises more than 3 edges!
-!C
-!C  Modified:
-!C
-!C    20 March 2005
-!C
-!C  Author:
-!C
-!C    John Burkardt
-!C
-!C  Parameters:
-!C
-!C    Input, integer NODE_NUM, the number of nodes.
-!C
-!C    Input, integer TRIANGLE_NUM, the number of triangles.
-!C
-!C    Input, integer TRIANGLE_NODE(3,TRIANGLE_NUM), the nodes that make up the
-!C    triangles.  These should be listed in counterclockwise order.
-!C
-!C    Output, logical NODE_BOUNDARY(NODE_NUM), is TRUE if the node
-!C    is on a boundary edge.
-!C
-        implicit none
-!C        
-        integer node_num
-        integer triangle_num
-!C       
-        integer e1(3*triangle_num)
-        integer e2(3*triangle_num)
-        integer edge(3,3*triangle_num)
-        integer triangle_node(3,triangle_num)          
-        logical node_boundary(node_num)
-        logical edge_boundary(3*triangle_num)
-        integer i
-        integer j
-        integer m
-        integer n          
-!C  
-        m = 2
-        n = 3 * triangle_num
-!C
-!C  Set up the edge array.
-!C
-        edge(1:2,               1:  triangle_num) = &
-          triangle_node(1:2,1:triangle_num)
-        edge(1:2,  triangle_num+1:2*triangle_num) = & 
-          triangle_node(2:3,1:triangle_num)
-        edge(1,  2*triangle_num+1:3*triangle_num) = & 
-          triangle_node(3,  1:triangle_num)
-        edge(2,  2*triangle_num+1:3*triangle_num) = & 
-          triangle_node(1,  1:triangle_num)
-!C
-!C  In each column, force the smaller entry to appear first.
-!C
-        e1(1:n) = minval ( edge(1:2,1:n), dim = 1 )
-        e2(1:n) = maxval ( edge(1:2,1:n), dim = 1 )
-!C 
-!        do i = 1, n
-!          write(*,*) i, edge(1,i), edge(2,i)
-!        end do
-!C  
-        edge(1,1:n) = e1(1:n)
-        edge(2,1:n) = e2(1:n)
-!C 
-        do i = 1, n
-          edge(3,i) = i
-        end do
-!C
-!C  Ascending sort the column array.
-!C
-        call icol_sort_a ( 3, n, edge )
-!C
-!C  Records which appear twice are internal edges and can be ignored.
-!C
-        node_boundary(1:node_num) = .false.
-!C
-        edge_boundary(1:n) = .false. 
-!C
-        j = 0
-!C        
-        do while ( j < 3 * triangle_num )    
-          j = j + 1        
-          if ( j == 3 * triangle_num ) then
-            node_boundary(edge(1:m,j)) = .true.
-            edge_boundary(j) = .true.
-          else if ( all ( edge(1:m,j) == edge(1:m,j+1) ) ) then
-            j = j + 1
-          else
-            node_boundary(edge(1:m,j)) = .true.
-            edge_boundary(j) = .true.    
-          end if        
-        end do
-!C
-!        do i = 1, n
-!          write(*,*) i, edge(1,i), edge(2,i), edge(3,i), edge_boundary(i)
-!        end do 
-!C  
-!        do i = 1, node_num
-!          write(*,*) i, node_boundary(i)
-!        end do
-!C
-        return
-      end subroutine
-!C
-!C******************************************************************************
-!C
-      subroutine triangulation_order3_boundary_edge( triangle_num, edge, &
-        edge_boundary, bound_edge_num, bound_num, edge_nums, edge_index )
-!C
-        implicit none
-        integer triangle_num
-        integer edge(3,3*triangle_num)
-        logical edge_boundary(3*triangle_num)
-        integer bound_edge_num
-        integer bound_num
-        integer edge_nums(bound_edge_num)
-        integer edge_index(2,bound_edge_num)
-        integer edge_tmp(3,bound_edge_num)
-        integer connect_node          
-        integer i, j, k, l
-!C
-        j = 1
-        do i = 1, triangle_num*3
-          if ( edge_boundary(i) ) then
-            edge_tmp(1:2,j) = edge(1:2,i)
-            edge_tmp(3,j) = i
-            j = j + 1
-          end if
-        end do
-!        do i = 1, bound_edge_num
-!          write(*,*) i, edge_tmp(1:3,i)
-!        end do
-!C        
-        j = 0
-        i = 0  
-        k = 0       
-!C
-        do while ( j < bound_edge_num )        
-!C        
-          do i = 1, bound_edge_num
-!C          
-            if ( edge_tmp(3,i) /= 0 ) then        
-              k = k + 1
-              j = j + 1              
-              edge_index(1:2,j) = edge_tmp(1:2,i)
-              connect_node = edge_index(2,j)
-              edge_tmp(3,i) = 0
-!              write(*,*) j, edge_index(1,j), edge_index(2,j)
-!C             
-              l = 0
-              do while ( l /= bound_edge_num+1 )
-                do l = 1, bound_edge_num
-                  if ( edge_tmp(3,l) /= 0 ) then 
-                    if ( connect_node == edge_tmp(1,l) ) then
-                      j = j + 1                     
-                      edge_index(1:2,j) = edge_tmp(1:2,l)                  
-                      connect_node = edge_index(2,j)
-                      edge_tmp(3,l) = 0
-!                     write(*,*) j, edge_index(1,j), edge_index(2,j) 
-                      exit 
-                    else if ( connect_node == edge_tmp(2,l) ) then
-                      j = j + 1
-                      edge_index(1:2,j) = edge_tmp(2:1:-1,l)
-                      connect_node = edge_index(2,j)
-                      edge_tmp(3,l) = 0
-!                     write(*,*) j, edge_index(1,j), edge_index(2,j) 
-                      exit                     
-                    end if
-                  end if        
-                end do
-              end do             
-!C    
-            end if
-            edge_nums(k) = j                        
-          end do         
-        end do
-!C          
-        bound_num = k
-!C          
-        return 
-      end subroutine
-!C
-!C******************************************************************************
-!C
-      subroutine icol_sort_a ( m, n, a )
-!
-!  ICOL_SORT_A ascending sorts an integer array of columns.
-!
-!  Discussion:
-!
-!    In lexicographic order, the statement "X < Y", applied to two real
-!    vectors X and Y of length M, means that there is some index I, with
-!    1 <= I <= M, with the property that
-!
-!      X(J) = Y(J) for J < I,
-!    and
-!      X(I) < Y(I).
-!
-!    In other words, the first time they differ, X is smaller.
-!
-!  Modified:
-!
-!    25 September 2001
-!
-!  Author:
-!
-!    John Burkardt
-!
-!  Parameters:
-!
-!    Input, integer M, the number of rows of A, and the length of
-!    a vector of data.
-!
-!    Input, integer N, the number of columns of A.
-!
-!    Input/output, integer A(M,N).
-!    On input, the array of N columns of M-vectors.
-!    On output, the columns of A have been sorted in ascending
-!    lexicographic order.
-!
-        implicit none
-      
-        integer m
-        integer n
-      
-        integer a(m,n)
-        integer i
-        integer indx
-        integer isgn
-        integer j
-      
-        if ( m <= 0 ) then
-          return
-        end if
-      
-        if ( n <= 1 ) then
-          return
-        end if
-!
-!  Initialize.
-!
-        i = 0
-        indx = 0
-        isgn = 0
-        j = 0
-!
-!  Call the external heap sorter.
-!
-        do
-      
-          call sort_heap_external ( n, indx, i, j, isgn )
-!
-!  Interchange the I and J objects.
-!
-          if ( 0 < indx ) then
-      
-            call icol_swap ( m, n, a, i, j )
-!
-!  Compare the I and J objects.
-!
-          else if ( indx < 0 ) then
-      
-            call icol_compare ( m, n, a, i, j, isgn )
-      
-          else if ( indx == 0 ) then
-      
-            exit
-      
-          end if
-      
-        end do
-      
-        return
-      end subroutine
-!C
-!C******************************************************************************
-!C
-      subroutine sort_heap_external ( n, indx, i, j, isgn )
-!C
-!C SORT_HEAP_EXTERNAL externally sorts a list of items into ascending order.
-!C
-!C  Discussion:
-!C
-!C    The actual list of data is not passed to the routine.  Hence this
-!C    routine may be used to sort integers, real ( kind = 8 )s, numbers, names,
-!C    dates, shoe sizes, and so on.  After each call, the routine asks
-!C    the user to compare or interchange two items, until a special
-!C    return value signals that the sorting is completed.
-!C
-!C  Modified:
-!C
-!C    05 February 2004
-!C
-!C  Reference:
-!C
-!C    A Nijenhuis and H Wilf,
-!C    Combinatorial Algorithms,
-!C    Academic Press, 1978, second edition,
-!C    ISBN 0-12-519260-6.
-!C
-!C  Parameters:
-!C
-!C    Input, integer N, the number of items to be sorted.
-!C
-!C    Input/output, integer INDX, the main communication signal.
-!C
-!C    The user must set INDX to 0 before the first call.
-!C    Thereafter, the user should not change the value of INDX until
-!C    the sorting is done.
-!C
-!C    On return, if INDX is
-!C
-!C      greater than 0,
-!C      * interchange items I and J;
-!C      * call again.
-!C
-!C      less than 0,
-!C      * compare items I and J;
-!C      * set ISGN = -1 if I < J, ISGN = +1 if J < I;
-!C      * call again.
-!C
-!C      equal to 0, the sorting is done.
-!C
-!C    Output, integer I, J, the indices of two items.
-!C    On return with INDX positive, elements I and J should be interchanged.
-!C    On return with INDX negative, elements I and J should be compared, and
-!C    the result reported in ISGN on the next call.
-!C
-!C    Input, integer ISGN, results of comparison of elements I and J.
-!C    (Used only when the previous call returned INDX less than 0).
-!C    ISGN <= 0 means I is less than or equal to J;
-!C    0 <= ISGN means I is greater than or equal to J.
-!C
-        implicit none
-      
-        integer i
-        integer, save :: i_save = 0
-        integer indx
-        integer isgn
-        integer j
-        integer, save :: j_save = 0
-        integer, save :: k = 0
-        integer, save :: k1 = 0
-        integer n
-        integer, save :: n1 = 0
-!C
-!C  INDX = 0: This is the first call.
-!C
-        if ( indx == 0 ) then
-      
-          i_save = 0
-          j_save = 0
-          k = n / 2
-          k1 = k
-          n1 = n
-!C
-!C  INDX < 0: The user is returning the results of a comparison.
-!C
-        else if ( indx < 0 ) then
-      
-          if ( indx == -2 ) then
-      
-            if ( isgn < 0 ) then
-              i_save = i_save + 1
-            end if
-      
-            j_save = k1
-            k1 = i_save
-            indx = -1
-            i = i_save
-            j = j_save
-            return
-      
-          end if
-      
-          if ( 0 < isgn ) then
-            indx = 2
-            i = i_save
-            j = j_save
-            return
-          end if
-      
-          if ( k <= 1 ) then
-      
-            if ( n1 == 1 ) then
-              i_save = 0
-              j_save = 0
-              indx = 0
-            else
-              i_save = n1
-              n1 = n1 - 1
-              j_save = 1
-              indx = 1
-            end if
-      
-            i = i_save
-            j = j_save
-            return
-      
-          end if
-      
-          k = k - 1
-          k1 = k
-!C
-!C  0 < INDX, the user was asked to make an interchange.
-!C
-        else if ( indx == 1 ) then
-      
-          k1 = k
-      
-        end if
-      
-        do
-      
-          i_save = 2 * k1
-      
-          if ( i_save == n1 ) then
-            j_save = k1
-            k1 = i_save
-            indx = -1
-            i = i_save
-            j = j_save
-            return
-          else if ( i_save <= n1 ) then
-            j_save = i_save + 1
-            indx = -2
-            i = i_save
-            j = j_save
-            return
-          end if
-      
-          if ( k <= 1 ) then
-            exit
-          end if
-      
-          k = k - 1
-          k1 = k
-      
-        end do
-      
-        if ( n1 == 1 ) then
-          i_save = 0
-          j_save = 0
-          indx = 0
-          i = i_save
-          j = j_save
-        else
-          i_save = n1
-          n1 = n1 - 1
-          j_save = 1
-          indx = 1
-          i = i_save
-          j = j_save
-        end if
-      
-        return
-      end subroutine       
-!C
-!C******************************************************************************
-!C      
-      subroutine icol_swap ( m, n, a, i, j )
-!C
-!C  ICOL_SWAP swaps columns I and J of a integer array of column data.
-!C
-!C  Example:
-!C
-!C    Input:
-!C
-!C      M = 3, N = 4, I = 2, J = 4
-!C
-!C      A = (
-!C        1  2  3  4
-!C        5  6  7  8
-!C        9 10 11 12 )
-!C
-!C    Output:
-!C
-!C      A = (
-!C        1  4  3  2
-!C        5  8  7  6
-!C        9 12 11 10 )
-!C
-!C  Modified:
-!C
-!C    04 April 2001
-!C
-!C  Author:
-!C
-!C    John Burkardt
-!C
-!C  Parameters:
-!C
-!C    Input, integer M, N, the number of rows and columns in the array.
-!C
-!C    Input/output, integer A(M,N), an array of N columns of length M.
-!C
-!C    Input, integer I, J, the columns to be swapped.
-!C
-        implicit none
-      
-        integer m
-        integer n
-      
-        integer a(m,n)
-        integer col(m)
-        integer i
-        integer j
-      
-        if ( i < 1 .or. n < i .or. j < 1 .or. n < j ) then
-      
-!          write ( *, '(a)' ) ' '
-!          write ( *, '(a)' ) 'ICOL_SWAP - Fatal error!'
-!          write ( *, '(a)' ) '  I or J is out of bounds.'
-!          write ( *, '(a,i6)' ) '  I =    ', i
-!          write ( *, '(a,i6)' ) '  J =    ', j
-!          write ( *, '(a,i6)' ) '  N =    ', n
-!          stop
-      
-        end if
-      
-        if ( i == j ) then
-          return
-        end if
-      
-        col(1:m) = a(1:m,i)
-        a(1:m,i) = a(1:m,j)
-        a(1:m,j) = col(1:m)
-      
-        return
-      end subroutine
-!C
-!C******************************************************************************
-!C
-      subroutine icol_compare ( m, n, a, i, j, isgn )
-!C
-!C  ICOL_COMPARE compares columns I and J of a integer array.
-!C
-!C  Example:
-!C
-!C    Input:
-!C
-!C      M = 3, N = 4, I = 2, J = 4
-!C
-!C      A = (
-!C        1  2  3  4
-!C        5  6  7  8
-!C        9 10 11 12 )
-!C
-!C    Output:
-!C
-!C      ISGN = -1
-!C
-!C  Modified:
-!C
-!C    30 June 2000
-!C
-!C  Author:
-!C
-!C    John Burkardt
-!C
-!C  Parameters:
-!C
-!C    Input, integer M, N, the number of rows and columns.
-!C
-!C    Input, integer A(M,N), an array of N columns of vectors of length M.
-!C
-!C    Input, integer I, J, the columns to be compared.
-!C    I and J must be between 1 and N.
-!C
-!C    Output, integer ISGN, the results of the comparison:
-!C    -1, column I < column J,
-!C     0, column I = column J,
-!C    +1, column J < column I.
-!C
-        implicit none
-      
-        integer m
-        integer n
-      
-        integer a(m,n)
-        integer i
-        integer isgn
-        integer j
-        integer k
-!C
-!C  Check.
-!C
-        if ( i < 1 .or. n < i ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'ICOL_COMPARE - Fatal error!'
-          write ( *, '(a)' ) '  Column index I is out of bounds.'
-          stop
-        end if
-      
-        if ( j < 1 .or. n < j ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'ICOL_COMPARE - Fatal error!'
-          write ( *, '(a)' ) '  Column index J is out of bounds.'
-          stop
-        end if
-      
-        isgn = 0
-      
-        if ( i == j ) then
-          return
-        end if
-      
-        k = 1
-      
-        do while ( k <= m )
-      
-          if ( a(k,i) < a(k,j) ) then
-            isgn = -1
-            return
-          else if ( a(k,j) < a(k,i) ) then
-            isgn = +1
-            return
-          end if
-      
-          k = k + 1
-      
-        end do
-      
-        return
-      end subroutine        
 !C
 !C******************************************************************************
 !C        
@@ -2977,20 +2088,6 @@ END SUBROUTINE
         
         return
       end subroutine       
-!C
-!C******************************************************************************
-!C
-      subroutine i_swap( a, b )
-        implicit none
-        integer a, b
-        integer itmp
-        
-        itmp = a
-        a = b
-        b = itmp
-        
-        return
-      end subroutine
 !C
 !C******************************************************************************
 !C

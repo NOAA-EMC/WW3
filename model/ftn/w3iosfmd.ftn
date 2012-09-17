@@ -148,6 +148,7 @@
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NDST, OUTPTS, O6INIT,       &
                           ICPRT, DTPRT
       USE W3WDATMD, ONLY: VA, ASF
+!/T     USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
 !/

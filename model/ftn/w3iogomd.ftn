@@ -1702,7 +1702,7 @@
 !/T              '       NX,NY : ',I9,I12/                            &
 !/T              '       UNDEF : ',F8.2)
 !/T 9003 FORMAT (' TEST W3IOGO : TIME  :',I9.8,I7.6/                  &
-!/T              '               FLAGS :',80L2)
+!/T              '               FLAGS :',90L2)
 !/T 9010 FORMAT (' TEST W3IOGO : PROC = ',L1,' FOR ',A)
 !/T 9020 FORMAT (' TEST W3IOGO : END OF FILE REACHED')
 !/

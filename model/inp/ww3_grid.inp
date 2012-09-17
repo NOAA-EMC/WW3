@@ -166,6 +166,15 @@ $                           CFLTM  : Maximum CFL number for refraction.
 $                           WDTHCG : Tuning factor propag. direction.
 $                           WDTHTH : Tuning factor normal direction.
 $
+$ Unstructured grids ------------------------------------------------ $
+$   UG parameters       : Namelist UG
+$                           UGOBCAUTO : Automatic detection of OBC points
+$                           UGOBCDEPTH: Threshold ( < 0) depth for OBC points
+$                           EXPFSN    : Activation of N scheme
+$                           EXPFSPSI  : Activation of PSI scheme
+$                           EXPFSFCT  : Activation of FCT scheme
+$                           EXPFSFCT  : Activation of N implicit scheme
+$
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
 $                           CICE0  : Ice concentration cut-off.

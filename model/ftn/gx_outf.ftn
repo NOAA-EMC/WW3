@@ -258,7 +258,7 @@
 !
 ! Note: Whenever number of output parameters change, this needs updating
 !
-        IF ( I.EQ.43 ) THEN
+        IF ( I.EQ.43.OR.I.EQ.40 ) THEN
             IF ( FLREQ(I) ) NVAR = NVAR + 3
           ELSE IF ( I.GE.17 .AND. I.LE.22 ) THEN
             IF ( FLREQ(I) ) NVAR = NVAR + NOSWLL + 1

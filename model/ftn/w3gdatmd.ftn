@@ -44,6 +44,7 @@
 !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
 !/    14-Mar-2012 : Add PSIC for BT4                    ( version 4.04 )
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -504,7 +505,6 @@
 !
 ! unstructured data	
 !
-        LOGICAL               :: CONTOUR
         INTEGER               :: NTRI
         DOUBLE PRECISION, POINTER         :: XYB(:,:)
         INTEGER, POINTER      :: TRIGP(:,:)
@@ -517,7 +517,6 @@
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),   &
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
         REAL, POINTER         :: TRIA(:), TRIA03(:)
-!/REF1       REAL, POINTER         :: UG_REFLC(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
 ! Coupling data
         LOGICAL               :: COUG_2D, COUG_RAD3D, COUG_US3D
@@ -674,7 +673,6 @@
 !
 ! Variables for unstructured grids 
 !
-      LOGICAL, POINTER        :: CONTOUR       
       INTEGER, POINTER        :: NTRI,COUNTRI,COUNTOT,NNZ
 !  XYB may not be necessary now that we have XGRD and YGRD
 !  but these XGRD and YGRD should probably be double precision
@@ -687,7 +685,6 @@
                                  IAA(:), JAA(:), POSI(:,:),            &
                                  VNEIGH(:,:), INDEX_CELL(:)
       REAL, POINTER           :: TRIA(:), TRIA03(:)
-!/REF1      REAL, POINTER           :: UG_REFLC(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       
@@ -961,7 +958,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2010 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -973,6 +970,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement unstructured grids        ( version 3.14.1)
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -1351,9 +1349,8 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  !           J. H. Alves             !
-!/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -1377,6 +1374,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
 !/
 !  1. Purpose :
 !
@@ -1481,7 +1479,6 @@
       US3DF  => GRIDS(IMOD)%US3DF
       REFLC  => GRIDS(IMOD)%REFLC
       REFLD  => GRIDS(IMOD)%REFLD
-      CONTOUR    => GRIDS(IMOD)%CONTOUR
       COUG_2D     => GRIDS(IMOD)%COUG_2D
       COUG_RAD3D  => GRIDS(IMOD)%COUG_RAD3D
       COUG_US3D   => GRIDS(IMOD)%COUG_US3D
@@ -1540,7 +1537,6 @@
       POSI     => GRIDS(IMOD)%POSI
       NNZ      => GRIDS(IMOD)%NNZ
       IOBPD     => GRIDS(IMOD)%IOBPD
-!/REF1      UG_REFLC  => GRIDS(IMOD)%UG_REFLC
       TRIA     => GRIDS(IMOD)%TRIA
       TRIA03     => GRIDS(IMOD)%TRIA03
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
@@ -2270,7 +2266,6 @@
                  GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX) )
-!/REF1       ALLOCATE ( GRIDS(IMOD)%UG_REFLC(MX) )
 !
 !/T      WRITE (NDST,9001)
 !

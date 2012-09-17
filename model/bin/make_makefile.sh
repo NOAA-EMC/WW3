@@ -485,7 +485,7 @@
 
   progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
-         ww3_ounp ww3_gint'
+         ww3_ounp ww3_gint ww3_bound'
 
   for prog in $progs
   do
@@ -504,6 +504,13 @@
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iorsmd'
                 aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_bound) IDstring='boundary conditions program'
+               core=
+               data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
+               prop=
+             source="$stx $nlx $btx"
+                 IO='w3iogrmd w3dispmd w3gsrumd'
+                aux='constants w3servmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
