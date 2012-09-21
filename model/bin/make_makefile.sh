@@ -11,9 +11,9 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      Dec 2010               #
+#                                                      July 2012              #
 #                                                                             #
-#    Copyright 2009-2010 National Weather Service (NWS),                      #
+#    Copyright 2009-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -87,7 +87,7 @@
   fi
 
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
-              prop stress s_ln source stab s_nl s_bot s_db s_tr s_bs s_xx \
+              prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
               mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip
   do
@@ -145,7 +145,11 @@
                OK='STAB0 STAB2 STAB3' ;;
       s_nl   ) TY='one'
                ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NLX' ;;
+               OK='NL0 NL1 NL2 NL3 NLX' ;;
+      snls   ) TY='upto1'
+               ID='quadruplet smoother'
+               TS='NLS'
+               OK='NLS' ;;
       s_bot  ) TY='one'
                ID='bottom friction'
                OK='BT0 BT1 BT4 BTX' ;;
@@ -300,6 +304,7 @@
       stress ) stress=$sw ;;
       scrip  ) scrip=$sw ;;
       s_nl   ) s_nl=$sw ;;
+      snls   ) snls=$sw ;;
       s_bot  ) s_bt=$sw ;;
       s_db   ) s_db=$sw ;;
       s_tr   ) s_tr=$sw ;;
@@ -423,8 +428,15 @@
         nlx='w3snl1md' ;;
    NL2) nl='w3snl2md mod_xnl4v5 serv_xnl4v5 mod_constants mod_fileio'
         nlx="$nl" ;;
+   NL3) nl='w3snl3md'
+        nlx='w3snl3md' ;;
    NLX) nl='w3snlxmd'
         nlx='w3snlxmd' ;;
+  esac
+
+  case $snls in
+   NLS) nl="$nl w3snlsmd"
+        nlx="$nlx w3snlsmd" ;;
   esac
 
   case $s_bt in
@@ -713,7 +725,7 @@
                W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3PROFSMD \
                W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLXXMD \
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRCXMD \
-               W3SNL1MD W3SNL2MD W3SNLXMD \
+               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
                W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
@@ -759,7 +771,9 @@
          'serv_xnl4v5'  ) modtest=serv_xnl4v5.o ;;
          'm_fileio'     ) modtest=mod_fileio.o ;;
          'm_constants'  ) modtest=mod_constants.o ;;
+         'W3SNL3MD'     ) modtest=w3snl3md.o ;;
          'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
+         'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
          'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
          'W3SBT4MD'     ) modtest=w3sbt4md.o ;;

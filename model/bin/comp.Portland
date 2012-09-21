@@ -85,13 +85,24 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  opt="-c -Mlist -fast -module $path_m"
+#  opt="-c -Mlist -module $path_m" ; fast="yes"
+  opt="-c -Mlist -fast -module $path_m -I$path_S"
 
-# opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m"
+# opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m" ; fast=
 
-  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
+# if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
+# then
+#   opt="$opt -byteswapio"
+# fi
+
+  if [ -n "$fast" ]
   then
-    opt="$opt -byteswapio"
+    if [ "$name" = 'w3iogrmd' ] ||  [ "$name" = 'w3iogomd' ] 
+    then
+      opt="-O3 $opt"
+    else
+      opt="-fast $opt"
+    fi
   fi
 
   if [ "$mpi_mod" = 'yes' ]

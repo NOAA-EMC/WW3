@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Mar-2012 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -44,9 +44,11 @@
 !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
 !/    14-Mar-2012 : Add PSIC for BT4                    ( version 4.04 )
-!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
+!/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
+!/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -339,6 +341,48 @@
 !      DPTHNL    R.A.  Public   Depths corresponding to NDPTHS.   
 !                               *** NOTE: This array is not allocated
 !                                         in the W3DIMP routine ***
+!                                                             (!/NL3)
+!      NFR       Int.  Public   Number of frequencies or wavenumbers
+!                               in discrete spectral space (NFR=>NK).
+!      NFRMIN    Int.  Public   Minimum discrete frequency in the
+!                               expanded frequency space.
+!      NFRMAX    Int.  Public   Idem maximum for first part.
+!      NFRCUT    Int.  Public   Idem maximum for second part.
+!      NTHMAX    Int.  Public   Extension of directional space.
+!      NTHEXP    Int   Public   Number of bins in extended dir. space.
+!      NSPMIN, NSPMAX, NSPMX2
+!                Int.  Public   1D spectral space range.
+!      FRQ       R.A.  Public   Expanded frequency range (Hz).
+!      XSI       R.A.  Public   Expanded frequency range (rad/s).
+!      NQA       Int.  Public   Number of actual quadruplets.
+!      QST1      I.A.  Public   Spectral offsets for compuation of
+!                               quadruplet spectral desnities.
+!      QST2      R.A.  Public   Idem weights.
+!      QST3      R.A.  Public   Proportionality constants and k factors
+!                               in diagonal strength.
+!      QST4      I.A.  Public   Spectral offsets for combining of
+!                               interactions and diagonal.
+!      QST5      R.A.  Public   Idem weights for interactions.
+!      QST6      R.A.  Public   Idem weights for diagonal.
+!      SNLNQ     Int.  Public   Number of quadruplet definitions.
+!      SNLMSC    Real  Public   Tuning power 'deep' scaling.
+!      SNLNSC    Real  Public   Tuning power 'shallow' scaling.
+!      SNLSFD    Real  Public   'Deep' nondimensional filer freq.
+!      SNLSFS    Real  Public   'Shallow' nondimensional filer freq.
+!      SNLL      R.A.  Public   Array with lambda for quadruplet.
+!      SNLM      R.A.  Public   Array with mu for quadruplet.
+!      SNLT      R.A.  Public   Array with Dtheta for quadruplet.
+!      SNLCD     R.A.  Public   Array with Cd for quadruplet.
+!      SNLCS     R.A.  Public   Array with Cs for quadruplet.
+!                                                             (!/NLS)
+!      NTHX      Int.  Public   Expanded discrete direction range.
+!      NFRX      Int.  Public   Expanded discrete frequency range.
+!      NSPL-H    Int.  Public   Range of 1D spectrum.
+!      SNSST     R.A.  Public   Array with interpolation weights.
+!      CNLSA     Real  Public   a34 in quadruplet definition.
+!      CNLSC     Real  Public   C in Snl definition.
+!      CNLSFM    Real  Public   Maximum relative spectral change.
+!      CNLSC1/3  Real  Public   Constant in frequency filter.
 !     ----------------------------------------------------------------
 !
 !     The structure SBTP contains parameters for the bottom friction
@@ -602,7 +646,22 @@
 !/NL2        INTEGER               :: IQTPE, NDPTHS
 !/NL2        REAL                  :: NLTAIL
 !/NL2        REAL, POINTER         :: DPTHNL(:)
+!/NL3        INTEGER               :: NFRMIN, NFRMAX, NFRCUT, NTHMAX,      &
+!/NL3                                 NTHEXP, NSPMIN, NSPMAX, NSPMX2,      &
+!/NL3                                 NQA, SNLNQ
+!/NL3        INTEGER, POINTER      :: QST1(:,:,:), QST4(:,:,:)
+!/NL3        REAL                  :: SNLMSC, SNLNSC, SNLSFD, SNLSFS
+!/NL3        REAL, POINTER         :: FRQ(:), XSI(:),                      &
+!/NL3                                 QST2(:,:,:), QST3(:,:,:),            &
+!/NL3                                 QST5(:,:,:), QST6(:,:,:),            &
+!/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
+!/NL3                                 SNLCD(:), SNLCS(:)
 !/NLX        REAL                  :: DUMMY
+!/NLS        INTEGER               :: NTHX, NFRX, NSPL, NSPH
+!/NLS        REAL                  :: CNLSA, CNLSC, CNLSFM,                &
+!/NLS                                 CNLSC1, CNLSC2, CNLSC3
+!/NLS        REAL, POINTER         :: SNSST(:,:)
+
       END TYPE SNLP
 !
       TYPE SBTP
@@ -796,6 +855,19 @@
 !/NL2      INTEGER, POINTER        :: IQTPE, NDPTHS
 !/NL2      REAL, POINTER           :: NLTAIL
 !/NL2      REAL, POINTER           :: DPTHNL(:)
+!/NL3      INTEGER, POINTER        :: NFRMIN, NFRMAX, NFRCUT, NTHMAX,      &
+!/NL3                                 NTHEXP, NSPMIN, NSPMAX, NSPMX2,      &
+!/NL3                                 NQA, SNLNQ
+!/NL3      INTEGER, POINTER        :: QST1(:,:,:), QST4(:,:,:)
+!/NL3      REAL, POINTER           :: SNLMSC, SNLNSC, SNLSFD, SNLSFS
+!/NL3      REAL, POINTER           :: FRQ(:), XSI(:),                      &
+!/NL3                                 QST2(:,:,:), QST3(:,:,:),            &
+!/NL3                                 QST5(:,:,:), QST6(:,:,:),            &
+!/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
+!/NL3                                 SNLCD(:), SNLCS(:)
+!/NLS      INTEGER, POINTER        :: NTHX, NFRX, NSPL, NSPH
+!/NLS      REAL, POINTER           :: CNLSA, CNLSC, CNLSFM,                &
+!/NLS                                 CNLSC1, CNLSC2, CNLSC3, SNSST(:,:)
 !/
 !/ Data aliasses for structure SBTP(S)
 !/
@@ -1374,6 +1446,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
+!/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
 !/
 !  1. Purpose :
@@ -1760,6 +1834,44 @@
 !/NL2      NDPTHS => MPARS(IMOD)%SNLPS%NDPTHS
 !/NL2      NLTAIL => MPARS(IMOD)%SNLPS%NLTAIL
 !/NL2      IF ( NDPTHS .NE. 0 ) DPTHNL => MPARS(IMOD)%SNLPS%DPTHNL
+!/NL3      NFRMIN => MPARS(IMOD)%SNLPS%NFRMIN
+!/NL3      NFRMAX => MPARS(IMOD)%SNLPS%NFRMAX
+!/NL3      NFRCUT => MPARS(IMOD)%SNLPS%NFRCUT
+!/NL3      NTHMAX => MPARS(IMOD)%SNLPS%NTHMAX
+!/NL3      NTHEXP => MPARS(IMOD)%SNLPS%NTHEXP
+!/NL3      NSPMIN => MPARS(IMOD)%SNLPS%NSPMIN
+!/NL3      NSPMAX => MPARS(IMOD)%SNLPS%NSPMAX
+!/NL3      NSPMX2 => MPARS(IMOD)%SNLPS%NSPMX2
+!/NL3      FRQ    => MPARS(IMOD)%SNLPS%FRQ
+!/NL3      XSI    => MPARS(IMOD)%SNLPS%XSI
+!/NL3      NQA    => MPARS(IMOD)%SNLPS%NQA
+!/NL3      QST1   => MPARS(IMOD)%SNLPS%QST1
+!/NL3      QST2   => MPARS(IMOD)%SNLPS%QST2
+!/NL3      QST3   => MPARS(IMOD)%SNLPS%QST3
+!/NL3      QST4   => MPARS(IMOD)%SNLPS%QST4
+!/NL3      QST5   => MPARS(IMOD)%SNLPS%QST5
+!/NL3      QST6   => MPARS(IMOD)%SNLPS%QST6
+!/NL3      SNLNQ  => MPARS(IMOD)%SNLPS%SNLNQ
+!/NL3      SNLMSC => MPARS(IMOD)%SNLPS%SNLMSC
+!/NL3      SNLNSC => MPARS(IMOD)%SNLPS%SNLNSC
+!/NL3      SNLSFD => MPARS(IMOD)%SNLPS%SNLSFD
+!/NL3      SNLSFS => MPARS(IMOD)%SNLPS%SNLSFS
+!/NL3      SNLL   => MPARS(IMOD)%SNLPS%SNLL
+!/NL3      SNLM   => MPARS(IMOD)%SNLPS%SNLM
+!/NL3      SNLT   => MPARS(IMOD)%SNLPS%SNLT
+!/NL3      SNLCD  => MPARS(IMOD)%SNLPS%SNLCD
+!/NL3      SNLCS  => MPARS(IMOD)%SNLPS%SNLCS
+!/NLS      NTHX   => MPARS(IMOD)%SNLPS%NTHX
+!/NLS      NFRX   => MPARS(IMOD)%SNLPS%NFRX
+!/NLS      NSPL   => MPARS(IMOD)%SNLPS%NSPL
+!/NLS      NSPH   => MPARS(IMOD)%SNLPS%NSPH
+!/NLS      SNSST  => MPARS(IMOD)%SNLPS%SNSST
+!/NLS      CNLSA  => MPARS(IMOD)%SNLPS%CNLSA
+!/NLS      CNLSC  => MPARS(IMOD)%SNLPS%CNLSC
+!/NLS      CNLSFM => MPARS(IMOD)%SNLPS%CNLSFM
+!/NLS      CNLSC1 => MPARS(IMOD)%SNLPS%CNLSC1
+!/NLS      CNLSC2 => MPARS(IMOD)%SNLPS%CNLSC2
+!/NLS      CNLSC3 => MPARS(IMOD)%SNLPS%CNLSC3
 !
 !     Structure SBTPS
 !

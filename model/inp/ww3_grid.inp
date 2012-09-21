@@ -106,6 +106,44 @@ $                                    integration space is established.
 $                                    Used for IQTYPE = 3 only
 $                         Namelist ANL2
 $                           DEPTHS : Array with depths for NDEPTH = 3
+$   Gen. Multiple DIA   : Namelist SNL3
+$                           NQDEF  : Number of quadruplets.
+$                           MSC    : Scaling constant 'm'.
+$                           NSC    : Scaling constant 'N'.
+$                           KDFD   : Deep water relative filter depth,
+$                           KDFS   : Shallow water relative filter depth,
+$                         Namelist ANL3
+$                           QPARMS : 5 x NQDEF paramaters describing the
+$                                    quadruplets, repeating LAMBDA, MU, DT12.
+$                                    Cdeep and Cshal. See examples below.
+$
+$ Traditional DIA setup (default):
+$
+$ &SNL3 NQDEF =  1, MSC =  0.00,  NSC = -3.50 /
+$ &ANL3 QPARMS = 0.250, 0.000,  -1.0, 0.1000E+08, 0.0000E+00 /
+$
+$ GMD3 from 2010 report (G13d in later paper) :
+$
+$ &SNL3 NQDEF =  3, MSC =  0.00,  NSC = -3.50 /
+$ &ANL3 QPARMS = 0.126, 0.000,  -1.0, 0.4790E+08, 0.0000E+00 ,
+$                0.237, 0.000,  -1.0, 0.2200E+08, 0.0000E+00 ,
+$                0.319, 0.000,  -1.0, 0.1110E+08, 0.0000E+00 /
+$
+$ G35d from 2010 report:
+$
+$ &SNL3 NQDEF =  5, MSC =  0.00,  NSC = -3.50 /
+$ &ANL3 QPARMS = 0.066, 0.018,  21.4, 0.170E+09, 0.000E+00 ,
+$                0.127, 0.069,  19.6, 0.127E+09, 0.000E+00 ,
+$                0.228, 0.065,   2.0, 0.443E+08, 0.000E+00 ,
+$                0.295, 0.196,  40.5, 0.210E+08, 0.000E+00 ,
+$                0.369, 0.226,  11.5, 0.118E+08, 0.000E+00 /
+$
+$ Nonlinear filter based on DIA  - - - - - - - - - - - - - - - - - - -
+$                         Namelist SNLS
+$                           A34    : Relative offset in quadruplet
+$                           FHFC   : Proportionality constants.
+$                           DMN    : Maximum relative change.
+$                           FC1-3  : Constants in frequency filter.
 $
 $ Dissipation  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   WAM-3               : Namelist SDS1

@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -44,7 +44,9 @@
 !      DISTAB    Subr. W3DISPMD Input coefficient lookup table.
 !      INSNL1    Subr. W3SNL1MD Initialization of the DIA.
 !      INSNL2    Subr. W3SNL2MD Initialization of WRT.
+!      INSNL3    Subr. W3SNL3MD Initialization of GMD.
 !      INSNLX    Subr. W3SNLXMD Initialization of exp. DIA.
+!      INSNLS    Subr. W3SNLSMD Initialization of nonlinear `smoother'.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
 !     ----------------------------------------------------------------
@@ -80,7 +82,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -122,8 +124,10 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
+!/                  from 3.15 (HLT).                    ( version 4.08 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -206,7 +210,9 @@
 !/ST4                          DIKCUMUL 
 !/NL1      USE W3SNL1MD, ONLY: INSNL1
 !/NL2      USE W3SNL2MD, ONLY: INSNL2
+!/NL3      USE W3SNL3MD, ONLY: INSNL3
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
+!/NLS      USE W3SNLSMD, ONLY: INSNLS
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
@@ -275,6 +281,7 @@
 !/NL0      TNAME2 = 'Not defined                   '
 !/NL1      TNAME2 = 'Discrete Interaction Approx.  '
 !/NL2      TNAME2 = 'Exact nonlinear interactions  '
+!/NL3      TNAME2 = 'Generalized Multiple DIA      '
 !/NLX      TNAME2 = 'Experimental                  '
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
@@ -814,8 +821,53 @@
 !/NL2      IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
 !/NL2      IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
 !
+!/NL3      IF ( WRITE ) THEN
+!/NL3          WRITE (NDSM) SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+!/NL3          WRITE (NDSM) SNLL(1:SNLNQ), SNLM(1:SNLNQ),             &
+!/NL3                       SNLT(1:SNLNQ), SNLCD(1:SNLNQ),            &
+!/NL3                       SNLCS(1:SNLNQ)
+!/NL3        ELSE
+!/NL3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/NL3                       SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+!/NL3          ALLOCATE ( MPARS(IGRD)%SNLPS%SNLL(SNLNQ),              &
+!/NL3                     MPARS(IGRD)%SNLPS%SNLM(SNLNQ),              &
+!/NL3                     MPARS(IGRD)%SNLPS%SNLT(SNLNQ),              &
+!/NL3                     MPARS(IGRD)%SNLPS%SNLCD(SNLNQ),             &
+!/NL3                     MPARS(IGRD)%SNLPS%SNLCS(SNLNQ) )
+!/NL3          SNLL   => MPARS(IGRD)%SNLPS%SNLL
+!/NL3          SNLM   => MPARS(IGRD)%SNLPS%SNLM
+!/NL3          SNLT   => MPARS(IGRD)%SNLPS%SNLT
+!/NL3          SNLCD  => MPARS(IGRD)%SNLPS%SNLCD
+!/NL3          SNLCS  => MPARS(IGRD)%SNLPS%SNLCS
+!/NL3          PINIT  = .TRUE.
+!/NL3          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/NL3                       SNLL, SNLM, SNLT, SNLCD, SNLCS
+!/NL3        END IF
+!
+!/NL3      IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC,     &
+!/NL3                                      SNLSFD, SNLSFS
+!/NL3      IF ( FLTEST ) THEN
+!/NL3          DO I=1, SNLNQ
+!/NL3              WRITE (NDST,9151) SNLL(I), SNLM(I), SNLT(I),       &
+!/NL3                                SNLCD(I), SNLCS(I)
+!/NL3             END DO
+!/NL3        END IF
+!
+!/NLS      IF ( WRITE ) THEN
+!/NLS          WRITE (NDSM)                                           &
+!/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+!/NLS        ELSE
+!/NLS          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+!/NLS        END IF
+!
+!/NLS      IF ( FLTEST ) WRITE (NDST,9251)                            &
+!/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+!
 !/NL1      IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
+!/NL3      IF ( .NOT. WRITE ) CALL INSNL3
 !/NLX      IF ( .NOT. WRITE ) CALL INSNLX
+!/NLS      IF ( .NOT. WRITE ) CALL INSNLS
 !
 ! Layered barriers needed for file management in xnl_init
 !
@@ -1047,6 +1099,13 @@
 !/NL2 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
 !/NL2              '      DATA   : ',I4,F5.1,I4)
 !/NL2 9151 FORMAT ('               ',5F7.1)
+!
+!/NL3 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+!/NL3              '      DATA   : ',I4,4F8.3)
+!/NL3 9151 FORMAT ('               ',2F8.3,F6.1,2E12.4)
+!
+!/NLS 9251 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP (NLS)'/       &
+!/NLS              '      DATA   : ',F8.3,E12.4,4F8.3)
 !
 !/BT1 9052 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SBTP'/             &
 !/BT1              '      DATA   : ',E10.3)

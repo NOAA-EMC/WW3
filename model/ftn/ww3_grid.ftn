@@ -73,9 +73,11 @@
 !/    16-Sep-2011 : Clean up.                           ( version 4.05 )
 !/    01-Dec-2011 : New namelist for reflection         ( version 4.05 )
 !/    01-Mar-2012 : Bug correction for NLPROP in ST2    ( version 4.05 )
-!/    02-Sep-2012 : Clean up of reflection and UG grids ( version 4.07 )
+!/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
+!/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
+!/    02-Sep-2012 : Clean up of reflection and UG grids ( version 4.08 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -327,7 +329,9 @@
 !     !/NL0   No nonlinear interactions.
 !     !/NL1   Discrete interaction approximation (DIA).
 !     !/NL2   Exact interactions (WRT).
+!     !/NL3   Generalized Multiple DIA (GMD).
 !     !/NLX   Open slot.
+!     !/NLS   Snl based HF filter.
 !
 !     !/BT0   No bottom friction included.
 !     !/BT1   JONSWAP bottom friction package.
@@ -389,6 +393,9 @@
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE,    &
                           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB
 !
+!/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
+!/NLS      USE W3SNLSMD, ONLY: ABMAX
+!
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -432,6 +439,8 @@
 !/ST2      REAL                    :: PHIMIN, FPIA, FPIB, DPHID
 !/NL1      REAL                    :: NLPROP
 !/NL2      REAL                    :: DPTFAC, DEPTHS(100)
+!/NL3      REAL                    :: QPARMS(500)
+!/NLS      REAL                    :: A34, FHFC, DNM, FC1, FC2, FC3
 !/BT1      REAL                    :: GAMMA
 !/PR2      REAL                    :: LATMIN
       REAL, ALLOCATABLE       :: XGRDIN(:,:), YGRDIN(:,:)
@@ -502,6 +511,8 @@
 !/NL1                                 SNLCS1, SNLCS2, SNLCS3
 !/NL2      INTEGER                 :: IQTYPE, NDEPTH
 !/NL2      REAL                    :: TAILNL
+!/NL3      INTEGER                 :: NQDEF
+!/NL3      REAL                    :: MSC, NSC, KDFD, KDFS
 !/DB1      REAL                    :: BJALFA, BJGAM
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
@@ -525,6 +536,9 @@
 !/NL1                      SNLCS1, SNLCS2, SNLCS3
 !/NL2      NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
 !/NL2      NAMELIST /ANL2/ DEPTHS
+!/NL3      NAMELIST /SNL3/ NQDEF, MSC, NSC, KDFD, KDFS
+!/NL3      NAMELIST /ANL3/ QPARMS
+!/NLS      NAMELIST /SNLS/ A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1      NAMELIST /SDS1/ CDIS, APM
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
@@ -781,6 +795,7 @@
 !/NL0      FLNL   = .FALSE.
 !/NL1      NRNL   = NRNL + 1
 !/NL2      NRNL   = NRNL + 1
+!/NL3      NRNL   = NRNL + 1
 !/NLX      NRNL   = NRNL + 1
 !
 !/BT0      NRBT   = NRBT + 1
@@ -1068,6 +1083,17 @@
 !/NL2      IQTYPE =  2
 !/NL2      TAILNL = -FACHF
 !/NL2      NDEPTH =  0
+!/NL3      NQDEF  =  0
+!/NL3      MSC    =  0.
+!/NL3      NSC    = -3.5
+!/NL3      KDFD   =  0.20
+!/NL3      KDFS   =  5.00
+!/NLS      A34    =  0.05
+!/NLS      FHFC   =  1.E10
+!/NLS      DNM    =  0.25
+!/NLS      FC1    =  1.25
+!/NLS      FC2    =  1.50
+!/NLS      FC3    =  6.00
 !
 !/NL2      CALL READNL ( NDSS, 'SNL2', STATUS )
 !/NL2      WRITE (NDSO,922) STATUS
@@ -1107,6 +1133,68 @@
 !/NL2      IQTPE  = IQTYPE
 !/NL2      NDPTHS = NDEPTH
 !/NL2      NLTAIL = TAILNL
+!
+!/NL3      CALL READNL ( NDSS, 'SNL3', STATUS )
+!/NL3      WRITE (NDSO,922) STATUS
+!!/NL3      MSC    = MAX ( 0. , MIN ( 8. , MSC ) )  ! Disabled HLT ca. 2009
+!/NL3      KDFD   = MAX ( 0.001 , MIN ( 10. , KDFD ) )
+!/NL3      KDFS   = MAX ( KDFD , MIN ( 10. , KDFS ) )
+!/NL3      WRITE (NDSO,923) MSC, NSC, KDFD, KDFS
+!
+!/NL3      NQDEF  = MAX ( 0 , NQDEF )
+!/NL3      IF ( NQDEF .EQ. 0 ) THEN
+!/NL3          NQDEF  = 1
+!/NL3          QPARMS(1:5) = [ 0.25 , 0.00, -1., 1.E7, 0.00 ]
+!/NL3        ELSE
+!/NL3          DO J=1, NQDEF
+!/NL3            QPARMS((J-1)*5+1:J*5) = [ 0.25, 0.00, -1., 1.E7, 1.E6 ]
+!/NL3            END DO
+!/NL3          CALL READNL ( NDSS, 'ANL3', STATUS )
+!/NL3        END IF
+!/NL3      DO J=1, NQDEF
+!/NL3        QPARMS((J-1)*5+1) = MAX(0.,MIN (LAMMAX,QPARMS((J-1)*5+1)))
+!/NL3        QPARMS((J-1)*5+2) = MAX(0.,MIN (QPARMS((J-1)*5+1),        &
+!/NL3                                        QPARMS((J-1)*5+2)))
+!/NL3        QPARMS((J-1)*5+3) = MIN (DELTHM,QPARMS((J-1)*5+3))
+!/NL3        QPARMS((J-1)*5+4) = MAX (0.,QPARMS((J-1)*5+4))
+!/NL3        QPARMS((J-1)*5+5) = MAX (0.,QPARMS((J-1)*5+5))
+!/NL3        END DO
+!/NL3      WRITE (NDSO,1923) NQDEF
+!/NL3      WRITE (NDSO,2923) QPARMS(1:NQDEF*5)
+!/NL3      WRITE (NDSO,*)
+!/NL3      SNLNQ  = NQDEF
+!/NL3      SNLMSC = MSC
+!/NL3      SNLNSC = NSC
+!/NL3      SNLSFD = SQRT ( KDFD * TANH(KDFD) )
+!/NL3      SNLSFS = SQRT ( KDFS * TANH(KDFS) )
+!/NL3      ALLOCATE ( MPARS(1)%SNLPS%SNLL(NQDEF),                     &
+!/NL3                 MPARS(1)%SNLPS%SNLM(NQDEF),                     &
+!/NL3                 MPARS(1)%SNLPS%SNLT(NQDEF),                     &
+!/NL3                 MPARS(1)%SNLPS%SNLCD(NQDEF),                    &
+!/NL3                 MPARS(1)%SNLPS%SNLCS(NQDEF) )
+!/NL3      SNLL   => MPARS(1)%SNLPS%SNLL
+!/NL3      SNLL   = QPARMS(1:NQDEF*5:5)
+!/NL3      SNLM   => MPARS(1)%SNLPS%SNLM
+!/NL3      SNLM   = QPARMS(2:NQDEF*5:5)
+!/NL3      SNLT   => MPARS(1)%SNLPS%SNLT
+!/NL3      SNLT   = QPARMS(3:NQDEF*5:5)
+!/NL3      SNLCD  => MPARS(1)%SNLPS%SNLCD
+!/NL3      SNLCD  = QPARMS(4:NQDEF*5:5)
+!/NL3      SNLCS  => MPARS(1)%SNLPS%SNLCS
+!/NL3      SNLCS  = QPARMS(5:NQDEF*5:5)
+!
+!/NLS      CALL READNL ( NDSS, 'SNLS', STATUS )
+!/NLS      WRITE (NDSO,9922) STATUS
+!/NLS      A34    = MAX ( 0. , MIN ( A34 , ABMAX ) )
+!/NLS      FHFC   = MAX ( 0. , FHFC )
+!/NLS      DNM    = MAX ( 0., DNM )
+!/NLS      WRITE (NDSO,9923) A34, (XFR-1.)*A34, FHFC, DNM, FC1, FC2, FC3
+!/NLS      CNLSA  = A34
+!/NLS      CNLSC  = FHFC
+!/NLS      CNLSFM = DNM
+!/NLS      CNLSC1 = FC1
+!/NLS      CNLSC2 = FC2
+!/NLS      CNLSC3 = FC3
 !
 ! 6.f Define Sds.
 !
@@ -1560,6 +1648,17 @@
 !/NL2              WRITE (NDSO,5923) DPTHNL(2:NDEPTH-1)
 !/NL2              WRITE (NDSO,6923) DPTHNL(NDEPTH)
 !/NL2            END IF
+!/NL3          WRITE (NDSO,2922) NQDEF, MSC, NSC, KDFD, KDFS
+!/NL3          IF ( NQDEF .EQ. 1 ) THEN
+!/NL3              WRITE (NDSO,3923) QPARMS(1:5)
+!/NL3            ELSE
+!/NL3              WRITE (NDSO,4923) QPARMS(1:5)
+!/NL3              DO J=2, NQDEF-1
+!/NL3                WRITE (NDSO,5923) QPARMS((J-1)*5+1:J*5)
+!/NL3                END DO
+!/NL3              WRITE (NDSO,6923) QPARMS((NQDEF-1)*5+1:NQDEF*5)
+!/NL3            END IF
+!/NLS          WRITE (NDSO,8922) A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1          WRITE (NDSO,2924) CDIS, APM
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
@@ -3330,7 +3429,34 @@
 !/NL2 5923 FORMAT ( '                ',F9.2,' ,')
 !/NL2 6923 FORMAT ( '                ',F9.2,' /')
 !
+!/NL3  922 FORMAT (/'  Nonlinear interactions (GMD) ',A/              &
+!/NL3        ' --------------------------------------------------')
+!/NL3  923 FORMAT ( '       Powers in scaling functions : ',2F7.2/    &
+!/NL3               '       Nondimension filter depths  : ',2F7.2)
+!/NL3 1923 FORMAT ( '       Number of quad. definitions : ',I4)
+!/NL3 2923 FORMAT ( '             ',2F8.3,F6.1,2E12.4)
+!/NL3 2922 FORMAT ( '  &SNL3 NQDEF =',I3,', MSC =',F6.2,',  NSC =',   &
+!/NL3               F6.2,',  KDFD =',F6.2,',  KDFS =',F6.2,' /')
+!/NL3 3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
+!/NL3               ', ',E10.4,' /')
+!/NL3 4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
+!/NL3               ', ',E10.4,' ,')
+!/NL3 5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
+!/NL3               ', ',E10.4,' ,')
+!/NL3 6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
+!/NL3               ', ',E10.4,' /')
+!
 !/NLX  922 FORMAT (/'  Experimental nonlinear interactions.'/)
+!
+!/NLS 9922 FORMAT (/'  HF filter based on Snl ',A/                    &
+!/NLS        ' --------------------------------------------------')
+!/NLS 9923 FORMAT ( '       a34 (lambda)                :',F9.3,F9.4/ &
+!/NLS               '       Prop. constant              :',E10.3/     &
+!/NLS               '       maximum relative change     :',F9.3/      &
+!/NLS               '       filter constants            :',F8.2,2F6.2/)
+!/NLS 8922 FORMAT ( '  &SNLS A34 =',F6.3,', FHFC =',E11.4,            &
+!/NLS               ',  DNM =',F6.3,','/'        FC1 =',F6.3,         &
+!/NLS               ',  FC2 =',F6.3,',  FC3 =',F6.3,' /')
 !
 !/ST0  924 FORMAT (/'  Dissipation not defined.'/)
 !
@@ -3841,6 +3967,13 @@
 !/NL2                          DEPTHS(1:NDEPTH) = DPTHNL
 !/NL2                          READ (NDS,NML=ANL2,END=801,ERR=802,IOSTAT=J)
 !/NL2                          DPTHNL = DEPTHS(1:NDEPTH)
+!/NL3                        CASE('SNL3')
+!/NL3                          READ (NDS,NML=SNL3,END=801,ERR=802,IOSTAT=J)
+!/NL3                        CASE('ANL3')
+!/NL3                          IF ( NQDEF .GT. 100 ) GOTO 804
+!/NL3                          READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
+!/NLS                        CASE('SNLS')
+!/NLS                          READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
 !/ST1                        CASE('SDS1')
 !/ST1                          READ (NDS,NML=SDS1,END=801,ERR=802,IOSTAT=J)
 !/ST2                        CASE('SDS2')
@@ -3903,6 +4036,11 @@
 !/NL2      CALL EXTCDE(4)
 !/NL2      RETURN
 !
+!/NL3  804 CONTINUE
+!/NL3      WRITE (NDSE,1004) NQDEF
+!/NL3      CALL EXTCDE(4)
+!/NL3      RETURN
+!
 ! Formats
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
@@ -3913,6 +4051,8 @@
                '     NAMELIST NAME ',A,' NOT RECOGNIZED'/)
 !/NL2 1004 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
 !/NL2               '     TEMP DEPTH ARRAY TOO SMALL, .LE. ',I8/)
+!/NL3 1004 FORMAT (/' *** WAVEWATCH-III ERROR IN READNL : '/          &
+!/NL3               '     TEMP QPARMS ARRAY TOO SMALL, .LE. ',I8/)
 !/
 !/ End of READNL ----------------------------------------------------- /
 !/

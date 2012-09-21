@@ -92,7 +92,7 @@
       PUBLIC
 !/
       REAL, PARAMETER              :: CRITOS = 15.
-      CHARACTER*10, PARAMETER      :: WWVER  = '4.07 '
+      CHARACTER*10, PARAMETER      :: WWVER  = '4.08 '
       CHARACTER*512, PARAMETER      :: SWITCHES  = &
           &"PUT_SW1&
           &PUT_SW2&
@@ -103,7 +103,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3INIT ( IMOD, FEXT, MDS, MTRACE, ODAT,              &
                           FLGRD, FLGR2, NPT, XPT, YPT, PNAMES, IPRT,  &
-			  PRTFRM, MPI_COMM )
+                          PRTFRM, MPI_COMM )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -724,7 +724,6 @@
         FLOUT(7) = FLOUT(7) .OR. FLOGR2(J)
 
         END DO
-	
 !
       FLOUT(2) = NPT .GT. 0
 !

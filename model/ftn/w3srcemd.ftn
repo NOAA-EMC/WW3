@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Aug-2010 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -63,7 +63,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Mar-2012 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -95,8 +95,10 @@
 !/    24-Aug-2011 : Uses true depth for depth-induced   ( version 4.04 )
 !/    16-Sep-2011 : Initialization of TAUWAX, TAUWAY    ( version 4.04 )
 !/    14-Mar-2012 : Update of BT4, passing PSIC         ( version 4.04 )
+!/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
+!/                  from 3.15 (HLT).                    ( version 4.08 )
 !/
-!/    Copyright 2009-2010 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -201,6 +203,7 @@
 !      W3SLNn    Subr. W3SLNnMD Linear input.
 !      W3SINn    Subr. W3SRCnMD Input source term.
 !      W3SNLn    Subr. W3SNLnMD Nonlinear interactions.
+!      W3SNLS    Subr. W3SNLSMD Nonlinear smoother.
 !      W3SDSn    Subr. W3SRCnMD Whitecapping source term
 !      W3SBTn    Subr. W3SBTnMD Bottom friction source term.
 !      W3SDBn    Subr. W3SBTnMD Depth induced breaking source term.
@@ -273,7 +276,9 @@
 !     !/NL0   No nonlinear interactions.                 ( Choose one )
 !     !/NL1   Discrete interaction approximation.
 !     !/NL2   Exact nonlinear interactions.
+!     !/NL3   Generalized Multiple DIA.
 !     !/NLX   User-defined nonlinear interactions.
+!     !/NLS   Nonlinear HF smoother.
 !
 !     !/BT0   No bottom friction.                        ( Choose one )
 !     !/BT1   JONSWAP bottom friction.
@@ -332,7 +337,9 @@
 !/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
+!/NL3      USE W3SNL3MD
 !/NLX      USE W3SNLXMD
+!/NLS      USE W3SNLSMD
 !/BT1      USE W3SBT1MD
 !/BT4      USE W3SBT4MD
 !/BTX      USE W3SBTXMD
@@ -603,6 +610,7 @@
 !
 !/NL1        CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH,          VSNL, VDNL )
 !/NL2        CALL W3SNL2 ( SPEC, CG1, DEPTH,                 VSNL, VDNL )
+!/NL3        CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,            VSNL, VDNL )
 !/NLX        CALL W3SNLX 
 !
 !/TRX        CALL W3STRX
@@ -765,6 +773,8 @@
        TAUWNX= TAUWNX+ TAUWAX * DRAT *DT
        TAUWNY= TAUWNY+ TAUWAY * DRAT *DT
        ! MISSING: TAIL TO BE ADDED ?	  
+!
+!/NLS      CALL W3SNLS ( SPEC, CG1, WN1, DEPTH, U10ABS, DT, AA=SPEC )
 !
 ! 6.  Add tail ------------------------------------------------------- *
 !   a Mean parameters

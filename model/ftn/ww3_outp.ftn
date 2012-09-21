@@ -47,9 +47,11 @@
 !/    04-Mar-2010 : Added partitions bulletin output.   ( version 3.14 )
 !/                  (J. H. Alves)
 !/    20-Apr-2010 : Fix initialization of USTAR.      ( version 3.14.1 )
-!/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.07 )
+!/    16-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
+!/                  from 3.15 (HLT).                    ( version 4.08 )
+!/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.08 )
 !/
-!/    Copyright 2009-2010 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -833,7 +835,7 @@
 !/                  |            F. Ardhuin             |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          1-Jul-2011 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    08-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -859,7 +861,9 @@
 !/    09-Apr-2008 : Adding an additional output for     ( version 3.12 )
 !/                  WMO standard (A. Chawla)
 !/    29-Apr-2008 : Adjust format partition output.     ( version 3.14 )
-!/     1-Jul-2011 : Adding BT4                          ( version 4.01 )
+!/    01-Jul-2011 : Adding BT4                          ( version 4.01 )
+!/    16-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
+!/                  from 3.15 (HLT).                    ( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -942,7 +946,9 @@
 !/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
+!/NL3      USE W3SNL3MD
 !/NLX      USE W3SNLXMD
+!/NLS      USE W3SNLSMD
 !/BT1      USE W3SBT1MD
 !/BT2      USE W3SBT2MD
 !/BT4      USE W3SBT4MD
