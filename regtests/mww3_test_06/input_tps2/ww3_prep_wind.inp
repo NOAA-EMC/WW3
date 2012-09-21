@@ -54,7 +54,7 @@ $ IDFM, the second (third) lines give the file unit number and name.
 $
 $  'UNIT' 3 1 '(..T..)' '(..F..)' 
   'NAME' 1 2 '(I10,1x,I10)' '(1000(F9.2))' 
-  401 './../input_tps2/wind.ascii'
+  401 './NOGAPS.2009.M5.D25.H0.12hrs.ascii'
 $ 10 'data_file.2'
 $
 $ If the above unit numbers are 10, data is read from this file

@@ -41,7 +41,6 @@
   main_dir=`pwd`
   cd
   home_dir=`pwd`
-
   cd $main_dir
 
   echo ' '
@@ -83,22 +82,19 @@
   elif [ "${sww3dir}" == "L" ] || [ "${sww3dir}" == "l" ]
   then
 
-    if [ -f wwatch3.env ]
+    main_dir=`pwd`
+
+    if [ -f ${main_dir}/wwatch3.env ]
     then
-      echo ' Local wwatch3.env found, keep file [Y|n]? '
-      read old_env
-
-      if [ "${old_env}" == "Y" ] || [ "${old_env}" == "y" ]
-      then
-        ww3_env="${main_dir}/wwatch3.env"
-      fi
+      echo ' ';echo ' Local wwatch3.env found, moving ahead.'
+      ww3_env="${main_dir}/wwatch3.env"
     else
-      echo 'Creating local wwatch3.env file with default settings'
-
+      echo ' ';echo ' Creating new env file from scratch.'
+      ww3_env="${main_dir}/wwatch3.env"
     fi
  fi
 
-  echo "Installing in $main_dir"
+  echo ' ';echo "Installing in $main_dir"
 
   OK="$NULL"
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
@@ -145,7 +141,7 @@
     newfile='no'
 
   else
-    echo '   No setup file found. Variables being set to defaults: '
+    echo ' ';echo '   No setup file found. Variables being set to defaults: '
     prnt=printer
     fort=f77
     cc=cc
@@ -154,7 +150,7 @@
     s_list=yes
     do_set='n'
 
-    echo 'Creating local wwatch3.env for use in regression testing'
+    echo ' ';echo 'Creating local wwatch3.env for use in regression testing'
     ww3_env=${main_dir}/wwatch3.env 
     newfile='yes'  
   fi
@@ -717,7 +713,7 @@
       3) echo 'Subroutines (.f90) :'
          echo '--------------------' ; files=`ls *.f90`  ;;
       4) echo 'Other :'
-         echo '-------' ; files=$all_files  ;;
+         echo '-------' ; files=`echo $all_files | sed -e "s/SCRIP//g"` ;;
     esac
     cd $main_dir/ftn
 
@@ -748,6 +744,27 @@
       fi
     fi
 
+  done
+
+# Update subdirectory SCRIP
+  cd $main_dir/svn/model/ftn/SCRIP
+  files=`ls`
+  if [ ! -d $main_dir/ftn/SCRIP ]
+  then
+    mkdir -p $main_dir/ftn/SCRIP
+  fi
+  cd $main_dir/ftn/SCRIP
+ 
+  for file in $files
+  do
+    if [ -f $file ]
+    then
+      nr_old=`expr $nr_old + 1`
+    else
+      nr_new=`expr $nr_new + 1`
+      echo "   New link $file ..."
+    fi
+    ln -sf ../../svn/model/ftn/SCRIP/$file
   done
 
   echo ' '
