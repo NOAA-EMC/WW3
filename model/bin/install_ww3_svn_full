@@ -588,7 +588,7 @@
         echo "   (re)linking $file ..."
         ln -sf ../svn/model/aux/$file .
         tmp_files=$all_files
-        all_files=`echo $tmp_files | sed -e "s/$file//g"`
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
     fi
 
@@ -656,7 +656,7 @@
         echo "   (re)linking $file ..."
         ln -sf ../svn/model/bin/$file .
         tmp_files=$all_files
-        all_files=`echo $tmp_files | sed -e "s/$file//g"`
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
     fi
 
@@ -734,9 +734,9 @@
         fi
         ln -sf ../svn/model/ftn/$file
         tmp_files=$all_files
-        all_files=`echo $tmp_files | sed -e "s/$file//g"`
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
         tmp_files=$ftn_files
-        ftn_files=`echo $tmp_files | sed -e "s/$file//g"`
+        ftn_files=`echo $tmp_files | sed -e "s/$file//"`
       done
       if [ "$nr_old" != '0' ]
       then
@@ -872,7 +872,7 @@
         fi
         ln -sf ../svn/model/oldtests/$file
         tmp_files=$all_files
-        all_files=`echo $tmp_files | sed -e "s/$file//g"`
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
       if [ "$nr_old" != '0' ]
       then
@@ -917,7 +917,7 @@
         fi
         ln -sf ../../svn/model/oldtests/$dir/$file
         tmp_files=$all_files
-        all_files=`echo $tmp_files | sed -e "s/$file//g"`
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
       if [ "$nr_old" != '0' ]
       then
@@ -968,7 +968,7 @@
         fi
         ln -sf ../../svn/regtests/$dir/$file
         tmp_files=$all_files
-        all_files=`echo $tmp_files | sed -e "s/$file//g"`
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
       if [ "$nr_old" != '0' ]
       then
@@ -1006,7 +1006,7 @@
           fi
           ln -sf ../../../svn/regtests/$dir/$ndir/$file
           tmp_files=$all_files
-          all_files=`echo $tmp_files | sed -e "s/$file//g"`
+          all_files=`echo $tmp_files | sed -e "s/$file//"`
         done
         if [ "$nr_old" != '0' ]
         then
