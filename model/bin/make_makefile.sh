@@ -849,14 +849,14 @@
     scrip_dir=$main_dir/ftn/SCRIP
     if [ ! -d $scrip_dir ]
     then
-      echo "*** SCRIPT directory $scrip_dir not found ***"
+      echo "*** SCRIP directory $scrip_dir not found ***"
       exit 2
     fi
 
     scrip_mk=$scrip_dir/SCRIP.mk
     if [ ! -e $scrip_mk ]
     then
-      echo "*** SCRIPT makefile fragment $scrip_mk not found ***"
+      echo "*** SCRIP makefile fragment $scrip_mk not found ***"
       exit 2
     fi
 

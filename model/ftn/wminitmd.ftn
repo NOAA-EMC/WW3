@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2012 |
+!/                  | Last update :         28-Nov-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -25,6 +25,9 @@
 !/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
 !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
 !/                  Tom Durrant's fix, but moved to allocation.
+!/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
+!/                  required for regridding.            ( version 4.08 )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -78,7 +81,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2012 |
+!/                  | Last update :         28-Nov-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -101,6 +104,9 @@
 !/                  (T. J. Campbell, NRL)
 !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
 !/                  Tom Durant's fix, but moved to allocation.
+!/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
+!/                  required for regridding.            ( version 4.08 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -304,10 +310,13 @@
       USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
-      USE W3GDATMD, ONLY: FLAGLL, GTYPE, ICLOSE, NX, NY,              &
-                          X0, Y0, SX, SY, HQFAC, HPFAC,               &
-                          FILEXT, NSEA, NSEAL, NK, NTH, XFR, FR1, TH, &
-                          DTMAX, DTCFL, FLAGST, UNGTYPE, CLGTYPE
+      USE W3GDATMD, ONLY: GTYPE, NX, NY, FILEXT, NSEA, FLAGST
+!/MPI      USE W3GDATMD, ONLY: FLAGLL, ICLOSE, GSU, X0, Y0, SX, SY,   &
+!/MPI                          XGRD, YGRD, DXDP, DXDQ, DYDP, DYDQ,    &
+!/MPI                          HQFAC, HPFAC, MAPSTA, MAPST2,          &
+!/MPI                          GRIDSHIFT, NSEAL, NK, NTH, XFR, FR1,   &
+!/MPI                          TH, DTMAX, DTCFL
+!/MPI      USE W3GSRUMD
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
       USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR, FLWIND
@@ -2180,6 +2189,27 @@
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            CALL MPI_BCAST ( HPFAC, NX*NY, MPI_REAL, 0,          &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( XGRD, NX*NY, MPI_REAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( YGRD, NX*NY, MPI_REAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
+!/MPI                 GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE, NX, NY,  &
+!/MPI                               XGRD, YGRD )
+!/MPI            CALL MPI_BCAST ( DXDP, NX*NY, MPI_REAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( DXDQ, NX*NY, MPI_REAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( DYDP, NX*NY, MPI_REAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( DYDQ, NX*NY, MPI_REAL, 0,           &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( MAPSTA, NX*NY, MPI_INTEGER, 0,      &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( MAPST2, NX*NY, MPI_INTEGER, 0,      &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
+!/MPI            CALL MPI_BCAST ( GRIDSHIFT, 1, MPI_DOUBLE_PRECISION, 0, &
+!/MPI                             MPI_COMM_BCT, IERR_MPI )
 !
 !/MPI            CALL MPI_BCAST ( NK   , 1, MPI_INTEGER, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
@@ -2305,6 +2335,15 @@
 !
       ALLOCATE ( FLRBPI(NRGRD) )
       CALL WMGLOW ( FLRBPI )
+!
+! ..... At this point the grid-search-utility (GSU) object for grids
+!       that do not belong to this processor is no longer needed.
+!
+!/MPI      DO I=1, NRGRD
+!/MPI        CALL WMSETM ( I, MDSE, MDST )
+!/MPI        CALL W3SETG ( I, MDSE, MDST )
+!/MPI        IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) CALL W3GSUD( GSU )
+!/MPI        END DO
 !
 ! ..... Unit numbers
 !
