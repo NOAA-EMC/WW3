@@ -366,8 +366,8 @@
       INTENT (IN)  intype, tmax, tcur, filename, paramFile, &
                    minlon, maxlon, minlat, maxlat, & 
                    hsKnob, wetPts, seedLat, seedLon, &
-                   dirTimeKnob, tpTimeKnob
-      INTENT (OUT) maxGroup, dirKnob, perKnob                             !!! dirKnob, perKnob should be INTENT (IN) now?
+                   dirKnob, perKnob, dirTimeKnob, tpTimeKnob
+      INTENT (OUT) maxGroup
 !      INTENT (IN OUT) wsdat, sysA, maxSys
 !
 !     Local variables
@@ -5211,7 +5211,7 @@
 !/
 
 !/ ------------------------------------------------------------------- /
-      INTEGER FUNCTION LENGTH(ARRAY,ARRAYSIZE,VAL)
+      INTEGER FUNCTION LENGTH(ARRAY,ARRSIZE,VAL)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -5244,9 +5244,9 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-      REAL :: ARRAY(ARRAYSIZE)
+      INTEGER :: ARRSIZE
+      REAL :: ARRAY(ARRSIZE)
       REAL :: VAL
-      INTEGER :: ARRAYSIZE
 !
 !     Local variables
 !     ----------------------------------------------------------------
@@ -5271,7 +5271,7 @@
 !/
 
 !/ ------------------------------------------------------------------- /
-      INTEGER FUNCTION FINDFIRST(ARRAY,ARRAYSIZE,VAL)
+      INTEGER FUNCTION FINDFIRST(ARRAY,ARRSIZE,VAL)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -5303,9 +5303,9 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-      REAL :: ARRAY(ARRAYSIZE)
+      INTEGER :: ARRSIZE
+      REAL :: ARRAY(ARRSIZE)
       REAL :: VAL
-      INTEGER :: ARRAYSIZE
 !
 !     Local variables
 !     ----------------------------------------------------------------
@@ -5315,11 +5315,11 @@
 !
 !/ ------------------------------------------------------------------- /
       IND = 1
-      DO WHILE (IND.LE.ARRAYSIZE)
+      DO WHILE (IND.LE.ARRSIZE)
          IF ( ARRAY(IND).EQ.VAL ) EXIT
          IND = IND + 1
       END DO
-      IF (IND.GT.ARRAYSIZE) THEN
+      IF (IND.GT.ARRSIZE) THEN
          FINDFIRST = 0
       ELSE
          FINDFIRST = IND
