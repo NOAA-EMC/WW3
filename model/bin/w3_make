@@ -93,6 +93,7 @@
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
+  reg_programs="$reg_programs ww3_systrk"
 
 # cdf_programs = NetCDF programs
   cdf_programs="ww3_prnc"

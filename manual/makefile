@@ -76,12 +76,14 @@ INPFILES = \
 ww3_grid.tex \
 ww3_strt.tex \
 ww3_prep.tex \
+ww3_bound.tex \
 ww3_shel.tex \
 ww3_multi.tex \
 ww3_outf.tex \
 ww3_outp.tex \
 ww3_ounf.tex \
 ww3_ounp.tex \
+ww3_systrk.tex \
 ww3_grib.tex \
 gx_outf.tex \
 gx_outp.tex

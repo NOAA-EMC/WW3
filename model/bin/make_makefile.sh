@@ -497,7 +497,7 @@
 
   progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
-         ww3_ounp ww3_gint ww3_bound'
+         ww3_ounp ww3_gint ww3_bound ww3_systrk'
 
   for prog in $progs
   do
@@ -640,6 +640,13 @@
              source="$flx $ln $st $nl $bt $db $tr $bs $xx"
                  IO='w3iogrmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+      ww3_systrk) IDstring='Wave system tracking postprocessor'
+               core='w3strkmd'
+               data=
+               prop=
+             source=
+                 IO=
+                aux= ;;
     esac
 
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
@@ -731,7 +738,7 @@
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD m_btffac
+               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD m_btffac W3STRKMD
     do
       case $mod in
          'CONSTANTS'    ) modtest=constants.o ;;
@@ -811,6 +818,7 @@
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;
+         'W3STRKMD'     ) modtest=w3strkmd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
