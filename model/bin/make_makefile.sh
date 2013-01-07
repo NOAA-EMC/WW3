@@ -520,9 +520,9 @@
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
-                 IO='w3iogrmd w3dispmd w3gsrumd'
-                aux='constants w3servmd' ;;
+             source="$stx $nlx $btx w3triamd"
+                 IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
+                aux='constants w3servmd w3timemd e3cspcmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
