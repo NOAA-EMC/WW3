@@ -522,7 +522,7 @@
                prop=
              source="$stx $nlx $btx w3triamd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
-                aux='constants w3servmd w3timemd e3cspcmd' ;;
+                aux='constants w3servmd w3timemd w3cspcmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
