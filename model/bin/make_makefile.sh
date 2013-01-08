@@ -532,7 +532,7 @@
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
-               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
@@ -585,11 +585,11 @@
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounf) IDstring='Gridded NetCDF output'
-               core=
+               core='w3initmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="w3triamd $stx $nlx $btx"
-                 IO='w3iogrmd w3iogomd'
+                 IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_outp) IDstring='Point output'
                core=
