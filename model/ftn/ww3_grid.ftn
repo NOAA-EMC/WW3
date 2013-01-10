@@ -564,7 +564,7 @@
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
                       US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
-                      FACBERG, COU_2D, COU_RAD3D
+                      FACBERG, COU_2D, COU_RAD3D, GSHIFT
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -1417,7 +1417,6 @@
        IMPFSNIMP = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UG  ', STATUS ) 
-               WRITE(NDSO, 950)
 !
 ! 6.m Select propagation scheme
 !
@@ -1694,7 +1693,7 @@
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                COU_RAD3D, COU_2D, FACBERG
+                                COU_RAD3D, COU_2D, FACBERG,GSHIFT
             ELSE
               WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
@@ -1702,7 +1701,7 @@
                                 FLAGICESOURCE,                        &
                                 P2SF, I1P2SF, I2P2SF,                 &
                                 US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                COU_RAD3D, COU_2D, FACBERG
+                                COU_RAD3D, COU_2D, FACBERG,GSHIFT
 
             END IF
           WRITE (NDSO,918)
@@ -3611,7 +3610,7 @@
                ', P2SF =',I1,', I1P2SF =',I2,', I2P2SF =',I2,         &
                ', US3D_OUNF =',I1,', I1US3D_OUNF =',I2,               &
                ', I2US3D_OUNF =',I2,'COU_2D =',L3,', COU_RAD3D =',L3, ','/    &
-               '     FACBERG =',F4.1,' /')
+               '     FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
 !
  2976 FORMAT ( '  &REF1 REFCOAST =',F5.2,', REFFREQ =',F5.2,', REFSLOPE =',F5.3, &
                ', REFMAP =',F4.1, ', REFMAPD =',F4.1, ', REFSUBGRID =',F5.2,','/ &   

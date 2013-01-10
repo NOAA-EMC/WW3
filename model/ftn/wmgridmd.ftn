@@ -371,15 +371,14 @@
 !              (counter-clockwise starting from lower i, lower j)
 !
 !  ... if not in grid, warning message and cycle (search next grid)
-!
         IF ( .NOT.INGRID ) THEN
-           IF ( IAPROC .EQ. NAPERR ) THEN
-              IF ( FLAGLL ) THEN
-                 WRITE (NDSE,2000) XA, YA
-              ELSE
-                 WRITE (NDSE,2001) XA, YA
-              END IF
-           END IF
+!/T        IF ( IAPROC .EQ. NAPERR ) THEN
+!/T           IF ( FLAGLL ) THEN
+!/T              WRITE (NDSE,2000) XA, YA
+!/T           ELSE
+!/T              WRITE (NDSE,2001) XA, YA
+!/T           END IF
+!/T        END IF
            CYCLE
         END IF
 
@@ -756,11 +755,11 @@
 !
  2000   FORMAT (/' *** WAVEWATCH-III WARNING : BOUNDARY POINT'/  &
                  '     NOT FOUND IN LOWER RANK GRID : ',2F10.3/  &
-                 '     POINT SKIPPPED '/)
+                 '     POINT SKIPPED '/)
 !
  2001   FORMAT (/' *** WAVEWATCH-III WARNING : BOUNDARY POINT'/  &
                  '     NOT FOUND IN LOWER RANK GRID : ',2E10.3/  &
-                 '     POINT SKIPPPED '/)
+                 '     POINT SKIPPED '/)
 !
 !/T 9010 FORMAT ( ' TEST WMGLOW : ALL GRIDS INITIALIZED')
 !

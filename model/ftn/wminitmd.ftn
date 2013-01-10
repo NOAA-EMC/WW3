@@ -2342,7 +2342,10 @@
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
 !/MPI        CALL W3SETG ( I, MDSE, MDST )
-!/MPI        IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) CALL W3GSUD( GSU )
+! the next line (with the W3GSUD call) removed Jan 8 2013. 
+! ...ref: personal communication, 
+! ...email from Rogers to Alves, Campbell, Tolman, Chawla Dec 13 2012.
+! REMOVED  !/MPI        IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) CALL W3GSUD( GSU )
 !/MPI        END DO
 !
 ! ..... Unit numbers

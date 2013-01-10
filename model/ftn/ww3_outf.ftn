@@ -977,7 +977,9 @@
 !
               ELSE IF ( J .EQ. 34 ) THEN
                 FLONE  = .TRUE.
-                FSC    = 0.1
+!WER Oct 31 2012: Changed FSC from 0.1 to 0.01 
+!WER Nov 13 2012: Changed FSC from 0.01 to 0.001 
+                FSC    = 0.001
                 UNITS  = ' '
                 ENAME  = '.wcc'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1)    &

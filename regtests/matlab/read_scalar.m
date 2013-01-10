@@ -60,7 +60,7 @@ height=height .* factor;
 fclose(fid);
 
 if variable ~= '.hs'
-  error('uh oh.')
+  disp('warning: this is not a .hs file')
 end
 
 if icheck>1

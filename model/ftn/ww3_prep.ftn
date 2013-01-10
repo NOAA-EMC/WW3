@@ -72,7 +72,7 @@
 !       IDFMF   I.A.   |
 !       FORMF   C.A.   | Idem. fields file(s)
 !       FROMF   C*4    |
-!       NAMEF   C*40   +
+!       NAMEF   C*50   +
 !       FORMT   C.A.  Format or time in field.
 !       XC      R.A.  Components of input vector field or first
 !                     input scalar field
@@ -233,7 +233,7 @@
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
-                                 NAMELL*40, FROMF*4, NAMEF*40
+                                 NAMELL*40, FROMF*4, NAMEF*50
       CHARACTER*12            :: IDSTR1(5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)

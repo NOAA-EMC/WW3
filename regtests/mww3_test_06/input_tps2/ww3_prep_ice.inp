@@ -56,7 +56,7 @@ $ IDFM, the second (third) lines give the file unit number and name.
 $
 $  'UNIT' 3 1 '(..T..)' '(..F..)' 
   'NAME' 1 2 '(I10,1x,I10)' '(1000(F9.2))' 
-  401 './PIPS.2009.M5.D25.H0.24hrs.ascii'
+  401 '../input_tps2/PIPS.2009.M5.D25.H0.24hrs.ascii'
 $  401 '../input/ice.short'
 $ 10 'data_file.2'
 $

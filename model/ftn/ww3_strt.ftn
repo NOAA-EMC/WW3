@@ -469,11 +469,6 @@
             ELSE
                RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
             ENDIF
-            IF (GTYPE .EQ. RLGTYPE)  THEN 
-              X      = X0 + REAL(IX-1)*SX
-              Y      = Y0 + REAL(IY-1)*SY
-              RDSQR  = ((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
-              END IF 
             IF ( RDSQR .GT. 40. ) THEN
                 FACTOR = 0.
               ELSE

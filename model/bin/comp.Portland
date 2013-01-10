@@ -36,12 +36,6 @@
 #                                                      Hendrik L. Tolman      #
 #                                                      February 2012          #
 #                                                                             #
-# Notes re: changing compilers when SCRIP is in use:                          #
-# ...1) run cleaner scrip to get rid of old .mod and .o files and             #
-#       /ftn/makefile                                                         #
-# ...2) edit and run makefile in SCRIP directory as needed                    #
-# ...3) use -c {compiler name} in run_test                                    #
-#                                                                             #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #

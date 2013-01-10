@@ -19,8 +19,8 @@ $
   226  331
 $
 $ UNITNUM SCALEFAC OFFSET IDLA IDFM, 3 strings
-  20 1.0 0.0 1 1 '(....)' 'NAME' './../input/xgrd.IDLA1.dat'
-  21 1.0 0.0 1 1 '(....)' 'NAME' './../input/ygrd.IDLA1.dat'
+  20 1.0 0.0 1 1 '(....)' 'NAME' './../input/xgrd.2.1c.dat'
+  21 1.0 0.0 1 1 '(....)' 'NAME' './../input/ygrd.2.1c.dat'
 $
 $    10.E3   10.E3  1.
 $   -60.E3  -60.E3  1.

@@ -462,17 +462,17 @@
 !
  1000 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT OUT OF GRID : ',2F10.3,2X,A/   &
-               '     POINT SKIPPPED '/)
+               '     POINT SKIPPED '/)
  1001 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT OUT OF GRID : ',2E10.3,2X,A/   &
-               '     POINT SKIPPPED '/)
+               '     POINT SKIPPED '/)
 !
  1002 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT ON LAND : ',2F10.3,2X,A/       &
-               '     POINT SKIPPPED '/)
+               '     POINT SKIPPED '/)
  1003 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT ON LAND : ',2E10.3,2X,A/       &
-               '     POINT SKIPPPED '/)
+               '     POINT SKIPPED '/)
 !
 !/T 9010 FORMAT (' TEST W3IOPP : INPUT  : ',I4,2F12.2,2X,A)
 !/T 9011 FORMAT ('               CORR.  :     ',2F12.2)
