@@ -122,7 +122,7 @@
                                  TOUT(2), TDUM(2), IOTEST, NOUT,         &
                                  NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,   &
                                  IDFM, IOUT, S3, S4, S5, IP,       &
-                                 NBIPART, CNTIPART
+                                 NBIPART, CNTIPART, NCVARTYPE
       INTEGER, ALLOCATABLE    :: TABIPART(:)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST
@@ -212,7 +212,7 @@
 ! ... Output type
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) NCTYPE
+      READ (NDSI,*,END=801,ERR=802) NCTYPE, NCVARTYPE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,'(A)',END=801,ERR=802) STRINGIPART
       NBIPART=0
@@ -311,7 +311,7 @@
         WRITE (NDSO,971) IDTIME
 !
 
-        CALL W3EXNC ( NX, NY, NSEA, FILEPREFIX, P2MSF, US3DF, NCTYPE, TOGETHER )
+        CALL W3EXNC ( NX, NY, NSEA, FILEPREFIX, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE )
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) EXIT
         END DO
@@ -413,17 +413,17 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3EXNC ( NX, NY, NSEA, FILEPREFIX, P2MSF, US3DF, NCTYPE, TOGETHER )
+      SUBROUTINE W3EXNC ( NX, NY, NSEA, FILEPREFIX, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE )
 !/
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Mar-2011 |
+!/                  | Last update :         28-Feb-2013 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
-!/    17-Mar-2010 : Creation                            ( version 4.01_Ifremer )
+!/    28-Feb-2010 : New option for float output         ( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -491,7 +491,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER                 :: NX, NY, NSEA, P2MSF(3), US3DF(3), NCTYPE
+      INTEGER                 :: NX, NY, NSEA, P2MSF(3), US3DF(3), NCTYPE, NCVARTYPE
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL                 :: TOGETHER
 !/
@@ -504,6 +504,8 @@
       INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY)
       INTEGER(KIND=2)         :: MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),  &
                                  MXY(NX,NY), MAPOUT(NX,NY)
+      REAL   (KIND=4)         :: MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY),  &
+                                 MXYR(NX,NY), MFILLR
       INTEGER, SAVE           :: IPASS
 !
       INTEGER                 :: S1, S2, ICODE, NCID, COORDTYPE,               & 
@@ -567,6 +569,7 @@
 !     Set-up transfer files
 !
       MFILL  = NF90_FILL_SHORT !-9999
+      MFILLR  = NF90_FILL_FLOAT !-9999
       IF (GTYPE.NE.UNGTYPE) THEN
         COORDTYPE=1
       ELSE
@@ -768,6 +771,34 @@
 !
           ELSE IF ( J .EQ.  7 ) THEN
             FLONE  = .TRUE.
+!
+! Information for spectral microseismic generation data (2nd file)
+!
+            IF ( US3DF(1).GT.0) THEN
+              NFILE=2
+              NFIELD2=1
+              FSC2    = 0.0004
+              varnm2(1)='Ef'
+              varnl2(1)='base ten logarithm of power spectral density of surface elevation'
+              varns2(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+              varng(1)=varns2(1)
+              varnc(1)=''
+              UNITS2  = 'log10(m2s+1E-12)'
+              ENAME2  = '.Ef'
+              I1F=US3DF(2)
+              I2F=US3DF(3)
+              DO IK=I1F,I2F
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,IK),MAPSF, XX )
+                WHERE ( XX.GE.0.) XX = ALOG10(XX+1E-12)
+                XK(:,:,IK)=XX
+                END DO
+              vmin = -30000
+              vmax = 32000
+            ELSE
+              vmin = 0
+              vmax = 32000
+              END IF
+
             FSC    = 0.002
             UNITS  = 'm'
             ENAME  = '.hs'
@@ -877,6 +908,31 @@
             vmax = 10000
 !
           ELSE IF ( J .EQ. 14 ) THEN
+            IF ( US3DF(1).GT.0) THEN
+              NFILE=2
+              NFIELD2=1
+              FSC2    = 0.1
+              varnm2(1)='th1m'
+              varnl2(1)='mean wave mean direction frequency spectrum'
+              varns2(1)='sea_surface_wave_from_direction_frequency_spectrum'
+              varng(1)=varns2(1)
+              varnc(1)=''
+              UNITS2  = 'degree'
+              ENAME2  = '.thm'
+              I1F=US3DF(2)
+              I2F=US3DF(3)
+              DO IK=I1F,I2F
+                DO ISEA=1, NSEA
+                  IF ( US3D(ISEA,NK+IK) .NE. UNDEF )  THEN
+                    US3D(ISEA,NK+IK) = MOD ( 630. - RADE*US3D(ISEA,NK+IK) , 360. )
+                   END IF
+                   END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,NK+IK),MAPSF, XX )
+                WHERE ( XX.GE.0.) XX = ALOG10(XX+0.01)
+                XK(:,:,IK)=XX
+                END DO
+              END IF
+
             FLONE  = .TRUE.
             FSC    = 0.1
             UNITS  = 'degree'
@@ -1166,7 +1222,7 @@
 !
           ELSE IF ( J .EQ. 30 ) THEN
             FLONE  = .TRUE.
-            FSC    = 1.E-6
+            FSC    = 4.E-6
             UNITS  = '1'
             ENAME  = '.cha'
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CHARN(1:NSEA), MAPSF, X1 )
@@ -1181,11 +1237,11 @@
 !
           ELSE IF ( J .EQ. 31 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.1
+            FSC    = 0.02
             UNITS  = 'Wm-2'
             ENAME  = '.faw'
             DO ISEA=1, NSEA
-               PHIAW(ISEA)=MIN(99.98,PHIAW(ISEA))
+               PHIAW(ISEA)=MIN(640.,PHIAW(ISEA))
                END DO
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA) , MAPSF, X1 )
             NFIELD=1
@@ -1542,7 +1598,7 @@
             UNITS  = 'W/m2'
             ENAME  = '.foc'
             DO ISEA=1, NSEA
-               PHIOC(ISEA)=MIN(1000.,PHIOC(ISEA))
+               PHIOC(ISEA)=MIN(3000.,PHIOC(ISEA))
                END DO
             CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIOC(1:NSEA)    &
                                                       , MAPSF, X1 )
@@ -1683,7 +1739,7 @@
 !
           ELSE IF ( J .EQ. 50 ) THEN
             FLONE  = .FALSE.
-            FSC    = 0.00001
+            FSC    = 0.0001
             ENAME  = '.msc'
             UNITS  = '1'
             CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCX,MAPSF, XX )
@@ -1898,7 +1954,7 @@
 !
                 CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
                              mfill,UNITVAR,vmin,vmax,COORDTYPE,   &
-                             extradim,NCTYPE,MAPSTAOUT)
+                             extradim,NCTYPE,NCVARTYPE,MAPSTAOUT)
 
 !
 
@@ -2049,14 +2105,24 @@
                   DO I=1,NFIELD
                     ivar=ivar1+I
                     IF (COORDTYPE.EQ.1) THEN
-                      iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
-!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      IF (NCVARTYPE.EQ.2) THEN 
+                        iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
+!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      ELSE
+                        iret = nf90_def_var(ncid,varnm(I), nf90_float, dimid(2:4+extradim), varid(ivar))
+!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                        END IF
                     ELSE
                       dimfield(1)=dimid(2)
                       dimfield(2)=dimid(4)
                       dimfield(3)=dimid(5)
-                      iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
-!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      IF (NCVARTYPE.EQ.2) THEN 
+                        iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
+!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      ELSE 
+                        iret = nf90_def_var(ncid,varnm(I), nf90_float, dimfield(1:2+extradim), varid(ivar))
+!/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                        END IF                        
                       END IF
 
                     call check_err(iret)
@@ -2066,7 +2132,13 @@
                     iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
                     iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
                     call check_err(iret)
-                    iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
+                    IF (NCVARTYPE.EQ.2) THEN 
+                      iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
+                    ELSE 
+                      iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_FLOAT)
+                      FSC=1.
+                      FSC3=1.
+                      END IF
                     call check_err(iret)
                     IF (I.LE.2) THEN 
                       iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
@@ -2161,8 +2233,16 @@
                     iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
                     iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
                     call check_err(iret)
-                    iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
-                    call check_err(iret)
+!
+                    IF (NCVARTYPE.EQ.2) THEN 
+                      iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_SHORT)
+                    ELSE 
+                      iret=nf90_put_att(ncid,varid(ivar),'_FillValue',NF90_FILL_FLOAT)
+                      FSC=1.
+                      FSC3=1.
+                      END IF
+!
+                   call check_err(iret)
                     IF (I.LE.2) THEN 
                       iret=nf90_put_att(ncid,varid(ivar),'scale_factor',FSC)
                     ELSE
@@ -2248,48 +2328,50 @@
 !
               
 ! NFIELD=3
-              IF ( NFIELD.EQ.3 ) THEN 
-                DO IX=IX1, IXN
-                  DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
-                      MXX(IX,IY) = MFILL
-                      MYY(IX,IY) = MFILL
-                      MXY(IX,IY) = MFILL
-                    ELSE
-                      MXX(IX,IY) = NINT(X1(IX,IY)/FSC)
-                      MYY(IX,IY) = NINT(X2(IX,IY)/FSC)
-                      MXY(IX,IY) = NINT(XY(IX,IY)/FSC3)
-                      END IF
-                    END DO
-                  END DO
-                iret=nf90_put_var(ncid,varid(ivar1+1),              &
-                          MXX(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(ivar1+2),            &
-                          MYY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-                iret=nf90_put_var(ncid,varid(ivar1+3),            &
-                          MXY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
-                call check_err(iret)
-! NFIELD=2
-              ELSE IF (NFIELD.EQ.2 ) THEN 
-! extradim=0
-                IF (extradim.EQ.0) THEN   
+              IF (NCVARTYPE.EQ.2) THEN 
+                IF ( NFIELD.EQ.3 ) THEN 
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
+                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
                         MXX(IX,IY) = MFILL
                         MYY(IX,IY) = MFILL
+                        MXY(IX,IY) = MFILL
                       ELSE
-                        MXX(IX,IY) = NINT(XX(IX,IY)/FSC)
-                        MYY(IX,IY) = NINT(XY(IX,IY)/FSC)
+                        MXX(IX,IY) = NINT(X1(IX,IY)/FSC)
+                        MYY(IX,IY) = NINT(X2(IX,IY)/FSC)
+                        MXY(IX,IY) = NINT(XY(IX,IY)/FSC3)
                         END IF
                       END DO
                     END DO
-                  iret=nf90_put_var(ncid,varid(ivar1+1),             &
-                            MXX(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+
+                  iret=nf90_put_var(ncid,varid(ivar1+1),              &
+                          MXX(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
                   call check_err(iret)
-                  iret=nf90_put_var(ncid,varid(ivar1+2),           &
+                  iret=nf90_put_var(ncid,varid(ivar1+2),            &
+                          MYY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                  call check_err(iret)
+                  iret=nf90_put_var(ncid,varid(ivar1+3),            &
+                          MXY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                  call check_err(iret)
+! NFIELD=2
+                ELSE IF (NFIELD.EQ.2 ) THEN 
+! extradim=0
+                  IF (extradim.EQ.0) THEN   
+                    DO IX=IX1, IXN
+                      DO IY=IY1, IYN
+                        IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
+                          MXX(IX,IY) = MFILL
+                          MYY(IX,IY) = MFILL
+                        ELSE
+                          MXX(IX,IY) = NINT(XX(IX,IY)/FSC)
+                          MYY(IX,IY) = NINT(XY(IX,IY)/FSC)
+                          END IF
+                        END DO
+                      END DO
+                    iret=nf90_put_var(ncid,varid(ivar1+1),             &
+                              MXX(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                    call check_err(iret)
+                    iret=nf90_put_var(ncid,varid(ivar1+2),           &
                             MYY(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
                   call check_err(iret)
 ! extradim=1
@@ -2350,6 +2432,115 @@
                       END DO
                     END IF   ! extradim
                   END IF   ! NFIELD
+!
+! Real output (NCVARTYPE.EQ.3)
+!
+                ELSE 
+                IF ( NFIELD.EQ.3 ) THEN 
+                  DO IX=IX1, IXN
+                    DO IY=IY1, IYN
+                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
+                        MXXR(IX,IY) = MFILLR
+                        MYYR(IX,IY) = MFILLR
+                        MXYR(IX,IY) = MFILLR
+                      ELSE
+                        MXXR(IX,IY) = X1(IX,IY)
+                        MYYR(IX,IY) = X2(IX,IY)
+                        MXYR(IX,IY) = XY(IX,IY)
+                        END IF
+                      END DO
+                    END DO
+
+                  iret=nf90_put_var(ncid,varid(ivar1+1),              &
+                          MXXR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                  call check_err(iret)
+                  iret=nf90_put_var(ncid,varid(ivar1+2),            &
+                          MYYR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                  call check_err(iret)
+                  iret=nf90_put_var(ncid,varid(ivar1+3),            &
+                          MXYR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                  call check_err(iret)
+! NFIELD=2
+                ELSE IF (NFIELD.EQ.2 ) THEN 
+! extradim=0
+                  IF (extradim.EQ.0) THEN   
+                    DO IX=IX1, IXN
+                      DO IY=IY1, IYN
+                        IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
+                          MXXR(IX,IY) = MFILLR
+                          MYYR(IX,IY) = MFILLR
+                        ELSE
+                          MXXR(IX,IY) = XX(IX,IY)
+                          MYYR(IX,IY) = XY(IX,IY)
+                          END IF
+                        END DO
+                      END DO
+                    iret=nf90_put_var(ncid,varid(ivar1+1),             &
+                              MXXR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                    call check_err(iret)
+                    iret=nf90_put_var(ncid,varid(ivar1+2),           &
+                            MYYR(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                  call check_err(iret)
+! extradim=1
+                ELSE
+                  start(3+1-COORDTYPE)=0
+                  DO IK=I1F,I2F
+                    start(3+1-COORDTYPE)=start(3+1-COORDTYPE)+1
+                    DO IX=IX1, IXN
+                      DO IY=IY1, IYN
+                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
+                          MXXR(IX,IY) = MFILLR
+                          MYYR(IX,IY) = MFILLR
+                        ELSE
+                          MXXR(IX,IY) = XXK(IX,IY,IK)
+                          MYYR(IX,IY) = XYK(IX,IY,IK)
+                          END IF
+                        END DO
+                      END DO
+                    iret=nf90_put_var(ncid,varid(ivar1+1),               &
+                            MXXR(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
+                    iret=nf90_put_var(ncid,varid(ivar1+2),             &
+                            MYYR(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
+                    END DO
+                  END IF  ! extradim
+! NFIELD=1
+                ELSE 
+! extradim=0
+                  IF (extradim.EQ.0) THEN   
+                    DO IX=IX1, IXN
+                      DO IY=IY1, IYN
+                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
+                          MX1R(IX,IY) = MFILLR
+                        ELSE
+                          MX1R(IX,IY) = X1(IX,IY)
+                          END IF
+                        END DO
+                      END DO
+                    iret=nf90_put_var(ncid,varid(ivar1+1),               &
+                            MX1R(IX1:IXN,IY1:IYN),(/start(1:3)/),(/count(1:3)/))
+                    call check_err(iret)
+! extradim=1
+                  ELSE
+                    start(3+1-COORDTYPE)=0
+                    DO IK=I1F,I2F
+                      start(3+1-COORDTYPE)=start(3+1-COORDTYPE)+1
+                      DO IX=IX1, IXN
+                        DO IY=IY1, IYN
+                          IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
+                            MX1R(IX,IY) = MFILLR
+                          ELSE
+                            MX1R(IX,IY) = XK(IX,IY,IK)
+                            END IF
+                          END DO
+                        END DO
+                      iret=nf90_put_var(ncid,varid(ivar1+1),               &
+                          MX1R(IX1:IXN,IY1:IYN),(/start(1:4)/),(/count(1:4)/))
+                      call check_err(iret)
+                      END DO
+                    END IF   ! extradim
+                    END IF   ! NFIELD
+                  END IF   ! NCVARTYPE
+
                 ivar1=ivar1+NFIELD
 !
                 iret=nf90_close(ncid)
@@ -2428,7 +2619,7 @@
 !--------------------------------------------------------------------------    
       SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid,  &
                            MFILL,UNITVAR,vmin,vmax,COORDTYPE,  &
-                           extradim, NCTYPE, mapstaout )
+                           extradim, NCTYPE, NCVARTYPE, mapstaout )
       USE W3GDATMD
       USE NETCDF
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRD
@@ -2438,7 +2629,7 @@
 
 
       INTEGER, INTENT(IN)               :: vmin,vmax,extradim
-      INTEGER, INTENT(IN)               :: MFILL, NCTYPE
+      INTEGER, INTENT(IN)               :: MFILL, NCTYPE, NCVARTYPE
       character*(*), INTENT(IN)         :: ncfile,UNITVAR(3)
       integer, INTENT(OUT)              :: ncid
       integer, INTENT(OUT)              :: dimid(6)
@@ -2626,9 +2817,10 @@
 !
       iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
       iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
-!/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'ST4 Namelist paramter ZWD',ZZWND)
-!/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'ST4 Namelist paramter ALPHA0',AALPHA)
-!/ST4    IF (BBETA.NE.1.52)    iret=nf90_put_att(ncid,NF90_GLOBAL,'ST4 Namelist paramter BETAMAX',BBETA)
+!/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
+!/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
+!/ST4    IF (BBETA.NE.1.52)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
+!/ST4    IF(SSDSC(7).NE.0.8)   iret=nf90_put_att(ncid,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
 ! ... TO BE CONTINUED ... 
       open(unit=994,file='NC_globatt.inp',status='old',iostat=icode)
       IF (ICODE.EQ.0) THEN

@@ -26,6 +26,7 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
+!/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.07 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -269,7 +270,7 @@
           INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
         ELSE 
           CALL IS_IN_UNGRID_INTERP(IPT, XPT, YPT, itout, IX, IY, RD)
-          INGRID = (ITOUT.GE.0) 
+          INGRID = (ITOUT.GT.0) 
           END IF
 !
         IF ( .NOT.INGRID ) THEN
@@ -462,17 +463,17 @@
 !
  1000 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT OUT OF GRID : ',2F10.3,2X,A/   &
-               '     POINT SKIPPED '/)
+               '     POINT SKIPPPED '/)
  1001 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT OUT OF GRID : ',2E10.3,2X,A/   &
-               '     POINT SKIPPED '/)
+               '     POINT SKIPPPED '/)
 !
  1002 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT ON LAND : ',2F10.3,2X,A/       &
-               '     POINT SKIPPED '/)
+               '     POINT SKIPPPED '/)
  1003 FORMAT (/' *** WAVEWATCH-III WARNING :'/                   &
                '     OUTPUT POINT ON LAND : ',2E10.3,2X,A/       &
-               '     POINT SKIPPED '/)
+               '     POINT SKIPPPED '/)
 !
 !/T 9010 FORMAT (' TEST W3IOPP : INPUT  : ',I4,2F12.2,2X,A)
 !/T 9011 FORMAT ('               CORR.  :     ',2F12.2)

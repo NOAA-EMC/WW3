@@ -416,7 +416,6 @@
 ! 
       DSUM(:)=0.
       TAUBBL(:)=0.
-      MINADIM = ABMIN*1.001
 !
       DO ISUB=1,3
 !
@@ -436,8 +435,8 @@
             DO ITH=1, NTH
               IS=ITH+(IK-1)*NTH
               EB  = EB  + A(IS)
-              EBX = EBX +A(IS)*ECOS(ITH)*SIGN(1.,ESIN(ITH))
-              EBY = EBY +A(IS)*ESIN(ITH)*SIGN(1.,ESIN(ITH))
+              EBX = EBX +A(IS)*ECOS(ITH)
+              EBY = EBY +A(IS)*ESIN(ITH)
               END DO   
 !
 ! U_bot=sigma * Zeta / sinh(KD)  and CBETA = 0.5*sigma^2 /(g*sinh^(kD))
@@ -471,8 +470,8 @@
 !
 ! 2.b First use of FWTABLE to get skin roughness and estimate Shields parameter
 !
-        XI=(ALOG10(MAX(AORB/DD50,MINADIM))-ABMIN)/DELAB 
-        IND  = MAX(MIN (SIZEFWTABLE-1, INT(XI)),1)
+        XI=MAX((ALOG10(MAX(AORB/DD50,0.3))-ABMIN)/DELAB,1.)
+        IND  = MIN (SIZEFWTABLE-1, INT(XI))
         DELI1= MIN (1. ,XI-FLOAT(IND))
         DELI2= 1. - DELI1
         FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
@@ -482,7 +481,6 @@
 ! Normalized Shields parameter
 !
         SHIELDS(ISUB)=PSI/PSIC 
-!       WRITE(6,*) 'IX A:',IX,ISUB,DSUB,UORB,AORB,FW,'##',PSIC,DD50,SHIELDS(ISUB)
 !
         END DO ! end of loop on ISUB
       DPSI=(SHIELDS(2)-SHIELDS(1))/(XSUB(2)-XSUB(1))*SBTCX(5)
@@ -544,14 +542,11 @@
 !
 ! 2.c second use of FWTABLE to get FW from the full roughness 
 !
-        XI=(ALOG10(MAX(AORB/KSUBN,MINADIM))-ABMIN)/DELAB  
-        IND  = MAX(MIN (SIZEFWTABLE-1, INT(XI)),1)
+        XI=MAX((ALOG10(MAX(AORB/KSUBN,0.3))-ABMIN)/DELAB,1.)
+        IND  = MIN (SIZEFWTABLE-1, INT(XI))
         DELI1= MIN (1. ,XI-FLOAT(IND))
         DELI2= 1. - DELI1
         FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
-
-!       WRITE(6,*) 'IX B:',IX,ISUB,UORB,AORB,FW,'##',SHIELDS
-        !WRITE(996,*) SHIELDS,FW,AORB/KSUBN
 ! 
 ! 5. Fills output arrays and estimates the energy and momentum loss 
 !

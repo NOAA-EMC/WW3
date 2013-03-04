@@ -5,12 +5,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Jun-2011 |
+!/                  | Last update :         28-Feb-2013 |
 !/                  +-----------------------------------+
 !/
 !/    11-Nov-1999 : Fortran 90 version.                 ( version 2.00 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    25-Jun-2011 : Adding Kelvin functions.            ( version 4.05 )
+!/    28-Feb-2013 : Adding cap at 0.5 in FWTABLE        ( version 4.08 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -68,11 +69,11 @@
 !
 ! Parameters for friction factor table 
 !
-      INTEGER, PARAMETER      :: SIZEFWTABLE=300  
-      REAL                    :: FWTABLE(0:SIZEFWTABLE)
-      REAL                    :: DELAB
-      REAL,    PARAMETER      :: ABMIN = -1. 
-      REAL,    PARAMETER      :: ABMAX = 8. 
+      INTEGER, PARAMETER       :: SIZEFWTABLE=300  
+      REAL                     :: FWTABLE(0:SIZEFWTABLE)
+      REAL                     :: DELAB
+      REAL,    PARAMETER       :: ABMIN = -1. 
+      REAL, PRIVATE, PARAMETER  :: ABMAX = 8. 
 !
    CONTAINS
 ! ----------------------------------------------------------------------
@@ -82,10 +83,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Oct-2007 |
+!/                  | Last update :         28-Feb-2013 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-2007 : Origination.                        ( version 3.13 )
+!/    28-Feb-2013 : Caps the friction factor to 0.5     ( version 4.08 )
 !/
 !  1. Purpose :
 !     TO estimate friction coefficients in oscillatory boundary layers
@@ -167,8 +169,12 @@
             fsubw=.5*(fsubwmemo+fsubw)
             dzeta0=.5*(dzeta0memo+dzeta0)
             END DO   
-            FWTABLE(I)  = fsubw
-!	 WRITE(994,*) 'Friction factor:',I,ABR,fsubw
+!
+! Maximum value of 0.5 for fe is based on field 
+! and lab experiment by Lowe et al. JGR 2005, 2007 
+! 
+            FWTABLE(I)  = MIN(fsubw,0.5) 
+!           WRITE(994,*) 'Friction factor:',I,ABR,FWTABLE(I)
          END DO
       RETURN
       END SUBROUTINE TABU_FW

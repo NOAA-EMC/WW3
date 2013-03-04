@@ -5,10 +5,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Aug-2012 |
+!/                  | Last update :         01-Nov-2012 |
 !/                  +-----------------------------------+
 !/
 !/    28-Aug-2012 : adaptation from SHOM/Ifremer code   ( version 4.08 )
+!/    01-Nov-2012 : Bug correction for NKI != NK        ( version 4.08 )
 !/
 !/    Copyright 2012-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -114,7 +115,7 @@
       CHARACTER*5   :: INXOUT
       CHARACTER*1   :: FILEFORMAT
       CHARACTER*10  :: VERTEST  ! = 'III  1.03 '
-      CHARACTER*32  :: IDTST  != 'WAVEWATCH III BOUNDARY DATA FILE'
+      CHARACTER*32  :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
       CHARACTER*120,     ALLOCATABLE  :: SPECFILES(:)
       CHARACTER*120 :: FILENAME
 
@@ -197,8 +198,8 @@
 !     ILOOP = 2 to read the file names
 !
       DO ILOOP = 1, 2
-        !WRITE(6,*) 'ILOOP:',1,NBO2,NDSI
-        OPEN (NDSS,FILE='ww3_bound.scratch',FORM='FORMATTED', status='UNKNOWN')
+        OPEN (NDSS,FILE='ww3_bound.scratch',FORM='FORMATTED',          &
+              status='UNKNOWN')
         IF ( ILOOP .EQ. 1 ) THEN
           NDSI2 = NDSI
         ELSE
@@ -243,20 +244,21 @@
           WRITE (NDSE,901) IDTST, IDSTRBC
           END IF
         WRITE(NDSE,*) "FORMAT VERSION: '",VERTEST,"'"
-        WRITE(6,*) "FILE TYPE: '",IDTST,"'"  
-        WRITE(6,*) 'NK,NTH,XFR, FR1I, TH1I, NBI :', NK,NTH,XFR, FR1I, TH1I, NBI 
+        WRITE(NDSE,*) "FILE TYPE: '",IDTST,"'"  
+        WRITE(NDSE,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', & 
+                    NK1,NTH1,XFR, FR1I, TH1I, NBI 
         ALLOCATE (XBPI(NBI),YBPI(NBI))
         ALLOCATE (IPBPI(NBI,4),RDBPI(NBI,4))
         READ(NDSB) (XBPI(I),I=1,NBI),           &
                (YBPI(I),I=1,NBI),             &
                ((IPBPI(I,J),I=1,NBI),J=1,4),  &
                ((RDBPI(I,J),I=1,NBI),J=1,4)
-        WRITE(6,*)      'XBPI:',XBPI
-        WRITE(6,*)      'YBPI:',YBPI
-        WRITE(6,*)      'IPBPI:'
+        WRITE(NDSE,*)      'XBPI:',XBPI
+        WRITE(NDSE,*)      'YBPI:',YBPI
+        WRITE(NDSE,*)      'IPBPI:'
         DO I=1,NBI
-          WRITE(6,*) I,' interpolated from:',IPBPI(I,1:4)
-          WRITE(6,*) I,' with coefficient :',RDBPI(I,1:4)
+          WRITE(NDSE,*) I,' interpolated from:',IPBPI(I,1:4)
+          WRITE(NDSE,*) I,' with coefficient :',RDBPI(I,1:4)
           END DO
 !
         READ (NDSB) TIME2, NBI2
@@ -266,10 +268,9 @@
         DO WHILE (IERR.EQ.0)
           READ (NDSB,IOSTAT=IERR) TIME2, NBI2
           IF (IERR.EQ.0) THEN 
-          WRITE(6,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
+          WRITE(NDSE,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
           DO IP=1, NBI2
             READ (NDSB,IOSTAT=IERR) ABPIN(:,IP)
-             !WRITE(6,*) 'IP:',IP,NBI2,IERR
             END DO
           END IF
         END DO
@@ -316,29 +317,32 @@
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
-          WRITE(6,*) 'IP:',SPECFILES(IP),IP,IERR
-          IF (IERR.NE.0) WRITE(6,*) 'File do not exist:',SPECFILES(IP)
+          WRITE(NDSE,'(A,I5,3A,I5)') 'IP, file, I/O error:',IP,', ',       &
+                                  TRIM(SPECFILES(IP)),', ',IERR
+          IF (IERR.NE.0) WRITE(NDSE,*) 'File do not exist:',SPECFILES(IP)
           READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
              space,string1,space,NKI,NTHI
-          WRITE(6,*) 'NK:',IP, NKI,NTHI
+          WRITE(NDSE,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
           IF (IP.EQ.1) THEN 
             NK1=NKI
-              NTH1=NTHI
+            NTH1=NTHI
             NSPEC1  = NK1 * NTH1
-               ALLOCATE (FREQ(NK1),THETA(NTH1))
-              ALLOCATE (SPEC2D(NK1,NTH1))
-              ALLOCATE (ABPIN(NK*NTH1,NBO2))
+            ALLOCATE (FREQ(NK1),THETA(NTH1))
+            ALLOCATE (SPEC2D(NK1,NTH1))
+            ALLOCATE (ABPIN(NK*NTH1,NBO2))
           ELSE
 !
 !  To be cleaned up later ... 
 !
             IF (NK1.NE.NKI.OR.NTH1.NE.NTHI) THEN 
-              WRITE(6,*) 'ERROR DIFFERENT GRIDS:',NK1,NKI
-            STOP
+              WRITE(NDSE,'(A,A,4I5)') 'ERROR, SPECTRAL GRID IN FILE:',     &
+                         TRIM(SPECFILES(IP)),NK1,NKI,NTH1,NTHI
+              STOP
               END IF
-          END IF
-        READ(200+IP,*) FREQ(1:NK1)
-        READ(200+IP,*) THETA(1:NTH1)
+            END IF
+!
+          READ(200+IP,*) FREQ(1:NK1)
+          READ(200+IP,*) THETA(1:NTH1)
         END DO
 
       IFMIN=1  ! index of first freq. in source spectrum
@@ -348,20 +352,21 @@
 ! Defines frequency range in spectra
 !
       IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
-        DO J=1,NK1
-            IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
-              IFMIN=J
-              END IF
-              END DO  
-        END IF
-     
-      IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN 
-        DO J=1,NK
-          IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN 
-              IFMIN2=J
+        DO J=1,MIN(NK1,NK)
+          IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
+            IFMIN=J
             END IF
-            END DO  
-          END IF
+          END DO  
+        END IF
+!     
+      IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN 
+        DO J=1,MIN(NK,NK1)
+          IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN 
+            IFMIN2=J
+            END IF
+          END DO  
+        END IF
+!
       IF ((FREQ(NK1)-FR1*XFR**(NK-1))/FREQ(NK1) .GT.0.03) THEN 
         DO J=1,NK
             IF (ABS(FREQ(J)-FR1*XFR**(NK1-1)) .LT. ABS(FREQ(IFMAX)-FR1*XFR**(NK1-1))) THEN 
@@ -369,8 +374,7 @@
             END IF
           END DO 
         END IF 
- 
-     !WRITE(6,*) 'IFMIN,IFMIN2,IFMAX:',IFMIN,IFMIN2,IFMAX  
+! 
       IERR=0
       ITIME=0
 !
@@ -385,7 +389,7 @@
               TIME1=TIME2
             ELSE
                 IF (TIME1(1).NE.TIME2(1).OR.TIME1(2).NE.TIME2(2)) THEN 
-                  WRITE(6,*) 'AT POINT ',IP,', BAD TIMES:',TIME1, TIME2
+                  WRITE(NDSE,*) 'AT POINT ',IP,', BAD TIMES:',TIME1, TIME2
                 END IF
               END IF 
 !
@@ -404,7 +408,7 @@
                 END DO
               END DO
            IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN 
-        !WRITE(6,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
+        !WRITE(NDSE,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
              ABPIN((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,IP)=0.
              END IF 
            END IF  ! ned of test on IERR
@@ -414,12 +418,15 @@
 !
        IF (IERR.EQ.0) THEN 
          IF (ITIME.EQ.0) THEN 
+! Correction for rounding error in ASCII files ... 
+           IF (ABS(THETA(1)-0.5*PI).LT.0.01) THETA(1)=0.5*PI
+! Writes header in nest.ww3 file 
            WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH, XFR, FREQ(1), &
              MOD(2.5*PI-THETA(1),TPI), NBO
              IPBPO(:,:)=1
              RDBPO(:,1)=1.
              RDBPO(:,2:4)=0.
-      
+!     
            DO IP1=1,NBO
              DMIN=360.+180.
              DMIN2=360.+180.
@@ -447,7 +454,7 @@
                  ENDIF
             END IF
           END DO
-         ! WRITE(6,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
+         ! WRITE(NDSE,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
          !                    LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
          !                    LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
 !
@@ -467,9 +474,10 @@
           RDBPO(IP1,1)=1-MIN(1.,MAX(0.,COS1))
              RDBPO(IP1,2)=MIN(1.,MAX(0.,COS1))
             END IF
-             WRITE(6,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
-          WRITE(6,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
-          
+!
+          WRITE(NDSE,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
+          WRITE(NDSE,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
+!          
         END DO
       WRITE(NDSB) (XBPO(I),I=1,NBO),           &
                (YBPO(I),I=1,NBO), &
@@ -477,11 +485,11 @@
                ((RDBPO(I,J),I=1,NBO),J=1,4)
          END IF
       
-      WRITE(6,*) 'Writing boundary data for time:', TIME2, NBO2
-         WRITE(NDSB,IOSTAT=IERR) TIME2, NBO2
-           DO IP=1, NBO2
-              WRITE (NDSB) ABPIN(:,IP)
-           END DO
+       WRITE(NDSE,*) 'Writing boundary data for time:', TIME2, NBO2
+       WRITE(NDSB,IOSTAT=IERR) TIME2, NBO2
+       DO IP=1, NBO2
+         WRITE (NDSB) ABPIN(:,IP)
+         END DO
 
        ITIME=ITIME+1
        END IF      

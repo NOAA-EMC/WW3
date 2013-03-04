@@ -19,11 +19,10 @@ $-------------------------------------------------------------------------------
  F F F F F  F T F F F  F F T T T  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
 $
 $ -------------------------------------------------------------------- $
-$ NetCDF file version [3,4]      
+$ NetCDF file version [3,4]  and variable type [2 = short int. , 4 = real ]     
 $  [0,1,2,3,4,5]   (swell partitions)
 $ TOGETHER [T] or not [F] in the same file
-$
-  3
+  3 4
   0 1 2
   F
 $ -------------------------------------------------------------------- $

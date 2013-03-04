@@ -70,6 +70,7 @@ END MODULE c_caldat
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
 !/    17-Nov-2011 : Fix bug on latitudes                ( version 4.04 )
+!/     4-Mar-2012 : allows any NetCDF dimensions names  ( version 4.08 ) 
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -237,8 +238,10 @@ END MODULE c_caldat
 !/
       INTEGER                 :: NTI
       CHARACTER               :: STRFIELDSNAME*1024
-      CHARACTER*5             :: FIELDSNAME(50)*30
-      INTEGER                 :: NFIELDS
+      CHARACTER               :: FIELDSNAME(4)*30
+      CHARACTER               :: STRDIMSNAME*1024
+      CHARACTER               :: DIMSNAME(2)*30
+      INTEGER                 :: NIDIMS, NFIELDS
 
       INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
                                  IERR, IFLD, ITYPE, J, IX, IY, NFCOMP,&
@@ -277,7 +280,7 @@ END MODULE c_caldat
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
-                                 NAMELL*20, FROMF*4, NAMEF*20
+                                 NAMELL*20, FROMF*4, NAMEF*40
       CHARACTER*12            :: IDSTR1(5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
@@ -285,6 +288,7 @@ END MODULE c_caldat
       INTEGER                 :: GTYPEDUM = 0
 !
       INTEGER               :: ncid, iret, ndims, parents, nvars, natts, varidtmp
+      INTEGER               :: status, numDimsLon, numAttsLon
       INTEGER, ALLOCATABLE  :: varid(:), dimid(:), dimln(:), varndims(:), vardimids(:,:)
       CHARACTER*10, DIMENSION(:), ALLOCATABLE   :: varname, dimname
       CHARACTER*50          :: timeunits
@@ -425,6 +429,21 @@ END MODULE c_caldat
       IF ( FLSTAB ) WRITE (NDSO,939)
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRDIMSNAME
+!
+      FIELDSNAME(:)=''
+      DO  I=1,2
+        DIMSNAME(I)='                              '
+      END DO
+      CALL SPLIT(STRDIMSNAME,DIMSNAME)
+!
+      ! Counts the number of dimensions
+      NIDIMS=0
+      DO I=1,2
+        IF (LEN_TRIM(DIMSNAME(I)).NE.0) NIDIMS=NIDIMS+1
+      ENDDO
+!
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRFIELDSNAME
 !
       FIELDSNAME(:)=''
@@ -435,8 +454,6 @@ END MODULE c_caldat
       DO WHILE (len_trim(FIELDSNAME(NFIELDS+1)).NE.0)
         NFIELDS=NFIELDS+1
       ENDDO
-
-
 !
 ! 3.c Additional input for format types and time
 ! ... time
@@ -507,59 +524,82 @@ END MODULE c_caldat
         read(timeunits(12:15),'(I4.4)') yref
         read(timeunits(17:18),'(I2.2)') mref
         read(timeunits(20:21),'(I2.2)') dref
+      ELSE IF (index(timeunits, "hours").NE.0) THEN
+        read(timeunits(13:16),'(I4.4)') yref
+        read(timeunits(18:19),'(I2.2)') mref
+        read(timeunits(21:22),'(I2.2)') dref
       END IF
       dateref=julday(dref,mref,yref)
 !
 ! instanciates generic variables dimensions
 !
+      NXI=0
+      NYI=0
       DO i=1,ndims
         IF (dimname(i) .EQ. "time") NTI = dimln(i)
-        IF ((dimname(i) .EQ. "longitude") .OR. (dimname(i) .EQ. "lon")) NXI = dimln(i)
-        IF ((dimname(i) .EQ. "latitude") .OR. (dimname(i) .EQ. "lat")) NYI = dimln(i)
-        IF (dimname(i) .EQ. "node") THEN
-          NXI = dimln(i)
-          NYI = dimln(i)
-        END IF
-      END DO
-
-
+        IF (dimname(i) .EQ. DIMSNAME(1))  NXI = dimln(i)
+        IF (dimname(i) .EQ. DIMSNAME(1).AND.NIDIMS.EQ.1) THEN
+          NYI = 1
+          END IF
+        IF (NIDIMS.GE.2) THEN 
+          IF (dimname(i) .EQ. DIMSNAME(2))  NYI = dimln(i)
+          END IF
+        END DO
+!
+      IF (NXI*NYI.EQ.0) GOTO 864
+!
       IF (ITYPE.NE.1) THEN
         ALLOCATE (ALA(NXI,NYI))
         ALLOCATE (ALO(NXI,NYI))
         iret=nf90_inq_varid(ncid,"longitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lon",varidtmp)
+        status = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         call check_err(iret)
-        iret=nf90_get_var(ncid,varidtmp,X0I,start=(/1/))
-        call check_err(iret)
-        iret=nf90_get_var(ncid,varidtmp,XNI,start=(/NXI/))
-        call check_err(iret)
-        iret=nf90_get_var(ncid,varidtmp,ALO(:,1))
-        call check_err(iret)
-        DO i=1,NYI
-          ALO(:,i)=ALO(:,1)
-        END DO
-
+        IF (numDimsLon.EQ.1) THEN
+          iret=nf90_get_var(ncid,varidtmp,X0I,start=(/1/))
+          call check_err(iret)
+          iret=nf90_get_var(ncid,varidtmp,XNI,start=(/NXI/))
+          call check_err(iret)
+          iret=nf90_get_var(ncid,varidtmp,ALO(:,1))
+          call check_err(iret)
+          DO i=1,NYI
+            ALO(:,i)=ALO(:,1)
+            END DO
+        ELSE 
+          iret=nf90_get_var(ncid,varidtmp,X0I,start=(/1,1/))
+          call check_err(iret)
+          iret=nf90_get_var(ncid,varidtmp,XNI,start=(/NXI,1/))
+          call check_err(iret)
+          iret=nf90_get_var(ncid,varidtmp,ALO(:,:))
+          call check_err(iret)
+          END IF
+!
         iret=nf90_inq_varid(ncid,"latitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lat",varidtmp)
-        call check_err(iret)
+        status = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
+        CALL check_err(iret)
         iret=nf90_get_var(ncid,varidtmp,Y0I, start=(/1/))
-        call check_err(iret)
-        iret=nf90_get_var(ncid,varidtmp,YNI, start=(/NYI/))
-        call check_err(iret)
-        iret=nf90_get_var(ncid,varidtmp,ALA(1,:))
-        call check_err(iret)
-        DO i=1,NXI
-          ALA(i,:)=ALA(1,:)
-        END DO
-      END IF
-
+        CALL check_err(iret)
+        IF (numDimsLon.EQ.1) THEN
+          iret=nf90_get_var(ncid,varidtmp,ALA(1,:))
+          CALL check_err(iret)
+          YNI=ALA(1,NYI)
+          DO i=1,NXI
+            ALA(i,:)=ALA(1,:)
+            END DO
+        ELSE 
+          iret=nf90_get_var(ncid,varidtmp,ALA(:,:))
+          CALL check_err(iret)
+          YNI=ALA(1,NYI)
+          END IF
+        END IF
 !
 ! gets FillValue
 !
       iret=nf90_inq_varid(ncid,FIELDSNAME(1),varidtmp)
-      call check_err(iret)
+      CALL check_err(iret)
       iret=nf90_get_att(ncid,varidtmp,"_FillValue", fillvalue)
-      call check_err(iret)
+      CALL check_err(iret)
 
 !
 ! ... type 1
@@ -688,12 +728,12 @@ END MODULE c_caldat
             DO IX=1, NX
               X = XYB(IX,1)
               Y = XYB(IX,2)
-
               IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
 !
 ! Manages the simple closure of the grid
 !
               IF (ICLO.EQ.ICLOSE_NONE) THEN 
+                IF (IX21(IX,1).LT.1.OR.IX21(IX,1).GT.NXI-1) WRITE(NDSO,1042) IX, IY, X, Y 
                 IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
                 IX22(IX,1) =   IX21(IX,1) + 1
               ELSE
@@ -701,25 +741,40 @@ END MODULE c_caldat
                 IX22(IX,1) =   MOD(IX21(IX,1),NXI)+1
                 END IF 
               IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
+              IF (IY21(IX,1).LT.1.OR.IY21(IX,1).GT.NYI-1) WRITE(NDSO,1042) IX, IY, X, Y
               IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
               IY22(IX,1) =   IY21(IX,1) + 1
 !
               RW(1) =  MOD(360.+(X-X0I),360.)/SXI - REAL(IX21(IX,1)-1)
               RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
 !	
-              IF (IY21(IX,1).EQ.1 .AND. RW(2).LT.ACC) THEN
-                IF (RW(2).LT.-ACC) THEN
+              IF (IX21(IX,1).LE.1 .AND. RW(1).LT.ACC) THEN
+                IF (RW(1).LT.0.) THEN
+                  RW(1) = 0.
+                  WRITE (NDSO,1043) X
+!/T                  FLMOD  = .TRUE.
+                  END IF
+                END IF
+!
+              IF (IX21(IX,1).GE.(NXI-1) .AND. RW(1).GT.1.-ACC) THEN
+                IF (RW(1).GT.1.) THEN
+                  WRITE (NDSO,1043) X
+                  RW(1) = 1.
+!/T                       FLMOD  = .TRUE.
+                  END IF
+                END IF
+!
+              IF (IY21(IX,1).LE.1 .AND. RW(2).LT.ACC) THEN
+                IF (RW(2).LT.0.) THEN
                   WRITE (NDSO,1044) Y
-                ELSE IF (RW(2).LT.0.) THEN
                   RW(2) = 0.
 !/T                  FLMOD  = .TRUE.
                 END IF
               END IF
 !
-              IF (IY21(IX,1).EQ.NYI .AND. RW(2).GT.1.-ACC) THEN
-                IF (RW(2).GT.1.+ACC) THEN
+              IF (IY21(IX,1).GE.NYI .AND. RW(2).GT.1.-ACC) THEN
+                IF (RW(2).GT.1) THEN
                   WRITE (NDSO,1044) Y
-                ELSE IF (RW(2).GT.1.) THEN
                   RW(2) = 1.
 !/T                       FLMOD  = .TRUE.
                 END IF
@@ -729,7 +784,6 @@ END MODULE c_caldat
                             MAX(0.,ABS(RW(2)-0.5)-0.5)**2 )
               EFAC        = 1. / ( 1. + 0.25*EFAC**2 )
                 
-
               RD11(IX,1) = EFAC * (1.-RW(1)) * (1.-RW(2))
               RD21(IX,1) = EFAC *    RW(1)   * (1.-RW(2))
               RD12(IX,1) = EFAC * (1.-RW(1)) *    RW(2)
@@ -1016,6 +1070,7 @@ END MODULE c_caldat
             iret=nf90_get_var(ncid,varidtmp,datecur,start=(/ITIME/))
             call check_err(iret)
             IF (index(timeunits, "seconds").NE.0)   datecur=datecur/86400.
+            IF (index(timeunits, "hours").NE.0)   datecur=datecur/24. 
             datecur=dateref+datecur
             call caldat(int(datecur),dcur,mcur,ycur)
 
@@ -1443,6 +1498,9 @@ END MODULE c_caldat
   863 CONTINUE
       WRITE (NDSE,1063) IDAT, IERR
       CALL EXTCDE ( 53 )
+  864 CONTINUE
+      WRITE (NDSE,1064)  TRIM(STRDIMSNAME)
+      CALL EXTCDE ( 53 )
 !
 !/O15  870 CONTINUE
 !/O15      WRITE (NDSE,1070) IDFLD, IERR
@@ -1613,6 +1671,8 @@ END MODULE c_caldat
  1063 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ERROR IN READING DATA RECORD',I6,' FROM FILE'/   &
                '     IOSTAT =',I5/)
+ 1064 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+               '     GRID DIMENSIONS ', A,' NOT FOUND... CHECK DIMENSION NAMES')
 !
 !/O15 1070 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/          &
 !/O15               '     ERROR IN CREATING A TIMES FILE FOR ',A/     &

@@ -5,9 +5,11 @@ $ D C W D W  I H L T T  T C F D S  D H T L T  S W W P D  F C C U C  F T T W W  W
 $ P U N T L  C S   0    M G P I P  P S P P H  I S S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
 $ T R D   V  E     2    1 E   R R    P P P P  P P F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
    F F F F F  F T F T T  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F T T F  F F F F F  F F F F F  F F F
-$
-  3 
-  0
+$ NetCDF file version [3,4]  and variable type [2 = short int. , 4 = real ]     
+$  [0,1,2,3,4,5]   (swell partitions)
+$ TOGETHER [T] or not [F] in the same file
+  3 4
+  0 
   F
 $
 ww3.

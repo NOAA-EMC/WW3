@@ -1248,7 +1248,7 @@
 !/ST4      SDSPBK    = 4.
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.
-!/ST4      WHITECAPWIDTH = 0.8
+!/ST4      WHITECAPWIDTH = 0.3
 !
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
@@ -1351,7 +1351,7 @@
 !/BT4      RIPFAC4=0.05   ! A4 in Ardhuin et al. 2003
 !/BT4      SIGDEPTH=0.05
 !/BT4      BOTROUGHMIN=0.01
-!/BT4      BOTROUGHFAC=30
+!/BT4      BOTROUGHFAC=0.03
 !/BT4      CALL READNL ( NDSS, 'SBT4', STATUS )
 !/BT4      WRITE (NDSO,926) STATUS
 !/BT4      WRITE (NDSO,927) SEDMAPD50, SED_D50_UNIFORM, &
@@ -1417,6 +1417,7 @@
        IMPFSNIMP = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UG  ', STATUS ) 
+               WRITE(NDSO, 950)
 !
 ! 6.m Select propagation scheme
 !
@@ -3607,9 +3608,10 @@
                '        WSM =',F6.3,', WSC =',F6.3,', FLC = ',A,      &
                ', FMICHE =',F6.3,', RWNDC =' ,F6.3,','/               &
                '        FLAGICESOURCE =',L3,                          &
-               ', P2SF =',I1,', I1P2SF =',I2,', I2P2SF =',I2,         &
-               ', US3D_OUNF =',I1,', I1US3D_OUNF =',I2,               &
-               ', I2US3D_OUNF =',I2,'COU_2D =',L3,', COU_RAD3D =',L3, ','/    &
+               ', P2SF =',I1,', I1P2SF =',I3,', I2P2SF =',I3,         &
+               ', US3D_OUNF =',I1,', I1US3D_OUNF =',I3,               &
+               ', I2US3D_OUNF =',I3,','/               &
+               '        COU_2D =',L3,', COU_RAD3D =',L3, ','/    &
                '     FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
 !
  2976 FORMAT ( '  &REF1 REFCOAST =',F5.2,', REFFREQ =',F5.2,', REFSLOPE =',F5.3, &

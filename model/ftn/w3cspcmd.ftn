@@ -5,11 +5,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         01-Nov-2012 |
 !/                  +-----------------------------------+
 !/
 !/    19-Sep-2005 : Origination.                        ( version 3.08 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    01-Nov-2012 : minor code clean-up (tabs & coments)( version 4.08 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -82,12 +83,12 @@
       PUBLIC
 !/
       TYPE CASE
-        INTEGER               :: ICASE, NFR1, NTH1, NFR2, NTH2, NFR2T
-        REAL                  :: XF1, FR1, TH1, XF2, FR2, TH2,       &
-                                 DTH1, DTH2, XDF1, XDF2
-        INTEGER, POINTER      :: IDTH(:,:), IDFR(:,:)
-        REAL, POINTER         :: RDTH(:,:), FRQ1(:), FRQ2(:), RDFR(:,:)
-        TYPE(CASE), POINTER   :: NEXT
+      INTEGER               :: ICASE, NFR1, NTH1, NFR2, NTH2, NFR2T
+      REAL                  :: XF1, FR1, TH1, XF2, FR2, TH2,       &
+                               DTH1, DTH2, XDF1, XDF2
+      INTEGER, POINTER      :: IDTH(:,:), IDFR(:,:)
+      REAL, POINTER         :: RDTH(:,:), FRQ1(:), FRQ2(:), RDFR(:,:)
+      TYPE(CASE), POINTER   :: NEXT
       END TYPE CASE
 !/
       INTEGER, PRIVATE        :: NCASES = 0
@@ -107,6 +108,7 @@
 !/                  +-----------------------------------+
 !/
 !/    19-Sep-2005 : Origination.                        ( version 3.08 )
+!/    01-Nov-2012 : code clean up (tab spaces, comments)( version 4.08 ) 
 !/
 !  1. Purpose :
 !
@@ -188,7 +190,7 @@
 !/
       INTEGER, INTENT(IN)     :: NSP, NFR1, NTH1, NFR2, NTH2, NDST, NDSE
       REAL, INTENT(IN)        :: SP1(NTH1,NFR1,NSP), XF1, FR1, TH1,   &
-                                                     XF2, FR2, TH2, FTL
+                                 XF2, FR2, TH2, FTL
       REAL, INTENT(OUT)       :: SP2(NTH2,NFR2,NSP)
 !/
 !/ ------------------------------------------------------------------- /
@@ -217,18 +219,18 @@
 !
       IF ( NFR1.LT.3 .OR. NTH1.LT.4 .OR. XF1.LE.1. .OR. FR1.LE.0. .OR.&
            NFR2.LT.3 .OR. NTH2.LT.4 .OR. XF2.LE.1. .OR. FR2.LE.0. ) THEN
-          WRITE (NDSE,900) NFR1, NTH1, XF1, FR1, NFR2, NTH2, XF2, FR2
-          CALL EXTCDE ( 1 )
+        WRITE (NDSE,900) NFR1, NTH1, XF1, FR1, NFR2, NTH2, XF2, FR2
+        CALL EXTCDE ( 1 )
         END IF
 !
       IF ( NSP .LT. 0 ) THEN
-          WRITE (NDSE,901) 
-          CALL EXTCDE ( 2 )
+        WRITE (NDSE,901)   
+        CALL EXTCDE ( 2 )
         END IF
 !
       IF ( NSP .EQ. 0 ) THEN
-          WRITE (NDSE,902) 
-          RETURN
+        WRITE (NDSE,902) 
+        RETURN
         END IF
 !
 ! 0.b Test output
@@ -244,9 +246,9 @@
       DO I=1, NCASES
 !
         IF ( I .EQ. 1 ) THEN
-            CURRENT => IDATA
-          ELSE
-            CURRENT => CURRENT%NEXT
+          CURRENT => IDATA
+        ELSE
+          CURRENT => CURRENT%NEXT
           END IF
 !
 !/T1        WRITE (NDST,9010) I, CURRENT%NFR1, CURRENT%NTH1,          &
@@ -271,168 +273,168 @@
 !
 !/T          WRITE (NDST,9020) I
 !
-          DTH1   => CURRENT%DTH1
-          DTH2   => CURRENT%DTH2
-          IDTH   => CURRENT%IDTH
-          RDTH   => CURRENT%RDTH
+        DTH1   => CURRENT%DTH1
+        DTH2   => CURRENT%DTH2
+        IDTH   => CURRENT%IDTH
+        RDTH   => CURRENT%RDTH
 !
-          FRQ1   => CURRENT%FRQ1
-          FRQ2   => CURRENT%FRQ2
-          XDF1   => CURRENT%XDF1
-          XDF2   => CURRENT%XDF2
-          NFR2T  => CURRENT%NFR2T
-          IDFR   => CURRENT%IDFR
-          RDFR   => CURRENT%RDFR
+        FRQ1   => CURRENT%FRQ1
+        FRQ2   => CURRENT%FRQ2
+        XDF1   => CURRENT%XDF1
+        XDF2   => CURRENT%XDF2
+        NFR2T  => CURRENT%NFR2T
+        IDFR   => CURRENT%IDFR
+        RDFR   => CURRENT%RDFR
 !
 ! 2.b Compute
 !
-        ELSE
+      ELSE
 !
-          NCASES = NCASES + 1
+        NCASES = NCASES + 1
 !/T          WRITE (NDST,9021) NCASES
 !
 ! 2.b.1 Point and allocate as necessary
 !
-          IF ( NCASES .EQ. 1 ) THEN
-              ALLOCATE ( IDATA )
-              CURRENT => IDATA
-            ELSE
-              ALLOCATE ( CURRENT%NEXT )
-              CURRENT => CURRENT%NEXT
-            END IF
+        IF ( NCASES .EQ. 1 ) THEN
+          ALLOCATE ( IDATA )
+          CURRENT => IDATA
+        ELSE
+          ALLOCATE ( CURRENT%NEXT )
+          CURRENT => CURRENT%NEXT
+          END IF 
 !
 ! 2.b.2 Store test data
 !
-          CURRENT%ICASE = NCASES
-          CURRENT%NFR1  = NFR1
-          CURRENT%NTH1  = NTH1
-          CURRENT%XF1   = XF1
-          CURRENT%FR1   = FR1
-          CURRENT%TH1   = TH1
-          CURRENT%NFR2  = NFR2
-          CURRENT%NTH2  = NTH2
-          CURRENT%XF2   = XF2
-          CURRENT%FR2   = FR2
-          CURRENT%TH2   = TH2
+        CURRENT%ICASE = NCASES
+        CURRENT%NFR1  = NFR1
+        CURRENT%NTH1  = NTH1
+        CURRENT%XF1   = XF1
+        CURRENT%FR1   = FR1
+        CURRENT%TH1   = TH1
+        CURRENT%NFR2  = NFR2
+        CURRENT%NTH2  = NTH2
+        CURRENT%XF2   = XF2
+        CURRENT%FR2   = FR2
+        CURRENT%TH2   = TH2
 !
 ! 2.b.3 Directional redistribution data
 !
-          DTH1   => CURRENT%DTH1
-          DTH1   = TPI / REAL(NTH1)
-          DTH2   => CURRENT%DTH2
-          DTH2   = TPI / REAL(NTH2)
+        DTH1   => CURRENT%DTH1
+        DTH1   = TPI / REAL(NTH1)
+        DTH2   => CURRENT%DTH2
+        DTH2   = TPI / REAL(NTH2)
 !
-          IF ( DTH1 .LE. DTH2 ) THEN
-              NRMAX  = 2
-            ELSE
-              NRMAX  = 2 + INT(DTH1/DTH2)
-            END IF
+        IF ( DTH1 .LE. DTH2 ) THEN
+          NRMAX  = 2
+        ELSE
+          NRMAX  = 2 + INT(DTH1/DTH2)
+          END IF
 !
-          ALLOCATE (CURRENT%IDTH(0:NRMAX,NTH1),CURRENT%RDTH(NRMAX,NTH1))
-          IDTH   => CURRENT%IDTH
-          RDTH   => CURRENT%RDTH
-          IDTH   = 0
-          RDTH   = 0.
+        ALLOCATE (CURRENT%IDTH(0:NRMAX,NTH1),CURRENT%RDTH(NRMAX,NTH1))
+        IDTH   => CURRENT%IDTH
+        RDTH   => CURRENT%RDTH
+        IDTH   = 0
+        RDTH   = 0.
 !
-          DO I=1, NTH1
-            LOW    = TH1 + REAL(I-1)*DTH1 - 0.5*DTH1
-            HGH    = LOW + DTH1
-            RLOW   = 1. + (LOW-TH2)/DTH2
-            RHGH   = 1. + (HGH-TH2)/DTH2
-            DO J=NINT(RLOW), NINT(RLOW)+NRMAX-1
-              BLOW   = TH2 + REAL(J-1)*DTH2 - 0.5*DTH2
-              BHGH   = BLOW + DTH2
-              FRAC   = (MIN(BHGH,HGH)-MAX(BLOW,LOW)) / (HGH-LOW)
-              IF ( FRAC .GT. 1.E-5 ) THEN
-                  IDTH(0,I) = IDTH(0,I) + 1
-                  IDTH(IDTH(0,I),I) = 1 + MOD(J-1+NTH2,NTH2)
-                  RDTH(IDTH(0,I),I) = FRAC
-                END IF
-              END DO
+        DO I=1, NTH1
+          LOW    = TH1 + REAL(I-1)*DTH1 - 0.5*DTH1
+          HGH    = LOW + DTH1
+          RLOW   = 1. + (LOW-TH2)/DTH2
+          RHGH   = 1. + (HGH-TH2)/DTH2
+          DO J=NINT(RLOW), NINT(RLOW)+NRMAX-1
+            BLOW   = TH2 + REAL(J-1)*DTH2 - 0.5*DTH2
+            BHGH   = BLOW + DTH2
+            FRAC   = (MIN(BHGH,HGH)-MAX(BLOW,LOW)) / (HGH-LOW)
+            IF ( FRAC .GT. 1.E-5 ) THEN
+               IDTH(0,I) = IDTH(0,I) + 1
+               IDTH(IDTH(0,I),I) = 1 + MOD(J-1+NTH2,NTH2)
+               RDTH(IDTH(0,I),I) = FRAC
+               END IF
             END DO
+          END DO
 !
 ! 2.b.4 Frequency redistribution data
 !
-          ALLOCATE ( CURRENT%FRQ1(NFR1), CURRENT%FRQ2(NFR2) )
-          FRQ1   => CURRENT%FRQ1
-          FRQ2   => CURRENT%FRQ2
+        ALLOCATE ( CURRENT%FRQ1(NFR1), CURRENT%FRQ2(NFR2) )
+        FRQ1   => CURRENT%FRQ1
+        FRQ2   => CURRENT%FRQ2
 !
-          FRQ1(1) = FR1
-          DO I=2, NFR1
-            FRQ1(I) = XF1 * FRQ1(I-1)
+        FRQ1(1) = FR1
+        DO I=2, NFR1
+          FRQ1(I) = XF1 * FRQ1(I-1)
+          END DO
+!
+        FRQ2(1) = FR2
+        DO I=2, NFR2
+          FRQ2(I) = XF2 * FRQ2(I-1)
+          END DO
+!
+        XDF1   => CURRENT%XDF1
+        XDF1   = 0.5 * ( XF1 - 1./XF1 )
+        XDF2   => CURRENT%XDF2
+        XDF2   = 0.5 * ( XF2 - 1./XF2 )
+!
+        IF ( XDF1 .LE. XDF2 ) THEN
+          NRMAX  = 2
+        ELSE
+          NRMAX  = 1
+          AUX1   = XDF1
+          AUX2   = XDF2
+          DO
+            NRMAX  = NRMAX + 1
+            AUX1   = AUX1 - AUX2
+            AUX2   = AUX2 / XF2
+            IF ( AUX1 .LT. 0. ) EXIT
             END DO
+          END IF
 !
-          FRQ2(1) = FR2
-          DO I=2, NFR2
-            FRQ2(I) = XF2 * FRQ2(I-1)
-            END DO
+        ALLOCATE (CURRENT%IDFR(0:NRMAX,NFR1),CURRENT%RDFR(NRMAX,NFR1))
+        IDFR   => CURRENT%IDFR
+        RDFR   => CURRENT%RDFR
+        IDFR   = 0
+        RDFR   = 0.
 !
-          XDF1   => CURRENT%XDF1
-          XDF1   = 0.5 * ( XF1 - 1./XF1 )
-          XDF2   => CURRENT%XDF2
-          XDF2   = 0.5 * ( XF2 - 1./XF2 )
-!
-          IF ( XDF1 .LE. XDF2 ) THEN
-              NRMAX  = 2
-            ELSE
-              NRMAX  = 1
-              AUX1   = XDF1
-              AUX2   = XDF2
-              DO
-                NRMAX  = NRMAX + 1
-                AUX1   = AUX1 - AUX2
-                AUX2   = AUX2 / XF2
-                IF ( AUX1 .LT. 0. ) EXIT
-                END DO
+        DO I=1, NFR1
+          IF ( I .EQ. 1 ) THEN
+            HGH    = 0.5 * ( FRQ1(I) + FRQ1(I+1) )
+            LOW    = HGH - XDF1*FRQ1(I)
+          ELSE
+            LOW    = 0.5 * ( FRQ1(I) + FRQ1(I-1) )
+            HGH    = LOW + XDF1*FRQ1(I)
             END IF
-!
-          ALLOCATE (CURRENT%IDFR(0:NRMAX,NFR1),CURRENT%RDFR(NRMAX,NFR1))
-          IDFR   => CURRENT%IDFR
-          RDFR   => CURRENT%RDFR
-          IDFR   = 0
-          RDFR   = 0.
-!
-          DO I=1, NFR1
-            IF ( I .EQ. 1 ) THEN
-                HGH    = 0.5 * ( FRQ1(I) + FRQ1(I+1) )
-                LOW    = HGH - XDF1*FRQ1(I)
-              ELSE
-                LOW    = 0.5 * ( FRQ1(I) + FRQ1(I-1) )
-                HGH    = LOW + XDF1*FRQ1(I)
-              END IF
-            DO J=1, NFR2
-              IF ( J .EQ. 1 ) THEN
-                  BHGH   = 0.5 * ( FRQ2(J) + FRQ2(J+1) )
-                  BLOW   = BHGH - XDF2*FRQ2(J)
-                ELSE
-                  BLOW   = 0.5 * ( FRQ2(J) + FRQ2(J-1) )
-                  BHGH   = BLOW + XDF2*FRQ2(J)
-                END IF
-              IF ( BHGH .LE. LOW ) CYCLE
-              IF ( BLOW .GE. HGH ) EXIT
-              FRAC   = (MIN(BHGH,HGH)-MAX(BLOW,LOW)) / (HGH-LOW)
-              IF ( FRAC .LT. 1.E-5 ) CYCLE
-              IDFR(0,I) = IDFR(0,I) + 1
-              IDFR(IDFR(0,I),I) = J
-              RDFR(IDFR(0,I),I) = FRAC
-              END DO
-            END DO
-!
-          NFR2T  => CURRENT%NFR2T
-          NFR2T  = NFR2 + 1
-          DO J=NFR2, 1, -1
+          DO J=1, NFR2
             IF ( J .EQ. 1 ) THEN
-                BHGH   = 0.5 * ( FRQ2(J) + FRQ2(J+1) )
-              ELSE
-                BLOW   = 0.5 * ( FRQ2(J) + FRQ2(J-1) )
-                BHGH   = BLOW + XDF2*FRQ2(J)
+              BHGH   = 0.5 * ( FRQ2(J) + FRQ2(J+1) )
+              BLOW   = BHGH - XDF2*FRQ2(J)
+            ELSE
+              BLOW   = 0.5 * ( FRQ2(J) + FRQ2(J-1) )
+              BHGH   = BLOW + XDF2*FRQ2(J)
               END IF
-            IF ( BHGH .GT. HGH ) THEN
-                NFR2T  = J
-              ELSE
-                EXIT
-              END IF
+            IF ( BHGH .LE. LOW ) CYCLE
+            IF ( BLOW .GE. HGH ) EXIT
+            FRAC   = (MIN(BHGH,HGH)-MAX(BLOW,LOW)) / (HGH-LOW)
+            IF ( FRAC .LT. 1.E-5 ) CYCLE
+            IDFR(0,I) = IDFR(0,I) + 1
+            IDFR(IDFR(0,I),I) = J
+            RDFR(IDFR(0,I),I) = FRAC
             END DO
+          END DO
+!
+        NFR2T  => CURRENT%NFR2T
+        NFR2T  = NFR2 + 1
+        DO J=NFR2, 1, -1
+          IF ( J .EQ. 1 ) THEN
+            BHGH   = 0.5 * ( FRQ2(J) + FRQ2(J+1) )
+          ELSE
+            BLOW   = 0.5 * ( FRQ2(J) + FRQ2(J-1) )
+            BHGH   = BLOW + XDF2*FRQ2(J)
+            END IF
+          IF ( BHGH .GT. HGH ) THEN
+            NFR2T  = J
+          ELSE
+            EXIT
+            END IF
+          END DO
 !
         END IF
 !
@@ -458,8 +460,8 @@
       SP2    = 0.
 !
       DO I2=1, NFR1
-        DO L2=1, IDFR(0,I2)
-          J2   = IDFR(L2,I2)
+      DO L2=1, IDFR(0,I2)
+        J2   = IDFR(L2,I2)
           R2   = RDFR(L2,I2)
           DO I1=1,NTH1
             DO L1=1, IDTH( 0,I1)

@@ -22,6 +22,9 @@ $                   incremental generation of a data file.)
 $
   'WND' 'LL' T T
 $
+$ Name of dimensions ------------------------------------------------- $
+$
+ longitude latitude
 $
 $ Variables to use --------------------------------------------------- $
 $
