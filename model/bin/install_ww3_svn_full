@@ -948,8 +948,8 @@
     fi
 
     cd $main_dir/svn/regtests/$dir
-    files=`ls -F | grep -v \/`
-    ndirs=`ls -F | grep \/`
+    files=`ls --file-type | grep -v \/`
+    ndirs=`ls --file-type | grep \/`
     cd $main_dir/regtests/$dir
     nr_old=0
 
@@ -987,7 +987,7 @@
       fi
 
       cd $main_dir/svn/regtests/$dir/$ndir
-      files=`ls -F | grep -v \/`
+      files=`ls --file-type | grep -v \/`
       cd $main_dir/regtests/$dir/$ndir
       nr_old=0
 
