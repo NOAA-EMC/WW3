@@ -590,7 +590,7 @@
 !/ST2        IKP1(JSEA) = NK
 !/ST2        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
 !/ST2        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
-!/ST2        FP1TST     = FP1STR / UST(ISEA) * GRAV
+!/ST2        FP1TST     = MAX ( 0.003 , FP1STR * UST(ISEA) / GRAV ) 
 !/ST2        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
 !/ST2            FP1 (ISEA) = TPIINV * FP1TST
 !/ST2            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )

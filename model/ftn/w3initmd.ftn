@@ -39,7 +39,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
+!/    30-Sep-2012 : Implemetation of tidal constituents ( version 4.09 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -92,7 +93,7 @@
       PUBLIC
 !/
       REAL, PARAMETER              :: CRITOS = 15.
-      CHARACTER*10, PARAMETER      :: WWVER  = '4.08 '
+      CHARACTER*10, PARAMETER      :: WWVER  = '4.09 '
       CHARACTER*512, PARAMETER      :: SWITCHES  = &
           &"PUT_SW1&
           &PUT_SW2&
@@ -103,7 +104,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3INIT ( IMOD, FEXT, MDS, MTRACE, ODAT,              &
                           FLGRD, FLGR2, NPT, XPT, YPT, PNAMES, IPRT,  &
-                          PRTFRM, MPI_COMM )
+                          PRTFRM, MPI_COMM, FLAGSTIDEIN )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -146,7 +147,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -347,6 +348,7 @@
                                        PRTFRM
       CHARACTER*(*), INTENT(IN)     :: FEXT
       CHARACTER(LEN=10), INTENT(IN) :: PNAMES(NPT)
+      LOGICAL, INTENT(IN), OPTIONAL :: FLAGSTIDEIN(4)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -555,7 +557,7 @@
           CALL W3DIMW ( IMOD, NDSE, NDST, .FALSE. )
         END IF
       CALL W3DIMA ( IMOD, NDSE, NDST )
-      CALL W3DIMI ( IMOD, NDSE, NDST )
+      CALL W3DIMI ( IMOD, NDSE, NDST , FLAGSTIDEIN )
 !
 ! 2.c.3 Calculated expected number of prop. calls per processor
 !

@@ -1,62 +1,3 @@
-MODULE c_caldat
-CONTAINS
-!*********************************************************************
-INTEGER FUNCTION julday(id,mm,iyyy)
-! See numerical recipes 2nd ed. The order of month and day have been swapped!
-!*********************************************************************
-   IMPLICIT NONE
-        INTEGER(KIND=4),    INTENT(in)  :: id,mm,iyyy
-   INTEGER(KIND=4), PARAMETER :: IGREG=15+31*(10+12*1582)
-   INTEGER(KIND=4) ja,jm,jy
-   jy=iyyy
-   IF (jy.EQ.0) WRITE(6,*) 'There is no zero year !!'
-   IF (jy.LT.0) jy=jy+1
-   IF (mm.GT.2) THEN
-      jm=mm+1
-   ELSE
-      jy=jy-1
-      jm=mm+13
-   ENDIF
-   julday=INT(365.25*jy)+int(30.6001*jm)+id+1720995
-   IF (id+31*(mm+12*iyyy).GE.IGREG) THEN
-      ja=INT(0.01*jy)
-      julday=julday+2-ja+INT(0.25*ja)
-   ENDIF
-   RETURN
-END FUNCTION JULDAY
-
-!*********************************************************************
-SUBROUTINE caldat(julian,id,mm,iyyy)
-! See numerical recipes 2nd ed. The order of month and day have been swapped!
-!*********************************************************************
-   IMPLICIT NONE
-        INTEGER(KIND=4),    INTENT(in)  :: julian
-   INTEGER(KIND=4),    INTENT(out) :: id,mm,iyyy
-   INTEGER(KIND=4), PARAMETER :: IGREG=2299161
-   INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je
-   if (julian.GE.IGREG) THEN
-      jalpha=INT(((julian-1867216)-0.25)/36524.25)
-      ja=julian+1+jalpha-INT(0.25*jalpha)
-   ELSE
-      ja=julian
-   ENDIF
-   jb=ja+1524
-   jc=INT(6680.+((jb-2439870)-122.1)/365.25)
-   jd=365*jc+INT(0.25*jc)
-   je=INT((jb-jd)/30.6001)
-   id=jb-jd-INT(30.6001*je)
-   mm=je-1
-   IF (mm.GT.12) mm=mm-12
-   iyyy=jc-4715
-   IF (mm.GT.2) iyyy=iyyy-1
-   IF (iyyy.LE.0) iyyy=iyyy-1
-   RETURN
-   END SUBROUTINE CALDAT
-END MODULE c_caldat
-!*********************************************************************
-
-
-
 !/ ------------------------------------------------------------------- /
       PROGRAM W3PRNC
 !/
@@ -65,12 +6,14 @@ END MODULE c_caldat
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Nov-2011 |
+!/                  | Last update :         29-Oct-2012 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
 !/    17-Nov-2011 : Fix bug on latitudes                ( version 4.04 )
-!/     4-Mar-2012 : allows any NetCDF dimensions names  ( version 4.08 ) 
+!/    30-Sep-2012 : Implement tidal analysis            ( version 4.08 )
+!/    29-Oct-2012 : Parallelization of tidal analysis   ( version 4.08 )
+!/     4-Mar-2012 : allows any NetCDF dimensions names  ( version 4.09 ) 
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -194,6 +137,7 @@ END MODULE c_caldat
 !     !/WNT2  Id. energy (USE ONLY ONE !)
 !     !/CRT1  Like !/WNT1 for currents.
 !     !/CRT2  Like !/WNT2 for currents.
+!     !/MPI   Parallel processing is used for tidal analysis.
 !
 !     !/O3    Additional output in fields processing loop.
 !     !/O15   Generate file with the times of the processed fields.
@@ -215,36 +159,47 @@ END MODULE c_caldat
 !     USE W3GDATMD, ONLY: W3NMOD, W3SETG
 !/NL1      USE W3ADATMD,ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
-      USE W3TIMEMD, ONLY : STME21
       USE W3ARRYMD, ONLY : INA2R, INA2I
 !/T2      USE W3ARRYMD, ONLY : PRTBLK
 !/T3      USE W3ARRYMD, ONLY : PRTBLK
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3FLDSMD, ONLY: W3FLDO, W3FLDP, W3FLDG, W3FLDD
+      USE W3FLDSMD, ONLY: W3FLDO, W3FLDP, W3FLDG, W3FLDD, W3FLDTIDE
 !/
       USE W3GDATMD
       USE W3GSRUMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, FNMPRE
 
-      USE c_caldat
-      USE netcdf
+      USE W3TIDEMD
+      USE W3TIMEMD
+      USE NETCDF
 !
       IMPLICIT NONE
+!
+!/MPI      INCLUDE "mpif.h"
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NTI
+!/MPI      INTEGER                 :: IERR_MPI
+!/MPI      INTEGER                 :: TIDESIZ, IND1
+!/MPI      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
+!/MPI      INTEGER                 :: TIDALSTUFF
+!/LRB4      INTEGER, PARAMETER      :: LRB = 4
+!/LRB8      INTEGER, PARAMETER      :: LRB = 8
+      INTEGER, ALLOCATABLE    :: NXL(:)
+      INTEGER                 :: NTI, NDSEN
       CHARACTER               :: STRFIELDSNAME*1024
       CHARACTER               :: FIELDSNAME(4)*30
       CHARACTER               :: STRDIMSNAME*1024
       CHARACTER               :: DIMSNAME(2)*30
       INTEGER                 :: NIDIMS, NFIELDS
-
+      INTEGER                 :: JPC, IND
+      INTEGER(KIND=4)         :: IX, IY, JX, NXLM
       INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
-                                 IERR, IFLD, ITYPE, J, IX, IY, NFCOMP,&
+                                 IERR, IFLD, ITYPE, J, NFCOMP,        &
                                  TIME(2), NXI, NYI, NXJ(2), NYJ(2),   &
                                  NDSLL, IDLALL, IDFMLL, NDSF(2),      &
                                  IDLAF(2), IDFMF(2), TIME2(2),        &
@@ -280,24 +235,39 @@ END MODULE c_caldat
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
-                                 NAMELL*20, FROMF*4, NAMEF*40
+                                 NAMELL*80, FROMF*4, NAMEF*80
       CHARACTER*12            :: IDSTR1(5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
-      CHARACTER*20            :: IDSTR2(5)
+      CHARACTER*20            :: IDSTR2(6)
       INTEGER                 :: GTYPEDUM = 0
 !
-      INTEGER               :: ncid, iret, ndims, parents, nvars, natts, varidtmp
-      INTEGER               :: status, numDimsLon, numAttsLon
+      INTEGER               :: ncid, iret, ndims, parents, nvars,     &
+                               NDIMSGRID, natts, varidtmp, varidf(50)
+      INTEGER               :: numDimsLon, numAttsLon
       INTEGER, ALLOCATABLE  :: varid(:), dimid(:), dimln(:), varndims(:), vardimids(:,:)
       CHARACTER*10, DIMENSION(:), ALLOCATABLE   :: varname, dimname
       CHARACTER*50          :: timeunits
       DOUBLE PRECISION      :: dateref, datecur
       REAL                  :: scur, mncur, hcur, fillvalue
-      INTEGER               :: i,ITIME, dref, mref, yref, dcur, mcur, ycur
+      INTEGER               :: I,K,L,ITIME, dref, mref, yref, dcur, mcur, ycur
       CHARACTER*14          :: TIME_STR
-
-
+! Variables used in tidal analysis
+      REAL(KIND=8), ALLOCATABLE :: ALLTIMES(:)
+      INTEGER                   :: TIDE_NDEF, TIDE_ITREND
+      REAL(KIND=8), ALLOCATABLE ::       SDEV0(:), SDEV(:), RMSR(:), &
+                                         RMSR0(:), RMSRP(:), RESMAX(:)
+      REAL ,        ALLOCATABLE ::       TIDE_DATA_ALL(:,:,:)
+      REAL ,        ALLOCATABLE ::       PREDICTED(:,:), RESID(:,:), &
+                                         SSQ(:), RES(:)
+      INTEGER ,        ALLOCATABLE ::       IMAX(:)
+      REAL                      :: TIDE_LAT, TIDE_LON
+      CHARACTER*256             :: TIDE_file
+      INTEGER                   :: TIDEFLAG
+!/TIDET  INTEGER                   ::   LRECL
+!/TIDET      CHARACTER(LEN=21)       :: FNAMETXT
+!/MPI      INTEGER                   :: status(MPI_STATUS_SIZE)
+!
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
 !/
 !/ ------------------------------------------------------------------- /
@@ -307,7 +277,7 @@ END MODULE c_caldat
                     'data        ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
                     'grid from file (1)  ' , 'grid from file (2)  ' , &
-                    'data (assimilation) ' /
+                    'data (assimilation) ' , 'pre-pro. file + tide'  /
       DATA IDSTR3 / 'mean parameters', '1D spectra     ',             &
                     '2D spectra     ' /
 !
@@ -348,23 +318,39 @@ END MODULE c_caldat
 !/NCO      NDSDAT = 51
 !/NCO      NDSTRC = NDSO
 !
-! 1.c Print header
-!
-      WRITE (NDSO,900)
 !/S      CALL STRACE (IENT, 'W3PRNC')
+!
+!
+! 1.c MPP initializations
+!
+!/SHRD      NAPROC = 1
+!/SHRD      IAPROC = 1
+!
+!/MPI      CALL MPI_INIT      ( IERR_MPI )
+!/MPI      CALL MPI_COMM_SIZE ( MPI_COMM_WORLD, NAPROC, IERR_MPI )
+!/MPI      CALL MPI_COMM_RANK ( MPI_COMM_WORLD, IAPROC, IERR_MPI )
+!/MPI      IAPROC = IAPROC + 1  ! this is to have IAPROC between 1 and NAPROC
+!
+      IF ( IAPROC .EQ. NAPERR ) THEN
+          NDSEN  = NDSE
+        ELSE
+          NDSEN  = -1
+        END IF
+!
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
 !
       J      = LEN_TRIM(FNMPRE)
       OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_prnc.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
       REWIND (NDSI)
       READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
       IF (COMSTR.EQ.' ') COMSTR = '$'
-      WRITE (NDSO,901) COMSTR
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Read model definition file.
 !
       CALL W3IOGR ( 'READ', NDSM )
-      WRITE (NDSO,902) GNAME
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,902) GNAME
       ALLOCATE ( IX21(NX,NY), IX22(NX,NY), IY21(NX,NY), IY22(NX,NY),  &
                  JX21(NX,NY), JX22(NX,NY), JY21(NX,NY), JY22(NX,NY),  &
                  MAPOVR(NX,NY) )
@@ -399,10 +385,14 @@ END MODULE c_caldat
         END IF
 !
       NFCOMP = 1
+      TIDEFLAG = 0
       IF (IDFLD.EQ.'DAT') THEN
           ITYPE   = 5
         ELSE IF (IDTYPE.EQ.'AI') THEN
           ITYPE   = 1
+        ELSE IF (IDTYPE.EQ.'AT') THEN
+          ITYPE   = 6
+          TIDEFLAG= 1
         ELSE IF (IDTYPE.EQ.'LL') THEN
           ITYPE   = 2
         ELSE IF (IDTYPE.EQ.'F1') THEN
@@ -417,16 +407,16 @@ END MODULE c_caldat
 !
 !/T      IF (ITYPE.NE.1 .AND. ITYPE.NE.5) WRITE (NDST,9000) ACC
 !
-      WRITE (NDSO,930) IDSTR1(IFLD), IDSTR2(ITYPE)
-      IF ( ITYPE.NE.1 ) THEN
-!/WNT0          IF (IFLD.EQ.3) WRITE (NDSO,1930)
-!/WNT1          IF (IFLD.EQ.3) WRITE (NDSO,1930)
-!/WNT2          IF (IFLD.EQ.3) WRITE (NDSO,2930)
-!/CRT1          IF (IFLD.EQ.4) WRITE (NDSO,1930)
-!/CRT2          IF (IFLD.EQ.4) WRITE (NDSO,2930)
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930) IDSTR1(IFLD), IDSTR2(ITYPE)
+      IF ( ITYPE.NE.1 .AND. ITYPE.NE.6 ) THEN
+!/WNT0          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,1930)
+!/WNT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,1930)
+!/WNT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.3) WRITE (NDSO,2930)
+!/CRT1          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,1930)
+!/CRT2          IF ( IAPROC .EQ. NAPOUT .AND.IFLD.EQ.4) WRITE (NDSO,2930)
         END IF
-      IF ( FLBERG ) WRITE (NDSO,938)
-      IF ( FLSTAB ) WRITE (NDSO,939)
+      IF ( IAPROC .EQ. NAPOUT .AND.FLBERG ) WRITE (NDSO,938)
+      IF ( IAPROC .EQ. NAPOUT .AND.FLSTAB ) WRITE (NDSO,939)
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRDIMSNAME
@@ -466,7 +456,7 @@ END MODULE c_caldat
           CALL EXTCDE ( 4 )
         END IF
         CALL STME21 ( TIME , IDTIME )
-        WRITE (NDSO,931) IDTIME
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,931) IDTIME
       END IF
 !
       J = 1
@@ -481,46 +471,46 @@ END MODULE c_caldat
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NAMEF
-      WRITE (NDSO,967) NAMEF
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,967) NAMEF
 
       J = LEN_TRIM(FNMPRE)
-      iret=nf90_open(path=FNMPRE(:J)//NAMEF,mode=nf90_nowrite,ncid=ncid)
-      call check_err(iret)
+      iret=nf90_open(path=FNMPRE(:J)//NAMEF,mode=nf90_noWRITE,ncid=ncid)
+      CALL check_err(iret)
       ! gets number of dimensions, variables, global attributes
       iret=nf90_inquire(ncid, ndims, nvars, natts)
-      call check_err(iret)
+      CALL check_err(iret)
       ! gets id of each dimension
       ALLOCATE(dimname(ndims),dimid(ndims),dimln(ndims))
       iret=nf90_inq_dimids(ncid,ndims,dimid,parents)
-      call check_err(iret)
+      CALL check_err(iret)
       ! gets name and length of each dimension
       DO i=1,ndims
         iret=nf90_inquire_dimension(ncid,dimid(i),name=dimname(i),len=dimln(i))
-        call check_err(iret)
+        CALL check_err(iret)
       END DO
 
       ! gets id of each variable
       ALLOCATE(varname(nvars),varid(nvars))
       iret=nf90_inq_varids(ncid,nvars,varid)
-      call check_err(iret)
+      CALL check_err(iret)
 
       ! gets name of each variable
       ALLOCATE(varndims(nvars),vardimids(nvars,NF90_MAX_VAR_DIMS))
       DO i=1,nvars
         iret=nf90_inquire_variable(ncid,varid(i),name=varname(i),ndims=varndims(i),dimids=vardimids(i,:))
-        call check_err(iret)
+        CALL check_err(iret)
       END DO
 !
 ! instanciates time
 !
       iret=nf90_inq_varid(ncid,"time",varidtmp)
-      call check_err(iret)
+      CALL check_err(iret)
       iret=nf90_get_att(ncid,varidtmp,"units",timeunits)
-      IF (index(timeunits, "seconds").NE.0) THEN
+      IF (INDEX(timeunits, "seconds").NE.0) THEN
         read(timeunits(15:18),'(I4.4)') yref
         read(timeunits(20:21),'(I2.2)') mref
         read(timeunits(23:24),'(I2.2)') dref
-      ELSE IF (index(timeunits, "days").NE.0) THEN
+      ELSE IF (INDEX(timeunits, "days").NE.0) THEN
         read(timeunits(12:15),'(I4.4)') yref
         read(timeunits(17:18),'(I2.2)') mref
         read(timeunits(20:21),'(I2.2)') dref
@@ -529,16 +519,18 @@ END MODULE c_caldat
         read(timeunits(18:19),'(I2.2)') mref
         read(timeunits(21:22),'(I2.2)') dref
       END IF
-      dateref=julday(dref,mref,yref)
+      dateref=JULDAY(dref,mref,yref)
 !
 ! instanciates generic variables dimensions
 !
       NXI=0
-      NYI=0
+      NYI=0 
+      NDIMSGRID=2
       DO i=1,ndims
         IF (dimname(i) .EQ. "time") NTI = dimln(i)
         IF (dimname(i) .EQ. DIMSNAME(1))  NXI = dimln(i)
         IF (dimname(i) .EQ. DIMSNAME(1).AND.NIDIMS.EQ.1) THEN
+          NDIMSGRID=1
           NYI = 1
           END IF
         IF (NIDIMS.GE.2) THEN 
@@ -548,12 +540,12 @@ END MODULE c_caldat
 !
       IF (NXI*NYI.EQ.0) GOTO 864
 !
-      IF (ITYPE.NE.1) THEN
+      IF (ITYPE.NE.1.AND.ITYPE.NE.6) THEN
         ALLOCATE (ALA(NXI,NYI))
         ALLOCATE (ALO(NXI,NYI))
         iret=nf90_inq_varid(ncid,"longitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lon",varidtmp)
-        status = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
+        IRET = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         call check_err(iret)
         IF (numDimsLon.EQ.1) THEN
           iret=nf90_get_var(ncid,varidtmp,X0I,start=(/1/))
@@ -576,7 +568,7 @@ END MODULE c_caldat
 !
         iret=nf90_inq_varid(ncid,"latitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lat",varidtmp)
-        status = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
+        iret = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         CALL check_err(iret)
         iret=nf90_get_var(ncid,varidtmp,Y0I, start=(/1/))
         CALL check_err(iret)
@@ -600,11 +592,10 @@ END MODULE c_caldat
       CALL check_err(iret)
       iret=nf90_get_att(ncid,varidtmp,"_FillValue", fillvalue)
       CALL check_err(iret)
-
 !
 ! ... type 1
 !
-      IF (ITYPE.EQ.1) THEN
+      IF (ITYPE.EQ.1.OR.ITYPE.EQ.6) THEN
 !
         NXI    = NX
         NYI    = NY
@@ -620,11 +611,11 @@ END MODULE c_caldat
           RW(1) = FACTOR*XGRD(1,1) ; RW(2) = FACTOR*XGRD(NY,NX)
           RW(3) = FACTOR*YGRD(1,1) ; RW(4) = FACTOR*YGRD(NY,NX)
         END IF
-        WRITE (NDSO,932) NXI, NYI
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) NXI, NYI
         IF ( FLAGLL ) THEN
-          WRITE (NDSO,933) RW(1),RW(2),RW(3),RW(4)
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,933) RW(1),RW(2),RW(3),RW(4)
         ELSE
-          WRITE (NDSO,733) RW(1),RW(2),RW(3),RW(4)
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,733) RW(1),RW(2),RW(3),RW(4)
         END IF
 !
 ! ... type 2
@@ -637,13 +628,13 @@ END MODULE c_caldat
         END IF
         ALLOCATE ( MASK(NXI,NYI) )
         MASK   = 1
-        WRITE (NDSO,932) NXI, NYI
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) NXI, NYI
 
         IF ( FLAGLL ) THEN
-          WRITE (NDSO,933) FACTOR*X0I, FACTOR*XNI,                &
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,933) FACTOR*X0I, FACTOR*XNI,                &
                            FACTOR*Y0I, FACTOR*YNI
         ELSE
-          WRITE (NDSO,733) FACTOR*X0I, FACTOR*XNI,                &
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,733) FACTOR*X0I, FACTOR*XNI,                &
                            FACTOR*Y0I, FACTOR*YNI
         END IF
 !
@@ -661,7 +652,7 @@ END MODULE c_caldat
           WRITE (NDSE,1034) RECLDT
           CALL EXTCDE ( 7 )
         END IF
-        WRITE (NDSO,934) IDSTR3(DATTYP+1), RECLDT, NODATA
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,934) IDSTR3(DATTYP+1), RECLDT, NODATA
         WRITE (IDFLD,935) DATTYP
         DEALLOCATE ( IX21, IX22, IY21, IY22, JX21, JX22, JY21, JY22, &
                      MAPOVR )
@@ -675,14 +666,14 @@ END MODULE c_caldat
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 4   Prepare interpolation.
 !
-      WRITE (NDSO,940)
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,940)
 !
-      IF (ITYPE.NE.1 .AND. ITYPE.NE.5) THEN
+      IF (ITYPE.NE.1 .AND. ITYPE.NE.5 .AND. ITYPE.NE.6 ) THEN
 !
 ! 4.a Longitude - latitude grid
 !
         IF (ITYPE.EQ.2) THEN
-          WRITE (NDSO,941)
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941)
 !
 ! ... setup coordinates
 !
@@ -699,7 +690,7 @@ END MODULE c_caldat
 !
           GSI = W3GSUC( .TRUE., FLAGLL, ICLO, NXI, NYI, ALO, ALA )
 !
-! ... construct interpolation data
+! ... construct Interpolation data
 !
 !/T1              WRITE (NDST,9045)
           IF (GTYPE .NE. UNGTYPE) THEN
@@ -708,7 +699,7 @@ END MODULE c_caldat
                 INGRID = W3GRMP( GSI, XGRD(IY,IX), YGRD(IY,IX),      &
                                  IS, JS, RW )
                 IF ( .NOT.INGRID ) THEN
-                    WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
+                    IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
                     CYCLE
                   END IF
                 IX21(IX,IY) = IS(1)
@@ -797,7 +788,7 @@ END MODULE c_caldat
 ! 4.b Grid(s) from file
 !
         ELSE ! ITYPE.EQ.2
-          WRITE (NDSO,942)
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942)
 !
 ! ... prepare overlay map
 !
@@ -815,7 +806,7 @@ END MODULE c_caldat
 !
           DO J=1, NFCOMP
 !
-            WRITE (NDSO,943) J
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) J
 !
 ! ... file info lat-long file
 !
@@ -829,21 +820,21 @@ END MODULE c_caldat
             IF ( ALLOCATED(MASK) ) DEALLOCATE (MASK)
             ALLOCATE ( MASK(NXJ(J),NYJ(J)) )
             MASK   = 1
-            WRITE (NDSO,944) NXJ(J), NYJ(J), CLO(J)
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,944) NXJ(J), NYJ(J), CLO(J)
 !
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
                   FROMLL, IDLALL, IDFMLL, FORMLL
             IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
             IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
-            WRITE (NDSO,945) IDLALL, IDFMLL
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,945) IDLALL, IDFMLL
             IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
 !
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
 !/NCO                NDSLL  = 20 + NFCOMP
-            WRITE (NDSO,947) NDSLL
-            IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,947) NDSLL
+            IF ( IAPROC .EQ. NAPOUT.AND.FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
             IF (NDSLL.EQ.NDSI) THEN
                 WRITE (NDSE,1038)
                 CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -890,22 +881,22 @@ END MODULE c_caldat
 !
 ! ... file info mask file
 !
-            WRITE (NDSO,949)
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
 !
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
                   FROMLL, IDLALL, IDFMLL, FORMLL
             IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
             IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
-            WRITE (NDSO,945) IDLALL, IDFMLL
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,945) IDLALL, IDFMLL
             IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
 !
             CALL NEXTLN ( COMSTR , NDSI , NDSE )
             READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
 !/NCO                NDSLL  = 22 + NFCOMP
-            WRITE (NDSO,947) NDSLL
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,947) NDSLL
             IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
-            WRITE (NDSO,*) ' '
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
             IF (NDSLL.EQ.NDSI) THEN
                 WRITE (NDSE,1038)
                 CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -995,15 +986,15 @@ END MODULE c_caldat
 !
       DO J=1, NFCOMP
 !
-        IF ( ITYPE .GE. 5 ) THEN
-            WRITE (NDSO,960)
+        IF ( ITYPE .EQ. 5 ) THEN
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
           ELSE
             IF (ITYPE.LE.3) THEN
-                WRITE (NDSO,961) NXJ(J), NYJ(J)
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,961) NXJ(J), NYJ(J)
               ELSE
-                WRITE (NDSO,962) J, NXJ(J), NYJ(J)
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,962) J, NXJ(J), NYJ(J)
               END IF
-          END IF ! ITYPE .GE. 5
+          END IF ! ITYPE .EQ. 5
 !
       END DO
 !
@@ -1022,16 +1013,32 @@ END MODULE c_caldat
 
 ! 5.b Open and prepare output file
 !
-      WRITE (NDSO,971)
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,971)
       J      = LEN_TRIM(FNMPRE)
-      IF ( ITYPE .LE. 4 ) THEN
-          CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
+      IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
+          IF (ITYPE.EQ.6) THEN 
+            CALL VUF_SET_PARAMETERS
+            TIDE_NDEF = NFIELDS
+!            CALL TIDE_SETTINGS_FAST
+            CALL TIDE_SETTINGS_VFAST
+            END IF
+            IF ( IAPROC .EQ. NAPOUT )  &
+               CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
                NX, NY, GTYPE, IERR, FPRE=FNMPRE(:J),                  &
-               FHDR=FLHDR )
+               FHDR=FLHDR, TIDEFLAGIN=TIDEFLAG)
         ELSE
+          IF ( IAPROC .EQ. NAPOUT )  &
           CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
                RECLDT, 0, GTYPEDUM, IERR, FPRE=FNMPRE(:J) )
         END IF
+!/TIDET   IF (TIDEFLAG.GT.0) THEN  
+!/TIDET   LRECL  = TIDE_MF*LRB*NFIELDS*2
+!/TIDET   OPEN (990,FILE='tidana.dat',FORM='UNFORMATTED',       &
+!/TIDET                 ACCESS='DIRECT',RECL=LRECL)
+!/TIDET   FNAMETXT  = 'tidanaNNN.txt'
+!/TIDET          WRITE (FNAMETXT(7:9),'(I3.3)') IAPROC
+!/TIDET   OPEN (989,FILE=FNAMETXT,status='unknown')
+!/TIDET   ENDIF 
 !
 ! 5.c Initialize fields
 !
@@ -1051,6 +1058,274 @@ END MODULE c_caldat
           AC = 0.
         END IF
 !
+! For ITYPE.LE.5 time stemps are read one by one. 
+! Otherwise points are read one by one for tidal analysis
+!
+      IF (ITYPE.GE.6) THEN
+! 
+! Reads in the full time vector
+!
+        IF (NX*NY.GT.4000) THEN 
+!/MPI     IF ((NX*NY)/NAPROC.LT.4000) THEN 
+!/MPI        IF (IAPROC.EQ.NAPOUT) WRITE(NDSE,*) 'Starting tidal analysis ... '
+!/MPI     ELSE
+!/MPI       IF (IAPROC.EQ.NAPOUT) WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY,     &
+!/MPI                         ' points. This can take hours ...'
+!/MPI     ENDIF 
+!/MPI     IF (NX*NY.LT.4000) THEN 
+          WRITE(NDSE,*) 'Starting tidal analysis for ',NX*NY, ' points.'
+          IF (NAPROC.EQ.1) WRITE(NDSE,*) 'This can take hours ...Consider running this with MPI '
+          END IF
+!/MPI     END IF
+        iret=nf90_inq_varid(ncid,"time",varidtmp)
+        CALL check_err(iret)
+        ALLOCATE(ALLTIMES(NTI))
+        iret=nf90_get_var(ncid,varidtmp,ALLTIMES,start=(/1/))
+        CALL check_err(iret)
+        IF (INDEX(timeunits, "seconds").NE.0)   datecur=datecur/86400.
+        ALLTIMES=dateref+ALLTIMES
+        CALL CALDAT(INT(ALLTIMES(1)),dcur,mcur,ycur)
+        hcur=(ALLTIMES(1)-INT(ALLTIMES(1)))*24
+        mncur=(hcur-INT(hcur))*60
+        scur=(mncur-INT(mncur))*60
+        !WRITE(6,'(I4.4,5I2.2)') INT(ycur), INT(mcur), INT(dcur), &
+        !                                  INT(hcur), INT(mncur), INT(scur)
+! 
+! Performs tidal analysis
+!
+        TIDE_NTI = NTI 
+        TIDE_NDEF = NFIELDS
+        ALLOCATE(SDEV0(TIDE_NDEF),SDEV(TIDE_NDEF), RMSR(TIDE_NDEF), &
+                   RES(TIDE_NDEF), SSQ(TIDE_NDEF),RMSR0(TIDE_NDEF), &
+                 RMSRP(TIDE_NDEF), IMAX(TIDE_NDEF), RESMAX(TIDE_NDEF))
+
+        ALLOCATE(PREDICTED(TIDE_NTI,TIDE_NDEF),RESID(TIDE_NTI,TIDE_NDEF))
+        
+        ALLOCATE( TIDE_DATA(TIDE_NTI,TIDE_NDEF) )  
+        ALLOCATE( TIDE_DAYS(TIDE_NTI), TIDE_SECS(TIDE_NTI), TIDE_HOURS(TIDE_NTI) )  
+        ALLOCATE(V_ARG(170,TIDE_NTI),F_ARG(170,TIDE_NTI),U_ARG(170,TIDE_NTI))
+        TIDE_NX=NX
+        TIDE_NY=NY
+        ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
+        TIDAL_CONST(:,:,:,:,:)=0.
+        DO I=1,NFIELDS
+          iret=nf90_inq_varid(ncid,FIELDSNAME(I),varidf(I))
+        END DO
+        iret=nf90_get_att(ncid,varidtmp,"_FillValue", fillvalue)
+!
+! Loop on grid points: reads all points for same IY to limit I/O time
+! this may require too much memory
+! Modified on 12-Feb-2013: now reads one block from IX to IX+NXLM-1
+!       NSEAL  = 1 + (NSEA-IAPROC)/NAPROC
+        ALLOCATE(NXL(NAPROC))
+        DO JPC=1,NAPROC
+          NXL(JPC)  = 1 + (NX-JPC)/NAPROC
+          END DO
+        NXLM=NXL(1)   ! this is the max value of NXL
+        NXL(1:NAPROC-1) = NXLM
+        NXL(NAPROC)=NX-(NAPROC-1)*NXLM
+
+!       ALLOCATE(TIDE_DATA_ALL(NX,NTI,NFIELDS))
+! Test modification by F.A. 12-Feb-2011
+!        ALLOCATE(TIDE_DATA_ALL(1,NTI,NFIELDS))
+        ALLOCATE(TIDE_DATA_ALL(NXL(IAPROC),NTI,NFIELDS))
+
+
+        WRITE(NDSE,*) "Number of points for this proc :", IAPROC,NXL(IAPROC)
+!/DIST   TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
+!/DIST   CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
+!/DIST   CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
+!/DIST   ALLOCATE(TIDALSTUFFA(TIDESIZ))
+!
+! Loops on Y dimension
+!
+        DO IY=1,NY
+!/DIST    IND=0
+!
+! big data read split in small data read ... 
+          IF (NDIMSGRID.EQ.1) THEN 
+            DO I=1,NFIELDS
+                iret=nf90_get_var(ncid,varidf(I),TIDE_DATA_ALL(:,:,I), &
+                                start=(/1+(IAPROC-1)*NXLM,1/),count=(/NXL(IAPROC),NTI/))
+              CALL check_err(iret)
+              END DO
+          ELSE 
+            DO I=1,NFIELDS
+              iret=nf90_get_var(ncid,varidf(I),TIDE_DATA_ALL(:,:,I), &
+                                start=(/1+(IAPROC-1)*NXLM,IY,1/),count=(/NXL(IAPROC),1,NTI/))
+              CALL check_err(iret)
+              END DO
+          END IF
+!
+!
+!/MPI          TIDALSTUFFA(:)=0.
+          DO JX=1,NXL(IAPROC)  ! This loop is parallelized with MPI 
+!/DIST      IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
+!/SHRD      IX = JX
+!          IF (NDIMSGRID.EQ.1) THEN
+!            DO I=1,NFIELDS
+!              iret=nf90_get_var(ncid,varidf(I),TIDE_DATA_ALL(IX,:,I), &
+!                                start=(/IX,1/),count=(/1,NTI/))
+!              CALL check_err(iret)
+!              END DO
+!          ELSE
+!            DO I=1,NFIELDS
+!              iret=nf90_get_var(ncid,varidf(I),TIDE_DATA_ALL(IX,:,I), &
+!                                start=(/IX,IY,1/),count=(/1,1,NTI/))
+!              CALL check_err(iret)
+!              END DO
+!          END IF
+
+            TIDE_NTI=0
+            DO I=1,NTI
+!
+! Defines usable timesteps ... criteria could be improved
+! remove the times when the point IX,IY is dry ... 
+! and redefine TIDE_NTI based on wet times only
+!
+              IF (TIDE_DATA_ALL(JX,I,1).NE.fillvalue     &
+                  .AND.TIDE_DATA_ALL(JX,I,NFIELDS).NE.fillvalue                   &
+                  .AND.TIDE_DATA_ALL(JX,I,1).NE.0.0) THEN 
+                TIDE_NTI=TIDE_NTI+1            
+                TIDE_DATA(TIDE_NTI,:)=TIDE_DATA_ALL(JX,I,:)
+                TIDE_DAYS(TIDE_NTI)=INT(ALLTIMES(I))
+                TIDE_SECS(TIDE_NTI)=(ALLTIMES(I)-TIDE_DAYS(TIDE_NTI))*86400
+              END IF
+            END DO
+!
+            TIDE_HOURS(1:TIDE_NTI)=24.d0*dfloat(TIDE_DAYS(1:TIDE_NTI)) &
+                                   +dfloat(TIDE_SECS(1:TIDE_NTI))/3600.d0
+!
+            IF (TIDE_NTI.GT.(TIDE_MF*3)) THEN 
+              TIDE_LAT= YGRD(IY,IX)
+              IF (ABS(TIDE_LAT).LT.5.) TIDE_LAT=SIGN(5.,TIDE_LAT)
+       
+              DO I=1,TIDE_NTI
+                CALL SETVUF(TIDE_HOURS(I),TIDE_LAT,I)
+              END DO
+              CALL flex_tidana_webpage(IX,IY,XGRD(IY,IX),TIDE_LAT,TIDE_DAYS(1),TIDE_DAYS(TIDE_NTI), &
+                                   TIDE_NDEF, TIDE_ITREND, RES, SSQ, RMSR0,          &
+                                   SDEV0, RMSR, RESMAX, IMAX, 0)
+                
+              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=TIDE_AMPC(1:TIDE_MF,1:NFIELDS)
+              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+!/TIDET    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_AMPC(1:TIDE_MF,1:NFIELDS) !,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+!/TIDET    WRITE (989,'(2I10,X,176F10.3)'),IX,TIDE_NTI,TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+!   !/TIDET    WRITE (989,'(I10,X,176F10.3)'),TIDE_NTI,TIDE_TTEST(1:TIDE_MF,1:NFIELDS)
+!/TIDET    WRITE (990,REC=IX),TIDE_AMPC(1:TIDE_MF,1:NFIELDS),TIDE_PHG(1:TIDE_MF,1:NFIELDS)
+!              
+! Only keeps constituents with high enough SNR ? (T-TEST > 2 : not a very good test ...)
+!
+!              DO J=1,TIDE_MF
+!                DO I=1,NFIELDS
+!                  WRITE(990+IAPROC,*) IX,IY,J,I,TIDE_TTEST(J,I),TIDE_AMPC(J,I),TIDE_PHG(J,I)
+!                  IF (TIDE_TTEST(J,I).GT.1.) THEN 
+!                    TIDAL_CONST(IX,IY,J,I,1)=TIDE_AMPC(J,I)
+!                    TIDAL_CONST(IX,IY,J,I,2)=TIDE_PHG(J,I)
+!                    END IF
+!                  END DO
+!                END DO
+
+!/DIST ! Fills 1-D array for MPI communication
+!/DIST         DO J=1,TIDE_MF
+!/DIST           DO K=1,NFIELDS
+!/DIST             DO L=1,2
+!/DIST              IND=IND+1
+!/DIST               TIDALSTUFFA(IND)=TIDAL_CONST(IX,IY,J,K,L)
+!/DIST             END DO
+!/DIST           END DO
+!/DIST         END DO
+!/DIST         IF (IAPROC.EQ.NAPOUT) WRITE(6,'(A,I6,A,I6,A,I6)') 'IY, JX = ', &
+!/DIST           IY,',',JX, ' out of  ', NXL(IAPROC)
+            ELSE 
+              WRITE(NDSE,*) 'WARNING NOT ENOUGH DATA AT POINT:',IX,IY, & 
+                                                            NTI, TIDE_NTI
+              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=0.
+              TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=0.
+              IND=IND+TIDE_MF*NFIELDS*2
+            END IF ! end of test on TIDE_NTI
+!/MPIT            DO J=1,TIDE_MF
+!/MPIT              DO K=1,NFIELDS
+!/MPIT                DO L=1,2
+!/MPIT                  WRITE(990+IAPROC,'(6I5,F10.4)') IAPROC,NAPOUT,IX,J,K,L,TIDAL_CONST(IX,1,J,K,L)
+!/MPIT                END DO
+!/MPIT              END DO
+!/MPIT            END DO
+
+          END DO  ! JX=1,NXL  - End of parallization
+!/MPIT         CLOSE(990+IAPROC)
+
+!
+! We need to send and receive the bits of TIDAL_CONST(:,IY,:,:,:)
+!
+!/DIST     IF (IAPROC.NE.NAPOUT)  THEN
+!/DIST       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
+!/DIST                       MPI_COMM_WORLD, IERR_MPI )
+!/DIST       WRITE(6,*) 'AFTER SEND IAPROC=',IAPROC
+!/DIST     ELSE
+!/MPIT           DO JX=1,NXL(IAPROC)
+!/MPIT             IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
+!/MPIT             DO J=1,TIDE_MF
+!/MPIT               DO K=1,NFIELDS
+!/MPIT                 DO L=1,2
+!/MPIT    WRITE(987,'(6I5,F10.4)') IAPROC,IAPROC,IX,J,K,L,TIDAL_CONST(IX,1,J,K,L)
+!/MPIT                 END DO
+!/MPIT               END DO
+!/MPIT             END DO
+!/MPIT           END DO       ! JX=1,NXL
+!/DIST       DO JPC=1,NAPROC
+!/DIST         IF (JPC .NE. NAPOUT )  THEN 
+!/DIST           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
+!/DIST                             MPI_COMM_WORLD, status, IERR_MPI )
+!/DIST           ! Now unpacks the 1-D array
+!/DIST           IND=0
+!/DIST           DO JX=1,NXL(JPC)
+!/DIST             IX = JX + (JPC-1)*NXLM ! JPC    + (JX-1)*NAPROC
+!/MPIT             WRITE(6,*) 'COUCOU:',JX,IAPROC,IX
+!/DIST             DO J=1,TIDE_MF
+!/DIST               DO K=1,NFIELDS
+!/DIST                 DO L=1,2
+!/DIST                   IND=IND+1
+!/DIST                   TIDAL_CONST(IX,IY,J,K,L)=TIDALSTUFFA(IND)
+!/MPIT    WRITE(987,'(6I5,F10.4)') JPC,IAPROC,IX,J,K,L,TIDAL_CONST(IX,1,J,K,L)
+!/DIST                 END DO
+!/DIST               END DO
+!/DIST             END DO
+!/DIST           END DO       ! JX=1,NXL
+!/DIST         END IF         ! JPC .NE. NAPOUT
+!/DIST       END DO           ! JPC=0,NAPROC-1
+!/MPIT       WRITE(NDSE,*) "IY = ", IY, "on ", NY
+!/DIST     END IF
+          
+        END DO ! IY=1,NY
+!/TIDET    CLOSE (990)
+!/TIDET    CLOSE (989)
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1)
+
+!/MPI        CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
+!/MPI        DEALLOCATE(TIDALSTUFFA)
+
+!/MPI        IF (IAPROC .EQ. NAPOUT )  THEN 
+!/MPI          WRITE(NDSE,*) "parallelization done"
+!/MPI        ELSE
+!/MPI          GOTO 888
+!/MPI        END IF
+
+
+
+
+
+
+
+
+!
+! After loop on points, write tidal constituents to file. 
+!
+        IF ( IAPROC .EQ. NAPOUT.AND.TIDEFLAG.GE.1)  &
+          CALL W3FLDTIDE ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
+        END IF
+!
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6   Begin loop over input fields
 !
@@ -1058,48 +1333,48 @@ END MODULE c_caldat
 !/O15      OPEN (NDSTIME,FILE=FNMPRE(:J)//'times.'//IDFLD,      &
 !/O15            ERR=870,IOSTAT=IERR )
 !
-      WRITE (NDSO,972)
-      DO ITIME=1,NTI
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972)
+        DO ITIME=1,NTI
 !
 ! 6.a Read new time and fields
 !
-        IF ( FLTIME ) THEN
+          IF ( FLTIME ) THEN
 !
             iret=nf90_inq_varid(ncid,"time",varidtmp)
-            call check_err(iret)
+            CALL check_err(iret)
             iret=nf90_get_var(ncid,varidtmp,datecur,start=(/ITIME/))
             call check_err(iret)
             IF (index(timeunits, "seconds").NE.0)   datecur=datecur/86400.
             IF (index(timeunits, "hours").NE.0)   datecur=datecur/24. 
             datecur=dateref+datecur
-            call caldat(int(datecur),dcur,mcur,ycur)
+            CALL caldat(INT(datecur),dcur,mcur,ycur)
 
-            hcur=(datecur-int(datecur))*24
-            mncur=(hcur-int(hcur))*60
-            scur=(mncur-int(mncur))*60
-            write(TIME_STR,'(I4.4,5I2.2)') int(ycur), int(mcur), int(dcur), &
-                                          int(hcur), int(mncur), int(scur)
+            hcur=(datecur-INT(datecur))*24
+            mncur=(hcur-INT(hcur))*60
+            scur=(mncur-INT(mncur))*60
+            WRITE(TIME_STR,'(I4.4,5I2.2)') INT(ycur), INT(mcur), INT(dcur), &
+                                          INT(hcur), INT(mncur), INT(scur)
             read(TIME_STR(1:8),'(I8.8)') TIME(1)
             read(TIME_STR(9:14),'(I6.6)') TIME(2)
 
-          END IF
+            END IF
 !
         CALL STME21 ( TIME , IDTIME )
-        WRITE (NDSO,973) IDTIME
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,973) IDTIME
 !/O15        WRITE (NDSTIME, 979, ERR=871,IOSTAT=IERR) TIME
-!/O3        WRITE (NDSO,974)
+!/O3        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974)
 !
 ! ... Input
 !
-        IF ( ITYPE .LE. 4 ) THEN
+        IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6) THEN
             iret=nf90_inq_varid(ncid,FIELDSNAME(1),varidtmp)
-            call check_err(iret)
-            IF (ITYPE.EQ.1) THEN 
+            CALL check_err(iret)
+            IF (NDIMSGRID.EQ.1) THEN 
               iret=nf90_get_var(ncid,varidtmp,XC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
-            call check_err(iret)
+            CALL check_err(iret)
             ELSE 
               iret=nf90_get_var(ncid,varidtmp,XC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-              call check_err(iret)
+              CALL check_err(iret)
             ENDIF
             !XC(:,:)=XC(:,MYM:1:-1)
 
@@ -1121,13 +1396,13 @@ END MODULE c_caldat
             IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
 
                 iret=nf90_inq_varid(ncid,FIELDSNAME(2),varidtmp)
-                call check_err(iret)
-                IF (ITYPE.EQ.1) THEN 
+                CALL check_err(iret)
+                IF (NDIMSGRID.EQ.1) THEN 
                   iret=nf90_get_var(ncid,varidtmp,YC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
-                call check_err(iret)
+                CALL check_err(iret)
                 ELSE 
                   iret=nf90_get_var(ncid,varidtmp,YC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-                  call check_err(iret)
+                  CALL check_err(iret)
                 END IF
                 !YC(:,:)=YC(:,MYM:1:-1)
 
@@ -1149,13 +1424,13 @@ END MODULE c_caldat
                 IF (FLSTAB) THEN
 
                     iret=nf90_inq_varid(ncid,FIELDSNAME(3),varidtmp)
-                    call check_err(iret)
-                    IF (ITYPE.EQ.1) THEN 
+                    CALL check_err(iret)
+                    IF (NDIMSGRID.EQ.1) THEN 
                       iret=nf90_get_var(ncid,varidtmp,AC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
-                    call check_err(iret)
+                    CALL check_err(iret)
                     ELSE 
                       iret=nf90_get_var(ncid,varidtmp,AC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-                      call check_err(iret)
+                      CALL check_err(iret)
                     END IF
                     !AC(:,:)=AC(:,MYM:1:-1)
 !
@@ -1179,13 +1454,13 @@ END MODULE c_caldat
 
           ELSE  ! ITYPE .NE. 5
 !
-            WRITE(NDSO,*) "ITYPE5 TO DO"
+            IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSO,*) "ITYPE5 TO DO"
             IF (IDFMF(1).EQ.3) THEN
                 READ (NDSF(1),  END=862,ERR=862,IOSTAT=IERR) NDAT
               ELSE
                 READ (NDSF(1),*,END=862,ERR=862,IOSTAT=IERR) NDAT
               END IF
-!/O3            WRITE (NDSO,975) NDAT
+!/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,975) NDAT
             IF ( NDAT.GT.0 ) THEN
                 ALLOCATE ( DATA(RECLDT,NDAT) )
                 DO IDAT=1, NDAT
@@ -1212,9 +1487,9 @@ END MODULE c_caldat
           END IF
 !
 ! 6.b Interpolate fields
-! ... No interpolation, type AI (should not use array syntax !!!)
+! ... No Interpolation, type AI (should not use array syntax !!!)
 !
-        IF (ITYPE.EQ.1) THEN
+        IF (ITYPE.EQ.1.OR.ITYPE.EQ.6) THEN
 !
             ! change fillvalue
             DO IY=1,NY
@@ -1258,7 +1533,7 @@ END MODULE c_caldat
 !
 ! ... One-component fields
 !
-!/O3            WRITE (NDSO,976) ' '
+!/O3           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,976) ' '
             IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
 !
                 DO IY=1,NY
@@ -1272,7 +1547,7 @@ END MODULE c_caldat
                   END DO
 !
                 IF (NFCOMP.EQ.2) THEN
-!/O3                WRITE (NDSO,976) ' (2) '
+!/O3             IF ( IAPROC .EQ. NAPOUT )    WRITE (NDSO,976) ' (2) '
                     DO IY=1,NY
                       DO IX=1,NX
                         FA(IX,IY) = FA(IX,IY)                         &
@@ -1416,18 +1691,18 @@ END MODULE c_caldat
 !
 ! 6.c Write fields
 !
-        IF ( ITYPE .LE. 4 ) THEN
-!/O3       WRITE (NDSO,977)
-          CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
+        IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
+!/O3      IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,977)
+          IF ( IAPROC .EQ. NAPOUT ) CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
                        NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
                        FX, FY, FA, IERR)
 
         ELSE IF ( ITYPE .EQ. 5 ) THEN
           IF ( NDAT .EQ. 0 ) THEN
-!/O3         WRITE (NDSO,978)
+!/O3        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,978)
           ELSE
-!/O3         WRITE (NDSO,977)
-            CALL W3FLDD ('WRITE', IDFLD, NDSDAT, NDST, NDSE, TIME,&
+!/O3        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,977)
+            IF ( IAPROC .EQ. NAPOUT ) CALL W3FLDD ('WRITE', IDFLD, NDSDAT, NDST, NDSE, TIME,&
                          TIME, RECLDT, NDAT, IDAT, DATA, IERR )
             DEALLOCATE ( DATA )
           END IF
@@ -1511,7 +1786,10 @@ END MODULE c_caldat
 !/O15      CALL EXTCDE ( 54 )
 !
   888 CONTINUE
-      WRITE (NDSO,999)
+!/MPI      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+!/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
+
+!/MPI      WRITE(NDSE,*) "finalized...", IAPROC, "error :", IERR_MPI
 !
 !/NCO/!     CALL W3TAGE('WAVEPREP')
 !
@@ -1529,7 +1807,7 @@ END MODULE c_caldat
  1930 FORMAT ( '          Field conserves velocity.')
  2930 FORMAT ( '          Field corrected for energy conservation.')
   931 FORMAT (/'       Single field, time: ',A)
-  932 FORMAT (/'       Input grid dim.   :',I5,3X,I5)
+  932 FORMAT (/'       Input grid dim.   :',I9,3X,I5)
   933 FORMAT ( '       Longitude range   :',2F8.2,' (deg)'/           &
                '       Latitude range    :',2F8.2,' (deg)')
   733 FORMAT ( '       X range           :',2F8.2,' (km)'/           &
@@ -1549,7 +1827,7 @@ END MODULE c_caldat
                '          (grid from file)')
   943 FORMAT (/'           Longitude-latitude file ',I1,' :'/         &
                '          ---------------------------------------')
-  944 FORMAT ( '           Input grid dim.   :',I5,3X,I5/             &
+  944 FORMAT ( '           Input grid dim.   :',I9,3X,I5/             &
                '           Closed longitudes :',L5)
   945 FORMAT ( '           Layout indicator  :',I5/                   &
                '           Format indicator  :',I5)
@@ -1563,10 +1841,10 @@ END MODULE c_caldat
                '          ---------------------------------------')
   961 FORMAT (/'           Data file :'/                              &
                '          ---------------------------------------'/   &
-               '           Input grid dim.   :',I5,3X,I5)
+               '           Input grid dim.   :',I9,3X,I5)
   962 FORMAT (/'           Data file (',I1,') :'/                     &
                '          ---------------------------------------'/   &
-               '           Input grid dim.   :',I5,3X,I5)
+               '           Input grid dim.   :',I9,3X,I5)
   963 FORMAT ( '           Layout indicator  :',I5)
   964 FORMAT ( '           Format indicator  :',I5)
   965 FORMAT ( '           Format for time   : ',A/                   &

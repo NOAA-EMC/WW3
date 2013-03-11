@@ -9,8 +9,8 @@ MODULE W3TRIAMD
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Modification of boundary treatment  ( version 4.04 )
-!/    30-Aug-2012 : Automatic detection of open BC      ( version 4.07 )
-!/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
+!/    30-Aug-2012 : Automatic detection of open BC      ( version 4.08 )
+!/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.08 )
 !/
 !
 !  1. Purpose :

@@ -1042,7 +1042,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement unstructured grids        ( version 3.14.1)
-!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -1448,7 +1448,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
 !/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
-!/    03-Sep-2012 : Clean up of UG grids                ( version 4.07 )
+!/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/
 !  1. Purpose :
 !

@@ -43,8 +43,6 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3BULL                                                &
           ( NPART, XPART, DIMXP, UABS, UD, IPNT, IOUT, TIMEV ) 
-!          ( NPART, XPART, DIMXP, UABS, UD, ASCBLINE, CSVBLINE, IPNT,   & 
-!            IOUT, TIMEV )
 !/
 !docb_xxxxxx.doc
 !/                  +-----------------------------------+
@@ -56,6 +54,8 @@
 !/                  +-----------------------------------+
 !/
 !/    01-APR-2010 : Origination.                        ( version 3.14 )
+!/    15-Aug-2011 : Adjustments to version 4.XX         ( version 4.05 )
+!/    11-Mar-2013 : Minor cleanup                       ( version 4.09 )
 !/
 !  1. Purpose :
 !

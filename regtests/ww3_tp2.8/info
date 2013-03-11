@@ -1,8 +1,10 @@
 #############################################################################
 #                                                                           #
-# ww3_tp2.4 Test for WW-III, two-dimensional propagation.                   #
-#           FOrcing by boundary conditons on regular lat/lon grid           #
-#                                                                           #
+# ww3_tp2.8 Test for WW-III, two-dimensional propagation.                   #
+#           Forcing by boundary conditons on regular lat/lon grid           #
+#           This is a very coarse grid of the sea around Brest, France.     #
+# when using the TIDE switch and changing ww3_shel.inp to activate current  #
+#                                                                           # 
 # Model should be compiled with the switches :                              #
 #                                                                           #
 #   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #

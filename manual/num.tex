@@ -1244,6 +1244,31 @@ or the current by utilizing a correction factor similar to
 Eq.~(\ref{eq:X_u10}).
 
 
+\pb
+% -------------------------------------------------------------
+\vssub
+\subsection{~Use of tidal analysis \hfill {\rm (F. Ardhuin)}}
+\vssub
+
+\noindent
+In order to reduce the volume of input files, the water levels and currents 
+can be defined by their tidal amplitudes and phases. This is made possible 
+by using the 'TIDE' switch which activates the detection of the needed 
+information in current.ww3 
+and level.ww3 files. The tidal analysis can be performed from NetCDF current 
+or water level files, using the ww3\_prnc preprocessing program. In that case 
+the analysis method uses the flexible tide analysis package by \cite{art:For09}. 
+At present the choice of tidal constituents is hard coded to 20, namely, 
+Z0 (mean), SSA, MSM, MSF, MF, 2N2, MU2, N2, NU2, M2, S2, K2, MSN2, MN4, M4, MS4, S4,
+M6, 2MS6, and  M8. Another arbitrary choice is the time step at which currents or water 
+level will be updated. This is now set to 1800~s. We also note that in the present 
+version, this definition of currents and water levels can only be used with single grids, 
+when using ww3\_shel. 
+
+Memory usage and time of analysis can be greatly reduced by removing some usually negligible constituents, 
+such as MSM, SSA,  MSM, 2N2, or even M8. 
+
+
 % -------------------------------------------------------------
 \vssub
 \subsection{~Ice coverage} \label{sub:ice}

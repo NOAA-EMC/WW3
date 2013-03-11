@@ -26,7 +26,7 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
-!/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.07 )
+!/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.08 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

@@ -33,6 +33,7 @@
 !/                  (T. J. Campbell, NRL)
 !/     1-Apr-2011 : Fix bug GLOBX forcing with unst.    ( version 3.14.4 )
 !/    19-Sep-2011 : Fix bug prep forcing with unst.     ( version 4.04 )
+!/     3-Mar-2013 : Allows for longer input file name   ( version 4.09 )
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),

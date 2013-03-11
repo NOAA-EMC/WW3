@@ -109,7 +109,7 @@
 !/                  +-----------------------------------+
 !/
 !/    03-Oct-2007 : Origination.                        ( version 3.13 )
-!/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.xx )
+!/    13-Jun-2011 : Adds f_m0,-1 as FMEAN in the outout ( version 4.04 )
 !/
 !  1. Purpose :
 !
@@ -1859,7 +1859,7 @@
             END IF  
           END DO
 !
-! Distribuates scale dissipation over the spectrum
+! Distributes scale dissipation over the frequency spectrum
 !
         S1 = 0.
         S2 = 0.

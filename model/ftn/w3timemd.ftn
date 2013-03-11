@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         23-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -32,6 +32,8 @@
 !                               between two data/time arrays.
 !      MYMD21    I.F.  DSEC21   Julian date function.
 !      STME21    Subr. Public   Converts integer time to string.
+!      JULDAY    I.F.  Public   Julian date function
+!      CALDAT    Subr. Public   Transform Julian day to date
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -566,32 +568,166 @@
 !/ End of STME21 ----------------------------------------------------- /
 !/
       END SUBROUTINE STME21
+
+!/ ------------------------------------------------------------------- /
+      INTEGER FUNCTION JULDAY(id,mm,iyyy)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         23-Sep-2012 |
+!/                  +-----------------------------------+
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+	  INTEGER(KIND=4),    INTENT(in)  :: id,mm,iyyy
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+     INTEGER(KIND=4), PARAMETER :: IGREG=15+31*(10+12*1582)
+     INTEGER(KIND=4) ja,jm,jy
+     jy=iyyy
+     IF (jy.EQ.0) WRITE(6,*) 'There is no zero year !!'
+     IF (jy.LT.0) jy=jy+1
+     IF (mm.GT.2) THEN
+       jm=mm+1
+     ELSE
+       jy=jy-1
+       jm=mm+13
+       ENDIF
+     julday=INT(365.25*jy)+int(30.6001*jm)+id+1720995
+     IF (id+31*(mm+12*iyyy).GE.IGREG) THEN
+       ja=INT(0.01*jy)
+       julday=julday+2-ja+INT(0.25*ja)
+       END IF
+     RETURN
+!/
+!/ End of JULDAY ----------------------------------------------------- /
+!/
+     END FUNCTION JULDAY
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE CALDAT(julian,id,mm,iyyy)
+! See numerical recipes 2nd ed. The order of month and day have been swapped!
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+        INTEGER(KIND=4),    INTENT(in)  :: julian
+     INTEGER(KIND=4),    INTENT(out) :: id,mm,iyyy
+     INTEGER(KIND=4), PARAMETER :: IGREG=2299161
+     INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je
+     if (julian.GE.IGREG) THEN
+       jalpha=INT(((julian-1867216)-0.25)/36524.25)
+       ja=julian+1+jalpha-INT(0.25*jalpha)
+     ELSE
+       ja=julian
+       END IF
+     jb=ja+1524
+     jc=INT(6680.+((jb-2439870)-122.1)/365.25)
+     jd=365*jc+INT(0.25*jc)
+     je=INT((jb-jd)/30.6001)
+     id=jb-jd-INT(30.6001*je)
+     mm=je-1
+     IF (mm.GT.12) mm=mm-12
+     iyyy=jc-4715
+     IF (mm.GT.2) iyyy=iyyy-1
+     IF (iyyy.LE.0) iyyy=iyyy-1
+     RETURN
+!/
+!/ End of CALDAT ----------------------------------------------------- /
+!/
+     END SUBROUTINE CALDAT
+!/ ------------------------------------------------------------------- /
+     REAL(KIND=8) FUNCTION  TIME2HOURS(TIME)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         26-Sep-2012 |
+!/                  +-----------------------------------+
+!
+!     gives date as real number
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       TIME    I.A.  I/O  (1) Current date in YYYYMMDD format.
+!                          (2) Current time in HHMMSS format.
+!       DTIME   Real   I   Time step in seconds.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!      IYMD21    Func. Internal Increment date in YYYYMMDD format.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     Any other routine.
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing using STRACE.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(INOUT)  :: TIME(2)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: NYMD, NHMS, NSEC, IY,IMO,ID,IH,IMI,IS
+      INTEGER(KIND=4)         :: JDAY
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'TICK21')
+!
+! Zero increment: get "legal" date
+!
+      IY     = TIME(1) / 10000
+      IMO    = MOD(TIME(1),10000) / 100
+      ID     = MOD(TIME(1),100)
+      IH     = TIME(2) / 10000
+      IMI    = MOD(TIME(2),10000) / 100
+      IS     = MOD(TIME(2),100)
+      JDAY    = julday(id,IMO,iy)    
+      TIME2HOURS = 24.d0*dfloat(JDAY)+dfloat(IH)+dfloat(IS+IMI*60)/3600.d0
+      RETURN
+!/
+!/ End of TIME2HOURS-------------------------------------------------- /
+!/
+      END FUNCTION TIME2HOURS
+
 !/
 !/ End of module W3TIMEMD -------------------------------------------- /
 !/
-
-!*********************************************************************
-INTEGER FUNCTION julday(id,mm,iyyy)
-!*********************************************************************
-   IMPLICIT NONE
-	INTEGER(KIND=4),    INTENT(in)  :: id,mm,iyyy
-   INTEGER(KIND=4), PARAMETER :: IGREG=15+31*(10+12*1582)
-   INTEGER(KIND=4) ja,jm,jy
-   jy=iyyy
-   IF (jy.EQ.0) WRITE(6,*) 'There is no zero year !!'
-   IF (jy.LT.0) jy=jy+1
-   IF (mm.GT.2) THEN
-      jm=mm+1
-   ELSE
-      jy=jy-1
-      jm=mm+13
-   ENDIF
-   julday=INT(365.25*jy)+int(30.6001*jm)+id+1720995
-   IF (id+31*(mm+12*iyyy).GE.IGREG) THEN
-      ja=INT(0.01*jy)
-      julday=julday+2-ja+INT(0.25*ja)
-   ENDIF
-   RETURN
-END FUNCTION JULDAY
-
       END MODULE W3TIMEMD

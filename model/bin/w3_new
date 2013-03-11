@@ -234,6 +234,11 @@
                                    touch ww3_ounp.ftn
                                    touch ww3_prnc.ftn ;;
       'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn ;;
+      'tide' )        cd $main_dir/ftn ; touch w3tidemd.ftn 
+                                         touch w3updtmd.ftn 
+                                         touch w3idatmd.ftn 
+                                         touch w3fldsmd.ftn 
+                                         touch ww3_shel.ftn ;;
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac
   done

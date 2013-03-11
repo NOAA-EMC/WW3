@@ -89,7 +89,7 @@
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip
+              mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip tide 
   do
     case $type in
       mach   ) TY='one'
@@ -233,6 +233,10 @@
                ID='grid to grid interpolation '
                TS='SCRIP'
                OK='SCRIP' ;;
+      tide   ) TY='upto1'
+               ID='use of tidal analysis'
+               TS='TIDE'
+               OK='TIDE' ;;
     esac
 
     n_found='0'
@@ -313,7 +317,8 @@
       reflection    ) reflection=$sw ;;
       mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
-        *    ) ;;
+      tide   ) tide=$sw ;;
+              *    ) ;;
     esac
   done
 
@@ -484,6 +489,11 @@
    REF1) refcode='w3ref1md'
    esac
 
+  tidecode=$NULL
+  case $tide in
+   TIDE) tidecode='w3tidemd'
+   esac
+
   if [ "$nr_thr" != '0' ] && [ "$s_nl" = 'NL2' ]
   then
       echo ' '
@@ -529,14 +539,14 @@
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd" ;;
      ww3_shel) IDstring='Generic shell'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -544,7 +554,7 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd' ;;
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
     ww3_multi) IDstring='Multi-grid shell'
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd'
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
@@ -553,8 +563,8 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd'
-                aux="$aux  wmunitmd"
+                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
+                aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
 	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod scrip_netcdfmod"
@@ -569,8 +579,8 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd' 
-                aux="$aux  wmunitmd"
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
+                aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
 	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod scrip_netcdfmod"
@@ -738,7 +748,7 @@
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD m_btffac W3STRKMD
+               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD m_btffac  W3STRKMD W3TIDEMD
     do
       case $mod in
          'CONSTANTS'    ) modtest=constants.o ;;
@@ -802,6 +812,7 @@
          'W3PARTMD'     ) modtest=w3partmd.o ;;
          'W3DISPMD'     ) modtest=w3dispmd.o ;;
          'W3TIMEMD'     ) modtest=w3timemd.o ;;
+         'W3TIDEMD'     ) modtest=w3tidemd.o ;;
          'W3SERVMD'     ) modtest=w3servmd.o ;;
          'W3ARRYMD'     ) modtest=w3arrymd.o ;;
          'W3GSRUMD'     ) modtest=w3gsrumd.o ;;

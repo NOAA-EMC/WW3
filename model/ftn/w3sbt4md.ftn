@@ -397,16 +397,8 @@
 !
 ! 1.  Min / Max settings for grain size D50---------------------------- *
 !
-      IF (D50.LT.1E-5) THEN 
-        DD50=1E-5       
-      ELSE
-        DD50=D50
-        END IF
-      IF (D50.LT.1E-5) THEN 
-        DD50=1E-5
-      ELSE
-        DD50=D50
-        END IF
+      DD50=MAX(D50,1E-5)
+      DD50=MIN(DD50,1.)
 !
 ! 1.1 Set background roughness when ripples are not active
 !

@@ -31,11 +31,13 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    05-Apr-2011 : Place holder for XGR in UNGTYPE     ( version 4.XX ) 
+!/    05-Apr-2011 : Place holder for XGR in UNGTYPE     ( version 4.04 ) 
 !/                  (A. Roland/F. Ardhuin)
 !/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
 !/                  activation of grid point.
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
+!/    26-Sep-2012 : Adding update from tidal analysis   ( version 4.08 )
+!/                  (F. Ardhuin)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -185,6 +187,10 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CX, CY, CA0, CAI, CD0, CDI
       USE W3IDATMD, ONLY: TC0, CX0, CY0, TCN, CXN, CYN
+!/TIDE      USE W3GDATMD, ONLY: YGRD
+!/TIDE      USE W3TIMEMD
+!/TIDE      USE W3IDATMD, ONLY: FLCURTIDE, CXTIDE, CYTIDE, NTIDE
+!/TIDE      USE W3TIDEMD
 !
       IMPLICIT NONE
 !/
@@ -199,6 +205,11 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: D0, DN, DD, DTT, DT0, RD, CABS, CDIR
 !/CRT2      REAL                    :: RD2, CI2
+!/TIDE      INTEGER          :: J,K
+!/TIDE      INTEGER(KIND=4)  :: TIDE_KD0, INT24, INTDYS       ! "Gregorian day constant"
+!/TIDE      REAL             :: WCURTIDEX, WCURTIDEY, TIDE_ARGX, TIDE_ARGY
+!/TIDE      REAL(KIND=8)     :: d1,h,TIDE_HOUR,HH,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
+!/TIDE      REAL             :: FX(44),UX(44),VX(44)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -244,11 +255,77 @@
 !/CRT2      RD2    = 1. - RD
 !
 !/T      WRITE (NDST,9000) DTT, DT0, RD
+
+!/TIDE        IF (FLCURTIDE) THEN 
+!/TIDE!          WRITE(6,*) 'TIME CUR:',TIME, '##',TC0, '##',TCN
+!/TIDE          TIDE_HOUR = TIME2HOURS(TIME)
+!/TIDE!
+!/TIDE!*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
+!/TIDE!*  AT THE MID POINT OF THE ANALYSIS PERIOD.
+!/TIDE          d1=TIDE_HOUR/24.d0
+!/TIDE          TIDE_KD0= 2415020
+!/TIDE          d1=d1-dfloat(TIDE_kd0)-0.5d0
+!/TIDE          call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
+!/TIDE          INT24=24
+!/TIDE          INTDYS=int((TIDE_HOUR+0.00001)/INT24)
+!/TIDE          HH=TIDE_HOUR-dfloat(INTDYS*INT24)
+!/TIDE          TAU=HH/24.D0+H-S
+!/TIDE        END IF
+!/TIDE!
+!/TIDE!  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
+!/TIDE!  TING THE LUNAR TIME TAU.
+!/TIDE!
+
 !
 ! 3.  Actual currents for all grid points
 !
       DO ISEA=1, NSEA
-!
+!/TIDE        IF (FLCURTIDE) THEN  ! could move IF test outside of ISEA loop ... 
+!/TIDE! VUF should only be updated in latitude changes significantly ...
+!/TIDE          IX        = MAPSF(ISEA,1)
+!/TIDE          IY        = MAPSF(ISEA,2)
+!/TIDE          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
+!/TIDE          WCURTIDEX = CXTIDE(IX,IY,1,1)
+!/TIDE          WCURTIDEY = CYTIDE(IX,IY,1,1)
+!/TIDE 
+!/TIDE            DO J=2,TIDE_MF
+!/TIDE              TIDE_ARGX=(VX(J)+UX(J))*twpi-CXTIDE(IX,IY,J,2)*DERA
+!/TIDE              TIDE_ARGY=(VX(J)+UX(J))*twpi-CYTIDE(IX,IY,J,2)*DERA
+!/TIDE              WCURTIDEX = WCURTIDEX+FX(J)*CXTIDE(IX,IY,J,1)*COS(TIDE_ARGX)
+!/TIDE              WCURTIDEY = WCURTIDEY+FX(J)*CYTIDE(IX,IY,J,1)*COS(TIDE_ARGY)                    
+!/TIDE              END DO
+!/TIDE     
+
+!/TIDET !Verification 
+!/TIDET         IF (ISEA.EQ.1) THEN 
+!/TIDET
+!/TIDET            TIDE_AMPC(1:NTIDE,1)=CXTIDE(IX,IY,1:NTIDE,1)
+!/TIDET            TIDE_PHG(1:NTIDE,1 )=CXTIDE(IX,IY,1:NTIDE,2)
+!/TIDET            TIDE_AMPC(1:NTIDE,2)=CYTIDE(IX,IY,1:NTIDE,1)
+!/TIDET            TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
+!/TIDET
+!/TIDET              WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
+!/TIDET                          d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,YGRD(IY,IX)
+!/TIDET
+!/TIDET              DO J=1,TIDE_MF
+!/TIDET                WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
+!/TIDET                            FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
+!/TIDET                END DO
+!/TIDET          DO K=1,2
+!/TIDET            DO J=1,TIDE_MF
+!/TIDET              WRITE(993,'(A,5I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,K,J,TIME,TIDE_HOUR,    &
+!/TIDET                         FX(J),UX(J),VX(J),TIDE_AMPC(J,K),TIDE_PHG(J,K)
+!/TIDET             END DO
+!/TIDET             END DO
+!/TIDET
+!/TIDET            WRITE(993,'(A,2F8.4,A,2F8.4)') '#:',CX0(IX,IY),CY0(IX,IY),'##',WCURTIDEX,WCURTIDEY
+!/TIDET            CLOSE(993)
+!/TIDET           END IF
+!/TIDET ! End of verification
+!/TIDE            CX(ISEA) = WCURTIDEX
+!/TIDE            CY(ISEA) = WCURTIDEY
+!/TIDE          ELSE 
+
         CABS    = CA0(ISEA) + RD * CAI(ISEA)
 !/CRT2        CI2      = SQRT ( RD2 *      CA0(ISEA)**2 +             &
 !/CRT2                          RD  *(CA0(ISEA)+CAI(ISEA))**2 )
@@ -256,6 +333,9 @@
         CDIR    = CD0(ISEA) + RD * CDI(ISEA)
         CX(ISEA) = CABS * COS(CDIR)
         CY(ISEA) = CABS * SIN(CDIR)
+!/TIDE  !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
+!/TIDE  !                                      CX(ISEA), CY(ISEA),WCURTIDEX, WCURTIDEY        
+!/TIDE          END IF
 !
         END DO
 !
@@ -1116,6 +1196,7 @@
 !/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
 !/                  activation of grid point.
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
+!/    26-Sep-2012 : Adding update from tidal analysis   ( version 4.08 )
 !/
 !  1. Purpose :
 !
@@ -1191,6 +1272,11 @@
       USE W3SERVMD, ONLY: EXTCDE
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
       USE W3TRIAMD, ONLY: SETUGIOBP
+      USE W3TIMEMD
+!/TIDE      USE W3GDATMD, ONLY: YGRD
+!/TIDE      USE W3IDATMD, ONLY: FLLEVTIDE, WLTIDE, NTIDE
+!/TIDE      USE W3TIDEMD
+
 !/T3      USE W3ARRYMD, ONLY: PRT2DS
 !/
       IMPLICIT NONE
@@ -1213,6 +1299,13 @@
       REAL                    :: KDMAX = 4., RDKMIN = 0.05
 !/T3      REAL                    :: OUT(NK,NTH)
       LOGICAL                 :: LOCAL
+!
+!/TIDE      INTEGER          :: J
+!/TIDE      INTEGER(KIND=4)  :: TIDE_KD0, INT24, INTDYS       ! "Gregorian day constant"
+!/TIDE      REAL             :: WLEVTIDE, TIDE_ARG, WLEVTIDE2(1)
+!/TIDE      REAL(KIND=8)     :: d1,h,TIDE_HOUR,HH,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
+!/TIDE      REAL             :: FX(44),UX(44),VX(44)
+      
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1243,11 +1336,65 @@
 !
 ! 1.d Update water levels and save old
 !
+!/TIDE        IF (FLLEVTIDE) THEN 
+!/TIDE!          WRITE(6,*) 'TIME:',TIME
+!/TIDE          TIDE_HOUR = TIME2HOURS(TIME)
+!/TIDE!
+!/TIDE!*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
+!/TIDE!*  AT THE MID POINT OF THE ANALYSIS PERIOD.
+!/TIDE          d1=TIDE_HOUR/24.d0
+!/TIDE          TIDE_KD0= 2415020
+!/TIDE          d1=d1-dfloat(TIDE_kd0)-0.5d0
+!/TIDE          call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
+!/TIDE          INT24=24
+!/TIDE          INTDYS=int((TIDE_HOUR+0.00001)/INT24)
+!/TIDE          HH=TIDE_HOUR-dfloat(INTDYS*INT24)
+!/TIDE          TAU=HH/24.D0+H-S
+!/TIDE        END IF
+!/TIDE!
+!/TIDE!  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
+!/TIDE!  TING THE LUNAR TIME TAU.
+!/TIDE!
       DO ISEA=1, NSEA
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         DWO(ISEA) = DW(ISEA)
+!
+!/TIDE        IF (FLLEVTIDE) THEN 
+!/TIDE! VUF should only be updated in latitude changes significantly ...
+!/TIDE          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
+!/TIDE          WLEVTIDE = WLTIDE(IX,IY,1,1)
+!/TIDE !Verification 
+!/TIDE !          IF (ISEA.EQ.1) THEN 
+!/TIDE
+!/TIDE            TIDE_AMPC(1:NTIDE,1)=WLTIDE(IX,IY,1:NTIDE,1)
+!/TIDE            TIDE_PHG(1:NTIDE,1)=WLTIDE(IX,IY,1:NTIDE,2)
+!/TIDE!
+!/TIDE   !           WRITE(991,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
+!/TIDE   !                       d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,YGRD(IY,IX)
+!/TIDE              J=1
+!/TIDE   !           WRITE(991,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
+!/TIDE   !                       FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
+!/TIDE            DO J=2,TIDE_MF
+!/TIDE              TIDE_ARG=(VX(J)+UX(J))*twpi-WLTIDE(IX,IY,J,2)*DERA
+!/TIDE              WLEVTIDE =WLEVTIDE+FX(J)*WLTIDE(IX,IY,J,1)*COS(TIDE_ARG)
+!/TIDE   !           WRITE(991,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
+!/TIDE   !                       FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
+!/TIDE              END DO
+!/TIDE            DO J=1,TIDE_MF
+!/TIDE   !           WRITE(991,'(A,4I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,J,TIME,TIDE_HOUR,    &
+!/TIDE   !                       FX(J),UX(J),VX(J),TIDE_AMPC(J,1),TIDE_PHG(J,1)
+!/TIDE              END DO
+!/TIDE   !         WRITE(991,'(A,3F7.3)') '#:',WLEV(IX,IY),WLEVTIDE,WLEV(IX,IY)-WLEVTIDE
+
+!/TIDE   !         CLOSE(991)
+!/TIDE   !         END IF
+!/TIDE ! End of verification
+!/TIDE            WLV(ISEA) = WLEVTIDE
+!/TIDE          ELSE 
+!
         WLV(ISEA) = WLEV(IX,IY)
+!/TIDE          ENDIF 
         DW (ISEA) = MAX ( 0. , WLV(ISEA)-ZB(ISEA) )
         END DO
 !

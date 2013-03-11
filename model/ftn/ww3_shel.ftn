@@ -38,6 +38,7 @@
 !/                  (A. Roland and F. Ardhuin) 
 !/    23-Nov-2011 : Comments clean up                   ( version 4.04 )
 !/    06-Mar-2012 : Repairing test output.              ( version 4.07 )
+!/    27-Sep-2012 : Implement use of tidal constituents ( version 4.08 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -218,6 +219,7 @@
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
+!/TIDE      USE W3TIDEMD
 !
       IMPLICIT NONE
 !
@@ -242,7 +244,7 @@
                              IPRT(6)
 !/F90      INTEGER             :: CLKT0, CLKTN, CLKDT, CLKINC, CLKMAX
 !/MPI      INTEGER             :: IERR_MPI
-      INTEGER             :: NODATA(5:7)
+      INTEGER             :: NODATA(5:7), FLAGTIDE
       REAL                :: FACTOR, DTTST, XX, YY,                   &
                              HA(NHMAX,4), HD(NHMAX,4), HS(NHMAX,4)
 !/F90      REAL                :: CLKFIN
@@ -251,6 +253,7 @@
       LOGICAL             :: FLLSTL, FLLSTI, FLH(8), FLFLG, FLHOM,    &
                              FLT, TFLAGI, FLGDAS(3), FLGRD(NOGRD)
       LOGICAL             :: FLGR2(NOGRD)
+      LOGICAL             :: FLAGSTIDE(4)
       LOGICAL             :: PRTFRM
 !
       CHARACTER(LEN=1)    :: COMSTR
@@ -286,6 +289,8 @@
       ELSE
         FACTOR = 1.E-3
       END IF
+!
+      FLAGSTIDE(:)=.FALSE.
 !
 !/T      PRTFRM = .TRUE.
 !
@@ -730,12 +735,70 @@
 ! 5.  Initializations
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950)
+
+!
+! 5.a Opening field and data files
+!
+      IF ( FLFLG ) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
+                                          'Preparing input files ...'
+!
+          DO J=1, 4
+            IF ( FLAGS(J) ) THEN
+                IF ( FLH(J) ) THEN
+                    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+                  ELSE
+                    JJ     = LEN_TRIM(FNMPRE)
+                    FLAGTIDE = 0
+                    CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
+                                  NDSEN, NX, NY, GTYPE,               &
+                                  IERR, FPRE=FNMPRE(:JJ), TIDEFLAGIN=FLAGTIDE )
+                    IF ( IERR .NE. 0 ) GOTO 2222
+!/TIDE                    IF (FLAGTIDE.GT.0.AND.J.EQ.1) FLAGSTIDE(1)=.TRUE.
+!/TIDE                    IF (FLAGTIDE.GT.0.AND.J.EQ.2) FLAGSTIDE(2)=.TRUE.
+                    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
+                  END IF
+              ELSE
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+              END IF
+          END DO
+!
+          DO J=5, 7
+            IF ( FLAGS(J) ) THEN
+                CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
+                             RCLD(J), NY, NODATA(J),                 &
+                             IERR, FPRE=FNMPRE(:JJ) )
+                IF ( IERR .NE. 0 ) GOTO 2222
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
+                             RCLD(J), NODATA(J)
+              ELSE
+                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+              END IF
+          END DO
+!
+        END IF
+
+
+
+
 !
 ! 5.a Wave model
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) 'Wave model ...'
-      CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, NPTS, X, Y,   &
-                    PNAMES, IPRT, PRTFRM, MPI_COMM )
+!
+!/TIDE      IF (FLAGSTIDE(1).OR.FLAGSTIDE(2)) THEN 
+!/TIDE        CALL VUF_SET_PARAMETERS
+!/TIDE        ! CALL TIDE_SETTINGS_FAST
+!/TIDE        CALL TIDE_SETTINGS_VFAST
+!/TIDE        ALLOCATE(V_ARG(170,1),F_ARG(170,1),U_ARG(170,1))  ! to be removed later ...
+!/TIDE        NTIDE = TIDE_MF
+!/TIDE        END IF
+! 
+     CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, NPTS, X, Y,   &
+                    PNAMES, IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN=FLAGSTIDE )
+!
+!/TIDE      IF (FLAGSTIDE(1)) CALL W3FLDTIDE ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), IERR )
+!/TIDE      IF (FLAGSTIDE(2)) CALL W3FLDTIDE ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), IERR )
 !
       ALLOCATE ( XXX(NX,NY) )
 !
@@ -828,44 +891,6 @@
 !
         END IF
 !
-! 5.c Opening field and data files
-!
-      IF ( FLFLG ) THEN
-          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
-                                          'Preparing input files ...'
-!
-          DO J=1, 4
-            IF ( FLAGS(J) ) THEN
-                IF ( FLH(J) ) THEN
-                    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-                  ELSE
-                    JJ     = LEN_TRIM(FNMPRE)
-                    CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
-                                  NDSEN, NX, NY, GTYPE,               &
-                                  IERR, FPRE=FNMPRE(:JJ) )
-                    IF ( IERR .NE. 0 ) GOTO 2222
-                    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
-                  END IF
-              ELSE
-                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-              END IF
-          END DO
-!
-          DO J=5, 7
-            IF ( FLAGS(J) ) THEN
-                CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
-                             RCLD(J), NY, NODATA(J),                 &
-                             IERR, FPRE=FNMPRE(:JJ) )
-                IF ( IERR .NE. 0 ) GOTO 2222
-                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
-                             RCLD(J), NODATA(J)
-              ELSE
-                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-              END IF
-          END DO
-!
-        END IF
-!
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
 !
@@ -920,7 +945,11 @@
 ! 7.a.3 Update time and fields / data
 !
             IF ( DTTST .LE. 0. ) THEN
+!/TIDE                 IF ((FLLEVTIDE .AND.(J.EQ.1)).OR.(FLCURTIDE.AND.(J.EQ.2))) THEN 
+!/TIDE                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974) IDFLDS(J)
+!/TIDE                 ELSE
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
+!/TIDE                 END IF
 !
                 IF ( J .EQ. 1 ) THEN
                     IF ( FLH(J) ) THEN
@@ -928,9 +957,18 @@
                           TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                           TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
                       ELSE
-                        CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
-                          NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
-                          TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
+!/TIDE                        IF ( FLLEVTIDE ) THEN 
+!/TIDE                          IERR=0
+!/TIDE                          IF ( TLN(1) .EQ. -1 ) THEN 
+!/TIDE                            TLN = TIME 
+!/TIDE                          ELSE 
+!/TIDE                            CALL TICK21 ( TLN, TIDE_DT )
+!/TIDE                            END IF
+!/TIDE                        ELSE
+                          CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
+                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
+                            TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
+!/TIDE                          END IF
                       END IF
                     IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
                   ELSE IF ( J .EQ. 2 ) THEN
@@ -939,9 +977,18 @@
                           TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                           TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
                       ELSE
+!/TIDE                        IF ( FLCURTIDE ) THEN 
+!/TIDE                          IERR=0
+!/TIDE                          IF ( TCN(1) .EQ. -1 ) THEN 
+!/TIDE                            TCN = TIME 
+!/TIDE                            END IF
+!/TIDE                          TC0(:) = TCN(:)               
+!/TIDE                          CALL TICK21 ( TCN, TIDE_DT )
+!/TIDE                        ELSE
                         CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
                           NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
                           TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+!/TIDE                          END IF
                       END IF
                   ELSE IF ( J .EQ. 3 ) THEN
                     IF ( FLH(J) ) THEN
@@ -1206,6 +1253,7 @@
   971 FORMAT (/'  Updating input at ',A)
   972 FORMAT ( '     Updating ',A)
   973 FORMAT ( '        Past last ',A)
+!/TIDE  974 FORMAT ( '     Updating ',A,'using tidal constituents')
   975 FORMAT (/'  Data assimmilation at ',A)
 !
 !/F90  998 FORMAT (/'  Elapsed time :',F10.2,' s')

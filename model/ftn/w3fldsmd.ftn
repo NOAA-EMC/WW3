@@ -24,6 +24,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    30-Oct-2012 : Implement tidal analysis (F. Ardhuin)(version 4.08 ) 
+!/     5-Mar-2012 : Cleanup of tidal analysis            (version 4.09 ) 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -47,6 +49,7 @@
 !      W3FLDP    Subr. Public.  Generic field interpolation.
 !      W3FLDH    Subr. Public.  Process homogeneous fields.
 !      W3FLDM    Subr. Public.  Process moving grid data.
+!      W3FLDTIDE Subr. Public.  Read/write tidal constituents
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -74,14 +77,14 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLDO ( INXOUT, IDFLD, NDS, NDST, NDSE, NX, NY,     &
-                          GTYPE, IERR, FEXT, FPRE, FHDR )
+                          GTYPE, IERR, FEXT, FPRE, FHDR, TIDEFLAGIN )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Apr-2010 |
+!/                  | Last update :         09-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -93,7 +96,8 @@
 !/    09-Oct-2007 : Make file header optional.          ( version 3.13 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    04-Apr-2010 : Adding iceberg field.               ( version 3.14_SHOM )
+!/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
+!/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
 !/
 !  1. Purpose :
 !
@@ -194,6 +198,7 @@
       CHARACTER*(*), INTENT(IN)           :: INXOUT
       CHARACTER*(*), INTENT(IN), OPTIONAL :: FEXT, FPRE
       LOGICAL, INTENT(IN), OPTIONAL       :: FHDR
+      INTEGER, INTENT(INOUT), OPTIONAL    :: TIDEFLAGIN
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -208,6 +213,8 @@
       CHARACTER(LEN=20)       :: TEMPXT
       CHARACTER(LEN=30)       :: FNAME
       LOGICAL                 :: FDHDR = .TRUE.
+      INTEGER                 :: TIDEFLAG = 0
+      LOGICAL                 ::  TIDEOK = .FALSE.
 !
 ! 'FORM' is used for initial testing of new files only.
 !/
@@ -220,7 +227,12 @@
 !
 ! test input parameters ---------------------------------------------- *
 !
+!/TIDE      TIDEOK = .TRUE.
       FILLER(:)=0
+      IF ( PRESENT(TIDEFLAGIN) ) THEN
+          TIDEFLAG = TIDEFLAGIN
+        END IF
+
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
       IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
@@ -295,22 +307,28 @@
              IF ( FORM .EQ. 'UNFORMATTED' ) THEN
 ! 
 ! The "filler" was added for compatibility with old binary forcing files
+! It is now also used for tidal info ... 
 !
                  WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
-                       IDSTR, IDFLD, NX, NY, GTYPE, FILLER
+                       IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
                ELSE
                  WRITE (NDS,900,ERR=804,IOSTAT=IERR)                  &
-                       IDSTR, IDFLD, NX, NY, GTYPE, FILLER
+                       IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
                END IF
             END IF
         ELSE
           IF ( FORM .EQ. 'UNFORMATTED' ) THEN
               READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
-                    TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER
+                    TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
             ELSE
               READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
-                    TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER
+                    TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
             END IF
+          IF ((FILLER(1).NE.0.OR.FILLER(2).NE.0).AND.TIDEFLAG.GE.0) TIDEFLAG=0
+          IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN     
+            GOTO 810
+            END IF          
+!
           IF ( IDSTR .NE. TSSTR ) GOTO 807
           IF (( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS') .OR.             &
               ( IDFLD.EQ.'ICE' .AND. TSFLD.EQ.'ISI')  ) THEN
@@ -331,6 +349,10 @@
 ! File OK ------------------------------------------------------------ *
 !
       IERR   = 0
+      IF ( PRESENT(TIDEFLAGIN) ) THEN
+          TIDEFLAGIN = TIDEFLAG
+        END IF
+
       RETURN
 !
 ! Error escape locations
@@ -379,6 +401,10 @@
       IF ( NDSE .GE. 0 ) WRITE (NDSE,1009)                      &
                                 NXT, NYT, GTYPET,               &
                                 NX , NY , GTYPE
+!
+  810 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1010)                      &
+                                FILLER(1:2),TIDEFLAG
       IERR   = 9
       RETURN
 !
@@ -408,6 +434,9 @@
  1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/         &
          '     INCOMPATIBLE GRID DATA : ',3(1X,I4)/             &
          '                  SHOULD BE : ',3(1X,I4)/)            
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/          &
+         '     FILLER indicates use of tidal constituents',3I4, /&
+         '     For this the code should be compiled with TIDE switch'/)            
 !
 !/T 9000 FORMAT (' TEST W3FLDO : INXOUT : ',A/                     &
 !/T              '               IDFLD  : ',A/                     &
@@ -424,6 +453,210 @@
 !/ End of W3FLDO  ---------------------------------------------------- /
 !/
       END SUBROUTINE W3FLDO
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3FLDTIDE ( INXOUT, NDS, NDST, NDSE, NX, NY, IDFLD, IERR )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         24-Sep-2012 |
+!/                  +-----------------------------------+
+!/
+!/    24-Sep-2012 : Creation                            ( version 4.09 ) 
+!/
+!  1. Purpose :
+!
+!     Reads and writes tidal consituents
+!
+!  2. Method :
+!
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       INXOUT  C*(*) I  Test string for read/write, valid are:
+!                        'READ' and 'WRITE'.
+!       IDFLD   C*3  I/O ID string for field type, valid are:
+!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', and 'DTn'.
+!       NDS     Int.  I  Dataset number for fields file.
+!       NDST    Int.  I  Dataset number for test output.
+!       NDSE    Int.  I  Dataset number for error output.
+!                        (No output if NDSE < 0).
+!       NX, NY  Int.  I  Discrete grid dimensions.                 \
+!       IERR    Int.  O  Error indicator.
+!                         0 : No errors.
+!                         1 : Illegal INXOUT.
+!     ----------------------------------------------------------------
+!      a) for output fields.
+!      b) for input data.
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_PREP  Prog.   N/A    Input data preprocessor.
+!      WW3_PRNC  Prog.   N/A    NetCDF input data preprocessor.
+!      WW3_SHEL  Prog.   N/A    Basic wave model driver.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     See end of subroutine.
+!
+!  7. Remarks :
+!
+!     - On read, the ID 'WND' may be changed to 'WNS' (including
+!       stability data).
+!     - On read, the ID 'ICE' may be changed to 'ISI' (including
+!       iceberg data).
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+!/TIDE      USE W3TIDEMD
+      USE W3IDATMD
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)                 :: NDS, NDST, NDSE, NX, NY
+      CHARACTER(LEN=3), INTENT(INOUT)     :: IDFLD
+      CHARACTER*(*), INTENT(IN)           :: INXOUT
+      INTEGER, INTENT(OUT)                :: IERR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+      LOGICAL                 :: WRITE
+      INTEGER                 :: I, IX
+!
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3FLDO')
+!
+! test input parameters ---------------------------------------------- *
+!
+      IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
+      IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
+           IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
+           IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
+           IDFLD.NE.'ISI' )    GOTO 802
+      WRITE  = INXOUT .EQ. 'WRITE'
+
+!/TIDE      IF ( WRITE ) THEN
+!/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+!/TIDE                     TIDE_MF
+!/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+!/TIDE                     TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
+!/TIDE        ELSE
+!/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+!/TIDE                    TIDE_MF
+!/TIDE               NTIDE = TIDE_MF
+!/TIDE               IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
+!/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+!/TIDE                     TIDE_FREQC,TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
+!/TIDE  ! WORK TO DO HERE: 
+!/TIDE  ! we should check that TIDE_FREQC,TIDECON_NAME(:) are OK
+!/TIDE               IF(IDFLD.EQ.'LEV') THEN 
+!/TIDE                 WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+!/TIDE               ELSE 
+!/TIDE                 CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+!/TIDE                 CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
+!/TIDE                 END IF 
+!/TIDE               END IF
+!/TIDET DO I=1,NTIDE 
+!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
+!/TIDET                   '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
+!/TIDET END DO
+!/TIDET DO I=1,NTIDE 
+!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
+!/TIDET                   '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
+!/TIDET END DO
+!/TIDET DO IX=1,NX
+!/TIDET IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)'),IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
+!/TIDET            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
+!/TIDET  END DO
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,2)
+!
+!
+! File OK ------------------------------------------------------------ *
+!
+      IERR   = 0
+      RETURN
+!
+! Error escape locations
+!
+  801 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1001) INXOUT
+      IERR   = 1
+      RETURN
+!
+  802 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1002) IDFLD
+      IERR   = 2
+      RETURN
+!
+  804 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
+      IERR   = 4
+      RETURN
+!
+  805 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
+      IERR   = 5
+      RETURN
+!
+  806 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
+      IERR   = 6
+      RETURN
+!
+! Formats
+!
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+               '     ILLEGAL INXOUT STRING : ',A/)
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+               '     ILLEGAL FIELD ID STRING : ',A/)
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+               '     ERROR IN WRITING TO ',A,' FILE, IOSTAT =',I6/)
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+               '     ERROR IN READING ',A,' FILE, IOSTAT =',I6/)
+
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE : '/         &
+               '     PREMATURE END OF ',A,' FILE'/)
+!/
+!/ End of W3FLDO  ---------------------------------------------------- /
+!/
+      END SUBROUTINE W3FLDTIDE
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLDG (INXOUT, IDFLD, NDS, NDST, NDSE, MX, MY,      &
                          NX, NY, T0, TN, TF0, FX0, FY0, FA0,          &

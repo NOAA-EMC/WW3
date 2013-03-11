@@ -65,6 +65,11 @@
 !      FLAGS     L.A.  Public   Array consolidating the above four 
 !                               flags, as well as four additional
 !                               data flags.
+!       CXTIDE    R.A.  Public   Tidal constituents of X current component
+!       CYTIDE    R.A.  Public   Tidal constituents of Y current component
+!       WLTIDE    R.A.  Public   Tidal constituents of water level
+!       FLLEVTIDE Log.  Public   Flag for use of tidal const. in water level input.
+!       FLCURTIDE Log.  Public   Flag for use of tidal const. in current input.
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -94,6 +99,7 @@
 !
 !     !/S    Enable subroutine tracing.
 !     !/T    Enable test output
+!     !/TIDE Use of tidal constituents
 !
 !  7. Source code :
 !
@@ -103,6 +109,8 @@
 !/ Conventional declarations
 !/
       INTEGER                 :: NIDATA = -1, IIDATA = -1
+!/TIDE      INTEGER                 :: NTIDE   ! number of tidal constituents
+!/TIDE      REAL, ALLOCATABLE       :: TIDEFREQ(:)
 !/
 !/ Data structure INPUT
 !/
@@ -115,8 +123,10 @@
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  BERGI(:,:)
+!/TIDE REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
+!/TIDE                           WLTIDE(:,:,:,:)
         LOGICAL               :: IINIT
-        LOGICAL               :: FLAGS(8)
+        LOGICAL               :: FLAGS(12)
       END TYPE INPUT
 !/
 !/ Data storage
@@ -134,9 +144,13 @@
                                  CX0(:,:), CY0(:,:), CXN(:,:),        &
                                  CYN(:,:), WLEV(:,:), ICEI(:,:),      &
                                  BERGI(:,:)
+!/TIDE       REAL, POINTER           :: CXTIDE(:,:,:,:),         &
+!/TIDE                                  CYTIDE(:,:,:,:), WLTIDE(:,:,:,:)
       LOGICAL, POINTER        :: IINIT
       LOGICAL, POINTER        :: FLAGS(:)
       LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE
+!/TIDE      LOGICAL, POINTER        ::  FLLEVTIDE, FLCURTIDE,  &
+!/TIDE                                  FLLEVRESI, FLCURRESI
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -259,7 +273,7 @@
 !/
       END SUBROUTINE W3NINP
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3DIMI  ( IMOD, NDSE, NDST )
+      SUBROUTINE W3DIMI  ( IMOD, NDSE, NDST, FLAGSTIDEIN )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -330,11 +344,13 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: IMOD, NDSE, NDST
+      LOGICAL, INTENT(IN), OPTIONAL     :: FLAGSTIDEIN(4)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: JGRID
+      LOGICAL                 :: FLAGSTIDE(4)=.FALSE.
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3DIMI')
@@ -365,8 +381,22 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
+!/TIDE      IF ( PRESENT(FLAGSTIDEIN) ) THEN
+!/TIDE          FLAGSTIDE(:) = FLAGSTIDEIN(:)
+!/TIDE        END IF
+
       FLLEV  => INPUTS(IMOD)%FLAGS(1)
       FLCUR  => INPUTS(IMOD)%FLAGS(2)
+!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%FLAGS(9)
+!/TIDE      FLCURTIDE  => INPUTS(IMOD)%FLAGS(10)
+!/TIDE      FLLEVRESI  => INPUTS(IMOD)%FLAGS(11)
+!/TIDE      FLCURRESI  => INPUTS(IMOD)%FLAGS(12)
+!/TIDE!
+!/TIDE      FLLEVTIDE = FLAGSTIDE(1)
+!/TIDE      FLCURTIDE = FLAGSTIDE(2)
+!/TIDE      FLLEVRESI = FLAGSTIDE(3)
+!/TIDE      FLCURRESI = FLAGSTIDE(4)     
+ 
       FLWIND => INPUTS(IMOD)%FLAGS(3)
       FLICE  => INPUTS(IMOD)%FLAGS(4)
 !
@@ -376,6 +406,11 @@
                                INPUTS(IMOD)%CY0(NX,NY) ,              &
                                INPUTS(IMOD)%CXN(NX,NY) ,              &
                                INPUTS(IMOD)%CYN(NX,NY) )
+!
+!/TIDE      IF ( FLLEVTIDE  ) ALLOCATE ( INPUTS(IMOD)%WLTIDE(NX,NY,NTIDE,2) )
+!/TIDE!
+!/TIDE      IF ( FLCURTIDE  ) ALLOCATE ( INPUTS(IMOD)%CXTIDE(NX,NY,NTIDE,2),  &
+!/TIDE                                   INPUTS(IMOD)%CYTIDE(NX,NY,NTIDE,2) )
 !
       IF ( FLWIND ) ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
                                INPUTS(IMOD)%WY0(NX,NY) ,              &
@@ -558,6 +593,11 @@
 !
       FLLEV  => INPUTS(IMOD)%FLAGS(1)
       FLCUR  => INPUTS(IMOD)%FLAGS(2)
+!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%FLAGS(9)
+!/TIDE      FLCURTIDE  => INPUTS(IMOD)%FLAGS(10)
+!/TIDE      FLLEVRESI  => INPUTS(IMOD)%FLAGS(11)
+!/TIDE      FLCURRESI  => INPUTS(IMOD)%FLAGS(12)
+
       FLWIND => INPUTS(IMOD)%FLAGS(3)
       FLICE  => INPUTS(IMOD)%FLAGS(4)
 !
@@ -573,6 +613,13 @@
               CXN    => INPUTS(IMOD)%CXN
               CYN    => INPUTS(IMOD)%CYN
             END IF
+!/TIDE          IF ( FLLEVTIDE ) THEN 
+!/TIDE              WLTIDE => INPUTS(IMOD)%WLTIDE
+!/TIDE            END IF
+!/TIDE          IF ( FLCURTIDE ) THEN 
+!/TIDE              CXTIDE => INPUTS(IMOD)%CXTIDE
+!/TIDE              CYTIDE => INPUTS(IMOD)%CYTIDE
+!/TIDE            END IF
 !
           IF ( FLWIND  ) THEN
               WX0    => INPUTS(IMOD)%WX0
