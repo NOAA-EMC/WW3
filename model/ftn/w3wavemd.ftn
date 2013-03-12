@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2012 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -58,9 +58,11 @@
 !/    16-May-2010 : Adding transparencies in W3SCRE     ( version 3.14_SHOM )
 !/    23-Jun-2011 : Movable bed bottom friction BT4     ( version 4.04 )
 !/    03-Nov-2011 : Shoreline reflection on unst. grids ( version 4.04 )
+!/    02-Jul-2011 : Update for PALM coupling            ( version 4.07 )
 !/    06-Mar-2012 : Initializing ITEST as needed.       ( version 4.07 )
 !/    02-Jul-2012 : Update for PALM coupling            ( version 4.07 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.08 )
+!/    03-Sep-2012 : Fix format 902.                     ( version 4.10 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -159,7 +161,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2012 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -210,6 +212,7 @@
 !/    05-Apr-2011 : Implement iteration for DTMAX <1s   ( version 3.14.4 )
 !/    02-Jul-2012 : Update for PALM coupling            ( version 4.07 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.08 )
+!/    03-Sep-2012 : Fix format 902.                     ( version 4.10 )
 !/
 !  1. Purpose :
 !
@@ -1470,7 +1473,7 @@
   900 FORMAT (8X,I6,'  |',I4,'  | ', A19  ,' | ',A,' | ',A,' |')
   901 FORMAT (8X,I6,'  |',I4,'  | ',11X,A8,' | ',A,' | ',A,' |')
   902 FORMAT (8X,'--------+------+---------------------+'             &
-                ,'-------------+-------------+')
+                ,'-------------+---------------+')
 !
   950 FORMAT ('  WAVEWATCH III calculating for ',A,' at ',A)
 !

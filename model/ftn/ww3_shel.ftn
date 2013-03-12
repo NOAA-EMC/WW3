@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -38,6 +38,7 @@
 !/                  (A. Roland and F. Ardhuin) 
 !/    23-Nov-2011 : Comments clean up                   ( version 4.04 )
 !/    06-Mar-2012 : Repairing test output.              ( version 4.07 )
+!/    03-Sep-2012 : Output initialization time.         ( version 4.10 )
 !/    27-Sep-2012 : Implement use of tidal constituents ( version 4.08 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
@@ -891,6 +892,20 @@
 !
         END IF
 !
+!/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+!
+      IF ( IAPROC .EQ. NAPOUT ) THEN
+!/F90          CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
+!/F90          IF ( CLKMAX .NE. 0 ) THEN
+!/F90              IF ( CLKTN-CLKT0 .GE. 0 ) THEN
+!/F90                  CLKDT  = CLKTN-CLKT0
+!/F90                ELSE
+!/F90                  CLKDT  = CLKTN-CLKT0 + CLKMAX
+!/F90                END IF
+!/F90              CLKFIN = REAL(CLKDT)/REAL(CLKINC)
+!/F90            END IF
+        END IF
+!
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
 !
@@ -1177,6 +1192,10 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
+!/F90          IF ( CLKMAX .NE. 0 ) THEN
+!/F90              WRITE (NDSO,997) CLKFIN
+!/F90              IF ( NDSO .NE. NDS(1) ) WRITE (NDS(1),997) CLKFIN
+!/F90            END IF
 !/F90          CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
 !/F90          IF ( CLKMAX .NE. 0 ) THEN
 !/F90              IF ( CLKTN-CLKT0 .GE. 0 ) THEN
@@ -1256,7 +1275,8 @@
 !/TIDE  974 FORMAT ( '     Updating ',A,'using tidal constituents')
   975 FORMAT (/'  Data assimmilation at ',A)
 !
-!/F90  998 FORMAT (/'  Elapsed time :',F10.2,' s')
+!/F90  997 FORMAT (/'  Initialization time :',F10.2,' s')
+!/F90  998 FORMAT ( '  Elapsed time        :',F10.2,' s')
 !
   999 FORMAT(//'  End of program '/                                   &
                ' ===================================='/               &

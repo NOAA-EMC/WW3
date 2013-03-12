@@ -11,7 +11,7 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      July 2012              #
+#                                                      Sep 2012               #
 #                                                                             #
 #    Copyright 2009-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -507,7 +507,7 @@
 
   progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
-         ww3_ounp ww3_gint ww3_bound ww3_systrk'
+         ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_systrk'
 
   for prog in $progs
   do
@@ -628,6 +628,13 @@
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iogomd'
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+     ww3_gspl) IDstring='Grid splitting'
+               core='w3fldsmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_gint) IDstring='Grid Interpolation'
                core=

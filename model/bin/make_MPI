@@ -6,7 +6,7 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      April 2010             #
-#                                                      Feb. 2012              #
+#                                                      Sep. 2012              #
 #                                                                             #
 #    Copyright 2010-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -75,7 +75,7 @@
 
   cp switch.shrd switch
   w3_make ww3_grid ww3_strt ww3_prep ww3_outf ww3_outp ww3_trck ww3_grib \
-          ww3_gint gx_outf gx_outp
+          ww3_gspl ww3_gint gx_outf gx_outp
 
 # --------------------------------------------------------------------------- #
 # 3. Compile MPI codes                                                        #

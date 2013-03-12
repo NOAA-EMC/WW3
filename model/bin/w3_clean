@@ -9,7 +9,7 @@
 #                                                      Hendrik L. Tolman      #
 #                                                      Feb. 2012              #
 #                                                                             #
-#    Copyright 2009-2012 National Weather Service (NWS),                      #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -176,8 +176,23 @@ EOF
     rm -f *.grads
     rm -f *.ctl
     rm -f map.gs
-    rm -f *.ctl
-    rm -f *.grads
+    rm -f ww3_mask.*
+    rm -rf ww3_gspl.temp
+    rm -f ww3.ww3_gspl
+
+    set +e
+    files=`ls ww3_multi.* 2> /dev/null`
+    set -e
+    if [ -n "$files" ]
+    then
+      for file in $files
+      do
+        if [ "$file" != 'ww3_multi.inp' ] 
+        then
+          rm -f $file
+        fi
+      done
+    fi
   done
 
 # --------------------------------------------------------------------------- #

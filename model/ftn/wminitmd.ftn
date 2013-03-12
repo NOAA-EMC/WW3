@@ -25,6 +25,10 @@
 !/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
 !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
 !/                  Tom Durrant's fix, but moved to allocation.
+!/    02-Sep-2012 : Set up for > 999 test files.        ( version 4.10 )
+!/                  Set up output for  > 999 procs.
+!/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
+!/                  Switch test file on/off (TSTOUT)
 !/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
 !/                  required for regridding.            ( version 4.08 )
 !/                  (T. J. Campbell, NRL)
@@ -104,6 +108,10 @@
 !/                  (T. J. Campbell, NRL)
 !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
 !/                  Tom Durant's fix, but moved to allocation.
+!/    02-Sep-2012 : Set up for > 999 test files.        ( version 4.10 )
+!/                  Set up output for  > 999 procs.
+!/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
+!/                  Switch test file on/off (TSTOUT)
 !/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
 !/                  required for regridding.            ( version 4.08 )
 !/                  (T. J. Campbell, NRL)
@@ -242,9 +250,6 @@
 !        ---------------------------------------------------
 !      6.  Read moving grid data
 !      7.  Work load distribution
-
-
-
 !        a Initialize arrays
 !        b Set communicators and ALLPRC array
 !        c Set MODMAP and LOADMP arrays
@@ -333,7 +338,7 @@
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
                           INPMAP, IDINP
-!/F90      USE WMMDATMD, ONLY: CLKT0, CLKINC, CLKMAX
+!/F90      USE WMMDATMD, ONLY: CLKT0, CLKTN, CLKINC, CLKMAX, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -360,7 +365,8 @@
                                  NDSREC, NDSFND, NPTS, JJ, IP1, IPN,  &
                                  MPI_COMM_LOC, NMPSC2, JJJ, TOUT(2),  &
                                  TLST(2), NCPROC, NPOUTT, NAPLOC,     &
-                                 NAPRES, NAPADD, NAPBCT
+                                 NAPRES, NAPADD, NAPBCT, IW, IFT
+!/F90      INTEGER                 :: CLKDT
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
@@ -375,15 +381,17 @@
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:), FLRBPI(:), BCDTMP(:),    &
                                  USEINP(:), LPRT(:), FLGR2(:,:)
       CHARACTER(LEN=1)        :: COMSTR
-      CHARACTER(LEN=3)        :: IDSTR(7), IDTST, OUTSTR(6)
+      CHARACTER(LEN=3)        :: IDSTR(7), IDTST
+      CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
       CHARACTER(LEN=6)        :: ACTION(9), YESXX, XXXNO
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
       CHARACTER(LEN=10)       :: STDATE, PN, MN, TNAMES(7)
       CHARACTER(LEN=11),                                              &
                   ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
-!/DIST      CHARACTER(LEN=12)       :: TFILE
-!/MPRF      CHARACTER(LEN=12)       :: PFILE
+      CHARACTER(LEN=12)       :: FORMAT
+!/DIST      CHARACTER(LEN=18)       :: TFILE
+!/MPRF      CHARACTER(LEN=18)       :: PFILE
       CHARACTER(LEN=13)       :: IDFLDS(7)
       CHARACTER(LEN=23)       :: DTME21
       CHARACTER(LEN=30)       :: IDOTYP(7)
@@ -497,9 +505,13 @@
       JJ     = LEN_TRIM(FNMPRE)
 !
       LFILE  = 'log.mww3'
+      IW     = 1 + INT ( LOG10 ( REAL(NMPROC) + 0.5 ) )
+      IW     = MAX ( 3 , MIN ( 9 , IW ) ) 
+      WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)') '(A4,I',IW,'.',IW,',A5)'
 !/SHRD       TFILE  = 'test.mww3'
-!/DIST       WRITE (TFILE,'(A4,I3.3,A5)') 'test', IMPROC, '.mww3'
-!/MPRF       WRITE (PFILE,'(A4,I3.3,A5)') 'prf.', IMPROC, '.mww3'
+!/DIST       WRITE (TFILE,FORMAT) 'test', IMPROC, '.mww3'
+!/MPRF       WRITE (PFILE,FORMAT) 'prf.', IMPROC, '.mww3'
+      IFT    = LEN_TRIM(TFILE)
 !
       IF ( IMPROC .EQ. NMPLOG ) THEN
           OPEN (MDSO,FILE=FNMPRE(:JJ)//LFILE,ERR=2010,IOSTAT=IERR)
@@ -512,16 +524,16 @@
                        'Log file on other processors')
         END IF
 !
-      IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS ) THEN
-          OPEN (MDST,FILE=FNMPRE(:JJ)//TFILE,ERR=2011,IOSTAT=IERR)
+      IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
+          OPEN (MDST,FILE=FNMPRE(:JJ)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
           CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
-                        FNMPRE(:JJ)//TFILE, 'Test output file')
+                        FNMPRE(:JJ)//TFILE(:IFT), 'Test output file')
         END IF
 !
 !/MPRF      CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
 !/MPRF      CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
-!/MPRF                    FNMPRE(:JJ)//PFILE, 'Profiling file')
-!/MPRF      OPEN (MDSP,FILE=FNMPRE(:JJ)//PFILE,ERR=2011,IOSTAT=IERR)
+!/MPRF                    FNMPRE(:JJ)//PFILE(:IFT), 'Profiling file')
+!/MPRF      OPEN (MDSP,FILE=FNMPRE(:JJ)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
 !
 ! 1.e Initial and test output
 !
@@ -926,11 +938,11 @@
           WRITE (LINE(JJJ+1:JJJ+3),'(I3)') INGRP(J,JJ)
 !
           LINE(JJJ+4:JJJ+5) = ' ('
-          WRITE (LINE(JJJ+6:JJJ+9),'(F4.2)') RP1(INGRP(J,JJ))
-          LINE(JJJ+10:JJJ+10) = '-'
-          WRITE (LINE(JJJ+11:JJJ+14),'(F4.2)') RPN(INGRP(J,JJ))
-          LINE(JJJ+15:JJJ+15) = ')'
-          JJJ    = JJJ + 15
+          WRITE (LINE(JJJ+6:JJJ+11),'(F6.4)') RP1(INGRP(J,JJ))
+          LINE(JJJ+12:JJJ+12) = '-'
+          WRITE (LINE(JJJ+13:JJJ+18),'(F6.4)') RPN(INGRP(J,JJ))
+          LINE(JJJ+19:JJJ+19) = ')'
+          JJJ    = JJJ + 19
 !
           END DO
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
@@ -1662,7 +1674,7 @@
 !
         IP1    = MAX( 1 , MIN ( NCPROC , 1+NINT(REAL(NCPROC)*RP1(I)) ) )
         IPN    = MAX( IP1 , MIN ( NCPROC , NINT(REAL(NCPROC)*RPN(I)) ) )
-        OUTSTR = '---'
+        OUTSTR = '-----'
 !
         CALL WMSETM ( I, MDSE, MDST )
         NAPLOC = 1 + IPN - IP1
@@ -1726,71 +1738,71 @@
         IF ( IOSTYP .LE. 1 ) THEN
 !
             IF ( ODAT( 3,I) .GT. 0 ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(MAX(1,NAPLOC-1))+1
-                OUTSTR(1) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(MAX(1,NAPLOC-1))+1
+                OUTSTR(1) = STOUT
               END IF
             IF ( ODAT( 8,I) .GT. 0 .OR. UNIPTS ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(MAX(1,NAPLOC-2))+1
-                OUTSTR(2) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(MAX(1,NAPLOC-2))+1
+                OUTSTR(2) = STOUT
               END IF
             IF ( ODAT(13,I) .GT. 0 ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(MAX(1,NAPLOC-5))+1
-                OUTSTR(3) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(MAX(1,NAPLOC-5))+1
+                OUTSTR(3) = STOUT
               END IF
             IF ( ODAT(18,I) .GT. 0 ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(NAPLOC)+1
-                OUTSTR(4) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(NAPLOC)+1
+                OUTSTR(4) = STOUT
               END IF
             IF ( ODAT(23,I) .GT. 0 ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(MAX(1,NAPLOC-3))+1
-                OUTSTR(5) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(MAX(1,NAPLOC-3))+1
+                OUTSTR(5) = STOUT
               END IF
             IF ( ODAT(28,I) .GT. 0 ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(MAX(1,NAPLOC-4))+1
-                OUTSTR(6) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(MAX(1,NAPLOC-4))+1
+                OUTSTR(6) = STOUT
               END IF
 !
           ELSE
 !
             IF ( UNIPTS ) THEN
-                WRITE (IDTST,'(I3.3)') TMPRNK(II) + 1
-                OUTSTR(2) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
+                OUTSTR(2) = STOUT
                 IF ( UPPROC ) II = II - 1
               END IF
 !
             IF ( IOSTYP .EQ. 2 ) THEN
 !
-                WRITE (IDTST,'(I3.3)') TMPRNK(II) + 1
-                IF ( ODAT( 3,I) .GT. 0 ) OUTSTR(1) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
+                IF ( ODAT( 3,I) .GT. 0 ) OUTSTR(1) = STOUT
                 IF ( ODAT( 8,I) .GT. 0 .OR.                           &
                                     ( UNIPTS .AND. .NOT.UPPROC ) )    &
-                                         OUTSTR(2) = IDTST
-                IF ( ODAT(13,I) .GT. 0 ) OUTSTR(3) = IDTST
-                IF ( ODAT(18,I) .GT. 0 ) OUTSTR(4) = IDTST
-                IF ( ODAT(23,I) .GT. 0 ) OUTSTR(5) = IDTST
-                IF ( ODAT(28,I) .GT. 0 ) OUTSTR(6) = IDTST
+                                         OUTSTR(2) = STOUT
+                IF ( ODAT(13,I) .GT. 0 ) OUTSTR(3) = STOUT
+                IF ( ODAT(18,I) .GT. 0 ) OUTSTR(4) = STOUT
+                IF ( ODAT(23,I) .GT. 0 ) OUTSTR(5) = STOUT
+                IF ( ODAT(28,I) .GT. 0 ) OUTSTR(6) = STOUT
 !
               ELSE IF ( IOSTYP .EQ. 3 ) THEN
 !
                 IF ( ODAT( 3,I).GT.0 ) THEN
-                    WRITE (IDTST,'(I3.3)') TMPRNK(II) + 1
-                    OUTSTR(1) = IDTST
+                    WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
+                    OUTSTR(1) = STOUT
                     II        = II - 1
                   END IF
                 IF ( ODAT(13,I).GT.0 ) THEN
-                    WRITE (IDTST,'(I3.3)') TMPRNK(II) + 1
-                    OUTSTR(3) = IDTST
+                    WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
+                    OUTSTR(3) = STOUT
                     II        = II - 1
                   END IF
                 IF ( ODAT(28,I).GT.0 ) THEN
-                    WRITE (IDTST,'(I3.3)') TMPRNK(II) + 1
-                    OUTSTR(6) = IDTST
+                    WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
+                    OUTSTR(6) = STOUT
                     II        = II - 1
                   END IF
-                WRITE (IDTST,'(I3.3)') TMPRNK(II) + 1
-                IF ( ODAT( 8,I) .GT. 0 ) OUTSTR(2) = IDTST
-                IF ( ODAT(18,I) .GT. 0 ) OUTSTR(4) = IDTST
-                IF ( ODAT(23,I) .GT. 0 ) OUTSTR(5) = IDTST
+                WRITE (STOUT,'(I5.5)') TMPRNK(II) + 1
+                IF ( ODAT( 8,I) .GT. 0 ) OUTSTR(2) = STOUT
+                IF ( ODAT(18,I) .GT. 0 ) OUTSTR(4) = STOUT
+                IF ( ODAT(23,I) .GT. 0 ) OUTSTR(5) = STOUT
 !
               END IF
 !
@@ -1968,8 +1980,8 @@
 !
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
-                      FLGRD(:,I),FLGR2(:,I), OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y,    &
-                      OT2(I)%PNAMES, IPRT(:,I), LPRT(I), MPI_COMM_LOC )
+             FLGRD(:,I),FLGR2(:,I), OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y,  &
+             OT2(I)%PNAMES, IPRT(:,I), LPRT(I), MPI_COMM_LOC )
 !
 ! ..... Finalize I/O file hook up
 !
@@ -2567,9 +2579,21 @@
 !    Test output of connected units (always)
 !
       CALL WMUSET ( MDSE, MDST, SCRATCH, .FALSE. )
-      CALL WMUDMP ( MDST, 0 )
+      IF ( TSTOUT ) CALL WMUDMP ( MDST, 0 )
 !
       DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, INAMES, MNAMES )
+!
+!/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
+!
+!/F90      CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
+!/F90      IF ( CLKMAX .NE. 0 ) THEN
+!/F90          IF ( CLKTN-CLKT0 .GE. 0 ) THEN
+!/F90              CLKDT  = CLKTN-CLKT0
+!/F90            ELSE
+!/F90              CLKDT  = CLKTN-CLKT0 + CLKMAX
+!/F90            END IF
+!/F90          CLKFIN = REAL(CLKDT)/REAL(CLKINC)
+!/F90        END IF
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN
@@ -2752,21 +2776,25 @@
   970 FORMAT(//'  Assigning resources : '/                            &
                ' --------------------------------------------------')
   971 FORMAT ( '       ',A)
-  972 FORMAT ( '       Process ',I3.3,' reserved for all point output.')
-  973 FORMAT ( '       Processes ',I3.3,' through ',I3.3,' [',I3,']', &
+  972 FORMAT ( '       Process ',I5.5,' reserved for all point output.')
+  973 FORMAT ( '       Processes ',I5.5,' through ',I5.5,' [',I3,']', &
                ' reserved for output.')
   974 FORMAT (/                                                       &
-        5X,'  grid         comp.   grd  pnt  trk  rst  bpt  prt'/     &
-        5X,' ---------------------------------------------------')
-  975 FORMAT (5X,'  ',A10,2X,I3.3,'-',I3.3,6(2x,A3))
-  976 FORMAT(5X,' ---------------------------------------------------')
-  977 FORMAT (5X,'    Unified point output at ',I3.3)
+        5X,'  grid           comp.      grd    pnt    trk    rst    bpt    prt'/     &
+        5X,' ------------------------------------------------------', &
+           '-------------')
+  975 FORMAT (5X,'  ',A10,2X,I5.5,'-',I5.5,6(2x,A5))
+  976 FORMAT(5X,' -------------------------------------------------', &
+                '------------------')
+  977 FORMAT (5X,'    Unified point output at ',I5.5)
  1974 FORMAT ('  Resource assignement (processes) : '/                &
-           '  grid         comp.   grd  pnt  trk  rst  bpt  prt'/     &
-           ' ---------------------------------------------------')
- 1975 FORMAT ('  ',A10,2X,I3.3,'-',I3.3,6(2x,A3))
- 1976 FORMAT (' ---------------------------------------------------')
- 1977 FORMAT ('    Unified point output at ',I3.3)
+           '  grid           comp.      grd    pnt    trk    rst    bpt    prt'/     &
+           ' ------------------------------------------------------', &
+           '-------------')
+ 1975 FORMAT ('  ',A10,2X,I5.5,'-',I5.5,6(2x,A5))
+ 1976 FORMAT (' ---------------------------------------------------', &
+              '----------------')
+ 1977 FORMAT ('    Unified point output at ',I5.5)
 !
   980 FORMAT(//'  Initializations :'/                                 &
                ' --------------------------------------------------')

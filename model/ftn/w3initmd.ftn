@@ -39,10 +39,13 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    02-Sep.2012 : Set up for > 999 test files.        ( version 4.10 )
+!/                  Reset UST initialization.
+!/    03-Sep-2012 : Switch test file on/off (TSTOUT)    ( version 4.10 )
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/    30-Sep-2012 : Implemetation of tidal constituents ( version 4.09 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -93,7 +96,7 @@
       PUBLIC
 !/
       REAL, PARAMETER              :: CRITOS = 15.
-      CHARACTER*10, PARAMETER      :: WWVER  = '4.09 '
+      CHARACTER*10, PARAMETER      :: WWVER  = '4.10 '
       CHARACTER*512, PARAMETER      :: SWITCHES  = &
           &"PUT_SW1&
           &PUT_SW2&
@@ -110,7 +113,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         03-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -147,6 +150,8 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    02-Sep.2012 : Set up for > 999 test files.        ( version 4.10 )
+!/    03-Sep-2012 : Switch test file on/off (TSTOUT)    ( version 4.10 )
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/
 !  1. Purpose :
@@ -357,7 +362,7 @@
                                  NTTARG, IK, IP, ITH, INTYPE, IX, IY, &
                                  J, J0, TOUT(2), TLST(2), ISEA, IS,   &
                                  K, I1, I2, JSEA, NTTMAX
-!/DIST      INTEGER                 :: ISTEP, ISP
+!/DIST      INTEGER                 :: ISTEP, ISP, IW
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T      INTEGER                 :: NX0, NXN
@@ -372,6 +377,7 @@
       LOGICAL                 :: OPENED
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=10)       :: STDATE
+!/DIST      CHARACTER(LEN=12)       :: FORMAT
       CHARACTER(LEN=23)       :: DTME21
       CHARACTER(LEN=30)       :: LFILE, TFILE
 !/
@@ -478,7 +484,11 @@
       LFILE  = 'log.' // FEXT(:IE)
       IFL    = LEN_TRIM(LFILE)
 !/SHRD       TFILE  = 'test.' // FEXT(:IE)
-!/DIST       WRITE (TFILE,'(A4,I3.3,2A)') 'test',                     &
+!/DIST      IW     = 1 + INT ( LOG10 ( REAL(NAPROC) + 0.5 ) )
+!/DIST      IW     = MAX ( 3 , MIN ( 9 , IW ) ) 
+!/DIST      WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)')                     &
+!/DIST                   '(A4,I', IW, '.', IW, ',2A)'
+!/DIST      WRITE (TFILE,FORMAT) 'test',                             &
 !/DIST                    OUTPTS(IMOD)%IAPROC, '.', FEXT(:IE)
       IFT    = LEN_TRIM(TFILE)
       J      = LEN_TRIM(FNMPRE)
@@ -486,11 +496,12 @@
       IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
           OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
 !
-      IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) ) THEN
+      IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
           INQUIRE (MDS(3),OPENED=OPENED)
           IF ( .NOT. OPENED ) OPEN                                    &
                (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT),ERR=889,IOSTAT=IERR)
         END IF
+!
 ! 1.d Dataset unit numbers
 !
       NDS    = MDS
@@ -907,7 +918,7 @@
 !
       AS     = UNDEF
 !
-      UST   (:) = 0.
+      UST   (:) = 1.E-5
       USTDIR(:) = 0.
       AS    (0) = 0.
       DW    (0) = 0.
@@ -1048,14 +1059,14 @@
   983 FORMAT ( ' Ice field time   : ',A)
 !
   984 FORMAT (//                                                      &
-        43X,'  |    input    |     output    |'/                        &
-        43X,'  |-------------|---------------|'/                        &
+        43X,'  |    input    |     output    |'/                      &
+        43X,'  |-------------|---------------|'/                      &
          8X,'   step | pass |    date      time   | b w l c i d |',   &
               ' g p t r b f c |'/                                     &
          8X,'--------|------|---------------------|-------------|',   &
-              '---------------|'/                                       &
-         8X,'--------+------+---------------------+---------------+',   &
-              '-------------+')
+              '---------------|'/                                     &
+         8X,'--------+------+---------------------+-------------+',   &
+              '---------------+')
   987 FORMAT (/' Coupling output fields : '/                          &
                '--------------------------------------------------')
 !
