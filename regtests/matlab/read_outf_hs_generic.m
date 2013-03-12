@@ -1,4 +1,4 @@
-function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,units,plot_bathy,headeroffset)
+function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,units,plot_bathy)
 
 % Purpose: scan depth (if ploty_bath==1) and Hs files 
 %     and make simple x,y plots and save fields
@@ -6,6 +6,10 @@ function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,unit
 %     assumed that the .mat file will subsequently be used to make better 
 %     plots (especially in case of curvilinear grid, since plot will be 
 %     distorted here).
+
+% Name: read_outf_hs_generic.m
+% Origination: E Rogers 
+% This header last updated: E Rogers Jan 11 2013
 
 icheck=1;
 
@@ -35,12 +39,12 @@ for itime=1:1000
     if exist(filename) == 2
       disp([filename ' does exist.'])
       
-      [xgrd,ygrd,depth,year,month,day,hour,minute]=read_scalar(filename,icheck,headeroffset);
+      [xgrd,ygrd,depth,year,month,day,hour,minute]=read_scalar(filename,icheck);
       time(itime)=datenum(year,month,day,hour,minute,0);
       icheck=0;
       
       figure(1),clf,hold off
-      imagesc2(xgrd,ygrd,depth')
+      imagesc(xgrd,ygrd,depth')
       colormap(jet)
       axis xy
       axis equal
@@ -70,7 +74,7 @@ for itime=1:1000
   if exist(filename) == 2
     disp([filename ' does exist; itime = ' num2str(itime)])
     
-    str=['[xgrd,ygrd,' variablename ',year,month,day,hour,minute]=read_scalar(filename,icheck,headeroffset);'];eval(str)
+    str=['[xgrd,ygrd,' variablename ',year,month,day,hour,minute]=read_scalar(filename,icheck);'];eval(str)
     filenames{itime}=filename; % for error checking
     time_filenames(itime)=time_filename; % for error checking
     time(itime)=datenum(year,month,day,hour,minute,0);
@@ -81,7 +85,7 @@ for itime=1:1000
       str=['    ' variablename '(i)=-99;'];eval(str)
     end
     figure(2),clf,hold off
-    str=['    imagesc2(xgrd,ygrd,' variablename ''')'];eval(str)
+    str=['    imagesc(xgrd,ygrd,' variablename ''')'];eval(str)
     colormap(wermap)
     axis xy
     axis equal
