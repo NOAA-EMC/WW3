@@ -635,7 +635,7 @@
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_gint) IDstring='Grid Interpolation'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
