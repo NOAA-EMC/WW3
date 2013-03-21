@@ -408,12 +408,8 @@ then
   echo '+--------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
-  else
-    \cp -f $file_c $path_b/switch
-  fi
+
   if $path_b/w3_make $prog
   then :
   else
@@ -773,6 +769,7 @@ then
       runcmd="$runcmd -np $nproc"
     fi
   fi
+
   if $runcmd $path_e/$prog | tee $ofile
   then
     \rm -f track_i.ww3

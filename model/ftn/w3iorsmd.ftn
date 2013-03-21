@@ -238,7 +238,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)           :: NDSR
+      INTEGER                       :: NDSR
+!      INTEGER, INTENT(IN)           :: NDSR
       INTEGER, INTENT(IN), OPTIONAL :: IMOD
       INTEGER, INTENT(OUT)          :: INTYPE
       REAL, INTENT(INOUT)           :: DUMFPI
@@ -269,6 +270,13 @@
 !/
 !/S      CALL STRACE (IENT, 'W3IORS')
 !
+!
+! Constant NDSR for using mpiifort in ZEUS ... paralell runs crashing 
+!  because compiler doesn't accept reciclyng of UNIT for FORMATTED or
+!  UNFORMATTED files in OPEN
+!
+!     NDSR = 525
+
       IOSFLG = IOSTYP .GT. 0
 !
 ! test parameter list input ------------------------------------------ *

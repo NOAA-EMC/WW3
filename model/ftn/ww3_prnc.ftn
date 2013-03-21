@@ -14,6 +14,7 @@
 !/    30-Sep-2012 : Implement tidal analysis            ( version 4.08 )
 !/    29-Oct-2012 : Parallelization of tidal analysis   ( version 4.08 )
 !/     4-Mar-2012 : allows any NetCDF dimensions names  ( version 4.09 ) 
+!/    13-Mar-2012 : Makes compatible with NC3           ( version 4.10 ) 
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -190,13 +191,13 @@
 !/LRB4      INTEGER, PARAMETER      :: LRB = 4
 !/LRB8      INTEGER, PARAMETER      :: LRB = 8
       INTEGER, ALLOCATABLE    :: NXL(:)
-      INTEGER                 :: NTI, NDSEN
+      INTEGER                 :: NTI, NDSEN, IND
       CHARACTER               :: STRFIELDSNAME*1024
       CHARACTER               :: FIELDSNAME(4)*30
       CHARACTER               :: STRDIMSNAME*1024
       CHARACTER               :: DIMSNAME(2)*30
       INTEGER                 :: NIDIMS, NFIELDS
-      INTEGER                 :: JPC, IND
+      INTEGER                 :: JPC
       INTEGER(KIND=4)         :: IX, IY, JX, NXLM
       INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
                                  IERR, IFLD, ITYPE, J, NFCOMP,        &
@@ -243,10 +244,11 @@
       INTEGER                 :: GTYPEDUM = 0
 !
       INTEGER               :: ncid, iret, ndims, parents, nvars,     &
-                               NDIMSGRID, natts, varidtmp, varidf(50)
+                               NDIMSGRID, NDIMSVAR, natts, varidtmp, varidf(50)
       INTEGER               :: numDimsLon, numAttsLon
-      INTEGER, ALLOCATABLE  :: varid(:), dimid(:), dimln(:), varndims(:), vardimids(:,:)
-      CHARACTER*10, DIMENSION(:), ALLOCATABLE   :: varname, dimname
+      INTEGER               :: DIMSVAR(4)
+       INTEGER               :: dimln(5),dimid(5) 
+      CHARACTER*20          :: dimname(5)
       CHARACTER*50          :: timeunits
       DOUBLE PRECISION      :: dateref, datecur
       REAL                  :: scur, mncur, hcur, fillvalue
@@ -476,30 +478,18 @@
       J = LEN_TRIM(FNMPRE)
       iret=nf90_open(path=FNMPRE(:J)//NAMEF,mode=nf90_noWRITE,ncid=ncid)
       CALL check_err(iret)
-      ! gets number of dimensions, variables, global attributes
-      iret=nf90_inquire(ncid, ndims, nvars, natts)
-      CALL check_err(iret)
-      ! gets id of each dimension
-      ALLOCATE(dimname(ndims),dimid(ndims),dimln(ndims))
-      iret=nf90_inq_dimids(ncid,ndims,dimid,parents)
-      CALL check_err(iret)
-      ! gets name and length of each dimension
-      DO i=1,ndims
-        iret=nf90_inquire_dimension(ncid,dimid(i),name=dimname(i),len=dimln(i))
-        CALL check_err(iret)
-      END DO
-
-      ! gets id of each variable
-      ALLOCATE(varname(nvars),varid(nvars))
-      iret=nf90_inq_varids(ncid,nvars,varid)
-      CALL check_err(iret)
-
-      ! gets name of each variable
-      ALLOCATE(varndims(nvars),vardimids(nvars,NF90_MAX_VAR_DIMS))
-      DO i=1,nvars
-        iret=nf90_inquire_variable(ncid,varid(i),name=varname(i),ndims=varndims(i),dimids=vardimids(i,:))
-        CALL check_err(iret)
-      END DO
+!
+! gets requested variables ids and dimensions
+!
+      DO I=1,NFIELDS
+        iret = nf90_inq_varid(ncid,FIELDSNAME(I),varidf(I))
+        iret = nf90_inquire_variable(ncid, varidf(I), ndims = NDIMSVAR, natts = nAtts)
+        iret = nf90_inquire_variable(ncid, varidf(I), dimids = DIMSVAR(:NDIMSVAR))
+! Now the dimensions
+        DO J=1,NDIMSVAR
+          iret=nf90_inquire_dimension(ncid,DIMSVAR(J),name=dimname(J),len=dimln(J))
+          END DO
+        END DO
 !
 ! instanciates time
 !
@@ -518,7 +508,7 @@
         read(timeunits(13:16),'(I4.4)') yref
         read(timeunits(18:19),'(I2.2)') mref
         read(timeunits(21:22),'(I2.2)') dref
-      END IF
+        END IF
       dateref=JULDAY(dref,mref,yref)
 !
 ! instanciates generic variables dimensions
@@ -526,15 +516,15 @@
       NXI=0
       NYI=0 
       NDIMSGRID=2
-      DO i=1,ndims
+      DO i=1,NDIMSVAR
         IF (dimname(i) .EQ. "time") NTI = dimln(i)
-        IF (dimname(i) .EQ. DIMSNAME(1))  NXI = dimln(i)
+        IF (dimname(i) .EQ. DIMSNAME(1)) NXI = dimln(i)
         IF (dimname(i) .EQ. DIMSNAME(1).AND.NIDIMS.EQ.1) THEN
           NDIMSGRID=1
           NYI = 1
           END IF
         IF (NIDIMS.GE.2) THEN 
-          IF (dimname(i) .EQ. DIMSNAME(2))  NYI = dimln(i)
+          IF (dimname(i) .EQ. DIMSNAME(2)) NYI = dimln(i)
           END IF
         END DO
 !
@@ -1367,15 +1357,16 @@
 ! ... Input
 !
         IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6) THEN
-            iret=nf90_inq_varid(ncid,FIELDSNAME(1),varidtmp)
-            CALL check_err(iret)
             IF (NDIMSGRID.EQ.1) THEN 
-              iret=nf90_get_var(ncid,varidtmp,XC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
+              iret=nf90_get_var(ncid,varidf(1),XC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
+            ELSE
+              IF (NDIMSVAR.EQ.3) THEN 
+                iret=nf90_get_var(ncid,varidf(1),XC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
+              ELSE 
+                iret=nf90_get_var(ncid,varidf(1),XC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
+                END IF
+              END IF
             CALL check_err(iret)
-            ELSE 
-              iret=nf90_get_var(ncid,varidtmp,XC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-              CALL check_err(iret)
-            ENDIF
             !XC(:,:)=XC(:,MYM:1:-1)
 
 !
@@ -1395,17 +1386,18 @@
 !
             IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
 
-                iret=nf90_inq_varid(ncid,FIELDSNAME(2),varidtmp)
-                CALL check_err(iret)
-                IF (NDIMSGRID.EQ.1) THEN 
-                  iret=nf90_get_var(ncid,varidtmp,YC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
-                CALL check_err(iret)
-                ELSE 
-                  iret=nf90_get_var(ncid,varidtmp,YC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-                  CALL check_err(iret)
-                END IF
-                !YC(:,:)=YC(:,MYM:1:-1)
-
+! This is a quick fix that works if the lon,lat,level,time dimensions are in that order
+! otherwise, one should check the length of each dimension ... 
+                    IF (NDIMSGRID.EQ.1) THEN
+                      iret=nf90_get_var(ncid,varidf(2),YC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
+                    ELSE
+                      IF (NDIMSVAR.EQ.3) THEN
+                        iret=nf90_get_var(ncid,varidf(2),YC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
+                      ELSE
+                        iret=nf90_get_var(ncid,varidf(2),YC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
+                        END IF
+                      END IF
+                    CALL check_err(iret)
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
@@ -1422,16 +1414,18 @@
 !/T2                  END DO
 !
                 IF (FLSTAB) THEN
-
-                    iret=nf90_inq_varid(ncid,FIELDSNAME(3),varidtmp)
-                    CALL check_err(iret)
+! This is a quick fix that works if the lon,lat,level,time dimensions are in that order
+! otherwise, one should check the length of each dimension ... 
                     IF (NDIMSGRID.EQ.1) THEN 
-                      iret=nf90_get_var(ncid,varidtmp,AC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
-                    CALL check_err(iret)
+                      iret=nf90_get_var(ncid,varidf(3),AC(:,1),start=(/1,ITIME/),count=(/MXM,1/))
                     ELSE 
-                      iret=nf90_get_var(ncid,varidtmp,AC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-                      CALL check_err(iret)
-                    END IF
+                      IF (NDIMSVAR.EQ.3) THEN
+                        iret=nf90_get_var(ncid,varidf(3),AC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
+                      ELSE
+                        iret=nf90_get_var(ncid,varidf(3),AC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
+                        END IF
+                      END IF
+                    CALL check_err(iret)
                     !AC(:,:)=AC(:,MYM:1:-1)
 !
 !/T2                    WRITE (NDST,9060) 3
@@ -1713,7 +1707,6 @@
 !
       DEALLOCATE(XC,YC,AC)  
       IF (ASSOCIATED(ALA)) DEALLOCATE(ALA,ALO)
-      DEALLOCATE(varndims,vardimids,varname,varid,dimname,dimid,dimln)
 !
 !     End loop over input fields
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

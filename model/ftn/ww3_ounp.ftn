@@ -42,6 +42,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    24-Mar-2011 : Adaptation to NetCDF (M. Accensi)   ( version 4.04 )
 !/    16-Jul-2011 : NC3 / NC4 switch     (M. Accensi)   ( version 4.05 )
+!/    14-Mar-2013 : Writing optimization (M. Accensi)   ( version 4.09 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -132,7 +133,9 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
-                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE
+                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
+                          IPASS => IPASS2
+
 !/O14      USE W3ODATMD, ONLY: GRDID
 !
 
@@ -150,13 +153,15 @@
                                  NREQ, ITYPE, OTYPE, NDSTAB, IPOINT,  &
                                  IOTEST, IK, ITH, IOUT, J, DIMXP, K,  &
                                  icode, strl, strl2, FLWW3, NBFILEOUT,&
-                                 S8, S5, S4, S3, NBSTATION, NCTYPE
+                                 S8, S5, S4, S3, NBSTATION, NCTYPE,   &
+                                 NCFLUSH, NFL, MFL, IFL, NREQL
       INTEGER                 :: ISCALE = 0
 !/O14      INTEGER                 :: NDBO
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
       REAL                    :: M2KM
       REAL, ALLOCATABLE       :: XPART(:,:)
+      INTEGER, ALLOCATABLE    :: INDREQ(:), INDREQTMP(:)
       LOGICAL                 :: FLFORM, FLSRCE(6)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
       LOGICAL                 :: TOGETHER
@@ -173,6 +178,10 @@
       REAL(kind=4),DIMENSION(:),ALLOCATABLE    :: THD
       integer(kind=4)         :: iyc,imc,idc,ihc,iminc,isc
       CHARACTER*20            :: FORMAT1
+      LOGICAL                 :: exist
+      CHARACTER(8)            :: EXT
+      INTEGER                 :: TIME1(2)
+
 
 
 
@@ -310,6 +319,7 @@
 !
 
       ALLOCATE ( FLREQ(NOPTS) )
+      ALLOCATE ( INDREQTMP(NOPTS) )
       FLREQ = .FALSE.
       NREQ   = 0
       ALLOCATE (ncfile(NOPTS))
@@ -325,16 +335,22 @@
           IF (I.EQ.1) THEN
             FLREQ = .TRUE.
             NREQ = NOPTS
+            INDREQTMP=(/(J,J=1,NREQ)/) 
           END IF
           EXIT
         END IF
         ! existing index in out_pnt.ww3   
         IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
-          IF ( .NOT. FLREQ(IPOINT) ) NREQ = NREQ + 1
+          IF ( .NOT. FLREQ(IPOINT) ) THEN 
+            NREQ = NREQ + 1
+            INDREQTMP(NREQ)=I
+            END IF
           FLREQ(IPOINT) = .TRUE.
         END IF
       END DO
 
+      ALLOCATE ( INDREQ(NREQ) )
+      INDREQ(:)=INDREQTMP(1:NREQ)
 !
 ! ... Formats file prefix and date
 !
@@ -395,154 +411,173 @@
       DO ITH=1, NTH
         THD(ITH)=DTHD*(RTH0+REAL(ITH-1))
       END DO
-
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 5.  Now create files
+!     If too many (memory problem) then makes several reads 
+!
 !
 ! ... Define number of files/stations per file
 !
-      IF (TOGETHER) THEN
-        NBFILEOUT = 1
-        NBSTATION = NREQ
+      MFL=150
+      IF (TOGETHER) THEN 
+        NFL=1
       ELSE
-        NBFILEOUT = NOPTS
-        NBSTATION = 1
-      ENDIF
+        NFL=1+NOPTS/MFL
+        END IF
+!
+! ... Create filename listing
+!
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      IF (ITYPE .EQ. 1) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2
+      IF (ITYPE .EQ. 2) READ (NDSI,*,END=801,ERR=802) OTYPE
+      IF (ITYPE .EQ. 3) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
 
+      WRITE(EXT,'(A)') ''
+      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A)') '_tab.nc'
+      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A)') '_spec.nc'
+      IF ((ITYPE .EQ. 1) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A)') '_tab.nc'
+      IF  (ITYPE .EQ. 2)                     WRITE(EXT,'(A)') '_tab.nc'
+      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A)') '_tab.nc'
+      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A)') '_tab.nc'
+      IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A)') '_src.nc'
 
+!
+! ... Defines periodic flushing of buffer
+!
+      NCFLUSH=FLOOR(15E7/(FLOAT(NK)*FLOAT(NTH)*FLOAT(NREQ)/NFL))
+      IF (NREQ.GT.10.AND.(.NOT.TOGETHER)) WRITE(NDSE,*)           &
+           'Buffer will be flushed every ', NCFLUSH ,' steps.'
+!
+      IF (LEN_TRIM(EXT).NE.0) THEN
+!
+        DO I=1,NOPTS
+          IF (FLREQ(I).OR.TOGETHER) THEN
 
+            IF (TOGETHER) THEN
+              WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME), trim(EXT)
+            ELSE
+              WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME), trim(EXT)
+            END IF
+            WRITE (NDSO,1947) trim(NCNAME)
+            ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
 
+            ! remove duplicata if "one file per station" mode
+            IF (.NOT.TOGETHER) THEN
+              IF( SUM(index(ncfile(:),ncfile(I))).GT.1 ) THEN
+                FLREQ(I)=.FALSE.
+                write(NDSO,'(3A)')'      ', trim(PTNME(I)), ' already exists, it will be skipped'
+                CYCLE
+              END IF
+            END IF
 
+          END IF  ! FLREQ(I).OR.TOGETHER
+        END DO  ! I=1,NOPTS    
+      END IF  ! TRIM(EXT).NE.''
+
+      TIME1=TOUT 
+      DO IFL=1,NFL
+        IF (TOGETHER) THEN
+          NBFILEOUT = 1
+          NBSTATION = NREQ
+        ELSE
+          NBFILEOUT=MIN(MFL,NOPTS-(IFL-1)*MFL)
+          NBSTATION = 1
+          END IF
+
+        NREQL=0
+        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+          IF ( FLREQ(I) ) THEN
+            NREQL = NREQL + 1
+            END IF
+          END DO
+        IF (NREQL.GT.0) THEN 
 !
 ! ... ITYPE = 1
 !
-      IF (ITYPE .EQ. 1) THEN
-        WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra'
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2
+        IF (ITYPE .EQ. 1) THEN
+          WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra, pass #',IFL
 !
 ! ... OTYPE = 1
 !
-        IF (OTYPE .EQ. 1) THEN
-          WRITE (NDSO,943) 'print plots'
-          IF ( SCALE1 .LT. 0.  ) THEN
-            WRITE (NDSO,1940) '1-D'
-          ELSE IF ( SCALE1 .EQ. 0.  ) THEN
-            WRITE (NDSO,1941) '1-D'
-          ELSE
-            WRITE (NDSO,1942) '1-D', SCALE1
-          END IF
-          IF ( SCALE2 .LT. 0.  ) THEN
-            WRITE (NDSO,1940) '2-D'
-          ELSE IF ( SCALE2 .EQ. 0.  ) THEN
-            WRITE (NDSO,1941) '2-D'
-          ELSE
-            WRITE (NDSO,1942) '2-D', SCALE2
-          END IF
+          IF (OTYPE .EQ. 1) THEN
+            WRITE (NDSO,943) 'print plots'
+            IF ( SCALE1 .LT. 0.  ) THEN
+              WRITE (NDSO,1940) '1-D'
+            ELSE IF ( SCALE1 .EQ. 0.  ) THEN
+              WRITE (NDSO,1941) '1-D'
+            ELSE
+              WRITE (NDSO,1942) '1-D', SCALE1
+              END IF
+            IF ( SCALE2 .LT. 0.  ) THEN
+              WRITE (NDSO,1940) '2-D'
+            ELSE IF ( SCALE2 .EQ. 0.  ) THEN
+              WRITE (NDSO,1941) '2-D'
+            ELSE
+              WRITE (NDSO,1942) '2-D', SCALE2
+              END IF
 !
 ! ... OTYPE = 2
 !
-        ELSE IF ( OTYPE .EQ. 2 ) THEN
-          WRITE (NDSO,943) 'Table of 1-D spectral data'
-          DO I=1,NBFILEOUT
-            IF (FLREQ(I) .OR. TOGETHER) THEN
-
-              IF (TOGETHER) THEN
-                WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME),'_tab.nc'
-              ELSE
-                WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME),'_tab.nc'
-              END IF
-              WRITE (NDSO,1947) trim(NCNAME)
-
-              ! Create the netCDF file
-              dimln(1)=NF90_UNLIMITED  !time
-              dimln(2)=NBSTATION ! station
-              dimln(3)=16    ! string station name length
-              dimln(4)=NK ! freq
-              ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
-              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid)
-            END IF
-          END DO
+          ELSE IF ( OTYPE .EQ. 2 ) THEN
+            WRITE (NDSO,943) 'Table of 1-D spectral data'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+             ! Create the netCDF file
+                dimln(1)=NF90_UNLIMITED    ! time
+                dimln(2)=NBSTATION         ! station
+                dimln(3)=16                ! string station name length
+                dimln(4)=NK                ! freq
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid)
+                END IF
+              END DO
 !
 ! ... OTYPE = 3
 !
-        ELSE IF ( OTYPE .EQ. 3 ) THEN
-
-          WRITE (NDSO,943) 'Transfer file'
-          DO I=1,NBFILEOUT
-            IF (FLREQ(I) .OR. TOGETHER) THEN
-
-              IF (TOGETHER) THEN
-                WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME),'_spec.nc'
-              ELSE
-                WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME),'_spec.nc'
-              END IF
-              WRITE (NDSO,1947) trim(NCNAME)
-
+          ELSE IF ( OTYPE .EQ. 3 ) THEN
+            WRITE (NDSO,943) 'Transfer file'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
               ! Create the netCDF file
-              dimln(1)=NF90_UNLIMITED  !time
-              dimln(2)=NBSTATION ! station
-              dimln(3)=16    ! string station name length
-              dimln(4)=NK ! freq
-              dimln(5)=NTH ! dir
-              ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
-              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid)
-            END IF
-          END DO
+                dimln(1)=NF90_UNLIMITED  !time
+                dimln(2)=NBSTATION ! station
+                dimln(3)=16 ! string station name length
+                dimln(4)=NK ! freq
+                dimln(5)=NTH ! dir
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid)
+                END IF
+              END DO
 !
 ! ... OTYPE = 4
 !
-        ELSE IF ( OTYPE .EQ. 4 ) THEN
-          WRITE (NDSO,943) 'Partitioning of spectra'
-          DO I=1,NBFILEOUT
-            IF (FLREQ(I) .OR. TOGETHER) THEN
-
-              IF (TOGETHER) THEN
-                WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME),'_tab.nc'
-              ELSE
-                WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME),'_tab.nc'
-              END IF
-              WRITE (NDSO,1947) trim(NCNAME)
-
-              ! Create the netCDF file
-              dimln(1)=NF90_UNLIMITED  !time
-              dimln(2)=NBSTATION ! station
-              dimln(3)=16    ! string station name length
-              dimln(4)=DIMXP ! npart
-              ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
-              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid)
+          ELSE IF ( OTYPE .EQ. 4 ) THEN
+            WRITE (NDSO,943) 'Partitioning of spectra'
+            DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+              IF (FLREQ(I) .OR. TOGETHER) THEN
+                ! Create the netCDF file
+                dimln(1)=NF90_UNLIMITED  !time
+                dimln(2)=NBSTATION ! station
+                dimln(3)=16    ! string station name length
+                dimln(4)=DIMXP ! npart
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid)
+                END IF
+              END DO
+          ELSE
+            WRITE (NDSE,1011) OTYPE
+            CALL EXTCDE ( 10 )
             END IF
-          END DO
-
-        ELSE
-          WRITE (NDSE,1011) OTYPE
-          CALL EXTCDE ( 10 )
-        END IF
-
-
-
 !
 ! ... ITYPE = 2
 !
-      ELSE IF (ITYPE .EQ. 2) THEN
-        WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) OTYPE
-
-        DO I=1,NBFILEOUT
-          IF (FLREQ(I) .OR. TOGETHER) THEN
-
-            IF (TOGETHER) THEN
-              WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME),'_tab.nc'
-            ELSE
-              WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME),'_tab.nc'
-            END IF
-            WRITE (NDSO,1947) trim(NCNAME)
-
-            ! Create the netCDF file
+        ELSE IF (ITYPE .EQ. 2) THEN
+          WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
+            IF (FLREQ(I) .OR. TOGETHER) THEN
+            ! Create the netCDF file 
             dimln(1)=NF90_UNLIMITED  !time
             dimln(2)=NBSTATION ! station
             dimln(3)=16    ! string station name length
-            ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
-            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid)
+            CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid)
           END IF
         END DO
 !
@@ -581,7 +616,7 @@
           CALL EXTCDE ( 30 )
         END IF
 !
-        DO I=1, 6
+        DO I=1,6
           IF ( FLSRCE(I) ) WRITE (NDSO,3940) IDSRCE(I)
         END DO
         WRITE (NDSO,*) ' '
@@ -591,8 +626,6 @@
 !
       ELSE IF (ITYPE .EQ. 3) THEN
         WRITE (NDSO,942) ITYPE, 'Source terms'
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
 !/NCO    NDSTAB = 51
         ISCALE = MAX ( 0 , MIN ( 5 , ISCALE ) )
 !
@@ -629,22 +662,14 @@
             WRITE (NDSO,944) '(nondimensional based on U*)'
           END IF
 
-          DO I=1,NBFILEOUT
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
             IF (FLREQ(I) .OR. TOGETHER) THEN
-              IF (TOGETHER) THEN
-                WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME),'_tab.nc'
-              ELSE
-                WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME),'_tab.nc'
-              END IF
-              WRITE (NDSO,1947) trim(NCNAME)
-
               ! Create the netCDF file
               dimln(1)=NF90_UNLIMITED  !time
               dimln(2)=NBSTATION ! station
               dimln(3)=16    ! string station name length
               dimln(4)=NK ! freq
-              ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
-              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid)
+              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid)
             END IF
           END DO
 !
@@ -652,24 +677,15 @@
 !
         ELSE IF ( OTYPE .EQ. 4 ) THEN
           WRITE (NDSO,943) 'Transfer file'
-          DO I=1,NBFILEOUT
+          DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
             IF (FLREQ(I) .OR. TOGETHER) THEN
-
-              IF (TOGETHER) THEN
-                WRITE (NCNAME, '(3A)') trim(FILEPREFIX), trim(FILETIME),'_src.nc'
-              ELSE
-                WRITE (NCNAME, '(5A)') trim(FILEPREFIX), trim(PTNME(I)),'_', trim(FILETIME),'_src.nc'
-              END IF
-              WRITE (NDSO,1947) trim(NCNAME)
-
               ! Create the netCDF file
               dimln(1)=NF90_UNLIMITED  !time
               dimln(2)=NBSTATION ! station
               dimln(3)=16    ! string station name length
               dimln(4)=NK ! freq
               dimln(5)=NTH ! dir
-              ncfile(I)=trim(FNMPRE(:J)//trim(NCNAME))  ! filename
-              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid)
+              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid)
             END IF
           END DO
 !
@@ -691,7 +707,7 @@
 ! ... Output of output points
 !
       WRITE (NDSO,950) NREQ
-      DO I=1, NOPTS
+      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
         IF (FLREQ(I)) THEN
           IF ( FLAGLL ) THEN
             WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
@@ -704,13 +720,8 @@
       END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 5.  Time management.
+! 6.  Time management.
 !
-      IF (TOGETHER) THEN
-        NBFILEOUT = 1
-      ELSE
-        NBFILEOUT = NOPTS
-      ENDIF
 !
       IOUT   = 0
       iyc=TIME(1)/10000
@@ -738,12 +749,25 @@
 !
         IOUT   = IOUT + 1
         CALL STME21 ( TOUT , IDTIME )
+!
+! Writes out a progress message
+!
+        IF (NREQ.GT.10.OR.NBFILEOUT.GT.10) WRITE(NDSE,'(A,2I8,4(A,I4))')         &
+              'Processing time:',TIME,' in ', NBFILEOUT ,' files. Step ', &
+                              IOUT,' out of  ',NOUT, ' pass ',IFL
 
-        DO I=1,NBFILEOUT
+        J=0
+        DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
           IF (FLREQ(I) .OR. TOGETHER) THEN
-            CALL W3EXNC(I,ncid(I))
-          END IF
-        END DO
+            IF ( TOGETHER ) THEN  
+              CALL W3EXNC(I,ncid(I),NREQ,INDREQ)
+            ELSE 
+              J=J+1
+              CALL W3EXNC(I,ncid(I),1,(/ I /) )
+              IF (MOD(IOUT,NCFLUSH).EQ.0) iret=NF90_SYNC(ncid(I))
+              END IF
+            END IF
+          END DO
 
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) GOTO 700
@@ -763,15 +787,10 @@
       ihc=TIME(2)/10000
       iminc=(TIME(2)-ihc*10000)/100
       isc=TIME(2)-ihc*10000-100*iminc
-      WRITE(stopdate,'(I4.4,A,5(I2.2,A))') iyc,'-',imc,'-',idc,'T',ihc,':',iminc,':',isc,'Z' 
-
-      IF (TOGETHER) THEN
-        NBFILEOUT = 1
-      ELSE
-        NBFILEOUT = NOPTS
-      ENDIF
-
-      DO I=1,NBFILEOUT
+      WRITE(stopdate,'(I4.4,A,5(I2.2,A))') iyc,'-',imc,'-',idc,'T',     &
+                                           ihc,':',iminc,':',isc,'Z' 
+!
+      DO I=1+(IFL-1)*MFL,NBFILEOUT
 
         IF ( FLREQ(I) .OR. TOGETHER ) THEN
           iret=nf90_redef(ncid(I))
@@ -831,15 +850,21 @@
               iret=nf90_put_att(ncid(I),NF90_GLOBAL,'field_type','n/a')
             END IF
 
-          ! Close netCDF file
-          iret=nf90_enddef(ncid(I))
-          call check_err(iret)
-          iret=nf90_close(ncid(I))
-          call check_err(iret)
+            ! Close netCDF file
+            iret=nf90_enddef(ncid(I))
+            call check_err(iret)
+            iret=nf90_close(ncid(I))
+            call check_err(iret)
 
-        END IF
-      END DO
-
+            END IF
+          END DO
+        CLOSE(NDSOP) ! closes binary file out_pnt*
+        IPASS = 0   ! resets time counter for binary file out_pnt*
+        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+        TOUT = TIME1
+!/T     WRITE(NDSE,*) 'out_pnt* closed and reopened'
+        END IF       ! NRECL.GT.0
+        END DO       ! End of passes for lage number of files
       GOTO 888
 
 
@@ -896,14 +921,14 @@
                '      Number of requests : ',I4)
   942 FORMAT (/'  Output type ',I2,' :'/                              &
                ' --------------------------------------------------'/ &
-               '      ',A/)
+               '      ',A, I3 /)
   943 FORMAT ( '      Subtype   : ',A)
   944 FORMAT ( '                  ',A)
 !/O14   945 FORMAT ( '      ',I5,3X,A,2F10.2,3X,A)
   948 FORMAT ( '      Data for ',A)
   949 FORMAT (/'      End of file reached '/)
 !
-  950 FORMAT (/'  Requested output for',I3,' points : '/              &
+  950 FORMAT (/'  Requested output for',I4,' points : '/              &
                ' --------------------------------------------------')
   951 FORMAT ( '      ',A,2F10.2)
   953 FORMAT ( '      ',A,2(F8.1,'E3'))
@@ -913,7 +938,6 @@
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
  1942 FORMAT ( '      Scale factor ',A,' spectrum : ',E10.3)
- 1943 FORMAT ( '      File name : ',A,' (',A,')')
  1944 FORMAT ('''',A,'''',1X,3I6,1X,'''',A,'''')
  1945 FORMAT (8E10.3)
  1946 FORMAT (7E11.3)
@@ -969,39 +993,18 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3EXNC(I,ncid)
+      SUBROUTINE W3EXNC(I,ncid,NREQ,INDREQ)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            F. Ardhuin             |
 !/                  |            M. Accensi             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Mar-2011 |
+!/                  | Last update :         14-Mar-2013 |
 !/                  +-----------------------------------+
 !/
-!/    08-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
-!/    21-Jan-2000 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/                  Massive changes to logistics
-!/    09-Jan-2001 : U* bug fix in tabular output        ( version 2.05 )
-!/    25-Jan-2001 : Flat grid version                   ( version 2.06 )
-!/    02-Feb-2001 : Xnl version 3.0                     ( version 2.07 )
-!/    11-Jun-2001 : Clean up                            ( version 2.11 )
-!/    11-Oct-2001 : Clean up, X*, Y* in tables          ( version 2.14 )
-!/    24-Dec-2004 : Multiple grid version.              ( version 3.06 )
-!/    17-Apr-2006 : Filter for directional spread.      ( version 3.09 )
-!/    23-Jun-2006 : Linear input added.                 ( version 3.09 )
-!/    03-Jul-2006 : Separate flux modules.              ( version 3.09 )
-!/    28-Oct-2006 : Add partitioning option.            ( version 3.10 )
-!/    24-Mar-2007 : Add pars for entire spectrum.       ( version 3.11 )
-!/    25-Apr-2007 : Battjes-Janssen Sdb added.          ( version 3.11 )
-!/                  (J. H. Alves)
-!/    09-Oct-2007 : WAM 4+ Sin and Sds added.           ( version 3.13 )
-!/                  (F. Ardhuin)
-!/    09-Oct-2007 : Experimental Sbs (BS1) added.       ( version 3.13 )
-!/                  (F. Ardhuin)
-!/    09-Apr-2008 : Adding an additional output for     ( version 3.12 )
-!/                  WMO standard (A. Chawla)
-!/    29-Apr-2008 : Adjust format partition output.     ( version 3.14 )
+!/    01-Apr-2011 : Creation                            ( version 3.14 )
+!/    14-Mar-2013 : Optimization and cleanup            ( version 4.10 )
 !/
 !  1. Purpose :
 !
@@ -1107,7 +1110,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 
-      INTEGER, INTENT(IN)       :: I, NCID
+      INTEGER, INTENT(IN)       :: I, NCID, NREQ, INDREQ(NREQ)
 
 
 
@@ -1116,7 +1119,6 @@
       INTEGER                   :: J, J1, I1, I2, ISP, IKM, IKL, IKH, ITH,  &
                                    IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
                                    NPART, IX, IY, ISEA
-      INTEGER, SAVE             :: IPASS  = 0
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                      :: depth, SQRTH, CDIR, SIX, R1, R2,     &
                                    UDIR, UDIRR, UABS, XL, XH, XL2, XH2, &
@@ -1128,7 +1130,9 @@
                                    XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                    YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
                                    FMEAN, WNMEAN, UDIRCA, CHARN, M2KM
+      REAL                      :: UDIR1(NREQ), CDIR1(NREQ)
       LOGICAL                   :: LASTSTATION=.FALSE.
+      LOGICAL                   :: SHORT=.TRUE.
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
@@ -1142,6 +1146,7 @@
 !/STAB2                                 THARG1, THARG2
       REAL, SAVE                :: HSMIN  = 0.05
       REAL                      :: WN(NK), CG(NK)
+      REAL                      :: E3(NTH,NK,NREQ)
       REAL                      :: E(NK,NTH), E1(NK), APM(NK),          &
                                    THBND(NK), SPBND(NK), A(NTH,NK),     &
                                    WN2(NTH,NK)
@@ -1154,6 +1159,7 @@
                                    SBT1(NK), STT1(NK), E1ALL(NK,5)
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
+!/ST4      REAL                    :: LAMBDA(NSPEC)
       CHARACTER                 :: DTME21*23
       CHARACTER*4               :: VAR1(5)
       REAL(kind=8)              :: ncDaysOffset,timenc,Jday0
@@ -1180,7 +1186,6 @@
       XH     =  XFR - 1.
       XL2    = XL**2
       XH2    = XH**2
-      IPASS  = IPASS + 1
 !
       IF ( ITYPE .EQ. 3 ) THEN
           XLN = 0.
@@ -1208,18 +1213,86 @@
 !
 ! Selects first station index 
 !
-    IF (TOGETHER) THEN
-      J=1
-    ELSE
-      J=I
-    END IF
-
-    J1=1
-    LASTSTATION=.FALSE.
-
-    DO WHILE (.NOT.LASTSTATION)
+      IF (TOGETHER) THEN
+        J=1
+      ELSE
+        J=I
+        END IF
 !
-      IF ( FLREQ(J) ) THEN
+! Short version of the ww3_ounp code for ITYPE = 1
+!                                    and OTYPE = 3
+!
+      IF (SHORT.AND.ITYPE.EQ.1.AND.OTYPE.EQ.3) THEN 
+        DO J1=1, NREQ
+           DO IK=1, NK
+             DO ITH=1, NTH
+               ISP    = ITH + (IK-1)*NTH
+               E3(ITH,IK,J1) = SPCO(ISP,INDREQ(J1))
+               END DO
+             END DO
+           END DO
+        iyc=TIME(1)/10000
+        imc=(TIME(1)-iyc*10000)/100
+        idc=TIME(1)-iyc*10000-100*imc
+        ihc=TIME(2)/10000
+        iminc=(TIME(2)-ihc*10000)/100
+        isc=TIME(2)-ihc*10000-100*iminc
+  
+        timenc=DBLE(julday(idc,imc,iyc))                              &
+              +(DBLE(ihc)+(DBLE(iminc)+(DBLE(isc)/60.))/60.)/24.
+        Jday0=JULDAY(1,1,1990)
+        timenc=timenc-Jday0
+
+        iret=nf90_put_var(ncid,varid(1),timenc,(/IOUT/))
+        call check_err(iret)
+ 
+        IF (IOUT.EQ.1) THEN 
+          DO J1=1, NREQ
+            iret=nf90_put_var(ncid,varid(27),INDREQ(J1),(/J1/))
+            call check_err(iret)
+            iret=nf90_put_var(ncid,varid(2),PTNME(INDREQ(J1)),         &
+                start=(/1,J1/),count=(/LEN_TRIM(PTNME(INDREQ(J1))) ,1/))
+            END DO
+          END IF
+!
+        DO J1=1, NREQ
+          IF (FLWW3.NE.0) iret=nf90_put_var(ncid,varid(3),FLWW3,(/J1,IOUT/))
+          END DO
+! 
+       IF ( FLFORM ) THEN
+         iret=nf90_put_var(ncid,varid(4),PTLOC(1,INDREQ(1:NREQ)),(/1,IOUT/))
+         iret=nf90_put_var(ncid,varid(5),PTLOC(2,INDREQ(1:NREQ)),(/1,IOUT/))
+       ELSE
+         iret=nf90_put_var(ncid,varid(4),M2KM*PTLOC(1,INDREQ(1:NREQ)),(/1,IOUT/))
+         iret=nf90_put_var(ncid,varid(5),M2KM*PTLOC(2,INDREQ(1:NREQ)),(/1,IOUT/))
+         END IF
+!             
+       DO J1=1,NREQ
+         UDIR1(J1)  = MOD ( 270. - WDO(INDREQ(J1))*RADE , 360. )
+         CDIR1(J1)   = MOD ( 270. - CDO(INDREQ(J1))*RADE , 360. )
+         END DO
+! 
+       iret=nf90_put_var(ncid,varid(11),DPO(INDREQ(1:NREQ)),(/1,IOUT/))
+       iret=nf90_put_var(ncid,varid(12),WAO(INDREQ(1:NREQ)),(/1,IOUT/))
+       iret=nf90_put_var(ncid,varid(13),UDIR1,(/1,IOUT/))
+       iret=nf90_put_var(ncid,varid(14),CAO(INDREQ(1:NREQ)),(/1,IOUT/))
+       iret=nf90_put_var(ncid,varid(15),CDIR1,(/1,IOUT/))
+!
+       iret=nf90_put_var(ncid,varid(10),E3(1:NTH,1:NK,1:NREQ), &
+                           start=(/1,1,1,IOUT/),count=(/NTH,NK,NREQ,1/))
+!
+! End of short version 
+!
+       ELSE 
+!
+! And here is the full thing with all options ITYPE and OTYPE ... 
+!
+      J1=1
+      LASTSTATION=.FALSE.
+!
+      DO WHILE (.NOT.LASTSTATION)
+!
+        IF ( FLREQ(J) ) THEN
 !
 !  Open netCDF file
 !
@@ -1227,13 +1300,13 @@
 !
 ! 2. Calculate grid parameters using and inlined version of WAVNU1.
 !
-        depth  = MAX ( DMIN, DPO(J) )
-        SQRTH  = SQRT ( depth )
-        UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
-        UDIRCA = WDO(J)*RADE
-        UDIRR  = WDO(J)
-        UABS   = MAX ( 0.001 , WAO(J) )
-        CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
+          DEPTH  = MAX ( DMIN, DPO(J) )
+          SQRTH  = SQRT ( depth )
+          UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
+          UDIRCA = WDO(J)*RADE
+          UDIRR  = WDO(J)
+          UABS   = MAX ( 0.001 , WAO(J) )
+          CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
 !
 !/STAB2            STAB0  = ZWIND * GRAV / 273.
 !/STAB2            STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
@@ -1245,139 +1318,135 @@
 !/STAB2            ASFAC  = SQRT ( (1.+COR1+COR2)/SHSTAB )
 !
 !/T            WRITE (NDST,9010) depth
-        DO IK=1, NK
-          SIX    = SIG(IK) * SQRTH
-          I1     = INT(SIX/DSIE)
-          IF (I1.LE.N1MAX) THEN
+          DO IK=1, NK
+            SIX    = SIG(IK) * SQRTH
+            I1     = INT(SIX/DSIE)
+            IF (I1.LE.N1MAX) THEN
               I2 = I1 + 1
               R1 = SIX/DSIE - REAL(I1)
               R2 = 1. - R1
               WN(IK) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / depth
               CG(IK) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
-          ELSE
+            ELSE
               WN(IK) = SIG(IK)*SIG(IK)/GRAV
               CG(IK) = 0.5 * GRAV / SIG(IK)
-          END IF
+              END IF
 !/T              WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 !
-        END DO
+            END DO
 !
 ! 3.  Prepare spectra etc.
 ! 3.a Mean wave parameters.
 !
-        ET     = 0.
-        EWN    = 0.
-        ETR    = 0.
-        ETX    = 0.
-        ETY    = 0.
-        DO IK=1, NK
-          EBND   = 0.
-          EBX    = 0.
-          EBY    = 0.
-          DO ITH=1, NTH
-            ISP    = ITH + (IK-1)*NTH
-            E(IK,ITH) = SPCO(ISP,J)
-            EBND   = EBND + SPCO(ISP,J)
-            EBX    = EBX  + SPCO(ISP,J)*ECOS(ITH)
-            EBY    = EBY  + SPCO(ISP,J)*ESIN(ITH)
-          END DO
-          E1(IK) = EBND * DTH
-          APM(IK)= E1(IK) / ( TPI * GRAV**2 / SIG(IK)**5  )
-          IF ( E1(IK) .GT. 1.E-5) THEN
+          ET     = 0.
+          EWN    = 0.
+          ETR    = 0.
+          ETX    = 0.
+          ETY    = 0.
+          DO IK=1, NK
+            EBND   = 0.
+            EBX    = 0.
+            EBY    = 0.
+            DO ITH=1, NTH
+              ISP    = ITH + (IK-1)*NTH
+              E(IK,ITH) = SPCO(ISP,J)
+              EBND   = EBND + SPCO(ISP,J)
+              EBX    = EBX  + SPCO(ISP,J)*ECOS(ITH)
+              EBY    = EBY  + SPCO(ISP,J)*ESIN(ITH)
+              END DO
+            E1(IK) = EBND * DTH
+            APM(IK)= E1(IK) / ( TPI * GRAV**2 / SIG(IK)**5  )
+            IF ( E1(IK) .GT. 1.E-5) THEN
               THBND(IK) = MOD(630.- RADE*ATAN2(EBY,EBX),360.)
               SPBND(IK) = RADE * SQRT ( MAX ( 0. , 2.*( 1. -      &
                 SQRT( MAX(0.,(EBX**2+EBY**2)/EBND**2) ) ) ) )
-          ELSE
+            ELSE
               THBND(IK) = -999.9
               SPBND(IK) = -999.9
-          END IF
-          EBND   = E1(IK) * DSII(IK) * TPIINV
-          ET     = ET  + EBND
-          EWN    = EWN + EBND / WN(IK)
-          ETR    = ETR + EBND / SIG(IK)
-          ETX    = ETX + EBX * DSII(IK)
-          ETY    = ETY + EBY * DSII(IK)
-        END DO
+              END IF
+            EBND   = E1(IK) * DSII(IK) * TPIINV
+            ET     = ET  + EBND
+            EWN    = EWN + EBND / WN(IK)
+            ETR    = ETR + EBND / SIG(IK)
+            ETX    = ETX + EBX * DSII(IK)
+            ETY    = ETY + EBY * DSII(IK)
+            END DO
 !
 ! tail factors for radian action etc ...!
 !
-        EBND   = E1(NK) * TPIINV / ( SIG(NK) * DTH )
-        ET     = ET  + FTE *EBND
-        EWN    = EWN + FTWL*EBND
-        ETR    = ETR + FTTR*EBND
-        ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
-        ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
+          EBND   = E1(NK) * TPIINV / ( SIG(NK) * DTH )
+          ET     = ET  + FTE *EBND
+          EWN    = EWN + FTWL*EBND
+          ETR    = ETR + FTTR*EBND
+          ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
+          ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
 !
-        HSIG   = 4. * SQRT ( ET )
-        IF ( HSIG .GT. HSMIN ) THEN
+          HSIG   = 4. * SQRT ( ET )
+          IF ( HSIG .GT. HSMIN ) THEN
             WLEN   = EWN / ET * TPI
             TMEAN  = ETR / ET * TPI
             THMEAN = MOD ( 630. - RADE*ATAN2(ETY,ETX) , 360. )
             THSPRD = RADE * SQRT ( MAX ( 0. , 2.*( 1. - SQRT(     &
                        MAX(0.,(ETX**2+ETY**2)/ET**2) ) ) ) )
             IF ( THSPRD .LT. 0.01*RADE*DTH ) THSPRD = 0.
-        ELSE
+          ELSE
             WLEN   = 0.
             TMEAN  = 0.
             THMEAN = 0.
             THSPRD = 0.
-            DO IK=1, NK
-              E1(IK) = 0.
-              DO ITH=1, NTH
-                E(IK,ITH) = 0.
-              END DO
-            END DO
-        END IF
+            E1(1:NK) = 0.
+            E(1:NK,1:NTH) = 0.
+            END IF
 !
 ! 3.b peak frequency
 !
-        EMAX   = E1(NK)
-        IKM    = NK
+          EMAX   = E1(NK)
+          IKM    = NK
 !
-        DO IK=NK-1, 1, -1
-          IF ( E1(IK) .GT. EMAX ) THEN
+          DO IK=NK-1, 1, -1
+            IF ( E1(IK) .GT. EMAX ) THEN
               EMAX   = E1(IK)
               IKM    = IK
-          END IF
-        END DO
+              END IF
+            END DO
 !
-        IKL    = MAX (  1 , IKM-1 )
-        IKH    = MIN ( NK , IKM+1 )
-        EL     = E1(IKL) - E1(IKM)
-        EH     = E1(IKH) - E1(IKM)
-        DENOM  = XL*EH - XH*EL
+          IKL    = MAX (  1 , IKM-1 )
+          IKH    = MIN ( NK , IKM+1 )
+          EL     = E1(IKL) - E1(IKM)
+          EH     = E1(IKH) - E1(IKM)
+          DENOM  = XL*EH - XH*EL
 !
-        IF ( HSIG .GE. HSMIN ) THEN
+          IF ( HSIG .GE. HSMIN ) THEN
             FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
                         / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
             THP    = THBND(IKM)
             SPP    = SPBND(IKM)
             IF ( SPP .LT. 0.01*RADE*DTH ) SPP = 0.
-        ELSE
+          ELSE
             FP     = 0.
             THP    = 0.
             SPP    = 0.
-        END IF
+            END IF
 !
 ! 3.c spectral partitioning
 !
-        IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
-           CALL W3PART( E, UABS, UDIRCA, depth, WN, NPART, XPART, DIMXP )
-        END IF
+          IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
+            CALL W3PART( E, UABS, UDIRCA, depth, WN, NPART, XPART, DIMXP )
+            END IF
 !
 ! 3.d nondimensional parameters
 !
-        IF ( ( ITYPE.EQ.2 .AND. (OTYPE.EQ.3.OR.OTYPE.EQ.4) ) .OR. &
+          IF ( ( ITYPE.EQ.2 .AND. (OTYPE.EQ.3.OR.OTYPE.EQ.4) ) .OR. &
              ( ITYPE.EQ.1 .AND. (OTYPE.EQ.2) ) ) THEN
 !
-          DO IK=1, NK
-            FACTOR = TPIINV * CG(IK) / SIG(IK)
-            DO ITH=1, NTH
-              ISP    = ITH + (IK-1)*NTH
-              A(ITH,IK)   = FACTOR * SPCO(ISP,J)
-              WN2(ITH,IK) = WN(IK)
-            END DO
-          END DO
+            DO IK=1, NK
+              FACTOR = TPIINV * CG(IK) / SIG(IK)
+              DO ITH=1, NTH
+                ISP    = ITH + (IK-1)*NTH
+                A(ITH,IK)   = FACTOR * SPCO(ISP,J)
+                WN2(ITH,IK) = WN(IK)
+                END DO
+              END DO
 !
 !/STAB2                UABS   = UABS / ASFAC
 !
@@ -1395,26 +1464,26 @@
 !
 !/ST1                CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
 !/ST1                FP     = 0.85 * FMEAN
-!/ST2                CALL W3SPR2 (A, CG, WN, depth, FP , UABS, USTAR, &
+!/ST2                CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR, &
 !/ST2                             EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 !/ST3                CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
 !/ST3                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST3                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,         &
+!/ST4                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,       &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 
 !/FLX1                CALL W3FLX1 ( ZWND, UABS, UDIRR,                   &
 !/FLX1                              USTAR, USTD, Z0, CD )
-!/FLX2                CALL W3FLX2 ( ZWND, depth, FP, UABS, UDIRR,        &
+!/FLX2                CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
 !/FLX2                                          USTAR, USTD, Z0, CD )
-!/FLX3                CALL W3FLX3 ( ZWND, depth, FP, UABS, UDIRR,        &
+!/FLX3                CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
 !/FLX3                                          USTAR, USTD, Z0, CD )
 !
-          DO ITT=1, 3
+            DO ITT=1, 3
 !/ST2                  CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
 !/ST2                                                 FPI, XIN, DIA )
-!/ST2                  CALL W3SPR2 (A, CG, WN, depth, FPI, UABS, USTAR, &
+!/ST2                  CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR, &
 !/ST2                               EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 !/ST3                  IX=1
 !/ST3                  IY=1
@@ -1429,55 +1498,55 @@
 !/ST4                  CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
 !/ST4                               ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
 !/ST4                               TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
-!/ST4                  CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,       &
+!/ST4                  CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,      &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-!/FLX2                  CALL W3FLX2 ( ZWND, depth, FP, UABS, UDIRR,      &
+!/FLX2                  CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
 !/FLX2                                            USTAR, USTD, Z0, CD )
-!/FLX3                  CALL W3FLX3 ( ZWND, depth, FP, UABS, UDIRR,      &
+!/FLX3                  CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
 !/FLX3                                            USTAR, USTD, Z0, CD )
-          END DO
+              END DO
 !
 ! Add alternative flux calculations here as part of !/ST2 option ....
 ! Also add before actual source term calculation !!!
 !
 !/STAB2                UABS   = UABS * ASFAC
 !
-          IF ( WAO(J) .LT. 0.01 ) THEN
-            UNORM  = 0.
-            ESTAR  = 0.
-            FPSTAR = 0.
-          ELSE
-            IF ( OTYPE.EQ.3 ) THEN
-              UNORM  = USTAR
+            IF ( WAO(J) .LT. 0.01 ) THEN
+              UNORM  = 0.
+              ESTAR  = 0.
+              FPSTAR = 0.
             ELSE
-              UNORM  = WAO(J)
-            END IF
-            ESTAR  = ET * GRAV**2 / UNORM**4
-            FPSTAR = FP * TPIINV * UNORM / GRAV
-            XSTAR  = PTLOC(1,J) * GRAV / UNORM**2
-            YSTAR  = PTLOC(2,J) * GRAV / UNORM**2
-            IF ( FLAGLL ) THEN
-              XSTAR  = XSTAR * DERA * RADIUS &
+              IF ( OTYPE.EQ.3 ) THEN
+                UNORM  = USTAR
+              ELSE
+                UNORM  = WAO(J)
+                END IF
+              ESTAR  = ET * GRAV**2 / UNORM**4
+              FPSTAR = FP * TPIINV * UNORM / GRAV
+              XSTAR  = PTLOC(1,J) * GRAV / UNORM**2
+              YSTAR  = PTLOC(2,J) * GRAV / UNORM**2
+              IF ( FLAGLL ) THEN
+                XSTAR  = XSTAR * DERA * RADIUS &
                        * COS(PTLOC(2,J)*DERA)
-              YSTAR  = YSTAR * DERA * RADIUS
-            END IF
-          END IF
+                YSTAR  = YSTAR * DERA * RADIUS
+                END IF
+              END IF
 !
-        END IF ! 3.d
+            END IF ! 3.d
 
 !
 ! 3.e source terms
 !
-        IF ( ITYPE.EQ.3 ) THEN
+          IF ( ITYPE.EQ.3 ) THEN
 !
-          DO IK=1, NK
-            FACTOR = TPIINV * CG(IK) / SIG(IK)
-            DO ITH=1, NTH
-              A(ITH,IK)   = FACTOR * SPCO(ITH+(IK-1)*NTH,J)
-              WN2(ITH,IK) = WN(IK)
-            END DO
-          END DO
+            DO IK=1, NK
+              FACTOR = TPIINV * CG(IK) / SIG(IK)
+              DO ITH=1, NTH
+                A(ITH,IK)   = FACTOR * SPCO(ITH+(IK-1)*NTH,J)
+                WN2(ITH,IK) = WN(IK)
+                END DO
+              END DO
 !
 !/STAB2                UABS   = UABS / ASFAC
 !
@@ -1602,7 +1671,7 @@
 !/BS1                                  TAUSCX, TAUSCY,   XBS, DIA )
 !/BSX                    CALL W3SBSX
 !
-          END IF
+              END IF
 !
 !/XXX                CALL W3SXXX
 !
@@ -1725,15 +1794,11 @@
             iret=nf90_put_var(ncid,varid(10),UDIR,(/J1,IOUT/))
 
             IF ( FP .EQ. 0. ) FP = SIG(NK)
-            DO IK=1, NK
-              iret=nf90_put_var(ncid,varid(11),SIG(IK)/FP,(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(12),E1(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(13),THBND(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(14),SPBND(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(15),APM(IK),(/ IK,J1,IOUT /))
-              END DO
-
-            !IF ( FP .EQ. SIG(NK) ) FP = 0.
+            iret=nf90_put_var(ncid,varid(11),SIG(1:NK)/FP,start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(12),E1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(13),THBND(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(14),SPBND(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(15),APM(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
 
 
 !
@@ -1742,6 +1807,7 @@
           ELSE IF ( OTYPE .EQ. 3 ) THEN
             iret=nf90_put_var(ncid,varid(27),J,(/J1/))
             call check_err(iret)
+!FA: Why this loop ?? 
             DO K=1,LEN_TRIM(PTNME(J))
                iret=nf90_put_var(ncid,varid(2),PTNME(J),start=(/1,J1/),count=(/LEN_TRIM(PTNME(J)) ,1/))
             END DO
@@ -1760,13 +1826,8 @@
             iret=nf90_put_var(ncid,varid(15),CDIR,(/J1,IOUT/))
 
 
-            DO ITH=1,NTH
-                DO IK=1,NK
-                    iret=nf90_put_var(ncid,varid(10),E(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    END DO
-                END DO
-
+            iret=nf90_put_var(ncid,varid(10),TRANSPOSE(E(1:NK,1:NTH)), &
+                           start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
 !
 !  Performs subtype 4
 !
@@ -1775,8 +1836,9 @@
             iret=nf90_put_var(ncid,varid(27),J,(/J1/))
             call check_err(iret)
             DO K=1,LEN_TRIM(PTNME(J)) 
-               iret=nf90_put_var(ncid,varid(2),PTNME(J),start=(/1,J1/),count=(/LEN_TRIM(PTNME(J)) ,1/))
-            END DO
+               iret=nf90_put_var(ncid,varid(2),PTNME(J),  &
+                         start=(/1,J1/),count=(/LEN_TRIM(PTNME(J)) ,1/))
+              END DO
             IF (FLWW3.NE.0) iret=nf90_put_var(ncid,varid(3),FLWW3,(/J1,IOUT/))
             iret=nf90_put_var(ncid,varid(4),M2KM*PTLOC(1,J),(/J1,IOUT/))
             iret=nf90_put_var(ncid,varid(5),M2KM*PTLOC(2,J),(/J1,IOUT/))
@@ -1787,14 +1849,14 @@
             iret=nf90_put_var(ncid,varid(10),CAO(J),(/J1,IOUT/))
             iret=nf90_put_var(ncid,varid(11),CDIR,(/J1,IOUT/))
 
-            DO K=0, NPART
-              iret=nf90_put_var(ncid,varid(12),XPART(1,K),(/K,J1,IOUT/))
-              iret=nf90_put_var(ncid,varid(13),XPART(2,K),(/K,J1,IOUT/))
-              iret=nf90_put_var(ncid,varid(14),XPART(3,K),(/K,J1,IOUT/))
-              iret=nf90_put_var(ncid,varid(15),XPART(4,K),(/K,J1,IOUT/))
-              iret=nf90_put_var(ncid,varid(16),XPART(5,K),(/K,J1,IOUT/))
-              iret=nf90_put_var(ncid,varid(17),XPART(6,K),(/K,J1,IOUT/))
-              END DO
+            iret=nf90_put_var(ncid,varid(12),XPART(1,0:NPART),  &
+                              start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+            iret=nf90_put_var(ncid,varid(13),XPART(2,0:NPART),  &
+                              start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+            iret=nf90_put_var(ncid,varid(14),XPART(3,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+            iret=nf90_put_var(ncid,varid(15),XPART(4,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+            iret=nf90_put_var(ncid,varid(16),XPART(5,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
+            iret=nf90_put_var(ncid,varid(17),XPART(6,0:NPART),start=(/1,J1,IOUT/),count=(/NPART,1,1/))
 !
           END IF
 
@@ -2027,15 +2089,13 @@
             iret=nf90_put_var(ncid,varid(8),USTAR,(/J1,IOUT/))
             iret=nf90_put_var(ncid,varid(9),WAO(J),(/J1,IOUT/))
             IF ( ISCALE.GE.3 ) FACF = 1. / FP
-            DO IK=1, NK
-              iret=nf90_put_var(ncid,varid(6),FACF*SIG(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(10),E1(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(11),SIN1(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(12),SNL1(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(13),SDS1(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(14),SBT1(IK),(/ IK,J1,IOUT /))
-              iret=nf90_put_var(ncid,varid(15),STT1(IK),(/ IK,J1,IOUT /))
-            END DO
+            iret=nf90_put_var(ncid,varid(6),FACF*SIG(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(10),E1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(11),SIN1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(12),SNL1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(13),SDS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(14),SBT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+            iret=nf90_put_var(ncid,varid(15),STT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
 
 !
 !  Performs subtype 3
@@ -2095,22 +2155,13 @@
             iret=nf90_put_var(ncid,varid(13),CAO(J),(/J1,IOUT/))
             iret=nf90_put_var(ncid,varid(14),CDIR,(/J1,IOUT/))
 
-            DO ITH=1,NTH
-                DO IK=1,NK
-                    iret=nf90_put_var(ncid,varid(15),E(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    iret=nf90_put_var(ncid,varid(16),SWN(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    iret=nf90_put_var(ncid,varid(17),SNL(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    iret=nf90_put_var(ncid,varid(18),SDS(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    iret=nf90_put_var(ncid,varid(19),SBT(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    iret=nf90_put_var(ncid,varid(20),STT(IK,ITH), &
-																				(/ITH,IK,J1,IOUT/))
-                    END DO
-                END DO
+            iret=nf90_put_var(ncid,varid(15),E(1:NK,1:NTH),start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
+            iret=nf90_put_var(ncid,varid(16),SWN(1:NK,1:NTH),start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
+            iret=nf90_put_var(ncid,varid(17),SNL(1:NK,1:NTH),start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
+            iret=nf90_put_var(ncid,varid(18),SDS(1:NK,1:NTH),start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
+            iret=nf90_put_var(ncid,varid(19),SBT(1:NK,1:NTH),start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
+            iret=nf90_put_var(ncid,varid(20),STT(1:NK,1:NTH),start=(/1,1,J1,IOUT/),count=(/NTH,NK,1,1/))
+
 !
           END IF
 !                 
@@ -2125,16 +2176,18 @@
 !
 ! Selects next station index or end up if not together
 !
-      IF (TOGETHER) THEN
-        J=J+1
-        IF (J.GT.NOPTS) LASTSTATION=.TRUE.
-      ELSE
-        LASTSTATION=.TRUE.
-      END IF
+        IF (TOGETHER) THEN
+          J=J+1
+          IF (J.GT.NOPTS) LASTSTATION=.TRUE.
+        ELSE
+          LASTSTATION=.TRUE.
+          END IF
 
-    END DO ! DO WHILE (.NOT. LASTSTATION)
+        END DO ! DO WHILE (.NOT. LASTSTATION)
+
+      END IF  ! NOT SHORT ... 
 !
-    RETURN
+      RETURN
 !
 ! Formats
 !
@@ -2148,7 +2201,7 @@
   911 FORMAT ( 15X,' Wind direction    :',F7.1,'  (degr)')
   912 FORMAT ( 15X,' Air-sea temp. dif.:',F7.1,'  (degr)'/            &
                15X,' sea water speed     :',F8.2,' (m/s)')
-  913 FORMAT ( 15X,' direction from of sea water velocity :',F7.1,'  (degr)')
+  913 FORMAT ( 15X,' direction of current (from) :',F7.1,'  (degr)')
   914 FORMAT ( 15X,' Wave height       :',F8.2,' (m)'/                &
                15X,' Mean wave length  :',F6.0,'   (m)'/              &
                15X,' Mean wave period  :',F7.1,'  (s)'/               &
@@ -2367,28 +2420,28 @@
 
 
 !--------------------------------------------------------------------------    
-      SUBROUTINE W3CRNC (itype, otype, nctype, ncfile, ncid, dimid, dimln, varid)
+      SUBROUTINE W3CRNC (itype, otype, nctype, IND, NFILES, ncfile, ncid, dimid, dimln, varid)
 
 
-		USE W3GDATMD
-		USE NETCDF
+      USE W3GDATMD
+      USE NETCDF
 
       implicit none
 
 
-      INTEGER, INTENT(IN)               :: itype,otype,nctype
+      INTEGER, INTENT(IN)               :: itype,otype,nctype, NFILES, IND
       CHARACTER*(*), INTENT(IN)         :: ncfile
       INTEGER, INTENT(IN)               :: dimln(5)
       INTEGER, INTENT(OUT)              :: dimid(7), varid(28),ncid
       INTEGER                           :: iret, deflate=1
-      REAL(kind=4)                      :: freq
+      REAL(kind=4)                      :: freq(NK), freq1(NK),freq2(NK), dir(NTH)
       LOGICAL                           :: filefound
 
 !      
 ! Creation in netCDF3 or netCDF4
 !
       IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_CLOBBER, ncid)
-!/NC4      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
+!/NC4      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_SHARE, ncid)
       call check_err(iret)
 
 !
@@ -2498,6 +2551,14 @@
         iret=nf90_put_att(ncid,varid(5),'associates','time station')
 
       END IF 
+
+! Process freq and dir dimension values
+      freq(1:NK)=SIG(1:NK)*TPIINV
+      freq1(1:NK)=freq(1:NK)-0.5*(freq(1:NK)-(freq(1:NK)/XFR))
+      freq2(1:NK)=freq(1:NK)+0.5*(-freq(1:NK)+(freq(1:NK)*XFR))
+      freq1(1)=SIG(1)*TPIINV
+      freq2(NK)=SIG(NK)*TPIINV
+      dir(1:NTH)=MOD(450-THD(1:NTH),360.)
 
 !
 ! ... ITYPE = 1 AND OTYPE = 2
@@ -2612,9 +2673,8 @@
         ! Add values in netCDF file      
         iret=nf90_enddef(ncid)
         call check_err(iret)
-        DO IK=1,NK
-          iret=nf90_put_var(ncid,varid(6),SIG(IK)*TPIINV,(/IK/))
-        END DO
+        iret=nf90_put_var(ncid,varid(6),freq(1:NK))
+        call check_err(iret)
 
 
 !
@@ -2696,7 +2756,7 @@
         iret=nf90_put_att(ncid,varid(10),'scale_factor',1.)
         iret=nf90_put_att(ncid,varid(10),'add_offset',0.)
         iret=nf90_put_att(ncid,varid(10),'valid_min',0.)
-        iret=nf90_put_att(ncid,varid(10),'valid_max',10.)
+        iret=nf90_put_att(ncid,varid(10),'valid_max',1.E20)
         iret=nf90_put_att(ncid,varid(10),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(10),'content','TXYZ')
         iret=nf90_put_att(ncid,varid(10),'associates','time station frequency direction')
@@ -2778,25 +2838,15 @@
         ! Add values in netCDF file      
         iret=nf90_enddef(ncid)
         call check_err(iret)
-        DO IK=1,NK
-          freq=SIG(IK)*TPIINV
-          iret=nf90_put_var(ncid,varid(6),freq,(/IK/))
-          call check_err(iret)
-          iret=nf90_put_var(ncid,varid(7),freq-0.5*(freq-(freq/XFR)),(/IK/))
-          call check_err(iret)
-          iret=nf90_put_var(ncid,varid(8),freq+0.5*(-freq+(freq*XFR)),(/IK/))
-          call check_err(iret)
-        END DO
-        iret=nf90_put_var(ncid,varid(7),SIG(1)*TPIINV,(/1/))
+        iret=nf90_put_var(ncid,varid(6),freq(1:NK))
         call check_err(iret)
-        iret=nf90_put_var(ncid,varid(8),SIG(NK)*TPIINV,(/NK/))
+        iret=nf90_put_var(ncid,varid(7),freq1(1:NK))
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(8),freq2(1:NK))
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(9),dir(1:NTH))
         call check_err(iret)
 
-
-        DO ITH=1,NTH
-          iret=nf90_put_var(ncid,varid(9),MOD(450-THD(ITH),360.),(/ITH/))
-          call check_err(iret)
-        END DO
 
 
 
@@ -3475,6 +3525,13 @@
         iret=nf90_put_att(ncid,varid(15),'associates','time station frequency')
 
 
+!  Add values in netCDF file   
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(6),freq(1:NK))
+        call check_err(iret)
+
+
 !
 ! ... ITYPE = 3 AND OTYPE = 3
 !
@@ -3665,6 +3722,13 @@
         iret=nf90_put_att(ncid,varid(15),'_FillValue', NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(15),'content','TXY')
         iret=nf90_put_att(ncid,varid(15),'associates','time station frequency')
+
+
+!  Add values in netCDF file   
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(6),freq(1:NK))
+        call check_err(iret)
 
 
 !
@@ -3903,19 +3967,14 @@
 !  Add values in netCDF file      
         iret=nf90_enddef(ncid)
         call check_err(iret)
-        DO IK=1,NK
-          freq=SIG(IK)*TPIINV
-          iret=nf90_put_var(ncid,varid(6),freq,(/IK/))
-          iret=nf90_put_var(ncid,varid(7),freq-0.5*(freq-(freq/XFR)),(/IK/))
-          iret=nf90_put_var(ncid,varid(8),freq+0.5*(-freq+(freq*XFR)),(/IK/))
-        END DO
-        iret=nf90_put_var(ncid,varid(7),SIG(1)*TPIINV,(/1/))
-        iret=nf90_put_var(ncid,varid(8),SIG(NK)*TPIINV,(/NK/))
-
-
-        DO ITH=1,NTH
-          iret=nf90_put_var(ncid,varid(9),MOD(450-THD(ITH),360.),(/ITH/))
-        END DO
+        iret=nf90_put_var(ncid,varid(6),freq(1:NK))
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(7),freq1(1:NK))
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(8),freq2(1:NK))
+        call check_err(iret)
+        iret=nf90_put_var(ncid,varid(9),dir(1:NTH))
+        call check_err(iret)
 !
       END IF
 !
@@ -3950,3 +4009,4 @@
 !/ End of W3OUNP ----------------------------------------------------- /
 !/
       END PROGRAM W3OUNP
+

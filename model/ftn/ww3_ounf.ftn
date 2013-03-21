@@ -682,8 +682,8 @@
             varns(2)='northward_sea_water_velocity'
             varng(1)='eastward_sea_water_velocity'
             varng(2)='northward_sea_water_velocity'
-            varnc(1)='cur=sqrt(U²+V²)'
-            varnc(2)='cur=sqrt(U²+V²)'
+            varnc(1)='cur=sqrt(U**2+V**2)'
+            varnc(2)='cur=sqrt(U**2+V**2)'
             vmin = -990
             vmax =  990
 !
@@ -719,8 +719,8 @@
             varns(2)='northward_wind'
             varng(1)='eastward_wind'
             varng(2)='northward_wind'
-            varnc(1)='wind=sqrt(U10²+V10²)'
-            varnc(2)='wind=sqrt(U10²+V10²)'
+            varnc(1)='wind=sqrt(U10**2+V10**2)'
+            varnc(2)='wind=sqrt(U10**2+V10**2)'
             vmin = -990
             vmax =  990
 !
@@ -1215,8 +1215,8 @@
             varns(2)='northward_friction_velocity'
             varng(1)='eastward_friction_velocity'
             varng(2)='northward_friction_velocity'
-            varnc(1)='ust=sqrt(uust²+vust²)'
-            varnc(2)='ust=sqrt(uust²+vust²)'
+            varnc(1)='ust=sqrt(uust**2+vust**2)'
+            varnc(2)='ust=sqrt(uust**2+vust**2)'
             vmin = -9900
             vmax =  9900
 !
@@ -1283,8 +1283,8 @@
             varns(2)='northward_wave_supported_wind_stress'
             varng(1)='eastward_wave_supported_wind_stress'
             varng(2)='northward_wave_supported_wind_stress'
-            varnc(1)='taw=sqrt(utaw²+vtaw²)'
-            varnc(2)='taw=sqrt(utaw²+vtaw²)'
+            varnc(1)='taw=sqrt(utaw**2+vtaw**2)'
+            varnc(2)='taw=sqrt(utaw**2+vtaw**2)'
             vmin = -32000
             vmax =  32000
 !
@@ -1306,8 +1306,8 @@
             varns(2)='northward_wave_to_wind_stress'
             varng(1)='eastward_wave_to_wind_stress'
             varng(2)='northward_wave_to_wind_stress'
-            varnc(1)='twa=sqrt(utwa²+vtwa²)'
-            varnc(2)='twa=sqrt(utwa²+vtwa²)'
+            varnc(1)='twa=sqrt(utwa**2+vtwa**2)'
+            varnc(2)='twa=sqrt(utwa**2+vtwa**2)'
             vmin = -32000
             vmax =  32000
 !
@@ -1410,8 +1410,8 @@
             varns(2)='rms_of_bottom_displacement_amplitude_meridional'
             varng(1)='rms_of_bottom_displacement_amplitude_zonal'
             varng(2)='rms_of_bottom_displacement_amplitude_meridional'
-            varnc(1)='abr=sqrt(uabr²+vabr²)'
-            varnc(2)='abr=sqrt(uabr²+vabr²)'
+            varnc(1)='abr=sqrt(uabr**2+vabr**2)'
+            varnc(2)='abr=sqrt(uabr**2+vabr**2)'
             vmin = -18000
             vmax = 18000
 !
@@ -1449,8 +1449,8 @@
             varns(2)='rms_of_bottom_velocity_amplitude_meridional'
             varng(1)='rms_of_bottom_velocity_amplitude_zonal'
             varng(2)='rms_of_bottom_velocity_amplitude_meridional'
-            varnc(1)='ubr=sqrt(uubr²+vubr²)'
-            varnc(2)='ubr=sqrt(uubr²+vubr²)'
+            varnc(1)='ubr=sqrt(uubr**2+vubr**2)'
+            varnc(2)='ubr=sqrt(uubr**2+vubr**2)'
             vmin = -18000 
             vmax = 18000
 !
@@ -1477,8 +1477,8 @@
             varns(3)='northward_ripple_wavelength'
             varng(2)='eastward_ripple_wavelength'
             varng(3)='northward_ripple_wavelength'
-            varnc(2)='ripple_length=sqrt(ripplex²+rippley²)'
-            varnc(3)='ripple_length=sqrt(ripplex²+rippley²)'
+            varnc(2)='ripple_length=sqrt(ripplex**2+rippley**2)'
+            varnc(3)='ripple_length=sqrt(ripplex**2+rippley**2)'
             vmin = 0
             vmax = 30000
 !
@@ -1516,8 +1516,8 @@
             varns(2)='northward_wave_to_bottom_boundary_layer_stress'
             varng(1)='eastward_wave_to_bbl_stress'
             varng(2)='northward_wave_to_bbl_stress'
-            varnc(1)='tbb=sqrt(utbb²+vtbb²)'
-            varnc(2)='tbb=sqrt(utbb²+vtbb²)'
+            varnc(1)='tbb=sqrt(utbb**2+vtbb**2)'
+            varnc(2)='tbb=sqrt(utbb**2+vtbb**2)'
             vmin = -32000 
             vmax =  32000
 !
@@ -1571,8 +1571,8 @@
             varns(2)='northward_wave_to_ocean_stress'
             varng(1)='eastward_wave_to_ocean_stress'
             varng(2)='northward_wave_to_ocean_stress'
-            varnc(1)='two=sqrt(utwo²+vtwo²)'
-            varnc(2)='two=sqrt(utwo²+vtwo²)'
+            varnc(1)='two=sqrt(utwo**2+vtwo**2)'
+            varnc(2)='two=sqrt(utwo**2+vtwo**2)'
             vmin = -32000 
             vmax =  32000
 !
@@ -1641,8 +1641,8 @@
             varns(2)='northward_stokes_transport'
             varng(1)='eastward_stokes_transport'
             varng(2)='northward_stokes_transport'
-            varnc(1)='tus=sqrt(utus²+vtus²)'
-            varnc(2)='tus=sqrt(utus²+vtus²)'
+            varnc(1)='tus=sqrt(utus**2+vtus**2)'
+            varnc(2)='tus=sqrt(utus**2+vtus**2)'
             vmin = -9900 
 !
           ELSE IF ( J .EQ. 48 ) THEN
@@ -1661,8 +1661,8 @@
                   varns2(2)='northward_spectral_variance_of_surface_stokes_drift'
                   varng(1)='eastward_spectral_variance_of_surface_stokes_drift'
                   varng(2)='northward_spectral_variance_of_surface_stokes_drift'
-                  varnc(1)='usf=sqrt(uusf²+vusf²)'
-                  varnc(2)='usf=sqrt(uusf²+vusf²)'
+                  varnc(1)='usf=sqrt(uusf**2+vusf**2)'
+                  varnc(2)='usf=sqrt(uusf**2+vusf**2)'
                   UNITS2  = 'm/s'
                   ENAME2  = '.usf'
                   I1F=US3DF(2)
@@ -1709,8 +1709,8 @@
             varns(2)='northward_surface_stokes_drift'
             varng(1)='eastward_surface_stokes_drift'
             varng(2)='northward_surface_stokes_drift'
-            varnc(1)='uss=sqrt(uuss²+vuss²)'
-            varnc(2)='uss=sqrt(uuss²+vuss²)'
+            varnc(1)='uss=sqrt(uuss**2+vuss**2)'
+            varnc(2)='uss=sqrt(uuss**2+vuss**2)'
             vmin = -9900 
             vmax =  9900
 !
@@ -1953,7 +1953,7 @@
 ! Creates the NetCDF file 
 !
                 CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
-                             mfill,UNITVAR,vmin,vmax,COORDTYPE,   &
+                             UNITVAR,vmin,vmax,COORDTYPE,   &
                              extradim,NCTYPE,NCVARTYPE,MAPSTAOUT)
 
 !
@@ -2216,14 +2216,24 @@
                   DO I=1,NFIELD
                     ivar=ivar1+I
                     IF (COORDTYPE.EQ.1) THEN
-                      iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
+                      IF (NCVARTYPE.EQ.2) THEN 
+                        iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
 !/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      ELSE
+                        iret = nf90_def_var(ncid,varnm(I), nf90_float, dimid(2:4+extradim), varid(ivar))
+!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                        END IF
                     ELSE
                       dimfield(1)=dimid(2)
                       dimfield(2)=dimid(4)
                       dimfield(3)=dimid(5)
-                      iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
+                      IF (NCVARTYPE.EQ.2) THEN 
+                        iret = nf90_def_var(ncid,varnm(I), nf90_short, dimfield(1:2+extradim), varid(ivar))
 !/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                      ELSE
+                        iret = nf90_def_var(ncid,varnm(I), nf90_float, dimfield(1:2+extradim), varid(ivar))
+!/NC4                      IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
+                        END IF
                       END IF
                     call check_err(iret)
 
@@ -2433,7 +2443,7 @@
                     END IF   ! extradim
                   END IF   ! NFIELD
 !
-! Real output (NCVARTYPE.EQ.3)
+! Real output (NCVARTYPE.GE.3)
 !
                 ELSE 
                 IF ( NFIELD.EQ.3 ) THEN 
@@ -2618,7 +2628,7 @@
 
 !--------------------------------------------------------------------------    
       SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid,  &
-                           MFILL,UNITVAR,vmin,vmax,COORDTYPE,  &
+                           UNITVAR,vmin,vmax,COORDTYPE,  &
                            extradim, NCTYPE, NCVARTYPE, mapstaout )
       USE W3GDATMD
       USE NETCDF
@@ -2629,7 +2639,7 @@
 
 
       INTEGER, INTENT(IN)               :: vmin,vmax,extradim
-      INTEGER, INTENT(IN)               :: MFILL, NCTYPE, NCVARTYPE
+      INTEGER, INTENT(IN)               :: NCTYPE, NCVARTYPE
       character*(*), INTENT(IN)         :: ncfile,UNITVAR(3)
       integer, INTENT(OUT)              :: ncid
       integer, INTENT(OUT)              :: dimid(6)
