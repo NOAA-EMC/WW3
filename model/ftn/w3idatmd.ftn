@@ -126,6 +126,8 @@
 !/TIDE REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
 !/TIDE                           WLTIDE(:,:,:,:)
         LOGICAL               :: IINIT
+! note that if size of FLAGS is changed, then TFLAGS in wminitmd.ftn
+!    also must be resized.
         LOGICAL               :: FLAGS(12)
       END TYPE INPUT
 !/

@@ -199,9 +199,12 @@
 !
 !-----------------------------------------------------------------------
 
-      call sort_add(grid2_add_map1, grid1_add_map1, wts_map1)
+! New Apr4 2013: sort_add is instead called from scrip_interface.ftn
+!     prior to entering this routine...no need to call it again here.
+
+!     call sort_add(grid2_add_map1, grid1_add_map1, wts_map1)
       if (num_maps > 1) then
-        call sort_add(grid1_add_map2, grid2_add_map2, wts_map2)
+         call sort_add(grid1_add_map2, grid2_add_map2, wts_map2)
       endif
 
 !-----------------------------------------------------------------------

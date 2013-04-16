@@ -54,8 +54,8 @@
       use SCRIP_ErrorMod    ! error tracking
       use SCRIP_IOUnitsMod  ! manages I/O units
       use SCRIP_constants    ! common constants
-      use SCRIP_NetcdfMod   ! netCDF stuff
-      use netcdf            ! netCDF library module
+!      use SCRIP_NetcdfMod   ! netCDF stuff
+!      use netcdf            ! netCDF library module
 
       implicit none
 

@@ -172,7 +172,7 @@
       SIX    = SI * SQRTH
       I1     = INT(SIX/DSIE)
 !
-      IF (I1.LE.N1MAX) THEN
+      IF (I1.LE.N1MAX.AND.I1.GE.1) THEN
           I2 = I1 + 1
           R1 = SIX/DSIE - REAL(I1)
           R2 = 1. - R1

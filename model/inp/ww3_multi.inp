@@ -178,7 +178,7 @@ $
   'the_end'  0
 $
 $ -------------------------------------------------------------------- $
-$ Moving grid data as in ww3_hel.inp. All grids will use same data.
+$ Moving grid data as in ww3_shel.inp. All grids will use same data.
 $
   'MOV' 19680606 000000   5.  90.
   'STP'

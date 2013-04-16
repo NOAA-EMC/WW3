@@ -660,7 +660,11 @@
       NDS    = -1
 !
       DO I=UNITLW, UNITHG - NRC + 1
-        OK     = .NOT.U_USED(I) .AND. U_TYPE(I).EQ.TYPE 
+! new: We do not allow I=NDST (unit number for test output).
+!      NDST (aka MDST or IDST) is set to 10 in call to WMINIT
+!      (4th argument)
+        OK     = .NOT.U_USED(I) .AND. U_TYPE(I).EQ.TYPE  &
+                 .AND. I.NE.NDST
         IF ( OK ) THEN
             DO J=1, NRC-1
               OK     = OK .AND. (.NOT.U_USED(I+J) .AND.               &

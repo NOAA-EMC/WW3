@@ -13,7 +13,9 @@ renamed to {\file nest.ww3} and put in the directory in which the nested
 (small scale) model is run. The small scale model then will automatically
 process the file and update the boundary conditions as required and
 available. Setting up the nesting consistently is more involved. A simple
-step-by-step method is presented here.
+step-by-step method is presented here. Another possibility, described in the next 
+subsection is to assemble the {\file nest.ww3} file from spectral output using 
+{\code ww3\_bound}.
 
 \newcounter{nestlist}
 
@@ -108,6 +110,21 @@ nest from the small scale model is also done in the same way. The model is
 presently set up for producing up to 9 files with boundary data per model
 run. There are no limitations on the number of consecutive (`telescoping')
 nests.
+
+\vssub
+\subsection{~Using {\file ww3\_bound} and/or unstructured grids}
+\vssub
+
+In some circumstances it is difficult or impossible to know in advance the position of the 
+forcing points for small scale model when running the large scale model. This is the case if 
+one wants to run a coastal zoom using boundary condition from an on-line or third-party database.
+
+In this case, it is possible to generate  {\file nest.ww3} file from spectral output using 
+{\code ww3\_bound}. This is particularly handy also for unstructured grids due to the irregular 
+spacing of points on the boundary. {\code ww3\_bound} takes a list of spectra files, which should 
+have the same spectral grid, and generates a  {\file nest.ww3}. The interpolation coefficients are 
+determined from the positions of the nearest avalaible spectra and the positions of the active 
+boundary points in the small scale model.
 
 \vssub
 \subsection{~Using {\file ww3\_multi}}

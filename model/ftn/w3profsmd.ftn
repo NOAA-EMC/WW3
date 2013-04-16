@@ -106,6 +106,10 @@
 !  7. Remarks :
 !              make the interface between the WAVEWATCH and the WWM code. 
 !
+!        gnu compiler complains about statements herein as
+!          "Warning: Deleted feature"
+!           1) 4 "assign" statements 2) 1 "go to next" statement
+!
 !  8. Structure :
 !
 !

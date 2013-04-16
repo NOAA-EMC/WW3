@@ -54,8 +54,6 @@ MODULE W3TRIAMD
 !
 !  9. Switches :
 !       !/PR3   : Enables unstructured meshes (temporary, will be replace by Unstructured switch)
-!       !/LLG   : Spherical longitude-latitude grid
-!       !/XYG   : Cartesian grid
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -164,9 +162,7 @@ CONTAINS
 !  8. Structure :
 !
 !  9. Switches :
-!       !/PR3   : Enables unstructured meshes (temporary, will be replace by Unstructured switch)
-!       !/LLG   : Spherical longitude-latitude grid
-!       !/XYG   : Cartesian grid
+!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -216,9 +212,9 @@ CONTAINS
 !
 ! read number of elements and elements from Gmsh files
 !
-     ALLOCATE(BOUNDTMP(NODES))
-     N_OUTSIDE_BOUNDARY = 0
-     CALL NEXTLN(COMSTR, NDS, NDSE)
+      ALLOCATE(BOUNDTMP(NODES))
+      N_OUTSIDE_BOUNDARY = 0
+      CALL NEXTLN(COMSTR, NDS, NDSE)
       READ(NDS,*) NELTS
       ALLOCATE(TRIGPTMP1(NELTS, 3))
       J = 0 
@@ -318,35 +314,15 @@ CONTAINS
         TRIGP(I,:) = TRIGPTMP2(I,:)
         END DO   
 !   
-     DEALLOCATE(TRIGPTMP2,XYBTMP2)   
+      DEALLOCATE(TRIGPTMP2,XYBTMP2)   
 !
 ! call the various routines which define the point spotting strategy
 !
-     CALL SPATIAL_GRID    
-     CALL NVECTRI
-     CALL COORDMAX
-!AR: Check for Multigrid
-     CALL AREA_SI(1)
-!     WRITE (NDSO,969) NX, NY, SX,DXYMAX,     &
-!                      X0, MAXX,                  &
-!                      Y0, MAXY
-!
-! Formats
-!
-!
-!/LLG  969 FORMAT (/'  The spatial unstructured cartesian grid : '/                    &
-!/LLG               ' -----------------------------------------------------'/ &
-!/LLG               '       Discrete dimensions          :',I10,I3/     &
-!/LLG               '       Increments min & max   (deg) :',2E14.6/     &
-!/LLG               '       longitudes min &  max  (deg) :',2F12.4/     &
-!/LLG               '       latitudes  min &  max  (deg) :',2F12.4)
-
-!/XYG  969 FORMAT (/'  The spatial unstructured cartesian grid : '/                    &
-!/XYG               ' -----------------------------------------------------'/ &
-!/XYG               '       Discrete dimensions         :',I7,I10/     &
-!/XYG               '       Increments min & max   (km) :',2E14.6/     &
-!/XYG               '       X min & X max          (km) :',2F12.4/     &
-!/XYG               '       Y min & Y max          (km) :',2F12.4)
+      CALL SPATIAL_GRID    
+      CALL NVECTRI
+      CALL COORDMAX
+!AR:Check for Multigrid
+      CALL AREA_SI(1)
       CLOSE(NDS)
       END SUBROUTINE READMSH
 !/--------------------------------------------------------------------/
@@ -1227,27 +1203,26 @@ END SUBROUTINE
 
        END SUBROUTINE   
        
-!/ ------------------------------------------------------------------- /  
-
-     SUBROUTINE TRIA_INTERPOLATION(IPT, XPT, YPT, itout, IVER, JVER, RD)
-
-!/ ------------------------------------------------------------------- 
+     SUBROUTINE IS_IN_UNGRID_PLUS_COEFFICIENT(I, XA, YA, itout, IVER, JVER, RW)
+!/ -------------------------------------------------------------------
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           F. Ardhuin              |
+!/                  |      Mathieu Dutour Sikiric, IRB  |
+!/                  |                 Aron Roland, Z&P  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          01-Sep-2012|
+!/                  | Last update :          15-May-2008|
 !/                  +-----------------------------------+
 !/
+!/ Adapted from other subroutine 
 !/    15-Oct-2007 : Origination.                        ( version 3.13 )
 !/    21-Sep-2012 : Uses same interpolation as regular  ( version 4.08 )
 !/
 !  1. Purpose :
 !
-!      Calculate interpolation coefficient for fields on the unstructured grid.
+!      Determine whether a point is inside or outside an unstructured grid.
 !
 !  2. Method :
-!      
+!
 !     Using barycentric coordinates. Each coefficient depends on the mass of its related point in the interpolation.
 !
 !  3. Parameters :
@@ -1264,9 +1239,9 @@ END SUBROUTINE
 !  6. Error messages :
 !
 !  7. Remarks :
-!     
+!
 !      This subroutine is adjusted from CREST code (Fabrice Ardhuin)
-!      For a given output point, the algorithm enable to glance through all the triangles 
+!      For a given output point, the algorithm enable to glance through all the triangles
 !      to find the one the point belong to, and then make interpolation.
 !
 !  8. Structure :
@@ -1278,115 +1253,120 @@ END SUBROUTINE
 !
 ! 10. Source code :
 !
-!/ ------------------------------------------------------------------- /       
- 
-           USE W3GDATMD, ONLY : TRIGP, NTRI, XYB, MAPSTA
-           USE W3SERVMD, ONLY: EXTCDE
-!/S          USE W3SERVMD, ONLY: STRACE
-          USE W3ODATMD, ONLY: NDSE       
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+      USE W3ODATMD, ONLY: NDSE
       IMPLICIT NONE
- 
-!/ ------------------------------------------------------------------- /       
+
+!/ ------------------------------------------------------------------- /
  ! Parameter list
- 
-           INTEGER, INTENT(IN)            :: IPT
-           REAL   , INTENT(IN)            :: XPT(:), YPT(:)
-           INTEGER, INTENT(OUT)           :: itout
+
+     INTEGER, INTENT(IN)            :: I
+     REAL   , INTENT(IN)            :: XA, YA
+     INTEGER, INTENT(OUT)           :: itout
      INTEGER, INTENT(OUT)           :: IVER(4), JVER(4)
-     REAL, INTENT(OUT)              :: RD(4)
- !/ ------------------------------------------------------------------- /                 
+     REAL, INTENT(OUT)              :: RW(4)
+ !/ ------------------------------------------------------------------- /
  !local parameters
- 
-           DOUBLE PRECISION             :: x1, x2, x3, x
-           DOUBLE PRECISION             :: y1, y2, y3, y
-           DOUBLE PRECISION             :: dM1, dM2, dM3
-           DOUBLE PRECISION             :: sg1, sg2, sg3
-           DOUBLE PRECISION             :: s1, s2, s3
-           INTEGER                      :: ITRI, I, J, K
-!/S        INTEGER                      ::  IENT = 0
-!/S      CALL STRACE (IENT, 'INTERPOLATION')
+
+     DOUBLE PRECISION             :: x1, x2, x3, xg
+     DOUBLE PRECISION             :: y1, y2, y3, yg
+     DOUBLE PRECISION             :: xx1, xx2, xx3, xx
+     DOUBLE PRECISION             :: yy1, yy2, yy3, yy
+     DOUBLE PRECISION             :: d1, d2, d3
+     DOUBLE PRECISION             :: dM1, dM2, dM3
+     DOUBLE PRECISION             :: sg1, sg2, sg3
+     DOUBLE PRECISION             :: s1, s2, s3
+     DOUBLE PRECISION             :: delta
+     INTEGER                      :: ITRI
+     INTEGER                      :: I1, I2, I3
+     INTEGER                      :: nbFound
+!/S     INTEGER                      ::  IENT = 0
+!/S     CALL STRACE (IENT, 'INTERPOLATION')
 
 !
-         itout = 0 
+     itout = 0
+     nbFound=0
+     DO ITRI= 1, GRIDS(I)%NTRI
+       I1=GRIDS(I)%TRIGP(ITRI,1)
+       I2=GRIDS(I)%TRIGP(ITRI,2)
+       I3=GRIDS(I)%TRIGP(ITRI,3)
+! coordinates of the first vertex A
+       x1=GRIDS(I)%XYB(I1,1)
+       y1=GRIDS(I)%XYB(I1,2)
+! coordinates of the 2nd vertex B
+       x2=GRIDS(I)%XYB(I2,1)
+       y2=GRIDS(I)%XYB(I2,2)
+!coordinates of the 3rd vertex C
+       x3=GRIDS(I)%XYB(I3,1)
+       y3=GRIDS(I)%XYB(I3,2)
+! coordinates of center of gravity G
+       xg=(x1+x2+x3)/3.
+       yg=(y1+y2+y3)/3.
+!length of edges
+       d1=sqrt((y2-y3)**2+(x2-x3)**2)
+       d2=sqrt((y3-y1)**2+(x3-x1)**2)
+       d3=sqrt((y2-y1)**2+(x2-x1)**2)
+!evaluate length between the vertices and the output point
+       dM1=sqrt((YA-y1)**2+(XA-x1)**2)
+       dM2=sqrt((YA-y2)**2+(XA-x2)**2)
+       dM3=sqrt((YA-y3)**2+(XA-x3)**2)
 !
-! coordinates of the output point 	    
-!
-            x=DBLE(XPT(IPT)) 
-            y=DBLE(YPT(IPT))
-            DO ITRI= 1, NTRI
-! coordinates of the first vertex A	    
-              x1=XYB(TRIGP(ITRI,1),1) 
-              y1=XYB(TRIGP(ITRI,1),2)
-! coordinates of the 2nd vertex B 
-              x2=XYB(TRIGP(ITRI,2),1)          
-              y2=XYB(TRIGP(ITRI,2),2)
-!coordinates of the 3rd vertex C	    
-              x3=XYB(TRIGP(ITRI,3),1)          
-              y3=XYB(TRIGP(ITRI,3),2)
-!evaluate squared length between the vertices and the output point	    
-              dM1=(y-y1)**2+(x-x1)**2
-              dM2=(y-y2)**2+(x-x2)**2
-              dM3=(y-y3)**2+(x-x3)**2
-!	    
-              IF (dM2 > dM3) THEN 
-!vector product of BC and BA	    
-                sg1=(y1-y2)*(x3-x2)-(x1-x2)*(y3-y2)    
-!vector product of BC and BM     
-                s1= (y -y2)*(x3-x2)-(x -x2)*(y3-y2)       
-              ELSE
-!vector product of CB and CA        
-                sg1=(y1-y3)*(x2-x3)-(x1-x3)*(y2-y3)    
-!vector product of CB and CM     
-                s1= (y -y3)*(x2-x3)-(x -x3)*(y2-y3)       
-                END IF
-              IF (dM3 > dM1) THEN 
-!vector product of CA and CB	    
-                sg2=(y2-y3)*(x1-x3)-(x2-x3)*(y1-y3)    
-!vector product of CA and CM	       
-                s2= (y -y3)*(x1-x3)-(x -x3)*(y1-y3)       
-              ELSE
-!vector product of AC and AB	    
-                sg2=(y2-y1)*(x3-x1)-(x2-x1)*(y3-y1)    
-!vector product of AC and AM	       
-                s2= (y-y1) *(x3-x1)-(x-x1) *(y3-y1)       
-                END IF
-              IF (dM1 > dM2) THEN 
-!vector product of AB and AC
-                sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
-!vector product of AB and AM   
-                s3= (y-y1) *(x2-x1)-(x-x1) *(y2-y1)       
-              ELSE
-!vector product of BA and BC	    
-                sg3=(y3-y2)*(x1-x2)-(x3-x2)*(y1-y2)  
-!vector product of BA and BM	         
-                s3= (y-y2) *(x1-x2)-(x-x2) *(y1-y2)       
-                END IF
-! test if the point is within the triangle	    
-            IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) THEN 
-              itout=ITRI
-              IVER(1)=TRIGP(ITRI,1)
-              IVER(2)=TRIGP(ITRI,2)
-              IVER(3)=TRIGP(ITRI,3)
-              IVER(4)=TRIGP(ITRI,1)
-              JVER(:)=1
-              RD(1)=s1/sg1    ! this is the ratio of triangles areas MBC / ABC
-              RD(2)=s2/sg2    ! this is the ratio of triangles areas MAC / ABC
-              RD(3)=1.-RD(1)-RD(2) 
-              RD(4)=0
-!PRINT*,'TRI TEST:',ITOUT 
-!PRINT*, TRIGP(ITOUT,1:3)
-!PRINT*, IVER
-!PRINT*, RD
-!PRINT*, x1,x2,x3,x
-!PRINT*, y1,y2,y3,y
-!PRINT*, sg1,s1,sg2,s2,sg3,s3
-             END IF
-           END DO
-! *
-      RETURN
+       IF (dM1 > dM2) THEN
+!vector product of AB and AG
+         sg1=(yg-y1)*(x2-x1)-(xg-x1)*(y2-y1)
+!vector product of AB and AM
+         s1=(YA-y1)*(x2-x1)-(XA-x1)*(y2-y1)
+       ELSE
+!vector product of BA and BG
+         sg1=(yg-y2)*(x1-x2)-(xg-x2)*(y1-y2)
+!vector product of BA and BM
+         s1=(YA-y2)*(x1-x2)-(XA-x2)*(y1-y2)
+       END IF
+       IF (dM2 > dM3) THEN
+!vector product of BC and BG
+         sg2=(yg-y2)*(x3-x2)-(xg-x2)*(y3-y2)
+!vector product of BC and BM
+         s2=(YA-y2)*(x3-x2)-(XA-x2)*(y3-y2)
+       ELSE
+!vector product of CB and CG
+         sg2=(yg-y3)*(x2-x3)-(xg-x3)*(y2-y3)
+!vector product of CB and CM
+         s2=(YA-y3)*(x2-x3)-(XA-x3)*(y2-y3)
+       END IF
+       IF (dM3 > dM1) THEN
+!vector product of CA and CG
+         sg3=(yg-y3)*(x1-x3)-(xg-x3)*(y1-y3)
+!vector product of CA and CM
+         s3=(YA-y3)*(x1-x3)-(XA-x3)*(y1-y3)
+       ELSE
+!vector product of AC and AG
+         sg3=(yg-y1)*(x3-x1)-(xg-x1)*(y3-y1)
+!vector product of AC and AM
+         s3=(YA-y1)*(x3-x1)-(XA-x1)*(y3-y1)
+       END IF
+       IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) THEN
+         itout=ITRI
+         nbFound=nbFound+1
+         IVER(1)=I1
+         IVER(2)=I2
+         IVER(3)=I3
+         IVER(4)=0
+         JVER(1)=1
+         JVER(2)=1
+         JVER(3)=1
+         JVER(4)=0
+         RW(1)=s1/sg1
+         RW(2)=s2/sg2
+         RW(3)=s3/sg3
+         RW(4)=0
+       END IF
+     ENDDO
 
-END SUBROUTINE
-!/ ------------------------------------------------------------------- /  
+
+     END SUBROUTINE IS_IN_UNGRID_PLUS_COEFFICIENT
 
 
 
@@ -1436,8 +1416,6 @@ END SUBROUTINE
 !
 !  9. Switches :
 !
-!       !/LLG   Spherical grid.
-!       !/XYG   Carthesian grid.
 !
 ! 10. Source code :
 !

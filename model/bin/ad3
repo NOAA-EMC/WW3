@@ -125,7 +125,7 @@
   path_o="$main_dir/obj"
   path_m="$main_dir/mod"
   path_e="$main_dir/exe"
-  if [ -n "`echo $name | grep scrip 2>/dev/null`" ]
+  if [ -n "`echo $name | grep scrip_ 2>/dev/null`" ]
   then
     path_i="$path_i/SCRIP"
   fi

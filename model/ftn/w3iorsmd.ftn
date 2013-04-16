@@ -340,6 +340,14 @@
 !
 !/T      WRITE (NDST,9001) FNAME, LRECL
 !
+      
+      IF(NDST.EQ.NDSR)THEN
+         IF ( IAPROC .EQ. NAPERR )                                    &
+            WRITE(NDSE,'(A,I8)')'UNIT NUMBERS OF RESTART FILE AND '&
+            //'TEST OUTPUT ARE THE SAME : ',NDST
+         CALL EXTCDE ( 15 )
+      ENDIF
+
       IF ( WRITE ) THEN
           IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
           OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &

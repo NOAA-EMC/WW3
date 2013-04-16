@@ -101,7 +101,7 @@
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
 
-  if [ -n "`grep SCRIP $switch_file`" ]
+  if [ -n "`grep SCRIPNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_sbs1"

@@ -902,7 +902,7 @@
 !/
 !  1. Purpose :
 !
-!     Compute pean parameters per partition.
+!     Compute mean parameters per partition.
 !
 !  3. Parameters :
 !
@@ -1073,7 +1073,10 @@
 !
         IF ( NPO .GE. DIMXP ) GOTO 2000
         NPO       = NPO + 1
-        IF (IP.GT.0) PMAP(NPO) = IP
+        IF (IP.GT.0)THEN
+           IF(NPO.LT.1)CYCLE
+           PMAP(NPO) = IP
+        ENDIF
         XP(1,NPO) = HS
         XP(2,NPO) = TPI / SIGP
         XP(3,NPO) = TPI / WNP

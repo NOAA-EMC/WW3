@@ -6,6 +6,8 @@ function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,unit
 %     assumed that the .mat file will subsequently be used to make better 
 %     plots (especially in case of curvilinear grid, since plot will be 
 %     distorted here).
+% Example input: time_filename=datenum(1968,06,06,0,0,0);hmax=5; dt=1/24;axisin=[];ext='hs';variablename='SWH';units='m';plot_bathy=0;
+
 
 % Name: read_outf_hs_generic.m
 % Origination: E Rogers 
@@ -49,9 +51,9 @@ for itime=1:1000
       axis xy
       axis equal
       if isempty(axisin)==1
-	axis1=[min(min(xgrd))-BUFFER max(max(xgrd))+BUFFER min(min(ygrd))-BUFFER max(max(ygrd))+BUFFER];
+        axis1=[min(min(xgrd))-BUFFER max(max(xgrd))+BUFFER min(min(ygrd))-BUFFER max(max(ygrd))+BUFFER];
       else
-	axis1=axisin;
+        axis1=axisin;
       end
       axis(axis1)
       xlabel('x (degrees)','fontsize',(fz+2))

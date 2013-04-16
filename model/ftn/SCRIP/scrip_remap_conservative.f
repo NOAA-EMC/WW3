@@ -44,7 +44,8 @@
 !     - phi_or_theta = 2 instead of phi_or_theta = 1 (important!)
 !
 !***********************************************************************
-
+!  Modifications introduced by M. Dutour (MD) for 
+!  running with WAVEWATCH III  ... see below
 !
 !     
 !     BE CAREFUL ABOUT EXPLICIT INITIALIZATION OF VARIABLES IN
@@ -275,7 +276,7 @@ C$OMP& srch_center_lon_find_adj_cell)
      &     ref_area             ! Area of cell as computed by direct 
                                 ! integration around its boundaries
 
-      call OMP_SET_DYNAMIC(.FALSE.)
+!      call OMP_SET_DYNAMIC(.FALSE.)
 
 !-----------------------------------------------------------------------
 !
@@ -1266,18 +1267,39 @@ C$OMP END PARALLEL
          !*** on the boundary of the active cells
          !*** 
 
+! Commented out by MD 
+!         call find_adj_cell(cell_add, corner, grid_num, adj_add)
+!         if (grid_num .eq. 1) then
+!            if (adj_add .eq. 0 .or. .not. grid1_mask(adj_add)) then
+!               bndedge = .true.
+!            else
+!               bndedge = .false.
+!            endif
+!         else
+!            if (adj_add .eq. 0 .or. .not. grid2_mask(adj_add)) then
+!               bndedge = .true.
+!            else
+!              bndedge = .false.
+!            endif
+!         endif
+
          call find_adj_cell(cell_add, corner, grid_num, adj_add)
+         bndedge = .false.
          if (grid_num .eq. 1) then
-            if (adj_add .eq. 0 .or. .not. grid1_mask(adj_add)) then
+            if (adj_add .eq. 0) then
                bndedge = .true.
             else
-               bndedge = .false.
+               if (.not. grid1_mask(adj_add)) then
+                 bndedge = .true.
+               endif
             endif
          else
-            if (adj_add .eq. 0 .or. .not. grid2_mask(adj_add)) then
+            if (adj_add .eq. 0) then
                bndedge = .true.
             else
-               bndedge = .false.
+               if (.not. grid2_mask(adj_add)) then
+                 bndedge = .true.
+               endif
             endif
          endif
          
@@ -1384,6 +1406,8 @@ C$OMP END PARALLEL
                         
                         if (oppcell_add .eq. 0) then
                            loutside = .true.
+! lcoinc added by MD
+                           lcoinc = .false.
                            exit ! exit the search loop
                         else
                            if (oppcell_add .ne. last_add .or. lthresh) 
@@ -1682,6 +1706,8 @@ C$OMP END PARALLEL
 
                      if (oppcell_add .eq. 0) then                     
                         loutside = .true.
+! lcoinc added by MD
+                        lcoinc = .false.
                       
                         !***
                         !*** Take baby steps to see if any part of the
@@ -4375,6 +4401,7 @@ C$OMP END CRITICAL(block6)
 
 
       logical (SCRIP_logical) :: inpoly, latlon      
+      logical (SCRIP_logical) :: test
 
 !-----------------------------------------------------------------------
 !
@@ -4437,11 +4464,23 @@ C$OMP END CRITICAL(block6)
          cell_center_lat = srch_center_lat_locate_point(ic)
          cell_center_lon = srch_center_lon_locate_point(ic)
 
-         if ((srch_grid_num .eq. 1 .and. 
-     &        (special_polar_cell1(srch_cell_add))) .or.
-     &        (srch_grid_num .eq. 2 .and.
-     &        (special_polar_cell2(srch_cell_add)))) then
-
+!         if ((srch_grid_num .eq. 1 .and. 
+!     &        (special_polar_cell1(srch_cell_add))) .or.
+!     &        (srch_grid_num .eq. 2 .and.
+!     &        (special_polar_cell2(srch_cell_add)))) then
+!
+! Modified by MD
+         test=.false.
+         if (srch_grid_num .eq. 1) then
+           if (special_polar_cell1(srch_cell_add)) then
+             test=.true.
+           endif
+         else
+           if (special_polar_cell2(srch_cell_add)) then
+             test=.true.
+           endif
+         endif
+         if (test) then
             call modify_polar_cell(ncorners, nalloc, cell_corner_lat,
      &           cell_corner_lon)
 

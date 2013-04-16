@@ -377,7 +377,9 @@
 !/MPRF      REAL                    :: PRFT0, PRFTN
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
                                  RP1(:), RPN(:)
-      LOGICAL                 :: FLT, TFLAGI, TFLAGS(8), PSHARE
+! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
+!   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(12)
+      LOGICAL                 :: FLT, TFLAGI, TFLAGS(12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:), FLRBPI(:), BCDTMP(:),    &
                                  USEINP(:), LPRT(:), FLGR2(:,:)
       CHARACTER(LEN=1)        :: COMSTR
@@ -618,6 +620,13 @@
       CALL WMUSET ( MDSE, MDST, SCRATCH, .TRUE., DESC='Scratch file', &
                     NAME=FNMPRE(:JJ)//'ww3_multi.scratch' )
 !
+      IF(MDST.EQ.NDSREC)THEN
+         IF   ( IMPROC .EQ. NMPERR )                                  &
+            WRITE(MDSE,'(A,I8)')'RECYCLABLE UNIT NUMBERS AND '&
+            //'TEST OUTPUT UNIT NUMBER ARE THE SAME : ',MDST
+         CALL EXTCDE ( 15 )
+      ENDIF
+
       DO I=1, NRGRD
         MDS   ( 2,I) =  6
         MDS   ( 3,I) = MDST
@@ -1979,6 +1988,7 @@
 ! ..... Model initialization
 !
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
+
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
              FLGRD(:,I),FLGR2(:,I), OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y,  &
              OT2(I)%PNAMES, IPRT(:,I), LPRT(I), MPI_COMM_LOC )

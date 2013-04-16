@@ -89,7 +89,7 @@
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip tide 
+              mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip scripnc tide
   do
     case $type in
       mach   ) TY='one'
@@ -233,6 +233,10 @@
                ID='grid to grid interpolation '
                TS='SCRIP'
                OK='SCRIP' ;;
+      scripnc ) TY='upto1'
+               ID='use of netcdf in grid to grid interpolation '
+               TS='SCRIPNC'
+               OK='SCRIPNC' ;;
       tide   ) TY='upto1'
                ID='use of tidal analysis'
                TS='TIDE'
@@ -307,6 +311,7 @@
       stab   ) stab=$sw ;;
       stress ) stress=$sw ;;
       scrip  ) scrip=$sw ;;
+      scripnc) scripnc=$sw ;;
       s_nl   ) s_nl=$sw ;;
       snls   ) snls=$sw ;;
       s_bot  ) s_bt=$sw ;;
@@ -567,9 +572,13 @@
                 aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
-	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod scrip_netcdfmod"
+	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
-                  aux="$aux scrip_kindsmod scrip_remap_conservative scrip_remap_write"
+                  aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
+                fi 
+                if [ "$scripnc" = 'SCRIPNC' ]
+                then
+                  aux="$aux scrip_netcdfmod scrip_remap_write"
                 fi ;;
    ww3_sbs1) IDstring='Multi-grid shell sbs version' 
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
@@ -583,9 +592,13 @@
                 aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
-	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod scrip_netcdfmod"
+	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
-                  aux="$aux scrip_kindsmod scrip_remap_conservative scrip_remap_write"
+                  aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
+                fi 
+                if [ "$scripnc" = 'SCRIPNC' ]
+                then
+                  aux="$aux scrip_netcdfmod scrip_remap_write"
                 fi ;;
      ww3_outf) IDstring='Gridded output'
                core=
@@ -755,8 +768,8 @@
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD m_btffac  W3STRKMD W3TIDEMD
-    do
+               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD WMSCRPMD m_btffac W3STRKMD W3TIDEMD  
+      do
       case $mod in
          'CONSTANTS'    ) modtest=constants.o ;;
          'W3GDATMD'     ) modtest=w3gdatmd.o ;;
@@ -835,6 +848,7 @@
          'WMINIOMD'     ) modtest=wminiomd.o ;;
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
+         'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;
          'W3STRKMD'     ) modtest=w3strkmd.o ;;
       esac
@@ -849,10 +863,25 @@
     done
     rm -f check_file
 
+    string_scripnc='$(aPo)/scrip_netcdfmod.o $(aPo)/scrip_remap_write.o'
+    if  [ "$scrip" = 'SCRIP' ] && [ "$file" = 'wmscrpmd' ]
+    then
+       S_string2='$(aPo)/scrip_constants.o $(aPo)/scrip_grids.o $(aPo)/scrip_iounitsmod.o  $(aPo)/scrip_remap_vars.o $(aPo)/scrip_timers.o $(aPo)/scrip_errormod.o $(aPo)/scrip_interface.o $(aPo)/scrip_kindsmod.o $(aPo)/scrip_remap_conservative.o'
+       if  [ "$scripnc" = 'SCRIPNC' ]
+       then
+           S_string2="$S_string2 $string_scripnc"
+       fi
+       string3="$string3 $S_string2"
+    fi
+
     if  [ "$scrip" = 'SCRIP' ] && [ "$file" = 'wmgridmd' ]
     then
-        S_string2='$(aPo)/scrip_constants.o $(aPo)/scrip_grids.o $(aPo)/scrip_iounitsmod.o $(aPo)/scrip_netcdfmod.o $(aPo)/scrip_remap_vars.o $(aPo)/scrip_timers.o $(aPo)/scrip_errormod.o $(aPo)/scrip_interface.o $(aPo)/scrip_kindsmod.o $(aPo)/scrip_remap_conservative.o $(aPo)/scrip_remap_write.o'
- 	string3="$string3 $S_string2"
+        S_string2='$(aPo)/scrip_constants.o $(aPo)/scrip_grids.o $(aPo)/scrip_iounitsmod.o  $(aPo)/scrip_remap_vars.o $(aPo)/scrip_timers.o $(aPo)/scrip_errormod.o $(aPo)/scrip_interface.o $(aPo)/scrip_kindsmod.o $(aPo)/scrip_remap_conservative.o'
+       if  [ "$scripnc" = 'SCRIPNC' ]
+       then
+           S_string2="$S_string2 $string_scripnc"
+       fi
+        string3="$string3 $S_string2"
     fi
 
     echo "$string1$string3"                      >> makefile
@@ -879,7 +908,12 @@
       exit 2
     fi
 
-    scrip_mk=$scrip_dir/SCRIP.mk
+    if  [ "$scripnc" = 'SCRIPNC' ]
+    then 
+       scrip_mk=$scrip_dir/SCRIP_NC.mk
+    else 
+       scrip_mk=$scrip_dir/SCRIP.mk
+    fi
     if [ ! -e $scrip_mk ]
     then
       echo "*** SCRIP makefile fragment $scrip_mk not found ***"
