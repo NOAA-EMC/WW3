@@ -134,7 +134,7 @@ C
       CHARACTER*20  TEST0, TSTSTR
       CHARACTER*120 FNAMEI, FNAMEO, FNAMER
       CHARACTER*72  INSTR
-      CHARACTER*140 NEWLNE, OLDLNE
+      CHARACTER*143 NEWLNE, OLDLNE
       CHARACTER*200 SWTCHS
       CHARACTER*33  NOLINE
       CHARACTER     SWITCH*8, SW0*8
@@ -264,12 +264,12 @@ C
             J      = LS(I)
             IF ( NEWLNE( 3 :2+J) .EQ. SW0(1:J) ) THEN
                 IF (  NEWLNE(3+J:3+J) .EQ. ' ' ) THEN
-                    NEWLNE(1:MMLOUT) = NEWLNE(3+J:MMLOUT+3+J)
+                    NEWLNE(1:MMLOUT) = NEWLNE(3+J:MMLOUT+3+J-1)
                     FLSWTC = .TRUE.
                     GOTO 141
                   ENDIF
                 IF (  NEWLNE(3+J:3+J) .EQ. '/' ) THEN
-                    NEWLNE(1:MMLOUT) = NEWLNE(4+J:MMLOUT+4+J)
+                    NEWLNE(1:MMLOUT) = NEWLNE(4+J:MMLOUT+4+J-1)
                     FLSWTC = .TRUE.
                     GOTO 141
                   ENDIF
@@ -379,12 +379,12 @@ C
             J      = LS(I)
             IF ( NEWLNE( 3 :2+J) .EQ. SW0(1:J) ) THEN
                 IF (  NEWLNE(3+J:3+J) .EQ. ' ' ) THEN
-                    NEWLNE(1:MMLOUT) = NEWLNE(3+J:MMLOUT+3+J)
+                    NEWLNE(1:MMLOUT) = NEWLNE(3+J:MMLOUT+3+J-1)
                     FLSWTC = .TRUE.
                     GOTO 311
                   ENDIF
                 IF (  NEWLNE(3+J:3+J) .EQ. '/' ) THEN
-                    NEWLNE(1:MMLOUT) = NEWLNE(4+J:MMLOUT+4+J)
+                    NEWLNE(1:MMLOUT) = NEWLNE(4+J:MMLOUT+4+J-1)
                     FLSWTC = .TRUE.
                     GOTO 311
                   ENDIF

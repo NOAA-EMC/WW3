@@ -179,7 +179,7 @@
 
 !***********************************************************************
 
-      subroutine grid_init( errorCode)
+      subroutine grid_init(errorCode,l_master,l_test)
 
 !-----------------------------------------------------------------------
 !
@@ -193,6 +193,9 @@
 !     input variables
 !
 !-----------------------------------------------------------------------
+
+      logical(SCRIP_Logical), intent(in) :: l_master  ! Am I the master processor (do I/O)?
+      logical(SCRIP_Logical), intent(in) :: l_test    ! Whether to include test output
 
 !-----------------------------------------------------------------------
 !
@@ -240,9 +243,7 @@
       character (9), parameter ::
      &   rtnName = 'grid_init'
 
-!------------------------------------------------NRL
-      write(*,*)'subroutine grid_init'         ! NRL
-!------------------------------------------------NRL
+      if(l_master.and.l_test)write(SCRIP_stdout,*)'subroutine grid_init'
 
 !NRL #####################################################
 !NRL .....Begin part of code formerly handled by netcdf read
@@ -771,43 +772,40 @@
             
       enddo
 
+      if(l_master)print *, ' '
+      if(l_master)print *, 'Grid 1 size', grid1_size
+      if(l_master)print *, 'Grid 2 size', grid2_size
 
 
-
-      print *, ' '
-      print *, 'Grid 1 size', grid1_size
-      print *, 'Grid 2 size', grid2_size
-
-
-      print *, 'grid1_npole_cell',grid1_npole_cell
+!     if(l_master)print *, 'grid1_npole_cell',grid1_npole_cell
       if (grid1_npole_cell .gt. 0) then
          do i = 1, grid1_corners
             print *, grid1_corner_lat(i,grid1_npole_cell),
      &           grid1_corner_lon(i,grid1_npole_cell)
          enddo
       endif
-      print *, 'grid1_spole_cell',grid1_spole_cell
+!     if(l_master)print *, 'grid1_spole_cell',grid1_spole_cell
       if (grid1_spole_cell .gt. 0) then
          do i = 1, grid1_corners
             print *, grid1_corner_lat(i,grid1_spole_cell), 
      &           grid1_corner_lon(i,grid1_spole_cell)
          enddo
       endif
-      print *, 'grid2_npole_cell',grid2_npole_cell
+!     if(l_master)print *, 'grid2_npole_cell',grid2_npole_cell
       if (grid2_npole_cell .gt. 0) then
          do i = 1, grid2_corners
             print *, grid2_corner_lat(i,grid2_npole_cell), 
      &           grid2_corner_lon(i,grid2_npole_cell)
          enddo
       endif
-      print *, 'grid2_spole_cell',grid2_spole_cell
+!     if(l_master)print *, 'grid2_spole_cell',grid2_spole_cell
       if (grid2_spole_cell .gt. 0) then
          do i = 1, grid2_corners
             print *, grid2_corner_lat(i,grid2_spole_cell), 
      &           grid2_corner_lon(i,grid2_spole_cell)
          enddo
       endif
-      print *
+      if(l_master)print *
 
 
 !-----------------------------------------------------------------------
@@ -820,7 +818,8 @@
       select case (restrict_type)
 
       case ('latitude')
-        write(SCRIP_stdout,*) 'Using latitude bins to restrict search.'
+        if(l_master.and.l_test)write(SCRIP_stdout,*)
+     &        'Using latitude bins to restrict search.'
 
         allocate(bin_addr1(2,num_srch_bins))
         allocate(bin_addr2(2,num_srch_bins))
@@ -861,7 +860,8 @@
         end do
 
       case ('latlon')
-        write(SCRIP_stdout,*) 'Using lat/lon boxes to restrict search.'
+        if(l_master.and.l_test)write(SCRIP_stdout,*)
+     &         'Using lat/lon boxes to restrict search.'
 
         dlat = pi /num_srch_bins
         dlon = pi2/num_srch_bins

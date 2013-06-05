@@ -37,6 +37,8 @@
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/    05-Sep-2012 : Implementation of UNGTYPE with SCRIP
 !/                       (Mathieu Dutour Sikiric, IRB; Aron Roland, Z&P)
+!/    21-Sep-2012 : Modify WMGHGH to support SCRIP remap( version 4.XX )
+!/                  write/read capabilities (K. Lind, NRL)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -952,6 +954,9 @@
 !/                  (W. E. Rogers, NRL)
 !/    02-Aug-2011 : Adapted for use with irregular      ( version 3.14+)
 !/                  grids (W. E. Rogers, NRL)
+!/    21-Sep-2012 : Modified to implement SCRIP remap   ( version 4.XX )
+!/                  file read and write option
+!/                  (K. R. Lind, NRL)
 !/
 !  1. Purpose :
 !
@@ -1041,8 +1046,11 @@
       USE WMMDATMD
 !/SCRIP      USE WMSCRPMD
 !/SCRIP      USE SCRIP_INTERFACE
-!
+!/
       IMPLICIT NONE
+!
+!/MPI      INCLUDE "mpif.h"
+!
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1068,6 +1076,7 @@
 !/SCRIP    INTEGER                 ::  NLMAX_SCRIP
 
 !/DIST      INTEGER                 :: LTAG0
+!/MPI       INTEGER                 :: IERR_MPI
 !/S      INTEGER, SAVE           :: IENT = 0
 
       INTEGER, ALLOCATABLE    :: IDSTL(:), IDSTH(:), JDSTL(:), JDSTH(:),      &
@@ -1110,15 +1119,29 @@
 !/SCRIP        TYPE(WEIGHT_DATA), POINTER :: WGTDATA(:)
 !/SCRIP      END TYPE ALLWGT      
 !/SCRIP      TYPE(ALLWGT), ALLOCATABLE :: ALLWGTS(:)
+!/SCRIP      LOGICAL              :: L_MASTER = .TRUE.
+!/SCRIP      LOGICAL              :: L_READ   = .FALSE.
+!/SCRIP      LOGICAL              :: L_WRITE = .FALSE.
+!/SCRIPNC      INTEGER              :: IMPROC_ASSIGN
+!/SCRIPNC      LOGICAL              :: L_STOP  = .FALSE.
+!/SCRIPNC      CHARACTER(LEN=80)    :: interp_file1, interp_file_test
+!/SCRIPNC      CHARACTER(LEN=3)     :: cdst, csrc
+!/SCRIPNC      LOGICAL, ALLOCATABLE :: LGRDREAD(:,:)
+!/SCRIPNC      LOGICAL, ALLOCATABLE :: LGRDWRITE(:,:)
+!/SCRIPNC      INTEGER              :: NGRDRANK(2)
 
-      LOGICAL                 :: LSCRIP=.FALSE. ! true if SCRIP switch is set,
-                                                ! indicates that SCRIP code has
-                                                ! been compiled into WW3 
-      LOGICAL                 :: T38=.FALSE.    ! true if T38 switch is set. 
-                                                ! This logical is necessary 
-                                                ! since it isn't possible to 
-                                                ! have two switches disabling 
-                                                ! the same line of code.
+      LOGICAL                 :: LSCRIP=.FALSE.      ! true if SCRIP switch is set,
+                                                     ! indicates that SCRIP code has
+                                                     ! been compiled into WW3 
+      LOGICAL                 :: LSCRIPNC=.FALSE.    ! true if SCRIPNC switch is set,
+                                                     ! indicates that SCRIP code has
+                                                     ! been compiled with netCDF 
+                                                     ! into WW3 
+      LOGICAL                 :: T38=.FALSE.         ! true if T38 switch is set. 
+                                                     ! This logical is necessary 
+                                                     ! since it isn't possible to 
+                                                     ! have two switches disabling 
+                                                     ! the same line of code.
       LOGICAL                 :: ALL_REGULAR=.TRUE.  ! true if all grids are 
                                                      ! regular grids
       LOGICAL                 :: DO_CHECKING=.FALSE. ! true if we will be 
@@ -1136,8 +1159,23 @@
 
 !/T      CHARACTER(LEN=1), ALLOCATABLE :: MAPST(:,:)
 !/
+!/SCRIPTST      CHARACTER (LEN=10) :: CDATE_TIME(3)
+!/SCRIPTST      INTEGER            :: DATE_TIME(8)
+!/SCRIPTST      INTEGER            :: ELAPSED_TIME, BEG_TIME(10), END_TIME
+!/SCRIPTST      INTEGER            :: NMYOUT=42
+!/SCRIPTST      CHARACTER (LEN=14) :: CMYOUT="myout00000.lis"
+!/SCRIPTST      CHARACTER (LEN=5)  :: CRANK
+
+!/SCRIPTST      WRITE(CRANK, "(I5.5)") IMPROC-1
+!/SCRIPTST      CMYOUT(6:10) = CRANK(1:5)
+!/SCRIPTST      OPEN (NMYOUT, FILE=CMYOUT, STATUS="REPLACE")
 !/S      CALL STRACE (IENT, 'WMGHGH')
 !
+!/MPI    CALL MPI_BARRIER(MPI_COMM_WORLD, IERR_MPI)
+!/SCRIPTST         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST         BEG_TIME(1) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST         WRITE(NMYOUT,*) "WMGHGH: START: 0 MSEC"
+
 
 ! -------------------------------------------------------------------- /
 ! 0.  Initializations / tests
@@ -1147,9 +1185,21 @@
          CALL EXTCDE (1000)
       END IF
 !
+!/SCRIP      IF (IMPROC .EQ. 1) THEN
+!/SCRIP         L_MASTER = .TRUE.
+!/SCRIP         L_WRITE  = .TRUE.
+!/SCRIP      ELSE
+!/SCRIP         L_MASTER = .FALSE.
+!/SCRIP         L_WRITE  = .FALSE.
+!/SCRIP      ENDIF
+!/SCRIPNC      INQUIRE(FILE="SCRIP_STOP", EXIST=L_STOP)
+!/SCRIPNC      IMPROC_ASSIGN = 1
+!
 !!HT:
 !!HT: Set up and initialize storage data structures ....
 !!HT:
+!/SCRIPTST      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST      BEG_TIME(2) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
       DO GDST=1, NRGRD
          DO GSRC=1, NRGRD
             IF ( HGSTGE(GDST,GSRC)%INIT ) THEN
@@ -1169,11 +1219,19 @@
             END IF
          END DO
       END DO
+      GDST=-999 ! unset grid
+      GSRC=-999 ! unset grid
+
+!/SCRIPTST      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST      ELAPSED_TIME = END_TIME - BEG_TIME(2)
+!/SCRIPTST      WRITE(NMYOUT,*) "WMGHGH, LOOP 1 TOOK ", ELAPSED_TIME, " MSEC"
 
 ! -------------------------------------------------------------------- /
 ! 0.a Plan future behavior by setting logical variables.
 
 !/SCRIP LSCRIP=.TRUE. 
+!/SCRIPNC LSCRIPNC=.TRUE. 
 !/T38   T38=.TRUE.
 
       DO GDST=1, NRGRD
@@ -1236,6 +1294,8 @@
 !
          DO GDST=1, NRGRD
 
+!/T38       IF(IMPROC.EQ.NMPERR)WRITE(MDSE,*)'GDST = ',GDST,' OUT OF ',NRGRD
+
             CALL W3SETO ( GDST, MDSE, MDST )
             CALL W3SETG ( GDST, MDSE, MDST )
             CALL WMSETM ( GDST, MDSE, MDST )
@@ -1271,20 +1331,20 @@
 !!HT:  -2. for points that still need to be processed.
 
             ELSE
+               IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A)') &
+                   '  Generating map with distances to boundary.'
                ALLOCATE ( MDATAS(GDST)%MAPBDI(NY,NX) )
                MAPBDI => MDATAS(GDST)%MAPBDI
 
 ! Loop to determine MAPBDI
-                
                DO JDST=1, NY
+                  IF(IMPROC.EQ.NMPERR.AND.MOD(JDST,25).EQ.0) &
+                    WRITE(MDSE,'(4x,A,I5,A,I5)')'processing row ',JDST, &
+                    ' out of ',NY
                   DO IDST=1, NX
                      IF ( MAPSTA(JDST,IDST) .EQ. 0 ) THEN ! (excluded point)
-!old form (with bug)    MAPBDI(JDST,IDST) = -1. / DTMAX
                         MAPBDI(JDST,IDST) = -1. / SIG(1) * DTMAX ! new (bug fix)
-
-!!HT: ERROR / INCONSISTENCY :     SHOULD BE -1. / SIG(1) * DTMAX
-
-                     ELSE IF ( ABS(MAPSTA(JDST,IDST)) .EQ. 2 ) THEN 
+                    ELSE IF ( ABS(MAPSTA(JDST,IDST)) .EQ. 2 ) THEN 
                         ! (boundary point)
                         MAPBDI(JDST,IDST) =  0.
                      ELSE ! ABS(MAPSTA)=1 (sea point)
@@ -1314,6 +1374,8 @@
 
                   END DO ! DO IDST...
                END DO ! DO JDST...
+               IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A/)') &
+               '  Finished generating map with distances to boundary.'
 
 !...notes regarding old method of doing what we just did
 !!HT:
@@ -1369,9 +1431,44 @@
 
 !/DIST      LTAG0  = 0
 
+!/SCRIPNC!     If reading/writing SCRIP files, need to determine in advance which it is to avoid race condition:
+!/SCRIPNC!        Processor writing file before other processor can check for it
+!/SCRIPNC      NGRDRANK = SHAPE(GRDHGH)
+!/SCRIPNC      ALLOCATE( LGRDREAD(NGRDRANK(1)-1, NGRDRANK(2)))
+!/SCRIPNC      ALLOCATE(LGRDWRITE(NGRDRANK(1)-1, NGRDRANK(2)))
+!/SCRIPNC      DO GDST=1, NRGRD
+!/SCRIPNC         DO JJ = 1, GRDHGH(GDST,0) 
+!/SCRIPNC            IF ( GRDHGH(GDST,0) .EQ. 0 ) THEN
+!/SCRIPNC!              If no remap, then no file
+!/SCRIPNC               LGRDREAD(GDST,JJ)  = .FALSE.
+!/SCRIPNC               LGRDWRITE(GDST,JJ) = .FALSE.
+!/SCRIPNC            ELSE
+!/SCRIPNC               GSRC   = GRDHGH(GDST,JJ)
+!/SCRIPNC               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
+!/SCRIPNC               WRITE(CDST, "(I3.3)") GDST
+!/SCRIPNC               WRITE(CSRC, "(I3.3)") GSRC
+!/SCRIPNC               INTERP_FILE1(24:26) = CSRC
+!/SCRIPNC               INTERP_FILE1(28:30) = CDST
+!/SCRIPNC               INQUIRE(FILE=INTERP_FILE1, EXIST=L_READ)
+!/SCRIPNC!              At this point, file either exists already (L_READ = .TRUE.) or needs to be written
+!/SCRIPNC               LGRDREAD(GDST,JJ)  = L_READ
+!/SCRIPNC               LGRDWRITE(GDST,JJ) = .NOT. L_READ
+!/SCRIPNC            END IF
+!/SCRIPNC         END DO
+!/SCRIPNC      END DO
+!/MPI              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_WORLD, IERR_MPI)
+
       LOWRANK_GRID : DO GDST=1, NRGRD
 
+!/SCRIPTST         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST         BEG_TIME(2) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST         ELAPSED_TIME = BEG_TIME(2) - BEG_TIME(1)
+!/SCRIPTST         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " START: ", ELAPSED_TIME, " MSEC"
+
+! Test output
 !/T        WRITE (MDST,9020) GDST, GRDHGH(GDST,0)
+!/SCRIP    IF ( IMPROC.EQ.NMPERR.AND.T38 )WRITE(MDST,*)'GDST = ',GDST,' OUT OF ',NRGRD
+
 !
          IF ( GRDHGH(GDST,0) .EQ. 0 ) THEN ! no grids of higher rank than this
                                            ! one.
@@ -1429,18 +1526,54 @@
 !/SCRIP            ALLOCATE ( ALLWGTS(MAXVAL(GRDHGH)),STAT=istat ) 
 
 ! Next, we loop through the src grids for the dst grid that we are working on.
-
 !/SCRIP            DO JJ=1, GRDHGH(GDST,0) 
+!/SCRIPTST                      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST                      BEG_TIME(3) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
+!/SCRIPTST                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ= ", JJ, " START: ", ELAPSED_TIME, " MSEC"
+
 !/SCRIP               GSRC   = GRDHGH(GDST,JJ)
 !/SCRIP               NISRC=GRIDS(GSRC)%NX
 !/SCRIP               NJSRC=GRIDS(GSRC)%NY ! only needed for diagnostics
 
 ! Next, we call SCRIP for this src grid
 
-!/SCRIP               WRITE(*,*)'Calling SCRIP for GDST,GSRC = ',GDST,GSRC
-!/SCRIP       CALL scrip_wrapper_next_generation (GSRC, GDST,         &
-!/SCRIP            GRIDS(GSRC)%MAPSTA,GRIDS(GSRC)%MAPST2,FLAGLL,      &
-!/SCRIP            GRIDS(GSRC)%GRIDSHIFT)
+!/SCRIPNC               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
+!/SCRIPNC               WRITE(CDST, "(I3.3)") GDST
+!/SCRIPNC               WRITE(CSRC, "(I3.3)") GSRC
+!/SCRIPNC               INTERP_FILE1(24:26) = CSRC
+!/SCRIPNC               INTERP_FILE1(28:30) = CDST
+!/SCRIPNC               L_READ = LGRDREAD(GDST, JJ)
+!/SCRIPTST                      CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST                      BEG_TIME(4) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
+!/SCRIPTST                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER START: ", ELAPSED_TIME, " MSEC"
+!/SCRIPNC               IF (L_STOP) L_WRITE = (IMPROC .EQ. IMPROC_ASSIGN)
+!/SCRIPNC               IF ((.NOT. L_STOP) .OR. ((.NOT. L_READ) .AND. L_WRITE)) THEN 
+!/SCRIP                  IF (LSCRIPNC.AND.L_STOP) THEN
+!/SCRIP                     WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GDST,GSRC = ', &
+!/SCRIP                            GDST,GSRC,' on processor ',IMPROC
+!/SCRIP                  ELSE
+!/SCRIP                     IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A,2(I5))') &
+!/SCRIP                           'Calling SCRIP for GDST,GSRC = ',GDST,GSRC
+!/SCRIP                  END IF
+!/SCRIP                  CALL scrip_wrapper (GSRC, GDST,         &
+!/SCRIP                    GRIDS(GSRC)%MAPSTA,GRIDS(GSRC)%MAPST2,FLAGLL,      &
+!/SCRIP                    GRIDS(GSRC)%GRIDSHIFT,L_WRITE,L_READ,T38)
+!/SCRIPNC               END IF
+!/SCRIPNC               IF (L_STOP) THEN
+!/SCRIPNC                  IF (.NOT. L_READ) THEN
+!/SCRIPNC                     IMPROC_ASSIGN = IMPROC_ASSIGN + 1
+!/SCRIPNC                     IF (IMPROC_ASSIGN .GT. NMPROC) IMPROC_ASSIGN = 1
+!/SCRIPNC                     IF (.NOT. L_WRITE) CYCLE
+!/SCRIPNC                  ELSE
+!/SCRIPNC                     CYCLE
+!/SCRIPNC                  END IF
+!/SCRIPNC               END IF
+!/SCRIPTST                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST                      ELAPSED_TIME = END_TIME - BEG_TIME(4)
+!/SCRIPTST                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
 
 ! SCRIP has now created the data strucure "WGTDATA" and stored the weights 
 ! in it. However, this is only for the present src grid. We want to store the
@@ -1517,8 +1650,14 @@
 !/SCRIP                  END DO !  DO JDST=1,NJDST
 !/SCRIP               ENDIF ! IF(T38)THEN
 
+!/SCRIPTST                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST                      ELAPSED_TIME = END_TIME - BEG_TIME(3)
+!/SCRIPTST                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
 !/SCRIP            END DO   !            DO JJ=1, GRDHGH(GDST,0) 
-     
+!/SCRIPNC            IF (L_STOP) CYCLE
+!/SCRIP            GSRC   = -999 ! unset grid
+
 !################################################################
 ! End new block of code: Calculate weights by calling SCRIP interface
 !################################################################
@@ -1556,6 +1695,7 @@
                   END IF
                END DO
             END DO
+            GSRC   = -999 ! unset grid
 !
 ! 2.b.3 Range of coverage per grid
 
@@ -1659,6 +1799,7 @@
 !/T               JDSTL(JJ),JDSTH(JJ)
 !
                END DO  ! end loop through higher ranked grids
+               GSRC   = -999 ! unset grid
 !
 
 ! save the extremities of that set of high-ranked grids
@@ -1682,6 +1823,7 @@
 !        Obviously, we cannot use this calculation for irregular grids.
 
             NLMAX  = 0
+!/SCRIP     NLMAX_SCRIP=0
             DO JJ=1, GRDHGH(GDST,0)
                GSRC   = GRDHGH(GDST,JJ)
 
@@ -1780,24 +1922,51 @@
                        (2+INT(DX_MAX_GDST/DX_MIN_GSRC+0.001)) *  &
                        (2+INT(DY_MAX_GDST/DY_MIN_GSRC+0.001)) )
 
-!/T38       WRITE(MDST,*)'ratio 1 = ',(DX_MAX_GDST/DX_MIN_GSRC), &
-!/T38       DX_MAX_GDST,DX_MIN_GSRC
-!/T38       WRITE(MDST,*)'ratio 2 = ',(DY_MAX_GDST/DY_MIN_GSRC), & 
-!/T38       DY_MAX_GDST,DY_MIN_GSRC
-!/T38       WRITE(MDST,*)'GSRC, NLMAX = ',GSRC,NLMAX
+!/T38          WRITE(MDST,*)'ratio 1 = ',(DX_MAX_GDST/DX_MIN_GSRC), &
+!/T38          DX_MAX_GDST,DX_MIN_GSRC
+!/T38          WRITE(MDST,*)'ratio 2 = ',(DY_MAX_GDST/DY_MIN_GSRC), & 
+!/T38          DY_MAX_GDST,DY_MIN_GSRC
+!/T38          WRITE(MDSE,*)'GSRC, NLMAX = ',GSRC,NLMAX
 
-            END DO
-!/SCRIP        NLMAX_SCRIP=0
 !/SCRIP        DO JDST=1, NY
 !/SCRIP          DO IDST=1, NX
-!/SCRIP            KDST=(JDST-1)*NIDST+IDST
-!/SCRIP            NLOC=ALLWGTS(GSRC)%WGTDATA(KDST)%N
-!/SCRIP            NLMAX_SCRIP=MAX(NLMAX_SCRIP,NLOC)
-!/SCRIP            END DO
-!/SCRIP          END DO
+!/SCRIP             KDST=(JDST-1)*NIDST+IDST
+!/SCRIP             NLOC=ALLWGTS(GSRC)%WGTDATA(KDST)%N
+!/SCRIP             NLMAX_SCRIP=MAX(NLMAX_SCRIP,NLOC)
+!/SCRIP           END DO
+!/SCRIP        END DO
 
-!/SCRIP          NLMAX = MIN (NLMAX, NLMAX_SCRIP)
-!/SCRIP          WRITE(MDSE,*) 'OLD NLMAX:',NLMAX,', NEW NLMAX:',NLMAX_SCRIP
+            END DO !  DO JJ=1, GRDHGH(GDST,0)
+            GSRC=-999 ! unset grid
+
+! Notes regarding 3 possible scenarios:
+!        If only using SCRIP, then 
+!            * set NLMAX=NLMAX_SCRIP here.
+!            * TMPRL_OM will not be created
+!            * TMPRL will be calculated using SCRIP
+!        If only using old method
+!            * NLMAX is already set, and SCRIP switch does not exist, so
+!               nothing is done here
+!            * both TMPRL and TMPRL_OM will be dimensioned 
+!            * TMPRL_OM will be calculated
+!            * TMPRL_OM will be copied to TMPRL for use 
+!        If using both methods ("DO_CHECKING")
+!            * set NLMAX=MAX(NLMAX, NLMAX_SCRIP) here.
+!            * both TMPRL_OM and TMPRL will be created
+!            * both will be calculated using the 2 methods, and 
+!               checked against each other
+!            * the SCRIP version of weights (TMPRL) will be the ones used.
+
+!/SCRIP     IF ( IMPROC.EQ.NMPERR.AND.T38 ) &
+!/SCRIP          WRITE(MDSE,*) 'NLMAX,NLMAX_SCRIP=',NLMAX,NLMAX_SCRIP
+!/SCRIP     IF(DO_CHECKING)THEN
+!/SCRIP          NLMAX = MAX (NLMAX, NLMAX_SCRIP)
+!/SCRIP       ELSE
+!/SCRIP          NLMAX = NLMAX_SCRIP
+!/SCRIP     ENDIF
+!/SCRIP     IF ( IMPROC.EQ.NMPERR.AND.T38 ) &
+!/SCRIP          WRITE(MDSE,*) 'NEW NLMAX:',NLMAX
+
             IF(NLMAX.GT.100)THEN
                WRITE(MDSE,'(/A,I8)') &
                'WARNING: unusually large value for NLMAX : ',NLMAX
@@ -1819,7 +1988,7 @@
 !
 !!HT:
 !!HT: After the search range is set, we are actually searching in the
-!!HT: highi-res grid. IDST, JDST are counters in the grid to which the
+!!HT: high-res grid. IDST, JDST are counters in the grid to which the
 !!HT: averaged data is to go. XA and YA are center locatons of target
 !!HT: grid. Necxt two loops over all relevant point in target grid.
 !!HT:
@@ -2075,6 +2244,7 @@
                      END IF
 
                   END DO !  GSRC loop
+                  GSRC=-999 ! unset grid
 
                   IF ( NROK .EQ. 0 ) THEN
 
@@ -2238,6 +2408,11 @@
 !/SCRIP                  TMPINT(NRTOT,0) = NLOC
 !/SCRIP                  NISRC=GRIDS(GSRC)%NX
 
+! Test output
+!/SCRIP                  IF ( IMPROC.EQ.NMPERR.AND.T38 ) THEN
+!/SCRIP                    WRITE(MDST,*)'GSRC,KDST,NLOC = ',GSRC,KDST,NLOC
+!/SCRIP                  ENDIF
+
 ! Notes: check here that we are sufficiently dimensioned.
 
 !/SCRIP                  IF ( NLOC .GT. NLMAX ) THEN
@@ -2246,9 +2421,9 @@
 !/SCRIP                        ' *** ERROR WMGHGH: ', & 
 !/SCRIP                        ' IDST,JDST,NLOC,NLMAX = ', &
 !/SCRIP                        IDST,JDST,NLOC,NLMAX
-!/SCRIP                        WRITE(MDSE,1020)
+!/SCRIP                        WRITE(MDSE,1021)
 !/SCRIP                     ENDIF
-!/SCRIP                     CALL EXTCDE(1020)
+!/SCRIP                     CALL EXTCDE(1021)
 !/SCRIP                  END IF
 !/SCRIP                  DO IPNT=1,NLOC
 !/SCRIP                     KSRC=ALLWGTS(GSRC)%WGTDATA(KDST)%K(IPNT)
@@ -2679,9 +2854,18 @@
 !/SCRIP            DEALLOCATE(ALLWGTS) 
 
          END IF !  IF ( GRDHGH(GDST,0) ...
+!/SCRIPTST         CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST         END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST         ELAPSED_TIME = END_TIME - BEG_TIME(2)
+!/SCRIPTST         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " TOOK ", ELAPSED_TIME, " MSEC"
       END DO LOWRANK_GRID
-!
 
+!/SCRIPNC! If L_STOP is set, we are done
+!/SCRIPNC  IF (L_STOP) THEN
+!/SCRIPNC    WRITE (MDSE,*)'Stopping after writing remap files'
+!/SCRIPNC    CALL EXTCDE(895)
+!/SCRIPNC  END IF
+!
       DEALLOCATE ( I1, I2, I3, I4 )
 !
 ! 2.j Test output counters
@@ -2716,6 +2900,11 @@
 !/T        WRITE (MDST,9029) HGSTGE(JJ,:)%NSMX
 !/T        END DO
 !
+!/SCRIPTST         CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST         END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
+!/SCRIPTST         ELAPSED_TIME = END_TIME - BEG_TIME(1)
+!/SCRIPTST         WRITE(NMYOUT,*) "WMGHGH, ALL TOOK ", ELAPSED_TIME, " MSEC"
+
       RETURN
 !
 ! Formats
@@ -2725,7 +2914,9 @@
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     NBI = 0 MAKES NO SENCE FOR RANK > 1 '/)
  1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
-               '     TMPINT AND TMPRL TOO SMALL '/)
+               '     TMPINT AND TMPRL TOO SMALL (w/out SCRIP)'/)
+ 1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
+               '     TMPINT AND TMPRL TOO SMALL (w/SCRIP) '/)
 !
 !/T 9010 FORMAT ( ' TEST WMGHGH : INITIALIZE BOUNDARY DISTANCE MAPS')
 !/T 9011 FORMAT ( '               GRID = ',I3,'  RANK = ',I3,         &

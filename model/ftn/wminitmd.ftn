@@ -2372,6 +2372,7 @@
 !
 ! ..... Unit numbers
 !
+
       DO I=1, NRGRD
 !
         CALL W3SETG ( I, MDSE, MDST )
@@ -2436,7 +2437,11 @@
 !
 ! 8.d.4 Relation to higher ranked grids
 !
+              IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
+      WRITE(MDSS,938)'Computing relation to higher ranked grids'
       CALL WMGHGH
+              IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
+      WRITE(MDSS,938)'Finished computing relation to higher ranked grids'
 !
 ! 8.d.5 Unified point output
 !

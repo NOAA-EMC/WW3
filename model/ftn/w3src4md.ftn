@@ -1614,7 +1614,8 @@
       REAL                    :: W, MICHE, X
 !/T0      REAL                    :: DOUT(NK,NTH)
       REAL                    :: QB(NK), S2(NK), KD, DC(NK)
-      REAL                    :: TSTR, TMAX, DT, T, IT, MFT
+      REAL                    :: TSTR, TMAX, DT, T, MFT
+      INTEGER                 :: IT
       REAL                    :: PB(NSPEC), PB2(NSPEC), LAMBDA(NSPEC)
       LOGICAL                 :: MASK(NSPEC)
 !/
@@ -2005,7 +2006,7 @@
           DT   = TMAX / 50
           MFT  = 0. 
           DO IT = 1, 50                                            ! integration over time of foam persistance
-            T = IT * DT
+            T = FLOAT(IT) * DT
             IF ( T .lt. TSTR ) THEN
               MFT = MFT + 0.4 / (K(IK)*TSTR) * T * DT              !
             ELSE                                                   ! Eq. 5 and 6 of Reul and Chapron, 2003

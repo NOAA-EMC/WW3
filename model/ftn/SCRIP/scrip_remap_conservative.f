@@ -162,6 +162,9 @@
       logical (SCRIP_logical), save ::
      &     first_call_find_adj_cell=.true.
 
+      logical (SCRIP_logical), private :: is_master
+           ! module's equivalent of "l_master"
+
       integer (SCRIP_i4), save :: 
      &     last_cell_find_adj_cell,
      &     last_cell_grid_num_find_adj_cell,
@@ -227,7 +230,7 @@ C$OMP& srch_center_lon_find_adj_cell)
 
 !***********************************************************************
 
-      subroutine remap_conserv
+      subroutine remap_conserv(l_master, l_test)
 
 !-----------------------------------------------------------------------
 !
@@ -236,6 +239,9 @@ C$OMP& srch_center_lon_find_adj_cell)
 !     line integrals for each subsegment.
 !
 !-----------------------------------------------------------------------
+
+      logical(SCRIP_Logical), intent(in) :: l_master   ! Am I the master processor (do I/O)?
+      logical(SCRIP_Logical), intent(in) :: l_test     ! Whether to include test output
 
 !-----------------------------------------------------------------------
 !
@@ -256,6 +262,7 @@ C$OMP& srch_center_lon_find_adj_cell)
      &     opp_grid_num,        ! Index of opposite grid (2,1)
      &     maxrd_cell,          ! cell with the max. relative difference in area
      &     progint              ! Intervals at which progress is to be printed
+     &     ,icount              ! for counting
 
       real (SCRIP_r8) ::
      &     norm_factor          ! factor for normalizing wts
@@ -284,12 +291,19 @@ C$OMP& srch_center_lon_find_adj_cell)
 !
 !-----------------------------------------------------------------------
 
-      print *,'grid1 sweep'
+      is_master=l_master ! set module variable using subroutine input
+                         ! argument variable. Use the former subsequently.
 
-      if (grid1_size > 1000000) then
-         progint = 100000
+      if(is_master)print *,'grid1 sweep'
+
+      if (grid1_size >     300000) then
+         progint =         100000
+      elseif (grid1_size > 150000) then
+         progint =          50000 
+      elseif (grid1_size >  75000) then
+         progint =          20000 
       else
-         progint = 10000
+         progint =          10000
       endif
 
       grid_num = 1
@@ -303,7 +317,7 @@ C$OMP DO SCHEDULE(DYNAMIC)
 
       do grid1_add = 1,grid1_size
 
-         if (mod(grid1_add,progint) .eq. 0) then
+         if (mod(grid1_add,progint) .eq. 0 .and. is_master) then
             print *, grid1_add, ' cells processed ...'
          endif
 
@@ -315,19 +329,22 @@ C$OMP END DO
 
 C$OMP END PARALLEL
 
-
 !-----------------------------------------------------------------------
 !
 !     integrate around each cell on grid2
 !
 !-----------------------------------------------------------------------
 
-      print *,'grid2 sweep '
+      if(is_master)print *,'grid2 sweep '
 
-      if (grid2_size > 1000000) then
-         progint = 100000
+      if (grid2_size >     300000) then
+         progint =         100000
+      elseif (grid2_size > 150000) then
+         progint =          50000 
+      elseif (grid2_size >  60000) then
+         progint =          20000 
       else
-         progint = 10000
+         progint =          10000
       endif
 
       grid_num = 2
@@ -341,7 +358,7 @@ C$OMP DO SCHEDULE(DYNAMIC)
 
       do grid2_add = 1,grid2_size
 
-         if (mod(grid2_add,progint) .eq. 0) then
+         if (mod(grid2_add,progint) .eq. 0 .and. is_master) then
             print *, grid2_add, ' cells processed ...'
          endif
 
@@ -447,7 +464,7 @@ C$OMP END PARALLEL
 
 
       
-      print *, 'Grid sweeps completed'
+      if(is_master)print *, 'Grid sweeps completed'
       
 
 !-----------------------------------------------------------------------
@@ -575,7 +592,7 @@ C$OMP END DO
 
 C$OMP END PARALLEL
 
-      print *, 'Total number of links = ',num_links_map1
+      if(is_master)print *, 'Total number of links = ',num_links_map1
 
 C$OMP PARALLEL
 C$OMP WORKSHARE
@@ -602,11 +619,11 @@ C$OMP&  PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
 C$OMP DO SCHEDULE(DYNAMIC)
 
       do n=1,grid1_size
-        if (grid1_area(n) < -.01) then
+        if (grid1_area(n) < -.01 .and. is_master) then
           print *,'Grid 1 area error: ',n,grid1_area(n)
         endif
-        if (grid1_centroid_lat(n) < -pih-.01 .or.
-     &      grid1_centroid_lat(n) >  pih+.01) then
+        if ((grid1_centroid_lat(n) < -pih-.01 .or.
+     &      grid1_centroid_lat(n) >  pih+.01) .and. is_master) then
           print *,'Grid 1 centroid lat error: ',n,grid1_centroid_lat(n)
         endif
 
@@ -661,7 +678,9 @@ C$OMP END PARALLEL
       max_reldiff = -1.0
 
       do n = 1, grid1_size
-         reldiff(n) = abs(ref_area(n)-grid1_area(n))/abs(ref_area(n))
+         if(ref_area(n).gt.0.0)then ! added May 21 2013
+            reldiff(n) = abs(ref_area(n)-grid1_area(n))/abs(ref_area(n))
+         endif
          ave_reldiff = ave_reldiff + reldiff(n)
          if (reldiff(n) > max_reldiff) then
             max_reldiff = reldiff(n)
@@ -673,18 +692,20 @@ C$OMP END PARALLEL
       
       ave_reldiff = ave_reldiff/grid1_size
 
-      print *
-      print *
-      print *,'Grid 1: Ave. rel. diff. in areas: ',
-     &     ave_reldiff
-      print *,'        rel. diff. = abs(area-refarea)/refarea'
-      print *
-      print *,'Grid 1: Max. rel. diff. in areas: ',
-     &     max_reldiff
-      print *, 'Max rel. diff. is in cell ',maxrd_cell
-      print *, 'Computed Area: ', maxrd_area
-      print *, 'Reference Area: ',maxrd_true 
-      print *
+      if(is_master.and.l_test)then
+         print *
+         print *
+         print *,'Grid 1: Ave. rel. diff. in areas: ',
+     &        ave_reldiff
+         print *,'        rel. diff. = abs(area-refarea)/refarea'
+         print *
+         print *,'Grid 1: Max. rel. diff. in areas: ',
+     &        max_reldiff
+         print *, 'Max rel. diff. is in cell ',maxrd_cell
+         print *, 'Computed Area: ', maxrd_area
+         print *, 'Reference Area: ',maxrd_true 
+         print *
+      endif
 
       deallocate(ref_area, reldiff)
 
@@ -698,11 +719,11 @@ C$OMP&   PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
 C$OMP DO SCHEDULE(DYNAMIC)
 
       do n=1,grid2_size
-        if (grid2_area(n) < -.01) then
+        if (grid2_area(n) < -.01 .and. is_master) then
           print *,'Grid 2 area error: ',n,grid2_area(n)
         endif
-        if (grid2_centroid_lat(n) < -pih-.01 .or.
-     &      grid2_centroid_lat(n) >  pih+.01) then
+        if ((grid2_centroid_lat(n) < -pih-.01 .or.
+     &      grid2_centroid_lat(n) >  pih+.01) .and. is_master) then
           print *,'Grid 2 centroid lat error: ',n,grid2_centroid_lat(n)
         endif
 
@@ -769,26 +790,28 @@ C$OMP END PARALLEL
 
       ave_reldiff = ave_reldiff/grid2_size
 
-      print *
-      print *,'Grid 2: Ave. rel. diff. in areas: ',
-     &     ave_reldiff
-      print *,'        rel. diff. = abs(area-refarea)/refarea'
-      print *
-      print *,'Grid 2: Max. rel. diff. in areas: ',
-     &     max_reldiff
-      print *, 'Max rel. diff. is in cell ',maxrd_cell
-      print *, 'Computed Area: ', maxrd_area
-      print *, 'Reference Area: ',maxrd_true 
-      print *
+      if(is_master.and.l_test)then
+         print *
+         print *,'Grid 2: Ave. rel. diff. in areas: ',
+     &        ave_reldiff
+         print *,'        rel. diff. = abs(area-refarea)/refarea'
+         print *
+         print *,'Grid 2: Max. rel. diff. in areas: ',
+     &        max_reldiff
+         print *, 'Max rel. diff. is in cell ',maxrd_cell
+         print *, 'Computed Area: ', maxrd_area
+         print *, 'Reference Area: ',maxrd_true 
+         print *
+      endif
 
       deallocate(ref_area,reldiff)
 
-
-      print *, 'Computed area = Area of cell computed by adding areas'
-      print *, '                of intersection with other cells'
-      print *, 'Reference area = Area of cell by direct integration'
-      print *
-
+      if(is_master.and.l_test)then
+        print *, 'Computed area = Area of cell computed by adding areas'
+        print *, '                of intersection with other cells'
+        print *, 'Reference area = Area of cell by direct integration'
+        print *
+      endif
 
       !***
       !*** In the following code, gridN_centroid_lat is being used to store
@@ -798,6 +821,7 @@ C$OMP END PARALLEL
 
       grid1_centroid_lat = zero
       grid2_centroid_lat = zero
+      icount=0
 
 C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
 C$OMP&   PRIVATE(n,grid1_add,grid2_add,nwgt,weights)
@@ -814,29 +838,18 @@ C$OMP DO SCHEDULE(DYNAMIC)
           endif
         end do
 
+! count warnings about weights that will be excluded
         if (grid2_frac(grid2_add).gt.frac_lowest .and. 
-     &      grid2_frac(grid2_add).lt.frac_highest) then
-        if (wts_map1(1,n) < wt_lowest) then
-          print *,'###########################################'
-          print *,'WARNING: Map 1 weight < 0 '
-          print *,'grid1_add = ',grid1_add
-          print *,'grid2_add = ',grid2_add
-          print *,'wts_map1(1,n) = ',wts_map1(1,n)
-          print *,'grid2_frac(grid2_add) = ',grid2_frac(grid2_add)
-          print *,'###########################################'
-!         print *,'Map 1 weight < 0 ',grid1_add,grid2_add,wts_map1(1,n)
-        endif
-        if (norm_opt /= norm_opt_none .and. wts_map1(1,n) > 
-     &       wt_highest) then
-          print *,'###########################################'
-          print *,'WARNING: Map 1 weight > 1 '
-          print *,'grid1_add = ',grid1_add
-          print *,'grid2_add = ',grid2_add
-          print *,'wts_map1(1,n) = ',wts_map1(1,n)
-          print *,'grid2_frac(grid2_add) = ',grid2_frac(grid2_add)
-          print *,'###########################################'
-!         print *,'Map 1 weight > 1 ',grid1_add,grid2_add,wts_map1(1,n)
-        endif
+     &       grid2_frac(grid2_add).lt.frac_highest .and. is_master) then
+           if ( (wts_map1(1,n) < wt_lowest) )then
+              icount=icount+1
+! print statements that were here have been moved to another routine...
+           endif
+           if (norm_opt /= norm_opt_none .and. wts_map1(1,n) > 
+     &          wt_highest)then
+              icount=icount+1
+! print statements that were here have been moved to another routine...
+           endif
         endif
 C$OMP   CRITICAL
         grid2_centroid_lat(grid2_add) = 
@@ -844,11 +857,12 @@ C$OMP   CRITICAL
 C$OMP   END CRITICAL
 
         if (num_maps > 1) then
-          if (wts_map2(1,n) < -.01) then
+          if (wts_map2(1,n) < -.01 .and. is_master) then
             print *,'Map 2 weight < 0 ',grid1_add,grid2_add,
      &                                  wts_map2(1,n)
           endif
-          if (norm_opt /= norm_opt_none .and. wts_map2(1,n) > 1.01) then
+          if (norm_opt /= norm_opt_none .and. wts_map2(1,n) > 1.01
+     &         .and. is_master) then
             print *,'Map 2 weight > 1 ',grid1_add,grid2_add,
      &                                  wts_map2(1,n)
           endif
@@ -862,6 +876,10 @@ C$OMP     END CRITICAL
 C$OMP END DO
 C$OMP END PARALLEL
 
+      if(icount.gt.0.and.is_master)then
+         print *,'We had problems in ',icount,' points.'
+      endif
+! stop condition was here...has been moved to another routine...
 
       !***
       !*** If grid1 has masks, links between some cells of grid1 and
@@ -884,10 +902,11 @@ C$OMP END PARALLEL
             norm_factor = grid2_area(n)
           endif
         end select
-        if (abs(grid2_centroid_lat(n)-norm_factor) > .01) then
-!         print *,'Error: sum of wts for map1 ',n,
+!       if (abs(grid2_centroid_lat(n)-norm_factor) > .01 
+!    &     .and. is_master) then
+!         print *,'Warning: sum of wts for map1 ',n,
 !    &            grid2_centroid_lat(n),norm_factor
-        endif
+!       endif
 !       write(501,*)n,grid2_centroid_lat(n)
       end do
 
@@ -906,7 +925,8 @@ C$OMP END PARALLEL
               norm_factor = grid1_area(n)
             endif
           end select
-          if (abs(grid1_centroid_lat(n)-norm_factor) > .01) then
+          if (abs(grid1_centroid_lat(n)-norm_factor) > .01
+     &      .and. is_master) then
             print *,'Error: sum of wts for map2 ',n,
      &              grid1_centroid_lat(n),norm_factor
           endif
@@ -916,13 +936,14 @@ C$OMP END PARALLEL
 
       call timer_stop(4)
 
-      print *, 'Finished Conservative Remapping'
+      if(is_master)print *, 'Finished Conservative Remapping'
 
-
-      call timer_print(1)
-      call timer_print(2)
-      call timer_print(3)
-      call timer_print(4)
+      if(l_test)then
+         call timer_print(1)
+         call timer_print(2)
+         call timer_print(3)
+         call timer_print(4)
+      endif
 
       end subroutine remap_conserv
 
@@ -1001,7 +1022,7 @@ C$OMP END PARALLEL
      &     max_add,             !   destination grid
      &     corner,              ! corner of cell that segment starts from
      &     next_corn,           ! corner of cell that segment ends on
-     &     nseg,                ! number of segments to use to represent 
+     &     nseg,                ! number of segments to use to represent
                                 ! edges near the pole                   
      &     num_subseg,          ! number of subsegments
      &     bedgeid1,            !
@@ -1337,7 +1358,7 @@ C$OMP END PARALLEL
                endlat1 = endlat
                endlon1 = endlon
             else
-               endlat1 = begseg(1) + ns*(fullseg_dlat)/nseg                
+               endlat1 = begseg(1) + ns*(fullseg_dlat)/nseg
                endlon1 = begseg(2) + ns*(fullseg_dlon)/nseg
             endif
             
@@ -1412,7 +1433,7 @@ C$OMP END PARALLEL
                         else
                            if (oppcell_add .ne. last_add .or. lthresh) 
      &                          then
-                              srch_success = .true.                       
+                              srch_success = .true.
                            else
                               offset = offset + delta
                               if (offset .ge. vec1_len) then
@@ -1786,16 +1807,18 @@ C$OMP END PARALLEL
                         
                      else
                         
-                        print *, 'Unable to move out of last cell'
-                        print *, 'Segment of edge ',corner,
-     &                       ' of grid cell ',cell_add
-                        print *, 'Stuck in opposite grid cell ',
-     &                       oppcell_add
-                        dist2 = 
+                        if(is_master)then
+                           print *, 'Unable to move out of last cell'
+                           print *, 'Segment of edge ',corner,
+     &                          ' of grid cell ',cell_add
+                           print *, 'Stuck in opposite grid cell ',
+     &                          oppcell_add
+                           dist2 = 
      &                      (endlat1-begseg(1))*(endlat1-begseg(1)) +
      &                      (endlon1-begseg(2))*(endlon1-begseg(2))
-                        print *, 'Fraction of segment left ',
-     &                       vec1_len/sqrt(dist2)
+                           print *, 'Fraction of segment left ',
+     &                          vec1_len/sqrt(dist2)
+                        endif
                         lstuck = .true.
                         
                         !***
@@ -1968,7 +1991,8 @@ C$OMP END CRITICAL(block4)
      &                 (endlon1-begseg(2))*(endlon1-begseg(2))
                   print *, 'Fraction of segment left ',
      &                 vec1_len/sqrt(dist2)
-                  exit       ! Give up
+!                 exit       ! Give up and exit
+                  stop       ! Give up and stop
                endif
 
 
@@ -2483,6 +2507,7 @@ C$OMP END CRITICAL(block4)
           !*** If area of triangle formed by endlat,endlon and
           !*** the gridline is negligible then the lines are coincident
           !***
+
 
           if (abs(cross_product) < tiny) then
 
@@ -4159,7 +4184,7 @@ C$OMP END CRITICAL(block6)
 
          if ((ptlat .gt. north_thresh .and. abs(ptlat-pih) .ge. 0.001) 
      &        .or. 
-     &        (ptlat .lt. south_thresh .and. abs(ptlat+pih) .ge. 0.001)) 
+     &        (ptlat .lt. south_thresh .and. abs(ptlat+pih) .ge. 0.001))
      &        then
 
             if (ptlat > zero) then
@@ -4186,7 +4211,7 @@ C$OMP END CRITICAL(block6)
 
             !*** Must calculate ptx and pty as an offset on straight line
             !*** in polar space rather than calculating it on a straight line
-            !*** in latlon space an offset point in latlon space will be 
+            !*** in latlon space an offset point in latlon space will be
             !*** off the straight line
             !*** in polar space
 
@@ -4300,7 +4325,7 @@ C$OMP END CRITICAL(block6)
       !***  General cell
       !***
                
-               call ptinpoly(ptlat, ptlon, srch_corners_locate_segstart, 
+               call ptinpoly(ptlat, ptlon, srch_corners_locate_segstart,
      &              srch_corner_lat_locate_segstart(:,ic), 
      &              srch_corner_lon_locate_segstart(:,ic),
      &              latlon, inpoly, lboundary, edgeid)
@@ -4595,7 +4620,7 @@ C$OMP END CRITICAL(block6)
       !*** POSITIVE ANSWER. FOR THESE POINTS REVERT TO THE LATLON SPACE
       !***
 
-      if ((ptlat .gt. north_thresh .and. abs(ptlat-pih) .ge. 0.001) .or. 
+      if ((ptlat .gt. north_thresh .and. abs(ptlat-pih) .ge. 0.001) .or.
      &    (ptlat .lt. south_thresh .and. abs(ptlat+pih) .ge. 0.001)) 
      &     then
 
@@ -5079,7 +5104,7 @@ C$OMP END CRITICAL(block6)
                cross_product = vec1_y*vec2_x - vec2_y*vec1_x
 
                !***
-               !***   if the cross product for a side is zero, the point 
+               !***   if the cross product for a side is zero, the point
                !***   lies exactly on the side or the side is degenerate
                !***   (zero length).  if degenerate, set the cross 
                !***   product to a positive number.  
@@ -5126,7 +5151,7 @@ C$OMP END CRITICAL(block6)
 !     the resulting triangle
 !
 !     The cell can be non-convex as long as the 'center' is 'visible' to
-!     all the edges of the polygon, i.e., we can connect the 'center' to 
+!     all the edges of the polygon, i.e., we can connect the 'center' to
 !     each edge of the polygon and form a triangle with positive area
 !
 !----------------------------------------------------------------------
@@ -5517,7 +5542,7 @@ C$OMP END CRITICAL(block6)
 
       if (last_cell_add_get_srch_cells /= cell_add .or. 
      &     last_cell_grid_num_get_srch_cells /= cell_grid_num .or.
-     &     last_srch_grid_num_get_srch_cells /= srch_grid_num) then         
+     &     last_srch_grid_num_get_srch_cells /= srch_grid_num) then
 
          if (first_call_get_srch_cells) then
             first_call_get_srch_cells = .false.
@@ -5949,7 +5974,7 @@ C$OMP END CRITICAL(block6)
      &              .and.
      &              abs(grid1_corner_lat(i,global_add)-lat2) .le. tiny 
      &              .and.
-     &              abs(grid1_corner_lon(inx,global_add)-lon1) .le. tiny 
+     &              abs(grid1_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
      &              abs(grid1_corner_lon(i,global_add)-lon2) .le. tiny) 
      &              then
@@ -5971,7 +5996,7 @@ C$OMP END CRITICAL(block6)
      &              .and.
      &              abs(grid1_corner_lat(i,global_add)-lat2) .le. tiny 
      &              .and.
-     &              abs(grid1_corner_lon(inx,global_add)-lon1) .le. tiny 
+     &              abs(grid1_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
      &              abs(grid1_corner_lon(i,global_add)-lon2) .le. tiny) 
      &              then
@@ -6011,7 +6036,7 @@ C$OMP END CRITICAL(block6)
      &              .and.
      &              abs(grid2_corner_lat(i,global_add)-lat2) .le. tiny 
      &              .and.
-     &              abs(grid2_corner_lon(inx,global_add)-lon1) .le. tiny 
+     &              abs(grid2_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
      &              abs(grid2_corner_lon(i,global_add)-lon2) .le. tiny) 
      &              then
@@ -6033,7 +6058,7 @@ C$OMP END CRITICAL(block6)
      &              .and.
      &              abs(grid2_corner_lat(i,global_add)-lat2) .le. tiny 
      &              .and.
-     &              abs(grid2_corner_lon(inx,global_add)-lon1) .le. tiny 
+     &              abs(grid2_corner_lon(inx,global_add)-lon1) .le. tiny
      &              .and.
      &              abs(grid2_corner_lon(i,global_add)-lon2) .le. tiny) 
      &              then
@@ -6086,13 +6111,13 @@ C$OMP END CRITICAL(block6)
 
          do i = 1, srch_corners_find_adj_cell
             inx = mod(i,srch_corners_find_adj_cell)+1
-            if (abs(srch_corner_lat_find_adj_cell(inx,n)-lat1) .le. tiny 
+            if (abs(srch_corner_lat_find_adj_cell(inx,n)-lat1) .le. tiny
      &           .and.
      &           abs(srch_corner_lat_find_adj_cell(i,n)-lat2) .le. tiny 
      &           .and.
-     &           abs(srch_corner_lon_find_adj_cell(inx,n)-lon1) .le.tiny 
+     &           abs(srch_corner_lon_find_adj_cell(inx,n)-lon1) .le.tiny
      &           .and.
-     &           abs(srch_corner_lon_find_adj_cell(i,n)-lon2) .le. tiny) 
+     &           abs(srch_corner_lon_find_adj_cell(i,n)-lon2) .le. tiny)
      &           then
 
                adj_add = global_add

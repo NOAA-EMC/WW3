@@ -1289,6 +1289,8 @@
                '     TSYNC :',I9.8,I7.6,1X,I9.8,I7.6/                 &
                '     TEND  :',I9.8,I7.6,1X,I9.8,I7.6/)
 !
+! Note: This 1099 error can occur when multi-grid time steps are not
+!       compatible.
  1099 FORMAT (/' *** WAVEWATCH III ERROR IN WMWAVE : *** '/           &
                '     ABORT FOR POSSIBLE ENDLESS LOOP '/)
 !

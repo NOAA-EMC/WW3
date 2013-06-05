@@ -68,12 +68,12 @@
 !       IDFMLL  Int.  Id. FORMAT indicator.           |
 !       FORMLL  C*16  Id. FORMAT.                     | Long-lat
 !       FROMLL  C*4   'UNIT' / 'NAME' indicator       |    file(s)
-!       NAMELL  C*40  Name of long-lat file(s)        +
+!       NAMELL  C*65  Name of long-lat file(s)        +
 !       IDLAF   I.A.   +
 !       IDFMF   I.A.   |
 !       FORMF   C.A.   | Idem. fields file(s)
 !       FROMF   C*4    |
-!       NAMEF   C*50   +
+!       NAMEF   C*65   +
 !       FORMT   C.A.  Format or time in field.
 !       XC      R.A.  Components of input vector field or first
 !                     input scalar field
@@ -234,7 +234,7 @@
 !/T      LOGICAL                 :: FLMOD
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
-                                 NAMELL*40, FROMF*4, NAMEF*50
+                                 NAMELL*65, FROMF*4, NAMEF*65
       CHARACTER*12            :: IDSTR1(5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)

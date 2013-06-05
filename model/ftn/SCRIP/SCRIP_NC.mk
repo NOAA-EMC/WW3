@@ -61,6 +61,16 @@ $(aPo)/scrip_remap_write.o: SCRIP/scrip_remap_write.f \
 	$(aPo)/scrip_iounitsmod.o
 	@$(aPb)/ad3 scrip_remap_write
 
+$(aPo)/scrip_remap_read.o: SCRIP/scrip_remap_read.f \
+	$(aPo)/scrip_kindsmod.o \
+	$(aPo)/scrip_constants.o \
+	$(aPo)/scrip_netcdfmod.o \
+	$(aPo)/scrip_remap_vars.o \
+	$(aPo)/scrip_grids.o \
+	$(aPo)/scrip_errormod.o \
+	$(aPo)/scrip_iounitsmod.o
+	@$(aPb)/ad3 scrip_remap_read
+
 $(aPo)/scrip_interface.o: SCRIP/scrip_interface.ftn \
 	$(aPo)/scrip_kindsmod.o \
 	$(aPo)/scrip_constants.o \
@@ -70,6 +80,7 @@ $(aPo)/scrip_interface.o: SCRIP/scrip_interface.ftn \
 	$(aPo)/scrip_remap_conservative.o \
 	$(aPo)/scrip_netcdfmod.o \
 	$(aPo)/scrip_remap_write.o \
+	$(aPo)/scrip_remap_read.o \
 	$(aPo)/scrip_iounitsmod.o \
 	$(aPo)/scrip_errormod.o 
 	@$(aPb)/ad3 scrip_interface

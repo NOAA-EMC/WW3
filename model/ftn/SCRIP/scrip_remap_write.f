@@ -118,7 +118,7 @@
 !***********************************************************************
 
       subroutine write_remap(map1_name, map2_name, interp_file1, 
-     &                       interp_file2, output_opt, errorCode)
+     &                    interp_file2, output_opt, l_master, errorCode)
 
 !-----------------------------------------------------------------------
 !
@@ -138,6 +138,9 @@
      &            interp_file1, ! filename for map1 remap data
      &            interp_file2, ! filename for map2 remap data
      &            output_opt    ! option for output conventions
+
+      logical, intent(in) ::
+     &            l_master      ! Am I the master processor?
 
 !-----------------------------------------------------------------------
 !
@@ -215,7 +218,8 @@
 
       select case(output_opt)
       case ('scrip')
-         call write_remap_scrip(map1_name, interp_file1, 1, errorCode)
+         if (l_master)  
+     &   call write_remap_scrip(map1_name, interp_file1, 1, errorCode)
          if (SCRIP_ErrorCheck(errorCode, rtnName,
      &       'error in write_remap_scrip')) return
       case ('ncar-csm')
@@ -237,7 +241,8 @@
       if (num_maps > 1) then
         select case(output_opt)
         case ('scrip')
-          call write_remap_scrip(map2_name, interp_file2, 2, errorCode)
+          if (l_master)  
+     &    call write_remap_scrip(map2_name, interp_file2, 2, errorCode)
           if (SCRIP_ErrorCheck(errorCode, rtnName,
      &        'error in write_remap_scrip')) return
         case ('ncar-csm')
@@ -940,6 +945,375 @@
 !-----------------------------------------------------------------------
 
       end subroutine write_remap_scrip
+
+!***********************************************************************
+
+      subroutine write_remap_ww3(map1_name, interp_file1, 
+     &                           output_opt, l_master, errorCode)
+
+!-----------------------------------------------------------------------
+!
+!     calls correct output routine for WW3 based on output format choice
+!
+!     only output variables needed for WW3 remapping
+!
+!-----------------------------------------------------------------------
+      use netcdf
+
+!-----------------------------------------------------------------------
+!
+!     input variables
+!
+!-----------------------------------------------------------------------
+
+      character(SCRIP_charLength), intent(in) ::
+     &            map1_name,    ! name for mapping grid1 to grid2
+     &            interp_file1, ! filename for map1 remap data
+     &            output_opt    ! option for output conventions
+      logical, intent(in) ::
+     &            l_master      ! Am I the master processor?
+
+!-----------------------------------------------------------------------
+!
+!     output variables
+!
+!-----------------------------------------------------------------------
+
+      integer (SCRIP_i4), intent(out) ::
+     &   errorCode              ! returned error code
+
+!-----------------------------------------------------------------------
+!
+!     local variables
+!
+!-----------------------------------------------------------------------
+
+      character (15), parameter :: rtnName = 'write_remap_ww3'
+      character(SCRIP_charLength) ::
+     &            map1_name_pass,    ! name for mapping grid1 to grid2
+     &            interp_file1_pass  ! filename for map1 remap data
+
+!-----------------------------------------------------------------------
+!
+!     define some common variables to be used in all routines
+!
+!-----------------------------------------------------------------------
+
+      errorCode = SCRIP_Success
+      map1_name_pass = map1_name
+      interp_file1_pass = interp_file1
+
+      select case(norm_opt)
+      case (norm_opt_none)
+        normalize_opt = 'none'
+      case (norm_opt_frcarea)
+        normalize_opt = 'fracarea'
+      case (norm_opt_dstarea)
+        normalize_opt = 'destarea'
+      end select
+
+      select case(map_type)
+      case(map_type_conserv)
+        map_method = 'Conservative remapping'
+      case(map_type_bilinear)
+        map_method = 'Bilinear remapping'
+      case(map_type_distwgt)
+        map_method = 'Distance weighted avg of nearest neighbors'
+      case(map_type_bicubic)
+        map_method = 'Bicubic remapping'
+      case(map_type_particle)
+        map_method = 'Particle remapping'
+      case default
+         call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
+         return
+      end select
+
+      call date_and_time(date=cdate)
+      write (history,1000) cdate(5:6),cdate(7:8),cdate(1:4)
+ 1000 format('Created: ',a2,'-',a2,'-',a4)
+
+!-----------------------------------------------------------------------
+!
+!     sort address and weight arrays
+!
+!-----------------------------------------------------------------------
+
+      call sort_add(grid2_add_map1, grid1_add_map1, wts_map1)
+      if (num_maps > 1) then
+        call sort_add(grid1_add_map2, grid2_add_map2, wts_map2)
+      endif
+
+!-----------------------------------------------------------------------
+!
+!     call appropriate output routine
+!
+!-----------------------------------------------------------------------
+
+      select case(output_opt)
+      case ('scrip')
+         if (l_master) then
+            call write_remap_scrip_ww3(map1_name_pass, 
+     &           interp_file1_pass, errorCode)
+         endif
+         if (SCRIP_ErrorCheck(errorCode, rtnName,
+     &       'error in write_remap_scrip')) return
+      case default
+         call SCRIP_ErrorSet(errorCode, rtnName, 
+     &                       'unknown output file convention')
+         return
+      end select
+
+!-----------------------------------------------------------------------
+
+      end subroutine write_remap_ww3
+
+!***********************************************************************
+
+      subroutine write_remap_scrip_ww3(map_name, interp_file, errorCode)
+
+!-----------------------------------------------------------------------
+!
+!     writes remap data to a netCDF file using SCRIP conventions
+!     only writes variables needed for WW3 remap
+!
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!
+!     input variables
+!
+!-----------------------------------------------------------------------
+
+      character(SCRIP_charLength), intent(in) ::
+     &            map_name     ! name for mapping 
+     &,           interp_file  ! filename for remap data
+
+!-----------------------------------------------------------------------
+!
+!     output variables
+!
+!-----------------------------------------------------------------------
+
+      integer (SCRIP_i4), intent(out) ::
+     &   errorCode              ! returned error code
+
+!-----------------------------------------------------------------------
+!
+!     local variables
+!
+!-----------------------------------------------------------------------
+
+      character(SCRIP_charLength) ::
+     &  grid1_ctmp        ! character temp for grid1 names
+     &, grid2_ctmp        ! character temp for grid2 names
+     &, map_name_ctmp     ! character temp for name for mapping 
+     &, interp_file_ctmp  ! character temp filename for remap data
+
+      integer (SCRIP_i4) ::
+     &  nc_file_id        ! netCDF file id
+     &, itmp1             ! integer temp
+     &, itmp2             ! integer temp
+     &, itmp3             ! integer temp
+     &, itmp4             ! integer temp
+
+      character (21), parameter :: rtnName = 'write_remap_scrip_ww3'
+
+!-----------------------------------------------------------------------
+!
+!     create netCDF file for mapping and define some global attributes
+!
+!-----------------------------------------------------------------------
+
+      errorCode = SCRIP_Success
+      map_name_ctmp = map_name
+      interp_file_ctmp = trim(interp_file)
+
+      itmp1 = len(interp_file_ctmp)
+      itmp2 = len_trim(interp_file_ctmp)
+      ncstat = nf90_create(interp_file_ctmp, NF90_CLOBBER, nc_file_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                           'error creating remap file')) return
+
+      !***
+      !*** map name
+      !***
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, 'title', map_name)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                           'error writing remap name')) return
+
+      !***
+      !*** normalization option
+      !***
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, 'normalization',
+     &                      normalize_opt)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                     'error writing normalize option')) return
+
+      !***
+      !*** map method
+      !***
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, 'map_method',
+     &                      map_method)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                         'error writing remap method')) return
+
+      !***
+      !*** history
+      !***
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, 'history',
+     &                      history)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                           'error writing history')) return
+
+      !***
+      !*** file convention
+      !***
+      convention = 'SCRIP'
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, 'conventions',
+     &                                                convention)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                  'error writing output convention')) return
+
+      !***
+      !*** source and destination grid names
+      !***
+
+      grid1_ctmp = 'source_grid'
+      grid2_ctmp = 'dest_grid'
+
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, trim(grid1_ctmp),
+     &                      grid1_name)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                      'error writing source grid name')) return
+
+      ncstat = nf90_put_att(nc_file_id, NF90_GLOBAL, trim(grid2_ctmp),
+     &                      grid2_name)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                   'error writing destination grid name')) return
+
+!-----------------------------------------------------------------------
+!
+!     prepare netCDF dimension info
+!
+!-----------------------------------------------------------------------
+
+      !***
+      !*** define grid size dimensions
+      !***
+
+      itmp2 = grid2_size
+
+      ncstat = nf90_def_dim(nc_file_id, 'dst_grid_size', itmp2, 
+     &                      nc_dstgrdsize_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &            'error defining destination grid size')) return
+
+      !***
+      !*** define map size dimensions
+      !***
+
+      itmp1 = num_links_map1
+
+      ncstat = nf90_def_dim(nc_file_id, 'num_links', 
+     &                      itmp1, nc_numlinks_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                           'error defining remap size')) return
+
+      ncstat = nf90_def_dim(nc_file_id, 'num_wgts', 
+     &                      num_wts, nc_numwgts_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                    'error defining number of weights')) return
+
+!-----------------------------------------------------------------------
+!
+!     define all arrays for netCDF descriptors
+!
+!-----------------------------------------------------------------------
+
+
+      !***
+      !*** define grid fraction arrays
+      !***
+
+
+      ncstat = nf90_def_var(nc_file_id, 'dst_grid_frac', 
+     &                      NF90_DOUBLE, nc_dstgrdsize_id, 
+     &                      nc_dstgrdfrac_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &         'error defining destination fraction')) return
+
+      ncstat = nf90_put_att(nc_file_id, nc_dstgrdfrac_id, 
+     &                      'units', 'unitless')
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &         'error writing destination frac units')) return
+
+      !***
+      !*** define mapping arrays
+      !***
+
+      ncstat = nf90_def_var(nc_file_id, 'src_address', 
+     &                      NF90_INT, nc_numlinks_id, 
+     &                      nc_srcadd_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &         'error defining source addresses')) return
+
+      ncstat = nf90_def_var(nc_file_id, 'dst_address', 
+     &                      NF90_INT, nc_numlinks_id, 
+     &                      nc_dstadd_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &         'error defining destination addresses')) return
+
+      nc_dims2_id(1) = nc_numwgts_id
+      nc_dims2_id(2) = nc_numlinks_id
+
+      ncstat = nf90_def_var(nc_file_id, 'remap_matrix', 
+     &                      NF90_DOUBLE, nc_dims2_id, 
+     &                      nc_rmpmatrix_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &         'error defining remapping weights')) return
+
+      !***
+      !*** end definition stage
+      !***
+
+      ncstat = nf90_enddef(nc_file_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                         'error ending definition phase')) return
+
+
+      !***
+      !*** write variable arrays
+      !***
+
+      itmp4 = nc_dstgrdfrac_id
+
+      ncstat = nf90_put_var(nc_file_id, itmp4, grid2_frac)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &         'error writing grid2 frac')) return
+
+      ncstat = nf90_put_var(nc_file_id, nc_srcadd_id, 
+     &                        grid1_add_map1)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &           'error writing source addresses')) return
+
+      ncstat = nf90_put_var(nc_file_id, nc_dstadd_id, 
+     &                        grid2_add_map1)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &           'error writing destination addresses')) return
+
+      ncstat = nf90_put_var(nc_file_id, nc_rmpmatrix_id, wts_map1)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &           'error writing weights')) return
+
+
+      ncstat = nf90_close(nc_file_id)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName,
+     &                           'error closing file')) return
+
+
+!-----------------------------------------------------------------------
+
+      end subroutine write_remap_scrip_ww3
 
 !***********************************************************************
 

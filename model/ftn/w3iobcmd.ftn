@@ -496,11 +496,10 @@
               ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
               DO IP=1, NBI2
                 READ (NDSB,ERR=803,IOSTAT=IERR) TMPSPC(:,IP)
-
+                END DO
                 CALL W3CSPC ( TMPSPC     , NKI, NTHI, XFRI, FR1I, TH1I, &
                             ABPIN(:,IP), NK , NTH , XFR , FR1, TH(1), &
                             NBI2, NDST, NDSE, FACHFE )
-                END DO
               DEALLOCATE ( TMPSPC )
             END IF
 !
@@ -599,6 +598,9 @@
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/               &
                '     ERROR IN OPENING FILE ',A/                       &
                '     IOSTAT =',I5/)
+!
+! Note: This 1001 error can occur when multi-grid time steps are not
+!       compatible.
  1001 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOBC : '/             &
                '     INPUT FILE WITH BOUNDARY CONDITIONS NOT FOUND'/  &
                '     BOUNDARY CONDITIONS WILL NOT BE UPDATED ',I5/)

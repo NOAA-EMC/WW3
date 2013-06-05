@@ -520,9 +520,9 @@ c     GOTO 888
      &                              '    (m)  (s) (d) |')
   953 FORMAT (
      &  75X,'Hst : Total sigificant wave height.'/
-     &  75X,'n   : Number of fields with Hs > ',f4.2,
+     &  75X,'n   : Number of fields with Hs > ',f6.2,
      &           ' in 2-D spectrum.'/
-     &  75X,'x   : Number of fields with Hs > ',f4.2,
+     &  75X,'x   : Number of fields with Hs > ',f6.2,
      &           ' not in table.'/
      &  75X,'Hs  : Significant wave height of separate wave field.'/
      &  75X,'Tp  : Peak period of separate wave field.'/

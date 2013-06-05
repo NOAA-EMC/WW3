@@ -30,7 +30,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:eg:hi:m:n:o:p:q:r:s:w:"  #option string for getopt function
+optstr="a:c:efg:hi:m:n:o:p:q:r:s:w:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -45,6 +45,9 @@ Options:
                    :   *file will be created if it does not already exist
   -c cmplr         : setup comp & link files for specified cmplr
   -e               : prompt for changes to existing WW3 environment
+  -f               : force pre- and post-processing programs to be compiled
+                   : non-MPI (i.e., with SHRD switch); default is all programs
+                   : compiled with unmodified switch settings
   -g grid_string   : use ww3_grid_<grid_string>.inp
   -h               : print usage and exit
   -i inpdir        : use inputs in test_name/<inpdir> (default  test_name/input)
@@ -101,6 +104,7 @@ do
   -a) shift; ww3_env="$1" ;;
   -c) shift; cmplr="$1" ;;
   -e) prompt=1 ;;
+  -f) force_shrd=1 ;;
   -g) shift; grdstr="$1" ;;
   -h) help=1 ;;
   -i) shift; inpdir="$1" ;;
@@ -298,7 +302,8 @@ mkdir -p $path_w
 cd $path_w
 if [ $exec_p = "none" ]
 then
-  \rm -f *.inp *.ww3 *.out *.nc *.txt
+  ncfiles=`\ls *.nc 2>/dev/null | grep -v rmp_`
+  \rm -f *.inp *.ww3 *.out *.txt $ncfiles
 fi
 
 # 3.b Header
@@ -327,8 +332,8 @@ then
   echo '+--------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
@@ -408,8 +413,12 @@ then
   echo '+--------------------+'
   echo ' '
 
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
-
+  else
+    \cp -f $file_c $path_b/switch
+  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -482,8 +491,8 @@ then
   echo '+---------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
@@ -559,8 +568,8 @@ then
   echo '+---------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
@@ -642,8 +651,8 @@ then
   echo '+-------------------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
@@ -818,8 +827,8 @@ then
   echo '+--------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
@@ -932,8 +941,8 @@ then
   echo '+--------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
@@ -1023,8 +1032,8 @@ then
   echo '+--------------------+'
   echo ' '
 
-  if [ `uname -s` = 'AIX' ]
-  then #On AIX, build pre- & post-processing programs with SHRD only
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch

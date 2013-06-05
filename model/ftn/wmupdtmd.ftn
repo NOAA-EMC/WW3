@@ -249,16 +249,7 @@
 !
 ! 2.  Using native input --------------------------------------------- /
 !
-! Notes:  I added a check here, since I was getting "Subscript out of range" 
-! ........errors in some cases. (Rogers)
-! ........(We can remove this check when root cause is addressed.)
-        IF(SIZE(INPMAP,2).LT.J.OR.SIZE(IDINP,2).LT.J)THEN
-           WRITE(*,*)'INPMAP/IDINP not sufficiently dimensioned.'
-           WRITE(*,*)'SIZE(INPMAP,2) = ',SIZE(INPMAP,2)
-           WRITE(*,*)'SIZE(IDINP,2) = ',SIZE(IDINP,2)
-           WRITE(*,*)'J = ',J
-           STOP
-        END IF
+        IF(SIZE(INPMAP,2).LT.J.OR.SIZE(IDINP,2).LT.J)CALL EXTCDE(895)
         IF ( INPMAP(IMOD,J) .EQ. 0 ) THEN
 !
 !/T            WRITE (MDST,9020)

@@ -27,7 +27,7 @@
 !
 !      Name                          Type  Scope      Description
 !     ----------------------------------------------------------------
-!      scrip_wrapper_next_generation  Subr. Public   as the name says ... 
+!      scrip_wrapper                  Subr. Public   as the name says ... 
 !      get_scrip_info_structured      Subr. Public   as the name says ... 
 !      get_scrip_info_unstructured    Subr. Public   as the name says ... 
 !      get_scrip_info                 Subr. Public   as the name says ... 
@@ -62,8 +62,9 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE SCRIP_WRAPPER_NEXT_GENERATION (ID_SRC, ID_DST,         &
-                    MAPSTA_SRC,MAPST2_SRC,FLAGLL,GRIDSHIFT)
+      SUBROUTINE SCRIP_WRAPPER (ID_SRC, ID_DST,                         &
+                    MAPSTA_SRC,MAPST2_SRC,FLAGLL,GRIDSHIFT,L_MASTER,    &
+                    L_READ,L_TEST)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III                     |
 !/                  | E. Rogers, M. Dutour, A. Roland   |
@@ -71,7 +72,6 @@
 !/                  | Last update :         06-Jun-2012 |
 !/                  +-----------------------------------+
 !/
-
 !  1. Original author :
 !
 !     Erick Rogers, NRL
@@ -89,6 +89,8 @@
 !                   ---get_scrip_info_structured (the structured case)
 !                   ---get_scrip_info (chooses according to FD/FE)
 !                   ---scrip_info_renormalization (conv_x and all that)
+!     11-Apr-2013   Kevin Lind
+!                   Added code for reading/writing SCRIP remap files
 !
 !  4. Copyright :
 !
@@ -131,15 +133,30 @@
       INTEGER(SCRIP_I4), INTENT(IN)      :: MAPST2_SRC(:,:)
       LOGICAL(SCRIP_LOGICAL), INTENT(IN) :: FLAGLL
       REAL   (SCRIP_R8), INTENT(IN)      :: GRIDSHIFT
+      LOGICAL(SCRIP_LOGICAL), INTENT(IN) :: L_MASTER  ! Am I the master processor (do I/O)?
+      LOGICAL(SCRIP_LOGICAL), INTENT(IN) :: L_READ    ! Do I read the remap file?
+      LOGICAL(SCRIP_LOGICAL), INTENT(IN) :: L_TEST    ! Whether to include test output
+                                                      ! in subroutines
 !/ ------------------------------------------------------------------- /
 !/ local variables
 !/
-      INTEGER(SCRIP_I4)                 :: IREC,I,J,NI,NJ,IDUM,NK,K,ILINK, &
-                                           IW,ICORNER
-      INTEGER(SCRIP_I4)                 :: ISRC,JSRC,KSRC,IPNT,KDST,NI_SRC
+      INTEGER(SCRIP_I4)                 :: IREC,I,J,NI,NJ,IDUM,NK,K, &
+                                           ILINK,IW,ICORNER,NGOODPNTS, &
+                                           NBADPNTS
+      INTEGER(SCRIP_I4)                 :: ISRC,JSRC,KSRC,IPNT,KDST, &
+                                           NI_SRC
       REAL   (SCRIP_R8)                 :: LAT_CONVERSION,OFFSET
       REAL   (SCRIP_R8)                 :: CONV_DX,CONV_DY,WEIGHT
       REAL   (SCRIP_R8)                 :: WTSUM
+!/SCRIPTST      CHARACTER (LEN=10)      :: CDATE_TIME(3)
+!/SCRIPTST      INTEGER                 :: DATE_TIME(8)
+!/SCRIPTST      INTEGER                 :: ELAPSED_TIME, BEG_TIME, &
+!/SCRIPTST                                 END_TIME
+
+! test output for input variables
+
+!/T38      if(l_master)write(*,*)'flagll = ',flagll
+!/T38      if(l_master)write(*,*)'gridshift = ',gridshift
 
 ! 
 ! START: universal settings
@@ -199,13 +216,23 @@
       ENDIF
 
 !.....test output
-!/T38 write(*,*)'conv_dx=', conv_dx
-!/T38 write(*,*)'conv_dy=', conv_dy
-!/T38 write(*,*)'offset = ',offset
-!/T38 write(*,*)'flagll = ',flagll
-!/T38 write(*,*)'gridshift = ',gridshift
-!/T38 write(*,*)'grid1_size=', grid1_size
-!/T38 write(*,*)'grid2_size=', grid2_size
+!/T38      write(*,*)'l_master = ',l_master
+!/T38      if(l_master)then
+!/T38      write(*,*)'conv_dx=', conv_dx
+!/T38      write(*,*)'conv_dy=', conv_dy
+!/T38      write(*,*)'offset = ',offset
+!/T38      write(*,*)'grid1_size=', grid1_size
+!/T38      write(*,*)'grid2_size=', grid2_size
+!/T38      write(*,*)'l_read = ',l_read
+!/T38      write(*,*)'minval(grid1_center_lon) = ',minval(grid1_center_lon)
+!/T38      write(*,*)'maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
+!/T38      write(*,*)'minval(grid1_center_lat) = ',minval(grid1_center_lat)
+!/T38      write(*,*)'maxval(grid1_center_lat) = ',maxval(grid1_center_lat)
+!/T38      write(*,*)'minval(grid2_center_lon) = ',minval(grid2_center_lon)
+!/T38      write(*,*)'maxval(grid2_center_lon) = ',maxval(grid2_center_lon)
+!/T38      write(*,*)'minval(grid2_center_lat) = ',minval(grid2_center_lat)
+!/T38      write(*,*)'maxval(grid2_center_lat) = ',maxval(grid2_center_lat)
+!/T38      endif
 
       CALL SCRIP_INFO_RENORMALIZATION(                                  &
      &   GRID1_CENTER_LON, GRID1_CENTER_LAT,                            &
@@ -224,32 +251,35 @@
       WT_LOWEST   =ZERO
       WT_HIGHEST  =ONE+1.E-7_SCRIP_R8
 
-      CALL SCRIP
+!/SCRIPTST      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+      CALL SCRIP(ID_SRC, ID_DST, L_MASTER, L_READ, L_TEST)
+!/SCRIPTST      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/SCRIPTST      elapsed_time = end_time - beg_time
+!/SCRIPTST      write(0,*) "SCRIP: ", elapsed_time, " MSEC"
+
+!/T38      if(l_master)write(*,*)'new minval(grid1_center_lon) = ',minval(grid1_center_lon)
+!/T38      if(l_master)write(*,*)'new maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
 
 !.....notes: at this point we have the following useful variables:
 !       num_wts, e.g. num_wts=3....for first order conservative remapping, 
 !       only the first one is relevant, the other two are for second-order
 !       remapping.
 !       max_links_map1, e.g. max_links_map1=1369, 
-!              equivalent to my netcdf/matlab variable num_links
 !       grid2_size, e.g. grid2_size=1849, 
-!              equivalent to my netcdf/matlab variable ndst
 !       wts_map1(num_wts,max_links_map1), e.g. wts_map1(3,1369), 
-!              equivalent to my netcdf/matlab variable remap_matrix(1369,3)
 !       grid1_add_map1(max_links_map1),  e.g. grid1_add_map1(1369),
-!              equivalent to my netcdf/matlab variable src_address(1369)
 !       grid2_add_map1(max_links_map1), e.g. grid2_add_map1(1369), 
-!              equivalent to my netcdf/matlab variable dst_address(1369)
 !       grid2_frac(grid2_size), e.g. grid2_frac(1849), 
-!              equivalent to my netcdf/matlab variable dst_grid_frac(1849)
-
+!       (see earlier versions for notes re: equivalency in netcdf/matlab)
 ! 
-!.....check results (optional)
+!.....test output (optional)
 ! 
-
 !.....note re: notation: I use k for the combined i/j array, similar to isea, 
 !            but not necessarily the same as isea since some points may
 !            be land etc.
+!/T38     if(l_master)then
 !/T38     do k=1,grid2_size
 !/T38        write(403,*)grid2_frac(k)
 !/T38     end do
@@ -258,10 +288,11 @@
 !/T38     end do
 !/T38     do ilink=1,max_links_map1
 !/T38        write(406,'(i20)')grid1_add_map1(ilink) ! equivalent to
-!                                                      my "src_address"
+!/T38                                                ! my "src_address"
 !/T38        write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to 
-!                                                      my "dst_address"
+!/T38                                                ! my "dst_address"
 !/T38     end do
+!/T38     endif
 
 !.....organize results and return to wmghgh.
 
@@ -280,36 +311,89 @@
       WGTDATA%NR2=0
       WGTDATA%NRL=0
       WGTDATA%N=0
-
-      ni_src=grid1_dims(1)
+      
+      NI_SRC=GRID1_DIMS(1)
+      NGOODPNTS=0
+      NBADPNTS=0
 
       DO ILINK=1,MAX_LINKS_MAP1
 
-         KSRC=GRID1_ADD_MAP1(ILINK)
-         JSRC=INT((KSRC-1)/NI_SRC)+1
-         ISRC=KSRC-(JSRC-1)*NI_SRC
+!........note that this pair of if-thens *must* be consistent with the
+!........single if-then below
+         IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.     &
+              (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST)) THEN
+            !     then consider this link either to include, or to print a warning
+            IF( (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                   &
+                 (WTS_MAP1(1,ILINK)<=WT_HIGHEST) )    THEN
+               KSRC=GRID1_ADD_MAP1(ILINK)
+               JSRC=INT((KSRC-1)/NI_SRC)+1
+               ISRC=KSRC-(JSRC-1)*NI_SRC
 
-         IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.      &
-     &       (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST) .AND.     &
-     &       (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                       &
-     &       (WTS_MAP1(1,ILINK)<=WT_HIGHEST))     THEN
-            IF (MAPSTA_SRC(JSRC,ISRC).EQ.0) THEN ! excluded point
-               WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0    =                  &
-     &              WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0 + 1
-               IF (MAPST2_SRC(JSRC,ISRC).EQ.0)THEN
-                  WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL =                  &
-     &              WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL + 1
+               IF (MAPSTA_SRC(JSRC,ISRC).EQ.0) THEN ! excluded point
+                  WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0    =              &
+                       WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0 + 1
+                  IF (MAPST2_SRC(JSRC,ISRC).EQ.0)THEN
+                     WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL =              &
+                          WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL + 1
+                  ENDIF
+               ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.1) THEN
+                                                          ! sea point
+                  WGTDATA(GRID2_ADD_MAP1(ILINK))%N=                    &
+                       WGTDATA(GRID2_ADD_MAP1(ILINK))%N+1
+               ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.2) THEN
+                                                          ! bnd point
+                  WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2    =              &
+                       WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2 + 1
+               END IF
+               NGOODPNTS=NGOODPNTS+1
+            ELSEIF ( (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))>FRAC_LOWEST)   &
+                 .AND. (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))<FRAC_HIGHEST)&
+                 ) THEN
+               ! note that we don't bother giving a warning for the 
+               ! cases where grid1_frac is strange.
+               NBADPNTS=NBADPNTS+1
+               ! we also don't bother giving a warning if we've already
+               ! given a lot of warnings (we keep counting, though)
+               IF((NBADPNTS.LT.5).AND.L_MASTER)THEN ! print warnings
+                  WRITE(*,'(A)')'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+                  WRITE(*,'(A)')'WARNING: SCRIP weight problem '
+                  WRITE(*,'(4x,A,I7,A,I7)')'ilink = ',ilink,' out of ',&
+                  max_links_map1
+                  WRITE(*,'(4x,A,I7)')'grid1_add_map1(ilink) = ',      &
+                  grid1_add_map1(ilink)
+                  WRITE(*,'(4x,A,I7)')'grid2_add_map1(ilink) = ',      &
+                  grid2_add_map1(ilink)
+                  WRITE(*,'(4x,A,E12.4)')'wts_map1(1,ilink) = ',       &
+                  wts_map1(1,ilink)
+                  WRITE(*,'(4x,A,F10.5)')                              &
+                  'grid1_frac(grid1_add_map1(ilink)) = ',              &
+                  grid1_frac(grid1_add_map1(ilink))
+                  WRITE(*,'(4x,A,F10.5)')                              &
+                  'grid2_frac(grid2_add_map1(ilink)) = ',              &
+                  grid2_frac(grid2_add_map1(ilink))
+                  WRITE(*,'(4x,A,F10.5)')'grid1_center_lat = ',        &
+                  grid1_center_lat(grid1_add_map1(ilink)) 
+                  WRITE(*,'(4x,A,F10.5)')'grid1_center_lon = ',        &
+                  grid1_center_lon(grid1_add_map1(ilink))
+                  WRITE(*,'(4x,A,F10.5)')'grid2_center_lat = ',        &
+                  grid2_center_lat(grid2_add_map1(ilink))
+                  WRITE(*,'(4x,A,F10.5)')'grid2_center_lon = ',        &
+                  grid2_center_lon(grid2_add_map1(ilink))
+                  WRITE(*,'(A)')'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
                ENDIF
-            ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.1) THEN ! sea point
-               WGTDATA(GRID2_ADD_MAP1(ILINK))%N=                        &
-     &              WGTDATA(GRID2_ADD_MAP1(ILINK))%N+1
-            ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.2) THEN ! bnd point
-               WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2    =                  &
-     &              WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2 + 1
-            END IF
+            ENDIF
          ENDIF
-
       END DO
+      IF((NBADPNTS.GT.0).AND.L_MASTER)THEN
+         WRITE(*,'(4x,A,I5,A)')'We had problems in ',NBADPNTS, &
+         ' points.'
+         WRITE(*,'(4x,I8,A)')NGOODPNTS,' points appear to be OK.'
+      ENDIF
+      IF(((NBADPNTS.GT.1000).OR.(NBADPNTS.GT.NGOODPNTS)) &
+         .AND.L_MASTER)THEN
+         WRITE(*,'(4x,A)')'Error: excessive SCRIP failure. Stopping.'
+         STOP
+      ENDIF
 
 !.....step 2: allocate according to the size "n" determined above
       DO KDST=1,GRID2_SIZE
@@ -325,6 +409,8 @@
          JSRC=INT((KSRC-1)/NI_SRC)+1
          ISRC=KSRC-(JSRC-1)*NI_SRC
 
+!........note that this single if-then *must* be consistent with the
+!........pair of if-thens above
          IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.      &
      &       (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST) .AND.     &
      &       (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                       &
@@ -356,7 +442,7 @@
       END DO
 
       CALL SCRIP_CLEAR
-      END SUBROUTINE SCRIP_WRAPPER_NEXT_GENERATION
+      END SUBROUTINE SCRIP_WRAPPER
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE GET_SCRIP_INFO_UNSTRUCTURED (ID_GRD,                  &
@@ -860,7 +946,7 @@
 !  
 !  8. Called by : 
 !
-!     Subroutine scrip_wrapper_next_generation
+!     Subroutine scrip_wrapper
 !
 !  9. Subroutines and functions used :
 !
@@ -953,7 +1039,8 @@
 !
 !     This is adapted from Erick Rogers scrip_wrapper
 !     Purpose is to rescale according to whether the grid is spherical
-!     or not and to adjust by some shift for
+!     or not and to adjust by some small shift to keep SCRIP happy
+!     in situations where nodes of different grids overlay
 !
 !  6. Method :
 !
@@ -992,6 +1079,7 @@
       INTEGER :: I, J, IP
       REAL*8 :: MINLON, MINLAT, MAXLON, MAXLAT, HLON, HLAT
       REAL*8 :: MINLONCORNER, MAXLONCORNER, MINLATCORNER, MAXLATCORNER
+
       DO I=1,GRID_SIZE
         GRID_CENTER_LON(I)=(GRID_CENTER_LON(I)+OFFSET)/CONV_DX +        &
      &       GRIDSHIFT
@@ -1016,6 +1104,7 @@
           END IF
         END DO
       END DO
+
       END SUBROUTINE SCRIP_INFO_RENORMALIZATION
 
 !/ ------------------------------------------------------------------- /
@@ -1258,4 +1347,3 @@
 !/ End of module WMSCRPMD -------------------------------------------- /
 !/
       END MODULE WMSCRPMD
-

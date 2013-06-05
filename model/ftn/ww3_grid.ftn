@@ -1418,7 +1418,6 @@
        IMPFSNIMP = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UG  ', STATUS ) 
-               WRITE(NDSO, 950)
 !
 ! 6.m Select propagation scheme
 !
@@ -1559,6 +1558,11 @@
       FICEL  = LICE
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
+!
+! Notes: Presently, if we want to use CICE0.ne.CICEN we are required to 
+!     input an obstruction grid. This is unfortunate, since we may not 
+!     have this information. However, it is possible to input zeros (as 
+!     a workaround).
       IF ( FLAGTR .LT. 3 ) CICE0 = CICEN
       IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN

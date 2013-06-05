@@ -845,7 +845,7 @@
 !       (time step correction in routine)
 !
           IF ( FLCX .OR. FLCY ) THEN
-!	  
+!
            IF(GTYPE .EQ. UNGTYPE) THEN
              IF (FLAGLL) THEN 
                 FACX   =  1./(DERA * RADIUS) 

@@ -86,6 +86,7 @@
 #       Note that all but GrADS output is forced to big endian data
 
   opt="-c $list -O3 -xSSE4.2 -ip  -module $path_m"
+# opt="-c $list -O3 -prec-div -prec-sqrt -xHost -align array128byte -ip  -module $path_m"
 # opt="-c $list -O0 -g -traceback -check all -fpe0 -ftrapuv -module $path_m"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ] && \
@@ -96,7 +97,7 @@
 
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=ifort
+    comp=mpiifort
   else
     comp=ifort
   fi

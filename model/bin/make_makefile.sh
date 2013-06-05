@@ -578,7 +578,7 @@
                 fi 
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
-                  aux="$aux scrip_netcdfmod scrip_remap_write"
+                  aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
                 fi ;;
    ww3_sbs1) IDstring='Multi-grid shell sbs version' 
                core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
@@ -598,7 +598,7 @@
                 fi 
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
-                  aux="$aux scrip_netcdfmod scrip_remap_write"
+                  aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
                 fi ;;
      ww3_outf) IDstring='Gridded output'
                core=
@@ -863,7 +863,7 @@
     done
     rm -f check_file
 
-    string_scripnc='$(aPo)/scrip_netcdfmod.o $(aPo)/scrip_remap_write.o'
+    string_scripnc='$(aPo)/scrip_netcdfmod.o $(aPo)/scrip_remap_write.o $(aPo)/scrip_remap_read.o'
     if  [ "$scrip" = 'SCRIP' ] && [ "$file" = 'wmscrpmd' ]
     then
        S_string2='$(aPo)/scrip_constants.o $(aPo)/scrip_grids.o $(aPo)/scrip_iounitsmod.o  $(aPo)/scrip_remap_vars.o $(aPo)/scrip_timers.o $(aPo)/scrip_errormod.o $(aPo)/scrip_interface.o $(aPo)/scrip_kindsmod.o $(aPo)/scrip_remap_conservative.o'

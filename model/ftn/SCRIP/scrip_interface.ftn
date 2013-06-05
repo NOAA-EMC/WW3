@@ -75,6 +75,8 @@
       contains
 !/ ------------------------------------------------------------------- /
 
+
+
 !#######################################################################
       subroutine scrip_clear
 !#######################################################################
@@ -268,11 +270,6 @@
       end subroutine scrip_clear
 !#######################################################################
 
-
-!#######################################################################
-      subroutine scrip
-!#######################################################################
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !     subroutine scrip:
@@ -329,6 +326,10 @@
 !
 !***********************************************************************
 
+      subroutine scrip(src_num, dst_num, l_master, l_read, l_test)
+
+!-----------------------------------------------------------------------
+
       use SCRIP_KindsMod                  ! module defining data types
       use scrip_constants                  ! module for common constants
       use scrip_iounitsmod                    ! I/O unit manager
@@ -338,6 +339,7 @@
       use scrip_remap_conservative         ! routines for conservative remap
 
 !/SCRIPNC      use scrip_remap_write                ! routines for remap output
+!/SCRIPNC      use scrip_remap_read                 ! routines for remap input
 
       use scrip_errormod
 
@@ -363,6 +365,19 @@
 
 !-----------------------------------------------------------------------
 !
+!     input variables not part of namelist
+!
+!-----------------------------------------------------------------------
+
+      integer (SCRIP_i4), intent(in)      :: dst_num   ! number of destination grid GDST
+      integer (SCRIP_i4), intent(in)      :: src_num   ! number of source grid GSRC
+      logical (SCRIP_Logical), intent(in) :: l_master  ! Am I the master processor (do I/O)?
+      logical( SCRIP_Logical), intent(in) :: l_read    ! Do I read the remap file?
+      logical(SCRIP_Logical), intent(in) :: l_test     ! Whether to include test output
+                                                       ! in subroutines
+
+!-----------------------------------------------------------------------
+!
 !     local variables
 !
 !-----------------------------------------------------------------------
@@ -376,13 +391,19 @@
       character (12), parameter :: &
            rtnName = 'SCRIP_driver'
 
+!/SCRIPNC      character (LEN=3) :: cdst  ! 3 character number of destination map
+!/SCRIPNC      character (LEN=3) :: csrc  ! 3 character number of source map
+!/SCRIPTST      CHARACTER (LEN=10) :: CDATE_TIME(3)
+!/SCRIPTST      INTEGER            :: DATE_TIME(8)
+!/SCRIPTST      INTEGER            :: ELAPSED_TIME, BEG_TIME, END_TIME
+
 !-----------------------------------------------------------------------
 !
 !     initialize timers and errorcode
 !
 !-----------------------------------------------------------------------
 
-      write(*,*)'subroutine scrip'
+!/T38 if(l_master)write(SCRIP_stdout,*)'subroutine scrip'
 
       call timers_init
       do n=1,max_timers
@@ -398,10 +419,17 @@
 !-----------------------------------------------------------------------
 
       num_maps = 1
-      interp_file1 = 'rmp_source_to_destination_conserv.nc'
-      interp_file2 = 'not_used.nc'
-      map1_name = 'source to destination Conservative Mapping'
-      map2_name = 'map not used'
+!/SCRIPNC!     Note: Only master does I/O, but all processors need to know about
+!/SCRIPNC!     file existence
+!/SCRIPNC      interp_file1 = "rmp_src_to_dst_conserv_XXX_XXX.nc"
+!/SCRIPNC      interp_file2 = 'not_used.nc'
+!/SCRIPNC      map1_name = 'source to destination Conservative Mapping'
+!/SCRIPNC      map2_name = 'map not used'
+!/SCRIPNC      write(cdst, "(i3.3)") dst_num
+!/SCRIPNC      write(csrc, "(i3.3)") src_num
+!/SCRIPNC      interp_file1(24:26) = csrc
+!/SCRIPNC      interp_file1(28:30) = cdst
+
       map_method = 'conservative'
       normalize_opt = 'fracarea'
       output_opt = 'scrip'
@@ -453,12 +481,12 @@
 !
 !-----------------------------------------------------------------------
 
-      write(*,*)'calling grid_init'
+!/T38 if(l_master)write(SCRIP_stdout,*)'calling grid_init'
 
-      call grid_init( errorCode)
+      call grid_init( errorCode,l_master,l_test)
 
-      write(SCRIP_stdout, *) 'Computing remappings between: ',grid1_name
-      write(SCRIP_stdout, *) '                         and  ',grid2_name
+!/T38 if(l_master)write(SCRIP_stdout, *) 'Computing remappings between: ',grid1_name
+!/T38 if(l_master)write(SCRIP_stdout, *) '                         and  ',grid2_name
 
 !-----------------------------------------------------------------------
 !
@@ -471,48 +499,90 @@
 !-----------------------------------------------------------------------
 !
 !     call appropriate interpolation setup routine based on type of
-!     remapping requested.
+!     remapping requested. or read in remapping data.
+!/SCRIPNC!or, read in remapping data.
 !
 !-----------------------------------------------------------------------
 
-      select case(map_type)
-      case(map_type_conserv)
-         write(*,*)'calling remap_conserv'
-         call remap_conserv
-         write(*,*)'back from remap_conserv'
-      case default
-         call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
-         call SCRIP_driverExit(errorCode, 'Invalid Map Type')
-      end select
+!/SCRIPTST      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+      
+!/SCRIPNC      if (l_read) then
+!/SCRIPNC         write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
+!/SCRIPNC         call read_remap_ww3(map1_name, interp_file1, errorCode)
+!/SCRIPTST         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST         end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/SCRIPTST         elapsed_time = end_time - beg_time
+!/SCRIPTST         write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
+!/SCRIPNC      else
+         select case(map_type)
+         case(map_type_conserv)
+!/T38       if(l_master)write(SCRIP_stdout,*)'calling remap_conserv'
+            call remap_conserv(l_master,l_test)
+!/T38       if(l_master)write(SCRIP_stdout,*)'back from remap_conserv'
+!/SCRIPTST            call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST            end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/SCRIPTST            elapsed_time = end_time - beg_time
+!/SCRIPTST            write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
+         case default
+            call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
+            call SCRIP_driverExit(errorCode, 'Invalid Map Type')
+         end select
 
 !-----------------------------------------------------------------------
 !
-!     reduce size of remapping arrays and then write remapping info
-!     to a file.
+!     reduce size of remapping arrays
 !
 !-----------------------------------------------------------------------
       
-      if (num_links_map1 /= max_links_map1) then
-         call resize_remap_vars(1, num_links_map1-max_links_map1)
-      endif
-      if ((num_maps > 1) .and. (num_links_map2 /= max_links_map2)) then
-         call resize_remap_vars(2, num_links_map2-max_links_map2)
-      endif
-      
-      call sort_add_v2(grid2_add_map1, grid1_add_map1, wts_map1)
+!/SCRIPTST         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST         beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
 
-!/SCRIPNC      call write_remap(map1_name, map2_name, &
-!/SCRIPNC                interp_file1, interp_file2, output_opt, errorCode)
+         if (num_links_map1 /= max_links_map1) then
+            call resize_remap_vars(1, num_links_map1-max_links_map1)
+         endif
+         if ((num_maps > 1) .and. (num_links_map2 /= max_links_map2)) then
+            call resize_remap_vars(2, num_links_map2-max_links_map2)
+         endif
+
+         call sort_add_v2(grid2_add_map1, grid1_add_map1, wts_map1)
+
+!-----------------------------------------------------------------------
+!
+!/SCRIPNC!     write remapping info to a file.
+!
+!-----------------------------------------------------------------------
+
+!/SCRIPNC         if (l_master) then
+!/SCRIPNC            write(SCRIP_stdout, *) 'Writing remapping data to ', interp_file1
+!/SCRIPNC         endif
+
+!/SCRIPTST        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST        end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/SCRIPTST        elapsed_time = end_time - beg_time
+!/SCRIPTST        write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
+!/SCRIPTST        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/SCRIPTST        beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+
+! Use  write_remap if you want the extra variables in the .nc files for diagnostics
+! Use  write_remap_ww3 if you don't want any extra variables in the .nc files
+
+!/SCRIPNC         if(l_test)then
+!/SCRIPNC            call write_remap(map1_name, map2_name, interp_file1, interp_file2, &
+!/SCRIPNC            output_opt, l_master, errorCode)
+!/SCRIPNC         else
+!/SCRIPNC            call write_remap_ww3(map1_name, interp_file1, output_opt, &
+!/SCRIPNC            l_master, errorCode)
+!/SCRIPNC         endif
+
+!/SCRIPNC      end if
 
 !-----------------------------------------------------------------------
 
-!#######################################################################
     end subroutine scrip
-!#######################################################################
 
-!#######################################################################
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    subroutine SCRIP_driverExit(errorCode,errormsg)
-!#######################################################################
 
 ! !DESCRIPTION:
 !  This routine exits the SCRIP driver program. It first calls the 
@@ -541,11 +611,10 @@
 
    stop
 
-!#######################################################################
-   end subroutine SCRIP_driverExit
-!#######################################################################
+!-----------------------------------------------------------------------
 
-   
+   end subroutine SCRIP_driverExit
+
 !#######################################################################
    subroutine sort_add_v2(add1, add2, weights)
 !#######################################################################
@@ -781,6 +850,6 @@
 !/
 !/ End of module SCRIP_INTERFACE -------------------------------------------- /
 !/
- END MODULE SCRIP_INTERFACE
+      END MODULE SCRIP_INTERFACE
 
 
