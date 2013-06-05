@@ -86,6 +86,7 @@
 	USE W3ODATMD, ONLY : FNMPRE, NOGRD, OUTPTS, UNDEF, NDSE, NDST,        &
 			     FLOGRD, NAPROC, NOSWLL
 	USE W3ODATMD, ONLY : W3NOUT, W3SETO
+        USE W3IDATMD
 	USE W3WDATMD, ONLY : W3NDAT, W3SETW
 	USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, UST, USTDIR, ASF
 	USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
@@ -178,7 +179,7 @@
 	CALL W3NMOD (NG, 6, 6)
 	CALL W3NDAT (    6, 6)
 	CALL W3NAUX (    6, 6)
-!	CALL W3NINP (    6, 6)
+	CALL W3NINP (    6, 6)
         CALL W3NOUT(     6, 6)
 	CALL W3SETO(1,   6, 6)	
 	ALLOCATE( GR_INTS(NG), COUNTG(NG-1) )
@@ -542,6 +543,7 @@
 ! 6.a Set-up dimensions for target grid outputs and allocate file pointers
 !
 	CALL W3SETA(NG, 6, 6)
+	CALL W3DIMI(NG, 6, 6)
 	CALL W3DIMA(NG, 6, 6)
 	ALLOCATE(FIDOUT(NG))
 	DO IG = 1,NG
@@ -641,9 +643,9 @@
  905    FORMAT ( '    Grid Particulars are : '/                               &
 		 '      Dimensions         --> ',2(I5,2X)/                    &
 		 '      Bottom left corner --> ',2(F6.2,2X)/                  &
-		 '      Grid resolution    --> ',2(F5.3,2X)/)
+		 '      Grid resolution    --> ',2(F6.3,2X)/)
  906    FORMAT (/'  Total number of wet points for interpolation ',I6/)
- 907    FORMAT ( '  For wet point ',I6,' only ',F5.3,' overlap region in',    &
+ 907    FORMAT ( '  For wet point ',I6,' only ',F6.3,' overlap region in',    &
                     I3,' grids'/)
  908    FORMAT (/'  In Grid ',I3,' Total no. of wet points found = ',I6/)
  909    FORMAT (/'  Total no. of wet points where no grids found = ',I6)
