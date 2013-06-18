@@ -502,7 +502,7 @@
 !/    18-Sep-2000 : PGI switch added                    ( version 2.04 )
 !/    13-Mar-2001 : LF95 switch added                   ( version 2.09 )
 !/    08-May-2002 : Replace obsolete switches with F90  ( version 2.21 )
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -580,7 +580,7 @@
 !/    18-Sep-2000 : PGI switch added                    ( version 2.04 )
 !/    13-Mar-2001 : LF95 switch added                   ( version 2.09 )
 !/    08-May-2002 : Replace obsolete switches with F90  ( version 2.21 )
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !  1. Purpose :
 !

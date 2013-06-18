@@ -11,7 +11,7 @@
 !/  24-Sep-2007 : Original code               ( version 1.0 + error fixes )
 !/  01-Aug-2011 : Modified to match grid output in WW3 v 4
 !/  02-20-2013  : Modified to use the new structure of 
-!/                output fields               ( version 4.TBD )
+!/                output fields               ( version 4.11 )
 !/
 !   1. Purpose : 
 !
@@ -703,7 +703,7 @@
 !/
 !/	09-Jul-2009 : Original code		( version 3.14 )
 !/      21-Feb-2013 : Modified to new output structure
-!/                                              ( version 4.TBD )
+!/                                              ( version 4.11 )
 !/
 !	1. Purpose :
 !

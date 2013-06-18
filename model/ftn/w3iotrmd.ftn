@@ -91,7 +91,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    26-Dec-2012 ; Initialize ASPTRK.                  ( version 4.TBD )
+!/    26-Dec-2012 ; Initialize ASPTRK.                  ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

@@ -126,7 +126,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
-!/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.TBD )
+!/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

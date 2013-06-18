@@ -44,8 +44,8 @@
 !/    03-Sep-2012 : Switch test file on/off (TSTOUT)    ( version 4.10 )
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/    30-Sep-2012 : Implemetation of tidal constituents ( version 4.09 )
-!/    07-Dec-2012 : Initialize UST non-zero.            ( version 4.TBD )
-!/    26-Dec-2012 : Modify field output MPI for new     ( version 4.TBD )
+!/    07-Dec-2012 : Initialize UST non-zero.            ( version 4.11 )
+!/    26-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
 !/                  structure and smaller memory footprint.
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
@@ -1443,7 +1443,7 @@
 !/                  Add user-defined field data.
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
-!/    25-Dec-2012 : Modify field output MPI for new     ( version 4.TBD )
+!/    25-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
 !/                  structure and smaller memory footprint.
 !/
 !  1. Purpose :

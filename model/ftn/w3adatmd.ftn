@@ -20,7 +20,7 @@
 !/    29-Oct-2010 : Adding unstructured grid data.      ( version 3.14 )
 !/                  (A. Roland and F. Ardhuin) 
 !/    31-Oct-2010 : Adding output parameters            ( version 3.14 )
-!/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.TBD )
+!/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/                  Add W3XETA.
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
@@ -673,7 +673,7 @@
 !/                  Add aditional undefined arrays.
 !/    22-Feb-2008 ; Modify MAPTH2 declaration.          ( version 3.14 )
 !/    31-Oct-2010 : Added initialization of CX,CY,DW    ( version 3.14 )
-!/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.TBD )
+!/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -2171,7 +2171,7 @@
 !/                  | Last update :         25-Dec-2012 |
 !/                  +-----------------------------------+
 !/
-!/    25-Dec-2012 : Origination.                        ( version 4.TBD )
+!/    25-Dec-2012 : Origination.                        ( version 4.11 )
 !/
 !  1. Purpose :
 !

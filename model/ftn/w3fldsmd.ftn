@@ -99,7 +99,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
 !/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -675,7 +675,7 @@
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
 !/    04-Apr-2010 : Adding icebergs in ISI              ( version 3.14 )
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -1049,7 +1049,7 @@
 !/                  +-----------------------------------+
 !/
 !/    24-Jan-2002 : Origination.                        ( version 2.17 )
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !  1. Purpose :
 !

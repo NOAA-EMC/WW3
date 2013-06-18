@@ -29,9 +29,9 @@
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
 !/    08-Nov-2010 : Implementing unstructured grids     ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
-!/    18-Dec-2012 : New 2D field output structure,      ( version 4.TBD )
+!/    18-Dec-2012 : New 2D field output structure,      ( version 4.11 )
 !/                  reducing memory footprint for fields.
-!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.TBD )
+!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -474,8 +474,8 @@
 !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
 !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-!/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.TBD )
-!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.TBD )
+!/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.11 )
+!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -1306,7 +1306,7 @@
 !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
-!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.TBD )
+!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/
 !  1. Purpose :
 !

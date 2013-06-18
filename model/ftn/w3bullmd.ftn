@@ -12,7 +12,7 @@
 !/    01-APR-2010 : Origination.                        ( version 3.14 )
 !/    25-Jun-2011 : Temporary change of HSMIN           ( version 4.05 )
 !/    15-Aug-2011 : Changing HSMIN to BHSMIN bugfix     ( version 4.05 )
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: GNAME, NK, NTH, NSPEC
@@ -51,7 +51,7 @@
 !/                  +-----------------------------------+
 !/
 !/    01-Apr-2010 : Origination.                        ( version 3.14 )
-!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    15-Aug-2011 : Adjustments to version 4.XX         ( version 4.05 )
 !/    11-Mar-2013 : Minor cleanup                       ( version 4.09 )
 !/

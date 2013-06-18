@@ -26,7 +26,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    25-Dec-2012 : New structure of output fields.     ( version 4.TBD )
+!/    25-Dec-2012 : New structure of output fields.     ( version 4.11 )
 !/                  Minor bug fixes and clean up.
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
@@ -487,7 +487,7 @@
 !/    28-Mar-2007 : Adding partitioned output.          ( version 3.11 )
 !/                  Adding user slots for outputs.
 !/    31-Jul-2007 : Fix file extension errors.          ( version 3.12 )
-!/    25-Dec-2012 : New structure of output fields.     ( version 4.TBD )
+!/    25-Dec-2012 : New structure of output fields.     ( version 4.11 )
 !/
 !  1. Purpose :
 !
