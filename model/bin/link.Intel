@@ -91,13 +91,14 @@
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
-  opt="-O3 -prec-div -prec-sqrt -xHost -align array128byte -ip -o $prog"
-# opt="-O3 -xSSE4.2 -ip -o $prog"
+  opt="-O3 -xSSE4.2 -ip -o $prog"
 # opt="-O0 -g -traceback -check all -fpe0 -ftrapuv -o $prog"
+# opt="-O3 -prec-div -prec-sqrt -xHost -align array128byte -ip -o $prog"
 
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=mpiifort
+    opt="-O3 -o $prog"
   else
     comp=ifort
   fi
