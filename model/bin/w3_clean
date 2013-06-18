@@ -137,7 +137,7 @@ EOF
 
 # test has become oldtests, will be phased out 
 # (Will need cleanup for new regtests area)
-
+  mkdir -p $main_dir/work
   for dir in $main_dir/work $main_dir/oldtests
   do
     cd $dir

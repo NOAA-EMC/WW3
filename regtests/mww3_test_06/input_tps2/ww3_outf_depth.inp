@@ -11,12 +11,27 @@ $ Just once (for depth)
    20090525 000000 10800 1
 $
 $ Request flags identifying fields as in ww3_shel input and section 2.4 of the manual.
-$-------------------------------------------------------------------------------------------------------------------
-$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
-$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
-$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
-$-------------------------------------------------------------------------------------------------------------------
- T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$ (1) Forcing Fields
+  T
+$ DPT CUR WND DT  WLV ICE IBG D50
+  T   F   F   F   F   F   F   F
+$ (2) Standard mean wave Parameters
+  F
+$ (3) Frequency-dependent parameters
+  F
+$ (4) Spectral Partition Parameters
+  F
+$ (5) Atmosphere-waves layer
+  F
+$ (6) Wave-Ocean layer
+  F
+$ (7) Wave-bottom layer
+  F
+$ (8) Spectrum parameters
+$ (9) Numerical diagnostics
+  F
+$ (10) User defined (NOEXTR flags needed)
+  F
 $
 $ Output type ITYPE [0,1,2,3]
 $ WER: I use "3" for field output.

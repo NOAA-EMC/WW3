@@ -1310,11 +1310,14 @@ S_{out}(k,\theta)= 2 s_1  \kappa \frac{\rho_a }{\rho_w} \left(\frac{u_\star}{C}\
 \end{equation}
 
 \noindent where $s_1$ is set to 1 when this damping is used and 0 otherwise. For $s_1=0$ 
-the parameterization is the WAM4 or BAJ parameterization (see table below). 
+the parameterization is the WAM4 or BJA parameterization (see table below). 
 
 Due to the increase in high frequency input compared to WAM3, the dissipation
 function was adapted by Janssen (1994) from the WAM3 dissipation, and later
-reshaped by \cite{rep:Bea05}. That later modification is referred to as "BAJ".
+reshaped by \cite{rep:Bea05}. That later modification is referred to as "BJA" for Bidlot, 
+Janssen and Abdallah. A more recent modification, strongly improved the model results for 
+Pacific swells, at the price of an underestimation of the highest sea states. This 
+corresponds to the ECMWF WAM model cotained in the IFS version CY38R1 \citep{pro:Bid12}. 
 
 \noindent
 The generic form of the WAM4 dissipation term is,
@@ -1354,30 +1357,30 @@ another exponent $p_{\mathrm{tail}}$.
 Unfortunately these parameterizations are sensitive to swell. An increase in
 swell height typically reduces dissipation at the windsea peak (the first
 factor is reduced) and increases dissipation at high frequencies (the second
-factor is reduced). For $p< 2$, as in the WAM-Cycle 4 and BAJ
+factor is reduced). For $p< 2$, as in the WAM-Cycle 4 and BJA
 parameterizations, this sensitivity is much larger than the expected effect of
 short wave modulation by long waves.
 
 The source term code was thus generalized to
-allow the use of WAM4, BAJ or others ECWAM parameterization, via a simple change of
+allow the use of WAM4, BJA or others ECWAM parameterization, via a simple change of
 the parameters in the namelists SIN3 and SDS3. At present, the default values of the namelist
-parameters correspond to BAJ \citep{rep:Bea05}.
+parameters correspond to BJA \citep{rep:Bea05}.
 
 \begin{table} \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var.           & namelist & WAM4 & BAJ   & ECWAM 2009 \\
+Par.         &  WWATCH var.           & namelist & WAM4 & BJA   & Bidlot 2012 \\
 \hline
   $z_u$ &  ZWND                       & SIN3 & 10.0    & 10.0   & 10.0   \\
   $\alpha_0$ &  ALPHA0                & SIN3 & 0.01    & 0.0095 &  0.0095 \\
   $\beta_{\mathrm{max}}$ & BETAMAX    & SIN3 & 1.2     & 1.2    & 1.2  \\
   $p_{\mathrm{in}}$ &  SINTHP         & SIN3 & 2       & 2      & 2  \\
-  $z_\alpha$ &  ZALP                  & SIN3 & 0.0110  & 0.0110 &  0.0110 \\
+  $z_\alpha$ &  ZALP                  & SIN3 & 0.0110  & 0.0110 &  0.0080 \\
   $s_1$ &  SWELLF                     & SIN3 & 0.0     & 0.0    & 1.0   \\
 \hline
 \end{tabular} \end{center}
-\caption{Parameter values for WAM4, BAJ and the 2009 update in the ECWAM model. Source term
-parameterizations that can be reset via the SIN3 and SDS3 namelist. BAJ is
-generally better than WAM4. The default parameters in ST3 corresponds to BAJ. Please
+\caption{Parameter values for WAM4, BJA and the 2009 update in the ECWAM model. Source term
+parameterizations that can be reset via the SIN3 and SDS3 namelist. BJA is
+generally better than WAM4. The default parameters in ST3 corresponds to BJA. Please
 note that the name of the variables only apply to the namelists. In the source
 term module the names are slightly different, with a doubled first letter, in
 order to differentiate the variables from the pointers to these variables.} \label{tab:WAM4_parSIN}
@@ -1385,17 +1388,17 @@ order to differentiate the variables from the pointers to these variables.} \lab
 
 \begin{table} \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|} \hline \hline
-Par.                               &  WWATCH var.         & namelist & WAM4 & BAJ   & ECWAM 2009  \\
+Par.                               &  WWATCH var.         & namelist & WAM4 & BJA   & Bidlot 2012 \\
 \hline
-  $C_{\mathrm{ds}}$                 &  SDSC1          & SDS3 & -4.5 & -2.1& -2.1             \\
-  $p$                               &  WNMEANP        & SDS3 & -0.5 & 0.5 &  0.5                \\
-  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS3 & -0.5 & 0.5 &  0.5                 \\
-  $\delta_1$                        &  SDSDELTA1      & SDS3 & 0.5  & 0.4 &  0.4                  \\
-  $\delta_2$                        &  SDSDELTA2      & SDS3 & 0.5  & 0.6 &  0.6 \\
+  $C_{\mathrm{ds}}$                 &  SDSC1          & SDS3 & -4.5 & -2.1& -1.33       \\
+  $p$                               &  WNMEANP        & SDS3 & -0.5 & 0.5 &  0.5        \\
+  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS3 & -0.5 & 0.5 &  0.5        \\
+  $\delta_1$                        &  SDSDELTA1      & SDS3 & 0.5  & 0.4 &  0.5        \\
+  $\delta_2$                        &  SDSDELTA2      & SDS3 & 0.5  & 0.6 &  0.5 \\
   \hline \hline
 \end{tabular} \end{center}
-\caption{Parameter values for WAM4, BAJ and the 2009 ECWAM update. Source term
-parameterizations that can be reset via the SDS3 namelist. BAJ is generally
+\caption{Parameter values for WAM4, BJA and the update by \cite{pro:Bid12}. Source term
+parameterizations that can be reset via the SDS3 namelist. BJA is generally
 better than WAM4. Please note that the
 name of the variables only apply to the namelists. In the source term module
 the names are slightly different, with a doubled first letter, in order to
@@ -1674,7 +1677,7 @@ ocean stratification and wave groupiness.
 \noindent
 All relevant source term parameters can be set via the namelists SIN4 and SDS4
 to yield parameterizations TEST441b, TEST405, 
-both described by \cite{art:Aea10}  or TEST500 described by \cite{art:FA11}. Please note that 
+both described by \cite{art:Aea10}  or TEST500 described by \cite{art:FA12}. Please note that 
 the DIA constant $C$ has been slightly adjusted in TEST441b, $C=2.5\times 10^7$. TEST441f corresponds 
 to a re-tuned wind input formulation when using NCEP/NCAR winds. 
 
@@ -2110,6 +2113,30 @@ The wave model provides output of the following gridded fields of mean wave
 parameters. Some of these parameters can also be found in the output for
 selected points. For activation of the output see \para\ref{sec:shell}
 
+Since version 4.TBD, WAVEWATCH III output fields are defined by a double-indexing 
+structure, where the first index refers to a functional group that parameters belong
+to, and the second number is the index for a given parameter within its group. Groups
+are defined according to Table \ref{tab:noge}.
+
+\begin{table} \begin{center}
+ \begin{tabular}{|l|c|} \hline \hline
+Group Name & Elements \\ \hline
+Forcing Fields & 6 \\
+Mean Wave Parameters & 9 \\ 
+Spectrum Parameters & N/A \\
+Partitions Parameters & 8 \\
+Atmosphere-Waves Layer & 10 \\
+Wave-Ocean Layer & 7 \\
+Wave-Bottom Layer & 5 \\
+Spectrum parameters & 2 \\
+Numerical Diagnostics & 5 \\
+User Defined & 2 \\ \hline
+\end{tabular} \end{center}
+\caption{Groups in new double-indexing output field structure.}
+\label{tab:noge} \botline \end{table}
+
+\subsubsection{Forcing Fields}
+
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
              \rightmargin 5mm \itemsep 0mm \parsep 0mm}
@@ -2121,6 +2148,16 @@ selected points. For activation of the output see \para\ref{sec:shell}
 \item The air-sea temperature difference ($^\circ$C).
 \item Water level.
 \item Ice concentration.
+\item Wave attenuation due to icebergs: this parameter is the inverse of the e-folding scale 
+associated to the loss of wave energy in a field of small icebergs \citep{Aeb11}. 
+\item Sediment median grain size ($D_{50}$). 
+\end{list}
+
+\subsubsection{Standard mean wave parameters}
+
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
 \item Significant wave height (m) [see Eq.~(\ref{eq:etot})]
       \begin{equation} H_s = 4 \sqrt{E} \: . \label{eq:Hs} \end{equation}
 \item Mean wave length (m) [see Eq.~(\ref{eq:zbar})]
@@ -2135,9 +2172,6 @@ selected points. For activation of the output see \para\ref{sec:shell}
 \item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
       \begin{equation} T_{m0,-1} = 2\pi \overline{\sigma^{-1}}
       \: . \label{eq:Tm} \end{equation}
-\item Energy flux (W/m)
-      \begin{equation} C_g E =  \rho_w g \overline{C_g} E
-      \: . \label{eq:CgE} \end{equation}
 \item Peak frequency (Hz), calculated from the one-dimensional frequency
       spectrum using a parabolic fit around the discrete peak.
 \item Mean wave direction (degr., meteorological convention)
@@ -2154,6 +2188,38 @@ selected points. For activation of the output see \para\ref{sec:shell}
 \item Peak direction (degr.), defined like the mean direction, using the
       frequency/wavenumber bin containing of the spectrum $F(k)$ that
       contains the peak frequency only.
+\end{list}
+\subsubsection{Spectral parameters (first 5 moments and wavenumbers)}
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+   
+\item Wave frequency spectrum (m$^2$/Hz)
+      \begin{equation} E(f) = 2 \pi  \int F(\sigma,\theta) \mathrm{d} \theta 
+      \: . \label{eq:Ef} \end{equation}
+\item Mean direction for each frequency  \citep[degr.;][]{art:KVH88}
+       \begin{equation} \theta_1 (f)= \mbox{atan} \left ( \frac{b_1(f)}{a_1(f)} \right )
+      \: , \label{eq:theta_m} \end{equation} \begin{equation}
+      a_1(f) = 2 \pi \int_0^{2\pi} \int_0^\infty \cos(\theta) F(\sigma,\theta) \:
+       \mathrm{d}\theta \: , \end{equation} \begin{equation}
+      b_1(f) = 2 \pi \int_0^{2\pi} \int_0^\infty \sin(\theta) F(\sigma,\theta) \:
+       \mathrm{d}\theta \: . \end{equation}
+\item First directional spread for each frequency  (degr.; )
+      \begin{equation} \sigma_1(f) = \left [ 2 \left \{ 1 - \left (
+      \frac{a_1(f)^2+b_1(f)^2}{E(f)^2} \right )^{1/2} \right \} \right ]^{1/2}
+      \: , \label{eq:sig_th1} \end{equation}
+\item Mean direction from $a_2$ and $b_2$ (degr.) (NOT PLUGGED YET)
+\item Spread from $a_2$ and $b_2$ (degr.)  (NOT PLUGGED YET)
+\item Wavenumbers $k(\sigma)$ (rad/m)
+      \begin{equation} \sigma^2 = g k \tanh (k D) 
+      \: , \label{eq:k} \end{equation}
+\end{list}
+\subsubsection{Spectral partition parameters}
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+
+
 \item Wave heights $H_s$ of partitions of the spectrum (see
       below). \label{out:first_part}
 \item Peak (relative) periods of partitions of the spectrum (parabolic fit).
@@ -2164,35 +2230,33 @@ selected points. For activation of the output see \para\ref{sec:shell}
 \item Wind sea fraction of partition of the spectrum (see below).
 \item Wind sea fraction of the entire spectrum.
 \item Number of partitions found in the spectrum. \label{out:last_part}
-\item Average time step in the source term integration (s).
-\item Cut-off frequency $f_c$ (Hz, depends on parameterization of
-      input and dissipation).
-\item Maximum CFL number for spatial advection 
-\item Maximum CFL number for spectral advection 
+\end{list}
+
+\subsubsection{Atmosphere-waves layer}
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
 \item The friction velocity $u_\ast$ (scalar). Definition depends on
       selected source term parameterization (m/s). An alternative vector version
       of the stresses is available for research (requires user intervention in
       the code).
 \item Charnock parameter for air-sea friction (without dimensions)
+\item Energy flux (W/m)
+      \begin{equation} C_g E =  \rho_w g \overline{C_g} E
+      \: . \label{eq:CgE} \end{equation}
 \item Wind to wave energy flux
 \item Net wave-supported stress (wind to wave momentum flux) 
 \item Wave to wind momentum flux
-\item Whitecap coverage (without dimensions) (NOT PLUGGED YET)
+\item Whitecap coverage (without dimensions) 
 \item Whitecap mean thickness (m) (NOT PLUGGED YET)
 \item Mean breaking wave height (m) (NOT PLUGGED YET)
 \item Moment of whitecap distribution (?) (NOT PLUGGED YET)
+\end{list}
 
-\item Near-bottom rms excursion amplitude
-      \begin{equation} a_{b,rms} = \left [ 2 \int \!\!\!\! \int
-      \frac{1}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
-      \: . \label{eq:ab_rms} \end{equation}
-\item Near-bottom rms orbital velocity
-      \begin{equation} u_{b,rms} = \left [ 2 \int \!\!\!\! \int
-      \frac{\sigma^2}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
-      \: . \label{eq:ub_rms} \end{equation}
-\item Bedform parameters  
-\item Energy dissipation in WBBL 
-\item Momentum loss in WBBL 
+\subsubsection{Wave-ocean layer}
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
 \item Radiation stresses
       \begin{equation} S_{xx} = \rho_w g \int \!\!\!\! \int \left
         ( n - 0.5 + n \cos^2 \theta \right )  \: F(k,\theta) \: dk d\theta
@@ -2211,14 +2275,59 @@ selected points. For activation of the output see \para\ref{sec:shell}
 \item Wave to ocean momentum flux
 \item Stokes volume transport (m$^2$/s)
 \item Stokes drift at the sea surface (m/s)
-\item Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
-\item Spectral tail level (without dimensions) 
+\item Frequency spectrum of Stokes drift at the sea surface (m/s/Hz)
 \item Second order pressure variance (m$^2$) and peak period of this pressure (s) which contributes to acoustic and seismic noise, 
       \begin{equation} F_{p2D} = \int_0^{\infty} \frac{4 \sigma}{C_g} \int_0^{\pi}  F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta dk
       \: , \label{eq:Sxx} \end{equation}
       \begin{equation} S_{xy} =\rho_w g \int \!\!\!\! \int
         n \sin \theta \cos \theta  \: F(k,\theta) \: dk d\theta
       \: , \label{eq:Syy} \end{equation}
+\end{list}
+
+\subsubsection{Wave-bottom layer}
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+
+\item Near-bottom rms excursion amplitude
+      \begin{equation} a_{b,rms} = \left [ 2 \int \!\!\!\! \int
+      \frac{1}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
+      \: . \label{eq:ab_rms} \end{equation}
+\item Near-bottom rms orbital velocity
+      \begin{equation} u_{b,rms} = \left [ 2 \int \!\!\!\! \int
+      \frac{\sigma^2}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
+      \: . \label{eq:ub_rms} \end{equation}
+\item Bedform parameters  
+\item Energy dissipation in WBBL 
+\item Momentum loss in WBBL 
+\end{list}
+
+\subsubsection{Remote sensing and spectral tail}
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+
+\item Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
+\item Spectral tail level (without dimensions) 
+\end{list}
+
+\subsubsection{Numerical diagnostics }
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+\item Average time step in the source term integration (s).
+\item Cut-off frequency $f_c$ (Hz, depends on parameterization of
+      input and dissipation).
+\item Maximum CFL number for spatial advection 
+\item Maximum CFL number for angular advection 
+\item Maximum CFL number for wavenumber advection 
+\end{list}
+
+\subsubsection{User defined }
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+
 \item Slot for user defined parameter (requires modification of code).
 \item Idem.
 \end{list}

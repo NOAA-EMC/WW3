@@ -685,7 +685,7 @@ developing and providing code upgrades.
 \newsec
 
 The wave model is distributed with a suite of test cases
-(in {\file /regtests}), ranging from simple
+(in {\file model/test}), ranging from simple
 tests to assure that basic features such as propagation and source terms work,
 to realistic tests that include wave hindcast cases in the Atlantic and
 Pacific oceans, and examples of the first multi-grid wave model implemented
@@ -704,7 +704,7 @@ in operations at NCEP. The following conventions are used in naming the test cas
 Particularly the simple idealized test cases should be used for regression
 testing when new code is added to the repository; i.e., these tests should
 result in different answers compared to the previous codes only when
-expected. To facilitate regression testing, a shell script, {\file regtests/bin/run\_test}
+expected. To facilitate regression testing, a shell script, {\file model/bin/run\_test}
 is provided along with input files for a number of test cases. The test cases
 are organized such that each major test case occupies its own
 directory. Within each test case directory, it is possible to have more than
@@ -820,8 +820,8 @@ to the code can employ an appropriate smaller set of test cases, according
 to common sense. If available to them, developers are encouraged to use alternate
 compilers for a few test cases on occasion.
 
-The {\file run\_test} script exists in {\file /regtests/bin}. The test
-directories exist in {\file regtests}, e.g.  {\file/regtests/ww3\_tp1.1}. For
+The {\file run\_test} script exists in {\file /model/test/bin}. The test
+directories exist in {\file /model/test}, e.g.  {\file/model/test/ww3\_tp1.1}. For
 example, the contents of {\file /ww3\_tp1.1} might be
   \begin{itemize}
 \item {\file info}: a file containing information
@@ -836,7 +836,7 @@ example, filename is such because the user had specified ``{\file run\_test -w P
 For a test case to run to completion is a necessary but not sufficient
 indication of success. The output from test cases should be compared with
 results using an appropriate prior version of the code. As an example, from
-{\file/regtests/} , these commands are executed:
+{\file/test/} , these commands are executed:
 \begin{center}
 {\small \begin{verbatim}
 (baseline)
@@ -881,7 +881,7 @@ Common sense applies. A developer of a new deep-water source term package, say
 ST5, would not include ST5 in regression testing, but it is reasonable for
 this developer to regression-test ST1 and ST2 to verify that they still work
 the same as before. Further, the developer should add ST5-compatible input
-files (or even new test cases) to the {\file/regtests/} directory. This would, for
+files (or even new test cases) to the {\file/test/} directory. This would, for
 example, make it possible for the future ST8 developer to include ST5 in
 regression testing.
 
@@ -889,10 +889,13 @@ Also, note that {\file run\_test} has utility beyond regression testing. Perhaps
 most useful feature is that it makes it possible to fully document (or
 communicate) a model simulation using a single line of text, ``{\file ./bin/run\_test}
 ...'' without ambiguity. Larger applications (i.e. those not necessarily
-suitable for regression testing) can be included in {\file/regtests/} of development
+suitable for regression testing) can be included in {\file/test/} of development
 branches for purposes of collaboration.
 
-A directory {\file/regtests/matlab/} exists for the purpose of providing {\file.m} files for processing, evaluating, and visualizing output. Developers are encouraged to add new {\file.m} files.
+[Aside: On the nrl repository, we have a directory {\file/test/matlab/} containing {\file.m} files
+  for processing, evaluating, and visualizing output. A similar directory
+  could be included in the ncep repository. Ours is a bit of a mess (e.g. too
+  much hard-wiring and not enough comments).]
 
 
 \pb
@@ -1068,7 +1071,7 @@ subversion repository, a new script
 \noindent
 has been created, which replaces the script {\file install\_wwatch3} used to
 install the model from {\file .tar} files. This script will first fill the
-five directories {\file svn/aux} through {\file svn/regtests} with all the files
+five directories {\file svn/aux} through {\file svn/test} with all the files
 from the svn repository, and will then continue to set up the model identical
 to the model setup from the tar files. The only difference is that
 distribution files in, for instance the {\file bin} directory, now are linked

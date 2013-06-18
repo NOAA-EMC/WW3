@@ -98,6 +98,13 @@
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=mpiifort
+    which mpiifort 1> /dev/null 2> /dev/null
+    OK=$?
+    if [ $OK != 0 ]
+    then 
+      comp=ifort
+    fi
+    
   else
     comp=ifort
   fi

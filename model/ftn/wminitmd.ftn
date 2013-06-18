@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Nov-2012 |
+!/                  | Last update :         28-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -25,13 +25,13 @@
 !/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
 !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
 !/                  Tom Durrant's fix, but moved to allocation.
+!/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
+!/                  required for regridding.            ( version 4.08 )
+!/                  (T. J. Campbell, NRL)
 !/    02-Sep-2012 : Set up for > 999 test files.        ( version 4.10 )
 !/                  Set up output for  > 999 procs.
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
 !/                  Switch test file on/off (TSTOUT)
-!/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
-!/                  required for regridding.            ( version 4.08 )
-!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -85,7 +85,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Nov-2012 |
+!/                  | Last update :         28-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -108,6 +108,9 @@
 !/                  (T. J. Campbell, NRL)
 !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
 !/                  Tom Durant's fix, but moved to allocation.
+!/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
+!/                  required for regridding.            ( version 4.08 )
+!/                  (T. J. Campbell, NRL)
 !/    02-Sep-2012 : Set up for > 999 test files.        ( version 4.10 )
 !/                  Set up output for  > 999 procs.
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
@@ -115,6 +118,8 @@
 !/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
 !/                  required for regridding.            ( version 4.08 )
 !/                  (T. J. Campbell, NRL)
+!/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
+!/                  (F. Ardhuin) 
 !/
 !  1. Purpose :
 !
@@ -184,6 +189,7 @@
 !      STME21    Subr. W3TIMEMD Convert time to string.
 !      DSEC21    Func.   Id.    Difference between times.
 !      TICK21    Subr.   Id.    Advance the clock.
+!      W3READFLGRD Subr. W3IOGOMD Reads flags or namelist for output fields
 !
 !      MPI_COMM_SIZE, CALL MPI_COMM_RANK, MPI_BARRIER, MPI_COMM_GROUP,
 !      MPI_GROUP_INCLUDE, MPI_COMM_CREATE, MPI_GROUP_FREE, MPI_BCAST
@@ -303,6 +309,7 @@
       USE WMMDATMD, ONLY: WMNDAT, WMSETM, WMDIMD
 !
       USE W3FLDSMD, ONLY: W3FLDO
+      USE W3IOGOMD, ONLY: W3READFLGRD 
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3INITMD, ONLY: W3INIT
       USE WMGRIDMD, ONLY: WMRSPC, WMGLOW, WMGEQL, WMGHGH
@@ -325,11 +332,12 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
       USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR, FLWIND
-      USE W3ODATMD, ONLY: NOGRD, IDOUT, FLOUT, TONEXT, FLBPI, FLBPO,  &
-                          NFBPO, NBI, NDS, IAPROC, NAPLOG, NAPFLD,    &
-                          NAPPNT, NAPTRK, NAPRST, NAPBPT, NAPPRT,     &
-                          NAPROC, FNMPRE, OUTPTS, NDST, NDSE, NOPTS,  &
-                          IOSTYP, UNIPTS, UPPROC, DTOUT, TOLAST, NOTYPE
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI, &
+                          FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
+                          NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
+                          NAPPRT, NAPROC, FNMPRE, OUTPTS, NDST, NDSE, &
+                          NOPTS, IOSTYP, UNIPTS, UPPROC, DTOUT,       &
+                          TOLAST, NOTYPE, NOGE
       USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, MDSF, MDSUP,  &
                           IMPROC, NMPROC, NMPSCR, NMPERR, NMPTST,     &
                           NMPLOG, NMPUPT, STIME, ETIME, NMV, NMVMAX,  &
@@ -365,7 +373,8 @@
                                  NDSREC, NDSFND, NPTS, JJ, IP1, IPN,  &
                                  MPI_COMM_LOC, NMPSC2, JJJ, TOUT(2),  &
                                  TLST(2), NCPROC, NPOUTT, NAPLOC,     &
-                                 NAPRES, NAPADD, NAPBCT, IW, IFT
+                                 NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
+                                 IFT
 !/F90      INTEGER                 :: CLKDT
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -380,8 +389,9 @@
 ! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
 !   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(12)
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(12), PSHARE
-      LOGICAL, ALLOCATABLE    :: FLGRD(:,:), FLRBPI(:), BCDTMP(:),    &
-                                 USEINP(:), LPRT(:), FLGR2(:,:)
+      LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
+                                 USEINP(:), LPRT(:), FLGR2(:,:,:),     &
+                                 FLG(:,:), FLG2D(:,:), FLG1D(:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=3)        :: IDSTR(7), IDTST
       CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
@@ -604,8 +614,9 @@
 ! 2.c Set up I/O for individual models (initial)
 !
       ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
-           FLGRD(NOGRD,NRGRD), OT2(0:NRGRD), MDSF(-NRINP:NRGRD,7),    &
-           IPRT(6,NRGRD), LPRT(NRGRD), FLGR2(NOGRD,NRGRD) )
+           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLG(NOGRP,NRGRD), &
+           MDSF(-NRINP:NRGRD,7), IPRT(6,NRGRD), LPRT(NRGRD),          &
+           FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
 !
       MDS    = -1
       MDSF   = -1
@@ -1049,25 +1060,13 @@
 !
 ! 5.c Type 1: fields of mean wave parameters
 !
-                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-                READ (MDSI,*,END=2001,ERR=2002) FLGRD(:,1)
+              FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
+              CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
+                                 FLG2D, NMPSCR, IMPROC, IERR )
+              FLGRD(:,:,1)=FLG2D
+              FLG(:,1)    =FLG1D
 !
-                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-                    FLT    = .TRUE.
-                    DO I=1, NOGRD 
-                      IF ( FLGRD(I,1) ) THEN
-                          IF ( FLT ) THEN 
-                              WRITE (MDSS,955) IDOUT(I)
-                              FLT    = .FALSE.
-                            ELSE
-                              WRITE (MDSS,956) IDOUT(I)
-                            END IF
-                        END IF
-                      END DO
-                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
-                  END IF
-!
-              ELSE IF ( J .EQ. 2 ) THEN
+            ELSE IF ( J .EQ. 2 ) THEN
 !
 ! 5.d Type 2: point output
 !
@@ -1171,19 +1170,21 @@
 ! 5.i Type 7: coupling
 !
 !/COU                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-!/COU                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,1)
+!/COU                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,1)
 !
 !/COU                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
 !/COU                    FLT    = .TRUE.
-!/COU                    DO I=1, NOGRD 
-!/COU                      IF ( FLGR2(I,1) ) THEN
+!/COU                    DO IFI=1, NOGRP 
+!/COU                    DO IFJ=1, NGRPP
+!/COU                      IF ( FLGR2(IFI,IFJ,1) ) THEN
 !/COU                          IF ( FLT ) THEN 
-!/COU                              WRITE (MDSS,955) IDOUT(I)
+!/COU                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
 !/COU                              FLT    = .FALSE.
 !/COU                            ELSE
-!/COU                              WRITE (MDSS,956) IDOUT(I)
+!/COU                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
 !/COU                            END IF
 !/COU                        END IF
+!/COU                      END DO
 !/COU                      END DO
 !/COU                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
 !/COU                  END IF
@@ -1210,8 +1211,9 @@
 !
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
-        FLGRD(:,I) = FLGRD(:,1)
-        FLGR2(:,I) = FLGR2(:,1)
+        FLG(:,I) = FLG(:,1)
+        FLGRD(:,:,I) = FLGRD(:,:,1)
+        FLGR2(:,:,I) = FLGR2(:,:,1)
         IPRT(:,I)  = IPRT(:,1)
         LPRT(I)    = LPRT(1)
         END DO
@@ -1311,20 +1313,36 @@
 !
 ! 5.l Type 1: fields of mean wave parameters
 !
-                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-                READ (MDSI,*,END=2001,ERR=2002) FLGRD(:,I)
+                FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
+! FA: name list should be used here too 
+                DO IFI=1,NOGRP ! Loop over field output groups
+
+                  CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+                  READ (MDSI,*,END=2001,ERR=2002) FLG(IFI,I)
+
+                  IF ( FLG (IFI,1) ) THEN ! Skip if group not requested
+
+                    CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+                    READ (MDSI,*,END=2001,ERR=2002)                    &
+                                          FLGRD(IFI,1:NOGE(IFI),I)
+
+                  ENDIF
+                ENDDO
+
 !
                 IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                     FLT    = .TRUE.
-                    DO II=1, NOGRD
-                      IF ( FLGRD(II,I) ) THEN
+                    DO IFI=1, NOGRP
+                    DO IFJ=1, NGRPP
+                      IF ( FLGRD(IFI,IFJ,I) ) THEN
                           IF ( FLT ) THEN
-                              WRITE (MDSS,955) IDOUT(II)
+                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
                               FLT    = .FALSE.
                             ELSE
-                              WRITE (MDSS,956) IDOUT(II)
+                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
                             END IF
                         END IF
+                      END DO
                       END DO
                     IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
                   END IF
@@ -1433,19 +1451,21 @@
 ! 5.p Type 7: coupling fields
 !
                 CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,I)
+                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,I)
 !
                 IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                     FLT    = .TRUE.
-                    DO II=1, NOGRD
-                      IF ( FLGR2(II,I) ) THEN
+                    DO IFI=1, NOGRP
+                    DO IFJ=1, NGRPP
+                      IF ( FLGR2(IFI,IFJ,I) ) THEN
                           IF ( FLT ) THEN
-                              WRITE (MDSS,955) IDOUT(II)
+                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
                               FLT    = .FALSE.
                             ELSE
-                              WRITE (MDSS,956) IDOUT(II)
+                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
                             END IF
                         END IF
+                      END DO
                       END DO
                     IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
                   END IF
@@ -1461,7 +1481,7 @@
 !/T      DO I=1, NRGRD
 !/T          WRITE (MDST,9050) I
 !/T          WRITE (MDST,9051) ODAT(:,I)
-!/T          WRITE (MDST,9052) FLGRD(:,I)
+!/T          WRITE (MDST,9052) FLGRD(:,:,I)
 !/T        END DO
 !
 ! 6.  Read moving grid data ------------------------------------------ /
@@ -1990,8 +2010,9 @@
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
 
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
-             FLGRD(:,I),FLGR2(:,I), OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y,  &
-             OT2(I)%PNAMES, IPRT(:,I), LPRT(I), MPI_COMM_LOC )
+                      FLGRD(:,:,I),FLGR2(:,:,I),FLG(:,I),OT2(I)%NPTS,&
+                      OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, IPRT(:,I),   &
+                      LPRT(I), MPI_COMM_LOC )
 !
 ! ..... Finalize I/O file hook up
 !
@@ -2596,7 +2617,8 @@
       CALL WMUSET ( MDSE, MDST, SCRATCH, .FALSE. )
       IF ( TSTOUT ) CALL WMUDMP ( MDST, 0 )
 !
-      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, INAMES, MNAMES )
+      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLG, INAMES,      &
+                   MNAMES )
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !

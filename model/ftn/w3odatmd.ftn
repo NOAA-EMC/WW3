@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2010 |
+!/                  | Last update :         19-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -29,8 +29,11 @@
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
 !/    08-Nov-2010 : Implementing unstructured grids     ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    18-Dec-2012 : New 2D field output structure,      ( version 4.TBD )
+!/                  reducing memory footprint for fields.
+!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.TBD )
 !/
-!/    Copyright 2009-2010 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -49,10 +52,10 @@
 !      NOUTP     Int.  Public   Number of models in array dim.
 !      IOUTP     Int.  Public   Selected model for output, init. at -1.
 !      IOSTYP    Int.  Public   Output data server type.
-!      NOGRD     I.P.  Public   Number of output fields available.
+!      NOGRP     I.P.  Public   Number of output field groups 
+!      NGRPP     I.P.  Public   Max numb of parameters per output group
+!      NOGE      I.P.  Public   Number of output group elements
 !      NOTYPE    I.P.  Public   Number of output types
-!      NOSWLL    I.P.  Public   Number of swell fields from part.
-!                               to be used in field output.
 !      NOEXTR    I.P.  Public   Number of extra (user available) 
 !                               output fields.
 !      IDOUT     C.A.  Public   ID strings for output fields.
@@ -88,6 +91,8 @@
 !      NAPRST    Int.  Public   Proc. dealing with restart output.
 !      NAPBPT    Int.  Public   Proc. dealing with boundary output.
 !      NAPPRT    Int.  Public   Proc. dealing with partition output.
+!      NOSWLL    I.P.  Public   Number of swell fields from part.
+!                               to be used in field output.
 !      TOFRST    I.A.  Public   Times for first output.
 !      TONEXT    I.A.  Public   Times for next output.
 !      TOLAST    I.A.  Public   Times for last output.
@@ -120,10 +125,11 @@
 !                               renamed to IPASS in routine.
 !      WRITE1    Int.  Public   Write flag for file management,
 !                               renamed to WRITE in routine.
-!      NRQGO     Int.  Public   Number of MPI handles W3IOGO.
+!      NRQGO(2)  Int.  Public   Number of MPI handles W3IOGO.
 !      IRQGO     I.A.  Public   Array with MPI handles W3IOGO.
 !      FLOGRD    L.A.  Public   FLags for output fields.
 !      FLOGR2    L.A.  Public   FLags for coupling fields.
+!      FLOG      L.A.  Public   Flags for output groups
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT2 are aliased to pointers with the same
@@ -278,76 +284,27 @@
 !/ Conventional declarations
 !/     
       INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
-      INTEGER, PARAMETER      :: NOGRD = 53
+!
+      INTEGER, PARAMETER      :: NOGRP = 10
+      INTEGER, PARAMETER      :: NGRPP = 20
+      INTEGER                 :: NOGE(NOGRP)
       INTEGER                 :: NOTYPE
-      INTEGER, PARAMETER      :: NOSWLL=  5
       INTEGER, PARAMETER      :: NOEXTR=  2
-      CHARACTER(LEN=20)       :: IDOUT(NOGRD)
+      CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
       CHARACTER(LEN=80)       :: FNMPRE = './'
       REAL                    :: UNDEF  = -999.9
       LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
-!
-      DATA IDOUT(  1 )  / 'Water depth         ' /
-      DATA IDOUT(  2 )  / 'Current vel.        ' /
-      DATA IDOUT(  3 )  / 'Wind speed          ' /
-      DATA IDOUT(  4 )  / 'Air-sea temp. dif.  ' /
-      DATA IDOUT(  5 )  / 'Water level         ' /
-      DATA IDOUT(  6 )  / 'Ice concentration   ' /
-      DATA IDOUT(  7 )  / 'Wave height         ' /
-      DATA IDOUT(  8 )  / 'Mean wave length    ' /
-      DATA IDOUT(  9 )  / 'Mean wave freq. (+2)' /
-      DATA IDOUT( 10 )  / 'Mean wave period(+1)' /
-      DATA IDOUT( 11 )  / 'Mean wave period(-1)' /
-      DATA IDOUT( 12 )  / 'Energy flux         ' /
-      DATA IDOUT( 13 )  / 'Peak frequency      ' /
-      DATA IDOUT( 14 )  / 'Mean wave direction ' /
-      DATA IDOUT( 15 )  / 'Mean dir. spread    ' /
-      DATA IDOUT( 16 )  / 'Peak direction      ' /
-      DATA IDOUT( 17 )  / 'Part. wave heigt    ' /
-      DATA IDOUT( 18 )  / 'Part. peak period   ' /
-      DATA IDOUT( 19 )  / 'Part. peak wave l.  ' /
-      DATA IDOUT( 20 )  / 'Part. mean direction' /
-      DATA IDOUT( 21 )  / 'Part. dir. spread   ' /
-      DATA IDOUT( 22 )  / 'Part. wind sea frac.' /
-      DATA IDOUT( 23 )  / 'Total wind sea frac.' /
-      DATA IDOUT( 24 )  / 'Number of partitions' /
-      DATA IDOUT( 25 )  / 'Avg. time step.     ' /
-      DATA IDOUT( 26 )  / 'Cut-off freq.       ' /
-      DATA IDOUT( 27 )  / 'Maximum spatial CFL ' /
-      DATA IDOUT( 28 )  / 'Maximum angular CFL ' /
-      DATA IDOUT( 29 )  / 'Friction velocity   ' /
-      DATA IDOUT( 30 )  / 'Charnock parameter  ' /
-      DATA IDOUT( 31 )  / 'Wind-wave enrgy flux' /
-      DATA IDOUT( 32 )  / 'Wind-wave net mom. f' /
-      DATA IDOUT( 33 )  / 'Wind-wave neg.mom.f.' /
-      DATA IDOUT( 34 )  / 'Whitecap coverage   ' /
-      DATA IDOUT( 35 )  / 'Whitecap mean thick.' /
-      DATA IDOUT( 36 )  / 'Mean breaking height' /
-      DATA IDOUT( 37 )  / 'Whitecap moment     ' /
-      DATA IDOUT( 38 )  / 'Bottom rms ampl.    ' /
-      DATA IDOUT( 39 )  / 'Bottom rms velocity ' /
-      DATA IDOUT( 40 )  / 'Bedform parameters  ' /
-      DATA IDOUT( 41 )  / 'Energy diss. in WBBL' /
-      DATA IDOUT( 42 )  / 'Moment. loss in WBBL' /
-      DATA IDOUT( 43 )  / 'Radiation stresses  ' /
-      DATA IDOUT( 44 )  / 'Wave-ocean mom. flux' /
-      DATA IDOUT( 45 )  / 'Bernoulli head      ' /
-      DATA IDOUT( 46 )  / 'Wave-ocean nrg  flux' /
-      DATA IDOUT( 47 )  / 'Stokes transport    ' /
-      DATA IDOUT( 48 )  / 'Stokes drift at z=0 ' /
-      DATA IDOUT( 49 )  / 'Mean square slopes  ' /
-      DATA IDOUT( 50 )  / 'Tail level          ' /
-      DATA IDOUT( 51 )  / 'Second order press. ' /
-      DATA IDOUT( 52 )  / 'User defined #1     ' /
-      DATA IDOUT( 53 )  / 'User defined #2     ' / 
+!/
+!/ Set NOGE and IDOUT identifiers in W3NOUT
 !/
 !/ Data structures
 !/
       TYPE OTYPE1
         INTEGER               :: IPASS1
-!/MPI        INTEGER               :: NRQGO
-!/MPI        INTEGER, POINTER      :: IRQGO(:)
-        LOGICAL               :: FLOGRD(NOGRD),FLOGR2(NOGRD), WRITE1
+!/MPI        INTEGER               :: NRQGO, NRQGO2
+!/MPI        INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
+        LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOG(NOGRP),   &
+                                   FLOGR2(NOGRP,NGRPP), WRITE1
       END TYPE OTYPE1
 !/
       TYPE OTYPE2
@@ -409,6 +366,7 @@
         INTEGER               :: NTPROC, NAPROC, IAPROC, NAPLOG,      &
                                  NAPOUT, NAPERR, NAPFLD, NAPPNT,      &
                                  NAPTRK, NAPRST, NAPBPT, NAPPRT
+        INTEGER               :: NOSWLL
         INTEGER               :: TOFRST(2), TONEXT(2,7), TOLAST(2,7), &
                                  TBPI0(2), TBPIN(2), NDS(13)
         REAL                  :: DTOUT(7)
@@ -431,6 +389,7 @@
       INTEGER, POINTER        :: NTPROC, NAPROC, IAPROC, NAPLOG,      &
                                  NAPOUT, NAPERR, NAPFLD, NAPPNT,      &
                                  NAPTRK, NAPRST, NAPBPT, NAPPRT
+      INTEGER, POINTER        :: NOSWLL
       INTEGER, POINTER        :: TOFRST(:), TONEXT(:,:), TOLAST(:,:), &
                                  TBPI0(:), TBPIN(:), NDS(:)
       REAL, POINTER           :: DTOUT(:)
@@ -440,9 +399,10 @@
 !/ Type 1 ...
 !/
       INTEGER, POINTER        :: IPASS1
-!/MPI      INTEGER, POINTER        :: NRQGO
-!/MPI      INTEGER, POINTER        :: IRQGO(:)
-      LOGICAL, POINTER        :: FLOGRD(:),  FLOGR2(:),WRITE1
+!/MPI      INTEGER, POINTER        :: NRQGO, NRQGO2
+!/MPI      INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
+      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:), FLOG(:),   &
+                                 WRITE1
 !/
 !/ Type 2 ...
 !/
@@ -504,7 +464,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-May-2007 !
+!/                  | Last update :         19-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -514,6 +474,8 @@
 !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
 !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+!/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.TBD )
+!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.TBD )
 !/
 !  1. Purpose :
 !
@@ -569,8 +531,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: I, NLOW
+      INTEGER                 :: I, NLOW, J
 !/S      INTEGER, SAVE           :: IENT = 0
+      CHARACTER(LEN=20)       :: STRING
 !/
 !/S      CALL STRACE (IENT, 'W3NOUT')
 !
@@ -612,11 +575,14 @@
         OUTPTS(I)%NAPBPT = 1
         OUTPTS(I)%NAPPRT = 1
 !
+        OUTPTS(I)%NOSWLL = -1
+!
         OUTPTS(I)%TBPI0 = (-1,0)
         OUTPTS(I)%TBPIN = (-1,0)
 !
         OUTPTS(I)%OUT1%IPASS1 = 0
 !/MPI        OUTPTS(I)%OUT1%NRQGO  = 0
+!/MPI        OUTPTS(I)%OUT1%NRQGO2 = 0
 !
         OUTPTS(I)%OUT2%IPASS2 = 0
         OUTPTS(I)%OUT2%NOPTS  = 0
@@ -642,6 +608,150 @@
         OUTPTS(I)%OUT6%IPASS6 = 0
         OUTPTS(I)%OUT6%O6INIT = .FALSE.
 !
+        END DO
+!
+!     Set IDOUT
+!       Commented outlines represent reserved slots.
+!
+      DO I=1, NOGRP
+        DO J=1, NGRPP
+          IDOUT(I,J) = 'Undefined / Not Used'
+          END DO
+        END DO
+!
+! 1) Forcing fields
+!
+      NOGE(1) = 7
+!/BT4      NOGE(1) = 8
+!
+      IDOUT( 1, 1)  = 'Water depth         '
+      IDOUT( 1, 2)  = 'Current vel.        '
+      IDOUT( 1, 3)  = 'Wind speed          '
+      IDOUT( 1, 4)  = 'Air-sea temp. dif.  '
+      IDOUT( 1, 5)  = 'Water level         '
+      IDOUT( 1, 6)  = 'Ice concentration   '
+      IDOUT( 1, 7)  = 'Iceberg damp coeffic'
+!/BT4      IDOUT( 1, 8)  = 'Sediment diam D50   '
+!     IDOUT( 1, 9)  = 'Critical Shields num'
+!     IDOUT( 1,10)  = 'Base roughness K_N0 '
+!
+! 2) Standard mean wave parameters
+!
+      NOGE(2) = 9
+!
+      IDOUT( 2, 1)  = 'Wave height         '
+      IDOUT( 2, 2)  = 'Mean wave length    '
+      IDOUT( 2, 3)  = 'Mean wave period(+2)'
+      IDOUT( 2, 4)  = 'Mean wave period(+1)'
+      IDOUT( 2, 5)  = 'Mean wave period(-1)'
+      IDOUT( 2, 6)  = 'Peak frequency      '
+      IDOUT( 2, 7)  = 'Mean wave dir. a1b1 '
+      IDOUT( 2, 8)  = 'Mean dir. spr. a1b1 '
+      IDOUT( 2, 9)  = 'Peak direction      '
+!      IDOUT( 2,10)  = 'Mean wave dir. a2b2 '
+!      IDOUT( 2,11)  = 'Mean dir. spr. a2b2 '
+!      IDOUT( 2,12)  = 'Windsea height (Sin)'
+!      IDOUT( 2,13)  = 'Windsea peak f (Sin)'
+!      IDOUT( 2,14)  = 'Subrange wave height'
+!
+! 3) Frequency-dependent standard parameters
+!
+      NOGE(3) = 6
+!
+      IDOUT( 3, 1)  = '1D Freq. Spectrum   '
+      IDOUT( 3, 2)  = 'Mean wave dir. a1b1 '
+      IDOUT( 3, 3)  = 'Mean dir. spr. a1b1 '
+      IDOUT( 3, 4)  = 'Mean wave dir. a2b2 '
+      IDOUT( 3, 5)  = 'Mean dir. spr. a2b2 '
+      IDOUT( 3, 6)  = 'Wavenumber array    '
+!
+! 4) Spectral Partitions parameters
+!
+      NOGE(4) = 8
+!
+      IDOUT( 4, 1)  = 'Part. wave heigt    '
+      IDOUT( 4, 2)  = 'Part. peak period   '
+      IDOUT( 4, 3)  = 'Part. peak wave l.  '
+      IDOUT( 4, 4)  = 'Part. mean direction'
+      IDOUT( 4, 5)  = 'Part. dir. spread   '
+      IDOUT( 4, 6)  = 'Part. wind sea frac.'
+      IDOUT( 4, 7)  = 'Total wind sea frac.'
+      IDOUT( 4, 8)  = 'Number of partitions'
+!
+! 5) Atmosphere-waves layer
+!
+      NOGE(5) = 10
+!
+      IDOUT( 5, 1)  = 'Friction velocity   '
+      IDOUT( 5, 2)  = 'Charnock parameter  '
+      IDOUT( 5, 3)  = 'Energy flux         '
+      IDOUT( 5, 4)  = 'Wind-wave enrgy flux'
+      IDOUT( 5, 5)  = 'Wind-wave net mom. f'
+      IDOUT( 5, 6)  = 'Wind-wave neg.mom.f.'
+      IDOUT( 5, 7)  = 'Whitecap coverage   '
+      IDOUT( 5, 8)  = 'Whitecap mean thick.'
+      IDOUT( 5, 9)  = 'Mean breaking height'
+      IDOUT( 5,10)  = 'Dominant break prob '
+!      IDOUT( 5,11)  = 'Breaker passage rate'
+!
+! 6) Wave-ocean layer
+!
+      NOGE(6) = 9 
+!
+      IDOUT( 6, 1)  = 'Radiation stresses  '
+      IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
+      IDOUT( 6, 3)  = 'wave ind p Bern Head'
+      IDOUT( 6, 4)  = 'Wave-ocean TKE  flux'
+      IDOUT( 6, 5)  = 'Stokes transport    '
+      IDOUT( 6, 6)  = 'Stokes drift at z=0 '
+      IDOUT( 6, 7)  = '2nd order pressure  '
+      IDOUT( 6, 8)  = 'Stokes drft spectrum'
+      IDOUT( 6, 9)  = '2nd ord press spectr'
+!
+! 7) Wave-bottom layer
+!
+      NOGE(7) = 5
+!
+      IDOUT( 7, 1)  = 'Bottom rms ampl.    '
+      IDOUT( 7, 2)  = 'Bottom rms velocity '
+      IDOUT( 7, 3)  = 'Bedform parameters  '
+      IDOUT( 7, 4)  = 'Energy diss. in WBBL'
+      IDOUT( 7, 5)  = 'Moment. loss in WBBL'
+!      IDOUT( 7, 6)  = 'Bottom mean period  '
+!      IDOUT( 7, 7)  = 'Bottom mean direct  '
+!      IDOUT( 7, 8)  = 'Bottom direct spread'
+!      IDOUT( 7, 9)  = 'Calc grain rough K_N'
+!
+! 8) Spectrum parameters
+!
+      NOGE(8) = 2
+!
+      IDOUT( 8, 1)  = 'Mean square slopes  '
+      IDOUT( 8, 2)  = 'Philllips tail const'
+!      IDOUT( 8, 3)  = '3rd spectral moment '
+!      IDOUT( 8, 4)  = '4th spectral moment '
+!      IDOUT( 8, 5)  = 'Goda peakedness parm'
+!      IDOUT( 8, 6)  = 'Kurtosis            '
+!      IDOUT( 8, 7)  = 'Skewness            '
+!
+! 9) Numerical diagnostics
+!
+      NOGE(9) = 5
+!
+      IDOUT( 9, 1)  = 'Avg. time step.     '
+      IDOUT( 9, 2)  = 'Cut-off freq.       '
+      IDOUT( 9, 3)  = 'Maximum spatial CFL '
+      IDOUT( 9, 4)  = 'Maximum angular CFL '
+      IDOUT( 9, 5)  = 'Maximum k advect CFL'
+!      IDOUT( 9, 6)  = 'Avg intrsp proptstep'
+!
+! 10) User defined
+!
+      NOGE(10) = NOEXTR
+!
+      DO I=1, MIN ( 20 , NOEXTR )
+        WRITE (STRING,'(A14,I2.2,A4)') 'User defined #', I, '    '
+        IDOUT(10, I) = STRING
         END DO
 !
 !/T      WRITE (NDSTST,9000) NGRIDS
@@ -1184,7 +1294,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2010 |
+!/                  | Last update :         19-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -1196,6 +1306,7 @@
 !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
+!/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.TBD )
 !/
 !  1. Purpose :
 !
@@ -1302,6 +1413,8 @@
       NAPBPT => OUTPTS(IMOD)%NAPBPT
       NAPPRT => OUTPTS(IMOD)%NAPPRT
 !
+      NOSWLL => OUTPTS(IMOD)%NOSWLL
+!
       TOFRST => OUTPTS(IMOD)%TOFRST
       TONEXT => OUTPTS(IMOD)%TONEXT
       TOLAST => OUTPTS(IMOD)%TOLAST
@@ -1315,9 +1428,12 @@
       IPASS1 => OUTPTS(IMOD)%OUT1%IPASS1
       WRITE1 => OUTPTS(IMOD)%OUT1%WRITE1
 !/MPI      NRQGO  => OUTPTS(IMOD)%OUT1%NRQGO
-!/MPI      IF ( NRQGO .NE. 0 ) IRQGO  => OUTPTS(IMOD)%OUT1%IRQGO
+!/MPI      NRQGO2 => OUTPTS(IMOD)%OUT1%NRQGO2
+!/MPI      IF ( NRQGO  .NE. 0 ) IRQGO  => OUTPTS(IMOD)%OUT1%IRQGO
+!/MPI      IF ( NRQGO2 .NE. 0 ) IRQGO2 => OUTPTS(IMOD)%OUT1%IRQGO2
       FLOGRD => OUTPTS(IMOD)%OUT1%FLOGRD
       FLOGR2 => OUTPTS(IMOD)%OUT1%FLOGR2
+      FLOG   => OUTPTS(IMOD)%OUT1%FLOG
 !
       IPASS2 => OUTPTS(IMOD)%OUT2%IPASS2
       NOPTS  => OUTPTS(IMOD)%OUT2%NOPTS

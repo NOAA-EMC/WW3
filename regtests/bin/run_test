@@ -96,6 +96,7 @@ set -- $args
 exit_p=none
 exec_p=none
 multi=0
+dist=0
 inpdir=input
 outopt=native
 while :
@@ -371,7 +372,6 @@ then
       errmsg "$ifile not found"
       exit 1
     fi
-
     \rm -f $prog.inp
     \ln -s $ifile $prog.inp
     echo "   Processing $ifile"

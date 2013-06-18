@@ -537,7 +537,7 @@
         LOGICAL          :: GUGINIT
         REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
         INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
-        INTEGER          :: P2MSF(3), US3DF(3) ! freq. indices for 3D output
+        INTEGER          :: E3DF(3,5), P2MSF(3), US3DF(3) ! freq. indices for 3D output
 !
         TYPE(T_GSU) :: GSU ! Grid search utility object
 !
@@ -562,8 +562,6 @@
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
         REAL, POINTER         :: TRIA(:), TRIA03(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
-! Coupling data
-        LOGICAL               :: COUG_2D, COUG_RAD3D, COUG_US3D
       END TYPE GRID
 !
       TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction
@@ -726,7 +724,7 @@
       INTEGER, POINTER :: GTYPE
       INTEGER, POINTER :: ICLOSE
       INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
-      INTEGER, POINTER        :: P2MSF(:),US3DF(:)
+      INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:)
       REAL,    POINTER        :: REFLC(:,:)
       INTEGER, POINTER        :: REFLD(:,:)    
 !
@@ -748,7 +746,6 @@
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       
 !
-      LOGICAL, POINTER        :: COUG_2D, COUG_RAD3D, COUG_US3D
       LOGICAL, POINTER        :: FLICES
       REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
@@ -1549,13 +1546,11 @@
       NSEA   => GRIDS(IMOD)%NSEA
       NSEAL  => GRIDS(IMOD)%NSEAL
       TRFLAG => GRIDS(IMOD)%TRFLAG
+      E3DF   => GRIDS(IMOD)%E3DF
       P2MSF  => GRIDS(IMOD)%P2MSF
       US3DF  => GRIDS(IMOD)%US3DF
       REFLC  => GRIDS(IMOD)%REFLC
       REFLD  => GRIDS(IMOD)%REFLD
-      COUG_2D     => GRIDS(IMOD)%COUG_2D
-      COUG_RAD3D  => GRIDS(IMOD)%COUG_RAD3D
-      COUG_US3D   => GRIDS(IMOD)%COUG_US3D
       FLICES => GRIDS(IMOD)%FLICES
       FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF

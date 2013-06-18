@@ -268,7 +268,7 @@
       INTEGER                   :: TIDEFLAG
 !/TIDET  INTEGER                   ::   LRECL
 !/TIDET      CHARACTER(LEN=21)       :: FNAMETXT
-!/MPI      INTEGER                   :: status(MPI_STATUS_SIZE)
+!/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
 !/
@@ -1130,7 +1130,7 @@
 ! Loops on Y dimension
 !
         DO IY=1,NY
-!/DIST    IND=0
+          IND=0
 !
 ! big data read split in small data read ... 
           IF (NDIMSGRID.EQ.1) THEN 
@@ -1232,7 +1232,7 @@
                                                             NTI, TIDE_NTI
               TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,1)=0.
               TIDAL_CONST(IX,IY,1:TIDE_MF,1:NFIELDS,2)=0.
-              IND=IND+TIDE_MF*NFIELDS*2
+!/DIST              IND=IND+TIDE_MF*NFIELDS*2
             END IF ! end of test on TIDE_NTI
 !/MPIT            DO J=1,TIDE_MF
 !/MPIT              DO K=1,NFIELDS
@@ -1266,7 +1266,7 @@
 !/DIST       DO JPC=1,NAPROC
 !/DIST         IF (JPC .NE. NAPOUT )  THEN 
 !/DIST           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
-!/DIST                             MPI_COMM_WORLD, status, IERR_MPI )
+!/DIST                             MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
 !/DIST           ! Now unpacks the 1-D array
 !/DIST           IND=0
 !/DIST           DO JX=1,NXL(JPC)

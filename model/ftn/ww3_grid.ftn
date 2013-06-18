@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Sep-2012 |
+!/                  | Last update :         19-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -54,7 +54,6 @@
 !/    22-Feb-2008 : Initialize TRNX-Y properly.         ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    23-Jul-2009 : Modification of ST3 namelist  .     ( version 3.14-SHOM )
-!/    23-Dec-2009 : Addition of COU namelists           ( version 3.14-SHOM )
 !/    31-Mar-2010 : Addition of shoreline reflection    ( version 3.14-IFREMER )
 !/    29-Jun-2010 : Adding Stokes drift profile output  ( version 3.14-IFREMER )
 !/    30-Aug-2010 : Adding ST4 option                   ( version 3.14-IFREMER )
@@ -76,7 +75,9 @@
 !/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
 !/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
 !/    02-Sep-2012 : Clean up of reflection and UG grids ( version 4.08 )
+!/    19-Dec-2012 : Add NOSWLL as namelist variable.    ( version 4.OF )
 !/    05-Mar-2013 : Adjusted default roughness for rocks( version 4.09 )
+!/    01-Jun-2013 : Adding namelist for spectral output ( version 4.10 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -392,7 +393,7 @@
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
       USE W3ODATMD, ONLY: NBI, NBI2, NFBPO, NBO, NBO2, FLBPI, FLBPO,  &
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE,    &
-                          IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB
+                          IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
 !
 !/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
 !/NLS      USE W3SNLSMD, ONLY: ABMAX
@@ -412,7 +413,7 @@
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
                                  IST, NKI, NTHI,                      &
-                                 IDFT, NSTAT, NBT, NLAND
+                                 IDFT, NSTAT, NBT, NLAND, NOSW
 !/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
 !/O1      INTEGER             :: IBI, IP0, IPN, IPH, IPI
@@ -433,8 +434,17 @@
                                  FACTOR, RTH0, FMICHE, RWNDC, COSAVG, &
                                  SINAVG, THAVG
       CHARACTER(LEN=4)        :: GSTRG, CSTRG
+!
+! Variables used to allow spectral output on full grid
+!
       INTEGER                 :: P2SF,I1P2SF,I2P2SF
-      INTEGER                 :: US3D_OUNF,I1US3D_OUNF,I2US3D_OUNF
+      INTEGER                 :: E3D,I1E3D,I2E3D
+      INTEGER                 :: US3D,I1US3D,I2US3D,                  &
+                                 TH1MF, I1TH1M, I2TH1M,               &
+                                 STH1MF, I1STH1M, I2STH1M,            &
+                                 TH2MF, I1TH2M, I2TH2M,               &
+                                 STH2MF, I1STH2M, I2STH2M
+!
 !/LN1      REAL                    :: CLIN, RFPM, RFHF
 !/ST1      REAL                    :: CINP, CDIS, APM
 !/ST2      REAL                    :: PHIMIN, FPIA, FPIB, DPHID
@@ -521,7 +531,6 @@
            REAL                    :: UGOBCDEPTH
            LOGICAL                 :: UGOBCAUTO, EXPFSN, EXPFSPSI,     &
                                       EXPFSFCT,IMPFSNIMP
-           LOGICAL                 :: COU_2D, COU_RAD3D
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
@@ -563,9 +572,14 @@
                            IMPFSNIMP
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
-                      RWNDC, FLAGICESOURCE, P2SF, I1P2SF, I2P2SF,     &
-                      US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,            &
-                      FACBERG, COU_2D, COU_RAD3D, GSHIFT
+                      RWNDC, FLAGICESOURCE,FACBERG,NOSW, GSHIFT
+           NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
+                             US3D, I1US3D, I2US3D,                    &
+                             E3D, I1E3D, I2E3D,                       &
+                             TH1MF, I1TH1M, I2TH1M,                   &
+                             STH1MF, I1STH1M, I2STH1M,                &
+                             TH2MF, I1TH2M, I2TH2M,                   &
+                             STH2MF, I1STH2M, I2STH2M
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -609,7 +623,7 @@
       CALL DISTAB
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 3.a Table for friction factors
+! 3.b Table for friction factors
 !
       CALL TABU_FW
 !
@@ -1334,7 +1348,6 @@
 ! 6.g Define Sbt.
 !
 !/BT0      WRITE (NDSO,926)
-!/BT4      WRITE (NDSO,926)
 !/BTX      WRITE (NDSO,926)
 !
 !/BT1      GAMMA  = -0.067
@@ -1520,18 +1533,34 @@
       WSM    = 1.7
       WSC    = 0.333
       FLC    = .TRUE.
+      NOSW   = 5
       FMICHE = 0.75
       RWNDC  = 1.
+! Variables for 3D array output
+      E3D=0 
+      I1E3D=1
+      I2E3D=NK
       P2SF   = 0
       I1P2SF = 1
       I2P2SF = 15
-      US3D_OUNF=0 
-      I1US3D_OUNF=1
-      I2US3D_OUNF=NK
+      US3D=0 
+      I1US3D=1
+      I2US3D=NK
+      TH1MF=0 
+      I1TH1M=1
+      I2TH1M=NK
+      STH1MF=0 
+      I1STH1M=1
+      I2STH1M=NK
+      TH2MF=0
+      I1TH2M=1
+      I2TH2M=NK
+      STH2MF=0 
+      I1STH2M=1
+      I2STH2M=NK
+!
       FLAGICESOURCE=.FALSE.
       FACBERG=1.
-      COU_2D=.FALSE.
-      COU_RAD3D=.FALSE.
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -1545,6 +1574,46 @@
 !/REF1      REFICEBERG=0.
 !
 !/REF1      CALL READNL ( NDSS, 'REF1', STATUS )
+!
+!
+      CALL READNL ( NDSS, 'OUTS', STATUS )
+      WRITE (NDSO,4970) STATUS
+!
+!
+! output of frequency spectra, th1m ... 
+!
+      E3DF(1,1) = E3D
+      E3DF(2,1) = MIN(MAX(1,I1E3D),NK)
+      E3DF(3,1) = MIN(MAX(1,I2E3D),NK)
+      E3DF(1,2) = TH1MF
+      E3DF(2,2) = MIN(MAX(1,I1TH1M),NK)
+      E3DF(3,2) = MIN(MAX(1,I2TH1M),NK)
+      E3DF(1,3) = STH1MF
+      E3DF(2,3) = MIN(MAX(1,I1STH1M),NK)
+      E3DF(3,3) = MIN(MAX(1,I2STH1M),NK)
+      E3DF(1,2) = TH2MF
+      E3DF(2,2) = MIN(MAX(1,I1TH2M),NK)
+      E3DF(3,2) = MIN(MAX(1,I2TH2M),NK)
+      E3DF(1,3) = STH2MF
+      E3DF(2,3) = MIN(MAX(1,I1STH2M),NK)
+      E3DF(3,3) = MIN(MAX(1,I2STH2M),NK)
+!
+! output of microseismic source spectra
+!
+      P2MSF(1) = P2SF
+      P2MSF(2) = MIN(MAX(1,I1P2SF),NK)
+      P2MSF(3) = MIN(MAX(1,I2P2SF),NK)
+!
+! output of Stokes drift profile
+!
+      US3DF(1) = US3D
+      US3DF(2) = I1US3D
+      US3DF(3) = I2US3D
+      US3DF(2) = MAX( 1 , MIN(NK,US3DF(2)) )
+      US3DF(3) = MAX( 1 , MIN(NK,US3DF(3)) )
+      WRITE (NDSO,4971) P2MSF(1:3)
+      WRITE (NDSO,4972) US3DF(1:3)
+      WRITE (NDSO,4973) E3DF(1:3,1)
 !
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
@@ -1587,12 +1656,13 @@
       WSMULT = MAX ( 1. , WSM )
       WSCUT  = MIN ( 1.0001 , MAX ( 0. , WSC ) )
       FLCOMB = FLC
-      IF ( FLCOMB ) THEN
-        J      = 1
-      ELSE
-		  J      = 2
-		END IF
-      WRITE (NDSO,966) IHMAX, HSPMIN, WSMULT, WSCUT, YESXNO(J)
+      NOSWLL = MAX ( 1 , NOSW )
+        IF ( FLCOMB ) THEN
+          J      = 1
+        ELSE
+          J      = 2
+        END IF
+      WRITE (NDSO,966) IHMAX, HSPMIN, WSMULT, WSCUT, YESXNO(J), NOSWLL
 !
       FHMAX  = MAX ( 0.01 , FMICHE )
       J      = 2
@@ -1600,25 +1670,6 @@
       WRITE (NDSO,967) FHMAX, FHMAX/SQRT(2.), YESXNO(J)
       IF ( FHMAX.LT.0.50 .AND. J.EQ.1 ) WRITE (NDST,968)
       WRITE (NDSO,*)
-!
-! output of microseismic source spectra
-!
-      P2MSF(1) = P2SF
-      P2MSF(2) = I1P2SF
-      P2MSF(3) = I2P2SF
-!
-! output of Stokes drift profile
-!
-      US3DF(1) = US3D_OUNF
-      US3DF(2) = I1US3D_OUNF
-      US3DF(3) = I2US3D_OUNF
-      US3DF(2)= MAX( 1 , MIN(NK,US3DF(2)) )
-      US3DF(3)= MAX( 1 , MIN(NK,US3DF(3)) )
-      COUG_2D=COU_2D
-      COUG_RAD3D=COU_RAD3D
-      COUG_US3D=.FALSE.
-      IF (US3D_OUNF.GT.0) COUG_US3D=.TRUE.
-
 !
 ! 6.o End of namelist processing
 !
@@ -1686,33 +1737,37 @@
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
-        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
+!
+        IF (GTYPE.EQ.UNGTYPE)  &
+          WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
-!/REF1         WRITE(NDSO,2976) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
+!
+        WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF, US3D, I1US3D, I2US3D,  & 
+                             E3D, I1E3D, I2E3D,                       &
+                             TH1MF, I1TH1M, I2TH1M,                   &
+                             STH1MF, I1STH1M, I2STH1M,                &
+                             TH2MF, I1TH2M, I2TH2M,                   &
+                             STH2MF, I1STH2M, I2STH2M
+!
+!/REF1         WRITE(NDSO,2986) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
 !/REF1                    REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
 !/REF1                    REFICEBERG, REFCOSP_STRAIGHT
-
+!
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
-                                WSCUT, '.TRUE.', FHMAX, RWNDC,        &
-                                FLAGICESOURCE,                        &
-                                P2SF, I1P2SF, I2P2SF,                 &
-                                US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                COU_RAD3D, COU_2D, FACBERG,GSHIFT
-            ELSE
-              WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
+                                WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
+                                RWNDC, FLAGICESOURCE, FACBERG,GSHIFT
+        ELSE
+          WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
-                                WSCUT, '.FALSE.', FHMAX, RWNDC,       &
-                                FLAGICESOURCE,                        &
-                                P2SF, I1P2SF, I2P2SF,                 &
-                                US3D_OUNF, I1US3D_OUNF, I2US3D_OUNF,  &
-                                COU_RAD3D, COU_2D, FACBERG,GSHIFT
+                                WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
+                                RWNDC, FLAGICESOURCE, FACBERG, GSHIFT
 
-            END IF
-          WRITE (NDSO,918)
+          END IF
+!
+        WRITE (NDSO,918)
         END IF
-
 !
 ! 6.p Set various other values ...
 ! ... Tail in integration       --> scale factor for A to E conv
@@ -3599,27 +3654,44 @@
                '       Minimum wave height     (m) :',F9.3/           &
                '       Wind area multiplier    (-) :',F9.3/           &
                '       Cut-off wind sea fract. (-) :',F9.3/           &
-               '       Combine wind seas           :  ',A)
+               '       Combine wind seas           :  ',A/            &
+               '       Number of swells in fld out :',I5)
   967 FORMAT (/'    Miche-style limiting wave height :'/              &
                '       Hs,max/d factor         (-) :',F9.3/           &
                '       Hrms,max/d factor       (-) :',F9.3/           &
                '       Limiter activated           :  ',A)
   968 FORMAT ( '          *** FACTOR DANGEROUSLY LOW ***')
 !
- 2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,', LICE = ',F8.1, &
-               ', PMOVE =',F6.3, ', XSEED =',F6.3,', FLAGTR = ', I1,  &
-               ','/'        XP =',F6.3,', XR =',F6.3,', XFILT =',     &
-               F6.3,', IHM =',I5,', HSPM =',F6.3,','/                 &
-               '        WSM =',F6.3,', WSC =',F6.3,', FLC = ',A,      &
-               ', FMICHE =',F6.3,', RWNDC =' ,F6.3,','/               &
-               '        FLAGICESOURCE =',L3,                          &
-               ', P2SF =',I1,', I1P2SF =',I3,', I2P2SF =',I3,         &
-               ', US3D_OUNF =',I1,', I1US3D_OUNF =',I3,               &
-               ', I2US3D_OUNF =',I3,','/               &
-               '        COU_2D =',L3,', COU_RAD3D =',L3, ','/    &
-               '     FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
+ 4970 FORMAT (/'  Spectral output on full grid ',A/                   &
+               ' --------------------------------------------------')
+ 4971 FORMAT ( '       Second order pressure at K=0:',3I4)
+ 4972 FORMAT ( '       Spectrum of Uss             :',3I4)
+ 4973 FORMAT ( '       Frequency spectrum          :',3I4)
 !
- 2976 FORMAT ( '  &REF1 REFCOAST =',F5.2,', REFFREQ =',F5.2,', REFSLOPE =',F5.3, &
+ 4980 FORMAT (/'  Coastal / iceberg reflection  ',A/                   &
+               ' --------------------------------------------------')
+ 4981 FORMAT ( '       Coefficient for shorelines  :',F6.4)
+ 4989 FORMAT ( '          *** CURVLINEAR GRID: REFLECTION NOT IMPLEMENTED YET ***')
+!
+ 2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
+                     ', LICE = ',F8.1, ', PMOVE =',F6.3,','/          &
+               '        XSEED =',F6.3,', FLAGTR = ', I1,              &
+                     ', XP =',F6.3,', XR =',F6.3,', XFILT =', F6.3,','&
+              /'        IHM =',I5,', HSPM =',F6.3,', WSM =',F6.3,     &
+                     ', WSC =',F6.3,', FLC = ',A/                     &
+               '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
+                        F6.3,', FLAGICESOURCE =',L3,','/              &
+               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
+!
+ 2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
+               '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  
+               '        E3D   =',I2,', I1E3D  =',I3,', I2E3D  =',I3,','/&  
+               '        TH1MF =',I2,', I1TH1M =',I3,', I2TH1M =',I3,','/&  
+               '        STH1MF=',I2,', I1STH1M=',I3,', I2STH1M=',I3,','/&  
+               '        TH2MF =',I2,', I1TH2M =',I3,', I2TH2M =',I3,','/&  
+               '        STH2MF=',I2,', I1STH2M=',I3,', I2STH2M=',I3,' /')
+!
+ 2986 FORMAT ( '  &REF1 REFCOAST =',F5.2,', REFFREQ =',F5.2,', REFSLOPE =',F5.3, &
                ', REFMAP =',F4.1, ', REFMAPD =',F4.1, ', REFSUBGRID =',F5.2,','/ &   
                '        REFRMAX=',F5.2,', REFFREQPOW =',F5.2,                    &
                ', REFICEBERG =',F5.2,', REFCOSP_STRAIGHT =',F4.1,' /')
@@ -3881,7 +3953,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Mar-2001 |
+!/                  | Last update :         01-Jun-2013 |
 !/                  +-----------------------------------+
 !/
 !  1. Purpose :
@@ -3946,7 +4018,7 @@
 !
       DO
         READ (NDS,'(A)',END=800,ERR=800,IOSTAT=IERR) LINE
-        DO I=1, 70
+        DO I=1, 70 
           IF ( LINE(I:I) .NE. ' ' ) THEN
               IF ( LINE(I:I) .EQ. '&' ) THEN
                   IF ( LINE(I+1:I+4) .EQ. NAME ) THEN
@@ -4004,6 +4076,8 @@
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
                         CASE('UG')
                           READ (NDS,NML=UG,END=801,ERR=802,IOSTAT=J)
+                        CASE('OUTS')
+                          READ (NDS,NML=OUTS,END=801,ERR=802,IOSTAT=J)
                         CASE('MISC')
                           READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
                         CASE DEFAULT

@@ -350,6 +350,7 @@
                           SBTCX, ECOS, ESIN, DTH      
           
 !/S      USE W3SERVMD, ONLY: STRACE
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -360,7 +361,6 @@
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
-      IMPLICIT NONE
       LOGICAL, SAVE           :: FIRST = .TRUE.
       REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), D50
       REAL, INTENT(IN)        :: PSIC

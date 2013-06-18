@@ -109,11 +109,11 @@
 
 #  Generation of *.a in case of coupled model
 
-  if [ "$prog" = 'ww3_shel' ]
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ]
     then
     if [ "$palm_mod" = 'yes' ]
        then
-       comp=ar
+       comp=xiar
        opt="-rv $prog.a"
        prog="$prog.a"
     fi

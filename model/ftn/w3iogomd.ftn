@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Feb-201³ |
+!/                  | Last update :         15-Apr-2013 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -31,10 +31,13 @@
 !/    15-Sep-2010 : Adding ST4 source term option.      ( version 3.14 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    05-Feb-2011 : Implement unstructured grid         ( version 3.14.3 )
+!/    05-Feb-2011 : Implement unstructured grid        ( version 3.14.3 )
 !/                  (A. Roland and F. Ardhuin) 
+!/    25-Dec-2012 : New output structure and smaller    ( version 4.TBD )
+!/                  memory footprint.
+!/    15-Apr-2013 : New subroutine to read param. names ( version 4.10 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -67,6 +70,7 @@
 !      W3SETG    Subr. W3GDATMD Point to data structure.
 !      W3SETW    Subr. W3WDATMD Point to data structure.
 !      W3SETA    Subr. W3ADATMD Point to data structure.
+!      W3XETA    Subr. W3ADATMD Point to data structure.
 !      W3DIMW    Subr. W3WDATMD Allocate data structure.
 !      W3DIMA    Subr. W3ADATMD Allocate data structure.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.           ( !/S )
@@ -111,11 +115,440 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROGR = 'III  2.03 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROGR = 'III  3.00 '
       CHARACTER(LEN=30), PARAMETER, PRIVATE ::                        &
                             IDSTR = 'WAVEWATCH III GRID OUTPUT FILE'
 !/
       CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLG ) 
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Apr-2013 |
+!/                  +-----------------------------------+
+!/
+!/    15-Apr-2013 : Origination.                        ( version 4.10 )
+!/
+!  1. Purpose :
+!
+!     Updates the flags for output parameters based on the mod_def file
+!     this is to prevent the allocation of big 3D arrays when not requested
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDSO    Int.   I   Output file logical unit number
+!       NDSEN   R.A.   I   Error output file logical unit number
+!       FLG     L.A.   O   1D array of flags for groups
+!       FLGRD   L.A.   O   2D array of flags
+!       FLGR2   L.A.   O   2D array of flags
+!     ----------------------------------------------------------------
+!
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3INIT    Subr.   N/A    
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF
+      USE W3ODATMD, ONLY: NOGRP, NGRPP
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: NDSO, NDSEN
+      LOGICAL, INTENT(INOUT)    :: FLGRD(NOGRP,NGRPP), FLG(NOGRP), FLGR2(NOGRP,NGRPP)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER             :: I
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3FLGRDUPDT')
+!
+      DO I=1,5
+        IF (E3DF(1,I).LE. 0.OR.E3DF(3,I) .LT.E3DF(2,I))  FLGRD(3,I)=.FALSE.
+        END DO
+      IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) FLGRD(6,9)=.FALSE.
+      IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) FLGRD(6,10)=.FALSE.
+      RETURN
+!
+      END SUBROUTINE W3FLGRDUPDT
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3READFLGRD ( NDSI , NDSO, NDSS, NDSEN, COMSTR,      &
+                               FLG1D, FLG2D, IAPROC, NAPOUT, IERR) 
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Apr-2013 |
+!/                  +-----------------------------------+
+!/
+!/    15-Apr-2013 : Origination.                        ( version 4.10 )
+!/
+!  1. Purpose :
+!
+!     Fills in FLG2D and FLG2D2 arrays from ASCII input file
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDSI    Int.   I   Input file logical unit number
+!       NDSO    Int.   I   Output file logical unit number
+!       NDSEN   R.A.   I   Error output file logical unit number
+!       COMSTR  Char   I   Comment string, usually '$'
+!       FLG     L.A.   O   1D array of flags for groups
+!       FLG2D   L.A.   O   2D array of flags
+!       IAPROC  Int.   I   index of current processor 
+!       IERR    Int.   O   Error message number
+!     ----------------------------------------------------------------
+!
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_SHEL  Prog.   N/A    Actual wave model program
+!      WW3_OUTF  Prog.   N/A    Ouput postprocessor.
+!      WW3_OUNF  Prog.   N/A    NetCDF ouput postprocessor.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR
+      USE W3SERVMD, ONLY: NEXTLN, STRSPLIT, STR_TO_UPPER
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: NDSI, NDSO, NDSS, NDSEN, IAPROC, NAPOUT
+      INTEGER, INTENT(OUT)    :: IERR
+      CHARACTER(LEN=1)        :: COMSTR
+      LOGICAL, INTENT(OUT)    :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP)
+      CHARACTER(LEN=1024)     :: OUTFIELDNAMES
+      CHARACTER(LEN=100)      :: OUT_NAMES(100), TESTSTR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER             :: I, IFI, IFJ, IOUT
+!/S      INTEGER, SAVE           :: IENT = 0
+      CHARACTER(LEN=1)    :: AFLG
+      LOGICAL             :: FLT, NAMES
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3READFLGRD')
+!
+!
+! 1.  Initialize flags -------------------------------------- *
+!
+      IERR=0
+      FLG2D(:,:)=.FALSE. ! Initialize FLG2D 
+      NAMES =.FALSE.
+!        
+      DO IFI=1,NOGRP ! Loop over field output groups
+!
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        READ (NDSI,*,END=2001,ERR=2002) AFLG
+        IF (AFLG.EQ.'T') THEN 
+          FLG1D(IFI)=.TRUE. 
+        ELSE IF (AFLG.EQ.'F') THEN 
+          FLG1D(IFI)=.FALSE.
+        ELSE IF (AFLG.EQ.'N') THEN 
+          NAMES=.TRUE.
+          EXIT
+        ELSE 
+          IERR=1
+          GOTO 2005
+          END IF
+        IF ( FLG1D (IFI) ) THEN ! Skip if group not requested
+          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+          READ (NDSI,*,END=2001,ERR=2006)                    &
+                 FLG2D(IFI,1:NOGE(IFI))
+         ENDIF
+        END DO
+!
+      IF (NAMES) THEN 
+!
+! 2. Reads and splits list of output field names
+!
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) OUTFIELDNAMES
+        OUT_NAMES(:)=''
+        CALL STRSPLIT(OUTFIELDNAMES,OUT_NAMES)
+        IOUT=0
+        DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
+          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
+          !WRITE(6,*) 'Requested:',OUT_NAMES(IOUT+1)
+!
+! 2. Matches names with expected ... 
+!
+         TESTSTR=OUT_NAMES(IOUT+1)
+         SELECT CASE(TRIM(TESTSTR(1:6)))
+           CASE('DPT')
+             FLG2D(1,1)=.TRUE.
+           CASE('CUR')
+             FLG2D(1,2)=.TRUE.
+           CASE('WND')
+             FLG2D(1,3)=.TRUE.
+           CASE('DT','AST')
+             FLG2D(1,4)=.TRUE.
+           CASE('LEV','WLV')
+             FLG2D(1,5)=.TRUE.
+           CASE('ICE')
+             FLG2D(1,6)=.TRUE.
+           CASE('IBG')
+             FLG2D(1,7)=.TRUE.
+!/BT4           CASE('D50')
+!/BT4             FLG2D(1,8)=.TRUE.
+!
+           CASE('HS','SWH','HM0')
+             FLG2D(2,1)=.TRUE.
+           CASE('L','MWL','LM','WLM')
+             FLG2D(2,2)=.TRUE.
+           CASE('T02','TZ')
+             FLG2D(2,3)=.TRUE.
+           CASE('T01','TM')
+             FLG2D(2,4)=.TRUE.
+           CASE('T','TM1','T-1','TE')
+             FLG2D(2,5)=.TRUE.
+           CASE('FP')
+             FLG2D(2,6)=.TRUE.
+           CASE('DIR')
+             FLG2D(2,7)=.TRUE.
+           CASE('SPR')
+             FLG2D(2,8)=.TRUE.
+           CASE('DP','PKD')
+             FLG2D(2,9)=.TRUE.
+!
+           CASE('EF')
+             FLG2D(3,1)=.TRUE.
+           CASE('TH1M')
+             FLG2D(3,2)=.TRUE.
+           CASE('STH1M')
+             FLG2D(3,3)=.TRUE.
+           CASE('WN')
+             FLG2D(3,6)=.TRUE.
+!
+           CASE('PHS')
+             FLG2D(4,1)=.TRUE.
+           CASE('PTP')
+             FLG2D(4,2)=.TRUE.
+           CASE('PLP')
+             FLG2D(4,3)=.TRUE.
+           CASE('PTH')
+             FLG2D(4,4)=.TRUE.
+           CASE('PSP')
+             FLG2D(4,5)=.TRUE.
+           CASE('PWS')
+             FLG2D(4,6)=.TRUE.
+           CASE('TWS','WSF')
+             FLG2D(4,7)=.TRUE.
+           CASE('PNR')
+             FLG2D(4,8)=.TRUE.
+!
+           CASE('UST')
+             FLG2D(5,1)=.TRUE.
+           CASE('CHA','CHK','CHN')
+             FLG2D(5,2)=.TRUE.
+           CASE('CGE')
+             FLG2D(5,3)=.TRUE.
+           CASE('FAW')
+             FLG2D(5,4)=.TRUE.
+           CASE('TAW')
+             FLG2D(5,5)=.TRUE.
+           CASE('TWA','NWS')
+             FLG2D(5,6)=.TRUE.
+           CASE('WCC')
+             FLG2D(5,7)=.TRUE.
+           CASE('WCF')
+             FLG2D(5,8)=.TRUE.
+           CASE('WCH')
+             FLG2D(5,9)=.TRUE.
+           CASE('WCM')
+             FLG2D(5,10)=.TRUE.
+!
+           CASE('SXY')
+             FLG2D(6,1)=.TRUE.
+           CASE('WOM','TWO')
+             FLG2D(6,2)=.TRUE.
+           CASE('BHD','JS')
+             FLG2D(6,3)=.TRUE.
+           CASE('WOE','FOC')
+             FLG2D(6,4)=.TRUE.
+           CASE('STP','TUS')
+             FLG2D(6,5)=.TRUE.
+           CASE('USS')
+             FLG2D(6,6)=.TRUE.
+           CASE('P2S','SSP')
+             FLG2D(6,7)=.TRUE.
+           CASE('USF','US3D','U3D')
+             FLG2D(6,8)=.TRUE.
+           CASE('P2L')
+             FLG2D(6,9)=.TRUE.
+!
+           CASE('ABR')
+             FLG2D(7,1)=.TRUE.
+           CASE('UBR')
+             FLG2D(7,2)=.TRUE.
+           CASE('BED')
+             FLG2D(7,3)=.TRUE.
+           CASE('FBB')
+             FLG2D(7,4)=.TRUE.
+           CASE('TBB')
+             FLG2D(7,5)=.TRUE.
+!
+           CASE('MSS')
+             FLG2D(8,1)=.TRUE.
+           CASE('MSC')
+             FLG2D(8,2)=.TRUE.
+!
+           CASE('DTD')
+             FLG2D(9,1)=.TRUE.
+           CASE('FC')
+             FLG2D(9,2)=.TRUE.
+           CASE('CFX')
+             FLG2D(9,3)=.TRUE.
+           CASE('CFD')
+             FLG2D(9,4)=.TRUE.
+           CASE('CFK')
+             FLG2D(9,5)=.TRUE.
+!
+           CASE('U1')
+             FLG2D(10,1)=.TRUE.
+           CASE('U2')
+             FLG2D(10,1)=.TRUE.
+           CASE DEFAULT
+             WRITE (NDSO,1004) TRIM(TESTSTR)
+           END SELECT
+          IOUT=IOUT+1
+          END DO 
+!
+        END IF
+!
+      IF ( NDSS.NE.NDSO .AND. IAPROC .EQ. NAPOUT ) THEN
+        FLT    = .TRUE.
+        DO IFI=1, NOGRP
+          DO IFJ=1, NGRPP
+            IF ( FLG2D(IFI,IFJ) ) THEN
+              IF ( FLT ) THEN
+                WRITE (NDSO,1945) IDOUT(IFI,IFJ)
+                FLT    = .FALSE.
+              ELSE
+                WRITE (NDSO,1946) IDOUT(IFI,IFJ)
+                END IF
+              END IF
+            END DO
+          END DO
+        IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
+          END IF
+!
+      RETURN 
+!
+ 2001 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN,1001)
+      RETURN 
+ 2002 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1002) IFI, IERR
+      RETURN 
+ 2003 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1003) IERR
+      RETURN 
+ 2004 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1004) IERR
+      IERR=0
+      RETURN 
+ 2005 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1005) AFLG
+      RETURN 
+ 2006 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1006) IFI,IERR
+      RETURN 
+!
+ 1945 FORMAT ( '            Fields   : ',A)
+ 1946 FORMAT ( '                       ',A)
+!
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
+               '     PREMATURE END OF INPUT FILE'/)
+!
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
+               '     ERROR IN READING OUTPUT FIELDS GROUP FLAGS ',    &
+               I2, /, '     IOSTAT =',I5/)
+!
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
+               '     ERROR IN READING OUTPUT FIELDS NAMES FROM INPUT FILE'/ &
+               '     IOSTAT =',I5/)
+!
+ 1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                        &
+               '     REQUESTED OUTPUT FIELD ',A,' WAS NOT RECOGNIZED.'/)
+!
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR    : '/                        &
+               '     WAS EXPECTING "T" "F" or "N", but found  "',A,'".'/)
+!
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
+               '     ERROR IN READING OUTPUT FIELDS FLAGS FOR GROUP ',  &
+               I2, /, '     IOSTAT =',I5/)
+!
+      END SUBROUTINE W3READFLGRD
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3OUTG ( A, FLPART, FLOUTG, FLOUTG2 )
 !/
@@ -123,7 +556,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2008 |
+!/                  | Last update :         25-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    10-Dec-1998 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -139,6 +572,8 @@
 !/                  ( F. Ardhuin )
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    25-Dec-2012 : New output structure and smaller    ( version 4.TBD )
+!/                  memory footprint.
 !/
 !  1. Purpose :
 !
@@ -208,17 +643,20 @@
       USE CONSTANTS
       USE W3GDATMD
       USE W3WDATMD, ONLY: UST, FPIS
-      USE W3ADATMD, ONLY: CG, WN, DW, HS, WLM, TMN, THM, THS, FP0,    &
-                          THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
+      USE W3ADATMD, ONLY: CG, WN, DW
+      USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
+
+      USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
                           SXX, SYY, SXY, PHS, PTP, PLP, PTH, PSI, PWS,&
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, JSMITH, P2SMS,             &
-                          CGE, T02, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,&
-                          CFLXYMAX, CFLTHMAX, CFLKMAX, US3D, SXX3D
-      USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, ICPRT, DTPRT,  &
-                          WSCUT, NOSWLL, FLOGRD, FLOGR2
+                          TAUWNX,  TAUWNY, BHD,                    &
+                          CGE, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,    &
+                          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS,         &
+                          US3D, EF, TH1M, STH1M, TH2M, STH2M
+      USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
+                          ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -238,24 +676,20 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: FXPMC, FACTOR, FACTOR2, EBAND, FKD,  &
                                  FP1STR, FP1TST, FPISTR, AABS, UABS,  &
-                                 XL, XH, XL2, XH2, EL, EH, DENOM, KD
+                                 XL, XH, XL2, XH2, EL, EH, DENOM, KD, &
+                                 M1
       REAL                    :: ET(NSEAL), EWN(NSEAL), ETR(NSEAL),   &
                                  ETX(NSEAL), ETY(NSEAL), AB(NSEAL),   &
                                  ABX(NSEAL), ABY(NSEAL),ET02(NSEAL),  &
                                  EBD(NK,NSEAL), EC(NSEAL),            &
                                  ABR(NSEAL), UBR(NSEAL), UBS(NSEAL),  &
-                                 ABX2(NSEAL), ABY2(NSEAL), ABST(NSEAL), &
-                                 ABXX(NSEAL), ABYY(NSEAL),            &
-                                 ABXY(NSEAL), ETTUSX(NSEAL),          &
-                                 ETTUSY(NSEAL), ETUSSX(NSEAL),        &
-                                 ETUSSY(NSEAL), ETUSCX(NSEAL),        &
-                                 ETUSCY(NSEAL),                       &
-                                 ETMSSX(NSEAL), ETMSSY(NSEAL),        &
-                                 ETMSCX(NSEAL), ETMSCY(NSEAL),        &
+                                 ABX2(NSEAL), ABY2(NSEAL),            &
+                                 ABST(NSEAL), ABXX(NSEAL),            &
+                                 ABYY(NSEAL), ABXY(NSEAL),            &
+                                 ETUSCX(NSEAL), ETUSCY(NSEAL),        &
                                  ETMSSL(NSEAL), ETMSSCL(NSEAL),       &
-                                 ETPRMS(NSEAL), ETTPMS(NSEAL), ETTPMM(NSEAL), &
-                                 ETF(NSEAL), JS(NSEAL)
-      REAL                       USSCO
+                                 ETTPMM(NSEAL), ETF(NSEAL), ET1(NSEAL)
+      REAL                       USSCO, FT1
       REAL, SAVE              :: HSMIN = 0.05
 !/
 !/ ------------------------------------------------------------------- /
@@ -264,6 +698,7 @@
 !
       FXPMC  = 0.66 * GRAV / 28.
       HSMIN  = HSMIN
+      FT1    =  0.3333 * SIG(NK)**2 * DTH * SIG(NK)
 !
 ! 1.  Initialize storage arrays -------------------------------------- *
 !
@@ -271,6 +706,7 @@
       ET02   = 0.
       EWN    = 0.
       ETR    = 0.
+      ET1    = 0. 
       ETX    = 0.
       ETY    = 0.
       ABR    = 0.
@@ -283,34 +719,37 @@
       SXX    = 0.
       SYY    = 0.
       SXY    = 0.
-      ETTUSX  = 0.
-      ETUSSX  = 0.
-      ETUSCX  = 0.
-      ETMSSX  = 0.
-      ETMSSY  = 0.
-      ETMSCX  = 0.
-      ETMSCY  = 0.
-      ETMSSL  = 0.
-      ETMSSCL = 0.
-      ETTUSY  = 0.
-      ETUSSY  = 0.
-      ETUSCY  = 0.
-      ETPRMS  = 0.
-      ETTPMS  = 0.
-      ETTPMM  = 0.
-      EBD     = 0.
-      EC      = 0.
-      ETF     = 0.   
-      JS      = 0.
+      USSX   = 0.
+      USSY   = 0.
+      TUSX   = 0.
+      TUSY   = 0.
+      MSSX   = 0.
+      MSSY   = 0.
+      MSCX   = 0.
+      MSCY   = 0.
+      PRMS   = 0.
+      TPMS   = 0.
+      ETUSCY = 0.
+      ETUSCY = 0.
+      ETMSSL = 0.
+      ETMSSCL= 0.
+      ETTPMM = 0.
+      EBD    = 0.
+      EC     = 0.
+      ETF    = 0.   
+      BHD = 0.
 !
       HS     = UNDEF
       WLM    = UNDEF
-      TMN    = UNDEF
+      T0M1   = UNDEF
+      T01    = UNDEF
+      T02    = UNDEF
+      FP0    = UNDEF
       THM    = UNDEF
       THS    = UNDEF
-      FP0    = UNDEF
-      FP1    = UNDEF
       THP0   = UNDEF
+!
+      FP1    = UNDEF
       THP1   = UNDEF
 !
 ! 2.  Integral over discrete part of spectrum ------------------------ *
@@ -367,17 +806,16 @@
           ETF(JSEA)    = ETF(JSEA) + EBD(IK,JSEA) * CG(IK,ISEA)
           EWN(JSEA)    = EWN(JSEA) + EBD(IK,JSEA) / WN(IK,ISEA)
           ETR(JSEA)    = ETR(JSEA) + EBD(IK,JSEA) / SIG(IK)
+          ET1(JSEA)    = ET1(JSEA) + EBD(IK,JSEA) * SIG(IK)
           ET02(JSEA)   = ET02(JSEA)+ EBD(IK,JSEA) * SIG(IK)**2
           ETX(JSEA)    = ETX(JSEA) + ABX(JSEA) * FACTOR
           ETY(JSEA)    = ETY(JSEA) + ABY(JSEA) * FACTOR
-          ETTUSX(JSEA)  = ETTUSX(JSEA) + ABX(JSEA)*FACTOR           &
+          TUSX(JSEA)  = TUSX(JSEA) + ABX(JSEA)*FACTOR               &
                      *GRAV*WN(IK,ISEA)/SIG(IK)
-          ETTUSY(JSEA)  = ETTUSY(JSEA) + ABY(JSEA)*FACTOR           &
+          TUSY(JSEA)  = TUSY(JSEA) + ABY(JSEA)*FACTOR               &
                      *GRAV*WN(IK,ISEA)/SIG(IK)
-          ETMSSX(JSEA)  = ETMSSX(JSEA) + ABX2(JSEA)*FACTOR           &
-                     *WN(IK,ISEA)**2
-          ETMSSY(JSEA)  = ETMSSY(JSEA) + ABY2(JSEA)*FACTOR           &
-                     *WN(IK,ISEA)**2
+          MSSX(JSEA)  = MSSX(JSEA) + ABX2(JSEA)*FACTOR * WN(IK,ISEA)**2
+          MSSY(JSEA)  = MSSY(JSEA) + ABY2(JSEA)*FACTOR * WN(IK,ISEA)**2
           IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN 
             ETMSSL(JSEA)  = ETMSSL(JSEA) + AB(JSEA)*FACTOR           &
                      *WN(IK,ISEA)**2
@@ -395,7 +833,6 @@
 !
 !   Microseismic equivalent pressure spectral density
 !                                                               
-          IF (IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)) THEN 
             FACTOR2 = DTH*2/(TPI**2)                        &
                       * SIG(IK)                             &
                       * (TPI*SIG(IK)/CG(IK,ISEA))**2        &  ! Jacobian^2 to get E(f,th) from A(k,th)
@@ -403,14 +840,14 @@
 !
 !   Integration over seismic radian frequency : *2*dsigma
 !
-              ETPRMS(JSEA)  = ETPRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
-              ! spectral density in wave frequency 
-              IF (P2MSF(1).GT.0) P2SMS(ISEA,IK) = FACTOR2 * 2 * TPI  
+              PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
+              IF ( FLOGRD (6, 10).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
+                P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI  
               IF (FACTOR2 .GT. ETTPMM(JSEA)) THEN
-                 ETTPMM(JSEA) = FACTOR2 
-                 ETTPMS(JSEA)=TPI/SIG(IK)
+                ETTPMM(JSEA) = FACTOR2 
+                TPMS(JSEA) = TPI/SIG(IK)
                 END IF 
-            END IF
+
 !
 ! Directional moments in the last freq. band
 !
@@ -418,8 +855,8 @@
             FACTOR2       = SIG(IK)**5/(GRAV**2)/DSII(IK)
             ETUSCX(JSEA)  = ABX(JSEA)*FACTOR*FACTOR2
             ETUSCY(JSEA)  = ABY(JSEA)*FACTOR*FACTOR2
-            ETMSCX(JSEA)  = ABX2(JSEA)*FACTOR*FACTOR2
-            ETMSCY(JSEA)  = ABY2(JSEA)*FACTOR*FACTOR2
+            MSCX(JSEA)  = ABX2(JSEA) * FACTOR * FACTOR2
+            MSCY(JSEA)  = ABY2(JSEA) * FACTOR * FACTOR2
             END IF
 !
 ! Deep water limits
@@ -428,45 +865,45 @@
           IF ( KD .LT. 6. ) THEN
             FKD       = FACTOR / SINH(KD)**2 
             ABR(JSEA) = ABR(JSEA) + AB(JSEA) * FKD
-            ABA(ISEA) = ABA(ISEA) + ABX(JSEA) * FKD
-            ABD(ISEA) = ABD(ISEA) + ABY(JSEA) * FKD
+            ABA(JSEA) = ABA(JSEA) + ABX(JSEA) * FKD
+            ABD(JSEA) = ABD(JSEA) + ABY(JSEA) * FKD
             UBR(JSEA) = UBR(JSEA) + AB(JSEA) * SIG(IK)**2 * FKD
-            UBA(ISEA) = UBA(ISEA) + ABX(JSEA) * SIG(IK)**2 * FKD
-            UBD(ISEA) = UBD(ISEA) + ABY(JSEA) * SIG(IK)**2 * FKD
-            USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD )                        
-            JS(JSEA) = JS(JSEA) + GRAV*WN(IK,ISEA)*EBD(IK,JSEA) &
-                                  /(SINH(2.*KD))                     
+            UBA(JSEA) = UBA(JSEA) + ABX(JSEA) * SIG(IK)**2 * FKD
+            UBD(JSEA) = UBD(JSEA) + ABY(JSEA) * SIG(IK)**2 * FKD
+            USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
+            BHD(JSEA) = BHD(JSEA) +                             &
+                GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
           ELSE 
             USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
             END IF
 !
-          ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*USSCO               
-          ETUSSY(JSEA)  = ETUSSY(JSEA) + ABY(JSEA)*USSCO         
-!
-! Fills the 3D Stokes drift spectrum array
-!
-            IF (COUG_US3D) THEN 
-               US3D(ISEA,IK)    =  ABX(JSEA)*USSCO    
-               US3D(ISEA,NK+IK) =  ABY(JSEA)*USSCO    
-               END IF
-!
-! Computes spectral distribution of Stokes drift
-!
-!/COU        IF (COUG_RAD3D.AND.FLOUTG2) THEN 
-!/COU  ! These are a1(f), b(f) and E(f)  for later use.
-!/COU          SXX3D(ISEA,IK)   =  ABX2(JSEA)*FACTOR
-!/COU          SXX3D(ISEA,NK+IK)   =  ABY2(JSEA)*FACTOR
-!/COU          SXX3D(ISEA,2*NK+IK)   =  EBD(IK,JSEA)
-!/COU          END IF
-
           ABXX(JSEA)   = MAX ( 0. , ABXX(JSEA) ) * FACTOR
           ABYY(JSEA)   = MAX ( 0. , ABYY(JSEA) ) * FACTOR
           ABXY(JSEA)   = ABXY(JSEA) * FACTOR
-          SXX(ISEA)    = SXX(ISEA)  + ABXX(JSEA)
-          SYY(ISEA)    = SYY(ISEA)  + ABYY(JSEA)
-          SXY(ISEA)    = SXY(ISEA)  + ABXY(JSEA)
+          SXX(JSEA)    = SXX(JSEA)  + ABXX(JSEA)
+          SYY(JSEA)    = SYY(JSEA)  + ABYY(JSEA)
+          SXY(JSEA)    = SXY(JSEA)  + ABXY(JSEA)
           EBD(IK,JSEA) = EBD(IK,JSEA) / DSII(IK)
+!
+          IF ( FLOGRD( 3, 1).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,1)))   &
+            EF(JSEA,IK)  = EBD(IK,JSEA)   
+!
+          USSX(JSEA)  = USSX(JSEA) + ABX(JSEA)*USSCO               
+          USSY(JSEA)  = USSY(JSEA) + ABY(JSEA)*USSCO         
+!
+! Fills the 3D Stokes drift spectrum array
+!
+          IF ( FLOGRD( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
+            US3D(JSEA,IK)    =  ABX(JSEA)*USSCO    
+            US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO  
+            END IF  
+          IF ( FLOGRD( 3, 2).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,2)))  &
+            TH1M(JSEA,IK)= MOD ( 630. - RADE*ATAN2(ABY(JSEA),ABX(JSEA)) , 360. )
+          M1 = SQRT(ABX(JSEA)**2+ABY(JSEA)**2)/MAX(1E-20,AB(JSEA))
+          IF ( FLOGRD( 3, 3).AND.(IK.GE.E3DF(2,3).AND.IK.LE.E3DF(3,3)))  &
+             STH1M(JSEA,IK)= SQRT(ABS(2.*(1-M1)))*RADE
           END DO
+!FA  TH2M AND STH2M CAN BE ADDED HERE 
 !
         END DO
 !
@@ -483,17 +920,18 @@
         EWN(JSEA) = EWN(JSEA) + FTWL * EBAND
         ETF(JSEA) = ETF(JSEA) + GRAV * FTTR * EBAND  ! this is the integral of CgE in deep water
         ETR(JSEA) = ETR(JSEA) + FTTR * EBAND
+        ET1(JSEA) = ET1(JSEA) + FT1  * EBAND
         ET02(JSEA)= ET02(JSEA)+ EBAND* 0.5 * SIG(NK)**4 * DTH 
         ETX(JSEA) = ETX(JSEA) + FTE * ABX(JSEA) / CG(NK,ISEA)
         ETY(JSEA) = ETY(JSEA) + FTE * ABY(JSEA) / CG(NK,ISEA)
-        SXX(ISEA) = SXX(ISEA) + FTE * ABXX(JSEA) / CG(NK,ISEA)
-        SYY(ISEA) = SYY(ISEA) + FTE * ABYY(JSEA) / CG(NK,ISEA)
-        SXY(ISEA) = SXY(ISEA) + FTE * ABXY(JSEA) / CG(NK,ISEA)
+        SXX(JSEA) = SXX(JSEA) + FTE * ABXX(JSEA) / CG(NK,ISEA)
+        SYY(JSEA) = SYY(JSEA) + FTE * ABYY(JSEA) / CG(NK,ISEA)
+        SXY(JSEA) = SXY(JSEA) + FTE * ABXY(JSEA) / CG(NK,ISEA)
 !
 ! Tail for surface stokes drift is commented out: very sensitive to tail power
 !	
-        !ETUSSX(JSEA)  = ETUSSX(JSEA) + 2*GRAV*ETUSCX(JSEA)/SIG(NK)
-        !ETUSSY(JSEA)  = ETUSSY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)
+!       USSX(JSEA)  = USSX(JSEA) + 2*GRAV*ETUSCX(JSEA)/SIG(NK)
+!       USSY(JSEA)  = USSY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)
         UBS(JSEA) = UBS(JSEA) + FTWL * EBAND/GRAV
         END DO
 !
@@ -509,65 +947,62 @@
         IY     = MAPSF(ISEA,2)
         IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
 !/O9            IF ( ET(JSEA) .GE. 0. ) THEN
-            HS (ISEA) = 4. * SQRT ( ET(JSEA) )
+            HS (JSEA) = 4. * SQRT ( ET(JSEA) )
 !/O9              ELSE
-!/O9                HS (ISEA) = - 4. * SQRT ( -ET(JSEA) )
+!/O9                HS (JSEA) = - 4. * SQRT ( -ET(JSEA) )
 !/O9              END IF
             IF ( ET(JSEA) .GT. 1.E-7 ) THEN
-                WLM(ISEA) = EWN(JSEA) / ET(JSEA) * TPI
-                TMN(ISEA) = ETR(JSEA) / ET(JSEA) * TPI
-                THS(ISEA) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
+                WLM(JSEA) = EWN(JSEA) / ET(JSEA) * TPI
+                T0M1(JSEA) = ETR(JSEA) / ET(JSEA) * TPI
+                THS(JSEA) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
                 MAX(0.,(ETX(JSEA)**2+ETY(JSEA)**2)/ET(JSEA)**2) ) ) ) )
-                IF ( THS(ISEA) .LT. 0.01*RADE*DTH ) THS(ISEA) = 0.
+                IF ( THS(JSEA) .LT. 0.01*RADE*DTH ) THS(JSEA) = 0.
               END IF
             IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 ) THEN
-                THM(ISEA) = ATAN2(ETY(JSEA),ETX(JSEA))
+                THM(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
               END IF
             ABR(JSEA) = SQRT ( 2. * MAX ( 0. , ABR(JSEA) ) )
             IF ( ABR(JSEA) .GE. 1.E-7 ) THEN
-                ABD(ISEA) = ATAN2(ABD(ISEA),ABA(ISEA))
+                ABD(JSEA) = ATAN2(ABD(JSEA),ABA(JSEA))
               ELSE
-                ABD(ISEA) = 0.
+                ABD(JSEA) = 0.
               ENDIF
-            ABA(ISEA) = ABR(JSEA)
+            ABA(JSEA) = ABR(JSEA)
             UBR(JSEA) = SQRT ( 2. * MAX ( 0. , UBR(JSEA) ) )
             IF ( UBR(JSEA) .GE. 1.E-7 ) THEN
-                UBD(ISEA) = ATAN2(UBD(ISEA),UBA(ISEA))
+                UBD(JSEA) = ATAN2(UBD(JSEA),UBA(JSEA))
               ELSE
-                UBD(ISEA) = 0.
+                UBD(JSEA) = 0.
               ENDIF
-            UBA(ISEA) = UBR(JSEA)
-            CGE(ISEA) = DWAT*GRAV*ETF(JSEA) 
-            IF ( ET(JSEA) .GT. 1.E-7 ) THEN
-              T02(ISEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) ) 
+            UBA(JSEA) = UBR(JSEA)
+            CGE(JSEA) = DWAT*GRAV*ETF(JSEA) 
+            IF ( ET02(JSEA) .GT. 1.E-7 ) THEN
+              T02(JSEA) = TPI * SQRT(ET(JSEA) / ET02(JSEA) ) 
+              T01(JSEA) = TPI * ET(JSEA) / ET1(JSEA)
             ELSE
-              T02(ISEA) = TPI / SIG(NK)
+              T02(JSEA) = TPI / SIG(NK)
+              T01(JSEA)= T02(JSEA)     
               ENDIF
-            MSSX(ISEA) = 100.*SQRT(ETMSSX(JSEA)) 
-            MSSY(ISEA) = 100.*SQRT(ETMSSY(JSEA)) 
-            MSCX(ISEA) = 100.*ETMSCX(JSEA)
-            MSCY(ISEA) = 100.*ETMSCY(JSEA)
-            USSX(ISEA) = ETUSSX(JSEA) 
-            USSY(ISEA) = ETUSSY(JSEA) 
-            TUSX(ISEA) = ETTUSX(JSEA) 
-            TUSY(ISEA) = ETTUSY(JSEA) 
-            PRMS(ISEA) = ETPRMS(JSEA)
-            TPMS(ISEA) = ETTPMS(JSEA)
-            JSMITH(ISEA)=JS(JSEA)
 !
-!  Add here USERO(ISEA,1) ... 
+            MSSX(JSEA) = 100. * SQRT(MSSX(JSEA)) 
+            MSSY(JSEA) = 100. * SQRT(MSSY(JSEA)) 
+            MSCX(JSEA) = 100. * MSCX(JSEA)
+            MSCY(JSEA) = 100. * MSCY(JSEA)
+!
+!  Add here USERO(JSEA,1) ... 
 !
           END IF
         END DO
 !
 ! 3.b Clean-up small values if !/O8 switch selected
 !
-!/O8      DO ISEA=IAPROC, NSEA, NAPROC
-!/O8        IF ( HS(ISEA).LE.HSMIN .AND. HS(ISEA).NE.UNDEF) THEN
-!/O8            WLM(ISEA) = UNDEF
-!/O8            TMN(ISEA) = UNDEF
-!/O8            THM(ISEA) = UNDEF
-!/O8            THS(ISEA) = UNDEF
+!/O8      DO JSEA=1, NSEAL
+!/O8        IF ( HS(JSEA).LE.HSMIN .AND. HS(JSEA).NE.UNDEF) THEN
+!/O8            WLM(JSEA) = UNDEF
+!/O8            T02(JSEA) = UNDEF
+!/O8            T0M1(JSEA) = UNDEF
+!/O8            THM(JSEA) = UNDEF
+!/O8            THS(JSEA) = UNDEF
 !/O8          END IF
 !/O8        END DO
 !
@@ -579,36 +1014,36 @@
 !/DIST        ISEA       = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA       = JSEA
         EC  (JSEA) = EBD(NK,JSEA)
-        FP0 (ISEA) = UNDEF
+        FP0 (JSEA) = UNDEF
         IKP0(JSEA) = 0
-        THP0(ISEA) = UNDEF
-!/ST0        FP1 (ISEA) = UNDEF
+        THP0(JSEA) = UNDEF
+!/ST0        FP1 (JSEA) = UNDEF
 !/ST0        IKP1(JSEA) = NK
-!/ST1        FP1 (ISEA) = UNDEF
+!/ST1        FP1 (JSEA) = UNDEF
 !/ST1        IKP1(JSEA) = 0
-!/ST2        FP1 (ISEA) = UNDEF
+!/ST2        FP1 (JSEA) = UNDEF
 !/ST2        IKP1(JSEA) = NK
 !/ST2        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
 !/ST2        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
 !/ST2        FP1TST     = MAX ( 0.003 , FP1STR * UST(ISEA) / GRAV ) 
 !/ST2        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
-!/ST2            FP1 (ISEA) = TPIINV * FP1TST
+!/ST2            FP1 (JSEA) = TPIINV * FP1TST
 !/ST2            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )
 !/ST2          END IF
-!/ST3        FP1 (ISEA) = UNDEF
+!/ST3        FP1 (JSEA) = UNDEF
 !/ST3        IKP1(JSEA) = 0
-!/ST4        FP1 (ISEA) = UNDEF
+!/ST4        FP1 (JSEA) = UNDEF
 !/ST4        IKP1(JSEA) = 0
-!/STX        FP1 (ISEA) = UNDEF
+!/STX        FP1 (JSEA) = UNDEF
 !/STX        IKP1(JSEA) = NK
 !/STX        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
 !/STX        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
 !/STX        FP1TST     = FP1STR / UST(ISEA) * GRAV
 !/STX        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
-!/STX            FP1 (ISEA) = TPIINV * FP1TST
+!/STX            FP1 (JSEA) = TPIINV * FP1TST
 !/STX            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )
 !/STX          END IF
-        THP1(ISEA) = UNDEF
+        THP1(JSEA) = UNDEF
         END DO
 !
 ! 4.b Discrete peak frequencies
@@ -647,10 +1082,10 @@
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
-        IF ( IKP0(JSEA) .NE. 0 ) FP0(ISEA) = SIG(IKP0(JSEA)) * TPIINV
-!/ST1        IF ( IKP1(JSEA) .NE. 0 ) FP1(ISEA) = SIG(IKP1(JSEA)) * TPIINV
-!/ST3        IF ( IKP1(JSEA) .NE. 0 ) FP1(ISEA) = SIG(IKP1(JSEA)) * TPIINV
-!/ST4        IF ( IKP1(JSEA) .NE. 0 ) FP1(ISEA) = SIG(IKP1(JSEA)) * TPIINV
+        IF ( IKP0(JSEA) .NE. 0 ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
+!/ST1        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
+!/ST3        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
+!/ST4        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
         END DO
 !
 ! 4.c Continuous peak frequencies
@@ -670,7 +1105,7 @@
         EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
         EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
         DENOM  = XL*EH - XH*EL
-        FP0(ISEA) = FP0 (ISEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )     &
+        FP0(JSEA) = FP0 (JSEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )     &
                        / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
 !/ST1        ILOW   = MAX (  1 , IKP1(JSEA)-1 )
 !/ST1        ICEN   = MAX (  1 , IKP1(JSEA)   )
@@ -678,7 +1113,7 @@
 !/ST1        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
 !/ST1        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
 !/ST1        DENOM  = XL*EH - XH*EL
-!/ST1        FP1(ISEA) = FP1(ISEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
+!/ST1        FP1(JSEA) = FP1(JSEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
 !/ST1                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
 !/ST3        ILOW   = MAX (  1 , IKP1(JSEA)-1 )
 !/ST3        ICEN   = MAX (  1 , IKP1(JSEA)   )
@@ -686,7 +1121,7 @@
 !/ST3        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
 !/ST3        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
 !/ST3        DENOM  = XL*EH - XH*EL
-!/ST3        FP1(ISEA) = FP1(ISEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
+!/ST3        FP1(JSEA) = FP1(JSEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
 !/ST3                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
 !/ST4        ILOW   = MAX (  1 , IKP1(JSEA)-1 )
 !/ST4        ICEN   = MAX (  1 , IKP1(JSEA)   )
@@ -694,7 +1129,7 @@
 !/ST4        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
 !/ST4        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
 !/ST4        DENOM  = XL*EH - XH*EL
-!/ST4        FP1(ISEA) = FP1(ISEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
+!/ST4        FP1(JSEA) = FP1(JSEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
 !/ST4                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
         END DO
 !
@@ -713,7 +1148,6 @@
         DO JSEA=1, NSEAL
 !/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA   = JSEA
-!FA commented on 2011/04/05          IF ( FP0(ISEA).NE.UNDEF) THEN
           IF (IKP0(JSEA).NE.0) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
@@ -726,8 +1160,8 @@
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
-             FP0(ISEA).NE.UNDEF )                                     &
-            THP0(ISEA) = ATAN2(ETY(JSEA),ETX(JSEA))
+             FP0(JSEA).NE.UNDEF )                                     &
+            THP0(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
         ETX(JSEA) = 0.
         ETY(JSEA) = 0.
         IKP1(JSEA) = MAX ( 1 , IKP1(JSEA) )
@@ -740,21 +1174,22 @@
         DO JSEA=1, NSEAL
 !/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA   = JSEA
-          IF ( FP1(ISEA).NE.UNDEF) THEN
+          IF ( FP1(JSEA).NE.UNDEF) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ESIN(ITH)
             END IF
           END DO
         END DO
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(ISEA,IX,IY)
-      DO ISEA=IAPROC, NSEA, NAPROC
+!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
+      DO JSEA =1, NSEAL
+        ISEA   = IAPROC + (JSEA-1)*NAPROC
         IX          = MAPSF(ISEA,1)
         IY          = MAPSF(ISEA,2)
         IF ( MAPSTA(IY,IX) .LE. 0 ) THEN
-            FP0 (ISEA) = UNDEF
-            THP0(ISEA) = UNDEF
-            FP1 (ISEA) = UNDEF
+            FP0 (JSEA) = UNDEF
+            THP0(JSEA) = UNDEF
+            FP1 (JSEA) = UNDEF
           END IF
         END DO
 !
@@ -763,31 +1198,32 @@
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
-             FP1(ISEA) .NE. UNDEF )                                   &
-            THP1(ISEA) = ATAN2(ETY(JSEA),ETX(JSEA))
+             FP1(JSEA) .NE. UNDEF )                                   &
+            THP1(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
         END DO
 !
 ! 5.  Test output (local to MPP only)
 !
 !/T      WRITE (NDST,9050)
-!/T      DO ISEA=IAPROC, NSEA, NAPROC
+!/T      DO JSEA =1, NSEAL
+!/T        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/T        IX     = MAPSF(ISEA,1)
 !/T        IY     = MAPSF(ISEA,2)
-!/T        IF ( HS(ISEA) .EQ. UNDEF ) THEN
+!/T        IF ( HS(JSEA) .EQ. UNDEF ) THEN
 !/T            WRITE (NDST,9051) ISEA, IX, IY
-!/T          ELSE IF ( WLM(ISEA) .EQ. UNDEF ) THEN
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(ISEA)
-!/T          ELSE IF ( FP0(ISEA) .EQ. UNDEF ) THEN
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(ISEA), WLM(ISEA),   &
-!/T                   TMN(ISEA), RADE*THM(ISEA), THS(ISEA)
-!/T          ELSE IF ( FP1(ISEA) .EQ. UNDEF ) THEN
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(ISEA), WLM(ISEA),   &
-!/T                   TMN(ISEA), RADE*THM(ISEA), THS(ISEA), FP0(ISEA),&
-!/T                   THP0(ISEA)
+!/T          ELSE IF ( WLM(JSEA) .EQ. UNDEF ) THEN
+!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA)
+!/T          ELSE IF ( FP0(JSEA) .EQ. UNDEF ) THEN
+!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
+!/T                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA)
+!/T          ELSE IF ( FP1(JSEA) .EQ. UNDEF ) THEN
+!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
+!/T                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA), FP0(JSEA),&
+!/T                   THP0(JSEA)
 !/T          ELSE
-!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(ISEA), WLM(ISEA),   &
-!/T                   TMN(ISEA), RADE*THM(ISEA), THS(ISEA), FP0(ISEA),&
-!/T                   THP0(ISEA), FP1(ISEA), THP1(ISEA)
+!/T            WRITE (NDST,9051) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
+!/T                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA), FP0(JSEA),&
+!/T                   THP0(JSEA), FP1(JSEA), THP1(JSEA)
 !/T          END IF
 !/T        END DO
 !
@@ -816,29 +1252,29 @@
 !
             IF ( MAPSTA(IY,IX).GT.0 ) THEN
                 I         = ICPRT(JSEA,2)
-                PNR(ISEA) = MAX ( 0. , REAL(ICPRT(JSEA,1)-1) )
-                IF ( ICPRT(JSEA,1).GE.1 ) PWST(ISEA) = DTPRT(6,I)
+                PNR(JSEA) = MAX ( 0. , REAL(ICPRT(JSEA,1)-1) )
+                IF ( ICPRT(JSEA,1).GE.1 ) PWST(JSEA) = DTPRT(6,I)
               END IF
 !
             IF ( MAPSTA(IY,IX).GT.0 .AND. ICPRT(JSEA,1).GT.1 ) THEN
                 I      = ICPRT(JSEA,2) + 1
                 IF ( DTPRT(6,I) .GE. WSCUT ) THEN
-                    PHS(ISEA,0) = DTPRT(1,I)
-                    PTP(ISEA,0) = DTPRT(2,I)
-                    PLP(ISEA,0) = DTPRT(3,I)
-                    PTH(ISEA,0) = ( 270. - DTPRT(4,I) ) * DERA
-                    PSI(ISEA,0) = DTPRT(5,I)
-                    PWS(ISEA,0) = DTPRT(6,I)
+                    PHS(JSEA,0) = DTPRT(1,I)
+                    PTP(JSEA,0) = DTPRT(2,I)
+                    PLP(JSEA,0) = DTPRT(3,I)
+                    PTH(JSEA,0) = ( 270. - DTPRT(4,I) ) * DERA
+                    PSI(JSEA,0) = DTPRT(5,I)
+                    PWS(JSEA,0) = DTPRT(6,I)
                     I      = I + 1
                   END IF
                 DO J=1, NOSWLL
                   IF ( I .GT.  ICPRT(JSEA,2)+ICPRT(JSEA,1)-1 ) EXIT
-                  PHS(ISEA,J) = DTPRT(1,I)
-                  PTP(ISEA,J) = DTPRT(2,I)
-                  PLP(ISEA,J) = DTPRT(3,I)
-                  PTH(ISEA,J) = ( 270. - DTPRT(4,I) ) * DERA
-                  PSI(ISEA,J) = DTPRT(5,I)
-                  PWS(ISEA,J) = DTPRT(6,I)
+                  PHS(JSEA,J) = DTPRT(1,I)
+                  PTP(JSEA,J) = DTPRT(2,I)
+                  PLP(JSEA,J) = DTPRT(3,I)
+                  PTH(JSEA,J) = ( 270. - DTPRT(4,I) ) * DERA
+                  PSI(JSEA,J) = DTPRT(5,I)
+                  PWS(JSEA,J) = DTPRT(6,I)
                   I      = I + 1
                   END DO
               END IF
@@ -865,7 +1301,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Feb-2010 |
+!/                  | Last update :         25-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -888,6 +1324,8 @@
 !/                  (A. Roland and F. Ardhuin) 
 !/    05-Feb-2011 : Renumbering of output fields        ( version 3.14 )
 !/                  (F. Ardhuin) 
+!/    25-Dec-2012 : New output structure and smaller    ( version 4.TBD )
+!/                  memory footprint.
 !  1. Purpose :
 !
 !     Read/write gridded output.
@@ -896,63 +1334,108 @@
 !
 !     Fields in file are determined by flags in FLOGRD in W3ODATMD.
 !
-!         Nr  Identifies
-!       --------------------------------------------
-!          1  Water depth.
-!          2  Current velocity.
-!          3  Wind speed.
-!          4  Air-sea temperature difference.
-!          5  Water levels.
-!          6  Ice concentration.
-!          7  Wave height.
-!          8  Mean wave length.
-!          9  Mean wave period (Tm02).
-!         10  Mean wave period (T??).
-!         11  Mean wave period (Tm0,-1).
-!         12  Energy flux
-!         13  Peak frequency.
-!         14  Mean wave direction.
-!         15  Mean directional spread.
-!         16  Peak direction.
-!         17  Partitioned wave heights.
-!         18  Partitioned peak period.
-!         19  Partitioned peak wave length.
-!         20  Partitioned mean direction.
-!         21  Partitioned mean directional spread.
-!         22  Partitionned wind sea fraction.
-!         23  Total wind sea fraction.
-!         24  Number of partitions.
-!         25  Average time step in integration.
-!         26  Cut-off frequency.
-!         27  Max. CFL number for spatial advection. 
-!         28  Max. CFL number for spectral advection. 
-!         29  Friction velocity.
-!         30  Charnock parameter
-!         31  Air-sea energy flux
-!         32  Net wave-supported stress
-!         33  Negative part of the wave-supported stress
-!         34  Whitecap coverage
-!         35  Whitecap thickness
-!         36  Mean wave breaking height
-!         37  Whitecap moment
-!         38  Near bottom rms amplitides.
-!         39  Near bottom rms velocities.
-!         40  bedforms
-!         41  energy flux due to bottom friction
-!         42  momentum flux due to bottom friction
-!         43  Radiation stresses.
-!         44  wave to ocean momentum flux
-!         45  Bernoulli head (J term) 
-!         46  wave to ocean energy flux
-!         47  Stokes transport
-!         48  Surface Stokes drift
-!         49  mean square slopes
-!         50  spectral level at high frequency
-!         51  second-order sum pressure 
-!         52  User defined #1. (requires coding ...)
-!         53  User defined #1. (requires coding ...)
+! Firt two columns: fields in gx_outf (GXO) and ww3_grib (GRB)
 !
-!     15-20 consist of a set of fields, index 0 = wind sea, index
+! G  G
+! R  X Grp  Param Code        Parameter/Group
+! B  O Numb Numbr Name        Definition 
+! ---------------------------------------------
+!       1                     Forcing Fields
+!  --------------------------------------------
+! T  T  1     1   DW          Water depth.
+! T  T  1     2   C[X,Y]      Current velocity.
+! T  T  1     3   UA          Wind speed.
+! T  T  1     4   AS          Air-sea temperature difference.
+! T  T  1     5   WLV         Water levels.
+! T  T  1     6   ICE         Ice concentration.
+! T  T  1     7   IBG         Iceberg-induced damping
+! T  T  1     8   D50         Median sediment grain size
+!  --------------------------------------------
+!       2                     Standard mean wave Parameters
+!  --------------------------------------------
+! T  T  2     1   HS          Wave height.
+! T  T  2     2   WLM         Mean wave length.
+! T  T  2     3   T02         Mean wave period (Tm02).
+! T  T  2     4   T0M1         Mean wave period (Tm0,-1).
+! T  T  2     5   T01        Mean wave period (Tm01).
+! T  T  2     6   FP0         Peak frequency.
+! T  T  2     7   THM         Mean wave direction.
+! T  T  2     8   THS         Mean directional spread.
+! T  T  2     9   THP0        Peak direction.
+!  --------------------------------------------
+!       3                     Spectral Parameters (first 5)
+!  --------------------------------------------
+! F  F  3     1   Ef          Wave frequency spectrum
+! F  F  3     2   th1m        Mean wave direction from a1,b2
+! F  F  3     3   sth1m       Directional spreading from a1,b2
+! F  F  3     4   th2m        Mean wave direction from a2,b2
+! F  F  3     5   sth2m       Directional spreading from a2,b2
+! F  F  3     6   WN          Wavenumber array
+!  --------------------------------------------
+!       4                     Spectral Partition Parameters 
+!  --------------------------------------------
+! T  T  4     1   PHS         Partitioned wave heights.
+! T  T  4     2   PTP         Partitioned peak period.
+! T  T  4     3   PLP         Partitioned peak wave length.
+! T  T  4     4   PTH         Partitioned mean direction.
+! T  T  4     5   PSI         Partitioned mean directional spread.
+! T  T  4     6   PWS         Partitionned wind sea fraction.
+! T  T  4     7   PWST        Total wind sea fraction.
+! T  T  4     8   PNR         Number of partitions.
+!  --------------------------------------------
+!       5                     Atmosphere-waves layer
+!  --------------------------------------------
+! T  T  5     1   UST         Friction velocity.
+! F  T  5     2   CHARN       Charnock parameter
+! F  T  5     3   CGE         Energy flux
+! F  T  5     4   PHIAW       Air-sea energy flux
+! F  T  5     5   TAUWI[X,Y]  Net wave-supported stress
+! F  T  5     6   TAUWN[X,Y]  Negative part of the wave-supported stress
+! F  F  5     7   WHITECAP    Whitecap coverage
+! F  F  5     8   WHITECAP    Whitecap thickness
+! F  F  5     9   WHITECAP    Mean breaking height
+! F  F  5    10   WHITECAP    Whitecap moment
+!  --------------------------------------------
+!       6                     Wave-ocean layer 
+!  --------------------------------------------
+! F  F  6     1   S[XX,YY,XY] Radiation stresses.
+! F  F  6     2   TAUO[X,Y]   Wave to ocean momentum flux
+! F  F  6     3   BHD      Bernoulli head (J term) 
+! F  F  6     4   PHIOC       Wave to ocean energy flux
+! F  F  6     5   TUS[X,Y]    Stokes transport
+! F  F  6     6   USS[X,Y]    Surface Stokes drift
+! F  F  6     7   [PR,TP]MS   Second-order sum pressure 
+! F  F  6     8   US3D        Spectrum of surface Stokes drift
+! F  F  6     9   P2SMS       Micro seism  source term
+!  --------------------------------------------
+!       7                     Wave-bottom layer 
+!  --------------------------------------------
+! F  F  7     1   ABA         Near bottom rms amplitides.
+! F  F  7     2   UBA         Near bottom rms velocities.
+! F  F  7     3   BEDFORMS    Bedforms
+! F  F  7     4   PHIBBL      Energy flux due to bottom friction 
+! F  F  7     5   TAUBBL      Momentum flux due to bottom friction
+!  --------------------------------------------
+!       8                     Spectrum parameters
+!  --------------------------------------------
+! F  F  8     1   MSS[X,Y]    Mean square slopes
+! F  F  8     2   MSC[X,Y]    Spectral level at high frequency tail
+!  --------------------------------------------
+!       9                     Numerical diagnostics  
+!  --------------------------------------------
+! T  T  9     1   DTDYN       Average time step in integration.
+! T  T  9     2   FCUT        Cut-off frequency.
+! T  T  9     3   CFLXYMAX    Max. CFL number for spatial advection. 
+! T  T  9     4   CFLTHMAX    Max. CFL number for theta-advection. 
+! F  F  9     5   CFLKMAX     Max. CFL number for k-advection. 
+!  --------------------------------------------
+!       10                    User defined          
+!  --------------------------------------------
+! F  F  10    1               User defined #1. (requires coding ...)
+! F  F  10    2               User defined #1. (requires coding ...)
+!  --------------------------------------------
+!
+!     Section 4 consist of a set of fields, index 0 = wind sea, index
 !     1:NOSWLL are first NOSWLL swell fields.
 !
 !  3. Parameters :
@@ -1021,25 +1504,25 @@
      USE W3GDATMD
 !/
       USE W3WDATMD, ONLY: W3SETW, W3DIMW
-      USE W3ADATMD, ONLY: W3SETA, W3DIMA
+      USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
       USE W3ODATMD, ONLY: W3SETO
 !/
       USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, BERG, UST, USTDIR, ASF
-      USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, HS, WLM,     &
-                          TMN, THM, THS, FP0, THP0, FP1, THP1, DTDYN, &
+      USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
+      USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
+      USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,    &
                           PHS, PTP, PLP, PTH, PSI, PWS, PWST, PNR,    &
                           USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,  &
                           PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,       &
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY,         &
-                          TAUWNX, TAUWNY, CHARN, JSMITH, P2SMS,       &
+                          TAUWNX, TAUWNY, CHARN, BHD,              &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE,    &
-                          T02, TM0M1, CFLXYMAX, CFLTHMAX, CFLKMAX,    &
-                          US3D
-!
-      USE W3ODATMD, ONLY: NOGRD, IDOUT, UNDEF, NDST, NDSE, FLOGRD,    &
-                          IPASS => IPASS1, WRITE => WRITE1, FNMPRE,   &
-                          NOSWLL, NOEXTR
+                          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D, EF, &
+                          TH1M, STH1M, TH2M, STH2M
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
+                          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
+                          FNMPRE, NOSWLL, NOEXTR
 !/
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -1057,8 +1540,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IGRD, IERR, I, J, IX, IY, IO, MOGRD, &
-                                 ISEA, MOSWLL, IK
+      INTEGER                 :: IGRD, IERR, I, J, IX, IY, MOGRP,     &
+                                 MGRPP, ISEA, MOSWLL, IK, IFI, IFJ
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
@@ -1081,6 +1564,7 @@
       CALL W3SETO ( IGRD, NDSE, NDST )
       CALL W3SETG ( IGRD, NDSE, NDST )
       CALL W3SETA ( IGRD, NDSE, NDST )
+!/MPI      CALL W3XETA ( IGRD, NDSE, NDST )
       CALL W3SETW ( IGRD, NDSE, NDST )
 !
       IPASS  = IPASS + 1
@@ -1126,11 +1610,11 @@
 !
           IF ( WRITE ) THEN
               WRITE (NDSOG)                                           &
-                IDSTR, VEROGR, GNAME, NOGRD, NSEA, NX, NY,            &
+                IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
                 UNDEF, NOSWLL
             ELSE
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                &
-                IDTST, VERTST, TNAME, MOGRD, NSEA, NX, NY,            &
+                IDTST, VERTST, TNAME, MOGRP, MGRPP, NSEA, NX, NY,     &
                 UNDEF, MOSWLL
 !
               IF ( IDTST .NE. IDSTR ) THEN
@@ -1141,8 +1625,8 @@
                   WRITE (NDSE,903) VERTST, VEROGR
                   CALL EXTCDE ( 21 )
                 END IF
-              IF ( NOGRD .NE. MOGRD ) THEN
-                  WRITE (NDSE,904) MOGRD, NOGRD
+              IF ( NOGRP .NE. MOGRP .OR. NGRPP .NE. MGRPP ) THEN
+                  WRITE (NDSE,904) MOGRP, MGRPP, NOGRP, NGRPP
                   CALL EXTCDE ( 22 )
                 END IF
               IF ( TNAME .NE. GNAME ) THEN
@@ -1185,48 +1669,168 @@
         END IF
       DEALLOCATE ( MAPTMP )
 !
-! Fields ------------------------------------------------------------- *
+! Fields ---------------------------------------------- *
+!
+! Initialization ---------------------------------------------- *
 !
       IF ( WRITE ) THEN
           DO ISEA=1, NSEA
             IF ( MAPSTA(MAPSF(ISEA,2),MAPSF(ISEA,1)) .LT. 0 ) THEN
-                UST   (ISEA) = UNDEF
-                USTDIR(ISEA) = UNDEF
-                DTDYN (ISEA) = UNDEF
-                FCUT  (ISEA) = UNDEF
-                WLM   (ISEA) = UNDEF
-                TMN   (ISEA) = UNDEF
-                THM   (ISEA) = UNDEF
-                T02   (ISEA) = UNDEF
-                CGE   (ISEA) = UNDEF
-                THS   (ISEA) = UNDEF
-                ABA   (ISEA) = UNDEF
-                ABD   (ISEA) = UNDEF
-                UBA   (ISEA) = UNDEF
-                UBD   (ISEA) = UNDEF
-                SXX   (ISEA) = UNDEF
-                SYY   (ISEA) = UNDEF
-                SXY   (ISEA) = UNDEF
+!
+                IF ( FLOGRD( 2, 2) ) WLM   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 3) ) T02   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 4) ) T0M1   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 5) ) T01  (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 6) ) FP0   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 7) ) THM   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 8) ) THS   (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 9) ) THP0  (ISEA) = UNDEF
+                                     UST   (ISEA) = UNDEF
+                                     USTDIR(ISEA) = UNDEF
+!
+                IF ( FLOGRD( 3, 1) ) EF   (ISEA,:) = UNDEF
+                IF ( FLOGRD( 3, 2) ) TH1M (ISEA,:) = UNDEF
+                IF ( FLOGRD( 3, 3) ) STH1M(ISEA,:) = UNDEF
+                IF ( FLOGRD( 3, 4) ) TH2M (ISEA,:) = UNDEF
+                IF ( FLOGRD( 3, 5) ) STH2M(ISEA,:) = UNDEF
+!
+                IF ( FLOGRD( 4, 1) ) PHS (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 2) ) PTP (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 3) ) PLP (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 4) ) PTH (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 5) ) PSI (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 6) ) PWS (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 7) ) PWST(ISEA  ) = UNDEF
+                IF ( FLOGRD( 4, 8) ) PNR (ISEA  ) = UNDEF
+!
+                IF ( FLOGRD( 5, 2) ) CHARN (ISEA) = UNDEF
+                IF ( FLOGRD( 5, 3) ) CGE   (ISEA) = UNDEF
+                IF ( FLOGRD( 5, 4) ) PHIAW (ISEA) = UNDEF
+                IF ( FLOGRD( 5, 5) ) THEN
+                                     TAUWIX(ISEA) = UNDEF
+                                     TAUWIY(ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 5, 6) ) THEN
+                                     TAUWNX(ISEA) = UNDEF
+                                     TAUWNY(ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
+                IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
+                IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
+                IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+!
+                IF ( FLOGRD( 6, 1) ) THEN
+                                     SXX   (ISEA) = UNDEF
+                                     SYY   (ISEA) = UNDEF
+                                     SXY   (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 2) ) THEN
+                                     TAUOX (ISEA) = UNDEF
+                                     TAUOY (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 3) ) BHD(ISEA) = UNDEF
+                IF ( FLOGRD( 6, 4) ) PHIOC (ISEA) = UNDEF
+                IF ( FLOGRD( 6, 5) ) THEN
+                                     TUSX  (ISEA) = UNDEF
+                                     TUSY  (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 6) ) THEN
+                                     USSX  (ISEA) = UNDEF
+                                     USSY  (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 7) ) THEN
+                                     PRMS  (ISEA) = UNDEF
+                                     TPMS  (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 8) ) THEN
+                                     US3D(ISEA,:) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 9) ) THEN
+                                    P2SMS(ISEA,:) = UNDEF
+                  END IF
+!
+                IF ( FLOGRD( 7, 1) ) THEN
+                                     ABA   (ISEA) = UNDEF
+                                     ABD   (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 7, 2) ) THEN
+                                     UBA   (ISEA) = UNDEF
+                                     UBD   (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
+                IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
+!
+                IF ( FLOGRD( 8, 1) ) THEN
+                                     MSSX  (ISEA) = UNDEF
+                                     MSSY  (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 8, 2) ) THEN
+                                     MSCX  (ISEA) = UNDEF
+                                     MSCY  (ISEA) = UNDEF
+                  END IF
+!
+                IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
+                IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
+                IF ( FLOGRD( 9, 3) ) CFLXYMAX(ISEA) = UNDEF
+                IF ( FLOGRD( 9, 4) ) CFLTHMAX(ISEA) = UNDEF
+                IF ( FLOGRD( 9, 5) ) CFLKMAX(ISEA) = UNDEF
+!
               END IF
+!
+            IF ( MAPSTA(MAPSF(ISEA,2),MAPSF(ISEA,1)) .EQ. 2 ) THEN
+!
+                IF ( FLOGRD( 5, 4) ) PHIAW (ISEA) = UNDEF
+                IF ( FLOGRD( 5, 5) ) THEN
+                                     TAUWIX(ISEA) = UNDEF
+                                     TAUWIY(ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 5, 6) ) THEN
+                                     TAUWNX(ISEA) = UNDEF
+                                     TAUWNY(ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
+                IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
+                IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
+                IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+!
+                IF ( FLOGRD( 6, 2) )THEN
+                                      TAUOX (ISEA) = UNDEF
+                                      TAUOY (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 6, 4) ) PHIOC (ISEA) = UNDEF
+!
+                IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
+                IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
+!
+              END IF
+!
             END DO
+!
         ELSE
           IF (.NOT.DINIT) CALL W3DIMW ( IGRD, NDSE, NDST, .TRUE. )
           IF (.NOT.AINIT) CALL W3DIMA ( IGRD, NDSE, NDST, .TRUE. )
         END IF
 !
-      DO IO=1, NOGRD
-        IF ( FLOGRD(IO) ) THEN
+! Actual output  ---------------------------------------------- *
+      DO IFI=1, NOGRP
+       DO IFJ=1, NGRPP
+
+        IF ( FLOGRD(IFI,IFJ) ) THEN
 !
-!/T            WRITE (NDST,9010) FLOGRD(IO), IDOUT(IO)
+!/T            WRITE (NDST,9010) FLOGRD(IFI,IFJ), IDOUT(IFI,IFJ)
 !
             IF ( WRITE ) THEN
 !
-                IF ( IO .EQ.  1 ) THEN
+!     Section 1)
+!
+                IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
                     WRITE ( NDSOG ) DW(1:NSEA)
-                  ELSE IF ( IO .EQ.  2 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
                     WRITE ( NDSOG ) CX(1:NSEA)
                     WRITE ( NDSOG ) CY(1:NSEA)
-                  ELSE IF ( IO .EQ.  3 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
                     DO ISEA=1, NSEA
                       IF (UA(ISEA) .NE.UNDEF) THEN
                           AUX1(ISEA) = UA(ISEA)*COS(UD(ISEA))
@@ -1238,9 +1842,79 @@
                       END DO
                     WRITE ( NDSOG ) AUX1
                     WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ.  4 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
                     WRITE ( NDSOG ) AS(1:NSEA)
-                  ELSE IF ( IO .EQ.  29 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) WLV(1:NSEA)
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
+                    WRITE ( NDSOG ) ICE(1:NSEA)
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
+                    WRITE ( NDSOG ) BERG(1:NSEA)
+!/BT4                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+!/BT4                    WRITE ( NDSOG ) SED_D50(1:NSEA)
+!                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!                    WRITE ( NDSOG ) CSHLDN(1:NSEA)
+!                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!                    WRITE ( NDSOG ) BRGKN0(1:NSEA)
+!
+!     Section 2)
+!
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
+                    WRITE ( NDSOG ) HS(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) WLM(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) T02(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) T0M1(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) T01(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
+                    WRITE ( NDSOG ) FP0(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
+                    WRITE ( NDSOG ) THM(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
+                    WRITE ( NDSOG ) THS(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
+                    WRITE ( NDSOG ) THP0(1:NSEA)
+!
+!     Section 3)
+!
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
+                    WRITE ( NDSOG ) EF   (1:NSEA,E3DF(2,1):E3DF(3,1))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) TH1M (1:NSEA,E3DF(2,2):E3DF(3,2))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) TH2M (1:NSEA,E3DF(2,4):E3DF(3,4))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
+                    WRITE ( NDSOG ) WN(1:NK,1:NSEA)
+!
+!     Section 4)
+!
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
+                    WRITE ( NDSOG ) PHS(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) PTP(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) PLP(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) PTH(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) PSI(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
+                    WRITE ( NDSOG ) PWS(1:NSEA,0:NOSWLL)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
+                    WRITE ( NDSOG ) PWST(1:NSEA)
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
+                    WRITE ( NDSOG ) PNR(1:NSEA)
+!
+!     Section 5)
+!
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
                     DO ISEA=1, NSEA
                       IX     = MAPSF(ISEA,1)
                       IY     = MAPSF(ISEA,2)
@@ -1256,384 +1930,355 @@
                       END DO
                     WRITE ( NDSOG ) AUX1
                     WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ. 5 ) THEN 
-                    WRITE ( NDSOG ) WLV(1:NSEA)
-                  ELSE IF ( IO .EQ. 6 ) THEN 
-                    WRITE ( NDSOG ) ICE(1:NSEA)
-                  ELSE IF ( IO .EQ.  7 ) THEN
-                    WRITE ( NDSOG ) HS(1:NSEA)
-                  ELSE IF ( IO .EQ.  8 ) THEN
-                    WRITE ( NDSOG ) WLM(1:NSEA)
-                  ELSE IF ( IO .EQ.  9 ) THEN
-                    WRITE ( NDSOG ) T02(1:NSEA)
-                  ELSE IF ( IO .EQ. 10 ) THEN
-                    WRITE ( NDSOG ) TMN(1:NSEA)
-                  ELSE IF ( IO .EQ. 11 ) THEN
-                    WRITE ( NDSOG ) TM0M1(1:NSEA)
-                  ELSE IF ( IO .EQ. 12 ) THEN
-                    WRITE ( NDSOG ) CGE(1:NSEA)
-                  ELSE IF ( IO .EQ. 13 ) THEN
-                    WRITE ( NDSOG ) FP0(1:NSEA)
-                  ELSE IF ( IO .EQ. 14 ) THEN
-                    WRITE ( NDSOG ) THM(1:NSEA)
-                  ELSE IF ( IO .EQ. 15 ) THEN
-                    WRITE ( NDSOG ) THS(1:NSEA)
-                  ELSE IF ( IO .EQ. 16 ) THEN
-                    WRITE ( NDSOG ) THP0(1:NSEA)
-                  ELSE IF ( IO .EQ. 17 ) THEN
-                    WRITE ( NDSOG ) PHS(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 18 ) THEN
-                    WRITE ( NDSOG ) PTP(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 19 ) THEN
-                    WRITE ( NDSOG ) PLP(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 20 ) THEN
-                    WRITE ( NDSOG ) PTH(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 21 ) THEN
-                    WRITE ( NDSOG ) PSI(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 22 ) THEN
-                    WRITE ( NDSOG ) PWS(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 23 ) THEN
-                    WRITE ( NDSOG ) PWST(1:NSEA)
-                  ELSE IF ( IO .EQ. 24 ) THEN
-                    WRITE ( NDSOG ) PNR(1:NSEA)
-                  ELSE IF ( IO .EQ. 25 ) THEN
-                    WRITE ( NDSOG ) DTDYN(1:NSEA)
-                  ELSE IF ( IO .EQ. 26 ) THEN
-                    WRITE ( NDSOG ) FCUT(1:NSEA)
-                  ELSE IF ( IO .EQ. 27 ) THEN
-                    WRITE ( NDSOG ) CFLXYMAX(1:NSEA)
-                  ELSE IF ( IO .EQ. 28 ) THEN
-                    WRITE ( NDSOG ) CFLTHMAX(1:NSEA)
-                  ELSE IF ( IO .EQ. 30 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
                     WRITE ( NDSOG ) CHARN(1:NSEA)
-                  ELSE IF ( IO .EQ. 31 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) CGE(1:NSEA)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
                     WRITE ( NDSOG ) PHIAW(1:NSEA)
-                  ELSE IF ( IO .EQ. 32 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( TAUWIX(ISEA) .NE. UNDEF ) THEN
-                          AUX1(ISEA)= TAUWIX(ISEA)
-                          AUX2(ISEA)= TAUWIY(ISEA)
-                        ELSE
-                          AUX1(ISEA) = UNDEF
-                          AUX2(ISEA) = UNDEF
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                    WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ. 33 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( TAUWIX(ISEA) .NE. UNDEF ) THEN
-                          AUX1(ISEA)= TAUWNX(ISEA)
-                          AUX2(ISEA)= TAUWNY(ISEA)
-                        ELSE
-                          AUX1(ISEA) = UNDEF
-                          AUX2(ISEA) = UNDEF
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                    WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ. 34 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) TAUWIX(1:NSEA)
+                    WRITE ( NDSOG ) TAUWIY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
+                    WRITE ( NDSOG ) TAUWNX(1:NSEA)
+                    WRITE ( NDSOG ) TAUWNY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) WHITECAP(1:NSEA,1)
-                  ELSE IF ( IO .EQ. 35 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
                     WRITE ( NDSOG ) WHITECAP(1:NSEA,2)
-                  ELSE IF ( IO .EQ. 36 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
                     WRITE ( NDSOG ) WHITECAP(1:NSEA,3)
-                  ELSE IF ( IO .EQ. 37 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
                     WRITE ( NDSOG ) WHITECAP(1:NSEA,4)
-                  ELSE IF ( IO .EQ. 38 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
-                          AUX1(ISEA) = ABA(ISEA)*COS(ABD(ISEA))
-                          AUX2(ISEA) = ABA(ISEA)*SIN(ABD(ISEA))
-                        ELSE
-                          AUX1(ISEA) = UNDEF
-                          AUX2(ISEA) = UNDEF
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                    WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ. 39 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
-                          AUX1(ISEA) = UBA(ISEA)*COS(UBD(ISEA))
-                          AUX2(ISEA) = UBA(ISEA)*SIN(UBD(ISEA))
-                        ELSE
-                          AUX1(ISEA) = UNDEF
-                          AUX2(ISEA) = UNDEF
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                    WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ. 40 ) THEN
-                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
-                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)
-                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,3)
-                  ELSE IF ( IO .EQ. 41 ) THEN
-                    WRITE ( NDSOG ) PHIBBL(1:NSEA)
-                  ELSE IF ( IO .EQ. 42 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( TAUBBL(ISEA,1) .NE. UNDEF ) THEN
-                          AUX1(ISEA)= TAUBBL(ISEA,1)
-                          AUX2(ISEA)= TAUBBL(ISEA,2)
-                        ELSE
-                          AUX1(ISEA) = UNDEF
-                          AUX2(ISEA) = UNDEF
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                    WRITE ( NDSOG ) AUX2
-                  ELSE IF ( IO .EQ. 43 ) THEN
+!
+!     Section 6)
+!
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
                     WRITE ( NDSOG ) SXX(1:NSEA)
                     WRITE ( NDSOG ) SYY(1:NSEA)
                     WRITE ( NDSOG ) SXY(1:NSEA)
-                  ELSE IF ( IO .EQ. 44 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( TAUOX(ISEA) .NE. UNDEF ) THEN
-                          AUX1(ISEA)= TAUOX(ISEA)
-                          AUX2(ISEA)= TAUOY(ISEA)
-                        ELSE
-                          AUX1(ISEA) = UNDEF
-                          AUX2(ISEA) = UNDEF
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                    WRITE ( NDSOG ) AUX2
-                 ELSE IF ( IO .EQ. 45 ) THEN
-                    WRITE ( NDSOG ) JSMITH(1:NSEA)
-                  ELSE IF ( IO .EQ. 46 ) THEN
-                    DO ISEA=1, NSEA
-                      IF ( PHIOC(ISEA) .NE. UNDEF ) THEN
-                          AUX1(ISEA) = PHIOC(ISEA) 
-                        END IF
-                      END DO
-                    WRITE ( NDSOG ) AUX1
-                  ELSE IF ( IO .EQ. 47 ) THEN
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) TAUOX(1:NSEA)
+                    WRITE ( NDSOG ) TAUOY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3  ) THEN
+                    WRITE ( NDSOG ) BHD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) PHIOC(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
                     WRITE ( NDSOG ) TUSX(1:NSEA)
                     WRITE ( NDSOG ) TUSY(1:NSEA)
-                  ELSE IF ( IO .EQ. 48 ) THEN
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
                     WRITE ( NDSOG ) USSX(1:NSEA)
                     WRITE ( NDSOG ) USSY(1:NSEA)
-                    IF (US3DF(1).GT.0) THEN
-                      WRITE ( NDSOG ) US3D(1:NSEA,   US3DF(2):US3DF(3))
-                      WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
-                      END IF
-                  ELSE IF ( IO .EQ. 49 ) THEN
-                    WRITE ( NDSOG ) MSSX(1:NSEA)
-                    WRITE ( NDSOG ) MSSY(1:NSEA)
-                  ELSE IF ( IO .EQ. 50 ) THEN
-                    WRITE ( NDSOG ) MSCX(1:NSEA)
-                    WRITE ( NDSOG ) MSCY(1:NSEA)
-                  ELSE IF ( IO .EQ. 51 ) THEN
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
                     WRITE ( NDSOG ) PRMS(1:NSEA)
                     WRITE ( NDSOG ) TPMS(1:NSEA)
-                    IF (P2MSF(1).GT.0)         &
-                      WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
-                  ELSE IF ( IO .EQ. 52 ) THEN
-                    WRITE ( NDSOG ) BERG(1:NSEA) !USERO(1:NSEA,1)
-                  ELSE IF ( IO .EQ. 53 ) THEN
-                    WRITE ( NDSOG ) CFLTHMAX(1:NSEA) !USERO(1:NSEA,2)
-                  ELSE
-                    WRITE (NDSE,999)
-                    CALL EXTCDE ( 30 )
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
+                    WRITE ( NDSOG ) US3D(1:NSEA,   US3DF(2):US3DF(3))
+                    WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
+                    WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+!
+!     Section 7)
+!
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
+                    WRITE ( NDSOG ) ABA(1:NSEA)
+                    WRITE ( NDSOG ) ABD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) UBA(1:NSEA)
+                    WRITE ( NDSOG ) UBD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
+                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)
+                    WRITE ( NDSOG ) BEDFORMS(1:NSEA,3)
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) PHIBBL(1:NSEA)
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) TAUBBL(1:NSEA,1)
+                    WRITE ( NDSOG ) TAUBBL(1:NSEA,2)
+!
+!     Section 8)
+!
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
+                    WRITE ( NDSOG ) MSSX(1:NSEA)
+                    WRITE ( NDSOG ) MSSY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) MSCX(1:NSEA)
+                    WRITE ( NDSOG ) MSCY(1:NSEA)
+!
+!     Section 9)
+!
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
+                    WRITE ( NDSOG ) DTDYN(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
+                    WRITE ( NDSOG ) FCUT(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) CFLXYMAX(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) CFLTHMAX(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
+                    WRITE ( NDSOG ) CFLKMAX(1:NSEA)
+!
+!     Section 10)
+!
+                  ELSE IF ( IFI .EQ. 10 ) THEN
+                    WRITE ( NDSOG ) USERO(1:NSEA,IFJ)
+!
                   END IF
 !
               ELSE
 !
-                IF ( IO .EQ.  1 ) THEN
+!     Start of reading ......
+!
+!     Section 1)
+!
+                IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) DW(1:NSEA)
-                  ELSE IF ( IO .EQ.  2 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) CX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) CY(1:NSEA)
-                  ELSE IF ( IO .EQ.  3 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UA(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UD(1:NSEA)
-                  ELSE IF ( IO .EQ.  4 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) AS(1:NSEA)
-                  ELSE IF ( IO .EQ.  5 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) WLV(1:NSEA)
-                  ELSE IF ( IO .EQ.  6 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICE(1:NSEA)
-                  ELSE IF ( IO .EQ.  7 ) THEN
+                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) BERG(1:NSEA)
+!/BT4                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+!/BT4                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SED_D50(1:NSEA)
+!
+!     Section 2)
+!
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) HS(1:NSEA)
-                  ELSE IF ( IO .EQ.  8 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) WLM(1:NSEA)
-                  ELSE IF ( IO .EQ.  9 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T02(1:NSEA)
-                  ELSE IF ( IO .EQ. 10 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) TMN(1:NSEA)
-                  ELSE IF ( IO .EQ. 11 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) TM0M1(1:NSEA)
-                  ELSE IF ( IO .EQ. 12 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) CGE(1:NSEA)
-                  ELSE IF ( IO .EQ. 13 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T0M1(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) T01(1:NSEA)
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) FP0(1:NSEA)
-                  ELSE IF ( IO .EQ. 14 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) THM(1:NSEA)
-                  ELSE IF ( IO .EQ. 15 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) THS(1:NSEA)
-                  ELSE IF ( IO .EQ. 16 ) THEN
+                  ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                          THP0(1:NSEA)
-                  ELSE IF ( IO .EQ. 17 ) THEN
+!
+!     Section 3)
+!
+                 ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
+                   READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                         EF   (1:NSEA,E3DF(2,1):E3DF(3,1))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                          TH1M (1:NSEA,E3DF(2,2):E3DF(3,2))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                          STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                          TH2M (1:NSEA,E3DF(2,4):E3DF(3,4))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                          STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
+                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   WN(1:NK,1:NSEA)
+!
+!     Section 4)
+!
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PHS(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 18 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PTP(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 19 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PLP(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 20 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PTH(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 21 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PSI(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 22 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PWS(1:NSEA,0:NOSWLL)
-                  ELSE IF ( IO .EQ. 23 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                           PWST(1:NSEA)
-                  ELSE IF ( IO .EQ. 24 ) THEN
+                  ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) PNR(1:NSEA)
-                  ELSE IF ( IO .EQ. 25 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                         DTDYN(1:NSEA)
-                  ELSE IF ( IO .EQ. 26 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                         FCUT(1:NSEA)
-                  ELSE IF ( IO .EQ. 27 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                         CFLXYMAX(1:NSEA)
-                  ELSE IF ( IO .EQ. 28 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                         CFLTHMAX(1:NSEA)
-                  ELSE IF ( IO .EQ. 29 ) THEN
+!
+!     Section 5)
+!
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)          &
                                                          UST(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)          &
                                                          USTDIR(1:NSEA)
-                  ELSE IF ( IO .EQ. 30 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       CHARN(1:NSEA)
-                  ELSE IF ( IO .EQ. 31 ) THEN
+                                                         CHARN(1:NSEA)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) CGE(1:NSEA)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        PHIAW(1:NSEA)
-                  ELSE IF ( IO .EQ. 32 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        TAUWIX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        TAUWIY(1:NSEA)
-                  ELSE IF ( IO .EQ. 33 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        TAUWNX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        TAUWNY(1:NSEA)
-                  ELSE IF ( IO .EQ. 34 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                    WHITECAP(1:NSEA,1)
-                  ELSE IF ( IO .EQ. 35 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                    WHITECAP(1:NSEA,2)
-                  ELSE IF ( IO .EQ. 36 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                    WHITECAP(1:NSEA,3)
-                  ELSE IF ( IO .EQ. 37 ) THEN
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                    WHITECAP(1:NSEA,4)
-                  ELSE IF ( IO .EQ. 38 ) THEN
+!
+!     Section 6)
+!
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SXX(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SYY(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SXY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUOX(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUOY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       BHD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       PHIOC(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TUSX(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TUSY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       USSX(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       USSY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       PRMS(1:NSEA)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TPMS(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
+                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   US3D(1:NSEA,US3DF(2):US3DF(3))
+                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN 
+                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)     &
+                                     P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+!
+!     Section 7)
+!
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ABA(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ABD(1:NSEA)
-                  ELSE IF ( IO .EQ. 39 ) THEN
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UBA(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UBD(1:NSEA)
-                  ELSE IF ( IO .EQ. 40 ) THEN
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                     BEDFORMS(1:NSEA,1)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                     BEDFORMS(1:NSEA,2)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                     BEDFORMS(1:NSEA,3)
-                  ELSE IF ( IO .EQ. 41 ) THEN
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        PHIBBL(1:NSEA)
-                  ELSE IF ( IO .EQ. 42 ) THEN
+                  ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        TAUBBL(1:NSEA,1)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        TAUBBL(1:NSEA,2)
-                  ELSE IF ( IO .EQ. 43 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SXX(1:NSEA)
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SYY(1:NSEA)
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SXY(1:NSEA)
-                  ELSE IF ( IO .EQ. 44 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TAUOX(1:NSEA)
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TAUOY(1:NSEA)
-                  ELSE IF ( IO .EQ. 45 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       JSMITH(1:NSEA)
-                  ELSE IF ( IO .EQ. 46 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       PHIOC(1:NSEA)
-                  ELSE IF ( IO .EQ. 47 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TUSX(1:NSEA)
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TUSY(1:NSEA)
-                  ELSE IF ( IO .EQ. 48 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       USSX(1:NSEA)
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       USSY(1:NSEA)
-                  IF (US3DF(1).GT.0) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
-                                   US3D(1:NSEA,US3DF(2):US3DF(3))
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
-                                   US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
-                    END IF
-                  ELSE IF ( IO .EQ. 49 ) THEN
+!
+!     Section 8)
+!
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        MSSX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        MSSY(1:NSEA)
-                  ELSE IF ( IO .EQ. 50 ) THEN
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        MSCX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        MSCY(1:NSEA)
-                  ELSE IF ( IO .EQ. 51 ) THEN
+!
+!     Section 9)
+!
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       PRMS(1:NSEA)
+                                                         DTDYN(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TPMS(1:NSEA)
-                    IF (P2MSF(1).GT.0) THEN
-                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)       &
-                                     P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
-                      END IF
-                  ELSE IF ( IO .EQ. 52 ) THEN
+                                                         FCUT(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       USERO(1:NSEA,1)
-                  ELSE IF ( IO .EQ. 53 ) THEN
+                                                        CFLXYMAX(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       USERO(1:NSEA,2)
-                  ELSE
-                    WRITE (NDSE,999)
-                    CALL EXTCDE ( 30 )
-                    END IF
+                                                        CFLTHMAX(1:NSEA)
+                  ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                         CFLKMAX(1:NSEA)
+!
+!     Section 10)
+!
+                  ELSE IF ( IFI .EQ. 10 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                      USERO(1:NSEA,IFJ)
+                  END IF
+!
 ! End of test on WRITE/READ:
-                END IF
-! End of test on  FLOGRD(IO):
+!
+              END IF
+!
+! End of test on  FLOGRD(IFI,IFJ):
+!
           END IF
+!
+! End of IFI and IFJ loops
+!
+         END DO
         END DO
 !
 ! Flush the buffers for write
 !
-      IF (WRITE ) THEN
-        FLUSH ( NDSOG )
-        END IF
+      IF ( WRITE ) CALL FLUSH ( NDSOG )
+!
+!/MPI      CALL W3SETA ( IGRD, NDSE, NDST )
 !
       RETURN
 !
@@ -1669,8 +2314,8 @@
                '     ILEGAL VEROGR, READ : ',A/                       &
                '                   CHECK : ',A/)
   904 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGO :'/                &
-               '     DIFFERENT NUMBER OF FIELDS, FILE :',I8/          &
-               '                              PROGRAM :',I8/)
+               '     DIFFERENT NUMBER OF FIELDS, FILE :',I8,I8/       &
+               '                              PROGRAM :',I8,I8/)
   905 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOGO :'/              &
                '     ILEGAL GNAME, READ : ',A/                        &
                '                  CHECK : ',A/)
@@ -1678,8 +2323,8 @@
                '     ILEGAL NOSWLL, READ : ',I4/                      &
                '                   CHECK : ',I4/)
 !
-  999 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGO :'/                &
-               '     PLEASE UPDATE FIELDS !!! '/)
+!  999 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGO :'/                &
+!               '     PLEASE UPDATE FIELDS !!! '/)
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGO : '/               &
                '     ERROR IN OPENING FILE'/                          &
@@ -1702,7 +2347,11 @@
 !/T              '       NX,NY : ',I9,I12/                            &
 !/T              '       UNDEF : ',F8.2)
 !/T 9003 FORMAT (' TEST W3IOGO : TIME  :',I9.8,I7.6/                  &
-!/T              '               FLAGS :',90L2)
+!/T              '               FLAGS :',20L2,1X,20L2/               &
+!/T              '                      ',20L2,2X,20L2/               &
+!/T              '                      ',20L2,2X,20L2/               &
+!/T              '                      ',20L2,2X,20L2/               &
+!/T              '                      ',20L2,2X,20L2)
 !/T 9010 FORMAT (' TEST W3IOGO : PROC = ',L1,' FOR ',A)
 !/T 9020 FORMAT (' TEST W3IOGO : END OF FILE REACHED')
 !/

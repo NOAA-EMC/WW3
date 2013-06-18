@@ -6,12 +6,13 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Aug-2010 |
+!/                  | Last update :         05-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    04-May-2005 : Origination.                        ( version 3.07 )
 !/    11-Aug-2010 : Upgrade for operations and inclusion in svn.        
 !/                                                    ( version 3.14.4 )
+!/    05-Dec-2012 : Making sleep a system call.       ( version 4.TBD   )
 !/
 !/    Copyright 2010 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -98,8 +99,9 @@
 !           decaration and initialization of the C*3 TYPE.
 !        2) Single wind file to be tested, this is the first aux grid
 !           with wind defined.
-!        3) Needs SLEEP or SLEEP_ commands (machine and compiler
-!           dependent.
+!        3) Needs system SLEEP command, now behind F90 switch.
+!/    05-Dec-2012 : Making sleep a system call.       ( version 4.TBD   )
+
 !
 !  8. Structure :
 !
@@ -120,6 +122,8 @@
 !     ----------------------------------------------------------------
 !
 !  9. Switches :
+!
+!       !/F90   F90 extensions.
 !
 !       !/MPI   Including MPI routines / environment.
 !
@@ -344,10 +348,11 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Aug-2010 !
+!/                  | Last update :         05-Dec-2012 !
 !/                  +-----------------------------------+
 !/
 !/    10-Aug-2010 : Origination.                      ( version 3.14.4 )
+!/    05-Dec-2012 : Making sleep a system call.       ( version 4.TBD   )
 !/
 !  1. Purpose :
 !
@@ -373,6 +378,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
+!/F90      CHARACTER(LEN=10)       :: COMMAND
+!/
 ! -------------------------------------------------------------------- /
 ! 1.  Reading loop
 !
@@ -384,8 +391,9 @@
   110   CONTINUE
         IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS, 911 )
         BACKSPACE NDS
-        CALL SLEEP_(SLEEP1)
-!       CALL SLEEP (SLEEP1)
+!
+!/F90        WRITE (COMMAND,'(A5,1X,I4)') 'SLEEP', SLEEP1
+!/F90        CALL SYSTEM ( COMMAND )
 !
         END DO
 !
@@ -418,10 +426,11 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Aug-2010 !
+!/                  | Last update :         05-Dec-2012 !
 !/                  +-----------------------------------+
 !/
 !/    10-Aug-2010 : Origination.                      ( version 3.14.4 )
+!/    05-Dec-2012 : Making sleep a system call.       ( version 4.TBD   )
 !/
 !  1. Purpose :
 !
@@ -452,6 +461,7 @@
       INTEGER                 :: TTIME(2), IX, IY
       INTEGER, SAVE           :: NREW  = 0
       REAL                    :: DTTST, XXX(NX,NY)
+!/F90      CHARACTER(LEN=10)       :: COMMAND
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Loops
@@ -496,8 +506,9 @@
           NREW   = NREW - 1
 !
           IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
-          CALL SLEEP_(SLEEP2)
-!         CALL SLEEP (SLEEP2)
+!
+!/F90          WRITE (COMMAND,'(A5,1X,I4)') 'SLEEP', SLEEP2
+!/F90          CALL SYSTEM ( COMMAND )
 !
           END DO
 !

@@ -6,11 +6,12 @@
 !/                  |           Aron Roland             |
 !/                  |         Fabrice Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Nov-2011 |
+!/                  | Last update :         03-Jun-2013 |
 !/                  +-----------------------------------+
 !/
 !/    XX-Nov-2007 : Origination.                        ( version 3.10 )
 !/    03-Nov-2011 : Adding shoreline reflection         ( version 4.04 )
+!/    03-Jun-2013 : Removed assign statements           ( version 4.10 )
 !
 !  1. Purpose :
 !
@@ -106,10 +107,6 @@
 !  7. Remarks :
 !              make the interface between the WAVEWATCH and the WWM code. 
 !
-!        gnu compiler complains about statements herein as
-!          "Warning: Deleted feature"
-!           1) 4 "assign" statements 2) 1 "go to next" statement
-!
 !  8. Structure :
 !
 !
@@ -129,7 +126,7 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL, CLATS,   &
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN,               &
-                          NTRI, TRIGP, CCON , TRIA03,                 &
+                          NTRI, TRIGP, CCON ,                         &
                           IE_CELL, POS_CELL, IOBP, IOBPD,             &
                           FSN, FSPSI, FSFCT, FSNIMP, GTYPE, UNGTYPE
 
@@ -156,6 +153,7 @@
 !/
       INTEGER                 :: ITH, IK, ISEA, IXY, IBI    
       INTEGER                 :: IX, IY, I, J, IE
+!/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
       REAL                    :: RD1, RD2
@@ -334,7 +332,7 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, DTCFL, CLATS,          &
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
-                          NTRI, TRIGP, CCON , TRIA03,                 &
+                          NTRI, TRIGP, CCON ,                         &
                           IE_CELL, POS_CELL, COUNTRI, SI, IOBP
 
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME
@@ -356,6 +354,7 @@
 !/
       INTEGER                 :: ITH, IK    
       INTEGER                 :: IP, IP2, ISEA2, I, J, IE, IV, I1, I2, I3
+!/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
       REAL                    :: RD1, RD2
@@ -507,6 +506,7 @@
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
+!/S      USE W3SERVMD, ONLY: STRACE
        IMPLICIT NONE  
      
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
@@ -533,7 +533,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XYPFSN')
 !
 ! local integer
 !
@@ -560,6 +559,8 @@
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX)
          REAL*8  :: NM(NTRI) 
+
+!/S      CALL STRACE (IENT, 'W3XYPFSN')
 
 ! 1. initialisation
 
@@ -752,6 +753,7 @@
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
+!/S      USE W3SERVMD, ONLY: STRACE
        IMPLICIT NONE  
      
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
@@ -778,7 +780,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XYPFSN')
 !
 ! local integer
 !
@@ -806,6 +807,8 @@
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX)
          REAL*8  :: NM(NTRI) 
+
+!/S      CALL STRACE (IENT, 'W3XYPFSN')
 
 ! 1. initialisation
 
@@ -999,11 +1002,12 @@
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IAA, JAA, POSI, &
-                            TRIA, TRIA03, NNZ
+                            TRIA, NNZ
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
+!/S      USE W3SERVMD, ONLY: STRACE
        IMPLICIT NONE  
      
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
@@ -1030,7 +1034,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XYPFSN')
 !
 ! local integer
 !
@@ -1085,6 +1088,8 @@
          POS_TRICK(2,2) = 1
          POS_TRICK(3,1) = 1
          POS_TRICK(3,2) = 2
+
+!/S      CALL STRACE (IENT, 'W3XYPFSN')
 
 ! 1. initialisation
 
@@ -1316,6 +1321,7 @@
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
+!/S      USE W3SERVMD, ONLY: STRACE
        IMPLICIT NONE  
      
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
@@ -1342,7 +1348,6 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3XYPFSN')
 !
 ! local integer
 !
@@ -1376,6 +1381,8 @@
          REAL*8  :: KKSUM(NX), ST(NX), BETA
          REAL*8  :: NM(NTRI) 
 !/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
+
+!/S      CALL STRACE (IENT, 'W3XYPFSFCT2')
 
 ! 1. initialisation
 
@@ -1626,13 +1633,13 @@ END MODULE W3PROFSMD
 !       DQGMRES == n + lb * (2*n+4) (lb=ipar(5)+1, default lb = 16)
 !
 !     (2) ALL iterative solvers require a user-supplied DOT-product
-!     routine named DISTDOT. The prototype of DISTDOT is
+!     routine named ddot. The prototype of ddot is
 !
-!     real*8 function distdot(n,x,ix,y,iy)
+!     real*8 function ddot(n,x,y)
 !     integer n, ix, iy
 !     real*8 x(1+(n-1)*ix), y(1+(n-1)*iy)
 !
-!     This interface of DISTDOT is exactly the same as that of
+!     This interface of ddot is exactly the same as that of
 !     DDOT (or SDOT if real == real*8) from BLAS-1. It should have
 !     same functionality as DDOT on a single processor machine. On a
 !     parallel/distributed environment, each processor can perform
@@ -1647,7 +1654,7 @@ END MODULE W3PROFSMD
 !     to each processor in the same way. (c) the preconditioning and
 !     stopping criteria specifications have to be the same on all
 !     processor involved, ipar and fpar have to be the same on each
-!     processor. (d) DISTDOT should be replaced by a distributed
+!     processor. (d) ddot should be replaced by a distributed
 !     dot-product function.
 !
 !     ..................................................................
@@ -1983,9 +1990,9 @@ END MODULE W3PROFSMD
 !-----------------------------------------------------------------------
 !     external routines used
 !
-      real*8 distdot
+      real*8 ddot
       logical stopbis, brkdn
-      external distdot, stopbis, brkdn
+      external ddot, stopbis, brkdn
 !
       real*8 one
       parameter(one=1.0D0)
@@ -2044,12 +2051,12 @@ END MODULE W3PROFSMD
          enddo
       endif
 !
-      fpar(7) = distdot(n,w,1,w,1)
+      fpar(7) = ddot(n,w,w)
       fpar(11) = fpar(11) + 2 * n
       fpar(5) = sqrt(fpar(7))
       fpar(3) = fpar(5)
       if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(distdot(n,rhs,1,rhs,1)) + fpar(2)
+         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
          fpar(11) = fpar(11) + 2 * n
       else if (ipar(3).ne.999) then
          fpar(4) = fpar(1) * fpar(3) + fpar(2)
@@ -2098,7 +2105,7 @@ END MODULE W3PROFSMD
  60   ipar(7) = ipar(7) + 1
 !
 !     step (2)
-      alpha = distdot(n,w(1,1),1,w(1,5),1)
+      alpha = ddot(n,w(1,1),w(1,5))
       fpar(11) = fpar(11) + 2 * n
       if (brkdn(alpha, ipar)) goto 900
       alpha = fpar(7) / alpha
@@ -2147,10 +2154,10 @@ END MODULE W3PROFSMD
  90   ipar(7) = ipar(7) + 1
 !
 !     step (5)
-      omega = distdot(n,w(1,4),1,w(1,4),1)
+      omega = ddot(n,w(1,4),w(1,4))
       fpar(11) = fpar(11) + n + n
       if (brkdn(omega,ipar)) goto 900
-      omega = distdot(n,w(1,4),1,w(1,3),1) / omega
+      omega = ddot(n,w(1,4),w(1,3)) / omega
       fpar(11) = fpar(11) + n + n
       if (brkdn(omega,ipar)) goto 900
       fpar(9) = omega
@@ -2178,7 +2185,7 @@ END MODULE W3PROFSMD
 !     step (8): computing new p and rho
 !
       rho = fpar(7)
-      fpar(7) = distdot(n,w(1,2),1,w(1,1),1)
+      fpar(7) = ddot(n,w(1,2),w(1,1))
       omega = fpar(9)
       beta = fpar(7) * fpar(8) / (fpar(9) * rho)
       do i = 1, n
@@ -2238,8 +2245,8 @@ END MODULE W3PROFSMD
 !-----------------------------------------------------------------------
 !     external functions used
 !
-      real*8 distdot
-      external distdot
+      real*8 ddot
+      external ddot
 !
       real*8 one, zero
       parameter(one=1.0D0, zero=0.0D0)
@@ -2303,11 +2310,11 @@ END MODULE W3PROFSMD
       endif
       fpar(11) = fpar(11) + n
 !
- 20   alpha = sqrt(distdot(n,w,1,w,1))
+ 20   alpha = sqrt(ddot(n,w,w))
       fpar(11) = fpar(11) + 2*n
       if (ipar(7).eq.1 .and. ipar(3).ne.999) then
          if (abs(ipar(3)).eq.2) then
-            fpar(4) = fpar(1) * sqrt(distdot(n,rhs,1,rhs,1)) + fpar(2)
+            fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
             fpar(11) = fpar(11) + 2*n
          else
             fpar(4) = fpar(1) * alpha + fpar(2)
@@ -2645,8 +2652,8 @@ END MODULE W3PROFSMD
       logical function stopbis(n,ipar,mvpi,fpar,r,delx,sx)
       implicit none
       integer n,mvpi,ipar(16)
-      real*8 fpar(16), r(n), delx(n), sx, distdot
-      external distdot
+      real*8 fpar(16), r(n), delx(n), sx, ddot
+      external ddot
 !-----------------------------------------------------------------------
 !     function for determining the stopping criteria. return value of
 !     true if the stopbis criteria is satisfied.
@@ -2664,13 +2671,13 @@ END MODULE W3PROFSMD
 !
 !     computes errors
 !
-      fpar(5) = sqrt(distdot(n,r,1,r,1))
+      fpar(5) = sqrt(ddot(n,r,r))
       fpar(11) = fpar(11) + 2 * n
       if (ipar(3).lt.0) then
 !
 !     compute the change in the solution vector
 !
-         fpar(6) = sx * sqrt(distdot(n,delx,1,delx,1))
+         fpar(6) = sx * sqrt(ddot(n,delx,delx))
          fpar(11) = fpar(11) + 2 * n
          if (ipar(7).lt.mvpi+mvpi+1) then
 !
@@ -2874,16 +2881,16 @@ END MODULE W3PROFSMD
 !               -2: input vector contains abnormal numbers
 !               -3: input vector is a linear combination of others
 !
-!     External routines used: real*8 distdot
+!     External routines used: real*8 ddot
 !-----------------------------------------------------------------------
       integer i,k
-      real*8  nrm0, nrm1, fct, thr, distdot, zero, one, reorth
+      real*8  nrm0, nrm1, fct, thr, ddot, zero, one, reorth
       parameter (zero=0.0D0, one=1.0D0, reorth=0.98D0)
-      external distdot
+      external ddot
 !
 !     compute the norm of the input vector
 !
-      nrm0 = distdot(n,vec(1,ind),1,vec(1,ind),1)
+      nrm0 = ddot(n,vec(1,ind),vec(1,ind))
       ops = ops + n + n
       thr = nrm0 * reorth
       if (nrm0.le.zero) then
@@ -2900,14 +2907,14 @@ END MODULE W3PROFSMD
 !
       if (full) then
          do 40 i = ind+1, m
-            fct = distdot(n,vec(1,ind),1,vec(1,i),1)
+            fct = ddot(n,vec(1,ind),vec(1,i))
             hh(i) = fct
             do 20 k = 1, n
                vec(k,ind) = vec(k,ind) - fct * vec(k,i)
  20         continue
             ops = ops + 4 * n + 2
             if (fct*fct.gt.thr) then
-               fct = distdot(n,vec(1,ind),1,vec(1,i),1)
+               fct = ddot(n,vec(1,ind),vec(1,i))
                hh(i) = hh(i) + fct
                do 30 k = 1, n
                   vec(k,ind) = vec(k,ind) - fct * vec(k,i)
@@ -2921,14 +2928,14 @@ END MODULE W3PROFSMD
       endif
 !
       do 70 i = 1, ind-1
-         fct = distdot(n,vec(1,ind),1,vec(1,i),1)
+         fct = ddot(n,vec(1,ind),vec(1,i))
          hh(i) = fct
          do 50 k = 1, n
             vec(k,ind) = vec(k,ind) - fct * vec(k,i)
  50      continue
          ops = ops + 4 * n + 2
          if (fct*fct.gt.thr) then
-            fct = distdot(n,vec(1,ind),1,vec(1,i),1)
+            fct = ddot(n,vec(1,ind),vec(1,i))
             hh(i) = hh(i) + fct
             do 60 k = 1, n
                vec(k,ind) = vec(k,ind) - fct * vec(k,i)
@@ -2942,7 +2949,7 @@ END MODULE W3PROFSMD
 !
 !     test the resulting vector
 !
-      nrm1 = sqrt(distdot(n,vec(1,ind),1,vec(1,ind),1))
+      nrm1 = sqrt(ddot(n,vec(1,ind),vec(1,ind)))
       ops = ops + n + n
       hh(ind) = nrm1    ! statement label 75 
       if (nrm1.le.zero) then
@@ -4514,7 +4521,7 @@ END MODULE W3PROFSMD
           vv(j,1) = rhs(j) - vv(j,1)
        end do
  20    if (lblas) then
-         ro = dnrm2(n, vv, 1)
+         ro = dnrm2(n, vv)
        else
          ro = sqrt(sum(vv(:,1)*vv(:,1)))
        end if
@@ -4557,10 +4564,10 @@ END MODULE W3PROFSMD
 !      modified gram - schmidt...
        if (lblas) then
          do j=1, i
-           t = ddot(n, vv(1,j),1,vv(1,i1),1)
+           t = ddot(n, vv(1,j),vv(1,i1))
            hh(j,i) = t
            call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
-           t = dnrm2(n, vv(1,i1), 1)
+           t = dnrm2(n, vv(1,i1))
          end do
        else
          do j=1, i
@@ -4670,174 +4677,138 @@ END MODULE W3PROFSMD
 !--------------------------------------------------------------------- 
        end
 !-----------------------------------------------------------------------
-      function distdot(n,x,ix,y,iy)
-      integer n, ix, iy
-      real*8 distdot, x(*), y(*), ddot
-      external ddot
-      distdot = ddot(n,x,ix,y,iy)
-      return
-      end
+
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !     subroutine from blas1.f90
 !-----------------------------------------------------------------------
-      double precision function dnrm2 ( n, dx, incx)
-      integer          next
-      double precision   dx(*), cutlo, cuthi, hitest, sumd, xmax,zero,one
-      data   zero, one /0.0d0, 1.0d0/
+      DOUBLE PRECISION FUNCTION DNRM2(N,X)
+!     .. Scalar Arguments ..
+      INTEGER N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION X(*)
+!     ..
 !
-!     euclidean norm of the n-vector stored in dx() with storage
-!     increment incx .
-!     if    n .le. 0 return with result = 0.
-!     if n .ge. 1 then incx must be .ge. 1
+!  Purpose
+!  =======
 !
-!           c.l.lawson, 1978 jan 08
+!  DNRM2 returns the euclidean norm of a vector via the function
+!  name, so that
 !
-!     four phase method     using two built-in constants that are
-!     hopefully applicable to all machines.
-!         cutlo = maximum of  dsqrt(u/eps)  over all known machines.
-!         cuthi = minimum of  dsqrt(v)      over all known machines.
-!     where
-!         eps = smallest no. such that eps + 1. .gt. 1.
-!         u   = smallest positive no.   (underflow limit)
-!         v   = largest  no.            (overflow  limit)
+!     DNRM2 := sqrt( x'*x )
 !
-!     brief outline of algorithm..
+!  Further Details
+!  ===============
 !
-!     phase 1    scans zero components.
-!     move to phase 2 when a component is nonzero and .le. cutlo
-!     move to phase 3 when a component is .gt. cutlo
-!     move to phase 4 when a component is .ge. cuthi/m
-!     where m = n for x() real and m = 2*n for complex.
+!  -- This version written on 25-October-1982.
+!     Modified on 14-October-1993 to inline the call to DLASSQ.
+!     Sven Hammarling, Nag Ltd.
 !
-!     values for cutlo and cuthi..
-!     from the environmental parameters listed in the imsl converter
-!     document the limiting values are as follows..
-!     cutlo, s.p.   u/eps = 2**(-102) for  honeywell.  close seconds are
-!                   univac and dec at 2**(-103)
-!                   thus cutlo = 2**(-51) = 4.44089e-16
-!     cuthi, s.p.   v = 2**127 for univac, honeywell, and dec.
-!                   thus cuthi = 2**(63.5) = 1.30438e19
-!     cutlo, d.p.   u/eps = 2**(-67) for honeywell and dec.
-!                   thus cutlo = 2**(-33.5) = 8.23181d-11
-!     cuthi, d.p.   same as s.p.  cuthi = 1.30438d19
-!     data cutlo, cuthi / 8.232d-11,  1.304d19 /
-!     data cutlo, cuthi / 4.441e-16,  1.304e19 /
-      data cutlo, cuthi / 8.232d-11,  1.304d19 /
+!  =====================================================================
 !
-      if(n .gt. 0) go to 10
-         dnrm2  = zero
-         go to 300
+!     .. Parameters ..
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER (ONE=1.0D+0,ZERO=0.0D+0)
+!     ..
+!     .. Local Scalars ..
+      DOUBLE PRECISION ABSXI,NORM,SCALE,SSQ
+      INTEGER IX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,SQRT
+!     ..
+      IF (N.LT.1 ) THEN
+          NORM = ZERO
+      ELSE IF (N.EQ.1) THEN
+          NORM = ABS(X(1))
+      ELSE
+          SCALE = ZERO
+          SSQ = ONE
+!        The following loop is equivalent to this call to the LAPACK
+!        auxiliary routine:
+!        CALL DLASSQ( N, X, SCALE, SSQ )
 !
-   10 assign 30 to next
-      sumd = zero
-      nn = n * incx
-!                                                 begin main loop
-      i = 1
-   20    go to next,(30, 50, 70, 110)
-   30 if( dabs(dx(i)) .gt. cutlo) go to 85
-      assign 50 to next
-      xmax = zero
+          DO 10 IX = 1,1 + (N-1)
+              IF (X(IX).NE.ZERO) THEN
+                  ABSXI = ABS(X(IX))
+                  IF (SCALE.LT.ABSXI) THEN
+                      SSQ = ONE + SSQ* (SCALE/ABSXI)**2
+                      SCALE = ABSXI
+                  ELSE
+                      SSQ = SSQ + (ABSXI/SCALE)**2
+                  END IF
+              END IF
+   10     CONTINUE
+          NORM = SCALE*SQRT(SSQ)
+      END IF
 !
-!                        phase 1.  sumd is zero
+      DNRM2 = NORM
+      RETURN
 !
-   50 if( abs(dx(i)) .lt. tiny(1.d0)) go to 200
-      if( dabs(dx(i)) .gt. cutlo) go to 85
+!     End of DNRM2.
 !
-!                                prepare for phase 2.
-      assign 70 to next
-      go to 105
+      END
+
+!-----------------------------------------------------------------------
+ SUBROUTINE DLASSQ( N, X, SCALE, SUMSQ )
 !
-!                                prepare for phase 4.
+! -- LAPACK auxiliary routine (version 3.1) --
+! Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd..
+! November 2006
+ INTEGER N
+DOUBLE PRECISION SCALE, SUMSQ
+DOUBLE PRECISION X( * )
 !
-  100 i = j
-      assign 110 to next
-      sumd = (sumd / dx(i)) / dx(i)
-  105 xmax = dabs(dx(i))
-      go to 115
+! DLASSQ returns the values scl and smsq such that
 !
-!                   phase 2.  sumd is small.
-!                             scale to avoid destructive underflow.
+! ( scl**2 )*smsq = x( 1 )**2 +...+ x( n )**2 + ( scale**2 )*sumsq,
 !
-   70 if( dabs(dx(i)) .gt. cutlo ) go to 75
+! where x( i ) = X( 1 + ( i - 1 )*INCX ). The value of sumsq is
+! assumed to be non-negative and scl returns the value
 !
-!                     common code for phases 2 and 4.
-!                     in phase 4 sumd is large.  scale to avoid overflow.
+! scl = max( scale, abs( x( i ) ) ).
 !
-  110 if( dabs(dx(i)) .le. xmax ) go to 115
-         sumd = one + sumd * (xmax / dx(i))**2
-         xmax = dabs(dx(i))
-         go to 200
+! SCALE (input/output) DOUBLE PRECISION
+! On entry, the value scale in the equation above.
+! On exit, SCALE is overwritten with scl , the scaling factor
+! for the sum of squares.
+ 	DOUBLE PRECISION ZERO
+ 	PARAMETER ( ZERO = 0.0D+0 )
+ 	INTEGER IX
+ 	DOUBLE PRECISION ABSXI
+ 	INTRINSIC ABS
 !
-  115 sumd = sumd + (dx(i)/xmax)**2
-      go to 200
-!
-!
-!                  prepare for phase 3.
-!
-   75 sumd = (sumd * xmax) * xmax
-!
-!
-!     for real or d.p. set hitest = cuthi/n
-!     for complex      set hitest = cuthi/(2*n)
-!
-   85 hitest = cuthi/float( n )
-!
-!                   phase 3.  sumd is mid-range.  no scaling.
-!
-      do 95 j =i,nn,incx
-      if(dabs(dx(j)) .ge. hitest) go to 100
-   95    sumd = sumd + dx(j)**2
-      dnrm2 = dsqrt( sumd )
-      go to 300
-!
-  200 continue
-      i = i + incx
-      if ( i .le. nn ) go to 20
-!
-!              end of main loop.
-!
-!              compute square root and adjust for scaling.
-!
-      dnrm2 = xmax * dsqrt(sumd)
-  300 continue
-      return
-      end
+ 	IF( N.GT.0 ) THEN
+	DO IX = 1, 1 + ( N-1 )
+	  IF( X( IX ).NE.ZERO ) THEN
+	    ABSXI = ABS( X( IX ) )
+	    IF( SCALE.LT.ABSXI ) THEN
+	      SUMSQ = 1 + SUMSQ*( SCALE / ABSXI )**2
+	      SCALE = ABSXI
+	    ELSE
+         SUMSQ = SUMSQ + ( ABSXI / SCALE )**2
+       END IF
+	  END IF
+	END DO
+	END IF
+	RETURN
+	END
+
 !-------------------------------------------------------------------------
-      double precision function ddot(n,dx,incx,dy,incy)
+      double precision function ddot(n,dx,dy)
 !
 !     forms the dot product of two vectors.
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
       double precision dx(*),dy(*),dtemp
-      integer i,incx,incy,ix,iy,m,mp1,n
+      integer i,ix,iy,m,mp1,n
 !
       ddot = 0.0d0
       dtemp = 0.0d0
       if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        dtemp = dtemp + dx(ix)*dy(iy)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      ddot = dtemp
-      return
-!
-!        code for both increments equal to 1
-!
-!
-!        clean-up loop
-!
+
    20 m = mod(n,5)
       if( m .eq. 0 ) go to 40
       do 30 i = 1,m

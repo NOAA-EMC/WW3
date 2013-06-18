@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Feb-2011 |
+!/                  | Last update :         25-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -26,8 +26,10 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    25-Dec-2012 : New structure of output fields.     ( version 4.TBD )
+!/                  Minor bug fixes and clean up.
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -103,21 +105,22 @@
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3TIMEMD
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3IOGO
+      USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
-      USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, TMN, THM,  &
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, BERG, UST, USTDIR
+      USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM, &
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
                           PHS, PTP, PLP, PTH, PSI, PWS, PWST, PNR,    &
-                          TAUOX, TAUOY, TAUWIX,JSMITH,                &
+                          TAUOX, TAUOY, TAUWIX,BHD,                &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
-                          CFLTHMAX, BEDFORMS, WHITECAP, T02, CGE, TM0M1
-      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRD, IDOUT, UNDEF,      &
-                          FLOGRD, FNMPRE, NOSWLL
+                          CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
+                          CGE, T01
+      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,     &
+                          UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       IMPLICIT NONE
 !/
@@ -125,7 +128,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSDT,    &
-                                 NDSTRC, NTRACE, IERR, I, J,          &
+                                 NDSTRC, NTRACE, IERR, I, J, IFI, IFJ,&
                                  TOUT(2), TDUM(2), IOTEST, NOUT,      &
                                  ITYPE, IX1, IXN, IXS, IY1, IYN, IYS, &
                                  IDLA, IDFM, IOUT, IPART
@@ -133,7 +136,8 @@
       REAL                    :: DTREQ, DTEST
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
                                  TABNME*9
-      LOGICAL                 :: FLREQ(NOGRD), SCALE, VECTOR
+      LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP),     &
+                                 SCALE, VECTOR, LTEMP(NGRPP)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -180,8 +184,10 @@
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
 !
       WRITE (NDSO,930)
-      DO I=1, NOGRD
-        IF ( FLOGRD(I) ) WRITE (NDSO,931) IDOUT(I)
+      DO IFI=1, NOGRP
+        DO IFJ=1, NGRPP
+          IF ( FLOGRD(IFI,IFJ) ) WRITE (NDSO,931) IDOUT(IFI,IFJ)
+          END DO
         END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -211,8 +217,10 @@
 !
 ! ... Output fields
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) FLREQ
+      CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
+                         FLREQ, 1, 1, IERR )
+      IF (IERR.NE.0) GOTO 800 
+
 !
 ! ... Output type
 !
@@ -293,30 +301,34 @@
           WRITE (NDSO,2945)
         END IF
 !
-      DO I=1, NOGRD
-        IF ( FLREQ(I) ) THEN
-            IF ( FLOGRD(I) ) THEN
+      DO IFI=1, NOGRP
+      DO IFJ=1, NGRPP
+        IF ( FLREQ(IFI,IFJ) ) THEN
+            IF ( FLOGRD(IFI,IFJ) ) THEN
                 IF ( ITYPE.NE.2 ) THEN
-                    WRITE (NDSO,946) IDOUT(I), ' '
+                    WRITE (NDSO,946) IDOUT(IFI,IFJ), ' '
                   ELSE
                     J      = LEN_TRIM(FNMPRE)
                     NDSDT  = NDSDT + 1
                     WRITE (TABNME,'(A3,I2.2,A4)') 'tab', NDSDT, '.ww3'
-                    WRITE (NDSO,2946) TABNME, IDOUT(I)
+                    WRITE (NDSO,2946) TABNME, IDOUT(IFI,IFJ)
                     OPEN (NDSDT,FILE=FNMPRE(:J)//TABNME)
-                    WRITE (NDSDT,2947) IDOUT(I)
+                    WRITE (NDSDT,2947) IDOUT(IFI,IFJ)
                   END IF
               ELSE
-                WRITE (NDSO,946) IDOUT(I), '*** NOT AVAILABLE ***'
-                FLREQ(I) = .FALSE.
+                WRITE (NDSO,946) IDOUT(IFI,IFJ), '*** NOT AVAILABLE ***'
+                FLREQ(IFI,IFJ) = .FALSE.
               END IF
           END IF
         END DO
+        END DO
 !
-      IF ( IPART .EQ. 0 ) THEN
-          WRITE (NDSO,948)
-        ELSE
-          WRITE (NDSO,949) IPART
+      IF ( FLOG(4) ) THEN
+          IF ( IPART .EQ. 0 ) THEN
+              WRITE (NDSO,948)
+            ELSE
+              WRITE (NDSO,949) IPART
+            END IF
         END IF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -456,7 +468,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Jul-2007 |
+!/                  | Last update :         25-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    26-Sep-1997 : Final FORTRAN 77                    ( version 1.18 )
@@ -475,6 +487,7 @@
 !/    28-Mar-2007 : Adding partitioned output.          ( version 3.11 )
 !/                  Adding user slots for outputs.
 !/    31-Jul-2007 : Fix file extension errors.          ( version 3.12 )
+!/    25-Dec-2012 : New structure of output fields.     ( version 4.TBD )
 !/
 !  1. Purpose :
 !
@@ -490,7 +503,10 @@
 !
 !     Internal parameters
 !     ----------------------------------------------------------------
-!       FLONE   Log.  Flags for one or two-dimensional field.
+!       FLONE   Log.  Flags for one-dimensional field.
+!       FLTWO   Log.  Flags for two-dimensional field X Y.
+!       FLDIR   Log.  Flags for two-dimensional, directional field.
+!       FLTRI   Log.  Flags for three dimensional field.
 !       X1, X2, XX, XY
 !               R.A.  Output fields
 !     ----------------------------------------------------------------
@@ -544,7 +560,7 @@
 !/
       INTEGER                 :: NXMAX, NXTOT, NBLOK, IH, IM, IS,     &
                                  MFILL, J, ISEA, IX, IY, IXB, IB,     &
-                                 IXA, NINGRD, JJ
+                                 IXA, NINGRD, JJ, IFI, IFJ
       INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY),          &
                                  MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),  &
                                  MXY(NX,NY)
@@ -555,20 +571,24 @@
       REAL                    :: FSC, CABS, UABS, FSCA, XMIN, XMAX,   &
                                  XAVG, XSTD, YGBX, XGBX, AABS
       REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
-                                 XX(NX+1,NY), XY(NX+1,NY) 
+                                 XX(NX+1,NY), XY(NX+1,NY), DPTMAX(1)
       DOUBLE PRECISION        :: XDS, XDSQ
-      LOGICAL                 :: FLONE
+      LOGICAL                 :: FLONE, FLTWO, FLDIR, FLTRI
+!/T      LOGICAL                 :: LTEMP(NGRPP)
       CHARACTER               :: OLDTID*8, FNAME*16, ENAME*4,         &
                                  FORMF*11, UNITS*10
       CHARACTER, SAVE         :: TIMEID*8 = '00000000'
       CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
+!/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!
 !/S      CALL STRACE (IENT, 'W3EXGO')
 !
-!/T      WRITE (NDST,9000) (FLREQ(J),J=1,NOGRD)
+!/T      DO IFI=1, NOGRP 
+!/T        LTEMP  = FLREQ(IFI,:)
+!/T        WRITE (NDST,9000) IFI, LTEMP
+!/T        END DO
 !/T      WRITE (NDST,9001) ITYPE, IX1, IXN, IXS, IY1, IYN, IYS,          &
 !/T                        SCALE, VECTOR, NDSDAT
 !
@@ -625,26 +645,44 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Loop over output fields.
 !
-      DO J=1, NOGRD
-        IF ( FLREQ(J) ) THEN
+      DO IFI=1, NOGRP
+      DO IFJ=1, NGRPP
+        IF ( FLREQ(IFI,IFJ) ) THEN
 !
             FORMF  = '(1X,32I4)'
-!/T            WRITE (NDST,9020) IDOUT(J)
+!/T            WRITE (NDST,9020) IDOUT(IFI,IFJ)
 !
 ! 2.a Set output arrays and parameters
+
+              FLONE = .FALSE.
+              FLTWO = .FALSE.
+              FLDIR = .FALSE.
+              FLTRI = .FALSE.
 !
-            IF ( J .EQ.  1 ) THEN
+              IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
                 FLONE  = .TRUE.
+                DPTMAX = MAXVAL ( DW(1:NSEA) )
                 FSC    = 1.
-                IF ( ITYPE .EQ. 3 ) FSC = 0.1
+                IF ( DPTMAX(1) .GT. 999. ) THEN
+                    FSC    = 0.1
+                  ELSE IF ( DPTMAX(1) .GT. 99.9 ) THEN
+                    FSC    = 0.1
+                  ELSE IF ( DPTMAX(1) .GT. 9.99 ) THEN
+                    FSC    = 0.01
+                  END IF
+                IF ( ITYPE .EQ. 3 ) FSC = 0.01
                 UNITS  = 'm'
                 ENAME  = '.dpt'
-                FORMF  = '(1X,20I6)'
+                FORMF  = '(1X,17I7)'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DW(1:NSEA)        &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ.  2 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.01
                 ENAME  = '.cur'
                 UNITS  = 'm/s'
@@ -667,8 +705,12 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
                                                           , MAPSF, X2 )
 !
-              ELSE IF ( J .EQ.  3 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.1
                 ENAME  = '.wnd'
                 UNITS  = 'm/s'
@@ -691,7 +733,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
                                                           , MAPSF, X2 )
 !
-              ELSE IF ( J .EQ.  4 ) THEN
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
                 ENAME  = '.dt'
@@ -699,73 +741,78 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AS(1:NSEA)        &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ.  6 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.001
-                UNITS  = ' '
-                ENAME  = '.ice'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ.  5 ) THEN
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 'm'
                 ENAME  = '.wlv'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLV   , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ.  7 ) THEN
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = ' '
+                ENAME  = '.ice'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.0002
+                UNITS  = 'km-1'
+                ENAME  = '.ibg'
+                WHERE ( BERG.NE.UNDEF) BERG = BERG*0.1
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BERG  , MAPSF, X1 )
+!
+!/BT4 ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
+!/BT4                FLONE  = .TRUE.
+!/BT4                FSC    = 0.01
+!/BT4                UNITS  = 'Krumbein phi scale'
+!/BT4                ENAME  = '.d50'
+!/BT4                WHERE ( SED_D50.NE.UNDEF) SED_D50 = -LOG(SED_D50/0.001)/LOG2 
+!/BT4                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50  , MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 'm'
                 ENAME  = '.hs'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HS    , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ.  8 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.
                 UNITS  = 'm'
-                ENAME  = '.l'
+                ENAME  = '.lm'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLM   , MAPSF, X1 )
 !
-             ELSE IF ( J .EQ.  9 ) THEN
+             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 's'
-                ENAME  = '.t02'
+                ENAME  = '.tz'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T02   , MAPSF, X1 )
-              ELSE IF ( J .EQ. 10 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 's'
                 ENAME  = '.t'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TMN   , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T0M1  , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 11 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 's'
-                ENAME  = '.tm1'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TM0M1   , MAPSF, X1 )
+                ENAME  = '.tm'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T01   , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 12 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.1           !0.01
-                UNITS  = 'kW/m'
-                ENAME  = '.CgE'
-                DO ISEA=1, NSEA
-                   USERO(ISEA,1)=0.001*USERO(ISEA,1)
-                   END DO
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,1)        &
-                                                          , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ. 13 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.001
                 UNITS  = 'Hz'
                 ENAME  = '.fp'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FP0   , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 14 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.
                 UNITS  = 'degr.'
@@ -777,14 +824,14 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM   , MAPSF, X1 )
 !
 !
-              ELSE IF ( J .EQ. 15 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
                 UNITS  = 'degr.'
                 ENAME  = '.spr'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THS   , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 16 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.
                 UNITS  = 'degr.'
@@ -796,7 +843,7 @@
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THP0  , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 17 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 'm'
@@ -804,7 +851,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHS(:,IPART)      &
                                                       , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 18 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.01
                 UNITS  = 's'
@@ -812,7 +859,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTP(:,IPART)      &
                                                       , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 19 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.
                 UNITS  = 'm'
@@ -820,7 +867,7 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PLP(:,IPART)      &
                                                       , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 20 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.
                 UNITS  = 'degr.'
@@ -834,15 +881,15 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTH(:,IPART)      &
                                                       , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 21 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
                 UNITS  = 'degr.'
-                ENAME  = '.psi'
+                ENAME  = '.psp'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSI(:,IPART)      &
                                                       , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 22 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.001
                 UNITS  = ' '
@@ -850,54 +897,26 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART)      &
                                                       , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 23 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.001
                 UNITS  = ' '
                 ENAME  = '.wsf'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWST(:), MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 24 ) THEN
+              ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.
                 UNITS  = ' '
                 ENAME  = '.pnr'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PNR(:), MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 25 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.1
-                UNITS  = 'min.'
-                ENAME  = '.dtd'
-                DO ISEA=1, NSEA
-                  IF ( DTDYN(ISEA) .NE. UNDEF )                       &
-                       DTDYN(ISEA) = DTDYN(ISEA) / 60.
-                  END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DTDYN , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ. 26 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.001
-                UNITS  = 'Hz'
-                ENAME  = '.fc'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FCUT  , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ. 27 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.001
-                UNITS  = '  ' 
-                ENAME  = '.cfx'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLXYMAX  , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ. 28 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.001
-                UNITS  = '  '
-                ENAME  = '.cfd'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLTHMAX  , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ. 29 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.001
                 ENAME  = '.ust'
                 FORMF  = '(1X,20I6)'
@@ -924,18 +943,30 @@
                 CALL W3S2XY (NSEA,NSEA,NX+1,NY, USTDIR(1:NSEA)        &
                                                       , MAPSF, X2 )
 !
-              ELSE IF ( J .EQ. 30 ) THEN
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 1.E-6
                 UNITS  = ' '
-                ENAME  = '.cha'
+                ENAME  = '.chn'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CHARN(1:NSEA)    &
-                                                          , MAPSF, X1 )
+                                                      , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 31 ) THEN
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
                 FLONE  = .TRUE.
-                FSC    = 0.1
-                UNITS  = ' '
+                FSC    = 0.1           !0.01
+                UNITS  = 'kW/m'
+                ENAME  = '.cge'
+                DO ISEA=1, NSEA
+                   IF ( CGE(ISEA) .NE. UNDEF )                       &
+                        CGE(ISEA) = 0.001 * CGE(ISEA)
+                   END DO
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE(1:NSEA)     &
+                                                      , MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.01
+                UNITS  = '???'
                 ENAME  = '.faw'
                 DO ISEA=1, NSEA
                    PHIAW(ISEA)=MIN(99.98,PHIAW(ISEA))
@@ -943,74 +974,245 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA)    &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 32 ) THEN
-                FLONE  = .TRUE.
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 1.E-6
                 UNITS  = 'm2/s2'
                 ENAME  = '.taw'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX(1:NSEA)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX(1:NSEA)    &
                                                           , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY(1:NSEA)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY(1:NSEA)    &
                                                           , MAPSF, XY )
                 DO ISEA=1, NSEA
                   CABS   = SQRT(TAUWIX(ISEA)**2+TAUWIY(ISEA)**2)
-                  IF ( CABS .NE. UNDEF ) THEN
-                      TAUWIY(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(TAUWIY(ISEA),TAUWIX(ISEA)) , 360. )
-                    ELSE
+                  IF ( TAUWIX(ISEA) .EQ. UNDEF ) THEN
                       TAUWIY(ISEA) = UNDEF
+                      CABS         = UNDEF
+                    ELSE IF ( TAUWIX(ISEA) .EQ. 0. .AND.              &
+                              TAUWIY(ISEA) .EQ. 0. ) THEN
+                      TAUWIY(ISEA) = UNDEF
+                    ELSE
+                      TAUWIY(ISEA) = MOD ( 630. -                     &
+                          RADE*ATAN2(TAUWIY(ISEA),TAUWIX(ISEA)) , 360. )
                     END IF
                   TAUWIX(ISEA) = CABS
                   END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TAUWIX,MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TAUWIY,MAPSF, X2 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX(1:NSEA)   &
+                                                          , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY(1:NSEA)   &
+                                                          , MAPSF, X2 )
 !
-              ELSE IF ( J .EQ. 33 ) THEN
-                FLONE  = .FALSE.
-                FSC    = 0.0001
-                ENAME  = '.twa'
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
+                FSC    = 1.E-6
                 UNITS  = 'm2/s2'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNX(1:NSEA)        &
+                ENAME  = '.nws'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNX(1:NSEA)    &
                                                           , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)    &
                                                           , MAPSF, XY )
+                DO ISEA=1, NSEA
+                  CABS   = SQRT(TAUWNX(ISEA)**2+TAUWNY(ISEA)**2)
+                  IF ( TAUWNX(ISEA) .EQ. UNDEF ) THEN
+                      TAUWNY(ISEA) = UNDEF
+                      CABS         = UNDEF
+                    ELSE IF ( TAUWNX(ISEA) .EQ. 0. .AND.              &
+                              TAUWNY(ISEA) .EQ. 0. ) THEN
+                      TAUWNY(ISEA) = UNDEF
+                    ELSE
+                      TAUWNY(ISEA) = MOD ( 630. -                     &
+                          RADE*ATAN2(TAUWNY(ISEA),TAUWNX(ISEA)) , 360. )
+                    END IF
+                  TAUWNX(ISEA) = CABS
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNX(1:NSEA)   &
+                                                          , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)   &
+                                                          , MAPSF, X2 )
 !
-              ELSE IF ( J .EQ. 34 ) THEN
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
                 FLONE  = .TRUE.
 !WER Oct 31 2012: Changed FSC from 0.1 to 0.01 
 !WER Nov 13 2012: Changed FSC from 0.01 to 0.001 
                 FSC    = 0.001
-                UNITS  = ' '
+                UNITS  = '?'
                 ENAME  = '.wcc'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1)    &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 35 ) THEN
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
-                UNITS  = ' '
+                UNITS  = '?'
                 ENAME  = '.wcf'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,2)    &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,2) &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 36 ) THEN
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
-                UNITS  = ' '
+                UNITS  = '?'
                 ENAME  = '.wch'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,3)    &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,3) &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 37 ) THEN
+              ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
-                UNITS  = ' '
+                UNITS  = '?'
                 ENAME  = '.wcm'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,4)    &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,4) &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 38 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
+                FLTRI  = .TRUE.
+                FSC    = 10.
+                UNITS  = 'N/m'
+                ENAME  = '.sxy'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXX(1:NSEA)       &
+                                                          , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SYY(1:NSEA)       &
+                                                          , MAPSF, X2 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXY(1:NSEA)       &
+                                                          , MAPSF, XY )
+!
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
+                FSC    = 1.E-6
+                UNITS  = 'm2/s2'
+                ENAME  = '.two'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)     &
+                                                          , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOY(1:NSEA)     &
+                                                          , MAPSF, XY )
+                DO ISEA=1, NSEA
+                  UABS   = SQRT(TAUOX(ISEA)**2+TAUOY(ISEA)**2)
+                  IF ( TAUOX(ISEA) .EQ. UNDEF ) THEN
+                      TAUOY(ISEA) = UNDEF
+                      UABS        = UNDEF
+                    ELSE IF ( UABS .GT. 1.E-8 ) THEN
+                      TAUOY(ISEA) = MOD ( 630. -                     &
+                        RADE*ATAN2(TAUOY(ISEA),TAUOX(ISEA)) , 360. )
+                    ELSE
+                      TAUOY(ISEA) = UNDEF
+                    END IF
+                  TAUOX(ISEA) = UABS
+                  END DO
+                CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOX(1:NSEA)         &
+                                                      , MAPSF, X1 )
+                CALL W3S2XY (NSEA,NSEA,NX+1,NY, TAUOY(1:NSEA)         &
+                                                      , MAPSF, X2 )
+!
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.3 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = '?'
+                ENAME  = '.bhd'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BHD(1:NSEA)    &
+                                                          , MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.1
+                UNITS  = '?'
+                ENAME  = '.foc'
+                DO ISEA=1, NSEA
+                   PHIOC(ISEA)=MIN(99.98,PHIOC(ISEA))
+                   END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIOC(1:NSEA)    &
+                                                          , MAPSF, X1 )
+!
+             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
+                FSC    = 0.001
+                UNITS  = 'm2/s'
+                ENAME  = '.tus'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSX(1:NSEA)      &
+                                                          , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSY(1:NSEA)      &
+                                                          , MAPSF, XY )
+                DO ISEA=1, NSEA
+                  CABS   = SQRT(TUSX(ISEA)**2+TUSY(ISEA)**2)
+                  IF ( TUSX(ISEA) .NE. UNDEF ) THEN
+                      TUSY(ISEA) = MOD ( 630. -                       &
+                            RADE*ATAN2(TUSY(ISEA),TUSX(ISEA)) , 360. )
+                    ELSE
+                      TUSY(ISEA) = UNDEF
+                      CABS       = UNDEF
+                    END IF
+                  TUSX(ISEA) = CABS
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSX,MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSY,MAPSF, X2 )
+!
+             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
+                FSC    = 0.001
+                UNITS  = 'm/s'
+                ENAME  = '.uss'
+                DO ISEA=1, NSEA
+                   IF (USSX(ISEA) .NE. UNDEF ) THEN
+                       USSX(ISEA)=MAX(-0.9998,MIN(0.9998,USSX(ISEA)))
+                       USSY(ISEA)=MAX(-0.9998,MIN(0.9998,USSY(ISEA)))
+                     END IF
+                   END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSX(1:NSEA)     &
+                                                          , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSY(1:NSEA)     &
+                                                          , MAPSF, XY )
+                DO ISEA=1, NSEA
+                  CABS   = SQRT(USSX(ISEA)**2+USSY(ISEA)**2)
+                  IF ( USSX(ISEA)  .NE. UNDEF ) THEN
+                      USSY(ISEA) = MOD ( 630. -                      &
+                            RADE*ATAN2(USSY(ISEA),USSX(ISEA)) , 360. )
+                    ELSE
+                      USSY(ISEA) = UNDEF
+                      CABS       = UNDEF
+                    END IF
+                  USSX(ISEA) = CABS
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSX(1:NSEA),     &
+                                                             MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSY(1:NSEA),     &
+                                                             MAPSF, X2 )
+!
+              ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
+                FLTWO  = .TRUE.
+                FSC    = 0.01
+                ENAME  = '.p2s'
+                UNITS  = 'm4'
+                DO ISEA=1, NSEA
+                  PRMS(ISEA)=PRMS(ISEA)
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,PRMS,MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TPMS,MAPSF, X2 )
+!
+              ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.01
                 ENAME  = '.abr'
                 UNITS  = 'm'
@@ -1036,8 +1238,12 @@
                                                           , MAPSF, X2 )
 
 !
-              ELSE IF ( J .EQ. 39 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.01
                 ENAME  = '.ubr'
                 UNITS  = 'm/s'
@@ -1062,166 +1268,146 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
                                                           , MAPSF, X2 )
 !
-              ELSE IF ( J .EQ. 40 ) THEN
-                FLONE  = .TRUE.
+              ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
+                FLTRI  = .TRUE.
                 FSC    = 1.E-2
                 UNITS  = 'm'
                 ENAME  = '.bed'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1) &
                                                           , MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2) &
                                                           , MAPSF, X2 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3) &
                                                           , MAPSF, XY )
 !
-              ELSE IF ( J .EQ. 41 ) THEN
+              ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.1
-                UNITS  = ' '
+                UNITS  = '?'
                 ENAME  = '.fbb'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIBBL(1:NSEA)    &
                                                           , MAPSF, X1 )
 !
-              ELSE IF ( J .EQ. 42 ) THEN
-                FLONE  = .TRUE.
+              ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
+                FLTWO  = .TRUE.
                 FSC    = 1.E-6
                 UNITS  = 'm2/s2'
                 ENAME  = '.tbb'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1)  &
                                                           , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2)        &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2)  &
                                                           , MAPSF, XY )
 !
-              ELSE IF ( J .EQ. 43 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 10.
-                UNITS  = 'N/m'
-                ENAME  = '.Sxy'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXX(1:NSEA)       &
-                                                          , MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SYY(1:NSEA)       &
-                                                          , MAPSF, X2 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXY(1:NSEA)       &
-                                                          , MAPSF, XY )
-!
-              ELSE IF ( J .EQ. 44 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 1.E-6
-                UNITS  = 'm2/s2'
-                ENAME  = '.two'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)        &
-                                                          , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOY(1:NSEA)        &
-                                                          , MAPSF, XY )
-!
-              ELSE IF ( J .EQ. 45 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.1
-                UNITS  = ' '
-                ENAME  = '.j'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, JSMITH(1:NSEA)    &
-                                                          , MAPSF, X1 )
-!
-              ELSE IF ( J .EQ. 46 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.1
-                UNITS  = ' '
-                ENAME  = '.foc'
-                DO ISEA=1, NSEA
-                   PHIOC(ISEA)=MIN(99.98,PHIOC(ISEA))
-                   END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIOC(1:NSEA)    &
-                                                          , MAPSF, X1 )
-!
-             ELSE IF ( J .EQ. 47 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.001
-                UNITS  = 'm2/s'
-                ENAME  = '.tus'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSX(1:NSEA)        &
-                                                          , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSY(1:NSEA)        &
-                                                          , MAPSF, XY )
-                DO ISEA=1, NSEA
-                  CABS   = SQRT(TUSX(ISEA)**2+TUSY(ISEA)**2)
-                  IF ( CABS .NE. UNDEF ) THEN
-                      TUSY(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(TUSY(ISEA),TUSX(ISEA)) , 360. )
-                    ELSE
-                      TUSY(ISEA) = UNDEF
-                    END IF
-                  TUSX(ISEA) = CABS
-                  END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSX,MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TUSY,MAPSF, X2 )
-!
-             ELSE IF ( J .EQ. 48 ) THEN
-                FLONE  = .TRUE.
-                FSC    = 0.001
-                UNITS  = 'm/s'
-                ENAME  = '.uss'
-                DO ISEA=1, NSEA
-                   USSX(ISEA)=MAX(-0.9998,MIN(0.9998,USSX(ISEA)))
-                   USSY(ISEA)=MAX(-0.9998,MIN(0.9998,USSY(ISEA)))
-                   END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSX(1:NSEA)        &
-                                                          , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSY(1:NSEA)        &
-                                                          , MAPSF, XY )
-                DO ISEA=1, NSEA
-                  CABS   = SQRT(USSX(ISEA)**2+USSY(ISEA)**2)
-                  IF ( CABS .NE. UNDEF ) THEN
-                      USSY(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(USSY(ISEA),USSX(ISEA)) , 360. )
-                    ELSE
-                      USSY(ISEA) = UNDEF
-                    END IF
-                  USSX(ISEA) = CABS
-                  END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSX,MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSY,MAPSF, X2 )
-!
-              ELSE IF ( J .EQ. 49 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.01
                 ENAME  = '.mss'
                 UNITS  = ' '
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSX,MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSY,MAPSF, XY )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSX(1:NSEA),     &
+                                                             MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY ,MSSY(1:NSEA),     &
+                                                             MAPSF, XY )
+                DO ISEA=1, NSEA
+                  CABS   = SQRT(MSSX(ISEA)**2+MSSY(ISEA)**2)
+                  IF ( MSSX(ISEA)  .EQ. UNDEF ) THEN
+                      MSSY(ISEA) = UNDEF
+                      CABS       = UNDEF
+                    ELSE IF ( MSSX(ISEA)  .NE. 0. .AND.              &
+                              MSSY(ISEA)  .NE. 0. ) THEN
+                      MSSY(ISEA) = UNDEF
+                    ELSE
+                      MSSY(ISEA) = MOD ( 630. -                      &
+                            RADE*ATAN2(MSSY(ISEA),MSSX(ISEA)) , 360. )
+                    END IF
+                  MSSX(ISEA) = CABS
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSX(1:NSEA),     &
+                                                             MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSY(1:NSEA),     &
+                                                             MAPSF, X2 )
 !
-              ELSE IF ( J .EQ. 50 ) THEN
-                FLONE  = .FALSE.
+              ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
+                IF ( VECTOR ) THEN
+                    FLTWO  = .TRUE.
+                  ELSE
+                    FLDIR  = .TRUE.
+                  END IF
                 FSC    = 0.001
                 ENAME  = '.msc'
                 UNITS  = ' '
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCX,MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCY,MAPSF, XY )
-!
-              ELSE IF ( J .EQ. 51 ) THEN
-                FLONE  = .FALSE.
-                FSC    = 0.01
-                ENAME  = '.p2s'
-                UNITS  = 'm4'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCX(1:NSEA),     &
+                                                             MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCY(1:NSEA),     &
+                                                             MAPSF, XY )
                 DO ISEA=1, NSEA
-                  PRMS(ISEA)=PRMS(ISEA)
+                  CABS   = SQRT(MSCX(ISEA)**2+MSCY(ISEA)**2)
+                  IF ( MSCX(ISEA)  .EQ. UNDEF ) THEN
+                      MSCY(ISEA) = UNDEF
+                      CABS       = UNDEF
+                    ELSE IF ( MSCX(ISEA)  .EQ. 0. .AND.              &
+                              MSCY(ISEA)  .EQ. 0. ) THEN
+                      MSCY(ISEA) = UNDEF
+                    ELSE
+                      MSCY(ISEA) = MOD ( 630. -                      &
+                            RADE*ATAN2(MSCY(ISEA),MSCX(ISEA)) , 360. )
+                    END IF
+                  MSCX(ISEA) = CABS
                   END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,PRMS,MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TPMS,MAPSF, XY )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCX(1:NSEA),     &
+                                                             MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCY(1:NSEA),     &
+                                                             MAPSF, X2 )
 !
-             ELSE IF ( J .EQ. 52 ) THEN
+              ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.1
+                UNITS  = 'min.'
+                ENAME  = '.dtd'
+                DO ISEA=1, NSEA
+                  IF ( DTDYN(ISEA) .NE. UNDEF )                       &
+                       DTDYN(ISEA) = DTDYN(ISEA) / 60.
+                  END DO
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DTDYN , MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.001
-                UNITS  = '(?)'
-                ENAME  = '.us1'
-                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,1)        &
-                                                          , MAPSF, X1 )
+                UNITS  = 'Hz'
+                ENAME  = '.fc'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, FCUT  , MAPSF, X1 )
 !
-             ELSE IF ( J .EQ. 53 ) THEN
+              ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
                 FLONE  = .TRUE.
                 FSC    = 0.001
+                FSC    = 1.
+                UNITS  = '  ' 
+                ENAME  = '.cfx'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLXYMAX, MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = '  '
+                ENAME  = '.cfd'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLTHMAX, MAPSF, X1 )
+!
+              ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = '  '
+                ENAME  = '.cfk'
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLKMAX, MAPSF, X1 )
+!
+             ELSE IF ( IFI .EQ. 10 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 1.
                 UNITS  = '(?)'
-                ENAME  = '.us2'
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,2)        &
+                WRITE (ENAME,'(A2,I2.2)') '.u', IFJ
+                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)      &
                                                           , MAPSF, X1 )
 !
               ELSE
@@ -1269,26 +1455,34 @@
                   IXA    = IXB + IXS
                   IXB    = IXA + (NXMAX-1)*IXS
                   IXB    = MIN ( IXB , IXN )
-                  IF ( J .EQ. 43 .OR. J.EQ.40 ) THEN
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, X2, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, XY, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
+                  IF ( FLTRI ) THEN 
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, X2, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, XY, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
                     ELSE IF ( FLONE ) THEN
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
-                    ELSE IF ( VECTOR ) THEN
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, XX, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, XY, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
-                    ELSE
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0, FSC, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), UNITS)
-                      CALL PRTBLK (NDSO, NX, NY, NX+1, X2, MP2, 0,FSCA, &
-                        IXA, IXB, IXS, IY1, IYN, IYS, IDOUT(J), 'Deg.')
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
+                    ELSE IF ( FLTWO ) THEN
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, XX, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, XY, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
+                    ELSE IF ( FLDIR ) THEN
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, X1, MAP, 0,    &
+                                   FSC, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), UNITS)
+                      CALL PRTBLK (NDSO, NX, NY, NX+1, X2, MP2, 0,    &
+                                  FSCA, IXA, IXB, IXS, IY1, IYN, IYS, &
+                                   IDOUT(IFI,IFJ), 'Deg.')
                     END IF
                   END DO
 !
@@ -1354,9 +1548,9 @@
                          X0,MAXX,NX, &
                         Y0,MAXY,NY, &
                          ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL  
-                  ENDIF 		              
+                  ENDIF
                 ELSE
-                   IF(GTYPE .NE. UNGTYPE) THEN		  
+                   IF(GTYPE .NE. UNGTYPE) THEN
                      JJ     = LEN_TRIM(FNMPRE)
                      OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
                           IOSTAT=IERR)
@@ -1374,7 +1568,7 @@
                         MINVAL(YGRD(IY1:IYN,IX1:IXN)),                 &
                         MAXVAL(YGRD(IY1:IYN,IX1:IXN)), IYN-IY1+1,      &
                         ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
-                     END IF						
+                     END IF
                    ELSE
                      OPEN (NDSDAT,FILE=FNAME,                      &
                         ERR=800,IOSTAT=IERR)
@@ -1382,10 +1576,10 @@
                          X0,MAXX,NX, &
                          Y0,MAXY,NY, &
                          ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL  
-                     ENDIF 		       		       
+                     ENDIF
                 END IF
 !
-                IF ( J.EQ.43 .OR. J.EQ.40 ) THEN 
+                  IF ( FLTRI ) THEN
                    DO IX=IX1, IXN
                      DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
@@ -1402,11 +1596,11 @@
                       END DO
                     IF ( IDLA .NE. 5 ) THEN
                         CALL OUTA2I ( MXX, NX, NY, IX1, IXN, IY1, IYN, &
-                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1, 0 )
+                           NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1, 0 )
                         CALL OUTA2I ( MYY, NX, NY, IX1, IXN, IY1, IYN, &
-                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1, 0 )
+                           NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1, 0 )
                         CALL OUTA2I ( MXY, NX, NY, IX1, IXN, IY1, IYN, &
-                             NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1, 0 )
+                           NDSDAT, NDST, NDSE, IDFM, FORMF, IDLA, 1, 0 )
                        ELSE
                         DO IY=IY1,IYN
                           YGBX   = Y0 + REAL(IY-1)*SY
@@ -1425,10 +1619,7 @@
                           END DO
                       END IF
                 ELSE 
-     IF (J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.29 .OR.         &
-     J.EQ.32 .OR. J.EQ.33 .OR. J.EQ.38 .OR. J.EQ.39   &
-    .OR. J.EQ.40 .OR. J.EQ.42 .OR. J.EQ.44 .OR. J.EQ.47 .OR. J.EQ.48  &
-    .OR. J.EQ.49 .OR. J.EQ.50 .OR. J.EQ.51 ) THEN
+      IF ( FLTWO .OR. FLDIR ) THEN
                     DO IX=IX1, IXN
                      DO IY=IY1, IYN
                         IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
@@ -1515,6 +1706,7 @@
 !
           END IF
         END DO
+        END DO
 !
       RETURN
 !
@@ -1543,7 +1735,7 @@
                '     ERROR IN OPENING OUTPUT FILE'/                   &
                '     IOSTAT =',I5/)
 !
-!/T 9000 FORMAT (' TEST W3EXGO : FLAGS :',40L2)
+!/T 9000 FORMAT (' TEST W3EXGO : FLAGS :',I3,2X,20L2)
 !/T 9001 FORMAT (' TEST W3EXGO : ITPYE :',I4/                         &
 !/T              '             IX1/N/S :',3I4/                        &
 !/T              '             IY1/N/S :',3I4/                        &

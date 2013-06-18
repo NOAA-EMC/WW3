@@ -7,7 +7,7 @@
 !/                  |            J.H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Jul-2012 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -36,6 +36,7 @@
 !/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.07 )
 !/    16-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -166,8 +167,8 @@
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
                                  CINC*2
-      CHARACTER*3             :: MNTH(12)
-      CHARACTER*25            :: IDSRCE(6)
+      CHARACTER(LEN=3)        :: MNTH(12)
+      CHARACTER(LEN=25)       :: IDSRCE(6)
 !/
 !/ ------------------------------------------------------------------- /
 !/

@@ -375,6 +375,7 @@ CONTAINS
 !/ Parameter list
 !/
       INTEGER, INTENT(INOUT)  :: TMPSTA(NY,NX)
+!/S      INTEGER, SAVE           :: IENT = 0
       REAL   , INTENT(IN)     :: ZBIN(NY,NX)
       REAL   , INTENT(IN)     :: ZLIM
 !/
@@ -445,6 +446,7 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /   
          USE W3GDATMD  
+!/S      USE W3SERVMD, ONLY: STRACE
          IMPLICIT NONE
 !	 
 !local parameters	 
@@ -546,7 +548,7 @@ CONTAINS
 !
 !/ ------------------------------------------------------------------- /       
        USE W3GDATMD 
-
+!/S      USE W3SERVMD, ONLY: STRACE
        IMPLICIT NONE
 
 !
@@ -650,6 +652,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /       
     USE W3GDATMD
+!/S      USE W3SERVMD, ONLY: STRACE
     USE CONSTANTS
 
          IMPLICIT NONE
@@ -789,7 +792,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- /  
         USE W3GDATMD
-
+!/S      USE W3SERVMD, ONLY: STRACE
         IMPLICIT NONE
 
      
@@ -879,6 +882,7 @@ END SUBROUTINE
 !
 !/ ------------------------------------------------------------------- / 
           USE W3GDATMD
+!/S      USE W3SERVMD, ONLY: STRACE
           IMPLICIT NONE
 !/S        INTEGER                      ::  IENT = 0  
             
@@ -953,7 +957,7 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /      
 
         USE W3GDATMD
-
+!/S      USE W3SERVMD, ONLY: STRACE
          IMPLICIT NONE
 !/ input 
 
@@ -1797,6 +1801,7 @@ END SUBROUTINE
       INTEGER                 ::  COUNT_MAX
       INTEGER                 :: K, K2, I1, I2, I3
       INTEGER                 :: TRILAND(NTRI)
+!/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: ANGLETOT(NX), ANGLETOTINV(NX)
 !/ ------------------------------------------------------------------- /				     
 !

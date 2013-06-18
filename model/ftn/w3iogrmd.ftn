@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jul-2012 |
+!/                  | Last update :         19-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -66,7 +66,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = 'III  4.01 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = 'III  4.02 '
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -82,7 +82,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jul-2012 |
+!/                  | Last update :         19-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -126,6 +126,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
+!/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.TBD )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -497,8 +498,6 @@
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 !/SCRIP   WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
-          WRITE(NDSM)                                                 &
-               COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, ICLOSE
@@ -551,13 +550,9 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 
-!/SCRIP   READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
+!/SCRIP       READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 
-!/SEC1              READ (NDSM) NITERSEC1
-!
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-               COUG_2D, COUG_RAD3D, COUG_US3D
-
+!/SEC1        READ (NDSM) NITERSEC1
         END IF
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
@@ -646,13 +641,13 @@
 !
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
-                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB
+                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-               IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB
+                IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
         END IF
 !
-!/T      WRITE (NDST,9025) IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB
+!/T      WRITE (NDST,9025) IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
 !
 ! Numerical parameters ----------------------------------------------- *
 !                                                 Module W3GDATMD NPAR
@@ -661,7 +656,7 @@
           WRITE (NDSM)                                                &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
                 FLICES, FFACBERG,                                     &
-                P2MSF, US3DF, DELAB, FWTABLE
+                E3DF, P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
 !/REF1          WRITE (NDSM)                                                &
@@ -670,7 +665,7 @@
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
                 FLICES, FFACBERG,                                     &
-                P2MSF, US3DF, DELAB, FWTABLE
+                E3DF, P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
 !/REF1         READ   (NDSM)                                                &
@@ -1056,7 +1051,7 @@
 !/T 9022 FORMAT ('          ',I5,2X,4I4,2X,4F5.2)
 !/T 9023 FORMAT ('          ',10I7)
 !/T 9025 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT6'/               &
-!/T              '      PARTITIONING DATA :',I5,3E10.3,L4)
+!/T              '      PARTITIONING DATA :',I5,3E10.3,L4,2X,I4)
 !
 !/T 9030 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SGRD'/               &
 !/T              '      MAPWN  : ',8I4,' ...'/                        &

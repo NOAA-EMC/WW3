@@ -5,12 +5,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         29-Apr-2013 |
 !/                  +-----------------------------------+
 !/
 !/    For update log see individual subroutines.
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -494,7 +494,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         08-May-2002 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    23-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -502,6 +502,7 @@
 !/    18-Sep-2000 : PGI switch added                    ( version 2.04 )
 !/    13-Mar-2001 : LF95 switch added                   ( version 2.09 )
 !/    08-May-2002 : Replace obsolete switches with F90  ( version 2.21 )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
 !/
 !  1. Purpose :
 !
@@ -540,9 +541,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER*8             :: DATE
-!/F90      CHARACTER*10            :: TIME
-!/F90      CHARACTER*5             :: ZONE
+!/F90      CHARACTER(LEN=8)        :: DATE
+!/F90      CHARACTER(LEN=10)       :: TIME
+!/F90      CHARACTER(LEN=5)        :: ZONE
 !/F90      INTEGER                 :: VALUES(8)
 !/
 !/ ------------------------------------------------------------------- /
@@ -571,7 +572,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         08-May-2002 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    23-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -579,6 +580,7 @@
 !/    18-Sep-2000 : PGI switch added                    ( version 2.04 )
 !/    13-Mar-2001 : LF95 switch added                   ( version 2.09 )
 !/    08-May-2002 : Replace obsolete switches with F90  ( version 2.21 )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.TBD )
 !/
 !  1. Purpose :
 !
@@ -620,9 +622,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER*8             :: DATE
-!/F90      CHARACTER*10            :: TIME
-!/F90      CHARACTER*5             :: ZONE
+!/F90      CHARACTER(LEN=8)        :: DATE
+!/F90      CHARACTER(LEN=10)       :: TIME
+!/F90      CHARACTER(LEN=5)        :: ZONE
 !/F90      INTEGER                 :: VALUES(8)
 !/
 !/ ------------------------------------------------------------------- /
@@ -863,7 +865,89 @@
 !/ End of PRTIME ----------------------------------------------------- /
 !/
       END SUBROUTINE PRTIME
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE STRSPLIT(STRING,TAB)
 !/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |          M. Accensi               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         29-Apr-2013 !
+!/                  +-----------------------------------+
+!/
+!/    29-Mar-2013 : Origination.                        ( version 4.10 )
+!/
+!  1. Purpose :
+!
+!     Splits string into words
+!
+!  2. Method :
+!
+!     finds spaces and loops
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       STRING   Str   O   String to be splitted
+!       TAB      Str   O   Array of strings
+!     ----------------------------------------------------------------
+!
+
+      IMPLICIT NONE
+
+
+
+      CHARACTER, intent(IN)                :: STRING*1024
+      CHARACTER, intent(INOUT)             :: TAB(*)*100
+      INTEGER                              :: cnt, I
+      CHARACTER                            :: tmp_str*1024, ori_str*1024
+
+! initializes arrays
+      ori_str=ADJUSTL(TRIM(STRING))
+      tmp_str=ori_str
+      cnt=0
+
+! counts the number of substrings
+      DO WHILE ((INDEX(tmp_str,' ').NE.0) .AND. (len_trim(tmp_str).NE.0))
+        tmp_str=ADJUSTL(tmp_str(INDEX(tmp_str,' ')+1:))
+        cnt=cnt+1
+        ENDDO
+!
+! reinitializes arrays
+!
+      tmp_str=ori_str
+
+! loops on each substring
+      DO I=1,cnt
+        TAB(I)=tmp_str(:INDEX(tmp_str,' '))
+        tmp_str=ADJUSTL(tmp_str(INDEX(tmp_str,' ')+1:))
+        END DO
+
+      RETURN
+!/
+!/ End of STRSPLIT ----------------------------------------------------- /
+!/
+      END SUBROUTINE STRSPLIT
+!/
+
+!/ ------------------------------------------------------------------- /
+   SUBROUTINE STR_TO_UPPER(STR)
+     character(*), intent(inout) :: str
+     integer :: i
+ 
+     DO i = 1, len(str)
+       select case(str(i:i))
+         case("a":"z")
+           str(i:i) = achar(iachar(str(i:i))-32)
+       end select
+       END DO 
+!/ End of STR_TO_UPPER
+!/ ------------------------------------------------------------------- /
+END SUBROUTINE STR_TO_UPPER
+
+
+
 !/ End of module W3SERVMD -------------------------------------------- /
 !/
       END MODULE W3SERVMD

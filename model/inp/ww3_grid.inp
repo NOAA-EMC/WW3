@@ -238,7 +238,10 @@ $                           WSC    : Cut of wind sea fraction for
 $                                    identifying wind sea in part.
 $                           FLC    : Flag for combining wind seas in
 $                                    partitioning.
+$                           NOSW   : Number of partitioned swell fields
+$                                    in field output.
 $                           FMICHE : Constant in Miche limiter.
+$                           P2SF   : ......
 $
 $ In the 'Out of the box' test setup we run with sub-grid obstacles
 $ and with continuous ice treatment.

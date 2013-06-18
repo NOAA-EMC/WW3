@@ -440,7 +440,7 @@
 !/ST1      ZWND   = 10.
 !/ST2      ZWND   = ZWIND
 !
-       DRAT=DAIR/DWAT
+       DRAT  = DAIR / DWAT
 !/T      WRITE (NDST,9000)
 !/T      WRITE (NDST,9001) DEPTH, U10ABS, U10DIR*RADE
 !

@@ -4,6 +4,8 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
+!/                  |           A. Chawla               |
+!/                  |           J.H.G.M. Alves          |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
@@ -29,8 +31,10 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    05-Oct-2011 : Updating to the 53 output parameter ( version 4.05 )
-!/                  (Jose-Henrique Alves)
+!/    05-Oct-2011 : Updating to the 53 output parameter ( version 4.05 ) 
+!/                  (J-H Alves) 
+!/    25-Feb-2013 : Adding double-index output fields   ( version 4.TBD ) 
+!/
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -73,6 +77,7 @@
 !      DSEC21    Func.   Id.    Difference between times.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
+!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags. 
 !      W3EXGO    Subr. Internal Execute grid output.
 !     ----------------------------------------------------------------
 !
@@ -110,7 +115,7 @@
       USE W3ADATMD, ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3IOGO
+      USE W3IOGOMD, ONLY: W3READFLGRD, W3IOGO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
@@ -118,17 +123,17 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
      USE W3ADATMD, ONLY:  CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN, &
-                          DW, HS, WLM, TMN, TM0M1, T02, THM, THS, FP0,&
+                          DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,&
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
                           SXX, SYY, SXY, PHS, PTP, PLP, PTH, PSI, PWS,&
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, JSMITH, P2SMS, DTDYN,       &
+                          TAUWNX,  TAUWNY, BHD, P2SMS, DTDYN,       &
                           CGE, T02, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,&
-                          CFLXYMAX, CFLTHMAX, CFLKMAX, US3D, SXX3D
-      USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRD, IDOUT, UNDEF,      &
-                          FLOGRD, FNMPRE, NOSWLL
+                          CFLXYMAX, CFLTHMAX, CFLKMAX, US3D 
+      USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
+                          FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       IMPLICIT NONE
 !/
@@ -136,11 +141,11 @@
 !/ Local parameters
 !/
       INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSCTL,   &
-                                 NDSTRC, NTRACE, IERR, I, J,          &
+                                 NDSTRC, NTRACE, IERR, I,J,K, IFI,IFJ,&
                                  TOUT(2), NOUT, TDUM(2), NVAR, IOUT,  &
                                  IX0, IXN, IY0, IYN, TIME0(2), IH0,   &
                                  IM0, ID0, IID, IJ0, IOTEST, IINC, IU,&
-                                 TIMEN(2)
+                                 TIMEN(2), JLEN
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST
       REAL                    :: FAC, XYMAX
@@ -148,7 +153,9 @@
                                  CINC*2
       CHARACTER*3             :: MNTH(12)
       CHARACTER*5             :: PARID
-      LOGICAL                 :: FLREQ(NOGRD), MSOUT, MBOUT
+      LOGICAL                 :: FLONE, FLTWO, FLDIR, FLTRI, FLPRT
+      LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP),     &
+                                 MSOUT, MBOUT, LTEMP(NGRPP)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -182,8 +189,8 @@
       CALL ITRACE ( NDSTRC, NTRACE )
 !/S      CALL STRACE (IENT, 'GXOUTF')
 !
-      J      = LEN_TRIM(FNMPRE)
-      OPEN (NDSI,FILE=FNMPRE(:J)//'gx_outf.inp',STATUS='OLD',         &
+      JLEN   = LEN_TRIM(FNMPRE)
+      OPEN (NDSI,FILE=FNMPRE(:JLEN)//'gx_outf.inp',STATUS='OLD',       &
             ERR=800,IOSTAT=IERR)
       READ (NDSI,'(A)',END=801,ERR=802) COMSTR
       IF (COMSTR.EQ.' ') COMSTR = '$'
@@ -207,8 +214,10 @@
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
 !
       WRITE (NDSO,930)
-      DO I=1, NOGRD
-        IF ( FLOGRD(I) ) WRITE (NDSO,931) IDOUT(I)
+      DO I=1, NOGRP
+       DO J=1, NGRPP
+        IF ( FLOGRD(I,J) ) WRITE (NDSO,931) IDOUT(I,J)
+        END DO
         END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -240,34 +249,93 @@
 !
 ! ... Output fields
 !
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) FLREQ
+      FLREQ(:,:)=.FALSE. ! Initialize FLGRD 
+      CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
+                                 FLREQ, 1, 1, IERR )
 !
+!
+! Reset flags for variables not yet implemented in grads output interface
+!
+!    This needs to be reviewed whenever new parameters are added to the 
+!     grads ctl and data files
+!
+      IFI = 3
+      DO IFJ = 1,NOGE(IFI)
+        IF ( FLREQ(IFI,IFJ) ) THEN
+          WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
+                           '*** NOT YET CODED INTO GXOUTF ***'
+          FLREQ(IFI,IFJ) = .FALSE.
+        END IF
+      END DO
+      IFI = 5 
+      DO IFJ = 7,10
+        IF ( FLREQ(IFI,IFJ) ) THEN
+          WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
+                           '*** NOT YET CODED INTO GXOUTF ***'
+          FLREQ(IFI,IFJ) = .FALSE.
+        END IF
+      END DO
+      DO IFI = 6,8
+        DO IFJ = 1,NOGE(IFI)
+          IF ( FLREQ(IFI,IFJ) ) THEN
+            WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
+                             '*** NOT YET CODED INTO GXOUTF ***' 
+            FLREQ(IFI,IFJ) = .FALSE.
+          END IF
+        END DO
+      END DO
+      IFI = 10
+      DO IFJ = 1,NOGE(IFI)
+        IF ( FLREQ(IFI,IFJ) ) THEN
+          WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
+                           '*** NOT YET CODED INTO GXOUTF ***'
+          FLREQ(IFI,IFJ) = .FALSE.
+        END IF
+      END DO
+      IF ( FLREQ(9,5) ) THEN
+        WRITE (NDSO,946) IDOUT(9,5),'*** NOT YET CODED INTO GXOUTF ***' 
+        FLREQ(9,5) = .FALSE.
+      END IF
+     
       WRITE (NDSO,945)
 !
       NVAR  = 1
-      DO I=1, NOGRD
-        IF ( FLREQ(I) ) THEN
-            IF ( .NOT. FLOGRD(I) ) THEN
-                WRITE (NDSO,946) IDOUT(I), '*** DATA NOT AVAILABLE ***'
-              ELSE
-                WRITE (NDSO,946) IDOUT(I), ' '
-              END IF
+      DO IFI=1, NOGRP
+       DO IFJ=1, NGRPP
+        IF ( FLREQ(IFI,IFJ) ) THEN
+          IF ( .NOT. FLOGRD(IFI,IFJ) ) THEN
+            WRITE (NDSO,946) IDOUT(IFI,IFJ),'*** DATA NOT AVAILABLE ***'
+          ELSE
+            WRITE (NDSO,946) IDOUT(IFI,IFJ), ' '
           END IF
-        FLREQ(I) = FLREQ(I) .AND. FLOGRD(I)
+        END IF
+        FLREQ(IFI,IFJ) = FLREQ(IFI,IFJ) .AND. FLOGRD(IFI,IFJ)
 !
 ! Note: Whenever number of output parameters change, this needs updating
 !
-        IF ( I.EQ.43.OR.I.EQ.40 ) THEN
-            IF ( FLREQ(I) ) NVAR = NVAR + 3
-          ELSE IF ( I.GE.17 .AND. I.LE.22 ) THEN
-            IF ( FLREQ(I) ) NVAR = NVAR + NOSWLL + 1
-          ELSE IF ( I.EQ.2 .OR. I.EQ.3 .OR. I.EQ.28 ) THEN
-            IF ( FLREQ(I) ) NVAR = NVAR + 2
+! The grads output type code does NOT cover all the output parameter space!!
+!
+        IF ( IFI.EQ.6 .AND. IFJ.EQ.1 ) THEN ! Radiation stresses needs 3D variable setting
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 3
+          ELSE IF ( IFI.EQ.4 .AND. IFJ.LE.6 ) THEN
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + NOSWLL + 1 ! Partitioned parameters
+          ELSE IF ( IFI.EQ.1 .AND. IFJ .EQ. 2 ) THEN
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! Current vector
+          ELSE IF ( IFI.EQ.1 .AND. IFJ.EQ.3 ) THEN
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! Wind vector
+          ELSE IF ( IFI.EQ.5 .AND. IFJ.EQ.1 ) THEN
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! USTAR vector
+          ELSE IF ( IFI.EQ.5 .AND. IFJ.EQ.5 ) THEN
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! TAUWI vector
+          ELSE IF ( IFI.EQ.5 .AND. IFJ.EQ.6 ) THEN
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! TAUWN vector
+!          ELSE IF ( IFI.EQ.9 .AND. IFJ.EQ.5 ) THEN
+!            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 2 ! Max angular CFL vector
           ELSE
-            IF ( FLREQ(I) ) NVAR = NVAR + 1
+            IF ( FLREQ(IFI,IFJ) ) NVAR = NVAR + 1 ! scalars
           END IF
         END DO
+       END DO
 !
 ! ... Grid range
 !
@@ -299,8 +367,9 @@
       MSOUT  = .NOT. MSOUT
       MBOUT  = .NOT. MBOUT
 !
-      OPEN (NDSDAT,FILE=FNMPRE(:J)//'ww3.grads',FORM='UNFORMATTED',   &
+      OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',FORM='UNFORMATTED', &
             ERR=811,IOSTAT=IERR)
+
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Time management.
@@ -345,7 +414,7 @@
       WRITE (NDSO,981)
       CLOSE (NDSDAT)
       WRITE (NDSO,982)
-      OPEN (NDSCTL,FILE=FNMPRE(:J)//'ww3.ctl',ERR=812,IOSTAT=IERR)
+      OPEN (NDSCTL,FILE=FNMPRE(:JLEN)//'ww3.ctl',ERR=812,IOSTAT=IERR)
 !
       IH0    = TIME0(2)/10000
       IM0    = MOD(TIME0(2)/100,100)
@@ -396,100 +465,112 @@
       IU     = 99
       WRITE (NDSCTL,991) 'MAP  ', 0, IU, 'grid use map   '
 !
-      IF ( FLREQ(01) )                                                &
+      IF ( FLREQ(01,01) )                                              &
            WRITE (NDSCTL,991) 'DEPTH', 0, IU, 'Water depth    '
-      IF ( FLREQ(02) )                                                &
+      IF ( FLREQ(01,02) )                                              &
            WRITE (NDSCTL,991) 'CX   ', 0, IU, 'Current U (m/s)'
-      IF ( FLREQ(02) )                                                &
+      IF ( FLREQ(01,02) )                                              &
            WRITE (NDSCTL,991) 'CY   ', 0, IU, 'Current V (m/s)'
-      IF ( FLREQ(03) )                                                &
+      IF ( FLREQ(01,03) )                                              &
            WRITE (NDSCTL,991) 'WU   ', 0, IU, 'Wind U (m/s)   '
-      IF ( FLREQ(03) )                                                &
+      IF ( FLREQ(01,03) )                                              &
            WRITE (NDSCTL,991) 'WV   ', 0, IU, 'Wind V (m/s)   '
-      IF ( FLREQ(04) )                                                &
+      IF ( FLREQ(01,04) )                                              &
            WRITE (NDSCTL,991) 'DELT ', 0, IU, 'AT-SST (degr)  '
-      IF ( FLREQ(05) )                                                &
+      IF ( FLREQ(01,05) )                                              &
            WRITE (NDSCTL,991) 'WLEV ', 0, IU, 'Water Level (m)'
-      IF ( FLREQ(06) )                                                &
+      IF ( FLREQ(01,06) )                                              &
            WRITE (NDSCTL,991) 'ICE  ', 0, IU, 'Ice Conc. (-)  '
-      IF ( FLREQ(07) )                                                &
+      IF ( FLREQ(02,01) )                                              &
            WRITE (NDSCTL,991) 'HS   ', 0, IU, 'Wave height (m)'
-      IF ( FLREQ(08) )                                                &
+      IF ( FLREQ(02,02) )                                              &
            WRITE (NDSCTL,991) 'LMN  ', 0, IU, 'Mean L (m)     '
-      IF ( FLREQ(09) )                                                &
+      IF ( FLREQ(02,03) )                                              &
            WRITE (NDSCTL,991) 'T02  ', 0, IU, 'Mean Per Tz (s)'
-      IF ( FLREQ(10) )                                                &
-           WRITE (NDSCTL,991) 'TMN  ', 0, IU, 'Mean Per Tm (s)  '
-      IF ( FLREQ(11) )                                                &
-           WRITE (NDSCTL,991) 'TM0M1', 0, IU, 'Mean Per Te (s)  '
-      IF ( FLREQ(12) )                                                &
-           WRITE (NDSCTL,991) 'CGE  ', 0, IU, 'Energy Flux (W/m)'
-      IF ( FLREQ(13) )                                                &
+      IF ( FLREQ(02,04) )                                              &
+           WRITE (NDSCTL,991) 'T01  ', 0, IU, 'Mean Per Tm (s)  '
+      IF ( FLREQ(02,05) )                                              &
+           WRITE (NDSCTL,991) 'T0M1', 0, IU, 'Mean Per Te (s)  '
+      IF ( FLREQ(02,06) )                                              &
            WRITE (NDSCTL,991) 'PEAKP', 0, IU, 'Peak Per. (s)  '
-      IF ( FLREQ(14) )                                                &
+      IF ( FLREQ(02,07) )                                              &
            WRITE (NDSCTL,991) 'DIRMN', 0, IU, 'Mean Dir. (rad)'
-      IF ( FLREQ(15) )                                                &
+      IF ( FLREQ(02,08) )                                              &
            WRITE (NDSCTL,991) 'DIRSP', 0, IU, 'Dir. spread    '
-      IF ( FLREQ(16) )                                                &
+      IF ( FLREQ(02,09) )                                              &
            WRITE (NDSCTL,991) 'PEAKD', 0, IU, 'Peak Dir. (rad)'
-      IF ( FLREQ(17) ) THEN
+      IF ( FLREQ(04,01) ) THEN
           PARID  = 'PHS  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. Hs (m)   '
             END DO
         END IF
-      IF ( FLREQ(18) ) THEN
+      IF ( FLREQ(04,02) ) THEN
           PARID  = 'PTP  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. Tp (s)   '
             END DO
         END IF
-      IF ( FLREQ(19) ) THEN
+      IF ( FLREQ(04,03) ) THEN
           PARID  = 'PLP  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. L  (m)   '
             END DO
         END IF
-      IF ( FLREQ(20) ) THEN
+      IF ( FLREQ(04,04) ) THEN
           PARID  = 'PTH  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. Th (deg.)'
             END DO
         END IF
-      IF ( FLREQ(21) ) THEN
+      IF ( FLREQ(04,05) ) THEN
           PARID  = 'PSI  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. si (deg.)'
             END DO
         END IF
-      IF ( FLREQ(22) ) THEN
+      IF ( FLREQ(04,06) ) THEN
           PARID  = 'PWS  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. ws frac. '
             END DO
         END IF
-      IF ( FLREQ(23) )                                                &
+      IF ( FLREQ(04,07) )                                              &
            WRITE (NDSCTL,991) 'PWST ', 0, IU, 'Total ws frac. '
-      IF ( FLREQ(24) )                                                &
+      IF ( FLREQ(04,08) )                                              &
            WRITE (NDSCTL,991) 'PNR  ', 0, IU, 'Number of part.'
-      IF ( FLREQ(25) )                                                &
-           WRITE (NDSCTL,991) 'DTDYN', 0, IU, 'DTAVG ST (min) '
-      IF ( FLREQ(26) )                                                &
-           WRITE (NDSCTL,991) 'FCUT ', 0, IU, 'fcut (Hz)      '
-      IF ( FLREQ(27) )                                                &
-           WRITE (NDSCTL,991) 'CFLXY', 0, IU, 'Max CFL XY Prop'
-      IF ( FLREQ(28) )                                                &
-           WRITE (NDSCTL,991) 'CFLTH', 0, IU, 'Max CFL TH Prop'
-      IF ( FLREQ(29) )                                                &
+      IF ( FLREQ(05,01) )                                              &
            WRITE (NDSCTL,991) 'USTU ', 0, IU, 'Fr.Vel. U(m/s) '
-      IF ( FLREQ(29) )                                                &
+      IF ( FLREQ(05,01) )                                              &
            WRITE (NDSCTL,991) 'USTV ', 0, IU, 'Fr.Vel. V(m/s) '
+      IF ( FLREQ(05,02) )                                              &
+           WRITE (NDSCTL,991) 'CHARN', 0, IU, 'Charnock parameter'
+      IF ( FLREQ(05,03) )                                              &
+           WRITE (NDSCTL,991) 'CGE  ', 0, IU, 'Energy Flux (W/m)'
+      IF ( FLREQ(05,04) )                                              &
+           WRITE (NDSCTL,991) 'PHIAW', 0, IU, 'Air-sea energy flux'
+      IF ( FLREQ(05,05) )                                              &
+           WRITE (NDSCTL,991) 'TAUWIX', 0, IU, 'Fr.Vel. U(m/s) '
+      IF ( FLREQ(05,05) )                                              &
+           WRITE (NDSCTL,991) 'TAUWIY', 0, IU, 'Fr.Vel. V(m/s) '
+      IF ( FLREQ(05,06) )                                              &
+           WRITE (NDSCTL,991) 'TAUWNX', 0, IU, 'Fr.Vel. U(m/s) '
+      IF ( FLREQ(05,06) )                                              &
+           WRITE (NDSCTL,991) 'TAUWNY', 0, IU, 'Fr.Vel. V(m/s) '
+      IF ( FLREQ(09,01) )                                              &
+           WRITE (NDSCTL,991) 'DTDYN', 0, IU, 'DTAVG ST (min) '
+      IF ( FLREQ(09,02) )                                              &
+           WRITE (NDSCTL,991) 'FCUT ', 0, IU, 'fcut (Hz)      '
+      IF ( FLREQ(09,03) )                                              &
+           WRITE (NDSCTL,991) 'CFLXY', 0, IU, 'Max CFL XY Prop'
+      IF ( FLREQ(09,04) )                                              &
+           WRITE (NDSCTL,991) 'CFLTH', 0, IU, 'Max CFL TH Prop'
 !
       WRITE (NDSCTL,992)
 !
@@ -586,7 +667,7 @@
               'TDEF     ',I4,'  LINEAR ',I6.2,':',I2.2,'Z',I2.2,A3,I4, &
                2x,I2,A2/                                              &
               'VARS     ',I4)
-  991 FORMAT (A5,2I4,2X,A15)
+  991 FORMAT (A6,2I4,2X,A15)
   992 FORMAT ('ENDVARS')
 !
   999 FORMAT (/'  End of program '/                                   &
@@ -729,7 +810,7 @@
 !/
 !/S      CALL STRACE (IENT, 'GXEXGO')
 !
-!/T      WRITE (NDST,9000) (FLREQ(J),J=1,NOGRD)
+!/T      WRITE (NDST,9000) ((FLREQ(J,K),J=1,NOGRP), K=1,NGRPP)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
@@ -814,22 +895,33 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Loop over output fields.
 !
-      DO J=1, NOGRD
-        IF ( FLREQ(J) ) THEN
+      DO J=1, NOGRP
+       DO K=1, NGRPP
+!        WRITE(*,*)J,K,FLREQ(J,K)
+        IF ( FLREQ(J,K) ) THEN
 !
-!/T            WRITE (NDST,9020) IDOUT(J)
+! Set array dimension flags
+        FLONE = .FALSE.
+        FLTWO = .FALSE.
+        FLDIR = .FALSE.
+        FLTRI = .FALSE.
+        FLPRT = .FALSE. 
+!
+!/T            WRITE (NDST,9020) IDOUT(J,K)
 !
 ! 2.a Set output arrays and parameters
 !
 !     Water depth
 !
-            IF ( J .EQ.  1 ) THEN
+            IF ( J.EQ.1 .AND. K.EQ.1 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, DW(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
 !     Current
 !
-              ELSE IF ( J .EQ.  2 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.2 ) THEN
+                FLTWO = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CX(1:NSEA)          &
                                                         , MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CY(1:NSEA)          &
@@ -837,7 +929,8 @@
 !
 !     Wind speed
 !
-              ELSE IF ( J .EQ.  3 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.3 ) THEN
+                FLTWO = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UA(1:NSEA)          &
                                                         , MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, UD(1:NSEA)          &
@@ -845,53 +938,57 @@
 !
 !     Air-sea temp. dif.
 !
-              ELSE IF ( J .EQ.  4 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.4 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, AS(1:NSEA)          &
                                                         , MAPSF, X1 )
 !
 !     Water level
 !
-              ELSE IF ( J .EQ. 5 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.5 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLV   , MAPSF, X1 )
 !
 !     Ice concentration
 !
-              ELSE IF ( J .EQ. 6 ) THEN
+              ELSE IF ( J.EQ.1 .AND. K.EQ.6 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
 !
 !     Significant wave height
 !
-              ELSE IF ( J .EQ.  7 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.1 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, HS    , MAPSF, X1 )
 !
 !     Mean wave length
 !
-              ELSE IF ( J .EQ.  8 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.2 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLM   , MAPSF, X1 )
 !
 !     Mean zero-crossing wave period T02
 !
-              ELSE IF ( J .EQ.  9 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.3 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
 !
 !     Mean wave period Tm
 !
-              ELSE IF ( J .EQ.  10 ) THEN
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, TMN   , MAPSF, X1 )
+              ELSE IF ( J.EQ.2 .AND. K.EQ.4 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
 !     Mean energy wave period Te
 !
-              ELSE IF ( J .EQ.  11 ) THEN
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, TM0M1   , MAPSF, X1 )
-!
-!     Mean energy flux 
-!
-              ELSE IF ( J .EQ.  12 ) THEN
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, CGE   , MAPSF, X1 )
+              ELSE IF ( J.EQ.2 .AND. K.EQ.5 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, T0M1   , MAPSF, X1 )
 !
 !     Peak period
 !
-              ELSE IF ( J .EQ. 13 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.6 ) THEN
+                FLONE = .TRUE.
                 DO ISEA=1, NSEA
                   IF ( FP0(ISEA) .NE. UNDEF ) THEN
                       FP0(ISEA) = 1. / FP0(ISEA)
@@ -901,22 +998,26 @@
 !
 !     Mean wave direction
 !
-              ELSE IF ( J .EQ.  14 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.7 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THM   , MAPSF, X1 )
 !
 !     Directional spread
 !
-              ELSE IF ( J .EQ. 15 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.8 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THS   , MAPSF, X1 )
 !
 !     Peak direction
 !
-              ELSE IF ( J .EQ. 16 ) THEN
+              ELSE IF ( J.EQ.2 .AND. K.EQ.9 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THP0  , MAPSF, X1 )
 !
 !     Partitioned wave heights
 !
-              ELSE IF ( J .EQ. 17 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.1 ) THEN
+                FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PHS(:,I),         &
                                                    MAPSF, XA(:,:,I) )
@@ -924,7 +1025,8 @@
 !
 !     Partitioned peak period
 !
-              ELSE IF ( J .EQ. 18 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.2 ) THEN
+                FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PTP(:,I),         &
                                                    MAPSF, XA(:,:,I) )
@@ -932,7 +1034,8 @@
 !
 !     Partitioned wave leangths (peak)
 !
-              ELSE IF ( J .EQ. 19 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.3 ) THEN
+                FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PLP(:,I),         &
                                                    MAPSF, XA(:,:,I) )
@@ -940,7 +1043,8 @@
 !
 !     Partitioned directions
 !
-              ELSE IF ( J .EQ. 20 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.4 ) THEN
+                FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PTH(:,I),         &
                                                    MAPSF, XA(:,:,I) )
@@ -948,7 +1052,8 @@
 !
 !     Partitioned direstional spread
 !
-              ELSE IF ( J .EQ. 21 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.5 ) THEN
+                FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PSI(:,I),         &
                                                    MAPSF, XA(:,:,I) )
@@ -956,7 +1061,8 @@
 !
 !     Partitioned wind sea fraction
 !
-              ELSE IF ( J .EQ. 22 ) THEN
+              ELSE IF ( J.EQ.4 .AND. K.EQ.6 ) THEN
+                FLPRT = .TRUE.
                 DO I=0, NOSWLL
                   CALL W3S2XY ( NSEA, NSEA, NX, NY, PWS(:,I),         &
                                                    MAPSF, XA(:,:,I) )
@@ -964,21 +1070,61 @@
 !
 !     Total wind sea fraction
 !
-              ELSE IF ( J .EQ. 23 ) THEN
-                DO I=0, NOSWLL
-                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST(:),MAPSF, X1 )
-                  END DO
+              ELSE IF ( J.EQ.4 .AND. K.EQ.7 ) THEN
+                FLONE = .TRUE.
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST ,MAPSF, X1 )
 !
 !     Number of partitions
 !
-              ELSE IF ( J .EQ. 24 ) THEN
-                DO I=0, NOSWLL
-                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR(:), MAPSF, X1 )
-                  END DO
+              ELSE IF ( J.EQ.4 .AND. K.EQ.8 ) THEN
+                FLONE = .TRUE.
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR , MAPSF, X1 )
+!
+!     Friction velocity
+!
+              ELSE IF ( J.EQ.5 .AND. K.EQ.1 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, UST   (1:NSEA)      &
+                                                        , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, USTDIR(1:NSEA)      &
+                                                        , MAPSF, XY )
+!
+!     Charnock parameter
+!
+              ELSE IF ( J.EQ.5 .AND. K.EQ.2 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, CHARN , MAPSF, X1 )
+!
+!     Mean energy flux 
+!
+              ELSE IF ( J.EQ.5 .AND. K.EQ.3 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, CGE   , MAPSF, X1 )
+!
+!     Air-sea energy flux 
+!
+              ELSE IF ( J.EQ.5 .AND. K.EQ.4 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, PHIAW , MAPSF, X1 )
+!
+!     Net supported wave stress
+!
+              ELSE IF ( J.EQ.5 .AND. K.EQ.5 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUWIX, MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUWIY, MAPSF, XY )
+!
+!     Net supported wave stress
+!
+              ELSE IF ( J.EQ.5 .AND. K.EQ.6 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUWNX, MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, TAUWNY, MAPSF, XY )
 !
 !     Average source term time step
 !
-              ELSE IF ( J .EQ. 25 ) THEN
+              ELSE IF ( J.EQ.9 .AND. K.EQ.1 ) THEN
+                FLONE = .TRUE.
                 DO ISEA=1, NSEA
                   IF ( DTDYN(ISEA) .NE. UNDEF )                       &
                        DTDYN(ISEA) = DTDYN(ISEA) / 60.
@@ -987,60 +1133,60 @@
 !
 !     Cut-off frequency
 !
-              ELSE IF ( J .EQ. 26 ) THEN
+              ELSE IF ( J.EQ.9 .AND. K.EQ.2 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FCUT  , MAPSF, X1 )
 !
 !     Max CFL step for XY propagation
 !
-              ELSE IF ( J .EQ. 27 ) THEN
+              ELSE IF ( J.EQ.9 .AND. K.EQ.3 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLXYMAX  , MAPSF, X1 )
 !
 !     Max CFL step for directional propagation
 !
-              ELSE IF ( J .EQ. 28 ) THEN
+              ELSE IF ( J.EQ.9 .AND. K.EQ.4 ) THEN
+                FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLTHMAX , MAPSF, X1 )
-!
-!     Friction velocity
-!
-              ELSE IF ( J .EQ.  29 ) THEN
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, UST   (1:NSEA)      &
-                                                        , MAPSF, XX )
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, USTDIR(1:NSEA)      &
-                                                        , MAPSF, XY )
 !!
 !! Not yet coded onto control file list (section 6 above)
-!!
-!!    Near-bottom amplitude
-!!
-!              ELSE IF ( J .EQ. 38 ) THEN
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, ABA   , MAPSF, XX )
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, ABD   , MAPSF, XY )
-!!
-!!     Near-bottom velocity
-!!
-!              ELSE IF ( J .EQ. 39 ) THEN
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, UBA   , MAPSF, XX )
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, UBD   , MAPSF, XY )
-!!
-!!     Radiation stresses
-!!
-!              ELSE IF ( J .EQ. 43 ) THEN
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, SXX   , MAPSF, X1 )
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, SYY   , MAPSF, XX )
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, SXY   , MAPSF, XY )
-!!
-!!     User defined #1
-!!
-!              ELSE IF ( J .EQ. 52 ) THEN
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, USERO(:,1)          &
-!                                                        , MAPSF, X1 )
-!!
-!!     User defined #2
-!!
-!              ELSE IF ( J .EQ. 53 ) THEN
-!                CALL W3S2XY ( NSEA, NSEA, NX, NY, USERO(:,2)          &
-!                                                        , MAPSF, X1 )
-!!
+!
+!    Near-bottom amplitude
+!
+              ELSE IF ( J.EQ.7 .AND. K.EQ.1 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, ABA   , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, ABD   , MAPSF, XY )
+!
+!     Near-bottom velocity
+!
+              ELSE IF ( J.EQ.7 .AND. K.EQ.2 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, UBA   , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, UBD   , MAPSF, XY )
+!
+!     Radiation stresses
+!
+              ELSE IF ( J.EQ.6 .AND. K.EQ.1 ) THEN
+                FLTWO = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, SXX   , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, SYY   , MAPSF, XX )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, SXY   , MAPSF, XY )
+!
+!     User defined #1
+!
+              ELSE IF ( J.EQ.10 .AND. K.EQ.1 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, USERO(:,1)          &
+                                                        , MAPSF, X1 )
+!
+!     User defined #2
+!
+              ELSE IF ( J.EQ.10 .AND. K.EQ.2 ) THEN
+                FLONE = .TRUE.
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, USERO(:,2)          &
+                                                        , MAPSF, X1 )
+!
               ELSE
                 WRITE (NDSE,999)
                 CALL EXTCDE ( 1 )
@@ -1051,7 +1197,7 @@
 !
 !     3D array fields
 !
-            IF ( J.EQ.43 ) THEN
+            IF ( FLTRI ) THEN
                 WRITE (NDSDAT)                                        &
                       ((X1(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
                 WRITE (NDSDAT)                                        &
@@ -1061,7 +1207,7 @@
 !
 !     Partitions parameters
 !
-              ELSE IF ( J.GE.17 .AND. J.LE.22 ) THEN
+              ELSE IF ( FLPRT ) THEN
                 DO I=0, NOSWLL
                   WRITE (NDSDAT)                                      &
                     ((XA(IX,IY,I),IX=IX0,IXN),IY=IY0,IYN)
@@ -1069,15 +1215,15 @@
 !
 !     2D array fields
 !
-              ELSE IF ( J.EQ.2 .OR. J.EQ.3 .OR. J.EQ.29 ) THEN
+              ELSE IF ( FLTWO ) THEN
                 WRITE (NDSDAT)                                        &
                       ((XX(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
                 WRITE (NDSDAT)                                        &
                       ((XY(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
-              ELSE
 !
 !     Scalars
 !
+              ELSE IF ( FLONE ) THEN 
                 WRITE (NDSDAT)                                        &
                       ((X1(IX,IY),IX=IX0,IXN),IY=IY0,IYN)
               END IF
@@ -1086,6 +1232,7 @@
 !
           END IF
         END DO
+       END DO
 !
       RETURN
 !

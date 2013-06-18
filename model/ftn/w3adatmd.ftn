@@ -1,11 +1,10 @@
-!/ ------------------------------------------------------------------- /
       MODULE W3ADATMD
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Oct-2010 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -21,8 +20,10 @@
 !/    29-Oct-2010 : Adding unstructured grid data.      ( version 3.14 )
 !/                  (A. Roland and F. Ardhuin) 
 !/    31-Oct-2010 : Adding output parameters            ( version 3.14 )
+!/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.TBD )
+!/                  Add W3XETA.
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -79,37 +80,74 @@
 !      U10D      R.A.  Public   Wind direction used.
 !      AS        R.A.  Public   Stability parameter.
 !      CX/Y      R.A.  Public   Current components.
-!      EMN       R.A.  Public   Mean energy.
-!      FMN       R.A.  Public   Mean frequency.
-!      WNM       R.A.  Public   Mean wavenumber.
-!      AMX       R.A.  Public   Spectral maximum.
-!      CDS       R.A.  Public   Drag coefficient.
-!      Z0S       R.A.  Public   Roughness parameter.
+!
 !      HS        R.A.  Public   Wave Height.
 !      WLM       R.A.  Public   Mean wave length.
-!      TMN       R.A.  Public   Mean wave period.
+!      T02       R.A.  Public   Mean wave period (m0,2).
+!      T0M1      R.A.  Public   Mean wave period (m0,-1).
+!      T01       R.A.  Public   Mean wave period (m0,1).
+!      FP0       R.A.  Public   Peak frequency.
 !      THM       R.A.  Public   Mean wave direction.
 !      THS       R.A.  Public   Mean directional spread.
-!      FP0       R.A.  Public   Peak frequency.
 !      THP0      R.A.  Public   Peak direction.
-!      FP1       R.A.  Public   Wind sea peak frequency.
-!      THP1      R.A.  Public   Wind sea peak direction.
-!      DTDYN     R.A.  Public   Mean dynamic time step (raw).
-!      FCUT      R.A.  Public   Cut-off frequency for tail.
+!
+!      CHARN     R.A.  Public   Charnock parameter for air-sea friction.
+!      CGE       R.A.  Public   Energy flux.
+!      PHIAW     R.A.  Public   Wind to wave energy flux.
+!      TAUWIX/Y  R.A.  Public   Wind to wave energy flux.
+!      TAUWNX/Y  R.A.  Public   Wind to wave energy flux.
+!      WHITECAP  R.A.  Public    1 : Whitecap coverage
+!                                2 : Whitecap thickness
+!                                3 : Mean breaking height
+!                                4 : Mean breaking height
+!
+!      Sxx       R.A.  Public   Radiation stresses.
+!      TAUOX/Y   R.A.  Public   Wave-ocean momentum flux.
+!      BHD       R.A.  Public   Wave-induced pressure (J term, Smith JPO 2006)
+!      PHIOC     R.A.  Public   Waves to ocean energy flux.
+!      TUSX/Y    R.A.  Public   Volume transport associated to Stokes drift.
+!      USSX/Y    R.A.  Public   Surface Stokes drift.
+!
+!      US3D      R.A.  Public   3D Stokes drift.
+!
 !      ABA       R.A.  Public   Near-bottom rms wave ex. apmplitude.
 !      ABD       R.A.  Public   Corresponding direction.
 !      UBA       R.A.  Public   Near-bottom rms wave velocity.
 !      UBD       R.A.  Public   Corresponding direction.
-!      Sxx       R.A.  Public   Radiation stresses.
+!      BEDFORMS  R.A.  Public   Bed for parameters
+!      PHIBBL    R.A.  Public   Energy loss in WBBL.
+!      TAUBBL    R.A.  Public   Momentum loss in WBBL.
+!
+!      MSSX/Y    R.A.  Public   Surface mean square slopes in X and Y direction.
+!      MSCX/Y    R.A.  Public   Phillips constant.
+!
+!      DTDYN     R.A.  Public   Mean dynamic time step (raw).
+!      FCUT      R.A.  Public   Cut-off frequency for tail.
+!      CFLXYMAX  R.A.  Public   Max. CFL number for spatial advection.
+!      CFLTHMAX  R.A.  Public   Max. CFL number for refraction.
+!      CFLKMAX   R.A.  Public   Max. CFL number for wavenumber shift.
+!
+!    Old parameters not yet in new structure ...
+!
+!      FP1       R.A.  Public   Wind sea peak frequency. (parked in 2)
+!      THP1      R.A.  Public   Wind sea peak direction. (parked in 2)
+!
+!    Orphans, commented out here, now automatic arrays in W3WAVE, ....
+!
+!      Z0S       R.A.  Public   Roughness parameter.
+!      CDS       R.A.  Public   Drag coefficient.
+!      DRAT      R.A.  Public   Density ration air/water. Was
+!                               placeholder only. Now scalar in W3SRCE,
+!      TAUWX/Y   R.A.  Public   Stresses particularly for PALM.
+!      EMN       R.A.  Public   Mean energy.
+!      FMN       R.A.  Public   Mean frequency.
+!      WNM       R.A.  Public   Mean wavenumber.
+!      AMX       R.A.  Public   Spectral maximum.
+!
+!    Derivatives in space ....
+!
 !      DDDx      R.A.  Public   Spatial derivatives of the depth.
 !      DCxDx     R.A.  Public   Spatial dirivatives of the current.
-!      PHIAW     R.A.  Public   Wind to wave energy flux.
-!      CHARN     R.A.  Public   Charnock parameter for air-sea friction.
-!      PHIOC     R.A.  Public   Waves to ocean energy flux.
-!      TUSX/Y    R.A.  Public   Volume transport associated to Stokes drift.
-!      USSX/Y    R.A.  Public   Surface Stokes drift.
-!      MSSX/Y    R.A.  Public   Surface mean square slopes in X and Y direction.
-!      JSMITH    R.A.  Public   Wave-induced pressure (J term in Smith JPO 2006)
 !
 !    Mean parameters from partitiones spectra, 2D array with el.
 !    0 holding wind sea data, and 1:NOSWLL holding swell fields.
@@ -122,7 +160,7 @@
 !      PSI       R.A.  Public   Mean spread of partition.
 !      PWS       R.A.  Public   Wind sea fraction of partition.
 !
-!      PWST      R.A.  Public   Total wind sea fractio
+!      PWST      R.A.  Public   Total wind sea fraction.
 !      PNR       R.A.  Public   Number of partitions found.
 !
 !     Empty dummy fields (NOEXTR)
@@ -209,7 +247,7 @@
 !      FLCOLD    Log.  Public   Flag for 'cold start' of model.
 !      FLIWND    Log.  Public   Flag for initialization of model
 !                               based on wind.
-!      AINIT     Log.  Public   Flag for array initialization.
+!      AINIT(2)  Log.  Public   Flag for array initialization.
 !      FL_ALL    Log.  Public   Flag for all/partial  initialization.
 !     ----------------------------------------------------------------
 !
@@ -221,6 +259,7 @@
 !      W3DIMA    Subr. Public   Set dimensions of arrays.
 !      W3DMNL    Subr. Public   Set dimensions of arrays.   ( !/NL1 )
 !      W3SETA    Subr. Public   Point to selected grid / model.
+!      W3XETA    Subr. Public   Like W3SETA for expanded output arrays.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -261,37 +300,96 @@
 !/
       TYPE WADAT
 !
+! The grid
+!
         REAL, POINTER         :: CG(:,:), WN(:,:)
+!
+! Arrays for processing model input
 !
         REAL, POINTER         :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
+! Output fields group 1)
+!
         REAL, POINTER         :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
-                                 AS(:), CX(:), CY(:), EMN(:), FMN(:), &
-                                 WNM(:), AMX(:), CDS(:),    &
-                                 Z0S(:),      &
-                                 HS(:), WLM(:), TMN(:), THM(:),       &
-                                 THS(:), FP0(:), THP0(:), FP1(:),     &
-                                 THP1(:), DTDYN(:), FCUT(:),          &
-                                 ABA(:), ABD(:), UBA(:), UBD(:),      &
-                                 SXX(:), SYY(:), SXY(:), USERO(:,:),  &
-                                 DRAT(:), TAUOX(:), TAUOY(:), &
-                                 TAUWX(:), TAUWY(:),TAUWIX(:),        &
-                                 TAUWIY(:),TAUWNX(:), TAUWNY(:),      & 
-                                 PHIAW(:), CHARN(:), PHIOC(:),&
-                                 TUSX(:), TUSY(:), USSX(:), USSY(:),  &
-                                 MSSX(:), MSSY(:), MSCX(:), MSCY(:),  &
-                                 PRMS(:), TPMS(:), JSMITH(:),         &
-                                 BEDFORMS(:,:), WHITECAP(:,:),        &
-                                 CFLXYMAX(:), CFLTHMAX(:),            &
-                                 CFLKMAX(:), TAUBBL(:,:),             &
-                                 PHIBBL(:), T02(:), CGE(:), TM0M1(:) 
-        REAL, POINTER         :: P2SMS(:,:)
-        REAL, POINTER         :: SXX3D(:,:), US3D(:,:)
-        REAL, POINTER         :: PHS(:,:), PTP(:,:), PLP(:,:),        &
-                                 PTH(:,:), PSI(:,:), PWS(:,:),        &
-                                 PWST(:), PNR(:)
+                                 AS(:), CX(:), CY(:)
+!
+! Output fields group 2)
+!
+        REAL, POINTER         ::  HS(:),  WLM(:),  T02(:), T0M1(:),   &
+                                  T01 (:),  FP0(:),  THM(:),          &
+                                  THS(:),  THP0(:),  FP1(:),  THP1(:)
+        REAL, POINTER         :: XHS(:), XWLM(:), XT02(:), XT0M1(:),  &
+                                 XT01 (:), XFP0(:), XTHM(:),          &
+                                 XTHS(:), XTHP0(:), XFP1(:), XTHP1(:)
+!
+! Output fields group 3)
+!
+        REAL, POINTER         ::  EF(:,:),  TH1M(:,:),  STH1M(:,:),   &
+                                  TH2M(:,:),  STH2M(:,:) !, WN(:,:)
+        REAL, POINTER         ::  XEF(:,:),  XTH1M(:,:),  XSTH1M(:,:),&
+                                  XTH2M(:,:),  XSTH2M(:,:) !, XWN(:,:)
+!
+! Output fields group 4)
+!
+        REAL, POINTER         ::  PHS(:,:),  PTP(:,:),  PLP(:,:),     &
+                                  PTH(:,:),  PSI(:,:),  PWS(:,:),     &
+                                  PWST(:),  PNR(:)
+        REAL, POINTER         :: XPHS(:,:), XPTP(:,:), XPLP(:,:),     &
+                                 XPTH(:,:), XPSI(:,:), XPWS(:,:),     &
+                                 XPWST(:), XPNR(:)
+!
+! Output fields group 5)
+!
+        REAL, POINTER         ::  CHARN(:),  CGE(:),  PHIAW(:),       &
+                                  TAUWIX(:),  TAUWIY(:),  TAUWNX(:),  &
+                                  TAUWNY(:),  WHITECAP(:,:)
+        REAL, POINTER         :: XCHARN(:), XCGE(:), XPHIAW(:),       &
+                                 XTAUWIX(:), XTAUWIY(:), XTAUWNX(:),  &
+                                 XTAUWNY(:), XWHITECAP(:,:)
+!
+! Output fields group 6)
+!
+        REAL, POINTER         ::  SXX(:),  SYY(:),  SXY(:),  TAUOX(:),&
+                                  TAUOY(:),  BHD(:),  PHIOC(:),       &
+                                  TUSX(:),  TUSY(:),  USSX(:),        &
+                                  USSY(:),  PRMS(:),  TPMS(:)
+        REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:)
+        REAL, POINTER         :: XSXX(:), XSYY(:), XSXY(:), XTAUOX(:),&
+                                 XTAUOY(:), XBHD(:), XPHIOC(:),       &
+                                 XTUSX(:), XTUSY(:), XUSSX(:),        &
+                                 XUSSY(:), XPRMS(:), XTPMS(:)
+        REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:)
+!
+! Output fields group 7)
+!
+        REAL, POINTER         ::  ABA(:),  ABD(:),  UBA(:),  UBD(:),  &
+                                  BEDFORMS(:,:),  PHIBBL(:),          &
+                                  TAUBBL(:,:)
+        REAL, POINTER         :: XABA(:), XABD(:), XUBA(:), XUBD(:),  &
+                                 XBEDFORMS(:,:), XPHIBBL(:),          &
+                                 XTAUBBL(:,:)
+!
+! Output fields group 8)
+!
+        REAL, POINTER         ::  MSSX(:),  MSSY(:),  MSCX(:),  MSCY(:)
+        REAL, POINTER         :: XMSSX(:), XMSSY(:), XMSCX(:), XMSCY(:)
+!
+! Output fields group 9)
+!
+        REAL, POINTER         ::  DTDYN(:),  FCUT(:),  CFLXYMAX(:),   &
+                                  CFLTHMAX(:),  CFLKMAX(:)
+        REAL, POINTER         :: XDTDYN(:), XFCUT(:), XCFLXYMAX(:),   &
+                                 XCFLTHMAX(:), XCFLKMAX(:)
+!
+! Output fields group 10)
+!
+        REAL, POINTER         ::  USERO(:,:)
+        REAL, POINTER         :: XUSERO(:,:)
+!
+! Spatial derivatives
+!
         REAL, POINTER         :: DDDX(:,:), DDDY(:,:), DCXDX(:,:),    &
                                  DCYDX(:,:), DCXDY(:,:), DCYDY(:,:)
 !
@@ -340,7 +438,7 @@
 !
         INTEGER               :: ITIME, IPASS, IDLAST, NSEALM
         REAL, POINTER         :: ALPHA(:,:)
-        LOGICAL               :: AINIT, FL_ALL, FLCOLD, FLIWND
+        LOGICAL               :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
 !
       END TYPE WADAT
 !/
@@ -357,29 +455,43 @@
                                  AS0(:), ASI(:), ATRNX(:,:), ATRNY(:,:)
 !
       REAL, POINTER           :: DW(:), UA(:), UD(:), U10(:), U10D(:),&
-                                 AS(:), CX(:), CY(:), EMN(:), FMN(:), &
-                                 WNM(:), AMX(:), CDS(:), Z0S(:),      &
-                                 HS(:), WLM(:), TMN(:), THM(:),       &
-                                 THS(:), FP0(:), THP0(:), FP1(:),     &
-                                 THP1(:), DTDYN(:), FCUT(:),          &
-                                 ABA(:), ABD(:), UBA(:), UBD(:),      &
-                                 SXX(:), SYY(:), SXY(:), USERO(:,:),  &
-                                 DRAT(:), TAUOX(:), TAUOY(:), &
-                                 TAUWX(:), TAUWY(:),TAUWIX(:),        &
-                                 TAUWIY(:), TAUWNX(:), TAUWNY(:),     &
-                                 PHIAW(:), CHARN(:), PHIOC(:),&
-                                 TUSX(:), TUSY(:), USSX(:), USSY(:),  &
-                                 MSSX(:), MSSY(:), MSCX(:), MSCY(:),  &
-                                 PRMS(:), TPMS(:), JSMITH(:),         &
-                                 BEDFORMS(:,:), WHITECAP(:,:),        &
-                                 CFLXYMAX(:), CFLTHMAX(:),            &
-                                 CFLKMAX(:),TAUBBL(:,:),              &
-                                 PHIBBL(:), T02(:), CGE(:), TM0M1(:)
-      REAL, POINTER           :: P2SMS(:,:)
-      REAL, POINTER           :: SXX3D(:,:), US3D(:,:)
+                                 AS(:), CX(:), CY(:)
+!
+      REAL, POINTER           :: HS(:), WLM(:),  T02(:), T0M1(:),     &
+                                 T01 (:), FP0(:), THM(:), THS(:),     &
+                                 THP0(:), FP1(:), THP1(:)
+!
+      REAL, POINTER           :: EF(:,:), TH1M(:,:), STH1M(:,:),      &
+                                 TH2M(:,:), STH2M(:,:)
+!
       REAL, POINTER           :: PHS(:,:), PTP(:,:), PLP(:,:),        &
                                  PTH(:,:), PSI(:,:), PWS(:,:),        &
                                  PWST(:), PNR(:)
+!
+      REAL, POINTER           :: CHARN(:), CGE(:), PHIAW(:),          &
+                                 TAUWIX(:), TAUWIY(:), TAUWNX(:),     &
+                                 TAUWNY(:), WHITECAP(:,:)
+!
+      REAL, POINTER           :: SXX(:), SYY(:), SXY(:), TAUOX(:),    &
+                                 TAUOY(:), BHD(:), PHIOC(:),          &
+                                 TUSX(:), TUSY(:), USSX(:), USSY(:),  &
+                                 PRMS(:), TPMS(:)
+      REAL, POINTER           :: P2SMS(:,:), US3D(:,:)
+!
+      REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
+                                 BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
+!
+      REAL, POINTER           :: MSSX(:), MSSY(:), MSCX(:), MSCY(:)
+!
+      REAL, POINTER           :: DTDYN(:), FCUT(:), CFLXYMAX(:),      &
+                                 CFLTHMAX(:), CFLKMAX(:)
+!
+      REAL, POINTER           :: USERO(:,:)
+!
+!     REAL, POINTER           :: Z0S(:), CDS(:), DRAT(:)
+!     REAL, POINTER           :: TAUWX(:), TAUWY(:)
+!     REAL, POINTER           :: EMN(:), FMN(:), WNM(:), AMX(:)
+!
       REAL, POINTER           :: DDDX(:,:), DDDY(:,:), DCXDX(:,:),    &
                                  DCYDX(:,:), DCXDY(:,:), DCYDY(:,:)
 !
@@ -427,7 +539,7 @@
 !
       INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM
       REAL, POINTER           :: ALPHA(:,:)
-      LOGICAL, POINTER        :: AINIT, FL_ALL, FLCOLD, FLIWND
+      LOGICAL, POINTER        :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -524,6 +636,7 @@
         WADATS(I)%IPASS  = 0
         WADATS(I)%IDLAST = 0
         WADATS(I)%AINIT  = .FALSE.
+        WADATS(I)%AINIT2 = .FALSE.
         WADATS(I)%FL_ALL = .FALSE.
 !/NL1        WADATS(I)%NLINIT  = .FALSE.
         END DO
@@ -550,7 +663,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Oct-2010 !
+!/                  | Last update :         25-Dec-2012 !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -560,6 +673,7 @@
 !/                  Add aditional undefined arrays.
 !/    22-Feb-2008 ; Modify MAPTH2 declaration.          ( version 3.14 )
 !/    31-Oct-2010 : Added initialization of CX,CY,DW    ( version 3.14 )
+!/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.TBD )
 !/
 !  1. Purpose :
 !
@@ -620,9 +734,9 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
-                          NSEAL, NSPEC, NTH, P2MSF, GTYPE, UNGTYPE
-      USE W3GDATMD, ONLY: COUG_2D, COUG_RAD3D, COUG_US3D
-      USE W3ODATMD, ONLY: NAPROC, NOSWLL, NOEXTR, UNDEF
+                          NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
+                          NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
       USE W3IDATMD, ONLY: FLCUR, FLWIND
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -682,94 +796,198 @@
 !/DIST      NSEALM = 1 + (NSEA-1)/NAPROC
       NXXX   = NSEALM * NAPROC
 !
-      ALLOCATE ( WADATS(IMOD)%DW(0:NSEA) , WADATS(IMOD)%UA(0:NSEA)  , &
-                 WADATS(IMOD)%UD(0:NSEA) , WADATS(IMOD)%U10(NSEA)   , &
-                 WADATS(IMOD)%U10D(NSEA) , WADATS(IMOD)%AS(0:NSEA)  , &
-                 WADATS(IMOD)%CX(0:NSEA) , WADATS(IMOD)%CY(0:NSEA)  , &
-                 WADATS(IMOD)%EMN(NSEA)  , WADATS(IMOD)%FMN(NSEA)   , &
-                 WADATS(IMOD)%WNM(NSEA)  , WADATS(IMOD)%AMX(NSEA)   , &
-                 WADATS(IMOD)%CDS(NSEA)  , WADATS(IMOD)%Z0S(NSEA)   , &
-                 WADATS(IMOD)%HS(NXXX)   , WADATS(IMOD)%WLM(NXXX)   , &
-                 WADATS(IMOD)%TMN(NXXX)  , WADATS(IMOD)%THM(NXXX)   , &
-                 WADATS(IMOD)%THS(NXXX)  , WADATS(IMOD)%FP0(NXXX)   , &
-                 WADATS(IMOD)%THP0(NXXX) , WADATS(IMOD)%FP1(NXXX)   , &
-                 WADATS(IMOD)%THP1(NXXX) , WADATS(IMOD)%DTDYN(NXXX) , &
-                 WADATS(IMOD)%FCUT(NXXX) , WADATS(IMOD)%ABA(NXXX)   , &
-                 WADATS(IMOD)%ABD(NXXX)  , WADATS(IMOD)%UBA(NXXX)   , &
-                 WADATS(IMOD)%UBD(NXXX)  , WADATS(IMOD)%SXX(NXXX)   , &
-                 WADATS(IMOD)%SYY(NXXX)  , WADATS(IMOD)%SXY(NXXX)   , &
-                 WADATS(IMOD)%USERO(NXXX,NOEXTR)                   , &
-                 WADATS(IMOD)%DRAT(0:NSEA)                          , &
-                 WADATS(IMOD)%TAUOX(0:NSEA)                         , &
-                 WADATS(IMOD)%TAUOY(0:NSEA)                         , &
-                 WADATS(IMOD)%JSMITH(0:NSEA)                        , &
-                 WADATS(IMOD)%TAUWX(0:NSEA)                         , &
-                 WADATS(IMOD)%TAUWY(0:NSEA)                         , &
-                 WADATS(IMOD)%TAUWIX(0:NSEA)                        , &
-                 WADATS(IMOD)%TAUWIY(0:NSEA)                        , &
-                 WADATS(IMOD)%TAUWNX(0:NSEA)                        , &
-                 WADATS(IMOD)%TAUWNY(0:NSEA)                        , &
-                 WADATS(IMOD)%TAUBBL(0:NSEA,2)                      , &
-                 WADATS(IMOD)%PHIBBL(0:NSEA)                        , & 
-                 WADATS(IMOD)%PHIAW(0:NSEA),                          &
-                 WADATS(IMOD)%CHARN(0:NSEA)                         , &
-                 WADATS(IMOD)%PHIOC(0:NSEA)                         , &
-                 WADATS(IMOD)%BEDFORMS(0:NSEA,3)                    , &
-                 WADATS(IMOD)%WHITECAP(0:NSEA,4)                    , &
-                 WADATS(IMOD)%CFLXYMAX(NXXX)                        , &
-                 WADATS(IMOD)%CFLTHMAX(NXXX)                        , &
-                 WADATS(IMOD)%CFLKMAX(NXXX)                         , &
-                 WADATS(IMOD)%TUSX(NXXX) , WADATS(IMOD)%TUSY(NXXX)  , &
-                 WADATS(IMOD)%USSX(NXXX) , WADATS(IMOD)%USSY(NXXX)  , &
-                 WADATS(IMOD)%MSSX(NXXX) , WADATS(IMOD)%MSSY(NXXX)  , &
-                 WADATS(IMOD)%MSCX(NXXX) , WADATS(IMOD)%MSCY(NXXX)  , &
-                 WADATS(IMOD)%PRMS(NXXX) , WADATS(IMOD)%TPMS(NXXX)  , &
-                 WADATS(IMOD)%T02(NXXX)  , WADATS(IMOD)%CGE(NXXX)   , &
-                 WADATS(IMOD)%TM0M1(NXXX) )
-      IF (COUG_RAD3D) ALLOCATE (WADATS(IMOD)%SXX3D(NXXX,NK*3))
-      IF (COUG_US3D) ALLOCATE (WADATS(IMOD)%US3D(NXXX,NK*2))
-                 IF (P2MSF(1).GT.0) THEN 
-                   ALLOCATE(WADATS(IMOD)%P2SMS(NXXX,P2MSF(2):P2MSF(3)))
-                   WADATS(IMOD)%P2SMS(:,P2MSF(2):P2MSF(3))=0.
-                   END IF
+!     Output and input parameteres by output type
 !
-! Initialize arrays to zero
+!  1) Forcing fields (these arrays are always needed)
 !
-      WADATS(IMOD)%FCUT(:)=0.
+      ALLOCATE ( WADATS(IMOD)%DW(0:NSEA) )
+      WADATS(IMOD)%DW(:)=0.            
+!
+      ALLOCATE ( WADATS(IMOD)%CX(0:NSEA) , WADATS(IMOD)%CY(0:NSEA) )
       WADATS(IMOD)%CX(:)=0.
       WADATS(IMOD)%CY(:)=0.     
-      WADATS(IMOD)%DW(:)=0.            
-      WADATS(IMOD)%TAUWX(:)=0.
-      WADATS(IMOD)%TAUWY(:)=0.
-      WADATS(IMOD)%TAUWIX(:)=0.
-      WADATS(IMOD)%TAUWIY(:)=0.
-      WADATS(IMOD)%TAUWNX(:)=0.
-      WADATS(IMOD)%TAUWNY(:)=0.
-      WADATS(IMOD)%TAUOX(:)=0.
-      WADATS(IMOD)%TAUOY(:)=0.
-      WADATS(IMOD)%JSMITH(:)=0.
-      WADATS(IMOD)%PHIAW(:)=0.
-      WADATS(IMOD)%CHARN(:)=0.
-      WADATS(IMOD)%PHIOC(:)=0.
-      WADATS(IMOD)%BEDFORMS(:,:)=0.
-      WADATS(IMOD)%WHITECAP(:,:)=0.
-      WADATS(IMOD)%TAUBBL(:,:)=0.
-      WADATS(IMOD)%PHIBBL(:)=0.
-      WADATS(IMOD)%CFLXYMAX(:)=0.
-                 WADATS(IMOD)%CFLTHMAX(:)=0.
-                 WADATS(IMOD)%CFLKMAX(:)=0.
-                 IF (COUG_RAD3D) WADATS(IMOD)%SXX3D(:,:)=0.
-                 IF (COUG_US3D) WADATS(IMOD)%US3D(:,:)=0.
 !
-      WADATS(IMOD)%USERO = UNDEF
+      ALLOCATE ( WADATS(IMOD)%UA(0:NSEA) , WADATS(IMOD)%UD(0:NSEA) , &
+                 WADATS(IMOD)%U10(NSEA)  , WADATS(IMOD)%U10D(NSEA) , &
+                 WADATS(IMOD)%AS(0:NSEA) )
 !
-      ALLOCATE ( WADATS(IMOD)%PHS(NXXX,0:NOSWLL),                     &
-                 WADATS(IMOD)%PTP(NXXX,0:NOSWLL),                     &
-                 WADATS(IMOD)%PLP(NXXX,0:NOSWLL),                     &
-                 WADATS(IMOD)%PTH(NXXX,0:NOSWLL),                     &
-                 WADATS(IMOD)%PSI(NXXX,0:NOSWLL),                     &
-                 WADATS(IMOD)%PWS(NXXX,0:NOSWLL),                     &
-                 WADATS(IMOD)%PWST(NXXX), WADATS(IMOD)%PNR(NXXX) )
+!     Water level WLV stored in W3WDATMD
+!     Ice concentration ICE stored in W3WDATMD
+!     Iceberg damping BERG stored in W3WDATMD
+!
+! 2) Standard mean wave parameters
+!    Here, all short arrays are always allocated to reduce logical
+!    checks in all computations. The coresponding full size arrays
+!    are allocated in W3MPIO only as needed to keep the memory
+!    footprint down.
+!
+      ALLOCATE ( WADATS(IMOD)%HS   (NSEALM), WADATS(IMOD)%WLM(NSEALM), &
+                 WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM),&
+                 WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0(NSEALM), &
+                 WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS(NSEALM), &
+                 WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%FP1(NSEALM), &
+                 WADATS(IMOD)%THP1 (NSEALM) )
+!
+      WADATS(IMOD)%HS     = UNDEF
+      WADATS(IMOD)%WLM    = UNDEF
+      WADATS(IMOD)%T02    = UNDEF
+      WADATS(IMOD)%T0M1   = UNDEF
+      WADATS(IMOD)%T01    = UNDEF
+      WADATS(IMOD)%FP0    = UNDEF
+      WADATS(IMOD)%THM    = UNDEF
+      WADATS(IMOD)%THS    = UNDEF
+      WADATS(IMOD)%THP0   = UNDEF
+      WADATS(IMOD)%FP1    = UNDEF
+      WADATS(IMOD)%THP1   = UNDEF
+!
+! 3) Frequency-dependent standard parameters
+!
+      ALLOCATE ( WADATS(IMOD)%EF  (NSEALM,E3DF(2,1):E3DF(3,1)), &
+                 WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)), &
+                 WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)), &
+                 WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,4)), &
+                 WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,5))) 
+      WADATS(IMOD)%EF      = UNDEF
+      WADATS(IMOD)%TH1M    = UNDEF
+      WADATS(IMOD)%STH1M   = UNDEF
+      WADATS(IMOD)%TH2M    = UNDEF
+      WADATS(IMOD)%STH2M   = UNDEF
+!
+! 4) Spectral Partitions parameters
+!
+      ALLOCATE ( WADATS(IMOD)%PHS(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PTP(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PLP(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PTH(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PSI(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PWS(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PWST(NSEALM), WADATS(IMOD)%PNR(NSEALM) )
+!
+      WADATS(IMOD)%PHS    = UNDEF
+      WADATS(IMOD)%PTP    = UNDEF
+      WADATS(IMOD)%PLP    = UNDEF
+      WADATS(IMOD)%PTH    = UNDEF
+      WADATS(IMOD)%PSI    = UNDEF
+      WADATS(IMOD)%PWS    = UNDEF
+      WADATS(IMOD)%PWST   = UNDEF
+      WADATS(IMOD)%PNR    = UNDEF
+!
+! 5) Atmosphere-waves layer
+!
+!    Frcition velocity UST and USTDIR in W3WDATMD
+!
+      ALLOCATE ( WADATS(IMOD)%CHARN   (NSEALM),                       &
+                 WADATS(IMOD)%CGE     (NSEALM),                       &
+                 WADATS(IMOD)%PHIAW   (NSEALM),                       &
+                 WADATS(IMOD)%TAUWIX  (NSEALM),                       &
+                 WADATS(IMOD)%TAUWIY  (NSEALM),                       &
+                 WADATS(IMOD)%TAUWNX  (NSEALM),                       &
+                 WADATS(IMOD)%TAUWNY  (NSEALM),                       &
+                 WADATS(IMOD)%WHITECAP(NSEALM,4) )
+!
+      WADATS(IMOD)%CHARN    = UNDEF
+      WADATS(IMOD)%CGE      = UNDEF
+      WADATS(IMOD)%PHIAW    = UNDEF
+      WADATS(IMOD)%TAUWIX   = UNDEF
+      WADATS(IMOD)%TAUWIY   = UNDEF
+      WADATS(IMOD)%TAUWNX   = UNDEF
+      WADATS(IMOD)%TAUWNY   = UNDEF
+      WADATS(IMOD)%WHITECAP = UNDEF
+!
+! 6) Wave-ocean layer
+!
+      ALLOCATE ( WADATS(IMOD)%SXX   (NSEALM) ,                        &
+                 WADATS(IMOD)%SYY   (NSEALM) ,                        &
+                 WADATS(IMOD)%SXY   (NSEALM) ,                        &
+                 WADATS(IMOD)%TAUOX (NSEALM) ,                        &
+                 WADATS(IMOD)%TAUOY (NSEALM) ,                        &
+                 WADATS(IMOD)%BHD   (NSEALM) ,                        &
+                 WADATS(IMOD)%PHIOC (NSEALM) ,                        &
+                 WADATS(IMOD)%TUSX  (NSEALM) ,                        &
+                 WADATS(IMOD)%TUSY  (NSEALM) ,                        &
+                 WADATS(IMOD)%USSX  (NSEALM) ,                        &
+                 WADATS(IMOD)%USSY  (NSEALM) ,                        &
+                 WADATS(IMOD)%PRMS  (NSEALM) ,                        &
+                 WADATS(IMOD)%TPMS  (NSEALM) )
+!
+! For the 3D arrays: the allocation is performed only if these arrays are allowed
+!                    by specific variables defined through the mod_def file 
+!                    and read by w3iogr, which is called before W3DIMA. 
+      IF (  E3DF(1,1).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)))
+      IF (  E3DF(1,2).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)))
+      IF (  E3DF(1,3).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)))
+      IF (  E3DF(1,4).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,5)))
+      IF (  E3DF(1,5).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,4)))
+      IF (  P2MSF(1).GT.0 ) ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)))
+      IF (  US3DF(1).GT.0 ) ALLOCATE(WADATS(IMOD)%US3D(NSEALM,NK*2)) ! maybe use US3DF(2:3)
+!
+      WADATS(IMOD)%SXX    = UNDEF
+      WADATS(IMOD)%SYY    = UNDEF
+      WADATS(IMOD)%SXY    = UNDEF
+      WADATS(IMOD)%TAUOX  = UNDEF
+      WADATS(IMOD)%TAUOY  = UNDEF
+      WADATS(IMOD)%BHD    = UNDEF
+      WADATS(IMOD)%PHIOC  = UNDEF
+      WADATS(IMOD)%TUSX   = UNDEF
+      WADATS(IMOD)%TUSY   = UNDEF
+      WADATS(IMOD)%USSX   = UNDEF
+      WADATS(IMOD)%USSY   = UNDEF
+      WADATS(IMOD)%PRMS   = UNDEF
+      WADATS(IMOD)%TPMS   = UNDEF
+      WADATS(IMOD)%P2SMS  = UNDEF
+      WADATS(IMOD)%US3D   = UNDEF
+!
+! 7) Wave-bottom layer
+!
+      ALLOCATE ( WADATS(IMOD)%ABA(NSEALM) , WADATS(IMOD)%ABD(NSEALM) , &
+                 WADATS(IMOD)%UBA(NSEALM) , WADATS(IMOD)%UBD(NSEALM) , &
+                 WADATS(IMOD)%BEDFORMS(NSEALM,3),                      &
+                 WADATS(IMOD)%PHIBBL  (NSEALM)  ,                      &
+                 WADATS(IMOD)%TAUBBL  (NSEALM,2) )
+!
+      WADATS(IMOD)%ABA    = UNDEF
+      WADATS(IMOD)%ABD    = UNDEF
+      WADATS(IMOD)%UBA    = UNDEF
+      WADATS(IMOD)%UBD    = UNDEF
+      WADATS(IMOD)%BEDFORMS = UNDEF
+      WADATS(IMOD)%PHIBBL = UNDEF
+      WADATS(IMOD)%TAUBBL = UNDEF
+!
+! 8) Spectrum parameters
+!
+      ALLOCATE ( WADATS(IMOD)%MSSX(NSEALM), WADATS(IMOD)%MSSY(NSEALM), &
+                 WADATS(IMOD)%MSCX(NSEALM), WADATS(IMOD)%MSCY(NSEALM) )
+!
+      WADATS(IMOD)%MSSX   = UNDEF
+      WADATS(IMOD)%MSSY   = UNDEF
+      WADATS(IMOD)%MSCX   = UNDEF
+      WADATS(IMOD)%MSCY   = UNDEF
+!
+! 9) Numerical diagnostics
+!
+!
+      ALLOCATE ( WADATS(IMOD)%DTDYN   (NSEALM) ,                       &
+                 WADATS(IMOD)%FCUT    (NSEALM) ,                       &
+                 WADATS(IMOD)%CFLXYMAX(NSEALM) ,                       &
+                 WADATS(IMOD)%CFLTHMAX(NSEALM) ,                       &
+                 WADATS(IMOD)%CFLKMAX (NSEALM) )
+!
+      WADATS(IMOD)%DTDYN    = UNDEF
+      WADATS(IMOD)%FCUT     = UNDEF
+      WADATS(IMOD)%CFLXYMAX = UNDEF
+      WADATS(IMOD)%CFLTHMAX = UNDEF
+      WADATS(IMOD)%CFLKMAX  = UNDEF
+!
+! 10) User defined
+!
+      ALLOCATE ( WADATS(IMOD)%USERO(NSEALM,NOEXTR) )
+!
+      WADATS(IMOD)%USERO  = UNDEF
 !
       IF ( FL_ALL ) THEN
 !
@@ -871,6 +1089,518 @@
 !/ End of W3DIMA ----------------------------------------------------- /
 !/
       END SUBROUTINE W3DIMA
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3XDMA  ( IMOD, NDSE, NDST, FLAGS )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         26-Dec-2012 !
+!/                  +-----------------------------------+
+!/
+!/    26-Dec-2012 : Origination.                        ( version 3.06 )
+!/
+!  1. Purpose :
+!
+!     Version of W3DIMX for extended ouput arrays only.
+!
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
+                          NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+      USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
+                          NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2,      &
+                          NOGRP, NGRPP
+      USE W3IDATMD, ONLY: FLCUR, FLWIND
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)           :: IMOD, NDSE, NDST
+      LOGICAL, INTENT(IN)           :: FLAGS(NOGRP,NGRPP)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: JGRID, NXXX, I
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/S      CALL STRACE (IENT, 'W3XDMA')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input and module status
+!
+      IF ( NGRIDS .EQ. -1 ) THEN
+          WRITE (NDSE,1001)
+          CALL EXTCDE (1)
+        END IF
+!
+      IF ( IMOD.LT.1 .OR. IMOD.GT.NADATA ) THEN
+          WRITE (NDSE,1002) IMOD, NADATA
+          CALL EXTCDE (2)
+        END IF
+!
+      IF ( WADATS(IMOD)%AINIT2 ) THEN
+          WRITE (NDSE,1003)
+          CALL EXTCDE (3)
+        END IF
+!
+!/T      WRITE (NDST,9000) IMOD
+!
+      JGRID  = IGRID
+      IF ( JGRID .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
+!
+! -------------------------------------------------------------------- /
+! 2.  Allocate arrays
+!
+!/SHRD      NSEALM = NSEA
+!/DIST      NSEALM = 1 + (NSEA-1)/NAPROC
+      NXXX   = NSEALM * NAPROC
+!
+      IF ( FLAGS( 2, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XHS(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XHS(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XWLM(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XWLM(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XT02(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XT02(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XT0M1(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XT0M1(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XT01 (NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XT01 (1) )
+        END IF
+!
+      IF ( FLAGS( 2, 6) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XFP0(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XFP0(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 7) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTHM(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTHM(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 8) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTHS(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTHS(1) )
+        END IF
+!
+      IF ( FLAGS( 2, 9) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTHP0(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTHP0(1) )
+        END IF
+!
+!     IF ( FLAGS( 2,xx) ) THEN
+!         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX) )
+!       ELSE
+!         ALLOCATE ( WADATS(IMOD)%XFP1(1) )
+!       END IF
+!
+!     IF ( FLAGS( 2,xx) ) THEN
+!         ALLOCATE ( WADATS(IMOD)%XTHP1(NXXX) )
+!       ELSE
+!         ALLOCATE ( WADATS(IMOD)%XTHP1(1) )
+!       END IF
+!
+      WADATS(IMOD)%XHS    = UNDEF
+      WADATS(IMOD)%XWLM   = UNDEF
+      WADATS(IMOD)%XT02   = UNDEF
+      WADATS(IMOD)%XT0M1  = UNDEF
+      WADATS(IMOD)%XT01   = UNDEF
+      WADATS(IMOD)%XFP0   = UNDEF
+      WADATS(IMOD)%XTHM   = UNDEF
+      WADATS(IMOD)%XTHS   = UNDEF
+      WADATS(IMOD)%XTHP0  = UNDEF
+!     WADATS(IMOD)%XFP1   = UNDEF
+!     WADATS(IMOD)%XTHP1  = UNDEF
+!
+      IF ( FLAGS( 3, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XEF(NXXX,E3DF(2,1):E3DF(3,1)))
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XEF(1,1))
+        END IF 
+
+        IF ( FLAGS( 3, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTH1M(NXXX,E3DF(2,2):E3DF(3,2)))
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTH1M(1,1) )
+        END IF
+
+      IF ( FLAGS( 3, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XSTH1M(NXXX,E3DF(2,3):E3DF(3,3)))
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XSTH1M(1,1) )
+        END IF
+
+      IF ( FLAGS( 3, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTH2M(NXXX,E3DF(2,4):E3DF(3,4)))
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTH2M(1,1) )
+        END IF
+!
+      IF ( FLAGS( 3, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XSTH2M(NXXX,E3DF(2,5):E3DF(3,5)))
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XSTH2M(1,1) )
+        END IF
+!
+      WADATS(IMOD)%XEF   = UNDEF
+!
+      IF ( FLAGS( 4, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPHS(NXXX,0:NOSWLL) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPHS(1,1) )
+        END IF
+!
+      IF ( FLAGS( 4, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPTP(NXXX,0:NOSWLL) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPTP(1,1) )
+        END IF
+!
+      IF ( FLAGS( 4, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPLP(NXXX,0:NOSWLL) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPLP(1,1) )
+        END IF
+!
+      IF ( FLAGS( 4, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPTH(NXXX,0:NOSWLL) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPTH(1,1) )
+        END IF
+!
+      IF ( FLAGS( 4, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPSI(NXXX,0:NOSWLL) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPSI(1,1) )
+        END IF
+!
+      IF ( FLAGS( 4, 6) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPWS(NXXX,0:NOSWLL) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPWS(1,1) )
+        END IF
+!
+      IF ( FLAGS( 4, 7) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPWST(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPWST(1) )
+        END IF
+!
+      IF ( FLAGS( 4, 8) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPNR(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPNR(1) )
+        END IF
+!
+      WADATS(IMOD)%XPHS   = UNDEF
+      WADATS(IMOD)%XPTP   = UNDEF
+      WADATS(IMOD)%XPLP   = UNDEF
+      WADATS(IMOD)%XPTH   = UNDEF
+      WADATS(IMOD)%XPSI   = UNDEF
+      WADATS(IMOD)%XPWS   = UNDEF
+      WADATS(IMOD)%XPWST  = UNDEF
+      WADATS(IMOD)%XPNR   = UNDEF
+!
+      IF ( FLAGS( 5, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XCHARN(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XCHARN(1) )
+        END IF
+!
+      IF ( FLAGS( 5, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XCGE(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XCGE(1) )
+        END IF
+!
+      IF ( FLAGS( 5, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPHIAW(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPHIAW(1) )
+        END IF
+!
+      IF ( FLAGS( 5, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUWIX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWIY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUWIX(1) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWIY(1) )
+        END IF
+!
+      IF ( FLAGS( 5, 6) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUWNX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWNY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUWNX(1) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWNY(1) )
+        END IF
+!
+      IF ( FLAGS( 5, 7) .OR. FLAGS( 5, 8) .OR.                        &
+           FLAGS( 5, 9) .OR. FLAGS( 5,10)) THEN
+          ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XWHITECAP(1,4) )
+        END IF
+!
+      WADATS(IMOD)%XCHARN    = UNDEF
+      WADATS(IMOD)%XCGE      = UNDEF
+      WADATS(IMOD)%XPHIAW    = UNDEF
+      WADATS(IMOD)%XTAUWIX   = UNDEF
+      WADATS(IMOD)%XTAUWIY   = UNDEF
+      WADATS(IMOD)%XTAUWNX   = UNDEF
+      WADATS(IMOD)%XTAUWNY   = UNDEF
+      WADATS(IMOD)%XWHITECAP = UNDEF
+!
+      IF ( FLAGS( 6, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XSXX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XSYY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XSXY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XSXX(1) )
+          ALLOCATE ( WADATS(IMOD)%XSYY(1) )
+          ALLOCATE ( WADATS(IMOD)%XSXY(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUOX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTAUOY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUOX(1) )
+          ALLOCATE ( WADATS(IMOD)%XTAUOY(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XBHD(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XBHD(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPHIOC(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPHIOC(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTUSX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTUSY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTUSX(1) )
+          ALLOCATE ( WADATS(IMOD)%XTUSY(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 6) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XUSSX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XUSSY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XUSSX(1) )
+          ALLOCATE ( WADATS(IMOD)%XUSSY(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 7) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPRMS(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTPMS(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPRMS(1) )
+          ALLOCATE ( WADATS(IMOD)%XTPMS(1) )
+        END IF
+!
+      IF ( FLAGS( 6, 8) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XUS3D(NXXX,2*NK) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XUS3D(1,1) )
+        END IF 
+!
+      IF ( FLAGS( 6, 9) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XP2SMS(NXXX,P2MSF(2):P2MSF(3)))
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XP2SMS(1,1))
+        END IF 
+!
+      WADATS(IMOD)%XSXX    = UNDEF
+      WADATS(IMOD)%XSYY    = UNDEF
+      WADATS(IMOD)%XSXY    = UNDEF
+      WADATS(IMOD)%XTAUOX  = UNDEF
+      WADATS(IMOD)%XTAUOY  = UNDEF
+      WADATS(IMOD)%XBHD    = UNDEF
+      WADATS(IMOD)%XPHIOC  = UNDEF
+      WADATS(IMOD)%XTUSX   = UNDEF
+      WADATS(IMOD)%XTUSY   = UNDEF
+      WADATS(IMOD)%XUSSX   = UNDEF
+      WADATS(IMOD)%XUSSY   = UNDEF
+      WADATS(IMOD)%XPRMS   = UNDEF
+      WADATS(IMOD)%XTPMS   = UNDEF
+      WADATS(IMOD)%XUS3D   = UNDEF
+      WADATS(IMOD)%XP2SMS  = UNDEF
+!
+      IF ( FLAGS( 7, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XABA(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XABD(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XABA(1) )
+          ALLOCATE ( WADATS(IMOD)%XABD(1) )
+        END IF
+!
+      IF ( FLAGS( 7, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XUBA(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XUBD(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XUBA(1) )
+          ALLOCATE ( WADATS(IMOD)%XUBD(1) )
+        END IF
+!
+      IF ( FLAGS( 7, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XBEDFORMS(NXXX,3) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XBEDFORMS(1,3) )
+        END IF
+!
+      IF ( FLAGS( 7, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPHIBBL(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPHIBBL(1) )
+        END IF
+!
+      IF ( FLAGS( 7, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUBBL(NXXX,2) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUBBL(1,2) )
+        END IF
+!
+      WADATS(IMOD)%XABA    = UNDEF
+      WADATS(IMOD)%XABD    = UNDEF
+      WADATS(IMOD)%XUBA    = UNDEF
+      WADATS(IMOD)%XUBD    = UNDEF
+      WADATS(IMOD)%XBEDFORMS = UNDEF
+      WADATS(IMOD)%XPHIBBL = UNDEF
+      WADATS(IMOD)%XTAUBBL = UNDEF
+!
+      IF ( FLAGS( 8, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XMSSX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XMSSY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XMSSX(1) )
+          ALLOCATE ( WADATS(IMOD)%XMSSY(1) )
+        END IF
+!
+      IF ( FLAGS( 8, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XMSCX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XMSCY(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XMSCX(1) )
+          ALLOCATE ( WADATS(IMOD)%XMSCY(1) )
+        END IF
+!
+      WADATS(IMOD)%XMSSX   = UNDEF
+      WADATS(IMOD)%XMSSY   = UNDEF
+      WADATS(IMOD)%XMSCX   = UNDEF
+      WADATS(IMOD)%XMSCY   = UNDEF
+!
+      IF ( FLAGS( 9, 1) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XDTDYN(1) )
+        END IF
+!
+      IF ( FLAGS( 9, 2) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XFCUT(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XFCUT(1) )
+        END IF
+!
+      IF ( FLAGS( 9, 3) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(1) )
+        END IF
+!
+      IF ( FLAGS( 9, 4) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(1) )
+        END IF
+!
+      IF ( FLAGS( 9, 5) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XCFLKMAX(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XCFLKMAX(1) )
+        END IF
+!
+      WADATS(IMOD)%XDTDYN    = UNDEF
+      WADATS(IMOD)%XFCUT     = UNDEF
+      WADATS(IMOD)%XCFLXYMAX = UNDEF
+      WADATS(IMOD)%XCFLTHMAX = UNDEF
+      WADATS(IMOD)%XCFLKMAX  = UNDEF
+!
+      DO I=1, NOEXTR
+        IF ( FLAGS(10, i) ) THEN
+            ALLOCATE ( WADATS(IMOD)%XUSERO(NXXX,I) )
+          ELSE
+            ALLOCATE ( WADATS(IMOD)%XUSERO(1,I) )
+          END IF
+        END DO
+!
+      WADATS(IMOD)%XUSERO  = UNDEF
+!
+      WADATS(IMOD)%AINIT2 = .TRUE.
+!
+!/T      WRITE (NDST,9001)
+!/T      WRITE (NDST,9001)
+!
+! -------------------------------------------------------------------- /
+! 5.  Restore previous grid setting if necessary
+!
+      IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
+!
+      RETURN
+!
+! Formats
+!
+ 1001 FORMAT (/' *** ERROR W3XDMA : GRIDS NOT INITIALIZED *** '/      &
+               '                    RUN W3NMOD FIRST '/)
+ 1002 FORMAT (/' *** ERROR W3XDMA : ILLEGAL MODEL NUMBER *** '/       &
+               '                    IMOD   = ',I10/                   &
+               '                    NADATA = ',I10/)
+ 1003 FORMAT (/' *** ERROR W3XDMA : ARRAY(S) ALREADY ALLOCATED *** ')
+!
+!/T 9000 FORMAT (' TEST W3XDMA : MODEL ',I4)
+!/T 9001 FORMAT (' TEST W3XDMA : ARRAYS ALLOCATED')
+!/T 9002 FORMAT (' TEST W3XDMA : POINTERS RESET')
+!/T 9003 FORMAT (' TEST W3XDMA : DIMENSIONS STORED')
+!/
+!/ End of W3XDMA ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3XDMA
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3DMNL  ( IMOD, NDSE, NDST, NSP, NSPX )
 !/
@@ -1118,7 +1848,7 @@
 !/ ------------------------------------------------------------------- /
 !
       USE W3IDATMD, ONLY: INPUTS
-      USE W3GDATMD, ONLY: P2MSF, GTYPE, UNGTYPE
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
 !
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -1167,6 +1897,7 @@
       FLCOLD => WADATS(IMOD)%FLCOLD
       FLIWND => WADATS(IMOD)%FLIWND
       AINIT  => WADATS(IMOD)%AINIT
+      AINIT2 => WADATS(IMOD)%AINIT2
       FL_ALL => WADATS(IMOD)%FL_ALL
 !
 !/PR2      NMX0   => WADATS(IMOD)%NMX0
@@ -1235,24 +1966,25 @@
           AS     => WADATS(IMOD)%AS
           CX     => WADATS(IMOD)%CX
           CY     => WADATS(IMOD)%CY
-          EMN    => WADATS(IMOD)%EMN
-          FMN    => WADATS(IMOD)%FMN
-          WNM    => WADATS(IMOD)%WNM
-          AMX    => WADATS(IMOD)%AMX
-          CDS    => WADATS(IMOD)%CDS
-          Z0S    => WADATS(IMOD)%Z0S
+!
           HS     => WADATS(IMOD)%HS
           WLM    => WADATS(IMOD)%WLM
-          TMN    => WADATS(IMOD)%TMN
           T02    => WADATS(IMOD)%T02
-          CGE    => WADATS(IMOD)%CGE
-          TM0M1  => WADATS(IMOD)%TM0M1
+          T0M1   => WADATS(IMOD)%T0M1
+          T01    => WADATS(IMOD)%T01 
+          FP0    => WADATS(IMOD)%FP0
           THM    => WADATS(IMOD)%THM
           THS    => WADATS(IMOD)%THS
-          FP0    => WADATS(IMOD)%FP0
           THP0   => WADATS(IMOD)%THP0
           FP1    => WADATS(IMOD)%FP1
           THP1   => WADATS(IMOD)%THP1
+!
+          EF     => WADATS(IMOD)%EF
+          TH1M   => WADATS(IMOD)%TH1M
+          STH1M  => WADATS(IMOD)%STH1M
+          TH2M   => WADATS(IMOD)%TH2M
+          STH2M  => WADATS(IMOD)%STH2M
+!
           PHS    => WADATS(IMOD)%PHS
           PTP    => WADATS(IMOD)%PTP
           PLP    => WADATS(IMOD)%PLP
@@ -1261,50 +1993,53 @@
           PWS    => WADATS(IMOD)%PWS
           PWST   => WADATS(IMOD)%PWST
           PNR    => WADATS(IMOD)%PNR
-          DTDYN  => WADATS(IMOD)%DTDYN
-          FCUT   => WADATS(IMOD)%FCUT
-          ABA    => WADATS(IMOD)%ABA
-          ABD    => WADATS(IMOD)%ABD
-          UBA    => WADATS(IMOD)%UBA
-          UBD    => WADATS(IMOD)%UBD
+!
+          CHARN    => WADATS(IMOD)%CHARN
+          CGE      => WADATS(IMOD)%CGE
+          PHIAW    => WADATS(IMOD)%PHIAW
+          TAUWIX   => WADATS(IMOD)%TAUWIX
+          TAUWIY   => WADATS(IMOD)%TAUWIY
+          TAUWNX   => WADATS(IMOD)%TAUWNX
+          TAUWNY   => WADATS(IMOD)%TAUWNY
+          WHITECAP => WADATS(IMOD)%WHITECAP
+!
           SXX    => WADATS(IMOD)%SXX
           SYY    => WADATS(IMOD)%SYY
           SXY    => WADATS(IMOD)%SXY
-          USERO  => WADATS(IMOD)%USERO
-          DRAT   => WADATS(IMOD)%DRAT
           TAUOX  => WADATS(IMOD)%TAUOX
           TAUOY  => WADATS(IMOD)%TAUOY
-          JSMITH => WADATS(IMOD)%JSMITH
-          TAUWX  => WADATS(IMOD)%TAUWX
-          TAUWY  => WADATS(IMOD)%TAUWY
-          TAUWIX => WADATS(IMOD)%TAUWIX
-          TAUWIY => WADATS(IMOD)%TAUWIY
-          TAUWNX => WADATS(IMOD)%TAUWNX
-          TAUWNY => WADATS(IMOD)%TAUWNY
-          PHIAW  => WADATS(IMOD)%PHIAW
-          CHARN  => WADATS(IMOD)%CHARN
+          BHD    => WADATS(IMOD)%BHD
           PHIOC  => WADATS(IMOD)%PHIOC
-          BEDFORMS=> WADATS(IMOD)%BEDFORMS
-          WHITECAP=> WADATS(IMOD)%WHITECAP
-          TAUBBL  =>  WADATS(IMOD)%TAUBBL
-          PHIBBL  =>  WADATS(IMOD)%PHIBBL
-          CFLXYMAX =>  WADATS(IMOD)%CFLXYMAX
-          CFLTHMAX =>  WADATS(IMOD)%CFLTHMAX
-          CFLKMAX =>  WADATS(IMOD)%CFLKMAX
           TUSX   => WADATS(IMOD)%TUSX
           TUSY   => WADATS(IMOD)%TUSY
           USSX   => WADATS(IMOD)%USSX
           USSY   => WADATS(IMOD)%USSY
+          PRMS   => WADATS(IMOD)%PRMS
+          TPMS   => WADATS(IMOD)%TPMS
+          P2SMS  => WADATS(IMOD)%P2SMS
+          US3D   => WADATS(IMOD)%US3D
+!
+          ABA    => WADATS(IMOD)%ABA
+          ABD    => WADATS(IMOD)%ABD
+          UBA    => WADATS(IMOD)%UBA
+          UBD    => WADATS(IMOD)%UBD
+          BEDFORMS=> WADATS(IMOD)%BEDFORMS
+          PHIBBL => WADATS(IMOD)%PHIBBL
+          TAUBBL => WADATS(IMOD)%TAUBBL
+!
           MSSX   => WADATS(IMOD)%MSSX
           MSSY   => WADATS(IMOD)%MSSY
           MSCX   => WADATS(IMOD)%MSCX
           MSCY   => WADATS(IMOD)%MSCY
-          PRMS   => WADATS(IMOD)%PRMS
-          TPMS   => WADATS(IMOD)%TPMS
-          IF (P2MSF(1).GT.0) P2SMS => WADATS(IMOD)%P2SMS
-          SXX3D   => WADATS(IMOD)%SXX3D
-          US3D   => WADATS(IMOD)%US3D
-!	  
+!
+          DTDYN    => WADATS(IMOD)%DTDYN
+          FCUT     => WADATS(IMOD)%FCUT
+          CFLXYMAX => WADATS(IMOD)%CFLXYMAX
+          CFLTHMAX => WADATS(IMOD)%CFLTHMAX
+          CFLKMAX =>  WADATS(IMOD)%CFLKMAX
+!
+          USERO  => WADATS(IMOD)%USERO
+!
           IF ( FL_ALL ) THEN
 !
               CG     => WADATS(IMOD)%CG
@@ -1426,6 +2161,157 @@
 !/ End of W3SETA ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SETA
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3XETA ( IMOD, NDSE, NDST )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         25-Dec-2012 |
+!/                  +-----------------------------------+
+!/
+!/    25-Dec-2012 : Origination.                        ( version 4.TBD )
+!/
+!  1. Purpose :
+!
+!     Reduced version of W3SETA to point t expended output arrays.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+      USE W3IDATMD, ONLY: INPUTS
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+!
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: IMOD, NDSE, NDST
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/S      CALL STRACE (IENT, 'W3XETA')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input and module status
+!
+      IF ( NADATA .EQ. -1 ) THEN
+          WRITE (NDSE,1001)
+          CALL EXTCDE (1)
+        END IF   
+!
+      IF ( IMOD.LT.1 .OR. IMOD.GT.NADATA ) THEN
+          WRITE (NDSE,1002) IMOD, NADATA
+          CALL EXTCDE (2)
+        END IF
+!
+!/T      WRITE (NDST,9000) IMOD
+!
+! -------------------------------------------------------------------- /
+! 2.  Set model numbers
+!
+      IADATA = IMOD
+!
+! -------------------------------------------------------------------- /
+! 3.  Set pointers
+!
+      IF ( AINIT2 ) THEN
+!
+          HS     => WADATS(IMOD)%XHS
+          WLM    => WADATS(IMOD)%XWLM
+          T02    => WADATS(IMOD)%XT02
+          T0M1   => WADATS(IMOD)%XT0M1
+          T01    => WADATS(IMOD)%XT01 
+          FP0    => WADATS(IMOD)%XFP0
+          THM    => WADATS(IMOD)%XTHM
+          THS    => WADATS(IMOD)%XTHS
+          THP0   => WADATS(IMOD)%XTHP0
+!         FP1    => WADATS(IMOD)%XFP1
+!         THP1   => WADATS(IMOD)%XTHP1
+!
+          EF     => WADATS(IMOD)%XEF
+!
+          PHS    => WADATS(IMOD)%XPHS
+          PTP    => WADATS(IMOD)%XPTP
+          PLP    => WADATS(IMOD)%XPLP
+          PTH    => WADATS(IMOD)%XPTH
+          PSI    => WADATS(IMOD)%XPSI
+          PWS    => WADATS(IMOD)%XPWS
+          PWST   => WADATS(IMOD)%XPWST
+          PNR    => WADATS(IMOD)%XPNR
+!
+          CHARN    => WADATS(IMOD)%XCHARN
+          CGE      => WADATS(IMOD)%XCGE
+          PHIAW    => WADATS(IMOD)%XPHIAW
+          TAUWIX   => WADATS(IMOD)%XTAUWIX
+          TAUWIY   => WADATS(IMOD)%XTAUWIY
+          TAUWNX   => WADATS(IMOD)%XTAUWNX
+          TAUWNY   => WADATS(IMOD)%XTAUWNY
+          WHITECAP => WADATS(IMOD)%XWHITECAP
+!	  
+          SXX    => WADATS(IMOD)%XSXX
+          SYY    => WADATS(IMOD)%XSYY
+          SXY    => WADATS(IMOD)%XSXY
+          TAUOX  => WADATS(IMOD)%XTAUOX
+          TAUOY  => WADATS(IMOD)%XTAUOY
+          BHD    => WADATS(IMOD)%XBHD
+          PHIOC  => WADATS(IMOD)%XPHIOC
+          TUSX   => WADATS(IMOD)%XTUSX
+          TUSY   => WADATS(IMOD)%XTUSY
+          USSX   => WADATS(IMOD)%XUSSX
+          USSY   => WADATS(IMOD)%XUSSY
+          PRMS   => WADATS(IMOD)%XPRMS
+          TPMS   => WADATS(IMOD)%XTPMS
+          P2SMS  => WADATS(IMOD)%XP2SMS
+          US3D   => WADATS(IMOD)%XUS3D
+!	  
+          ABA    => WADATS(IMOD)%XABA
+          ABD    => WADATS(IMOD)%XABD
+          UBA    => WADATS(IMOD)%XUBA
+          UBD    => WADATS(IMOD)%XUBD
+          BEDFORMS=> WADATS(IMOD)%XBEDFORMS
+          PHIBBL => WADATS(IMOD)%XPHIBBL
+          TAUBBL => WADATS(IMOD)%XTAUBBL
+!
+          MSSX   => WADATS(IMOD)%XMSSX
+          MSSY   => WADATS(IMOD)%XMSSY
+          MSCX   => WADATS(IMOD)%XMSCX
+          MSCY   => WADATS(IMOD)%XMSCY
+!
+          DTDYN    => WADATS(IMOD)%XDTDYN
+          FCUT     => WADATS(IMOD)%XFCUT
+          CFLXYMAX => WADATS(IMOD)%XCFLXYMAX
+          CFLTHMAX => WADATS(IMOD)%XCFLTHMAX
+          CFLKMAX =>  WADATS(IMOD)%XCFLKMAX
+!
+          USERO  => WADATS(IMOD)%XUSERO
+!	  
+        END IF
+!
+      RETURN
+!
+! Formats
+!
+ 1001 FORMAT (/' *** ERROR W3XETA : GRIDS NOT INITIALIZED *** '/      &
+               '                    RUN W3NMOD FIRST '/)
+ 1002 FORMAT (/' *** ERROR W3XETA : ILLEGAL MODEL NUMBER *** '/       &
+               '                    IMOD   = ',I10/                   &
+               '                    NADATA = ',I10/)
+!
+!/T 9000 FORMAT (' TEST W3XETA : MODEL ',I4,' SELECTED')
+!/
+!/ End of W3XETA ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3XETA
 !/
 !/ End of module W3ADATMD -------------------------------------------- /
 !/

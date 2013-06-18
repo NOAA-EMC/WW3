@@ -12,18 +12,41 @@ $
 $
    19680606 000000   19680607 000000
 $
-    T T
+    F F
 $
    19680606 000000   3600  19680607 000000
-$-------------------------------------------------------------------------------------------------------------------
-$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
-$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
-$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
-$-------------------------------------------------------------------------------------------------------------------
- T T T F F  F T F F F  T T F F T  T F T F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$
+$ (1) Forcing Fields
+  T
+$ DPW CUR WND AST WLV ICE
+  T   T   T   T   T   T
+$ (2) Standard mean wave Parameters
+  T
+$ HS  MWL T02 T01 T-1 FP  DIR SPR PKD
+  T   T   T   T   T   T   T   T   T
+$ (3) Frequency-dependent parameters
+  F
+$ (4) Spectral Partition Parameters
+  T
+$ PHS PTP PLP PTH PSP WSF TWS PNR
+  T   T   T   T   T   T   T   T
+$ (5) Atmosphere-waves layer
+  T
+$ UST CHK CGE TKU TKW TK- WCC WCT MBH WCM
+  T   T   T   T   T   T   T   T   T   T
+$ (6) Wave-Ocean layer
+  F
+$ (7) Wave-bottom layer
+  F
+$ (8) Spectrum parameters
+  F
+$ (9) Numerical diagnostics
+  F
+$ (10) User defined (NOEXTR flags needed)
+  F
+$
    19680606 000000   3600  19680608 000000
-       0.E3     0.E3  'eye       '
-       0.E3    50.E3  'mN        '
+$
      -35.E3    35.E3  'mNW       '
      -50.E3     0.E3  'mW        '
      -35.E3   -35.E3  'mSW       '

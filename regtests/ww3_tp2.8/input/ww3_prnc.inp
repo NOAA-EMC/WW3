@@ -12,7 +12,8 @@ $
 $   Format types :  AI    Transfer field 'as is'. (ITYPE 1)
 $                   LL    Field defined on regular longitude-latitude
 $                         or Cartesian grid. (ITYPE 2)
-$                   AT    AI + tidal analysis
+$   Format types :  AT    Transfer field 'as is', performs tidal 
+$                         analysis on the time series (ITYPE 6)
 $
 $        - Format type not used for field type 'DAT'.
 $
@@ -21,26 +22,30 @@ $   Header flag  : If true, header is added to file.
 $                  (necessary for reading, FALSE is used only for
 $                   incremental generation of a data file.)
 $
-  'CUR' 'AT' T T
+  'WND' 'LL' T T
 $
-$ Name of spatial dimensions
-  longitude latitude
+$ Name of dimensions ------------------------------------------------- $
+$
+ lon lat
 $
 $ Variables to use --------------------------------------------------- $
 $
-  U V
+  U10 V10
 $
 $
 $ Additional time input ---------------------------------------------- $
 $ If time flag is .FALSE., give time of field in yyyymmdd hhmmss format.
+$
+$ -> TIME
 $
 $   19680606 053000
 $
 $ Define data files -------------------------------------------------- $
 $ The input line identifies the filename using for the forcing field.
 $
-  '../input/Iroise_AI_UV.nc'
+$ -> filename
 $
+  'wind.nc'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

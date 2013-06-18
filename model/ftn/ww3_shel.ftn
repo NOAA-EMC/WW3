@@ -113,6 +113,7 @@
 !      W3FLDH    Subr.   Id.    Udates homogeneous fields.
 !
 !      W3INIT    Subr. W3INITMD Wave model initialization.
+!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags. 
 !      W3WAVE    Subr. W3WAVEMD Wave model.
 !      W3WDAS    Subr. W3WDASMD Data assimilation interface.
 !
@@ -208,8 +209,8 @@
       USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
       USE W3IDATMD
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
-      USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR,             &
-                          NOGRD, IDOUT, FNMPRE, IOSTYP, NOTYPE
+      USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
+                          NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE, NOGE
 !/
       USE W3FLDSMD
       USE W3INITMD
@@ -217,6 +218,7 @@
       USE W3WDASMD
 !/
       USE W3IOGRMD, ONLY: W3IOGR
+      USE W3IOGOMD, ONLY: W3READFLGRD
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
@@ -242,7 +244,7 @@
                              IERR, J, I, ODAT(35), ILOOP, NPTS,       &
                              NH(4), THO(2,4,NHMAX), RCLD(5:7),        &
                              NDT(5:7), NDTNEW, MPI_COMM = -99, JJ,    &
-                             IPRT(6)
+                             IPRT(6), IFI, IFJ
 !/F90      INTEGER             :: CLKT0, CLKTN, CLKDT, CLKINC, CLKMAX
 !/MPI      INTEGER             :: IERR_MPI
       INTEGER             :: NODATA(5:7), FLAGTIDE
@@ -252,8 +254,9 @@
       REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),        &
                              DATA1(:,:), DATA2(:,:)
       LOGICAL             :: FLLSTL, FLLSTI, FLH(8), FLFLG, FLHOM,    &
-                             FLT, TFLAGI, FLGDAS(3), FLGRD(NOGRD)
-      LOGICAL             :: FLGR2(NOGRD)
+                             TFLAGI, FLGDAS(3), FLGRD(NOGRP,NGRPP),   &
+                             FLT, FLG(NOGRP)
+      LOGICAL             :: FLGR2(NOGRP,NGRPP)
       LOGICAL             :: FLAGSTIDE(4)
       LOGICAL             :: PRTFRM
 !
@@ -285,11 +288,11 @@
       DATA IDSTR  / 'LEV', 'CUR', 'WND', 'ICE', 'DT0', 'DT1', 'DT2',  &
                     'MOV' /
 !
-      IF (FLAGLL) THEN
-        FACTOR = 1.
-      ELSE
-        FACTOR = 1.E-3
-      END IF
+!     IF (FLAGLL) THEN
+!         FACTOR = 1.
+!       ELSE
+!         FACTOR = 1.E-3
+!       END IF
 !
       FLAGSTIDE(:)=.FALSE.
 !
@@ -567,24 +570,9 @@
 !
 ! 4.c Type 1: fields of mean wave parameters
 !
-                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                READ (NDSI,*,END=2001,ERR=2002) FLGRD
-                FLGR2(:)=.FALSE.
-!
-                IF ( IAPROC .EQ. NAPOUT ) THEN
-                    FLT    = .TRUE.
-                    DO I=1, NOGRD
-                      IF ( FLGRD(I) ) THEN
-                          IF ( FLT ) THEN
-                              WRITE (NDSO,1945) IDOUT(I)
-                              FLT    = .FALSE.
-                            ELSE
-                              WRITE (NDSO,1946) IDOUT(I)
-                            END IF
-                        END IF
-                      END DO
-                    IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
-                  END IF
+              CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLG,      &
+                                 FLGRD, IAPROC, NAPOUT, IERR )
+              IF ( IERR .NE. 0 ) GOTO 2222
 !
               ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -705,15 +693,17 @@
 !
 !/COU                IF ( IAPROC .EQ. NAPOUT ) THEN
 !/COU                    FLT    = .TRUE.
-!/COU                    DO I=1, NOGRD
-!/COU                      IF ( FLGR2(I) ) THEN
+!/COU                    DO IFI=1, NOGRP
+!/COU                    DO IFJ=1, NGRPP
+!/COU                      IF ( FLGR2(IFI,IFJ) ) THEN
 !/COU                          IF ( FLT ) THEN
-!/COU                              WRITE (NDSO,1947) IDOUT(I)
+!/COU                              WRITE (NDSO,1947) IDOUT(IFI,IFJ)
 !/COU                              FLT    = .FALSE.
 !/COU                            ELSE
-!/COU                              WRITE (NDSO,1946) IDOUT(I)
+!/COU                              WRITE (NDSO,1946) IDOUT(IFI,IFJ)
 !/COU                            END IF
 !/COU                        END IF
+!/COU                      END DO
 !/COU                      END DO
 !/COU                    IF ( FLT ) WRITE (NDSO,1947) 'no fields defined'
 !/COU                  END IF
@@ -795,8 +785,9 @@
 !/TIDE        NTIDE = TIDE_MF
 !/TIDE        END IF
 ! 
-     CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, NPTS, X, Y,   &
-                    PNAMES, IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN=FLAGSTIDE )
+     CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLG,     &
+                   NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,         &
+                   FLAGSTIDEIN=FLAGSTIDE )
 !
 !/TIDE      IF (FLAGSTIDE(1)) CALL W3FLDTIDE ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), IERR )
 !/TIDE      IF (FLAGSTIDE(2)) CALL W3FLDTIDE ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), IERR )
@@ -1157,7 +1148,7 @@
 !
       GOTO 2222
 !
-! Error scape locations
+! Error escape locations
 !
  2000 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
@@ -1339,4 +1330,3 @@
 !/
 !/NOPA     END PROGRAM W3SHEL
 !/PALM     END SUBROUTINE W3SHEL
-

@@ -2,8 +2,30 @@ $ WAVEWATCH III Grid output post-processing
 $ -----------------------------------------
   19680607 000000 86400. 999
 $
-$ Wave height and Currents
-  F T F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F F
+$ (1) Forcing Fields
+  T   
+$ DPT CUR WND DT  WLV ICE IBG D50
+  F   T   F   F   F   F   F   F
+$ (2) Standard mean wave Parameters
+  T
+$ HS  LM  TZ  TE  TM  FP  DIR SPR DP
+  T   F   F   F   F   F   F   F   F
+$ (3) Frequency-dependent parameters
+  F
+$ (4) Spectral Partition Parameters
+  F
+$ (5) Atmosphere-waves layer
+  F          
+$ (6) Wave-Ocean layer
+  F
+$ (7) Wave-bottom layer
+  F
+$ (8) Spectrum parameters
+  F
+$ (9) Numerical diagnostics
+  F
+$ (10) User defined
+  F
 $
 $ Output type ITYPE [0,1,2,3]
 $ 0 0 for inventory

@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         07-Sep-2011 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -33,10 +33,10 @@
 !/                  (T. J. Campbell, NRL)
 !/     1-Apr-2011 : Fix bug GLOBX forcing with unst.    ( version 3.14.4 )
 !/    19-Sep-2011 : Fix bug prep forcing with unst.     ( version 4.04 )
+!/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.OF )
 !/     3-Mar-2013 : Allows for longer input file name   ( version 4.09 )
-
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -235,10 +235,10 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*65, FROMF*4, NAMEF*65
-      CHARACTER*12            :: IDSTR1(5)
-      CHARACTER*15            :: IDSTR3(3)
-      CHARACTER*32            :: FORMT(2), FORMF(2)
-      CHARACTER*20            :: IDSTR2(5)
+      CHARACTER(LEN=12)       :: IDSTR1(5)
+      CHARACTER(LEN=15)       :: IDSTR3(3)
+      CHARACTER(LEN=32)       :: FORMT(2), FORMF(2)
+      CHARACTER(LEN=20)       :: IDSTR2(5)
       INTEGER                 :: GTYPEDUM = 0
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )

@@ -1,15 +1,17 @@
 !/ ------------------------------------------------------------------- /
-	PROGRAM W3GRID_INTERP
+      PROGRAM W3GRID_INTERP
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Sep-2007 |
+!/                  | Last update :         21-Feb-2013 |
 !/                  +-----------------------------------+
 !/
 !/  24-Sep-2007 : Original code               ( version 1.0 + error fixes )
 !/  01-Aug-2011 : Modified to match grid output in WW3 v 4
+!/  02-20-2013  : Modified to use the new structure of 
+!/                output fields               ( version 4.TBD )
 !/
 !   1. Purpose : 
 !
@@ -76,15 +78,14 @@
 	USE CONSTANTS
 !/
 	USE W3IOGRMD
-!        USE W3GSRUMD
 	USE W3TIMEMD
 	USE W3IOGOMD, ONLY : W3IOGO
 	USE W3ADATMD, ONLY : W3DIMA, W3NAUX, W3SETA
 	USE W3GDATMD, ONLY : GRID, NGRIDS, GRIDS, NX, NY, NSEA, MAPSTA,       &
 			     MAPFS, MAPSF, MAPST2, SX, SY, X0, Y0, ZB
 	USE W3GDATMD, ONLY : W3NMOD, W3SETG  
-	USE W3ODATMD, ONLY : FNMPRE, NOGRD, OUTPTS, UNDEF, NDSE, NDST,        &
-			     FLOGRD, NAPROC, NOSWLL
+	USE W3ODATMD, ONLY : FNMPRE, NOGRP, NGRPP, OUTPTS, UNDEF, NDSE,       &
+			     NDST, FLOGRD, NAPROC, NOSWLL
 	USE W3ODATMD, ONLY : W3NOUT, W3SETO
         USE W3IDATMD
 	USE W3WDATMD, ONLY : W3NDAT, W3SETW
@@ -113,11 +114,11 @@
 
 	TYPE(GR_INT), TARGET, ALLOCATABLE :: GR_INTS(:)
 	TYPE(GR_WT),  TARGET, ALLOCATABLE :: GR_WTS(:), NO_WTS(:)
-	INTEGER			:: J, K, IERR, NG, IG, NXT, NYT, ISEA, IX,    &
-				   IY, IXFS, IXFE, IYFS, IYFE, IXT, IYT,      &
-				   NS, INS, COUNTF, NDSM, NDSI, NDSO,  &
+	INTEGER			:: I, J, K, IERR, NG, IG, NXT, NYT, ISEA,     &
+				   IX, IY, IXFS, IXFE, IYFS, IYFE, IXT, IYT,  &
+				   NS, INS, COUNTF, NDSM, NDSI, NDSO,         &
 			           NO_WTC, GSEA, IOTST, IOGRD, IX3, IY3,      &
-                                   NTRACE, NDSTRC
+                                   NTRACE, NDSTRC, NOSWLL_MIN
 	INTEGER, ALLOCATABLE    :: FIDOUT(:), COUNTG(:), MAP(:,:)
 	REAL			:: SXT, SYT, X0T, Y0T, X, Y, XSS, YSS,        &
 				   DXSS, DYSS, XST, YST, XEN, YEN, XT, YT,    &
@@ -179,25 +180,36 @@
 	CALL W3NMOD (NG, 6, 6)
 	CALL W3NDAT (    6, 6)
 	CALL W3NAUX (    6, 6)
-	CALL W3NINP (    6, 6)
+ 	CALL W3NINP (    6, 6)
         CALL W3NOUT(     6, 6)
-	CALL W3SETO(1,   6, 6)	
 	ALLOCATE( GR_INTS(NG), COUNTG(NG-1) )
 !
 ! 3.d Read file extensions for each of the grids and 
 !     the grid information from the corresponding mod_def files
 !
+        NOSWLL_MIN = 9999999
 	CALL NEXTLN ( COMSTR, NDSI, NDSE )
 !
 	DO IG = 1,NG	
 	  READ (NDSI,*,END=2001,ERR=2002) GRIDS(IG)%FILEXT
 	  WRITE (NDSO,904) IG,GRIDS(IG)%FILEXT
 !
-	  CALL W3IOGR ('GRID', NDSM, IG, GRIDS(IG)%FILEXT)
+	  CALL W3SETO( IG, 6, 6)
+	  CALL W3SETA( IG, 6, 6)
+	  CALL W3SETW( IG, 6, 6)
 	  CALL W3SETG( IG, 6, 6)
+	  CALL W3IOGR ('READ', NDSM, IG, GRIDS(IG)%FILEXT)
 	  WRITE (NDSO,905) NX, NY, X0, Y0, SX, SY
+          IF ( IG .NE. NG .AND. NOSWLL_MIN .GE. OUTPTS(IG)%NOSWLL ) THEN
+             NOSWLL_MIN = OUTPTS(IG)%NOSWLL
+          END IF
 !
 	END DO
+!
+        IF ( NOSWLL_MIN .NE. OUTPTS(NG)%NOSWLL ) THEN
+           WRITE (NDSO,906) NOSWLL_MIN, OUTPTS(NG)%NOSWLL
+           NOSWLL_MIN = MIN (NOSWLL_MIN,OUTPTS(NG)%NOSWLL)
+        END IF
 !
 ! 3.e Allocate memory for integration map and initialize with grid status map
 !
@@ -218,7 +230,7 @@
 ! 4.a Point to output grid
 !
 	DAREA = SX*SY
-	WRITE (NDSO,906) NSEA
+	WRITE (NDSO,907) NSEA
 !
 ! 4.b Loop through each of the interpolation grids
 !
@@ -479,7 +491,7 @@
 	      GR_WTS(ISEA)%NO = 0
 	      NO_WTS(NO_WTC)%NO = ISEA
 	      ALLOCATE( NO_WTS(NO_WTC)%ID(9),NO_WTS(NO_WTC)%WT(9))
-	      WRITE (NDSO,907) ISEA,AREAF/DAREA,COUNTF
+	      WRITE (NDSO,908) ISEA,MAPSF(ISEA,1),MAPSF(ISEA,2),AREAF/DAREA,COUNTF
 	    ENDIF
 	  ENDIF
 !
@@ -496,13 +508,13 @@
 	END DO
 !
 	DO IG = 1,NG-1
-	  WRITE (NDSO,908) IG, COUNTG(IG)
+	  WRITE (NDSO,909) IG, COUNTG(IG)
 	END DO
 !
 ! 5.c Loop through points with no intp info and determine weights
 !	for interpolation from target grid itself
 !
-	WRITE(NDSO,909) NO_WTC
+	WRITE(NDSO,910) NO_WTC
 !
 	DO ISEA = 1, NO_WTC
 	  COUNTF = 0
@@ -521,7 +533,7 @@
 	      END IF
 	    END DO
 	  END DO
-	  WRITE (NDSO,910) NO_WTS(ISEA)%NO,COUNTF
+	  WRITE (NDSO,911) NO_WTS(ISEA)%NO,COUNTF
 	  DO IG = 1,COUNTF
 	    NO_WTS(ISEA)%WT(IG) = 1./COUNTF
 	  END DO
@@ -543,17 +555,16 @@
 ! 6.a Set-up dimensions for target grid outputs and allocate file pointers
 !
 	CALL W3SETA(NG, 6, 6)
-	CALL W3DIMI(NG, 6, 6)
-	CALL W3DIMA(NG, 6, 6)
+	CALL W3DIMA(NG, 6, 6, .TRUE. )
 	ALLOCATE(FIDOUT(NG))
 	DO IG = 1,NG
 	  FIDOUT(IG) = 30 + (IG-1)*10
 	END DO
-
 !
 ! 6.b Initialize and read the first set of fields for base grids
 !
 	DO IG = 1,NG-1
+          CALL W3SETO( IG, 6, 6)
 	  CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
 	  IF ( IOTST .NE. 0 ) THEN
 	    GO TO 2111
@@ -563,15 +574,18 @@
 !
 ! 6.c Setup the output flag options for the target grid
 !
+        WRITE (NDSO,912) 
+        DO I = 1, NOGRP
+          WRITE (NDSO,913) I
+          WRITE (NDSO, 914) (OUTPTS(1)%OUT1%FLOGRD(I,J),J=1,NGRPP)
+        END DO
+        WRITE (NDSO, 915) 
 	OUTPTS(NG)%OUT1%FLOGRD = OUTPTS(1)%OUT1%FLOGRD
 !
 ! 6.d Carry out interpolation in an infinite loop till appropriate 
 !     time steps are interpolated 
 !
 	IOUT = 0
-!
-        WRITE (NDSO,911) (FLOGRD(J),J=1,NOGRD) 
-        WRITE (NDSO,912) 
 !
 	DO
 	  DTEST = DSEC21 ( WDATAS(1)%TIME, TOUT )
@@ -591,7 +605,7 @@
 !
 	  IOUT = IOUT + 1
 	  CALL STME21 ( TOUT, IDTIME)
-	  WRITE (NDSO,913) IDTIME
+	  WRITE (NDSO,916) IDTIME
 !
 	  WDATAS(NG)%TIME = WDATAS(1)%TIME
 	  CALL W3SETO(NG, 6, 6)
@@ -599,7 +613,7 @@
 	  CALL W3SETA(NG, 6, 6)
 	  CALL W3SETW(NG, 6, 6)
 !
-	  CALL W3EXGI ( NSEA )
+	  CALL W3EXGI ( NSEA, NOSWLL_MIN )
 !
 	  CALL TICK21 ( TOUT , DTREQ )
 	  IF ( IOUT .GE. NOUT ) EXIT
@@ -644,16 +658,23 @@
 		 '      Dimensions         --> ',2(I5,2X)/                    &
 		 '      Bottom left corner --> ',2(F6.2,2X)/                  &
 		 '      Grid resolution    --> ',2(F6.3,2X)/)
- 906    FORMAT (/'  Total number of wet points for interpolation ',I6/)
- 907    FORMAT ( '  For wet point ',I6,' only ',F6.3,' overlap region in',    &
+ 906    FORMAT ( /' NOTE :  The no. of swell partitions from input and',      &
+                    ' target grids do not match',/                            &
+                  '  The Min. no. of partitions from input grids =',I5/       &
+                  '        The no. of partitions for target grid =',I5/       &
+                  '  Interpolation will be limited to the smaller number of', &
+                  ' the partitions, rest will be marked undefined')  
+ 907    FORMAT (/'  Total number of wet points for interpolation ',I6/)
+ 908    FORMAT ( '  For wet point ',I6,' at IX = ',I6,' and IY = ',I6,'; only ',F6.3,' overlap region in',    &
                     I3,' grids'/)
- 908    FORMAT (/'  In Grid ',I3,' Total no. of wet points found = ',I6/)
- 909    FORMAT (/'  Total no. of wet points where no grids found = ',I6)
- 910    FORMAT ( '  --> For wet point ',I6,' found ',I1,' output intp points')
- 911	FORMAT (/'  Interpolating fields .... '/                              &
-		 '    Output variable flags are -> ',7(5L2,1X))
- 912    FORMAT ( '   -----------------------------------------------------------------------------------------------------')
- 913    FORMAT ( '        OUTPUT TIME : ',A)
+ 909    FORMAT (/'  In Grid ',I3,' Total no. of wet points found = ',I6/)
+ 910    FORMAT (/'  Total no. of wet points where no grids found = ',I6)
+ 911    FORMAT ( '  --> For wet point ',I6,' found ',I1,' output intp points')
+ 912	FORMAT (/'  Interpolating fields .... '/)
+ 913    FORMAT ('     Output group   ', I5)
+ 914    FORMAT ('     Output variable flags are -> ',7(5L2,1X))
+ 915    FORMAT ( '   -----------------------------------------------------------------------------------------------------')
+ 916    FORMAT ( '        OUTPUT TIME : ',A)
  950    FORMAT (/'  End of file reached'/)
  999  	FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/     &
                15X,'==============================================='/)
@@ -672,15 +693,17 @@
 !/
 	CONTAINS
 !/ -----------------------------------------------------------------------/
-	SUBROUTINE W3EXGI ( NSEA )
+	SUBROUTINE W3EXGI ( NSEA, NOSWLL_MIN )
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Jul-2009 |
+!/                  | Last update :         21-Feb-2013 |
 !/                  +-----------------------------------+
 !/
 !/	09-Jul-2009 : Original code		( version 3.14 )
+!/      21-Feb-2013 : Modified to new output structure
+!/                                              ( version 4.TBD )
 !/
 !	1. Purpose :
 !
@@ -715,7 +738,7 @@
 !
 !/ -------------------------------------------------------------------------/
 !	USE W3ADATMD, ONLY : WADAT, WADATS, NADATA, DW, CX, CY, UA, UD,       &
-!			     AS, WLV, HS, WLM, TMN, THM, THS, FP0, THP0, FP1,      &
+!			     AS, WLV, HS, WLM, T0M1, THM, THS, FP0, THP0, FP1,      &
 !			     THP1, PHS, PTP, PLP, PTH, PSI, PWS, PWST,        &
 !                             PNR, DTDYN, FCUT, ABA, ABD, UBA, UBD, SXX,       &
 !			     SXY, SYY, USERO
@@ -724,11 +747,12 @@
 !/ -------------------------------------------------------------------------/
 !/ Parameter List
 !/
-	INTEGER, INTENT(IN)	:: NSEA
+	INTEGER, INTENT(IN)	:: NSEA, NOSWLL_MIN
 !/
 !/ Local Parameters
 !/
-	INTEGER			:: IOGRD, ISEA, GSEA, J, IG, K, IX, IY, ISWLL
+	INTEGER			:: IOGRP, IGRPP, ISEA, GSEA, J, IG, K, IX,  & 
+                                   IY, ISWLL
 	REAL			:: AUX1(NSEA), AUX2(NSEA)
 	REAL			:: VAR1, VAR2, VAR3
 !/
@@ -742,16 +766,15 @@
 !-------------------------------------------------------------------
 ! 2.  Loop through output points
 !
-	DO IOGRD = 1,NOGRD
-	  IF ( FLOGRD(IOGRD) ) THEN
+        DO IOGRP = 1, NOGRP
+           DO IGRPP = 1, NGRPP
+              IF ( FLOGRD(IOGRP,IGRPP) ) THEN
+
+                IF ( IOGRP .EQ. 1 .AND. IGRPP .EQ. 1 ) THEN
 !
-	    SELECT CASE (IOGRD)
-		CASE (1)        !<===================================CASE 1  << 
-! 
 ! Mean Water Depth
 !
                   AUX1 = UNDEF
-                  AUX2 = UNDEF
 		  DO ISEA = 1,NSEA
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
@@ -784,13 +807,14 @@
 		      DW(ISEA) = UNDEF
 		    ENDIF
 		  END DO
-		CASE (2)        !<===================================CASE 2  << 
+! 
+                ELSE IF ( IOGRP .EQ. 1 .AND. IGRPP .EQ. 2 ) THEN
 !
-! Ocean currents vector
+! Current vectors
 !
+                  AUX1 = UNDEF
+                  AUX2 = UNDEF
 		  DO ISEA = 1, NSEA
-		    CX(ISEA) = UNDEF
-		    CY(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -799,15 +823,15 @@
 			  VAR1 = WADATS(IG)%CX(GSEA)
 			  VAR2 = WADATS(IG)%CY(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( CX(ISEA) .EQ. UNDEF ) THEN
-			      CX(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
-			      CY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR2 
 			    ELSE
-			      CX(ISEA)=CX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
-			      CY(ISEA)=CY(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR2 
 			    ENDIF
 			  ENDIF
@@ -817,10 +841,13 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-                    CX(GSEA) = UNDEF
-                    CY(GSEA) = UNDEF
+                    AUX1(GSEA) = UNDEF
+                    AUX2(GSEA) = UNDEF
 		  END DO
-		CASE (3)        !<===================================CASE 3  << 
+                  CX = AUX1
+                  CY = AUX2
+!
+                ELSE IF ( IOGRP .EQ. 1 .AND. IGRPP .EQ. 3 ) THEN
 !
 ! Wind Speeds
 !
@@ -867,12 +894,13 @@
 		      UD(ISEA) = UNDEF
                     ENDIF
                   END DO
-		CASE (4)        !<===================================CASE 4  << 
+!
+                ELSE IF ( IOGRP .EQ. 1 .AND. IGRPP .EQ. 4 ) THEN
 !
 ! Air - Sea Temp difference
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    AS(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -880,11 +908,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%AS(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( AS(ISEA) .EQ. UNDEF ) THEN
-			      AS(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      AS(ISEA)=AS(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -894,13 +922,15 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    AS(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (5)       !<===================================CASE 5 << 
+                  AS = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 1 .AND. IGRPP .EQ. 5 ) THEN
 !
 ! Mean water level
 !
-		  IF ( .NOT. FLOGRD( 1 ) ) THEN
+		  IF ( .NOT. FLOGRD( 1,1 ) ) THEN
 		    DO ISEA = 1, NSEA
 		      WLV(ISEA) = UNDEF
 		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
@@ -927,12 +957,13 @@
 		      WLV(GSEA) = UNDEF
 		    END DO
 		  END IF
-		CASE (6)       !<===================================CASE 6 << 
+!
+                ELSE IF ( IOGRP .EQ. 1 .AND. IGRPP .EQ. 6 ) THEN
 !
 ! Ice Concentration
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    ICE(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -940,11 +971,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WDATAS(IG)%ICE(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( ICE(ISEA) .EQ. UNDEF ) THEN
-			      ICE(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      ICE(ISEA)=ICE(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -954,14 +985,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    ICE(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (7)        !<===================================CASE 7  << 
+                  ICE = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 1 ) THEN
 !
 ! Hs
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    HS(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -969,11 +1002,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%HS(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( HS(ISEA) .EQ. UNDEF ) THEN
-			      HS(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      HS(ISEA)=HS(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -983,14 +1016,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    HS(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (8)        !<===================================CASE 8  << 
+                  HS = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 2 ) THEN
 !
 ! Mean Wave Length
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    WLM(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -998,11 +1033,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%WLM(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-		            IF ( WLM(ISEA) .EQ. UNDEF ) THEN
-			      WLM(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+		            IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      WLM(ISEA)=WLM(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1012,14 +1047,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    WLM(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (9)        !<===================================CASE 9  << 
+                  WLM = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 3 ) THEN
 ! 
 ! Mean Wave period based on second moment
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    T02(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1027,11 +1064,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%T02(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( T02(ISEA) .EQ. UNDEF ) THEN
-			      T02(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      T02(ISEA)=T02(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1041,26 +1078,28 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    T02(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (10)        !<===================================CASE 10  << 
+                  T02 = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 4 ) THEN
 !
 ! Mean wave period based on first moment
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    TMN(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
 		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%TMN(GSEA)
+			  VAR1 = WADATS(IG)%T0M1(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( TMN(ISEA) .EQ. UNDEF ) THEN
-			      TMN(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      TMN(ISEA)=TMN(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1070,26 +1109,28 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    TMN(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (11)        !<===================================CASE 11  << 
+                  T0M1 = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 5 ) THEN
 !
 ! Mean wave period based on first inverse moment
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    TM0M1(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
 		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%TM0M1(GSEA)
+                          VAR1 = WADATS(IG)%T01(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( TM0M1(ISEA) .EQ. UNDEF ) THEN
-			      TM0M1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      TM0M1(ISEA)=TM0M1(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1099,43 +1140,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    TM0M1(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (12)        !<===================================CASE 12  << 
+                  T01 = AUX1
 !
-! Energy Flux 
-!
-		  DO ISEA = 1, NSEA
-		    CGE(ISEA) = UNDEF
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%CGE(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( CGE(ISEA) .EQ. UNDEF ) THEN
-			      CGE(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
-			                    GR_WTS(ISEA)%WT(J)*VAR1 
-			    ELSE
-			      CGE(ISEA)=CGE(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
-			                    GR_WTS(ISEA)%WT(J)*VAR1 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    CGE(GSEA) = UNDEF
-		  END DO
-		CASE (13)       !<===================================CASE 13 << 
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 6 ) THEN
 !
 ! Peak Frequency
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    FP0(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1143,19 +1157,21 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%FP0(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    FP0(ISEA) = VAR1
+			    AUX1(ISEA) = VAR1
 			    EXIT
 			  ENDIF
 		        END DO
-			IF ( FP0(ISEA) .NE. UNDEF ) EXIT
+			IF ( AUX1(ISEA) .NE. UNDEF ) EXIT
 		      END DO
 		    ENDIF
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    FP0(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (14)        !<===================================CASE 14  << 
+                  FP0 = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 7 ) THEN
 !
 ! Mean Wave direction
 !
@@ -1200,12 +1216,13 @@
 		      THM(ISEA) = UNDEF
 		    ENDIF
 		  END DO
-		CASE (15)       !<===================================CASE 15 << 
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 8 ) THEN
 !
 ! Directional spread
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    THS(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1213,11 +1230,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%THS(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( THS(ISEA) .EQ. UNDEF ) THEN 
-			      THS(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN 
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      THS(ISEA)=THS(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1227,14 +1244,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    THS(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (16)       !<===================================CASE 16 << 
+                  THS = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 2 .AND. IGRPP .EQ. 9 ) THEN
 !
 ! Peak Direction
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    THP0(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1242,25 +1261,27 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%THP0(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    THP0(ISEA) = VAR1
+			    AUX1(ISEA) = VAR1
 			    EXIT
 			  ENDIF
 		        END DO
-			IF ( THP0(ISEA) .NE. UNDEF ) EXIT
+			IF ( AUX1(ISEA) .NE. UNDEF ) EXIT
 		      END DO
 		    ENDIF
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-                    THP0(GSEA) = UNDEF
+                    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (17)       !<===================================CASE 17 << 
+                  THP0 = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 1 ) THEN
 !
 ! Partitioned Hs
 !
-                  DO ISWLL = 0,NOSWLL
+                  DO ISWLL = 0,NOSWLL_MIN
+                    AUX1 = UNDEF
 		    DO ISEA = 1, NSEA
-		      PHS(ISEA,ISWLL) = UNDEF
 		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		        DO J = 1,GR_WTS(ISEA)%NO
 		          IG = GR_WTS(ISEA)%ID(J)
@@ -1268,12 +1289,12 @@
 		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
 			    VAR1 = WADATS(IG)%PHS(GSEA,ISWLL)
 			    IF ( VAR1 .NE. UNDEF ) THEN
-			      IF ( PHS(ISEA,ISWLL) .EQ. UNDEF ) THEN
-			        PHS(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			      IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			        AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*         &
 			                            GR_WTS(ISEA)%WT(J)*VAR1 
 			      ELSE
-			        PHS(ISEA,ISWLL) = PHS(ISEA,ISWLL) +           &
-                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			        AUX1(ISEA) = AUX1(ISEA) +                    &
+                                                    GR_INTS(IG)%WT(ISEA,K)*  &
 			                             GR_WTS(ISEA)%WT(J)*VAR1 
 			      ENDIF
 			    ENDIF
@@ -1283,16 +1304,22 @@
 		    END DO
 		    DO ISEA = 1,NO_WTC
 		      GSEA = NO_WTS(ISEA)%NO
-		      PHS(GSEA,ISWLL) = UNDEF
+		      AUX1(GSEA) = UNDEF
 		    END DO
+                    PHS(1:NSEA,ISWLL) = AUX1
                   END DO
-		CASE (18)       !<===================================CASE 18 << 
 !
-! Partitioned peak period
+                  DO ISWLL = NOSWLL_MIN+1,NOSWLL
+                    PHS(1:NSEA,ISWLL) = UNDEF
+                  END DO
 !
-                  DO ISWLL = 0,NOSWLL
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 2 ) THEN
+!
+! Partitioned Peak Period
+!
+                  DO ISWLL = 0,NOSWLL_MIN
+                    AUX1 = UNDEF
 		    DO ISEA = 1, NSEA
-		      PTP(ISEA,ISWLL) = UNDEF
 		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		        DO J = 1,GR_WTS(ISEA)%NO
 		          IG = GR_WTS(ISEA)%ID(J)
@@ -1300,12 +1327,12 @@
 		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
 			    VAR1 = WADATS(IG)%PTP(GSEA,ISWLL)
 			    IF ( VAR1 .NE. UNDEF ) THEN
-			      IF ( PTP(ISEA,ISWLL) .EQ. UNDEF ) THEN
-			        PTP(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			      IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			        AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*         &
 			                            GR_WTS(ISEA)%WT(J)*VAR1 
 			      ELSE
-			        PTP(ISEA,ISWLL) = PTP(ISEA,ISWLL) +           &
-                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			        AUX1(ISEA) = AUX1(ISEA) +                    &
+                                                    GR_INTS(IG)%WT(ISEA,K)*  &
 			                             GR_WTS(ISEA)%WT(J)*VAR1 
 			      ENDIF
 			    ENDIF
@@ -1315,16 +1342,22 @@
 		    END DO
 		    DO ISEA = 1,NO_WTC
 		      GSEA = NO_WTS(ISEA)%NO
-		      PTP(GSEA,ISWLL) = UNDEF
+		      AUX1(GSEA) = UNDEF
 		    END DO
+                    PTP(1:NSEA,ISWLL) = AUX1
                   END DO
-		CASE (19)       !<===================================CASE 19 << 
 !
-! Partitioned peak length
+                  DO ISWLL = NOSWLL_MIN+1,NOSWLL
+                    PTP(1:NSEA,ISWLL) = UNDEF
+                  END DO
 !
-                  DO ISWLL = 0,NOSWLL
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 3 ) THEN
+!
+! Partitioned Peak Wave Length
+!
+                  DO ISWLL = 0,NOSWLL_MIN
+                    AUX1 = UNDEF
 		    DO ISEA = 1, NSEA
-		      PLP(ISEA,ISWLL) = UNDEF
 		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		        DO J = 1,GR_WTS(ISEA)%NO
 		          IG = GR_WTS(ISEA)%ID(J)
@@ -1332,12 +1365,12 @@
 		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
 			    VAR1 = WADATS(IG)%PLP(GSEA,ISWLL)
 			    IF ( VAR1 .NE. UNDEF ) THEN
-			      IF ( PLP(ISEA,ISWLL) .EQ. UNDEF ) THEN
-			        PLP(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			      IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			        AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*         &
 			                            GR_WTS(ISEA)%WT(J)*VAR1 
 			      ELSE
-			        PLP(ISEA,ISWLL) = PLP(ISEA,ISWLL) +           &
-                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			        AUX1(ISEA) = AUX1(ISEA) +                    &
+                                                    GR_INTS(IG)%WT(ISEA,K)*  &
 			                             GR_WTS(ISEA)%WT(J)*VAR1 
 			      ENDIF
 			    ENDIF
@@ -1347,14 +1380,20 @@
 		    END DO
 		    DO ISEA = 1,NO_WTC
 		      GSEA = NO_WTS(ISEA)%NO
-		      PLP(GSEA,ISWLL) = UNDEF
+		      AUX1(GSEA) = UNDEF
 		    END DO
+                    PLP(1:NSEA,ISWLL) = AUX1
                   END DO
-		CASE (20)       !<===================================CASE 20 << 
+!
+                  DO ISWLL = NOSWLL_MIN+1,NOSWLL
+                    PLP(1:NSEA,ISWLL) = UNDEF
+                  END DO
+!
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 4 ) THEN
 !
 ! Partitioned mean direction
 !
-                  DO ISWLL = 0,NOSWLL
+                  DO ISWLL = 0,NOSWLL_MIN
                     AUX1 = UNDEF
                     AUX2 = UNDEF
 		    DO ISEA = 1, NSEA
@@ -1397,13 +1436,18 @@
 		      ENDIF
 		    END DO
                   END DO
-		CASE (21)       !<===================================CASE 21 << 
 !
-! Partitioned directional Spread
+                  DO ISWLL = NOSWLL_MIN+1,NOSWLL
+                    PTH(1:NSEA,ISWLL) = UNDEF
+                  END DO
 !
-                  DO ISWLL = 0,NOSWLL
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 5 ) THEN
+!
+! Partitioned mean directional spread
+!
+                  DO ISWLL = 0,NOSWLL_MIN
+                    AUX1 = UNDEF
 		    DO ISEA = 1, NSEA
-		      PSI(ISEA,ISWLL) = UNDEF
 		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		        DO J = 1,GR_WTS(ISEA)%NO
 		          IG = GR_WTS(ISEA)%ID(J)
@@ -1411,12 +1455,12 @@
 		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
 			    VAR1 = WADATS(IG)%PSI(GSEA,ISWLL)
 			    IF ( VAR1 .NE. UNDEF ) THEN
-			      IF ( PSI(ISEA,ISWLL) .EQ. UNDEF ) THEN
-			        PSI(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			      IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			        AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*         &
 			                            GR_WTS(ISEA)%WT(J)*VAR1 
 			      ELSE
-			        PSI(ISEA,ISWLL) = PSI(ISEA,ISWLL) +           &
-                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			        AUX1(ISEA) = AUX1(ISEA) +                    &
+                                                    GR_INTS(IG)%WT(ISEA,K)*  &
 			                             GR_WTS(ISEA)%WT(J)*VAR1 
 			      ENDIF
 			    ENDIF
@@ -1426,16 +1470,22 @@
 		    END DO
 		    DO ISEA = 1,NO_WTC
 		      GSEA = NO_WTS(ISEA)%NO
-		      PSI(GSEA,ISWLL) = UNDEF
+		      AUX1(GSEA) = UNDEF
 		    END DO
+                    PSI(1:NSEA,ISWLL) = AUX1
                   END DO
-		CASE (22)       !<===================================CASE 22 << 
 !
-! Wind sea fraction of partition
+                  DO ISWLL = NOSWLL_MIN+1,NOSWLL
+                    PSI(1:NSEA,ISWLL) = UNDEF
+                  END DO
 !
-                  DO ISWLL = 0,NOSWLL
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 6 ) THEN
+!
+! Partitioned wind sea fraction
+!
+                  DO ISWLL = 0,NOSWLL_MIN
+                    AUX1 = UNDEF
 		    DO ISEA = 1, NSEA
-		      PWS(ISEA,ISWLL) = UNDEF
 		      IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		        DO J = 1,GR_WTS(ISEA)%NO
 		          IG = GR_WTS(ISEA)%ID(J)
@@ -1443,12 +1493,12 @@
 		  	    GSEA = GR_INTS(IG)%ID(ISEA,K)
 			    VAR1 = WADATS(IG)%PWS(GSEA,ISWLL)
 			    IF ( VAR1 .NE. UNDEF ) THEN
-			      IF ( PWS(ISEA,ISWLL) .EQ. UNDEF ) THEN
-			        PWS(ISEA,ISWLL) = GR_INTS(IG)%WT(ISEA,K)*     &
+			      IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			        AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*         &
 			                            GR_WTS(ISEA)%WT(J)*VAR1 
 			      ELSE
-			        PWS(ISEA,ISWLL) = PWS(ISEA,ISWLL) +           &
-                                                    GR_INTS(IG)%WT(ISEA,K)*   &
+			        AUX1(ISEA) = AUX1(ISEA) +                    &
+                                                    GR_INTS(IG)%WT(ISEA,K)*  &
 			                             GR_WTS(ISEA)%WT(J)*VAR1 
 			      ENDIF
 			    ENDIF
@@ -1458,15 +1508,21 @@
 		    END DO
 		    DO ISEA = 1,NO_WTC
 		      GSEA = NO_WTS(ISEA)%NO
-		      PWS(GSEA,ISWLL) = UNDEF
+		      AUX1(GSEA) = UNDEF
 		    END DO
+                    PWS(1:NSEA,ISWLL) = AUX1
                   END DO
-		CASE (23)       !<===================================CASE 23 << 
 !
-! Wind sea fraction of the spectrum
+                  DO ISWLL = NOSWLL_MIN+1,NOSWLL
+                    PWS(1:NSEA,ISWLL) = UNDEF
+                  END DO
 !
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 7 ) THEN
+!
+! Total wind sea fraction
+!
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    PWST(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1474,11 +1530,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%PWST(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-		            IF ( PWST(ISEA) .EQ. UNDEF ) THEN
-			      PWST(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+		            IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      PWST(ISEA)=PWST(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1488,14 +1544,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    PWST(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (24)       !<===================================CASE 24 << 
+                  PWST = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 4 .AND. IGRPP .EQ. 8 ) THEN
 !
 ! Number of partitions
 !
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    PNR(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1503,11 +1561,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%PNR(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-		            IF ( PNR(ISEA) .EQ. UNDEF ) THEN
-			      PNR(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+		            IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      PNR(ISEA)=PNR(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1517,40 +1575,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    PNR(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (25)       !<===================================CASE 25 << 
+                  PNR = AUX1
 !
-! Average time step in source term integration
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 1 ) THEN
 !
-		  DO ISEA = 1, NSEA
-		    DTDYN(ISEA) = UNDEF
-		  END DO
-		CASE (26)       !<===================================CASE 26 << 
+! Frictional velocity
 !
-! Cut off frequency
-!
-		  DO ISEA = 1, NSEA
-		    FCUT(ISEA) = UNDEF
-		  END DO
-		CASE (27)       !<===================================CASE 27 << 
-!
-! CFL Maximum (in spatial space)
-!
-		  DO ISEA = 1, NSEA
-		    CFLXYMAX(ISEA) = UNDEF
-		  END DO
-		CASE (28)       !<===================================CASE 28 << 
-!
-! CFL Maximum (in spectral space)
-!
-		  DO ISEA = 1, NSEA
-		    CFLTHMAX(ISEA) = UNDEF
-		  END DO
-		CASE (29)        !<===================================CASE 29  << 
-!
-! Frictional velocity ustar
-!
+                  AUX1 = UNDEF
+                  AUX2 = UNDEF
 		  DO ISEA = 1, NSEA
 		    ASF(ISEA) = 1.
 		    IX = MAPSF(ISEA,1)
@@ -1597,12 +1631,13 @@
 		      USTDIR(ISEA) = PI/4
                     ENDIF
                   END DO
-		CASE (30)        !<===================================CASE 30  << 
 !
-! Charnook Coefficient
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 2 ) THEN
 !
+! Charnock parameter
+!
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    CHARN(ISEA) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1610,11 +1645,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%CHARN(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( CHARN(ISEA) .EQ. UNDEF ) THEN
-			      CHARN(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      CHARN(ISEA)=CHARN(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -1624,14 +1659,47 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    CHARN(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (31)        !<===================================CASE 31  << 
+                  CHARN = AUX1
 !
-! Wind to Wave energy flux
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 3 ) THEN
 !
+! Energy Flux
+!
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    PHIAW(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%CGE(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  CGE = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 4 ) THEN
+!
+! Air-sea Energy Flux
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -1639,12 +1707,12 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%PHIAW(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( PHIAW(ISEA) .EQ. UNDEF ) THEN
-			      PHIAW(ISEA) = GR_INTS(IG)%WT(ISEA,K)*              &
-			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      PHIAW(ISEA)=PHIAW(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
-			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
 		        END DO
@@ -1653,11 +1721,13 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    PHIAW(GSEA) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (32)       !<===================================CASE 32 << 
+                  PHIAW = AUX1
 !
-! Wind to wave momentum flux
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 5 ) THEN
+!
+! Net wave-supported stress (wind to wave momentum flux)
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF
@@ -1693,9 +1763,10 @@
 		  END DO
                   TAUWIX = AUX1
                   TAUWIY = AUX2
-		CASE (33)       !<===================================CASE 33 << 
 !
-! Wave to wind momentum flux
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 6 ) THEN
+!
+! Negative part of wave-supported stress (wave to wind momentum flux)
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF
@@ -1731,9 +1802,10 @@
 		  END DO
                   TAUWNX = AUX1
                   TAUWNY = AUX2
-		CASE (34)        !<===================================CASE 34  << 
 !
-! Whitecap coverage 
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 7 ) THEN
+!
+! Whitecap coverage
 !
                   AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
@@ -1761,9 +1833,10 @@
 		    AUX1(GSEA) = UNDEF
 		  END DO
                   WHITECAP(1:NSEA,1) = AUX1
-		CASE (35)        !<===================================CASE 35  << 
 !
-! Whitecap thickness 
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 8 ) THEN
+!
+! Whitecap thickness
 !
                   AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
@@ -1791,9 +1864,10 @@
 		    AUX1(GSEA) = UNDEF
 		  END DO
                   WHITECAP(1:NSEA,2) = AUX1
-		CASE (36)        !<===================================CASE 36  << 
 !
-! Mean wave breaking height
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 9 ) THEN
+!
+! Mean breaking height
 !
                   AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
@@ -1821,9 +1895,10 @@
 		    AUX1(GSEA) = UNDEF
 		  END DO
                   WHITECAP(1:NSEA,3) = AUX1
-		CASE (37)        !<===================================CASE 37  << 
 !
-! Moment of white cap distribution 
+                ELSE IF ( IOGRP .EQ. 5 .AND. IGRPP .EQ. 10 ) THEN
+!
+! Whitecap moment
 !
                   AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
@@ -1851,9 +1926,272 @@
 		    AUX1(GSEA) = UNDEF
 		  END DO
                   WHITECAP(1:NSEA,4) = AUX1
-		CASE (38)       !<===================================CASE 38 << 
 !
-! Near bottom RMS amplitude excursion
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 1 ) THEN
+!
+! Radiation Stresses
+!
+		  DO ISEA = 1, NSEA
+		    SXX(ISEA) = UNDEF
+		    SXY(ISEA) = UNDEF
+		    SYY(ISEA) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%SXX(GSEA)
+			  VAR2 = WADATS(IG)%SXY(GSEA)
+			  VAR3 = WADATS(IG)%SYY(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( SXX(ISEA) .EQ. UNDEF ) THEN
+			      SXX(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR1 
+			      SXY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR2 
+			      SYY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
+			                    GR_WTS(ISEA)%WT(J)*VAR3 
+			    ELSE
+			      SXX(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      SXY(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			      SYY(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
+			                     GR_WTS(ISEA)%WT(J)*VAR3 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    SXX(GSEA) = UNDEF
+		    SXY(GSEA) = UNDEF
+		    SYY(GSEA) = UNDEF
+		  END DO
+!
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 2 ) THEN
+!
+! Wave to ocean momentum flux
+!
+                  AUX1 = UNDEF
+                  AUX2 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%TAUOX(GSEA)
+			  VAR2 = WADATS(IG)%TAUOY(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+                  TAUOX = AUX1
+                  TAUOY = AUX2
+!
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 3 ) THEN
+!
+! Bernoulli head (J term)
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%BHD(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  BHD = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 4 ) THEN
+!
+! Wave to ocean energy flux
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%PHIOC(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  PHIOC = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 5 ) THEN
+!
+! Stokes Volume Transport
+!
+                  AUX1 = UNDEF
+                  AUX2 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%TUSX(GSEA)
+			  VAR2 = WADATS(IG)%TUSY(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+                  TUSX = AUX1
+                  TUSY = AUX2
+!
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 6 ) THEN
+!
+! Stokes drift at the surface (not clear about the IO for US3D_OUNF = 1)
+!
+                  AUX1 = UNDEF
+                  AUX2 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%USSX(GSEA)
+			  VAR2 = WADATS(IG)%USSY(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+                  USSX = AUX1
+                  USSY = AUX2
+!
+                ELSE IF ( IOGRP .EQ. 6 .AND. IGRPP .EQ. 7 ) THEN
+!
+! Second order pressure variance and peak period
+!
+                  AUX1 = UNDEF
+                  AUX2 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%PRMS(GSEA)
+			  VAR2 = WADATS(IG)%TPMS(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR1 
+			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		    AUX2(GSEA) = UNDEF
+		  END DO
+                  PRMS = AUX1
+                  TPMS = AUX2
+!
+                ELSE IF ( IOGRP .EQ. 7 .AND. IGRPP .EQ. 1 ) THEN
+!
+! Near bottom RMS amplitudes
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF 
@@ -1898,9 +2236,10 @@
 		      ABD(ISEA) = UNDEF
                     ENDIF
                   END DO
-		CASE (39)       !<===================================CASE 39 << 
 !
-! Near bottom RMS orbital velocity
+                ELSE IF ( IOGRP .EQ. 7 .AND. IGRPP .EQ. 2 ) THEN
+!
+! Near bottom RMS velocities
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF 
@@ -1945,9 +2284,11 @@
 		      UBD(ISEA) = UNDEF
                     ENDIF
                   END DO
-		CASE (40)       !<===================================CASE 40 << 
 !
-! Bedform Parameters (have made the assumption if one is defined then the other is as well)
+                ELSE IF ( IOGRP .EQ. 7 .AND. IGRPP .EQ. 3 ) THEN
+!
+! Bedforms (Have made the assumption if one is defined then the other is as
+! well)
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF
@@ -1983,7 +2324,8 @@
 		  END DO
                   BEDFORMS(1:NSEA,1) = AUX1
                   BEDFORMS(1:NSEA,2) = AUX2
-		CASE (41)        !<===================================CASE 41  << 
+!
+                ELSE IF ( IOGRP .EQ. 7 .AND. IGRPP .EQ. 4 ) THEN
 !
 ! Energy dissipation in WBBL
 !
@@ -2000,7 +2342,7 @@
 			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
 			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
@@ -2013,9 +2355,10 @@
 		    AUX1(GSEA) = UNDEF
 		  END DO
                   PHIBBL = AUX1
-		CASE (42)       !<===================================CASE 42 << 
 !
-! Momentum loss in WBBL
+                ELSE IF ( IOGRP .EQ. 7 .AND. IGRPP .EQ. 5 ) THEN
+!
+! Momentum dissipation in WBBL
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF
@@ -2051,226 +2394,10 @@
 		  END DO
                   TAUBBL(1:NSEA,1) = AUX1
                   TAUBBL(1:NSEA,2) = AUX2
-		CASE (43)       !<===================================CASE 43 << 
 !
-! Radiation Stresses
+                ELSE IF ( IOGRP .EQ. 8 .AND. IGRPP .EQ. 1 ) THEN
 !
-		  DO ISEA = 1, NSEA
-		    SXX(ISEA) = UNDEF
-		    SXY(ISEA) = UNDEF
-		    SYY(ISEA) = UNDEF
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%SXX(GSEA)
-			  VAR2 = WADATS(IG)%SXY(GSEA)
-			  VAR3 = WADATS(IG)%SYY(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( SXX(ISEA) .EQ. UNDEF ) THEN
-			      SXX(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
-			                    GR_WTS(ISEA)%WT(J)*VAR1 
-			      SXY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
-			                    GR_WTS(ISEA)%WT(J)*VAR2 
-			      SYY(ISEA) = GR_INTS(IG)%WT(ISEA,K)*             &
-			                    GR_WTS(ISEA)%WT(J)*VAR3 
-			    ELSE
-			      SXX(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      SXY(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			      SYY(ISEA)=SXX(ISEA) + GR_INTS(IG)%WT(ISEA,K)*   &
-			                     GR_WTS(ISEA)%WT(J)*VAR3 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    SXX(GSEA) = UNDEF
-		    SXY(GSEA) = UNDEF
-		    SYY(GSEA) = UNDEF
-		  END DO
-		CASE (44)       !<===================================CASE 44 << 
-!
-! Wave to ocean energy flux
-!
-                  AUX1 = UNDEF
-                  AUX2 = UNDEF
-		  DO ISEA = 1, NSEA
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%TAUOX(GSEA)
-			  VAR2 = WADATS(IG)%TAUOY(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
-			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			    ELSE
-			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    AUX1(GSEA) = UNDEF
-		    AUX2(GSEA) = UNDEF
-		  END DO
-                  TAUOX = AUX1
-                  TAUOY = AUX2
-		CASE (45)        !<===================================CASE 45  << 
-!
-! Bernoulli Head
-!
-                  AUX1 = UNDEF
-		  DO ISEA = 1, NSEA
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%JSMITH(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
-			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                   GR_WTS(ISEA)%WT(J)*VAR1 
-			    ELSE
-			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
-			                   GR_WTS(ISEA)%WT(J)*VAR1 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    AUX1(GSEA) = UNDEF
-		  END DO
-                  JSMITH = AUX1
-		CASE (46)        !<===================================CASE 46  << 
-!
-! Wave to ocean momentum flux
-!
-                  AUX1 = UNDEF
-		  DO ISEA = 1, NSEA
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%PHIOC(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
-			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                   GR_WTS(ISEA)%WT(J)*VAR1 
-			    ELSE
-			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)*     &
-			                   GR_WTS(ISEA)%WT(J)*VAR1 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    AUX1(GSEA) = UNDEF
-		  END DO
-                  PHIOC = AUX1
-		CASE (47)       !<===================================CASE 47 << 
-!
-! Stokes volume transport
-!
-                  AUX1 = UNDEF
-                  AUX2 = UNDEF
-		  DO ISEA = 1, NSEA
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%TUSX(GSEA)
-			  VAR2 = WADATS(IG)%TUSY(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
-			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			    ELSE
-			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    AUX1(GSEA) = UNDEF
-		    AUX2(GSEA) = UNDEF
-		  END DO
-                  TUSX = AUX1
-                  TUSY = AUX2
-		CASE (48)       !<===================================CASE 48 << 
-!
-! Stokes drift at the surface (not clear about the IO for US3D_OUNF = 1)
-!
-                  AUX1 = UNDEF
-                  AUX2 = UNDEF
-		  DO ISEA = 1, NSEA
-		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
-		      DO J = 1,GR_WTS(ISEA)%NO
-		        IG = GR_WTS(ISEA)%ID(J)
-		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
-		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%USSX(GSEA)
-			  VAR2 = WADATS(IG)%USSY(GSEA)
-			  IF ( VAR1 .NE. UNDEF ) THEN
-			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
-			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			    ELSE
-			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
-			    ENDIF
-			  ENDIF
-		        END DO
-		      END DO
-		    ENDIF
-		  END DO
-		  DO ISEA = 1,NO_WTC
-		    GSEA = NO_WTS(ISEA)%NO
-		    AUX1(GSEA) = UNDEF
-		    AUX2(GSEA) = UNDEF
-		  END DO
-                  USSX = AUX1
-                  USSY = AUX2
-		CASE (49)       !<===================================CASE 49 << 
-!
-! Mean square slopes in x,y 
+! Mean Square Slope
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF
@@ -2306,9 +2433,10 @@
 		  END DO
                   MSSX = AUX1
                   MSSY = AUX2
-		CASE (50)       !<===================================CASE 50 << 
 !
-! Spectral tail level 
+                ELSE IF ( IOGRP .EQ. 8 .AND. IGRPP .EQ. 2 ) THEN
+!
+! Spectral tail levels
 !
                   AUX1 = UNDEF
                   AUX2 = UNDEF
@@ -2344,31 +2472,26 @@
 		  END DO
                   MSCX = AUX1
                   MSCY = AUX2
-		CASE (51)       !<===================================CASE 51 << 
 !
-! Second order pressure variance and peak period
+                ELSE IF ( IOGRP .EQ. 9 .AND. IGRPP .EQ. 1 ) THEN
+!
+! Average time step in integration
 !
                   AUX1 = UNDEF
-                  AUX2 = UNDEF
 		  DO ISEA = 1, NSEA
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
 		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
-			  VAR1 = WADATS(IG)%PRMS(GSEA)
-			  VAR2 = WADATS(IG)%TPMS(GSEA)
+			  VAR1 = WADATS(IG)%DTDYN(GSEA)
 			  IF ( VAR1 .NE. UNDEF ) THEN
 			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
 			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
 			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR1 
-			      AUX2(ISEA)=AUX2(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
-			                     GR_WTS(ISEA)%WT(J)*VAR2 
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
 			  ENDIF
 		        END DO
@@ -2378,16 +2501,139 @@
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
 		    AUX1(GSEA) = UNDEF
-		    AUX2(GSEA) = UNDEF
 		  END DO
-                  PRMS = AUX1
-                  TPMS = AUX2
-		CASE (52)       !<===================================CASE 52 << 
+                  DTDYN = AUX1
 !
-! User defined variable (number 1)
+                ELSE IF ( IOGRP .EQ. 9 .AND. IGRPP .EQ. 2 ) THEN
 !
+! Cut-off frequency
+!
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    USERO(ISEA,1) = UNDEF
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%FCUT(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  FCUT = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 9 .AND. IGRPP .EQ. 3 ) THEN
+!
+! Max. CFL number for spatial advection
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%CFLXYMAX(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  CFLXYMAX = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 9 .AND. IGRPP .EQ. 4 ) THEN
+!
+! Max. CFL number for theta advection
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%CFLTHMAX(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  CFLTHMAX = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 9 .AND. IGRPP .EQ. 5 ) THEN
+!
+! Max. CFL number for k advection
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
+		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
+		      DO J = 1,GR_WTS(ISEA)%NO
+		        IG = GR_WTS(ISEA)%ID(J)
+		        DO K = 1,GR_INTS(IG)%COUNT(ISEA)
+		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
+			  VAR1 = WADATS(IG)%CFLKMAX(GSEA)
+			  IF ( VAR1 .NE. UNDEF ) THEN
+			    IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ELSE
+			      AUX1(ISEA)=AUX1(ISEA) + GR_INTS(IG)%WT(ISEA,K)* &
+			                   GR_WTS(ISEA)%WT(J)*VAR1 
+			    ENDIF
+			  ENDIF
+		        END DO
+		      END DO
+		    ENDIF
+		  END DO
+		  DO ISEA = 1,NO_WTC
+		    GSEA = NO_WTS(ISEA)%NO
+		    AUX1(GSEA) = UNDEF
+		  END DO
+                  CFLKMAX = AUX1
+!
+                ELSE IF ( IOGRP .EQ. 10 .AND. IGRPP .EQ. 1 ) THEN
+!
+! User defined variable 1 (we are assuming they are scalars)
+!
+                  AUX1 = UNDEF
+		  DO ISEA = 1, NSEA
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -2395,11 +2641,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%USERO(GSEA,1)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-		            IF ( USERO(ISEA,1) .EQ. UNDEF ) THEN
-			      USERO(ISEA,1) = GR_INTS(IG)%WT(ISEA,K)*         &
+		            IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      USERO(ISEA,1) = USERO(ISEA,1) +                 &
+			      AUX1(ISEA) = AUX1(ISEA) +                       &
                                                 GR_INTS(IG)%WT(ISEA,K)*       &
 			                        GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
@@ -2410,14 +2656,16 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    USERO(GSEA,1) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE (53)       !<===================================CASE 53 << 
+                  USERO(1:NSEA,1) = AUX1
 !
-! User defined variable (number 2)
+                ELSE IF ( IOGRP .EQ. 10 .AND. IGRPP .EQ. 2 ) THEN
 !
+! User defined variable 2 (we are assuming they are scalars)
+!
+                  AUX1 = UNDEF
 		  DO ISEA = 1, NSEA
-		    USERO(ISEA,2) = UNDEF
 		    IF ( GR_WTS(ISEA)%NO .NE. 0 ) THEN
 		      DO J = 1,GR_WTS(ISEA)%NO
 		        IG = GR_WTS(ISEA)%ID(J)
@@ -2425,11 +2673,11 @@
 		  	  GSEA = GR_INTS(IG)%ID(ISEA,K)
 			  VAR1 = WADATS(IG)%USERO(GSEA,2)
 			  IF ( VAR1 .NE. UNDEF ) THEN
-		            IF ( USERO(ISEA,2) .EQ. UNDEF ) THEN
-			      USERO(ISEA,2) = GR_INTS(IG)%WT(ISEA,K)*         &
+		            IF ( AUX1(ISEA) .EQ. UNDEF ) THEN
+			      AUX1(ISEA) = GR_INTS(IG)%WT(ISEA,K)*            &
 			                    GR_WTS(ISEA)%WT(J)*VAR1 
 			    ELSE
-			      USERO(ISEA,2) = USERO(ISEA,2) +                 &
+			      AUX1(ISEA) = AUX1(ISEA) +                       &
                                                 GR_INTS(IG)%WT(ISEA,K)*       &
 			                        GR_WTS(ISEA)%WT(J)*VAR1 
 			    ENDIF
@@ -2440,14 +2688,20 @@
 		  END DO
 		  DO ISEA = 1,NO_WTC
 		    GSEA = NO_WTS(ISEA)%NO
-		    USERO(GSEA,2) = UNDEF
+		    AUX1(GSEA) = UNDEF
 		  END DO
-		CASE DEFAULT
-		  GO TO 2003
-	      END SELECT
+                  USERO(1:NSEA,2) = AUX1
 !
-	  END IF
-	END DO	  
+                ELSE 
+!
+! End of output options
+!
+	          WRITE(NDSE,1003) IOGRP, IGRPP
+!
+                END IF
+              END IF
+           END DO
+        END DO
 !
 !------------------------------------------------------------------------------
 ! 3. Write out interpolated data to target output file
@@ -2458,12 +2712,8 @@
 !
 ! Error escape locations
 !
- 2003   CONTINUE
-	WRITE(NDSE,1003) IOGRD
-	CALL EXTCDE ( 4 )
-!
- 1003   FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                          &
-	         '   INVALID OUTPUT SWITCH ',I5/)
+ 1003   FORMAT (/' *** ERROR IN WAVEGRID_INTERP *** '/                        &
+	         '   OUTPUT NOT DEFINED FOR (GROUP, PARAM): ',I5,I5/)
 !/
 !/ End of W3EXGI ------------------------------------------------------------/
 !/

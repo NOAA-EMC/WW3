@@ -1,26 +1,46 @@
-$ WAVEWATCH III Grid output post-processing
-$ -----------------------------------------
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid output post-processing                            $
+$--------------------------------------------------------------------- $
+$ Time, time increment and number of outputs
+$
   19680606 000000 86400. 999
 $
-$-------------------------------------------------------------------------------------------------------------------
-$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
-$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
-$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
-$-------------------------------------------------------------------------------------------------------------------
- F F F F F  F T F F F  F F F T T  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$--------------------------------------------------------------------- $
+$ Output request flags identifying fields as in ww3_shel input and
+$ section 2.4 fo the manual.
 $
-$ NetCDF file version [3,4]  and variable type [2 = short int. , 4 = real ]     
-$  [0,1,2,3,4,5]   (swell partitions)
-$ TOGETHER [T] or not [F] in the same file
+N
+HS DIR SPR DP EF TH1M STH1M
+$
+$--------------------------------------------------------------------- $
+$ Output type 4 [3,4] (version netCDF)   
+$        and   variable type 4 [2 = SHORT, 4 = REAL]
+$ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)
+$ variables T [T] or not [F] in the same file
+$
   3 4
   0 1 2
   F
 $
-$ It appears that if you put in a nx ny that is larger than the comp grid nx ny, it just uses the comp grid nx ny, which is good, since you can just leave it at some high number if you want to output the entire grid , e.g. 1 999 1 999 1 1 .
+$ -------------------------------------------------------------------- $
+$ File prefix
+$ number of characters in date
+$ IX, IY range
+$
+$ It appears that if you put in a nx ny that is larger than the comp grid nx ny, 
+$ it just uses the comp grid nx ny, which is good, 
+$ since you can just leave it at some high number 
+$ if you want to output the entire grid , e.g. 1 999 1 999 1 1 .
 $
 ww3.
  6
  1 999 1 999 1  
+$
+$ For each field and time a new file is generated with the file name
+$ ww3.date_xxx.nc , where date is a conventional time idicator with S3
+$ characters,
+$ and xxx is a field identifier.
+$
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

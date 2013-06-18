@@ -15,12 +15,44 @@ $
     T T
 $
    19680606 000000   3600  19680607 000000
-$-------------------------------------------------------------------------------------------------------------------
-$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
-$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
-$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
-$-------------------------------------------------------------------------------------------------------------------
- T T T F F  F T F F F  T T F F T  T F T F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
+$
+$----------------------------------------------------------------
+$
+$ Output request flags identifying fields as in ww3_shel input and
+$ section 2.4 of the manual. It is also possible to use a namelist,
+$ see ww3_ounf.inp for an example.
+$
+$ (1) Forcing Fields
+  T
+$ DPW CUR WND AST WLV ICE BER D50
+  T   T   T   F   F   F   F   F
+$ (2) Standard mean wave Parameters
+  T
+$ HS  MWL T02 T01 T-1 FP  DIR SPR PKD
+  T   F   F   F   T   F   F   T   T
+$ (3) Frequency-dependent parameters
+  F
+$ (4) Spectral Partition Parameters
+  T
+$ PHS PTP PLP PTH PSP WSF TWS PNR
+  F   T   F   F   F   F   T   F
+$ (5) Atmosphere-waves layer
+  T
+$ UST CHK CGE TKU TKW TK- WCC WCT MBH WCM
+  F   F   T   F   F   F   F   F   F   F
+$ (6) Wave-Ocean layer
+  F
+$ (7) Wave-bottom layer
+  F
+$ (8) Spectrum parameters
+  F
+$ (9) Numerical diagnostics
+  F
+$ (10) User defined (NOEXTR flags needed)
+  F
+$
+$----------------------------------------------------------------
+$
    19680606 000000   3600  19680608 000000
        0.E3     0.E3  'eye       '
        0.E3    50.E3  'mN        '

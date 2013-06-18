@@ -68,6 +68,9 @@ height=height .* factors;
 fclose(fid);
 
 disp(['variable read is ' variable])
+if variable ~= '.hs'
+  disp('warning: this is not a .hs file')
+end
 
 if icheck>1
   beep
