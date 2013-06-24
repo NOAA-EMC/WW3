@@ -136,6 +136,7 @@
                                  FTIME(2), CID, PID, GID, GDS, IOUT
       INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:) 
 ! GRIB1 specific variables
+!/NOGRB      INTEGER                 :: KPDS(1), KGDS(1)
 !/NCEP1      INTEGER                 :: KPDS(25), KGDS(22)
 ! GRIB2 specific variables
 !/NCEP2      INTEGER                 :: KPDS(200), KGDS(200), IDRS(200)
@@ -366,6 +367,11 @@
       CALL STME21 ( FTIME , IDTIME )
       WRITE (NDSO,948) IDTIME, CID, PID, GID, GDS
 ! 
+! ... Initialize KPDS and KGDS (for both NCEP1 and NCEP2)
+!
+      KPDS     =   0
+      KGDS     =   0
+!
 ! ... Set PDS GRIB1 elements
 !
 !     ( 1)  ID OF CENTER
@@ -397,8 +403,6 @@
 !  * : Changing on the fly in main program
 ! ** : Changing on the fly in W3EXGB
 !
-!/NCEP1      KPDS     =   0
-!
 !/NCEP1      KPDS( 1) = CID
 !/NCEP1      KPDS( 2) = PID
 !/NCEP1      KPDS( 3) = GID
@@ -428,8 +432,6 @@
 !           OF POINTS IN EACH ROW OR 255 IF NEITHER ARE PRESENT
 !     (21)  FOR GRIDS WITH PL, NUMBER OF POINTS IN GRID
 !     (22)  NUMBER OF WORDS IN EACH ROW
-!
-!/NCEP1      KGDS     = 0
 !
 !/NCEP1      KGDS( 2) = NX
 !/NCEP1      KGDS( 3) = NY
@@ -511,7 +513,6 @@
 !       (18) Increment of latitude
 !       (19) Scanning mode
 !
-!/NCEP2      KGDS = 0
 !/NCEP2      KGDS( 1) = 6
 !/NCEP2      KGDS( 8) = NX
 !/NCEP2      KGDS( 9) = NY
@@ -546,7 +547,6 @@
 !     (15) Scaled value of (13)
 !
 !/NCEP2       KPDSNUM = 0
-!/NCEP2       KPDS = 0
 !/NCEP2       KPDS( 3) = 2
 !/NCEP2       KPDS( 4) = 0
 !/NCEP2       KPDS( 5) = PID
@@ -876,7 +876,7 @@
         FLTRI = .FALSE.
         FLPRT = .FALSE.
 !
-!/T            WRITE (NDST,9020) IDOUT(J)
+!/T            WRITE (NDST,9020) IDOUT(IFI,IFJ)
 !
 ! 2.a Set output arrays and parameters
 !
