@@ -4,7 +4,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         28-Jul-2013 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -22,8 +22,9 @@
 !/    31-Oct-2010 : Adding output parameters            ( version 3.14 )
 !/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/                  Add W3XETA.
+!/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -663,7 +664,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Dec-2012 !
+!/                  | Last update :         28-Jul-2013 !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -674,6 +675,7 @@
 !/    22-Feb-2008 ; Modify MAPTH2 declaration.          ( version 3.14 )
 !/    31-Oct-2010 : Added initialization of CX,CY,DW    ( version 3.14 )
 !/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
+!/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -939,8 +941,8 @@
       WADATS(IMOD)%USSY   = UNDEF
       WADATS(IMOD)%PRMS   = UNDEF
       WADATS(IMOD)%TPMS   = UNDEF
-      WADATS(IMOD)%P2SMS  = UNDEF
-      WADATS(IMOD)%US3D   = UNDEF
+      IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
+      IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
 !
 ! 7) Wave-bottom layer
 !
