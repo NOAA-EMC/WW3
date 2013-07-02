@@ -321,8 +321,17 @@
           END IF
         IF ( FLG1D (IFI) ) THEN ! Skip if group not requested
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          READ (NDSI,*,END=2001,ERR=2006)                    &
-                 FLG2D(IFI,1:NOGE(IFI))
+          READ (NDSI,'(A)',END=2001,ERR=2006,IOSTAT=IERR)              &
+                                                       OUTFIELDNAMES
+          OUT_NAMES(:)=''
+          CALL STRSPLIT(OUTFIELDNAMES,OUT_NAMES)
+          IFJ=0
+          DO WHILE (len_trim(OUT_NAMES(IFJ+1)).NE.0)
+             IFJ=IFJ+1
+             IF ( OUT_NAMES(IFJ) .EQ. 'T' )                            &
+                               FLG2D(IFI,IFJ)=.TRUE.
+          ENDDO
+          IF (IFJ .LT. NOGE(IFI)) WRITE(NDSEN,1007) IFI 
          ENDIF
         END DO
 !
@@ -526,26 +535,30 @@
  1945 FORMAT ( '            Fields   : ',A)
  1946 FORMAT ( '                       ',A)
 !
- 1001 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR  : '/                         &
                '     PREMATURE END OF INPUT FILE'/)
 !
- 1002 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
-               '     ERROR IN READING OUTPUT FIELDS GROUP FLAGS ',    &
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR  : '/                         &
+               '     ERROR IN READING OUTPUT FIELDS GROUP FLAGS ',     &
                I2, /, '     IOSTAT =',I5/)
 !
- 1003 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
-               '     ERROR IN READING OUTPUT FIELDS NAMES FROM INPUT FILE'/ &
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR  : '/                         &
+               '     ERROR READING OUTPUT FIELD NAMES FROM INPUT FILE'/&
                '     IOSTAT =',I5/)
 !
- 1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                        &
+ 1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
                '     REQUESTED OUTPUT FIELD ',A,' WAS NOT RECOGNIZED.'/)
 !
- 1005 FORMAT (/' *** WAVEWATCH III ERROR    : '/                        &
-               '     WAS EXPECTING "T" "F" or "N", but found  "',A,'".'/)
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR    : '/                       &
+               '     WAS EXPECTING "T" "F" or "N", but found "',A,'".'/)
 !
- 1006 FORMAT (/' *** WAVEWATCH III ERROR  : '/                        &
-               '     ERROR IN READING OUTPUT FIELDS FLAGS FOR GROUP ',  &
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR  : '/                         &
+               '     ERROR IN READING OUTPUT FIELDS FLAGS FOR GROUP ', &
                I2, /, '     IOSTAT =',I5/)
+!
+ 1007 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+               '     NUMBER OF REQUESTED OUTPUT FIELD FLAGS IN GROUP ',&
+              I2, /,' LESS THAN AVAILABLE, CHECK DOCS FOR MORE OPTIONS')
 !
       END SUBROUTINE W3READFLGRD
 
