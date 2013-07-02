@@ -51,8 +51,8 @@ $ section 2.4 of the manual.
 $
 $ (1) Forcing Fields
   T
-$ DPW CUR WND AST WLV ICE
-  T   F   F   F   F   F
+$ DPW CUR WND AST WLV ICE BRG D50
+  T   F   F   F   F   F   F  F
 $ (2) Standard mean wave Parameters
   T
 $ HS  LM  TZ  TE  TM  FP  DIR SPR DP 
