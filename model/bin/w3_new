@@ -202,7 +202,10 @@
      'wind'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prep.ftn ;; 
      'windx'  ) cd $main_dir/ftn ; touch wmupdtmd.ftn ;;
-     'rwind'  ) cd $main_dir/ftn ; touch w3updtmd.ftn ;;
+     'rwind'  ) cd $main_dir/ftn ; touch w3updtmd.ftn
+                                   touch w3gdatmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch ww3_grid.ftn ;;
      'curr'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prep.ftn ;; 
      'currx'  ) cd $main_dir/ftn ; touch wmupdtmd.ftn ;;
