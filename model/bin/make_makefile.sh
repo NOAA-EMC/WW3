@@ -426,7 +426,7 @@
   if [ "$s_inds" = 'ST4' ] && [ "$str_st3" = 'no' ]
   then
       echo ' '
-      echo "   *** !/ST3 cannot be used in combination with !/$stress"
+      echo "   *** !/ST4 cannot be used in combination with !/$stress"
       echo "       Stresses embedded in source terms, use FLX0."
       echo ' ' ; exit 7
   fi
