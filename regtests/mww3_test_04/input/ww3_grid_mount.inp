@@ -1,6 +1,6 @@
 $ WAVEWATCH III Grid preprocessor input file
 $ ------------------------------------------
-  'The inner grid @  5 km        '
+  'The inner grid @  5 km + mount'
 $
    1.03 0.075 20 24 0.
 $
@@ -12,7 +12,7 @@ $
   &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
-$  'RECT' F 'NONE'
+   'RECT' F 'NONE'
    51   51
      5.E3    5.E3   1.
   -125.E3 -125.E3   1.
