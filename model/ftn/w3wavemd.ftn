@@ -371,7 +371,7 @@
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
-                                 REFLED(4), IK, ITH, IS
+                                 REFLED(4), IK, ITH, IS, NKCFL 
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -416,6 +416,7 @@
 !/PALM  CHARACTER(LEN=PL_LNAME) :: cl_object, cl_space
 !/PALM  INTEGER                :: PALMED
 !/PALM  LOGICAL :: MEL03
+!/T     REAL             :: INDSORT(NSEA), DTCFL1(NSEA)
 !/
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
@@ -820,6 +821,55 @@
 !/T              WRITE (NDST,9023)
               GOTO 380
             END IF
+!	  
+           IF(GTYPE .EQ. UNGTYPE) THEN
+             IF (FLAGLL) THEN 
+                FACX   =  1./(DERA * RADIUS) 
+                FACY   =  1./(DERA * RADIUS)
+              ELSE 
+                FACX   =  1.
+                FACY   =  1. 
+              END IF
+            END IF
+!
+! Estimation of the local maximum CFL for XY propagation
+!
+!/T           FLOGRD(9,3)=.TRUE.
+!/T           WRITE(NDSE,*) 'Computing CFLs .... ',NSEAL
+                IF ( FLOGRD(9,3).AND. UGDTUPDATE ) THEN 
+                  NKCFL=NK
+!/T               NKCFL=1
+!/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
+                  DO JSEA=1, NSEAL
+!/DIST                  ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD                  ISEA   = JSEA
+!/T                     IF (MOD(ISEA,100).EQ.0) WRITE(NDSE,*) 'COMPUTING CFL FOR NODE:',ISEA
+!/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
+!/PR3                        CALL W3CFLUG ( ISEA, NKCFL, FACX, FACY, DTG,  &
+!/PR3                             MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
+!/PR3                      ELSE 
+!/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
+!/PR3                                       CFLXYMAX(JSEA), VGX, VGY )
+!/PR3                        END IF
+                      END DO
+                    END IF
+!/T       IF (GTYPE .EQ. UNGTYPE) THEN 
+!/T         DTCFL1(:)=1.
+!/T         DO ISEA=1,NSEA
+!/T           INDSORT(ISEA)=FLOAT(ISEA)
+!/T           DTCFL1(ISEA)=DTG/CFLXYMAX(ISEA)
+!/T           END DO
+!/T         CALL SSORT1 (DTCFL1, INDSORT, NSEAL, 2)
+!/T         IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,*) 'Nodes requesting smallest timesteps:'
+!/T         IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10I10)')   'Nodes      ',NINT(INDSORT(1:10))
+!/T         IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,10F10.2)') 'time steps ',DTCFL1(1:10)
+!/T         DO JSEA = 1, MIN(NSEAL,200) 
+!/T           ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
+!/T           IX     = MAPSF(ISEA,1)
+!/T           WRITE(995,'(2I8,F10.2,3F10.4)') IX, ISEA, DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
+!/T           END DO ! JSEA
+!/T         CLOSE(995)
+!/T         END IF
 !
 ! 3.6 Perform Propagation = = = = = = = = = = = = = = = = = = = = = = =
 ! 3.6.1 Preparations
@@ -874,16 +924,6 @@
 !       (time step correction in routine)
 !
           IF ( FLCX .OR. FLCY ) THEN
-!
-           IF(GTYPE .EQ. UNGTYPE) THEN
-             IF (FLAGLL) THEN 
-                FACX   =  1./(DERA * RADIUS) 
-                FACY   =  1./(DERA * RADIUS)
-              ELSE 
-                FACX   =  1.
-                FACY   =  1. 
-              END IF
-            END IF
 !
 !/MPI              IF ( NRQSG1 .GT. 0 ) THEN
 !/MPI                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
@@ -957,18 +997,6 @@
 !/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 !/PRX                      CALL W3KTPX
-!
-! Estimation of the local maximum CFL for XY propagation
-!
-                    IF ( FLOGRD(9,3).AND. UGDTUPDATE ) THEN 
-!/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
-!/PR3                        CALL W3CFLUG ( ISEA, FACX, FACY, DTG,         &
-!/PR3                             MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
-!/PR3                      ELSE 
-!/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
-!/PR3                                       CFLXYMAX(JSEA), VGX, VGY )
-!/PR3                        END IF
-                      END IF
                     END IF
                   END DO
                 END DO

@@ -232,7 +232,9 @@
 !/TIDE      TIDEOK = .TRUE.
       FILLER(:)=0
       IF ( PRESENT(TIDEFLAGIN) ) THEN
-          TIDEFLAG = TIDEFLAGIN
+        TIDEFLAG = TIDEFLAGIN
+      ELSE 
+        TIDEFLAG = 0
         END IF
 
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801

@@ -12,6 +12,7 @@
 !/    XX-Nov-2007 : Origination.                        ( version 3.10 )
 !/    03-Nov-2011 : Adding shoreline reflection         ( version 4.04 )
 !/    03-Jun-2013 : Removed assign statements           ( version 4.10 )
+!/    20-Jun-2013 : Update test output for time steps   ( version 4.10 )
 !
 !  1. Purpose :
 !
@@ -218,7 +219,7 @@
         AQ(IX) = VQ(IX)   
         C(IX,1)  = VLCFLX(IX)
         C(IX,2)  = VLCFLY(IX)
-      ENDDO
+        END DO
 !
 ! 4. Prepares boundary update
 !
@@ -259,7 +260,7 @@
       RETURN    
  END SUBROUTINE W3XYPUG   
 !/ ------------------------------------------------------------------- /
-   SUBROUTINE W3CFLUG ( ISEA, FACX, FACY, DT, MAPFS, CFLXYMAX,    &
+   SUBROUTINE W3CFLUG ( ISEA, NKCFL, FACX, FACY, DT, MAPFS, CFLXYMAX,    &
                           VGX, VGY )    
 !/
 !/                  +-----------------------------------+
@@ -269,7 +270,8 @@
 !/                  | Last update :         01-Mar-2011 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2011 : Origination.                        ( version 3.14.4 )
+!/    01-Mar-2011 : Origination.                        ( version 3.14 )
+!/    20-Jun-2013 : Computes only up to NKCFL for tests ( version 4.10 )
 !/
 !  1. Purpose :
 !
@@ -284,6 +286,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       ISEA     Int.   I   Index of sea point
+!       NKCFL    Int.   I   Maximum frequency index
 !       FACX/Y   Real   I   Factor in propagation velocity.
 !                          ( 1 or 0 * DT / DX )
 !       DT       Real   I   Time step.
@@ -345,7 +348,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: ISEA, MAPFS(NY*NX)
+      INTEGER, INTENT(IN)     :: ISEA, NKCFL, MAPFS(NY*NX)
       REAL, INTENT(IN)        :: FACX, FACY, DT, VGX, VGY
       REAL, INTENT(INOUT)     :: CFLXYMAX
 !/
@@ -360,12 +363,14 @@
       REAL                    :: RD1, RD2
       INTEGER                 :: COUNTSEACON
       REAL*8                  :: KELEM(3), KTMP(3), LAMBDA(2)
-      REAL*8                  :: KKSUM, DTMAXEXP
+      REAL*8                  :: NM(3), KKSUM, DTMAXEXP
 !/
 !/  Velocities 
 !/
       REAL                    :: VLCFLX, VLCFLY
-      REAL*8,  PARAMETER      :: ONESIXTH  = 1.0d0/6.0d0
+       REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
+       REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
+       REAL,    PARAMETER :: THR       = TINY(1.0) 
 
 !/ ------------------------------------------------------------------- /				     
 !
@@ -381,7 +386,7 @@
 ! Loop over spectral components
 !
       IP = MAPSF(ISEA,3)
-      DO IK=1,NK
+      DO IK=1,NKCFL
         DO ITH=1,NTH
           CCOS   = FACX * ECOS(ITH) 
           CSIN   = FACY * ESIN(ITH) 
@@ -391,8 +396,7 @@
 ! 2.1  Calculate advection velocities: group speed ---------------- *
 ! 
           DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
-            IV=POS_CELL(I)
+            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
             DO J=1,3
               IP2=TRIGP(IE,J)
               ISEA2=MAPFS(IP2)
@@ -427,11 +431,14 @@
             LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Advection speed in X direction
             LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2)) ! Advection speed in Y direction
             KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
-            KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
-            KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
-            KTMP        = KELEM(:) ! Copy
-            KELEM(:) = MAX(0.d0,KTMP)
-            KKSUM = KKSUM  + KELEM(IV)
+            KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4) ! K-Values - so called Flux Jacobians 
+            KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians 
+
+            KTMP        = KELEM ! Copy
+            NM          = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values 
+            KELEM       = MAX(0.d0,KTMP)
+
+            KKSUM = KKSUM  +  KELEM(IV)
             END DO ! COUNTRI
 !
           DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM)
@@ -585,6 +592,7 @@
            KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
            KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
            KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
+!
            KTMP        = KELEM(:,IE) ! Copy
            NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values 
            KELEM(:,IE) = MAX(0.d0,KTMP)
@@ -619,12 +627,14 @@
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
+!/T              WRITE(994,'(A)') 'dir.    Node    step needed step used long.   lat.  depth'
 !/T             DO IP = 1, NX
 !/T               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
-!/T               IF (DTMAXEXP.LT.DTMAXGL*1.3.AND.IK.EQ.1) WRITE(6,'(A,3I8,2F8.3,3F10.4)') 'DTMAX:', IK, ITH, IP, &
+!/T               IF (DTMAXEXP.LT.DTMAXGL*1.3.AND.IK.EQ.1) WRITE(994,'(A,2I8,2F8.3,3F10.4)') 'DTMAX:', ITH, IP, &
 !/T                          REAL(DTMAXEXP), REAL(DTMAXGL), XYB(IP,1), XYB(IP,2), XYB(IP,3)        
 !/T             END DO ! IP
-
+!/T             IF (ITH.EQ.NTH) CLOSE(994)
+!
              CFLXY = DBLE(DT)/DTMAXGL
              REST  = ABS(MOD(CFLXY,1.0d0))
              IF (REST .LT. THR8) THEN

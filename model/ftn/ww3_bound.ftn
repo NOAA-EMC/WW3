@@ -113,7 +113,6 @@
       LOGICAL         :: FILEW = .TRUE.
       CHARACTER               :: COMSTR*1, LINE*80
       CHARACTER*5   :: INXOUT
-      CHARACTER*1   :: FILEFORMAT
       CHARACTER*10  :: VERTEST  ! = 'III  1.03 '
       CHARACTER*32  :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
       CHARACTER*120,     ALLOCATABLE  :: SPECFILES(:)
@@ -123,7 +122,7 @@
                 NDSI,NDSM, NDSI2,NDSS,NDSB, NDSTRC, NTRACE, &
                 NK1,NTH1,NSPEC1, NBI, NBI2,           &
                 NKI, NTHI, NBO, NBO2, IERR, INTERP, N3, OVER, ILOOP, &
-               IFMIN, IFMIN2, IFMAX
+               IFMIN, IFMIN2, IFMAX, VERBOSE
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER     np,npar,Jfp, IBO
       INTEGER     iostat,finished
@@ -186,10 +185,9 @@
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*) INXOUT
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
- 
-     READ (NDSI,*) INTERP
+      READ (NDSI,*) INTERP
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*)  FILEFORMAT  ! N or A for ASCII
+      READ (NDSI,*) VERBOSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
       NBO2 = 0          
@@ -241,11 +239,11 @@
         READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
         NSPEC1  = NK1 * NTH1
         IF ( IDTST .NE. IDSTRBC ) THEN
-          WRITE (NDSE,901) IDTST, IDSTRBC
+          WRITE (NDSO,901) IDTST, IDSTRBC
           END IF
-        WRITE(NDSE,*) "FORMAT VERSION: '",VERTEST,"'"
-        WRITE(NDSE,*) "FILE TYPE: '",IDTST,"'"  
-        WRITE(NDSE,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', & 
+        WRITE(NDSO,*) "FORMAT VERSION: '",VERTEST,"'"
+        WRITE(NDSO,*) "FILE TYPE: '",IDTST,"'"  
+        IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', & 
                     NK1,NTH1,XFR, FR1I, TH1I, NBI 
         ALLOCATE (XBPI(NBI),YBPI(NBI))
         ALLOCATE (IPBPI(NBI,4),RDBPI(NBI,4))
@@ -253,12 +251,12 @@
                (YBPI(I),I=1,NBI),             &
                ((IPBPI(I,J),I=1,NBI),J=1,4),  &
                ((RDBPI(I,J),I=1,NBI),J=1,4)
-        WRITE(NDSE,*)      'XBPI:',XBPI
-        WRITE(NDSE,*)      'YBPI:',YBPI
-        WRITE(NDSE,*)      'IPBPI:'
+        IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'XBPI:',XBPI
+        IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'YBPI:',YBPI
+        IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'IPBPI:'
         DO I=1,NBI
-          WRITE(NDSE,*) I,' interpolated from:',IPBPI(I,1:4)
-          WRITE(NDSE,*) I,' with coefficient :',RDBPI(I,1:4)
+          IF (VERBOSE.EQ.1) WRITE(NDSO,*) I,' interpolated from:',IPBPI(I,1:4)
+          IF (VERBOSE.EQ.1) WRITE(NDSO,*) I,' with coefficient :',RDBPI(I,1:4)
           END DO
 !
         READ (NDSB) TIME2, NBI2
@@ -268,7 +266,7 @@
         DO WHILE (IERR.EQ.0)
           READ (NDSB,IOSTAT=IERR) TIME2, NBI2
           IF (IERR.EQ.0) THEN 
-          WRITE(NDSE,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
+          IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
           DO IP=1, NBI2
             READ (NDSB,IOSTAT=IERR) ABPIN(:,IP)
             END DO
@@ -317,12 +315,12 @@
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
-          WRITE(NDSE,'(A,I5,3A,I5)') 'IP, file, I/O error:',IP,', ',       &
+          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') 'IP, file, I/O error:',IP,', ',       &
                                   TRIM(SPECFILES(IP)),', ',IERR
           IF (IERR.NE.0) WRITE(NDSE,*) 'File do not exist:',SPECFILES(IP)
           READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
              space,string1,space,NKI,NTHI
-          WRITE(NDSE,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
+          IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
           IF (IP.EQ.1) THEN 
             NK1=NKI
             NTH1=NTHI
@@ -408,7 +406,7 @@
                 END DO
               END DO
            IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN 
-        !WRITE(NDSE,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
+        !IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
              ABPIN((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,IP)=0.
              END IF 
            END IF  ! ned of test on IERR
@@ -422,7 +420,7 @@
            IF (ABS(THETA(1)-0.5*PI).LT.0.01) THETA(1)=0.5*PI
 ! Writes header in nest.ww3 file 
            WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH, XFR, FREQ(1), &
-             MOD(2.5*PI-THETA(1),TPI), NBO
+                       MOD(2.5*PI-THETA(1),TPI), NBO
              IPBPO(:,:)=1
              RDBPO(:,1)=1.
              RDBPO(:,2:4)=0.
@@ -454,7 +452,7 @@
                  ENDIF
             END IF
           END DO
-         ! WRITE(NDSE,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
+         !IF (VERBOSE.EQ.1)  WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
          !                    LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
          !                    LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
 !
@@ -475,17 +473,17 @@
              RDBPO(IP1,2)=MIN(1.,MAX(0.,COS1))
             END IF
 !
-          WRITE(NDSE,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
-          WRITE(NDSE,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
+          IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
+          IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
 !          
         END DO
       WRITE(NDSB) (XBPO(I),I=1,NBO),           &
-               (YBPO(I),I=1,NBO), &
-               ((IPBPO(I,J),I=1,NBO),J=1,4),&
-               ((RDBPO(I,J),I=1,NBO),J=1,4)
+                  (YBPO(I),I=1,NBO),           &
+                  ((IPBPO(I,J),I=1,NBO),J=1,4),&
+                  ((RDBPO(I,J),I=1,NBO),J=1,4)
          END IF
       
-       WRITE(NDSE,*) 'Writing boundary data for time:', TIME2, NBO2
+       WRITE(NDSO,*) 'Writing boundary data for time:', TIME2, NBO2
        WRITE(NDSB,IOSTAT=IERR) TIME2, NBO2
        DO IP=1, NBO2
          WRITE (NDSB) ABPIN(:,IP)

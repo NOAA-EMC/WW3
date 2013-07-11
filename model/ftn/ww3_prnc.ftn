@@ -161,7 +161,7 @@
 !/NL1      USE W3ADATMD,ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
-      USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+      USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3ARRYMD, ONLY : INA2R, INA2I
 !/T2      USE W3ARRYMD, ONLY : PRTBLK
@@ -192,10 +192,10 @@
 !/LRB8      INTEGER, PARAMETER      :: LRB = 8
       INTEGER, ALLOCATABLE    :: NXL(:)
       INTEGER                 :: NTI, NDSEN, IND
-      CHARACTER               :: STRFIELDSNAME*1024
-      CHARACTER               :: FIELDSNAME(4)*30
-      CHARACTER               :: STRDIMSNAME*1024
-      CHARACTER               :: DIMSNAME(2)*30
+      CHARACTER(LEN=1024)     :: STRFIELDSNAME
+      CHARACTER(LEN=100)      :: FIELDSNAME(4)
+      CHARACTER(LEN=1024)     :: STRDIMSNAME
+      CHARACTER(LEN=100)      :: DIMSNAME(2)
       INTEGER                 :: NIDIMS, NFIELDS
       INTEGER                 :: JPC
       INTEGER(KIND=4)         :: IX, IY, JX, NXLM
@@ -424,11 +424,8 @@
       READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRDIMSNAME
 !
       FIELDSNAME(:)=''
-      DO  I=1,2
-        DIMSNAME(I)='                              '
-      END DO
-      CALL SPLIT(STRDIMSNAME,DIMSNAME)
-!
+      DIMSNAME(:)=''
+      CALL STRSPLIT(STRDIMSNAME,DIMSNAME)
       ! Counts the number of dimensions
       NIDIMS=0
       DO I=1,2
@@ -439,7 +436,7 @@
       READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRFIELDSNAME
 !
       FIELDSNAME(:)=''
-      CALL SPLIT(STRFIELDSNAME,FIELDSNAME)
+      CALL STRSPLIT(STRFIELDSNAME,FIELDSNAME)
 !
       ! Counts the number of variables
       NFIELDS=0
@@ -1996,40 +1993,3 @@ END PROGRAM W3PRNC
   END subroutine check_err
 
 
-!*********************************************************************
-
-
-SUBROUTINE SPLIT(STRING,TAB)
-
-IMPLICIT NONE
-
-
-
-   CHARACTER, intent(IN)                :: STRING*1024
-   CHARACTER, intent(INOUT)             :: TAB(*)*30
-   INTEGER                              :: cnt, I
-   CHARACTER                            :: tmp_str*1024, ori_str*1024
-
-   ! initializes arrays
-   ori_str=ADJUSTL(TRIM(STRING))
-   tmp_str=ori_str
-   cnt=0
-
-   ! counts the number of substrings
-   DO WHILE ((INDEX(tmp_str,' ').NE.0) .AND. (len_trim(tmp_str).NE.0))
-     tmp_str=tmp_str(INDEX(tmp_str,' ')+1:)
-     cnt=cnt+1
-   ENDDO
-
-   ! reinitializes arrays
-   tmp_str=ori_str
-
-   ! loops on each substring
-   DO I=1,cnt
-     TAB(I)=tmp_str(:INDEX(tmp_str,' '))
-     tmp_str=tmp_str(INDEX(tmp_str,' ')+1:)
-   ENDDO
-
-   return
-
-END SUBROUTINE SPLIT

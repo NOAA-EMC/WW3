@@ -623,7 +623,7 @@
 !/
       IMPLICIT NONE
 !/
-        INTEGER(KIND=4),    INTENT(in)  :: julian
+     INTEGER(KIND=4),    INTENT(in)  :: julian
      INTEGER(KIND=4),    INTENT(out) :: id,mm,iyyy
      INTEGER(KIND=4), PARAMETER :: IGREG=2299161
      INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je

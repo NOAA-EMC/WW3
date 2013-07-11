@@ -1361,7 +1361,7 @@
         DWO(ISEA) = DW(ISEA)
 !
 !/TIDE        IF (FLLEVTIDE) THEN 
-!/TIDE! VUF should only be updated in latitude changes significantly ...
+!/TIDE! VUF should be updated only if latitude changes significantly ...
 !/TIDE          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),FX,UX,VX)
 !/TIDE          WLEVTIDE = WLTIDE(IX,IY,1,1)
 !/TIDE !Verification 

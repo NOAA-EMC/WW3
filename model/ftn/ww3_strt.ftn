@@ -319,7 +319,7 @@
               END IF
             END DO
           THM    = MOD ( THM , 360. )
-          NCOS   = MAX ( 2 , 2*(NCOS/2) )
+          NCOS   = MAX ( 0 , 2*(NCOS/2) )
 
           NOSIX=.FALSE.
           IF(SIX.LT.0.0)THEN

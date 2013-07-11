@@ -560,7 +560,7 @@
         INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), VNEIGH(:,:),  &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),   &
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
-        REAL, POINTER         :: TRIA(:), TRIA03(:)
+        REAL, POINTER         :: TRIA(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
       END TYPE GRID
 !
@@ -741,7 +741,7 @@
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),     &
                                  IAA(:), JAA(:), POSI(:,:),            &
                                  VNEIGH(:,:), INDEX_CELL(:)
-      REAL, POINTER           :: TRIA(:), TRIA03(:)
+      REAL, POINTER           :: TRIA(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       
@@ -1607,7 +1607,6 @@
       NNZ      => GRIDS(IMOD)%NNZ
       IOBPD     => GRIDS(IMOD)%IOBPD
       TRIA     => GRIDS(IMOD)%TRIA
-      TRIA03     => GRIDS(IMOD)%TRIA03
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
       MAXX     => GRIDS(IMOD)%MAXX
       MAXY     => GRIDS(IMOD)%MAXY
@@ -2352,7 +2351,6 @@
                  GRIDS(IMOD)%XYB(MX,3),                             &
                  GRIDS(IMOD)%SI(MX),                                &
                  GRIDS(IMOD)%TRIA(MTRI),                            & 
-                 GRIDS(IMOD)%TRIA03(MTRI),                          &
                  GRIDS(IMOD)%CROSSDIFF(6,MTRI),                     &
                  GRIDS(IMOD)%IEN(MTRI,6),                           &
                  GRIDS(IMOD)%LEN(MTRI,3),                           &

@@ -4,7 +4,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2013 |
+!/                  | Last update :         28-Jun-2013 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -22,7 +22,7 @@
 !/    31-Oct-2010 : Adding output parameters            ( version 3.14 )
 !/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/                  Add W3XETA.
-!/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
+!/    28-Jun-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -664,7 +664,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2013 !
+!/                  | Last update :         28-Jun-2013 !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )

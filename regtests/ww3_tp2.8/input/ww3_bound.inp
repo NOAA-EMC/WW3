@@ -2,9 +2,8 @@ $ boundary option: READ or WRITE
 WRITE 
 $ Interpolation method. 1: nearest, 2: linear interpolation
 2 
-$ Type of spectra files: 'A' for ASCII and 'N' for NetCDF (this option 
-$                                           is not yet implemented) 
-A
+$ Verbose                                             
+0
 $ list of spectra files. These ASCII files use the WAVEWATCH III format
 $ examples of such files can be found at (for example): 
 $   ftp://polar.ncep.noaa.gov/pub/waves/develop/glw.latest_run/   (the *.spec.gz files)

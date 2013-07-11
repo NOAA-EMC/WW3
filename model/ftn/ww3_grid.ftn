@@ -1348,6 +1348,7 @@
 ! 6.g Define Sbt.
 !
 !/BT0      WRITE (NDSO,926)
+!/BT4      WRITE (NDSO,926)
 !/BTX      WRITE (NDSO,926)
 !
 !/BT1      GAMMA  = -0.067
@@ -1431,6 +1432,7 @@
        IMPFSNIMP = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UG  ', STATUS ) 
+               WRITE(NDSO, 950)
 !
 ! 6.m Select propagation scheme
 !
@@ -1574,7 +1576,9 @@
 !/REF1      REFICEBERG=0.
 !
 !/REF1      CALL READNL ( NDSS, 'REF1', STATUS )
-!
+!/REF1      WRITE (NDSO,969) STATUS
+      CALL READNL ( NDSS, 'MISC', STATUS )
+      WRITE (NDSO,960) STATUS
 !
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
@@ -3638,6 +3642,9 @@
  2956 FORMAT ( '  &UG   UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3','/   &
                '        EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
                L3,',GMSH =',L3,         / )
+!
+!/REF1  969 FORMAT (/'  Shoreline reflection     ',A/                  &
+!/REF1               ' --------------------------------------------------')
 !
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')

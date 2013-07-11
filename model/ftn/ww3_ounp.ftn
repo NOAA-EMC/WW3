@@ -397,11 +397,16 @@
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) NCTYPE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) TOGETHER
+      READ (NDSI,*,END=801,ERR=802) TOGETHER, MFL 
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) ITYPE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) FLWW3
+
+      IF ((NCTYPE.EQ.4) .AND. INDEX(NF90_INQ_LIBVERS(),'"3.').NE.0) THEN
+        write(NDSE,'(2A)') 'NCTYPE=4 is incompatible with netcdf library used :',  NF90_INQ_LIBVERS()
+        STOP
+      END IF
 !
 ! ... Convert direction unit in degree
 !
@@ -413,20 +418,19 @@
       END DO
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 5.  Now create files
+! 5.  Now creates files
 !     If too many (memory problem) then makes several reads 
 !
 !
-! ... Define number of files/stations per file
+! ... Defines number of files/stations per file
 !
-      MFL=150
       IF (TOGETHER) THEN 
         NFL=1
       ELSE
         NFL=1+NOPTS/MFL
         END IF
 !
-! ... Create filename listing
+! ... Creates filename listing
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       IF (ITYPE .EQ. 1) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2
@@ -441,6 +445,20 @@
       IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.2)) WRITE(EXT,'(A)') '_tab.nc'
       IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A)') '_tab.nc'
       IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A)') '_src.nc'
+
+
+!
+! ... Redefines netCDF type 
+!
+!/NC4      IF((NCTYPE.EQ.4).AND.(TOGETHER.EQ. .FALSE.).AND.(NREQ.GT.300))  THEN
+!/NC4        WRITE(NDSO,'(A)') ' WARNING : Files will be generated in netCDF3 with nf90_share mode'
+!/NC4        WRITE(NDSO,'(A)') ' WARNING : this is due to nf90_sync memory problem with netCDF4 library'
+!/NC4        WRITE(NDSO,'(A)') ' WARNING : to convert in netCDF4, use ncks -h -a -4 -L 9 file.nc3 file.nc4'
+!/NC4        WRITE(NDSO,'(A)') ' WARNING : or use option "Points in same file" with value TRUE in .inp file'
+!/NC4        WRITE(NDSO,'(A)') ' WARNING : or limit the output points list to less than 300'
+!/NC4        NCTYPE=3
+!/NC4      END IF
+
 
 !
 ! ... Defines periodic flushing of buffer
@@ -466,7 +484,7 @@
             IF (.NOT.TOGETHER) THEN
               IF( SUM(index(ncfile(:),ncfile(I))).GT.1 ) THEN
                 FLREQ(I)=.FALSE.
-                write(NDSO,'(3A)')'      ', trim(PTNME(I)), ' already exists, it will be skipped'
+                WRITE(NDSO,'(3A)')'      ', trim(PTNME(I)), ' already exists, it will be skipped'
                 CYCLE
               END IF
             END IF
@@ -491,6 +509,7 @@
             NREQL = NREQL + 1
             END IF
           END DO
+!
         IF (NREQL.GT.0) THEN 
 !
 ! ... ITYPE = 1
@@ -928,7 +947,7 @@
   948 FORMAT ( '      Data for ',A)
   949 FORMAT (/'      End of file reached '/)
 !
-  950 FORMAT (/'  Requested output for',I4,' points : '/              &
+  950 FORMAT (/'  Requested output for ',I4,' points : '/              &
                ' --------------------------------------------------')
   951 FORMAT ( '      ',A,2F10.2)
   953 FORMAT ( '      ',A,2(F8.1,'E3'))
@@ -938,6 +957,7 @@
  1940 FORMAT ( '      ',A,' print plots not requested.')
  1941 FORMAT ( '      ',A,' print plots normalized.')
  1942 FORMAT ( '      Scale factor ',A,' spectrum : ',E10.3)
+ 1943 FORMAT ( '      File name : ',A,' (',A,')')
  1944 FORMAT ('''',A,'''',1X,3I6,1X,'''',A,'''')
  1945 FORMAT (8E10.3)
  1946 FORMAT (7E11.3)
@@ -2435,13 +2455,13 @@
       INTEGER, INTENT(OUT)              :: dimid(7), varid(28),ncid
       INTEGER                           :: iret, deflate=1
       REAL(kind=4)                      :: freq(NK), freq1(NK),freq2(NK), dir(NTH)
-      LOGICAL                           :: filefound
+      LOGICAL                           :: filefound, TOGETHER
 
 !      
 ! Creation in netCDF3 or netCDF4
 !
-      IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_CLOBBER, ncid)
-!/NC4      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_SHARE, ncid)
+      IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_SHARE, ncid)
+!/NC4      IF(NCTYPE.EQ.4) iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
       call check_err(iret)
 
 !

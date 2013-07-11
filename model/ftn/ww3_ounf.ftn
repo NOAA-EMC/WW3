@@ -6,13 +6,14 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Apr-2013 |
+!/                  | Last update :         02-Jul-2013 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
 !/    07-Nov-2011 : Debug for spectral output on UNST   ( version 4.04 )
 !/    13-Mar-2012 : Update of NC attributes             ( version 4.04 )
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.10 )
+!/    02-Jul-2013 : Bug correction for lat in unst grid ( version 4.11 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -973,21 +974,23 @@
               vmax = 360
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
-              IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
+              IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               NFIELD = 1
               FLFRQ  = .TRUE.
               FSC     = 0.0004
               varnm(1)='Ef'
               varnl(1)='wave_elevation_spectrum'
-              varns(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
               varng(1)=varns(1)
               varnc(1)=''
               IF (NCVARTYPE.EQ.2) THEN 
                 UNITS  = 'log10(m2s+1E-12)'
+                varns(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
               ELSE
                 UNITS  = 'm2/Hz'
+                varns(1)='power_spectral_density_of_surface_elevation'
                 END IF
               ENAME  = '.Ef'
+              varng(1)=varns(1)
               I1F=E3DF(2)
               I2F=E3DF(3)
               DO IK=I1F,I2F
@@ -2033,7 +2036,6 @@
                   CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
                                UNITVAR,vmin,vmax,             &
                                extradim,NCTYPE,NCVARTYPE,MAPSTAOUT)
- WRITE(6,*) 'AFTER CRNC'
 !
                   IF (GTYPE.EQ.CLGTYPE) THEN
                     IF (.NOT.ALLOCATED(lon2D)) ALLOCATE(lon2D(NX,NY),lat2D(NX,NY))
@@ -2045,7 +2047,14 @@
                                          'longitude_resolution','n/a')
                     call check_err(iret)
                   ELSE 
-                    IF (.NOT.ALLOCATED(lon)) ALLOCATE(lon(NX),lat(NY))
+                    IF (.NOT.ALLOCATED(lon)) ALLOCATE(lon(NX))
+                    IF (.NOT.ALLOCATED(lat)) THEN 
+                      IF (GTYPE.EQ.RLGTYPE) THEN 
+                        ALLOCATE(lat(NY))
+                      ELSE 
+                        ALLOCATE(lat(NX))
+                        END IF 
+                      END IF
                     END IF
 !
 ! Generates Lat-Lon arrays
@@ -2736,7 +2745,6 @@
 !      
 ! Creation in netCDF3 or netCDF4
 !
-
       IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_CLOBBER, ncid)
 !/NC4      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
       call check_err(iret)

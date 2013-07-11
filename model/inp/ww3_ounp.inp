@@ -26,8 +26,9 @@ $
 $ version netCDF [3,4]
  4
 $
-$ Points in same file [T] or not [F]
- T
+$ Points in same file [T] or not [F] and max number of points to be 
+$ processed in one pass
+ T 100 
 $
 $ Output type ITYPE [0,1,2,3]
  1

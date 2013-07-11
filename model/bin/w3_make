@@ -100,6 +100,7 @@
   cdf_programs="ww3_prnc"
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
+  cdf_programs="$cdf_programs ww3_bounc"
 
   if [ -n "`grep SCRIPNC $switch_file`" ]
   then

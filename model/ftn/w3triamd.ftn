@@ -387,10 +387,10 @@ CONTAINS
 !/S      CALL STRACE (IENT, 'SETUGIOBP')      
         DO IBC = 1, N_OUTSIDE_BOUNDARY
            IX = OUTSIDE_BOUNDARY(IBC)
-           IF ((TMPSTA(1,IX).EQ.1).AND.(CCON(IX) .LT. COUNTCON(IX))  &
-               .AND.(ZBIN(1,IX).LT.ZLIM))  THEN 
-            TMPSTA(1,IX)=2
-            END IF    
+           IF (IX.NE.0) THEN  ! There was a bug in the mesh conversion, OUTSIDE_BOUNDARY(IBC) should not be zero 
+             IF ((TMPSTA(1,IX).EQ.1).AND.(CCON(IX) .LT. COUNTCON(IX))  &
+               .AND.(ZBIN(1,IX).LT.ZLIM))  TMPSTA(1,IX)=2  
+            END IF       
           END DO     
 !
     END SUBROUTINE UG_GETOPENBOUNDARY
@@ -482,7 +482,6 @@ CONTAINS
          I3 = TRIGP(K,3)
          TRIA(K) = -1.0*TRIA(K)
          END IF    
-       TRIA03(K)=TRIA(K)*1./3. 
        END DO
      END SUBROUTINE
 !/--------------------------------------------------------------------/
@@ -971,7 +970,11 @@ END SUBROUTINE
          INTEGER :: I1, I2, I3, IP2
          INTEGER :: TMP(NX), CELLVERTEX(NX,COUNTRI,2)
          INTEGER :: COUNT_MAX
+         DOUBLE PRECISION   :: TRIA03
          INTEGER, ALLOCATABLE :: PTABLE(:,:)
+         !DOUBLE PRECISION ,  PARAMETER            :: ONE      = 1.0d
+         !DOUBLE PRECISION ,  PARAMETER            :: THREE    = 3.0d
+         DOUBLE PRECISION, PARAMETER :: ONETHIRD = 0.33333333333333333333333333333333333333333333333 !ONETHIRD = ONE/THREE
 !/S        INTEGER                      ::  IENT = 0  	
 !/ ------------------------------------------------------------------- /      
 
@@ -988,6 +991,7 @@ END SUBROUTINE
              IF (IP == TRIGP(IE,1) .OR. IP == TRIGP(IE,2) .OR. IP== TRIGP(IE,3)) THEN
                COUNTER = COUNTER + 1
                CCON(IP) = COUNTER
+               TRIA03 = ONETHIRD * TRIA(IE)
                SI(IP) = SI(IP) +  1./3. * TRIA(IE) 
                END IF
              END DO
@@ -1214,7 +1218,7 @@ END SUBROUTINE
 !/                  |      Mathieu Dutour Sikiric, IRB  |
 !/                  |                 Aron Roland, Z&P  |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          15-May-2008|
+!/                  | Last update :          21-Sep-2012|
 !/                  +-----------------------------------+
 !/
 !/ Adapted from other subroutine 
@@ -1245,7 +1249,7 @@ END SUBROUTINE
 !  7. Remarks :
 !
 !      This subroutine is adjusted from CREST code (Fabrice Ardhuin)
-!      For a given output point, the algorithm enable to glance through all the triangles
+!      For a given output point, the algorithm enable to glance through all the triangles 
 !      to find the one the point belong to, and then make interpolation.
 !
 !  8. Structure :
@@ -1768,7 +1772,7 @@ END SUBROUTINE
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPFS, DTCFL,          &
                           NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, COUNTOT,      &
-                          NTRI, TRIGP, CCON , TRIA03, VNEIGH,         &
+                          NTRI, TRIGP, CCON , VNEIGH,                 &
                           IE_CELL, POS_CELL, IOBP,IOBPD, XYB, TH,     &
                           ANGLE0, ANGLE, REFPARS, REFLC, REFLD
 
@@ -1876,7 +1880,8 @@ END SUBROUTINE
             IOBP(IX)=0
             IOBPD(:,IX)=0
             END IF
-          IF (SEACCON(IX) .LT. SEANEIGH(IX).AND.MAPSTA(1,IX).NE.2) THEN 
+!          IF (SEACCON(IX) .LT. SEANEIGH(IX).AND.MAPSTA(1,IX).NE.2) THEN 
+            IF (SEACCON(IX) .LT. SEANEIGH(IX).AND.MAPSTA(1,IX).EQ.1) THEN 
             IOBP(IX)=0
 !/REF1            REFLC(1,MAPFS(1,IX))= REFPARS(1)
           !  WRITE(995,*) '@@@@ TRUE BOUNDARY:',IX,IOBP(IX),MAPSTA(1,IX),SEACCON(IX),SEANEIGH(IX),CCON(IX)
