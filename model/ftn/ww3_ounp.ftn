@@ -1726,9 +1726,8 @@
               SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
               SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
               SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
-              STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) +         &
-                            SNL(IK,ITH) + SBT(IK,ITH) +         &
-                            XXX(ITH,IK) * FACTOR
+              STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) +          &
+                            SBT(IK,ITH) + XXX(ITH,IK) * FACTOR
               E1  (IK) = E1  (IK) + E(IK,ITH)
               SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
               SNL1(IK) = SNL1(IK) + SNL(IK,ITH)
