@@ -388,7 +388,7 @@ EOF
       export mpi_mod
 
       omp_mod=no
-      if [ -n "`grep OMP $switch_file`" ] || [ -n "`grep SCRIP $switch_file`" ]
+      if [ -n "`grep OMP $switch_file`" ]
       then
         omp_mod=yes
       fi

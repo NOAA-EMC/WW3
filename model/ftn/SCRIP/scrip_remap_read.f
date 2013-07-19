@@ -301,10 +301,11 @@
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid name')) return
 
-      print *,' '
-      print *,'Remapping between:',trim(grid1_name)
-      print *,'and ',trim(grid2_name)
-      print *,' '
+! Do not include routine write statements w/out check on improc
+!     print *,' '
+!     print *,'Remapping between:',trim(grid1_name)
+!     print *,'and ',trim(grid2_name)
+!     print *,' '
 
 !-----------------------------------------------------------------------
 !
@@ -350,8 +351,14 @@
 !
 !-----------------------------------------------------------------------
 
+! grid2_frac is allocated in grid_init
+      if(allocated(grid2_frac))deallocate(grid2_frac)
       allocate( grid2_frac      (grid2_size) )
 
+! grid1_add_map1, grid2_add_map1, wts_map1 are allocated in init_remap_vars
+      if(allocated(grid1_add_map1))deallocate(grid1_add_map1)
+      if(allocated(grid2_add_map1))deallocate(grid2_add_map1)
+      if(allocated(wts_map1))deallocate(wts_map1)
       allocate( grid1_add_map1(num_links_map1),
      &          grid2_add_map1(num_links_map1),
      &          wts_map1(num_wts,num_links_map1) )

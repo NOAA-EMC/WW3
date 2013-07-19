@@ -11,6 +11,7 @@ $ Just once (for depth)
    20090525 000000 10800 1
 $
 $ Request flags identifying fields as in ww3_shel input and section 2.4 of the manual.
+$-------------------------------------------------------------------------------------------------------------------
 $ (1) Forcing Fields
   T
 $ DPT CUR WND DT  WLV ICE IBG D50
@@ -28,6 +29,7 @@ $ (6) Wave-Ocean layer
 $ (7) Wave-bottom layer
   F
 $ (8) Spectrum parameters
+  F
 $ (9) Numerical diagnostics
   F
 $ (10) User defined (NOEXTR flags needed)

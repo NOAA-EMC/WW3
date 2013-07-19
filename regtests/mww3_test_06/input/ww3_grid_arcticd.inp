@@ -25,11 +25,6 @@ END OF NAMELISTS
 $
   'CURV' T 'NONE'
   361  361
-$  20  1.0     0.0 1 1 '(....)' 'NAME' './../input/longit.nx361_ny361.dat'
-$  20  1.0     0.0 1 1 '(....)' 'NAME' './../input/longit.0_to_360.dat'
-$  21  1.0     0.0 1 1 '(....)' 'NAME' './../input/latit.nx361_ny361.dat'
-$ -0.1 7.50 9 -1.0 1 1 '(....)' 'NAME' './../input/depth.nx361_ny361.dat' 
-$ notes: after my experience from test case 6d, I have decided to transpose and fliplr my 361x361 grids. note that this will affect my specification of boundary points.
    20  1.0     0.0 1 1 '(....)' 'NAME' './../input/lon.361x361.TLR.dat'
    21  1.0     0.0 1 1 '(....)' 'NAME' './../input/lat.361x361.TLR.dat'
 $ option 1: depth via file:
@@ -49,7 +44,6 @@ $   10 3 1 '(....)' 'PART' 'mapsta.inp' {example}
 $
   10  1 1 '(....)' 'PART' 'input'
 $
-$
 $ Input boundary points from segment data ( FROM = PART ) ------------ $
 $   An unlimited number of lines identifying points at which input
 $   boundary conditions are to be defined. If the actual input data is
@@ -59,8 +53,6 @@ $     Discrete grid counters (IX,IY) of the active point and a
 $     connect flag. If this flag is true, and the present and previous
 $     point are on a grid line or diagonal, all intermediate points
 $     are also defined as boundary points.
-$
-$ using deal_with_complaint_?.m with THRESHOLD=?? :
 $
 $ full list:
      1   1  T

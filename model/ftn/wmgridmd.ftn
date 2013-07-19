@@ -1157,6 +1157,8 @@
                                                      ! not necessarily mean 
                                                      ! that this solution is
                                                      ! utilized)
+      LOGICAL                 :: LMPIBDI=.FALSE.     ! true if MPIBDI switch is set
+
       INTEGER  :: ITRI, IM1, IM2, IT, JT, IsFirst
       REAL :: DIST_MIN, DIST_MAX, eDist
 
@@ -1187,7 +1189,7 @@
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,1000)
          CALL EXTCDE (1000)
       END IF
-!
+!/MPIBDI     LMPIBDI=.TRUE.
 !/SCRIP      IF (IMPROC .EQ. 1) THEN
 !/SCRIP         L_MASTER = .TRUE.
 !/SCRIP         L_WRITE  = .TRUE.
@@ -1345,13 +1347,16 @@
             ELSE
                IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A)') &
                    '  Generating map with distances to boundary.'
+!  for purposes of screen output, would be useful to wait for other processors to catch up here...(if mpibdi switch used)
                ALLOCATE ( MDATAS(GDST)%MAPBDI(NY,NX) )
                MAPBDI => MDATAS(GDST)%MAPBDI
 !
-!KRL           Set up ranges for X. If not MPI, just 1 to NX
+!KRL           Set up ranges for X. If not MPIBDI, just 1 to NX
                NX_BEG(IMPROC) = 1
+               NX_END(IMPROC) = NX
+!/MPIBDI               NX_BEG(1) = 1
 !/MPIBDI               IF ( NMPROC .EQ. 1 ) THEN
-                  NX_END(IMPROC) = NX
+!/MPIBDI                  NX_END(1) = NX
 !/MPIBDI                  NX_SIZE(1) = NX
 !/MPIBDI               ELSE
 !/MPIBDI                  NX_REM = MOD( NX, NMPROC )
@@ -1371,9 +1376,16 @@
 !
 ! Loop to determine MAPBDI
                DO IDST=NX_BEG(IMPROC), NX_END(IMPROC)
-                  IF(MOD(IDST,25).EQ.0) WRITE(MDSE,'(4x,3(A,I5))')&
-                    'processing column ',IDST,' out of ',NX, &
-                    ' on processor ',IMPROC
+                  IF(MOD(IDST,25).EQ.0)THEN
+                     IF(LMPIBDI)THEN
+                        WRITE(MDSE,'(4x,3(A,I5))')&
+                             'processing column ',IDST,' out of ',NX, &
+                             ' on processor ',IMPROC
+                     ELSEIF(IMPROC.EQ.NMPERR)THEN
+                        WRITE(MDSE,'(4x,2(A,I5))')&
+                             'processing column ',IDST,' out of ',NX
+                     ENDIF
+                  ENDIF
                   DO JDST=1, NY
                      IF ( MAPSTA(JDST,IDST) .EQ. 0 ) THEN ! (excluded point)
                         MAPBDI(JDST,IDST) = -1. / SIG(1) * DTMAX ! new (bug fix)
@@ -1612,8 +1624,13 @@
 !/SCRIPTST                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER START: ", ELAPSED_TIME, " MSEC"
 !/SCRIPNC               IF (L_STOP) L_WRITE = (IMPROC .EQ. IMPROC_ASSIGN)
 !/SCRIPNC               IF ((.NOT. L_STOP) .OR. ((.NOT. L_READ) .AND. L_WRITE)) THEN 
-!/SCRIP                   WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GSRC,GDST = ', &
+!/SCRIP                   IF (L_STOP) THEN ! we are sending different grids to different processors
+!/SCRIP                     WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GSRC,GDST = ', &
 !/SCRIP                          GSRC,GDST,' on processor ',IMPROC
+!/SCRIP                   ELSEIF(IMPROC.EQ.NMPERR)THEN
+!/SCRIP                     WRITE(MDSE,'(A,2(I5))')'Calling SCRIP for GSRC,GDST = ', &
+!/SCRIP                          GSRC,GDST
+!/SCRIP                   ENDIF
 !/SCRIP                   CALL scrip_wrapper (GSRC, GDST,         &
 !/SCRIP                     GRIDS(GSRC)%MAPSTA,GRIDS(GSRC)%MAPST2,FLAGLL,      &
 !/SCRIP                     GRIDS(GSRC)%GRIDSHIFT,L_WRITE,L_READ,T38)

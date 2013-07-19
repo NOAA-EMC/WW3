@@ -10,12 +10,13 @@ $ 3600=Every 1 hour. Just use a large number to go all the way to end.
 $ Just once (for depth)
 $  20090525 000000 10800 1
 $
-$ Request flags identifying fields as in ww3_shel input and section 2.4 of the manual.
-$-------------------------------------------------------------------------------------------------------------------
+$ Request flags identifying fields as in ww3_shel input and
+$ section 2.4 of the manual.
+$
 $ (1) Forcing Fields
   T
 $ DPT CUR WND DT  WLV ICE IBG D50
-  F   F   T   F   F   T   F   F
+  F   F   F   F   F   T   F   F
 $ (2) Standard mean wave Parameters
   T
 $ HS  LM  TZ  TE  TM  FP  DIR SPR DP

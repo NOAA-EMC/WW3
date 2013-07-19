@@ -43,7 +43,7 @@ MODEL: gbandd_1p0 arcticd
 INPUT:
 POINT: gbandd_1p0 arcticd
 arcticd : 361 x 361
-6f: a test case that uses the full arctic grid, deep water only, but to speed things up vs 6a, we are using a 1 deg "global band" for the global grid, rather than the full 0.5 deg global grid used in 6a. Note that adding land to this would make it run faster.
+6f: a test case that uses the full arctic grid, but to speed things up vs 6a, we are using a 1 deg "global band" for the global grid, rather than the full 0.5 deg global grid used in 6a. The gbandd_1p0 is deep water. By default, arcticd uses actual bathymetry (not deep water), but the ww3_grid.inp is different from the "arctic" grid used in grdset_a since the boundary input is different.
 "tps" version includes winds from an idealized cyclone
 
 summary of gridsets with curvilinear grids (context=computation time):

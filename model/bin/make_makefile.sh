@@ -89,7 +89,8 @@
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection mcp netcdf scrip scripnc tide
+              mgwind mgprop mggse nnt mprf reflection mcp netcdf \
+              scrip scripnc tide mpiexp
   do
     case $type in
       mach   ) TY='one'
@@ -108,6 +109,10 @@
       mpp    ) TY='one'
                ID='message passing protocol'
                OK='SHRD MPI' ;;
+      mpiexp ) TY='upto1'
+               ID='experimental MPI option'
+               TS='MPIBDI'
+               OK='MPIBDI' ;;
       thr0   ) TY='upto1'
                ID='directive controlled threading (subs)'
                TS='OMP0'
@@ -172,7 +177,7 @@
                ID='wind interpolation in space'
                OK='WNX0 WNX1 WNX2' ;;
       rwind  ) TY='upto1'
-               ID='wind vs. current definition'
+                ID='wind vs. current definition'
                TS='RWND'
                OK='RWND' ;;
       curr   ) TY='one'
@@ -303,6 +308,7 @@
     case $type in
       shared ) shared=$sw ;;
       mpp    ) mpp=$sw ;;
+      mpiexp ) mpiexp=$sw ;;
       thr0   ) nr_thr=`expr $nr_thr + $n_found` ;;
       thr1   ) nr_thr=`expr $nr_thr + $n_found` ;;
       prop   ) p_switch=$sw ;;
@@ -572,7 +578,7 @@
                 aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
-	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
+                  aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
                   aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
                 fi 
@@ -592,7 +598,7 @@
                 aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
-	          aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
+                  aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
                   aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
                 fi 

@@ -225,6 +225,7 @@
                                    touch ww3_shel.ftn ;; 
      'mggse'  ) cd $main_dir/ftn ; touch w3pro3md.ftn
                                    touch ww3_shel.ftn ;;
+     'mpiexp' ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
      'scrip'  ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
      'scripnc') cd $main_dir/ftn ; touch wmgridmd.ftn
                 cd $main_dir/ftn/SCRIP ; touch scrip_interface.ftn ;;
