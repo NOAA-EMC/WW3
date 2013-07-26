@@ -13,8 +13,9 @@
 #                                                      Hendrik L. Tolman      #
 #                                                      Jose-Henrique Alves    #
 #                                                      August 2011            #
+#                                                      July 2013              #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -533,7 +534,7 @@
      1) echo 'GrADS aux scripts'
         echo '-----------------'
         cd $main_dir/svn/model/aux
-        files='map2_1.gs map2_2.gs map2_3.gs map_s3.gs spec.gs 1source.gs'
+        files='spec.gs 1source.gs'
         files="$files source.gs colorset.gs cbarn.gs spec_ids.gen"
         files="$files profile.gs" ;;
      2) echo 'Other :'

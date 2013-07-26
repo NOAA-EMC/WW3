@@ -19,8 +19,8 @@
 # 1.a Computer/ user dependent set up
 
 #PBS -l procs=12
-#PBS -q urgent
-#PBS -l walltime=01:00:00
+#PBS -q batch
+#PBS -l walltime=06:00:00
 #PBS -A omd
 #PBS -N ww3_regtest
 #PBS -j oe
@@ -31,15 +31,15 @@
   mpi='mpiexec_mpt'
    np='12'
 
- rtst="./bin/run_test -a $HOME/.wwatch3.env"
+ rtst="./bin/run_test -a $HOME/.wwatch3.env -G"
   ww3='../.'
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 #     Addition selection by commenting out lines as below
 
-testtest='y' # Run a single case of each test only
+testtest='-' # Run a single case of each test only
 
-    shrd='y' # Do shared architecture tests
+    shrd='-' # Do shared architecture tests
     dist='y' # Do distributed architecture tests
 #    omp='y' # NEED TO IMPLEMENT STILL ....
 
@@ -48,11 +48,11 @@ testtest='y' # Run a single case of each test only
     time='y' # time linmited growth
    fetch='y' # fetch linmited growth
   hur1mg='y' # Hurricane with one moving grid
- multi01='y' # mww3_test_01 (wetting and drying)
- multi02='y' # mww3_test_02 (basic two-way nesting test))
- multi03='y' # mww3_test_03 (three high and three low res grids).
- multi04='y' # mww3_test_04 (swell on sea mount and/or current)
- multi05='y' # mww3_test_05 (three-grid moving hurricane)
+ multi01=' ' # mww3_test_01 (wetting and drying)
+ multi02=' ' # mww3_test_02 (basic two-way nesting test))
+ multi03=' ' # mww3_test_03 (three high and three low res grids).
+ multi04=' ' # mww3_test_04 (swell on sea mount and/or current)
+ multi05=' ' # mww3_test_05 (three-grid moving hurricane)
 
 #
 # Hendrik's sanity ifor commenting out lines
@@ -236,38 +236,104 @@ then
   if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
   then
     $rtst -s ST1_PR1     -w work_ST1_PR1                       $ww3 ww3_ts3
-    $rtst -s ST1_PR2     -w work_ST1_PR2                       $ww3 ww3_ts3
-    $rtst -s ST1_PR3     -w work_ST1_PR3                       $ww3 ww3_ts3
-    $rtst -s ST2_PR1     -w work_ST2_PR1                       $ww3 ww3_ts3
-    $rtst -s ST2_PR2     -w work_ST2_PR2                       $ww3 ww3_ts3
-    $rtst -s ST2_PR3     -w work_ST2_PR3                       $ww3 ww3_ts3
-    $rtst -s ST3_PR1     -w work_ST3_PR1                       $ww3 ww3_ts3
-    $rtst -s ST3_PR2     -w work_ST3_PR2                       $ww3 ww3_ts3
-    $rtst -s ST3_PR3     -w work_ST3_PR3                       $ww3 ww3_ts3
-    $rtst -s ST4_PR1     -w work_ST4_PR1                       $ww3 ww3_ts3
-    $rtst -s ST4_PR2     -w work_ST4_PR2                       $ww3 ww3_ts3
-    $rtst -s ST4_PR3     -w work_ST4_PR3                       $ww3 ww3_ts3
   fi
-
   if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
   then
     $rtst -s ST1_PR1_MPI -w work_ST1_PR1_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST1_PR2     -w work_ST1_PR2                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST1_PR2_MPI -w work_ST1_PR2_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST1_PR3     -w work_ST1_PR3                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST1_PR3_MPI -w work_ST1_PR3_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST2_PR1     -w work_ST2_PR1                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST2_PR1_MPI -w work_ST2_PR1_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST2_PR2     -w work_ST2_PR2                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST2_PR2_MPI -w work_ST2_PR2_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST2_PR3     -w work_ST2_PR3                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST2_PR3_MPI -w work_ST2_PR3_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST3_PR1     -w work_ST3_PR1                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST3_PR1_MPI -w work_ST3_PR1_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST3_PR2     -w work_ST3_PR2                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST3_PR2_MPI -w work_ST3_PR2_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST3_PR3     -w work_ST3_PR3                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST3_PR3_MPI -w work_ST3_PR3_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST4_PR1     -w work_ST4_PR1                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST4_PR1_MPI -w work_ST4_PR1_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST4_PR2     -w work_ST4_PR2                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST4_PR2_MPI -w work_ST4_PR2_MPI -f -p $mpi -n $np $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ]
+  then
+    $rtst -s ST4_PR3     -w work_ST4_PR3                       $ww3 ww3_ts3
+  fi
+  if [ "$hur1mg" = 'y' ] && [ "$dist" = 'y' ]
+  then
     $rtst -s ST4_PR3_MPI -w work_ST4_PR3_MPI -f -p $mpi -n $np $ww3 ww3_ts3
   fi
 
 # --------------------------------------------------------------------------- #
 # 4.  Multigrid tests                                                         #
 # --------------------------------------------------------------------------- #
+# Note that test 03 has separate grid sets for MPI and non-MPI tests.
 # Note that test 04 has separate grid sets for MPI and non-MPI tests.
 
   echo ' '
@@ -293,7 +359,6 @@ then
     $rtst -s PR1           -w work_PR1_b        -m grdset_b                            $ww3 mww3_test_03
     $rtst -s PR1           -w work_PR1_c        -m grdset_c                            $ww3 mww3_test_03
     $rtst -s PR1           -w work_PR1_d        -m grdset_d                            $ww3 mww3_test_03
-    $rtst -s PR1           -w work_PR1_d2       -m grdset_d2                           $ww3 mww3_test_03
     $rtst -s PR1           -w work_PR1_e        -m grdset_e                            $ww3 mww3_test_03
   fi
   if [ "$multi04" = 'y' ] && [ "$shrd" = 'y' ]
@@ -321,7 +386,6 @@ then
     $rtst -s PR2           -w work_PR2_b        -m grdset_b                            $ww3 mww3_test_03
     $rtst -s PR2           -w work_PR2_c        -m grdset_c                            $ww3 mww3_test_03
     $rtst -s PR2           -w work_PR2_d        -m grdset_d                            $ww3 mww3_test_03
-    $rtst -s PR2           -w work_PR2_d2       -m grdset_d2                           $ww3 mww3_test_03
     $rtst -s PR2           -w work_PR2_e        -m grdset_e                            $ww3 mww3_test_03
   fi
   if [ "$multi04" = 'y' ] && [ "$shrd" = 'y' ]
@@ -349,7 +413,6 @@ then
     $rtst -s PR3           -w work_PR3_b        -m grdset_b                            $ww3 mww3_test_03
     $rtst -s PR3           -w work_PR3_c        -m grdset_c                            $ww3 mww3_test_03
     $rtst -s PR3           -w work_PR3_d        -m grdset_d                            $ww3 mww3_test_03
-    $rtst -s PR3           -w work_PR3_d2       -m grdset_d2                           $ww3 mww3_test_03
     $rtst -s PR3           -w work_PR3_e        -m grdset_e                            $ww3 mww3_test_03
   fi
   if [ "$multi04" = 'y' ] && [ "$shrd" = 'y' ]
@@ -373,7 +436,6 @@ then
     $rtst -s PR3_SCRIP     -w work_PR3_b_c      -m grdset_b                            $ww3 mww3_test_03
     $rtst -s PR3_SCRIP     -w work_PR3_c_c      -m grdset_c                            $ww3 mww3_test_03
     $rtst -s PR3_SCRIP     -w work_PR3_d_c      -m grdset_d                            $ww3 mww3_test_03
-    $rtst -s PR3_SCRIP     -w work_PR3_d2_c     -m grdset_d2                           $ww3 mww3_test_03
     $rtst -s PR3_SCRIP     -w work_PR3_e_c      -m grdset_e                            $ww3 mww3_test_03
   fi
   if [ "$multi04" = 'y' ] && [ "$shrd" = 'y' ]
@@ -548,6 +610,8 @@ else
   echo '********************************************************************'
   echo ' '
 
+  if [ "$hsrd" = 'y' ]
+  then
     $rtst                                              $ww3 ww3_tp1.1
     $rtst                                              $ww3 ww3_tp1.2
     $rtst                                              $ww3 ww3_tp1.3
@@ -572,12 +636,16 @@ else
     $rtst -m grdset_b                                  $ww3 mww3_test_02
     $rtst -m grdset_d                                  $ww3 mww3_test_03
     $rtst -m grdset_f                                  $ww3 mww3_test_04
+  fi
   if [ "$dist" = 'y' ]
   then
     $rtst -m grdset_a                -f -p $mpi -n $np $ww3 mww3_test_05
   fi
+ #if [ "$hsrd" = 'y' ]
+ #then
  #  $rtst                                              $ww3 mww3_test_06
  #  $rtst -m grdset                                    $ww3 mww3_test_07
+ #fi
 
 fi
 

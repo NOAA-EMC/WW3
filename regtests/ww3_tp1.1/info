@@ -17,19 +17,21 @@
 # Remarks :                                                                 #
 #                                                                           #
 # - No other optional switches should be used.                              #
-# - User must select one of available switch inputs:                        #
-#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
 # - Test case input (default):                                              #
 #   * ww3_grid.inp : (default)                                              #
 #     + Spatial grid: 360 x 3 rectilinear lat/lon grid (global)             #
 #       - dx = 1.0 deg, dy= 1.0 deg                                         #
 #       - Xrange = -180:179 deg, Yrange = -1:1 deg                          #
 #     + Spectral grid: ntheta =  4, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * switch options :                                                      #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

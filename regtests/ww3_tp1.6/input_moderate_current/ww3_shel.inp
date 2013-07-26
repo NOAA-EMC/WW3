@@ -14,7 +14,10 @@ $
    1
 $
    19680606 000000    900  19680616 000000
-     F T F F F   T F F T T  F F F F F  F F F F F  F F F F F  F F F F F  F
+$
+  N
+  DPT CUR HS 
+$
    19680606 000000    900  19680616 000000
      0.    0.0    'No curr. 1'
      3.E3  0.0    'No curr. 2'

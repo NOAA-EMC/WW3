@@ -12,8 +12,6 @@ $  1.21 0.04665   8  24  0.
 $  1.21 0.04665   8  12  0.
 $
    F T T F F F
-$  900.   900.   900.   900.
-$ 1800.  1800.  1800.  1800.
   3600.  3600.  3600.  3600.
 $
 $ Activated up to one line per namelist !!
@@ -25,21 +23,7 @@ $ &PRO3 WDTHTH=0.00, WDTHCG=0.00 /
 $ &PRO3 WDTHTH=0.75, WDTHCG=0.75 /
   &PRO3 WDTHTH=1.50, WDTHCG=1.50 /
 $ &PRO3 WDTHTH=2.00, WDTHCG=1.00 /
-$ &PRO4 QTFAC=0.01, RNFAC=0.00, RSFAC=0.00 /
-$ &PRO4 QTFAC=0.01, RNFAC=0.50, RSFAC=0.00 /
-  &PRO4 QTFAC=0.05, RNFAC=0.60, RSFAC=0.60 /
-$ &PRO4 QTFAC=0.05, RNFAC=0.75, RSFAC=0.50 /
 END OF NAMELISTS
-$
-$ 'RECT' F 'NONE'
-$ 189  149
-$   100.E3   100.E3  4.
-$  -600.E3  -600.E3  1.
-$
-$ 'RECT' F 'NONE'
-$  95   75
-$   100.E3   100.E3  2.
-$  -600.E3  -600.E3  1.
 $
   'RECT' F 'NONE'
    48   38
@@ -48,7 +32,7 @@ $
 $
   -5. 5.75  10  -2500. 4 1 '(....)' 'UNIT' 'input'
 $
-   28161*1
+   1824*1
 $
   10  1 1 '(....)' 'PART' 'input'
 $

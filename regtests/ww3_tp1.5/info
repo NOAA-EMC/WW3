@@ -17,11 +17,9 @@
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
-# - User must select one of available switch inputs:                        #
-#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
 # - Several initial conditions and shoaling to top or bottom are available  #
 #   in the test case. Select by commenting/uncommenting lines in            #
-#   ww3_grid.inp and ww3_strt.inp.                                          #
+#   ww3_grid.inp and ww3_strt.inp. NOT YET CONVERTED TO regtest             #
 # - Note that the refraction time step is chosen as half the spatial        #
 #   time step to avoid slight wiggling due to the otherwise alternating     #
 #   order of the spatial and spectral propagation steps.                    #
@@ -31,11 +29,15 @@
 #       - dx = 5 km, dy = 5 km                                              #
 #       - Xrange = -5:5 km, Yrange = -5:55 km                               #
 #     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.08,    fgamma = 1.25    #
+#   * switch options :                                                      #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

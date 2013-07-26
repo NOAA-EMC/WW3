@@ -5,9 +5,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
-#                                                      July 2010              #
+#                                                      July 2013              #
 #                                                                             #
-#    Copyright 2009-2010 National Weather Service (NWS),                      #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -231,7 +231,7 @@
     cd $tmp
 
     files="w3adc.f w3prnt.f w3list.f w3split.f"
-    files="$files map2_1.gs map2_2.gs map2_3.gs map_s3.gs cbarn.gs colorset.gs"
+    files="$files cbarn.gs colorset.gs"
     files="$files spec.gs source.gs 1source.gs spec_ids.gen profile.gs"
     for file in $files
     do 

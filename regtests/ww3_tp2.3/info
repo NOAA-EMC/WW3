@@ -27,11 +27,21 @@
 #       - dx = 100 km, dy = 100 km                                          #
 #       - Xrange = -600:4100 km, Yrange = -600:3100 km                      #
 #     + Spectral grid: several resolutions available, choose one            #
+#       Defult is with 24 direction and 1.1 frequency factor                #
+#   * map2_3.gs can be used to illustrate GSE alleviation results by using  #
+#     any of the namlist options embedded in ww3_grid.inp.                  #
+#   * switch options (mostly self-explanatory).                             #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion                               #
+#     + switch_PR3 : UQ scheme with averaging  (default)                    #
+#     + switch_PR1_MPI                                                      #
+#     + switch_PR2_MPI                                                      #
+#     + switch_PR3_MPI                                                      #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

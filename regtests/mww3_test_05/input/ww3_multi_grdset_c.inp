@@ -14,42 +14,8 @@ $
 $
    19680606 000000   3600  19680607 000000
 $
-$----------------------------------------------------------------
-$
-$ Output request flags identifying fields as in ww3_shel input and
-$ section 2.4 of the manual. It is also possible to use a namelist,
-$ see ww3_ounf.inp for an example.
-$
-$ (1) Forcing Fields
-  T
-$ DPW CUR WND AST WLV ICE BER D50
-  T   T   T   F   F   F   F   F
-$ (2) Standard mean wave Parameters
-  T
-$ HS  MWL T02 T01 T-1 FP  DIR SPR PKD
-  T   F   F   F   T   F   F   T   T
-$ (3) Frequency-dependent parameters
-  F
-$ (4) Spectral Partition Parameters
-  T
-$ PHS PTP PLP PTH PSP WSF TWS PNR
-  F   T   F   F   F   F   T   F
-$ (5) Atmosphere-waves layer
-  T
-$ UST CHK CGE TKU TKW TK- WCC WCT MBH WCM
-  F   F   T   F   F   F   F   F   F   F
-$ (6) Wave-Ocean layer
-  F
-$ (7) Wave-bottom layer
-  F
-$ (8) Spectrum parameters
-  F
-$ (9) Numerical diagnostics
-  F
-$ (10) User defined (NOEXTR flags needed)
-  F
-$
-$----------------------------------------------------------------
+  N
+  DPT CUR WND HS TM FP DP PHS PTP PTH
 $
    19680606 000000   3600  19680608 000000
        0.E3     0.E3  'eye       '

@@ -4,23 +4,61 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
-#                        Select source term, growth needed, other opt.      #
+#   !/FLn !/LN1 !/STn !/NL1 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                   #
+#                        Select source term, deep water focus.              #
+#                         1: WAM 3.                                         #
+#                         2: Tolman and Chalikov (1996)                     #
+#                         3: WAM 4.                                         #
+#                         4: Ardhuin et al. (2010)                          #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #                         1: First order.                                   #
+#                         2: UQ schemes                                     #   
 #                         3: UQ schemes                                     #   
-#   !/MGx                Moving grid outions.                               #
+#   !/MGP !/MGG !/MGW    Moving grid outions.                               #
 #   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
-#   !/SEED               Seeding of spectra on.                             #
 #   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
 #                                                                           #
 # Remarks :                                                                 #
-# - Running without ww3-strt, should always initalize properly.             #
+#   * This problem is big enough to run it under MPI to speed it up and     #
+#     test MPI behavior.                                                    #
+#   * This is a reduced version of teest mww3_test_05, which has a similar  #
+#     setup with three two-way nested grids. this test uses ww3_shel,       #
+#     mww3_test_05 uses ww3_multi.                                          #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 26x3 rectilinear Cartesian grid                       #
+#       - dx = 25km, dy= 25km                                               #
+#       - Xrange = -525:525km deg, Yrange = -525:525                        #
+#     + Spectral grid: ntheta = 24, nf = 25, f1 = 0.04, fgamma = 1.1,       #
+#   * switch options : (self explanatory)                                   #
+#       - switch_ST1_PR1                                                    #
+#       - switch_ST1_PR2                                                    #
+#       - switch_ST1_PR3                                                    #
+#       - switch_ST2_PR1                                                    #
+#       - switch_ST2_PR2                                                    #
+#       - switch_ST2_PR3 (default)                                          #
+#       - switch_ST3_PR1                                                    #
+#       - switch_ST3_PR2                                                    #
+#       - switch_ST3_PR3                                                    #
+#       - switch_ST4_PR1                                                    #
+#       - switch_ST4_PR2                                                    #
+#       - switch_ST4_PR3                                                    #
+#       - switch_ST1_PR1_MPI                                                #
+#       - switch_ST1_PR2_MPI                                                #
+#       - switch_ST1_PR3_MPI                                                #
+#       - switch_ST2_PR1_MPI                                                #
+#       - switch_ST2_PR2_MPI                                                #
+#       - switch_ST2_PR3_MPI                                                #
+#       - switch_ST3_PR1_MPI                                                #
+#       - switch_ST3_PR2_MPI                                                #
+#       - switch_ST3_PR3_MPI                                                #
+#       - switch_ST4_PR1_MPI                                                #
+#       - switch_ST4_PR2_MPI                                                #
+#       - switch_ST4_PR3_MPI                                                #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

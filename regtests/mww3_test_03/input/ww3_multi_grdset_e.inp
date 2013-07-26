@@ -2,17 +2,6 @@ $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
   2 0 T 2 T F
 $
-$
-$ If there are input data grids defined ( NRINP > 0 ), then these
-$ grids are defined first.
-$ (none for this case)
-$
-$ If all point output is gathered in a unified point output file
-$ ( UNIPTS = .TRUE. ), then the output spectral grid needs to be 
-$ defined. Ths information is taken from a wave model grid, and only
-$ the spectral definitions from this grid are relevant. Define the
-$ name of this grid here
-$
   'points'
 $
  'low0'  'no' 'no' 'no' 'no' 'no' 'no' 'no'  1  1  0.00 1.00  F
@@ -22,40 +11,9 @@ $
 $
   T T
 $
-$  19680606 000000   3600  19680608 000000
    19680606 000000    600  19680608 000000
-$-------------------------------------------------------------------------------------------------------------------
-$ (1) Forcing Fields
-  T
-$ DW UC UA AS WL IC IBG D50
-  T  T  T  T  T  T  F  F
-$ (2) Standard mean wave Parameters
-  T
-$ HS WL T2 T1 TM FP DM SP DP
-  T  T  T  T  T  T  T  T  T
-$ (3) Frequency-dependent parameters
-  F
-$ None yet defined
-$ F
-$ (4) Spectral Partition Parameters
-  T
-$ HS TP WL DM SP WS TF NP
-  T  T  T  T  T  T  T  T
-$ (5) Atmosphere-waves layer
-  T
-$ US CH CE TU TW T- WC WT BH WM
-  T  T  T  F  F  F  F  F  F  F
-$ (6) Wave-Ocean layer
-  F
-$ (7) Wave-bottom layer
-  F
-$ (8) Spectrum parameters
-  F
-$ (9) Numerical diagnostics
-  F
-$ (10) User defined (NOEXTR flags needed)
-  F
-$-------------------------------------------------------------------------------------------------------------------
+     N
+     DPT HS TP DP
    19680606 000000    600  19680608 000000
      200.E3 400.E3  'point_A   '
        0.E3   0.E3  'STOPSTRING'

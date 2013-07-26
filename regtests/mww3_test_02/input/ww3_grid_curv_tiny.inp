@@ -7,10 +7,9 @@ $
    F T T F F F
    225.  225.  225.   15.
 $
-$ &PRO2 DTIME = 21600. /
   &PRO2 DTIME = 0. /
+$ &PRO2 DTIME = 21600. /
   &PRO3 WDTHCG = 0., WDTHTH = 0. /
-  &PRO4 RNFAC = 0., RSFAC = 0. /
 END OF NAMELISTS
 $
    'CURV' F 'NONE'

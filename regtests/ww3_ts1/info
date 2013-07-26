@@ -11,17 +11,23 @@
 #   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
 #   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
 #                                                                           #
-# Remarks :                                                                 #
-# - There is no check to see if the initial conditions in ww3_strt are      #
-#   compatible with the linear growth term. LN0 with type 5 in ww3_strt     #
-#   will results in NO WAVE GROWTH.                                         #
-# - Set FLAGLL=F (Cartesian coordinate system) in ww3_grid.inp to assure    #
-#   proper initialization with type 3 in ww3_strt.                          #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + one point grid without propagation.                                 #
+#     + Spectral grid: ntheta = 24, nf = 25 f1 = 0.042  , fgamma = 1.1      #
+#   * switch options :                                                      #
+#     + switch_ST1      : WAM 3 phyics.                                     #
+#     + switch_ST1_RWND : WAM 3 physics + wind dorrection.                  #
+#     + switch_ST2      : Tolman and Chalikov (default).                    #
+#     + switch_ST3      : WAM 4 physics.                                    #
+#     + switch_ST4      : Ardhuin et al. (2010).                            #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

@@ -17,21 +17,25 @@
 # Remarks :                                                                 #
 #                                                                           #
 # - No other optional switches should be used.                              #
-# - User must select one of available switch inputs:                        #
-#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
 # - Test case input (default):                                              #
 #   * ww3_grid.inp : (default)                                              #
 #     + Spatial grid: 43 x 3 rectilinear Cartesian grid                     #
 #       - dx = 15 km, dy = 15 km                                            #
 #       - Xrange = -15:615 km, Yrange = -15:15 km                           #
 #     + Spectral grid: ntheta =  4, nf =  3, f1 = 0.08,    fgamma = 1.25    #
+#   * switch options :                                                      #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
 #                                                                           #
-#                                              Hendrik Tolman, May 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
 #                                                                           #
 #############################################################################
+
+

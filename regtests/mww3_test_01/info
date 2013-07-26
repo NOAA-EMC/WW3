@@ -1,6 +1,6 @@
 #############################################################################
 #                                                                           #
-# mww3_test_01 : Tests for expanded status map.                             #
+# mww3_test_01 : Tests for expanded status map (wetting and drying)         #
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
@@ -13,23 +13,32 @@
 # No other optional switches should be used.                                #
 #                                                                           #
 # Remarks :                                                                 #
-# - Grads scripts do not display but prodice .eps files.                    #
-# - Script set up for parallel running :                                    #
-#    a) For cluster with mpirun activate mpirun command lines and set       #
-#       environment with valiables MPI and proc in section 0.               #
-#    b) For IBM with poe, activale poe command lines and set environment    #
-#       variables in poe jobcards at the top of the scripts.                #
+#                                                                           #
+# - This is a pre-test for the multi-grid approach, needed to test the      #
+#   new status map and wetting and drying, necessary to work effectively    #
+#   with w3_multi. It does not, however, use ww3_multi yet.                 #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 23 x 23 rectilinear Cartesian grid                    #
+#       - dx = 10 km, dy = 10 km                                            #
+#       - Xrange = -10:210 km, Yrange = -10:210 km                          #
+#       - land mask defined                                                 #
+#     + Spectral grid: ntheta = 24, nf = 25, f1 = 0.04177, fgamma = 1.1     #
+#   * map_m01.gs: GrADS script for the default grid.                        #
+#   * switch options (mostly self-explanatory).                             #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
+#     + switch_PR1_MPI                                                      #
+#     + switch_PR2_MPI                                                      #
+#     + switch_PR3_MPI                                                      #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Mar 2011     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
-#                                                                           #
-#  Additional remarks: despite its name, mww3_test_01 is apparently         #
-#     *not* a multi-grid test case. There exists no ww3_multi.inp           #
-#     and there is a ww3_shel.inp.                                          #
 #                                                                           #
 #############################################################################

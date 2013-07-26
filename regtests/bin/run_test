@@ -30,7 +30,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:efg:hi:m:n:o:p:q:r:s:w:"  #option string for getopt function
+optstr="a:c:efg:Ghi:m:n:o:p:q:r:s:w:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -49,6 +49,7 @@ Options:
                    : non-MPI (i.e., with SHRD switch); default is all programs
                    : compiled with unmodified switch settings
   -g grid_string   : use ww3_grid_<grid_string>.inp
+  -G               : create GrADS data files using gx_outX.inp
   -h               : print usage and exit
   -i inpdir        : use inputs in test_name/<inpdir> (default  test_name/input)
   -m grid_set      : execute multi-model test
@@ -99,6 +100,7 @@ multi=0
 dist=0
 inpdir=input
 outopt=native
+grads=0
 while :
 do
   case "$1" in
@@ -107,6 +109,7 @@ do
   -e) prompt=1 ;;
   -f) force_shrd=1 ;;
   -g) shift; grdstr="$1" ;;
+  -G) grads=1 ;;
   -h) help=1 ;;
   -i) shift; inpdir="$1" ;;
   -m) shift; grdset="$1" ;
@@ -805,6 +808,18 @@ case $outopt in
   both)   out_progs="ww3_outf ww3_ounf" ;;
   *)      out_progs="" ;;
 esac
+
+if [ "$grads" ]
+then
+  out_progs="$out_progs gx_outf"
+  if [ `ls $path_i | grep '.gs' | wc -l` -gt '0' ]
+  then
+    cp $path_i/*.gs .
+    cp $path_a/cbarn.gs .
+    cp $path_a/colorset.gs .
+  fi
+fi
+
 for prog in $out_progs
 do
 
@@ -812,6 +827,10 @@ rline='|   Gridded output   |'
 if [ $prog = ww3_ounf ]
 then
   rline='| NC Gridded output  |'
+fi
+if [ $prog = gx_outf ]
+then
+  rline='|GrADS Gridded output|'
 fi
 
 if [ $exec_p = $prog -o $exec_p = "none" ]
@@ -890,6 +909,25 @@ then
             mv -f $ofiles ${otype}_$g/.
             echo "   Output files moved to ${otype}_$g"
           fi
+          if [ "$prog" = 'gx_outf' ]
+          then
+            case $g in
+              'grd2' )  sed -e "s/ww3\.grads/ww3\.$g/g" \
+                            -e "s/37\.5/3\.75/g" \
+                            -e "s/1\.50/0\.15/g" \
+                                                  ww3.ctl > $g.ctl ;;
+              'grd3' )  sed -e "s/ww3\.grads/ww3\.$g/g" \
+                            -e "s/12\.5/1\.25/g" \
+                            -e "s/0\.50/0\.05/g" \
+                                                  ww3.ctl > $g.ctl ;;
+                *    )  sed -e "s/ww3\.grads/ww3\.$g/g" \
+                            -e "s/0\.25/2\.50/g" ww3.ctl > $g.ctl ;;
+            esac
+            rm -f ww3.ctl
+            echo "   ww3.ctl moved to $g.ctl"
+            mv ww3.grads ww3.$g
+            echo "   ww3.grads moved to ww3.$g"
+          fi
         fi
       else
         errmsg "Error occured during $path_e/$prog execution"
@@ -919,6 +957,20 @@ case $outopt in
   both)   out_progs="ww3_outp ww3_ounp" ;;
   *)      out_progs="" ;;
 esac
+
+if [ "$grads" ]
+then
+  out_progs="$out_progs gx_outp"
+  if [ `ls $path_i | grep 'gx_outp' | wc -l` -gt '0' ]
+  then
+    cp $path_a/cbarn.gs .
+    cp $path_a/colorset.gs .
+    cp $path_a/source.gs .
+    cp $path_a/1source.gs .
+    cp $path_a/spec.gs .
+  fi
+fi
+
 for prog in $out_progs
 do
 

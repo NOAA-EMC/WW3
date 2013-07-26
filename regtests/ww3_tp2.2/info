@@ -15,24 +15,28 @@
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
 #                                                                           #
 # Remarks :                                                                 #
-#                                                                           #
-# - User must select one of available switch inputs:                        #
-#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
-#       switch_PRn_MPI : for parallel run with MPI                          #
 # - Test case input (default):                                              #
-#   * Input is also available to execute test case with ww3_multi.          #
+#   * Single grid, but run using ww3_multi.                                 #
 #   * ww3_grid.inp : (default)                                              #
 #     + Spatial grid: 193 x 93 rectilinear lat/lon grid                     #
 #       - dx = 1.0 deg, dy = 1.0 deg                                        #
 #       - Xrange = -6:186 deg, Yrange = -46:46 deg                          #
 #     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * map2_2.gs: grads script for visualizing results.                      #
 #   * GSE correction is enabled. To disable GSE correction                  #
 #     comment/uncomment the appropriate lines in ww3_grid.inp.              #
+#   * switch options (mostly self-explanatory).                             #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion                               #
+#     + switch_PR3 : UQ scheme with averaging  (default)                    #
+#     + switch_PR1_MPI                                                      #
+#     + switch_PR2_MPI                                                      #
+#     + switch_PR3_MPI                                                      #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

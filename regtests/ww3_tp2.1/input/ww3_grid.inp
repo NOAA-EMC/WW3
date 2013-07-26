@@ -7,10 +7,9 @@ $
    F T T F F F
   360.  360.  360.  360.
 $
-$ &PRO2 DTIME = 0. /
+  &PRO2 DTIME = 0. /
 $ &PRO2 DTIME = 14400. /
-$ &PRO3 WDTHCG = 0., WDTHTH = 0. /
-$ &PRO4 RNFAC = 0., RSFAC = 0. /
+  &PRO3 WDTHCG = 0., WDTHTH = 0. /
 END OF NAMELISTS
 $
   'RECT' F 'NONE'

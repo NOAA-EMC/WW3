@@ -16,8 +16,6 @@
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
-# - User must select one of available switch inputs:                        #
-#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
 # - Test case input (default):                                              #
 #   * wave blocking (strong currents)                                       #
 #   * ww3_grid.inp : (default)                                              #
@@ -28,11 +26,19 @@
 # - Test case input_moderate_currents                                       #
 #   * nearly wave blocking (moderate currents)                              #
 #   * grid definition same as blocking case                                 #
+#   * switch options :                                                      #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
+# - Test case input_moderate_current:                                       #
+#   * Current too weak to block wave propagation.                           #
+#   * All else as in default tests.                                         #
+#   * Presently not added in regresssion text matrix.                       #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
-#    Copyright 2009 National Weather Service (NWS),                         #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #

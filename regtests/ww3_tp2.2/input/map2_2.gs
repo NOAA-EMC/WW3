@@ -117,7 +117,7 @@ while ( t <= 13 )
 
   'print'
   say 'Hit return for next plot '
-* pull go_on
+  pull go_on
   'clear'
   'set grads off'
 

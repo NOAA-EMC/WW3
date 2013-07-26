@@ -155,8 +155,8 @@ endif
 *  Print this page and clear
 
   'print'
-* say 'Hit return for next plot '
-* pull go_on
+  say 'Hit return for next plot '
+  pull go_on
   'clear'
   'set grads off'
 

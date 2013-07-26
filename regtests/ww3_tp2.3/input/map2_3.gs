@@ -19,6 +19,9 @@
   gdate = sublin(result,2)
   '!rm -f tmp_grads_gdate'
 
+
+  '!../input/grads.sh'
+
   result = read (run_ID)
   OK = sublin(result,1)
   if ( OK = '0' )
@@ -126,7 +129,7 @@ while ( t <= 6 )
 
   'print'
   say 'Hit return for next plot '
-* pull go_on
+  pull go_on
   'clear'
   'set grads off'
 
