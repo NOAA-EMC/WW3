@@ -250,7 +250,7 @@
         'set arrscl 0.25'
         'set arrlab off'
         'set ccolor 1'
-        'd skip(cos(PEAKD.2),4);skip(sin(PEAKD.2),4)'
+        'd skip(cos(dp.2),4);skip(sin(dp.2),4)'
       endif
 
     endif
@@ -298,7 +298,7 @@
         'set arrscl 0.125'
         'set arrlab off'
         'set ccolor 1'
-        'd skip(cos(PEAKD.3),4);skip(sin(PEAKD.3),4)'
+        'd skip(cos(dp.3),4);skip(sin(dp.3),4)'
       endif
 
 * Plot depth
@@ -309,7 +309,7 @@
         'set ccolor 60'
         'set clevs 25 50 100 150 225'
         'set clab off'
-        'd depth.3'
+        'd dpt.3'
       endif
 
 * Plot current
@@ -320,7 +320,7 @@
         'set arrscl 0.25 1.0'
         'set arrlab off'
         'set ccolor 4'
-        'd skip(cx.3,4);skip(cy.3,4)'
+        'd skip(ucur.3,4);skip(vcur.3,4)'
       endif
 
     endif

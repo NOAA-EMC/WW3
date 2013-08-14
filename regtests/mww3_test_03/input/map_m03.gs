@@ -258,7 +258,7 @@
           else
             k = 6
           endif
-          'd skip(cos(PEAKD.' j '),' k ');skip(sin(PEAKD.' j '),' k ')'
+          'd skip(cos(dp.' j '),' k ');skip(sin(dp.' j '),' k ')'
         endif
 
         if ( plot_dpt = 'yes' & j >=4 )

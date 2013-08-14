@@ -95,7 +95,7 @@ if ( wind = 'yes' )
   'set gxout shaded'
   'set clevs 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34'
   'set ccols 21 22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38'
-  'd sqrt ( wu*wu + wv*wv )'
+  'd sqrt ( uwnd*uwnd + vwnd*vwnd )'
   'run cbarn'
 
   'set gxout vector'
@@ -103,7 +103,7 @@ if ( wind = 'yes' )
   'set arrscl 0.25'
   'set arrlab off'
   'set ccolor 1'
-  'd skip(WU,2);skip(WV,2)'
+  'd skip(uwnd,2);skip(vwnd,2)'
 
   'set strsiz 0.18'
   'set string 1 c 5'

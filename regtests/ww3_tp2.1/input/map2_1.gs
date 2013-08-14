@@ -106,7 +106,7 @@ while ( t <= 10 )
   'set arrscl 0.25'
   'set arrlab off'
   'set ccolor 1'
-  'd skip(cos(PEAKD),2);skip(sin(PEAKD),2)'
+  'd skip(cos(dp),2);skip(sin(dp),2)'
 
 * Text around plot
 

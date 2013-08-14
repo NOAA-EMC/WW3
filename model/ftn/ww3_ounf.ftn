@@ -678,7 +678,7 @@
               ENAME  = '.dpt'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, DW(1:NSEA)        &
                                                             , MAPSF, X1 )
-              varnm(1)='Depth'
+              varnm(1)='dpt'
               varnl(1)='depth'
               varns(1)='depth'
               varng(1)='depth'
@@ -709,8 +709,8 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
                                                         , MAPSF, X2 )
               NFIELD=2
-              varnm(1)='U'
-              varnm(2)='V'
+              varnm(1)='ucur'
+              varnm(2)='vcur'
               varnl(1)='eastward current'
               varnl(2)='northward current'
               varns(1)='eastward_sea_water_velocity'
@@ -745,8 +745,8 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
                                                         , MAPSF, X2 )
               NFIELD=2
-              varnm(1)='U10'
-              varnm(2)='V10'
+              varnm(1)='uwnd'
+              varnm(2)='vwnd'
               varnl(1)='eastward_wind'
               varnl(2)='northward_wind'
               varns(1)='eastward_wind'
@@ -760,12 +760,12 @@
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.1
-              ENAME  = '.dt'
+              ENAME  = '.ast'
               UNITS  = 'K'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, AS(1:NSEA)        &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='dt'
+              varnm(1)='ast'
               varnl(1)='air sea temperature difference'
               varns(1)='air_sea_temperature_difference'
               varng(1)='air_sea_temperature_difference'
@@ -793,7 +793,7 @@
               ENAME  = '.ice'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='CI'
+              varnm(1)='ice'
               varnl(1)='sea ice area fraction'
               varns(1)='sea_ice_area_fraction'
               varng(1)='sea_ice_area_fraction'
@@ -851,10 +851,10 @@
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 1.
               UNITS  = 'm'
-              ENAME  = '.l'
+              ENAME  = '.lm'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WLM, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wl'
+              varnm(1)='lm'
               varnl(1)='mean wave length'
               varns(1)='mean_wave_length' 
               varng(1)='mean_wave_length' 
@@ -865,10 +865,10 @@
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.01
               UNITS  = 's'
-              ENAME  = '.tz'
+              ENAME  = '.t02'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T02, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='tz'
+              varnm(1)='t02'
               varnl(1)='mean period T02'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
 					                   spectral_density_second_frequency_moment'
@@ -880,10 +880,10 @@
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.01
               UNITS  = 's'
-              ENAME  = '.t'
+              ENAME  = '.t0m1'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T0M1, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='te'
+              varnm(1)='t0m1'
               varnl(1)='mean period T0m1'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					                  _spectral_density_inverse_frequency_moment'
@@ -895,10 +895,10 @@
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.01
               UNITS  = 's'
-              ENAME  = '.tm'
+              ENAME  = '.t01'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, T01   , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='tm'
+              varnm(1)='t01'
               varnl(1)='mean period T01'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance&
 					                  _spectral_density_first_frequency_moment' 
@@ -978,7 +978,7 @@
               NFIELD = 1
               FLFRQ  = .TRUE.
               FSC     = 0.0004
-              varnm(1)='Ef'
+              varnm(1)='ef'
               varnl(1)='wave_elevation_spectrum'
               varng(1)=varns(1)
               varnc(1)=''
@@ -989,7 +989,7 @@
                 UNITS  = 'm2/Hz'
                 varns(1)='power_spectral_density_of_surface_elevation'
                 END IF
-              ENAME  = '.Ef'
+              ENAME  = '.ef'
               varng(1)=varns(1)
               I1F=E3DF(2)
               I2F=E3DF(3)
@@ -1107,10 +1107,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.002
               UNITS  = 'm'
-              WRITE(ENAME,'(A3,I1)') '.hs',IPART
+              WRITE(ENAME,'(A3,I1)') '.phs',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHS(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'hs',IPART 
+              WRITE(varnm(1),'(A2,I1)') 'phs',IPART 
               WRITE(varnl(1),'(A,I1)') 'wave significant height partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
               WRITE(varng(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
@@ -1121,10 +1121,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
               UNITS  = 's'
-              WRITE(ENAME,'(A3,I1)') '.tp',IPART
+              WRITE(ENAME,'(A3,I1)') '.ptp',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTP(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'tp',IPART 
+              WRITE(varnm(1),'(A2,I1)') 'ptp',IPART 
               WRITE(varnl(1),'(A,I1)') 'peak period partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_peak_period_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'dominant_wave_period_partition_',IPART
@@ -1135,13 +1135,13 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 1.
               UNITS  = 'm'
-              WRITE(ENAME,'(A3,I1)') '.lp',IPART
+              WRITE(ENAME,'(A3,I1)') '.plp',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PLP(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'lp',IPART 
-              WRITE(varnl(1),'(A,I1)') 'mean wave length partition ',IPART 
-              WRITE(varns(1),'(A,I1)') 'mean_wave_length_partition_',IPART
-              WRITE(varng(1),'(A,I1)') 'mean_wave_length_partition_',IPART
+              WRITE(varnm(1),'(A2,I1)') 'plp',IPART 
+              WRITE(varnl(1),'(A,I1)') 'peak wave length partition ',IPART 
+              WRITE(varns(1),'(A,I1)') 'peak_wave_length_partition_',IPART
+              WRITE(varng(1),'(A,I1)') 'peak_wave_length_partition_',IPART
               varnc(1)=''
               vmin = 0 
               vmax = 10000
@@ -1149,7 +1149,7 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 1.
               UNITS  = 'degree'
-              WRITE(ENAME,'(A3,I1)') '.th',IPART
+              WRITE(ENAME,'(A3,I1)') '.pdir',IPART
               DO ISEA=1, NSEA
                 IF ( PTH(ISEA,IPART) .NE. UNDEF ) THEN
                   PTH(ISEA,IPART) = MOD ( 630-RADE*PTH(ISEA,IPART) , 360. )
@@ -1157,7 +1157,7 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTH(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'th',IPART 
+              WRITE(varnm(1),'(A2,I1)') 'pdir',IPART 
               WRITE(varnl(1),'(A,I1)') 'wave mean direction partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'wave_from_direction_partition_',IPART
@@ -1168,10 +1168,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.1
               UNITS  = 'degree'
-              WRITE(ENAME,'(A3,I1)') '.si',IPART
+              WRITE(ENAME,'(A3,I1)') '.pspr',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSI(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'si',IPART 
+              WRITE(varnm(1),'(A2,I1)') 'pspr',IPART 
               WRITE(varnl(1),'(A,I1)') 'directional spread partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'directional_spread_partition_',IPART
@@ -1182,10 +1182,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
               UNITS  = ' '
-              WRITE(ENAME,'(A3,I1)') '.ws',IPART
+              WRITE(ENAME,'(A3,I1)') '.pws',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'ws',IPART
+              WRITE(varnm(1),'(A2,I1)') 'pws',IPART
               WRITE(varnl(1),'(A,I1)') 'wind sea fraction in partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
               WRITE(varng(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
@@ -1196,10 +1196,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
               FSC    = 0.001
               UNITS  = '1'
-              ENAME  = '.wsf'
+              ENAME  = '.tws'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWST(:), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='wsf'
+              varnm(1)='tws'
               varnl(1)='wind sea fraction'
               varns(1)='wind_sea_fraction'
               varng(1)='wind_sea_fraction'
@@ -1266,10 +1266,10 @@
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 1.E-5
               UNITS  = '1'
-              ENAME  = '.chn'
+              ENAME  = '.cha'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CHARN(1:NSEA), MAPSF, X1 )
               NFIELD=1
-              varnm(1)='chn'
+              varnm(1)='cha'
               varnl(1)='charnock coefficient for surface roughness length for momentum in air'
               varns(1)='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
               varng(1)='charnock_coefficient'
@@ -1342,7 +1342,7 @@
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.0001
-              ENAME  = '.nws'
+              ENAME  = '.twa'
               UNITS  = 'm2/s2'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNX(1:NSEA)     &
                                                         , MAPSF, XX )
@@ -1435,9 +1435,9 @@
                                                         , MAPSF, XY )
 
               NFIELD=3
-              varnm(1)='Sxx'
-              varnm(2)='Syy'
-              varnm(3)='Sxy'
+              varnm(1)='sxx'
+              varnm(2)='syy'
+              varnm(3)='sxy'
               varnl(1)='Radiation stress component Sxx'
               varnl(2)='Radiation stress component Syy'
               varnl(3)='Radiation stress component Sxy'
@@ -1482,7 +1482,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BHD(1:NSEA)    &
                                                         , MAPSF, X1 )
               NFIELD=1
-              varnm(1)='bh'
+              varnm(1)='bhd'
               varnl(1)='radiation pressure (Bernouilli Head)'
               varns(1)='radiation_pressure'
               varng(1)='radiation_pressure'
@@ -1584,8 +1584,8 @@
               FSC    = 0.01
               ENAME  = '.p2s'
               UNITS  = 'm4'
-              varnm(1)='Fp2D'
-              varnm(2)='p2Tp'
+              varnm(1)='fp2s'
+              varnm(2)='pp2s'
               varnl(1)='power spectral density of equivalent surface pressure'
               varnl(2)='peak period of power spectral density of equivalent surface pressure'
               varns(1)='power_spectral_density_of_equivalent_surface_pressure'
@@ -1638,7 +1638,7 @@
                 FLFRQ=.TRUE.
                 NFIELD=1
                 FSC    = 0.0004
-                varnm(1)='Fp3D'
+                varnm(1)='p2l'
                 varnl(1)='base ten logarithm of power spectral density of equivalent surface pressure'
                 varns(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
                 varng(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
@@ -1749,7 +1749,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3)    &
                                                         , MAPSF, XY )
               NFIELD=3
-              varnm(1)='bottom roughness'
+              varnm(1)='bed'
               varnm(2)='ripplex'
               varnm(3)='rippley'
               varnl(1)='bottom roughness'
@@ -1927,7 +1927,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)        &
                                                         , MAPSF, X1 )
               NFIELD=1
-              WRITE (varnm(1),'(A2,I2.2)') 'us', IFJ
+              WRITE (varnm(1),'(A2,I2.2)') 'u', IFJ
               WRITE (varnl(1),'(A12,I2.2)') 'User_defined', IFJ
               WRITE (varns(1),'(A12,I2.2)') 'User_defined', IFJ
               WRITE (varng(1),'(A12,I2.2)') 'user_defined', IFJ

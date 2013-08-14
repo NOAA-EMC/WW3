@@ -24,31 +24,31 @@
 
   if ( hs_type = -1 )
     hspar = 'hs'
-    thpar = 'peakd'
+    dirpar = 'dp'
   endif
   if ( hs_type = 0 )
     hspar = 'phs00'
-    thpar = 'pth00'
+    dirpar = 'pdir00'
   endif
   if ( hs_type = 1 )
     hspar = 'phs01'
-    thpar = 'pth01'
+    dirpar = 'pdir01'
   endif
   if ( hs_type = 2 )
     hspar = 'phs02' 
-    thpar = 'pth02'
+    dirpar = 'pdir02'
   endif
   if ( hs_type = 3 )
     hspar = 'phs03' 
-    thpar = 'pth03'
+    dirpar = 'pdir03'
   endif
   if ( hs_type = 4 )
     hspar = 'phs04' 
-    thpar = 'pth04'
+    dirpar = 'pdir04'
   endif
   if ( hs_type = 5 )
     hspar = 'phs05' 
-    thpar = 'pth05'
+    dirpar = 'pdir05'
   endif
 
   plot_1 = 'yes'
@@ -269,7 +269,7 @@
         'set arrscl 0.25'
         'set arrlab off'
         'set ccolor 1'
-        'd skip(cos(' thpar '.1),' vskip1 ');skip(sin(' thpar '.1),' vskip1 ')'
+        'd skip(cos(' dirpar '.1),' vskip1 ');skip(sin(' dirpar '.1),' vskip1 ')'
       endif
 
 * Plot wind
@@ -328,7 +328,7 @@
         'set arrscl 0.25'
         'set arrlab off'
         'set ccolor 1'
-        'd skip(cos(' thpar '.2),' vskip2 ');skip(sin(' thpar '.2),' vskip2 ')'
+        'd skip(cos(' dirpar '.2),' vskip2 ');skip(sin(' dirpar '.2),' vskip2 ')'
       endif
 
 * Plot wind
@@ -387,7 +387,7 @@
         'set arrscl 0.125'
         'set arrlab off'
         'set ccolor 1'
-        'd skip(cos(' thpar '.3),' vskip3 ');skip(sin(' thpar '.3),' vskip3 ')'
+        'd skip(cos(' dirpar '.3),' vskip3 ');skip(sin(' dirpar '.3),' vskip3 ')'
       endif
       
 * Plot wind
@@ -398,7 +398,7 @@
         'set arrscl 0.25 ' wsc3
         'set arrlab off'
         'set ccolor 2'
-        'd skip(wu.3,' vskip3 ');skip(wv.3,' vskip3 ')'
+        'd skip(uwnd.3,' vskip3 ');skip(vwnd.3,' vskip3 ')'
       endif
 
     endif

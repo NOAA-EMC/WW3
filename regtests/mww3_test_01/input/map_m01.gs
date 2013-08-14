@@ -184,7 +184,7 @@
       'set arrscl 0.25'
       'set arrlab off'
       'set ccolor 1'
-      'd skip(cos(PEAKD),1);skip(sin(PEAKD),1)'
+      'd skip(cos(dp),1);skip(sin(dp),1)'
     endif
 
 * Plot output locations

@@ -246,7 +246,7 @@
           'set arrscl 0.25'
           'set arrlab off'
           'set ccolor 1'
-          'd skip(cos(PEAKD.' i ' ),' sk.i ');skip(sin(PEAKD.' i ' ),' sk.i ')'
+          'd skip(cos(dp.' i ' ),' sk.i ');skip(sin(dp.' i ' ),' sk.i ')'
         endif
 
 
@@ -256,7 +256,7 @@
           'set gxout shaded'
           'set clevs ' wlevs
           'set ccols ' ccols
-          'd mag(wu.' i ',wv.' i ')'
+          'd mag(uwnd.' i ',vwnd.' i ')'
 
 *         'run cbarn'
 
@@ -266,7 +266,7 @@
             'set ccolor 60'
             'set clevs ' wlevs
             'set clab off'
-            'd mag(wu.' i ',wv.' i ')'
+            'd mag(uwnd.' i ',vwnd.' i ')'
           endif
         endif
 
@@ -278,7 +278,7 @@
           'set arrscl 0.25'
           'set arrlab off'
           'set ccolor 1'
-          'd skip(WU.' i ',' sk.i ');skip(WV.' i ',' sk.i ')'
+          'd skip(uwnd.' i ',' sk.i ');skip(vwnd.' i ',' sk.i ')'
         endif
 
 * Plot output locations

@@ -96,7 +96,7 @@ while ( t <= 13 )
   'set arrscl 0.25'
   'set arrlab off'
   'set ccolor 0'
-  'd skip(cos(DIRMN),5);skip(sin(DIRMN),5)'
+  'd skip(cos(dir),5);skip(sin(dir),5)'
 
 * Text around plot
 

@@ -358,9 +358,9 @@
              FLG2D(1,2)=.TRUE.
            CASE('WND')
              FLG2D(1,3)=.TRUE.
-           CASE('DT','AST')
+           CASE('AST')
              FLG2D(1,4)=.TRUE.
-           CASE('LEV','WLV')
+           CASE('WLV')
              FLG2D(1,5)=.TRUE.
            CASE('ICE')
              FLG2D(1,6)=.TRUE.
@@ -369,15 +369,15 @@
 !/BT4           CASE('D50')
 !/BT4             FLG2D(1,8)=.TRUE.
 !
-           CASE('HS','SWH','HM0')
+           CASE('HS')
              FLG2D(2,1)=.TRUE.
-           CASE('L','MWL','LM','WLM')
+           CASE('LM')
              FLG2D(2,2)=.TRUE.
-           CASE('T02','TZ')
+           CASE('T02')
              FLG2D(2,3)=.TRUE.
-           CASE('T01','TM')
+           CASE('T01')
              FLG2D(2,4)=.TRUE.
-           CASE('T','TM1','T-1','TE')
+           CASE('T0M1')
              FLG2D(2,5)=.TRUE.
            CASE('FP')
              FLG2D(2,6)=.TRUE.
@@ -385,7 +385,7 @@
              FLG2D(2,7)=.TRUE.
            CASE('SPR')
              FLG2D(2,8)=.TRUE.
-           CASE('DP','PKD')
+           CASE('DP')
              FLG2D(2,9)=.TRUE.
 !
            CASE('EF')
@@ -409,14 +409,14 @@
              FLG2D(4,5)=.TRUE.
            CASE('PWS')
              FLG2D(4,6)=.TRUE.
-           CASE('TWS','WSF')
+           CASE('TWS')
              FLG2D(4,7)=.TRUE.
            CASE('PNR')
              FLG2D(4,8)=.TRUE.
 !
            CASE('UST')
              FLG2D(5,1)=.TRUE.
-           CASE('CHA','CHK','CHN')
+           CASE('CHA')
              FLG2D(5,2)=.TRUE.
            CASE('CGE')
              FLG2D(5,3)=.TRUE.
@@ -424,7 +424,7 @@
              FLG2D(5,4)=.TRUE.
            CASE('TAW')
              FLG2D(5,5)=.TRUE.
-           CASE('TWA','NWS')
+           CASE('TWA')
              FLG2D(5,6)=.TRUE.
            CASE('WCC')
              FLG2D(5,7)=.TRUE.
@@ -437,19 +437,19 @@
 !
            CASE('SXY')
              FLG2D(6,1)=.TRUE.
-           CASE('WOM','TWO')
+           CASE('TWO')
              FLG2D(6,2)=.TRUE.
-           CASE('BHD','JS')
+           CASE('BHD')
              FLG2D(6,3)=.TRUE.
-           CASE('WOE','FOC')
+           CASE('FOC')
              FLG2D(6,4)=.TRUE.
-           CASE('STP','TUS')
+           CASE('TUS')
              FLG2D(6,5)=.TRUE.
            CASE('USS')
              FLG2D(6,6)=.TRUE.
-           CASE('P2S','SSP')
+           CASE('P2S')
              FLG2D(6,7)=.TRUE.
-           CASE('USF','US3D','U3D')
+           CASE('USF')
              FLG2D(6,8)=.TRUE.
            CASE('P2L')
              FLG2D(6,9)=.TRUE.
@@ -1347,106 +1347,106 @@
 !
 !     Fields in file are determined by flags in FLOGRD in W3ODATMD.
 !
-! Firt two columns: fields in gx_outf (GXO) and ww3_grib (GRB)
+! First two columns: fields in gx_outf (GXO) and ww3_grib (GRB)
 !
 ! G  G
-! R  X Grp  Param Code        Parameter/Group
-! B  O Numb Numbr Name        Definition 
-! ---------------------------------------------
-!       1                     Forcing Fields
-!  --------------------------------------------
-! T  T  1     1   DW          Water depth.
-! T  T  1     2   C[X,Y]      Current velocity.
-! T  T  1     3   UA          Wind speed.
-! T  T  1     4   AS          Air-sea temperature difference.
-! T  T  1     5   WLV         Water levels.
-! T  T  1     6   ICE         Ice concentration.
-! T  T  1     7   IBG         Iceberg-induced damping
-! T  T  1     8   D50         Median sediment grain size
-!  --------------------------------------------
-!       2                     Standard mean wave Parameters
-!  --------------------------------------------
-! T  T  2     1   HS          Wave height.
-! T  T  2     2   WLM         Mean wave length.
-! T  T  2     3   T02         Mean wave period (Tm02).
-! T  T  2     4   T0M1         Mean wave period (Tm0,-1).
-! T  T  2     5   T01        Mean wave period (Tm01).
-! T  T  2     6   FP0         Peak frequency.
-! T  T  2     7   THM         Mean wave direction.
-! T  T  2     8   THS         Mean directional spread.
-! T  T  2     9   THP0        Peak direction.
-!  --------------------------------------------
-!       3                     Spectral Parameters (first 5)
-!  --------------------------------------------
-! F  F  3     1   Ef          Wave frequency spectrum
-! F  F  3     2   th1m        Mean wave direction from a1,b2
-! F  F  3     3   sth1m       Directional spreading from a1,b2
-! F  F  3     4   th2m        Mean wave direction from a2,b2
-! F  F  3     5   sth2m       Directional spreading from a2,b2
-! F  F  3     6   WN          Wavenumber array
-!  --------------------------------------------
-!       4                     Spectral Partition Parameters 
-!  --------------------------------------------
-! T  T  4     1   PHS         Partitioned wave heights.
-! T  T  4     2   PTP         Partitioned peak period.
-! T  T  4     3   PLP         Partitioned peak wave length.
-! T  T  4     4   PTH         Partitioned mean direction.
-! T  T  4     5   PSI         Partitioned mean directional spread.
-! T  T  4     6   PWS         Partitionned wind sea fraction.
-! T  T  4     7   PWST        Total wind sea fraction.
-! T  T  4     8   PNR         Number of partitions.
-!  --------------------------------------------
-!       5                     Atmosphere-waves layer
-!  --------------------------------------------
-! T  T  5     1   UST         Friction velocity.
-! F  T  5     2   CHARN       Charnock parameter
-! F  T  5     3   CGE         Energy flux
-! F  T  5     4   PHIAW       Air-sea energy flux
-! F  T  5     5   TAUWI[X,Y]  Net wave-supported stress
-! F  T  5     6   TAUWN[X,Y]  Negative part of the wave-supported stress
-! F  F  5     7   WHITECAP    Whitecap coverage
-! F  F  5     8   WHITECAP    Whitecap thickness
-! F  F  5     9   WHITECAP    Mean breaking height
-! F  F  5    10   WHITECAP    Whitecap moment
-!  --------------------------------------------
-!       6                     Wave-ocean layer 
-!  --------------------------------------------
-! F  F  6     1   S[XX,YY,XY] Radiation stresses.
-! F  F  6     2   TAUO[X,Y]   Wave to ocean momentum flux
-! F  F  6     3   BHD      Bernoulli head (J term) 
-! F  F  6     4   PHIOC       Wave to ocean energy flux
-! F  F  6     5   TUS[X,Y]    Stokes transport
-! F  F  6     6   USS[X,Y]    Surface Stokes drift
-! F  F  6     7   [PR,TP]MS   Second-order sum pressure 
-! F  F  6     8   US3D        Spectrum of surface Stokes drift
-! F  F  6     9   P2SMS       Micro seism  source term
-!  --------------------------------------------
-!       7                     Wave-bottom layer 
-!  --------------------------------------------
-! F  F  7     1   ABA         Near bottom rms amplitides.
-! F  F  7     2   UBA         Near bottom rms velocities.
-! F  F  7     3   BEDFORMS    Bedforms
-! F  F  7     4   PHIBBL      Energy flux due to bottom friction 
-! F  F  7     5   TAUBBL      Momentum flux due to bottom friction
-!  --------------------------------------------
-!       8                     Spectrum parameters
-!  --------------------------------------------
-! F  F  8     1   MSS[X,Y]    Mean square slopes
-! F  F  8     2   MSC[X,Y]    Spectral level at high frequency tail
-!  --------------------------------------------
-!       9                     Numerical diagnostics  
-!  --------------------------------------------
-! T  T  9     1   DTDYN       Average time step in integration.
-! T  T  9     2   FCUT        Cut-off frequency.
-! T  T  9     3   CFLXYMAX    Max. CFL number for spatial advection. 
-! T  T  9     4   CFLTHMAX    Max. CFL number for theta-advection. 
-! F  F  9     5   CFLKMAX     Max. CFL number for k-advection. 
-!  --------------------------------------------
-!       10                    User defined          
-!  --------------------------------------------
-! F  F  10    1               User defined #1. (requires coding ...)
-! F  F  10    2               User defined #1. (requires coding ...)
-!  --------------------------------------------
+! R  X Grp  Param Code     Output  Parameter/Group
+! B  O Numb Numbr Name        Tag  Definition 
+! --------------------------------------------------
+!       1                          Forcing Fields
+!  -------------------------------------------------
+! T  T  1     1   DW         DPT   Water depth.
+! T  T  1     2   C[X,Y]     CUR   Current velocity.
+! T  T  1     3   UA         WND   Wind speed.
+! T  T  1     4   AS         AST   Air-sea temperature difference.
+! T  T  1     5   WLV        WLV   Water levels.
+! T  T  1     6   ICE        ICE   Ice concentration.
+! T  T  1     7   IBG        IBG   Iceberg-induced damping
+! T  T  1     8   D50        D50   Median sediment grain size
+!  -------------------------------------------------
+!       2                          Standard mean wave Parameters
+!  -------------------------------------------------
+! T  T  2     1   HS         HS    Wave height.
+! T  T  2     2   WLM        LM    Mean wave length.
+! T  T  2     3   T02        T02   Mean wave period (Tm02).
+! T  T  2     4   T0M1       T0M1  Mean wave period (Tm0,-1).
+! T  T  2     5   T01        T01   Mean wave period (Tm01).
+! T  T  2     6   FP0        FP    Peak frequency.
+! T  T  2     7   THM        DIR   Mean wave direction.
+! T  T  2     8   THS        SPR   Mean directional spread.
+! T  T  2     9   THP0       DP    Peak direction.
+!  -------------------------------------------------
+!       3                          Spectral Parameters (first 5)
+!  -------------------------------------------------
+! F  F  3     1   Ef         EF    Wave frequency spectrum
+! F  F  3     2   th1m       TH1M  Mean wave direction from a1,b2
+! F  F  3     3   sth1m      STH1M Directional spreading from a1,b2
+! F  F  3     4   th2m             Mean wave direction from a2,b2
+! F  F  3     5   sth2m            Directional spreading from a2,b2
+! F  F  3     6   WN         WN    Wavenumber array
+!  -------------------------------------------------
+!       4                          Spectral Partition Parameters 
+!  -------------------------------------------------
+! T  T  4     1   PHS        PHS   Partitioned wave heights.
+! T  T  4     2   PTP        PTP   Partitioned peak period.
+! T  T  4     3   PLP        PLP   Partitioned peak wave length.
+! T  T  4     4   PTH        PDIR  Partitioned mean direction.
+! T  T  4     5   PSI        PSPR  Partitioned mean directional spread.
+! T  T  4     6   PWS        PWS   Partitionned wind sea fraction.
+! T  T  4     7   PWST       TWS   Total wind sea fraction.
+! T  T  4     8   PNR        PNR   Number of partitions.
+!  -------------------------------------------------
+!       5                          Atmosphere-waves layer
+!  -------------------------------------------------
+! T  T  5     1   UST        UST   Friction velocity.
+! F  T  5     2   CHARN      CHA   Charnock parameter
+! F  T  5     3   CGE        CGE   Energy flux
+! F  T  5     4   PHIAW      FAW   Air-sea energy flux
+! F  T  5     5   TAUWI[X,Y] TAW   Net wave-supported stress
+! F  T  5     6   TAUWN[X,Y] TWA   Negative part of the wave-supported stress
+! F  F  5     7   WHITECAP   WCC   Whitecap coverage
+! F  F  5     8   WHITECAP   WCF   Whitecap thickness
+! F  F  5     9   WHITECAP   WCH   Mean breaking height
+! F  F  5    10   WHITECAP   WCM   Whitecap moment
+!  -------------------------------------------------
+!       6                          Wave-ocean layer 
+!  -------------------------------------------------
+! F  F  6     1   S[XX,YY,XY] SXY  Radiation stresses.
+! F  F  6     2   TAUO[X,Y]  TWO   Wave to ocean momentum flux
+! F  F  6     3   BHD        BHD   Bernoulli head (J term) 
+! F  F  6     4   PHIOC      FOC   Wave to ocean energy flux
+! F  F  6     5   TUS[X,Y]   TUS   Stokes transport
+! F  F  6     6   USS[X,Y]   USS   Surface Stokes drift
+! F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure 
+! F  F  6     8   US3D       USF   Spectrum of surface Stokes drift
+! F  F  6     9   P2SMS      P2L   Micro seism  source term
+!  -------------------------------------------------
+!       7                          Wave-bottom layer 
+!  -------------------------------------------------
+! F  F  7     1   ABA        ABR   Near bottom rms amplitides.
+! F  F  7     2   UBA        UBR   Near bottom rms velocities.
+! F  F  7     3   BEDFORMS   BED   Bedforms
+! F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction 
+! F  F  7     5   TAUBBL     TBB   Momentum flux due to bottom friction
+!  -------------------------------------------------
+!       8                          Spectrum parameters
+!  -------------------------------------------------
+! F  F  8     1   MSS[X,Y]   MSS   Mean square slopes
+! F  F  8     2   MSC[X,Y]   MSC   Spectral level at high frequency tail
+!  -------------------------------------------------
+!       9                          Numerical diagnostics  
+!  -------------------------------------------------
+! T  T  9     1   DTDYN      DTD   Average time step in integration.
+! T  T  9     2   FCUT       FC    Cut-off frequency.
+! T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection. 
+! T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection. 
+! F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection. 
+!  -------------------------------------------------
+!       10                         User defined          
+!  -------------------------------------------------
+! F  F  10    1              U1    User defined #1. (requires coding ...)
+! F  F  10    2              U2    User defined #1. (requires coding ...)
+!  -------------------------------------------------
 !
 !     Section 4 consist of a set of fields, index 0 = wind sea, index
 !     1:NOSWLL are first NOSWLL swell fields.

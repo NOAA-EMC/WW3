@@ -233,7 +233,7 @@
       'set arrscl 0.25'
       'set arrlab off'
       'set ccolor 1'
-      'd skip(cos(PEAKD.1),2);skip(sin(PEAKD.1),2)'
+      'd skip(cos(dp.1),2);skip(sin(dp.1),2)'
     endif
 
     if ( plot_dir = 'yes' ) & ( plot_2 = 'yes' )
@@ -242,7 +242,7 @@
       'set arrscl 0.25'
       'set arrlab off'
       'set ccolor 5'
-      'd skip(cos(PEAKD.1),2);skip(sin(PEAKD.2),2)'
+      'd skip(cos(dp.1),2);skip(sin(dp.2),2)'
     endif
 
 * Plot output locations

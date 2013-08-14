@@ -466,111 +466,111 @@
       WRITE (NDSCTL,991) 'MAP  ', 0, IU, 'grid use map   '
 !
       IF ( FLREQ(01,01) )                                              &
-           WRITE (NDSCTL,991) 'DEPTH', 0, IU, 'Water depth    '
+           WRITE (NDSCTL,991) 'dpt  ', 0, IU, 'Water depth    '
       IF ( FLREQ(01,02) )                                              &
-           WRITE (NDSCTL,991) 'CX   ', 0, IU, 'Current U (m/s)'
+           WRITE (NDSCTL,991) 'ucur ', 0, IU, 'Current U (m/s)'
       IF ( FLREQ(01,02) )                                              &
-           WRITE (NDSCTL,991) 'CY   ', 0, IU, 'Current V (m/s)'
+           WRITE (NDSCTL,991) 'vcur ', 0, IU, 'Current V (m/s)'
       IF ( FLREQ(01,03) )                                              &
-           WRITE (NDSCTL,991) 'WU   ', 0, IU, 'Wind U (m/s)   '
+           WRITE (NDSCTL,991) 'uwnd ', 0, IU, 'Wind U (m/s)   '
       IF ( FLREQ(01,03) )                                              &
-           WRITE (NDSCTL,991) 'WV   ', 0, IU, 'Wind V (m/s)   '
+           WRITE (NDSCTL,991) 'vwnd ', 0, IU, 'Wind V (m/s)   '
       IF ( FLREQ(01,04) )                                              &
-           WRITE (NDSCTL,991) 'DELT ', 0, IU, 'AT-SST (degr)  '
+           WRITE (NDSCTL,991) 'ast  ', 0, IU, 'AT-SST (degr)  '
       IF ( FLREQ(01,05) )                                              &
-           WRITE (NDSCTL,991) 'WLEV ', 0, IU, 'Water Level (m)'
+           WRITE (NDSCTL,991) 'wlv  ', 0, IU, 'Water Level (m)'
       IF ( FLREQ(01,06) )                                              &
-           WRITE (NDSCTL,991) 'ICE  ', 0, IU, 'Ice Conc. (-)  '
+           WRITE (NDSCTL,991) 'ice  ', 0, IU, 'Ice Conc. (-)  '
       IF ( FLREQ(02,01) )                                              &
-           WRITE (NDSCTL,991) 'HS   ', 0, IU, 'Wave height (m)'
+           WRITE (NDSCTL,991) 'hs   ', 0, IU, 'Wave height (m)'
       IF ( FLREQ(02,02) )                                              &
-           WRITE (NDSCTL,991) 'LMN  ', 0, IU, 'Mean L (m)     '
+           WRITE (NDSCTL,991) 'lm   ', 0, IU, 'Mean L (m)     '
       IF ( FLREQ(02,03) )                                              &
-           WRITE (NDSCTL,991) 'T02  ', 0, IU, 'Mean Per Tz (s)'
+           WRITE (NDSCTL,991) 't02  ', 0, IU, 'Mean Per Tz (s)'
       IF ( FLREQ(02,04) )                                              &
-           WRITE (NDSCTL,991) 'T01  ', 0, IU, 'Mean Per Tm (s)  '
+           WRITE (NDSCTL,991) 't01  ', 0, IU, 'Mean Per Tm (s)  '
       IF ( FLREQ(02,05) )                                              &
-           WRITE (NDSCTL,991) 'T0M1', 0, IU, 'Mean Per Te (s)  '
+           WRITE (NDSCTL,991) 't0m1', 0, IU, 'Mean Per Te (s)  '
       IF ( FLREQ(02,06) )                                              &
-           WRITE (NDSCTL,991) 'PEAKP', 0, IU, 'Peak Per. (s)  '
+           WRITE (NDSCTL,991) 'tp   ', 0, IU, 'Peak Per. (s)  '
       IF ( FLREQ(02,07) )                                              &
-           WRITE (NDSCTL,991) 'DIRMN', 0, IU, 'Mean Dir. (rad)'
+           WRITE (NDSCTL,991) 'dir  ', 0, IU, 'Mean Dir. (rad)'
       IF ( FLREQ(02,08) )                                              &
-           WRITE (NDSCTL,991) 'DIRSP', 0, IU, 'Dir. spread    '
+           WRITE (NDSCTL,991) 'spr  ', 0, IU, 'Dir. spread    '
       IF ( FLREQ(02,09) )                                              &
-           WRITE (NDSCTL,991) 'PEAKD', 0, IU, 'Peak Dir. (rad)'
+           WRITE (NDSCTL,991) 'dp   ', 0, IU, 'Peak Dir. (rad)'
       IF ( FLREQ(04,01) ) THEN
-          PARID  = 'PHS  '
+          PARID  = 'phs  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. Hs (m)   '
             END DO
         END IF
       IF ( FLREQ(04,02) ) THEN
-          PARID  = 'PTP  '
+          PARID  = 'ptp  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. Tp (s)   '
             END DO
         END IF
       IF ( FLREQ(04,03) ) THEN
-          PARID  = 'PLP  '
+          PARID  = 'plp  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. L  (m)   '
             END DO
         END IF
       IF ( FLREQ(04,04) ) THEN
-          PARID  = 'PTH  '
+          PARID  = 'pdir  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. Th (deg.)'
             END DO
         END IF
       IF ( FLREQ(04,05) ) THEN
-          PARID  = 'PSI  '
+          PARID  = 'pspr '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. si (deg.)'
             END DO
         END IF
       IF ( FLREQ(04,06) ) THEN
-          PARID  = 'PWS  '
+          PARID  = 'pws  '
           DO I=0, NOSWLL
             WRITE (PARID(4:5),'(I2.2)') I
             WRITE (NDSCTL,991) PARID , 0, IU, 'Part. ws frac. '
             END DO
         END IF
       IF ( FLREQ(04,07) )                                              &
-           WRITE (NDSCTL,991) 'PWST ', 0, IU, 'Total ws frac. '
+           WRITE (NDSCTL,991) 'tws  ', 0, IU, 'Total ws frac. '
       IF ( FLREQ(04,08) )                                              &
-           WRITE (NDSCTL,991) 'PNR  ', 0, IU, 'Number of part.'
+           WRITE (NDSCTL,991) 'pnr  ', 0, IU, 'Number of part.'
       IF ( FLREQ(05,01) )                                              &
-           WRITE (NDSCTL,991) 'USTU ', 0, IU, 'Fr.Vel. U(m/s) '
+           WRITE (NDSCTL,991) 'uust ', 0, IU, 'Fr.Vel. U(m/s) '
       IF ( FLREQ(05,01) )                                              &
-           WRITE (NDSCTL,991) 'USTV ', 0, IU, 'Fr.Vel. V(m/s) '
+           WRITE (NDSCTL,991) 'vust ', 0, IU, 'Fr.Vel. V(m/s) '
       IF ( FLREQ(05,02) )                                              &
-           WRITE (NDSCTL,991) 'CHARN', 0, IU, 'Charnock parameter'
+           WRITE (NDSCTL,991) 'cha  ', 0, IU, 'Charnock parameter'
       IF ( FLREQ(05,03) )                                              &
-           WRITE (NDSCTL,991) 'CGE  ', 0, IU, 'Energy Flux (W/m)'
+           WRITE (NDSCTL,991) 'cge  ', 0, IU, 'Energy Flux (W/m)'
       IF ( FLREQ(05,04) )                                              &
-           WRITE (NDSCTL,991) 'PHIAW', 0, IU, 'Air-sea energy flux'
+           WRITE (NDSCTL,991) 'faw  ', 0, IU, 'Air-sea energy flux'
       IF ( FLREQ(05,05) )                                              &
-           WRITE (NDSCTL,991) 'TAUWIX', 0, IU, 'Fr.Vel. U(m/s) '
+           WRITE (NDSCTL,991) 'utaw  ', 0, IU, 'Net wave supp str'
       IF ( FLREQ(05,05) )                                              &
-           WRITE (NDSCTL,991) 'TAUWIY', 0, IU, 'Fr.Vel. V(m/s) '
+           WRITE (NDSCTL,991) 'vtaw  ', 0, IU, 'Net wave supp str'
       IF ( FLREQ(05,06) )                                              &
-           WRITE (NDSCTL,991) 'TAUWNX', 0, IU, 'Fr.Vel. U(m/s) '
+           WRITE (NDSCTL,991) 'utwa  ', 0, IU, 'Neg wave supp str'
       IF ( FLREQ(05,06) )                                              &
-           WRITE (NDSCTL,991) 'TAUWNY', 0, IU, 'Fr.Vel. V(m/s) '
+           WRITE (NDSCTL,991) 'vtwa  ', 0, IU, 'Neg wave supp str'
       IF ( FLREQ(09,01) )                                              &
-           WRITE (NDSCTL,991) 'DTDYN', 0, IU, 'DTAVG ST (min) '
+           WRITE (NDSCTL,991) 'dtd  ', 0, IU, 'DTAVG ST (min) '
       IF ( FLREQ(09,02) )                                              &
-           WRITE (NDSCTL,991) 'FCUT ', 0, IU, 'fcut (Hz)      '
+           WRITE (NDSCTL,991) 'fc   ', 0, IU, 'fcut (Hz)      '
       IF ( FLREQ(09,03) )                                              &
-           WRITE (NDSCTL,991) 'CFLXY', 0, IU, 'Max CFL XY Prop'
+           WRITE (NDSCTL,991) 'cfx  ', 0, IU, 'Max CFL XY Prop'
       IF ( FLREQ(09,04) )                                              &
-           WRITE (NDSCTL,991) 'CFLTH', 0, IU, 'Max CFL TH Prop'
+           WRITE (NDSCTL,991) 'cfd  ', 0, IU, 'Max CFL TH Prop'
 !
       WRITE (NDSCTL,992)
 !
