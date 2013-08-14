@@ -492,7 +492,7 @@
       IF ( FLREQ(02,05) )                                              &
            WRITE (NDSCTL,991) 't0m1', 0, IU, 'Mean Per Te (s)  '
       IF ( FLREQ(02,06) )                                              &
-           WRITE (NDSCTL,991) 'tp   ', 0, IU, 'Peak Per. (s)  '
+           WRITE (NDSCTL,991) 'fp   ', 0, IU, 'Peak Freq. (Hz)'
       IF ( FLREQ(02,07) )                                              &
            WRITE (NDSCTL,991) 'dir  ', 0, IU, 'Mean Dir. (rad)'
       IF ( FLREQ(02,08) )                                              &
@@ -989,11 +989,6 @@
 !
               ELSE IF ( J.EQ.2 .AND. K.EQ.6 ) THEN
                 FLONE = .TRUE.
-                DO ISEA=1, NSEA
-                  IF ( FP0(ISEA) .NE. UNDEF ) THEN
-                      FP0(ISEA) = 1. / FP0(ISEA)
-                    END IF
-                  END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FP0   , MAPSF, X1 )
 !
 !     Mean wave direction
