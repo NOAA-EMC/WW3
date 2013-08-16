@@ -17,9 +17,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
-#                                                      Aug. 2010              #
+#                                                      July 2013              #
 #                                                                             #
-#    Copyright 2009-2010 National Weather Service (NWS),                      #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -67,15 +67,53 @@
   echo "Save listings     : $list"
   echo ' '
 
-# 1.a.3 Check for switch file  - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.a.3 Check for switch file and makefile - - - - - - - - - - - - - - - - - - - 
 
   switch_file=$main_dir/bin/switch
-  switch_file_old=$main_dir/bin/switch.old
+  makefile=$main_dir/ftn/makefile
+  rm -f $makefile
 
   if test ! -f $switch_file
   then
     echo "*** switch file $switch_file not found ***" ; echo ' '
     exit 1
+  fi
+
+  flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
+
+  switch_file_old=$main_dir/bin/switch.old
+  exec_type_file=$main_dir/exe/exec_type
+
+  here=`pwd`
+
+  if [ ! -d $main_dir/obj_SHRD ] ; then
+     mkdir  $main_dir/obj_SHRD ; fi
+  if [ ! -d $main_dir/obj_DIST ] ; then
+     mkdir  $main_dir/obj_DIST ; fi
+  rm -rf $main_dir/obj
+  if [ ! -d $main_dir/mod_SHRD ] ; then
+     mkdir  $main_dir/mod_SHRD ; fi
+  if [ ! -d $main_dir/mod_DIST ] ; then
+     mkdir  $main_dir/mod_DIST ; fi
+  rm -rf $main_dir/mod
+
+  if [ "$flag_SHRD" -gt '0' ]
+  then
+    pres_type='SHRD'
+    if [ -f ${switch_file_old}_SHRD ] ; then
+         cp ${switch_file_old}_SHRD $switch_file_old ; fi
+    if [ -f ${makefile}_SHRD ] ; then
+         cp ${makefile}_SHRD $makefile ; fi
+    cd $main_dir ; ln -sf obj_SHRD obj
+                   ln -sf mod_SHRD mod ; cd $here
+  else
+    pres_type='DIST'
+    if [ -f ${switch_file_old}_DIST ] ; then
+         cp ${switch_file_old}_DIST $switch_file_old ; fi
+    if [ -f ${makefile}_DIST ] ; then
+         cp ${makefile}_DIST $makefile ; fi
+    cd $main_dir ; ln -sf obj_DIST obj
+                   ln -sf mod_DIST mod ; cd $here
   fi
 
 # 1.a.4 Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -328,7 +366,14 @@ EOF
     echo 'Making makefile ...'
     if $main_dir/bin/make_makefile.sh
     then
-      cp $switch_file $switch_file_old
+      if [ "$flag_SHRD" -gt '0' ]
+      then
+        cp $switch_file ${switch_file_old}_SHRD
+        cp $makefile ${makefile}_SHRD
+      else
+        cp $switch_file ${switch_file_old}_DIST
+        cp $makefile ${makefile}_DIST
+      fi
     else
       exit 1
     fi
@@ -401,10 +446,26 @@ EOF
       fi
       export palm_mod
 
+      if [ ! -f $exec_type_file ] ; then
+          touch $exec_type_file ; fi
+
+      if [ `grep $prog $exec_type_file | wc -l | awk '{ print $1}'` != '0' ]
+      then
+        exec_type=`grep $prog $exec_type_file | tail -1 | awk '{ print $2}'`
+      fi
+      if [ "$exec_type" != "$pres_type" ] ; then
+          rm -f $main_dir/exe/$prog  ; fi
+
+      cp $exec_type_file tempfile
+      sed -n "/$prog/!p" tempfile > $exec_type_file
+      rm -f tempfile
+
       path_m=$main_dir/mod
       export path_m
       make -f makefile $aPe/$prog
       echo ' '
+
+      echo "$prog $pres_type" >> $exec_type_file
 
     fi
 

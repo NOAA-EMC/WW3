@@ -16,9 +16,9 @@
 # programs used :                                                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      July 2012              #
+#                                                      July 2013              #
 #                                                                             #
-#    Copyright 2009-2012 National Weather Service (NWS),                      #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -61,9 +61,12 @@
   for key in $keys
   do
     case $key in
-     'all'    ) cd $main_dir/obj ; rm -f *.o 
-                cd $main_dir/mod ; rm -f *.mod
-                cd $main_dir/exe ; rm -f ww3_* gx_* ;;
+     'all'    ) cd $main_dir     ; rm -f obj_????/*.o 
+                                   rm -f mod_????/*.mod
+                                   rm -f exe/exec_type ;;
+#    'all'    ) cd $main_dir/obj ; rm -f *.o 
+#               cd $main_dir/mod ; rm -f *.mod
+#               cd $main_dir/exe ; rm -f ww3_* gx_* ;;
      'mach'   ) cd $main_dir/ftn ; touch w3servmd.ftn
                                    touch wmmdatmd.ftn
                                    touch wminitmd.ftn
@@ -74,10 +77,12 @@
                                    touch ww3_outp.ftn
                                    touch ww3_grib.ftn ;; 
      'grib'   ) cd $main_dir/ftn ; touch ww3_grib.ftn ;; 
-     'shared' ) cd $main_dir/obj ; rm -f *.o 
-                cd $main_dir/mod ; rm -f *.mod ;;
-     'mpp'    ) cd $main_dir/obj ; rm -f *.o 
-                cd $main_dir/mod ; rm -f *.mod ;;
+     'shared' ) ;;
+#    'shared' ) cd $main_dir/obj ; rm -f *.o 
+#               cd $main_dir/mod ; rm -f *.mod ;;
+     'mpp'    );;
+#    'mpp'    ) cd $main_dir/obj ; rm -f *.o 
+#               cd $main_dir/mod ; rm -f *.mod ;;
      'thr0'   ) cd $main_dir/ftn ; touch w3wavemd.ftn ;;
      'thr1'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch w3iogomd.ftn ;;

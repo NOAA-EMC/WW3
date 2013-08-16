@@ -226,15 +226,35 @@ EOF
         echo "   Remove $main_dir/exe"
         rm -fr $main_dir/exe
       fi
-      if [ -d $main_dir/obj ]
+      if [ -d $main_dir/obj ] || [ -l $main_dir/obj ]
       then
         echo "   Remove $main_dir/obj"
         rm -fr $main_dir/obj
       fi
-      if [ -d $main_dir/mod ]
+      if [ -d $main_dir/obj_DIST ]
+      then
+        echo "   Remove $main_dir/obj_DIST"
+        rm -fr $main_dir/ob_DISTj
+      fi
+      if [ -d $main_dir/obj_SHRD ]
+      then
+        echo "   Remove $main_dir/obj_SHRD"
+        rm -fr $main_dir/obj_SHRD
+      fi
+      if [ -d $main_dir/mod ] || [ -l $main_dir/mod ]
       then
         echo "   Remove $main_dir/mod"
         rm -fr $main_dir/mod
+      fi
+      if [ -d $main_dir/mod_DIST ]
+      then
+        echo "   Remove $main_dir/mod_DIST"
+        rm -fr $main_dir/mod_DIST
+      fi
+      if [ -d $main_dir/mod_SHRD ]
+      then
+        echo "   Remove $main_dir/mod_SHRD"
+        rm -fr $main_dir/mod_SHRD
       fi
     else
       echo "   Directory does not exist: $main_dir"
