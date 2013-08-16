@@ -40,7 +40,7 @@
   echo '                                  svntar version 4'
   echo ' '
 
-# 1.c Test present directory - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.c Test present directory and set location of environment file  - - - - - -
 
   main_dir=`pwd`
   cd
@@ -363,7 +363,7 @@
 
   cd $main_dir/arc_tmp/model/bin
   chmod 744 *
-  chmod 644 install_wwatch3 switch*
+  chmod 644 install_wwatch3_tar switch*
 
   cd $main_dir/arc_tmp/model/ftn
   chmod 644 *.ftn

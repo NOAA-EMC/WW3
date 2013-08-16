@@ -1,0 +1,281 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# arc_wwatch3_tar : Archive WAVEWATCH III in tar files which can be processed #
+#                   by the installation program install_wwatch3_tar.          #
+#                                                                             #
+# Origination : Hendrik L. Tolman    May 2009                                 # 
+# Updates :                                                                   #
+# - Adapted to create tar files from svn directory structures                 #
+#   (JH Alves, Aug 2013)                                                      #
+#                                                                             #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  clear
+  echo ' '
+  echo '               **************************************'
+  echo '             ***   WAVEWATCH III archiving program  ***'
+  echo '               **************************************'
+  echo ' '
+
+# 1.b Test present directory and set location of environment file  - - - - - -
+
+  echo ' '
+  echo ' Choose now where you configuration file wwatch3.env is located.'
+  echo ' If you use a generic/system-wide wwatch3.env, type G. '
+  echo ' If you use a local wwatch3.env, type L. ' 
+  echo ' '
+  echo ' Type your choice now [G|L]: '
+  read sww3dir
+
+  if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ]
+  then
+
+    ww3_env="${HOME}/.wwatch3.env"   # setup file
+
+    if [ -s $ww3_env ]
+    then
+      set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
+      echo "Install directory: " $main_dir
+    else
+      echo "Generic wwatch3.env file not found at ${home_dir}          "
+      echo 'Enter correct location of env file relative to there.' ; echo ' '
+      echo ' Alternatively, quit and choose local env file [option L] '
+      main_dir=nodir.$$
+      until [ -d $main_dir ]
+      do
+        echo -n "   Directory (relative to $home_dir) : "
+        read OK
+        if [ -n "$OK" ]
+        then
+          main_dir="$OK"
+        fi
+      done
+      cd $main_dir
+      main_dir=`pwd`
+      echo ' '
+    fi
+
+  elif [ "${sww3dir}" == "L" ] || [ "${sww3dir}" == "l" ]
+  then
+
+    main_dir=`pwd`
+
+    if [ -f ${main_dir}/wwatch3.env ]
+    then
+      echo ' ';echo ' Local wwatch3.env found, moving ahead.'
+      ww3_env="${main_dir}/wwatch3.env"
+    else
+      echo ' ';echo ' wwatch3.env file not found. Exiting. '
+      echo ' Run the arc script from your base WW3 directory (where wwatch3.env is).'
+      exit
+    fi
+ fi
+
+  echo ' ';echo "Archiving in $main_dir/arc"
+
+  OK="$NULL"
+  until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
+        [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
+  do
+    echo -n "   OK ? [y/n] "
+    read OK
+  done
+  if [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
+  then
+    echo ' ' ; echo 'Change to correct directory '
+    echo ' ' ; echo '   *** INSTALL ABORTED *** ' ; echo ' ' ; exit
+  fi
+
+  if test ! -d arc
+  then
+    mkdir arc
+  fi
+
+# --------------------------------------------------------------------------- #
+# 2. Process requests                                                         #
+# --------------------------------------------------------------------------- #
+# 2.a Requested files
+
+  is="1 2 3 4"
+  for i in $is
+  do
+    OK="$NULL"
+    until test "$OK" = 'y' || test "$OK" = 'Y' || \
+          test "$OK" = 'n' || test "$OK" = 'N'
+    do
+      case $i in
+        1) echo -n "Make guide file ? [y/n] : " ;;
+        2) echo -n "Make manual file ? [y/n] : " ;;
+        3) echo -n "Make model file ? [y/n] : " ;;
+        4) echo -n "Make regtests file  ? [y/n] : " ;;
+      esac
+      read OK
+    done
+
+    if test "$OK" = 'y' || test "$OK" = 'Y'
+    then
+      do_it='y'
+    else
+      do_it='n'
+    fi
+
+    case $i in
+     1) make_gde=$do_it ;;
+     2) make_man=$do_it ;;
+     3) make_mod=$do_it ;;
+     4) make_reg=$do_it ;;
+    esac
+  done
+
+# 2.b File names - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  OK="$NULL"
+  ID="$NULL"
+  until test "$OK" = 'y' || test "$OK" = 'Y'
+  do
+    echo ' '
+    echo -n "Identifier tag for this archive version [$ID] : " ; read ID
+    echo -n "   Are you sure ? [y/-] : " ; read OK
+  done
+  echo ' '
+
+# 2.c Check for existence of files - - - - - - - - - - - - - - - - - - - - - -
+
+  if test -z "$ID"
+  then
+    file_gde="$main_dir/arc/wwatch3.guide.tar"
+    file_man="$main_dir/arc/wwatch3.manual.tar"
+    file_mod="$main_dir/arc/wwatch3.model.tar"
+    file_reg="$main_dir/arc/wwatch3.regtests.tar"
+  else
+    file_gde="$main_dir/arc/wwatch3.$ID.guide.tar"
+    file_man="$main_dir/arc/wwatch3.$ID.manual.tar"
+    file_mod="$main_dir/arc/wwatch3.$ID.model.tar"
+    file_reg="$main_dir/arc/wwatch3.$ID.regtests.tar"
+  fi
+
+  for i in 1 2 3 4
+  do
+    case $i in
+     1) file=$file_gde ; make=$make_gde ;; 
+     2) file=$file_man ; make=$make_man ;; 
+     3) file=$file_mod ; make=$make_mod ;; 
+     4) file=$file_reg ; make=$make_reg ;;
+    esac
+    if test -f $file && test "$make" = 'y'
+    then
+      echo "File $file exists."
+      echo -n "   Replace ? [y/-] : "
+      read OK
+      if test "$OK" != 'y' && test "$OK" != 'Y'
+      then
+        case $i in
+         1) make_gde='n' ;;
+         2) make_man='n' ;;
+         3) make_mod='n' ;;
+         4) make_reg='n' ;;
+        esac
+      fi
+    fi
+  done
+
+# 2.d Final check before action  - - - - - - - - - - - - - - - - - - - - - - -
+
+  action="$NULL"
+  if [ "$make_gde" = 'n' ] && [ "$make_man" = 'n' ] && \
+     [ "$make_mod" = 'n' ] && [ "$make_reg" = 'n' ] 
+  then
+    action='n'
+  else
+    action='y'
+    echo ' '
+    echo 'Files to be generated :'
+    echo '-----------------------'
+    if test "$make_gde" = 'y'
+    then
+      echo "   $file_gde"
+      if [ -f arc/$file_gde ]
+      then
+        rm -f arc/$file_gde
+      fi
+    fi
+    if test "$make_man" = 'y'
+    then
+      echo "   $file_man"
+      if [ -f arc/$file_man ]
+      then
+        rm -f arc/$file_man
+      fi
+    fi
+    if test "$make_mod" = 'y'
+    then
+      echo "   $file_mod"
+      if [ -f arc/$file_mod ]
+      then
+        rm -f arc/$file_mod
+      fi
+    fi
+    if test "$make_reg" = 'y'
+    then
+      echo "   $file_reg"
+      if [ -f arc/$file_reg ]
+      then
+        rm -f arc/$file_reg
+      fi
+    fi
+  fi
+
+  echo ' '
+  echo -n "Continue ? [y/-] : "
+  read OK
+  if test "$OK" != 'y' && test "$OK" != 'Y'
+  then
+    action='n'
+  fi
+  echo ' '
+
+  if test "$action" = 'n'
+  then
+    echo ' '
+    echo '                   *******************************'
+    echo '                 ***       End of program        ***'
+    echo '                   *******************************'
+    echo ' ' ; exit 0
+  fi
+
+# 6.c genarate data tar files  - - - - - - - - - - - - - - - - - - - - - - - -
+
+    mkdir -p ./arc
+ 
+    cd $main_dir/svn
+
+  if test -z "$ID"
+  then
+    echo ' '
+    echo ' No identifier chosen for this archive, please re-run and choose one'
+  else
+    if test "$make_gde" = 'y'
+    then
+      tar cf ${main_dir}/arc/wwatch3.$ID.guide.tar guide --exclude=.svn
+    fi
+    if test "$make_man" = 'y'
+    then
+      tar cf ${main_dir}/arc/wwatch3.$ID.manual.tar manual --exclude=.svn
+    fi
+    if test "$make_mod" = 'y'
+    then
+      tar cf ${main_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn
+    fi
+    if test "$make_reg" = 'y'
+    then
+      tar cf ${main_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
+    fi
+  fi

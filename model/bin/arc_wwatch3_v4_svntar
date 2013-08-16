@@ -1,4 +1,0 @@
-tar cf wwatch3.4.08.guide.tar guide --exclude=.svn
-tar cf wwatch3.4.08.manual.tar manual --exclude=.svn
-tar cf wwatch3.4.08.model.tar model --exclude=.svn
-tar cf wwatch3.4.08.regtests.tar regtests --exclude=.svn
