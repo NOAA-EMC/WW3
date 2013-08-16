@@ -267,7 +267,7 @@
           'set ccolor 60'
           'set cint 50'
           'set clab off'
-          'd depth.' j
+          'd dpt.' j
         endif
 
       endif
