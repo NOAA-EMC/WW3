@@ -63,6 +63,8 @@
     case $key in
      'all'    ) cd $main_dir     ; rm -f obj_????/*.o 
                                    rm -f mod_????/*.mod
+                                   rm -f exe/ww3_*
+                                   rm -f exe/gx_*
                                    rm -f exe/exec_type ;;
 #    'all'    ) cd $main_dir/obj ; rm -f *.o 
 #               cd $main_dir/mod ; rm -f *.mod
