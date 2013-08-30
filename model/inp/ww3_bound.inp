@@ -7,8 +7,9 @@ $
 $ Interpolation method: 1: nearest
 $                       2: linear interpolation
  2 
-$ Verbose
-1
+$
+$ verbose mode [0-1]
+ 0
 $
 $ list of spectra files. These ASCII files use the WAVEWATCH III format
 $ examples of such files can be found at (for example): 

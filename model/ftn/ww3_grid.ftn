@@ -1536,7 +1536,7 @@
       WSC    = 0.333
       FLC    = .TRUE.
       NOSW   = 5
-      FMICHE = 0.75
+      FMICHE = 1.6
       RWNDC  = 1.
 ! Variables for 3D array output
       E3D=0 
@@ -1742,8 +1742,7 @@
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
-        IF (GTYPE.EQ.UNGTYPE)  &
-          WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
+        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
 !
         WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF, US3D, I1US3D, I2US3D,  & 
