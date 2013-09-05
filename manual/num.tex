@@ -1186,7 +1186,7 @@ computed as
 % eq:MLIM
 
 \begin{equation}
-E_m = \frac{1}{16} [ \gamma_{lim}  \tanh ( \bar{k} d ) / \bar{k} ] ^2
+E_m = \frac{1}{16} [ \gamma_{lim} \:\bar{k} \: \tanh ( \bar{k} d ) ] ^2
 \:\:\: , \label{eq:MLIM} 
 \end{equation}
 
@@ -1194,27 +1194,16 @@ E_m = \frac{1}{16} [ \gamma_{lim}  \tanh ( \bar{k} d ) / \bar{k} ] ^2
 where $\gamma_{lim}$ is a factor comparable to $\gamma_M$ in
 Eq.~(\ref{eq:BJ78_Miche}), with the caveat that $\gamma_M$ is representative
 for an individual wave, whereas $\gamma_{lim}$ is representative for the
-significant wave height. For monochromatic waves, the original expression by \cite{art:Miche44} would correspond to $\gamma_{lim} = 0.94$ and
-replacing $H_s$ by the height $H$ of the waves. Here this idea, is applied to random waves. 
-In shallow water, this limit $H_s$ to be less than $\gamma_{lim} d$. 
-
-If the total spectral energy $E$ is larger than the
+significant wave height. If the total spectral energy $E$ is larger than the
 maximum energy $E_m$, the limiter is applied by simply rescaling the spectrum
 by the factor $E/E_m$, loosely following the argumentation from
-\cite{art:EB96} ad used in \para\ref{sec:BJ}. This expression 
+\cite{art:EB96} ad used in \para\ref{sec:BJ}. 
 
 This limiter can be switch on or off in the compilation of the model, and
-$\gamma_{lim}$ can be adjusted by the user. The default is set to $\gamma_{lim} =
-1.6$ because $H_{rms}$ values close to $d$ have indeed been recorded and thus taking a ration 
-$H_s/H_{rms}$ of 1.4, using 1.6 allows this large steepness to be exceeded by some margin. 
-Note that this limiter should be used as a `safety valve' only, and
+$\gamma_{lim}$ can be adjusted by the user (default $\gamma_{lim} =
+0.75$). Note that this limiter should be used as a `safety valve' only, and
 hence that it should be less strict than the breaking criterion in the
-surf-breaking or whitecapping source terms, if these source terms are modeled explicitly.
-
-Also, this limiter does not guarantee that all parts of the spectrum are realistic. Indeed, 
-the use of a mean wavenumber, as in the Komen et al. dissipation, makes it possible to have unrealistically steep 
-short waves in the presence of swell. A future extension of this limiter could be to limit the steepness with a partial spectral integration 
-in frequencies, to make sure that waves of all scales are indeed not too steep. 
+surf-breaking source term, if this source term is modeled explicitly.
 
 
 \pb

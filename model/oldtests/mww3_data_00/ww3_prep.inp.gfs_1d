@@ -1,0 +1,8 @@
+$ WAVEWATCH III Field preprocessor input file
+$ -------------------------------------------
+  'WND' 'LL' T T
+    0. 359.  360  -90. 90. 181
+  'NAME' 4 2 '(I8,I7)' '(16F5.2)'
+    20 'wind.raw'
+$
+$ End of input file

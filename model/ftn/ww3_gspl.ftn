@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Mar-2013 |
+!/                  | Last update :         05-Aug-2013 |
 !/                  +-----------------------------------+
 !/
 !/    24-Sep-2012 : Origination.                        ( version 4.10 )
@@ -25,6 +25,7 @@
 !/    04-Feb-2013 : Testing on zero grid size added.    ( version 4.10 )
 !/                  Corner point in halo for GR1GRD.
 !/    04-Mar-2013 : Adding GrADS output.                ( version 4.10 )
+!/    05-Aug-2013 : Add UQ/UNO for distances.           ( version 4.12 )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2863,8 +2864,8 @@
 !
 !/PR0      NIT    = 0
 !/PR1      NIT    = 2 + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
-!/PR2      NIT    = 3 + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
-!/PR3      NIT    = 3 + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+!/UQ      NIT    = 3 + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+!/UNO      NIT    = 3 + ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 !
 ! 3.b Exand halo
 !

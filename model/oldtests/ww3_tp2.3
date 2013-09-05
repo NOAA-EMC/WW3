@@ -1,0 +1,351 @@
+#!/bin/sh
+#############################################################################
+#                                                                           #
+# ww3_tp2.3 Test script for WW-III, two-dimensional propagation.            #
+#           Garden Sprinkler Effect tests.                                  #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging.                             #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+# - Check the shell script variable 'grads' and section 4.b to generate     #
+#   graphical output using GrADS.                                           #
+# - Several spectral resolutions available in ww3_grid.inp                  #
+# - Several initial conditions available in ww3_strt.inp                    #
+# - Set proper parameters for propagation schemes in ww3_grid.inp           #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Dec 2010     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
+
+ 
+# 0. Preparations -----------------------------------------------------------
+
+  ww3_env='.wwatch3.env'   # setup file
+
+# 0.a Set-up variables
+
+  cd
+  if [ -f $ww3_env ]
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    set `grep WWATCH3_TMP $ww3_env` ; shift
+    temp_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+  path_w="$temp_dir"              # work directory
+  path_e="$main_dir/exe"          # path for executables
+  path_a="$main_dir/aux"          # path for auxiliaries (GrADS)
+  path_o="$main_dir/test"         # path for output files
+# path_o="$main_dir/work"
+
+  grads='yes'                     # run gx_outf and grads [yes/-]
+                                  # set you GrADS environment properly !!
+
+# 0.b Clean-up
+
+  clear
+  rm -f $path_o/ww3_????.out
+  rm -f $path_o/gx_????.out
+  rm -f $path_o/log.ww3
+  rm -f $path_o/test.ww3
+  rm -f $path_o/tab??.ww3
+  rm -f $path_o/*.eps
+
+  cd $path_w
+  rm -f core
+  rm -f *.ww3
+  rm -f *.gs
+  rm -f run_ID
+
+  echo ' ' ; echo ' '
+  echo '                  ======> TEST RUN WAVEWATCH III <====== '
+  echo '                    ==================================   '
+  echo '                                   propagation test'
+  echo '                                   2-D XY garden sprinkler'
+  echo ' '
+
+# 1. Grid pre-processor -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|  Grid preprocessor |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_grid.inp << EOF
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'GARDEN SPRINKLER EFFECT TESTS '
+$
+$ spectral resolutions, choose one
+$ First one for "exact" solution, use with higher grid resolution below
+$ as well as smaller time step
+$
+$  1.0488088  0.04665  29 144  0.
+   1.1  0.04665  15  24  0.
+$  1.21 0.04665   8  24  0.
+$  1.21 0.04665   8  12  0.
+$
+   F T T F F F
+$  900.   900.   900.   900.
+$ 1800.  1800.  1800.  1800.
+  3600.  3600.  3600.  3600.
+$
+$ Activated up to one line per namelist !!
+$
+$ &PRO2 DTIME= 0. /
+$ &PRO2 DTIME=172800. /
+  &PRO2 DTIME=345600. /
+$ &PRO3 WDTHTH=0.00, WDTHCG=0.00 /
+$ &PRO3 WDTHTH=0.75, WDTHCG=0.75 /
+  &PRO3 WDTHTH=1.50, WDTHCG=1.50 /
+$ &PRO3 WDTHTH=2.00, WDTHCG=1.00 /
+$ &PRO4 QTFAC=0.01, RNFAC=0.00, RSFAC=0.00 /
+$ &PRO4 QTFAC=0.01, RNFAC=0.50, RSFAC=0.00 /
+  &PRO4 QTFAC=0.05, RNFAC=0.60, RSFAC=0.60 /
+$ &PRO4 QTFAC=0.05, RNFAC=0.75, RSFAC=0.50 /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+$ 189  149
+$   100.E3   100.E3  4.
+$  -600.E3  -600.E3  1.
+$
+$  95   75
+$   100.E3   100.E3  2.
+$  -600.E3  -600.E3  1.
+$
+   48   38
+    100.E3   100.E3  1.
+   -600.E3  -600.E3  1.
+$
+  -5. 5.75  10  -2500. 4 1 '(....)' 'UNIT' 'input'
+$
+   28161*1
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_grid.out"
+  $path_e/ww3_grid > $path_o/ww3_grid.out
+
+  rm -f ww3_grid.inp
+
+  grep 'PRO' $path_o/ww3_grid.out > run_ID
+
+  if [ ! -s run_ID ]
+  then
+    echo ' '
+    echo '        *** Set !/O0 (O-zero) switch to put run ID on plot *** '
+    echo ' '
+    rm -f run_ID
+  fi
+
+  res=`grep 'Increments' $path_o/ww3_grid.out | awk '{ print $4 }'`
+  unt=`grep 'Increments' $path_o/ww3_grid.out | awk '{ print $2 }'`
+  xfr=`grep 'Increment factor'  $path_o/ww3_grid.out | awk '{ print $4 }'`
+  dth=`grep 'Directional increment'  $path_o/ww3_grid.out | awk '{ print $4 }'`
+
+  echo "Grid resolution $res $unt, spectral resolution XFR = $xfr, $dth degr." > grd_ID
+
+# 2. Initial conditions -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '| Initial conditions |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_strt.inp << EOF
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  1
+$
+$ Initial conditions, choose one
+$
+   0.1  0.010 240.   2  0.E3  150.E3     0.E3  150.E3  2.5
+$  0.1  0.005 240.   2  0.E3  150.E3     0.E3  150.E3  2.5
+$  0.1  0.001 240.   2  0.E3  150.E3     0.E3  150.E3  2.5
+$  0.1  0.001 240. 100  0.E3  150.E3     0.E3  150.E3  2.5
+$  0.1  0.001 270.   2  0.E3  150.E3  1250.E3  150.E3  2.5
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_strt.out"
+  $path_e/ww3_strt > $path_o/ww3_strt.out
+
+  rm -f ww3_strt.inp
+
+# 3. Main program -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Main program    |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_shel.inp << EOF
+$ WAVEWATCH III shell input file
+$ ------------------------------
+   F T
+   F T
+   F T
+   F
+   F
+   F
+   F
+$
+   19680606 000000
+   19680611 000000
+$
+   0
+$
+   19680606 000000  86400  19680611 000000
+     F F F F F   T F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+   19680606 000000      0  19680608 000000
+EOF
+
+  export NCPUS=4
+
+  $path_e/ww3_shel
+
+  rm -f ww3_shel.inp
+
+  echo ' ' ; echo "   Output file log.ww3 routed to $path_o"
+  mv log.ww3 $path_o/.
+  if [ -f test.ww3 ]
+  then
+    echo "   Output file test.ww3 routed to $path_o"
+    mv test.ww3 $path_o/.
+  fi
+
+# 4. Gridded output ---------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|   Gridded output   |'
+  echo '+--------------------+'
+  echo ' '
+
+# 4.a Regular gridded output
+
+cat > ww3_outf.inp << EOF
+$ WAVEWATCH III Grid output post-processing
+$ -----------------------------------------
+  19680606 000000 86400. 6
+$
+  F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F
+$
+  1 0
+$
+  2 47 1 2 37 1 T F F
+EOF
+
+  echo "   Screen output routed to $path_o/ww3_outf.out"
+  $path_e/ww3_outf > $path_o/ww3_outf.out
+
+  rm -f ww3_outf.inp
+
+# 4.b GrADS gridded output
+
+  if [ "$grads" = 'yes' ]
+  then
+
+cat > gx_outf.inp << EOF
+$ WAVEWATCH III Grid output post-processing (GrADS)
+$ -------------------------------------------------
+  19680606 000000 86400. 6
+$
+  F F F F F  T F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F
+$
+  1 999 1 999  F F
+EOF
+
+    echo ' '
+    echo "   Screen output routed to $path_o/gx_outf.out"
+    $path_e/gx_outf > $path_o/gx_outf.out
+
+    rm -f gx_outf.inp
+
+    ln -s $path_a/colorset.gs .
+    ln -s $path_a/cbarn.gs .
+    ln -s $path_a/map2_3.gs   .
+
+# Set up GrADS properly here if necessary !!!
+
+    grads -bpc "run map2_3"
+
+    gxeps -c -i plot.grads -o $path_o/plot.eps
+
+#   cp ww3.grads $path_o/grads.data
+#   cp ww3.ctl   $path_o/grads.ctl
+
+    rm -f *.gs
+    rm -f ww3.grads ww3.ctl plot.grads
+    rm -f run_ID grd_ID
+
+  fi
+
+# 5. Point output -----------------------------------------------------------
+
+# echo ' '
+# echo '+--------------------+'
+# echo '|    Point output    |'
+# echo '+--------------------+'
+# echo ' '
+
+# 6. End, cleaning up -------------------------------------------------------
+
+  echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
+  ls -l *.ww3
+
+  echo ' ' ; echo "Cleaning-up `pwd`"
+  rm -f *.ww3
+
+  echo ' ' ; echo "Files in $path_o :" ; echo ' '
+  cd $path_o
+  ls -l ww3_????.out
+  if [ "$grads" = 'yes' ]
+  then
+    ls -l gx_outf.out
+  fi
+  ls -l *.ww3
+  if [ "$grads" = 'yes' ]
+  then
+    ls -l *.eps
+  fi
+
+  echo ' ' ; echo ' '
+  echo '                  ======>  END OF WAVEWATCH III  <====== '
+  echo '                    ==================================   '
+  echo ' '
+
+# End of ww3_tp2.3 ----------------------------------------------------------

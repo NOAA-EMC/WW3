@@ -1,0 +1,275 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# matrix.comp Compare output of matrix for two model versions.                #
+#                                                                             #
+#    Intended for interactive running only.                                   #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      August 2013            #
+#                                                                             #
+#    Copyright 2013 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Set up
+# 1.a Computer/ user dependent set up
+
+  home_dir=`pwd`
+  base_dir='.'
+  comp_dir='../../wwatch3.trunk/regtests'
+
+# 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
+
+# 1.c Output to ID script  - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo '       ******************************************************'
+  echo '     ***  compare WAVEWATCH III matrix of regression tests  ***'
+  echo '       ******************************************************'
+  echo ' '
+
+  if [ "$#" != '2' ] ; then
+    echo "usage: matrix.comp test case"
+    echo "       test and/or case can be 'all'" ; exit 1 ; fi
+
+  test=$1
+  case=$2
+
+  if [ "$test" = 'all' ] ; then
+    test=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? mww3_test_??` ; fi
+
+  echo "test(s)        : $test"
+  echo "case(s)        : $case"
+  echo "base directory : $base_dir"
+  echo "comp directory : $comp_dir"
+  echo
+
+  if [ ! -d $base_dir ] ; then
+    echo "       directory $base_dir not found." ; exit 2 ; fi
+
+  if [ ! -d $comp_dir ] ; then
+    echo "       directory $comp_dir not found." ; exit 2 ; fi
+
+# --------------------------------------------------------------------------- #
+# 2.  Looping over tests                                                      #
+# --------------------------------------------------------------------------- #
+
+  for tst in $test
+  do
+    cd $home_dir ; cd $base_dir
+    if [ ! -d $tst ]
+    then
+      echo "cannot find $tst in $base_dir, skipping ..."
+    else
+      cd $home_dir ; cd $comp_dir
+      if [ ! -d $tst ]
+      then
+        echo "cannot find $tst in $comp_dir, skipping ..."
+      else
+        cd $tst
+        return_comp=`pwd`
+        cd $home_dir ; cd $base_dir ; cd $tst
+        return_base=`pwd`
+
+# --------------------------------------------------------------------------- #
+# 3.  Looping over work directories                                           #
+# --------------------------------------------------------------------------- #
+
+        if [ "$case" = 'all' ]
+        then
+          cases=`ls -d work*`
+        else
+          cases=$case
+        fi
+
+        for run in $cases
+        do
+          if [ ! -d $run ]
+          then
+            echo "cannot find $run in $base_dir/$run, skipping ..."
+          else
+            cd $return_comp
+            if [ ! -d $run ]
+            then
+              echo "cannot find $run in $comp_dir/$run, skipping ..."
+            else
+
+              echo "* test case $tst test run $run"
+              echo "*********************************************************"
+
+# --------------------------------------------------------------------------- #
+# 4.  Check for files                                                         #
+# --------------------------------------------------------------------------- #
+
+              cd $return_base ; cd $run
+              rm -f diff_tempfile
+              files_1=`ls`
+              nf_1=`echo $files_1 | wc -w | awk '{print $1}'`
+              echo "  found $nf_1 files in base directory"
+
+              cd $return_comp ; cd $run
+              rm -f diff_tempfile
+              files_2=`ls`
+              nf_2=`echo $files_2 | wc -w | awk '{print $1}'`
+              echo "  found $nf_2 files in compare directory"
+
+              cd $return_base ; cd $run
+
+# --------------------------------------------------------------------------- #
+# 5.  Loop over all files in base directory                                   #
+# --------------------------------------------------------------------------- #
+
+              for file in $files_1
+              do
+
+# 5.a Check for buddy file
+
+
+                if [ ! -f $return_comp/$run/$file ]
+                then
+                  echo "     files $file not in compare directory"
+                else
+#                 echo "     files $file found twice"
+                  files_2=`echo $files_2 | sed "s/$file//g" | sed "s/  / /g"`
+
+# 5.a Identify file
+
+                  case "$file" in
+                    log.*           ) form='f' ; do='y' ; drop='y' ;;
+                    restart*.*      ) form='u' ; do='y' ; drop='-' ;;
+                    mod_def*.*      ) form='u' ; do='y' ; drop='-' ;;
+                    out_grd*.*      ) form='u' ; do='y' ; drop='-' ;;
+                    out_pnt*.*      ) form='u' ; do='y' ; drop='-' ;;
+                    current.*       ) form='u' ; do='y' ; drop='-' ;;
+                    wind.*          ) form='u' ; do='y' ; drop='-' ;;
+                    ice.*           ) form='u' ; do='y' ; drop='-' ;;
+                    tab*.ww3        ) form='f' ; do='y' ; drop='-' ;;
+                    ww3_grid*.out   ) form='f' ; do='y' ; drop='-' ;;
+                    ww3_strt*.out   ) form='f' ; do='y' ; drop='-' ;;
+                    ww3_prep*.out   ) form='f' ; do='y' ; drop='-' ;;
+                    ww3_shel.out    ) form='f' ; do='-' ; drop='-' ;;
+                    ww3_multi.out   ) form='f' ; do='-' ; drop='-' ;;
+                    ww3_outf*.out   ) form='f' ; do='y' ; drop='-' ;;
+                    ww3_outp*.out   ) form='f' ; do='y' ; drop='-' ;;
+                    ww3.????????*.* ) form='f' ; do='y' ; drop='-' ;;
+                    *.gs            ) form='f' ; do='y' ; drop='-' ;;
+                    gx_outf*.out    ) form='f' ; do='y' ; drop='-' ;;
+                    gx_outp*.out    ) form='f' ; do='y' ; drop='-' ;;
+                    *.ctl           ) form='f' ; do='y' ; drop='-' ;;
+                    ww3.*           ) form='u' ; do='y' ; drop='-' ;;
+                    prf.*.mww3      ) form='f' ; do='-' ; drop='-' ;;
+                    *               ) echo " *** do not recognize $file ; fix script ..."
+                                      echo ' ' ; exit 5 ;;
+                  esac
+
+                  if [ "$drop" = 'y' ]
+                  then
+                    filter=' (filtered)'
+                  else
+                    filter=
+                  fi
+
+                  if [ "$do" = 'y' ]
+                  then
+
+# 5.b Formatted file, use diff end exclude lines ...
+
+                    if [ "$form" = 'f' ]
+                    then
+                      if [ "$drop" = 'y' ]
+                      then
+                        diff $file $return_comp/$run/. | \
+                          sed -n '/version/!p'         | \
+                          sed -n '/date :/!p'          | \
+                          sed -n '/time :/!p'          | \
+                          sed -n '/Elapsed/!p' > diff_tempfile
+                      else
+                        diff $file $return_comp/$run/. > diff_tempfile
+                      fi
+#                     if [ -f $diff_tempfile ] ; then
+#                       cat diff_tempfile ; fi
+                      if [ -f diff_tempfile ]
+                      then
+                        size_1=`wc -l diff_tempfile | awk '{ print $1}'`
+                        size_2=`grep '\-\-\-' diff_tempfile | wc -l | awk '{ print $1}'`
+                        size_1=`expr $size_1 - $size_2`
+                        if [ "$size_1" = "$size_2" ] || [ "$size_1" = '0' ]
+                        then
+                          rm -f diff_tempfile
+                        fi
+                      fi
+                      if [ ! -f diff_tempfile ]
+                      then
+                        echo "     files $file are identical$filter"
+                      else
+                        echo -n "     files $file differ. Display [y/-] ? "
+                        read OK
+                        if [ "$OK" = 'y' ]
+                        then
+                          echo '-------------------------------------------------------------------'
+                          cat diff_tempfile
+                          echo '-------------------------------------------------------------------'
+                          echo -n "     hit enter to continue ..."
+                          read OK
+                        fi
+                        rm -f diff_tempfile
+                      fi
+
+# 5.c Formatted file, use diff end exclude lines ...
+
+                    else
+                      cmp=`cmp $file -s $return_comp/$run/$file # > diff_tempfile 2> dev/null`
+                      case $? in
+                       0) echo "     files $file are identical (binary)" ;;
+                       1) echo -n "     files $file are different (binary) hit enter to continue ... " ; read OK;;
+                       *) echo "     files $file error in binary compare" ;;
+                      esac
+
+# ... End of 5.a/b/c if tests
+
+                    fi
+                  else
+                    echo "     skipping files $file"
+                  fi
+                fi
+
+# ... End of file loop
+
+#             echo "files_2 = [$files_2]"
+              done
+
+# 5.d Fils in compare directpry only
+
+            for file in $files_2
+            do
+              echo "     file $file in comp directory only ..."
+            done
+            echo 
+
+# --------------------------------------------------------------------------- #
+# 6.  End of all loops outside of 'do' test                                   #
+# --------------------------------------------------------------------------- #
+
+            cd ..
+            fi
+          fi
+        done
+      fi
+    fi
+  done
+
+# --------------------------------------------------------------------------- #
+# 7.  End of script output                                                    #
+# --------------------------------------------------------------------------- #
+
+  echo ' '
+  echo '   *************************************************************'
+  echo ' ***  end of WAVEWATCH III compare matrix of regression tests  ***'
+  echo '   *************************************************************'
+  echo ' '
+
+# --------------------------------------------------------------------------- #
+# End to matrix.comp                                                          #
+# --------------------------------------------------------------------------- #

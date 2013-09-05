@@ -1,0 +1,394 @@
+#!/bin/sh
+#############################################################################
+#                                                                           #
+# ww3_tp1.6 Test script for WW-III, one-dimensional propagation.            #
+#           Wave blocking.                                                  #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: Switch smoothing off to reproduce 2.           #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Dec 2010     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
+
+# 0. Preparations -----------------------------------------------------------
+
+  ww3_env='.wwatch3.env'   # setup file
+
+# 0.a Set-up variables
+
+  cd
+  if [ -f $ww3_env ]
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    set `grep WWATCH3_TMP $ww3_env` ; shift
+    temp_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+  path_w="$temp_dir"              # work directory
+  path_e="$main_dir/exe"          # path for executables
+  path_o="$main_dir/test"         # path for output files
+# path_o="$main_dir/work"
+
+# 0.b Clean-up
+
+  clear
+  rm -f $path_o/ww3_????.out
+  rm -f $path_o/log.ww3
+  rm -f $path_o/test.ww3
+  rm -f $path_o/tab??.ww3
+
+  cd $path_w
+  rm -f *.ww3
+
+  echo ' ' ; echo ' '
+  echo '                  ======> TEST RUN WAVEWATCH III <====== '
+  echo '                    ==================================   '
+  echo '                                   propagation test'
+  echo '                                   colinear wave blocking test'
+  echo ' '
+
+# 1. Grid pre-processor -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|  Grid preprocessor |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_grid.inp << EOF
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'WAVE BLOCKING TEST            '
+$
+   1.1 0.18628  15  8  0.
+$
+   F T F F T F
+  600.  600.  300.  600.
+$
+  &PRO3 WDTHCG = 0., WDTHTH = 0. /
+  &PRO4 RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+  22   3
+    3.E3   3.E3  1.
+   -3.E3  -3.E3  1.
+$
+  -1. 1. 10  -1000. 2 1 '(....)' 'UNIT' 'input'
+$
+  66*1.
+$
+  10  2 1 '(....)' 'PART' 'input'
+$
+   2  2  F
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_grid.out"
+  $path_e/ww3_grid > $path_o/ww3_grid.out
+
+  rm -f ww3_grid.inp
+
+# 2. Initial conditions -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '| Initial conditions |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_strt.inp << EOF
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  1
+   0.3  0.015  270. 100  0. 3.E3  0. 3.E3  1.0
+$  0.3  0.0001 270. 100  0. 3.E3  0. 3.E3  1.0
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_strt.out"
+  $path_e/ww3_strt > $path_o/ww3_strt.out
+
+  rm -f ww3_strt.inp
+
+# 3. Current field ----------------------------------------------------------
+
+  echo ' '
+  echo '+---------------+'
+  echo '| Current field |'
+  echo '+---------------+'
+  echo ' '
+
+cat > ww3_prep.inp << EOF
+$ WAVEWATCH III Field preprocessor input file
+$ --------------------------------------------
+  'CUR'  'AI'  F T
+  19680606  000000
+  'UNIT'  3  1  '(..T..)'  '(..F..)'
+  10 'dummy.name'
+  0. 0. 0. 0. 0. 0. -0.2 -0.4 -0.6 -0.8 -1.0 -1.2 -1.4 -1.6 -1.8
+               -2.0 -2.2 -2.4 -2.6 -2.8 -3.0 -3.0
+  0. 0. 0. 0. 0. 0. -0.2 -0.4 -0.6 -0.8 -1.0 -1.2 -1.4 -1.6 -1.8
+               -2.0 -2.2 -2.4 -2.6 -2.8 -3.0 -3.0
+  0. 0. 0. 0. 0. 0. -0.2 -0.4 -0.6 -0.8 -1.0 -1.2 -1.4 -1.6 -1.8
+               -2.0 -2.2 -2.4 -2.6 -2.8 -3.0 -3.0
+  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. -3. -3. -3. -3. -3. -3. -3. -3. -3. -3. -3.
+$ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. -3. -3. -3. -3. -3. -3. -3. -3. -3. -3. -3.
+$ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. -3. -3. -3. -3. -3. -3. -3. -3. -3. -3. -3.
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_prep.out"
+  $path_e/ww3_prep > $path_o/ww3_prep.out
+
+  rm -f ww3_prep.inp
+
+# 4. Main program -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Main program    |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_shel.inp << EOF
+$ WAVEWATCH III shell input file
+$ ------------------------------
+   F F
+   T F
+   F F
+   F
+   F
+   F
+   F
+$
+   19680606 000000
+   19680607 000000
+$
+   1
+$
+   19680606 000000    900  19680616 000000
+     F T F F F   T F F T T  F F F F F  F F F F F  F F F F F  F F F F F  F
+   19680606 000000    900  19680616 000000
+     0.    0.0    'No curr. 1'
+     3.E3  0.0    'No curr. 2'
+     6.E3  0.0    'No curr. 3'
+     9.E3  0.0    'No curr. 4'
+    12.E3  0.0    'No curr. 5'
+    15.E3  0.0    'U = 0.2m/s'
+    18.E3  0.0    'U = 0.4m/s'
+    21.E3  0.0    'U = 0.6m/s'
+    24.E3  0.0    'U = 0.8m/s'
+    27.E3  0.0    'U = 1.0m/s'
+    30.E3  0.0    'U = 1.2m/s'
+    33.E3  0.0    'U = 1.4m/s'
+    36.E3  0.0    'U = 1.6m/s'
+    39.E3  0.0    'U = 1.8m/s'
+    42.E3  0.0    'U = 2.0m/s'
+    45.E3  0.0    'U = 2.2m/s'
+    48.E3  0.0    'U = 2.4m/s'
+    51.E3  0.0    'U = 2.6m/s'
+    54.E3  0.0    'U = 2.8m/s'
+    57.E3  0.0    'U = 3.0m/s'
+     0.    0.0    'STOPSTRING'
+   19680606 000000      0  19680616 000000
+   19680606 000000      0  19680616 000000
+   19680606 000000      0  19680616 000000
+   19680606 000000      0  19680616 000000
+EOF
+
+  $path_e/ww3_shel
+
+  rm -f ww3_shel.inp
+
+  echo ' ' ; echo "   Output file log.ww3 routed to $path_o"
+  mv log.ww3 $path_o/.
+  if [ -f test.ww3 ]
+  then
+    echo "   Output file test.ww3 routed to $path_o"
+    mv test.ww3 $path_o/.
+  fi
+
+# 5. Gridded output ---------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|   Gridded output   |'
+  echo '+--------------------+'
+  echo ' '
+  echo '   Fields every hour' 
+
+cat > ww3_outf.inp << EOF
+$ WAVEWATCH III Grid output post-processing
+$ -----------------------------------------
+  19680606 000000 3600. 49
+$
+   F F F F F  T F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F
+$
+  1 0
+$
+  2 21 1 2 2 1 F T F
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_outf.out"
+  $path_e/ww3_outf > $path_o/ww3_outf.out
+
+  rm -f ww3_outf.inp
+
+# 6. Point output -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Point output    |'
+  echo '+--------------------+'
+  echo ' '
+  echo '   Spectra at the final time'
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680607 000000   3600. 1
+$
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13
+  14
+  15
+  16
+  17
+  18
+  19
+  20
+  -1
+$
+   1
+   1  0.  -1. 33   F
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_outp.out"
+  $path_e/ww3_outp > $path_o/ww3_outp.out
+
+  echo ' '
+  echo '   Time series of mean wave parameters at grid point 5 '
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 000000   3600. 49
+$
+   5
+  -1
+$
+   2
+   2 55
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_op05.out"
+  $path_e/ww3_outp > $path_o/ww3_op05.out
+
+  echo ' '
+  echo '   Time series of mean wave parameters at grid point 10 '
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 000000   3600. 49
+$
+  10
+  -1
+$
+   2
+   2 60
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_op10.out"
+  $path_e/ww3_outp > $path_o/ww3_op10.out
+
+  echo ' '
+  echo '   Time series of mean wave parameters at grid point 15 '
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 000000   3600. 49
+$
+  15
+  -1
+$
+   2
+   2 65
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_op15.out"
+  $path_e/ww3_outp > $path_o/ww3_op15.out
+
+  echo ' '
+  echo '   Time series of mean wave parameters at grid point 20 '
+
+cat > ww3_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+  19680606 000000   3600. 49
+$
+  20
+  -1
+$
+   2
+   2 70
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_op20.out"
+  $path_e/ww3_outp > $path_o/ww3_op20.out
+
+# 6. End, cleaning up -------------------------------------------------------
+
+  mv tab* $path_o
+
+  echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
+  ls -l *.ww3
+
+  echo ' ' ; echo "Cleaning-up `pwd`"
+  rm -f *.ww3
+
+  echo ' ' ; echo "Files in $path_o :" ; echo ' '
+  cd $path_o
+  ls -l ww3_????.out
+  ls -l *.ww3
+
+  echo ' ' ; echo ' '
+  echo '                  ======>  END OF WAVEWATCH III  <====== '
+  echo '                    ==================================   '
+  echo ' '
+
+# End of ww3_tp1.6 ----------------------------------------------------------

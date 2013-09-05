@@ -1,0 +1,35 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+  'Pacific 1 degree grid          '
+$
+   1.1  0.04118  25  24  0.
+$
+   F T T T F T
+$
+   3600. 1700. 1800. 30.                              
+$
+  &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+END OF NAMELISTS
+$
+$ In this case, the mask is included in the bottom grid,
+$ the obstructions are taken from both neighbouring cells.
+$
+    'RECT' T 'NONE'
+    176    139
+      1.     1.     1.
+    120.   -78.     1.
+     -0.1  2.50  20  0.001 1 1 '(....)' 'NAME' 'Pac_1d.bot'
+                 21  0.010 1 1 '(....)' 'NAME' 'Pac_1d.obs'
+                 10        1 1 '(....)' 'PART' 'dummy'
+$
+      0   0   F
+      0   0   F
+      0   0
+$
+     0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

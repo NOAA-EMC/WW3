@@ -10,41 +10,41 @@ $ section 2.4 of the manual. If the first flag is 'N' then a namelist
 $ is read. See ww3_ounf.inp for an example
 $
 $ (1) Forcing Fields
-  T
+  F
 $ DPT CUR WND DT  WLV ICE IBG D50
-  T   T   T   T   T   T   F   F
+$ T   T   T   T   T   T   F   F
 $ (2) Standard mean wave Parameters
   T
 $ HS  LM  TZ  TE  TM  FP  DIR SPR DP
-  T   T   T   T   T   T   T   T   T
+  T   F   F   F   F   F   F   F   F
 $ (3) Frequency-dependent parameters
-  T
+  F
 $ EF TH1M STH1M TH1M STH1M WN
-  T  T  T  F  F  F
+$ T  T  T  F  F  F
 $ (4) Spectral Partition Parameters
-  T
+  F
 $ PHS PTP PLP PTH PSP PWS WSF PNR
-  T   T   T   T   T   T   T   T
+$ T   T   T   T   T   T   T   T
 $ (5) Atmosphere-waves layer
-  T
+  F
 $ UST CHN CGE FAW TAW NWS WCC WCF WCH WCM
-  T   T   T   T   T   T   T   T   T   T
+$ T   T   T   T   T   T   T   T   T   T
 $ (6) Wave-Ocean layer
-  T
+  F
 $ SXY TWO BHD FOC TUS USS P2S U3D P2L
-  T   T   T   T   T   T   T   F   F   F
+$ T   T   T   T   T   T   T   F   F   F
 $ (7) Wave-bottom layer
-  T
+  F
 $ ABR UBR BED FBB TBB
-  T   T   T   T   T
+$ T   T   T   T   T
 $ (8) Spectrum parameters
-  T
+  F
 $ MSS MSC
-  T   T
+$ T   T
 $ (9) Numerical diagnostics
-  T
+  F
 $ DTD FC  CFX CFD CFK
-  T   T   T   T   T
+$ T   T   T   T   T
 $ (10) User defined (NOEXTR flags needed)
   F
 $  US1  US2

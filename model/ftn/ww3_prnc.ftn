@@ -1248,6 +1248,7 @@
 !/DIST     IF (IAPROC.NE.NAPOUT)  THEN
 !/DIST       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
 !/DIST                       MPI_COMM_WORLD, IERR_MPI )
+!/DIST       WRITE(6,*) 'AFTER SEND IAPROC=',IAPROC
 !/DIST     ELSE
 !/MPIT           DO JX=1,NXL(IAPROC)
 !/MPIT             IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
@@ -1267,7 +1268,7 @@
 !/DIST           IND=0
 !/DIST           DO JX=1,NXL(JPC)
 !/DIST             IX = JX + (JPC-1)*NXLM ! JPC    + (JX-1)*NAPROC
-!
+!/MPIT             WRITE(6,*) 'COUCOU:',JX,IAPROC,IX
 !/DIST             DO J=1,TIDE_MF
 !/DIST               DO K=1,NFIELDS
 !/DIST                 DO L=1,2

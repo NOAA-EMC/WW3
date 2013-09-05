@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Aug-2012 |
+!/                  | Last update :         13-Jul-2012 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -97,7 +97,6 @@
 !/    14-Mar-2012 : Update of BT4, passing PSIC         ( version 4.04 )
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
-!/    28-Aug-2013 : Corrected MLIM application          ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -833,7 +832,7 @@
 !     uses true depth (D_INP) instead of limited depth 
 !
 !/MLIM        IF ( DTTOT .GE. 0.9999*DTG ) THEN
-!/MLIM            HM     = FHMAX *TANH(WNMEAN*MAX(0.,D_INP)) / MAX(1.E-4,WNMEAN )
+!/MLIM            HM     = FHMAX / MAX(1.E-4,WNMEAN * TANH(WNMEAN*MAX(0.,D_INP)))
 !/MLIM            EM     = HM * HM / 16.
 !/MLIM            IF ( EMEAN.GT.EM .AND. EMEAN.GT.1.E-30 ) THEN
 !/MLIM                SPEC   = SPEC / EMEAN * EM

@@ -1,0 +1,31 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+  'Norwegian Sea 12x6min         '
+$
+   1.1  0.04118  25  24  0.
+$
+   F T T T F T
+$
+    900.  360.  900. 30.                              
+$
+  &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+END OF NAMELISTS
+$
+$ In this case, the mask is provided separate from the bottom grid,
+$ the obstructions are taken from both neighbouring cells.
+$
+     'RECT' T 'NONE'
+     71     71
+      0.2    0.1    1.
+      2.    60.5    1.
+     -0.1  2.50  20  0.001 1 1 '(....)' 'NAME' 'Nor_6m.bot'
+                 21  0.010 1 1 '(....)'  NAME  'Nor_6m.obs'
+                 22        1 1 '(....)' 'NAME' 'Nor_6m.mask'
+$
+     0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

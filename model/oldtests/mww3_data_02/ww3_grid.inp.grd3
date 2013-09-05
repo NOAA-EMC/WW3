@@ -1,0 +1,31 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+  'Alaska 1/16 x 1/8 degree grid '
+$
+   1.1  0.04118  25  24  0.
+$
+   F T T T F T
+$
+   450.  150.  225. 30.                              
+$
+  &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+END OF NAMELISTS
+$
+$ In this case, the mask is provided separate from the bottom grid,
+$ the obstructions are taken from both neighbouring cells.
+$
+    'RECT' T 'NONE'
+    585    401
+      2.     1.    16.
+    162.    50.     1.
+     -0.1  2.50  20  0.001 1 1 '(....)' 'NAME' 'coast_4m.bot'
+                 21  0.010 1 1 '(....)' 'NAME' 'coast_4m.obs'
+                 22        1 1 '(....)' 'NAME' 'coast_4m.mask2'
+$
+     0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

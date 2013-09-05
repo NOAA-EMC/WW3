@@ -1,0 +1,429 @@
+#!/bin/sh
+#############################################################################
+#                                                                           #
+# ww3_ts3   Test script for WW-III, moving grid with artificial vortex.     #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/FLn !/LNn !/STn !/NLn !/BTn !/DBn !/TRn !/BSn !/XXn                   #
+#                        Select source term, growth needed, other opt.      #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         3: UQ schemes                                     #   
+#   !/MGx                Moving grid outions.                               #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/SEED               Seeding of spectra on instead of !/LNx.            #
+#   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
+#                                                                           #
+# Remarks :                                                                 #
+# - Check the shell script variable 'grads' and set its environment to      #
+#   generate graphical output using GrADS.                                  #
+# - Running without ww3-strt, should always initalize properly.             #
+#                                                                           #
+#                                              Hendrik Tolman, Nov 2002     #
+#                                                   Last Mod : Dec 2010     #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+############################################################################# 
+
+# 0. Preparations -----------------------------------------------------------
+
+  ww3_env='.wwatch3.env'   # setup file
+
+  grads='yes'                     # run gx_outx and grads [yes/-]
+                                  # set you GrADS environment properly !!
+  maps='yes'                      # plot maps using gx_outf
+  spec='no '                      # plot spectra using gx_outp
+  fort=f77                        # FORTRAN compiler
+
+# 0.a Set-up variables
+
+  cd
+  if [ -f $ww3_env ]
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    set `grep WWATCH3_TMP $ww3_env` ; shift
+    temp_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+  path_w="$temp_dir"              # work directory
+  path_e="$main_dir/exe"          # path for executables
+  path_a="$main_dir/aux"          # path for gs scripts
+  path_o="$main_dir/test"         # path for output files
+# path_o="$main_dir/work"
+
+# 0.b Clean-up
+
+  clear
+  rm -f $path_o/ww3_????.out
+  rm -f $path_o/gx_????.out
+  rm -f $path_o/log.ww3
+  rm -f $path_o/test.ww3
+  rm -f $path_o/tab??.ww3
+  rm -f $path_o/*.ps
+  rm -f $path_o/*.eps
+
+  cd $path_w
+  rm -f *.ww3 *.gs
+
+  echo ' ' ; echo ' '
+  echo '                  ======> TEST RUN WAVEWATCH III <====== '
+  echo '                    ==================================   '
+  echo '                                   moving grid test'
+  echo ' '
+
+# 1. Grid pre-processor -----------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|  Grid preprocessor |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_grid.inp << EOF
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'MOVING GRID TEST              '
+$
+   1.1   0.04  25  24  0.
+$  1.07  0.04  40  36  0.5
+$
+   F T T F F T
+$
+    900.  900.  900.  15.
+$
+$ &MISC PMOVE = 0.0 /                                                         
+  &PRO3 WDTHCG = 2.0, WDTHTH = 2.0 /         
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+  43  43
+$  0.25  0.25  1.
+$ -5.25 -5.25  1.
+    25.E3   25.E3  1.
+  -525.E3 -525.E3  1.
+$
+  -5. 5.75  10  -2500. 4 1 '(....)' 'UNIT' 'input'
+$
+   1849*1
+$
+  10  4 1 '(....)' 'PART' 'input'
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0
+EOF
+
+  echo "   Screen ouput routed to $path_o/ww3_grid.out"
+  $path_e/ww3_grid > $path_o/ww3_grid.out
+
+  rm -f ww3_grid.inp
+
+# 2. Wind fields ------------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '| Wind field         |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > wind.f << EOF
+      program wind
+c
+      integer     nx, ny
+      real        radius, umax, dxy
+c
+      parameter ( nx     = 43 )
+      parameter ( radius = 100. )
+      parameter ( umax   = 35. )
+      parameter ( dxy    = 25. )
+c
+      integer     ixyc, ix, iy
+      real        distx, disty, dist, u10
+      real        u(nx,nx), v(nx,nx)
+c
+      ixyc   = 1 + nx/2
+c
+      do 110, ix=1, nx
+        do 100, iy=1, nx
+          distx  = dxy * real(ix-ixyc)
+          disty  = dxy * real(iy-ixyc)
+          dist   = sqrt ( distx**2 + disty**2 )
+          if ( dist .le. radius ) then
+              u10    = umax * dist / radius
+            else
+              u10    = umax * radius / dist
+            endif
+          if ( dist .gt. 0.1*dxy ) then
+              u(ix,iy) = - u10 * disty / dist
+              v(ix,iy) =   u10 * distx / dist
+            else
+              u(ix,iy) = 0.
+              v(ix,iy) = 0.
+            end if
+  100     continue
+  110   continue
+c
+      write (*,'(10f8.2)') ((u(ix,iy),ix=1,nx),iy=1,nx)
+      write (*,'(10f8.2)') ((v(ix,iy),ix=1,nx),iy=1,nx)
+c
+      end
+EOF
+
+  $fort wind.f -o wind.x
+
+cat > ww3_prep.inp << EOF
+$ WAVEWATCH III Wind preprocessing
+$ --------------------------------
+  'WND' 'AI' F T
+  19680606 000000
+$
+  'UNIT' 2 1 '(..T..)' '(..F..)'
+  10 'dummy_name '
+$
+EOF
+
+  ./wind.x >> ww3_prep.inp
+
+  echo "   Screen ouput routed to $path_o/ww3_prep.out"
+  $path_e/ww3_prep > $path_o/ww3_prep.out
+
+  rm -f ww3_prep.inp wind.f wind.x
+
+# 3. Main program -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Main program    |'
+  echo '+--------------------+'
+  echo ' '
+
+cat > ww3_shel.inp << EOF
+$ WAVEWATCH III shell input file
+$ ------------------------------
+   F T
+   F T
+   T F
+   F
+   F
+   F
+   F
+$
+   19680606 000000
+   19680608 000000
+$
+   0
+$
+   19680606 000000   3600  19680618 000000
+     F F T F F  T F F F F  T T F F F  F F F F F  F F F F F  F F F F F  F
+   19680606 000000   3600  19680618 000000
+$
+       0.E3    0.E3  'center    '
+$
+       0.E3    50E3  '50km_N    '
+       50E3    0.E3  '50km_E    '
+       0.E3   -50E3  '50km_S    '
+      -50E3    0.E3  '50km_W    '
+$
+       0.E3  100.E3  '100km_N   '
+      75.E3   75.E3  '100km_NE  '
+     100.E3    0.E3  '100km_E   '
+      75.E3  -75.E3  '100km_SE  '
+       0.E3 -100.E3  '100km_S   '
+     -75.E3  -75.E3  '100km_SW  '
+    -100.E3    0.E3  '100km_W   '
+     -75.E3   75.E3  '100km_NW  '
+$
+       0.E3  200.E3  '200km_N   '
+     150.E3  150.E3  '200km_NE  '
+     200.E3    0.E3  '200km_E   '
+     150.E3 -150.E3  '200km_SE  '
+       0.E3 -200.E3  '200km_S   '
+    -150.E3 -150.E3  '200km_SW  '
+    -200.E3    0.E3  '200km_W   '
+    -150.E3  150.E3  '200km_NW  '
+$
+       0.E3  300.E3  '300km_N   '
+     225.E3  225.E3  '300km_NE  '
+     300.E3    0.E3  '300km_E   '
+     225.E3 -225.E3  '300km_SE  '
+       0.E3 -300.E3  '300km_S   '
+    -225.E3 -225.E3  '300km_SW  '
+    -300.E3    0.E3  '300km_W   '
+    -225.E3  225.E3  '300km_NW  '
+$
+       0.E3  400.E3  '400km_N   '
+     300.E3  300.E3  '400km_NE  '
+     400.E3    0.E3  '400km_E   '
+     300.E3 -300.E3  '400km_SE  '
+       0.E3 -400.E3  '400km_S   '
+    -300.E3 -300.E3  '400km_SW  '
+    -400.E3    0.E3  '400km_W   '
+    -300.E3  300.E3  '400km_NW  '
+$
+       0.      0.    'STOPSTRING'
+$
+   19680606 000000      0  19680618 000000
+   19680606 000000      0  19680618 000000
+   19680606 000000      0  19680618 000000
+   19680606 000000      0  19680618 000000
+$
+   'MOV' 19680606 000000    5.0     90.
+   'CUR' 19680606 000000    0.0     30.
+   'STP'
+EOF
+  
+  $path_e/ww3_shel
+
+# export NCPUS=6
+# mpirun -np $NCPUS $path_e/ww3_shel
+
+  rm -f ww3_shel.inp
+
+  echo ' ' ; echo "   Output file log.ww3 routed to $path_o"
+  mv log.ww3 $path_o/.
+  if [ -f test.ww3 ]
+  then
+    echo "   Output file test.ww3 routed to $path_o"
+    mv test.ww3 $path_o/.
+  fi
+
+# 4. Gridded output ---------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|   Gridded output   |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ "$grads" = 'yes' ] && [ "$maps" = 'yes' ]
+  then
+
+cat > gx_outf.inp << EOF
+$ WAVEWATCH III Grid output post-processing (GrADS)
+$ -------------------------------------------------
+$ 19680606 000000 3600. 999
+  19680606 000000 21600. 999
+$ 19680606 000000 86400. 999
+$
+  F F T F F  T F F F F  T T F F F  F F F F F  F F F F F F  F F F F F  F
+$
+  1 999 1 999  F F
+EOF
+
+    echo ' '
+    echo "   Screen output routed to $path_o/gx_outf.out"
+    $path_e/gx_outf > $path_o/gx_outf.out
+
+    rm -f gx_outf.inp
+
+    ln -s $path_a/colorset.gs .
+    ln -s $path_a/cbarn.gs .
+    ln -s $path_a/map_s3.gs   .
+
+# Set up GrADS properly here if necessary !!!
+
+    grads -pbc "run map_s3"
+
+    gxeps -c -i plot.grads -o $path_o/plot.eps
+
+    cp ww3.grads $path_o/ww3.grads
+    cp ww3.ctl   $path_o/ww3.ctl
+
+    rm -f *.gs
+    rm -f ww3.grads ww3.ctl plot.grads
+
+  fi
+
+# 5. Point output -----------------------------------------------------------
+
+  echo ' '
+  echo '+--------------------+'
+  echo '|    Point output    |'
+  echo '+--------------------+'
+  echo ' '
+
+  if [ "$grads" = 'yes' ] && [ "$spec" = 'yes' ]
+  then
+  
+cat > gx_outp.inp << EOF
+$ WAVEWATCH III Point output post-processing (GrADS)
+$ --------------------------------------------------
+  19680606 000000  3600.  999
+$ 19680606 000000  21600.  999
+$
+  1
+$ 2
+$ 6
+$14
+$22
+$30
+$-1
+$
+  T T T T T T
+EOF
+
+    echo "   Screen output routed to $path_o/gx_outp.out"
+    $path_e/gx_outp > $path_o/gx_outp.out
+
+    rm -f gx_outp.inp
+
+    ln -s $path_a/colorset.gs .
+    ln -s $path_a/spec.gs     .
+    ln -s $path_a/source.gs   .
+    echo 'script ww3_ts3'        > spec_ids
+    echo 'WAVEWATCH III TEST'   >> spec_ids
+
+# Set up GrADS properly here if necessary !!!
+
+    grads -pc "run spec"
+
+    gxeps -c -i plot.grads -o $path_o/spec.eps
+
+    cp ww3.mean.grads $path_o/ww3.mean.grads
+    cp ww3.spec.ctl   $path_o/ww3.spec.ctl
+    cp ww3.spec.grads $path_o/ww3.spec.grads
+    cp spec_ids       $path_o/spec_ids      
+
+    rm -f *.gs plot.grads spec_ids
+    rm -f ww3.mean.grads ww3.spec.ctl ww3.spec.grads
+
+  fi
+
+# 6. End, cleaning up -------------------------------------------------------
+
+  echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
+  ls -l *.ww3
+
+  echo ' ' ; echo "Cleaning-up `pwd`"
+  rm -f *.ww3
+
+  echo ' ' ; echo "Files in $path_o :" ; echo ' '
+  cd $path_o
+  ls -l ww3_????.out
+  if [ "$grads" = 'yes' ]
+  then
+    ls -l gx_*.out
+  fi
+  ls -l *.ww3
+  if [ "$grads" = 'yes' ]
+  then
+    ls -l *.eps 
+  fi
+
+  echo ' ' ; echo ' '
+  echo '                  ======>  END OF WAVEWATCH III  <====== '
+  echo '                    ==================================   '
+  echo ' '
+
+# End of ww3_ts3 ------------------------------------------------------------

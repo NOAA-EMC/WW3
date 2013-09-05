@@ -1,0 +1,32 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+  'NE Atlantic 1/3 degree grid   '
+$
+   1.1  0.04118  25  24  0.
+$
+   F T T T F T
+$
+   1200.  400. 1200. 30.                              
+$
+$ &PRO3 WDTHCG = 0., WDTHTH = 0. /
+  &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+END OF NAMELISTS
+$
+$ In this case, the mask is provided separate from the bottom grid,
+$ the obstructions are taken from both neighbouring cells.
+$
+    'RECT' T 'NONE'
+    181    106
+      1.     1.     3.
+    -35.    40.     1.
+     -0.1  2.50  20  0.001 1 1 '(....)' 'NAME' 'NEA_20m.bot'
+                 21  0.010 1 1 '(....)'  NAME  'NEA_20m.obs'
+                 22        1 1 '(....)' 'NAME' 'NEA_20m.mask'
+$
+     0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

@@ -55,7 +55,7 @@
   echo ' Type your choice now: '
   read sww3dir
 
-  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ] 
+  if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ] 
   then
 
     ww3_env="${home_dir}/.wwatch3.env"   # setup file
@@ -64,8 +64,6 @@
     then
       set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
       echo "Install directory: " $main_dir
-      mkdir -p $main_dir
-      cp install_ww3_tar wwatch*tar  $main_dir
     else
       echo "Generic wwatch3.env file not found at ${home_dir}          "
       echo 'Enter correct location of env file relative to there.' ; echo ' '
@@ -85,7 +83,7 @@
       echo ' '
     fi
 
-  elif [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
+  elif [ "${sww3dir}" == "L" ] || [ "${sww3dir}" == "l" ]
   then
 
     main_dir=`pwd`
@@ -347,7 +345,7 @@
   cd ${main_dir}
 
 # Make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp work regtests manual guide
+  for dir in aux bin ftn obj mod exe inp oldtests work regtests manual guide
   do
     if [ ! -d $dir ]
     then
@@ -374,9 +372,32 @@
   cd $main_dir/arc_tmp/model/inp
   chmod 644 *.inp track_i.ww3
 
+  cd $main_dir/arc_tmp/model/oldtests
+  chmod 744 ww3_t* mww3_test_*
+  chmod 755 mww3_data_*
+
 # Include regtests in the loop
   cd $main_dir/arc_tmp/regtests/bin
   chmod 744 *
+#  chmod 755 mww3_data_*
+
+#Old test loop
+  for dir in 00 01 02 03
+  do
+    cd $main_dir/arc_tmp/model/oldtests/mww3_data_$dir
+    if [ "$dir" = '00' ]
+    then
+      chmod 644 gfs*
+      chmod 644 ice*
+    else
+      chmod 644 *.bot
+      chmod 644 *.obs*
+      chmod 644 *.mask
+      chmod 644 *.gs
+    fi
+    chmod 644 ww3_*
+
+  done
 
 # New regtests loop (for when mww3_case_?? are included)
 #    for dir in 00 01 02 03
@@ -706,6 +727,122 @@
 # 7. Set-up / update test directory                                           #
 # --------------------------------------------------------------------------- #
 
+  cd $main_dir/arc_tmp/model/oldtests
+  tmp_files=`ls`
+  all_files=
+  all_dirs=
+  for file in $tmp_files
+  do
+    if [ -d $file ]
+    then
+      all_dirs="$all_dirs $file"
+    else
+      all_files="$all_files $file"
+    fi
+  done
+  cd $main_dir/oldtests
+  echo ' '
+
+  echo ' ' ; echo ' '
+  echo ' ********************************'
+  echo '*** Set up / update directories ***'
+  echo ' *****************************************************************'
+  echo "    Directory `pwd`"
+
+# 7.a Sets of test cases
+
+  for list in 1 2 3 4
+  do
+    echo ' '
+    cd ../arc_tmp/model/oldtests
+    case $list in 
+      1) echo 'Propagation tests :' ; \
+         echo '-------------------' ; files=`ls ww3_tp*` ;;
+      2) echo 'Source term tests :' ; \
+         echo '-------------------' ; files=`ls ww3_ts*` ;;
+      3) echo 'Multi-scale tests :' ; \
+         echo '-------------------' ; \
+               files=`ls mww3_test_* mww3_case_*` ;;
+      4) echo 'Other tests :' ; \
+         echo '-------------' ; files=$all_files ;;
+    esac
+    cd $main_dir/oldtests
+   
+    nr_old=0
+
+    if [ -z "$files" ]
+    then 
+      echo '   No files found'
+    else
+      for file in $files
+      do
+        if [ -f $file ]
+        then
+          nr_old=`expr $nr_old + 1`
+        else
+          nr_new=`expr $nr_new + 1`
+          echo "   New copy $file ..."
+        fi
+        cp -f  ../arc_tmp/model/oldtests/$file .
+        tmp_files=$all_files
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
+      done
+      if [ "$nr_old" != '0' ]
+      then
+        echo "   $nr_old existing copies found."
+      fi
+    fi
+  done
+
+# 7.b Directories
+
+  echo ' '
+  echo 'Data directories :'
+  echo '------------------'
+
+  for dir in $all_dirs
+  do
+    if [ ! -d $main_dir/oldtests/$dir ]
+    then
+      mkdir $main_dir/oldtests/$dir
+      echo "   Making directory $dir ..."
+    else
+      echo "   Checking directory $dir ..."
+    fi
+
+    cd $main_dir/arc_tmp/model/oldtests/$dir
+    files=`ls`
+    cd $main_dir/oldtests/$dir
+    nr_old=0
+
+    if [ -z "$files" ]
+    then 
+      echo '      No files found'
+    else
+      for file in $files
+      do
+        if [ -f $file ]
+        then
+          nr_old=`expr $nr_old + 1`
+        else
+          nr_new=`expr $nr_new + 1`
+          echo "      New copy $file ..."
+        fi
+        cp -f  ../../arc_tmp/model/oldtests/$dir/$file .
+        tmp_files=$all_files
+        all_files=`echo $tmp_files | sed -e "s/$file//"`
+      done
+      if [ "$nr_old" != '0' ]
+      then
+        echo "      $nr_old existing copies found."
+      fi
+    fi
+
+  done
+
+  cd $main_dir/oldtests
+  cp -f  ../bin/switch .
+
 # --------------------------------------------------------------------------- #
 # 7.1 Set-up / update regtests directory                                           #
 # --------------------------------------------------------------------------- #
@@ -875,7 +1012,7 @@
         nr_new=`expr $nr_new + 1`
         echo "   New copy $file ..."
       fi
-      cp -f ../arc_tmp/${newdir}/$file .
+      ln -sf ../arc_tmp/${newdir}/$file
     done
     if [ "$nr_old" != '0' ]
     then
@@ -909,20 +1046,10 @@
   echo "Note that 'comp' and 'link' and 'switch' are user supplied ...."
   echo ' '
 
-  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ]
-  then
-    echo ' '
-    echo " Your codes were installed at: ${main_dir} "
-    echo ' '
-    echo ' Make sure you cd to that directory to find the full installation '
-    echo " following the setting of your generic $HOME/.wwatch.env file."
-    echo ' '
-    echo ' '
-  fi
-  echo ' ' 
+  echo ' ' ; echo ' '
   echo '                    *******************************'
   echo '                  ***       End of program        ***'
   echo '                    *******************************'
   echo ' '
-  
+
 # end of script ------------------------------------------------------------- #

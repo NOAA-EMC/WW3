@@ -100,7 +100,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '4.11 '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '4.12 '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
           &"PUT_SW1&
           &PUT_SW2&
@@ -1596,9 +1596,9 @@
 !/MPI            IF ( FLGRDALL( 3,J)) NRQMAX = NRQMAX +               &
 !/MPI                                        E3DF(3,J) - E3DF(2,J) + 1
 !/MPI            END DO
-!/MPI          IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX +               &
+!/MPI          IF ( FLGRDALL( 6,10)) NRQMAX = NRQMAX +               &
 !/MPI                                          P2MSF(3) - P2MSF(2) + 1
-!/MPI          IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK
+!/MPI          IF ( FLGRDALL( 6, 9) ) NRQMAX = NRQMAX + 2*NK
 !
 !/MPI          IF ( NRQMAX .GT. 0 ) THEN 
 !/MPI              ALLOCATE ( OUTPTS(IMOD)%OUT1%IRQGO(NRQMAX) )
@@ -1999,7 +1999,7 @@
 !/MPIT      WRITE (NDST,9011) IH, ' 6/07', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
 !
-!/MPI              IF ( FLGRDALL( 6, 8) ) THEN
+!/MPI              IF ( FLGRDALL( 6, 9) ) THEN
 !/MPI                  DO IK=1,2*NK
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
@@ -2009,7 +2009,7 @@
 !/MPI                    END DO
 !/MPI                END IF
 !      
-!/MPI             IF ( FLGRDALL( 6, 9) ) THEN     
+!/MPI             IF ( FLGRDALL( 6,10) ) THEN     
 !/MPI                      DO K=P2MSF(2),P2MSF(3)
 !/MPI                        IH     = IH + 1
 !/MPI                        IT     = IT + 1
@@ -2573,7 +2573,7 @@
 !/MPIT      WRITE (NDST,9011) IH, ' 6/07', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                  END IF
 !
-!/MPI                IF ( FLGRDALL( 6, 8) ) THEN
+!/MPI                IF ( FLGRDALL( 6, 9) ) THEN
 !/MPI                    DO IK=1,2*NK
 !/MPI                      IH     = IH + 1
 !/MPI                      IT     = IT + 1
@@ -2583,7 +2583,7 @@
 !/MPI                      END DO
 !/MPI                  END IF
 !      
-!/MPI                IF (  FLGRDALL( 6, 9) ) THEN
+!/MPI                IF (  FLGRDALL( 6, 10) ) THEN
 !/MPI                      DO K=P2MSF(2),P2MSF(3)
 !/MPI                        IH     = IH + 1
 !/MPI                        IT     = IT + 1
