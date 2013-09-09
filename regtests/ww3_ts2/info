@@ -27,7 +27,7 @@
 #         interactions. This leads to longer wiggling of the results in     #
 #         near stationary conditions, and also appears to be the reason     #
 #         for slight directional instabilities in this fetch-limited        #
-#         test. If the third order scheme is to be used, the !/PR2_UQ option   #
+#         test. If the third order scheme is to be used, the !/PR2 option   #
 #         with DTIME set as suggested in this script gives the most stable  #
 #         results. Directional instabilities disappear of the initial       #
 #         direction is shifted by half a directional step, using grid       #
@@ -52,28 +52,20 @@
 #       grid offset by 0.5 Dtheta                                           #
 #   * switch options : (self explanatory)                                   #
 #       - switch_ST1_PR1                                                    #
-#       - switch_ST1_PR2_UNO                                                #
-#       - switch_ST1_PR2_UQ                                                 #
-#       - switch_ST1_PR3_UNO                                                #
-#       - switch_ST1_PR3_UQ                                                 #
+#       - switch_ST1_PR2                                                    #
+#       - switch_ST1_PR3                                                    #
 #       - switch_ST2_PR1                                                    #
-#       - switch_ST2_PR2_UNO                                                #
-#       - switch_ST2_PR2_UQ                                                 #
-#       - switch_ST2_PR3_UNO                                                #
-#       - switch_ST2_PR3_UQ                                                 #
+#       - switch_ST2_PR2                                                    #
+#       - switch_ST2_PR3                                                    #
 #       - switch_ST3_PR1                                                    #
-#       - switch_ST3_PR2_UNO                                                #
-#       - switch_ST3_PR2_UQ                                                 #
-#       - switch_ST3_PR3_UNO                                                #
-#       - switch_ST3_PR3_UQ                                                 #
+#       - switch_ST3_PR2                                                    #
+#       - switch_ST3_PR3                                                    #
 #       - switch_ST4_PR1 (default)                                          #
-#       - switch_ST4_PR2_UNO                                                #
-#       - switch_ST4_PR2_UQ                                                 #
-#       - switch_ST4_PR3_UNO                                                #
-#       - switch_ST4_PR3_UQ                                                 #
+#       - switch_ST4_PR2                                                    #
+#       - switch_ST4_PR3                                                    #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Aug 2013     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

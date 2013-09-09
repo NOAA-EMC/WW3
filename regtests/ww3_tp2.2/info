@@ -26,19 +26,15 @@
 #   * GSE correction is enabled. To disable GSE correction                  #
 #     comment/uncomment the appropriate lines in ww3_grid.inp.              #
 #   * switch options (mostly self-explanatory).                             #
-#     + switch_PR1     : First order scheme                                 #
-#     + switch_PR2_UNO : UQ scheme with diffusion                           #
-#     + switch_PR2_UQ  : UQ scheme with diffusion                           #
-#     + switch_PR3_UNO : UQ scheme with averaging  (default)                #
-#     + switch_PR3_UQ  : UQ scheme with averaging  (default)                #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion                               #
+#     + switch_PR3 : UQ scheme with averaging  (default)                    #
 #     + switch_PR1_MPI                                                      #
-#     + switch_PR2_UNO_MPI                                                  #
-#     + switch_PR2_UQ_MPI                                                   #
-#     + switch_PR3_UNO_MPI                                                  #
-#     + switch_PR3_UQ_MPI                                                   #
+#     + switch_PR2_MPI                                                      #
+#     + switch_PR3_MPI                                                      #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Aug 2013     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

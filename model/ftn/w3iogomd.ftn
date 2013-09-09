@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Apr-2013 |
+!/                  | Last update :         21-Aug-2013 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -36,6 +36,7 @@
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    15-Apr-2013 : New subroutine to read param. names ( version 4.10 )
+!/    21-Aug-2013 : Bug correction in W3IOGO: UBR, ABR  ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -202,8 +203,8 @@
       DO I=1,5
         IF (E3DF(1,I).LE. 0.OR.E3DF(3,I) .LT.E3DF(2,I))  FLGRD(3,I)=.FALSE.
         END DO
-      IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) FLGRD(6,9)=.FALSE.
-      IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) FLGRD(6,10)=.FALSE.
+      IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) FLGRD(6,8)=.FALSE.
+      IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) FLGRD(6,9)=.FALSE.
       RETURN
 !
       END SUBROUTINE W3FLGRDUPDT
@@ -854,7 +855,7 @@
 !   Integration over seismic radian frequency : *2*dsigma
 !
               PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
-              IF ( FLOGRD (6, 10).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
+              IF ( FLOGRD (6, 9).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
                 P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI  
               IF (FACTOR2 .GT. ETTPMM(JSEA)) THEN
                 ETTPMM(JSEA) = FACTOR2 
@@ -1314,7 +1315,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Dec-2012 |
+!/                  | Last update :         23-Aug-2013 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -1339,6 +1340,7 @@
 !/                  (F. Ardhuin) 
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
+!/    21-Aug-2013 : Added missing cos,sin for UBA, ABA  ( version 4.11 )
 !  1. Purpose :
 !
 !     Read/write gridded output.
@@ -1347,7 +1349,7 @@
 !
 !     Fields in file are determined by flags in FLOGRD in W3ODATMD.
 !
-! First two columns: fields in gx_outf (GXO) and ww3_grib (GRB)
+! Firt two columns: fields in gx_outf (GXO) and ww3_grib (GRB)
 !
 ! G  G
 ! R  X Grp  Param Code     Output  Parameter/Group
@@ -1995,11 +1997,33 @@
 !     Section 7)
 !
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
-                    WRITE ( NDSOG ) ABA(1:NSEA)
-                    WRITE ( NDSOG ) ABD(1:NSEA)
+                    DO ISEA=1, NSEA
+                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
+                          AUX1(ISEA) = ABA(ISEA)*COS(ABD(ISEA))
+                          AUX2(ISEA) = ABA(ISEA)*SIN(ABD(ISEA))
+                        ELSE
+                          AUX1(ISEA) = UNDEF
+                          AUX2(ISEA) = UNDEF
+                        END IF
+                      END DO
+                    WRITE ( NDSOG ) AUX1
+                    WRITE ( NDSOG ) AUX2
+                    !WRITE ( NDSOG ) ABA(1:NSEA)
+                    !WRITE ( NDSOG ) ABD(1:NSEA)
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
-                    WRITE ( NDSOG ) UBA(1:NSEA)
-                    WRITE ( NDSOG ) UBD(1:NSEA)
+                    DO ISEA=1, NSEA
+                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
+                          AUX1(ISEA) = UBA(ISEA)*COS(UBD(ISEA))
+                          AUX2(ISEA) = UBA(ISEA)*SIN(UBD(ISEA))
+                        ELSE
+                          AUX1(ISEA) = UNDEF
+                          AUX2(ISEA) = UNDEF
+                        END IF
+                      END DO
+                    WRITE ( NDSOG ) AUX1
+                    WRITE ( NDSOG ) AUX2
+!                    WRITE ( NDSOG ) UBA(1:NSEA)
+!                    WRITE ( NDSOG ) UBD(1:NSEA)
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
                     WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
                     WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)

@@ -16,7 +16,7 @@
 # programs used :                                                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      August 2013            #
+#                                                      July 2013              #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -123,18 +123,12 @@
                                    touch ww3_grib.ftn
                                    touch gx_outp.ftn
                                    touch gx_outf.ftn ;;
-     'GSE'    ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+     'prop'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3adatmd.ftn
                                    touch w3iogrmd.ftn
                                    touch w3wavemd.ftn
                                    touch wmgridmd.ftn
                                    touch ww3_grid.ftn ;; 
-     'prop'   ) cd $main_dir/ftn ; touch w3iogrmd.ftn
-                                   touch w3pro2md.ftn
-                                   touch w3pro3md.ftn
-                                   touch wmgridmd.ftn
-                                   touch ww3_grid.ftn
-                                   touch ww3_gspl.ftn ;; 
      'stress' ) cd $main_dir/ftn ; touch w3srcemd.ftn
                                    touch w3gdatmd.ftn
                                    touch w3iogrmd.ftn

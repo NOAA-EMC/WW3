@@ -574,7 +574,7 @@
       LOGICAL                 :: FLFRQ, FLDIR
 !/T      LOGICAL                 :: LTEMP(NGRPP)
       CHARACTER               :: OLDTID*8, FNAME*16, FNAMENC*50,      &
-                                 ENAME*6,FORMF*11, UNITS*20
+                                 ENAME*6,FORMF*11, UNITS*20, UNITS2*20
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
 !/
@@ -670,6 +670,8 @@
 !
             FLFRQ = .FALSE.
             FLDIR = .FALSE.
+            UNITS2='SAME'
+            IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
 
             IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.5
@@ -974,22 +976,23 @@
               vmax = 360
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
-              IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               NFIELD = 1
               FLFRQ  = .TRUE.
-              FSC     = 0.0004
               varnm(1)='ef'
               varnl(1)='wave_elevation_spectrum'
               varng(1)=varns(1)
               varnc(1)=''
-              IF (NCVARTYPE.EQ.2) THEN 
+              IF (NCVARTYPE.LE.3) THEN 
                 UNITS  = 'log10(m2s+1E-12)'
                 varns(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+                FSC     = 0.0004
               ELSE
                 UNITS  = 'm2/Hz'
                 varns(1)='power_spectral_density_of_surface_elevation'
+                FSC     = 1.
                 END IF
               ENAME  = '.ef'
+              varng(1)=varns(1)
               varng(1)=varns(1)
               I1F=E3DF(2)
               I2F=E3DF(3)
@@ -1002,7 +1005,6 @@
               vmax = 32000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
-              IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               NFIELD = 1
               FLFRQ  = .TRUE.
               FSC     = 0.1
@@ -1023,7 +1025,6 @@
               vmax = 900
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
-              IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               NFIELD = 1
               FLFRQ  = .TRUE.
               FSC     = 0.01
@@ -1044,7 +1045,6 @@
               vmax = 90
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
-              IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               NFIELD = 1
               FLFRQ  = .TRUE.
               FSC     = 0.1
@@ -1065,7 +1065,6 @@
               vmax = 900
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
-              IF (NCVARTYPEI.EQ.3) NCVARTYPE=2
               NFIELD = 1
               FLFRQ  = .TRUE.
               FSC     = 0.01
@@ -1293,6 +1292,7 @@
               vmax = 9990
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
+              IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               FSC    = 0.1
               UNITS  = 'Wm-2'
               ENAME  = '.faw'
@@ -1491,6 +1491,7 @@
               vmax = 1000
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
+              IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               FSC    = 0.1
               UNITS  = 'W/m2'
               ENAME  = '.foc'
@@ -1669,22 +1670,6 @@
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABD(1:NSEA)       &
                                                         , MAPSF, XY )
-              DO ISEA=1, NSEA
-                IF ( ABA(ISEA) .NE. UNDEF ) THEN
-                    AABS   = SQRT(ABA(ISEA)**2+ABD(ISEA)**2)
-                    IF ( AABS .GT. 0.005 ) THEN
-                        ABD(ISEA) = MOD ( 630. -                    &
-                              RADE*ATAN2(ABD(ISEA),ABA(ISEA)) , 360. )
-                      ELSE
-                        ABD(ISEA) = UNDEF
-                      END IF
-                    ABA(ISEA) = AABS
-                  END IF
-                END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABA(1:NSEA)       &
-                                                        , MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABD(1:NSEA)       &
-                                                        , MAPSF, X2 )
 
               NFIELD=2
               varnm(1)='uabr'
@@ -1708,22 +1693,6 @@
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
                                                         , MAPSF, XY )
-              DO ISEA=1, NSEA
-                IF ( UBA(ISEA) .NE. UNDEF ) THEN
-                    UABS   = SQRT(UBA(ISEA)**2+UBD(ISEA)**2)
-                    IF ( UABS .GT. 0.005 ) THEN
-                        UBD(ISEA) = MOD ( 630. -                    &
-                              RADE*ATAN2(UBD(ISEA),UBA(ISEA)) , 360. )
-                      ELSE
-                        UBD(ISEA) = UNDEF
-                      END IF
-                    UBA(ISEA) = UABS
-                  END IF
-                END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBA(1:NSEA)       &
-                                                        , MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
-                                                        , MAPSF, X2 )
               NFIELD=2
               varnm(1)='uubr'
               varnm(2)='vubr'
@@ -1944,7 +1913,7 @@
 !
 ! 
             UNITVAR(:)=UNITS
-            IF (J.EQ.44) UNITVAR(2)='s'
+            IF (UNITS2.NE.'SAME') UNITVAR(2)=UNITS2
 !
 ! 2.b Make map
 !
@@ -2918,7 +2887,9 @@
 ! Global attributes
 !
       iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_version_number' ,TRIM(WWVER))   
+      call check_err(iret)
       iret=nf90_put_att(ncid,NF90_GLOBAL,'WAVEWATCH_III_switches',TRIM(SWITCHES))
+      call check_err(iret)
 !/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
 !/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
 !/ST4    IF (BBETA.NE.1.52)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
@@ -2933,6 +2904,7 @@
             strl=LEN_TRIM(attname)
             strl2=LEN_TRIM(attval)
             iret=nf90_put_att(ncid,NF90_GLOBAL,attname(1:strl),attval(1:strl2))
+            call check_err(iret)
           END IF
         END DO
       ENDIF

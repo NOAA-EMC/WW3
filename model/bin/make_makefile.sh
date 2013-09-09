@@ -11,9 +11,9 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      July 2013              #
+#                                                      Sep 2012               #
 #                                                                             #
-#    Copyright 2009-2013 National Weather Service (NWS),                      #
+#    Copyright 2009-2012 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -86,7 +86,7 @@
     $new_sw all
   fi
 
-  for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid GSE \
+  for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid \
               prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche \
               mgwind mgprop mggse nnt mprf reflection mcp netcdf \
@@ -132,12 +132,9 @@
       lrecl  ) TY='one'
                ID='word length in record length'
                OK='LRB4 LRB8' ;;
-      GSE    ) TY='one'
-               ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX' ;;
       prop   ) TY='one'
                ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO' ;;
+               OK='PR0 PR1 PR2 PR3 PRX' ;;
       stress ) TY='one'
                ID='stress computation'
                OK='FLX0 FLX1 FLX2 FLX3 FLXX' ;;
@@ -180,7 +177,7 @@
                ID='wind interpolation in space'
                OK='WNX0 WNX1 WNX2' ;;
       rwind  ) TY='upto1'
-                ID='wind vs. current definition'
+               ID='wind vs. current definition'
                TS='RWND'
                OK='RWND' ;;
       curr   ) TY='one'
@@ -314,7 +311,6 @@
       mpiexp ) mpiexp=$sw ;;
       thr0   ) nr_thr=`expr $nr_thr + $n_found` ;;
       thr1   ) nr_thr=`expr $nr_thr + $n_found` ;;
-      GSE    ) g_switch=$sw ;;
       prop   ) p_switch=$sw ;;
       s_ln   ) s_ln=$sw ;;
       source ) s_inds=$sw ;;
@@ -344,16 +340,11 @@
       echo ' ' ; exit 5
   fi
 
-  case $g_switch in
+  case $p_switch in
    PR0) pr=$NULL ;;
    PR1) pr='w3profsmd w3pro1md' ;;
-   PR2) pr='w3profsmd w3pro2md' ;;
-   PR3) pr='w3profsmd w3pro3md' ;;
-  esac 
-
-  case $p_switch in
-   UQ ) pr="$pr w3uqckmd" ;;
-   UNO) pr="$pr w3uno2md" ;;
+   PR2) pr='w3profsmd w3uqckmd w3pro2md' ;;
+   PR3) pr='w3profsmd w3uqckmd w3pro3md' ;;
   esac 
 
   case $stress in
@@ -774,7 +765,7 @@
                W3TRIAMD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
                W3IOSFMD W3PARTMD \
-               W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3UNO2MD W3PROFSMD \
+               W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3PROFSMD \
                W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLXXMD \
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRCXMD \
                W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD \
@@ -802,8 +793,7 @@
          'W3PRO3MD'     ) modtest=w3pro3md.o ;;
          'W3PRO4MD'     ) modtest=w3pro4md.o ;;
          'W3UQCKMD'     ) modtest=w3uqckmd.o ;;
-         'W3UNO2MD'     ) modtest=w3uno2md.o ;;
-         'W3PROFSMD'    ) modtest=w3profsmd.o ;;
+         'W3PROFSMD'     ) modtest=w3profsmd.o ;;
          'W3PROXMD'     ) modtest=w3proxmd.o ;;
          'W3SRCEMD'     ) modtest=w3srcemd.o ;;
          'W3FLX1MD'     ) modtest=w3flx1md.o ;;

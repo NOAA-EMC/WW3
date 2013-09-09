@@ -24,14 +24,12 @@
 #       - Xrange = -180:179 deg, Yrange = -1:1 deg                          #
 #     + Spectral grid: ntheta =  4, nf =  3, f1 = 0.03679, fgamma = 1.1     #
 #   * switch options :                                                      #
-#     + switch_PR1     : First order scheme                                 #
-#     + switch_PR2_UNO : UNO scheme with diffusion (off)                    #
-#     + switch_PR2_UQ  : UQ scheme with diffusion (off)                     #
-#     + switch_PR3_UNO : UNO scheme with averaging (off)                    #
-#     + switch_PR3_UQ  : UQ scheme with averaging (off) (default)           #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Aug 2013     #
+#                                                   Last Mod : Jul 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

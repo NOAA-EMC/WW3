@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |           W. E. Rogers            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Aug-2013 |
+!/                  | Last update :         05-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination WMGLOW, WMGHGH, WMRSPC. ( version 3.08 )
@@ -37,11 +37,10 @@
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
 !/    05-Sep-2012 : Implementation of UNGTYPE with SCRIP
 !/                       (Mathieu Dutour Sikiric, IRB; Aron Roland, Z&P)
-!/    21-Sep-2012 : Modify WMGHGH to support SCRIP remap( version 4.11 )
+!/    21-Sep-2012 : Modify WMGHGH to support SCRIP remap( version 4.XX )
 !/                  write/read capabilities (K. Lind, NRL)
-!/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/
-!/    Copyright 2009-2013 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -87,8 +86,6 @@
 !  6. Switches :
 !
 !     !/PRn  propagation scheme.
-!     !/UQ   propagation scheme.
-!     !/UNO  propagation scheme.
 !
 !     !/SHRD Distributed memory approach
 !     !/DIST
@@ -938,7 +935,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |           W. E. Rogers            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Aug-2013 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination.                        ( version 3.08 )
@@ -957,10 +954,9 @@
 !/                  (W. E. Rogers, NRL)
 !/    02-Aug-2011 : Adapted for use with irregular      ( version 3.14+)
 !/                  grids (W. E. Rogers, NRL)
-!/    21-Sep-2012 : Modified to implement SCRIP remap   ( version 4.11 )
+!/    21-Sep-2012 : Modified to implement SCRIP remap   ( version 4.XX )
 !/                  file read and write option
 !/                  (K. R. Lind, NRL)
-!/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/
 !  1. Purpose :
 !
@@ -2624,8 +2620,8 @@
 
 !/PR0            NIT    = 0
 !/PR1            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
-!/UQ            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
-!/UNO            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+!/PR2            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+!/PR3            NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 
             IDSTLA=2
             IDSTHA=NX-1
@@ -3037,7 +3033,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Aug-2013 |
+!/                  | Last update :         23-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    24-Apr-2006 : Origination.                        ( version 3.09 )
@@ -3057,7 +3053,6 @@
 !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/
 !  1. Purpose :
 !
@@ -3492,8 +3487,8 @@
 !
 !/PR0        NIT    = 0
 !/PR1        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 1
-!/UQ        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
-!/UNO        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+!/PR2        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
+!/PR3        NIT    = ( 1 + INT(DTMAX/DTCFL-0.001) ) * 3
 !
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
             IXL    =  1

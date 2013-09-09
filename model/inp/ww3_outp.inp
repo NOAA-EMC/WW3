@@ -19,7 +19,7 @@ $ mandatory end of list
 $
 $ Output type ITYPE [0,1,2,3]
 $
-  1
+  2
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
 $            No additional input, the above time range is ignored.
@@ -35,7 +35,7 @@ $          - Unit number for transfer file, also used in table file
 $            name.
 $          - Flag for unformatted transfer file.
 $
-  1   0.  0.  33  F
+$ 3   0.  0.  33  F
 $
 $ The transfer file contains records with the following contents.
 $

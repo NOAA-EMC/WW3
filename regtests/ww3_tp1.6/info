@@ -27,11 +27,9 @@
 #   * nearly wave blocking (moderate currents)                              #
 #   * grid definition same as blocking case                                 #
 #   * switch options :                                                      #
-#     + switch_PR1     : First order scheme                                 #
-#     + switch_PR2_UNO : UNO scheme with diffusion (off)                    #
-#     + switch_PR2_UQ  : UQ scheme with diffusion (off)                     #
-#     + switch_PR3_UNO : UNO scheme with averaging (off)                    #
-#     + switch_PR3_UQ  : UQ scheme with averaging (off) (default)           #
+#     + switch_PR1 : First order scheme                                     #
+#     + switch_PR2 : UQ scheme with diffusion (off)                         #
+#     + switch_PR3 : UQ scheme with averaging (off) (default)               #
 # - Test case input_moderate_current:                                       #
 #   * Current too weak to block wave propagation.                           #
 #   * All else as in default tests.                                         #

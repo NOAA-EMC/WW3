@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2013 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -28,10 +28,8 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    26-Dec-2012 : More initializations.               ( version 4.11 )
-!/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
-!/                  and second order schemes.           ( version 4.12 )
 !/
-!/    Copyright 2009-2013 National Weather Service (NWS),
+!/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -67,12 +65,8 @@
 !     ----------------------------------------------------------------
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      W3QCK1    Subr. W3UQCKMD Regular grid UQ scheme.
-!      W3QCK2    Subr.   Id.    Irregular grid UQ scheme.
-!      W3QCK3    Subr.   Id.    Regular grid UQ scheme + obstructions.
-!      W3UNO2    Subr. W3UNO2MD UNO2 scheme for irregular grid.
-!      W3UNO2r   Subr.   Id.    UNO2 scheme reduced to regular grid.
-!      W3UNO2s   Subr.   Id.    UNO2 regular grid with subgrid
-!                               obstruction.
+!      W3QCK2    Subr. W3UQCKMD Irregular grid UQ scheme.
+!      W3QCK3    Subr. W3UQCKMD Regular grid UQ scheme + obstructions.
 !     ----------------------------------------------------------------
 !
 !  5. Remarks :
@@ -81,9 +75,6 @@
 !       points to avoid that leaking through barriers occurs.
 !
 !  6. Switches :
-!
-!       !/UQ    3rd order UQ propagation scheme.
-!       !/UNO   2nd order UNO propagation scheme.
 !
 !       !/C90   Cray FORTRAN 90 compiler directives.
 !       !/NEC   NEC SXF90 compiler directives.
@@ -535,7 +526,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2013 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -556,8 +547,6 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
-!/                  and second order schemes.           ( version 4.12 )
 !/
 !  1. Purpose :
 !
@@ -692,8 +681,7 @@
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
                           ISBPI, BBPI0, BBPIN
 !/S      USE W3SERVMD, ONLY: STRACE
-!/UQ      USE W3UQCKMD
-!/UNO      USE W3UNO2MD
+      USE W3UQCKMD
 !/
       IMPLICIT NONE
 !/
@@ -1104,45 +1092,23 @@
       END DO
 
         IF ( YFIRST ) THEN
-!
-!/UQ            IF ( FLCY ) CALL W3QCK3                               &
-!/UQ                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
-!/UQ                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
-!/UQ                         NMY1, NMY2, NDSE, NDST )
-!/UQ            IF ( FLCX ) CALL W3QCK3                               &
-!/UQ                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
-!/UQ                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
-!/UQ                         NMX1, NMX2, NDSE, NDST )
-!
-!/UNO            IF ( FLCY ) CALL W3UNO2s                             &
-!/UNO                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
-!/UNO                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
-!/UNO                         NMY1, NMY2, NDSE, NDST )
-!/UNO            IF ( FLCX ) CALL W3UNO2s                             &
-!/UNO                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
-!/UNO                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
-!/UNO                         NMX1, NMX2, NDSE, NDST )
-!
+            IF ( FLCY ) CALL W3QCK3                                   &
+                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,           &
+                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,       &
+                         NMY1, NMY2, NDSE, NDST )
+            IF ( FLCX ) CALL W3QCK3                                   &
+                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,           &
+                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,       &
+                         NMX1, NMX2, NDSE, NDST )
           ELSE
-!
-!/UQ            IF ( FLCX ) CALL W3QCK3                               &
-!/UQ                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
-!/UQ                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
-!/UQ                         NMX1, NMX2, NDSE, NDST )
-!/UQ            IF ( FLCY ) CALL W3QCK3                               &
-!/UQ                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
-!/UQ                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
-!/UQ                         NMY1, NMY2, NDSE, NDST )
-!
-!/UNO            IF ( FLCX ) CALL W3UNO2s                             &
-!/UNO                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
-!/UNO                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
-!/UNO                         NMX1, NMX2, NDSE, NDST )
-!/UNO            IF ( FLCY ) CALL W3UNO2s                             &
-!/UNO                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
-!/UNO                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
-!/UNO                         NMY1, NMY2, NDSE, NDST )
-!
+            IF ( FLCX ) CALL W3QCK3                                   &
+                        (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,           &
+                         GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,       &
+                         NMX1, NMX2, NDSE, NDST )
+            IF ( FLCY ) CALL W3QCK3                                   &
+                        (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,           &
+                         .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,       &
+                         NMY1, NMY2, NDSE, NDST )
           END IF
 
 ! Transform VQ back to normal space
@@ -1237,7 +1203,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2013 |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    14-Feb-2000 : Origination.                        ( version 2.08 )
@@ -1246,8 +1212,6 @@
 !/    24-Aug-2011 : Limiter on k advection (F. Ardhuin) ( version 4.04 )
 !/    25-Aug-2011 : DEPTH  = MAX ( DMIN, DW(ISEA) )     ( version 4.04 )
 !/    26-Dec-2012 : More initializations.               ( version 4.11 )
-!/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
-!/                  and second order schemes.           ( version 4.12 )
 !/
 !  1. Purpose :
 !
@@ -1349,8 +1313,7 @@
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST
 !/S      USE W3SERVMD, ONLY: STRACE
-!/UQ      USE W3UQCKMD
-!/UNO      USE W3UNO2MD
+      USE W3UQCKMD
 !/
       IMPLICIT NONE
 !/
@@ -1536,56 +1499,30 @@
           DO ITH=1, NTH
                 VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
                 END DO
-!
-!/UQ              CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
-!/UQ                            VQ, .FALSE., 1, MAPTH2, NSPEC,            &
-!/UQ                            MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
-!/UQ                            NDSE, NDST )
-!
-!/UNO              CALL W3UNO2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,  &
-!/UNO                            VQ, .FALSE., 1, MAPTH2, NSPEC,           &
-!/UNO                            MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,     &
-!/UNO                            NDSE, NDST )
-!
+              CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
+                            VQ, .FALSE., 1, MAPTH2, NSPEC,            &
+                            MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
+                            NDSE, NDST )
             END IF
           IF ( FLCTH ) THEN
-!
-!/UQ              CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
-!/UQ                            NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
-!/UQ                            NSPEC, NDSE, NDST )
-!
-!/UNO              CALL W3UNO2r( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,   &
-!/UNO                            NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC,&
-!/UNO                            NSPEC, NDSE, NDST )
-!
+              CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
+                            NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
+                            NSPEC, NDSE, NDST )
             END IF
         ELSE
           IF ( FLCTH ) THEN
-!
-!/UQ              CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
-!/UQ                            NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
-!/UQ                            NSPEC, NDSE, NDST )
-!
-!/UNO              CALL W3UNO2r( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,   &
-!/UNO                            NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC,&
-!/UNO                            NSPEC, NDSE, NDST )
-!
+              CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
+                            NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
+                            NSPEC, NDSE, NDST )
             END IF
           IF ( FLCK ) THEN
             DO ITH=1, NTH
                 VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
                 END DO
-!
-!/UQ              CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
-!/UQ                            VQ, .FALSE., 1, MAPTH2, NSPEC,            &
-!/UQ                            MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
-!/UQ                            NDSE, NDST )
-!
-!/UNO              CALL W3UNO2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,  &
-!/UNO                            VQ, .FALSE., 1, MAPTH2, NSPEC,           &
-!/UNO                            MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,     &
-!/UNO                            NDSE, NDST )
-!
+              CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
+                            VQ, .FALSE., 1, MAPTH2, NSPEC,            &
+                            MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
+                            NDSE, NDST )
           END IF
         END IF
 !
