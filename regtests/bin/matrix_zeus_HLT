@@ -33,16 +33,26 @@
   echo '#PBS -o matrix.out'                                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-  cd /scratch1/portfolios/NCEPDEV/ocean/save/Hendrik.Tolman/wwatch3/regtests
   export home_dir=`pwd`
   echo "  cd $home_dir"                                     >> matrix.head
   echo ' '                                                  >> matrix.head
 
+# Compiler option. Choose appropriate compiler and set cmplOption to
+# y if using for the first time or using a different compiler
+
+  cmplr=Intel
+  export cmplOption='y'
+
   export  mpi='mpiexec_mpt'
   export   np='12'
 
-  export rtst="./bin/run_test -a $HOME/.wwatch3.env -G"
-  export rtst="./bin/run_test -a ~/.wwatch3.env -G"
+  if [ "$cmplOption" = 'y' ]
+  then
+     export rtst="./bin/run_test -c $cmplr -a ~/.wwatch3.env -G"
+  else
+     export rtst="./bin/run_test -a ~/.wwatch3.env -G"
+  fi
+
   export  ww3='../.'
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
