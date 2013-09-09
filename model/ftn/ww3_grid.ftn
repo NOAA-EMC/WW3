@@ -1440,14 +1440,18 @@
 !
       NRPROP = 0
       FLPROP = .TRUE.
+      PNAME  = '                              '
 !/PR0      PNAME  = 'Not defined                   '
 !/PR0      NRPROP = NRPROP + 1
 !/PR0      FLPROP = .FALSE.
 !/PR1      PNAME  = 'First order upstream          '
 !/PR1      NRPROP = NRPROP + 1
-!/PR2      PNAME  = 'ULTIMATE QUICKEST + diffusion '
+!/UQ      PNAME  = '3rd order UQ'
+!/UNO      PNAME  = '2nd order UNO'
+       J = LEN_TRIM(PNAME)
+!/PR2      PNAME  = PNAME(1:J)//' + GSE diffusion '
 !/PR2      NRPROP = NRPROP + 1
-!/PR3      PNAME  = 'ULTIMATE QUICKEST + averaging '
+!/PR3      PNAME  = PNAME(1:J)//' + GSE averaging '
 !/PR3      NRPROP = NRPROP + 1
 !/PRX      PNAME  = 'Experimental                  '
 !/PRX      NRPROP = NRPROP + 1

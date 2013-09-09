@@ -13,7 +13,7 @@ $
 $ Name list of output fields, see section 2.4 of the manual.
 $
 N
-DPT WND ICE HS T02 T01 TM1 DIR SPR 
+DPT WND ICE HS T02 T01 T0M1 DIR SPR 
 $
 $ Output type ITYPE [0,1,2,3]
 $ WER: I use "3" for field output.

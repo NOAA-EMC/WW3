@@ -56,7 +56,7 @@ $  20021001 000000  10800 20021009 000000
    20021001 000000   3600 20021001 030000
 $
 N
-DPT WND ICE HS T02 T01 TM1 DIR SPR 
+DPT WND ICE HS T02 T01 T0M1 DIR SPR 
 $
 $ Type 2 : Point output
 $          Standard line and a number of lines identifying the 

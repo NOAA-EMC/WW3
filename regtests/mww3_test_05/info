@@ -54,37 +54,64 @@
 #                                                                           #
 # - switch options (mostly self-explanatory).                               #
 #    + switch_ST1_PR1                                                       #
-#    + switch_ST1_PR2                                                       #
-#    + switch_ST1_PR3                                                       #
-#    + switch_ST1_PR3_SCRIP                                                 #
-#    + switch_ST1_PR3_SCRIP_T38                                             #
+#    + switch_ST1_PR2_UNO                                                   #
+#    + switch_ST1_PR2_UQ                                                    #
+#    + switch_ST1_PR3_UNO                                                   #
+#    + switch_ST1_PR3_UQ                                                    #
+#    + switch_ST1_PR3_UNO_SCRIP                                             #
+#    + switch_ST1_PR3_UQ_SCRIP                                              #
+#    + switch_ST1_PR3_UNO_SCRIP_T38                                         #
+#    + switch_ST1_PR3_UQ_SCRIP_T38                                          #
 #    + switch_ST2_PR1                 (default)                             #
-#    + switch_ST2_PR2                                                       #
-#    + switch_ST2_PR3                                                       #
-#    + switch_ST2_PR3_SCRIP_T38                                             #
+#    + switch_ST2_PR2_UNO                                                   #
+#    + switch_ST2_PR2_UQ                                                    #
+#    + switch_ST2_PR3_UNO                                                   #
+#    + switch_ST2_PR3_UQ                                                    #
+#    + switch_ST2_PR3_UNO_SCRIP_T38                                         #
+#    + switch_ST2_PR3_UQ_SCRIP_T38                                          #
 #    + switch_ST3_PR1                                                       #
-#    + switch_ST3_PR2                                                       #
-#    + switch_ST3_PR3                                                       #
+#    + switch_ST3_PR2_UNO                                                   #
+#    + switch_ST3_PR2_UQ                                                    #
+#    + switch_ST3_PR3_UNO                                                   #
+#    + switch_ST3_PR3_UQ                                                    #
 #    + switch_ST4_PR1                                                       #
-#    + switch_ST4_PR2                                                       #
-#    + switch_ST4_PR3                                                       #
+#    + switch_ST4_PR2_UNO                                                   #
+#    + switch_ST4_PR2_UQ                                                    #
+#    + switch_ST4_PR3_UNO                                                   #
+#    + switch_ST4_PR3_UQ                                                    #
 #    + switch_ST1_PR1_MPI                                                   #
-#    + switch_ST1_PR2_MPI                                                   #
-#    + switch_ST1_PR3_MPI                                                   #
-#    + switch_ST1_PR3_MPI_SCRIP                                             #
+#    + switch_ST1_PR2_UNO_MPI                                               #
+#    + switch_ST1_PR2_UQ_MPI                                                #
+#    + switch_ST1_PR3_UNO_MPI                                               #
+#    + switch_ST1_PR3_UQ_MPI                                                #
+#    + switch_ST1_PR3_UNO_MPI_SCRIP                                         #
+#    + switch_ST1_PR3_UQ_MPI_SCRIP                                          #
 #    + switch_ST2_PR1_MPI                                                   #
-#    + switch_ST2_PR2_MPI                                                   #
-#    + switch_ST2_PR3_MPI                                                   #
-#    + switch_ST2_PR3_MPI_SCRIP                                             #
-#    + switch_ST2_PR3_MPI_SCRIPNC                                           #
+#    + switch_ST2_PR2_UNO_MPI                                               #
+#    + switch_ST2_PR2_UQ_MPI                                                #
+#    + switch_ST2_PR3_UNO_MPI                                               #
+#    + switch_ST2_PR3_UQ_MPI                                                #
+#    + switch_ST2_PR3_UNO_MPI_SCRIP                                         #
+#    + switch_ST2_PR3_UQ_MPI_SCRIP                                          #
+#    + switch_ST2_PR3_UNO_MPI_SCRIPNC                                       #
+#    + switch_ST2_PR3_UQ_MPI_SCRIPNC                                        #
 #    + switch_ST3_PR1_MPI                                                   #
-#    + switch_ST3_PR2_MPI                                                   #
-#    + switch_ST3_PR3_MPI                                                   #
+#    + switch_ST3_PR2_UNO_MPI                                               #
+#    + switch_ST3_PR2_UQ_MPI                                                #
+#    + switch_ST3_PR3_UNO_MPI                                               #
+#    + switch_ST3_PR3_UQ_MPI                                                #
 #    + switch_ST4_PR1_MPI                                                   #
-#    + switch_ST4_PR2_MPI                                                   #
-#    + switch_ST4_PR3_MPI                                                   #
+#    + switch_ST4_PR2_UNO_MPI                                               #
+#    + switch_ST4_PR2_UQ_MPI                                                #
+#    + switch_ST4_PR3_UNO_MPI                                               #
+#    + switch_ST4_PR3_UQ_MPI                                                #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2005     #
-#                                                   Last Mod : Jul 2013     #
+#                                                   Last Mod : Aug 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
 #                                                                           #
 #############################################################################

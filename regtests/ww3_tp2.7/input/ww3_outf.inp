@@ -7,7 +7,7 @@ $
 $
 $ outpuf field name list
 N
-HS F02 T01 ABR UBR
+HS T02 T01 ABR UBR
 $
 $ Output type ITYPE [0,1,2,3]
 $

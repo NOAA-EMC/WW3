@@ -10,7 +10,7 @@ $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 fo the manual.
 $
 N
-HS F02 T01 ABR UBR
+HS T02 T01 ABR UBR
 $
 $--------------------------------------------------------------------- $
 $ Output type 4 [3,4] (version netCDF)   

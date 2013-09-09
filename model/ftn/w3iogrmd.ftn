@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Dec-2012 |
+!/                  | Last update :         01-Jul-2013 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
@@ -66,7 +66,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = 'III  4.02 '
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = 'III  4.03 '
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -82,7 +82,7 @@
 !/                  |           H. L. Tolman            |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Dec-2012 |
+!/                  | Last update :         01-Jul-2013 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -127,8 +127,9 @@
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.11 )
+!/    01-Jul-2013 : Document UQ / UNO switches in file  ( version 4.12 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -245,10 +246,10 @@
       CHARACTER(LEN=10)       :: VERTST, TEMPXT
       CHARACTER(LEN=30)       :: TNAME0, TNAME1, TNAME2, TNAME3,      &
                                  TNAME4, TNAME5, TNAME6, TNAME7,      &
-                                 TNAMEP, TNAMEF
+                                 TNAMEP, TNAMEG, TNAMEF
       CHARACTER(LEN=30)       :: FNAME0, FNAME1, FNAME2, FNAME3,      &
                                  FNAME4, FNAME5, FNAME6, FNAME7,      &
-                                 FNAMEP, FNAMEF
+                                 FNAMEP, FNAMEG, FNAMEF
       CHARACTER(LEN=35)       :: IDTST
       LOGICAL                 :: GLOBAL
 !/
@@ -266,6 +267,7 @@
       TNAME6 = '------------------------------'
       TNAME7 = '------------------------------'
       TNAMEP = '------------------------------'
+      TNAMEG = '------------------------------'
 !
 !/FLX1      TNAMEF = 'Wu (1980)                     '
 !/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
@@ -297,11 +299,16 @@
 !/BSX      TNAME6 = 'Experimental                  '
 !/XX0      TNAME7 = 'Not defined                   '
 !/XXX      TNAME7 = 'Experimental                  '
-!/PR0      TNAMEP = 'Not defined                   '
+!/PR0      TNAMEP = 'No propagation                '
 !/PR1      TNAMEP = 'First order upstream          '
-!/PR2      TNAMEP = 'QUICKEST with ULTIMATE limiter'
-!/PR3      TNAMEP = 'Averaging ULTIMATE QUICKEST   '
+!/UQ      TNAMEP = '3rd order UQ scheme           '
+!/UNO      TNAMEP = '2nd order UNO scheme          '
 !/PRX      TNAMEP = 'Experimental                  '
+!/PR0      TNAMEG = 'No GSE aleviation             '
+!/PR1      TNAMEG = 'No GSE aleviation (1up prop)  '
+!/PR2      TNAMEG = 'Diffusion operator            '
+!/PR3      TNAMEG = 'Averaging operator            '
+!/PRX      TNAMEG = 'Experimental                  '
 !
       FNAMEF = TNAMEF
       FNAME0 = TNAME0
@@ -313,6 +320,7 @@
       FNAME6 = TNAME6
       FNAME7 = TNAME7
       FNAMEP = TNAMEP
+      FNAMEG = TNAMEG
 !
 !/T      FLTEST = .TRUE.
 !/NL2      FLSNL2 = .TRUE.
@@ -366,26 +374,26 @@
           WRITE (NDSM)                                                &
                 IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEF
+                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
           WRITE (NDSM)                                                &
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
 !/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
 !/T            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP
+!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
 !/T          WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
 !/T          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEF
+                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
           NK     = MK
           NTH    = MTH
           NK2    = NK + 2
           NSPEC  = NK * NTH
 !/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
 !/T            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP
+!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
 !
           IF ( IDTST .NE. IDSTR ) THEN
               IF ( IAPROC .EQ. NAPERR )                               &
@@ -447,10 +455,15 @@
                   WRITE (NDSE,906) FNAMEP, TNAMEP
                CALL EXTCDE ( 22 )
             END IF
+          IF ( FNAMEG .NE. TNAMEG ) THEN
+               IF ( IAPROC .EQ. NAPERR )                              &
+                  WRITE (NDSE,907) FNAMEG, TNAMEG
+               CALL EXTCDE ( 22 )
+            END IF
           IF ( FNAMEF .NE. TNAMEF ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,907) FNAMEF, TNAMEF
-               CALL EXTCDE ( 23 )
+                  WRITE (NDSE,908) FNAMEF, TNAMEF
+               CALL EXTCDE ( 24 )
             END IF
 !
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
@@ -983,6 +996,11 @@
                '               EXPECTED :',A/                         &
                '     CHECK CONSISTENCY OF SWITCHES IN PROGRAMS'/)
   907 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR :'/                &
+               '     UNEXPECTED GSE ALEVIATION IDENTIFIER'/           &
+               '                IN FILE :',A/                         &
+               '               EXPECTED :',A/                         &
+               '     CHECK CONSISTENCY OF SWITCHES IN PROGRAMS'/)
+  908 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGR :'/                &
                '     UNEXPECTED FLUX PARAMETERIZATION IDENTIFIER'/    &
                '                IN FILE :',A/                         &
                '               EXPECTED :',A/                         &
@@ -1020,7 +1038,9 @@
 !/T              '      FNAME5 : ',A/                                 &
 !/T              '      FNAME6 : ',A/                                 &
 !/T              '      FNAME7 : ',A/                                 &
-!/T              '      FNAMEP : ',A)
+!/T              '      FNAMEP : ',A/                                 &
+!/T              '      FNAMEG : ',A/                                 &
+!/T              '      FNAMEF : ',A)
 !/T 9002 FORMAT ('      NBO    : ',10I5)
 !/T 9003 FORMAT ('      NBO2   : ',10I5)
 !
