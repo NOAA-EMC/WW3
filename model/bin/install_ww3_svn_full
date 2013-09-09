@@ -382,13 +382,7 @@
 
     cd svn/model
 
-# Check for tests directory (deprecated), move to oldtests if present
-    if [ -d tests ]
-    then
-      svn mv tests oldtests
-    fi
-
-    for dir in aux bin ftn inp .svn oldtests
+    for dir in aux bin ftn inp .svn
     do
       if [ ! -d $dir ]
       then
@@ -433,7 +427,7 @@
     fi
   done
 # Now make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp oldtests work
+  for dir in aux bin ftn obj mod exe inp cases work
   do
     if [ ! -d $dir ]
     then
@@ -460,8 +454,8 @@
   cd $main_dir/svn/model/inp
   chmod 644 *.inp track_i.ww3
 
-  cd $main_dir/svn/model/oldtests
-  chmod 744 ww3_t* mww3_test_*
+  cd $main_dir/svn/cases
+  chmod 744 ww3_t* mww3_case_*
   chmod 755 mww3_data_*
 
 # Include regtests in the loop
@@ -469,10 +463,10 @@
   chmod 744 *
 #  chmod 755 mww3_data_*
 
-#Old test loop
+# cases loop
   for dir in 00 01 02 03
   do
-    cd $main_dir/svn/model/oldtests/mww3_data_$dir
+    cd $main_dir/svn/cases/mww3_data_$dir
     if [ "$dir" = '00' ]
     then
       chmod 644 gfs*
@@ -812,10 +806,10 @@
   fi
 
 # --------------------------------------------------------------------------- #
-# 7. Set-up / update test directory                                           #
+# 7. Set-up / update cases directory                                           #
 # --------------------------------------------------------------------------- #
 
-  cd $main_dir/svn/model/oldtests
+  cd $main_dir/svn/cases
   tmp_files=`ls`
   all_files=
   all_dirs=
@@ -828,7 +822,7 @@
       all_files="$all_files $file"
     fi
   done
-  cd $main_dir/oldtests
+  cd $main_dir/cases
   echo ' '
 
   echo ' ' ; echo ' '
@@ -839,22 +833,18 @@
 
 # 7.a Sets of test cases
 
-  for list in 1 2 3 4
+  for list in 1 2
   do
     echo ' '
-    cd ../svn/model/oldtests
+    cd ../svn/cases
     case $list in 
-      1) echo 'Propagation tests :' ; \
-         echo '-------------------' ; files=`ls ww3_tp*` ;;
-      2) echo 'Source term tests :' ; \
-         echo '-------------------' ; files=`ls ww3_ts*` ;;
-      3) echo 'Multi-scale tests :' ; \
+      1) echo 'Multi-scale tests :' ; \
          echo '-------------------' ; \
-               files=`ls mww3_test_* mww3_case_*` ;;
-      4) echo 'Other tests :' ; \
+               files=`ls mww3_case_*` ;;
+      2) echo 'Other tests :' ; \
          echo '-------------' ; files=$all_files ;;
     esac
-    cd $main_dir/oldtests
+    cd $main_dir/cases
    
     nr_old=0
 
@@ -871,7 +861,7 @@
           nr_new=`expr $nr_new + 1`
           echo "   New link $file ..."
         fi
-        ln -sf ../svn/model/oldtests/$file
+        ln -sf ../svn/cases/$file
         tmp_files=$all_files
         all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
@@ -890,17 +880,17 @@
 
   for dir in $all_dirs
   do
-    if [ ! -d $main_dir/oldtests/$dir ]
+    if [ ! -d $main_dir/cases/$dir ]
     then
-      mkdir $main_dir/oldtests/$dir
+      mkdir $main_dir/cases/$dir
       echo "   Making directory $dir ..."
     else
       echo "   Checking directory $dir ..."
     fi
 
-    cd $main_dir/svn/model/oldtests/$dir
+    cd $main_dir/svn/cases/$dir
     files=`ls`
-    cd $main_dir/oldtests/$dir
+    cd $main_dir/cases/$dir
     nr_old=0
 
     if [ -z "$files" ]
@@ -916,7 +906,7 @@
           nr_new=`expr $nr_new + 1`
           echo "      New link $file ..."
         fi
-        ln -sf ../../svn/model/oldtests/$dir/$file
+        ln -sf ../../svn/cases/$dir/$file
         tmp_files=$all_files
         all_files=`echo $tmp_files | sed -e "s/$file//"`
       done
@@ -928,7 +918,7 @@
 
   done
 
-  cd $main_dir/oldtests
+  cd $main_dir/cases
   ln -sf ../bin/switch .
 
 # --------------------------------------------------------------------------- #
