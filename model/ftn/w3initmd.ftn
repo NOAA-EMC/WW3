@@ -262,6 +262,10 @@
 !       restart file. To assure consistency within the model, the
 !       water level and ice coverage are re-evaluated at the 0th
 !       time step in the actual wave model routine.
+!     - When running regtests in cases where disk is non-local 
+!       (i.e. NFS used), there can be a huge improvment in compute
+!       time by using /var/tmp/ for log files. 
+!       See commented line at "OPEN (MDS(1),FILE=..."
 !
 !  8. Structure :
 !
@@ -500,6 +504,7 @@
 !
       IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
           OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
+!         OPEN (MDS(1),FILE='/var/tmp/'//LFILE(:IFL),ERR=888,IOSTAT=IERR)
 !
       IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
           INQUIRE (MDS(3),OPENED=OPENED)

@@ -508,7 +508,7 @@
 !/SCRIPTST      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
       
 !/SCRIPNC      if (l_read) then
-!/SCRIPNC         write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
+!/SCRIPNC         if(l_master)write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
 !/SCRIPNC         call read_remap_ww3(map1_name, interp_file1, errorCode)
 !/SCRIPTST         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
 !/SCRIPTST         end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)

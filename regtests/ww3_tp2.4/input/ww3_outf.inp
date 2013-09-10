@@ -3,9 +3,9 @@ $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
 $ Time, time increment and number of outputs
 $
-$ 10800=Every 3 hours. Just use a large number to go all the way to end.
+$ 10800=Every 3 hours. Use a large number to go all the way to end.
 $  20080522 000000 10800 999
-$ 3600=Every 1 hour. Just use a large number to go all the way to end.
+$ 3600=Every 1 hour. Use a large number to go all the way to end.
   20080522 000000 3600 999
 $ Just once (for depth)
 $  20080522 000000 10800 1
@@ -35,7 +35,6 @@ $ (10) User defined (NOEXTR flags needed)
   F
 $
 $ Output type ITYPE [0,1,2,3]
-$ WER: I use "3" for field output.
   3 0
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
@@ -61,10 +60,8 @@ $            IX, IY range, IDLA and IDFM as in ww3_grid.inp.
 $            The additional option IDLA=5 gives ia longitude, lattitude 
 $            and parameter value(s) per record (defined points only).
 $
-$ it appears that if you put in a nx ny that is larger than the comp grid nx ny, it just uses the comp grid nx ny, which is good, since you can just leave it at some high number if you want to output the entire grid , e.g. 1 999 1 999 1 1 
 $
  1 999 1 999 1 1
-$ 1 233 1 158 1 1 
 $
 $ For each field and time a new file is generated with the file name
 $ ww3.yymmddhh.xxx, where yymmddhh is a conventional time idicator,

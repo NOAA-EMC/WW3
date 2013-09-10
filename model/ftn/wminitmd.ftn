@@ -210,6 +210,10 @@
 !     following.
 !
 !  7. Remarks :
+!     - When running regtests in cases where disk is non-local 
+!       (i.e. NFS used), there can be a huge improvment in compute
+!       time by using /var/tmp/ for log files. 
+!       See commented line at "OPEN (MDSO,FILE=..."
 !
 !  8. Structure :
 !
@@ -527,6 +531,7 @@
 !
       IF ( IMPROC .EQ. NMPLOG ) THEN
           OPEN (MDSO,FILE=FNMPRE(:JJ)//LFILE,ERR=2010,IOSTAT=IERR)
+!         OPEN (MDSO,FILE='/var/tmp/'//LFILE,ERR=2010,IOSTAT=IERR)
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
               WRITE (MDSS,911)  LFILE, MDSO
           CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'OUT',              &

@@ -180,7 +180,7 @@
                ID='wind interpolation in space'
                OK='WNX0 WNX1 WNX2' ;;
       rwind  ) TY='upto1'
-               ID='wind vs. current definition'
+                ID='wind vs. current definition'
                TS='RWND'
                OK='RWND' ;;
       curr   ) TY='one'

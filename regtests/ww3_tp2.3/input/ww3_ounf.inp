@@ -27,11 +27,6 @@ $ File prefix
 $ number of characters in date
 $ IX, IY range
 $
-$ It appears that if you put in a nx ny that is larger than the comp grid nx ny, 
-$ it just uses the comp grid nx ny, which is good, 
-$ since you can just leave it at some high number 
-$ if you want to output the entire grid , e.g. 1 999 1 999 1 1 .
-$
 ww3.
  6
  1 999 1 999 1  

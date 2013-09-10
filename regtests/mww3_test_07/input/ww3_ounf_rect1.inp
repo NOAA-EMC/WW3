@@ -3,9 +3,9 @@ $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
 $ Time, time increment and number of outputs
 $
-$ 10800=Every 3 hours. Just use a large number to go all the way to end.
+$ 10800=Every 3 hours. Use a large number to go all the way to end.
 $  20080522 000000 10800 999
-$ 3600=Every 1 hour. Just use a large number to go all the way to end.
+$ 3600=Every 1 hour. Use a large number to go all the way to end.
   20030101 000000 3600. 100
 $ Just once (for depth)
 $  20080522 000000 10800 1

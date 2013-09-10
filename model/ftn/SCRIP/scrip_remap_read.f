@@ -301,7 +301,7 @@
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid name')) return
 
-! Do not include routine write statements w/out check on improc
+! Let's not include routine write statements w/out check on improc, l_master, etc.
 !     print *,' '
 !     print *,'Remapping between:',trim(grid1_name)
 !     print *,'and ',trim(grid2_name)
