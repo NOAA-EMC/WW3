@@ -691,7 +691,7 @@
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
               ENAME  = '.cur'
-              UNITS  = 'm/s'
+              UNITS  = 'm s-1'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CX(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
@@ -727,7 +727,7 @@
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1
               ENAME  = '.wnd'
-              UNITS  = 'm/s'
+              UNITS  = 'm s-1'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UA(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
@@ -791,7 +791,7 @@
 !
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
-              UNITS  = ' '
+              UNITS  = '1'
               ENAME  = '.ice'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ICE   , MAPSF, X1 )
               NFIELD=1
@@ -983,11 +983,11 @@
               varng(1)=varns(1)
               varnc(1)=''
               IF (NCVARTYPE.LE.3) THEN 
-                UNITS  = 'log10(m2s+1E-12)'
+                UNITS  = 'log10(m2 s+1E-12)'
                 varns(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
                 FSC     = 0.0004
               ELSE
-                UNITS  = 'm2/Hz'
+                UNITS  = 'm2 s'
                 varns(1)='power_spectral_density_of_surface_elevation'
                 FSC     = 1.
                 END IF
@@ -1180,7 +1180,7 @@
 !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
-              UNITS  = ' '
+              UNITS  = '1'
               WRITE(ENAME,'(A4,I1)') '.pws',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART), MAPSF, X1 )
               NFIELD=1
@@ -1223,7 +1223,7 @@
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.01
               ENAME  = '.ust'
-              UNITS  = 'm/s'
+              UNITS  = 'm s-1'
               DO ISEA=1, NSEA
                 UABS   = SQRT(UST(ISEA)**2+USTDIR(ISEA)**2)
                  IF (UABS.GE.10.) THEN
@@ -1278,7 +1278,7 @@
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1           !0.01
-              UNITS  = 'kW/m'
+              UNITS  = 'kW m-1'
               ENAME  = '.cge' 
               CGE=CGE*0.001  ! from W / m to kW / m 
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE, MAPSF, X1 )
@@ -1294,7 +1294,7 @@
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               FSC    = 0.1
-              UNITS  = 'W/m2'
+              UNITS  = 'W m-2'
               ENAME  = '.faw'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA) , MAPSF, X1 )
               NFIELD=1
@@ -1308,7 +1308,7 @@
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.000001
-              UNITS  = 'm2/s2'
+              UNITS  = 'm2 s-2'
               ENAME  = '.taw'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -1343,7 +1343,7 @@
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.0001
               ENAME  = '.twa'
-              UNITS  = 'm2/s2'
+              UNITS  = 'm2 s-2'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNX(1:NSEA)     &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)     &
@@ -1425,7 +1425,7 @@
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 10.
               FSC3    = 1.
-              UNITS  = 'N/m'
+              UNITS  = 'N m-1'
               ENAME  = '.sxy'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXX(1:NSEA)       &
                                                         , MAPSF, X1 )
@@ -1455,7 +1455,7 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.000001
-              UNITS  = 'm2/s2'
+              UNITS  = 'm2 s-2'
               ENAME  = '.two'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -1477,7 +1477,7 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1
-              UNITS  = 'N/m'
+              UNITS  = 'N m-1'
               ENAME  = '.bhd'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BHD(1:NSEA)    &
                                                         , MAPSF, X1 )
@@ -1493,7 +1493,7 @@
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               FSC    = 0.1
-              UNITS  = 'W/m2'
+              UNITS  = 'W m-2'
               ENAME  = '.foc'
               DO ISEA=1, NSEA
                  PHIOC(ISEA)=MIN(3000.,PHIOC(ISEA))
@@ -1511,7 +1511,7 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.001
-              UNITS  = 'm2/s'
+              UNITS  = 'm2 s-1'
               ENAME  = '.tus'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSX(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -1544,7 +1544,7 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.0005
-              UNITS  = 'm/s'
+              UNITS  = 'm s-1'
               ENAME  = '.uss'
               DO ISEA=1, NSEA
                  USSX(ISEA)=MAX(-0.9998,MIN(0.9998,USSX(ISEA)))
@@ -1617,7 +1617,7 @@
               varng(2)='northward_spectral_variance_of_surface_stokes_drift'
               varnc(1)='usf=sqrt(uusf**2+vusf**2)'
               varnc(2)='usf=sqrt(uusf**2+vusf**2)'
-              UNITS   = 'm/s'
+              UNITS   = 'm s-1'
               I1F=US3DF(2)
               I2F=US3DF(3)
               DO IK= I1F,I2F
@@ -1651,10 +1651,10 @@
                   CALL W3S2XY ( NSEA, NSEA, NX+1,NY,P2SMS(:,IK),MAPSF, XX )
                   IF (NCVARTYPE.EQ.2) THEN 
                      WHERE ( XX.GE.0.) XX = ALOG10(XX*(DWAT*GRAV)**2+1E-12)
-                     UNITS  = 'log10(Pa2s+1E-12)'
+                     UNITS  = 'log10(Pa2 s+1E-12)'
                   ELSE 
                      WHERE ( XX.GE.0.) XX = XX*(DWAT*GRAV)**2
-                     UNITS  = 'Pa2s'
+                     UNITS  = 'Pa2 s'
                      END IF
                 
                   XK(:,:,IK)=XX
@@ -1688,7 +1688,7 @@
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
               ENAME  = '.ubr'
-              UNITS  = 'm/s'
+              UNITS  = 'm s-1'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
@@ -1736,7 +1736,7 @@
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.1
-              UNITS  = 'W/m2'
+              UNITS  = 'W m-2'
               ENAME  = '.fbb'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIBBL(1:NSEA)    &
                                                         , MAPSF, X1 )
@@ -1751,7 +1751,7 @@
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.000001
-              UNITS  = 'm2/s2'
+              UNITS  = 'm2 s-2'
               ENAME  = '.tbb'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -1849,7 +1849,7 @@
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.01
-              UNITS  = '  '
+              UNITS  = '1'
               ENAME  = '.cfx'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLXYMAX  , MAPSF, X1 )
               NFIELD=1
@@ -1863,7 +1863,7 @@
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 0.01
-              UNITS  = '  '
+              UNITS  = '1'
               ENAME  = '.cfd'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLTHMAX  , MAPSF, X1 )
               NFIELD=1
@@ -1877,7 +1877,7 @@
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.01
-              UNITS  = '  '
+              UNITS  = '1'
               ENAME  = '.cfk'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CFLKMAX  , MAPSF, X1 )
               NFIELD=1

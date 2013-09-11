@@ -1,0 +1,71 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.9 Test script for WW-III, two-dimensional propagation.            #
+#           Propagation with obstruction grids.                             #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging.                             #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - Test cases are for a swell field propagating across the French          #
+#   Polynesian Islands. The grids used are:                                 #
+#    * ww3_grid_a.inp                                                       #
+#      + Spatial grid: 121 x 141 Rectilinear LL grid                        #
+#        - dx and dy = 0.25 deg                                             #
+#        - Xrange = 200 - 230 ; Yrange = -30 - 5                            #
+#        - bathymetry, obstruction and mask defined by rect_2d.bot,         #
+#          rect_2d.obs and rect_2d.mask respectively                        #
+#      + Spectral grid: ntheta = 36, nf = 3, f1 = 0.035 fgamma = 1.1        #
+#    * ww3_grid_b.inp                                                       #
+#      + Spatial grid: 121 x 121 Curvilinear LL grid                        #
+#        - dx and dy are variable. The grid is set in the shape of a        #
+#          quarter annulus. The formulation used to build the x and y grids #
+#          is as follows                                                    #
+#          theta = [0:0.75:90] (in degrees)                                 #
+#          R = [5:0.25:35]                                                  #
+#          x(i,j) = 195+R(i)*cos(theta(j))                                  #
+#          y(i,j) = -30+R(i)*sin(theta(j)) (repeat for all i,j)             #
+#        - x and y grids are curv_2d.lon and curv_2d.lat                    #
+#        - bottom, obstruction and mask grids are defined as for the        #
+#          rectlinear grids but with a file prefix of curv_2d               #
+#      + Spectral grid: Same as the rectilinear grid                        #
+#    * The obstruction grids used here have been developed using the        #
+#      gridgen software that has been adapted to work with curvilinear      #
+#      grids.                                                               #
+#    * The runs are initialized by a narrow banded spectrum with an         #
+#      Hs = 4m everywhere, propagating in the SW direction (this can be     #
+#      changed in ww3_strt.inp)                                             #
+#    * The masks have been given a value of 2 (denoted boundary points)     #
+#      along the edges. In the absence of nest files this ensures that the  #
+#      initial wave spectrum is maintained along the edges for the duration #
+#      of the run (thus allowing for steady state conditions to develop)    # 
+#   * switch options (mostly self-explanatory).                             #
+#     + switch_PR1      : First order scheme                                #
+#     + switch_PR2_UNO  : UNO scheme with diffusion (off)                   #
+#     + switch_PR2_UQ   : UQ scheme with diffusion (off)                    #
+#     + switch_PR3_UNO  : UNO scheme with averaging (off)                   #
+#     + switch_PR3_UQ   : UQ scheme with averaging (off) (default)          #
+#     + switch_PR1_MPI                                                      #
+#     + switch_PR2_UNO_MPI                                                  #
+#     + switch_PR2_UQ_MPI                                                   #
+#     + switch_PR3_UNO_MPI                                                  #
+#     + switch_PR3_UQ_MPI                                                   #
+#                                                                           #
+#                                              Arun Chawla, Sep 2013        #
+#                                                   Last Mod : Sep 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
