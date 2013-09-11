@@ -1269,15 +1269,24 @@ information in current.ww3
 and level.ww3 files. The tidal analysis can be performed from NetCDF current 
 or water level files, using the ww3\_prnc preprocessing program. In that case 
 the analysis method uses the flexible tide analysis package by \cite{art:For09}. 
-At present the choice of tidal constituents is hard coded to 20, namely, 
-Z0 (mean), SSA, MSM, MSF, MF, 2N2, MU2, N2, NU2, M2, S2, K2, MSN2, MN4, M4, MS4, S4,
-M6, 2MS6, and  M8. Another arbitrary choice is the time step at which currents or water 
-level will be updated. This is now set to 1800~s. We also note that in the present 
-version, this definition of currents and water levels can only be used with single grids, 
-when using ww3\_shel. 
+In the present version, the tidal consituents can be used to generated time series 
+with the tidal prediction program ww3\_prtide, or to compute the current or level values at the current 
+time step in ww3\_shel. That second possibility, however, require a large amount of memory and is not 
+very practical for large grids. 
 
-Memory usage and time of analysis can be greatly reduced by removing some usually negligible constituents, 
-such as MSM, SSA,  MSM, 2N2, or even M8. 
+The choice of tidal constituents for the analysis and prediction are specified 
+in the input files for ww3\_prnc and ww3\_prtide. Two short-cuts are 
+defined. 'VFAST' is the following selection of 20 components,  
+Z0 (mean), SSA, MSM, MSF, MF, 2N2, MU2, N2, NU2, M2, S2, K2, MSN2, MN4, M4, MS4, S4,
+M6, 2MS6, and  M8. When using ww3\_shel to do the tidal prediction, 
+ the time step at which currents or water is set to 1800~s. 
+
+In ww3\_prtide, there is also a quality check on the values of the tidal constituents 
+that is performed: unrealistically large values of the amplitudes for some 
+constituents can be defined in ww3\_prtide.inp .  For model grid points where these 
+are exceeded, all components are set to zero. Another approach would have been 
+to use the amplitudes from the nearest grid point. 
+
 
 
 % -------------------------------------------------------------

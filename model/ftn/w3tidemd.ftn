@@ -96,7 +96,7 @@
       CHARACTER*5,    ALLOCATABLE   :: KONCO_CON(:)         
       INTEGER, ALLOCATABLE, PRIVATE :: II(:),JJ(:),KK(:),LL(:),MM(:),NN(:),NJ(:)
       REAL, ALLOCATABLE             :: SEMI(:),COEF_CON(:)
-      REAL , ALLOCATABLE            :: V_ARG(:,:),F_ARG(:,:),u_ARG(:,:)
+      REAL , ALLOCATABLE            :: V_ARG(:,:),F_ARG(:,:),U_ARG(:,:)
       REAL                          :: EE(180),PH(180)
       INTEGER                       :: LDEL(180),MDEL(180),NDEL(180),IR(180)
 ! these two index table are used in VUF ... 
@@ -106,8 +106,9 @@
 !
       INTEGER                      :: TIDE_MF, TIDE_NX, TIDE_NY
       REAL, ALLOCATABLE            :: TIDE_FREQC(:)                 ! array of freq. of tidal constituents
-      CHARACTER*5, ALLOCATABLE     :: TIDECON_NAME(:)          ! array of names of tidal constituents
-      CHARACTER*5                  :: TIDE_KONAN(10), TIDE_KONIN(10,10)
+      CHARACTER(LEN=5), ALLOCATABLE:: TIDECON_NAMEI(:)              ! array of names of tidal constituents
+      CHARACTER(LEN=5), ALLOCATABLE:: TIDECON_NAME(:)               ! array of names of tidal constituents
+      CHARACTER(LEN=5)             :: TIDE_KONAN(10), TIDE_KONIN(10,10)
       REAL                         :: TIDE_R(10,10), TIDE_ZETA(10,10)
       REAL                         :: TIDE_SIGAN(10),TIDE_SIGIN(10,10)   ! these two are only read from files and written out
       INTEGER                      :: TIDE_NIN,TIDE_NINF(10)
@@ -237,19 +238,165 @@
       END SUBROUTINE TIDE_WRITE_RESULTS
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE TIDE_SETTINGS_FULL
-  
-      TIDE_MF = 60
-    
-      TIDECON_NAME(:)=(/ &
+      SUBROUTINE TIDE_FIND_INDICES_PREDICTION(LIST,INDS,TIDE_PRMF)
+!/                  +-----------------------------------+
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         28-Feb-2013 |
+!/                  +-----------------------------------+
+!/
+!/    29-Jun-2013 : Creation                            ( version 4.11 )
+!/
+!  1. Purpose :
+!
+!     Finds indices of tidal constituents to be used for prediction
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       LIST         Char  I  Array of tidal constituents names to be used
+!       INDS         I.A.  O  Array of indices
+!       TIDE_PRMF    I.A.  O  number of constituents to be used
+!     ----------------------------------------------------------------
+!
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!     ww3_prtide
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S  Enable subroutine tracing.
+!       !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE   
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      CHARACTER(LEN=100), INTENT(IN) :: LIST(70)
+      INTEGER, INTENT(OUT)    :: INDS(70), TIDE_PRMF
+ 
+      INTEGER J, FOUND
+!/S      INTEGER, SAVE           :: IENT   =   0
+!
+!/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
+!
+      TIDE_PRMF=0
+      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
+        DO J=1,TIDE_MF
+          INDS(J)=J
+          END DO
+        TIDE_PRMF = TIDE_MF
+        RETURN
+        END IF
+!
+      DO WHILE (len_trim(LIST(TIDE_PRMF+1)).NE.0)
+        TIDE_PRMF=TIDE_PRMF+1
+        FOUND = 0
+        DO J=1,TIDE_MF
+          IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN 
+            INDS(TIDE_PRMF)=J
+            FOUND=1
+            WRITE(6,*) 'Tidal constituent to be used in pre:',TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
+            END IF
+          END DO
+        IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)),' not available.'
+        END DO
+!
+      END SUBROUTINE TIDE_FIND_INDICES_PREDICTION
+
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE TIDE_FIND_INDICES_ANALYSIS(LIST)
+!/                  +-----------------------------------+
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         28-Feb-2013 |
+!/                  +-----------------------------------+
+!/
+!/    29-Jun-2013 : Creation                            ( version 4.11 )
+!/
+!  1. Purpose :
+!
+!     Finds indices of tidal constituents to be used for analysis
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       LIST         Char  I  Array of tidal constituents names to be used
+!     ----------------------------------------------------------------
+!
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!     ww3_prtide
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S  Enable subroutine tracing.
+!       !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE   
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      CHARACTER(LEN=100), INTENT(IN) :: LIST(70)
+!
+      INTEGER TIDE_MF_ALL
+      CHARACTER(LEN=5)             :: TIDECON_NAME_ALL(60)      ! array of names of tidal constituents
+      REAL                         :: TIDE_FREQC_ALL(60)        ! array of freq. of tidal constituents
+      INTEGER                      :: INDS(60), J, FOUND, NTIDES
+!/S      INTEGER, SAVE           :: IENT   =   0
+!
+!/S      CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
+!
+      TIDECON_NAME_ALL(:)=(/ &
        'Z0   ', 'SSA  ', 'MSM  ', 'MM   ', 'MSF  ', 'MF   ', 'ALP1 ', '2Q1  ', 'SIG1 ', 'Q1   ',  &
        'RHO1 ', 'O1   ', 'TAU1 ', 'BET1 ', 'NO1  ', 'CHI1 ', 'P1   ', 'K1   ', 'PHI1 ', 'THE1 ',  &
        'J1   ', 'SO1  ', 'OO1  ', 'UPS1 ', 'OQ2  ', 'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
        'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
        'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
        '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
-
-       TIDE_FREQC(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
+!
+       TIDE_FREQC_ALL(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
                   0.0343965698, 0.0357063505, 0.0359087218, 0.0372185025, 0.0374208738, &
                   0.0387306544, 0.0389588136, 0.0400404351, 0.0402685943, 0.0404709655, &
                   0.0415525871, 0.0417807462, 0.0420089053, 0.0430905269, 0.0432928982, &
@@ -262,69 +409,65 @@
                   0.2084474129, 0.2400220500, 0.2415342020, 0.2443561347, 0.2445842938, &
                   0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027 /)
 
-      CALL TIDE_SET_INDICES
+      INDS(:) = 0
+      IF (TRIM(LIST(1)).EQ.'ALL') THEN 
+        TIDE_MF = TIDE_MF_ALL
+        IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
+        ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
+        TIDECON_NAME = TIDECON_NAME_ALL
+        TIDE_FREQC = TIDE_FREQC_ALL
+        RETURN
+        END IF
 !
-      END SUBROUTINE TIDE_SETTINGS_FULL
+      IF (TRIM(LIST(1)).EQ.'FAST') THEN 
+        TIDE_MF = 44
+        INDS(1:44)= (/ 1, 2, 3, 4, 5, 6, 12, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,  &
+                      37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,&
+                      55, 56, 57, 58, 59, 60 /) 
+!
+      ELSE IF (TRIM(LIST(1)).EQ.'VFAST') THEN 
+        TIDE_MF = 20
+        INDS(1:20)= (/ 1, 2, 3, 5, 6, 27, 28, 29, 30, 31, 35, 36, 37, 44, 45, 47, 49, 54, 55, 60 /) 
+!
+      ELSE
+        TIDE_MF=0
+        NTIDES=0
+!
+        DO WHILE (len_trim(LIST(TIDE_MF+1)).NE.0)
+!
+          TIDE_MF=TIDE_MF+1
+          FOUND = 0
+          DO J=1,60
+            IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN 
+              NTIDES=NTIDES+1
+              INDS(NTIDES)=J
+              FOUND = 1
+              WRITE(6,*) 'Tidal constituent in analysis:',J,TRIM(TIDECON_NAME_ALL(J)),TRIM(LIST(TIDE_MF)),TIDE_FREQC_ALL(J)
+              END IF
+            END DO
+          IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
+! 
+          END DO
+!
+        TIDE_MF=NTIDES
+        END IF
+!
+! Defines names and frequencies
+!
+        IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
+        ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
 
+        DO J=1,TIDE_MF 
+          TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
+          TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
+          END DO
+      CALL TIDE_SET_INDICES
+
+!
+      END SUBROUTINE TIDE_FIND_INDICES_ANALYSIS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE TIDE_SETTINGS_VFAST
-!
-      IMPLICIT NONE   
-
-      TIDE_MF = 20
-      ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
-      TIDECON_NAME(:)=(/ &
-             'Z0   ', 'SSA  ', 'MSM  ',          'MSF  ', 'MF   '   ,  &
-                                                                  '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
-             'M2   ',                            'S2   ', 'K2   ', 'MSN2 ',                             &
-                                        'MN4  ', 'M4   ',          'MS4  ',          'S4   '        ,  &
-                                        'M6   ', '2MS6 ',                                    'M8   ' /) 
 
 
-  TIDE_FREQC(:)=(/0.0000000000, 0.0002281591, 0.0013097807,              0.0028219327, 0.0030500918, &
-                  0.0774870967, 0.0776894680, 0.0789992487, 0.0792016200, 0.0805114007, &     ! 2N2, MU2, N2, NU2, M2
-                                                            0.0833333333, 0.0835614924, &     ! S2 , K2
-                  0.0848454853,                                                         &     ! MSN2
-                                              0.1595106494, 0.1610228013,               &     ! MN4, M4
-                  0.1638447340,               0.1666666667,                             &     ! MS4 , S4 
-                                              0.2415342020, 0.2443561347, 0.3220456027 /)     ! M6, 2MS6, M8
-
-      CALL TIDE_SET_INDICES
-!
-      END SUBROUTINE TIDE_SETTINGS_VFAST
-
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE TIDE_SETTINGS_FAST
-!     Reduced set of tidal constituents
-!
-      IMPLICIT NONE   
-!
-      TIDE_MF = 44
-      ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
-
-      TIDECON_NAME(:)=(/ &
-       'Z0   ', 'SSA  ', 'MSM  ', 'MM   ', 'MSF  ', 'MF   ',  &
-                'O1   ',                                     'P1   ', 'K1   '                  ,  &
-                                                    'EPS2 ', '2N2  ', 'MU2  ', 'N2   ', 'NU2  ',  &
-       'M2   ', 'MKS2 ', 'LDA2 ', 'L2   ', 'S2   ', 'K2   ', 'MSN2 ', 'ETA2 ', 'MO3  ', 'M3   ',  &
-       'SO3  ', 'MK3  ', 'SK3  ', 'MN4  ', 'M4   ', 'SN4  ', 'MS4  ', 'MK4  ', 'S4   ', 'SK4  ',  &
-       '2MK5 ', '2SK5 ', '2MN6 ', 'M6   ', '2MS6 ', '2MK6 ', '2SM6 ', 'MSK6 ', '3MK7 ', 'M8   ' /) 
-
-       TIDE_FREQC(:)=(/0.0000000000, 0.0002281591, 0.0013097807, 0.0015121520, 0.0028219327, 0.0030500918, &
-                  0.0387306544,                                                         &     ! O1
-                  0.0415525871, 0.0417807462,                                           &     ! P1 & K1
-                                                                          0.0761773160, &     ! SO1 ... EPS2
-                  0.0774870967, 0.0776894680, 0.0789992487, 0.0792016200, 0.0805114007, &     ! 2N2, MU2, N2, NU2, M2
-                  0.0807395598, 0.0818211814, 0.0820235526, 0.0833333333, 0.0835614924, &
-                  0.0848454853, 0.0850736444, 0.1192420551, 0.1207671010, 0.1220639878, &
-                  0.1222921469, 0.1251140796, 0.1595106494, 0.1610228013, 0.1623325820, &
-                  0.1638447340, 0.1640728931, 0.1666666667, 0.1668948258, 0.2028035476, &
-                  0.2084474129, 0.2400220500, 0.2415342020, 0.2443561347, 0.2445842938, &
-                  0.2471780673, 0.2474062264, 0.2833149482, 0.3220456027 /)
-
-      CALL TIDE_SET_INDICES
-!
-      END SUBROUTINE TIDE_SETTINGS_FAST
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE TIDE_SET_INDICES
@@ -355,7 +498,7 @@
             IF (TIDECON_ALLNAMES(L2).EQ.KONCO_CON(J)) THEN 
               TIDE_INDEXJK(J)=L2
               END IF
-            END DO   ! L2
+            END DO ! L2
           END DO   ! J
         JBASE=JL
         END DO     ! K

@@ -1,0 +1,26 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Boundary input processing                              $
+$--------------------------------------------------------------------- $
+$ boundary option: READ or WRITE
+ WRITE 
+$
+$ Interpolation method: 1: nearest
+$                       2: linear interpolation
+ 2 
+$
+$ verbose mode [0-1]
+ 1
+$
+$ list of spectra files: 
+$ list of spectra files. These netCDF files use the WAVEWATCH III format
+$ examples of such files can be found at (for example): 
+$   http://tinyurl.com/iowagaftp/HINDCAST/NORGASUG/2010_ECMWF/SPECTRA_NC
+$
+SPECTRA_NC/ww3.62163_spec.nc
+SPECTRA_NC/ww3.62069_spec.nc
+$
+'STOPSTRING'
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

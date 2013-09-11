@@ -180,7 +180,7 @@
                ID='wind interpolation in space'
                OK='WNX0 WNX1 WNX2' ;;
       rwind  ) TY='upto1'
-                ID='wind vs. current definition'
+               ID='wind vs. current definition'
                TS='RWND'
                OK='RWND' ;;
       curr   ) TY='one'
@@ -527,7 +527,7 @@
 
   progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
-         ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk'
+         ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk ww3_prtide'
 
   for prog in $progs
   do
@@ -566,7 +566,14 @@
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd" ;;
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
+     ww3_prtide) IDstring='Tide prediction'
+               core='w3fldsmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               prop=
+             source="w3triamd $stx $nlx $btx"
+                 IO='w3iogrmd'
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_shel) IDstring='Generic shell'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'

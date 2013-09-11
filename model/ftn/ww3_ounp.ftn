@@ -450,7 +450,7 @@
 !
 ! ... Redefines netCDF type 
 !
-!/NC4      IF((NCTYPE.EQ.4).AND.(TOGETHER.EQ. .FALSE.).AND.(NREQ.GT.300))  THEN
+!/NC4      IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NREQ.GT.300))  THEN
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : Files will be generated in netCDF3 with nf90_share mode'
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : this is due to nf90_sync memory problem with netCDF4 library'
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : to convert in netCDF4, use ncks -h -a -4 -L 9 file.nc3 file.nc4'

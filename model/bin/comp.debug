@@ -81,8 +81,8 @@
 
 # opt="-c -list -O3 -unroll -tpp7 -Zp8 -module $path_m"
 # debug
-# opt="-c -CB -O0 -fpe0 -traceback  -assume byterecl -module $path_m"
- opt="-c -CB -O0 -p -pg -fpe0 -traceback  -assume byterecl -module $path_m"
+ opt="-c -CB -O0 -fpe0 -traceback  -assume byterecl -module $path_m"
+# opt="-p -pg $opt"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
   then
@@ -91,8 +91,8 @@
 
   if [ "$mpi_mod" = 'yes' ]
   then
-#    opt="-c -CB -O0 -fpe0 -traceback -assume byterecl  -convert big_endian -module   $path_m"
-    opt="-c -CB -O0 -p -pg -fpe0 -traceback -assume byterecl  -convert big_endian -module   $path_m"
+    opt="-c -CB -O0 -fpe0 -traceback -assume byterecl  -convert big_endian -module   $path_m"
+#    opt="-p -pg $opt"
     comp=mpiifort
   else
     comp=ifort

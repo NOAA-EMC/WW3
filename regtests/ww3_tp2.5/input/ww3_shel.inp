@@ -50,29 +50,8 @@ $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual.
 $
 $ (1) Forcing Fields
-  T
-$ DPW CUR WND AST WLV ICE BRG D50
-  T   F   F   F   F   F   F  F
-$ (2) Standard mean wave Parameters
-  T
-$ HS  LM  TZ  TE  TM  FP  DIR SPR DP 
-  T   F   F   F   F   T   T   T   F
-$ (3) Frequency-dependent parameters
-  F
-$ (4) Spectral Partition Parameters
-  F
-$ (5) Atmosphere-waves layer
-  F
-$ (6) Wave-Ocean layer
-  F
-$ (7) Wave-bottom layer
-  F
-$ (8) Spectrum parameters
-  F
-$ (9) Numerical diagnostics
-  F
-$ (10) User defined (NOEXTR flags needed)
-  F
+  N
+  DPT HS FP DIR SPR 
 $
 $----------------------------------------------------------------
 $

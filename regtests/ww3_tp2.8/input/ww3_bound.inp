@@ -1,9 +1,10 @@
 $ boundary option: READ or WRITE
-WRITE 
+ WRITE 
 $ Interpolation method. 1: nearest, 2: linear interpolation
-2 
-$ Verbose                                             
-0
+ 2 
+$ verbose mode [0-1]
+ 0
+$
 $ list of spectra files. These ASCII files use the WAVEWATCH III format
 $ examples of such files can be found at (for example): 
 $   ftp://polar.ncep.noaa.gov/pub/waves/develop/glw.latest_run/   (the *.spec.gz files)

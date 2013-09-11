@@ -257,6 +257,8 @@
                                          touch w3updtmd.ftn 
                                          touch w3idatmd.ftn 
                                          touch w3fldsmd.ftn 
+                                         touch ww3_prtide.ftn 
+                                         touch ww3_prnc.ftn 
                                          touch ww3_shel.ftn ;;
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac

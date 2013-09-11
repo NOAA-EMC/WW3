@@ -1106,10 +1106,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.002
               UNITS  = 'm'
-              WRITE(ENAME,'(A3,I1)') '.phs',IPART
+              WRITE(ENAME,'(A4,I1)') '.phs',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHS(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'phs',IPART 
+              WRITE(varnm(1),'(A3,I1)') 'phs',IPART 
               WRITE(varnl(1),'(A,I1)') 'wave significant height partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
               WRITE(varng(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
@@ -1120,10 +1120,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
               UNITS  = 's'
-              WRITE(ENAME,'(A3,I1)') '.ptp',IPART
+              WRITE(ENAME,'(A4,I1)') '.ptp',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTP(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'ptp',IPART 
+              WRITE(varnm(1),'(A3,I1)') 'ptp',IPART 
               WRITE(varnl(1),'(A,I1)') 'peak period partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_peak_period_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'dominant_wave_period_partition_',IPART
@@ -1134,10 +1134,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 1.
               UNITS  = 'm'
-              WRITE(ENAME,'(A3,I1)') '.plp',IPART
+              WRITE(ENAME,'(A4,I1)') '.plp',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PLP(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'plp',IPART 
+              WRITE(varnm(1),'(A3,I1)') 'plp',IPART 
               WRITE(varnl(1),'(A,I1)') 'peak wave length partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'peak_wave_length_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'peak_wave_length_partition_',IPART
@@ -1148,7 +1148,7 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
               FSC    = 1.
               UNITS  = 'degree'
-              WRITE(ENAME,'(A3,I1)') '.pdir',IPART
+              WRITE(ENAME,'(A5,I1)') '.pdir',IPART
               DO ISEA=1, NSEA
                 IF ( PTH(ISEA,IPART) .NE. UNDEF ) THEN
                   PTH(ISEA,IPART) = MOD ( 630-RADE*PTH(ISEA,IPART) , 360. )
@@ -1156,7 +1156,7 @@
                 END DO
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTH(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'pdir',IPART 
+              WRITE(varnm(1),'(A4,I1)') 'pdir',IPART 
               WRITE(varnl(1),'(A,I1)') 'wave mean direction partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'wave_from_direction_partition_',IPART
@@ -1167,10 +1167,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.1
               UNITS  = 'degree'
-              WRITE(ENAME,'(A3,I1)') '.pspr',IPART
+              WRITE(ENAME,'(A5,I1)') '.pspr',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PSI(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'pspr',IPART 
+              WRITE(varnm(1),'(A4,I1)') 'pspr',IPART 
               WRITE(varnl(1),'(A,I1)') 'directional spread partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'directional_spread_partition_',IPART
@@ -1181,10 +1181,10 @@
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
               UNITS  = ' '
-              WRITE(ENAME,'(A3,I1)') '.pws',IPART
+              WRITE(ENAME,'(A4,I1)') '.pws',IPART
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PWS(:,IPART), MAPSF, X1 )
               NFIELD=1
-              WRITE(varnm(1),'(A2,I1)') 'pws',IPART
+              WRITE(varnm(1),'(A3,I1)') 'pws',IPART
               WRITE(varnl(1),'(A,I1)') 'wind sea fraction in partition ',IPART 
               WRITE(varns(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
               WRITE(varng(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
@@ -1294,7 +1294,7 @@
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
               IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
               FSC    = 0.1
-              UNITS  = 'Wm-2'
+              UNITS  = 'W/m2'
               ENAME  = '.faw'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHIAW(1:NSEA) , MAPSF, X1 )
               NFIELD=1
@@ -1308,7 +1308,7 @@
 !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.000001
-              UNITS  = 'm2s-2'
+              UNITS  = 'm2/s2'
               ENAME  = '.taw'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -1511,7 +1511,7 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
               FSC    = 0.001
-              UNITS  = 'm2s-1'
+              UNITS  = 'm2/s'
               ENAME  = '.tus'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSX(1:NSEA)        &
                                                         , MAPSF, XX )
@@ -1688,7 +1688,7 @@
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
               FSC    = 0.01
               ENAME  = '.ubr'
-              UNITS  = 'ms-1'
+              UNITS  = 'm/s'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &

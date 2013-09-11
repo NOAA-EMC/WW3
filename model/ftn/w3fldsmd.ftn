@@ -459,17 +459,18 @@
       END SUBROUTINE W3FLDO
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLDTIDE ( INXOUT, NDS, NDST, NDSE, NX, NY, IDFLD, IERR )
+      SUBROUTINE W3FLDTIDE1 ( INXOUT, NDS, NDST, NDSE, NX, NY, IDFLD, IERR )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Sep-2012 |
+!/                  | Last update :         30-Jun-2013 |
 !/                  +-----------------------------------+
 !/
 !/    24-Sep-2012 : Creation                            ( version 4.09 ) 
+!/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
 !/
 !  1. Purpose :
 !
@@ -562,7 +563,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3FLDO')
+!/S      CALL STRACE (IENT, 'W3FLDTIDE1')
 !
 ! test input parameters ---------------------------------------------- *
 !
@@ -577,38 +578,11 @@
 !/TIDE      IF ( WRITE ) THEN
 !/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
 !/TIDE                     TIDE_MF
-!/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
-!/TIDE                     TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
 !/TIDE        ELSE
 !/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
 !/TIDE                    TIDE_MF
-!/TIDE               NTIDE = TIDE_MF
-!/TIDE               IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
-!/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
-!/TIDE                     TIDE_FREQC,TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
-!/TIDE  ! WORK TO DO HERE: 
-!/TIDE  ! we should check that TIDE_FREQC,TIDECON_NAME(:) are OK
-!/TIDE               IF(IDFLD.EQ.'LEV') THEN 
-!/TIDE                 WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-!/TIDE               ELSE 
-!/TIDE                 CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-!/TIDE                 CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
-!/TIDE                 END IF 
+!/TIDE                    NTIDE = TIDE_MF
 !/TIDE               END IF
-!/TIDET DO I=1,NTIDE 
-!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
-!/TIDET                   '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
-!/TIDET END DO
-!/TIDET DO I=1,NTIDE 
-!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
-!/TIDET                   '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
-!/TIDET END DO
-!/TIDET DO IX=1,NX
-!/TIDET IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)'),IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
-!/TIDET            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
-!/TIDET  END DO
-!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)
-!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,2)
 !
 !
 ! File OK ------------------------------------------------------------ *
@@ -659,7 +633,222 @@
 !/
 !/ End of W3FLDO  ---------------------------------------------------- /
 !/
-      END SUBROUTINE W3FLDTIDE
+      END SUBROUTINE W3FLDTIDE1
+
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3FLDTIDE2 ( INXOUT, NDS, NDST, NDSE, NX, NY, IDFLD, IDAT, IERR )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Jun-2013 |
+!/                  +-----------------------------------+
+!/
+!/    24-Sep-2012 : Creation                            ( version 4.09 ) 
+!/    30-Jun-2013 : Split in 2 subroutines              ( version 4.11 ) 
+!/
+!  1. Purpose :
+!
+!     Reads and writes tidal consituents
+!
+!  2. Method :
+!
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       INXOUT  C*(*) I  Test string for read/write, valid are:
+!                        'READ' and 'WRITE'.
+!       IDFLD   C*3  I/O ID string for field type, valid are:
+!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', and 'DTn'.
+!       NDS     Int.  I  Dataset number for fields file.
+!       NDST    Int.  I  Dataset number for test output.
+!       NDSE    Int.  I  Dataset number for error output.
+!                        (No output if NDSE < 0).
+!       NX, NY  Int.  I  Discrete grid dimensions.                 \
+!       IDAT    Int.  I  Equal to 1 if W3IDATMD arrays are to be filled
+!       IERR    Int.  O  Error indicator.
+!                         0 : No errors.
+!                         1 : Illegal INXOUT.
+!     ----------------------------------------------------------------
+!      a) for output fields.
+!      b) for input data.
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_PREP  Prog.   N/A    Input data preprocessor.
+!      WW3_PRNC  Prog.   N/A    NetCDF input data preprocessor.
+!      WW3_SHEL  Prog.   N/A    Basic wave model driver.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     See end of subroutine.
+!
+!  7. Remarks :
+!
+!     - On read, the ID 'WND' may be changed to 'WNS' (including
+!       stability data).
+!     - On read, the ID 'ICE' may be changed to 'ISI' (including
+!       iceberg data).
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+!/TIDE      USE W3TIDEMD
+      USE W3IDATMD
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)                 :: NDS, NDST, NDSE, NX, NY, IDAT
+      CHARACTER(LEN=3), INTENT(INOUT)     :: IDFLD
+      CHARACTER*(*), INTENT(IN)           :: INXOUT
+      INTEGER, INTENT(OUT)                :: IERR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+!/S      INTEGER, SAVE           :: IENT = 0
+      LOGICAL                 :: WRITE
+      INTEGER                 :: I, IX, TIDE_MF1
+      CHARACTER(LEN=100)      :: LIST(70)
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3FLDTIDE2')
+!
+! test input parameters ---------------------------------------------- *
+!
+      IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
+      IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
+           IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
+           IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
+           IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
+           IDFLD.NE.'ISI' )    GOTO 802
+      WRITE  = INXOUT .EQ. 'WRITE'
+
+!/TIDE      IF ( WRITE ) THEN
+!/TIDE               WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+!/TIDE                     TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
+!/TIDE        ELSE
+!/TIDE               IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
+!/TIDE               IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
+!/TIDE               IF (.NOT. ALLOCATED(TIDECON_NAME)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
+!/TIDE               READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+!/TIDE                     TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
+!/TIDE                     LIST(:)=''
+!/TIDE                     TIDE_MF1=TIDE_MF
+!/TIDE                     DO I=1,TIDE_MF
+!/TIDE                       LIST(I)=TIDECON_NAMEI(I)
+!/TIDE                       END DO
+!/TIDE                     CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
+!/TIDE               IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
+!/TIDE               CALL TIDE_SET_INDICES
+!/TIDE               IF(IDFLD.EQ.'LEV') THEN 
+!/TIDE                 IF (IDAT.EQ.1) WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+!/TIDE               ELSE 
+!/TIDE                 IF (IDAT.EQ.1) CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+!/TIDE                 IF (IDAT.EQ.1) CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
+!/TIDE                 END IF 
+!/TIDE               END IF
+!/TIDET DO I=1,NTIDE 
+!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
+!/TIDET                   '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
+!/TIDET END DO
+!/TIDET DO I=1,NTIDE 
+!/TIDET  WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
+!/TIDET                   '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
+!/TIDET END DO
+!/TIDET DO IX=1,NX
+!/TIDET IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)'),IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
+!/TIDET            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
+!/TIDET  END DO
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)
+!/TIDET  IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,2)
+!
+!
+! File OK ------------------------------------------------------------ *
+!
+      IERR   = 0
+      RETURN
+!
+! Error escape locations
+!
+  801 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1001) INXOUT
+      IERR   = 1
+      RETURN
+!
+  802 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1002) IDFLD
+      IERR   = 2
+      RETURN
+!
+  804 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
+      IERR   = 4
+      RETURN
+!
+  805 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
+      IERR   = 5
+      RETURN
+!
+  806 CONTINUE
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
+      IERR   = 6
+      RETURN
+!
+  807 CONTINUE
+!/TIDE      IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) TIDECON_NAMEI(:)
+      IERR   = 7
+      RETURN
+!
+! Formats
+!
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+               '     ILLEGAL INXOUT STRING : ',A/)
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+               '     ILLEGAL FIELD ID STRING : ',A/)
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+               '     ERROR IN WRITING TO ',A,' FILE, IOSTAT =',I6/)
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+               '     ERROR IN READING ',A,' FILE, IOSTAT =',I6/)
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+               '     PREMATURE END OF ',A,' FILE'/)
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDTIDE2 : '/         &
+               '     TIDAL CONSTITUENTS NOT RECOGNIZED ',A /)
+!/
+!/ End of W3FLDO  ---------------------------------------------------- /
+!/
+      END SUBROUTINE W3FLDTIDE2
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLDG (INXOUT, IDFLD, NDS, NDST, NDSE, MX, MY,      &

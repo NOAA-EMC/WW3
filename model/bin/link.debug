@@ -92,14 +92,14 @@
 #     No GRIB libraries for this one
 
   libs=""
-#  opt="-O2  -o $prog"
-  opt="-O2 -p -pg -o $prog"
+  opt="-O2  -o $prog"
+#  opt="-p -pg $opt"
 
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=mpiifort
-#    opt="-O0 -Zp8 -tpp7 -o $prog"
-    opt="-O0 -p -pg -Zp8 -tpp7 -o $prog"
+    opt="-O0 -Zp8 -tpp7 -o $prog"
+#    opt="-p -pg $opt"
   else
     comp=ifort
   fi
@@ -115,7 +115,6 @@
       NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
            libs="$libs `$NETCDF_CONFIG --flibs` `curl-config --libs` " ;;
-           #libs="$libs `$NETCDF_CONFIG --flibs`" ;;
     esac
   fi
 
