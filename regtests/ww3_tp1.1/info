@@ -29,9 +29,10 @@
 #     + switch_PR2_UQ  : UQ scheme with diffusion (off)                     #
 #     + switch_PR3_UNO : UNO scheme with averaging (off)                    #
 #     + switch_PR3_UQ  : UQ scheme with averaging (off) (default)           #
+# - Test case input2: Like input but with waves traveling in the opp. dir.  #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Aug 2013     #
+#                                                   Last Mod : Sep 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

@@ -1,0 +1,29 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D PROPAGATION EQUATOR       '
+$
+   1.1 0.03679 3 4 0.
+$
+   F T F F F F
+  3600. 3600. 3600. 3600.
+$
+  &PRO3 WDTHCG = 0., WDTHTH = 0. /
+  &PRO4 RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$
+  'RECT' T 'SMPL'
+  360    3
+    1.   1.  1.
+ -180.  -1.  1.
+$
+  -5. 5.75  10  -2500. 2 1 '(....)' 'UNIT' 'input'
+$
+  1080*1
+$
+  10  2 1 '(....)' 'PART' 'input'
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

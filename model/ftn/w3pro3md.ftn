@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2013 |
+!/                  | Last update :         12-Sep-2013 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -30,6 +30,7 @@
 !/    26-Dec-2012 : More initializations.               ( version 4.11 )
 !/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
 !/                  and second order schemes.           ( version 4.12 )
+!/    12-Sep-2013 : Add documentation for global clos.  ( version 4.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -535,7 +536,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jul-2013 |
+!/                  | Last update :         12-Sep-2013 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -558,6 +559,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
 !/                  and second order schemes.           ( version 4.12 )
+!/    12-Sep-2013 : Add documentation for global clos.  ( version 4.12 )
 !/
 !  1. Purpose :
 !
@@ -1083,7 +1085,7 @@
           IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
           END DO
 !
-! 3.a.4 Global closure
+! 3.a.4 Global closure (averaging only, propagation is closed in W3QCK3).
 !
         IF ( GLOBAL ) THEN
             DO IY=1, NY
