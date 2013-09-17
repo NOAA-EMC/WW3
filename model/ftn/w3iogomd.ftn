@@ -900,7 +900,7 @@
           EBD(IK,JSEA) = EBD(IK,JSEA) / DSII(IK)
 !
           IF ( FLOGRD( 3, 1).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,1)))   &
-            EF(JSEA,IK)  = EBD(IK,JSEA)   
+            EF(JSEA,IK)  = EBD(IK,JSEA) * TPI
 !
           USSX(JSEA)  = USSX(JSEA) + ABX(JSEA)*USSCO               
           USSY(JSEA)  = USSY(JSEA) + ABY(JSEA)*USSCO         
