@@ -3713,9 +3713,9 @@
  3001 FORMAT ( '       Coordinate system           : ',A)
  3002 FORMAT ( '       Index closure type          : ',A)
  3003 FORMAT ( '       Dimensions                  : ',I6,I8)
- 3004 FORMAT (/'       Increments           (deg.) :',2F8.2/          &
-               '       Longitude range      (deg.) :',2F8.2/          &
-               '       Latitude range       (deg.) :',2F8.2)
+ 3004 FORMAT (/'       Increments           (deg.) :',2F10.4/         &
+               '       Longitude range      (deg.) :',2F10.4/         &
+               '       Latitude range       (deg.) :',2F10.4)
  3005 FORMAT ( '       Increments             (km) :',2F8.2/          &
                '       X range                (km) :',2F8.2/          &
                '       Y range                (km) :',2F8.2)

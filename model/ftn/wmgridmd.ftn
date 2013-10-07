@@ -797,11 +797,6 @@
                STOP
            END IF
 
-!!/T38      print *, 'i, x, min=', x_min_i, 'max=', x_max_i
-!!/T38      print *, 'i, y, min=', y_min_i, 'max=', y_max_i
-!!/T38      print *, 'j, x, min=', x_min_j, 'max=', x_max_j
-!!/T38      print *, 'j, y, min=', y_min_j, 'max=', y_max_j
-
            RESOL_CHECK=.FALSE.
 !/T38      RESOL_CHECK=.TRUE.
            IF (RESOL_CHECK) THEN
