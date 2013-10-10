@@ -400,7 +400,7 @@
           call check_err(iret)
 
 
-          iret=nf90_inq_varid(ncid(IP),"Efth",varid(7))
+          iret=nf90_inq_varid(ncid(IP),"efth",varid(7))
           call check_err(iret)
           iret=nf90_get_var(ncid(IP),varid(7),SPEC2D(:,:,:,IP),start=(/1,1,1,1/),count=(/NTHI,NKI,1,NTI/))
           call check_err(iret)

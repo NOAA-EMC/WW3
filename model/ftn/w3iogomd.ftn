@@ -179,7 +179,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF
-      USE W3ODATMD, ONLY: NOGRP, NGRPP
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, FLOG
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -270,7 +270,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR, FLOG
       USE W3SERVMD, ONLY: NEXTLN, STRSPLIT, STR_TO_UPPER
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -353,139 +353,224 @@
 !
          TESTSTR=OUT_NAMES(IOUT+1)
          SELECT CASE(TRIM(TESTSTR(1:6)))
+!
+! Group 1
+!
            CASE('DPT')
              FLG2D(1,1)=.TRUE.
+             FLOG(1)=.TRUE.   
            CASE('CUR')
              FLG2D(1,2)=.TRUE.
+             FLOG(1)=.TRUE.   
            CASE('WND')
              FLG2D(1,3)=.TRUE.
+             FLOG(1)=.TRUE.   
            CASE('AST')
              FLG2D(1,4)=.TRUE.
+             FLOG(1)=.TRUE.   
            CASE('WLV')
              FLG2D(1,5)=.TRUE.
+             FLOG(1)=.TRUE.   
            CASE('ICE')
              FLG2D(1,6)=.TRUE.
+             FLOG(1)=.TRUE.   
            CASE('IBG')
              FLG2D(1,7)=.TRUE.
+             FLOG(1)=.TRUE.   
 !/BT4           CASE('D50')
 !/BT4             FLG2D(1,8)=.TRUE.
+!/BT4             FLOG(1)=.TRUE.   
+!
+!
+! Group 2
 !
            CASE('HS')
              FLG2D(2,1)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('LM')
              FLG2D(2,2)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('T02')
              FLG2D(2,3)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('T01')
              FLG2D(2,4)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('T0M1')
              FLG2D(2,5)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('FP')
              FLG2D(2,6)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('DIR')
              FLG2D(2,7)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('SPR')
              FLG2D(2,8)=.TRUE.
+             FLOG(2)=.TRUE.   
            CASE('DP')
              FLG2D(2,9)=.TRUE.
+             FLOG(2)=.TRUE.   
+!
+!
+! Group 3
 !
            CASE('EF')
              FLG2D(3,1)=.TRUE.
+             FLOG(3)=.TRUE.   
            CASE('TH1M')
              FLG2D(3,2)=.TRUE.
+             FLOG(3)=.TRUE.   
            CASE('STH1M')
              FLG2D(3,3)=.TRUE.
+             FLOG(3)=.TRUE.   
            CASE('WN')
              FLG2D(3,6)=.TRUE.
+             FLOG(3)=.TRUE.   
+!
+! Group 4
 !
            CASE('PHS')
              FLG2D(4,1)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('PTP')
              FLG2D(4,2)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('PLP')
              FLG2D(4,3)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('PTH')
              FLG2D(4,4)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('PSP')
              FLG2D(4,5)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('PWS')
              FLG2D(4,6)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('TWS')
              FLG2D(4,7)=.TRUE.
+             FLOG(4)=.TRUE.   
            CASE('PNR')
              FLG2D(4,8)=.TRUE.
+             FLOG(4)=.TRUE.   
+!
+! Group 5
 !
            CASE('UST')
              FLG2D(5,1)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('CHA')
              FLG2D(5,2)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('CGE')
              FLG2D(5,3)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('FAW')
              FLG2D(5,4)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('TAW')
              FLG2D(5,5)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('TWA')
              FLG2D(5,6)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('WCC')
              FLG2D(5,7)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('WCF')
              FLG2D(5,8)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('WCH')
              FLG2D(5,9)=.TRUE.
+             FLOG(5)=.TRUE.   
            CASE('WCM')
              FLG2D(5,10)=.TRUE.
+             FLOG(5)=.TRUE.   
+!
+! Group 6
 !
            CASE('SXY')
              FLG2D(6,1)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('TWO')
              FLG2D(6,2)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('BHD')
              FLG2D(6,3)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('FOC')
              FLG2D(6,4)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('TUS')
              FLG2D(6,5)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('USS')
              FLG2D(6,6)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('P2S')
              FLG2D(6,7)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('USF')
              FLG2D(6,8)=.TRUE.
+             FLOG(6)=.TRUE.   
            CASE('P2L')
              FLG2D(6,9)=.TRUE.
+             FLOG(6)=.TRUE.   
+!
+! Group 7
 !
            CASE('ABR')
              FLG2D(7,1)=.TRUE.
+             FLOG(7)=.TRUE.   
            CASE('UBR')
              FLG2D(7,2)=.TRUE.
+             FLOG(7)=.TRUE.   
            CASE('BED')
              FLG2D(7,3)=.TRUE.
+             FLOG(7)=.TRUE.   
            CASE('FBB')
              FLG2D(7,4)=.TRUE.
+             FLOG(7)=.TRUE.   
            CASE('TBB')
              FLG2D(7,5)=.TRUE.
+             FLOG(7)=.TRUE.   
+!
+! Group 8
 !
            CASE('MSS')
              FLG2D(8,1)=.TRUE.
+             FLOG(8)=.TRUE.   
            CASE('MSC')
              FLG2D(8,2)=.TRUE.
+             FLOG(8)=.TRUE.   
+!
+! Group 9
 !
            CASE('DTD')
              FLG2D(9,1)=.TRUE.
+             FLOG(9)=.TRUE.   
            CASE('FC')
              FLG2D(9,2)=.TRUE.
+             FLOG(9)=.TRUE.   
            CASE('CFX')
              FLG2D(9,3)=.TRUE.
+             FLOG(9)=.TRUE.   
            CASE('CFD')
              FLG2D(9,4)=.TRUE.
+             FLOG(9)=.TRUE.   
            CASE('CFK')
              FLG2D(9,5)=.TRUE.
+             FLOG(9)=.TRUE.   
+!
+! Group 10
 !
            CASE('U1')
              FLG2D(10,1)=.TRUE.
+             FLOG(10)=.TRUE.   
            CASE('U2')
              FLG2D(10,1)=.TRUE.
+             FLOG(10)=.TRUE.   
            CASE DEFAULT
              WRITE (NDSO,1004) TRIM(TESTSTR)
            END SELECT

@@ -71,6 +71,7 @@
 !      DSEC21    Func.   Id.    Difference between times.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
+!      W3READFLGRD Subr. W3IOGOMD Reading output fields flags. 
 !      W3EXGB    Subr. Internal Execute grib output.
 !      BAOPEN    Subr.          NCEP library routine.
 !      BAOPENW    Subr.          NCEP library routine.
@@ -110,7 +111,7 @@
 !      USE W3ADATMD, ONLY: W3NAUX, W3SETA
       USE W3ODATMD, ONLY: W3NOUT, W3SETO
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3IOGO
+      USE W3IOGOMD, ONLY: W3READFLGRD, W3IOGO
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
@@ -265,27 +266,18 @@
       IDTIME(21:23) = '   '
       WRITE (NDSO,941) IDTIME, NOUT
 !
-! ... Output fields
+! ... Initialize FLGRD array 
 !
-      FLREQ(:,:)=.FALSE. ! Initialize FLGRD 
+      FLREQ(:,:)=.FALSE. 
 !
-      DO IFI=1,NOGRP ! Loop over field output groups
+! ... Call to interface for reading flags or namelists
 !
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) FLOG(IFI)
-!
-        IF ( FLOG (IFI) ) THEN ! Skip if group not requested
-!
-            CALL NEXTLN ( COMSTR , NDSI , NDSE )
-            READ (NDSI,*,END=801,ERR=802) FLREQ(IFI,1:NOGE(IFI))
-!            FLREQ(IFI,1:NOGE(IFI)) = LTEMP(1:NOGE(IFI))
-!
-        ENDIF
-!
-      ENDDO
+      CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG, FLREQ,   &
+                         1, 1, IERR )
 !
 ! Inform user of parameters that were requested but failed to make the
-! grade
+! grade, as they are not available for grib encoding, or are not
+! included presently
 !
       WRITE (NDSO,944)
 ! Reset flags for variables not yet implemented in grib output
@@ -867,6 +859,8 @@
       DO IFI=1, NOGRP
        DO IFJ=1, NGRPP
         IF ( FLREQ(IFI,IFJ) ) THEN
+
+
 !
 ! Initialize array dimension flags
 !

@@ -445,7 +445,7 @@
 
   cd $main_dir/svn/model/bin
   chmod 744 *
-  chmod 644 install_wwatch3 switch*
+  chmod 644 install_* switch*
 
   cd $main_dir/svn/model/ftn
   chmod 644 *.ftn
@@ -455,7 +455,7 @@
   chmod 644 *.inp track_i.ww3
 
   cd $main_dir/svn/cases
-  chmod 744 ww3_t* mww3_case_*
+  chmod 744 mww3_case_*
   chmod 755 mww3_data_*
 
 # Include regtests in the loop
@@ -1125,6 +1125,13 @@
       echo "   $nr_new links made."
     fi
   done
+
+# --------------------------------------------------------------------------- #
+# 7. Remove broken links
+# --------------------------------------------------------------------------- #
+
+bkl=`find . -type l ! -exec test -e {} \; -print`
+rm -f $bkl
 
 # --------------------------------------------------------------------------- #
 # 9. The end                                                                  #
