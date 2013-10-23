@@ -6,7 +6,7 @@
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Oct-2012 |
+!/                  | Last update :         18-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
@@ -15,6 +15,8 @@
 !/    29-Oct-2012 : Parallelization of tidal analysis   ( version 4.08 )
 !/     4-Mar-2012 : allows any NetCDF dimensions names  ( version 4.09 ) 
 !/    13-Mar-2012 : Makes compatible with NC3           ( version 4.10 ) 
+!/    18-Oct-2013 : Debug compile issue with TIDE switch( version 4.12 )
+!/    18-Oct-2013 : Initialize interpolation weights    ( version 4.12 )
 
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -186,7 +188,7 @@
 !/ Local parameters
 !/
 !/MPI      INTEGER                 :: IERR_MPI
-!/MPI      INTEGER                 :: TIDESIZ, IND1
+!/TIDE     INTEGER                 :: TIDESIZ
 !/TIDE      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
 !/TIDE      INTEGER                 :: TIDALSTUFF
 !/LRB4      INTEGER, PARAMETER      :: LRB = 4
@@ -257,7 +259,7 @@
       CHARACTER*14          :: TIME_STR
 ! Variables used in tidal analysis
       REAL(KIND=8), ALLOCATABLE :: ALLTIMES(:)
-      INTEGER                   :: TIDE_NDEF, TIDE_ITREND, TIDESWITCH, DISTSWITCH 
+      INTEGER                   :: TIDE_NDEF, TIDE_ITREND
       REAL(KIND=8), ALLOCATABLE ::       SDEV0(:), SDEV(:), RMSR(:), &
                                          RMSR0(:), RMSRP(:), RESMAX(:)
       REAL ,        ALLOCATABLE ::       TIDE_DATA_ALL(:,:,:)
@@ -268,6 +270,7 @@
       INTEGER                   :: TIDEFLAG
       CHARACTER                 :: TIDECONSTNAMES*1024
       CHARACTER(LEN=100)         :: LIST(70)
+      LOGICAL                   :: TIDESWITCH, DISTSWITCH 
 !/TIDET  INTEGER                   ::   LRECL
 !/TIDET      CHARACTER(LEN=21)       :: FNAMETXT
 !/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
@@ -583,7 +586,6 @@
       iret=nf90_inq_varid(ncid,FIELDSNAME(1),varidtmp)
       CALL check_err(iret)
       iret=nf90_get_att(ncid,varidtmp,"_FillValue", fillvalue)
-      CALL check_err(iret)
 !
 ! ... type 1
 !
@@ -692,7 +694,16 @@
                                  IS, JS, RW )
                 IF ( .NOT.INGRID ) THEN
                     IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
-                    CYCLE
+                  IX21(IX,IY) = 1
+                  IX22(IX,IY) = 1
+                  IY21(IX,IY) = 1
+                  IY22(IX,IY) = 1
+                  RD11(IX,IY) = 0.
+                  RD21(IX,IY) = 0.
+                  RD12(IX,IY) = 0.
+                  RD22(IX,IY) = 0.
+
+                  CYCLE
                   END IF
                 IX21(IX,IY) = IS(1)
                 IX22(IX,IY) = IS(2)
@@ -1052,9 +1063,9 @@
 ! For ITYPE.LE.5 time stemps are read one by one. 
 ! Otherwise points are read one by one for tidal analysis
 !
-        TIDESWITCH=0
-!/TIDE      TIDESWITCH=1
-      IF (ITYPE.GE.6.AND.TIDESWITCH.EQ.1) THEN
+      TIDESWITCH=.FALSE.
+!/TIDE      TIDESWITCH=.TRUE.
+      IF (ITYPE.GE.6.AND.TIDESWITCH) THEN
 ! 
 ! Reads in the full time vector
 !
@@ -1118,10 +1129,13 @@
 
 
         WRITE(NDSE,*) "Number of points for this processor :", IAPROC,NXL(IAPROC)
-!/DIST   TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
-!/DIST   CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
-!/DIST   CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
-!/DIST   ALLOCATE(TIDALSTUFFA(TIDESIZ))
+!/TIDE        IF (DISTSWITCH) THEN 
+!/TIDE          TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
+!/MPI          CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
+!/MPI          CALL MPI_TYPE_COMMIT ( TIDALSTUFF, IERR_MPI )
+!/TIDE          ALLOCATE(TIDALSTUFFA(TIDESIZ))
+!/TIDE          TIDALSTUFFA(:)=0.
+!/TIDE          END IF
 !
 ! Loops on Y dimension
 !
@@ -1143,8 +1157,6 @@
               END DO
           END IF
 !
-!
-!/MPI          TIDALSTUFFA(:)=0.
           DO JX=1,NXL(IAPROC)  ! This loop is parallelized with MPI 
 !/DIST      IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
 !/SHRD      IX = JX
@@ -1198,9 +1210,9 @@
 !                END DO
 
 ! Fills 1-D array for MPI communication
-            DISTSWITCH = 0
-!/DIST      DISTSWITCH = 1
-            IF (DISTSWITCH.EQ.1) THEN 
+            DISTSWITCH = .FALSE.
+!/DIST      DISTSWITCH = .TRUE.
+            IF (DISTSWITCH) THEN 
 !/TIDE         DO J=1,TIDE_MF
 !/TIDE           DO K=1,NFIELDS
 !/TIDE             DO L=1,2
@@ -1233,10 +1245,11 @@
 !
 ! We need to send and receive the bits of TIDAL_CONST(:,IY,:,:,:)
 !
-!/DIST     IF (IAPROC.NE.NAPOUT)  THEN
+!/TIDE     IF (DISTSWITCH) THEN 
+!/TIDE     IF (IAPROC.NE.NAPOUT)  THEN
 !/DIST       CALL MPI_SEND ( TIDALSTUFFA, 1, TIDALSTUFF, NAPOUT-1, 0,  &
 !/DIST                       MPI_COMM_WORLD, IERR_MPI )
-!/DIST     ELSE
+!/TIDE     ELSE
 !/TIDET           DO JX=1,NXL(IAPROC)
 !/TIDET             IX = JX + (IAPROC-1)*NXLM ! IAPROC + (JX-1)*NAPROC
 !/TIDET             DO J=1,TIDE_MF
@@ -1247,28 +1260,29 @@
 !/TIDET               END DO
 !/TIDET             END DO
 !/TIDET           END DO       ! JX=1,NXL
-!/DIST       DO JPC=1,NAPROC
-!/DIST         IF (JPC .NE. NAPOUT )  THEN 
+!/TIDE       DO JPC=1,NAPROC
+!/TIDE         IF (JPC .NE. NAPOUT )  THEN 
 !/DIST           CALL MPI_RECV ( TIDALSTUFFA, 1, TIDALSTUFF, JPC-1, MPI_ANY_TAG,  &
 !/DIST                             MPI_COMM_WORLD, STAT_MPI, IERR_MPI )
-!/DIST           ! Now unpacks the 1-D array
-!/DIST           IND=0
-!/DIST           DO JX=1,NXL(JPC)
-!/DIST             IX = JX + (JPC-1)*NXLM ! JPC    + (JX-1)*NAPROC
-!
-!/DIST             DO J=1,TIDE_MF
-!/DIST               DO K=1,NFIELDS
-!/DIST                 DO L=1,2
-!/DIST                   IND=IND+1
-!/DIST                   TIDAL_CONST(IX,IY,J,K,L)=TIDALSTUFFA(IND)
-!/DIST                 END DO
-!/DIST               END DO
-!/DIST             END DO
-!/DIST           END DO       ! JX=1,NXL
-!/DIST         END IF         ! JPC .NE. NAPOUT
-!/DIST       END DO           ! JPC=0,NAPROC-1
+!/TIDE           ! Now unpacks the 1-D array
+!/TIDE           IND=0
+!/TIDE           DO JX=1,NXL(JPC)
+!/TIDE             IX = JX + (JPC-1)*NXLM ! JPC    + (JX-1)*NAPROC
+!/TIDE!
+!/TIDE             DO J=1,TIDE_MF
+!/TIDE               DO K=1,NFIELDS
+!/TIDE                 DO L=1,2
+!/TIDE                   IND=IND+1
+!/TIDE                   TIDAL_CONST(IX,IY,J,K,L)=TIDALSTUFFA(IND)
+!/TIDE                 END DO
+!/TIDE               END DO
+!/TIDE             END DO
+!/TIDE           END DO       ! JX=1,NXL
+!/TIDE         END IF         ! JPC .NE. NAPOUT
+!/TIDE       END DO           ! JPC=0,NAPROC-1
 !/TIDET       WRITE(NDSE,*) "IY = ", IY, "on ", NY
-!/DIST     END IF
+!/TIDE     END IF
+!/TIDE     END IF
           
         END DO ! IY=1,NY
 !/TIDET    CLOSE (990)
@@ -1276,22 +1290,26 @@
 !/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1) 
 !/TIDET  IF (IDFLD.EQ.'CUR') WRITE(986,'(F10.3,/)') TIDAL_CONST(:,1,15,1,1)
 
-!/MPI        CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
-!/MPI        DEALLOCATE(TIDALSTUFFA)
+!/TIDE     IF (DISTSWITCH) THEN 
+!/DIST       CALL MPI_TYPE_FREE(TIDALSTUFF, IERR_MPI)
+!/TIDE       DEALLOCATE(TIDALSTUFFA)
+!/TIDE       END IF
 
 !/MPI        IF (IAPROC .EQ. NAPOUT )  THEN 
 !/MPI          WRITE(NDSE,*) "parallelization done"
 !/MPI        ELSE
 !/MPI          GOTO 888
 !/MPI        END IF
-!
-! After loop on points, write tidal constituents to file. 
-!
+!/TIDE!
+!/TIDE! After loop on points, write tidal constituents to file. 
+!/TIDE!
 !/TIDE        IF ( IAPROC .EQ. NAPOUT.AND.TIDEFLAG.GE.1)  &
 !/TIDE          CALL W3FLDTIDE1 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, IERR )
 !/TIDE          CALL W3FLDTIDE2 ( 'WRITE',  NDSDAT, NDST, NDSE, NX, NY, IDFLD, 0, IERR )
-!/TIDE        END IF
-!/TIDE        IF (ITYPE.GE.6.AND.TIDESWITCH.EQ.1) GOTO 880
+!/TIDE!
+!/TIDE        GOTO 880
+           END IF ! end of test   IF (ITYPE.GE.6.AND.TIDESWITCH)
+
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6   Begin loop over input fields

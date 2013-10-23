@@ -5,10 +5,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Mar-2013 |
+!/                  | Last update :         17-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    29-Mar-2013 : Creation                            ( version 4.11 )   
+!/    17-Oct-2013 : Manages missing data for UNST grids ( version 4.12 )   
 !/
 !/    Copyright 2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -133,16 +134,18 @@
       CHARACTER               :: TIDECONSTNAMES*1024
       CHARACTER(LEN=100)      :: TIDECON_PRNAMES(70), TIDECON_MAXNAMES(70), &
                                  TIDECON_MAXVALS(70)
-      INTEGER                 :: PR_INDS(70)
+      INTEGER                 :: PR_INDS(70), K, IND, IX2, SUMOK, NBAD, ITER
       CHARACTER*23            :: IDTIME 
       CHARACTER               :: COMSTR*1, IDFLD*3
       REAL, ALLOCATABLE       :: FX(:,:), FY(:,:), FA(:,:)
+      INTEGER, ALLOCATABLE    :: BADPOINTS(:,:)
       REAL                    :: MAXVALCON(70) 
       REAL             :: WCURTIDEX, WCURTIDEY, TIDE_ARGX, TIDE_ARGY
       INTEGER(KIND=4)  :: TIDE_KD0, INT24, INTDYS       ! "Gregorian day constant"
       REAL             :: WLEVTIDE, TIDE_ARG, WLEVTIDE2(1)
       REAL(KIND=8)     :: d1,h,TIDE_HOUR,HH,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
-      REAL             :: TIDE_FX(44),UX(44),VX(44)
+      REAL             :: TIDE_FX(44),UX(44),VX(44), AMPCOS, AMPSIN
+      LOGICAL          :: TIDEFILL
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -168,6 +171,7 @@
 !
       NDSTRC =  6
       NTRACE = 10
+      TIDEFILL =.TRUE.
       CALL ITRACE ( NDSTRC, NTRACE )
 !
 !/NCO/!
@@ -199,7 +203,7 @@
 !
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,902) GNAME
-      ALLOCATE ( FX(NX,NY), FY(NX,NY), FA(NX,NY) )
+      ALLOCATE ( FX(NX,NY), FY(NX,NY), FA(NX,NY),  BADPOINTS(NX,NY) )
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.a Read types from input file.
@@ -308,30 +312,90 @@
         INTDYS=int((TIDE_HOUR+0.00001)/INT24)
         HH=TIDE_HOUR-dfloat(INTDYS*INT24)
         TAU=HH/24.D0+H-S
+
 !
-! For currents: 2 components
+! Treatment of 'bad points'
 !
-        IF (IFLD.EQ.4) THEN 
+        BADPOINTS(:,:)=0
+        NBAD =0
         DO IY = 1, NY
           DO IX = 1, NX 
-
             CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,YGRD(IY,IX),TIDE_FX,UX,VX)
-! Removes unlikely values ... 
             IF (TINDEX.EQ.1) THEN 
               TIDEOK=1
               DO I=1,TIDE_MAX
                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) &
                   .OR.ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) & 
                   TIDEOK = 0
+                  BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
                 END DO
-              IF (TIDEOK.EQ.0) THEN   
-                WRITE(NDSE,*) 'BAD POINT:',IX,IY, &
+                IF (BADPOINTS(IX,IY).GT.0) THEN 
+                  NBAD = NBAD +1
+                  WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &
+                     TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
+                  END IF
+              END IF
+            END DO
+          END DO
+!   
+        DO ITER=1,2
+        DO IY = 1, NY
+          DO IX = 1, NX 
+            IF (TINDEX.EQ.1) THEN 
+              IF (BADPOINTS(IX,IY).GT.0) THEN 
+                IF (IX.EQ.72167) WRITE(NDSE,*) 'BAD POINT:',IX,IY, &
                      TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 TIDAL_CONST(IX,IY,:,1,1)=0
                 TIDAL_CONST(IX,IY,:,2,1)=0
-                END IF
-              END IF   
+                IF (TIDEFILL.AND.(GTYPE.EQ.UNGTYPE)) THEN 
 !
+! Performs a vector sum of tidal constituents over neighbor nodes
+!  
+                   DO J=1, TIDE_MF 
+                     DO K=1, 2
+                      AMPCOS = 0
+                      AMPSIN = 0
+                      SUMOK = 0
+                      DO IND=1,COUNTCON(IX) 
+                        IX2=VNEIGH(IX,IND)
+                IF (IX.EQ.72167.OR.IX.EQ.80571.AND.J.EQ.8) WRITE(NDSE,*) 'BAD POINTZ:',ITER, IX,IX2,BADPOINTS(IX2,IY)
+                        IF (BADPOINTS(IX2,IY).EQ.0) THEN 
+                          SUMOK = SUMOK + 1
+                          AMPCOS = AMPCOS+TIDAL_CONST(IX2,IY,J,K,1)*COS(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
+                          AMPSIN = AMPSIN+TIDAL_CONST(IX2,IY,J,K,1)*SIN(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
+!IF (IX.EQ.72167.OR.IX.EQ.80571.AND.J.EQ.10) WRITE(6,*) 'TEST 1:',IX,J,K,IX2,AMPCOS/SUMOK,AMPSIN/SUMOK, &
+!               TIDAL_CONST(IX2,IY,J,K,1),TIDAL_CONST(IX2,IY,J,K,2)
+                          END IF
+                        END DO
+                      IF (SUMOK.GT.1) THEN 
+                        TIDAL_CONST(IX,IY,J,K,1) = SQRT(AMPCOS**2+AMPSIN**2)/SUMOK
+                        TIDAL_CONST(IX,IY,J,K,2) = ATAN2(AMPSIN,AMPCOS)/DERA
+                        IF(K.EQ.2.AND.J.EQ.TIDE_MF) THEN 
+                          NBAD=NBAD-1
+                          BADPOINTS(IX,IY) = 0
+!IF (IX.EQ.72167.OR.IX.EQ.80571) WRITE(6,*) 'ENDDZ:',ITER, IX, K,J,NBAD,IX2,BADPOINTS(IX,IY)
+                          END IF 
+!IF (IX.EQ.72167.OR.IX.EQ.80571.AND.J.EQ.10) WRITE(6,*) 'ENDDD:',ITER, IX, K,J,NBAD,IX2,AMPCOS/SUMOK,AMPSIN/SUMOK, &
+!                                      TIDAL_CONST(IX2,IY,J,K,1),TIDAL_CONST(IX2,IY,J,K,2)
+
+                         ENDIF
+                       END DO
+                     END DO
+                   END IF
+                 END IF
+              END IF
+            END DO
+          END DO
+          END DO
+
+        IF (TINDEX.EQ.1) WRITE(NDSE,*) 'Number of remaining bad points:',NBAD
+
+!
+! For currents: 2 components
+!
+        IF (IFLD.EQ.4) THEN 
+        DO IY = 1, NY
+          DO IX = 1, NX 
             WCURTIDEX = 0.
             WCURTIDEY = 0.
             DO I=1,TIDE_PRMF

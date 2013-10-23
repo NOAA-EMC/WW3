@@ -848,13 +848,20 @@ than neighbor triangles (5 in the same example).
 cell gives the rate of change of the wave action at the corresponding node. The various schemes implemented have 
 different discretizations for the estimation of this flux. 
 
+The equivalent of the CFL condition in the stable schemes is the ratio of the dual cell area divided 
+by the product of the time step and all positive flux into the dual cell. Because the spectral levels 
+are imposed on the boundary for the positive fluxes, the boundary nodes are excluded from this 
+CFL calculation. 
+
  The boundary condition at the shoreline depends on the 
 wave direction relative to the shoreline orientation. This particular treatment is enforced using the `{\F IOBPD}' array 
 which is updated whenever the grid points status map `{\F MAPSTA}' changes. The grid geometry is also used to define 
 local gradients of the water depth and currents. All other operations, such as interpolation of the forcing 
 on the grid and interpolation from the grid onto output locations, is performed using linear interpolation in triangles. 
 
-All the triangle geometry operations assume a locally flat Earth. 
+All the triangle geometry operations assume a locally flat Earth. Depth and current gradients on 
+the grid are estimated at the nodes by weighting with their angle the gradients over each 
+triangle connected to the node. 
 
 
 
@@ -1283,9 +1290,9 @@ M6, 2MS6, and  M8. When using ww3\_shel to do the tidal prediction,
 
 In ww3\_prtide, there is also a quality check on the values of the tidal constituents 
 that is performed: unrealistically large values of the amplitudes for some 
-constituents can be defined in ww3\_prtide.inp .  For model grid points where these 
-are exceeded, all components are set to zero. Another approach would have been 
-to use the amplitudes from the nearest grid point. 
+constituents can be defined in ww3\_prtide.inp.  For model grid points where these 
+are exceeded, all components are set to zero, execept for UNST grids, in which the 
+neighbors are searched to provide a reasonable value. 
 
 
 

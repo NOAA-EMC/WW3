@@ -739,8 +739,12 @@
 !
 !/T        WRITE (NDST,9004) DPO(I), WAO(I), WDO(I)*RADE,             &
 !/T                                  CAO(I), CDO(I)*RADE
-!/T        CALL PRT2DS (NDST, NK, NK, NTH, SPTEST, SIG(1:), ' ', 1.,0.,&
-!/T                     0.0001, 'E(f,theta)', 'm**2s', 'TEST OUTPUT' )
+
+! FA COMMENTED OUT: BUG 
+!At line 1974 of file w3arrymd.f90
+!Fortran runtime error: Index '52' of dimension 1 of array 'pnum2' above upper bound of 51
+!/T       ! CALL PRT2DS (NDST, NK, NK, NTH, SPTEST, SIG(1:), ' ', 1.,0.,&
+!/T       !              0.0001, 'E(f,theta)', 'm**2s', 'TEST OUTPUT' )
 !
         END DO
 !

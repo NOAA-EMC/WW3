@@ -4,13 +4,14 @@ MODULE W3TRIAMD
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |       F. Ardhuin and A. Roland    |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          30-Aug-2012|
+!/                  | Last update :          14-Oct-2013|
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
 !/    25-Aug-2011 : Modification of boundary treatment  ( version 4.04 )
 !/    30-Aug-2012 : Automatic detection of open BC      ( version 4.08 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.08 )
+!/    14-Oct-2013 : Correction  of latitude factor      ( version 4.12 )
 !/
 !
 !  1. Purpose :
@@ -702,9 +703,9 @@ END SUBROUTINE
 !
 ! edges length
 !            
-            LEN(IE,1) = SQRT(R1(1)**2.+R1(2)**2.)
-            LEN(IE,2) = SQRT(R2(1)**2.+R2(2)**2.)
-            LEN(IE,3) = SQRT(R3(1)**2.+R3(2)**2.)   
+            LEN(IE,1) = SQRT(R1(1)**2+R1(2)**2)
+            LEN(IE,2) = SQRT(R2(1)**2+R2(2)**2)
+            LEN(IE,3) = SQRT(R3(1)**2+R3(2)**2)   
 !
 ! inward normal used for propagation (not normalized)
 !            
@@ -1540,12 +1541,13 @@ END SUBROUTINE
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          08-Nov-2011|
+!/                  | Last update :          14-Oct-2013|
 !/                  +-----------------------------------+
 !/
 !/    15-Nov-2007 : Origination.                        ( version 3.13 )
 !/    31-Oct-2010 : Merging of 4.03 with 3.14-Ifremer   ( version 4.04 )
 !/    08-Nov-2011 : Correction for zero grad. on contour( version 4.04 )
+!/    14-Oct-2013 : Correction  of latitude factor      ( version 4.12 )
 !/      
 !
 !  1. purpose: calculate gradients at a point via its connection.
@@ -1594,9 +1596,9 @@ END SUBROUTINE
       INTEGER              :: COUNTER(NX)
       REAL                 :: TMP1(3), TMP2(3)
       INTEGER              :: I, IX
-      REAL                 :: VAR(3), FACT, LAT(3)
+      REAL                 :: VAR(3), FACT, LATMEAN
       REAL                 :: DIFFXTMP, DIFFYTMP
-      
+      REAL, PARAMETER      :: ONETHIRD = 0.3333333333
        
 !initialisation step      
       COUNTER(:) = 0.
@@ -1614,28 +1616,37 @@ END SUBROUTINE
        VERTICES(3) = TRIGP(I,3)
 !
 !   CLATIS is 1/COS(latitute) 
-! 
-       LAT(1)=CLATIS(MAPFS(1,VERTICES(1)))
-       LAT(2)=CLATIS(MAPFS(1,VERTICES(2)))
-       LAT(3)=CLATIS(MAPFS(1,VERTICES(2)))
-      
-
-       VAR(1) = PARAM(MAPFS(1,VERTICES(1)))* FACT*LAT(1)
-       VAR(2) = PARAM(MAPFS(1,VERTICES(2)))* FACT*LAT(2)
-       VAR(3) = PARAM(MAPFS(1,VERTICES(3)))* FACT*LAT(3)
+!   this may give funny results close to the pole ... 
+!
+       LATMEAN = ONETHIRD * ( CLATIS(MAPFS(1,VERTICES(1)))  & 
+                             +CLATIS(MAPFS(1,VERTICES(2)))  &
+                             +CLATIS(MAPFS(1,VERTICES(3))) )
+ 
+       VAR(1) = PARAM(MAPFS(1,VERTICES(1)))* FACT
+       VAR(2) = PARAM(MAPFS(1,VERTICES(2)))* FACT
+       VAR(3) = PARAM(MAPFS(1,VERTICES(3)))* FACT
      
        TMP1(:)  = CROSSDIFF(1:3, I)
        TMP2(:)  = CROSSDIFF(4:6, I)
 
-       DIFFXTMP = DOT_PRODUCT(VAR(:),TMP1(:))
-       DIFFYTMP = DOT_PRODUCT(VAR(:),TMP2(:))
+! Slopes in a triangle : 
+! denom=(x(1)-x(2))*(y(3)-y(2))-(y(2)-y(1))*(x(2)-x(3));
+! denom is 2*area
+!dz/dy= -((z(2)-z(1))*(x(2)-x(3))-(z(3)-z(2))*(x(1)-x(2)))/denom;
+!dz/dx=  ((z(2)-z(1))*(y(2)-y(3))+(z(3)-z(2))*(y(1)-y(2)))/denom;
+!dz/dx=  (z(1)*(y(3)-y(2))+z(2)*(y(1)-y(3))+z(3)*(y(2)-y(1)))/(2*area);
+!dz/dy= -(z(1)*(x(3)-x(2))+z(2)*(x(1)-x(3))+z(3)*(x(2)-x(1)))/(2*area);
+
+       DIFFXTMP = DOT_PRODUCT(VAR(:),TMP1(:)) * LATMEAN
+       DIFFYTMP = DOT_PRODUCT(VAR(:),TMP2(:)) 
 
 ! calculate global gradients via all the connection contributions.
        DIFFX(1,VERTICES(:)) = DIFFX(1,VERTICES(:)) + DIFFXTMP * ANGLE(I,:)
        DIFFY(1,VERTICES(:)) = DIFFY(1,VERTICES(:)) + DIFFYTMP * ANGLE(I,:) 
        END DO
-
-! restore 0 on the contour 
+!
+! Sets gradient to 0 on the contour 
+!
        DO IX = 1,NX
          IF (IOBP(IX).EQ. 0 ) THEN
            DIFFX(1,IX)  =  0.     

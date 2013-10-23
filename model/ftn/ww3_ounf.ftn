@@ -2121,11 +2121,12 @@
 ! Writes frequencies
 !
                   IF (extradim.EQ.1) THEN
-                    IF (.NOT.ALLOCATED(freq)) ALLOCATE(freq(I2F-I1F+1))
+                    ALLOCATE(freq(I2F-I1F+1))
                     DO i=1,I2F-I1F+1
                       freq(i)=SIG(I1F-1+i)*TPIINV
                     END DO
                     iret=nf90_put_var(ncid,varid(3),freq)
+                    DEALLOCATE(freq)
                   END IF
 !
 ! Writes Triangles
@@ -2259,7 +2260,6 @@
                 !  call check_err(iret)
                 !  END DO
 
-
 !  
 ! new time step for existing file
 !
@@ -2356,7 +2356,7 @@
               WRITE(stopdate,'(I4.4,A,5(I2.2,A))') iyc,'-',imc,'-',idc,'T',ihc,':',iminc,':',isc,'Z' 
               iret=nf90_put_att(ncid,NF90_GLOBAL,'stop_date',stopdate)
               iret=nf90_enddef(ncid)
-
+              call check_err(iret)
 
               timenc=DBLE(julday(idc,imc,iyc))+(DBLE(ihc)+(DBLE(iminc)+(DBLE(isc)/60.))/60.)/24.
               Jday0=julday(1,1,1990)

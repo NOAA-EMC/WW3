@@ -442,7 +442,7 @@
               NTIDES=NTIDES+1
               INDS(NTIDES)=J
               FOUND = 1
-              WRITE(6,*) 'Tidal constituent in analysis:',J,TRIM(TIDECON_NAME_ALL(J)),TRIM(LIST(TIDE_MF)),TIDE_FREQC_ALL(J)
+              WRITE(6,*) 'Tidal constituent in analysis:',J,TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
               END IF
             END DO
           IF (FOUND.EQ.0) WRITE(6,*) 'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'

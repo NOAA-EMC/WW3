@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2013 |
+!/                  | Last update :         10-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination (out of W3WAVEMD).      ( version 3.06 )
@@ -48,6 +48,7 @@
 !/    26-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
 !/                  structure and smaller memory footprint.
 !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
+!/    10-Oct-2013 : CG and WN values at DMIN for ISEA=0 ( version 4.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -891,8 +892,12 @@
 ! 5.b Fill wavenumber and group velocity arrays.
 !
 !/NEC/!CDIR LOOPCNT=100000
-      DO IS=1, NSEA
-        DEPTH  = MAX ( DMIN , DW(IS) )
+      DO IS=0, NSEA
+        IF (IS.GT.0) THEN
+          DEPTH  = MAX ( DMIN , DW(IS) )
+        ELSE
+          DEPTH = DMIN
+          END IF 
         SQRTH  = SQRT(DEPTH)
 !
 !/T1        WRITE (NDST,9051) IS, DEPTH
@@ -920,10 +925,11 @@
           END DO
         END DO
 !
-      DO IK=1, NK
-        CG(IK,0) = CG(IK,1)
-        WN(IK,0) = WN(IK,1)
-        END DO
+! Commented by FA with version 4.12 
+!      DO IK=1, NK
+!        CG(IK,0) = CG(IK,1)
+!        WN(IK,0) = WN(IK,1)
+!        END DO
 !
 ! 6.  Initialize arrays ---------------------------------------------- /
 !     Some initialized in W3IORS

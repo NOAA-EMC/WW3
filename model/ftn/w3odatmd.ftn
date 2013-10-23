@@ -648,6 +648,7 @@
       IDOUT( 2, 7)  = 'Mean wave dir. a1b1 '
       IDOUT( 2, 8)  = 'Mean dir. spr. a1b1 '
       IDOUT( 2, 9)  = 'Peak direction      '
+      IDOUT( 2, 10)  = 'Infragravity height'
 !      IDOUT( 2,10)  = 'Mean wave dir. a2b2 '
 !      IDOUT( 2,11)  = 'Mean dir. spr. a2b2 '
 !      IDOUT( 2,12)  = 'Windsea height (Sin)'

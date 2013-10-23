@@ -469,9 +469,9 @@
         AORB = AORB + EB             * DDEN(IK) / CG(IK)  !deep water only
         END DO
 
-      UORB = 2*SQRT(UORB)             ! this is now the significant orbital amplitude
-      AORB1 = 2*AORB**(1-0.5*SSWELLF(6))   ! this is now half the significant wave height ... if SWELLF(6)=1
-      RE = 4*UORB*AORB1 / NU_AIR ! this is the Reynolds number 
+      UORB = 2*SQRT(UORB)                  ! significant orbital amplitude
+      AORB1 = 2*AORB**(1-0.5*SSWELLF(6))   ! half the significant wave height ... if SWELLF(6)=1
+      RE = 4*UORB*AORB1 / NU_AIR           ! Reynolds number 
 !
 ! Defines the swell dissipation based on the "Reynolds number"
 !
@@ -531,7 +531,7 @@
       STRESSSTAB(ISTAB,:)=0.
       STRESSSTABN(ISTAB,:)=0.
 !
-! Coupling coefficient times densit ration and fraction of free surface (1-ICE)
+! Coupling coefficient times density ratio DRAT and fraction of free surface (1-ICE)
 !
       IF (FLICES) THEN 
         CONST0=MIN(0.,MAX(1.,1.-ICE))*BBETA*DRAT/(kappa**2)
@@ -556,9 +556,8 @@
         CONST2=DDEN2(IS)/CG(IK) &        !Jacobian to get energy in band
               *GRAV/(SIG(IK)/K(IS)*DRAT) ! coefficient to get momentum
         CONST=SIG2(IS)*CONST0                    
-           ! this CM parameter is 1 / C_phi
-           ! this is the "correct" shallow-water expression
-           ! here Z0 corresponds to Z0+Z1 of the Janssen eq. 14
+           ! CM parameter is 1 / C_phi
+           ! Z0 corresponds to Z0+Z1 of the Janssen eq. 14
         ZCN=ALOG(K(IS)*Z0)
            ! below is the original WAM version (OK for deep water)  g*z0/C^2
            ! ZCN=ALOG(G*Z0b(I)*CM(I)**2)
@@ -630,7 +629,6 @@
         YSTRESS=STRESSSTAB (3,2)
         TAUWNX =STRESSSTABN(3,1)
         TAUWNY =STRESSSTABN(3,2)
-!	      WRITE(995,'(A,11G14.5)') 'NEGSTRESS:    ',TAUWNX,TAUWNY,FW*UORB**3
 !/STAB3      END DO 
 !/STAB3      D(:)=0.5*(DSTAB(1,:)+DSTAB(2,:))
 !/STAB3      XSTRESS=0.5*(STRESSSTAB(1,1)+STRESSSTAB(2,1))
@@ -810,7 +808,7 @@
 !/
 !/S      CALL STRACE (IENT, 'INSIN4')
 !
-! 1.  .... ----------------------------------------------------------- *
+! 1.  Initializations ------------------------------------------------ *
 !
 !
 ! These precomputed tables are written in mod_def.ww3 
@@ -823,11 +821,9 @@
           CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress
           END IF
         END IF
-!/ ------------------------------------------------------------------- /
-!                        SPONTANEOUS BREAKING
-!/ ------------------------------------------------------------------- /
 !
-! Precomputes the indices for integrating the spectrum to get saturation (TEST 441)
+! 2.  SPONTANEOUS BREAKING
+! 2.a Precomputes the indices for integrating the spectrum to get saturation (TEST 4xx )
 !
       IF (SSDSDTH.LT.180) THEN
         SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
@@ -965,7 +961,6 @@
                 IS2=ITH2+(IK2-1)*NTH
                 CUMULW(IS2,IS)=SQRT(C**2+C2**2-2*C*C2*ECOS(1+ABS(ITH2-ITH))) & ! = deltaC
                                    *DSIP(IK2)/(0.5*C2) * DTH                   ! = dk*dtheta (Valid in deep water only)
-                                   !*DDEN(IK)/(DTH*SIG(IK)*CG(IK))* DTH         ! = dk*dtheta (Valid in all water depth ???)
                 END DO
               END DO 
             END DO
@@ -1251,9 +1246,11 @@
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update 2006/08/14            |
+!/                  | Last update 2013/01/24            |
 !/                  +-----------------------------------+
 !/
 !/    15-May-2007 : Origination in WW3                  ( version 3.10.SHOM )
+!/    24-Jan-2013 : Allows to read in table             ( version 4.08 )
 !
 !  1. Purpose :
 !
@@ -1519,8 +1516,10 @@
 !     Calculate whitecapping source term and diagonal term of derivative.
 !
 !  2. Method :
-!
-!       Ardhuin et al. (JPO 2009) and Filipot & Ardhuin (OM, submitted)
+!       
+!       This codes does either one or the other of 
+!       Ardhuin et al. (JPO 2010)   
+!       Filipot & Ardhuin (JGR 2012)
 !
 !  3. Parameters :
 !
@@ -1948,12 +1947,6 @@
                 END IF
               END DO
             END IF
-!            IS2MAX = (IK-DIKCUMUL)*NTH
-!            RENEWALFREQ = DOT_PRODUCT(CUMULW(1:IS2MAX,IS),LAMBDA(1:IS2MAX))
-!          ELSE
-!            RENEWALFREQ = 0.
-!            END IF
-
 !
 ! Computes wave turbulence interaction
 !
@@ -2005,16 +1998,20 @@
 !/ Calculates the Mean Foam Thickness for component K(IK) => Fig.3, Reul and Chapron, 2003 
 !/
         DO IK=1,NK
-          TSTR = 0.8 * 2*PI/SIG(IK)                                ! Duration of active breaking (TAU*)
-          TMAX = 5.  * 2*PI/SIG(IK)                                ! Time persistence of foam (a=5.)
+! Duration of active breaking (TAU*)
+          TSTR = 0.8 * 2*PI/SIG(IK)                                
+! Time persistence of foam (a=5.)
+          TMAX = 5.  * 2*PI/SIG(IK)                                
           DT   = TMAX / 50
           MFT  = 0. 
-          DO IT = 1, 50                                            ! integration over time of foam persistance
+          DO IT = 1, 50                                            
+! integration over time of foam persistance
             T = FLOAT(IT) * DT
-            IF ( T .lt. TSTR ) THEN
-              MFT = MFT + 0.4 / (K(IK)*TSTR) * T * DT              !
-            ELSE                                                   ! Eq. 5 and 6 of Reul and Chapron, 2003
-              MFT = MFT + 0.4 / K(IK) * exp(-1*(T-TSTR)/3.8) * DT  !
+! Eq. 5 and 6 of Reul and Chapron, 2003
+            IF ( T .LT. TSTR ) THEN
+              MFT = MFT + 0.4 / (K(IK)*TSTR) * T * DT              
+            ELSE                                                   
+              MFT = MFT + 0.4 / K(IK) * EXP(-1*(T-TSTR)/3.8) * DT  
               END IF
             END DO
           MFT = MFT / TMAX

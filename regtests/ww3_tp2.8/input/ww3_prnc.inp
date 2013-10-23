@@ -22,15 +22,15 @@ $   Header flag  : If true, header is added to file.
 $                  (necessary for reading, FALSE is used only for
 $                   incremental generation of a data file.)
 $
-  'WND' 'LL' T T
+  'CUR' 'LL' T T
 $
 $ Name of dimensions ------------------------------------------------- $
 $
- lon lat
+ longitude latitude
 $
 $ Variables to use --------------------------------------------------- $
 $
-  U10 V10
+  U V
 $
 $
 $ Additional time input ---------------------------------------------- $
@@ -45,7 +45,7 @@ $ The input line identifies the filename using for the forcing field.
 $
 $ -> filename
 $
-  'wind.nc'
+  'Iroise_AI_UV.nc'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

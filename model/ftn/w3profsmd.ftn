@@ -6,13 +6,14 @@
 !/                  |           Aron Roland             |
 !/                  |         Fabrice Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Jun-2013 |
+!/                  | Last update :         17-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    XX-Nov-2007 : Origination.                        ( version 3.10 )
 !/    03-Nov-2011 : Adding shoreline reflection         ( version 4.04 )
 !/    03-Jun-2013 : Removed assign statements           ( version 4.10 )
 !/    20-Jun-2013 : Update test output for time steps   ( version 4.10 )
+!/    17-Oct-2013 : Removes boundary nodes from CFL     ( version 4.12 )
 !
 !  1. Purpose :
 !
@@ -200,7 +201,7 @@
         DO ISEA=1, NSEA
           IXY =  MAPSF(ISEA,3)
 !
-! Currents are not included on coastal boundaries (COUNTSEACON(IXY) .NE. CCON(IXY))
+! Currents are not included on coastal boundaries (IOBP(IXY).EQ.0)
 !
           IF (IOBP(IXY) .EQ. 1) THEN                                  
             VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
@@ -336,9 +337,9 @@
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN, INDEX_CELL,   &
                           NTRI, TRIGP, CCON ,                         &
-                          IE_CELL, POS_CELL, COUNTRI, SI, IOBP
+                          IE_CELL, POS_CELL, COUNTRI, SI, IOBP, XYB
 
-      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, DW
       USE W3IDATMD, ONLY: FLCUR
 !/T      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
 !/T                          ISBPI, BBPI0, BBPIN
@@ -356,7 +357,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: ITH, IK    
-      INTEGER                 :: IP, IP2, ISEA2, I, J, IE, IV, I1, I2, I3
+      INTEGER                 :: IP, IP2, IP3, ISEA2, I, J, IE, IV, I1, I2, I3
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
@@ -379,13 +380,17 @@
 !      
       
 !/S      CALL STRACE (IENT, 'W3CFLUG')      
+      CFLXYMAX=1E-10
+      IP = MAPSF(ISEA,3)
+!
+! CFL no important on boundary 
+!
+      IF (IOBP(IP).EQ.1) THEN       
       CCURX  = FACX 
       CCURY  = FACY  
-      CFLXYMAX=0.
 !
 ! Loop over spectral components
 !
-      IP = MAPSF(ISEA,3)
       DO IK=1,NKCFL
         DO ITH=1,NTH
           CCOS   = FACX * ECOS(ITH) 
@@ -393,7 +398,7 @@
           C(:,:)=0.
 
 !
-! 2.1  Calculate advection velocities: group speed ---------------- *
+! 2.  Calculate advection velocities: group speed ---------------- *
 ! 
           DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
             IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
@@ -404,20 +409,14 @@
               C(IP2,2) = CSIN * CG(IK,ISEA2)
 !/MGP              C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
 !/MGP              C(IP2,2) = C(IP2,2) - CCURY*VGY
+              IF ( FLCUR ) THEN   
+                IF (IOBP(IP2) .EQ. 1) THEN                                  
+                  C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
+                  C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
+                  END IF    
+                END IF  ! end of ( FLCUR )
               END DO
             END DO
-!
-! 2.1  Calculate advection velocities: current --------------------- *
-! 
-          IF ( FLCUR ) THEN   
-!
-! Currents are not included on coastal boundaries 
-!
-            IF (IOBP(IP) .EQ. 1) THEN                                  
-              C(IP,1) = C(IP,1) + CCURX*CX(ISEA)/CLATS(ISEA)
-              C(IP,2) = C(IP,2) + CCURY*CY(ISEA)
-              END IF    
-            END IF  ! end of ( FLCUR )
 !
 !3.     Calculate K-Values and contour based quantities ...
 !
@@ -445,6 +444,7 @@
           CFLXYMAX = MAX(DBLE(DT)/DTMAXEXP,DBLE(CFLXYMAX))
           END DO
         END DO
+        END IF
 !
       RETURN    
  END SUBROUTINE W3CFLUG    
@@ -612,21 +612,22 @@
            FLALL(2,IE) = (FL111 + FL312) * ONESIXTH + KELEM(2,IE)
            FLALL(3,IE) = (FL211 + FL112) * ONESIXTH + KELEM(3,IE)
            ! IF (I1.EQ.1.OR.I2.EQ.1.OR.I3.EQ.1) WRITE(6,*) 'TEST N1 :',IK,ITH,IP,IE,KELEM(:,IE),'##',LAMBDA
-         END DO ! NTRI
+           END DO ! NTRI
 
-           IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
-             KKSUM = 0.d0
-             DO IE = 1, NTRI
+         IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
+           KKSUM = 0.d0
+           DO IE = 1, NTRI
                NI = TRIGP(IE,:)
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
                END DO ! IE
-             DO IP = 1, NX
-!               DTMAXEXP = MAX( ABS(DBLE(IOBP(IP))*DBLE(10.E10)),SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*DBLE(IOBPD(ITH,IP)))) 
-! This corrects the CFL on the boundary ... 
-! I have omitted this by now due to increased oscillations when using all physics ...
-               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
-               DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+           DO IP = 1, NX
+             DTMAXEXP = 1E10 ! initialize to large number 
+! Does take into account boundary points in CFL calculation 
+             IF (IOBP(IP) .NE. 0) CYCLE 
+             DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
+             DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
+!/T! Test output
 !/T              WRITE(994,'(A)') 'dir.    Node    step needed step used long.   lat.  depth'
 !/T             DO IP = 1, NX
 !/T               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
@@ -652,7 +653,6 @@
 
            DO IT = 1, ITER(IK,ITH)
              U = DBLE(AC)
-
              ST = 0.d0
              DO IE = 1, NTRI
                NI     = TRIGP(IE,:)

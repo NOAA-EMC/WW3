@@ -510,8 +510,10 @@
    esac
 
   tidecode=$NULL
+  tideprog=$NULL
   case $tide in
    TIDE) tidecode='w3tidemd'
+         tideprog='ww3_prtide'
    esac
 
   if [ "$nr_thr" != '0' ] && [ "$s_nl" = 'NL2' ]
@@ -525,9 +527,9 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
-  progs='ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
+  progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
-         ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk ww3_prtide'
+         ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
 
   for prog in $progs
   do
