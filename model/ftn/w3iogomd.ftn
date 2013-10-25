@@ -521,7 +521,7 @@
       IF ( NDSS.NE.NDSO .AND. IAPROC .EQ. NAPOUT ) THEN
         FLT    = .TRUE.
         DO IFI=1, NOGRP
-          IF(ANY(FLG2D(IFI,:).EQ..TRUE.)) FLG1D(IFI)=.TRUE. !Update FLOG
+          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLOG
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
