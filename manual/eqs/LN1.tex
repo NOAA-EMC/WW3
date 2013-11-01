@@ -1,0 +1,46 @@
+\vsssub
+\subsubsection{~$S_{ln}$: Cavaleri and Malanotte-Rizzoli 1981} \label{sec:LN1}
+\vsssub
+
+\opthead{LN1}{Pre-WAM}{H. L. Tolman}
+
+\noindent 
+A linear input source term is useful to allow for the consistent spin-up of a
+model from quiescent conditions, and to improve initial wave growth
+behavior. The parameterization of \cite{art:CMR81} is available in \ws, with a
+filter for low-frequency energy as introduced by \cite{tol:JPO92}. The input
+term can be expressed as
+\begin{equation}
+\cS_{lin}(k,\theta) = 80 \left( \frac{\rho_a}{\rho_w} \right ) ^2
+  g^{-2}  k^{-1} \max \left [ 0 , u_* \cos (\theta - \theta_w) \right ]^4 \: G
+   \:\:\: , \label{eq:CMR81}
+\end{equation}
+
+\noindent
+where $\rho_a$ and $\rho_w$ are the densities of air and water, respectively,
+and where $G$ is the filter function
+
+\begin{equation}
+G = \exp \left [ - \left ( \frac{f}{f_{filt}} \right ) ^{-4} \right ]
+\:\:\: . \label{eq:GSln}
+\end{equation}
+
+\noindent
+In \cite {tol:JPO92} the filter frequency $f_{filt}$ was given as the
+Pierson-Moskowitz frequency $f_{PM}$, which in turn was estimated as in
+Eq.~(\ref{eq:f_PM}).  In the present implementation, the filter can be related
+to both $f_{PM}$ and the cut-off frequency of the prognostic part of the
+spectrum $f_{hf}$ as defined in Eq.~(\ref{eq:tail_E_f})
+
+\begin{equation}
+f_{filt} = \max \left [ \alpha_{PM} f_{PM} , \alpha_{hf} f_{hf} \right ]
+\:\:\: ,
+\end{equation}
+
+\noindent
+where the constants $\alpha_{PM}$ and $\alpha_{hf}$ are user-defined. Default
+values of these constants are set to $\alpha_{PM} = 1$ and $\alpha_{hf} =
+0.5$.  Addition of the dependency on $f_{hf}$ assures consistent growth
+behavior at all fetches, without the possibility of low-frequency linear
+growth to dominate at extremely short fetches.
+

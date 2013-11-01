@@ -1,0 +1,34 @@
+\vssub
+\subsection{~Winds and currents} \label{sub:num_w_c}
+\vssub
+
+\noindent
+Model input mainly consists of wind and current fields. Within the model,
+winds and currents are updated at every time step $\Delta t_g$ and represent
+values at the end of the time step considered. Several interpolation methods
+are available (selected during compilation). By default, the interpolation in
+time consists of a linear interpolation of the velocity and the direction
+(turning the wind or current over the smallest angle). The wind speed or
+current velocity can optionally be corrected to (approximately) conserve the
+energy instead of the wind velocity. The corresponding correction factor $X_u$
+is calculated as
+
+% eq:X_u10
+
+\begin{equation}
+X_u = \max \left [ \: 1.25 \: , \: \frac{u_{10,rms}}{u_{10,l}}
+\right ] \: , \label{eq:X_u10} \end{equation}
+
+\noindent
+where $u_{10,l}$ is the linearly interpolated velocity and $u_{10,rms}$ is the
+rms interpolated velocity. Finally, winds can optionally be kept constant and
+changed discontinuously (option not available for current).
+
+\vspace{\baselineskip} \noindent 
+Note that the auxiliary programs of \ws\ include a program to pre-process
+input fields (see \para\ref{sec:ww3prep}). This program transfers gridded
+fields to the grid of the wave model. For winds and currents this program
+utilizes a bilinear interpolation of vector components. This interpolation can
+be corrected to (approximately) conserve the velocity or the energy of the
+wind or the current by utilizing a correction factor similar to
+Eq.~(\ref{eq:X_u10}).

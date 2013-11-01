@@ -1,0 +1,60 @@
+\vssub
+\subsection{~The preprocessor} \label{sec:w3adc}
+\vssub
+
+The \ws\ source code files are not ready to use {\fortran} files; mandatory
+and optional program options still have to be selected, and test output may be
+activated\footnote{~Exceptions are some modules that are not originally part
+  of \ws, like the exact interaction modules. Such modules with the extension
+  {\file .f} of {\file .f90} bypass the preprocessor and get copied to the
+  work directory with the {\file .f} extension.}. Compile level options are
+activated using `switches'. The arbitrary switch '{\F swt}' is included in the
+\ws\ files as comment of the form {\F !/swt}, where the switch name {\F swt}
+is followed by a space or by a '{\F /}'. If a switch is selected, the
+preprocessor removes the comment characters, thus activating the corresponding
+source code line. If '{\F/}' follows the switch, it is also removed, thus
+allowing the selective inclusion of hardware-dependent compiler directives
+etc. The switches are case sensitive, and available switches are presented in
+\para\ref{sec:switches}. Files which contain the switch {\F c/swt} can be
+found by typing \command{find\_switch '!/SWT'} A list of all switches included
+in the \ws\ files can be obtained by typing \command{all\_switches}
+
+\pb
+%\vspace{\baselineskip}
+\noindent
+Pre-processing is performed by the program {\code w3adc}. This program is
+found in the file {\file w3adc.f}, which contains a ready to compile
+{\fortran} source code and a full documentation\footnote{~Presently still in
+  fixed-format {\fortran}-77.}. Various properties of {\code w3adc} are set in
+{\F parameter} statements in {\file w3adc.f}, i.e., the maximum length of
+switches, the maximum number of include files, the maximum number of lines in
+an include file and the line length. {\code w3adc} reads its `commands' from
+standard input. An example input file for {\code w3adc} is given in
+figure~\ref{fig:w3adc}. Line-by-line, the input consists of
+
+\begin{list}{$\rightarrow$}{\itemsep 0mm \parsep 0mm}
+\item	Test indicator and compress indicator
+\item	File names of the input and output code
+\item	Switches to be turned on in a single string (see
+          \para\ref{sec:switches})
+\item   Additional lines with include files can be given, but these are no
+        longer used in the automated compile system.
+\end{list}
+
+% fig:w3adc
+
+\input{sys/fig_ad3}
+
+\noindent
+A test indicator 0 disables test output, and increasing values increase the
+detail of the test output. A compress indicator 0 leaves the file as is. A
+compress indicator 1 results in the removal of all comment lines indicated by
+'{\F !}', except for empty switches, i.e., lines starting with '{\F !/}'. A
+compress indicator 2 results in the subsequent removal of all comments.
+Comment lines are not allowed in this input file. The above input for {\F
+w3adc} is read using free format. Therefore quotes are needed around
+strings. Echo and test output is send to the standard output device. To
+facilitate the use of the preprocessor, several \unix\ scripts are provided
+with \ws\ as discussed in \para\ref{sec:comp}. Note that compiler directives
+are protected from file compression by defining them using a switch.
+

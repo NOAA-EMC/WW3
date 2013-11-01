@@ -1,0 +1,36 @@
+\vssub
+\subsection{~Running test cases} \label{sec:tests}
+\vssub
+
+If \ws\ is installed and compiled successfully, it can be tested by running
+most different program elements interactively from the {\file work}
+directory. The switch settings in the generic switch file correspond to the
+activated inputs in the example input files. It should therefore be possible
+to run all model elements by typing
+\command{ww3\_grid | more \\
+  ww3\_strt | more \\
+  ww3\_bound | more \\
+  ww3\_prep | more \\
+  ww3\_shel | more \\
+  ww3\_outf | more \\
+  ww3\_outp | more \\
+  ww3\_ounf | more \\
+  ww3\_ounp | more \\
+  ww3\_trck | more \\
+  ww3\_grib | more \\
+  gx\_outf | more \\
+  gx\_outp | more } where the {\code more} command is added to allow for
+on-screen inspection of the output. This {\code | more} can be replaced by
+redirection to an output file, e.g. \command{ww3\_grid > ww3\_grid.out } Note
+that {\code ww3\_grib} will only provide GRIB output if a user-supplied
+packing routine is linked in. Note furthermore that no simple interactive test
+case for {\file ww3\_multi} is provided. GrADS can then be run from the work
+directory to generate graphical output for these calculations. All
+intermediate output files are placed in the {\file work} directory, and can be
+removed conveniently by typing \command{w3\_clean}
+
+\vspace{\baselineskip}
+\noindent
+\ldots I removed the old test cases here. We now need a short description of
+regtests and cases \ldots
+

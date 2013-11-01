@@ -1,0 +1,96 @@
+\vssub
+\subsection{~Propagation}
+\vssub
+
+In a numerical model, a Eulerian form of the balance equation
+(\ref{eq:balance0}) is needed. This balance equation can either be written in
+the form of a transport equation (with velocities outside the derivatives), or
+in a conservation form (with velocities inside the derivatives). The former
+form is valid for the vector wavenumber spectrum $N(\bk;\bx,t)$ only, whereas
+valid equations of the latter form can be derived for arbitrary spectral
+formulations, as long as the corresponding Jacobian transformation as
+described above is well behaved \citep[e.g.,][]{tol:GAOS98b}. Furthermore, the
+conservation equation conserves total wave energy/action, unlike the transport
+equation. This is an important feature of an equation when applied in a
+numerical model. The balance equation for the spectrum $N(k,\theta;\bx,t)$ as
+used in \ws\ is given as (for convenience of notation, the spectrum is
+henceforth denoted simply as $N$)
+
+%----------------------------------%
+% Plain-grid propagation equations %
+%----------------------------------%
+% eq:bal_plane
+% eq:x_dot
+% eq:k_dot
+% eq:theta_dot
+
+\begin{equation}
+\frac{\partial N}{\partial t} + \nabla_x \cdot {\bf\dot{x}}N +
+\frac{\partial}{\partial k} \dot{k}N +
+\frac{\partial}{\partial \theta} \dot{\theta}N =
+\frac{S}{\sigma} \: , \label{eq:bal_plane}
+\end{equation}
+\begin{equation}
+{\bf \dot{x}} = {\bf c}_g + {\bf U} \: , \label{eq:x_dot}
+\end{equation}
+\begin{equation}
+\dot{k} = - \frac{\partial \sigma}{\partial d}
+\frac{\partial d}{\partial s} - {\bk} \cdot
+\frac{\partial {\bf U}}{\partial s} \: , \label{eq:k_dot}
+\end{equation}
+\begin{equation}
+\dot{\theta} = - \frac{1}{k} \left [
+\frac{\partial \sigma}{\partial d} \frac{\partial d}{\partial m}
+- {\bk} \cdot \frac{\partial {\bf U}}{\partial m}
+\right ] \: , \label{eq:theta_dot}
+\end{equation}
+
+\noindent
+where ${\bf c}_g$ is given by $c_g$ and $\theta$, $s$ is a coordinate in the
+direction $\theta$ and $m$ is a coordinate perpendicular to $s$.
+Equation~(\ref{eq:bal_plane}) is valid for a Cartesian grid. For large-scale
+applications, this equation is usually transferred to a spherical grid,
+defined by longitude $\lambda$ and latitude $\phi$, but maintaining the
+definition of the local variance \citep[i.e., per unit surface, as
+in][]{art:WAM88}
+
+%---------------------------------%
+% Spherical propagation equations %
+%---------------------------------%
+% eq:bal_sphere
+% eq:phi_dot
+% eq:lambda_dot
+% eq:theta_g_dot
+
+\begin{equation}
+\frac{\partial N}{\partial t} +
+\frac{1}{\cos \phi} \frac{\partial}{\partial \phi} \dot{\phi}
+    N \cos \theta +
+\frac{\partial}{\partial \lambda} \dot{\lambda}N +
+\frac{\partial}{\partial k} \dot{k} N +
+\frac{\partial}{\partial \theta} \dot{\theta}_g N
+= \frac{S}{\sigma} \: ,\label{eq:bal_sphere}
+\end{equation}
+\begin{equation}
+\dot{\phi} = \frac{c_g \cos \theta + U_\phi}{R}
+\: , \label{eq:phi_dot}
+\end{equation}
+\begin{equation}
+\dot{\lambda} =  \frac{c_g \sin \theta + U_\lambda}{R \cos \phi}
+\: , \label{eq:lambda_dot}
+\end{equation}
+\begin{equation}
+\dot{\theta}_g = \dot{\theta} -
+\frac{c_g \tan \phi \cos \theta}{R}
+\: , \label{eq:theta_g_dot}
+\end{equation}
+
+\noindent
+where $R$ is the radius of the earth and $U_\phi$ and $U_\lambda$ are current
+components. Equation~(\ref{eq:theta_g_dot}) includes a correction term for
+propagation along great circles, using a Cartesian definition of $\theta$
+where $\theta = 0$ corresponds to waves traveling from west to east. \ws\ can
+be run on either a Cartesian of spherical grid. Note that unresolved obstacles
+such as islands can be included in the equations. In \ws\ this is done at the
+level of the numerical scheme, as is discussed in section~\ref{sub:num_obst}.
+

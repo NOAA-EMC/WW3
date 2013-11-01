@@ -1,0 +1,190 @@
+\vsssub
+\subsubsection{~$S_{nl}$: Full Boltzmann Integral (WRT)} \label{sec:NL2}
+\vsssub
+
+\opthead{NL2}{Exact-NL model}{G. Ph. van Vledder}
+
+\noindent
+The second method for calculating the nonlinear interactions in \ws\ is the
+so-called Webb-Resio-Tracy method (\xnl), which is based on the original work
+on the six-dimensional Boltzmann integral formulation of
+\cite{art:Has62,art:Has63a,art:Has63b}, and additional considerations by
+\cite{art:Web78}, \cite{rep:TR82} and \cite{art:RP91}.
+
+The Boltzmann integral describes the rate of change of action density of a
+particular wavenumber due to resonant interactions between pairs of four
+wavenumbers. To interact these wavenumbers must satisfy the following
+resonance conditions
+
+%--------------------------%
+% Resonance conditions WRT %
+%--------------------------%
+% eq:resonance_2
+
+\begin{equation} \left .
+\begin{array}{ccc}
+  \bk_1 + \bk_2 & = & \bk_3 + \bk_4          \\
+  \sigma_1 + \sigma_2  & = & \sigma_3 + \sigma_4
+\end{array} \:\:\: \right \rbrace \:\:\: , \label{eq:resonance_2}
+\end{equation}
+
+\noindent
+which is a more general version of the resonance conditions
+(\ref{eq:resonance}). The rate of change of action density $N_1 $ at
+wave number $\bk_1$ due to all quadruplet interactions involving
+$\bk_1$ is given by
+
+\begin{eqnarray}
+\frac{{\p N_1 }}{{\p t}} & = & \int\!\!\int\!\!\int G\left( \bk_1
+,\bk_2 ,\bk_3 ,\bk_4 \right ) \: \delta \left( \bk_1  + \bk_2  - \bk_3
+- \bk_4 \right)
+\: \delta \left( {\sigma _1  + \sigma _2  - \sigma _3  - \sigma _4 }
+\right) \nonumber \\  & &
+\hspace{7mm}\times \:\:\: \left[ {N_1 N_3 \left( {N_4  - N_2 } \right)
++ N_2 N_4 \left(
+{N_3  - N_1 } \right)} \right] \: d\bk_2 \: d\bk_3 \: d\bk_4 \:\:\: ,
+\end{eqnarray}
+
+\noindent
+where the action density $N$ is defined in terms of the wavenumber
+vector $\bk$, $N = N(\bk)$. The term $G$ is a complicated coupling
+coefficients for which expressions have been given by \cite{art:HH80}.
+In the \xnl\ method a number of transformations are
+made to remove the delta functions. A key element in the \xnl\ method
+is to consider the integration space for each ($\bk_1 ,\bk_3 $)
+combination \citep[see][]{art:RP91}
+
+\begin{equation}
+{{\partial N_1 } \over {\partial t}} = 2\int T\left( {\bk_1 ,\bk_3 }
+\right) \: d\bk_3  \:\:\: ,
+\end{equation}
+
+\noindent
+in which the function $T$ is given by
+
+\begin{eqnarray}
+T \left( \bk_1 ,\bk_3 \right) & = & \int\!\!\int
+G\left( \bk_1 ,\bk_2, \bk_3 ,\bk_4 \right) \: \delta \left( \bk_1  +
+\bk_2  - \bk_3  - \bk_4 \right) \nonumber \\
+& \times & \delta \left( {\sigma _1  + \sigma _2  - \sigma _3  -
+\sigma _4 }
+\right) \: \theta \left ( \bk_1 , \bk_3 , \bk_4 \right )
+\nonumber \\
+& \times & \left [ N_1 N_3 \left ( N_4 - N_2 \right ) + N_2 N_4 \left
+(
+N_3  - N_1 \right ) \right ] \: d\bk_2 \: d\bk_4 \:\:\: ,
+\label{eq:WRT_T}
+\end{eqnarray}
+
+\noindent
+in which
+
+\begin{equation}
+\theta \left( {\bk_1 ,\bk_3 ,\bk_4 } \right) = \left\{ {\begin{array}{*{20}c}
+   1 & {\rm{when}} & {\left| {\bk_1  - \bk_3 } \right| \leq \left| {\bk_1  - \bk_4 } \right|}  \\
+   0 & {\rm{when}} & {\left| {\bk_1  - \bk_3 } \right| > \left| {\bk_1  - \bk_4 } \right|}  \\
+ \end{array} } \right.
+\end{equation}
+
+The delta functions in Eq. (\ref{eq:WRT_T}) determine a region in wavenumber
+space along which the integration should be carried out.  The function
+$\theta$ determines a section of the integral which is not defined due to the
+assumption that $\bk_1$ is closer to $\bk_3$ than $\bk_2$. The crux of the
+Webb method consists of using a local coordinate system along a so-named
+locus, that is, the path in $\bk$ space given by the resonance conditions for
+a given combination of $\bk_1$ and $\bk_3$. To that end the $(k_{x},k_{y})$
+coordinate system is replaced by a $(s,n)$ coordinate system, where $s$ ($n$)
+is the tangential (normal) direction along the locus. After some
+transformations the transfer integral can then be written as a closed line
+integral along the closed locus
+
+\begin{eqnarray}
+T \left( \bk_1 ,\bk_3 \right) & = & \oint G \:
+\left | \frac{\p W(s,n)}{\p n}\right | ^{-1}
+\: \theta ( \bk_1 , \bk_3 , \bk_4 ) \nonumber \\
+& \times & \left [ N_1 N_3 \left ( N_4 - N_2 \right ) + N_2 N_4 \left
+(
+N_3  - N_1 \right ) \right ] \: d s  \:\:\: , \label{eq:WRT_T2}
+\end{eqnarray}
+
+\noindent
+In which $G$ is the coupling coefficient and $\left| {\partial W/\partial n}
+\right|$ is the gradient term of a function representing the resonance
+conditions \citep[see][]{pro:vVl00}. Numerically, the Boltzmann integral is
+computed as the finite sum of many line integrals $T$ for all discrete
+combinations of $\bk_1$ and $\bk_3$. The line integral (\ref{eq:WRT_T2}) is
+solved by dividing the locus in typically 30 pieces, such that the discretized
+version is given as:
+
+\begin{equation}
+T\left( {\bk_1 ,\bk_3 } \right) \approx \sum_{i=1}^{n_s } G(s_i)
+W(s_i) P(s_i) \: \Delta s_i \:\:\: ,
+\end{equation}
+
+\noindent
+in which $P(s_i)$ is the product term for a given point on the locus,
+$n_s$ is the number of segments, and $s_i$ is the discrete coordinate
+along the locus. Finally, the rate of change for a given wavenumber
+$\bk_1 $ is given by
+
+\begin{equation}
+\frac{\p N(\bk_1)}{\p t} \approx \sum_{i_{k3}  = 1}^{n_k }
+{\sum_{i_{\theta 3}  = 1}^{n_\theta  } k_3 T(\bk_1,\bk_3) \: \Delta
+k_{i_{k3}} \: \Delta \theta_{i_{\theta 3} } } \label{eq:WRT_numT}
+\end{equation}
+
+\noindent
+where $n_k$ and $n_\theta$ are the discrete number of wavenumbers and
+directions in the calculational grid, respectively. Note that although the
+spectrum is defined in terms of the vector wavenumber $\bk$, the calculational
+grid in a wave model is more conveniently defined in terms of the absolute
+wavenumber and wave direction ($k,\theta$) to assure directional isotropy of
+the calculations. Taking all wave numbers $\bk_1 $ into account produces the
+complete source term due to nonlinear quadruplet wave-wave
+interactions. Details of the efficient computation of a locus for a given
+combination of the wave numbers $\bk_1 $ and $\bk_3 $ can be found in
+\cite{pro:vVl00,rep:vVl02a,rep:vVl02b}.
+
+It should be noted that these exact interaction calculations are extremely
+expensive, typically requiring $10^3$ to $10^4$ times more computational
+effort than the \dia. Presently, these calculations can therefore only be made
+for highly idealized test cases involving a limited spatial grid.
+
+The nonlinear interactions according to the \xnl\ method have been implemented
+in \ws\ using the portable subroutines developed by \cite{rep:vVl02b}.  In
+this implementation, the computational grid of the \xnl\ method is taken
+identical to the discrete spectral grid of \ws.  In addition, the \xnl\
+routines inherit the power of the parametric spectral tail as in the
+\dia. Choosing a higher resolution than the computational grid of \ws\ for
+computing the nonlinear interactions is possible in theory, but this does not
+improve the results and is therefore not implemented.
+
+Because nonlinear quadruplet wave-wave interactions at high frequencies are
+important, it is recommended to choose the maximum frequency of the wave model
+about five times the peak frequency of the spectra that are expected to occur
+in a wave model run. Note that this is important as the spectral grid
+determines the range of integration in Eq.~(\ref{eq:WRT_numT}). The
+recommended number of frequencies is about 40, with a frequency increment
+factor 1.07. The recommended directional resolution for computing the
+nonlinear interactions is about $10^\circ$. For specific purposes other
+resolutions may be used, and some testing with other resolutions may be
+needed.
+
+An important feature of most algorithms for the evaluation of the Boltzmann
+integral is that the integration space can be pre-computed.  This is also the
+case for the subroutine version of the \xnl\ method used in \ws. In the
+initialization phase of the wave model the integration space, consisting of
+the discretized paths of all loci, together with the interaction coefficients
+and gradient terms, are computed and stored in a binary data file. For each
+water depth such a data file is generated and stored in the current
+directory. The names of these data files consist of a keyword, "quad",
+followed by the keyword "{\it{xxxx}}", with {\it xxxx} the water depth in
+meters, or 9999 for deep water.  The extension of the binary data file is
+"bqf" (of Binary Quadruplet File). If a BQF file exists, the program checks if
+this BQF file has been generated with the proper spectral grid. If this is not
+the case, the existing BQF file is overwritten with the correct BQF
+file. During a wave model run with various depths, the optimal BQF is used, by
+looking at the nearest water depths for which a valid BQF file has been
+generated. In addition, the result is rescaled using the ratio of the depth
+scaling factors (\ref{eq:snl_shal}) for the target depth and the depth
+corresponding to the BQF file.

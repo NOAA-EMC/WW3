@@ -1,0 +1,40 @@
+\vsssub
+\subsubsection{Point output post-processor} \label{sec:ww3outp}
+\vsssub
+
+\proddefH{ww3\_outp}{w3outp}{ww3\_outp.ftn}
+\proddeff{Input}{ww3\_outp.inp}{Input file for point output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_pnt.ww3}{Raw point output data.}{20}
+\proddefa{NC\_globatt.inp}{Additional global attributes.}{994}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{tab{\sl{nn}}.ww3 \opt}{Table of mean parameters where
+{\file{\sl{nn}}} is a two-digit integer.}{\sl nn}
+\proddefa{\ldots \opt}{Transfer file.}{user}
+
+\inpfile{ww3_outp.tex}
+
+\vspace{\baselineskip} 
+\vspace{\baselineskip} 
+\noindent 
+In previous releases of \ws\ spectral bulletins were generated using spectral
+data transfer file generated with {\F itype = 1} and {\F otype = 3} and the
+{\file w3split} program (see section~\ref{sec:install}). This is an
+obsolescent code that is produced here for backward compatibility only.  This
+program reads the following five records from standard input (no comment lines
+allowed) :
+
+\begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
+\item Name of output location.
+\item Identifier for run to be used in table.
+\item Name of input file.
+\item Logical identifying UNFORMATTED input file.
+\item Name of output file.
+\end{list}
+
+\noindent
+All above strings are read as characters using free format, and therefore need
+to be enclosed in quotes.
+
+\pb

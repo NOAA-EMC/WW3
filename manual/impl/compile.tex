@@ -1,0 +1,144 @@
+\vssub
+\subsection{~Compiling and linking} \label{sec:comp}
+\vssub
+
+Compilation of \ws\ is performed using the script {\file w3\_make} in the
+{\dir bin} directory\footnote{~Note that before running {\file w3\_make}
+  several user interventions are needed as described in the remainder of this
+  section.}.  If this script is used without parameters, all basic programs of
+\ws\ are compiled. Optionally, names of programs to be compiled can be given
+as part of the compile command. For instance \command{w3\_make ww3\_grid
+  ww3\_strt} will compile the grid preprocessor and the initial conditions
+program only. {\file w3\_make} uses several of the scripts described in the
+previous section. A graphical representation is given in Fig.~\ref{fig:make}.
+If necessary, the script {\file w3\_make} uses the scripts {\file
+  make\_makefile.sh} to generate a makefile. {\file make\_makefile.sh}
+generates a list of modules to be linked, based on the program switches in the
+file {\file switch} (see~\para\ref{sec:switches}), and checks all needed
+sources for module dependencies. If switches have been changed since the last
+call to {\file w3\_make}, {\file w3\_new} is used to `touch' relevant source
+code or to delete relevant object files. After the makefile has been
+completed, the standard \unix\ make utility is used to compile and link the
+programs. Instead of directly using the \fortran\ compiler, the makefile
+invokes the preprocessor and compile scripts {\file ad3} and {\file comp}, and
+the link script {\file link}. The script {\file ad3} uses the extension of the
+file name to determine the necessary action. Files with extension {\file .ftn}
+are processed by {\code w3adc}, files with extension {\file .f} or {\file
+  .f90} are send to the script {\code comp} directly.  Although a user could
+try out several of these scripts interactively, he or she generally needs to
+run {\file w3\_make} only.
+
+\input{impl/fig_make} 
+
+\vspace{\baselineskip} \noindent 
+Before a first attempt is made at compiling, user intervention is required in
+three scripts/files. For convenience of debugging and development, links to
+these three files are made in the work directory {\dir work}. The files in the
+work directory are
+
+\begin{flist}
+\fit{comp}  {Compiler script. This script requires the correct definition
+             of the compiler and its options. Linked to {\file ../bin/comp}}
+\fit{link}  {Linker script. This script requires the correct definition
+             of the linker and its options. Linked to {\file ../bin/link}}
+\fit{switch}{File containing a list of switches as recognized by the
+             preprocessor {\file w3adc}. Linked to {\file ../bin/switch}}. The
+             file provided with \ws\ should result in a hardware independent
+             code.
+\end{flist}
+
+\vspace{\baselineskip}
+
+\begin{center}
+\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
+\vspace{\baselineskip}
+\parbox{120mm}{The auxiliary scripts {\file w3\_make} etc. use the {\file
+  switch}, {\file comp} and {\file link} files from the {\file ./bin}
+  directory under the \ws\ home directory, {\it NOT} from the local
+  directory.} \\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} WARNING
+  \rule[1mm]{55mm}{1.0mm}
+\end{center}
+
+\noindent
+After the appropriate changes have been made, or the appropriate example
+scripts have been copied in, (parts of) \ws\ can be compiled and linked. When
+the program is compiled for the first time, it is suggested to compile program
+parts one-by-one to avoid lengthy errors messages, and to set up error
+capturing in {\file comp}. A good place to start is compilation of the simple
+test code {\F ctest}. First go to the directory {\dir work} and make a link to
+the source code of this routine by typing \command{ln3 ctest} This link is
+made to facilitate later inclusion of errors to test or set-up error capturing
+in the script {\file comp}. The inner workings of the preprocessor {\file
+  w3adc} can be seen by typing the command \command{ad3\_test ctest} which
+will show how the actual source code is constructed from {\file ctest.ftn},
+include files and program switches. Next, the compilation of this subroutine
+can be tested by typing \command{ad3 ctest 1} which invokes both the
+preprocessor {\file w3adc} and the compile script {\file comp}. The 1 at the
+end of this line activates test output. If it is omitted, this command should
+result in a single line of output, identifying that the routine is being
+processed. If {\file ad3} works as expected, an object file {\file
+  obj/ctest.o} is generated. If requested during the initial set up, a source
+code and listing file ({\file ctest.f} and {\file ctest.l}) can be found in
+the scratch directory. The listing file is also retained if compilation errors
+are detected by {\file comp}. At this time, it is prudent to test error
+capturing in the script {\file comp} by adding errors and warnings to {\file
+  ctest.ftn} in the work directory. The error capturing is discussed in some
+detail in the documentation of {\file comp}. After {\file comp} has been
+tested, and the errors in {\file ctest.ftn} have been removed, the link to the
+work directory and the file {\file obj/ctest.o} can be deleted.
+
+After a single routine has been compiled successfully, the next step is to try
+to compile and link an entire program. The grid preprocessor can be compiled
+by typing \command{w3\_make ww3\_grid} If the compilation appears successful,
+and if the input files have been installed (see above), the grid preprocessor
+can be tested by typing \command{ww3\_grid} in the work directory. If the
+input files have been installed, a link to the input file {\file
+ww3\_grid.inp} will be present in the work directory, and the grid
+preprocessor will run and send its output to the screen. Output files of the
+grid preprocessor will appear in the work directory. When a program is
+compiled for the first time, the operating system might not be able to find
+the executable. If this occurs, try to type \command{rehash} or open a new
+shell to work from. In this way all separate programs can be compiled and
+tested. To clean up all temporarily files (such as listings) and data files of
+the test runs, type \command{w3\_clean} Note that {\file w3\_make} only checks
+the switch file for changes. If the user changes the compile options in the
+compile and link scripts {\file comp} and {\file link}, it is advised to force
+the recompilation of the entire program. This can be achieved by typing
+\command{w3\_new all {\rm or} w3\_new} before invoking {\file w3\_make}. This
+might also be useful if the compilation is unsuccessful for no apparent
+reason.
+
+
+\vspace{\baselineskip} 
+\noindent
+Compile of the \ws\ NetCDF enabled programs requires the environment variable
+{\code WWATCH3\_NETCDF} be set to either {\code NC3} (compile with NetCDF
+version 3.x) or {\code NC4} (compile with NetCDF version 4.x).  If the script
+variable is set to {\code WWATCH3\_NETCDF = NC3}, then the following
+environment variables are required
+\begin{clist}
+\cit {NETCDF\_LIBDIR} {Path to where the NetCDF-3 libraries are installed.}
+\cit {NETCDF\_INCDIR} {Path to where the NetCDF-3 include files are installed.}
+\end{clist}
+If {\code WWATCH3\_NETCDF = NC4}, then the following environment variables
+are required.
+\begin{clist}
+\cit {NETCDF\_CONFIG} {Path to the NetCDF-4 nc-config utility program.}
+\end{clist}
+The {\file nc-config} utility program (part of the NetCDF-4 install) is used
+to determine the appropriate compile and link flags for the {\code
+  WWATCH3\_NETCDF = NC4} compile.  The NetCDF-4 compile requires NetCDF
+version 4.1.1 or higher.  Use the command \command{\code nc-config --version}
+to check the version of the installed NetCDF.  Compiling with the {\code NC4}
+switch requires {\code WWATCH3\_NETCDF = NC4} and the NetCDF-4 installation
+compiled with the NetCDF-4 API enabled.  Use \command{\code nc-config
+  --has-nc4} to check if the installed NetCDF has the NetCDF-4 API enabled.
+
+\vspace{\baselineskip} 
+\noindent 
+Two additional remarks need to be made regarding parallel versions of the
+model (OpenMP and \mpi\ versions). First, complications may occur when
+preparing executables for running in an \mpi\ environment. Such complications
+are discussed in Appendix~\ref{app:mpi}. Secondly, the \omp\ code should be
+compiled using directives only, i.e., do not use compiler options that
+automatically thread the code.

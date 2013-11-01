@@ -1,0 +1,21 @@
+\vsssub
+\subsubsection{The multi-grid shell} \label{sec:ww3multi}
+\vsssub
+
+\proddefH{ww3\_multi}{w3mlti}{ww3\_multi.ftn}
+\proddeff{Input}{ww3\_multi.inp}{Input file for multi-grid wave model shel.}{8}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{log.mww3}{Output log of wave model driver.}{9}
+\proddefa{test.mww3\opt}{Test output of wave model.}{auto}
+
+\vspace{\baselineskip}
+\noindent
+This wave model program requires and produces a plethora of input and output
+files consistent with those of {\file ww3\_shel} in \para\ref{sec:ww3shel},
+where file extensions {\file .ww3} are replaced by an identifier for a
+specific grid. Note that all files are opened by name, and that the unit
+number assignment is dynamic and automatic.
+
+\inpfile{ww3_multi.tex}
+
+\pb

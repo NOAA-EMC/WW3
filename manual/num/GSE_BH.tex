@@ -1,0 +1,196 @@
+\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Booij and Holthuijsen 1987}
+
+\vspace{\baselineskip} \noindent {\bf Booij and Holthuijsen 1987}
+
+\opthead{PR2}{\ws}{H. L. Tolman}
+
+\noindent
+The classical GSE alleviation method is from \cite{art:BH87}, who derived an
+alternative propagation equation for the discrete spectrum, including a
+diffusive correction to account for continuous dispersion in spite of the
+discrete spectral description. This correction influences spatial propagation
+only, which for general spatial coordinates $(x,y)$ becomes
+
+% ------ Correction linear dispersion --------- %
+% eq:d_bal_0         Booij and Holthuijsen, 1987
+% eq:Dxx
+% eq:Dyy
+% eq:Dxy
+% eq:Dss
+% eq:Dnn
+
+\begin{equation}
+\frac{\p \cN}{\p t} +
+\frac{\p}{\p x} \left [ \dot{x} \cN 
+           - D_{xx} \frac{\p \cN}{\p x} \right ] +
+\frac{\p}{\p y} \left [ \dot{y} \cN 
+           - D_{yy} \frac{\p \cN}{\p y} \right ] -
+2 D_{xy} \frac{\p^2 \cN}{\p x \p y} = 0
+\: , \label{eq:d_bal_0}\end{equation}  \begin{equation}
+D_{xx} = D_{ss} \, \cos^2 \theta + D_{nn} \, \sin^2 \theta
+\: , \label{eq:Dxx} \end{equation} \begin{equation}
+D_{yy} = D_{ss} \, \sin^2 \theta + D_{nn} \, \cos^2 \theta
+\: , \label{eq:Dyy} \end{equation}  \begin{equation}
+D_{xy} = ( D_{ss} - D_{nn} ) \, \cos \theta \, \sin \theta
+\: , \label{eq:Dxy} \end{equation} \begin{equation}
+D_{ss} = (\Delta c_g )^2 \: T_s / 12
+\: , \label{eq:Dss} \end{equation} \begin{equation}
+D_{nn} =  ( c_g \Delta \theta )^2 \: T_s / 12
+\: , \label{eq:Dnn} \end{equation}
+
+\noindent
+where $D_{ss}$ is the diffusion coefficient in the propagation direction of
+the discrete wave component, $D_{nn}$ is the diffusion coefficient along the
+crest of the discrete wave component and $T_s$ is the time elapsed since the
+generation of the swell. In the present fractional step method the diffusion
+can be added as a separate step
+
+% eq:d_bal_1         Separated diffusion equation
+
+\begin{equation}
+\frac{\p \cN}{\p t} = 
+\frac{\p}{\p x} \left [ D_{xx} \frac{\p \cN}{\p x} \right ] +
+\frac{\p}{\p y} \left [ D_{yy} \frac{\p \cN}{\p y} \right ] +
+   2 D_{xy} \frac{\p^2 \cN}{\p x \p y}
+\: . \label{eq:d_bal_1} \end{equation}
+
+\noindent
+This equation is incorporated with two simplifications, the justification of
+which is discussed in \cite{tol:OMB95}. First, the swell `age' $T_s$ is kept
+constant throughout the model (defined by the user, no default value
+available). Secondly, the diffusion coefficients $D_{ss}$ and $D_{nn}$ are
+calculated assuming deep water
+
+% eq:Dss_d
+% eq:Dnn_d
+
+\begin{equation}
+D_{ss} = \left ( \: (X_\sigma-1) \: \frac{\sigma_m}{2 k_m} \right )^2
+\: \frac{T_s}{12} \: , \label{eq:Dss_d} \end{equation} \begin{equation}
+D_{nn} =  \left ( \frac{\sigma_m}{2 k_m} \Delta \theta \right )^2
+\: \frac{T_s}{12} \: , \label{eq:Dnn_d} \end{equation}
+
+\noindent
+where $X_\sigma$ is defined as in Eq.~(\ref{eq:sigma_grid}). With these two
+assumptions, the diffusion tensor becomes constant throughout the spatial
+domain for each separate spectral component.
+
+Equation~(\ref{eq:d_bal_1}) is solved using a forward-time central-space
+scheme. At the cell interface between points $i$ and $i-1$ in $\phi$ ($x$)
+space, the term in brackets in the first term on the right side of
+Eq.~(\ref{eq:d_bal_1}) (denoted as $\cD_{i,-})$ is estimated as
+
+% eq:ddif_1          Discrete diffusion 1
+
+\begin{equation}
+D_{xx} \frac{\p \cN}{\p x} \approx \cD_{i,-} =
+\left . D_{xx} \; \left ( \frac{\cN_i - \cN_{i-1}}{\Delta x} \right ) \: 
+\right |_{j,l,m} \: . \label{eq:ddif_1} \end{equation}
+
+\noindent
+Corresponding values for counters $i$ and $i+1$, and for gradients in
+$\lambda$ ($y$) space again are obtained by rotating indices and
+increments. If one of the two grid points in located on land,
+Eq.~(\ref{eq:ddif_1}) is set to zero. The mixed derivative at the right side
+of Eq.~(\ref{eq:d_bal_1}) (denoted as $\cD_{ij,--}$) is estimated for the grid
+point $i$ and $i-1$ in $x$-space and $j$ and $j-1$ in $y$-space as
+
+% eq:ddif_2          Discrete diffusion 2
+
+\begin{equation}
+\cD_{ij,--} = \left . \: D_{xy} 
+\left ( \frac{- \cN_{i,j} + \cN_{i-1,j} +
+              \cN_{i,j-1} - \cN_{i-1,j-1}}
+           {0.5 ( \Delta x_j + \Delta x_{j-1} ) \: \Delta y}
+              \right ) \: \right |_{l,m} 
+\: . \label{eq:ddif_2} \end{equation}
+
+\noindent
+Note that the increment $\Delta x$ is a function of $y$ due to the use of the
+spherical grid. This term is evaluated only if all four grid points considered
+are sea points, otherwise it is set to zero. Using a forward in time
+discretization of the first term in Eq.~(\ref{eq:d_bal_1}), and central in
+space discretizations for the remainder of the first and second term on the
+right side, the final algorithm becomes
+
+% eq:ddif_3          Discrete diffusion 3
+
+\begin{eqnarray}
+\cN_{i,j,l,m}^{n+1} = \cN_{i,j,l,m}^n + 
+\frac{\Delta t}{\Delta x} 
+   \left ( \cD_{i,+} - \cD_{i,-} \right ) +
+\frac{\Delta t}{\Delta y}
+   \left ( \cD_{j,+} - \cD_{j,-} \right ) \nonumber \\
++ \frac{\Delta t}{4} \left ( \cD_{ij,--} + 
+   \cD_{ij,-+} + \cD_{ij,+-} + \cD_{ij,++} \right )
+\: . \label{eq:ddif_3} \end{eqnarray}
+
+\noindent
+Stable solutions are obtained for \citep[e.g.,][Part I section
+7.1.1]{bk:Fle88}
+
+% eq:ddif_4          Stability
+
+\begin{equation}
+\frac{D_{\max} \: \Delta t}{\min(\Delta x , \Delta y)^2}
+\leq 0.5 \: , \label{eq:ddif_4} \end{equation}
+
+\noindent
+where $D_{\max}$ is the maximum value of the diffusion coefficient (typically
+$D_{\max} = D_{nn}$). Because this stability criterion is a quadratic function
+of the grid increment, stability can become a serious problem at high
+latitudes for large scale applications. To avoid that this puts undue
+constraints on the time step of a model, a corrected swell age $T_{s,c}$ is
+used
+
+% eq:Ts_cor
+
+\begin{equation}
+T_{s,c} = T_s \min \left \{ \: 1 \: , \: 
+\left ( \frac{\cos(\phi)}{\cos(\phi_c)} \right )^2 \: \right \}
+\: , \label{eq:Ts_cor} \end{equation}
+
+\noindent
+where $\phi_c$ is a cut-off latitude defined by the user.
+
+\vspace{\baselineskip} \noindent 
+The above diffusion is needed for swell propagation only, but is not realistic
+for growing wind seas. In the latter conditions, the \uq\ scheme without the
+dispersion correction is sufficiently smooth to render stable fetch-limited
+growth curves \citep{tol:OMB95}. To remove minor oscillations, a small
+isotropic diffusion is used for growing wave components. To assure that this
+diffusion is small and equivalent for all spectral components, it is
+calculated from a preset cell Reynolds (or cell Peclet) number $\cR = c_g
+\Delta x D_g^{-1} = 10$, where $D_g$ is the isotropic diffusion for growing
+components
+
+% eq:Dg              Diffusion growing components
+
+\begin{equation}
+D_g = \frac{c_g \: \min(\Delta x , \Delta y)}{\cR} \: , \label{eq:Dg}
+ \end{equation}
+
+\noindent
+The diffusion for swell and for wind seas are combined using a linear
+combination depending on the nondimensional wind speed or inverse wave age
+$u_{10} c^{-1} = u_{10} k \sigma^{-1}$ as
+
+% eq:Xg              Linear combination for diffusion
+% eq:Dss_f           Final Dss
+% eq:Dnn_f           Final Dnn
+
+\begin{equation}
+X_g = \min \: \left \{ \: 1 \: , \: \max \: \left [ \: 0 \: , \:
+3.3 \left ( \frac{k \, u_{10}}{\sigma} \right ) - 2.3
+\: \right ] \: \right \}
+ \: , \label{eq:Xg} \end{equation} \begin{equation}
+D_{ss} = X_g D_g + (1-X_g) D_{ss,p}
+\: , \label{eq:Dss_f} \end{equation} \begin{equation}
+D_{nn} = X_g D_g + (1-X_g) D_{nn,p}
+\: , \label{eq:Dnn_f} \end{equation}
+
+\noindent
+where the suffix $p$ denotes propagation diffusion as defined in
+Eqs.~(\ref{eq:Dss_d}) and (\ref{eq:Dnn_d}). The constants in Eqs~(\ref{eq:Dg})
+and (\ref{eq:Xg}) are preset in the model.
+

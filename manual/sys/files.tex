@@ -1,0 +1,26 @@
+\vssub
+\subsection{~Program files} \label{sec:files}
+\vssub
+
+The \ws\ source code files are stored in files with the extension {\file
+  ftn}\footnote{~with the exception of some modules provided by others.}.
+Starting with version 2.00, the code has been organized in modules. Only the
+main programs are not packaged in modules.  Originally, variables were bundled
+with the code modules, resulting in a single static data structure. In model
+version 3.06, a separate dynamical data structure was introduced, allow for
+the presence of multiple wave grids in a single program, as a preparation for
+the development of the the multi-grid model driver.
+
+The subroutines contained in the modules are described in some detail below.
+The relation between the various subroutines is graphically depicted in
+Figs.~\ref{fig:w3init} through \ref{fig:post}. Three groups of codes are
+considered. The first are the main wave model subroutine modules, which are
+generally identified by the file name structure {\file
+  w3{\it{xxxx}}md.ftn}. These modules are described
+in \para\ref{sec:wave_mod}.  The second group consists of modules specific to
+the multi-grid wave model driver, which are generally identified by the file
+name structure {\file wm{\it{xxxx}}md.ftn}. These modules are described
+in \para\ref{sec:multi_mod}.  The final group consists of auxiliary programs
+and wave model drivers, and is described
+in \para\ref{sec:aux_mod}. Section~\ref{sec:data_ass} briefly describes the
+data assimilation module.

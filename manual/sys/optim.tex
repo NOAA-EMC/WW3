@@ -1,0 +1,28 @@
+\vssub
+\subsection{~Optimization} \label{sec:optim}
+\vssub
+
+The source code of \ws\ is written in ANSI standard FORTRAN 90, and has been
+compiled and run on a variety of platforms ranging from PC's to
+supercomputers.
+
+Optimization for vector computers has been performed by structuring the code
+in long vector loops where possible. Optimization was originally performed for
+the Cray YMP and C90. Note that some compiler directives for vectorization
+have been used. Note also that the vector optimization has not been updated
+since about 1997, and therefore needs to be revisited if the model is
+implemented on a vector machine. Vectorization directives are activated by the
+corresponding preprocessor switch ({\F c90}).
+
+Parallelization for shared memory machines using threading has been
+implemented using standard OpenMP directives. Such parallelization takes place
+mainly in the loop calling the source term routine {\F w3srce} and the
+different propagation routines. OpenMP directives are activated by the
+corresponding preprocessor switches ({\F omp}{\it n}).
+
+Parallelization for distributed memory machines is discussed in some detail in
+section~\ref{sec:distr}.
+
+Note that an important part of the optimization is the use of interpolation
+tables for the solution of the dispersion relation and for the calculation of
+the wind-wave interaction parameter).

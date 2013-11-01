@@ -1,0 +1,341 @@
+\vssub
+\subsection{~Selecting model options} \label{sec:switches}
+\vssub
+
+The file {\file switch} in the {\file bin} directory contains a set of strings
+identifying model options to be selected. Many options are available. Of
+several groups of options it is mandatory to select exactly one. These
+mandatory switches are described in \para\ref{sub:man_switch}. Other switches
+are optional, and are described in \para\ref{sub:opt_switch}. Default model
+setting are identified in \para\ref{sub:opt_default}. The order in which the
+switches appear in {\file switch} is arbitrary. How these switches are
+included in the source code files is described in \para\ref{sec:w3adc}.
+
+\vsssub
+\subsubsection{~Mandatory switches} \label{sub:man_switch}
+\vsssub
+
+Of each of the below groups of switches exactly one has to be selected. The
+first group of switches controls the selection of machine-dependent code. With
+the introduction of \fortran-90 this set of switches should have become
+obsolete. Problems with some compilers have prompted the retention of the
+second switch.
+\begin{slist}
+\sit{f90} {\fortran-90 style date and time capturing and program
+           abort.}
+\sit{dum} {Dummy to be used if \ws\ is to be installed on
+           previously untried hardware.}
+\end{slist}
+
+\noindent
+Hardware model (first group) and message passing protocol (second group). Note
+that these two groups share a switch. This implies that the {\sc mpi} switch
+can only be used in combination with the {\sc dist} switch.
+\begin{slist}
+\sit{shrd}{Shared memory model.}
+\sit{dist}{Distributed memory model}.
+\end{slist}
+
+\begin{slist}
+\sit{shrd}{Shared memory model, no message passing.}
+\sit{mpi} {Message Passing Interface (MPI).}
+\end{slist}
+
+\noindent
+Word length used to determine record length in direct access files
+\begin{slist}
+\sit{lrb4}{4 byte words.}
+\sit{lrb8}{8 byte words.}
+\end{slist}
+
+\noindent
+Compilation as a subroutine (called by a coupled model system using PALM) or a
+stand-alone program.
+\begin{slist}
+\sit{nopa}{Compilation as a stand-alone program}
+\sit{palm}{Compilation as a subroutine }
+\end{slist}
+
+\noindent
+Selection of propagation schemes and GSE alleviation method. These represent
+two sets of switched with some shared switches between the groups. Note that
+the second set of switches is secondary to the selection of program modules
+in the first set of switches, and therefore, does not have a user-defined
+option.
+\begin{slist}
+\sit{pr0} {No propagation scheme / GSE alleviation used.}
+\sit{pr1} {First order propagation scheme, no GSE alleviation.}
+\sit{pr2} {Higher order schemes with \cite{art:BH87} dispersion correction.}
+\sit{pr3} {Higher order schemes with \cite{tol:OMOD02b} averaging technique.}
+%\sit{pr4} {\uq\ propagation scheme with \cite{tol:OMOD02b}
+%           divergence technique.}
+\sit{prx} {Experimental (user supplied).}
+\end{slist}
+
+\begin{slist}
+\sit{pr0} {No propagation scheme used.}
+\sit{pr1} {First order propagation scheme.}
+\sit{uno} {Second order (UNO) propagation scheme.}
+\sit{uq } {Third order (UQ) propagation scheme.}
+\end{slist}
+
+\noindent
+Selection of flux computation:
+\begin{slist}
+\sit{flx0} {No routine used; flux computation included in source terms,}
+\sit{flx1} {Friction velocity according to Eq.~(\ref{eq:Wu}).}
+\sit{flx2} {Friction velocity from Tolman and Chalikov input.}
+\sit{flx3} {Idem, with cap of Eq.~(\ref{eq:Cd_cap_1}) or (\ref{eq:Cd_cap_2}).}
+\sit{flxx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of linear input:
+\begin{slist}
+\sit{ln0} {No linear input.}
+\sit{seed}{Spectral seeding of Eq.~(\ref{eq:seed}).}
+\sit{ln1} {Cavaleri and Malanotte-Rizzoli with filter.}
+\sit{lnx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of input and dissipation. {\F stab{}\it n} switches are optional and
+additional to corresponding {\F st{\it n}} switch:
+\begin{slist}
+\sit{st0} {No input and dissipation used.}
+\sit{st1} {\wam\-3 source term package.}
+\sit{st2} {\cite{tol:JPO96} source term package. See also the optional 
+          {\F stab2} switch.}
+\sit{stab2}{Enable stability correction (\ref{eq:scor}) - (\ref{eq:stab})
+            for {\F st2}.}
+\sit{st3} {\wam\-4 and variants source term package.}
+\sit{stab3}{Enable stability correction from \cite{rep:AB02} for {\F st4}.}
+\sit{st4} {\cite{art:Aea10} source term package.}
+%\sit{st5} {UNSW source term package.}
+%\sit{st6} {Swinburne source term package.}
+\sit{stx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of nonlinear interactions:
+\begin{slist}
+\sit{nl0} {No nonlinear interactions used.}
+\sit{nl1} {Discrete interaction approximation (\dia).}
+\sit{nl2} {Exact interaction approximation (\xnl).}
+\sit{nl3} {Generalized Multiple \dia\ (\gmd).}
+\sit{nlx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of bottom friction:
+\begin{slist}
+\sit{bt0} {No bottom friction used.}
+\sit{bt1} {\js\ bottom friction formulation.}
+%\sit{bt2} {??? bottom friction formulation.}
+%\sit{bt3} {??? bottom friction formulation.}
+\sit{bt4} {\showex\ bottom friction formulation.}
+\sit{btx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection depth-induced breaking of :
+\begin{slist}
+\sit{db0} {No depth-induced breaking used.}
+\sit{db1} {Battjes-Janssen.}
+\sit{dbx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of triad interactions:
+\begin{slist}
+\sit{tr0} {No triad interactions used.}
+\sit{trx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of bottom scattering:
+\begin{slist}
+\sit{bs0} {No bottom scattering used.}
+\sit{bs1} {Magne and Ardhuin.}
+\sit{bsx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of supplemental source term:
+\begin{slist}
+\sit{xx0} {No supplemental source term used.}
+\sit{xxx} {Experimental (user supplied).}
+\end{slist}
+
+\noindent
+Selection of method of wind interpolation (time):
+\begin{slist}
+\sit{wnt0}{No interpolation.}
+\sit{wnt1}{Linear interpolation.}
+\sit{wnt2}{Approximately quadratic interpolation.}
+\end{slist}
+
+\noindent
+Selection of method of wind interpolation (space):
+\begin{slist}
+\sit{wnx0}{Vector interpolation.}
+\sit{wnx1}{Approximately linear speed interpolation.}
+\sit{wnx2}{Approximately quadratic speed interpolation.}
+\end{slist}
+
+\noindent
+Selection of method of current interpolation (time):
+\begin{slist}
+\sit{crt1}{Linear interpolation.}
+\sit{crt2}{Approximately quadratic interpolation.}
+\end{slist}
+
+\noindent
+Selection of method of current interpolation (space):
+\begin{slist}
+\sit{crx0}{Vector interpolation}
+\sit{crx1}{Approximate linear speed interpolation.}
+\sit{crx2}{Approximate quadratic speed interpolation.}
+\end{slist}
+
+\noindent
+Switch for user supplied GRIB package.
+\begin{slist}
+\sit{nogrb}{No package included.}
+\sit{ncep1}{\ncep\ GRIB1 package for IBM SP.}
+\sit{ncep2}{\ncep\ GRIB2 package for IBM SP.}
+\end{slist}
+
+% -------------------------------------------------------------
+\vsssub
+\subsubsection{~Optional switches} \label{sub:opt_switch}
+\vsssub
+
+All switches below activate model behavior if selected, but do not require
+particular combinations. The following switches control optional output for
+\ws\ programs.
+
+\begin{slist}
+\sit{o0}  {Output of namelists in grid preprocessor.}
+\sit{o1}  {Output of boundary points in grid preprocessor.}
+\sit{o2}  {Output of the grid point status map in grid preprocessor.} 
+\sita{o2} {Generation of land-sea mask file {\file mask.ww3} in grid
+           preprocessor.}
+\sitb{o2} {Output of obstruction map in grid preprocessor.}
+\sitc{o2} {Print status map in format as read by {\file ww3\_grid}.}
+\sit{o3}  {Additional output in loop over fields in field preprocessor.}
+\sit{o4}  {Print plot of normalized one-dimensional energy
+           spectrum in initial conditions program.}
+\sit{o5}  {Id. two-dimensional energy spectrum.}
+\sit{o6}  {Id. spatial distribution of wave heights (not adapted for 
+           distributed memory).}
+\sit{o7}  {Echo input data for homogeneous fields in generic shell.}
+\sita{o7} {Diagnostic output for output points.}
+\sitb{o7} {Idem in {\file ww3\_multi}.}
+\sit{o8}  {Filter field output for extremely small wave heights
+           in wave model (useful for some propagation tests).}
+\sit{o9}  {Assign a negative wave height to negative energy in wave model.
+           Used in testing phase of new propagation schemes.}
+\sit{o10} {Identify main elements of multi-grid model extensions in
+           standard output.}
+\sit{o11} {Additional log output on management algorithm in {\file log.mww3}.}
+\sit{o12} {Identify removed boundary points in overlapping grids (center).}
+\sit{o13} {Identify removed boundary points in overlapping grids (edge).}
+\sit{o14} {Generate log file with buoy data {\file buoy\_log.ww3} for output
+           type {\code ITYPE = 0} in {\file ww3\_outp}.}
+\sit{o15} {Generate log file with time stamps of input data file {\file
+           times.XXX} in {\file ww3\_prep}.}
+\sit{o16} {Generate GrADS output of grid partitioning in {\file ww3\_gspl}.}
+\end{slist}
+
+\noindent
+The following switches enable parallelization of the model using \omp\
+directives, also known as `threading'. Note that in the present version of the
+model, threading and parallelization using the {\sc mpi} switch cannot be used
+simultaneously.
+\begin{slist}
+\sit{omp0}{High level parallelization of calls to source term and
+           propagation subroutines.}
+\sit{omp1}{Parallelization of loops in output and other processing.}
+\end{slist}
+
+\noindent
+The following switches are associated with the continuously moving grid
+options. The first switch activates the option, the other two are optional
+additions.
+\begin{slist}
+\sit{mgp }{Activate propagation correction in
+           Eq.~(\ref{eq:bal_move}).} 
+\sit{mgw }{Apply wind correction in moving grid approach.}
+\sit{mgg }{Activate GSE alleviation correction in
+           Eq.~(\ref{eq:move_GSE_avg2}).}
+\end{slist}
+
+\noindent
+The following compiler dependent switches are available. They may not have
+been maintained for recent compiler versions.
+\begin{slist}
+\sit{c90} {Compiler directives for Cray C90 (vectorization).}
+\sit{nec} {Compiler directives for NEC SX6/SX8 (vectorization).}
+\end{slist}
+
+\noindent
+Furthermore the following miscellaneous switches are available:
+\begin{slist}
+\sit{cou} {Activates the calculation of variables required for coupling}
+\sit{dss0}{Switch off frequency dispersion in diffusive
+           dispersion correction.}
+\sit{mlim}{Use Miche-style shallow water limiter of Eq.~(\ref{eq:MLIM})}.
+\sit{mpibdi}{Experimental parallelization of multi-grid model initialization.}
+\sit{mpit}{Test output for \mpi\ initializations.}
+\sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
+\sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing
+           programs.}
+\sit{nco} {Code modifications for operational implementation at NCO
+           (NCEP Central Operations). Mostly changes unit numbers
+           and file names. Not recommended for general use.} 
+\sit{nls }{Activate nonlinear smoother (\para\ref{sec:NLS}).}
+\sit{nnt} {Generate file test\_data\_{\it{nnn}}.ww3 with spectra and 
+           nonlinear interactions for training and testing of NNIA}.
+\sit{ref1} {Enables reflection of shorelines and icebergs}
+\sit{reft}{??? \ldots}
+\sit{rwnd}{Correct wind speed for current velocity.}
+\sit{s}   {Enable subroutine tracing in the main \ws\
+           subroutines by activating calls to the
+           subroutine {\F strace}.}
+\sit{scrip   }{??? \ldots}
+\sit{scripnc }{??? \ldots}
+\sit{scriptst}{??? \ldots}
+\sit{sec1}{Enable the use of global time steps less than 1~s, but does not
+           allow output at time steps less than 1~s.}
+\sit{t}   {Enable test output throughout the program(s).}
+\sitn{t}  {Id.}
+\sit{tdyn}{Dynamic increment of swell age in diffusive
+           dispersion correction (test cases only).}
+\sit{tide }{??? \ldots}
+\sit{tidet}{??? \ldots}
+\sit{xw0 }{Swell diffusion only in \uq\ scheme.}
+\sit{xw1 }{Id. wave growth diffusion only.}
+\end{slist}
+
+\vspace{\baselineskip}
+\centerline{\ldots there are orphan XYG and LLG switches in the code \ldots}
+\centerline{\ldots these need to be cleaned up \ldots}
+
+\vsssub
+\subsubsection{~Default model settings} \label{sub:opt_default}
+\vsssub
+
+With the plethora of numerical and physical options in \ws, and with the
+different and ever evolving way \ws\ is implemented at various organizations,
+we no longer provide a `default' model set up for the model with respect to
+most numerical and physical approaches. The only setup options that are still
+considered default is the treatment of input fields.
+
+\begin{slist}
+\sit{wnt1} {Wind interpolation (linear).}
+\sit{wnx1} {Wind interpolation (linear).}
+\sit{rwnd} {Define wind as relative to current.}
+\sit{crt1} {Current interpolation (linear).}
+\sit{crx1} {Current interpolation (linear).}
+\end{slist}

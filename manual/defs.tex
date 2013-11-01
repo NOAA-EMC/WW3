@@ -1,4 +1,8 @@
-\newcommand{\WWver}{4.08}
+\newcommand{\WWver}{4.12a}
+\newcommand{\guidever}{1.1}
+\newcommand{\guideref}{tol:MMAB13d}
+\newcommand{\genever}{1.3}
+\newcommand{\generef}{tol:MMAB13c}
 
 \renewcommand{\theequation}{\thesection.\arabic{equation}}
 \renewcommand{\thefigure}{\thesection.\arabic{figure}}
@@ -22,6 +26,7 @@
 \renewcommand{\evensidemargin}{0.5in}
 
 \newcounter{outpars}
+\newcounter{outgrps}
 
 \newcommand{\wt}{WAVEWATCH}
 \newcommand{\ww}{WAVEWATCH~III$\:$\textsuperscript\textregistered}
@@ -33,8 +38,10 @@
 \newcommand{\dia}{DIA}
 \newcommand{\vdia}{VDIA}
 \newcommand{\mdia}{MDIA}
+\newcommand{\gmd}{GMD}
 \newcommand{\xnl}{WRT}
 \newcommand{\js}{JONSWAP}
+\newcommand{\showex}{SHOWEX}
 \newcommand{\ncar}{NCAR}
 %\newcommand{\para}{\S$\:$}
 \newcommand{\para}{section~}
@@ -118,6 +125,11 @@
             \rightmargin 10mm}}{\end{list}}
 \newcommand{\fit}[2]{\item[{\file{#1}}\hfill]{#2}}
 
+\newenvironment{clist}{\begin{list}{nofile ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 40mm \labelwidth 30mm
+            \rightmargin 10mm}}{\end{list}}
+\newcommand{\cit}[2]{\item[{\code{#1}}\hfill]{#2}}
+
 \newenvironment{flisti}{\begin{list}{nofile ?}{\parsep 0mm
             \itemsep 0mm \leftmargin 30mm \labelwidth 20mm
             \rightmargin 10mm}}{\end{list}}
@@ -186,6 +198,17 @@
 \end{picture}}
 
 \newcommand{\command}[1]{\begin{center}{\code #1}\end{center}}
+
+\newcommand{\opthead}[3]{\strut \hfill \begin{tabular}{|l|l|} \hline
+Switch:      & {\code #1}  \\ \hline
+Origination: & #2  \\ \hline
+Provided by: & #3 \\ \hline
+\end{tabular} \\ \vspace{\baselineskip}}
+
+\newcommand{\conthead}[2]{\strut \hfill \begin{tabular}{|l|l|} \hline
+Origination: & #1  \\ \hline
+Provided by: & #2 \\ \hline
+\end{tabular} \\ \vspace{\baselineskip}}
 
 \hyphenation{wave-num-ber wave-num-bers}
 \hyphenation{va-ry-ing ge-ne-ric}

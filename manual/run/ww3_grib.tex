@@ -1,0 +1,59 @@
+\vsssub
+\subsubsection{Gridded GRIB output post-processor} \label{sec:ww3grib}
+\vsssub
+
+\proddefH{ww3\_grib}{w3grib}{ww3\_grib.ftn}
+\proddeff{Input}{ww3\_grib.inp}{Input file for gridded output
+post-processor.}{10}
+\proddefa{mod\_def.ww3}{Model definition file.}{20}
+\proddefa{out\_grd.ww3}{Raw gridded output data.}{20}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{gribfile}{GRIB file.}{50}
+
+\inpfile{ww3_grib.tex}
+
+\vspace{\baselineskip} 
+\noindent
+This post-processor packs fields of mean wave parameters in GRIB format, using
+GRIB version II and \ncep's w3 and bacio library routines, or in GRIB2, using
+NCEPS's operational package. Additional packing data can be found in
+Table~\ref{tab:fields} on page \pageref{tab:fields}.
+
+The GRIB packing is performed using the \ncep's GRIB tables as described in
+\cite{rep:GRIB}. Because the w3 and bacio routine are not fully portable, they
+are not supplied with the code. The user will have to provide corresponding
+routines. It is suggested that such routines are activated with additional
+\ws\ switches in the mandatory switch group containing the `{\F nogrb}'
+switch, as if presently the case with the \ncep\ routines.  The GRIB2 packing
+is performed according to \cite{rep:GRIB2}, and is performed with NCEP's
+standard operational packages.
+
+Table~\ref{tab:fields} shows the {\F kpds(5)} data values for GRIB
+packing. For the partitioned data, the first number identifies the wind sea,
+the second number identifies swell. Most data are packed as surface data ({\F
+kpds(6) = 0}). For the partitioned swell fields, however, consecutive fields
+are packed at consecutive levels, with the level type indicator set to ({\F
+kpds(6) = 241}). {\F kpds(7)} identifies the actual level or swell field
+number.
+
+Table~\ref{tab:fields} shows several {\F kpds} data values for GRIB2
+packing. The first number in the table represents {\F listsec0(2)}, which
+identifies the discipline type (e.g., oceanography, meteorology, etc.)  The
+second number represents {\F kpds(1)}, which identifies the parameter category
+(e.g., waves, circulation, ice, etc.) within the discipline type.  The third
+number represents {\F kpds(2)}, which identifies the actual parameter.  For
+the partitioned data, A/B means A for wind sea and B for swell.  Additionally
+{\F kpds(10) = 0} for surface data, and {\F kpds(10) = 241 } to pack
+consecutive swell fields at consecutive levels. {\F kpds(12)} identifies the
+actual level or swell field number.
+
+Although the above input file contains flags for all 31 output fields of \ws,
+not all fields can be packed in GRIB. If a parameter is chosen for which GRIB
+packing is not available, a message will be printed to standard
+output. Table~\ref{tab:fields} shows which parameter can be packed in GRIB.
+Note that at \ncep\ the conversions from GRIB to GRIB2 coincided with the
+introduction of partitioned wave model output. This required some duplicate
+definitions in GRIB and some apparent inconsistencies between GRIB and GRIB2
+packing.
+
+\pb

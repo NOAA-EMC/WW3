@@ -1,0 +1,118 @@
+\vsssub
+\subsubsection{~Distributed memory concepts.} \label{sec:distr}
+\vsssub
+
+The general grid structure described in the previous paragraph is used for
+both shared and distributed memory versions of the model, with some minor
+differences. For the distributed memory version of the model, not all data is
+kept at each processor. Instead, each spectrum is kept at a single processor
+only. The spectra on the storage grid are distributed over the available
+processors with a constant stride. Because only part of the spectra are stored
+locally on a given processor, a distinction needs to be made between the above
+global sea point counter {\F isea}, and the local sea point counter {\F
+jsea}. If the actual number of processors used in the computation is {\F
+naproc}, and if {\F iaproc} is the processor number ranging form 1 to {\F
+naproc}, these parameters are related in the following way
+
+\vspace{\baselineskip}
+\centerline{\F isea = iaproc + (jsea-1) naproc ,}
+\centerline{\F jsea = 1 + (isea-1) / naproc ,}
+\centerline{\F iaproc = 1 + mod(isea-1,naproc) .}
+\vspace{\baselineskip}
+
+\noindent
+In model version 3.10, a further refinement was introduced. The actual number
+of processors {\F naproc} can be smaller than the total number of processors
+used by the program ({\F ntproc}). Processors where {\F naproc} $<$ {\F
+iaproc} $\le$ {\F ntproc} are reserved for output processing only.
+
+With this data distribution, source terms and intra-spectral propagation can
+be calculated at the each given processor without the need for communication
+between processors. For spatial propagation, however, a data transpose is
+required where the spectral components {\F(ith,ik)} for all spatial grid
+points have to be gathered at a single processor. After propagation has been
+performed, the modified data have to be scattered back to their `home'
+processor. Individual spectral components are assigned to specific processors
+in such a way that the number of partial propagation steps to be performed by
+each processor is roughly identical. This makes a good load balance
+possible. The actual algorithm can be found in section 4.d of the subroutine
+{\F w3init} ({\file w3initmd.ftn}).
+
+The data transpose for the gather operation is implemented in two steps using
+the Message Passing Interface (MPI) standard \citep[e.g.][]{bk:GLS97}. First,
+values for each spatial grid point for a given spectral bin {\F(ith,ik)} are
+gathered in a single target processor in a one-dimensional array {\F
+  store(isea)}, which then is converted to the full two-dimensional field of
+spectral components. After propagation has been performed, the transpose for
+the scatter operation reverses this process, using the same one-dimensional
+array {\F store}. Whereas the algorithm for distributing spatial propagation
+over individual processors assures a global (per time step) load balance, it
+does not assure that communication is synchronized, because not each
+calculation at each processor will take the same effort. To avoid that this
+results in a load imbalance, non-blocking communication has been
+used. Furthermore, the one-dimensional array {\F store(isea)} is replaced by
+{\F store(isea,ibuf)}, where the added dimension of the array supplies an
+actively managed buffer space (see {\F w3gath} and {\F w3scat} in {\file
+  w3wavemd.ftn}). These buffers allow that spare clock cycles as may occur
+during communication can be used for calculation, and that hiding of
+communication behind calculation will occur if the hardware is capable of
+doing this. To avoid problems with incompatibilities between FORTRAN and MPI,
+separate gather and scatter data arrays are used.  The buffered data
+transposes are graphically depicted in Fig.~\ref{fig:transpose}. More details
+can be found in \cite{tol:PACO02}
+
+% fig:transpose
+
+\input{sys/fig_transpose}
+
+In principle only the storage array {\F a(ith,ik,jsea)} is influenced by the
+data distribution. Input fields, maps and output fields of mean wave
+parameters in principle are retained at full resolution at each grid
+point. Full maps are available at each processor at each phase of the
+calculation. Input and output fields generally contain pertinent data at the
+stride {\F naproc} only.
+
+Distributed memory also requires modifications to the I/O. Input files are
+read completely by each separate processor. The type of file output is
+determined by the I/O type indicator {\F iostyp}
+
+\begin{center} \begin{tabular}{cl}
+{\F iostyp} & implies \\ \hline
+  0 & Restart file written from each individual process. \\
+  1 & Each file written from assigned process. \\
+  2 & Each file written from a single dedicated output process. \\
+  3 & Dedicated output processes for each output type.
+\end{tabular} \end{center}
+
+\noindent
+Note that the restart file is a direct access file, so that each processor can
+efficiently gather only the locally stored spectra, without the need of
+reading through the entire file. The restart file is either written by each
+individual process directly, or all data is funneled through a dedicated
+processor. The first method requires a parallel file system, the second method
+is generally applicable. 
+
+The present algorithm for data distribution has been chosen for several
+reasons. First, it results in an automatic and efficient load balancing with
+respect to the (dynamic) integration of source terms, the exclusion of ice
+covered grid points, and of intra-spectral propagation. Secondly, the
+communication by definition becomes independent of the numerical propagation
+scheme, unlike for the more conventional domain decomposition. In the latter
+case, only a so-called `halo' of boundary data needs to be converted to
+neighboring `blocks' of grid points. The size of the halo depends on the
+propagation scheme selected. The main disadvantage of the present data
+distribution scheme is that the amount of data to be communicated each time
+step is much larger than for a more conventional domain decomposition,
+particularly when relatively small numbers of processors are used. On an IBM
+RS6000 SP, on which the distributed memory version of \ws\ was tested, the
+relatively large amount of communication did not constitute a significant part
+of the overall time of computation, and the model shows excellent scaling
+behavior for up to O(100) processors \citep{tol:PACO02}.
+
+More recently, hybrid parallelization techniques have been developed using a
+combination of a course scale domain decomposition and a local data transpose,
+using approaches already available in {\file ww3\_multi}. To accommodate this,
+the {file ww3\_gspl(.sh)} tools were introduced in model version
+4.10. Although this approach still needs some work with respect to the model
+memory footprint in the initialization in {\file ww3\_multi}, initial scaling
+results obtained with this approach are encouraging \cite[see][]{tol:MMAB13b}.

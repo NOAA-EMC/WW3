@@ -1,0 +1,201 @@
+\subsubsection{Data in {\F w3adatmd}.} \label{sub:adatmd}
+
+The module {\F w3adatmd} in the file {\file w3adatmd.ftn} contains data that
+are used inside the wave model only. Embedded in the module are the following
+parameters:
+
+\begin{vlist}
+\vit{nadata}{i }{Number of models in array dim.}
+\vit{iadata}{i }{Selected model for output, init. at -1.}
+\vit{mpibuf}{IP}{Number of buffer arrays for 'hidden' MPI communications
+                (no hiding for {\F mpibuf = 1}).}
+\vit{wadat }{t }{Basic data structure.}
+\vit{wadats}{ta}{Array of data structures.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F wadat}, alias pointers are defined as in the
+module {\F w3adatmd}. Within the type, several groups of variables are
+present. The first are the internal grid definition of the model:
+
+\begin{vlist}
+\vit{cg    }{ra}{Group velocities for all wave model sea points and 
+                 frequencies.}
+\vit{wn    }{ra}{Idem, wavenumbers.}
+\end{vlist}
+
+\noindent
+The second group of parameters consists auxiliary arrays needed to process
+model input:
+
+\begin{vlist}
+\vit{ca0-i  }{ra}{Absolute current velocity (initial and inc.) in \\
+                  {\F w3ucur}. \hfill (m/s)}
+\vit{cd0-i  }{ra}{Current direction (initial and increment) in \\
+                  {\F w3ucur}. \hfill (rad)}
+\vit{ua0-i  }{ra}{Absolute wind speeds (init. and incr.) in 
+                  {\F w3uwnd} \hfill (m/s)}
+\vit{ud0-i  }{ra}{Wind direction (initial and incr.) in
+                  {\F w3uwnd} \hfill (rad)}
+\vit{as0-i  }{ra}{Stability par. (initial and incr.) in
+                  {\F w3uwnd} \hfill (degr)}
+\vit{atrnx-y}{ra}{Actual transparency info.}
+\end{vlist}
+
+\noindent
+The third group of parameters consists of internal gridded fields of
+parameters:
+
+\begin{vlist}
+\vit{dw   }{ra}{Water depths.}
+\vit{ua   }{ra}{Absolute wind speeds.}
+\vit{ud   }{ra}{Absolute wind direction.}
+\vit{u10  }{ra}{Wind speed used.}
+\vit{u10d }{ra}{Wind direction used.}
+\vit{as   }{ra}{Stability parameter.}
+\vit{cx/y }{ra}{Current components.}
+\vit{emn  }{ra}{Mean energy.}
+\vit{fmn  }{ra}{Mean frequency.}
+\vit{wnm  }{ra}{Mean wavenumber.}
+\vit{amx  }{ra}{Spectral maximum.}
+\vit{cds  }{ra}{Drag coefficient.}
+\vit{z0s  }{ra}{Roughness parameter.}
+\vit{hs   }{ra}{Wave height.}
+\vit{wlm  }{ra}{Mean wave length.}
+\vit{tmn  }{ra}{Mean wave period.}
+\vit{thm  }{ra}{Mean wave direction.}
+\vit{ths  }{ra}{Mean directional spread.}
+\vit{fp0  }{ra}{Peak frequency.}
+\vit{thp0 }{ra}{Peak direction.}
+\vit{fp1  }{ra}{Wind sea peak frequency.}
+\vit{thp1 }{ra}{Wind sea peak direction.}
+\vit{dtdyn}{ra}{Mean dynamic time step (raw).}
+\vit{fcut }{ra}{Cut-off frequency for tail.}
+\vit{aba  }{ra}{Near bottom rms wave excursion amplitude.}
+\vit{abd  }{ra}{Corresponding direction.}
+\vit{uba  }{ra}{Near bottom rms wave velocity.}
+\vit{ubd  }{ra}{Corresponding direction.}
+\vit{s{\it xx}}{ra}{Radiation stress components.}
+\vit{phs  }{ra}{Wave height of partition of spectrum.}
+\vit{ptp  }{ra}{Peak period of partition of spectrum.}
+\vit{plp  }{ra}{Peak wave length of partition of spectrum.}
+\vit{pth  }{ra}{Direction of partition of spectrum.}
+\vit{psi  }{ra}{Directional spread of partition of spectrum.}
+\vit{pws  }{ra}{Wind sea fraction of partition of spectrum.}
+\vit{pwst }{ra}{Wind sea fraction of total spectrum.}
+\vit{pnr  }{ra}{Number of wave fields in partitioning.}
+\vit{ddd{\it x} }{ra}{Spatial derivatives of the depth.}
+\vit{dc{\it x}d{\it x}}{ra}{Spatial derivatives of the current.}
+%\vit{drat }{ra}{Ratio or air and water densities.}
+%\vit{tauo/y}{ra}{Momentum flux from waves to ocean.}
+%\vit{tauw/y}{ra}{Momentum flux from atmosphere to waves.}
+%\vit{phat}{ra}{Wave-modified mean pressure (responsible for set-up).}
+%\vit{z0w}{ra}{Under-water roughness length.}
+%\vit{phiaw}{ra}{Atmosphere to waves energy flux.}
+%\vit{phioc}{ra}{Waves to ocean energy flux.}
+%\vit{tusx/y}{ra}{Depth-integrated wave Stokes transport.}
+%\vit{ussx/y}{ra}{Surface Stokes drift.}
+%\vit{mssx/y}{ra}{Mean square slope components.}
+%\vit{usero}{ra}{Slots for user-supplied output parameters.}
+\end{vlist}
+
+\noindent
+The fourth group of parameters consists of map data for the first
+order propagation scheme ({\F !/pr1}).
+
+\begin{vlist}
+\vit{is0-2 }{ia}{Spectral propagation maps.}
+\vit{facvx-y}{ra}{Spatial propagation factor map.}
+\end{vlist}
+
+\noindent
+The fifth group of parameters consists of map data for the third
+order propagation scheme ({\F !/pr2-4}).
+
+\begin{vlist}
+\vit{nmx-y{\it{n}}}{i }{Counters for {\F mapx2}, see {\F w3map3}.}
+\vit{nmxy  }{i }{Dimension of {\F mapxy}.}
+\vit{nact1-2}{i }{Dimension of {\F mapaxy}.}
+\vit{ncent }{i }{Dimension of {\F mapaxy}.}
+\vit{mapx2 }{ia}{Map for prop. in 'x' (longitude) dir.}
+\vit{mapy2 }{ia}{Idem in y' (latitude) direction.}
+\vit{mapxy }{ia}{}
+\vit{mapaxy}{ia}{List of active points used in {\F w3qck1}.}
+\vit{mapcxy}{ia}{List of central points used in avg.}
+\vit{mapth2}{ia}{Like {\F mapx2} for refraction (rotated and
+                 shifted, see {\F w3ktp3}).
+                 Like {\F mapaxy}.}
+\vit{mapwn2}{ia}{Like {\F mapx2} for wavenumber shift.}
+\vit{maptrn}{la}{Map to block out GSE mitigation in proper grid
+                 points.}
+\end{vlist}
+
+\noindent 
+The sixth group of parameters consists variables used by the parameterizations
+for the nonlinear interactions :
+
+\begin{vlist}
+\vit{nfr        }{i }{Number of frequencies (\F{ nfr = nk } ).
+                                                       \hfill ({\F !/nl1})}
+\vit{nfrhgh     }{i }{Auxiliary frequency counter.     \hfill ({\F !/nl1})}
+\vit{nfrchg     }{i }{Id.                              \hfill ({\F !/nl1})}
+\vit{nspecx-y   }{i }{Auxiliary spectral counter.      \hfill ({\F !/nl1})}
+\vit{ip\it{nn}  }{ia}{Spectral address for $S_{nl}$.   \hfill ({\F !/nl1})}
+\vit{im\it{nn}  }{ia}{Id.                              \hfill ({\F !/nl1})}
+\vit{ic\it{nn}  }{ia}{Id.                              \hfill ({\F !/nl1})}
+\vit{dal\it{n}  }{r }{Lambda dependent weight factors. \hfill ({\F !/nl1})}
+\vit{awg\it{n}  }{r }{Interpolation weights for Snl.   \hfill ({\F !/nl1})}
+\vit{swg\it{n}  }{r }{Interpolation weights for diag. term.
+                                                       \hfill ({\F !/nl1})}
+\vit{af11       }{ra}{Scaling array ($f^{11}$).        \hfill ({\F !/nl1})}
+\vit{nlinit     }{l }{Flag for initialization.         \hfill ({\F !/nl1})}
+\end{vlist}
+
+\noindent
+The seventh group of parameters consists MPP and MPI variables:
+
+\begin{vlist}
+\vit{iappro}{ia}{Processor numbers for propagation calc. for each
+                 spectral component.}
+\vit{mpi\_comm\_wave, mpi\_comm\_wcmp}{}{}
+\vit{      }{i }{mpi communicator for wave model.     \hfill ({\F !/mpi})}
+\vit{ww3\_field\_vec, ww3\_spec\_vec}{}{}
+\vit{      }{i }{MPI derived vector types.            \hfill ({\F !/mpi})}
+\vit{nrqsg1}{i }{Number of handles in {\F irqsg1}.    \hfill ({\F !/mpi})}
+\vit{nrqsg2}{i }{Number of handles in {\F irqsg2}.    \hfill ({\F !/mpi})}
+\vit{ibfloc}{i }{Present active buffer number.        \hfill ({\F !/mpi})}
+\vit{isploc}{i }{Corresponding local spectral bin number \\
+                 {\F (1,nsploc,1)}.                   \hfill ({\F !/mpi})}
+\vit{nsploc}{i }{Total number of spectral bins for which prop. \\ is
+                 performed on present CPU.            \hfill ({\F !/mpi})}
+\vit{bstat }{ia}{Status of buffer (size {\F mpibuf}): \hfill ({\F !/mpi})}
+\vit{      }{  }{$\:\:$ 0: Inactive.}
+\vit{      }{  }{$\:\:$ 1: {\F a} $\to$ {\F store} (active or finished).}
+\vit{      }{  }{$\:\:$ 2: {\F store} $\to$ {\F a} (active or finished).}
+\vit{bispl }{ia}{Local spectral bin number for buffer
+                 (size {\F mpibuf}).                  \hfill ({\F !/mpi})}
+\vit{irqsg1}{ia}{MPI request handles for scatters and gathers \\ to {\F va}
+                (persistent).                         \hfill ({\F !/mpi})}
+\vit{irqsg2}{ia}{MPI request handles for gathers and scatters \\ to
+                 {\F STORE} (persistent).             \hfill ({\F !/mpi})}
+\vit{gstore, sstore}{}{}
+\vit{      }{ra}{Communication buffer {\F (nsea,mpibuf)}.
+                                                      \hfill ({\F !/mpi})}
+\vit{sppnt }{ra}{Communication buffer {\F (nth,nk,4)}.}
+\end{vlist}
+
+\noindent
+The final group of parameters consist of all other internal auxiliary
+parameters that need to be saved between model runs:
+
+\begin{vlist}
+\vit{itime }{i }{Discrete time step counter.}
+\vit{ipass }{i }{Pass counter for log file.}
+\vit{idlast}{i }{Last day ID for log file.}
+\vit{nsealm}{i }{Maximum number of local sea points.}
+\vit{alpha }{ra}{Phillips' alpha.}
+\vit{flcold}{l }{Flag for 'cold start' of model.}
+\vit{fliwnd}{l }{Flag for initialization of model based on wind.}
+\vit{ainit }{l }{Flag for array initialization.}
+\vit{fl\_all}{l}{Flag for all or partial array initialization.}
+\end{vlist}

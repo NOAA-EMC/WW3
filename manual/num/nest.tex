@@ -1,0 +1,148 @@
+\vssub
+\subsection{~Nesting} \label{sub:num_nest}
+\conthead{\ws}{H. L. Tolman}
+
+\noindent
+Traditionally, wave models only consider one-way nesting, with boundary data
+from low resolution grids being provided to high resolution grids. This
+approach has always been available in \ws, and is discussed in
+\para\ref{sub:one_way}. In model version 3.14, a multi-grid wave model
+driver was introduced, considering full two-way nesting between grids. This
+approach is discussed in \para\ref{sub:two_way}. The illustrations below
+consider regular grids, but the principles discussed are applicable to
+curvilinear and triangular grids too.
+
+
+% -------------------------------------------------------------
+\vssub
+\subsubsection{~Traditional one-way nesting} \label{sub:one_way}
+\vssub
+
+\input{num/fig_nest1.tex}
+
+The conventional wave model program {\file ww3\_shel} considers a single wave
+model grid. This program includes options to transfer boundary conditions from
+large-scale runs to small-scale runs. Each run can simultaneous accept one
+data set with boundary conditions, and generate up to 9 data sets with
+boundary conditions. To assure conservation of wave energy with incompatible
+depths and currents, the boundary data consists of energy spectra
+$F(\sigma,\theta)$. The data file consists of spectra at grid points of the
+generating run, and information needed to interpolate spectra at the requested
+boundary points. The size of the transfer files is thus minimized if the input
+points for a small-scale run are located on grid lines in the large-scale
+run. When used as input, the spectra are interpolated in space and time for
+every global time step $\Delta t_g$, using a linear interpolation of spectral
+components. 
+
+The numerical approach for including boundary data in a wave model is
+illustrated in Fig.~\ref{fig:nest1}. Active boundary points are assigned in
+the grid to separate sea points from land points or from otherwise deactivated
+grid points. Between the active boundary points and sea points, a local
+boundary scheme is applied (typically first order). In the internal sea points
+of the model, the selected propagation scheme is used.
+
+Practical aspect of the conventional one-way nesting approach are
+discussed in more detail in Appendix~\ref{app:nest}.
+
+
+% -------------------------------------------------------------
+\vssub
+\subsubsection{~Two-way nesting} \label{sub:two_way}
+\vssub
+
+Model version 3.14 includes an option to use the multi-grid or mosaic approach
+to wave modeling with the the program {\file ww3\_multi} \citep{tol:Vict06a,
+  tol:MMAB07b, tol:OMOD08b}. In this program, an arbitrary number of grids
+with arbitrary resolutions is considered, with data exchange between grids at
+each relevant model time step. The grids are given a rank number, where lower
+rank corresponds to lower resolution, and equal rank corresponds to similar
+resolution (but not necessarily equal resolution).  Three types of data
+transfer between grids are considered. These are
+
+\begin{itemize}
+\item Transfer of data from lower to higher rank grids.
+\item Transfer of data from higher to lower rank grids.
+\item Transfer of data between grids with equal rank.
+\end{itemize}
+
+Data transfer from lower to higher ranked grids is accomplished by providing
+boundary data to the higher ranked grid, as in the traditional one-way nesting
+approach described in the previous section and in Fig.~\ref{fig:nest1}.
+
+\input{num/fig_nest2}
+
+When this approach is combined with data transfer from higher to lower rank, a
+full two way nesting approach is established. In {\file ww3\_multi} the data
+at the lower ranked grids is reconciled with the data at the higher ranked
+grids after the higher ranked grids have `caught up' in time with the lower
+ranked grids.  Considering that the resolution of the lower ranked grid by
+definition is lower that the resolution of the higher ranked grid, a natural
+way to estimate the wave energy in the lower ranked grid $E_{l,i}$ from energy
+in the higher ranked grid $E_{h,j}$ is
+
+\begin{equation}
+E_{l,i} = \sum w_{i,j} W_{h,j} \:\:\: , \label{eq:nest_hg1}
+\end{equation}
+
+\noindent
+where $i$ and $j$ are grid counters in the two grids, and where $w_{i,j}$ are
+averaging weights. The weights can be defined consistent with conservation of
+wave energy as the surface of the grid box $j$ in the higher ranked grid that
+covers the grid box $i$ in the lower ranked grid, normalized with the surface
+of the lower ranked grid box $i$. This is illustrated in Fig.~\ref{fig:nest2}.
+To avoid circular reconciliation, grid points in the lower ranked grid that
+contribute to the boundary data in the higher ranked grid are not updated in
+this manner.
+
+\input{num/fig_nest3}
+
+Overlapping grids with similar rank cannot use the above two-way nesting
+technique to consistently exchanger data. Instead, all such grids are
+propagated one time step, after which the grids are reconciled as is
+illustrated in Fig.~\ref{fig:nest3} For grid 1 ($\circ$ in
+Fig.~\ref{fig:nest3}) two areas can be distinguished. In area C, the influence
+of the boundary has propagated into the grid since the last
+reconciliation. The actual depth of penetration depends on the stencil width
+of the numerical scheme, and the number of propagation time steps.  In areas A
+and B, information from the boundary has not yet penetrated, and this area can
+be considered as the `interior' of grid 1.  Similarly, area A represents the
+boundary penetration depth for grid 2 ($\bullet$ in Fig.~\ref{fig:nest3})
+whereas B and C represent the interior of grid 2.  A simple and consistent
+reconciliation between grid 1 and 2 uses data from grid 1 exclusively in area
+A (interpolating data from grid 1 to grid points in grid 2 as necessary), and
+uses data from grid 2 exclusively in area C. In area B, where interior parts
+of both grids overlap, a consistent solution can be found by using weighted
+averages from both grids. Note that this approach is easily extended to
+multiple overlapping grids.
+
+Note that for explicit numerical propagation schemes and overlapping grids with
+identical resolution and coinciding grid points, solutions for overlapping
+grids and the compatible single grid can be identical, as long as the overlap
+areas are sufficiently wide.
+
+\vspace{\baselineskip} 
+\noindent 
+The two-way nesting techniques in {\file ww3\_multi} are largely automated.
+Each grid is prepared individually, with its own preferred time stepping
+information. Locations where each grid expects to get boundary data are marked
+as in the one-way nesting approach. All other bookkeeping needed to implement
+the two-way nesting techniques are automated, although some iterations may be
+needed to assure that all input boundary points defined in each grid can be
+provided with boundary data from other grids in the multi-grid application.
+Alternatively, each grid can obtain data from an external data file as in the
+traditional nesting approach. In the present implementation, each grid has to
+obtain all boundary data from a single file, of from other grids in the
+multi-grid application, but cannot receive data from file and grids
+simultaneously. Details on the management algorithm developed to run all grid
+simultaneously can be found in \citet[section 3.4]{tol:MMAB07b} or
+\cite{tol:OMOD08b}, and will not be reproduced here.
+
+Note that the grids used in {\file ww3\_multi} do not need to have the same
+spectral discretization. Spectra are converted on the fly in {\file
+ww3\_multi}. Details on the numerical techniques used for this approach can be
+found in \citet[section 3.5.5]{tol:MMAB07b}.
+
+Grid generation for multiple grids in such an approach can be cumbersome, and
+consistency between grids is required for consistent model results. For this
+reason automated grid generation utilities have been developed by
+\cite{tol:MMAB07a, tol:OMOD08a}.

@@ -1,0 +1,46 @@
+\vsssub
+\subsubsection{Spatial and temporal tracking of wave systems} \label{sec:ww3systrk}
+\vsssub
+
+\proddefH{ww3\_systrk}{w3systrk}{ww3\_systrk.ftn}
+\proddeff{Input}{ww3\_systrk.inp}{Formatted input file for program.}{10}
+\proddefa{partition.ww3}{Spectral partition file.}{11}
+\proddefa{sys\_restart.ww3\opt}{Restart file with system memory.}{12}
+\proddefa{sys\_mask.ww3\opt}{Mask file.}{13}
+\proddeff{Output}{sys\_log.ww3}{Output log (appended with processor number in parallel run).}{20}
+\proddefa{sys\_coord.ww3}{Lat/lon coordinates of fields.}{21}
+\proddefa{sys\_hs.ww3}{Significant wave height fields of individual wave systems.}{22}
+\proddefa{sys\_tp.ww3}{Peak period fields of individual wave systems.}{23}
+\proddefa{sys\_dir.ww3}{Peak direction fields of individual wave systems}{24}
+\proddefa{sys\_dspr.ww3}{Direction spread fields of individual wave systems.}{25}
+\proddefa{sys\_pnt.ww3}{Direction spread fields of individual wave systems.}{26}
+\proddefa{sys\_restart1.ww3}{Restart file.}{27}
+
+\inpfile{ww3_systrk.tex}
+
+
+\vspace{\baselineskip} 
+\noindent 
+Program currently implemented for regular grids only. The spatial and temporal
+tracking is performed on the basis of the spectral partition data file. Both
+the time interval and geographic domain over which wave systems are tracked
+can be subsets of the data contained in the partition file. The combining
+parameters {\code dirKnob} and {\code perKnob} are used to influence the
+strictness of the system combining algorithm in geographic space, and {\code
+  dirTimeKnob} and {\code perTimeKnob} are the corresponding parameters in
+temporal space. Lower values imply stricter criteria, which results in
+smaller, more numerous systems. This also typically increases the processing
+time. Recommended values are given above. These values can be influenced
+locally, for example around an island, by defining a mask file {\file
+  sys\_mask.ww3}.  Parameters {\code hsKnob} and {\code wetPts} are a
+low-energy and small system filters---all wave systems with an average
+$H_\mathrm{m0}$ below {\code hsKnob} or with a size of less than {\code
+  wetPts}*100\% of the overall domain size are purged. Parameters {\code
+  seedLat} and {\code seedLon} influence the origin of the wave system search
+spiral, with default at the center of model domain (indicated by {\code
+  0. 0.}). At the end of a tracking run, the end state of system memory is
+stored in {\file sys\_restart1.ww3}.  This file, renamed as {\file
+  sys\_restart.ww3}, can be used to restart a tracking sequence from this
+previous system memory state.
+
+\pb

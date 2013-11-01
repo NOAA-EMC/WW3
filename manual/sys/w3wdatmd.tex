@@ -1,0 +1,33 @@
+\subsubsection{Data in {\F w3wdatmd}.} \label{sub:wdatmd}
+
+The module {\F w3wdatmd} in the file {\file w3wdatmd.ftn} contains the dynamic
+data of the model, that is, spectra and other fields describing the
+instantaneous wave field. First several variables and parameters embedded in
+the module are defined:
+
+\begin{vlist}
+\vit{nwdata}{i }{Number of models in array dim.}
+\vit{iwdata}{i }{Selected model, initialized at -1.}
+\vit{wdata }{t }{Basic data structure.}
+\vit{wdatas}{ta}{Array of data structures.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F wdata}, direct aliases are defined with the
+same name, as in {\F w3gdatmd}.  These variables are:
+
+\begin{vlist}
+\vit{time  }{ia}{Valid time for spectra.}
+\vit{tlev  }{ia}{Valid time for water levels.}
+\vit{tice  }{ia}{Valid time for ice.}
+\vit{va    }{ra}{Storage array for spectra.}
+\vit{wlv   }{ra}{Water levels.}
+\vit{ice   }{ra}{Ice coverage.}
+\vit{berg  }{ra}{Iceberg damping coefficient.}
+\vit{ust   }{ra}{Friction velocities (absolute value).}
+\vit{ustdir}{ra}{Friction velocities (direction).}
+\vit{asf   }{ra}{Stability correction factor.}
+\vit{fpis  }{ra}{Input peak frequencies.}
+\vit{dinit }{l }{Flag for array initialization.}
+\vit{fl\_all}{l}{Flag for array initialization to include {\F va}.}
+\end{vlist}

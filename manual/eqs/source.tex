@@ -1,0 +1,100 @@
+\vssub
+\subsection{~Source terms}
+\vsssub
+\subsubsection{~General concepts}
+\vsssub
+
+In deep water, the net source term $S$ is generally considered to consist of
+three parts, a wind-wave interaction term $S_{in}$, a nonlinear wave-wave
+interactions term $S_{nl}$ and a dissipation (`whitecapping') term
+$S_{ds}$. More recently, explicit swell disipation has been added to this
+source term in some model.  The input term $S_{in}$ is dominated by the
+exponential growth term, and this source term generally describes this
+dominant process only. For model initialization, and to provide more realistic
+initial wave growth, and linear input term $S_{ln}$ can also be considered in
+\ws.
+
+In shallow water additional processes have to be considered, most notably
+wave-bottom interactions $S_{bot}$ \cite[e.g.,][]{pro:Sea78}. In extremely
+shallow water, depth-induced breaking ($S_{db}$) and triad wave-wave
+interactions ($S_{tr}$) become important. Also available in \ws\ are source
+terms for scattering of waves by bottom features ($S_{sc}$), reflection off
+shorelines or floating objects such as icebergs ($S_{ref}$) and a general
+purpose slot for additional, user defined source terms ($S_{xx}$).
+
+This defines the general source terms used in \ws\ as
+
+%---------------------------------%
+% General source term composition %
+%---------------------------------%
+% eq:general_st
+
+\begin{equation}
+S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} + S_{sc} + S_{ref} +
+    S_{xx}\: .
+\label{eq:general_st}
+\end{equation}
+
+\noindent
+Other source terms are easily added. These source terms are defined for the
+{\em energy} spectra. In the model, however, most source terms are directly
+calculated for the action spectrum. The latter source terms are denoted as
+$\cS \equiv S/\sigma$.
+
+The treatment of the nonlinear interactions defines a third-generation wave
+model. Therefore, the options for the calculation of $S_{nl}$ will be
+discussed first, starting in section \ref{sec:NL1}. $S_{in}$ and $S_{ds}$
+represent separate processes, but should be considered as interrelated,
+because the balance of these two source terms governs the integral growth
+characteristics of the wave model. Several combinations of these basic source
+terms are available, and are described in section~\ref{sec:ST1} and following.
+The description of linear input starts in section~\ref{sec:LN1}, and
+section~\ref{sec:BT1} and following describe available additional (shallow
+water) processes.
+
+\vspace{\baselineskip} \noindent
+A third-generation wave model effectively integrates the spectrum only up to a
+cut-off frequency $f_{hf}$ (or wavenumber $k_{hf}$). Above this frequency a
+parametric tail is applied \citep[e.g.,][]{art:WAM88}
+
+%--------------------------------------%
+% General tail parameterization E(f,t) %
+%--------------------------------------%
+% eq:tail_E_f
+
+\begin{equation}
+F(f_r,\theta) = F(f_{r,hf},\theta) \left ( \frac{f_r}{f_{r,hf}}
+\right ) ^{-m} \label{eq:tail_E_f}
+\end{equation}
+
+\noindent
+which is easily transformed to any other spectrum using the Jacobian
+transformations as discussed above. For instance, for the present action
+spectrum, the parametric tail can be expressed as (assuming deep water for the
+wave components in the tail)
+
+%--------------------------------------%
+% General tail parameterization N(k,t) %
+%--------------------------------------%
+% eq:tail_N_k
+
+\begin{equation}
+N(k,\theta) = N(k_{hf},\theta) \left ( \frac{f_r}{f_{r,hf}}
+\right ) ^{-m-2} \label{eq:tail_N_k}
+\end{equation}
+
+\noindent
+The actual values of $m$ and the expressions for $f_{r,hf}$ depend on the
+source term parameterization used, and will be given below.
+
+\vspace{\baselineskip} \noindent
+Before actual source term parameterizations are described, the definition of
+the wind requires some attention. In cases with currents, one can either
+consider the wind to be defined in a fixed frame of reference, or in a frame
+of reference moving with the current. Both definitions are available in \ws,
+and can be selected during compilation. The output of the program, however,
+will always be the wind speed which is not in any way corrected for the
+current.
+
+\vspace{\baselineskip} \noindent
+\centerline{\ldots provide table with balanced options \ldots}

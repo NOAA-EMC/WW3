@@ -1,0 +1,42 @@
+\vssub
+\subsection{~Auxiliary programs} \label{sec:auxprog}
+\vsssub
+\subsubsection{General concepts}
+\vsssub
+
+All auxiliary programs presented here, with the exception of the track output
+post-processor, read input from a pre-defined input file. The first character
+on the first line of the input file will be considered to be the comment
+character, identifying comment lines in the input file. This comment character
+has to appear on the first position of input lines to be effective. In all
+examples in the following sections lines starting with '{\tt \$}' therefore
+only contain comment. The programs furthermore all write formatted output to
+the standard output unit.
+
+In the following sections, all available auxiliary programs are described
+using an example input file with all options included (partially as
+comment). These files are identical to the distributed example input
+files. The sections furthermore show the name of the executable program, the
+program name (as appears in the program statement), the source code file and
+input and output files and there unit numbers (in brackets behind the file
+name). Input and output files marked with \opt are optional. The intermediate
+files mentioned below are all {\F unformatted}, and are not described in
+detail here. Each file is written and read by a single routine, to which
+reference is made for additional documentation.
+
+\begin{list}{}{\itemsep 0mm \parsep 0mm \leftmargin 40mm \labelwidth 30mm}
+\item[{mod\_def.ww3} \hfill] Subroutine {\F w3iogr} ({\file w3iogrmd.ftn}).
+\item[{out\_grd.ww3} \hfill] Subroutine {\F w3iogo} ({\file w3iogomd.ftn}).
+\item[{out\_pnt.ww3} \hfill] Subroutine {\F w3iopo} ({\file w3iopomd.ftn}).
+\item[{track\_o.ww3} \hfill] Subroutine {\F w3iotr} ({\file w3iotrmd.ftn}).
+\item[{restart.ww3}  \hfill] Subroutine {\F w3iors} ({\file w3iorsmd.ftn}).
+\item[{nest.ww3}     \hfill] Subroutine {\F w3iobc} ({\file w3iobcmd.ftn}).
+\item[{partition.ww3}\hfill] Subroutine {\F w3iosf} ({\file w3iosfmd.ftn}).
+\end{list}
+
+\noindent
+Preprocessing and compilation of the programs is discussed in the following
+two chapters. Examples of test runs of the model are provided with the source
+code.
+
+\pb

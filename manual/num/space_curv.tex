@@ -1,0 +1,34 @@
+\vssub
+\subsubsection{~Curvilinear grids} \label{sub:num_space_curv}
+\conthead{\ws (NRL Stennis)}{W. E. Rogers, T. J. Campbell}
+
+\noindent 
+As an extension to traditional grids, computations may be made on curvilinear
+grids within \ws\ . This makes it possible to run the model on alternate grid
+projections (e.g. Lambert conformal conic), rotated grids, or
+shoreline-following grids with higher resolution near shore, though the
+restrictions on time step from the conditionally stable schemes still
+apply. The same propagation schemes are utilized for irregular grids as for
+regular grids (\para\ref{sub:num_space_trad}).
+
+The implementation is described in detail in \citep{rep:RC09}, summarized
+here: a Jacobian is used to convert the entire domain between the normal,
+curving space, and a straightened space. This conversion is performed only
+within the propagation routine, rather than integrating the entire model in
+straightened space. A simple, three step process is used every time the
+propagation subroutine is call (i.e. every time step and every spectral
+component): first, the dependent variable (wave action density) is converted
+to straightened space using a Jacobian; second, the wave action density is
+propagated via subroutine calls for each (of two) grid axes; third, the wave
+action density is converted back to normal, curved space. The actual flux
+computation is not significantly modified from its original, regular grid
+form. The same process occurs, regardless of grid type (regular or irregular);
+for regular grids, the Jacobian is unity.
+
+Regarding the user interface: in {\file ww3\_grid.inp}, a string is used to
+indicate the grid type. In cases where this grid string is `{\code RECT}', the
+model processes input for a regular grid. In case where this grid string is
+`{\code CURV}' , the model processes input for an irregular grid. [Note that
+with \ws\ version 4.00, the coordinate system (i.e. degrees vs. meters) and
+the closure type (e.g. global/wrapping grid) are also specified in {\file
+ww3\_grid.inp} ; the switches {\code LLG} and {\code XYG} are deprecated.]

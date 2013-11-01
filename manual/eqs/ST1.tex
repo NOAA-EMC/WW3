@@ -1,0 +1,91 @@
+\vsssub
+\subsubsection{~$S_{in} + S_{ds}$: \wam\ cycle 3} \label{sec:ST1}
+\vsssub
+
+\opthead{ST1}{\wam\  model}{H. L. Tolman}
+
+\noindent
+The input and dissipation source terms of \wam\ cycles 1 through 3 are based
+on \cite{art:Sea81} and \cite{art:KHH84} \citep[see also][]{art:WAM88}. The
+input source term is given as
+
+%-------------%
+% WAM-3 input %
+%-------------%
+% eq:Snyder
+% eq:Wu
+
+\begin{equation}
+\cS_{in}(k,\theta) = C_{in} \frac{\rho_a}{\rho_w} \max
+\left [ 0 , \left (
+\frac{28 \, u_\ast}{c} \cos ( \theta - \theta_w ) - 1
+\right ) \right ]
+\: \sigma \: N(k,\theta) \; , \label{eq:Snyder}
+\end{equation}
+\begin{equation}
+u_\ast = u_{10} \sqrt{(0.8 + 0.065u_{10})10^{-3}}
+\: , \label{eq:Wu}
+\end{equation}
+
+\noindent
+where $C_{in}$ is a constant $(C_{in} = 0.25)$, $\rho_a$ $(\rho_w)$ is the
+density of air (water), $u_\ast$ is the wind friction velocity
+\citep{art:Cha55,art:Wu82}, $c$ is the phase velocity $\sigma/k$, $u_{10}$ is
+the wind speed at 10~m above the mean sea level and $\theta_w$ is the mean
+wind direction. The corresponding dissipation term is given as
+
+%-------------------%
+% WAM-3 dissipation %
+%-------------------%
+% eq:Snyder_ds
+% eq:sigma_hat
+% eq:alpha_hat
+
+\begin{equation}
+\cS_{ds}(k,\theta) = C_{ds} \, \hat{\sigma} \, \frac{k}{\hat{k}}
+\left ( \frac{\hat{\alpha}}{\hat{\alpha}_{PM}} \right ) ^2
+N(k,\theta) \; , \label{eq:Snyder_ds}
+\end{equation}
+\begin{equation}
+\hat{\sigma} = \left ( \overline{\sigma^{-1}} \right) ^{-1} \: ,
+\label{eq:sigma_hat}
+\end{equation}
+\begin{equation}
+\hat{\alpha} = E \, \hat{k}^2 \,g^{-2} \: ,
+\label{eq:alpha_hat}
+\end{equation}
+
+\noindent
+where $C_{ds}$ is a constant $(C_{ds} = -2.36 \: 10^{-5})$,
+$\hat{\alpha}_{PM}$ is the value of $\hat{\alpha}$ for a {\sc pm} spectrum
+$(\hat{\alpha}_{PM} = 3.02\:10^{-3})$ and where $\hat{k}$ is given by
+Eq.~(\ref{eq:k_hat}).
+
+The parametric tail [Eqs.~(\ref{eq:tail_E_f}) and (\ref{eq:tail_N_k})]
+corresponding to these source terms is given by\footnote{~originally, \wam\
+used $m = 5$, present setting used for consistent limit behavior
+\cite[e.g.,][]{tol:JPO92}.} $m = 4.5$ and by
+
+%------------%
+% WAM-3 tail %
+%------------%
+% eq:tail_WAM3
+% eq:f_PM
+
+\begin{equation}
+f_{hf} = \max \left [ \: 2.5 \, \hat{f}_r \: , \: 4 \,
+f_{r,PM} \: \right ] \: ,
+\label{eq:tail_WAM3}
+\end{equation}
+\begin{equation}
+f_{r,PM} = \frac{g}{28 \, u_\ast} \: ,
+\label{eq:f_PM}
+\end{equation}
+
+\noindent
+where $f_{r,PM}$ is the \cite{art:PM64} frequency, estimated from the wind
+friction velocity $u_\ast$. The shape and attachment point of this tail is
+hardwired to the present model. The tunable parameters $C_{in}$, $C_{ds}$ and
+$\alpha_{PM}$ are preset to their default values, but can be redefined by the
+user in the input files of the model.
+

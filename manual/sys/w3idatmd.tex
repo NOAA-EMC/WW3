@@ -1,0 +1,43 @@
+\subsubsection{Data in {\F w3idatmd}.} \label{sub:idatmd}
+
+The module {\F w3idatmd} in the file {\file w3idatmd.ftn} contains the
+input data for the wave model.  First several variables and parameters
+embedded in the module are defined:
+
+\begin{vlist}
+\vit{nidata}{i }{Number of models for which space is available.}
+\vit{iidata}{i }{Number of model/grid presently selected.}
+\vit{input }{t }{Data structure containing output information.}
+\vit{inputs }{ta}{Array of type {\F input} and size {\F nidata}.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F input}, alias pointers are defined as in
+the module {\F w3gdatmd}. These variables are:
+
+\begin{vlist}
+\vit{tln   }{ia}{Time for water level field.}
+\vit{tc0/n }{ia}{Times for current fields.}
+\vit{tw0/n }{ia}{Times for wind fields.}
+\vit{tin   }{ia}{Time for ice field.}
+\vit{t{\it n}n}{ia}{Time for data types 1-3.}
+\vit{tdn   }{ia}{Time for next data.}
+\vit{tg0/n }{ia}{Times for grid motion data.}
+\vit{tfn   }{ia}{Array consolidating most above times.}
+\vit{ga0/n }{r }{Norm of grid speed vector. \hfill{(ms$^{-1}$)}}
+\vit{gd0/n }{r }{Direction of grid speed vector. \hfill{(?)}}
+\vit{wx0/n, wy0/n }{ }{ }
+\vit{      }{ra}{Cartesian wind components. \hfill{(ms$^{-1}$)}}
+\vit{dt0/n }{ra}{Air-sea temperature differences. \hfill{($\degree$C)}}
+\vit{cx0/n, cy0/n }{ }{ }
+\vit{      }{ra}{Cartesian current components \hfill{(ms$^{-1}$)}.}
+\vit{wlev  }{ra}{Water level field. \hfill{(m)}}
+\vit{icei  }{ra}{Ice concentrations. \hfill{(-)}}
+\vit{iinit }{l }{Flag for array initialization.}
+\vit{fllev }{l }{Flag for water level input.}
+\vit{flcur }{l }{Flag for current input.}
+\vit{flwind}{l }{Flag for wind input.}
+\vit{flice }{l }{Flag for ice input.}
+\vit{flags }{la}{Array consolidating the above four flags, as well as four
+                 additional data flags.}
+\end{vlist}

@@ -1,0 +1,60 @@
+\vssub
+\subsection{~Ice coverage} \label{sub:num_ice}
+\conthead{\ws}{H. L. Tolman}
+
+\noindent
+Ice covered sea is considered as `land' in \ws, assuming zero wave energy and
+boundary conditions at ice edges are identical to boundary conditions at shore
+lines. Grid points are taken out of the calculation if the ice concentration
+becomes larger than a user-defined concentration. If the ice concentration
+drops below its critical value, the corresponding grid point is
+`re-activated'. The spectrum is then initialized with a PM spectrum based on
+the local wind direction with a peak frequency corresponding to the
+second-highest discrete frequency in the grid. A small spectrum is used to
+assure that spectra are realistic, even for shallow coastal points.
+
+The above discontinuous ice treatment represents the default model setting in
+\ws. In the framework of the modeling of unresolved obstacles as discussed in
+\para\ref{sub:num_obst}, a continuous method is also available, as given by
+\cite{tol:OMOD03a}. In this method, a user-defined critical ice concentration
+at which obstruction begins ($\epsilon_{c,0}$) and is complete
+($\epsilon_{c,n}$) are given (defaults are $\epsilon_{c,0} = \epsilon_{c,n} =
+0.5$, i.e., discontinuous treatment of ice). From these critical
+concentrations, corresponding decay length scales are calculated as,
+
+\begin{equation}
+l_0 = \epsilon_{c,0} \min ( \Delta x , \Delta y )
+\:\:\: . \label{eq:l0}
+\end{equation}
+\begin{equation}
+l_n = \epsilon_{c,n} \min ( \Delta x , \Delta y )
+\:\:\: . \label{eq:ln}
+\end{equation}
+
+\noindent
+from which cell transparencies in $x$ and $y$ ($\alpha_x$ and $\alpha_y$,
+respectively) are calculated as
+
+\begin{equation}
+\alpha_x = \left \{ \begin{array}{ccl}
+ 1 & \mbox{for} & \epsilon \Delta x < l_0 \\
+ 0 & \mbox{for} & \epsilon \Delta x > l_n \\
+\frac{l_n - \epsilon \Delta x}{l_n - l_0} & \multicolumn{2}{c}{\mbox{otherwise}} 
+\end{array} \right .
+\:\:\: , \:\:\:
+\alpha_y = \left \{ \begin{array}{ccl}
+ 1 & \mbox{for} & \epsilon \Delta y < l_0 \\
+ 0 & \mbox{for} & \epsilon \Delta y > l_n \\
+\frac{l_n - \epsilon \Delta y}{l_n - l_0} & \multicolumn{2}{c}{\mbox{otherwise}} 
+\end{array} \right .
+\:\:\: . \label{eq:ice_0} 
+\end{equation}
+
+\noindent
+Details of this model can be found in \cite{tol:OMOD03a}.
+
+Updating of the ice map within the model takes place at the discrete model
+time approximately half way in between the valid times of the old and new ice
+maps. The map will not be updated, if the time stamps of both ice fields are
+identical.
+

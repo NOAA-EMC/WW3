@@ -1,0 +1,57 @@
+\vssub
+\subsubsection{~Third  order scheme (UQ)}
+\opthead{UQ}{\ws}{H. L. Tolman}
+
+\noindent
+The \uq\ scheme for the $\theta$-space is implemented similar to the scheme
+for physical space, with the exception that the closed direction space does
+not require boundary conditions. The variable grid spacing in $k$-space
+requires some modifications to the scheme as outlined by
+\cite[{Appendix}]{art:Leo79}. Equations~(\ref{eq:quick_1}) through
+(\ref{eq:quick_4}) then become
+
+% ------ QUICKEST scheme for k space---------- %
+% eq:quick_1k        Basic flux
+% eq:quick_2k        Boundary value
+% eq:quick_3k        Divergence
+% eq:quick_4k        CFL number
+
+\begin{equation}
+\cF_{m,-} = \left [ \dot{k}_{g,b} \: N_b \: \right ]^n_{i,j,l}
+\: , \label{eq:quick_1k}\end{equation} \begin{equation}
+\dot{k}_{g,b} = 0.5 \: \left ( \dot{k}_{g,m-1} + \dot{k}_{g,m} 
+\: \right )  \: , \label{eq:quick_1ak}
+\end{equation} \begin{equation}
+N_b = \frac{1}{2} \left [ \rule[0mm]{0mm}{\baselineskip} \: 
+(1+C)N_{i-1} + (1-C)N_i \: \right ] - \:
+\frac{1-C^2}{6} \: {\cal CU} \: \Delta k^2_{m-1/2}, \label{eq:quick_2k} \end{equation} \begin{equation}
+{\cal CU} =  \left \{ \begin{array}{ccc}
+\frac{1}{\Delta k_{m-1}}
+\left [ \frac{N_{ m }-N_{m-1}}{\Delta k_{m-1/2}} - 
+        \frac{N_{m-1}-N_{m-2}}{\Delta k_{m,-3/2}} \right ]
+               & \mbox{for} & \dot{k}_b \geq 0 \\
+\frac{1}{\Delta k_m}
+\left [ \frac{N_{m+1}-N_{ m }}{\Delta k_{m+1/2}} -
+       \frac{N_{ m }-N_{m-1}}{\Delta k_{m-1/2}} \right ]
+               & \mbox{for} & \dot{k}_b   <  0
+\end{array} \right . \: , \label{eq:quick_3k}
+\end{equation} \begin{equation}
+C = \frac{\dot{k}_{g,b} \: \Delta t}{\Delta k_{m-1/2}}
+\: , \label{eq:quick_4k} \end{equation}
+
+\noindent
+where $\Delta k_m$ is the discrete band or cell width at grid point $m$, and
+where $\Delta k_{m-1/2}$ is the distance between grid points with counters $m$
+and $m-1$. The \ult\ limiter can be applied as in Eqs.~(\ref{eq:ult_1})
+through (\ref{eq:ult_4}), if the \cfl\ number of Eq.~(\ref{eq:quick_4k}) is
+used. At the low- and high-wavenumber boundaries the fluxes again are
+estimated using a first-order upwind approach, with boundary conditions as
+above defined for the first-order scheme. The final scheme in $k$-space
+becomes
+
+% eq:1uq_k_tot
+
+\begin{equation}
+N_{i,j,l,m}^{n+1} = N_{i,j,l,m}^n 
+ + \frac{\Delta t}{\Delta k_m} \left [ \cF_{m,-} - \cF_{m,+} \right ]
+\: , \label{eq:uq_k_tot} \end{equation}

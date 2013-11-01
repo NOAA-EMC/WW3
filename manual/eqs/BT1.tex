@@ -1,0 +1,29 @@
+\vsssub
+\subsubsection{~$S_{bot}$: \js} \label{sec:BT1}
+\vsssub
+
+\opthead{BT1}{\js\ experiment}{H. L. Tolman}
+
+\noindent 
+A simple parameterization of bottom friction is the empirical, linear \js\
+parameterization \citep{art:JONSWAP}, as used in the \wam\ model
+\citep{art:WAM88}. Using the notation of \cite{tol:JPO91b}, this source term
+can be written as
+
+%-------------------------%
+% JONSWAP bottom friction %
+%-------------------------%
+% eq:JONSWAP_bot
+
+\begin{equation}
+\cS_{bot}(k,\theta) = 2 \Gamma \: \frac{n-0.5}{gd} \: N(k,\theta)
+\: , \label{eq:JONSWAP_bot}
+\end{equation}
+
+\noindent
+where $\Gamma$ is an empirical constant, which is estimated as $\Gamma =
+-0.038\:\mbox m^2 \mbox s ^{-3}$ for swell \citep{art:JONSWAP}, and as $\Gamma
+= -0.067\:\mbox m^2 \mbox s^{-3}$ for wind seas \citep{art:BK83}. $n$ is the
+ratio of phase velocity to group velocity given by (\ref{eq:cg}). The default
+value for $\Gamma = -0.067$ can be redefined by the user in the model input
+files.

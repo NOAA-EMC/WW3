@@ -1,0 +1,130 @@
+\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Third order scheme (UQ)}
+
+\vspace{\baselineskip} \noindent {\bf Third order scheme (UQ)}
+
+\opthead{UQ}{\ws}{H. L. Tolman}
+
+\noindent 
+The third order accurate scheme available in \ws\ is the \qck\ scheme
+\citep{art:Leo79,art:DM82} combined with the \ult\ \tvd\ (total variance
+diminishing) limiter \citep{art:Leo91}. This is the default propagation scheme
+for \ws. This scheme is third-order accurate in both space and time, and has
+been selected based on the extensive intercomparison of higher order finite
+difference schemes for water quality models performed by
+\citep[see][]{PhD:Cah,pro:FC93,tol:OMB95}. This scheme is applied to
+propagation in longitudinal and latitudinal directions separately, alternating
+the direction to be treated first.
+
+In the \qck\ scheme the flux between grid points with counters $i$ and $i-1$
+in $\phi$-space $(\cF_{i,-})$ is calculated as\footnote{~Fluxes $(\cF_{i,+})$
+between grid points with counters $i+1$ and $i$ again are obtained by
+substituting the appropriate indices.}
+
+% ------ QUICKEST scheme ---------- %
+% eq:quick_1         Basic flux
+% eq:quick_2         Boundary value
+% eq:quick_3         Divergence
+% eq:quick_4         CFL number
+
+\begin{equation}
+\cF_{i,-} = \left [ \dot{\phi}_b \: \cN_b \: \right ]^n_{j,l,m} \: , \label{eq:quick_1}
+\end{equation} \begin{equation}
+\dot{\phi}_b = 0.5 \: \left ( \dot{\phi}_{i-1} + \dot{\phi}_i 
+\: \right ) \: , \label{eq:quick_1a}
+\end{equation}  \begin{equation}
+\cN_b = \frac{1}{2} \left [ \rule[0mm]{0mm}{\baselineskip} \: 
+(1+C)\cN_{i-1} + (1-C)\cN_i \: \right ] - \:
+\left ( \frac{1-C^2}{6} \right ) \: {\cal CU} \: \Delta\phi^2, \label{eq:quick_2} \end{equation} \begin{equation}
+{\cal CU} =  \left \{ \begin{array}{ccc}
+(\: \cN_{i-2} - 2\cN_{i-1} + \cN_{i} \:)\: \: \Delta \phi^{-2}
+               & \mbox{for} & \dot{\phi}_b \geq 0 \\
+(\: \cN_{i-1} - 2\cN_{i} + \cN_{i+1} \:)\: \Delta \phi^{-2}
+               & \mbox{for} & \dot{\phi}_b   <  0
+\end{array} \right . \: , \label{eq:quick_3}
+\end{equation} \begin{equation}
+C = \frac{\dot{\phi}_b \: \Delta t}{\Delta \phi} 
+\: , \label{eq:quick_4} \end{equation}
+
+\noindent
+where $\cal CU$ is the (upstream) curvature of the action density
+distribution, and where $C$ is a \cfl\ number including a sign to identify the
+propagation direction. Like the first order scheme, this scheme gives stable
+solutions for $|C| \leq 1$. To assure that this scheme does not generate
+aphysical extrema, it is used in combination with the \ult\ limiter. This
+limiter uses the central, upstream and downstream action density (suffices
+$c$, $u$ and $d$, respectively), which are defined as
+
+% ------ ULTIMATE limiter --------- %
+% eq:ult_1           Cell definition
+% eq:ult_2           Nondimensional action
+% eq:ult_3           Monotonic limiter
+% eq:ult_4           Non-monotonic action
+
+\begin{equation} \begin{array}{ccccc}
+\cN_c = \cN_{i-1} \: , \: & \cN_u = \cN_{ i } \: , \: &
+                            \cN_d = \cN_{i-2} &
+                            \mbox{for} & \dot{\phi}_b \geq 0 \\
+\cN_c = \cN_{ i } \: , \: & \cN_u = \cN_{i-1} \: , \: &
+                            \cN_d = \cN_{i+1} &
+                            \mbox{for} & \dot{\phi}_b   <  0
+\end{array} \: . \label{eq:ult_1} \end{equation}
+
+\noindent
+To assess if the initial state and the solution show similar monotonic or
+non-monotonic behavior, the normalized action $\tilde\cN$ is defined
+
+\begin{equation}
+\tilde\cN = \frac{\cN-\cN_u}{\cN_d - \cN_u} 
+\: . \label{eq:ult_2} \end{equation}
+
+\noindent
+If the initial state is monotonic (i.e., $0 \leq \tilde\cN_c \leq 1$), the
+(normalized) action at the cell boundary $\cN_b$ is limited to
+
+\begin{equation}
+\tilde\cN_c \leq \tilde\cN_b \leq 1 \:\:\: , \:\:\:
+\tilde\cN_b \leq \tilde\cN_c \: C^{-1} \:\:\: . 
+\label{eq:ult_3} \end{equation}
+\noindent otherwise \begin{equation}
+\tilde\cN_b = \tilde\cN_c 
+\: . \label{eq:ult_4} \end{equation}
+
+\noindent
+An alternative scheme is necessary if one of the two grid points adjacent to
+the cell boundary is on land or represents an active boundary point. In such
+cases, Eqs.~(\ref{eq:1up_xy_2}) and (\ref{eq:quick_2}) are replaced by
+
+% eq:1_vel           Boundary velocity
+% eq:1_bval          Boundary value
+
+\begin{equation}
+\dot{\phi}_b = \dot{\phi}_s \: ,
+\label{eq:1_vel} \end{equation} \begin{equation}
+\cN_b = \cN_u \: ,
+\label{eq:1_bval} \end{equation}
+
+\noindent
+where the suffix $s$ indicates the (average of) the sea point(s). This
+boundary condition represents a simple first order upwind scheme, which does
+not require the limiter (\ref{eq:ult_1}) through (\ref{eq:ult_4}).
+
+The final propagation scheme, similar to Eq.~(\ref{eq:1up_xy_tot}),  becomes
+
+% eq:uq_xy_tot
+
+\begin{equation}
+\cN_{i,j,l,m}^{n+1} = \cN_{i,j,l,m}^n +
+\frac{\Delta t}{\Delta \phi} \left [ \cF_{i,-} - \cF_{i,+} \right ]
+\: . \label{eq:uq_xy_tot} \end{equation}
+
+\noindent
+The scheme for propagation in $\lambda$-space is simply obtained by rotating
+indices and increments in the above equations\footnote{~The `soft' boundary
+treatment as described on page 31 of \cite{tol:OMB02c} is no longer available,
+because it is incompatible with the advanced nesting techniques introduced in
+model version 3.14.}
+
+Note that the \uq\ scheme is implemented as alternate one-dimensional schemes,
+for which the maxima of component advection speeds need to be used in
+Eq.~(\ref{eq:dtpl}). For consistency, the same time steps are always used for
+$\lambda$ and $\phi$ propagation for a given component.

@@ -1,0 +1,71 @@
+\vsssub
+\subsubsection{~$S_{??}$: Reflection by shoreline and icebergs} \label{sec:unknown}
+\vsssub
+
+\opthead{unknown}{\ws}{F. Ardhuin}
+
+\noindent 
+Reflections by shorelines and icebergs is activated by setting namelists
+parameters REFCOAST, REFSUBGRID or REFBERG (in namelist REF1) to non-zero
+values that are the target reflection coefficients $R_0^2$ for the wave
+energy.  From these values $R_0^2$ may be varied with wave height and period
+following a Miche-type parameter: this is activated by setting REFFREQ to a
+non-zero value, and is based on the field measurements of \cite{art:EHG94}.
+These coefficients can also be made to vary spatially, by setting REFMAP to a
+non-zero value. In that case ww3\_grid will expect to find a extra line after
+the reading of the water depths and obstructions in ww3\_grid.inp.
+
+Wave reflection at the shoreline varies from a fraction of a percent to about
+40\% of the incoming wave energy, and may have important consequences for the
+directional wave spectrum, and the wave climate in otherwise sheltered
+locations \citep{pro:ORe99}. Wave reflection is also extremely important for
+the generation of seismic noise by ocean waves.
+
+Because reflection involve wave trains with different directions, in a model
+like \ws, their interaction can only be represented through a source term in
+the right hand side. Nevertheless, this is physically linked to propagation.
+
+In practice, for the regular grids, the reflection source term puts into the
+reflected wave directions the proper amount of energy that will be taken away
+by propagation at the next time step. When neglecting the cross-shore current,
+this is
+
+\begin{equation} 
+\cS_{ref}(k,\theta) = 
+\int R^2(k,\theta,\theta') \frac{C_g(k)}{\Delta A} \left[\cos \theta \Delta y + \sin \theta  \Delta x \right] N(k,\theta') \mathrm{d} \theta'
+\end{equation}
+where $R^2$ is an energy reflection coefficient, and $\Delta x$ and $\Delta y$
+are the grid spacing along the two axes, and $\Delta A$ is the cell area. The
+definition of the shoreline direction from the land/sea mask is explained in
+\cite{art:Aea11}. It has not been adapted for curvilinear grids.
+
+In the case of unstructured grids, the spectral density of outgoing directions
+on the boundary is directly set to the expected reflected value and the
+boundary condition is handled specifically by the the numerical schemes.
+
+The reflection coefficient $R^2$ is taken to be non-zero only for the
+directions for which $\cos(\theta-\theta')<0$, and its magnitude is the
+product of a reflection coefficient $R_0^2(k)$, integrated over the scattered
+directions $\theta$, and a directional distribution $R_2(\theta,\theta')$
+around the specular direction $\theta_s$,
+\begin{equation} 
+R^2(k,\theta,\theta')  =  R_0^2(k) R_2(\theta,\theta').
+\end{equation}
+
+This directional distribution takes three forms: 
+\begin{itemize}
+
+\item isotropic in all directions opposite to the incoming direction: this is
+      for sub-grid islands and icebergs or sharp shoreline angles, 
+
+\item proportional to $\cos(\theta-\theta_s)^2$ for moderate shoreline angles,
+
+\item proportional to $\cos(\theta-\theta_s)^n$ for small shoreline angles
+      (nearly straight shoreline). Where $n=4$ by default and can be changed
+      to any value using the REFCOSP\_STRAIGHT namelist parameter in the REF1
+      namelist.
+
+\end{itemize}
+
+\noindent
+That parameterization is described in detail by \cite{art:AR12}.

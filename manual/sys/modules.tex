@@ -1,0 +1,124 @@
+\vsssub
+\subsubsection{~Parameter settings in modules}
+\vsssub
+
+Several modules has internally used parameter settings. Here only parameter
+settings that are generally usable or impact model output are presented.
+
+\vspace{\baselineskip} \noindent
+Physical and mathematical constants : \hfill {\file constants.ftn}
+\begin{vlist}
+\vit{grav  }{rp}{Acceleration of gravity $g$.
+                \hfill (m s$^{-2}$)}
+\vit{dwat  }{rp}{Density of water. \hfill(kg m$^{-3}$)}
+\vit{dair  }{rp}{Density of air. \hfill(kg m$^{-3}$)}
+\vit{pi    }{rp}{$\pi$.}
+\vit{tpi   }{rp}{$2\pi$.}
+\vit{hpi   }{rp}{$0.5\pi$.}
+\vit{tpiinv}{rp}{$(2\pi)^{-1}$.}
+\vit{hpiinv}{rp}{$(0.5\pi)^{-1}$.}
+\vit{rade  }{rp}{Conversion factor from radians to degrees.}
+\vit{dera  }{rp}{Conversion factor from degrees to radians.}
+\vit{radius}{rp}{Radius of the earth. \hfill (m)}
+\vit{g2pi3i}{rp}{$g^{-2} (2\pi)^{-3}$.}
+\vit{g1pi1i}{rp}{$g^{-1}(2\pi)^{-1}$.}
+\end{vlist}
+
+\noindent
+Wave model initialization module : \hfill {\file w3initmd.ftn}
+\begin{vlist}
+\vit{critos}{rp}{Critical fraction of resources used for output only
+                     (triggers warning output).}
+\vit{wwver }{cp}{Version number of the main program.}
+\end{vlist}
+
+\noindent
+I/O module ({\file mod\_def.ww3}) : \hfill {\file w3iogrmd.ftn}
+\begin{vlist}
+\vit{vergrd}{cp\opt}{Version number of file {\file mod\_def.ww3}.}
+\vit{idstr }{cp\opt}{ID string for file.}
+\end{vlist}
+
+\noindent
+I/O module ({\file out\_grd.ww3}) : \hfill {\file w3iogomd.ftn}
+\begin{vlist}
+\vit{verogr}{cp\opt}{Version number of file {\file out\_grd.ww3}.}
+\vit{idstr }{cp\opt}{ID string for file.}
+\end{vlist}
+
+\noindent
+I/O module ({\file out\_pnt.ww3}) : \hfill {\file w3iopomd.ftn}
+\begin{vlist}
+\vit{veropt}{cp\opt}{Version number of file {\file out\_pnt.ww3}.}
+\vit{idstr }{cp\opt}{ID string for file.}
+\end{vlist}
+
+\noindent
+I/O module ({\file track\_o.ww3}) : \hfill {\file w3iotrmd.ftn}
+\begin{vlist}
+\vit{vertrk}{cp\opt}{Version number of file {\file track\_o.ww3}.}
+\vit{idstri}{cp\opt}{ID string for file {\file track\_i.ww3}.}
+\end{vlist}
+
+\noindent
+I/O module ({\file restart.ww3}) : \hfill {\file w3iorsmd.ftn}
+\begin{vlist}
+\vit{verini}{cp\opt}{Version number of file {\file restart.ww3}.}
+\vit{idstr }{cp\opt}{ID string for file.}
+\end{vlist}
+
+\noindent
+I/O module ({\file nest.ww3}) : \hfill {\file w3iobcmd.ftn}
+\begin{vlist}
+\vit{verbpt}{cp\opt}{Version number of file {\file nest.ww3}.}
+\vit{idstr }{cp\opt}{ID string for file.}
+\end{vlist}
+
+\noindent
+I/O module ({\file partition.ww3}) : \hfill {\file w3iosfmd.ftn}
+\begin{vlist}
+\vit{vertrt}{cp\opt}{Version number of file {\file partition.ww3}.}
+\vit{idstr }{cp\opt}{ID string for file.}
+\end{vlist}
+
+\noindent
+Multi-grid model input update : \hfill {\file wmupdtmd.ftn}
+\begin{vlist}
+\vit{swpmax}{ip}{Maximum number of extrapolation sweeps allowed to make maps
+                 match in conversion from input from input grid to wave model
+                 grid.}
+\end{vlist}
+
+\vspace{\baselineskip} \noindent
+The service modules contain private variables only, with the exception of the
+interpolation tables for the solution of the dispersion relation
+
+\vspace{\baselineskip} \noindent
+Solving the dispersion relation : \hfill {\file w3dispmd.ftn}
+\begin{vlist}
+\vit{nar1d }{ip}{Dimension of interpolation tables.}
+\vit{dfac  }{rp}{Maximum nondimensional water depth $kd$.}
+\vit{ecg1  }{ra}{Table for calculating  group velocities from
+                 the frequency and the depth.}
+\vit{ewn1  }{ra}{Id. wavenumbers.}
+\vit{n1max }{i }{Largest index in tables.}
+\vit{dsie  }{r }{Nondimensional frequency increment.}
+\end{vlist}
+
+\noindent
+Automatic unit number assignment : \hfill {\file wmunitmd.ftn}
+\begin{vlist}
+\vit{unitlw}{ip}{Lowest unit number to be considered.}
+\vit{unithg}{ip}{Highest unit number to be considered.}
+\vit{inplow, inphgh}{}{}
+\vit{      }{ip}{Range of input file unit numbers.}
+\vit{outlow, outhgh}{}{}
+\vit{      }{ip}{Range of output file unit numbers.}
+\vit{scrlow, scrhgh}{}{}
+\vit{      }{ip}{Range of scratch file unit numbers.}
+\end{vlist}
+
+\noindent
+Note that the main programs only contain locally defined variables, which need
+not be documented here in detail.
+

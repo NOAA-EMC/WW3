@@ -1,0 +1,80 @@
+\vssub
+\subsection{~Intra-spectral propagation} \label{sub:spec}
+\vssub
+\subsubsection{~General concepts}
+\vsssub
+
+The third step of the numerical fractional step algorithm considers refraction
+and residual (current-induced) wavenumber shifts. Irrespective of the spatial
+grid discretization and coordinate system, the equation to be solved in this
+step becomes
+
+%-----------------------------------%
+% Step : Intra-spectral propagation %
+%-----------------------------------%
+% eq:step_intra
+% eq:k_dot_g
+
+\begin{equation}
+\frac{\p N}{\p t} + \frac{\p}{\p k} \, \dot{k}_g N +
+\frac{\p}{\p \theta} \, \dot{\theta}_g N = 0
+\: , \label{eq:step_intra} \end{equation} \begin{equation}
+\dot{k}_g  = \frac{\p \sigma}{\p d} 
+    \frac{{\bf U} \cdot \nabla_x d}{c_g}  -
+    {\bf k} \cdot \frac{\p {\bf U}}{\p s}
+\: . \label{eq:k_dot_g} \end{equation}
+
+\noindent
+where $\dot{k}_g$ is the wavenumber velocity relative to the grid, and
+$\dot{\theta}_g$ is given by (\ref{eq:theta_g_dot}) and (\ref{eq:theta_dot}).
+This equation does not require boundary conditions in $\theta$-space, as the
+model by definition uses the full (closed) directional space. In $k$-space,
+however, boundary conditions are required. At low wavenumbers, it is assumed
+that no wave action exists outside the discrete domain. It is therefore
+assumed that no action enters the model at the discrete low-wavenumber
+boundary. At the high-wavenumber boundary, transport across the discrete
+boundary is calculated assuming a parametric spectral shape as given by
+Eq. (\ref{eq:tail_N_k}). The derivatives of the depth as needed in the
+evaluation of $\dot{\theta}$ are mostly determined using central
+differences. For points next to land, however, one-sided differences using sea
+points only are used.
+
+Propagation in $\theta$-space can cause practical problems in an explicit
+numerical scheme, as the refraction velocity can become extreme for long waves
+in extremely shallow water or due to strong current shears. Similarly, 
+the propagation in $k$-space suffers from similar problems in very shallow water. 
+To avoid the need of extremely small time steps
+due to refraction, the propagation velocities in $\theta$-space and $k$-space
+(\ref{eq:theta_dot}) are filtered,
+
+% eq:theta_filter
+
+\begin{equation}
+\dot{\theta} = X_{rd}(\lambda,\phi,k)\left( \dot{\theta_d} + 
+\dot{\theta_c} + \dot{\theta_g} \right)\: , \label{eq:theta_filter} \end{equation}
+
+\noindent
+where the indices d, c and g refer to the depth, current and great-circle
+related fraction of the refraction velocity in (\ref{eq:theta_dot}). The
+filter factor $X_{rd}$ is calculated for every wavenumber and location
+separately, and is determined so that the \cfl\ number for propagation in
+$\theta$-space due to the {\em depth} refraction term cannot exceed a pre-set
+(user defined) value (default 0.7). This corresponds to a reduction of the
+bottom slope for some low frequency wave components. For mid-latitudes, the
+effected components are expected to carry little energy because they are in
+extremely shallow water. Long wave components carrying significant energy are
+usually traveling toward the coast, where their energy is dissipated
+anyway. This filtering is also important for short waves, and close to the
+pole. The effect of this filter can be tested by reducing the time steps for
+intraspectral refraction and by looking at the maximum CFL numbers in the
+output of the model.  These are computed just before the filter is applied.
+
+\vspace{\baselineskip}
+\centerline{\ldots ADD DYNAMIC TIME INTEGRATION \ldots}
+
+
+\vspace{\baselineskip} \noindent 
+The spectral space is always discretized with constants directional increments
+and a logarithmic frequency grid (\ref{eq:sigma_grid}) to accommodate
+computations of the nonlinear interaction $S_{nl}$. First, second and third
+orders schemes are available, and are presented in the following sections.

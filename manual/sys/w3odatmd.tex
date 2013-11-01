@@ -1,0 +1,176 @@
+\subsubsection{Data in {\F w3odatmd}.} \label{sub:odatmd}
+
+The module {\F w3odatmd} in the file {\file w3odatmd.ftn} contains the data
+describing model output. First several variables and parameters embedded in
+the module are defined:
+
+\begin{vlist}
+\vit{noutp }{i }{Number of models for which space is available.}
+\vit{ioutp }{i }{Number of model/grid presently selected.}
+\vit{iostyp}{i }{Flag for type of output server approach.}
+\vit{nogrd }{ip}{Number of output field typed defined.}
+\vit{noswll}{ip}{Number of swell fields from partitioning to be stored
+                in fields.}
+\vit{noextr}{ip}{Number of slots for user-defined output fields.}
+\vit{idout }{ca}{ID strings for output fields.}
+\vit{fnmpre}{ca}{File name preamble.}
+\vit{undef }{r }{Value for undefined parameters in gridded output fields.}
+\vit{unipts}{l }{Flag for unified point output (multi-grid model).}
+\vit{upproc}{l }{Flag for separate processor for unified point
+                 output (multi-grid model).}
+\vit{output}{t }{Data structure containing output information.}
+\vit{outpts }{ta}{Array of type {\F output} and size {\F noutp}.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F output}, alias pointers are defined as in
+the module {\F w3gdatmd}. These variables are:
+
+\begin{vlist}
+\vit{ndso  }{i }{General output unit number (log file).}
+\vit{ndse  }{i }{Error output unit number.}
+\vit{ndst  }{i }{Test output unit number.}
+\vit{screen}{i }{Unit for 'direct' output.}
+\vit{ntproc}{i }{Number of processors (total).}
+\vit{naproc}{i }{Number of processors (computation only).}
+\vit{iaproc}{i }{Actual processor number (starting at 1),}
+\vit{naplog}{i }{Proc. dealing with log output.}
+\vit{napout}{i }{Proc. dealing with standard output.}
+\vit{naperr}{i }{Proc. dealing with error output.}
+\vit{napfld}{i }{Proc. dealing with raw field output.}
+\vit{nappnt}{i }{Proc. dealing with raw point output.}
+\vit{naptrk}{i }{Proc. dealing with track output.}
+\vit{naprst}{i }{Proc. dealing with restart output.}
+\vit{napbpt}{i }{Proc. dealing with boundary output.}
+\vit{napprt}{i }{Proc. dealing with partitioning output.}
+\vit{tofrst}{ia}{Times for first output.}
+\vit{tonext}{ia}{Times for next output.}
+\vit{tolast}{ia}{Times for last output.}
+\vit{tbpi0 }{ia}{Time of first set of input boundary spectra.}
+\vit{tbpin }{ia}{Idem second set.}
+\vit{nds   }{ia}{Array with data set numbers.}
+\vit{dtout }{ra}{Output intervals.}
+\vit{flout }{la}{Output flags.}
+\vit{out1  }{t }{Structure of type {\F OTYPE1} with data for output
+                 type 1 (fields output).}
+\vit{out2  }{t }{Idem {\F Otype2}, output type 2 (point output).}
+\vit{out3  }{t }{Idem {\F otype3}, output type 3 (track output).}
+\vit{out4  }{t }{Idem {\F otype4}, output type 4 (boundary data output).}
+\vit{out5  }{t }{Idem {\F otype5}, output type 5 (restart files).}
+\vit{out6  }{t }{Idem {\F otype6}, output type 6 (partitioning output).}
+\end{vlist}
+
+\noindent
+For each element of the type {\F otype1}, alias pointers are defined as:
+
+\begin{vlist}
+\vit{ipass1}{i }{Pass counter in IO routine for file management.}
+\vit{nrqgo }{i }{Number of handles in {\F irqgo}.      \hfill ({\F !/mpi})}
+\vit{irqgo }{ia}{MPI request handles for field output. \hfill ({\F !/mpi})}
+\vit{flogrd}{la}{Array with flags for output fields.}
+\vit{write1}{l }{Flag for reading or writing data.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F otype2}, alias pointers are defined as:
+
+\begin{vlist}
+\vit{ipass2}{i }{Pass counter in IO routine for file management.}
+\vit{nopts }{i }{Number of output points.}
+\vit{nrqpo(2)}{i }{Number of MPI handles {\F irqpo}{\it{n}}.
+                                                       \hfill ({\F !/mpi})}
+\vit{iptint}{ia}{Id. interpolation counters.}
+\vit{il    }{ia}{Number of land points in interpolation box for output point.}
+\vit{iw    }{ia}{Id. water.}
+\vit{ii    }{ia}{Id. ice.}
+\vit{irqpo1/2}{ia}{Array with MPI handles.             \hfill ({\F !/mpi})}
+\vit{ptloc }{ra}{Name of output locations.}
+\vit{ptifac}{ra}{Id. weights.}
+\vit{dpo   }{ra}{Interpolated depths.}
+\vit{wao   }{ra}{Interpolated wind speeds.}
+\vit{wdo   }{ra}{Interpolated wind directions.}
+\vit{aso   }{ra}{Interpolated air-sea temp. diff.}
+\vit{cao   }{ra}{Interpolated current speeds.}
+\vit{cdo   }{ra}{Interpolated current directions.}
+\vit{spco  }{ra}{Output spectra.}
+\vit{ptnme }{ca}{Output locations.}
+\vit{grdid }{ca}{Originating grid ID.}
+\vit{o2init}{l }{Flag for array initialization.}
+\vit{o2irqi}{l }{Flag for array initialization.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F otype3}, alias pointers are defined as:
+
+\begin{vlist}
+\vit{ipass3}{i }{Pass counter in IO routine for file management.}
+\vit{it0pnt}{i }{Base tag number of MPI communication.}
+\vit{it0trk}{i }{Base tag number of MPI communication.}
+\vit{it0prt}{i }{Base tag number of MPI communication.}
+\vit{nrqtr }{i }{Number of handles in {\F irqtr}.      \hfill ({\F !/mpi})}
+\vit{irqtr }{ia}{Array with MPI handles.               \hfill ({\F !/mpi})}
+\vit{o3init}{l }{Flag for array initialization.}
+\vit{stop  }{l }{Flag for end of output.}
+\vit{mask{\it{n}}}{la}{Mask arrays for internal use.}
+\end{vlist}
+
+\noindent
+For each element of the type {\F otype4}, alias pointers are defined as:
+
+\begin{vlist}
+\vit{ifile4}{i }{File number for output files.}
+\vit{nblkrs}{i }{Number of blocks in communication of spectra.
+                                                       \hfill ({\F !/mpi})}
+\vit{rsblks}{i }{Corresponding block size.             \hfill ({\F !/mpi})}
+\vit{nrqrs }{i }{Number of MPI handles.                \hfill ({\F !/mpi})}
+\vit{irqrs }{ia}{Array with MPI handles.               \hfill ({\F !/mpi})}
+\vit{irqrss}{ia}{Array with MPI handles.               \hfill ({\F !/mpi})}
+\vit{vaaux }{ia}{Aux. spectra storage.                 \hfill ({\F !/mpi})}
+\end{vlist}
+
+\noindent
+For each element of the type {\F otype5}, alias pointers are defined as:
+
+\begin{vlist}
+\vit{nbi(2)  }{i }{Number of input bound. points.}
+\vit{nfbpo   }{i }{Number of files for output bound. data.}
+\vit{nrqbp(2)}{i }{Number of MPI handles.              \hfill ({\F !/mpi})}
+\vit{nbo(2)  }{ia}{Number of output boundary points. per file.}
+\vit{ndsl    }{ia}{Array with unit numbers.}
+\vit{ipbpi   }{ia}{Interpolation data for input boundary points.}
+\vit{isbpi   }{ia}{Sea point counters for input boundary points.}
+\vit{irqbp1/2}{ia}{Array with MPI handles.             \hfill ({\F !/mpi})}
+\vit{x/ybpi  }{ra}{Location of input boundary points.}
+\vit{rdbpi   }{ra}{Interpolation factors for input boundary points.}
+\vit{abpi0/n }{ra}{Storage of spectra from which to interpolate boundary data.}
+\vit{bbpi0/n }{ra}{Id., secondary storage.}
+\vit{abpos   }{ra}{Temporarily storage for output boundary data. }
+\vit{}{}{\strut}
+\vit{ipbpo, isbpo, x/ybpo, rdbpo}{}{}
+\vit{        }{--}{Id. for output boundary points.}
+\vit{o5ini{\it n}}{l}{Flags for array initializations.}
+\vit{flbpi   }{l }{Flag for input of boundary data.}
+\vit{flbpo   }{l }{Flag for output of boundary data.}
+\vit{filer   }{l }{Read flag for file management.}
+\vit{filew   }{l }{Write flag for file management.}
+\vit{filed   }{l }{Dump flag for file management (multi-grid model).}
+\vit{spconv  }{l }{Dump flag for file management (multi-grid model).}
+\end{vlist}
+
+\noindent
+For each element of the type {\F otype6}, alias pointers are defined as:
+
+\begin{vlist}
+\vit{ipass6 }{i }{Pass counter for file management.}
+\vit{ihmax  }{i }{Number of discrete spectral levels.}
+\vit{ix0/n/s}{i }{First-last-step {\F ix} counters.}
+\vit{iy0/n/s}{i }{Idem {\F iy} counters.}
+\vit{hspmin }{r }{Minimum significant height per part.}
+\vit{wsmult }{r }{Multiplier for wind sea boundary.}
+\vit{wscut  }{r }{Cut-off wind factor for wind seas.}
+\vit{icprt  }{ia}{Counters for partitions.}
+\vit{dtprt  }{ra}{Data from partitions.}
+\vit{flcomb }{l }{Flag for combining wind seas.}
+\vit{flform }{l }{Flag for (un)formatted output.}
+\vit{o6init }{l }{Flag for array initializations.}
+\end{vlist}

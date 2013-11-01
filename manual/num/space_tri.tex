@@ -1,0 +1,54 @@
+\vssub
+\subsubsection{~Triangular unstructured grids} \label{sub:num_space_tri}
+\conthead{WWM}{A. Roland, F. Ardhuin}
+
+\noindent Triangle-based grids can be used in \ws\ by using numerical schemes
+based on contour residual distribution \citep[see][for a
+review]{rep:Roland2008}.  This option is activated by setting the grid string
+to `{\code UNST}' in {\file ww3\_grid.inp}.  Four schemes have been
+implemented, and the choice of one or the other is done with the {\code UG}
+namelist.  These are the N scheme, the PSI scheme, the FCT scheme, and one
+implicit scheme. The default is the faster but more diffusive N scheme.
+
+In practice the grid can be easily generated, using the Polymesh interface
+(software developed by T.U. Darmstadt), from a shoreline polygons database
+\citep[e.g.][]{art:WS96} and a list of depth soundings, regular or irregular.
+
+Regarding the method: the evolution of the spectrum at the nodes, where it is
+evaluated, is based on the redistribution over the nodes of the flux
+convergence into the median dual cells associated with the nodes (see figure
+\ref{fig:triangles}).  For any spectral component, the advection equation
+(\ref{eq:step_xy_prop}) is solved on the median dwell cells: the incoming flux
+into a cell gives the rate of change of the wave action at the corresponding
+node. The various schemes implemented have different discretizations for the
+estimation of this flux.
+
+The equivalent of the CFL condition in the stable schemes is the ratio of the
+dual cell area divided by the product of the time step and all positive flux
+into the dual cell. Because the spectral levels are imposed on the boundary
+for the positive fluxes, the boundary nodes are excluded from this CFL
+calculation.
+
+The boundary condition at the shoreline depends on the wave direction
+relative to the shoreline orientation. This particular treatment is enforced
+using the `{\code IOBPD}' array which is updated whenever the grid points
+status map `{\code MAPSTA}' changes. The grid geometry is also used to define
+local gradients of the water depth and currents. All other operations, such as
+interpolation of the forcing on the grid and interpolation from the grid onto
+output locations, is performed using linear interpolation in triangles.
+
+All the triangle geometry operations assume a locally flat Earth. Depth and
+current gradients on the grid are estimated at the nodes by weighting with
+their angle the gradients over each triangle connected to the node.
+
+\begin{figure} \begin{center}
+\epsfig{file=./num/grid_triangles.eps,angle=0,width=4.5in}
+\caption{Example of a region of a triangle-based mesh, with in this case the
+ small Island of Bannec, France. If the depth is greater than the minimum
+depth, the nodes of the shoreline are active. These are characterized by a
+larger number of neighbor nodes (6 in the example chosen) than neighbor
+triangles (5 in the same example).}
+\label{fig:triangles} \botline
+\end{center}
+\end{figure}
+

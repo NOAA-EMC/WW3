@@ -1,0 +1,287 @@
+\vsssub
+\subsubsection{~$S_{in} + S_{ds}$: Ardhuin et al. 2010} \label{sec:ST4}
+\vsssub
+
+\opthead{ST4}{\ws}{F. Ardhuin}
+
+\noindent 
+This parameterization uses a positive part of the wind input that is takem
+from WAM cycle 4, with an ad hoc reduction of $u_\star$ is implemented in
+order to allow a balance with a saturation-based dissipation.  This correction
+also reduces the drag coefficient at high winds. This is done by reducing the
+wind input for high frequencies and high winds. For this, $u_\star$ in
+eq. (\ref{eq:SinWAM4}) is replaced by $u_\star '(k)$ defined for each
+frequency as
+
+\begin{equation}
+\left(u_\star '\right)^2=\left|u_\star^2 \left(\cos \theta_u, \sin
+\theta_u \right) - \left|s_u\right| \int_0^k \int_0^{2 \pi}
+\frac{S_{in}\left(k',\theta \right)}{C}  \left(\cos \theta, \sin
+\theta \right)  {\mathrm d} k' \mathrm d
+\theta,\label{ustarp}\right|
+\end{equation}
+
+\noindent 
+where the sheltering coefficient $\left|s_u\right|\sim 1$ can be used to tune
+the stresses at high winds, which would be largely overestimated for
+$s_u=0$. For $s_u > 0$ this sheltering is also applied within the diagnostic
+tail in eq. (\ref{eq:tauhfint}), which requires the estimation of a
+3-dimensional look-up table for the high frequency stress, the third parameter
+being the energy level of the tail.
+
+The swell dissipation parameterization of \cite{art:ACC09} is activated by
+setting $s_0$ to a non-zero integer value, and is given by a combination of
+the viscous boundary layer value,
+
+\begin{equation}
+\cS_{out,vis}\left(k,\theta\right) = - s_5 \frac{\rho_a}{\rho_w}\left\{ 2 k \sqrt{2
+\nu \sigma}\right\}  N \left(k,\theta\right) \label{Sds_turb},\label{eq:Dore}
+\end{equation}
+
+\noindent
+with the turbulent boundary layer expression 
+\begin{equation}
+\cS_{out,tur} \left(k,\theta\right) = - \frac{\rho_a}{\rho_w}\left\{  16 f_e
+\sigma^2 u_{\mathrm{orb},s} / g \right\}
+ N\left(k,\theta\right) \label{Sds_visc}.\label{eq:swell_turb}
+\end{equation}
+
+\noindent
+giving the full term 
+\begin{equation}
+\cS_{out} \left(k,\theta\right) = r_{vis} \cS_{out,vis}\left(k,\theta\right)  + 
+ r_{tur} \cS_{out,tur}\left(k,\theta\right)  
+ \label{eq:swell_comb}
+\end{equation}
+
+\noindent
+where the two weights $ r_{vis} $ and $r_{tur}$ are defined from 
+a modified  air-sea boundary layer significant Reynolds number $\mathrm{Re} = 2
+u_{\mathrm{orb},s} H_s / \nu_{a}$ 
+
+\begin{eqnarray}
+ r_{vis} &=& 0.5 (1- \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7) \\
+ r_{tur}&=& 0.5 (1+ \tanh((\mathrm{Re}-\mathrm{Re}_{c})/s_7) 
+\end{eqnarray}
+The significant surface orbital velocity is defined by
+\begin{equation} u_{\mathrm{orb},s} = 2 \left [  \int \!\!\!\! \int
+      \sigma^3 \: N(k,\theta) \: dk d\theta \right ] ^{1/2}
+      \: . \label{eq:ub_orbs} \end{equation}
+
+\noindent 
+The first equation (\ref{eq:Dore}) is the linear viscous decay by
+\cite{art:Dore78}, with $\nu_a$ the air viscosity and $s_5$ is an $O(1)$
+tuning parameter. A few tests have indicated that a threshold Re$_{c}=2 \times
+10^5 \times (4~\mathrm{m}/H_s)^{(1-s_6)}$ provides reasonable result with
+$s_6=0$, although it may also be a function of the wind speed, and we have no
+explanation for the dependence on $H_s$.  With $s_6=1$, a constant threshold
+close to $2 \times 10^5$ provides similar -- but less accurate -- results.
+
+
+%\begin{landscape}
+\begin{table} \begin{center} {\tiny
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var.       & namelist & TEST451 & TEST451f & TEST405  & TEST500 \\
+\hline
+  $z_u$ &  ZWND                       & SIN4 & 10.0    & 10.0    & 10.0      & 10.0 \\
+  $\alpha_0$ &  ALPHA0                & SIN4 & 0.0095  & 0.0095   & 0.0095    &  0.0095 \\
+  $\beta_{\mathrm{max}}$ & BETAMAX    & SIN4 & 1.52    &\textbf{1.33}& \textbf{1.55}    &  1.52   \\
+  $p_{\mathrm{in}}$ &  SINTHP         & SIN4 & 2       & 2       & 2         &  2      \\
+  $z_\alpha$ &  ZALP                  & SIN4 & 0.006   & 0.006   & 0.006     &  0.006 \\
+  $s_u$ &  TAUWSHELTER                & SIN4 & 1.0     & 1.0     & \textbf{0.0} & 1.0   \\
+  $s_1$ &  SWELLF                     & SIN4 & 0.8     & 0.8     & 0.8       &  0.8 \\
+  $s_2$ &  SWELLF2                    & SIN4 & -0.018  & -0.018  & -0.018    &  -0.018 \\
+  $s_3$ &  SWELLF3                    & SIN4 &  0.015  &  0.015  &  0.015    &  0.015 \\
+  $\mathrm{Re}_c$ &  SWELLF4                    & SIN4 & $10^5$  & $10^5$  & $10^5$    & $10^5$  \\
+  $s_5$ &  SWELLF5                    & SIN4 & 1.2     & 1.2     & 1.2       &  1.2 \\
+  $s_6$ &  SWELLF6                    & SIN4 & 0.      & 0.      & 0.        & 0.   \\
+  $s_7$ &  SWELLF7                    & SIN4 & 2.3$\times 10^5$ & 2.3$\times 10^5$  & 0.0       &  0.0 \\
+  $z_r$ &  Z0RAT                      & SIN4 & 0.04    & 0.04    & 0.04      &  0.04 \\
+  $z_{0,\max}$ &  Z0MAX               & SIN4 & 1.002   & 1.002   &\textbf{0.002}&  1.002 \\
+\hline
+\end{tabular} }
+ \end{center}
+\caption{Parameter values for TEST451, TEST451f, TEST405 and TEST500 source term
+parameterizations that can be reset via the SIN4 namelist. TEST451 generally
+provides the best results at global scale when using ECMWF winds, with the
+only serious problem being a low bias for $H_s > 8$~m.  TEST451f corresponds
+to a retuning for CSFR wind reanalysis from NCEP/NCAR \citep{art:CFSRR10}, and
+has almost no bias all the way to $H_s = 15$~m. Simumations and papers
+prepared before March 2012, used a slightly different TEST441 and TEST441f
+which can be recovered by setting SWELLF7 to 0.  TEST405 is slightly superior
+for short fetches, and TEST500 is intermediate in terms of quality but it also
+includes depth-induced breaking in the same formulation, and thus may be more
+appropriate for depth-limited conditions.  Please note that the name of the
+variables only apply to the namelists. In the source term module the names are
+slightly different, with a doubled first letter, in order to differentiate the
+variables from the pointers to these variables, and the SWELLFx are combined
+in one array SSWELLF. Bold values are different from the default values set by
+ww3\_grid.} \label{tab:ST4_parSIN}
+\end{table}
+%\end{landscape}
+
+
+Eq. (\ref{eq:swell_turb}) is a parameterization for the
+nonlinear turbulent decay. When comparing model results to observations, it
+was found that the model tended to underestimate large swells and overestimate
+small swells, with regional biases. This defect is likely due, in part, to
+errors in the generation or non-linear evolution of theses swells. However, it
+was chosen to adjust $f_e$ as a function of the wind speed and direction,
+
+\begin{equation}
+f_e = s_1 f_{e,GM} + \left[\left|s_3\right| + s_2 \cos
+(\theta-\theta_u)\right]u_\star / u_{\mathrm{orb}},\label{fevar}
+\end{equation}
+
+\noindent 
+where $f_{e,GM}$ is the friction factor given by Grant and Madsen's
+(1979)\nocite{art:GM79} theory for rough oscillatory boundary layers without a
+mean flow, using a roughness length adjusted to $r_z$ times the roughness for
+the wind $z_1$. The coefficients $s_1$ is an $O(1)$ tuning parameter, and the
+coefficients $s_2$ and $s_3$ are two other adjustable parameters for the
+effect of the wind on the oscillatory air-sea boundary layer. When $s_2 < 0$,
+wind opposing swells are more dissipated than following swells. Further, if
+$s_3 > 0$, $\cS_{out}$ is applied to the entire spectrum and not just the
+swell.
+
+The dissipation term is parameterized from the wave spectrum
+saturation. Because the directional wave spectrum were too narrow when using a
+saturation spectrum integrated over the full circle \citep{art:AL06}, we
+restricted the integration over a sector of half-width $\Delta_\theta$,
+\begin{equation}
+B'\left(k,\theta\right)=
+\int_{\theta-\Delta_\theta}^{\theta+\Delta_\theta} \sigma k^3 cos^{\mathrm{sB}}\left(\theta-
+\theta^{\prime}\right) N(k,\theta^{\prime}) \mathrm d
+\theta^{\prime} \label{defBofkprime},
+\end{equation}
+As a result, a sea state with two systems of same energy but opposite
+direction will typically produce less dissipation than a sea state with all
+the energy radiated in the same direction.
+
+We finally define our dissipation term as the sum of the saturation-based term
+and a cumulative breaking term $S_{\mathrm{bk,cu}}$,
+\begin{eqnarray}
+\cS_{ds}(k,\theta)& =&  \sigma
+ \frac{C_{\mathrm{ds}}^{\mathrm{sat}}}{B^2_r} \left[ \delta_d
+\max\left\{ B\left(k\right) -
+B_r,0\right\}^2 \right.
+\nonumber \\
+  & & +  \left(1-\delta_d \right) \left. \max\left\{B'\left(k,\theta \right)- B_r
+ ,0\right\}^2\right]N(k,\theta)  \nonumber \\
+ & & + \cS_{\mathrm{bk,cu}}(k,\theta) + \cS_{\mathrm{turb}}(k,\theta) \label{Sds_all}.
+\end{eqnarray}
+where
+\begin{equation}
+B\left(k \right)=\max\left\{B'(k,\theta), \theta \in [0,2
+\pi[\right\} \label{defBof}.
+\end{equation}
+The combination of an isotropic part (the term that multiplies $ \delta_d$)
+and a direction-dependent part (the term with $1-\delta_d$) was intended to
+allow some control of the directional spread in resulting spectra.
+
+The cumulative breaking term $\cS_{\mathrm{bk,cu}}$ represents the smoothing
+of the surface by big breakers with celerity $C'$ that wipe out smaller waves
+of phase speed $C$. Due to uncertainties in the estimation of this effect in
+various observations, we use the theoretical model of
+\cite{art:Aea09}. Briefly, the relative velocity of the crests is the norm of
+the vector difference, $\Delta_C =\left|\mathbf{C}-\mathbf{C}'\right|$, and
+the dissipation rate of short wave is simply the rate of passage of the large
+breaker over short waves, i.e. the integral of $\Delta_C \Lambda(\mathbf{C})
+d\mathbf{C}$, where $\Lambda (\mathbf{C}) d\mathbf{C}$ is the length of
+breaking crests per unit surface that have velocity components between $C_x$
+and $C_x+dC_x$, and between $C_y$ and $C_y+dC_y$ \citep{art:Phi85}.  Here
+$\Lambda$ is inferred from breaking probabilities. Based on Banner et
+al. (2000, figure 6, $b_T=22
+\left(\varepsilon-0.055\right)^2$)\nocite{art:BBY00}, and taking their
+saturation parameter $\varepsilon$ to be of the order of $1.6
+\sqrt{B'(k,\theta)}$, the breaking probability of dominant waves waves is
+approximately
+\begin{equation}
+P=56.8\left(\max\{\sqrt{B'(k,\theta)}-\sqrt{B'_r},0\}\right)^2.\label{PBanner}
+\end{equation}
+However, because they used a zero-crossing analysis, for a given wave scale,
+there are many times when waves are not counted because the record is
+dominated by another scale: in their analysis there is only one wave at any
+given time.  This tends to overestimate the breaking probability by a factor
+of 2 \citep{art:FAB10}, compared to the present approach in which we consider
+that several waves (of different scales) may be present at the same place and
+time. We correct for this effect simply, dividing $P$ by 2.
+
+With this approach the spectral density of crest length (breaking or not) per
+unit surface $l(\mathbf{k})$ such that $\int l(\mathbf{k}) \mathrm{d}k_x
+\mathrm{d}k_y$, we take
+\begin{equation}
+l(\mathbf{k})= 1/(2\pi^2 k),
+\end{equation}
+and the spectral density of breaking crest length per unit surface is
+$\Lambda(\mathbf{k})=l(\mathbf{k})P(\mathbf{k})$.  Assuming that any breaking
+wave instantly dissipates all the energy of all waves with frequencies higher
+by a factor $r_{\mathrm{cu}}$ or more, the cumulative dissipation rate is
+simply given by the rate at which these shorter waves are taken over by larger
+breaking waves, times the spectral density, namely
+\begin{equation}
+\cS_{\mathrm{bk,cu}}(k,\theta) = -C_{\mathrm{cu}}  N \left(k,\theta\right) \int_{f' < r_{\mathrm{cu}} f } \Delta_C \Lambda(\mathbf{k'}) \mathrm{d\mathbf{k'}},
+\label{Sds_cu1}
+\end{equation}
+where $r_{\mathrm{cu}}$ defines the maximum ratio of the frequencies of long
+waves that will wipe out short waves.  This gives the source term,
+\begin{eqnarray}
+\cS_{\mathrm{bk,cu}}(k,\theta) &=&  \frac{-14.2 C_{\mathrm{cu}}}{\pi^2}  N \left(k,\theta\right)
+ \nonumber \\
+& &\int_0^{ r^2_{\mathrm{cu}} k }\int_0^{2\pi}
+\max \left\{\sqrt{B(f',\theta')}-\sqrt{B_r},0\right\}^2
+\mathrm{d}\theta' \mathrm{d}k'.
+\label{Sds_sat_isotropic}
+\end{eqnarray}
+We shall take $r_{\mathrm{cu}}=0.5$, and $C_{\mathrm{cu}}$ is a tuning
+coefficient expected to be of order 1, which also corrects for errors in the
+estimation of $l$.
+
+\begin{table} \begin{center} {\small
+\begin{tabular}{|l|c|c|c|c|c|} \hline \hline
+Par.         &  WWATCH var. & namelist & TEST451 & TEST405  & TEST500 \\
+\hline
+  $p$                               &  WNMEANP        & SDS4 & 0.5                   & 0.5 &  0.5    \\
+  $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5                   & 0.5 &  0.5 \\
+  $f_{\mathrm{FM}}$                 &  FXFM3          & SDS4 & 9.9                   & \textbf{2.5} &  9.9  \\
+                                    & SDSC1           & SDS4 & 0   & 0                              & \textbf{1.0} \\
+  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4 & $-2.4\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
+  $C_{\mathrm{ds}}^{\mathrm{BCK}}$  & SDSBCK          & SDS4 & 0                     & 0  & \textbf{0.185} \\
+  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 0  & \textbf{1.5} \\
+  $\Delta_\theta$                   &  SDSDTH         & SDS4 & 80                    & 80 &  80 \\
+  $B_r$                             &  SDSBR          & SDS4 & 0.0009                & \textbf{0.00085} & 0.0009    \\
+  $C_{\mathrm{cu}}$                 & SDSCUM         & SDS4 & -0.40344               & \textbf{0.0}    & -0.40344     \\
+  ${\mathrm{s_B}}$                  & SDSCOS           &SDS4 & 2.0                   &  0.0 & 2.0 \\
+   $B_0$                             &  SDSC4          & SDS4 & 1.0                  & 1.0 & 1.0   \\
+  $p^{\mathrm{sat}}$                &  SDSP           & SDS4 & 2.0  & 2.0 &  2.0   \\
+  $C_{\mathrm{turb}}$               & SDSC5           & SDS4  & 0.0 & 0.0 &  0.0   \\
+  $\delta_d$                        & SDSC6           & SDS4  & 0.3 & 0.3 &  0.3   \\
+  $C$                               & NLPROP          & SNL1  & $2.5\times 10^7$ & $\mathbf{2.7\times 10^7}$  & $2.5\times 10^7$   \\
+ \hline \hline
+\end{tabular} } \end{center}
+
+\caption{Same as table \ref{tab:ST4_parSIN}, for the SDS4 and SNL1
+namelists. Bold values are different from the default values set by 
+ ww3\_grid.} \label{tab:ST4_parSDS}
+\end{table}
+
+
+Finally, the wave-turbulence interaction term of \cite{art:TB02} and \cite{art:AJ06}),
+is given by
+
+\begin{equation}
+\cS_{\mathrm{ds}}^{\mathrm{TURB}}\left(k,\theta\right) = - 2
+C_{\mathrm{turb}} \sigma \cos(\theta_u - \theta) k \frac{\rho_a
+u_\star^2}{g \rho_w}  N\left(k,\theta\right) .
+\end{equation}
+
+\noindent
+The coefficient $C_{\mathrm{turb}}$ is of order 1 and can be used to adjust for
+ocean stratification and wave groupiness.
+
+All relevant source term parameters can be set via the namelists SIN4 and SDS4
+to yield parameterizations TEST441b, TEST405, both described by
+\cite{art:Aea10} or TEST500 described by \cite{art:FA12}. Please note that the
+DIA constant $C$ has been slightly adjusted in TEST441b, $C=2.5\times
+10^7$. TEST441f corresponds to a re-tuned wind input formulation when using
+NCEP/NCAR winds.

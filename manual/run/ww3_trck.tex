@@ -1,0 +1,38 @@
+\vsssub
+\subsubsection{Track output post-processor} \label{sec:ww3trck}
+\vsssub
+
+\proddefH{ww3\_trck}{w3trck}{ww3\_trck.ftn}
+\proddeff{Input}{track\_o.ww3}{Raw track output data.}{11}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{track.ww3}{Formatted data file.}{51}
+
+\vspace{\baselineskip} 
+\noindent
+This post-processor does not require a formatted input file with program
+commands. It will simply convert the entire unformatted file to an integer
+compressed formatted file. The file contains the following header records :
+
+\begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
+\item File identifier (character string of length 34).
+\item Number of frequencies and directions, first direction and directional
+      increment (radians, oceanographic convention).
+\item Radian frequencies of each frequency bin.
+\item Corresponding directional bin size times frequency bin size to obtain
+      discrete energy per bin.
+\end{list}
+
+\noindent
+For each output point the following records are printed :
+\begin{list}{$\bullet$}{\itemsep 0mm \parsep 0mm}
+\item Date and time in {\tt yyyymmdd hhmmss} format, longitude and latitude in
+      degrees, and a status identifier `{\F ice}', `{\F lnd}' or `{\F
+      sea}'. The following two records are written only for sea points.
+\item Water depth in meters, current and wind u and v components in meters per
+      second, friction velocity in meters per second, air-sea temperature
+      difference in degrees centigrade and scale factor for spectrum.
+\item The entire spectrum in integer packed format (can be read using free
+      format).
+\end{list}
+
+\pb
