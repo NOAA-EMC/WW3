@@ -813,11 +813,11 @@
 !
 ! These precomputed tables are written in mod_def.ww3 
 !
-!      WRITE(6,*) 'INSIN4:',FLTABS, SSDSDTH, SSDSC3, SSDSBCK
       IF (FLTABS) THEN   
         CALL TABU_STRESS
         CALL TABU_TAUHF(SIG(NK) * TPIINV)   !tabulate high-frequency stress
         IF (TTAUWSHELTER.GT.0) THEN
+          WRITE(NDSE,*) 'Computing 3D lookup table... please wait ...'
           CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress
           END IF
         END IF

@@ -576,7 +576,7 @@
       LOGICAL                 :: FLONE, FLTWO, FLDIR, FLTRI
 !/T      LOGICAL                 :: LTEMP(NGRPP)
       CHARACTER               :: OLDTID*8, FNAME*16, ENAME*4,         &
-                                 FORMF*11, UNITS*10
+                                 FORMF*11, UNITS*10, FSCS*7
       CHARACTER, SAVE         :: TIMEID*8 = '00000000'
       CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
 !/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
@@ -1040,8 +1040,6 @@
 !
               ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
                 FLONE  = .TRUE.
-!WER Oct 31 2012: Changed FSC from 0.1 to 0.01 
-!WER Nov 13 2012: Changed FSC from 0.01 to 0.001 
                 FSC    = 0.001
                 UNITS  = '1'
                 ENAME  = '.wcc'
@@ -1304,31 +1302,14 @@
                   ELSE
                     FLDIR  = .TRUE.
                   END IF
-                FSC    = 0.01
-                ENAME  = '.mss'
+                FSC    = 1.E-6     
+                ENAME  = '.mss' 
+                FORMF  = '(1X,20I6)'
                 UNITS  = '1'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSX(1:NSEA),     &
                                                              MAPSF, XX )
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY ,MSSY(1:NSEA),     &
                                                              MAPSF, XY )
-                DO ISEA=1, NSEA
-                  CABS   = SQRT(MSSX(ISEA)**2+MSSY(ISEA)**2)
-                  IF ( MSSX(ISEA)  .EQ. UNDEF ) THEN
-                      MSSY(ISEA) = UNDEF
-                      CABS       = UNDEF
-                    ELSE IF ( MSSX(ISEA)  .NE. 0. .AND.              &
-                              MSSY(ISEA)  .NE. 0. ) THEN
-                      MSSY(ISEA) = UNDEF
-                    ELSE
-                      MSSY(ISEA) = MOD ( 630. -                      &
-                            RADE*ATAN2(MSSY(ISEA),MSSX(ISEA)) , 360. )
-                    END IF
-                  MSSX(ISEA) = CABS
-                  END DO
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSX(1:NSEA),     &
-                                                             MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSY(1:NSEA),     &
-                                                             MAPSF, X2 )
 !
               ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
                 IF ( VECTOR ) THEN
@@ -1336,7 +1317,7 @@
                   ELSE
                     FLDIR  = .TRUE.
                   END IF
-                FSC    = 0.001
+                FSC    = 0.00001
                 ENAME  = '.msc'
                 UNITS  = '1'
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCX(1:NSEA),     &
@@ -1546,7 +1527,7 @@
                     FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
                     WRITE (NDSDAT) FILEID, TIME,                      &
                          X0,MAXX,NX, &
-                        Y0,MAXY,NY, &
+                         Y0,MAXY,NY, &
                          ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL  
                   ENDIF
                 ELSE
@@ -1554,20 +1535,25 @@
                      JJ     = LEN_TRIM(FNMPRE)
                      OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
                           IOSTAT=IERR)
+                     IF (FSC.LT.1E-4) THEN
+                       WRITE(FSCS,'(G7.1)') FSC
+                     ELSE
+                       WRITE(FSCS,'(F7.4)') FSC
+                       END IF
                     IF ( FLAGLL ) THEN
                         WRITE (NDSDAT,950) FILEID, TIME,               &
                         MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
                         MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
                         MINVAL(YGRD(IY1:IYN,IX1:IXN)),                 &
                         MAXVAL(YGRD(IY1:IYN,IX1:IXN)), IYN-IY1+1,      &
-                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
+                        ENAME, FSCS, UNITS, IDLA, IDFM, FORMF, MFILL
                     ELSE
                         WRITE (NDSDAT,960) FILEID, TIME,               &
                         MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
                         MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
                         MINVAL(YGRD(IY1:IYN,IX1:IXN)),                 &
                         MAXVAL(YGRD(IY1:IYN,IX1:IXN)), IYN-IY1+1,      &
-                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
+                        ENAME, FSCS, UNITS, IDLA, IDFM, FORMF, MFILL
                      END IF
                    ELSE
                      OPEN (NDSDAT,FILE=FNAME,                      &
@@ -1722,10 +1708,10 @@
   949 FORMAT (1X,A13,I9.8,I7.6,2(2F8.2,I8),                      &
                     1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
   950 FORMAT (1X,A13,I9.8,I7.6,2(2F8.2,I4),                      &
-              1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
+              1X,A4,1X,A7,1X,A10,2I2,1X,A11,I4)
   951 FORMAT (1X,2F10.5,2I8)
   960 FORMAT (1X,A13,I9.8,I7.6,2(2E11.3,I4),                     &
-              1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
+              1X,A4,1X,A7,1X,A10,2I2,1X,A11,I4)
   961 FORMAT (1X,2E12.4,2I8)
 !
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO :'/                &

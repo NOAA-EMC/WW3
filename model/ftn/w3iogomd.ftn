@@ -1023,11 +1023,6 @@
               T01(JSEA)= T02(JSEA)     
               ENDIF
 !
-            MSSX(JSEA) = 100. * SQRT(MSSX(JSEA)) 
-            MSSY(JSEA) = 100. * SQRT(MSSY(JSEA)) 
-            MSCX(JSEA) = 100. * MSCX(JSEA)
-            MSCY(JSEA) = 100. * MSCY(JSEA)
-!
 !  Add here USERO(JSEA,1) ... 
 !
           END IF

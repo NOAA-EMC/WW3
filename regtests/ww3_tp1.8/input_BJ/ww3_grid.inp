@@ -1,0 +1,82 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$
+$ Grid name (C*30, in quotes) -----------------------------------------$
+$
+  'VALIDATION - Haas Warner 2009 '
+$
+$ Frequency increment factor and first frequency (Hz) ---------------- $
+$ number of frequencies (wavenumbers) and directions, relative offset
+$ of first direction in terms of the directional increment [-0.5,0.5].
+$
+   1.091 0.04 30 90 0.
+$   1.2 0.04 15 36 0.
+$   1.1 0.04 28 36 0.
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+   F T F T T T
+$
+$ Set time steps ----------------------------------------------------- $
+$   4. 1. 2. 1.
+   0.5  0.25 0.25 0.1 
+$
+$ Start of namelist input section ------------------------------------ $
+$
+$ Stresses - - - - - - - - - - - - - - 
+$ Linear input - - - - - - - - - - - - 
+$ Exponential input  - - - - - - - - - 
+$ Nonlinear interactions - - - - - - - 
+$ Dissipation  - - - - - - - - - - - - 
+$ Bottom friction  - - - - - - - - - - 
+$ Surf breaking  - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$   &SDB1 BJGAM=0.55 / 
+$ Propagation schemes - - - - - - - - - - - - - - - - - - - - - - - - -$
+   &PRO2 DTIME = 64800. /
+   &PRO3 WDTHCG = 1.50, WDTHTH = 1.50 /
+   &PRO4 RNFAC = 0., RSFAC = 0. /
+$ Stokes Drift spectrum parametrization - - - - - - - - - - - - - - - -$
+   &OUTS US3D = 1 , I1US3D = 1 , I2US3D = 30 /
+$
+$ Miscellaneous ------------------------------------------------------ $
+$
+END OF NAMELISTS
+$
+$  Type of grid, Coordinate system (T=geo.,F=cart) and Global flag (T=
+$  longitude range [0 360])--------------------------------------------$
+  'RECT' F NONE
+$
+$ Define grid -------------------------------------------------------- $
+$ Grid size         NX, NY
+$ Grid increments   SX, SY
+$ Coordinate of (1,1) and scaling
+   52   3
+   20   20  1.
+  -10  -10  1.
+$ 
+$ Limiting bottom depth (m), minimum water depth (m), unit number
+$ of file , scale factor, IDLA, IDFM, format, FROM and filename ------ $
+$
+  98 0.1  8  -1. 1 1 '(....)' 'NAME' '../input_BJ/BathyWW3.dat'
+$
+$ Input boundary points and excluded points -------------------------- 
+  10  2 1 '(....)' 'PART' 'input'
+$
+$ Input boundary points from segment data ( FROM = PART ) ------------ $
+   2   2   F
+   0   0   F
+$
+$ Excluded grid points from segment data ( FROM != PART ) ------------ $
+   0  0  F
+   0  0
+$
+$ Output boundary points --------------------------------------------- $
+   0. 0. 0. 0.  0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

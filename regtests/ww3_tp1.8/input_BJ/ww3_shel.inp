@@ -1,0 +1,80 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III shell input file                                       $
+$ -------------------------------------------------------------------- $
+$
+$ Define input to be used with flag for use and flag for definition
+$ as a homogeneous field (first three only); eight input lines. -------$
+   F T     Water levels
+   F T     Currents
+   F T     Winds
+   F       Ice concentrations
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
+$
+$ Time frame of calculations ----------------------------------------- $
+   20110101 000000
+   20110101 000100
+$
+$ Define output data ------------------------------------------------- $
+$
+$ Define output server mode. This is used only in the parallel version
+$ of the model. To keep the input file consistent, it is always needed.
+$ IOSTYP = 1 is generally recommended. IOSTYP > 2 may be more efficient
+$ for massively parallel computations. Only IOSTYP = 0 requires a true
+$ parallel file system like GPFS.
+$
+$    IOSTYP = 0 : No data server processes, direct access output from
+$                 each process (requirese true parallel file system).
+$             1 : No data server process. All output for each type 
+$                 performed by process that performes computations too.
+$             2 : Last process is reserved for all output, and does no
+$                 computing.
+$             3 : Multiple dedicated output processes.
+$
+$ IOSTYP = 
+   1
+$
+$ Type 1 : Fields of mean wave parameters - - - - 
+    20110101 000000 10  20110102 000000
+$
+N
+DPT WND WLV HS T02 DIR SPR TAW TWO BHD SXY FOC USS USF 
+$
+$ Type 2 : Point output - - - - - - - - - - - - -
+    20110101 000000 10  20110102 000000
+    100.    0.0  '100m'
+     0.0   0.0  'STOPSTRING'
+$
+$ Type 3 : Output along  track - - - - - - - - - - 
+    20110101 000000 0  20110102 000000
+$
+$ Type 4 : Restart files - - - - - - - - - - - - - 
+    20110101 000000 0  20110102 000000
+$
+$ Type 5 : Boundary data - - - - - - - - - - - - -
+    20110101 000000 0  20110102 000000
+$
+$ Type 6 : Separated wave field data - - - - - - - 
+    20110101 000000 0  20110102 000000
+$
+$ Type 7 : Coupling wave field data - - - - - - -  
+$          Same format as Type 1
+    20110101 000000 600  20110102 000000
+$    D C W D W  I H L T T  T C F D S  D H T L T  S W W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$    P U N T L  C S   0    M G P I P  P S P P H  I S S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$    T R D   V  E     2    1 E   R R    P P P P  P P F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$
+     F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F T F F  F F F
+$
+$ Homogeneous field data --------------------------------------------- $
+$ Homogeneous fields can be defined by a list of lines containing an ID
+$ string 'LEV' 'CUR' ''WND', date and time information (yyyymmdd
+$ hhmmss), value (S.I. units), direction (current and wind, oceanographic
+$ convention degrees)) and air-sea temparature difference (degrees C).
+$ 'STP' is mandatory stop string.
+$
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

@@ -25,7 +25,7 @@ endif
 # INPDIR: location of ww3_*.inp input files used for documentation.
 # The default can be overridden by specifying INPDIR on the make
 # command-line or in the environment.
-INPDIR ?= ../inp
+INPDIR ?= ../model/inp
 
 # Make sure INPDIR exists (if not clean)
 ifneq ($(MAKECMDGOALS),clean)
@@ -218,7 +218,7 @@ obstr.eps \
 partition.eps
 
 # All dependencies
-DEPFILES = $(TEXFILES) $(INPFILES) $(BIBFILES) $(BSTFILES) $(STYFILES) $(GFXFILES)
+DEPFILES = $(TEXFILES) $(INPFILES) $(BIBFILES) $(BSTFILES) $(STYFILES) #$(GFXFILES)
 
 #------------------------------------------------------------------------------#
 # Make targets

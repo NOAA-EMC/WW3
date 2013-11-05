@@ -20,10 +20,15 @@ $ number of characters in date
 4   
 $ version netCDF [3,4]
 3
-$ Points in same file [T] or not [F]
-F
+$ Points in same file [T] or not [F] and max number of points to be
+$ processed in one pass
+ T 100
+$
 $ Output type ITYPE [4,5]
-4
+1
+$
+$ Flag for global attributes WW3 [0] or variable version [1-2-3-4]
+ 0
 $
 $
 $ -------------------------------------------------------------------- $

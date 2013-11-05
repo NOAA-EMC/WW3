@@ -78,6 +78,7 @@
 !/    19-Dec-2012 : Add NOSWLL as namelist variable.    ( version 4.OF )
 !/    05-Mar-2013 : Adjusted default roughness for rocks( version 4.09 )
 !/    01-Jun-2013 : Adding namelist for spectral output ( version 4.10 )
+!/    01-Nov-2013 : Changed UG list name to UNST        ( version 4.12 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -567,7 +568,7 @@
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
-           NAMELIST /UG/   UGOBCAUTO, UGOBCDEPTH,                     &
+           NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH,                     &
                            EXPFSN, EXPFSPSI, EXPFSFCT,                &
                            IMPFSNIMP
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
@@ -1431,7 +1432,7 @@
        EXPFSFCT  = .FALSE.
        IMPFSNIMP = .FALSE.
 ! read data from the unstructured devoted namelist
-       CALL READNL ( NDSS, 'UG  ', STATUS ) 
+       CALL READNL ( NDSS, 'UNST', STATUS ) 
                WRITE(NDSO, 950)
 !
 ! 6.m Select propagation scheme
@@ -3642,7 +3643,7 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UG   UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3','/   &
+ 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3','/   &
                '        EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
                L3,',GMSH =',L3,         / )
 !
@@ -4084,8 +4085,8 @@
 !/PR3                          READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
 !/REF1                        CASE('REF1') 
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
-                        CASE('UG')
-                          READ (NDS,NML=UG,END=801,ERR=802,IOSTAT=J)
+                        CASE('UNST')
+                          READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')
                           READ (NDS,NML=OUTS,END=801,ERR=802,IOSTAT=J)
                         CASE('MISC')

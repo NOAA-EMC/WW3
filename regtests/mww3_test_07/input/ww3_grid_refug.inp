@@ -50,7 +50,7 @@ SDSC2 = -2.2E-5, SDSC3 = 0.000, SDSC4 = 1. , SDSC5 = 0., SDSC6 = 0.30,
 SDSDTH = 80., FXFM3= 2.5,
 SDSCOS = 2., SDSISO = 2  /
 $
-  &UG  UGOBCAUTO = F,  EXPFSN = T   /
+  &UNST UGOBCAUTO = F,  EXPFSN = T   /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1

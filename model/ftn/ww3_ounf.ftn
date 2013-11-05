@@ -6,7 +6,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2013 |
+!/                  | Last update :         02-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -14,6 +14,7 @@
 !/    13-Mar-2012 : Update of NC attributes             ( version 4.04 )
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.10 )
 !/    02-Jul-2013 : Bug correction for lat in unst grid ( version 4.11 )
+!/    02-Nov-2013 : Removes unnecessary IDFM            ( version 4.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -124,7 +125,7 @@
                                  NDSTRC, NTRACE, IERR, I, J, I1F, I2F,    &
                                  TOUT(2), TDUM(2), IOTEST, NOUT, IFI, IFJ,&
                                  NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,    &
-                                 IDFM, IOUT, S3, S4, S5, IP,              &
+                                 IOUT, S3, S4, S5, IP,                    &
                                  NBIPART, CNTIPART, NCVARTYPE
       INTEGER, ALLOCATABLE    :: TABIPART(:)
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -275,14 +276,13 @@
       READ (NDSI,*,END=801,ERR=802) S3
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802)                               &
-            IX1, IXN, IY1, IYN, IDFM
+            IX1, IXN, IY1, IYN
       IX1    = MAX ( IX1 , 1 )
       IXN    = MIN ( IXN , NX )
       IY1    = MAX ( IY1 , 1 )
       IYN    = MIN ( IYN , NY )
-!      IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
       VECTOR = .TRUE.
-      WRITE (NDSO,3940) IX1, IXN, IY1, IYN, IDFM
+      WRITE (NDSO,3940) IX1, IXN, IY1, IYN
 
 !
 ! ... Output of output fields
@@ -1777,8 +1777,6 @@
               UNITS  = '1'
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSX,MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSY,MAPSF, XY )
-              XX=(XX*0.01)**2
-              XY=(XY*0.01)**2
               NFIELD=2
               varnm(1)='mssx'
               varnm(2)='mssy'
@@ -1794,7 +1792,7 @@
               vmax = 30000
 !
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
-              FSC    = 0.0001
+              FSC    = 1E-7     
               ENAME  = '.msc'
               UNITS  = '1'
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCX,MAPSF, XX )

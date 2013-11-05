@@ -98,7 +98,7 @@ $
 $
 &SNL1 NLPROP=2.5E7 /
 $
-  &UG   UGOBCAUTO = F  , EXPFSN = T /
+  &UNST UGOBCAUTO = F  , EXPFSN = T /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1
