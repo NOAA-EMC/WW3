@@ -1,0 +1,38 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.10 Test script for WW-III, two-dimensional propagation.           #
+#           Propagation on SMC grid with UNO2 scheme.                       #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   see the switch files in subdirectory input/.                            # 
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - This is a simplified version of the SMC0512 grid (to be introduced in   #
+#   cases), covering the Lake Erie only for a quick regression test.        #
+#   Corresponding input files are labeled with id 'Erie'.                   #
+#                                                                           #
+#   Output is converted into text files by ww3_outf as type 4 output, which #
+#   is added as a new type for all sea points.  Plotting of the output is   #
+#   achieved with a proper projection method with the help of the cell      #
+#   information file  ErieSMCel.dat and the grid parameters stored in       #
+#   ww3_grid.inp.  IDL scripts for plotting SMC grid output is available on #
+#   until a solution is agreed to add them into the WW3 package as a post-  #
+#   procession tool.  Regular grid at the base resolution is also possible  #
+#   as type 3 for instance but the refined cells are merged into base       #
+#   resolution regular grid ones.                      #
+#                                                                           #
+#   Further details about SMC grid, please see the guide documents:         #
+#      guide/SMC_Grid_Guide.pdf                                             #
+#   or contact me at Jian-Guo.Li@metoffice.gov.uk                           #
+#                                                                           #
+#                                                                           #
+#                                               Jian-Guo Li  6 Nov 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

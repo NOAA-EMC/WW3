@@ -1619,6 +1619,7 @@
 !/T0      REAL                    :: DOUT(NK,NTH)
       REAL                    :: QB(NK), S2(NK), KD, DC(NK)
       REAL                    :: TSTR, TMAX, DT, T, MFT
+      INTEGER                 :: IT
       REAL                    :: PB(NSPEC), PB2(NSPEC), LAMBDA(NSPEC)
       LOGICAL                 :: MASK(NSPEC)
 !/

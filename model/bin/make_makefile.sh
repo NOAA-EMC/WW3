@@ -134,10 +134,10 @@
                OK='LRB4 LRB8' ;;
       GSE    ) TY='one'
                ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX' ;;
+               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
       prop   ) TY='one'
                ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO' ;;
+               OK='PR0 PR1 UQ UNO SMC' ;;
       stress ) TY='one'
                ID='stress computation'
                OK='FLX0 FLX1 FLX2 FLX3 FLXX' ;;
@@ -349,6 +349,7 @@
    PR1) pr='w3profsmd w3pro1md' ;;
    PR2) pr='w3profsmd w3pro2md' ;;
    PR3) pr='w3profsmd w3pro3md' ;;
+   SMC) pr='w3psmcmd' ;;
   esac 
 
   case $p_switch in
@@ -789,7 +790,7 @@
                CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD \
                W3TRIAMD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
-               W3IOSFMD W3PARTMD \
+               W3IOSFMD W3PARTMD W3PSMCMD \
                W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3UNO2MD W3PROFSMD \
                W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLXXMD \
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRCXMD \
@@ -813,6 +814,7 @@
          'W3INITMD'     ) modtest=w3initmd.o ;;
          'W3WDASMD'     ) modtest=w3wdasmd.o ;;
          'W3UPDTMD'     ) modtest=w3updtmd.o ;;
+         'W3PSMCMD'     ) modtest=w3psmcmd.o ;;
          'W3PRO1MD'     ) modtest=w3pro1md.o ;;
          'W3PRO2MD'     ) modtest=w3pro2md.o ;;
          'W3PRO3MD'     ) modtest=w3pro3md.o ;;

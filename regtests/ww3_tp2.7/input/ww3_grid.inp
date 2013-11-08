@@ -40,6 +40,7 @@ $   not needed for the given switch settings will be skipped
 $   automatically, and the order of the namelists is immaterial.
 $
 $
+$  &UG   EXPFSN = T   /
   &UNST UGOBCAUTO = F , EXPFSN = T   /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
