@@ -248,6 +248,7 @@ then
     model_grids="`awk '/^MODEL:/' $path_i/$grdset | sed 's/MODEL\://'`"
     input_grids="`awk '/^INPUT:/' $path_i/$grdset | sed 's/INPUT\://'`"
     point_grids="`awk '/^POINT:/' $path_i/$grdset | sed 's/POINT\://'`"
+    intgl_grids="`awk '/^INTGL:/' $path_i/$grdset | sed 's/INTGL\://'`"
   else
     errmsg "grid_set file $path_i/$grdset not found"
     exit 1
@@ -256,9 +257,10 @@ else
   model_grids="none"
   input_grids="none"
   point_grids="none"
+  intgl_grids="none"
 fi
 all_grids=$model_grids
-for g in $input_grids $point_grids
+for g in $input_grids $point_grids $intgl_grids
 do
   if [ -z "`echo $all_grids | grep $g`" ]
   then
@@ -786,6 +788,69 @@ then
   then
     \rm -f track_i.ww3
     \rm -f $prog.inp
+  else
+    errmsg "Error occured during $path_e/$prog execution"
+    exit 1
+  fi
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.g Grid integration ------------------------------------------------------- #
+
+prog=ww3_gint
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+if [ $multi -eq 2 ]
+then
+  ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
+else
+  ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
+fi
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+-------------------------+'
+  echo '|    Integrated output    |'
+  echo '+-------------------------+'
+  echo ' '
+
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+  else
+    \cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  ofile="$path_w/`basename $ifile .inp`.out"
+  \rm -f $prog.inp
+  \ln -f $ifile $prog.inp
+  echo "   Processing $ifile"
+  echo "   Screen output copied to $ofile"
+  if $path_e/$prog > $ofile
+  then
+    \rm -f $prog.inp
+    for g in $intgl_grids
+    do
+      if [ -f "out_grd.$g" ]
+      then
+        model_grids="$model_grids $g"
+      fi
+    done
   else
     errmsg "Error occured during $path_e/$prog execution"
     exit 1
