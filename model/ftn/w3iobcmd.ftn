@@ -41,7 +41,6 @@
 !      W3SETO, W3SETG, W3SETW, W3SETA, W3DMO5
 !                Subr. W3xDATMD Manage data structures.
 !      W3CSPC    Subr. W3CSPCMD Spectral grid conversion.
-!      W3LLTOEQ  Subr. W3CSPCMD Standard to rotated lat/lon conversion.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
 !     ----------------------------------------------------------------
@@ -93,8 +92,6 @@
 !/    31-Oct-2010 : Implementing unstructured grid      ( version 3.14.3 )
 !/                  (A. Roland and F. Ardhuin) 
 !/    05-Apr-2011 : Moved the SPCONV call into loop     ( version 3.14.3 )
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    03-Jul-2013 : Corrected ABPIN indices             ( version 4.11 )
 !/
 !  1. Purpose :
@@ -178,14 +175,11 @@
       USE W3TRIAMD, ONLY: W3NESTUG      
 !
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
-                          X0, Y0, SX, SY, GSU, MAPSTA, MAPFS, MAPSF,  &
+                          GSU, MAPSTA, MAPFS, MAPSF,       &
                           XFR, FR1, SIG2, TH, DTH, FILEXT, FACHFE,    &
                           GTYPE, UNGTYPE
       USE W3GDATMD, ONLY: DXYMAX  
 !/T1      USE W3GDATMD, ONLY: SIG
-!/RTD !!   Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: Polat, Polon
-!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ
       USE W3WDATMD, ONLY: VA
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPBPT, &
@@ -220,9 +214,6 @@
 !/T1      INTEGER               :: IK, ITH
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T1      REAL                  :: HS, HS0
-!/RTD  !!    Declare rotation angle and rotated lat/lon variables for
-!/RTD  !!    boundary points.   JGLi12Jun2012
-!/RTD        REAL, ALLOCATABLE   :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
       REAL, ALLOCATABLE       :: TMPSPC(:,:)
       LOGICAL                 :: FLOK
       CHARACTER(LEN=16)       :: FILEN
@@ -372,22 +363,6 @@
               ((IPBPI(I,J),I=1,NBI),J=1,4),                           &
               ((RDBPI(I,J),I=1,NBI),J=1,4)
 !
-!/RTD !!   Convert standard into rotated lat/lon. JGLi12Jun2012
-!/RTD       ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
-!/RTD
-!/RTD       CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
-!/RTD     &                 Anglbdy, Polat, Polon, NBI )
-!/RTD
-!/RTD !!    XBPI = ELonbdy
-!/RTD       YBPI = ELatbdy
-!/RTD !!   Need to wrap NAEW Elon values greater than 360 as X0=327.265
-!/RTD       DO I=1, NBI
-!/RTD          XBPI(I)=MOD( ELonbdy(I)+360.0, 360.0)
-!/RTD          IF( XBPI(I)+0.4*SX .LT. X0 )  XBPI(I) = XBPI(I) + 360.0
-!/RTD       ENDDO
-!/RTD
-!/RTD       DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
-!/RTD
           FLOK   = .TRUE.
           IF (GTYPE .EQ. UNGTYPE) THEN
             CALL W3NESTUG(DXYMAX,FLOK) 

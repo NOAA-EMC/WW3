@@ -10,8 +10,6 @@
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3IOGR documentation.
-!/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
-!/    16-Sep-2013 : Add Arctic part in SMC grid.        ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -126,8 +124,6 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.11 )
@@ -307,7 +303,6 @@
 !/PR1      TNAMEP = 'First order upstream          '
 !/UQ      TNAMEP = '3rd order UQ scheme           '
 !/UNO      TNAMEP = '2nd order UNO scheme          '
-!/SMC      TNAMEP = 'UNO2 on SMC grid propagation  '
 !/PRX      TNAMEP = 'Experimental                  '
 !/PR0      TNAMEG = 'No GSE aleviation             '
 !/PR1      TNAMEG = 'No GSE aleviation (1up prop)  '
@@ -380,10 +375,6 @@
                 IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
                 FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
-!
-!/SMC          WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
-!/ARC          WRITE (NDSM) NGLO, NARC, NBGL, NBAC
-!
           WRITE (NDSM)                                                &
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
 !/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
@@ -396,12 +387,6 @@
                 IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
                 FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
-!
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     NCel, NUFc, NVFc, NRLv, MRFct
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     NGLO, NARC, NBGL, NBAC 
-!
           NK     = MK
           NTH    = MTH
           NK2    = NK + 2
@@ -519,18 +504,6 @@
 !
           WRITE (NDSM)                                                &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
-!
-!/SMC         WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
-!/SMC         WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc
-!/ARC         WRITE (NDSM)  ICLBAC 
-!/ARC         WRITE (NDSM)  ANGARC 
-!/SMC         WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
-!/SMC         IF ( FLTEST ) THEN
-!/SMC            WRITE (NDSE,"('  NLvCel, NLvUFc, NLvVFc Write for',2I9)") NRLv, MRFct
-!/SMC            WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc 
-!/SMC            WRITE (NDSE,"('  CTRNXY transparency write for 2x', I9)") NCel
-!/SMC         ENDIF
-! 
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
           WRITE (NDSM)                                                &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
@@ -538,19 +511,10 @@
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
-!/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
-!/RTD         WRITE (NDSM) Polat, Polon, AnglD
-!/RTD
-!!        WRITE(NDSM)                                                 &
-!!             COUG_2D, COUG_RAD3D, COUG_US3D
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                GTYPE, FLAGLL, ICLOSE
-!!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
-          IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
-!/SMC                                 , NCel, NUFc, NVFc, NRLv         &
-!/ARC                                 , NARC, NBAC, NSPEC              &
-                                      )
+          IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
 !
 ! Reads different kind of information depending on grid type
 !
@@ -588,18 +552,6 @@
           IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST ) 
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
-!
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     NLvCel, NLvUFc, NLvVFc
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     IJKCel, IJKUFc, IJKVFc
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     ICLBAC 
-!/ARC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ARC                     ANGARC 
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                     CTRNX,  CTRNY,  CLATF
-!
           MAPSTA = MOD(MAPTMP+2,8) - 2
           MAPST2 = (MAPTMP-MAPSTA) / 8
           MAPSF(:,3) = MAPSF(:,2) + (MAPSF(:,1)-1)*NY
@@ -612,12 +564,8 @@
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
-!/SEC1         READ (NDSM) NITERSEC1
-!
-!/RTD !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
-!/RTD          READ (NDSM) Polat, Polon, AnglD
-!/RTD
-!
+
+!/SEC1        READ (NDSM) NITERSEC1
         END IF
 !
 !/T      WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
@@ -997,15 +945,6 @@
 !
 !/PR3      IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
 !
-!/SMC      IF ( WRITE ) THEN
-!/SMC          WRITE (NDSM) DTME, CLATMN, Refran
-!/SMC        ELSE
-!/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                       DTME, CLATMN, Refran
-!/SMC        END IF
-!
-!/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
-!
 ! Interpolation tables ( fill locally ) ----------------------------- *
 !                                                      Module W3DISPMD
 !
@@ -1194,9 +1133,6 @@
 !
 !/PR3 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
 !/PR3              '      DATA   : ',2F6.2)
-!
-!/SMC 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
-!/SMC              '      DATA   : ',2E10.3)
 !
 !/T 9070 FORMAT (' TEST W3IOGR : DISPERSION INTEPOLATION TABLES')
 !/

@@ -45,7 +45,6 @@
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
 !/    30-Sep-2012 : Implemetation of tidal constituents ( version 4.09 )
 !/    07-Dec-2012 : Initialize UST non-zero.            ( version 4.11 )
-!/    12-Dec-2012 : Changes for SMC grid.  JG_Li        ( version 4.11 )
 !/    26-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
 !/                  structure and smaller memory footprint.
 !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
@@ -331,7 +330,7 @@
       USE W3ARRYMD, ONLY: PRTBLK
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSTA, MAPST2, MAPFS, &
-                          MAPSF, FLAGLL,   &
+                          FLAGLL,   &
                           ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
                           FLCK, NK, NTH, NSPEC, SIG, GNAME
       USE W3WDATMD, ONLY: TIME, TLEV, TICE, WLV, UST, USTDIR, VA
@@ -853,18 +852,11 @@
       MAPTST = MOD(MAPST2/2,2)
       MAPST2 = MAPST2 - 2*MAPTST
 !
-!Li   For multi-resolution SMC grid, these 1-NX and 1-NY nested loops
-!Li   may miss the refined cells as they are not 1-1 corresponding to
-!Li   the (Nx,NY) regular grid.  The loop is now modified to run over
-!Li   full NSEA points.   JGLi24Jan2012
-!Li   DO IY=1, NY
-!Li     DO IX=1, NX
-!Li       ISEA   = MAPFS(IY,IX)
-      DO ISEA=1, NSEA
-              IX = MAPSF(ISEA,1)
-              IY = MAPSF(ISEA,2)
+      DO IY=1, NY
+        DO IX=1, NX
+          ISEA   = MAPFS(IY,IX)
 !/T          MAPOUT(IX,IY) = MAPSTA(IY,IX)
-!Li          IF ( ISEA .NE. 0) THEN
+          IF ( ISEA .NE. 0) THEN
               DW(ISEA) = MAX ( 0. , WLV(ISEA)-ZB(ISEA) )
 !/T              XOUT(IX,IY) = DW(ISEA)
               IF ( WLV(ISEA)-ZB(ISEA) .LE.0. ) THEN
@@ -875,8 +867,8 @@
                       VA(:,JSEA) = 0.
                     END IF
                 END IF
-!Li         END IF
-!Li        END DO
+            END IF
+           END DO
          END DO
 !
       MAPST2 = MAPST2 + 2*MAPTST

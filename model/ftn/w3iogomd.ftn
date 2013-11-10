@@ -33,11 +33,9 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    05-Feb-2011 : Implement unstructured grid        ( version 3.14.3 )
 !/                  (A. Roland and F. Ardhuin) 
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
-!/    15-Apr-2013 : New subroutine to read param. names ( version 4.11 )
+!/    15-Apr-2013 : New subroutine to read param. names ( version 4.10 )
 !/    21-Aug-2013 : Bug correction in W3IOGO: UBR, ABR  ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
@@ -1001,16 +999,10 @@
               END IF
             IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 ) THEN
                 THM(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
-!/RTD  !!  Subtract AnglD from mean direction and wrap to 0-2Pi. JGLi12Jun2012
-!/RTD            THM(JSEA) = THM(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( THM(JSEA) .LT. 0.0 )  THM(JSEA) = THM(JSEA) + TPi
               END IF
             ABR(JSEA) = SQRT ( 2. * MAX ( 0. , ABR(JSEA) ) )
             IF ( ABR(JSEA) .GE. 1.E-7 ) THEN
                 ABD(JSEA) = ATAN2(ABD(JSEA),ABA(JSEA))
-!/RTD  !!  Subtract AnglD from bottom rms direction and wrap to 0-2Pi. JGLi12Jun2012
-!/RTD            ABD(JSEA) = ABD(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( ABD(JSEA) .LT. 0.0 )  ABD(JSEA) = ABD(JSEA) + TPi
               ELSE
                 ABD(JSEA) = 0.
               ENDIF
@@ -1018,9 +1010,6 @@
             UBR(JSEA) = SQRT ( 2. * MAX ( 0. , UBR(JSEA) ) )
             IF ( UBR(JSEA) .GE. 1.E-7 ) THEN
                 UBD(JSEA) = ATAN2(UBD(JSEA),UBA(JSEA))
-!/RTD  !!  Subtract AnglD from bottom wave direction and wrap to 0-2Pi. JGLi12Jun2012
-!/RTD            UBD(JSEA) = UBD(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( UBD(JSEA) .LT. 0.0 )  UBD(JSEA) = UBD(JSEA) + TPi
               ELSE
                 UBD(JSEA) = 0.
               ENDIF
@@ -1207,9 +1196,6 @@
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP0(JSEA).NE.UNDEF )                                     &
             THP0(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
-!/RTD  !!  Subtract AnglD from peak direction and wrap to 0-2Pi.  JGLi12Jun2012
-!/RTD            THP0(JSEA) = THP0(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( THP0(JSEA) .LT. 0.0 )  THP0(JSEA) = THP0(JSEA) + TPi
         ETX(JSEA) = 0.
         ETY(JSEA) = 0.
         IKP1(JSEA) = MAX ( 1 , IKP1(JSEA) )
@@ -1248,9 +1234,6 @@
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP1(JSEA) .NE. UNDEF )                                   &
             THP1(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
-!/RTD  !!  Subtract AnglD from THP1 direction and wrap to 0-2Pi.  JGLi12Jun2012
-!/RTD            THP1(JSEA) = THP1(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( THP1(JSEA) .LT. 0.0 )  THP1(JSEA) = THP1(JSEA) + TPi
         END DO
 !
 ! 5.  Test output (local to MPP only)

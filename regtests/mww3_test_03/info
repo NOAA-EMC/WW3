@@ -100,19 +100,8 @@
 #     + switch_PR3_UNO_MPI_SCRIP_T38                                        #
 #     + switch_PR3_UQ_MPI_SCRIP_T38                                         #
 #                                                                           #
-#   * Added an output grid ww3_grid.cmpl.inp                                #
-#     + Spatial grid: 105 x 105 rectilinear Cartesian grid                  #
-#       - dx = 5 km, dy = 5 km                                              #
-#       - Xrange = -10:510 km, Yrange = -10::510 km                         #
-#     + Spectral grid: ntheta = 24, nf = 20, f1 = 0.075, fgamma = 1.03      #
-#     Data from the computational model grids is interpolated to this       #
-#     grid using ww3_gint. The input files for the interpolation are        #
-#     defined by ww3_gint_grdset_*.inp files. The interpolation grid is     #
-#     defined in the grdset_* files under the flag INTGL.                   #
-#                                                   Arun, Nov 11 2013       #
-#                                                                           #
 #                                              Hendrik Tolman, Feb 2006     #
-#                                                   Last Mod : Nov 2013     #
+#                                                   Last Mod : Aug 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

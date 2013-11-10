@@ -52,5 +52,3 @@ summary of gridsets with curvilinear grids (context=computation time):
 6e: intermediate
 6f: slow (relative to 6a, computation of weights is faster but computation is slower)
 
-Added a grid integration step for gridsets b through f. Output from the computational grids will be interpolated to a global output grid glout.
-                            Arun, 11th Nov 2013

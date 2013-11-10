@@ -137,6 +137,7 @@
                                  FTIME(2), CID, PID, GID, GDS, IOUT
       INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:) 
 ! GRIB1 specific variables
+!/NOGRB      INTEGER                 :: KPDS(1), KGDS(1)
 !/NCEP1      INTEGER                 :: KPDS(25), KGDS(22)
 ! GRIB2 specific variables
 !/NCEP2      INTEGER                 :: KPDS(200), KGDS(200), IDRS(200)
@@ -147,7 +148,7 @@
 !/NCEP2      CHARACTER(LEN=1), ALLOCATABLE  :: CGRIB(:)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST, RFTIME
-      LOGICAL                 :: FLREQ(NOGRP,NGRPP)
+      LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLGRIB(NOGRP,NGRPP)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11
 !/
 !/ ------------------------------------------------------------------- /
@@ -283,15 +284,6 @@
 ! interface 
 !
 !
-      IFI = 5 ! Atm-waves layer, all except for friction velocity
-      DO IFJ = 2,10
-        IF ( FLREQ(IFI,IFJ) ) THEN
-          WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
-                           '*** NOT YET CODED INTO WW3_GRIB ***'
-          FLREQ(IFI,IFJ) = .FALSE.
-        END IF
-      END DO
-
       IFI = 3 ! Entire group Frequency-dependent parameters 
       DO IFJ = 1,NOGE(IFI)
         IF ( FLREQ(IFI,IFJ) ) THEN
@@ -300,7 +292,15 @@
           FLREQ(IFI,IFJ) = .FALSE.
         END IF
       END DO
-
+! 
+      IFI = 5 ! Atm-waves layer, all except for friction velocity
+      DO IFJ = 2,10
+        IF ( FLREQ(IFI,IFJ) ) THEN
+          WRITE (NDSO,946) IDOUT(IFI,IFJ),                           &
+                           '*** NOT YET CODED INTO WW3_GRIB ***'
+          FLREQ(IFI,IFJ) = .FALSE.
+        END IF
+      END DO
       DO IFI = 6,8 ! Entire groups wave-ocean interaction, wave-bottom
                    ! layer and spectrum parameters
         DO IFJ = 1,NOGE(IFI)
@@ -359,6 +359,11 @@
       CALL STME21 ( FTIME , IDTIME )
       WRITE (NDSO,948) IDTIME, CID, PID, GID, GDS
 ! 
+! ... Initialize KPDS and KGDS (for both NCEP1 and NCEP2)
+!
+      KPDS     =   0
+      KGDS     =   0
+!
 ! ... Set PDS GRIB1 elements
 !
 !     ( 1)  ID OF CENTER
@@ -390,8 +395,6 @@
 !  * : Changing on the fly in main program
 ! ** : Changing on the fly in W3EXGB
 !
-!/NCEP1      KPDS     =   0
-!
 !/NCEP1      KPDS( 1) = CID
 !/NCEP1      KPDS( 2) = PID
 !/NCEP1      KPDS( 3) = GID
@@ -421,8 +424,6 @@
 !           OF POINTS IN EACH ROW OR 255 IF NEITHER ARE PRESENT
 !     (21)  FOR GRIDS WITH PL, NUMBER OF POINTS IN GRID
 !     (22)  NUMBER OF WORDS IN EACH ROW
-!
-!/NCEP1      KGDS     = 0
 !
 !/NCEP1      KGDS( 2) = NX
 !/NCEP1      KGDS( 3) = NY
@@ -504,7 +505,6 @@
 !       (18) Increment of latitude
 !       (19) Scanning mode
 !
-!/NCEP2      KGDS = 0
 !/NCEP2      KGDS( 1) = 6
 !/NCEP2      KGDS( 8) = NX
 !/NCEP2      KGDS( 9) = NY
@@ -539,7 +539,6 @@
 !     (15) Scaled value of (13)
 !
 !/NCEP2       KPDSNUM = 0
-!/NCEP2       KPDS = 0
 !/NCEP2       KPDS( 3) = 2
 !/NCEP2       KPDS( 4) = 0
 !/NCEP2       KPDS( 5) = PID
@@ -659,19 +658,6 @@
           CALL EXTCDE ( 10 )
         END IF
 !
-<<<<<<< .working
-=======
-  806 CONTINUE
-      WRITE (NDSE,1005) IDOUT(9), IDOUT(18)
-      CALL EXTCDE ( 5 )
-!
-  810 CONTINUE
-      IF ( .NOT. FLAGLL ) THEN
-          WRITE (NDSE,1010)
-          CALL EXTCDE ( 10 )
-        END IF
-!
->>>>>>> .merge-right.r29000
   888 CONTINUE
       WRITE (NDSO,999)
 !
@@ -884,7 +870,7 @@
         FLTRI = .FALSE.
         FLPRT = .FALSE.
 !
-!/T            WRITE (NDST,9020) IDOUT(J)
+!/T            WRITE (NDST,9020) IDOUT(IFI,IFJ)
 !
 ! 2.a Set output arrays and parameters
 !
@@ -973,22 +959,13 @@
 !
 !     Water level
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
 !/NCEP2                KPDS(2) = 1 
 !/NCEP2                KPDS(1) = 3 
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLV   , MAPSF, X1 )
-=======
-              ELSE IF ( J .EQ. 5 ) THEN
-!/NCEP1                KPDS(5) = -1 
-!/NCEP2                KPDS(2) = 1 
-!/NCEP2                KPDS(1) = 3 
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, WLV   , MAPSF, X1 )
->>>>>>> .merge-right.r29000
 !
-<<<<<<< .working
 !     Ice concentration
 !
               ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
@@ -998,43 +975,24 @@
 !/NCEP2                KPDS(1) = 2
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
 !
-=======
-!     Ice concentration
-!
-              ELSE IF ( J .EQ. 6 ) THEN
-!/NCEP1                KPDS(5) = 091
-!/NCEP2                KPDS(2) = 0
-!/NCEP2                KPDS(1) = 2
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
-!
->>>>>>> .merge-right.r29000
 !     Significant wave height
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  1 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ.  7 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = 100
 !/NCEP2                KPDS(2) = 3
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, HS    , MAPSF, X1 )
 !
 !     Mean wave length
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  2 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ.  8 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, WLM   , MAPSF, X1 )
 !
 !     Mean wave period (based on second moment)
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
@@ -1045,9 +1003,6 @@
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  4 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ.  9 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = 103
 !/NCEP2                KPDS(2) = 15
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T0M1   , MAPSF, X1 )
@@ -1058,13 +1013,8 @@
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
 !/NCEP2                KPDS(2) = 255
-<<<<<<< .working
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
-=======
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
->>>>>>> .merge-right.r29000
 !
-<<<<<<< .working
 !     Peak frequency
 !
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 6 ) THEN
@@ -1080,80 +1030,29 @@
 !
 !
 !     Mean wave direction
-=======
-!     Mean wave period (based on first moment)
->>>>>>> .merge-right.r29000
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  7 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = 101
-=======
-              ELSE IF ( J .EQ.  10 ) THEN
-!/NCEP1                KPDS(5) = 103
->>>>>>> .merge-right.r29000
 !/NCEP2                KPDS(2) = 255
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, TMN   , MAPSF, X1 )
-!
-!     Mean wave period (based on first inverse moment)
-!
-<<<<<<< .working
-              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
-                FLONE = .TRUE.
-!/NCEP1                KPDS(5) = -1
-=======
-              ELSE IF ( J .EQ.  11 ) THEN
-!/NCEP1                KPDS(5) = 103
->>>>>>> .merge-right.r29000
-!/NCEP2                KPDS(2) = 255
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, TM0M1   , MAPSF, X1 )
-!
-<<<<<<< .working
-=======
-!     Peak frequency
-!
-              ELSE IF ( J .EQ. 13 ) THEN
-!/NCEP1                KPDS(5) = 108
-!/NCEP2                KPDS(2) = 11
-                DO ISEA=1, NSEA
-                  IF ( FP0(ISEA) .NE. UNDEF .AND. FP0(ISEA) .NE. 0 ) THEN
-                      FP0(ISEA) = 1. / FP0(ISEA)
-                    END IF
-                  END DO
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, FP0   , MAPSF, X1 )
-!
->>>>>>> .merge-right.r29000
-!
-<<<<<<< .working
-              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
-                FLONE = .TRUE.
-!/NCEP1                KPDS(5) = 107
-!/NCEP2                KPDS(2) = 10
-=======
-!     Mean wave direction
-!
-              ELSE IF ( J .EQ.  14 ) THEN
-!/NCEP1                KPDS(5) = 101
-!/NCEP2                KPDS(2) = 255
->>>>>>> .merge-right.r29000
                 DO ISEA=1, NSEA
                   IF ( THM(ISEA) .NE. UNDEF )                         &
                        THM(ISEA) = MOD ( 630. - RADE*THM(ISEA) , 360. )
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THM   , MAPSF, X1 )
 !
-<<<<<<< .working
-=======
 !     Directional spread
 !
-              ELSE IF ( J .EQ. 15 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
+                FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THS   , MAPSF, X1 )
 !
 !     Peak direction
 !
-              ELSE IF ( J .EQ. 16 ) THEN
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
+                FLONE = .TRUE.
 !/NCEP1                KPDS(5) = 107
 !/NCEP2                KPDS(2) = 10
                 DO ISEA=1, NSEA
@@ -1163,15 +1062,10 @@
                   END DO
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THP0  , MAPSF, X1 )
 !
->>>>>>> .merge-right.r29000
 !     Partitioned wave height
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLPRT = .TRUE.
-=======
-              ELSE IF ( J .EQ. 17 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS5A  = 102
 !/NCEP1                KPDS5B  = 105
 !/NCEP2                KPDS5A  = 5
@@ -1185,14 +1079,9 @@
 !
 !     Partitioned peak period
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
                 FLPRT = .TRUE.
 !/NCEP1                KPDS5A  = 110
-=======
-              ELSE IF ( J .EQ. 18 ) THEN
-!/NCEP1                KPDS5A  = 110
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS5B  = 106
 !/NCEP2                KPDS5A  = 6
 !/NCEP2                KPDS5B  = 9
@@ -1205,12 +1094,8 @@
 !
 !     Partitioned peak wave length
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
                 FLPRT = .TRUE.
-=======
-              ELSE IF ( J .EQ. 19 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS5A  =  -1
 !/NCEP1                KPDS5B  =  -1
 !/NCEP2                KPDS5A  =  255
@@ -1224,14 +1109,9 @@
 !
 !     Partitioned mean direction
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
                 FLPRT = .TRUE.
 !/NCEP1                KPDS5A  = 109
-=======
-              ELSE IF ( J .EQ. 20 ) THEN
-!/NCEP1                KPDS5A  = 109
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS5B  = 104
 !/NCEP2                KPDS5A  = 4
 !/NCEP2                KPDS5B  = 7
@@ -1251,12 +1131,8 @@
 !
 !     Partitioned Directional spread
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                 FLPRT = .TRUE.
-=======
-              ELSE IF ( J .EQ. 21 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS5A  =  -1
 !/NCEP1                KPDS5B  =  -1
 !/NCEP2                KPDS5A  =  255
@@ -1270,12 +1146,8 @@
 !
 !     Partitioned wind sea fraction
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
                 FLPRT = .TRUE.
-=======
-              ELSE IF ( J .EQ. 22 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS5A  =  -1
 !/NCEP1                KPDS5B  =  -1
 !/NCEP2                KPDS5A  =  255
@@ -1289,24 +1161,16 @@
 !
 !     Total wind sea fraction
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ. 23 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, PWST  , MAPSF, X1 )
 !
 !     Number of fields in partition
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ. 24 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, PNR   , MAPSF, X1 )
@@ -1325,12 +1189,8 @@
 !
 !     Average source term time step
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ. 25 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 DO ISEA=1, NSEA
@@ -1341,56 +1201,27 @@
 !
 !     Cut-off frequency
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
                 FLONE = .TRUE.
-=======
-              ELSE IF ( J .EQ. 26 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, FCUT  , MAPSF, X1 )
 !
 !     CFL Maximum (in spatial space)
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLXYMAX  , MAPSF, X1 )
-=======
-              ELSE IF ( J .EQ. 27 ) THEN
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLXYMAX  , MAPSF, X1 )
->>>>>>> .merge-right.r29000
 !
 !     CFL Maximum (in spectral space)
 !
-<<<<<<< .working
               ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
 !/NCEP2                KPDS(2) = 255
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLTHMAX  , MAPSF, X1 )
-=======
-              ELSE IF ( J .EQ. 28 ) THEN
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, CFLTHMAX  , MAPSF, X1 )
->>>>>>> .merge-right.r29000
-!
-!     Friction velocity
-!
-              ELSE IF ( J .EQ.  29 ) THEN
-!/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
-!/NCEP2                KPDS(1) = 1
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, UST(1:NSEA)         &
-                                                        , MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, USTDIR(1:NSEA)      &
-                                                        , MAPSF, X2 )
 !
               ELSE
                 WRITE (NDSE,999)
@@ -1404,11 +1235,7 @@
 !
 ! 3.a Partitioned data
 !
-<<<<<<< .working
             IF ( FLPRT ) THEN
-=======
-            IF ( J.GE.17 .AND. J.LE.22 ) THEN
->>>>>>> .merge-right.r29000
 !
 !/NCEP1                KPDS(5) = KPDS5A
 !/NCEP2                KPDS(2) = KPDS5A
@@ -1480,7 +1307,6 @@
 !/NCEP2            IF (IO .NE. 0) GOTO 830
 !/NCEP2            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 !
-<<<<<<< .working
               ELSE IF ( FLTWO ) THEN
 !
                 DO IXY=1, NX*NY
@@ -1500,9 +1326,6 @@
 !/NCEP2            IF (IO .NE. 0) GOTO 830
 !/NCEP2            CALL WRYTE (NDSDAT, LENGRIB, CGRIB)
 
-=======
-                IF ( J .EQ. 3 .OR. J .EQ. 2 ) THEN
->>>>>>> .merge-right.r29000
 !/NCEP1                    KPDS(5) = 031
 !/NCEP1                    CALL PUTGB (NDSDAT,NDATA,KPDS,KGDS,BITMAP,X2,IO)
 !/NCEP2                    KPDS(2) = 0

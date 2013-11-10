@@ -20,7 +20,6 @@
 !/    29-Oct-2010 : Adding unstructured grid data.      ( version 3.14 )
 !/                  (A. Roland and F. Ardhuin) 
 !/    31-Oct-2010 : Adding output parameters            ( version 3.14 )
-!/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
 !/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/                  Add W3XETA.
 !/    28-Jun-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
@@ -394,7 +393,6 @@
 !
         REAL, POINTER         :: DDDX(:,:), DDDY(:,:), DCXDX(:,:),    &
                                  DCYDX(:,:), DCXDY(:,:), DCYDY(:,:)
-!/SMC        REAL, POINTER         :: DHDX(:), DHDY(:), DHLMT(:,:)
 !
 !/PR1        INTEGER, POINTER      :: IS0(:), IS2(:)
 !/PR1        REAL, POINTER         :: FACVX(:), FACVY(:)
@@ -409,11 +407,6 @@
 !/PR3        INTEGER, POINTER      :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
 !/PR3                                 MAPCXY(:), MAPTH2(:), MAPWN2(:)
 !/PR3        LOGICAL, POINTER      :: MAPTRN(:)
-!
-!/SMC        INTEGER               :: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2,  &
-!/SMC                                 NACT, NMXY
-!/SMC        INTEGER, POINTER      :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
-!/SMC                                 MAPXY(:), MAPTH2(:), MAPWN2(:)
 !
 ! Warning Defined but not set if UGTYPE .EQ. .T. 
             INTEGER, POINTER      :: ITER(:,:)
@@ -502,7 +495,6 @@
 !
       REAL, POINTER           :: DDDX(:,:), DDDY(:,:), DCXDX(:,:),    &
                                  DCYDX(:,:), DCXDY(:,:), DCYDY(:,:)
-!/SMC        REAL, POINTER         :: DHDX(:), DHDY(:), DHLMT(:,:)
 !
 !/PR1      INTEGER, POINTER        :: IS0(:), IS2(:)
 !/PR1      REAL, POINTER           :: FACVX(:), FACVY(:)
@@ -517,11 +509,6 @@
 !/PR3      INTEGER, POINTER        :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
 !/PR3                                 MAPCXY(:), MAPTH2(:), MAPWN2(:)
 !/PR3      LOGICAL, POINTER        :: MAPTRN(:)
-!
-!/SMC      INTEGER, POINTER        :: NMX0, NMX1, NMX2, NMY0, NMY1, NMY2,  &
-!/SMC                                 NACT, NMXY
-!/SMC      INTEGER, POINTER        :: MAPX2(:), MAPY2(:), MAPAXY(:),       &
-!/SMC                                 MAPXY(:), MAPTH2(:), MAPWN2(:)
 !
           INTEGER, POINTER        :: ITER(:,:)
 !
@@ -1031,10 +1018,6 @@
                      WADATS(IMOD)%DCXDY(NY,NX) ,                      &
                      WADATS(IMOD)%DCYDY(NY,NX) )
 !
-!/SMC          ALLOCATE ( WADATS(IMOD)%DHDX(NSEA) ,                        &
-!/SMC                     WADATS(IMOD)%DHDY(NSEA) ,                        &
-!/SMC                     WADATS(IMOD)%DHLMT(NTH,NSEA) )
-!
           ALLOCATE ( WADATS(IMOD)%ALPHA(NK,NSEAL) )
 !
 !/PR1          ALLOCATE ( WADATS(IMOD)%IS0(NSPEC)   ,                 &
@@ -1062,14 +1045,6 @@
 !/PR3                     WADATS(IMOD)%MAPWN2(NSPEC+NTH)  ,           &
 !/PR3                     WADATS(IMOD)%MAPTRN(NY*NX) )
 !/PR3          WADATS(IMOD)%MAPTH2 = 0
-!
-!/SMC          ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)     ,             &
-!/SMC                     WADATS(IMOD)%MAPY2(NY*NX)     ,             &
-!/SMC                     WADATS(IMOD)%MAPAXY(NY*NX)    ,             &
-!/SMC                     WADATS(IMOD)%MAPXY(NSEA)      ,             &
-!/SMC                     WADATS(IMOD)%MAPTH2(NSPEC)    ,             &
-!/SMC                     WADATS(IMOD)%MAPWN2(NSPEC+NTH) )
-!/SMC          WADATS(IMOD)%MAPTH2 = 0
 !
           ALLOCATE ( WADATS(IMOD)%IAPPRO(NSPEC) ,                     &
                      WADATS(IMOD)%SPPNT(NTH,NK,4) )
@@ -1945,15 +1920,6 @@
 !/PR3      NACT   => WADATS(IMOD)%NACT
 !/PR3      NCENT  => WADATS(IMOD)%NCENT
 !
-!/SMC      NMX0   => WADATS(IMOD)%NMX0
-!/SMC      NMX1   => WADATS(IMOD)%NMX1
-!/SMC      NMX2   => WADATS(IMOD)%NMX2
-!/SMC      NMY0   => WADATS(IMOD)%NMY0
-!/SMC      NMY1   => WADATS(IMOD)%NMY1
-!/SMC      NMY2   => WADATS(IMOD)%NMY2
-!/SMC      NACT   => WADATS(IMOD)%NACT
-!/SMC      NMXY   => WADATS(IMOD)%NMXY
-!
 !/NL1      NFR    => WADATS(IMOD)%NFR
 !/NL1      NFRHGH => WADATS(IMOD)%NFRHGH
 !/NL1      NFRCHG => WADATS(IMOD)%NFRCHG
@@ -2091,10 +2057,6 @@
               DCXDY  => WADATS(IMOD)%DCXDY
               DCYDY  => WADATS(IMOD)%DCYDY
 !
-!/SMC              DHDX   => WADATS(IMOD)%DHDX
-!/SMC              DHDY   => WADATS(IMOD)%DHDY
-!/SMC              DHLMT  => WADATS(IMOD)%DHLMT
-!
               ALPHA  => WADATS(IMOD)%ALPHA
 !
               IF ( INPUTS(IMOD)%FLAGS(2) ) THEN
@@ -2132,13 +2094,6 @@
 !/PR3              MAPTH2 => WADATS(IMOD)%MAPTH2
 !/PR3              MAPWN2 => WADATS(IMOD)%MAPWN2
 !/PR3              MAPTRN => WADATS(IMOD)%MAPTRN
-!
-!/SMC              MAPX2  => WADATS(IMOD)%MAPX2
-!/SMC              MAPY2  => WADATS(IMOD)%MAPY2
-!/SMC              MAPAXY => WADATS(IMOD)%MAPAXY
-!/SMC              MAPXY  => WADATS(IMOD)%MAPXY
-!/SMC              MAPTH2 => WADATS(IMOD)%MAPTH2
-!/SMC              MAPWN2 => WADATS(IMOD)%MAPWN2
 !
                IF (GTYPE .EQ. UNGTYPE) ITER   => WADATS(IMOD)%ITER
 !

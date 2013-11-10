@@ -204,7 +204,6 @@
                                  IDLAF(2), IDFMF(2), TIME2(2),        &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
                                  NDAT, NDATMX, JJ, IS(4), JS(4)
-      INTEGER                 :: NXT, NYT, GTYPET, FILLER(2), TFLAGT
       INTEGER                 :: NYB
       INTEGER                 :: ILAND = -999
 !/O15      INTEGER                 :: NDSTIME
@@ -240,8 +239,6 @@
       CHARACTER(LEN=15)       :: IDSTR3(3)
       CHARACTER(LEN=32)       :: FORMT(2), FORMF(2)
       CHARACTER(LEN=20)       :: IDSTR2(5)
-      CHARACTER(LEN=13)       :: TSTR, IDSTR = 'WAVEWATCH III'
-      CHARACTER(LEN=3)        :: TSFLD
       INTEGER                 :: GTYPEDUM = 0
 !
       EQUIVALENCE              ( NXI , NXJ(1) ) , ( NYI , NYJ(1) )
@@ -854,22 +851,6 @@
                   ELSE
                     OPEN (NDSF(J),FORM='UNFORMATTED',                 &
                           STATUS='OLD',ERR=850,IOSTAT=IERR)
-                  END IF
-!
-! Adding a check to see if input file is a WAVEWATCH III file
-! (This check has only been added for binary wind files)
-!
-                  READ (NDSF(J),END=888,IOSTAT=IERR) TSTR,            &
-                        TSFLD, NXT, NYT
-                  IF (IERR .EQ. 0 .AND. TSTR .EQ. IDSTR) THEN
-                      IF (TSFLD .NE. IDFLD .OR. NXT .NE. NXI          &
-                          .OR. NYT .NE. NYI ) THEN
-                          WRITE (NDSE,1052) TSFLD, NXT, NYT, IDFLD,   &
-                                 NXI, NYI
-                          CALL EXTCDE ( 21 ) 
-                      END IF
-                  ELSE
-                      REWIND(NDSF(J)) 
                   END IF
               END IF
           ELSE
@@ -1491,13 +1472,6 @@
                '     NAMEF  = ',A/)
  1051 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     CANNOT READ UNFORMATTED FROM UNIT',I3/)
-!
- 1052 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
-               '     ERROR IN READING FROM INPUT DATA FILE'/          &
-               '     IN FILE ,    VARIABLE ID     = ',A/              &
-               '                  ARRAY DIMENSION = ',2I5/            &
-               '     EXPECTING ,  VARIABLE ID     = ',A/              &
-               '                  ARRAY DIMENSION = ',2I5/)
 !
  1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ERROR IN READING TIME FROM FILE (',I1,')'/       &

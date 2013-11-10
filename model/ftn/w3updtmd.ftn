@@ -36,11 +36,8 @@
 !/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
 !/                  activation of grid point.
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.07 )
 !/    26-Sep-2012 : Adding update from tidal analysis   ( version 4.08 )
 !/                  (F. Ardhuin)
-!/    16-Sep-2013 : Add Arctic part for SMC grid.       ( version 4.11 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -367,7 +364,6 @@
 !/    26-Dec-2002 : Moving grid wind correction.        ( version 3.02 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
-!/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
 !/
 !  1. Purpose :
 !
@@ -440,7 +436,6 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
 !/RWND      USE W3GDATMD, ONLY:   RWINDC
 !/ST2      USE W3GDATMD, ONLY: ZWIND, OFSTAB, FFNG, FFPS, CCNG, CCPS, SHSTAB
-!/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
       USE W3WDATMD, ONLY: TIME, ASF
       USE W3ADATMD, ONLY: DW, CX, CY, UA, UD, U10, U10D, AS,          &
                           UA0, UAI, UD0, UDI, AS0, ASI
@@ -462,7 +457,6 @@
                                  UXR, UYR
 !/WNT2      REAL                    :: RD2
 !/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1, COR2
-!/ARC       REAL                    :: UDARC
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -530,12 +524,6 @@
 !/MGW        UYR        = UA(ISEA)*SIN(UD(ISEA)) + VGY
 !/MGW        UA(ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
 !/MGW        UD(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
-!/ARC  !Li   Rotate wind direction by ANGARC for Arctic part cells.
-!/ARC        IF( ISEA .GT. NGLO ) THEN
-!/ARC            UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
-!/ARC            UD(ISEA) = MOD ( TPI + UDARC, TPI )
-!/ARC        ENDIF
-!
         AS(ISEA) = AS0(ISEA) + RD * ASI(ISEA)
 !        IF (UA(ISEA).NE.UA(ISEA)) WRITE(6,*) 'BUG WIND:',ISEA,UA(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2),UA0(ISEA),RD,UAI(ISEA)
 !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
@@ -844,8 +832,6 @@
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    07-Sep-2005 : Moving update to end of time step.  ( version 3.08 )
 !/    17-Aug-2010 : Add initialization ABPI0-N(:,0).  ( version 3.14.5 )
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/
 !  1. Purpose :
 !
@@ -897,9 +883,6 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NSPEC, MAPWN, SIG2, DDEN
-!/RTD !!   Use rotation angle and action conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: NK, NTH, NSPEC, AnglD 
-!/RTD      USE W3SERVMD, ONLY: w3acturn
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NBI, ABPI0, ABPIN, ISBPI, IPBPI, RDBPI,     &
                           BBPI0, BBPIN
@@ -914,8 +897,6 @@
       INTEGER                 :: IBI, ISP, ISEA
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T0      REAL                    :: HS1, HS2
-!/RTD !!    Declare a temporary spectr variable.  JGLi12Jun2012 
-!/RTD       REAL :: Spectr(NSPEC), AnglBP
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -959,16 +940,8 @@
                        + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
                        + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) )
           END DO
-!
-!/RTD !!  Rotate the spectra if model is on rotated grid.  JGLi12Jun2012
-!/RTD        Spectr = BBPIN(:,IBI)
-!/RTD        AnglBP = AnglD(ISEA)
-!/RTD        CALL  w3acturn( NTH, NK, AnglBP, Spectr )
-!/RTD        BBPIN(:,IBI) = Spectr
-!/RTD
-!
         END DO
-
+!
 ! 3.  Wave height test output ---------------------------------------- *
 !
 !/T0      WRITE (NDST,9000)

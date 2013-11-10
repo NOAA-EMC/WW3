@@ -196,7 +196,7 @@
       USE W3ODATMD, ONLY: O2INIT, NOPTS, PTLOC, PTNME, GRDID, OUTPTS
 !/MPI      USE W3ODATMD, ONLY: O2IRQI
       USE WMMDATMD, ONLY: MDSE, MDST, NRGRD, MDATAS, IMPROC, NMPSCR,  &
-                          NMPERR, MDSS
+                          MDSS
       USE W3TRIAMD
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_GRD, MPI_COMM_MWAVE
 !
@@ -285,13 +285,13 @@
         CALL W3SETG ( J, MDSE, MDST )
 
         IF ( GTYPE .EQ. UNGTYPE ) THEN
-           IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
+           WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
                 'UNSTRUCTURED GRID SUPPORT IN THIS ROUTINE', & 
                 'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
                 'TO WORK *** '
           END IF
         IF ( GTYPE .EQ. CLGTYPE ) THEN
-           IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
+           WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
                 'CURVILINEAR GRID SUPPORT IN THIS ROUTINE', & 
                 'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
                 'TO WORK *** '

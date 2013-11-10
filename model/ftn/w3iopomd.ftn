@@ -25,8 +25,6 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.08 )
 !/
@@ -123,8 +121,6 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/
 !  1. Purpose :
@@ -206,9 +202,6 @@
                           ICLOSE,ICLOSE_NONE,ICLOSE_SMPL,ICLOSE_TRPL, &
                           MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
       USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  
-!/RTD  !!  Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: Polat, Polon    
-!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ 
       USE W3ODATMD, ONLY: W3DMO2
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
                           NOPTS, PTLOC, PTNME, GRDID, IPTINT, PTIFAC
@@ -248,9 +241,6 @@
 !/O7a       DATA LND / ' ', 'l', 'n', 'd', ' ' /
 !/O7a       DATA OUT / ' ', 'x', 'x', 'x', ' ' /
 !/
-!/RTD  !!  Declare a few temporary variables for rotated grid.  JGLi12Jun2012
-!/RTD       REAL, ALLOCATABLE :: EquLon(:),EquLat(:),StdLon(:),StdLat(:),AnglPT(:)
-!/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3IOPP')
@@ -266,20 +256,6 @@
 !
       NOPTS  = 0
 !
-!/RTD !!   Convert standard lon/lat to rotated lon/lat  JGLi12Jun2012
-!/RTD       ALLOCATE( EquLon(NPT), EquLat(NPT),                 &
-!/RTD      &          StdLon(NPT), StdLat(NPT), AnglPT(NPT) )
-!/RTD
-!/RTD       StdLon = XPT
-!/RTD       StdLat = YPT
-!/RTD
-!/RTD       CALL W3LLTOEQ ( StdLat, StdLon, EquLat, EquLon,     &
-!/RTD      &                AnglPT, Polat, Polon, NPT )
-!/RTD
-!/RTD       XPT = EquLon
-!/RTD       YPT = EquLat
-!/RTD
-!
 !   Removed by F.A. 2011/04/04  /T      CALL W3GSUP( GSU, NDST )
 !
 ! Loop over output points
@@ -287,10 +263,6 @@
       DO IPT=1, NPT
 !
 !/T        WRITE (NDST,9010) IPT, XPT(IPT), YPT(IPT), PNAMES(IPT)
-!
-!/RTD !!   Need to wrap rotated Elon values greater than X0.  JGLi12Jun2012
-!/RTD          XPT(IPT) = MOD( EquLon(IPT)+360.0, 360.0 )
-!/RTD          IF( XPT(IPT) .LT. X0 )  XPT(IPT) = XPT(IPT) + 360.0
 !
 !     Check if point within grid and compute interpolation weights
 !
@@ -338,10 +310,6 @@
 !
         PTLOC (1,NOPTS) = XPT(IPT)
         PTLOC (2,NOPTS) = YPT(IPT)
-!/RTD !!   Store the standard lon/lat in PTLOC for output purpose, assuming
-!/RTD !!   they are not used for any inside calculation.  JGLi12Jun2012
-!/RTD        PTLOC (1,NOPTS) = StdLon(IPT)
-!/RTD        PTLOC (2,NOPTS) = StdLat(IPT)
 !
         DO K = 1,4
           IPTINT(1,K,NOPTS) = IX(K)
@@ -352,8 +320,6 @@
         PTNME(NOPTS) = PNAMES(IPT)
 !
         END DO ! End loop over output points (IPT). 
-!
-!/RTD       DEALLOCATE( EquLon, EquLat, StdLon, StdLat, AnglPT )
 !
 ! Diagnostic output
 !
@@ -540,8 +506,6 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.4 )
 !/                  (A. Roland and F. Ardhuin) 
-!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
-!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/
 !  1. Purpose :
 !
@@ -605,9 +569,6 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, SIG, NX, NY, NSEA, NSEAL,          &
                           MAPSTA, MAPFS
-!/RTD !!   Use spectral rotation sub and angle.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD 
-!/RTD      USE W3SERVMD, ONLY: w3acturn 
       USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY, SP => SPPNT
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO
@@ -637,7 +598,6 @@
                                  WNDX, WNDY, CURX, CURY, FAC1(NK),    &
                                  FAC2(NK), FAC3(NK), FAC4(NK)
 !/T      REAL                    :: SPTEST(NK,NTH)
-!/RTD        REAL :: Spectr(NSPEC), AnglDIS      !! JGLi12Jun2012
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -712,7 +672,6 @@
         WAO(I) = SQRT ( WNDX**2 + WNDY**2 )
         IF ( WAO(I).GT.1.E-7 ) THEN
             WDO(I) = ATAN2(WNDY,WNDX)
-!/RTD            WDO(I) = WDO(I) - AnglD(IS(1))*DERA
           ELSE
             WDO(I) = 0.
           END IF
@@ -728,7 +687,6 @@
         CAO(I) = SQRT ( CURX**2 + CURY**2 )
         IF ( CAO(I).GT.1.E-7 ) THEN
             CDO(I) = ATAN2(CURY,CURX)
-!/RTD            CDO(I) = CDO(I) - AnglD(IS(1))*DERA
           ELSE
             CDO(I) = 0.
           END IF
@@ -778,15 +736,6 @@
 !/T            SPTEST(IK,ITH) = SPCO(ISP,I)
             END DO
           END DO
-!
-!/RTD   !!  Rotate the interpolated spectrum by -AnglD(IS(1)).  JGLi12Jun2012
-!/RTD   !!  SPCO still holds action not energy spectrum yet.  JGLi18Jun2013
-!/RTD        Spectr = SPCO(:,I)
-!/RTD        AnglDIS = -AnglD(IS(1))
-!/RTD   !!   CALL  w3spectn( NK, NTH, AnglDIS, Spectr )
-!/RTD        CALL  w3acturn( NTH, NK, AnglDIS, Spectr )
-!/RTD        SPCO(:,I) = Spectr
-!/RTD       
 !
 !/T        WRITE (NDST,9004) DPO(I), WAO(I), WDO(I)*RADE,             &
 !/T                                  CAO(I), CDO(I)*RADE
