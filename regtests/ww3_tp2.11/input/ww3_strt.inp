@@ -1,0 +1,17 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Initial conditions input file                          $
+$--------------------------------------------------------------------- $
+$
+   2
+$
+$ JONSWAP spectrum with Hasselmann et al. (1980) direct. distribution.
+$ - alfa, peak freq. (Hz), mean direction (degr., oceanographical
+$   convention), gamma, sigA, sigB, Xm and spread (degr. or m) Ym and
+$   spread (degr. or m)  (Example for lon-lat grid in degr.).
+$   alfa, sigA, sigB give default values if less than or equal to 0.
+$
+   0.0081  0.1  270.  1.0 0. 0. 340. 10. 0. 10.
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

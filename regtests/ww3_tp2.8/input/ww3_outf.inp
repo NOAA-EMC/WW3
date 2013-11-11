@@ -6,9 +6,13 @@ $
 $ 600=Every 10'. Use a large number to go all the way to end.
   20080310 000000 600 999
 $
-$ Output fields name list
-N 
-DPT HS FP DIR SPR 
+$ Request flags identifying fields as in ww3_shel input and section 2.4 of the manual.
+$-------------------------------------------------------------------------------------------------------------------
+$D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C  F T T W W  W W A U B  F T S T J  F T U M M  P U U
+$P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H  A A W C C  C C B B E  B B X W    O U S S S  2 S S
+$T R D   V  E     2    1 E   R R    S P P H  I S F R D    X D T A  W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
+$-------------------------------------------------------------------------------------------------------------------
+ F F F F F  F T F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F F F  F F F
 $
 $ Output type ITYPE [0,1,2,3]
   3 0

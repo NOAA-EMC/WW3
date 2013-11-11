@@ -9,6 +9,8 @@
 !/                  +-----------------------------------+
 !/
 !/    For update log see individual subroutines.
+!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
+!/                  (Jian-Guo Li)                       ( version 4.06 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -48,6 +50,14 @@
 !      EXTCDE    Subr. Public   Abort program with exit code.
 !      PRINIT    Subr. Public   Initialize profiling.
 !      PRTIME    Subr. Public   Get profiling time.
+!     Four subs for rotated grid are appended to this module.  As they 
+!     are shared with SMC grid, they are not quoted by option /RTD but 
+!     are available for general use.     JGLi12Jun2012
+!     W3SPECTN       turns wave spectrum anti-clockwise by AnglD 
+!     W3ACTURN       turns wave action(k,nth) anti-clockwise by AnglD.
+!     W3LLTOEQ       convert standard into rotated lat/lon, plus AnglD
+!     W3EQTOLL       revers of the LLTOEQ, but AnglD unchanged.
+!
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -866,6 +876,466 @@
 !/
       END SUBROUTINE PRTIME
 !/ ------------------------------------------------------------------- /
+!  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!  This subroutine turn the wave spectrum by an fixed angle anti-clockwise
+!  so that it may be used in the rotated or stanadard system.
+!  First created:   26 Aug 2005   Jian-Guo Li
+!  Last modified:   21 Feb 2008   Jian-Guo Li
+!
+! Subroutine Interface:
+
+       Subroutine w3spectn( NFreq, NDirc, Alpha, Spectr )
+ 
+! Description:
+!   Rotates wave spectrum anticlockwise by angle alpha in degree
+!
+! Subroutine arguments
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: NFreq, NDirc         ! No. frequ and direc bins
+        REAL,    INTENT(IN) :: Alpha                ! Turning angle in degree
+        REAL, INTENT(INOUT) :: Spectr(NFreq,NDirc)  ! Wave spectrum in and out
+
+! Local variables
+        INTEGER :: ii, jj, kk, nsft
+        REAL    :: Ddirc, frac, CNST
+        REAL, Dimension(NFreq)      ::  Wrkfrq, Tmpfrq
+        REAL, Dimension(NFreq,NDirc)::  Wrkspc
+
+! Check input bin numbers
+        IF( (NFreq .LT. 0) .OR. (NDirc .LT. 0) )  THEN
+           PRINT*, " Invalid bin number NF or ND", NFreq, NDirc
+           RETURN
+        ELSE
+           Ddirc=360.0/FLOAT(NDirc)
+        ENDIF
+
+! Work out shift bin number and fraction
+
+           CNST=Alpha/Ddirc
+           nsft=INT( CNST )
+           frac= CNST - FLOAT( nsft )
+!     PRINT*, ' nsft and frac =', nsft, frac
+
+! Shift nsft bins if >=1
+         IF( ABS(nsft) .GE. 1 )  THEN
+           DO ii=1, NDirc
+
+! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
+! So shift nsft bins anticlockwise results in local bin number Decreases by nsft
+              jj=ii - nsft
+ 
+! As nsft may be either positive or negative depends on alpha, wrapping may
+! happen in either ends of the bin number train
+              IF( jj > NDirc )  jj=jj - NDirc
+              IF( jj < 1     )  jj=jj + NDirc
+
+! Copy the selected bin to the loop bin number
+              Wrkspc(:,ii)=Spectr(:,jj)
+ 
+           Enddo
+
+! If nsft=0, no need to shift, simply copy
+         ELSE
+             Wrkspc = Spectr
+         ENDIF
+
+! Pass fraction of wave energy in frac direction
+! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
+! So Positive frac or anticlock case, smaller bin upstream
+         IF( frac > 0.0 ) THEN
+           Tmpfrq=Wrkspc(:,NDirc)*frac
+           DO kk=1, NDirc
+              Wrkfrq=Wrkspc(:,kk)*frac
+              Spectr(:,kk)=Wrkspc(:,kk) - Wrkfrq + Tmpfrq
+              Tmpfrq=Wrkfrq
+           ENDDO
+         ELSE
+! Negative or clockwise case, larger bin upstream
+           Tmpfrq=Wrkspc(:,1)*frac
+           DO kk=NDirc, 1, -1
+              Wrkfrq=Wrkspc(:,kk)*frac 
+              Spectr(:,kk)=Wrkspc(:,kk) + Wrkfrq - Tmpfrq 
+              Tmpfrq=Wrkfrq
+           ENDDO
+         ENDIF
+
+! Speasturn completed
+
+        Return 
+        End Subroutine w3spectn
+!
+!  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!  This subroutine turn the wave action by an angle (deg) anti-clockwise
+!  so that it may be used in the rotated or stanadard system.
+!  First created:   26 Aug 2005   Jian-Guo Li
+!  Last modified:    9 Oct 2008   Jian-Guo Li
+!
+! Subroutine Interface:
+
+       Subroutine w3acturn( NDirc, NFreq, Alpha, Spectr )
+ 
+! Description:
+!   Rotates wave spectrum anticlockwise by angle alpha
+!
+! Subroutine arguments
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: NFreq, NDirc         ! No. frequ and direc bins
+        REAL,    INTENT(IN) :: Alpha                ! Turning angle in degree
+        REAL, INTENT(INOUT) :: Spectr(NDirc, NFreq)  ! Wave action in and out
+
+! Local variables
+        INTEGER :: ii, jj, kk, nsft
+        REAL    :: Ddirc, frac, CNST
+        REAL, Dimension(NFreq)      ::  Wrkfrq, Tmpfrq
+        REAL, Dimension(NDirc,NFreq)::  Wrkspc
+
+! Check input bin numbers
+        IF( (NFreq .LT. 0) .OR. (NDirc .LT. 0) )  THEN
+           PRINT*, " Invalid bin number NF or ND", NFreq, NDirc
+           RETURN
+        ELSE
+           Ddirc=360.0/FLOAT(NDirc)
+        ENDIF
+
+! Work out shift bin number and fraction
+
+        CNST=Alpha/Ddirc
+        nsft=INT( CNST )
+        frac= CNST - FLOAT( nsft )
+!     PRINT*, ' nsft and frac =', nsft, frac
+
+! Shift nsft bins if >=1
+        IF( ABS(nsft) .GE. 1 )  THEN
+          DO ii=1, NDirc
+
+! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
+! So shift nsft bins anticlockwise results in local bin number Decreases by nsft
+             jj=ii - nsft
+ 
+! As nsft may be either positive or negative depends on alpha, wrapping may
+! happen in either ends of the bin number train
+             IF( jj > NDirc )  jj=jj - NDirc
+             IF( jj < 1     )  jj=jj + NDirc
+
+! Copy the selected bin to the loop bin number
+             Wrkspc(ii,:)=Spectr(jj,:)
+ 
+          Enddo
+
+! If nsft=0, no need to shift, simply copy
+        ELSE
+            Wrkspc = Spectr
+        ENDIF
+
+! Pass fraction of wave energy in frac direction
+! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
+! So Positive frac or anticlock case, smaller bin upstream
+        IF( frac > 0.0 ) THEN
+          Tmpfrq=Wrkspc(NDirc,:)*frac
+          DO kk=1, NDirc
+             Wrkfrq=Wrkspc(kk,:)*frac
+             Spectr(kk,:)=Wrkspc(kk,:) - Wrkfrq + Tmpfrq
+             Tmpfrq=Wrkfrq
+          ENDDO
+        ELSE
+! Negative or clockwise case, larger bin upstream
+          Tmpfrq=Wrkspc(1,:)*frac
+          DO kk=NDirc, 1, -1
+             Wrkfrq=Wrkspc(kk,:)*frac 
+             Spectr(kk,:)=Wrkspc(kk,:) + Wrkfrq - Tmpfrq 
+             Tmpfrq=Wrkfrq
+          ENDDO
+        ENDIF
+
+! Spectral turning completed
+
+       Return 
+       End Subroutine w3acturn
+!
+!Li  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!Li
+!Li  Merged UM source code for rotated grid, consisting the following
+!Li  original subroutines in UM 6.1
+!Li    LLTOEQ1A  WCOEFF1A  and  LBCROTWINDS1
+!Li  The last subroutine is modified to process only one level winds
+!Li  cpp directives are removed and required header C_Pi.h inserted.
+!Li	    Jian-Guo Li     26 May 2005
+!Li
+!Li  The WCOEFF1A subroutine is merged into LLTOEQ to reduce repetition
+!Li  of the same calculations. Subroutine interface changed to 
+!Li  LLTOEQANGLE
+!Li	    Jian-GUo Li     23 Aug 2005
+!Li
+!Li  Subroutine W3LLTOEQ   --------------------------------------------    
+!Li                                                                        
+!Li  Purpose:  Calculates latitude and longitude on equatorial             
+!Li            latitude-longitude (eq) grid used in regional               
+!Li            models from input arrays of latitude and                    
+!Li            longitude on standard grid. Both input and output           
+!Li            latitudes and longitudes are in degrees.                    
+!Li	       Also calculate rotation angle in degree to tranform
+!Li            standard wind velocity into equatorial wind.
+!Li	       Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
+!Li                                                                        
+!* Arguments:--------------------------------------------------------    
+      SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &              
+     &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )             
+                                                                           
+      IMPLICIT NONE                                                        
+                                                                           
+      INTEGER:: POINTS    !IN  Number of points to be processed             
+
+      REAL :: PHI_POLE,  & !IN  Latitude of equatorial lat-lon pole
+     &        LAMBDA_POLE  !INOUT  Longitude of equatorial lat-lon pole
+                                                                           
+      REAL, DIMENSION(POINTS) ::         &
+     &        PHI,       & !IN  Latitude
+     &        LAMBDA,    & !IN  Longitude
+     &        ANGLED,    & !OUT turning angle in deg for standard wind
+     &        LAMBDA_EQ, & !OUT Longitude in equatorial lat-lon coords
+     &        PHI_EQ       !OUT Latitude in equatorial lat-lon coords
+
+! Define local varables:-----------------------------------------------
+      REAL :: A_LAMBDA, A_PHI, E_LAMBDA, E_PHI, SIN_PHI_POLE, COS_PHI_POLE,  &
+     &        TERM1, TERM2, ARG, LAMBDA_ZERO, LAMBDA_POLE_KEEP
+      INTEGER   :: I                                                            
+      REAL, PARAMETER :: SMALL=1.0E-6
+
+! Constants from comdecks:---------------------------------------------
+
+      Real, Parameter :: Pi = 3.14159265358979323846  , &
+     &                   Pi_Over_180 = Pi/180.0       , &
+     &                   Recip_Pi_Over_180 = 180.0/Pi                     
+
+!*----------------------------------------------------------------------   
+
+! 1. Initialise local constants
+! Scale lambda pole to range -180 to 180 degs
+      LAMBDA_POLE_KEEP=LAMBDA_POLE
+      IF (LAMBDA_POLE.LE.-180.0) LAMBDA_POLE=LAMBDA_POLE+360.0
+      IF (LAMBDA_POLE.GT. 180.0) LAMBDA_POLE=LAMBDA_POLE-360.0
+
+! Latitude of zeroth meridian
+      LAMBDA_ZERO=LAMBDA_POLE+180.0
+! Sine and cosine of latitude of eq pole
+      IF (PHI_POLE >= 0.0) THEN
+        SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
+        COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
+      ELSE
+        SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
+        COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
+      ENDIF
+
+! 2. Transform from standard to equatorial latitude-longitude
+
+      DO 200 I= 1, POINTS
+
+! Scale longitude to range -180 to +180 degs
+
+      A_LAMBDA=LAMBDA(I)-LAMBDA_ZERO
+      IF(A_LAMBDA.GT. 180.0) A_LAMBDA=A_LAMBDA-360.
+      IF(A_LAMBDA.LE.-180.0) A_LAMBDA=A_LAMBDA+360.
+
+! Convert latitude & longitude to radians
+
+      A_LAMBDA=PI_OVER_180*A_LAMBDA
+      A_PHI=PI_OVER_180*PHI(I)
+
+! Compute eq latitude using equation (4.4)
+
+      ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
+     &    +SIN_PHI_POLE*SIN(A_PHI)
+      ARG=MIN(ARG, 1.0)
+      ARG=MAX(ARG,-1.0)
+      E_PHI=ASIN(ARG)
+      PHI_EQ(I)=RECIP_PI_OVER_180*E_PHI
+
+! Compute eq longitude using equation (4.6)
+
+      TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
+     &       +COS_PHI_POLE*SIN(A_PHI)
+      TERM2 = COS(E_PHI)
+      IF(TERM2 .LT. SMALL) THEN
+        E_LAMBDA=0.0
+      ELSE
+        ARG=TERM1/TERM2
+        ARG=MIN(ARG, 1.0)
+        ARG=MAX(ARG,-1.0)
+        E_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
+        E_LAMBDA=SIGN(E_LAMBDA,A_LAMBDA)
+      ENDIF
+
+! Scale longitude to range 0 to 360 degs
+
+      IF(E_LAMBDA.GE.360.0) E_LAMBDA=E_LAMBDA-360.0
+      IF(E_LAMBDA.LT.  0.0) E_LAMBDA=E_LAMBDA+360.0
+      LAMBDA_EQ(I)=E_LAMBDA
+
+!Li  Calculate turning angle for standard wind velocity
+
+      E_LAMBDA=PI_OVER_180*LAMBDA_EQ(I)
+
+! Formulae used are from eqs (4.19) and (4.21)
+
+      TERM2=SIN(E_LAMBDA)
+      ARG= SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE      &
+     &    +COS(A_LAMBDA)*COS(E_LAMBDA)
+      ARG=MIN(ARG, 1.0)
+      ARG=MAX(ARG,-1.0)
+      TERM1=RECIP_PI_OVER_180*ACOS(ARG)
+      ANGLED(I)=SIGN(TERM1,TERM2)
+!Li
+
+ 200  CONTINUE
+
+! Reset Lambda pole to the setting on entry to subroutine
+      LAMBDA_POLE=LAMBDA_POLE_KEEP
+
+      RETURN
+      END SUBROUTINE W3LLTOEQ 
+! 
+!Li  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!Li
+!Li  Merged UM source code for rotated grid, consiting the following
+!Li  original subroutines in UM 6.1
+!Li    EQTOLL1A  WCOEFF1A  and  LBCROTWINDS1
+!Li  The last subroutine is modified to process only one level winds
+!Li  cpp directives are removed and required header C_Pi.h inserted.
+!Li	    Jian-Guo Li     26 May 2005
+!Li
+!Li  The WCOEFF1A subroutine is merged into EQTOLL to reduce repetition
+!Li  of the same calculations. Subroutine interface changed to 
+!Li  EQTOLLANGLE
+!Li  First created:   Jian-GUo Li     23 Aug 2005
+!Li  Last modified:   Jian-GUo Li     25 Feb 2008
+!Li
+!Li  Subroutine W3EQTOLL  --------------------------------------------
+!Li
+!Li  Purpose:  Calculates latitude and longitude on standard grid
+!Li            from input arrays of latitude and longitude on
+!Li            equatorial latitude-longitude (eq) grid used
+!Li            in regional models. Both input and output latitudes
+!Li            and longitudes are in degrees.
+!Li	       Also calculate rotation angle in degree to tranform
+!Li            standard wind velocity into equatorial wind.
+!Li	       Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
+!Li
+!Li  Arguments:--------------------------------------------------------
+
+      SUBROUTINE W3EQTOLL( PHI_EQ, LAMBDA_EQ, PHI, LAMBDA,   &
+     &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
+
+      IMPLICIT NONE
+
+      INTEGER:: POINTS      !IN  Number of points to be processed
+
+      REAL :: PHI_POLE,   & !IN  Latitude of equatorial lat-lon pole
+     &        LAMBDA_POLE   !IN  Longitude of equatorial lat-lon pole
+
+      REAL, DIMENSION(POINTS) ::         &
+     &        PHI,       & !OUT Latitude
+     &        LAMBDA,    & !OUT Longitude (0 =< LON < 360)
+     &        ANGLED,    & !OUT turning angle in deg for standard wind
+     &        LAMBDA_EQ, & !IN  Longitude in equatorial lat-lon coords
+     &        PHI_EQ       !IN  Latitude in equatorial lat-lon coords
+
+! Local varables:------------------------------------------------------
+      REAL :: E_LAMBDA, E_PHI, A_LAMBDA, A_PHI,   &
+     &        SIN_PHI_POLE, COS_PHI_POLE,         &
+     &        TERM1, TERM2, ARG, LAMBDA_ZERO
+      INTEGER :: I
+
+      REAL, PARAMETER :: SMALL=1.0E-6
+
+! Constants from comdecks:---------------------------------------------
+
+      REAL, Parameter :: Pi = 3.14159265358979323846  , &
+     &                   Pi_Over_180 = Pi/180.0       , &
+     &                   Recip_Pi_Over_180 = 180.0/Pi
+
+! ----------------------------------------------------------------------
+
+! 1. Initialise local constants
+
+! Latitude of zeroth meridian
+      LAMBDA_ZERO=LAMBDA_POLE+180.0
+! Sine and cosine of latitude of eq pole
+      IF (PHI_POLE >= 0.0) THEN
+        SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
+        COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
+      ELSE
+        SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
+        COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
+      ENDIF
+
+! 2. Transform from equatorial to standard latitude-longitude
+
+      DO 200 I= 1, POINTS
+
+! Scale eq longitude to range -180 to +180 degs
+
+      E_LAMBDA=LAMBDA_EQ(I)
+      IF(E_LAMBDA.GT. 180.0) E_LAMBDA=E_LAMBDA-360.0
+      IF(E_LAMBDA.LT.-180.0) E_LAMBDA=E_LAMBDA+360.0
+
+! Convert eq latitude & longitude to radians
+
+      E_LAMBDA=PI_OVER_180*E_LAMBDA
+      E_PHI=PI_OVER_180*PHI_EQ(I)
+
+! Compute latitude using equation (4.7)
+
+      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA)    &
+     &   +SIN_PHI_POLE*SIN(E_PHI)
+      ARG=MIN(ARG, 1.0)
+      ARG=MAX(ARG,-1.0)
+      A_PHI=ASIN(ARG)
+      PHI(I)=RECIP_PI_OVER_180*A_PHI
+
+! Compute longitude using equation (4.8)
+
+      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA)   &
+     &       -SIN(E_PHI)*COS_PHI_POLE
+      TERM2 = COS(A_PHI)
+      IF(TERM2.LT.SMALL) THEN
+        A_LAMBDA=0.0
+      ELSE
+        ARG=TERM1/TERM2
+        ARG=MIN(ARG, 1.0)
+        ARG=MAX(ARG,-1.0)
+        A_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
+        A_LAMBDA=SIGN(A_LAMBDA,E_LAMBDA)
+        A_LAMBDA=A_LAMBDA+LAMBDA_ZERO
+      END IF
+
+! Scale longitude to range 0 to 360 degs
+
+      IF(A_LAMBDA.GE.360.0) A_LAMBDA=A_LAMBDA-360.0
+      IF(A_LAMBDA.LT.  0.0) A_LAMBDA=A_LAMBDA+360.0
+      LAMBDA(I)=A_LAMBDA
+
+!Li  Calculate turning angle for standard wind velocity
+
+      A_LAMBDA=PI_OVER_180*(LAMBDA(I)-LAMBDA_ZERO)
+
+! Formulae used are from eqs (4.19) and (4.21)
+
+      TERM2=SIN(E_LAMBDA)
+      ARG=SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE     &
+     &           +COS(A_LAMBDA)*COS(E_LAMBDA)
+      ARG=MIN(ARG, 1.0)
+      ARG=MAX(ARG,-1.0)
+      TERM1=RECIP_PI_OVER_180*ACOS(ARG)
+      ANGLED(I)=SIGN(TERM1,TERM2)
+!Li
+
+ 200  CONTINUE
+
+      RETURN
+      END SUBROUTINE W3EQTOLL  
+
+!Li
+!/
       SUBROUTINE STRSPLIT(STRING,TAB)
 !/
 !/                  +-----------------------------------+

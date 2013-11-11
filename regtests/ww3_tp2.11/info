@@ -1,0 +1,41 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.11 Test script for WW-III, two-dimensional propagation.           #
+#           Propagation on rotated grid.                                    #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   see the switch file in subdirectory input/.                             # 
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - The rotated grid of North Atlantic and European region (NAE) is used    #
+#   for the rotated grid test.  Boundary input files should be created with #
+#   a consistent (same spectral resolution and source term) global model,   #
+#   using the boundary point location listed in input/NAEWbndys.dat.  Note  #
+#   that standard regular grid lat/lon coordinates should be used for both  #
+#   the global and NAE model input files.  The standard lat/lon are         #
+#   converted into equatorial (roated) lat/lon inside the model.  Similar   #
+#   standard lat/lon coordiantes are used for the 2D spectral output list   #
+#   in ww3_shel.inp.  The model will convert them inside the model.         #
+#                                                                           #
+#   Wind, ice and current forcing files should be converted into rotated    #
+#   grid in the .ww3 format.  Conversion outside the WW3 model may be done  #
+#   with IDL scripts or by FORTRAN program by adaption of the two rotation  #
+#   subs in module w3servmd.ftn:                                            #
+#     W3LLTOEQ       convert standard into rotated lat/lon, plus AnglD      #
+#     W3EQTOLL       revers of the LLTOEQ, but AnglD unchanged.             #
+#                                                                           #
+#   Further details about rotated grid, please see the guide documents:     #
+#      guide/RotatedGrid.pdf                                                #
+#   or contact me at Jian-Guo.Li@metoffice.gov.uk                           #
+#                                                                           #
+#                                                                           #
+#                                               Jian-Guo Li 16 Oct 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
