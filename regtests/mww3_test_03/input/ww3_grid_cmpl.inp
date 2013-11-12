@@ -1,0 +1,32 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+   'integral grid covering the full domain'
+$
+   1.03 0.075 20 24 0.
+$
+   F T T T F F 
+$
+     600.0   600.0   600.0     5.0
+$
+$ &PRO2 DTIME = 21600. /
+$ &PRO3 WDTHCG = 0., WDTHTH = 0. /
+
+END OF NAMELISTS
+$
+    'RECT' F 'NONE'
+    105         105
+    5.00E3    5.00E3   1.
+   -10.00E3   -10.00E3   1.
+$
+  -0.1  10.0  10  -250. 4 1 '(....)' 'UNIT' 'input'
+$
+  11025*1
+$
+   10 1 1 '(....)' 'PART' 'mapsta.inp'
+$
+   0   0   F
+   0   0   F
+   0   0
+$
+   0.  0.  0.  0.  0 
+$

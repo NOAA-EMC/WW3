@@ -144,9 +144,9 @@
 !      W3NNSP    Subr. Public   Print nearest-neighbor-search object to stdout.
 !      W3SORT    Subr. Public   Sort input arrays in increasing order.
 !      W3ISRT    Subr. Public   Insert data into array.
+!      W3CKCL    Func. Public   Check if point lies within grid cell.
 !     ----------------------------------------------------------------
 !      W3RMBL    Subr. Private  Compute bilinear interpolation coeff. from cell.
-!      W3CKCL    Func. Private  Check if point lies within grid cell.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -203,6 +203,7 @@
       PUBLIC W3NNSP
       PUBLIC W3SORT
       PUBLIC W3ISRT
+      PUBLIC W3CKCL
 !/
 !/ Public return codes
 !/

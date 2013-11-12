@@ -1,3 +1,4 @@
 MODEL: gband arcticreg
 INPUT:
 POINT: gband arcticreg
+INTGL: glout

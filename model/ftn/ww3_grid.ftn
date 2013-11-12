@@ -4281,12 +4281,12 @@
                '       X range                (km) :',2F8.2/          &
                '       Y range                (km) :',2F8.2)
  3006 FORMAT (/'       X-coordinate unit           :',I6/             &
-               '       Scale factor                :',F8.2/           &
+               '       Scale factor                :',F10.4/           &
                '       Add offset                  :',E12.4/          &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)
  3007 FORMAT (/'       Y-coordinate unit           :',I6/             &
-               '       Scale factor                :',F8.2/           &
+               '       Scale factor                :',F10.4/           &
                '       Add offset                  :',E12.4/          &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)

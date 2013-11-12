@@ -1,3 +1,4 @@
 MODEL: low0 hgh1 hgh2 hgh3
 INPUT:
 POINT: low0 hgh1 hgh2 hgh3
+INTGL: cmpl

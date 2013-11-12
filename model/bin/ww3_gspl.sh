@@ -215,7 +215,7 @@ EOF
 # 1.d Set up work space  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # 1.d.1 Genmeral preparations
 
-  w3_clean
+#  ${main_dir}/bin/w3_clean
 
   cd $home_dir
   rm -f $inp_file.new
@@ -385,7 +385,7 @@ EOF
   echo ' '
   echo " Process individual grids ..."
 
-  for file in *.tmpl
+  for file in ${modID}*.tmpl
   do
     grdID=`echo $file | sed 's/\./ /g' | awk '{ print $1 }'`
     echo "   Grid $grdID (ww3_grid.$grdID.out) ..."
