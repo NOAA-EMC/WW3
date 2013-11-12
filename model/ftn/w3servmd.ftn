@@ -5,12 +5,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-Apr-2013 |
+!/                  | Last update :         11-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    For update log see individual subroutines.
 !/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/                  trunk                               ( version 4.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

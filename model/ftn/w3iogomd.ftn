@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Aug-2013 |
+!/                  | Last update :         11-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -39,6 +39,8 @@
 !/                  memory footprint.
 !/    15-Apr-2013 : New subroutine to read param. names ( version 4.11 )
 !/    21-Aug-2013 : Bug correction in W3IOGO: UBR, ABR  ( version 4.11 )
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/                  trunk                               ( version 4.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

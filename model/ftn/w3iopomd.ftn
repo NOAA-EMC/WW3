@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Sep-2012 |
+!/                  | Last update :         11-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    25-Jan-2001 : Origination.                        ( version 2.00 )
@@ -29,6 +29,8 @@
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
 !/    25-Feb-2013 : ITOUT=0 bug correction for UG grids ( version 4.08 )
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/                  trunk                               ( version 4.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

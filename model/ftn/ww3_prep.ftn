@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         11-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -35,6 +35,8 @@
 !/    19-Sep-2011 : Fix bug prep forcing with unst.     ( version 4.04 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.OF )
 !/     3-Mar-2013 : Allows for longer input file name   ( version 4.09 )
+!/    11-Nov-2013 : Allows for input binary files to be of WAVEWATCH
+!/                  type (i.e. accounts for the header) ( version 4.13 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
