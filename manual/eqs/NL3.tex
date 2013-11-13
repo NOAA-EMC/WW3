@@ -5,4 +5,147 @@
 \opthead{NL3}{\ws}{H. L. Tolman}
 
 \noindent
-Still to be provided \ldots
+The \gmd\ has been developed as an extension to the \dia. Its development is
+documented in a set of reports \citep{tol:MMAB03a, tol:MMAB05a, tol:MMAB08b,
+tol:MMAB10d}, reports \citep{tol:Oahu04a, tol:Hal09a, tol:Kona11b}, and papers
+\citep{tol:OMOD04, tol:OMOD13d}. As part of the development of the \gmd, a
+holistic genetic optimization technique was developed \citep{tol:OMOD13e}. A
+package to perform this optimization within \ws\ was first provided as
+\citep{tol:MMAB10e}. the most recent version of this package is version
+\genever\ \citep{\generef}.
+
+The \gmd\ expands on the \dia\ in three ways. First, the definition of the
+representative quadruplets is expanded. Second, the equations are developed
+for arbitrary depths, including the description of strong interactions in
+extremely shallow water \citep[e.g.,][]{art:Web78}. Third, multiple
+representative quadruplets are used.
+
+The \gmd\ allows for arbitrary configurations of the representative
+quadruplet, by expanding on the resonance conditions (\ref{eq:resonance}) as
+
+\begin{equation} \left .
+\begin{array}{ccc}
+  \sigma_1    & = & a_1 \: \sigma_r \\
+  \sigma_2    & = & a_2 \: \sigma_r \\
+  \sigma_3    & = & a_3 \: \sigma_r \\
+  \sigma_4    & = & a_4 \: \sigma_r \\
+  \theta_{12} & = & \theta_1 \pm \theta_{12}   \
+\end{array} \:\:\: \right \rbrace \:\:\: , \label{eq:gmd_res}
+\end{equation}
+
+\begin{table}
+\caption{One, two, or three parameter definitions of the representative
+         quadruplet in the \gmd. $\bk_d$ or ($\sigma_d, \theta_d$) represents
+         the discrete spectral grid point for which the discrete interaction
+         contributions are evaluated. All quadruplets are aligned with the
+         discrete directions by taking $\bk_1 + \bk_2 // \bk_d$.}
+  \label{tab:gmd_quad_def}
+\vspace{\baselineskip}
+\begin{center}
+\begin{tabular}{ccccccc} \hline
+ parameters  & $a_1$ & $a_2$ & $a_3$  & $a_4$ & $\theta_{12}$ &
+ $\sigma_r$  \\ \hline
+$(\lambda)$
+    &    1    &    1    & $1+\lambda$  & $1-\lambda$ &    0  & $\sigma_d$ \\
+$(\lambda, \mu)$
+    & $1+\mu$ & $1-\mu$ & $1+\lambda$ & $1-\lambda$  &
+                                   implied\textsuperscript{*}& $\sigma_d$ \\
+$(\lambda, \mu, \theta_{12})$
+    & $1+\mu$ & $1-\mu$ & $1+\lambda$ & $1-\lambda$  & free  &
+                                                 $\frac{\sigma_d}{1+\mu}$ \\
+\hline
+\end{tabular}
+\end{center}
+\hspace{55mm} \textsuperscript{*}~assuming $\bk_1 + \bk_2 = \bk_3 + \bk_4 =
+2\bk_d$ 
+\vspace{\baselineskip}
+\botline
+\end{table}
+
+\noindent 
+where $a_1 + a_2 = a_3 + a_4$ to satisfy the general resonance conditions
+(\ref{eq:resonance_2}), $\sigma_r$ is a reference frequency, and $\theta_{12}$
+is the angular gap between the wavenumbers $\bk_1$ and $\bk_2$. The latter
+parameter can either be implicit to the quadruplet definition, or can be an
+explicitly tunable parameter. With this, a one- ($\lambda$), two- ($\lambda,
+\mu$) or three-parameter ($\lambda, \mu \theta_{12}$) quadruplet definition
+have been constructed as outlined in Table~\ref{tab:gmd_quad_def}. Note that,
+unlike in the \dia, all quadruplets are evaluated for the actual water depth
+and frequency.
+
+In the \gmd, the discrete interaction are computed for arbitrary depths.
+Somewhat surprisingly, interactions computed for the $F(f, \theta)$ spectrum
+and converted to the native \ws\ spectrum $N(k, \theta)$ using a Jacobian
+transformation proved more easily optimizable than computing the interaction
+contributions for the latter spectrum directly. Furthermore, a two component
+scaling function was introduced with a `deep' scaling function for the
+traditionally represented weak interactions in intermediate to deep water, and
+a `shallow' scaling function representing strong interactions in extremely
+shallow water. With these modifications, the discrete interaction
+contributions (\ref{eq:snl_dia}) of the \dia\ become
+\begin{eqnarray}
+\left ( \begin{array}{c}
+  \delta S_{nl,1} \\ \delta S_{nl,2} \\ \delta S_{nl,3} \\ \delta S_{nl,4} 
+\end{array} \right )  & = &  
+\left ( \begin{array}{r} -1 \\  -1 \\ 1 \\ 1 \end{array} \right )
+  \left ( \frac{1}{n_{q,d}} C_{\rm{deep}} B_{\rm{deep}} + 
+          \frac{1}{n_{q,s}} C_{\rm{shal}} B_{\rm{shal}} \right ) \times \nonumber \\
+ &  & \hspace{20mm} \left [ \:\:\:\:
+                    \frac{c_{g,1}F_1}{k_1 \sigma_1} 
+                    \frac{c_{g,2}F_2}{k_2 \sigma_2} \left ( 
+                    \frac{c_{g,3}F_3}{k_3 \sigma_3} +
+                    \frac{c_{g,4}F_4}{k_4 \sigma_4} \right )
+                                                         \right . \nonumber \\
+ &  &  \hspace{20mm} \left . - \:\:
+                    \frac{c_{g,3}F_3}{k_3 \sigma_3} 
+                    \frac{c_{g,4}F_4}{k_4 \sigma_4} \left ( 
+                    \frac{c_{g,1}F_1}{k_1 \sigma_1} + 
+                    \frac{c_{g,2}F_2}{k_2 \sigma_2} \right ) \:\:\:\:
+                                                    \right ] \:\:\:
+, \label{eq:gmd_dsnl} 
+\end{eqnarray}
+
+\noindent
+where $B_{\rm{deep}}$ and $B_{\rm{shal}}$ are the deep and shallow water
+scaling functions
+
+\begin{equation}
+B_{\rm{deep}} = \frac{k^{4+m} \sigma^{13-2m} }{(2\pi)^{11} \:
+                 g^{4-m} \: c_g^2 } \:\:\: , \label{eq:gmd_B_deep}
+\end{equation}
+
+\begin{equation}
+B_{\rm{shal}} = \frac{g^2 \: k^{11}}{(2\pi)^{11} \: c_g} (kd)^n
+\:\:\: , \label{eq:gmd_B_shal}
+\end{equation}
+
+\noindent
+with $m$m and $n$ as tunable parameters, $C_{\rm{deep}}$ and $C_{\rm{shal}}$
+in Eq.~(\ref{eq:gmd_dsnl}) are the corresponding tunable proportionality
+constants, and $n_{q,d}$ and $n_{q,d}$ are the number of representative
+quadruplets with deep and shallow water scaling, respectively, representing
+the feature of the \gmd\ that multiple representative quadruplets can be used.
+
+In the namelists {\F snl3} and {\F anl3} the user refines the number of
+quadruplets, and per quadruplet $\lambda$, $\mu$, $\theta_{12}$,
+$C_{\rm{deep}}$ and $C_{\rm{shal}}$. Values of $m$ and $n$ are defined once,
+and used for all quadruplets. Finally relative depth below which deep water
+scaling is not used and above which shallow water scaling is not used are
+defined. Examples of some of the \gmd\ configurations from \cite{tol:MMAB10d}
+are included in the example input file {\file ww3\_grid.inp}
+in \para\ref{sub:ww3grid}. The default setting is to reproduce the traditional
+\dia.
+
+Note that the \gmd\ is significantly more complex that the \dia\ formulation,
+and requires evaluation of the quadruplet layout for every spectral frequency
+(compared to a single layout used for the \dia). For effective computation,
+quadruplet layouts are pre-computed and stored in memory for a set of
+nondimensional depths. Even with these and other optimizations, the \gmd\ is
+roughly twice as expensive to compute for a single representative quadruplet
+than the \dia\ when using the one-parameter quadruplet layout. Using the two=
+or three-parameter quadruplet layout, the \gmd\ has four rather than two
+quadruplet realizations, making a the \gmd\ per quadruplet four times as
+expensive as the traditional \dia. Using multiple representative quadruplets
+is linearly additive in computational costs. For more in depth assessment of
+computational costs of a model including the \gmd, see \cite{tol:MMAB10d} and
+\cite{tol:OMOD13d}.

@@ -2,8 +2,8 @@
 \subsubsection{~Parameter settings in modules}
 \vsssub
 
-Several modules has internally used parameter settings. Here only parameter
-settings that are generally usable or impact model output are presented.
+Several modules have internally used parameter settings. Here only parameter
+settings that are generally usable or impact model behavior are presented.
 
 \vspace{\baselineskip} \noindent
 Physical and mathematical constants : \hfill {\file constants.ftn}
@@ -12,6 +12,10 @@ Physical and mathematical constants : \hfill {\file constants.ftn}
                 \hfill (m s$^{-2}$)}
 \vit{dwat  }{rp}{Density of water. \hfill(kg m$^{-3}$)}
 \vit{dair  }{rp}{Density of air. \hfill(kg m$^{-3}$)}
+\vit{nu\_air}{rp}{Kinematic viscosity of air \hfill (m$^2$ s$^{-1}$)}
+\vit{nu\_water}{rp}{Kinematic viscosity of water \hfill (m$^2$ s$^{-1}$)}
+\vit{sed\_sd}{rp}{Specific gravity of sediment \hfill (--)}
+\vit{kappa }{rp}{Von Karman's constants \hfill (--)}
 \vit{pi    }{rp}{$\pi$.}
 \vit{tpi   }{rp}{$2\pi$.}
 \vit{hpi   }{rp}{$0.5\pi$.}
@@ -30,6 +34,7 @@ Wave model initialization module : \hfill {\file w3initmd.ftn}
 \vit{critos}{rp}{Critical fraction of resources used for output only
                      (triggers warning output).}
 \vit{wwver }{cp}{Version number of the main program.}
+\vit{switches}{cp}{Switches taken from {\file bin/switch}.}
 \end{vlist}
 
 \noindent
@@ -51,6 +56,8 @@ I/O module ({\file out\_pnt.ww3}) : \hfill {\file w3iopomd.ftn}
 \begin{vlist}
 \vit{veropt}{cp\opt}{Version number of file {\file out\_pnt.ww3}.}
 \vit{idstr }{cp\opt}{ID string for file.}
+\vit{acc   }{cp}{Relative offset below which output point is moved to grid
+                 point.}
 \end{vlist}
 
 \noindent
@@ -58,6 +65,7 @@ I/O module ({\file track\_o.ww3}) : \hfill {\file w3iotrmd.ftn}
 \begin{vlist}
 \vit{vertrk}{cp\opt}{Version number of file {\file track\_o.ww3}.}
 \vit{idstri}{cp\opt}{ID string for file {\file track\_i.ww3}.}
+\vit{otype }{cp}{Array dimension.}
 \end{vlist}
 
 \noindent
@@ -65,6 +73,7 @@ I/O module ({\file restart.ww3}) : \hfill {\file w3iorsmd.ftn}
 \begin{vlist}
 \vit{verini}{cp\opt}{Version number of file {\file restart.ww3}.}
 \vit{idstr }{cp\opt}{ID string for file.}
+\vit{lrb   }{cp}{Word length set with {\F lrb{\it n}} switch.}
 \end{vlist}
 
 \noindent
@@ -89,9 +98,9 @@ Multi-grid model input update : \hfill {\file wmupdtmd.ftn}
                  grid.}
 \end{vlist}
 
-\vspace{\baselineskip} \noindent
-The service modules contain private variables only, with the exception of the
-interpolation tables for the solution of the dispersion relation
+\noindent
+Several routines contain interpolation tables that are set up with parameter
+statements, including
 
 \vspace{\baselineskip} \noindent
 Solving the dispersion relation : \hfill {\file w3dispmd.ftn}
@@ -103,6 +112,95 @@ Solving the dispersion relation : \hfill {\file w3dispmd.ftn}
 \vit{ewn1  }{ra}{Id. wavenumbers.}
 \vit{n1max }{i }{Largest index in tables.}
 \vit{dsie  }{r }{Nondimensional frequency increment.}
+\end{vlist}
+
+\noindent
+Shallow water quadruplet lookup table for \gmd\ : \hfill {\file w3snl3md.ftn}
+\begin{vlist}
+\vit{nkd   }{ip}{Number of nondimensional depths in storage array.}
+\vit{kdmin }{rp}{Minimum relative depth in table.}
+\vit{kdmax }{rp}{Maximum relative depth in table.}
+\vit{lammax}{rp}{Maximum value for $\lambda$ or $\mu$.}
+\vit{delthm}{rp}{Maximum angle gap $\theta_{12}$ ($\degree$).}
+\end{vlist}
+
+\noindent
+Shallow water lookup table for nonlinear filter : \hfill {\file w3snlsmd.ftn}
+\begin{vlist}
+\vit{nkd   }{ip}{Number of nondimensional depths in storage array.}
+\vit{kdmin }{rp}{Minimum relative depth in table.}
+\vit{kdmax }{rp}{Maximum relative depth in table.}
+\vit{abmax }{rp}{Maximum value for $a_{34}$.}
+\end{vlist}
+
+\noindent
+Lookup table for $\beta$ in Tolman and Chalikov 1996 : \hfill {\file w3src2md.ftn}
+\begin{vlist}
+\vit{nrsiga}{ip}{Array dimension ($\sigma_a$).}
+\vit{nrdrag}{ip}{Array dimension ($C_d$).}
+\vit{sigamx}{rp}{Maximum nondimensional frequency $\tilde{\sigma}_a$.}
+\vit{dragmx}{rp}{Maximum drag coefficient $C_d$}
+\end{vlist}
+
+\noindent
+Lookup table for \ldots in WAM-4 / ECWAM : \hfill {\file w3src3md.ftn}
+\begin{vlist}
+\vit{nhmax  }{ip}{\ldots}
+\vit{kappa  }{rp}{\ldots}
+\vit{nu\_air}{rp}{\ldots}
+\vit{itoumax}{ip}{\ldots}
+\vit{iustar }{ip}{\ldots}
+\vit{iab    }{ip}{\ldots}
+\vit{umax   }{rp}{\ldots}
+\vit{tauwmax}{rp}{\ldots}
+\vit{eps1   }{rp}{\ldots}
+\vit{eps2   }{rp}{\ldots}
+\vit{niter  }{ip}{\ldots}
+\vit{xm     }{ip}{\ldots}
+\vit{jtot   }{ip}{\ldots}
+\end{vlist}
+
+\noindent
+Lookup tables Ardhuin et al. 2010 : \hfill {\file w3src3md.ftn}
+
+Combination of previous two sets of parameters. \\
+
+\noindent
+Table of error functions in bottom friction : \hfill {\file w3sbt4md.ftn}
+\begin{vlist}
+\vit{sizeerftable}{ip}{\ldots}
+\vit{xerfmax}{rp }{\ldots}
+\vit{wsub   }{rpa}{\ldots}
+\vit{xsun   }{rpa}{\ldots}
+\end{vlist}
+
+\noindent
+Some model parameters are set using parameter statements.
+
+\vspace{\baselineskip}
+\noindent
+Source term computation and integration : \hfill {\file w3srcemd.ftn}
+\begin{vlist}
+\vit{offset}{rp\opt}{Offset $\epsilon$ in Eq.~(\ref{eq:implicit_st}).}
+\end{vlist}
+
+\noindent
+Auxiliary data storage : \hfill {\file w3adatmd.ftn}
+\begin{vlist}
+\vit{mpibuf}{ip}{Number of buffers used in \mpi\ data transpose.}
+\end{vlist}
+
+\noindent
+Some service routines contain parameters that can be used to influence, for
+instance, the model output.
+
+\vspace{\baselineskip}
+\noindent
+Array I/O including text outputs : \hfill {\file w3arrymd.ftn}
+\begin{vlist}
+\vit{icol  }{ip\opt}{Set maximum columns on output (now set to 80).}
+\vit{nfrmax}{ip\opt}{Set maximum number of frequency in spectral print plots
+                     (now set to 50).}
 \end{vlist}
 
 \noindent
@@ -119,6 +217,11 @@ Automatic unit number assignment : \hfill {\file wmunitmd.ftn}
 \end{vlist}
 
 \noindent
-Note that the main programs only contain locally defined variables, which need
-not be documented here in detail.
+Creating spectral bulletins : \hfill {\file w3bullmd.ftn}
+\begin{vlist}
+\vit{nptab, nfld, npmax, bhsmin, bhsdrop, dhsmax,}{}{}
+\vit{dptmx, ddmmax, ddwmax, agemin}{}{}
+\vit{}{i/rp}{Setting of size of bulletin as well as various filter values.}
+\end{vlist}
+
 

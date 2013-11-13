@@ -211,7 +211,7 @@ Linear input (Cavaleri and Malanotte Rizzoli) \hfill {\file w3sln1md.ftn}
 \end{flisti}
 
 \noindent
-Linear input (slot for user supplied routines) \hfill {\file w3sln1md.ftn}
+Linear input (slot for user supplied routines) \hfill {\file w3slnxmd.ftn}
 
 \begin{flisti}
 \fit{w3slnx}{Calculation $S_{lin}$.}
@@ -316,8 +316,7 @@ files, see \cite{rep:vVl02b}.
 
 \vspace{\baselineskip}
 \noindent
-Nonlinear interaction module (GMD) \hfill {\file
-w3snlxmd.ftn}
+Nonlinear interaction module (GMD) \hfill {\file w3snl3md.ftn}
 
 \begin{flisti}
 \fit{w3snl3}{Calculation of $S_{nl}$.}
@@ -336,7 +335,17 @@ w3snlxmd.ftn}
 \fit{insnlx}{Initialization for $S_{nl}$.}
 \end{flisti}
 
+\vspace{\baselineskip}
 \noindent
+Nonlinear high-frequency filter \hfill {\file w3snlsmd.ftn}
+
+\begin{flisti}
+\fit{w3snls}{Calculation of filter.}
+\fit{expand}{Expand spectral space.}
+\fit{insnls}{Initialization for filter.}
+\end{flisti}
+
+\pb \noindent
 Bottom friction module (\js) \hfill {\file w3sbt1md.ftn}
 
 \begin{flisti}

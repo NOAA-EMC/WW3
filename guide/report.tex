@@ -3,7 +3,7 @@
 \oddsidemargin=0.4in
 \evensidemargin=0.4in
 \textwidth=6.0in
-\topmargin=0.4in
+\topmargin=-0.6in
 \textheight=8.5in
 
 \usepackage{psfig}
@@ -14,9 +14,19 @@
 \SVN $Revision$
 \SVN $Date$
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% proper link to most recent manual %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\manver}{4.12a}
+\newcommand{\manref}{tol:MMABmanual}
+\newcommand{\manregtestsec}{5.6}
+
 %\newcommand{\pstyle}{myheadings}
 \newcommand{\pstyle}{plain}
 \newfont{\ff}{cmsl12}
+
+\newcommand{\topline}{\rule{152mm}{0.5mm}}
+\newcommand{\botline}{\vspace{1 mm}\rule{152mm}{0.5mm}}
 
 \newcommand{\wwt}{WAVEWATCH III$\:$\textsuperscript\textregistered}
 \newcommand{\ww}{WAVEWATCH III}
@@ -34,6 +44,8 @@
 \newcommand{\code}{\tt}
 \newcommand{\dir}{\sf}
 \newcommand{\F}{\sc}
+
+\newcommand{\command}[1]{\begin{center}{\code #1}\end{center}}
 
 \newcommand{\pb}{\strut \vfill \pagebreak}
 \newcommand{\bpage}{\vfill \pagebreak \strut
@@ -101,8 +113,8 @@ U. S. Department of Commerce \\
 National Oceanic and Atmospheric Administration \\
 National Weather Service \\
 National Centers for Environmental Prediction \\
-5200 Auth Road Room 207 \\
-Camp Springs, MD 20746
+5830 University Research Court \\
+College Park, MD 20740
 
 \vspace{15mm}
 
@@ -123,6 +135,7 @@ Marine Modeling and Analysis Branch
 
 % Version 0.1, May 2010
 % Version 1.0, Feb. 2011
+% Version 1.1, Feb. 2014
 (DRAFT) \\
 Last Changed Rev: \SVNRevision \\
 Last Changed Date: \SVNDate \\
@@ -170,12 +183,14 @@ documentation and manuals.
 version & svn rev.     & date    & comment    \\ \hline \hline
   0.1   &   7869       & May 14, 2010 & Initial MMAB No. 286.      \\ 
         &              &              & Sec.~\ref{sec:testing} (regression testing) \\
-        &              &              & as placeholder only \\
-  1.0   &  12398       & Feb 18, 2011 & Adding svn note p.~\pageref{svn_n}  \\
-        &              &              & Adding svn warning p.~\pageref{svn_w} \\
-        &              &              & Section~\ref{sec:testing} updated  \\
-  1.1   & \SVNRevision &   \SVNDate   & Draft work version \\
-(draft) &              &              & \\
+        &              &              & as placeholder only                   \\
+  1.0   &  12398       & Feb 18, 2011 & Adding svn note p.~\pageref{svn_n}.   \\
+        &              &              & Adding svn warning p.~\pageref{svn_w}.\\
+        &              &              & Section~\ref{sec:testing} updated.    \\
+  1.1   & \SVNRevision &   \SVNDate   & Changed address on title page.        \\
+(draft) &              &              & Prepare for release of v. \manver.    \\
+        &              &              & Updating most sections.               \\
+        &              &              & Adding Sec.~\ref{sec:dist} (code distr.). \\
 \hline \end{tabular}
 \end{center}
 \vspace{-3mm}
@@ -190,9 +205,10 @@ version & svn rev.     & date    & comment    \\ \hline \hline
 \phantomsection
 \addcontentsline{toc}{section}{Acknowledgments}
 
+\noindent
 {\it Acknowledgments.} Code management for \ww\ is provided by NCEP. Arun
-Chawla (IMSG), Henrique Alves (RSG), Erick Rogers and Tim Campbell (NRL
-Stennis) contributed to this report.
+Chawla (NCEP), Henrique Alves (RSG at NCEP), Erick Rogers and Tim Campbell
+(NRL Stennis) contributed to this report.
 
 \vspace{\baselineskip} \noindent
 This report is available as a pdf file from
@@ -243,20 +259,21 @@ the web
 site\footnote{~http://polar.ncep.noaa.gov/waves/wavewatch/license.shtml
 }]{tol:MMAB09a}. Henceforth, \ww\ will be denoted as \ws.
 
-Three public releases of \ws\ have been made available
-\citep{tol:OMB99a,tol:OMB02b, tol:MMAB09a}. This best practices report was
-first provided with model versions 3.14 for two reasons. First, coding
-standards are needed to foster and support community model development. This
-has become particularly important with the National Oceanographic Partnership
-Program (NOPP) project to improve all basic wave model source terms, which
-will run from 2010 through 2014, and which will use \ws\ as a main development
-vehicle. This means that several teams will work simultaneously on the \ws\
-code. Second, there is a need for unifying coding approaches within NCEP. A
-first set of standards has been developed for the Community Radiative Transfer
-Model (CRTM) as presented in \cite{rep:PvD08}. Whereas it is unrealistic to
-retrofit all NCEP codes to a completely homogeneous coding standard due to the
-shear size of legacy codes, all basic precepts should be the same, and are
-consistent between the present report and \cite{rep:PvD08}.
+Four public releases of \ws\ have been made available
+\citep{tol:OMB99a,tol:OMB02c, tol:MMAB09a, tol:MMABmanual}. This best
+practices report was first provided with model versions 3.14 for two
+reasons. First, coding standards are needed to foster and support community
+model development. This has become particularly important with the National
+Oceanographic Partnership Program (NOPP) project to improve all basic wave
+model source terms, which will run from 2010 through 2014, and which will use
+\ws\ as a main development vehicle. This means that several teams will work
+simultaneously on the \ws\ code. Second, there is a need for unifying coding
+approaches within NCEP. A first set of standards has been developed for the
+Community Radiative Transfer Model (CRTM) as presented in
+\cite{rep:PvD08}. Whereas it is unrealistic to retrofit all NCEP codes to a
+completely homogeneous coding standard due to the shear size of legacy codes,
+all basic precepts should be the same, and are consistent between the present
+report and \cite{rep:PvD08}.
 
 From the beginning, \ws\ has been envisioned as a modeling framework, with
 various options for numerical and physical approaches, both for operational
@@ -267,7 +284,7 @@ operations. For example, complex exact interaction codes are not compiled into
 the operational models at NCEP, and hence do not need to be maintained in the
 operational code versions. Compile level code selections are made using the
 native \ws\ preprocessor and `switches' in the source code, as described in
-full in the \ws\ manual \cite[or more recent versions]{tol:MMAB09a}.
+full in the \ws\ manuals as identified above.
 
 Starting with the release model version 3.14, we are maintaining the code
 using subservion \citep{bk:CSea06}. The master version of \ws\ will be
@@ -287,7 +304,7 @@ co-developers.
 In this context, coding standards, best practices for upgrading parts of \ws\
 and for adding new pieces to \ws, regression testing, and maintenance of
 documentation are essential. These issues are approached in
-Sections~\ref{sec:style} (also including copyright statements), \ref{sec:add}
+Sections~\ref{sec:style} (also including copyright statements), \ref{sec:add},
 \ref{sec:testing}, and \ref{sec:man}, respectively.  Finally,
 Section~\ref{sec:svn} discusses standards of code management using the
 subversion server at NCEP.
@@ -450,71 +467,7 @@ claim copyright of such packages).
 \begin{center}
 \begin{minipage}[c]{4.5in}
 \vspace{-10mm}
-{\scriptsize \begin{verbatim}
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE W3XXXX
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |             John Doe              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jan-2010 |
-!/                  +-----------------------------------+
-!/
-!/    01-Jan-2010 : Origination.                        ( version 4.xx )
-!/
-!  1. Purpose :
-!  2. Method :
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD Subroutine tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!  7. Remarks 
-!  8. Structure :
-!  9. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-!/S      USE W3SERVMD, ONLY: STRACE
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-!/S      INTEGER, SAVE           :: IENT = 0
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'W3XXXX')
-....
-!/
-!/ End of W3XXXX ----------------------------------------------------- /
-!/
-      END SUBROUTINE INSBTX
-\end{verbatim}}
+\input{docu_subr.tex}
 \end{minipage}
 \end{center}
 
@@ -528,68 +481,7 @@ claim copyright of such packages).
 \begin{center}
 \begin{minipage}[c]{4.5in}
 \vspace{-10mm}
-{\scriptsize \begin{verbatim}
-!/ ------------------------------------------------------------------- /
-      MODULE W3XXXXMD
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |             John Doe              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Jan-2010 |
-!/                  +-----------------------------------+
-!/
-!/    01-Jan-2010 : Origination.                        ( version 4.xx )
-!/
-!/    Copyright 2010 National Weather Service (NWS),
-!/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
-!/       No unauthorized use without permission.
-!/
-!  1. Purpose :
-!  2. Variables and types :
-!
-!      Name      Type  Scope    Description
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  3. Subroutines and functions :
-!
-!      Name      Type  Scope    Description
-!     ----------------------------------------------------------------
-!      W3XXXX    Subr. Public   ........
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines and functions used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD Subroutine tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Remarks :
-!  6. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-!  7. Source code :
-!/
-!/ ------------------------------------------------------------------- /
-!/
-      PRIVATE
-!/
-      CONTAINS
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE W3XXXX
-.....
-!/
-!/ End of w3XXXX ----------------------------------------------------- /
-!/
-      END SUBROUTINE W3XXXX
-!/
-!/ End of module W3XXXXMD -------------------------------------------- /
-!/
-      END MODULE W3XXXXMD
-\end{verbatim}}
+\input{docu_mod.tex}
 \end{minipage}
 \end{center}
 
@@ -598,6 +490,7 @@ claim copyright of such packages).
 \label{fig:docu_mod}
 \end{myfig}
 
+\bpage
 
 \pb
 %--------------------------------------------------------------%
@@ -661,14 +554,14 @@ and unification much easier when multiple developers are working on the code
 simultaneously.
 
 \vspace{\baselineskip} \noindent The integration of new modules may involve
-adding new software selection switches to the source code. When this happens it
-is necessary to also add the new software selection switches to the build scripts.
-Specifically, the new switches must be properly encoded in
-{\file model/bin/make\_file.sh} and {\file model/bin/w3\_new}. This is required so
+adding new software selection switches to the source code. When this happens
+it is necessary to also add the new software selection switches to the build
+scripts.  Specifically, the new switches must be properly encoded in {\file
+  model/bin/make\_file.sh} and {\file model/bin/w3\_new}. This is required so
 that switch incompatibilities can be trapped at compile time and source files
-affected by changes to {\file model/bin/switch} can be correctly identified and
-recompiled. Documentation for new software selection switches must be added to
-chapter 5.4 of the manual.
+affected by changes to {\file model/bin/switch} can be correctly identified
+and recompiled. Documentation for new software selection switches must be
+added to chapter 5.4 of the manual.
 
 \vspace{\baselineskip} \noindent The above approach are applicable to
 inherently modular elements of \ws\ such as source terms or propagation
@@ -684,33 +577,62 @@ developing and providing code upgrades.
 \section{Regression testing} \label{sec:testing}
 \newsec
 
-The wave model is distributed with a suite of test cases
-(in {\file /regtests}), ranging from simple
-tests to assure that basic features such as propagation and source terms work,
-to realistic tests that include wave hindcast cases in the Atlantic and
-Pacific oceans, and examples of the first multi-grid wave model implemented
-in operations at NCEP. The following conventions are used in naming the test cases:
+Up to model version 3.14m the wave model was distributed with a suite of test
+cases in the {\file tests} directory. This set of tests was inconvenient to
+use for regression testing, as it needed manual intervention and compilation
+of the code for each individual test. In model version 4.07, an automated
+script was introduced by Erick Rogers and Tim Campbell of NRL to convert the
+traditional tests cases to regression tests that could be run in a more
+automated manner. The automated regression tests were first maintained in the
+{\file nrltest} directory, and are now kept in the {\file regtests} directory.
+The previous {\file tests} directory has been removed, moving the remaining
+real-world examples in the new {\file cases} directory. A more complete
+documentation of the test cases and of the regression test tools can be found
+in Section~\manregtestsec\ in \cite{\manref}.  The regression tests in {\file
+  regtests} cover basic tests to assure that features such as propagation and
+source terms work. The following conventions are used in naming the test
+cases:
 
 \begin{itemize}
-\item {\file ww3\_tp1.{\it N}}: Tests for one-dimensional propagation (regular grid).
-\item {\file ww3\_tp2.{\it N}}: Tests for two-dimensional propagation (regular grid).
-\item {\file ww3\_tp3.{\it N}}: Tests for two-dimensional propagation (unstructured grid).
-\item {\file ww3\_ts{\it N}}: Tests for source term integration.
-\item {\file mww3\_test\_{\it NN}}: Tests cases for the multi-grid wave model.
-\item {\file mww3\_case\_{\it NN}}: Real-world application of the multi-grid wave model.
+\item {\file ww3\_tp1.{\it n}}: Tests for one-dimensional propagation (regular
+       grids). 
+\item {\file ww3\_tp2.{\it n}}: Tests for two-dimensional propagation (all
+       grids).
+\item {\file ww3\_ts{\it n}}: Tests for source term integration (some
+       including propagation).
+\item {\file mww3\_test\_{\it nn}}: Tests cases for the multi-grid wave model.
 \end{itemize}
 
 \noindent
-Particularly the simple idealized test cases should be used for regression
-testing when new code is added to the repository; i.e., these tests should
-result in different answers compared to the previous codes only when
-expected. To facilitate regression testing, a shell script, {\file regtests/bin/run\_test}
-is provided along with input files for a number of test cases. The test cases
-are organized such that each major test case occupies its own
-directory. Within each test case directory, it is possible to have more than
-one file of the same type, thus allowing multiple test cases from one major
-test case. This is all possible using command-line commands. The user may
-further customize test cases by editing input files (see below).
+these idealized test cases should be used for regression testing when new code
+is added to the repository; i.e., these tests should result in different
+answers compared to the previous codes only when expected. 
+
+More generally, there are two reasons for providing regression tests. The
+first is the responsibility of a code developer not to break previously
+existing code. The regression testing gives a developer the tools to check
+this systematically and rigorously. The second is to avoid that a contributor
+of code has to provide large time efforts in keeping the code running. By
+providing a regression test for your new code / features, the responsibility
+of keeping this running first will fall on developers of new code, not on the
+contributor of already accepted code. this implies that developers of new
+model options should both run relevant regression tests during development,
+and provide new (options for existing) regression tests for their code
+additions. Some more details of how and when to regression test will follow
+below.
+
+
+To facilitate regression testing, a shell script, {\file
+  regtests/bin/run\_test} is provided along with input files for all test
+cases. The test cases are organized such that each major test case has its own
+directory. Within each test case directory, it is possible to have more test
+cases, for instance by compiling the code with different switches, using
+different grid configurations, using different model inputs, and running the
+code in either shared or distributed compute environment. Running a regression
+test is done using using command-line commands. All options can be displayed
+by running the script without arguments or with the {\file -h} option
+\command{run\_test} \command{run\_test -h} the output of which is displayed in
+Fig.~\ref{fig:run_test} at the end of this section.
 
 When editing input files, it is recommended that developers avoid ``checking
 in'' trivial changes as updates to the svn repository. In the case of {\file
@@ -718,184 +640,78 @@ in'' trivial changes as updates to the svn repository. In the case of {\file
 non-version-controlled variants of these files for local editing and accessing
 them via the -g and -s switches, respectively.
 
-Most WW3 developers will not have any reason to edit the {\file run\_test}
-script itself, i.e. it is treated as a black box. However, developers who
-would like to extend the capabilities of the script (e.g. by adding new
-command line switches) and commit these changes to the repository for sharing
-are encouraged to do so.
+Most \ws\ developers will not have reason to edit the {\file run\_test} script
+itself, i.e. it is treated as a black box. However, developers who would like
+to extend the capabilities of the script (e.g. by adding new command line
+switches) and commit these changes to the repository for sharing are
+encouraged to do so.
 
-Executing {\file run\_test} without arguments or with "-h" causes it to output
-a summary about using the script. That information is repeated Fig.
-\ref{fig:run_test} in slightly more verbose form.
+\vspace{\baselineskip} \noindent With the set of simple test cases, an a large
+number of switch and grid options, several hundred unique regression tests
+have been created. A matrix of all possible regression tests can be generated
+with the tools provided in the {\file regtests/bin} directory, as described in
+Section~\manregtestsec\ in \cite{\manref}. The tools also allow for quickly
+sub-setting the full matrix by test case or other filter options. The NCEP
+code managers will run the full matrix of regression tests for most trunk
+updates, running the matrix on both the old trunk, and the proposed new trunk,
+and using the tools in {\file regtests/bin} to do bit-wise comparisons of the
+model results. As it may take up to 10 hours to run the full matrix on our
+supercomputers, it makes no sense to run the full set of regression tests
+during development of new options.
+
+During development of code, common sense should prevail. For instance, when
+developing a new source term package, it is worth while to regularly run some
+of the source term tests to assure that the other source term options are not
+broken, and only occasionally run the entire matrix. Note that the NCEP
+developers do expect that a branch presented for integration with the trunk
+has been tested at least once with the entire matrix of regression test by the
+developer.
+
+There are two basic ways in which the regression testing can be done. One is
+to keep copy of the trunk from which the development branch is created, and
+have a set of regression tests run for both the trunk and the development
+branch, and compare the results with the tools provide. The other is to do the
+regression testing ``in place''. In this case, when creating a branch, run the
+selected regression test(s) to create a baseline identifying it with a version
+identifier. For instance, checking the PR3 and UQ propagation options while
+working on another propagation scheme, a baseline could be generated with (and
+possibly other command line options) \command{./bin/run\_test -s PR3 -w
+  work\_PR3\_OQ\_v4.00 ../. ww3\_tp1.1} and after modifications are made to
+the code, the regression test is re-run in a in a different work directory,
+e.g., \command{./bin/run\_test -s PR3 -w work\_PR3\_UQ\_v4.01 ../. ww3\_tp1.1}
+after which results can be compared using tools provided or with direct UNIX
+file comparison tools.  Note that for a test case to run to completion is a
+necessary but not sufficient indication of success.
+
+Note that {\file run\_test} has utility beyond regression testing. Perhaps the
+most useful feature is that it makes it possible to fully document (or
+communicate) a model simulation using a single line of text, ``{\file
+  ./bin/run\_test} ...'' without ambiguity. Furthermore, the utility allows
+for direct comparison of options in the model. For instance, the GSE test can
+be used to easily generate GrADS output for all different propagation schemes
+on a regular grid with otherwise identical model settings.
+
+Note, furthermore, that for those who have access, a wiki describing each test
+case has been installed in {\file
+  https://svnemc.ncep.noaa.gov/trac/ww3/wiki/NrlTest }. This also includes
+many examples of {\file run\_test} commands.
+
+\pb
 
 \begin{myfig}{tbp}
 \begin{center}
-\begin{minipage}[c]{4.5in}
-\vspace{-10mm}
-{\scriptsize \begin{verbatim}
-Usage: run_test [options] source_dir test_name
-
-Required:
-  source_dir : path to top-level of WW3 source
-  test_name  : name of test case (directory)
-
-Options:
-  -a ww3_env       : use WW3 environment setup file <ww3_env>
-                   :   *default is <source_dir>/wwatch3.env
-                   :   *file will be created if it does not already exist
-
-  -c cmplr         : Setup comp & link files for specified cmplr
-                   : The cmplr string matches the comp.* and link.*
-                   : files in /model/bin (e.g., comp.Portland or comp.gnu).
-                   : Once the comp and link files are set, this flag does not
-                   : need to be used again until the user wants to change compilers.
-
-  -e               : Prompt for changes to existing WW3 environment
-                   : This causes run_test to execute w3_setup.
-
-  -g grid_string   : Use ww3_grid_<grid_string>.inp
-                   : Example: -g b_pseudo will access ww3_grid_b_pseudo.inp in the
-                   : test_name/input directory. If -g is not used, then the script
-                   : will use the test_name/input/ww3_grid.inp file.
-
-  -h               : Print usage and exit
-
-  -i inpdir        : Use inputs in test_name/<inpdir> (default  test_name/input)
-
-  -m grid_set      : Execute multi-model test
-                   :   *grid names are obtained from input/<grid_set>
-                   :   *ww3_multi_<grid_set> will execute instead of ww3_shell
-                   :   *to execute a single model test case with ww3_multi use
-                   :    grid_set = none
-
-  -n nproc         : Specify <nproc> processors for parallel run
-                   :   *some <runcmd> programs do not require <nproc>
-                   :   *ignored if -p <runcmd> is not specified
-
-  -o outopt        : limit output post-processing based on <outopt>
-                   :   native : post-process only native output
-                   :   netcdf : post-process only NetCDF output
-                   :   both   : post-process both native and NetCDF output
-                   :   * default is native
-                   :   * note that required input files must be present for
-                   :     selected output post-processing to occur
-
-  -p runcmd        : Run in parallel using <runcmd> to start program
-                   :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
-                   :   *IBM with Loadleveler: poe (no <nproc> required)
-                   :   *LSF: mpirun.lsf (no <nproc> required)
-
-  -q program       : Exit script after program <program> executes
-
-  -r program       : Only execute program <program>
-                   : For example, if the user already has files from a previous
-                   : application of ww3_shel, and now wants to run only ww3_outp.
-
-  -s switch_string : Use switch_<switch_string>
-                   : Example: -s PR2 will access test_name/input/switch_PR2.
-                   : If -s is not used, then test_name/input/switch will be used.
-
-  -w work_dir      : Run test case in test_name/work_dir (default test_name/work)
-                   : Thus, for example, it is possible to keep separate output
-                   : directories for separate codes for comparison.
-
-\end{verbatim}}
-\end{minipage}
+{\scriptsize \begin{minipage}[c]{4.5in}
+%\vspace{-10mm}
+\input{run_test.out}
+\end{minipage} }
 \end{center}
-\myfcap{Description of arguments for {\file run\_test} script.}
+\myfcapc{Description of arguments for {\file run\_test} script.}
 \label{fig:run_test}
 \end{myfig}
 
-There are 12 simple, single-grid test cases [{\file ww3\_tp1.1 ww3\_tp1.2 ww3\_tp1.3
-ww3\_tp1.4 ww3\_tp1.5 ww3\_tp1.6 ww3\_tp2.1 ww3\_tp2.2 ww3\_tp2.3 ww3\_ts1
-ww3\_ts2 ww3\_ts3}]. Developers with substantial changes to the code should
-apply their code to at least one variant of each of the these 12 test cases,
-before they can consider the code to be regression-tested and ready for merge
-with the trunk. Depending on the part of the code that they are working on,
-additional tests should be performed. For example, someone working on
-propagation routines PR1 PR2 and PR3 will need to run tests for each using the
--s switch, and someone working on the multi-grid source code will need to
-apply the multi-grid test cases. Developers with relatively modest changes
-to the code can employ an appropriate smaller set of test cases, according
-to common sense. If available to them, developers are encouraged to use alternate
-compilers for a few test cases on occasion.
+\clearpage
 
-The {\file run\_test} script exists in {\file /regtests/bin}. The test
-directories exist in {\file regtests}, e.g.  {\file/regtests/ww3\_tp1.1}. For
-example, the contents of {\file /ww3\_tp1.1} might be
-  \begin{itemize}
-\item {\file info}: a file containing information
-about the test case 
-\item {\file input}: a permanent directory containing input files for
-the test case 
-\item {\file work\_PR3} : a scratch directory for model output (in this
-example, filename is such because the user had specified ``{\file run\_test -w PR3
-...''})
-  \end{itemize}
-
-For a test case to run to completion is a necessary but not sufficient
-indication of success. The output from test cases should be compared with
-results using an appropriate prior version of the code. As an example, from
-{\file/regtests/} , these commands are executed:
-\begin{center}
-{\small \begin{verbatim}
-(baseline)
-./bin/run_test -g v4.00 -s PR3_v4.00 -w work_PR3_v4.00 $WW3_v4p00 ww3_tp1.1
-
-(verify)
-./bin/run_test -g v4.01 -s PR3_v4.01 -w work_PR3_v4.01 $WW3_v4p01 ww3_tp1.1
-\end{verbatim}}
-\end{center}
-\noindent
-Here, the user is comparing his/her version (v4.01) with the previous version
-(v4.00). In situations where the two versions are expected to produce
-essentially identical results, this can be evaluated using ``diff'' on the
-scratch directories:
-\begin{center}
-{\small \begin{verbatim}
-diff ./work_PR3_v4.01 ./work_PR3_v4.00.
-\end{verbatim}}
-\end{center}
-\noindent
-This will, of course, report some irrelevant differences such as different
-wall clock time and different version number, and it is up to the user to
-determine if any changes are significant.
-
-Since ``diff'' is utilized, it is recommended that users designing new test
-cases use text files for output, rather than relying exclusively on binary
-output (e.g. {\file out\_grd.ww3}). For the NetCDF files 
-generated by {\file run\_test}, one can use the {\file ncdump} command.
-The log files from ww3\_grid are given
-names according to {\file ww3\_grid.inp}, so these must be compared separately, e.g.
-\begin{center}
-{\small \begin{verbatim}
-diff ./work_PR3_v4.00/ww3_grid_v4.00.out ./work_PR3_v4.01/ww3_grid_v4.01.out
-\end{verbatim}}
-\end{center}
-
-For those who have access, a wiki describing each test case has been installed
-in {\file https://svnemc.ncep.noaa.gov/trac/ww3/wiki/NrlTest }. This also includes
-many examples of {\file run\_test} commands.
-
-Common sense applies. A developer of a new deep-water source term package, say
-ST5, would not include ST5 in regression testing, but it is reasonable for
-this developer to regression-test ST1 and ST2 to verify that they still work
-the same as before. Further, the developer should add ST5-compatible input
-files (or even new test cases) to the {\file/regtests/} directory. This would, for
-example, make it possible for the future ST8 developer to include ST5 in
-regression testing.
-
-Also, note that {\file run\_test} has utility beyond regression testing. Perhaps the
-most useful feature is that it makes it possible to fully document (or
-communicate) a model simulation using a single line of text, ``{\file ./bin/run\_test}
-...'' without ambiguity. Larger applications (i.e. those not necessarily
-suitable for regression testing) can be included in {\file/regtests/} of development
-branches for purposes of collaboration.
-
-A directory {\file/regtests/matlab/} exists for the purpose of providing {\file.m} files for processing, evaluating, and visualizing output. Developers are encouraged to add new {\file.m} files.
-
-
-\pb
+%\pb
 %--------------------------------------------------------------%
 % Section : Manual and documentation                           %
 %--------------------------------------------------------------%
@@ -913,46 +729,44 @@ files. Because the manual is rather large, it has been stored in several
                  files below into the complete manual.}
 \fit{defs.tex  }{User defined \LaTeX\ constructs used in the manual.}
 \fit{start.tex }{Title page and table of contents set up.}
-\fit{intro.tex }{Chapter: Introduction.}
-\fit{eqs.tex   }{Chapter: Governing equations.}
-\fit{num.tex   }{Chapter: Numerics.}
-\fit{run.tex   }{Chapter: Running the model.}
-\fit{impl.tex  }{Chapter: Installing the model.}
-\fit{sys.tex   }{Chapter: System documentation.}
-\fit{more.tex  }{Appendix: Managing multiple model versions.}
-\fit{tstep.tex }{Appendix: Setting time steps.}
-\fit{nest.tex  }{Appendix: Nesting.}
-\fit{mpi.tex   }{Appendix: Compiling MPI versions of the model.}
-\fit{move.tex  }{Appendix: Moving grid options.}
-\fit{fig\_{\it{XXXX}}.tex }{Various figures made directly using \LaTeX.}
-\fit{{\it{XXXX}}.eps}{Various encapsulated postscript graphics.}
-
+\fit{intro.tex }{Chapter: Introduction, using directory {\file intro}.}
+\fit{eqs.tex   }{Chapter: Governing equations, using directory {\file eqs}.}
+\fit{num.tex   }{Chapter: Numerics, using directory {\file num}.}
+\fit{run.tex   }{Chapter: Running the model, using directory {\file run}.}
+\fit{impl.tex  }{Chapter: Installing the model, using directory {\file impl}.}
+\fit{sys.tex   }{Chapter: System documentation, using directory {\file sys}.}
+\fit{app.tex   }{Appendices, using directory {\file app}.}
 \fit{manual.bib}{BibTex database with references used in the manual.}
 \fit{jas.bst   }{Bibliography style file used for the manual.}
 \end{flist}
 
-\vspace{\baselineskip} \noindent
-A {\file makefile} is provided to compile the manual.  The default make
-target will compile a PDF version of the manual (manual.pdf).  Other make
-targets available are: "inp" (create \LaTeX versions in current directory
-of the {\file ww3\_*.inp} and {\file gx\_*.inp} input files),
-"clean" (remove all files created during compile of manual).
-The following external programs are required and must
-be found in the user PATH: {\file latex}, {\file bibtex} and {\file dvipdf}.
+\vspace{\baselineskip} \noindent All files for the main chapters and
+appendices manage individual \LaTeX\ files for individual sections
+(appendices) in the chapter. This way, new options are documented in their own
+sub-file, and can therefore be easily managed. See the main chapter files for
+the contents of the chapter directories. Note that the chapter directories
+also include files for many individual figures.
 
-\vspace{\baselineskip} \noindent
-The example input files ({\file ww3\_*.tex} and {\file gx\_*.tex})
-required for the programs described in {\file run.tex} are automatically generated
-during compilation of the manual. The source input files are copied from
-{\file \$(INPDIR)}.  The default setting for {\file INPDIR},
-"../inp", can be overridden by setting {\file INPDIR} either on the make
-command-line or in the environment. This method assures that the example input files
-provided with the code are the files displayed in the manual.
+\vspace{\baselineskip} \noindent A {\file makefile} is provided to compile the
+manual.  The default make target will compile a PDF version of the manual
+(manual.pdf).  Other make targets available are: "inp" (create \LaTeX versions
+in current directory of the {\file ww3\_*.inp} and {\file gx\_*.inp} input
+files), as well as outputs of the {\file ww3\_gspl.sh} and {\file run\_test}
+scripts, "clean" (remove all files created during compile of manual).  The
+following external programs are required and must be found in the user PATH:
+{\file latex}, {\file bibtex} and {\file dvipdf}.
 
-\pb \noindent
-Note that the manual consist of both a conventional manual and a basic system
-documentation. The following standards should be used in writing \LaTeX\
-contributions to the manual:
+\vspace{\baselineskip} \noindent The example input files ({\file ww3\_*.tex}
+and {\file gx\_*.tex}) required for the programs described in {\file run.tex}
+are automatically generated during compilation of the manual. The source input
+files are copied from {\file \$(INPDIR)}.  The default setting for {\file
+  INPDIR}, "../inp", can be overridden by setting {\file INPDIR} either on the
+make command-line or in the environment. This method assures that the example
+input files provided with the code are the files displayed in the manual.
+
+\pb \noindent Note that the manual consist of both a conventional manual and a
+basic system documentation. The following standards should be used in writing
+\LaTeX\ contributions to the manual:
 
 \begin{itemize}
 \item Use American spelling and grammar.
@@ -999,10 +813,10 @@ WARNING \rule[1mm]{55mm}{1.0mm}
 \section{Subversion repository} \label{sec:svn}
 \newsec
 
-Starting with model version 3.14, \ws\ in maintained using subversion
-\citep{bk:CSea06}. The subversion (svn) system has two components. One is the
-svn repository maintained at NCEP. The other is the svn client that has to be
-installed at your own machine. 
+Starting with model version 3.14, the \ws\ model is maintained using
+subversion \citep{bk:CSea06}. The subversion (svn) system has two
+components. One is the svn repository maintained at NCEP. The other is the svn
+client that has to be installed at your own machine.
 
 The svn server is where codes are stored and shared between collaborators. The
 subversion client allows you interact with the server to obtain codes, and to
@@ -1125,7 +939,8 @@ providing simple change logs in the source files.
 \begin{myfig}{tbp}
 \begin{center}
 \begin{minipage}[c]{4.5in}
-{\scriptsize \begin{verbatim}
+{\scriptsize 
+\begin{verbatim}
 ww3/branches/hendrik/workcopy/model/aux subdirectory
  * spec_ids: File removed, as it was eroneously added to the repository with
              the initial import of model version 3.14.
@@ -1141,12 +956,13 @@ ww3/branches/hendrik/workcopy/model/ftn subdirectory
  * w3sbtxmd.ftn: added copyright statement
    (w3sbtx): cosmetic changes
    (insbtx): cleared typos from documentation
-\end{verbatim}}
+\end{verbatim} }
 \end{minipage}
 \end{center}
 
 \myfcap{Example of commit log entry following the GNU ChangeLog format.}
 \label{fig:log}
+\botline
 \end{myfig}
 
 
@@ -1212,8 +1028,71 @@ moves, adding files) rather than use Unix/Linux commands.} \\
 \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm}
 \end{center}
 
+%\bpage
+\pb
+%--------------------------------------------------------------%
+% Section : Distributing experimental model versions           %
+%--------------------------------------------------------------%
+\section{Distributing experimental model versions} \label{sec:dist}
+\newsec
+
+With the relatively long period between formal releases of \ws, there is an
+ongoing issue with making experimental code available to those who could
+benefit from these codes.  Per \ws\ license, individual developers cannot
+redistribute the code. After extensive discussions at NCEP, we have come up
+with the following solution, which is consistent with the licensing, and
+satisfies early distribution needs. If requests come in for distributing
+developmental code to individuals, NCEP will provide ``alpha'' versions of the
+new code through the web site, which then will be made available on a
+case-by-case basis under the alpha code distribution agreement provided
+below. Note that this is intended for users, not developers. The latter should
+be requesting joint access to the svn server. In principle, we prefer to
+generate alpha versions from the trunk. This implies that 
+
+\begin{itemize}
+\item If you want an early release of your contributions, it should be ready
+  for, and integrated into the trunk (or make the case to us to do this
+  differently).
+\item If you leave your contributions in your branch, there is no
+  way it can ``accidentally'' be distributed.  
+\end{itemize}
+
+\noindent
+Now that we have implemented this early distribution mechanism, there will be
+a zero tolerance policy for those who violate the license and distribute the
+code on their own. Individual distribution of the code will result in an
+immediate removal of svn privileges at NCEP, and may result in NCEP involving
+the Office of the General Council (OGC, i.e., the NOAA lawyers). Distributing
+information of branches that are not your own will be considered as breach of
+copyright.
+
+\vspace{\baselineskip} \noindent
+{\bf Alpha (beta) code access: }
+
+\vspace{\baselineskip} \noindent 
+Upon individual request, user will be given access to alpha versions of the
+WW3 code under the following conditions: 
+
+\begin{itemize}
+\item The code and manuals are provided with the understanding that both may
+  be incomplete. NCEP will not provide additional support to run the codes,
+  with the exception of working with the developers on bug fixes, and moving
+  these into updated model versions.
+\item The user will update to the formal release as soon as reasonably
+  possible, and not maintain alpha versions after a formal code release.
+\item The WW3 license covers alpha model versions (registered WW3 users only).
+\item Where reasonably possible, reference will be made to formal versions of
+  model documentation and existing papers, not to draft documentation versions
+  that are distributed with the code.
+\item NCEP needs to be contacted for obtaining explicit permission for
+  commercial use. NCEP will consult with contributors to the trunk in case of
+  such requests.  Future beta versions of the code will be distributed under
+  the same arrangement, with the exception that NCEP will actively solicit
+  beta users.
+\end{itemize}
 
 %\bpage
+
 \pb
 %--------------------------------------------------------------%
 %           References                                         %
@@ -1225,7 +1104,9 @@ moves, adding files) rather than use Unix/Linux commands.} \\
 \setcounter{footnote}{0}
 
 \bibliographystyle{jas}
+%\bibliography{short,articles,books,reports,conf,mine}
 \bibliography{report}
+
 
 \pb
 \pagestyle{empty}

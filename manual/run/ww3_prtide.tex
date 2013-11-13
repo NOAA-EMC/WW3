@@ -1,5 +1,5 @@
 \vsssub
-\subsubsection{The tide prediction program} \label{sub:ww3bound}
+\subsubsection{The tide prediction program} \label{sub:ww3prtide}
 \vsssub
 
 \proddefH{ww3\_prtide}{w3tide}{ww3\_prtide.ftn}
@@ -10,5 +10,10 @@
 \proddefa{current.ww3 or level.ww3}{Level or current forcing.}{33}
 
 \inpfile{ww3_prtide.tex}
+\vspace{\baselineskip}
+\noindent
+The user-provided file current.ww3\_tide or level.ww3\_tide is a binary file that can be 
+obtained by running ww3\_prnc with the 'AT' option and then renaming the resulting file 
+current.ww3 or level.ww3 into current.ww3\_tide or level.ww3\_tide .
 
 \pb

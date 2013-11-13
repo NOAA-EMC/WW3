@@ -22,8 +22,25 @@ ifneq ($(MAKECMDGOALS),clean)
   endif
 endif
 
+# Set base WAVEWATCH III directory used her
+WW3 = ../../wwatch3
+# WW3 = ../model
+
+# Make sure run_test script is there
+RUNTEST ?= $(WW3)/regtests/bin/run_test
+
+ifneq ($(MAKECMDGOALS),clean)
+  ifeq ($(shell if [ ! -e $(RUNTEST) ]; then echo 1; fi),1)
+    RUNTEST = $(WW3)/regtests/bin/run_test
+  endif
+  ifeq ($(shell if [ ! -e $(RUNTEST) ]; then echo 1; fi),1)
+    $(error RUNTEST=$(RUNTEST) does not exist.  RUNTEST must point to the \
+      location of the run_test used for documentation)
+  endif
+endif
+
 # TeX files in this directory
-TEXFILES = report.tex
+TEXFILES = report.tex docu_subr.tex docu_mod.tex
 
 # Bibliography inputs
 BIBFILES = report.bib
@@ -33,7 +50,7 @@ BSTFILES = jas.bst
 STYFILES = psfig.sty svn.sty
 
 # All dependencies
-DEPFILES = $(TEXFILES) $(BIBFILES) $(BSTFILES) $(STYFILES)
+DEPFILES = $(TEXFILES) run_test.out $(BIBFILES) $(BSTFILES) $(STYFILES)
 
 #------------------------------------------------------------------------------#
 # Make targets
@@ -44,6 +61,15 @@ $(TARGET): $(TARGET).dvi $(TARGET).pdf
 clean:
 	\rm -f *.log *.aux *.bbl *.blg *.toc *.out
 	\rm -f *.dvi *.pdf
+
+run_test.out : $(RUNTEST)
+	-@echo "Processing $<"
+	-@if [ ! -e $< ]; then echo "ERROR: $< not found"; exit 1; fi
+	-@\rm -f $@
+	-@touch $@
+	-@printf '%s\n' \\begin\{verbatim\} >> $@
+	-@ $< -h >> $@
+	-@printf '%s\n' \\end\{verbatim\} >> $@
 
 $(TARGET).dvi: $(DEPFILES)
 	$(LATEX) $(TARGET)

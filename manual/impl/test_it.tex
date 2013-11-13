@@ -29,8 +29,110 @@ directory to generate graphical output for these calculations. All
 intermediate output files are placed in the {\file work} directory, and can be
 removed conveniently by typing \command{w3\_clean}
 
-\vspace{\baselineskip}
-\noindent
-\ldots I removed the old test cases here. We now need a short description of
-regtests and cases \ldots
+\vspace{\baselineskip} \noindent Up to version 3.14, \ws\ was provided with a
+set of simple tests to established assess the proper behavior of the basic
+functionality of the model. In the early development of the next release of
+the model, Erick Rogers and Tim Campbell converted these in regression tests
+that could be run more easily in an automated version. Up to model version
+4.06, these modified tests were gathered in the {\file nrltest} directory,
+while keeping the old tests in the {\file test} directory. In model version
+4.07, the {\file nrltest} were adopted as the new test cases for \ws\ in a new
+{\file regtests} directory, while eventually the remaining real-world test
+cases in {\file test} were moved to the {\file cases} directory, while
+discontinuing the {\file test} directory completely. The following regression
+tests are available in the {\file regtests} directory.
 
+\begin{flist}
+\fit{ww3\_tp1.1}{1D propagation around the world along the
+                 equator (no land).}
+\fit{ww3\_tp1.2}{1D propagation, along meridian (no land).}
+\fit{ww3\_tp1.3}{1D propagation, shoaling test.}
+\fit{ww3\_tp1.4}{1D propagation, spectral refraction ($x$).}
+\fit{ww3\_tp1.5}{1D propagation, spectral refraction ($y$)}.
+\fit{ww3\_tp1.6}{1D propagation, wave blocking by current.}
+\fit{ww3\_tp1.8}{1D propagation, wave breaking on a beach.}
+\fit{ww3\_tp2.1}{2D propagation under angle with grid.}
+\fit{ww3\_tp2.2}{2D propagation over half the globe without land (with
+                 directional spread). }
+\fit{ww3\_tp2.3}{2D propagation, GSE test.}
+\fit{ww3\_tp2.4}{2D propagation, East Pacific curvilinear grid test.}
+\fit{ww3\_tp2.5}{2D propagation, Arctic Grid, curvilinear grid test.}
+\fit{ww3\_tp2.6}{2D propagation, Limon Harbor unstructured grid test.}
+\fit{ww3\_tp2.7}{\ldots}
+\fit{ww3\_tp2.8}{\ldots}
+\fit{ww3\_tp2.9}{\ldots}
+\fit{ww3\_ts1  }{Source term test, time limited growth.}
+\fit{ww3\_ts2  }{Source term test, fetch limited growth.}
+\fit{ww3\_ts3  }{Source term test, hurricane with single moving grid.}
+\fit{ww3\_ts4  }{\ldots}
+\fit{ww3\_systrk\_test\_01}{Test for system tracking.}
+\fit{mww3\_test\_01}{Test for expanded grid mask with wetting and drying, etc.}
+\fit{mww3\_test\_02}{Two-way nesting test with single inner grid.}
+\fit{mww3\_test\_03}{Overlapping grids and two-way nesting tests (6-grid
+                     version with beach in high-resolution grids.)}
+\fit{mww3\_test\_04}{Current or sea-mount test for two-way nesting with
+                     stationary swell conditions.}
+\fit{mww3\_test\_05}{Three nested hurricane grids with moving grids test.}
+\fit{mww3\_test\_06}{\ldots}
+\fit{mww3\_test\_07}{\ldots}
+\end{flist}
+
+\noindent These regression tests are now run using the {\file run\_test}
+script in the {\file regtests/bin} directory. How to run this script,
+including options, is shown by running \command{run\_test -h} The output of
+running this command is shown here in Fig.~\ref{fig:runtest}.  The test cases
+are stored in directories under the {\file regtests} directory, e.g.  {\file
+  regtests/ww3\_tp1.1}. For example, the contents of {\file /ww3\_tp1.1} might
+be
+
+\begin{flist}
+\fit{info }{A file containing information about the test case.} 
+\fit{input}{A permanent directory containing input files for the test case.}
+\fit{work\_PR3}{A scratch directory for model output (in this example,
+    filename is such because the user had specified ``{\file run\_test -w PR3
+      ...''}).}
+\end{flist}
+
+\noindent
+Also provided now is a matrix if regression tests, used by the code developers
+to assure that new model versions do not break older model versions. The core
+of this matrix is the file {\file regtests/bin/matrix.base}. An example of how
+to run this is given in {\file regtests/bin/matrix\_zeus\_HLT}, which is
+Hendrik's driver for the matrix at the NCEP Zeus R\&D
+computer\footnote{~Please build your own driver for your own setup using this
+  as a blueprint, rather than editing this file.}. To run this, make a link to
+it in the {\file regtests} directory and execute after setting the desired
+option flags in the script. This will make a file {\file matrix} in {\file
+  retests}, which can then be run interactively or in batch mode as
+desired. The file can also be manually edited further if so desired.
+
+
+\vspace{\baselineskip}
+\centerline{*** document rest of {\file bin} directory here ***}
+
+\vspace{\baselineskip} \noindent Finally, the {\file cases} directory hold the
+real-world test cases as described below.
+
+\begin{flist}
+\fit{mww3\_case\_01}{Atlantic case with five grids focusing on Trondheim.}
+\fit{mww3\_case\_02}{Pacific case with three grids focusing on Alaska.}
+\fit{mww3\_case\_03}{Original multi-grid case used as global model at NCEP.}
+\end{flist}
+
+\noindent
+Each of these cases is a single script executing the entire model run. Before
+executing the script, compile the model with the switches indicated in the
+documentation at the head of the script. Additional data used by these scripts
+is contained in the directories
+
+\begin{flist}
+\fit{mww3\_data\_00}{Wind fields and ice data used by all example cases.}
+\fit{mww3\_data\_{\it nn}}{Specific data needed for script {\file
+                           mww3\_case\_{\it nn}}.}
+\end{flist}
+
+\noindent
+These examples can be used as blueprints for setting up other real model
+applications. 
+
+\input{impl/fig_runtest}

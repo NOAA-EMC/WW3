@@ -2,15 +2,22 @@
 \subsection{~Variables in modules} \label{sec:variables}
 \vsssub
 
-\centerline{\ldots need to chec all this still \ldots}
-\vspace{\baselineskip}
-\noindent
-Below, most {\F public} and {\F private} variables in modules are described
-briefly (full documentation can also be found in the source code). The file
-name of the module is given at the right margin of the start of each list. The
-second column of each list identifies the type of the variable. {\F i}, {\F
-  r}, {\F l} and {\F c} represent integer, real, logical and character, {\F a}
-identifies an array, and{ \F p} identifies a {\F parameter} declaration. All
-variables are public, unless marked with \opt. First, parameter settings in
-various modules are discussed. After that, the contents of the main storage
-modules is discussed.
+\noindent 
+In the documentation of model versions up to version 3.14, all {\F public} and
+{\F private} variables in modules were described in the present and following
+sections. All these parameters are also documented in the source code of the
+model. Keeping two separate unlinked copies of the documentations is becoming
+a daunting task with little benefit to the model user and developer. Hence,
+from model version \WWver\ on, the main documentation of the variables in the
+code is kept up to date in the source code itself, and second full
+documentation in the manual is no longer maintained. In this manual, we now
+only describe {\F parameter} definitions, as they may influence model
+behavior, and identify critical versions of I/O elements of the code.  The
+file name of the module is given at the right margin of the start of each
+list. The second column of each list identifies the type of the variable. {\F
+i}, {\F r}, {\F l} and {\F c} represent integer, real, logical and character,
+{\F a} identifies an array, and{ \F p} identifies a {\F parameter}
+declaration. All variables are public, unless marked with \opt.  The following
+sections account for parameter settings in modules (and programs), and give a
+top level description of what is stored in the data structures, and where
+these data structures are located in the code.

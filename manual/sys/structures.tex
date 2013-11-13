@@ -1,0 +1,23 @@
+\vsssub
+\subsubsection{~Data structures}
+\vsssub
+
+As outlined in \para\ref{sec:mgrids}, the core of the wave model consists of a
+set of data structures allowing for the consecutive storage of data for
+multiple grids. The individual storage structures are contained in the
+following modules:
+
+\begin{flist}
+\fit{w3gdatmd.ftn}{In formation for spatial and spectral grids, and all
+                   physical and numerical model parameters.}
+\fit{w3wdatmd.ftn}{The actual wave data, consisting of spectra and the fields
+                   like $u_*$ that are needed to hot-start the model.}
+\fit{w3adatmd.ftn}{Auxiliary fields and parameters.}
+\fit{w3odatmd.ftn}{Output data.}
+\fit{w3idatmd.ftn}{Input data.}
+\fit{wmmdatmd.ftn}{Data specific to the multi-grid model.}
+\end{flist}
+
+\noindent
+The data structures are fully documented in the above files, and the
+documentation is no linger reproduced here in the manual.
