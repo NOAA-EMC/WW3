@@ -130,7 +130,7 @@
         REAL                    :: RW(4), SUMWT
 !/S      INTEGER, SAVE           :: IENT = 0
 	REAL, ALLOCATABLE       :: INT_MAP(:,:)
-        LOGICAL                 :: LPLC, INGRD, BRNCHCL, BRNCHCR
+        LOGICAL                 :: L360=.FALSE., LPLC, INGRD, BRNCHCL, BRNCHCR
         CHARACTER               :: COMSTR*1, IDTIME*23
 !
 !---------------------------------------------------------------------------
@@ -201,7 +201,7 @@
           CALL W3SETW( IG, 6, 6)
           CALL W3SETG( IG, 6, 6)
           CALL W3IOGR ('READ', NDSM, IG, GRIDS(IG)%FILEXT)
-          WRITE (NDSO,905) NX, NY, GTYPE, ICLOSE, GSU%PTR%LLG, GSU%PTR%L360 
+          WRITE (NDSO,905) NX, NY, GTYPE, ICLOSE 
           IF ( GTYPE .EQ. UNGTYPE ) THEN
              WRITE (NDSO,906)
              STOP
@@ -240,6 +240,11 @@
         WRITE (NDSO,908) NSEA
 !
         ALLOCATE ( GR_INTS(NSEA) )
+!
+        IF ( FLAGLL ) THEN
+          IF ( MINVAL ( XGRD ) .LT. 0 .OR.                                     &
+               MAXVAL ( XGRD ) .GT. 180.0 ) L360 = .TRUE. 
+        END IF
 !
 ! 4.b Loop through the wet points
 !
@@ -493,12 +498,14 @@
                 END IF
                 BRNCHCL = .FALSE. 
                 BRNCHCR = .FALSE. 
-                IF ( GSU%PTR%L360 ) THEN
-                   IF ( MINVAL ( XCRNR(1:4) ) .LT.   0.0 ) BRNCHCL = .TRUE. 
-                   IF ( MAXVAL ( XCRNR(1:4) ) .GT. 360.0 ) BRNCHCR = .TRUE. 
-                ELSE
-                   IF ( MINVAL ( XCRNR(1:4) ) .LT. -180.0 ) BRNCHCL = .TRUE. 
-                   IF ( MAXVAL ( XCRNR(1:4) ) .GT.  180.0 ) BRNCHCR = .TRUE. 
+                IF ( FLAGLL .AND. ICLOSE .EQ. ICLOSE_SMPL ) THEN
+                  IF ( L360 ) THEN
+                    IF ( MINVAL ( XCRNR(1:4) ) .LT.   0.0 ) BRNCHCL = .TRUE. 
+                    IF ( MAXVAL ( XCRNR(1:4) ) .GT. 360.0 ) BRNCHCR = .TRUE. 
+                  ELSE
+                    IF ( MINVAL ( XCRNR(1:4) ) .LT. -180.0 ) BRNCHCL = .TRUE. 
+                    IF ( MAXVAL ( XCRNR(1:4) ) .GT.  180.0 ) BRNCHCR = .TRUE. 
+                  END IF
                 END IF
 !
 !        Step 2 : Loop through source grid to find all active points in cell
@@ -511,21 +518,21 @@
                   XT = GRIDS(IG)%XGRD(IYT,IXT)
                   YT = GRIDS(IG)%YGRD(IYT,IXT)
 !
-                  IF ( GSU%PTR%LLG ) THEN
-                    IF (  GSU%PTR%L360 ) THEN
+                  IF ( FLAGLL ) THEN
+                    IF (  L360 ) THEN
                       IF ( XT .LT. 0 ) XT = XT + 360.
                     ELSE
                       IF ( XT .GT. 180. ) XT = XT - 360.
                     END IF
                   END IF
-                  INGRD = W3CKCL (GSU%PTR%LLG,XT,YT,4,XCRNR,YCRNR,LPLC)
+                  INGRD = W3CKCL (FLAGLL,XT,YT,4,XCRNR,YCRNR,LPLC)
                   IF ( INGRD ) THEN
                     COUNTF = COUNTF+1
                     TMP_INDX(COUNTF) = I
                   ELSEIF ( BRNCHCL .AND. GRIDS(IG)%ICLOSE                      &
                            .EQ. ICLOSE_SMPL ) THEN
                     XTT = XT - 360.0
-                    INGRD = W3CKCL (GSU%PTR%LLG,XTT,YT,4,XCRNR,YCRNR,LPLC)
+                    INGRD = W3CKCL (FLAGLL,XTT,YT,4,XCRNR,YCRNR,LPLC)
                     IF ( INGRD ) THEN
                       COUNTF = COUNTF+1
                       TMP_INDX(COUNTF) = I
@@ -533,7 +540,7 @@
                   ELSEIF ( BRNCHCR .AND. GRIDS(IG)%ICLOSE                  &
                           .EQ. ICLOSE_SMPL ) THEN
                     XTT = XT + 360.0
-                    INGRD = W3CKCL (GSU%PTR%LLG,XTT,YT,4,XCRNR,YCRNR,LPLC)
+                    INGRD = W3CKCL (FLAGLL,XTT,YT,4,XCRNR,YCRNR,LPLC)
                     IF ( INGRD ) THEN
                       COUNTF = COUNTF+1
                       TMP_INDX(COUNTF) = I
@@ -697,9 +704,7 @@
  905    FORMAT ( '    Grid Particulars are : '/                                &
                  '      Dimensions =  ',2(I5,2X)/                              &
                  '       Grid Type = ',I3,'  ==> 1 Rect, 2 Curv, 3 Unstr'/     &
-                 '    Grid Closure = ',I3,'  ==> 0 None, 1 Simple, 2 Tripolar'/&
-                 '   Coord. System = ',L3,'  ==> T Spherical, F Cartesian'/    &
-                 '           Range = ',L3,'  ==> T 0:360, F -180:180')    
+                 '    Grid Closure = ',I3,'  ==> 0 None, 1 Simple, 2 Tripolar')
  906    FORMAT ( '/ *** ERROR IN WW3_GINT : '/                                 &
                  '      UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED'/ ) 
  907    FORMAT ( /' NOTE :  The no. of swell partitions from input and',       &
