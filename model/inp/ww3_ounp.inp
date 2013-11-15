@@ -1,5 +1,5 @@
 $ -------------------------------------------------------------------- $
-$ WAVEWATCH III Point output post-processing                           $
+$ WAVEWATCH III NETCDF Point output post-processing                    $
 $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s), 
 $ and number of output times.
@@ -100,7 +100,7 @@ $                              1 : Nondimensional in terms of U10
 $                              2 : Nondimensional in terms of U*
 $                             3-5: like 0-2 with f normalized with fp.
 $
-$  2  0  0  T T T T T T  0
+$  4  0  0  T T T T T T  0
 $
 $ The transfer file contains records with the following contents.
 $
@@ -120,7 +120,6 @@ $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
-$
 $
 $
 $ -------------------------------------------------------------------- $

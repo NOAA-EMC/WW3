@@ -1281,7 +1281,7 @@
               UNITS  = 'kW m-1'
               ENAME  = '.cge' 
               CGE=CGE*0.001  ! from W / m to kW / m 
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE, MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CGE(1:NSEA), MAPSF, X1 )
               NFIELD=1
               varnm(1)='cge'
               varnl(1)='wave energy flux'

@@ -140,13 +140,13 @@
                OK='PR0 PR1 UQ UNO SMC' ;;
       stress ) TY='one'
                ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLXX' ;;
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
       s_ln   ) TY='one'
                ID='linear input'
                OK='LN0 SEED LN1 LNX' ;;
       source ) TY='one'
                ID='input/whitecapping'
-               OK='ST0 ST1 ST2 ST3 ST4 STX' ;;
+               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
       stab   ) TY='upto1'
                ID='stability correction'
                TS='STAB'
@@ -358,18 +358,22 @@
   esac 
 
   case $stress in
-   FLX0) str_st1='no' ; str_st2='no' ; str_st3='yes'
+   FLX0) str_st1='no' ; str_st2='no' ; str_st3='yes' ; str_st6='no'
          flx='w3flx1md'
          flxx=$NULL ;;
-   FLX1) str_st1='OK' ; str_st2='no' ; str_st3='no'
+   FLX1) str_st1='OK' ; str_st2='no' ; str_st3='no' ; str_st6='OK'
          flx='w3flx1md'
          flxx=$NULL ;;
-   FLX2) str_st1='OK' ; str_st2='OK' ; str_st3='no'
+   FLX2) str_st1='OK' ; str_st2='OK' ; str_st3='no' ; str_st6='OK'
          flx='w3flx2md'
          flxx=$NULL ;;
-   FLX3) str_st1='OK' ; str_st2='OK' ; str_st3='no'
+   FLX3) str_st1='OK' ; str_st2='OK' ; str_st3='no' ; str_st6='OK'
          flx='w3flx3md'
          flxx=$NULL ;;
+   FLX4) str_st1='OK' ; str_st2='no' ; str_st3='no' ; str_st6='OK'
+         flx='w3flx4md'
+         flxx=$NULL ;;
+
    FLXX) str_st1='no' ; str_st2='no' ; str_st3='no'
          flx='w3flxxmd'
          flxx=$NULL ;;
@@ -395,6 +399,8 @@
         stx='w3src3md' ;;
    ST4) st='w3src4md'
         stx='w3src4md' ;;
+   ST6) st='w3src6md w3swldmd'
+        stx='w3src6md' ;;
    STX) st='w3srcxmd'
         stx=$NULL ;;
   esac
@@ -420,7 +426,7 @@
   then
       echo ' '
       echo "   *** !/ST1 cannot be used in combination with !/$stress"
-      echo "       Choose from FLX1, FLX2 or FLX3."
+      echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
       echo ' ' ; exit 7
   fi
 
@@ -444,6 +450,13 @@
       echo ' '
       echo "   *** !/ST4 cannot be used in combination with !/$stress"
       echo "       Stresses embedded in source terms, use FLX0."
+      echo ' ' ; exit 7
+  fi
+  if [ "$s_inds" = 'ST6' ] && [ "$str_st6" = 'no' ]
+  then
+      echo ' '
+      echo "   *** !/ST6 cannot be used in combination with !/$stress"
+      echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
       echo ' ' ; exit 7
   fi
 
@@ -537,18 +550,18 @@
     case $prog in
      ww3_grid) IDstring='Grid preprocessor'
                core=
-               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               data='w3wdatmd w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
-                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
+                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_strt) IDstring='Initial conditions program'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iorsmd'
-                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd' ;;
+                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_bound) IDstring='boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
@@ -565,7 +578,7 @@
                 aux='constants w3servmd w3timemd w3cspcmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
-               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
@@ -676,7 +689,7 @@
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_gspl) IDstring='Grid splitting'
                core='w3fldsmd'
-               data='w3gdatmd w3adatmd w3idatmd w3odatmd'
+               data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="w3triamd $stx $nlx $btx"
                  IO='w3iogrmd'
@@ -792,9 +805,9 @@
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
                W3IOSFMD W3PARTMD W3PSMCMD \
                W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3UNO2MD W3PROFSMD \
-               W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLXXMD \
-               W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRCXMD \
-               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD \
+               W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLX4MD W3FLXXMD \
+               W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRC6MD W3SRCXMD \
+               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD W3SWLDMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
                W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
@@ -827,6 +840,7 @@
          'W3FLX1MD'     ) modtest=w3flx1md.o ;;
          'W3FLX2MD'     ) modtest=w3flx2md.o ;;
          'W3FLX3MD'     ) modtest=w3flx3md.o ;;
+         'W3FLX4MD'     ) modtest=w3flx4md.o ;;
          'W3FLXXMD'     ) modtest=w3flxxmd.o ;;
          'W3SLN1MD'     ) modtest=w3sln1md.o ;;
          'W3SLNXMD'     ) modtest=w3slnxmd.o ;;
@@ -835,9 +849,11 @@
          'W3SRC2MD'     ) modtest=w3src2md.o ;;
          'W3SRC3MD'     ) modtest=w3src3md.o ;;
          'W3SRC4MD'     ) modtest=w3src4md.o ;;
+         'W3SRC6MD'     ) modtest=w3src6md.o ;;
          'W3SRCXMD'     ) modtest=w3srcxmd.o ;;
          'W3SNL1MD'     ) modtest=w3snl1md.o ;;
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
+         'W3SWLDMD'     ) modtest=w3swldmd.o ;;
          'm_xnldata'    ) modtest=mod_xnl4v5.o ;;
          'serv_xnl4v5'  ) modtest=serv_xnl4v5.o ;;
          'm_fileio'     ) modtest=mod_fileio.o ;;
