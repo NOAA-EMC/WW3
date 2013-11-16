@@ -64,20 +64,20 @@
   export     dist='y' # Do distributed architecture tests
   export      omp='X' # NEED TO IMPLEMENT STILL ....
 
-  export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
-  export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)
-  export     time='y' # time linmited growth
-  export    fetch='y' # fetch linmited growth
-  export    shwtr='y' # shallow water tests
-  export    unstr='y' # unstructured grid tests
-  export    smcgr='y' # SMC/Rotated grid test
-  export   hur1mg='y' # Hurricane with one moving grid
-  export  multi01='n' # mww3_test_01 (wetting and drying)
-  export  multi02='n' # mww3_test_02 (basic two-way nesting test))
-  export  multi03='n' # mww3_test_03 (three high and three low res grids).
-  export  multi04='n' # mww3_test_04 (swell on sea mount and/or current)
-  export  multi05='n' # mww3_test_05 (three-grid moving hurricane)
-  export  multi06='n' # mww3_test_06 (curvilinear grid tests)
+  export   prop1D='n' # 1-D propagation tests (ww3_tp1.X)
+  export   prop2D='n' # 2-D propagation tests (ww3_tp2.X)
+  export     time='n' # time linmited growth
+  export    fetch='n' # fetch linmited growth
+  export    shwtr='n' # shallow water tests
+  export    unstr='n' # unstructured grid tests
+  export    smcgr='n' # SMC/Rotated grid test
+  export   hur1mg='n' # Hurricane with one moving grid
+  export  multi01='y' # mww3_test_01 (wetting and drying)
+  export  multi02='y' # mww3_test_02 (basic two-way nesting test))
+  export  multi03='y' # mww3_test_03 (three high and three low res grids).
+  export  multi04='y' # mww3_test_04 (swell on sea mount and/or current)
+  export  multi05='y' # mww3_test_05 (three-grid moving hurricane)
+  export  multi06='y' # mww3_test_06 (curvilinear grid tests)
 
 # export   filter='UQ SCRIP'
                       # The filter does a set of consecutinve greps on the 

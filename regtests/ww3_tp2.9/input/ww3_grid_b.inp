@@ -19,14 +19,14 @@ $
   'CURV' T 'NONE'
   121  121
 $
- 20  0.000100   0.00  1  1 '(....)'  NAME  './../input2/curv_2d.lon'
- 30  0.000100   0.00  1  1 '(....)'  NAME  './../input2/curv_2d.lat'
+ 20  0.0001   0.00        1  1 '(....)'  NAME  './../input/curv_2d.lon'
+ 30  0.0001   0.00        1  1 '(....)'  NAME  './../input/curv_2d.lat'
 $ Bottom Bathymetry
- -0.10   2.50  40  0.001000  1  1 '(....)'  NAME  './../input2/curv_2d.bot'
+ -0.10   2.50  40  0.001  1  1 '(....)'  NAME  './../input/curv_2d.bot'
 $ Sub-grid information
- 50  0.010000  1  1  '(....)'  NAME  './../input2/curv_2d.obs'
+ 50  0.01                 1  1 '(....)'  NAME  './../input/curv_2d.obs'
 $ Mask Information
- 60  1  1  '(....)'  NAME  './../input2/curv_2d.mask'
+ 60                       1  1 '(....)'  NAME  './../input/curv_2d.mask'
 $
    0. 0. 0. 0.  0
 $
