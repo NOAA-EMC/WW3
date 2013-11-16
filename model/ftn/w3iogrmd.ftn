@@ -277,7 +277,9 @@
 !
 !/FLX1      TNAMEF = 'Wu (1980)                     '
 !/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
-!/FLX3      TNAMEF = 'T and C(1996) with cap on Cd '
+!/FLX3      TNAMEF = 'T and C(1996) with cap on Cd  '
+!/FLX4      TNAMEF = 'Hwang (2011) with cap on Cd   '
+!/FLXX      TNAMEF = 'Experimental                  '
 !/LN0      TNAME0 = 'Not defined                   '
 !/LN1      TNAME0 = 'Cavaleri and M.-R. (1982)     '
 !/LNX      TNAME0 = 'Experimental                  '
@@ -286,6 +288,7 @@
 !/ST2      TNAME1 = 'Tolman and Chalikov (1996)    '
 !/ST3      TNAME1 = 'WAM cycle 4+                  '
 !/ST4      TNAME1 = 'Ardhuin et al. (2009+)        '
+!/ST6      TNAME1 = 'BYDB input and dissipation    '
 !/STX      TNAME1 = 'Experimental                  '
 !/NL0      TNAME2 = 'Not defined                   '
 !/NL1      TNAME2 = 'Discrete Interaction Approx.  '
@@ -767,6 +770,13 @@
 !
 !/FLX3      IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CAP_ID, CINXSI, CD_MAX
 !
+!/FLX4      IF ( WRITE ) THEN
+!/FLX4          WRITE (NDSM)                            FLX4A0
+!/FLX4        ELSE
+!/FLX4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
+!/FLX4        END IF
+!
+! 
 !/LN1      IF ( WRITE ) THEN
 !/LN1          WRITE (NDSM)                            SLNC1, FSPM, FSHF
 !/LN1        ELSE
@@ -854,6 +864,15 @@
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
 !/ST4        END IF
+!
+!/ST6      IF ( WRITE ) THEN
+!/ST6          WRITE (NDSM) SIN6A0, SIN6U10, SDS6ET, SDS6A1, SDS6A2,  &
+!/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1
+!/ST6        ELSE
+!/ST6          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/ST6                       SIN6A0, SIN6U10, SDS6ET, SDS6A1, SDS6A2,  &
+!/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1
+!/ST6        END IF
 !
 ! ... Nonlinear interactions
 !

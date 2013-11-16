@@ -94,6 +94,9 @@
 !/    01-Jul-2011 : Energy and momentum flux, friction  ( version 4.01 ) 
 !/    24-Aug-2011 : Uses true depth for depth-induced   ( version 4.04 )
 !/    16-Sep-2011 : Initialization of TAUWAX, TAUWAY    ( version 4.04 )
+!/     1-Dec-2011 : Adding BYDRZ source term package    ( version 4.04 )
+!/                  ST6 and optional Hwang (2011)
+!/                  stresses FLX4. 
 !/    14-Mar-2012 : Update of BT4, passing PSIC         ( version 4.04 )
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
@@ -244,7 +247,9 @@
 !       2.  Calculate source terms
 !         a Input.                                  ( W3SLNx, W3SINn )
 !         b Nonlinear interactions.                         ( W3SNLn )
-!         c Dissipation.                                    ( W3SDSn )
+!         c Dissipation                                     ( W3SDSn )
+!           1 as included in source terms                   ( W3SDSn )
+!           2 optional dissipation due to different physics ( W3SWLn )
 !         d Bottom friction.                                ( W3SBTn )
 !       3.  Calculate cut-off frequencie(s)
 !       4.  Summation of source terms and diagonal term and time step.
@@ -263,16 +268,18 @@
 !     !/FLX1  Wu (1980) stress computation.              ( Choose one )
 !     !/FLX2  T&C (1996) stress computation.
 !     !/FLX3  T&C (1996) stress computation with cap.
+!     !/FLX4  Hwang (2011) stress computation (2nd order).
 !
 !     !/LN0   No linear input.                           ( Choose one )
 !     !/LNX   User-defined bottom friction.
 !
 !     !/ST0   No input and dissipation.                  ( Choose one )
-!     !/ST1   WAM-3 input and sissipation.
-!     !/ST2   Tolman and Chalikov (1996)  input and sissipation.
+!     !/ST1   WAM-3 input and dissipation.
+!     !/ST2   Tolman and Chalikov (1996)  input and dissipation.
 !     !/ST3   WAM 4+ input and dissipation.
 !     !/ST4   Ardhuin et al. (2009, 2010)
-!     !/STX   User-defined input and sissipation.
+!     !/ST6   BYDB source terms after Babanin, Young, Donelan and Banner.
+!     !/STX   User-defined input and dissipation.
 !
 !     !/NL0   No nonlinear interactions.                 ( Choose one )
 !     !/NL1   Discrete interaction approximation.
@@ -325,6 +332,7 @@
 !/FLX1      USE W3FLX1MD
 !/FLX2      USE W3FLX2MD
 !/FLX3      USE W3FLX3MD
+!/FLX4      USE W3FLX4MD
 !/LN1      USE W3SLN1MD
 !/LNX      USE W3SLNXMD
 !/ST0      USE W3SRC0MD
@@ -335,6 +343,9 @@
 !/ST3      USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM
 !/ST4      USE W3SRC4MD
 !/ST4      USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM
+!/ST6      USE W3SRC6MD
+!/ST6      USE W3SWLDMD, ONLY : W3SWL6
+!/ST6      USE W3GDATMD, ONLY : SWL6S6
 !/STX      USE W3SRCXMD
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
@@ -401,6 +412,7 @@
                                  VSIN(NSPEC), VDIN(NSPEC),            &
                                  VSNL(NSPEC), VDNL(NSPEC),            &
                                  VSDS(NSPEC), VDDS(NSPEC),            &
+                                 VSWL(NSPEC), VDWL(NSPEC),            &
                                  VSBT(NSPEC), VDBT(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
@@ -410,8 +422,9 @@
 !/REF1                                VREF(NSPEC),                         &
 !/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
-!/ST3      LOGICAL                :: LLWS(NSPEC) 
-!/ST4      LOGICAL                :: LLWS(NSPEC)
+      REAL                    :: SWL(NSPEC), DWL(NSPEC)
+!/ST3      LOGICAL                 :: LLWS(NSPEC) 
+!/ST4      LOGICAL                 :: LLWS(NSPEC)
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
       LOGICAL                 :: SHAVE
@@ -436,10 +449,15 @@
 !/ST0      VDDS = 0.
 !/BT0      VSBT = 0.
 !/BT0      VDBT = 0.
+      VSWL = 0.
+      VDWL = 0.
+      SWL  = 0.
+      DWL  = 0.
 !
 !/ST0      ZWND   = 10.
 !/ST1      ZWND   = 10.
 !/ST2      ZWND   = ZWIND
+!/ST6      ZWND   = 10.
 !
        DRAT  = DAIR / DWAT
 !/T      WRITE (NDST,9000)
@@ -526,11 +544,12 @@
 !/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST6      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)  
 !
 ! 1.c2 computes the initial spectral energy and momentum
 !
       EINIT  = 0.
-! GRAV*MWINIT is the depth-integrated velocity in m^2/s 		
+! GRAV*MWINIT is the depth-integrated velocity in m^2/s
       MWXINIT= 0.
       MWYINIT= 0.
       DO IK=1, NK
@@ -555,6 +574,7 @@
 !/FLX2                                          USTAR, USTDIR, Z0, CD )
 !/FLX3      CALL W3FLX3 ( ZWND, DEPTH, FP, U10ABS, U10DIR,            &
 !/FLX3                                          USTAR, USTDIR, Z0, CD )
+!/FLX4      CALL W3FLX4 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
 !
 ! 1.e Prepare cut-off 
 !
@@ -566,7 +586,7 @@
 !/ST2      FHIGH  = XFC * FPI
 !/ST3      FHIGH  = MAX(FFXFM * MAX(FMEAN,FMEANWS),FFXPM / USTAR)
 !/ST4      FHIGH  = MAX(FFXFM * MAX(FMEAN1,FMEANWS),FFXPM / USTAR)
-
+!/ST6      FHIGH  = MAX (FXFM * FMEAN, FXPM / USTAR)
 !
 ! 1.f Prepare output file for !/NNT option
 !
@@ -605,6 +625,8 @@
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, USTAR, USTDIR, CD,             &
+!/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 !/STX        CALL W3SINX
 !
 ! 2.b Nonlinear interactions.
@@ -617,6 +639,7 @@
 !/TRX        CALL W3STRX
 !
 ! 2.c Dissipation.
+! 2.c1   as in source term package
 !
 !/ST1        CALL W3SDS1 ( SPEC, WN2, EMEAN, FMEAN, WNMEAN,  VSDS, VDDS )
 !/ST2        CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
@@ -624,11 +647,20 @@
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
 !/ST4        CALL W3SDS4 ( SPEC, WN1, CG1,              &
 !/ST4                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY, WHITECAP )
+!/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !
 !/DB1        CALL W3SDB1 ( SPEC, WN2, DEPTH, EMEAN, FMEAN, WNMEAN,        &
 !/DB1                                                        VSDB, VDDB )
 !/DBX        CALL W3SDBX
+!
+! 2.c2   optional dissipation parameterisations
+!
+!/ST6        IF (SWL6S6) THEN
+!/ST6           CALL W3SWL6 ( SPEC, CG1, WN1,       SWL,  DWL )
+!/ST6           VSWL = VSWL + SWL 
+!/ST6           VDWL = VDWL + DWL 
+!/ST6        END IF
 !
 ! 2.d Bottom interactions.
 !
@@ -685,6 +717,7 @@
 !
         DO IS=1, NSPECH
           VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS) + VSDS(IS) + VSBT(IS)
+          VS(IS) = VS(IS) + VSWL(IS)
 !/DB1          VS(IS) = VS(IS) + VSDB(IS)
 !/DBX          VS(IS) = VS(IS) + VSDB(IS)
 !/TRX          VS(IS) = VS(IS) + VSTR(IS)
@@ -692,6 +725,7 @@
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/XXX          VS(IS) = VS(IS) + VSXX(IS)
           VD(IS) =            VDIN(IS) + VDNL(IS) + VDDS(IS) + VDBT(IS)
+          VD(IS) = VD(IS) + VDWL(IS)
 !/DB1          VD(IS) = VD(IS) + VDDB(IS)
 !/DBX          VD(IS) = VD(IS) + VDDB(IS)
 !/TRX          VD(IS) = VD(IS) + VDTR(IS)
@@ -791,6 +825,7 @@
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,           &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST6        CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 !
 !/FLX2        CALL W3FLX2 ( ZWND, DEPTH, FP, U10ABS, U10DIR,           &
 !/FLX2                                          USTAR, USTDIR, Z0, CD )
@@ -827,6 +862,12 @@
 !/ST4        FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
 !/ST4        NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
 !/ST4                 INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
+!
+!/ST6        FHIGH  = SIG(NK)
+!/ST6        NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
+!/ST6                 INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
+!
+!/ST6        IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
 !
 ! 6.b Limiter for shallow water or Miche style criterion
 !     Last time step only !
@@ -992,6 +1033,8 @@
 !/ST3              '               NKH        : ',I3)
 !/ST4 9062 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
 !/ST4              '               NKH        : ',I3)
+!/ST6 9063 FORMAT (' TEST W3SRCE : FHIGH      : ',F8.4/                    &
+!/ST6              '               NKH        : ',I3)
 !/
 !/ End of W3SRCE ----------------------------------------------------- /
 !/
