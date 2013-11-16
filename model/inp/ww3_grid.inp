@@ -50,8 +50,6 @@ $                           CDMAX  : Maximum allowed CD (cap)
 $                           CTYPE  : Cap type :
 $                                     0: Discontinuous (default).
 $                                     1: Hyperbolic tangent.
-$   Hwang 2011          : Namelist FLX4
-$                           CDFAC  : re-scaling of drag
 $
 $ Linear input - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   Cavaleri and M-R    : Namelist SLN1
@@ -84,11 +82,8 @@ $                            SWELLF : swell attenuation factor
 $     Extra parameters for SWELLFPAR=3 only 
 $                  SWELLF2, SWELLF3 : swell attenuation factors 
 $                           SWELLF4 : Threshold Reynolds number for ACC2008
-$                           SWELLF5 : Relative viscous decay below threshold
-$                             Z0RAT : roughness for oscil. flow / mean flow 
-$   BYDRZ input         : Namelist SIN6
-$                          SINA0    : factor for negative input
-$                          SINU10   : wind speed scaling option
+$                  	    SWELLF5 : Relative viscous decay below threshold
+$                             Z0RAT : roughness for oscil. flow / mean flow      
 $
 $ Nonlinear interactions - - - - - - - - - - - - - - - - - - - - - - -
 $   Discrete I.A.       : Namelist SNL1
@@ -178,12 +173,6 @@ $                           SDSC5 : coefficient for turbulence dissipation
 $                           SDSC6 : Weight for the istropic part of Sds_SAT
 $                           SDSDTH: Angular half-width for integration of B
 $
-$   BYDRZ               : Namelist SDS6
-$                          SDSET    : Select threshold normalization spectra
-$                          SDSA1, SDSA2, SDSP1, SDSP2  :
-$                               Coefficients for dissipation terms T1 and T2
-$                       : Namelist SWL6
-$                          SWLB1    : Coefficient for swell dissipation
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1

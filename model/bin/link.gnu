@@ -89,7 +89,7 @@
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
-# libs="-L/opt/local/lib -L$HOME/g2lib -lg2 -lw3 -lpng -ljasper"
+  libs=""
   opt="-o $prog"
 
   if [ "$mpi_mod" = 'yes' ]
@@ -107,7 +107,7 @@
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
-      NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdff -lnetcdf" ;;
+      NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
            libs="$libs `$NETCDF_CONFIG --flibs`" ;;
     esac

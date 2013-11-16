@@ -106,7 +106,6 @@
 !       !/ST2   Source term set 2 (Tolman and Chalikov)
 !       !/ST3   Source term set 3 (WAM 4+)
 !       !/ST4   Source term set 4 (Ardhuin et al. 2009, 2010)
-!       !/ST6   Source term set 6 (BYDRZ)
 !       !/STX   Open source term slot (implemented as ST0).
 !
 !       !/S     Enable subroutine tracing.
@@ -676,7 +675,6 @@
 !     !/ST1   Source term set 1 (WAM equiv.)
 !     !/ST2   Source term set 2 (Tolman and Chalikov)
 !     !/ST3   Source term set 3 (WAM 4+)
-!     !/ST6   Source term set 6 (BYDRZ)
 !     !/STX   Open source term slot (implemented as ST0).
 !
 !     !/S     Enable subroutine tracing.
@@ -1083,15 +1081,6 @@
 !/ST3        IKP1(JSEA) = 0
 !/ST4        FP1 (JSEA) = UNDEF
 !/ST4        IKP1(JSEA) = 0
-!/ST6        FP1 (JSEA) = UNDEF
-!/ST6        IKP1(JSEA) = NK
-!/ST6        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
-!/ST6        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
-!/ST6        FP1TST     = FP1STR / UST(ISEA) * GRAV
-!/ST6        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
-!/ST6            FP1 (JSEA) = TPIINV * FP1TST
-!/ST6            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )
-!/ST6          END IF
 !/STX        FP1 (JSEA) = UNDEF
 !/STX        IKP1(JSEA) = NK
 !/STX        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )

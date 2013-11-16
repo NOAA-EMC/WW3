@@ -87,7 +87,6 @@
 #     -Jdir or -Mdir : where to put .mod files
 
   opt="-c -O3 -J$path_m -fno-second-underscore -ffree-line-length-none"
-# opt="$opt -I$HOME/g2lib -I/opt/local/include"
 
   if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
   then

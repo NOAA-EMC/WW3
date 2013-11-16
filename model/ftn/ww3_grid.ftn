@@ -384,7 +384,6 @@
 !     !/FLX1  Stresses according to Wu (1980).
 !     !/FLX2  Stresses according to T&C (1996).
 !     !/FLX3  Stresses according to T&C (1996) with cap on Cd.
-!     !/FLX4  Stresses according to Hwang (2011).
 !
 !     !/LN0   No linear input source term.
 !     !/SEED  'Seeding' of lowest frequency for sufficiently strong
@@ -397,8 +396,6 @@
 !     !/ST2   Tolman and Chalikov (1996) physics package.
 !     !/ST3   WAM 4+ source terms from P.A.E.M. Janssen and J-R. Bidlot
 !     !/ST4   Ardhuin et al. (2009,2010) input and dissipation 
-!     !/ST6   BYDRZ source term package featuring Donelan et al.
-!             (2006) input and Babanin et al. (2001,2010) dissipation.
 !     !/STX   Open slot.
 !
 !     !/NL0   No nonlinear interactions.
@@ -563,8 +560,6 @@
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
       LOGICAL                 :: FLST4  = .FALSE.
-      LOGICAL                 :: FLST6  = .FALSE.
-
 !!Li  Add a logical variable to shelter regular grid lines from SMC grid.
       LOGICAL                 :: RGLGRD = .TRUE.
 !!Li
@@ -594,7 +589,6 @@
       LOGICAL                 :: FLC
 !/FLX3      INTEGER                 :: CTYPE
 !/FLX3      REAL                    :: CDMAX
-!/FLX4      REAL                    :: CDFAC
 !/ST2      REAL                    :: ZWND, SWELLF, STABSH, STABOF,        &
 !/ST2                                 CNEG, CPOS, FNEG, FPOS
 !/ST2      REAL                    :: SDSA0, SDSA1, SDSA2,                 &
@@ -618,10 +612,6 @@
 !/ST4                                 SDSBR2, SDSBRF1, SDSBRF2,            &
 !/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
 !
-!/ST6      REAL                    :: SINA0, SDSA1, SDSA2, SWLB1
-!/ST6      INTEGER                 :: SDSP1, SDSP2
-!/ST6      LOGICAL                 :: SINU10, SDSET
-!
 !/NL1      REAL                    :: LAMBDA, KDCONV, KDMIN,               &
 !/NL1                                 SNLCS1, SNLCS2, SNLCS3
 !/NL2      INTEGER                 :: IQTYPE, NDEPTH
@@ -640,7 +630,6 @@
                                       EXPFSFCT,IMPFSNIMP
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
-!/FLX4      NAMELIST /FLX4/ CDFAC
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
 !/ST1      NAMELIST /SIN1/ CINP
 !/ST2      NAMELIST /SIN2/ ZWND, SWELLF, STABSH, STABOF, CNEG, CPOS, FNEG
@@ -667,9 +656,6 @@
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
-!/ST6      NAMELIST /SIN6/ SINA0, SINU10
-!/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
-!/ST6      NAMELIST /SWL6/ SWLB1
 !/BT1      NAMELIST /SBT1/ GAMMA
 !/BT4      NAMELIST /SBT4/ SEDMAPD50, SED_D50_UNIFORM, RIPFAC1,            &
 !/BT4                      RIPFAC2, RIPFAC3, RIPFAC4, SIGDEPTH,            &
@@ -921,8 +907,6 @@
 !/ST3      NRSRCE = NRSRCE + 1
 !/ST4      NRSRCE = NRSRCE + 1
 !/ST4      FLST4  = .TRUE.
-!/ST6      NRSRCE = NRSRCE + 1
-!/ST6      FLST6  = .TRUE.
 !/STX      NRSRCE = NRSRCE + 1
 !
 !/NL0      NRNL   = NRNL + 1
@@ -1054,12 +1038,6 @@
 !/FLX3      CD_MAX =    CDMAX
 !/FLX3      CAP_ID =    CTYPE
 !
-!/FLX4      CDFAC  = 1.0E-4
-!/FLX4      CALL READNL ( NDSS, 'FLX4', STATUS )
-!/FLX4      WRITE (NDSO,810) STATUS
-!/FLX4      WRITE (NDSO,811) CDFAC
-!/FLX4      FLX4A0 = CDFAC
-!
 ! 6.d.2 Linear input
 !
 !/LN0      WRITE (NDSO,820)
@@ -1118,9 +1096,6 @@
 !/ST4      SWELLF7 = 230000. 
 !/ST4      TAUWSHELTER = 1.
 !/ST4      ZALP   = 0.006
-!
-!/ST6      SINA0  = 0.04
-!/ST6      SINU10 = .FALSE.
 !
 !/ST1      CALL READNL ( NDSS, 'SIN1', STATUS )
 !/ST1      WRITE (NDSO,920) STATUS
@@ -1186,16 +1161,6 @@
 !/ST4      SSWELLF(7) = SWELLF7
 !/ST4      SSWELLFPAR = SWELLFPAR
 !
-!/ST6      CALL READNL ( NDSS, 'SIN6', STATUS )
-!/ST6      WRITE (NDSO,920) STATUS
-!/ST6      SIN6A0 = SINA0
-!/ST6      SIN6U10 = SINU10
-!/ST6      J = 1
-!/ST6      JJ = 2
-!/ST6      IF ( SIN6U10 ) JJ = 1
-!/ST6      IF ( SIN6A0.LE.0. ) J = 2
-!/ST6      WRITE (NDSO,921) YESXNO(JJ), YESXNO(3-JJ), YESXNO(J), SIN6A0
-!
 ! 6.e Define Snl.
 !
 !/NL0      WRITE (NDSO,922)
@@ -1205,8 +1170,6 @@
 !/NL1          NLPROP =  1.00E7
 !/NL1        ELSE IF ( FLST4 ) THEN
 !/NL1          NLPROP =  2.50E7
-!/NL1        ELSE IF ( FLST6 ) THEN
-!/NL1          NLPROP =  3.00E7
 !/NL1        ELSE
 !/NL1          NLPROP =  2.78E7
 !/NL1        END IF
@@ -1234,7 +1197,6 @@
 !/ST2      FACHF  = 5.
 !/ST3      FACHF  = 5.
 !/ST4      FACHF  = 5.
-!/ST6      FACHF  = 5.
 !/STX      FACHF  = 5.
 !/NL2      IQTYPE =  2
 !/NL2      TAILNL = -FACHF
@@ -1406,13 +1368,6 @@
 !/ST4      SDSHCK    = 1.
 !/ST4      WHITECAPWIDTH = 0.3
 !
-!/ST6      SDSET  = .TRUE.
-!/ST6      SDSA1  = 6.24E-7
-!/ST6      SDSP1  = 4
-!/ST6      SDSA2  = 8.74E-6
-!/ST6      SDSP2  = 4
-!/ST6      SWLB1  = 0.25E-3
-!
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
 !/ST1      WRITE (NDSO,925) CDIS, APM
@@ -1492,25 +1447,6 @@
 !/ST4      SSDSPBK   = SDSPBK
 !/ST4      SSDSBINT  = SDSBINT
 !/ST4      SSDSHCK   = SDSHCK
-!
-!/ST6      CALL READNL ( NDSS, 'SDS6', STATUS )
-!/ST6      WRITE (NDSO,924) STATUS
-!/ST6      SDS6ET = SDSET
-!/ST6      SDS6A1 = SDSA1
-!/ST6      SDS6P1 = SDSP1
-!/ST6      SDS6A2 = SDSA2
-!/ST6      SDS6P2 = SDSP2
-!/ST6      J = 2
-!/ST6      IF (SDSET) J = 1
-!/ST6      WRITE (NDSO,925) YESXNO(J), YESXNO(3-J), SDS6A1, SDS6P1, SDS6A2, SDS6P2
-!/ST6
-!/ST6      CALL READNL ( NDSS, 'SWL6', STATUS )
-!/ST6      WRITE (NDSO,937) STATUS
-!/ST6      J = 1
-!/ST6      SWL6S6 = SWLB1.GT.0.0
-!/ST6      IF (.NOT.SWL6S6) J  = 2
-!/ST6      SWL6B1 = SWLB1
-!/ST6      WRITE (NDSO,940) YESXNO(J), SWL6B1 
 !
 ! 6.g Define Sbt.
 !
@@ -1893,7 +1829,6 @@
 !/ST4          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
 !/ST4            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
 !/ST4            SWELLF5, SWELLF6, SWELLF7, Z0RAT
-!/ST6          WRITE (NDSO,2920) SINA0, SINU10
 !/NL1          WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
 !/NL1                            SNLCS1, SNLCS2, SNLCS3
 !/NL2          WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -1927,8 +1862,6 @@
 !/ST4                    SDSBR, SDSBR2, SDSP, SDSISO, SDSCOS, SDSDTH,      &
 !/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
 !/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH 
-!/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
-!/ST6          WRITE (NDSO,2937) SWLB1
 !/BT1          WRITE (NDSO,2926) GAMMA
 !/BT4          WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
@@ -2004,7 +1937,6 @@
 ! ... High frequency cut-off
 !
       FXFM   = 2.5
-!/ST6       FXFM   = 6.0
       FXPM   = 4.0
       FXPM   = FXPM * GRAV / 28.
       FXFM   = FXFM * TPI
@@ -4007,10 +3939,6 @@
 !/FLX2        ' --------------------------------------------------'/)
 !/FLX3  810 FORMAT (/'  Stresses (T&C 96 capped) ',A/                 &
 !/FLX3        ' --------------------------------------------------')
-!/FLX4  810 FORMAT (/'  Stresses (Hwang 2011) ',A/                     &
-!/FLX4        ' --------------------------------------------------')
-!/FLX4  811 FORMAT ( '       drag coefficient scaling    :',E11.4    /)
-!/FLX4 2810 FORMAT ( '  &FLX4 CDFAC =',F6.3,'E-4 /')
 !/FLX3  811 FORMAT ( '       Max Cd * 10^3               :',F8.2/     &
 !/FLX3               '       Cap type                    : ',A/)
 !/FLX3 2810 FORMAT ( '  &FLX3 CDMAX =',F6.2,'E-3 , CTYPE = ',I1,' /')
@@ -4088,15 +4016,7 @@
 !/ST4              ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
 !/ST4              '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
 !/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,' /')
-!
-!/ST6  920 FORMAT (/'  Wind input (Donelan et al, 2006) ',A/       &
-!/ST6         ' --------------------------------------------------')
-!/ST6  921 FORMAT ( '  friction velocity scaling to 10m winds',/   &
-!/ST6               '         U10 = USTAR / SQRT(CD)    :  ',A/    &
-!/ST6               '         U10 = 28 * USTAR          :  ',A/    &
-!/ST6               '  negative wind input active       :  ',A/    &
-!/ST6               '    attenuation factor             :  ',F6.2/ )
-!/ST6 2920 FORMAT ( '  &SIN6 SINA0 =',F6.3,', SINU10 =',L,' /')
+
 !
 !/STX  920 FORMAT (/'  Experimental wind input.'/)
 !
@@ -4208,24 +4128,6 @@
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
 !/ST4               F5.2,', WHITECAPWIDTH =',F5.2,' /')
-!
-!/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &
-!/ST6               ' --------------------------------------------------')
-!/ST6  925 FORMAT ( '  normalise by threshold spectral density    :  ',A/&
-!/ST6               '  normalise by spectral density              :  ',A/&
-!/ST6               '  coefficient and exponent  for                 '/  &
-!/ST6               '   inherent breaking term a1, L as in (21)   : ',E9.3,I3/ &
-!/ST6               '   cumulative breaking term a2, M as in (22) : ',E9.3,I3/ &
-!/ST6               ' ')
-!/ST6 2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E9.3,              &
-!/ST6               ', SDSA2 = ',E9.3,', SDSP1 = ',I2,', SDSP1 = ',      &
-!/ST6               I2,' /'                                              )
-!/ST6
-!/ST6  937 FORMAT (/'  Swell dissipation ',A/                            &
-!/ST6               ' --------------------------------------------------')
-!/ST6  940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
-!/ST6               '   coefficient B1 (7.91)                : ',E9.3/   )
-!/ST6 2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,' /')
 !
 !/STX  924 FORMAT (/'  Experimental dissipation.'/)
 !
@@ -4697,8 +4599,6 @@
                       SELECT CASE(NAME)
 !/FLX3                        CASE('FLX3')
 !/FLX3                          READ (NDS,NML=FLX3,END=801,ERR=802,IOSTAT=J)
-!/FLX4                        CASE('FLX4')
-!/FLX4                          READ (NDS,NML=FLX4,END=801,ERR=802,IOSTAT=J)
 !/LN1                        CASE('SLN1')
 !/LN1                          READ (NDS,NML=SLN1,END=801,ERR=802,IOSTAT=J)
 !/ST1                        CASE('SIN1')
@@ -4709,8 +4609,6 @@
 !/ST3                          READ (NDS,NML=SIN3,END=801,ERR=802,IOSTAT=J)
 !/ST4                        CASE('SIN4')
 !/ST4                          READ (NDS,NML=SIN4,END=801,ERR=802,IOSTAT=J)
-!/ST6                        CASE('SIN6')
-!/ST6                          READ (NDS,NML=SIN6,END=801,ERR=802,IOSTAT=J)
 !/NL1                        CASE('SNL1')
 !/NL1                          READ (NDS,NML=SNL1,END=801,ERR=802,IOSTAT=J)
 !/NL2                        CASE('SNL2')
@@ -4735,10 +4633,6 @@
 !/ST3                          READ (NDS,NML=SDS3,END=801,ERR=802,IOSTAT=J)
 !/ST4                        CASE('SDS4')
 !/ST4                          READ (NDS,NML=SDS4,END=801,ERR=802,IOSTAT=J)
-!/ST6                        CASE('SDS6')
-!/ST6                          READ (NDS,NML=SDS6,END=801,ERR=802,IOSTAT=J)
-!/ST6                        CASE('SWL6')
-!/ST6                          READ (NDS,NML=SWL6,END=801,ERR=802,IOSTAT=J)
 !/BT1                        CASE('SBT1')
 !/BT1                          READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
 !/BT4                        CASE('SBT4')

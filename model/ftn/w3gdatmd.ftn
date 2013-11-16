@@ -43,8 +43,6 @@
 !/                  (F. Ardhuin) 
 !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
 !/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
-!/    29-Nov-2011 : Adding ST6 source term option.      ( version 4.04 )
-!/                  (S. Zieger)
 !/    14-Mar-2012 : Add PSIC for BT4                    ( version 4.04 )
 !/    12-Jun-2012 : Add /RTD option or rotated grid variables. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
@@ -274,8 +272,6 @@
 !      CAP_ID    Int   Public   Type of cap used.
 !      CINXSI    Real  Public   Constant in parametric description
 !      CD_MAX    Real  Public   Cap on Cd.
-!                                                            (!/FLX4)
-!      FLX4A0    Real  Public   Scaling value in parametric description
 !     ----------------------------------------------------------------
 !
 !     The structure SLNP contains parameters for the linear input
@@ -637,7 +633,6 @@
 !/FLX2        REAL                  :: CINXSI
 !/FLX3        INTEGER               :: NITTIN, CAP_ID
 !/FLX3        REAL                  :: CINXSI, CD_MAX
-!/FLX4        REAL                  :: FLX4A0
 !/FLXX        REAL                  :: DUMMY
       END TYPE SFLP
 !
@@ -677,11 +672,6 @@
 !/ST4                                 SSDSPBK
 !/ST4        REAL                  :: ZZWND
 !/ST4        REAL                  :: SSDSCOS, SSDSDTH, SSDSBR2, SSDSBM(0:4)
-!
-!/ST6        REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
-!/ST6        INTEGER               :: SDS6P1, SDS6P2
-!/ST6        LOGICAL               :: SIN6U10, SDS6ET, SWL6S6
-!
 !/STX        REAL                  :: DUMMY
       END TYPE SRCP
 !
@@ -873,7 +863,6 @@
 !/FLX2      REAL, POINTER           :: CINXSI
 !/FLX3      INTEGER, POINTER        :: NITTIN, CAP_ID
 !/FLX3      REAL, POINTER           :: CINXSI, CD_MAX
-!/FLX4      REAL, POINTER           :: FLX4A0
 !/
 !/ Data aliasses for structure SLNP(S)
 !/
@@ -905,9 +894,6 @@
 !/ST4                                 SSDSC(:), SSDSBR,                    &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
 !/ST4                                 SSDSBR2, SSDSCOS, SSDSDTH, SSDSBM(:)
-!/ST6      REAL, POINTER           :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
-!/ST6      INTEGER, POINTER        :: SDS6P1, SDS6P2
-!/ST6      LOGICAL, POINTER        :: SIN6U10, SDS6ET, SWL6S6
       REAL, POINTER           :: WWNMEANPTAIL, SSTXFTFTAIL
 !/
 !/ Data aliasses for structure SNLP(S)
@@ -1842,7 +1828,6 @@
 !/FLX3      CAP_ID => MPARS(IMOD)%SFLPS%CAP_ID
 !/FLX3      CINXSI => MPARS(IMOD)%SFLPS%CINXSI
 !/FLX3      CD_MAX => MPARS(IMOD)%SFLPS%CD_MAX
-!/FLX4      FLX4A0 => MPARS(IMOD)%SFLPS%FLX4A0
 !
 !     Structure SLNPS
 !
@@ -1932,16 +1917,6 @@
 !/ST4      CUMULW   => MPARS(IMOD)%SRCPS%CUMULW
 !/ST4      SATINDICES    => MPARS(IMOD)%SRCPS%SATINDICES
 !/ST4      SATWEIGHTS   => MPARS(IMOD)%SRCPS%SATWEIGHTS
-!
-!/ST6      SIN6A0 => MPARS(IMOD)%SRCPS%SIN6A0
-!/ST6      SIN6U10 => MPARS(IMOD)%SRCPS%SIN6U10
-!/ST6      SDS6ET => MPARS(IMOD)%SRCPS%SDS6ET
-!/ST6      SDS6A1 => MPARS(IMOD)%SRCPS%SDS6A1
-!/ST6      SDS6P1 => MPARS(IMOD)%SRCPS%SDS6P1
-!/ST6      SDS6A2 => MPARS(IMOD)%SRCPS%SDS6A2
-!/ST6      SDS6P2 => MPARS(IMOD)%SRCPS%SDS6P2
-!/ST6      SWL6S6 => MPARS(IMOD)%SRCPS%SWL6S6
-!/ST6      SWL6B1 => MPARS(IMOD)%SRCPS%SWL6B1
 !
 !     Structure SRNLS
 !

@@ -79,11 +79,6 @@
 #    + switch_ST4_PR2_UQ                                                    #
 #    + switch_ST4_PR3_UNO                                                   #
 #    + switch_ST4_PR3_UQ                                                    #
-#    + switch_ST6_PR1                                                       #
-#    + switch_ST6_PR2_UNO                                                   #
-#    + switch_ST6_PR2_UQ                                                    #
-#    + switch_ST6_PR3_UNO                                                   #
-#    + switch_ST6_PR3_UQ                                                    #
 #    + switch_ST1_PR1_MPI                                                   #
 #    + switch_ST1_PR2_UNO_MPI                                               #
 #    + switch_ST1_PR2_UQ_MPI                                                #
@@ -110,11 +105,6 @@
 #    + switch_ST4_PR2_UQ_MPI                                                #
 #    + switch_ST4_PR3_UNO_MPI                                               #
 #    + switch_ST4_PR3_UQ_MPI                                                #
-#    + switch_ST6_PR1_MPI                                                   #
-#    + switch_ST6_PR2_UNO_MPI                                               #
-#    + switch_ST6_PR2_UQ_MPI                                                #
-#    + switch_ST6_PR3_UNO_MPI                                               #
-#    + switch_ST6_PR3_UQ_MPI                                                #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2005     #
 #                                                   Last Mod : Aug 2013     #
