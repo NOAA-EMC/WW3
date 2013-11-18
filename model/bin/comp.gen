@@ -84,14 +84,8 @@
 
 # Portland Group Inc FORTRAN on Redhad Linux  --------------------------------
 # 2.b.1 Build options and determine compiler name
-#       Note that all but GrADS output is forced to big endian data
 
-# opt="-c -Mlist -fast -fastsse -module $path_m"
-
-# if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
-# then
-#   opt="$opt -byteswapio"
-# fi
+# opt="-c -Mlist -fast -fastsse -module $path_m -byteswapio"
 
 ## if [ "$mpi_mod" = 'yes' ]
 ## then

@@ -61,7 +61,6 @@
   endif
 
 *
-  'enable print plot.grads'
   'set display color ' display
   'clear'
   'run colorset.gs'
@@ -312,12 +311,11 @@
         say '   Starting with page ' ipage
 *
         if ( ipage > 1 )
-          'print'
-          prompt 'Hit rerun for next page ...'
-          pull go_on
+          iplot = ipage - 1
+          'printim spec_plot_'iplot'.png'
           'clear'
         endif
-*
+
         if ( npan = 1 )
           page_ID = 'Spectrum for '
         else
@@ -402,7 +400,6 @@
 *
 * End of operations  - - - - - - - - - - - - - - - - - - - - - - -
 *
-  'print'
 *
   say ' '
   say '----------------------'
@@ -410,8 +407,6 @@
   say '----------------------'
   say ' '
 *
-  prompt 'Hit return to quit ...'
-  pull go_on
   'quit'
 *
 * End of main script - - - - - - - - - - - - - - - - - - - - - - -

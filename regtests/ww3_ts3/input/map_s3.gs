@@ -8,9 +8,8 @@
 *
 * General set up  plot wind or waves
 
-   wind = ' es'
+   wind = 'yes'
 
-  'enable print plot.grads'
   'set display color white'
   'clear'
   'run colorset.gs'
@@ -154,9 +153,7 @@ endif
 
 *  Print this page and clear
 
-  'print'
-  say 'Hit return for next plot '
-  pull go_on
+  'printim map_s3_'t'.png'
   'clear'
   'set grads off'
 

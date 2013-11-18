@@ -128,7 +128,6 @@
 
 * Basic plot set up
 
-    'enable print plot.grads.' t
     'clear'
     'set grads off'
     'set lon ' xml / 10 ' ' xmh / 10
@@ -227,9 +226,7 @@
  
 * Finalize
 
-    'print'
-    'disable print'
-    pull OK
+    'printim map_m01_'t'.png'
     t = t + ts
     i = i + 1
   endwhile

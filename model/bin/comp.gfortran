@@ -77,15 +77,8 @@
 #
 # Intel compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
-#       Note that all but GrADS output is forced to big endian data
 
-  opt="-c -fconvert=big-endian -J$path_m"
-
-  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
-  then
-    opt="$opt -O3 -fbacktrace"
-#    opt="$opt -O0 -fbounds-check -fbacktrace -fconvert=big-endian"
-  fi
+  opt="-c -O3 -fbacktrace -fconvert=big-endian -J$path_m"
 
   if [ "$mpi_mod" = 'yes' ]
   then

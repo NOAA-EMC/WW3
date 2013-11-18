@@ -17,7 +17,7 @@ $
 $ mandatory end of list
  -1
 $
-$ Output type ITYPE [0,1,2,3]
+$ Output type ITYPE [0,1,2,3,4]
 $
   1
 $ -------------------------------------------------------------------- $
@@ -65,7 +65,7 @@ $                              5 : 'Validation table'
 $                              6 : WMO standard output 
 $          - Unit number for file, also used in file name.
 $
-   6  66
+$   6  66
 $
 $ If output for one point is requested, a time series table is made,
 $ otherwise the file contains a separate tables for each output time.
@@ -125,7 +125,7 @@ $            in CSV type output (if the first field is negative, the
 $            reference time becomes the first simulation time slice)
 $          - Three-character code indicating time zone (UTC, EST etc)
 $
-$   4  1 20100928 000000 'UTC'
+$   4  2 19680606 060000 'UTC'
 $
 $ The transfer file contains records with the following contents.
 $

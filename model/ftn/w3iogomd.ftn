@@ -1539,8 +1539,9 @@
 !     - MAPSTA is dumped as it contains information on the ice edge.
 !       Dynamic ice edges require MAPSTA to be dumped every time step.
 !     - The output file has the pre-defined name 'out_grd.FILEXT'.
-!     - The current components CX and CY are converted to the absolute
-!       value and direction in this routine.
+!     - The current components CX and CY are written to out_grd as
+!       components, but converted to magnitude and direction in most
+!       gridded and point output post-processors (except gx_outf).
 !     - All written direction are in degrees, nautical convention,
 !       but in reading, all is convered back to radians and cartesian
 !       conventions.

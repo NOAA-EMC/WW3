@@ -27,7 +27,7 @@
 * color : color or b&w   [yes/---]
 * polar : polar repres.  [yes/---]
 *
-  color = ' es'
+  color = 'yes'
   polar = ' es'
 *
   if ( polar = 'yes' )
@@ -64,7 +64,6 @@
 *
   ilev = 3
 *
-  'enable print plot.grads'
   'set display color ' display
   'clear'
   'run colorset.gs'
@@ -328,9 +327,8 @@
         say '   Starting with page ' ipage
 *
         if ( ipage > 1 )
-          'print'
-          prompt 'Hit rerun for next page ...'
-          pull go_on
+          iplot = ipage - 1
+          'printim 'sst'_plot_'iplot'.png'
           'clear'
         endif
 *
@@ -422,20 +420,15 @@
 *
 * End of operations  - - - - - - - - - - - - - - - - - - - - - - -
 *
-  'print'
-*
   say ' '
   say '-------------------------'
   say '*** End of 1source.gs ***'
   say '-------------------------'
   say ' '
-*
-  prompt 'Hit return to quit ...'
-  pull go_on
   'quit'
 *
 * End of main script - - - - - - - - - - - - - - - - - - - - - - -
-
+*
 * ------------------------------------------------------------------------------
   function plotspec (xp0,yp0,dxyp,dxgrid,dygrid,ymax,spec,scale,str1,str2,str3,str4,strlen,u,ux,uy,c,cx,cy,color)
 *

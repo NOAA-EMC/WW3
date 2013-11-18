@@ -368,8 +368,7 @@
       MBOUT  = .NOT. MBOUT
 !
       OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',FORM='UNFORMATTED', &
-            ERR=811,IOSTAT=IERR)
-
+            ERR=811,IOSTAT=IERR, CONVERT='big_endian')
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Time management.
@@ -660,6 +659,7 @@
   990 FORMAT ('DSET      ww3.grads'/                                  &
               'TITLE     WAVEWATCH III gridded data'/                 &
               'OPTIONS   sequential'/                                 &
+              'OPTIONS   big_endian'/                                 &
               'UNDEF    ',F8.1/                                       &
               'XDEF     ',I4,'  LINEAR ',2F12.5/                      &
               'YDEF     ',I4,'  LINEAR ',2F12.5/                      &

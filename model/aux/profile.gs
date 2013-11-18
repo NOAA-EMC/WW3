@@ -9,8 +9,6 @@
 *
 * General set up - - - - - - - - - - - - - - - - - - - - - - - - -
 *
-* pull OK
-  'enable print plot.grads'
   'set display color white'
   'clear'
 *
@@ -544,7 +542,7 @@
 *
 * End of operations  - - - - - - - - - - - - - - - - - - - - - - -
 *
-  'print'
+  'printim ww3_profile.png'
 *
   say ' '
   say '-------------------------'
@@ -552,8 +550,6 @@
   say '-------------------------'
   say ' '
 *
-  prompt 'Hit return to quit ...'
-  pull go_on
   'quit'
 *
 * End of profile.gs  - - - - - - - - - - - - - - - - - - - - - - -

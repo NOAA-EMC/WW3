@@ -86,13 +86,8 @@
 #     -Idir : where to search for .mod files
 #     -Jdir or -Mdir : where to put .mod files
 
-  opt="-c -O3 -J$path_m -fno-second-underscore -ffree-line-length-none"
+  opt="-c -O3 -J$path_m -fno-second-underscore -ffree-line-length-none -fconvert=big-endian"
 # opt="$opt -I$HOME/g2lib -I/opt/local/include"
-
-  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
-  then
-    opt="$opt -fconvert=big-endian"
-  fi
 
   if [ "$mpi_mod" = 'yes' ]
   then

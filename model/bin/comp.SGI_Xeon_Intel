@@ -84,12 +84,7 @@
 # 3.0Ghz Intel Dual-core Xeon Processors(Woodcrest 5160)
 # compiler used is Intel Fortran 10.1.1008
 #
-  opt="-c -O3 -assume byterecl -module  $path_m"
-
-  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
-  then
-    opt="$opt -convert big_endian"
-  fi
+  opt="-c -O3 -assume byterecl -convert big_endian -module  $path_m"
 
   if [ "$mpi_mod" = 'yes' ]
   then

@@ -84,8 +84,7 @@
 
 # opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m" ; fast=
 
-  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ] && \
-     [ "$name" != 'ww3_gspl' ]
+  if [ "$name" != 'ww3_gspl' ]
   then
     opt="$opt -byteswapio"
   fi

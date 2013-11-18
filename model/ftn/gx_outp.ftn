@@ -224,7 +224,8 @@
       IF (COMSTR.EQ.' ') COMSTR = '$'
       WRITE (NDSO,901) COMSTR
 !
-      OPEN (NDSGRD,FILE=FNMPRE(:J)//'ww3.spec.grads',FORM='UNFORMATTED')
+      OPEN (NDSGRD,FILE=FNMPRE(:J)//'ww3.spec.grads',                 &
+            FORM='UNFORMATTED', CONVERT='big_endian')
       OPEN (NDSPNT,FILE=FNMPRE(:J)//'ww3.mean.grads',FORM='FORMATTED')
       OPEN (NDSCGR,FILE=FNMPRE(:J)//'ww3.spec.ctl',FORM='FORMATTED')
 !
@@ -482,6 +483,7 @@
   970 FORMAT ('DSET      ww3.spec.grads'/                             &
               'TITLE     WAVEWATCH III spectra and source terms'/     &
               'OPTIONS   sequential'/                                 &
+              'OPTIONS   big_endian'/                                 &
               'UNDEF    ',E10.2/                                      &
               'XDEF     ',I4,'  LINEAR ',2F8.2/                       &
               'YDEF     ',I4,'  LEVELS ',5F8.4)

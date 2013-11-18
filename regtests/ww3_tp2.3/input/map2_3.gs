@@ -8,7 +8,6 @@
 *
 * General set up
 
-  'enable print plot.grads'
   'set display color white'
   'clear'
   'run colorset.gs'
@@ -127,9 +126,7 @@ while ( t <= 6 )
 
 *  Print this page and clear
 
-  'print'
-  say 'Hit return for next plot '
-  pull go_on
+  'printim map2_3_'t'.png'
   'clear'
   'set grads off'
 

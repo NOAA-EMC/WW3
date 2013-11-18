@@ -15,7 +15,7 @@
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: GNAME, NK, NTH, NSPEC
+      USE W3GDATMD, ONLY: GNAME, NK, NTH, NSPEC, FLAGLL
       USE W3ODATMD, ONLY: NOPTS, PTLOC, PTNME
       USE CONSTANTS, ONLY: PI, TPI
       USE W3WDATMD, ONLY: TIME
@@ -150,12 +150,10 @@
                                  DOUTP, FCSTI, NZERO
       REAL                    :: AFR, AGE, DDMMAXR, DELDM, DELDMR,     &
                                  DELDW, DELHS, DELTP, DHSMAXR,  &
-                                 DTPMAXR, HMAX, HSTOT, TP, UDIR
+                                 DTPMAXR, HMAX, HSTOT, TP, UDIR, FACT
       REAL                    :: HSP(NPMAX), TPP(NPMAX), &
                                  DMP(NPMAX), WNP(NPMAX), HSD(NPMAX),   &
                                  TPD(NPMAX), WDD(NPMAX)
-!/LLG      REAL                    :: FACT = 1.
-!/XYG      REAL                    :: FACT = 1.E-3
       LOGICAL                 :: FLAG(NPMAX)
       CHARACTER(LEN=129)      :: BLANK, TAIL !, ASCBLINE
 !/NCO      CHARACTER(LEN=67)       :: CBLANK, CTAIL !, CASCBLINE
@@ -168,6 +166,13 @@
 !/ ------------------------------------------------------------------- /
 !
 ! 1.a Constants etc.
+!
+! Set FACT to proper scaling according to spherical or cartesian
+     IF ( FLAGLL ) THEN
+       FACT = 1.
+     ELSE
+       FACT = 1.E-3
+     ENDIF 
 !
 ! Convert wind direction to azimuthal reference
       UDIR   = MOD( UD+180., 360. )

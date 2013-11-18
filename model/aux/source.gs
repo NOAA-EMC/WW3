@@ -61,7 +61,6 @@
     fmx =  0.4056
   endif
 *
-  'enable print plot.grads'
   'set display color ' display
   'clear'
   'run colorset.gs'
@@ -269,9 +268,8 @@
       say '   Starting with page ' ipage
 *
       if ( ipage > 1 )
-        'print'
-        prompt 'Hit rerun for next page ...'
-        pull go_on
+        iplot = ipage - 1
+        'printim sterms_plot_'iplot'.png'
         'clear'
       endif
 *
@@ -417,16 +415,12 @@
 *
 * End of operations  - - - - - - - - - - - - - - - - - - - - - - -
 *
-  'print'
-*
   say ' '
   say '------------------------'
   say '*** End of source.gs ***'
   say '------------------------'
   say ' '
 *
-  prompt 'Hit return to quit ...'
-  pull go_on
   'quit'
 *
 * End of main script - - - - - - - - - - - - - - - - - - - - - - -
