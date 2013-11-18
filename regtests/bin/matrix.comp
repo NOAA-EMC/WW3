@@ -5,7 +5,7 @@
 #    Intended for interactive running only.                                   #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      August 2013            #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -153,6 +153,7 @@
                     ww3_multi.out   ) form='f' ; do='-' ; drop='-' ;;
                     ww3_outf*.out   ) form='f' ; do='y' ; drop='-' ;;
                     ww3_outp*.out   ) form='f' ; do='y' ; drop='-' ;;
+                    ww3_gint*.out   ) form='f' ; do='y' ; drop='-' ;;
                     ww3.????????*.* ) form='f' ; do='y' ; drop='-' ;;
                     *.gs            ) form='f' ; do='y' ; drop='-' ;;
                     gx_outf*.out    ) form='f' ; do='y' ; drop='-' ;;

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-May-2010 |
+!/                  | Last update :         14-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -15,8 +15,9 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    16-May-2010 : Add iceberg damping                 ( version 3.14.4 )
+!/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -231,7 +232,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         14-Nov-2013 !
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -239,6 +240,7 @@
 !/                  data types and initialize as needed.
 !/    05-Jul-2006 : Consolidate stress vector.          ( version 3.09 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
 !/
 !  1. Purpose :
 !
@@ -365,8 +367,10 @@
                  WDATAS(IMOD)%ASF(NSEATM),                            &
                  WDATAS(IMOD)%FPIS(NSEATM) )
 !
-      WDATAS(IMOD)%BERG(:)=0.
-      WDATAS(IMOD)%DINIT  = .TRUE.
+      WDATAS(IMOD)%UST   (:) = 1.E-5
+      WDATAS(IMOD)%USTDIR(:) = 0.
+      WDATAS(IMOD)%BERG  (:) = 0.
+      WDATAS(IMOD)%DINIT     = .TRUE.
       CALL W3SETW ( IMOD, NDSE, NDST )
 !
 !/T      WRITE (NDST,9003)

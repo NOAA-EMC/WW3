@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Aug-2012 |
+!/                  | Last update :         14-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -51,19 +51,18 @@
       SUBROUTINE W3SRCE ( IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
                           U10ABS, U10DIR, AS, USTAR, USTDIR, ICE,     &
                           CX, CY, REFLEC, REFLED,DELX, DELY, DELA,    &
-                          TRNX, TRNY, BERG,                           &
-                          EMEAN, FMEAN, WNMEAN, AMAX, FPI,   &
-                          CD, Z0, DTDYN, FCUT, DTG, TAUWX, TAUWY,     &
-                          TAUOX, TAUOY, TAUWIX, TAUWIY,               &
+                          TRNX, TRNY, BERG, FPI, DTDYN, FCUT, DTG,    &
+                          TAUWX, TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, &
                           TAUWNX, TAUWNY, PHIAW, CHARN, PHIOC,        &
-                          WHITECAP,  D50, PSIC, BEDFORM , PHIBBL, TAUBBL ) 
+                          WHITECAP,  D50, PSIC, BEDFORM , PHIBBL,     &
+                          TAUBBL ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jul-2012 |
+!/                  | Last update :         14-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -101,8 +100,9 @@
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    28-Aug-2013 : Corrected MLIM application          ( version 4.11 )
+!/    14-Nov-2013 : Make orphaned pars in par lst local ( version 4.13 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -178,13 +178,7 @@
 !       DELX    Real.  I   grid cell size in X direction  ( !/BS1 )
 !       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )
 !       DELA    Real.  I   grid cell area                 ( !/BS1 )
-!       EMEAN   Real. I/O  Mean energy.                   ( !/ST1 )
-!       FMEAN   Real. I/O  Mean frequency.                
-!       WNMEAN  Real. I/O  Mean wavenumber.       ( !/ST1 , !/ST2 )
-!       AMAX    Real.  O   Maximum energy.        ( !/ST1 , !/ST2 )
 !       FPI     Real  I/O  Peak-input frequency.          ( !/ST2 )
-!       CD      Real  I/O  Drag coefficient.              ( !/ST2 )
-!       Z0      Real  I/O  Roughness length.              ( !/ST2 )
 !      WHITECAP R.A.   O   Whitecap statisics             ( !/ST4 )
 !       DTDYN   Real   O   Average dynamic time step.
 !       FCUT    Real   O   Cut-off frequency for tail.
@@ -376,14 +370,13 @@
       INTEGER, INTENT(IN)     :: REFLED(4)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG
-      REAL, INTENT(INOUT)     :: SPEC(NSPEC), ALPHA(NK), EMEAN,       &
-                                 FMEAN, WNMEAN, USTAR, USTDIR, FPI,   &
-                                 CD, Z0, TAUOX, TAUOY,                &
+      REAL, INTENT(INOUT)     :: SPEC(NSPEC), ALPHA(NK), USTAR,       &
+                                 USTDIR, FPI, TAUOX, TAUOY,           &
                                  TAUWX, TAUWY, PHIAW, PHIOC,          &
                                  CHARN, BEDFORM(3), PHIBBL,           &
                                  TAUBBL(2), WHITECAP(4),              &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY
-      REAL, INTENT(OUT)       :: AMAX, DTDYN, FCUT
+      REAL, INTENT(OUT)       :: DTDYN, FCUT
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -394,6 +387,7 @@
 !/NNT      INTEGER, SAVE           :: NDSD = 89, NDSD2 = 88, J
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY
+      REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0
 !/ST1      REAL                    :: FH1, FH2
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
 !/ST3      REAL                    :: FMEANS, FH1, FH2

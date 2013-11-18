@@ -89,7 +89,7 @@
     opt="$opt -byteswapio"
   fi
 
-  if [ -n "$fast" ]
+  if [ "$fast" = 'yes' ]
   then
     if [ "$name" = 'w3iogrmd' ] ||  [ "$name" = 'w3iogomd' ] 
     then
@@ -97,6 +97,8 @@
     else
       opt="-fast $opt"
     fi
+  else
+    opt="-O3 $opt"
   fi
 
   if [ "$mpi_mod" = 'yes' ]
