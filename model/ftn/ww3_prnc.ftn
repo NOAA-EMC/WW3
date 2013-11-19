@@ -188,9 +188,9 @@
 !/ Local parameters
 !/
 !/MPI      INTEGER                 :: IERR_MPI
-!/TIDE     INTEGER                 :: TIDESIZ
-!/TIDE      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
-!/TIDE      INTEGER                 :: TIDALSTUFF
+      INTEGER                 :: TIDESIZ
+      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
+      INTEGER                 :: TIDALSTUFF
 !/LRB4      INTEGER, PARAMETER      :: LRB = 4
 !/LRB8      INTEGER, PARAMETER      :: LRB = 8
       INTEGER, ALLOCATABLE    :: NXL(:)

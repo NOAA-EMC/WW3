@@ -10,7 +10,7 @@ $ 4) Ice concentrations (cannot be homogeneous).
 $
    F F
    F F
-   T T
+   F F
    F
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
@@ -20,8 +20,8 @@ $ Time frame of calculations ----------------------------------------- $
 $ - Starting time in yyyymmdd hhmmss format.
 $ - Ending time in yyyymmdd hhmmss format.
 $
-   20080310 060000
-   20080310 080000
+   20080522 000000
+   20080523 120000
 $
 $---------------------------------------------------------
     1
@@ -42,11 +42,17 @@ $                               The raw data file is out_grd.ww3,
 $                               see w3iogo.ftn for additional doc.
 $          
 $
-   20080310 000000  600  20080525 000000
+   20080522 000000  3600     20080525 000000
+$  20080522 000000  10800    20080525 000000
+$----------------------------------------------------------------
+$ Output request flags identifying fields as in ww3_shel input and
+$ section 2.4 of the manual.
 $
-N
+$ (1) Forcing Fields
+  N
+  DPT HS FP DIR SPR 
 $
-DPT HS FP DIR SPR 
+$----------------------------------------------------------------
 $
 $ Type 2 : Point output
 $          Standard line and a number of lines identifying the 
@@ -57,10 +63,14 @@ $          requested (i.e., no 'STOPSTRING' needed).
 $                               The raw data file is out_pnt.ww3, 
 $                               see w3iogo.ftn for additional doc.
 $
-   20080310 000000 600   20080523 000000
-    -4.97 48.29  '62069'
-    -6.00 48.29  'Boundary'
-     0.0   0.0   'STOPSTRING'
+$   20080522 000000   0  20080525 000000
+   20080522 000000  3600     20080525 000000
+   -45.585327       83.150841  P1
+   -46.464142       83.250504  P2
+   -47.369141       83.348534  P3
+   -48.301056       83.444878  P4
+   -150.0    75.0  'A_point'
+    0.0   0.0  'STOPSTRING'
 $
 $
 $ Type 3 : Output along  track.
@@ -68,7 +78,7 @@ $          Flags for formatted input files.
 $                         The data files are track_i.ww3 and
 $                         track_o.ww3, see w3iotr.ftn for ad. doc.
 $
-   20080311 000000   0  20080525 000000
+   20080522 000000   0  20080525 000000
 $     T
 $
 $ Type 4 : Restart files (no additional data required).
@@ -82,7 +92,7 @@ $                               The data file is nestN.ww3, see
 $                               w3iobp.ftn for additional doc.
 $
    20080522 000000   0  20080525 000000
-$ Type 6 : Partitionned data 
+$ Type 6 : Whatever
    20080522 000000   0  20080525 000000
 $
 $ Testing of output through parameter list (C/TPAR) ------------------ $
@@ -101,7 +111,7 @@ $
 $  'LEV' 19680606 010000    0.0
 $  'CUR' 19680606 073125    2.0    25.
 $  'WND' 20010701 000000   20.    145.    2.0
-   'WND' 19680606 030000   2.    270.  -10.0
+$  'WND' 19680606 030000   20.    270.  -10.0
    'STP'
 $
 $ -------------------------------------------------------------------- $

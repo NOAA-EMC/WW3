@@ -1,0 +1,49 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid output post-processing                            $
+$--------------------------------------------------------------------- $
+$ Time, time increment and number of outputs
+$
+$ 10800=Every 3 hours. Use a large number to go all the way to end.
+$  20080522 000000 10800 999
+$ 3600=Every 1 hour. Use a large number to go all the way to end.
+  20080522 000000 3600 999
+$ Just once (for depth)
+$  20080522 000000 10800 1
+$
+$--------------------------------------------------------------------- $
+$ Output request flags identifying fields as in ww3_shel input and
+$ section 2.4 fo the manual.
+$
+$ N for namelist 
+  N
+$
+  DPT HS FP DIR SPR 
+$
+$--------------------------------------------------------------------- $
+$ Output type 4 [3,4] (version netCDF)   
+$        and   variable type 4 [2 = SHORT, 4 = REAL]
+$ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)
+$ variables T [T] or not [F] in the same file
+$
+  3 2
+  0 1 2
+  F
+$
+$ -------------------------------------------------------------------- $
+$ File prefix
+$ number of characters in date
+$ IX, IY range
+$
+ww3.
+6
+ 1 999 1 999 1 1
+$
+$ For each field and time a new file is generated with the file name
+$ ww3.date_xxx.nc , where date is a conventional time idicator with S3
+$ characters,
+$ and xxx is a field identifier.
+$
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

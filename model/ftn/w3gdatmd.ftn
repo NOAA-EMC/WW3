@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Nov-2013 |
+!/                  | Last update :         16-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -55,8 +55,9 @@
 !/    16-Sep-2013 : Add Arctic part SMC grid.           ( version 4.11 )
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
+!/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.15 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -1265,8 +1266,10 @@
 !
 !/REF1      ALLOCATE ( GRIDS(IMOD)%RREF(4)  )
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFPARS(10) )
+!/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes 
+!/REF1! where reflection can occur. 
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLC(4,0:NSEA))
-!/REF1      ALLOCATE ( GRIDS(IMOD)%REFLD(4,0:NSEA))
+!/REF1      ALLOCATE ( GRIDS(IMOD)%REFLD(6,0:NSEA))
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/T      WRITE (NDST,9001)
@@ -2535,6 +2538,241 @@
 !/ End of W3DIMUG ----------------------------------------------------- /
 !/
       END SUBROUTINE W3DIMUG
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3SETREF
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         13-Nov-2013 |
+!/                  +-----------------------------------+
+!/
+!/    13-Nov-2013 : Origination.                        ( version 4.13 )
+!/
+!  1. Purpose :
+!
+!     Update reflection directions at shoreline. 
+!
+!  2. Method :
+!
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       None
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_GRID  Prog. WW3_GRID Grid preprocessor
+!      W3ULEV    Subr. W3UPDTMD Water level update
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S      Enable subroutine tracing.
+!       !/T      Basic test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      INTEGER                 :: ISEA, IX, IY, IXY, IXN, IXP, IYN, IYP
+      INTEGER                 :: J, K, NEIGH1(0:7)
+!/S      INTEGER, SAVE           :: IENT = 0
+!/T      INTEGER                 :: ILEV, NLEV
+
+      REAL                    :: TRIX(NY*NX), TRIY(NY*NX), DX, DY,    &
+                                 COSAVG, SINAVG, THAVG, ANGLES(0:7), CLAT
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3SETREF')
+!
+! 1.  Preparations --------------------------------------------------- *
+!
+!/REF1      IF (REFPARS(2).GT.0) RREF(2)=.TRUE.
+!/REF1      IF (REFPARS(3).GT.0) RREF(3)=.TRUE.
+!/REF1      IF (REFPARS(4).GT.0) RREF(4)=.TRUE.
+!
+!/REF1      DO IY=2, NY-1
+!/REF1        DO IX=2, NX-1
+!/REF1          IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
+!/REF1!No reflection from artificial island on pole. 
+!/REF1          IF (FLAGLL.AND.(YGRD(IY,IX).GT.85)) RREF(1)=.FALSE.
+!/REF1          IF (MAPSTA(IY,IX).GT.0) THEN
+!/REF1!
+!/REF1! Prepares for reflection from subgrid islands
+!/REF1!
+!/REF1            IF (RREF(2)) &
+!/REF1              REFLC(2,MAPFS(IY,IX))= (1. - TRNX(IY,IX))*(1.-TRNY(IY,IX))
+!/REF1!
+!/REF1! Prepares for iceberg reflections
+!/REF1!
+!/REF1            IF (RREF(4)) &
+!/REF1              REFLC(4,MAPFS(IY,IX))= 1.
+!/REF1!
+!/REF1! resolved shoreline reflection
+!/REF1!
+!/REF1            IF (RREF(1)) THEN 
+!/REF1              REFLC(1,  MAPFS(IY,IX)) = 0.
+!/REF1              REFLD(1:6,MAPFS(IY,IX)) = 0
+!/REF1!
+!/REF1! Search for neighboring coastline.        3 2 1 
+!/REF1! around X. These are the neighbors of X:  4 X 0
+!/REF1!                                          5 6 7
+!/REF1!
+!/REF1!
+!/REF1              NEIGH1(0)=8*MAPST2(IY,IX+1)+MAPSTA(IY,IX+1)
+!/REF1              NEIGH1(1:3)=8*MAPST2(IY+1,IX+1:IX-1:-1)+MAPSTA(IY+1,IX+1:IX-1:-1)
+!/REF1              NEIGH1(4)=8*MAPST2(IY,IX-1)+MAPSTA(IY,IX-1)
+!/REF1              NEIGH1(5:7)=8*MAPST2(IY-1,IX-1:IX+1)+MAPSTA(IY-1,IX-1:IX+1)
+!/REF1!
+!/REF1! if one of the surrounding points is land: determines directions ... 
+!/REF1!              
+!/REF1              IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN 
+!/REF1                IF ( FLAGLL ) THEN
+!/REF1                  CLAT   = COS(YGRD(IY,IX)*DERA)
+!/REF1                ELSE
+!/REF1                  CLAT = 1.
+!/REF1                  END IF
+!/REF1                ANGLES(0)= ATAN2(DYDP(IY,IX),DXDP(IY,IX)*CLAT)
+!/REF1                ANGLES(1)= ATAN2(DYDP(IY,IX)+DYDQ(IY,IX),(DXDP(IY,IX)+DXDQ(IY,IX))*CLAT)
+!/REF1                ANGLES(2)= ATAN2(DYDQ(IY,IX),DXDQ(IY,IX)*CLAT)
+!/REF1                ANGLES(3)= ATAN2(DYDQ(IY,IX)-DYDP(IY,IX),(DXDQ(IY,IX)-DXDP(IY,IX))*CLAT)
+!/REF1                ANGLES(4:7)= ANGLES(0:3)+PI
+!/REF1                IF ((NEIGH1(0).GE.1).AND.(NEIGH1(4).GE.1)) THEN 
+!/REF1                  REFLD(3,MAPFS(IY,IX))=0
+!/REF1                ELSE 
+!/REF1                  IF ((NEIGH1(0).GE.1).OR.(NEIGH1(4).GE.1)) REFLD(3,MAPFS(IY,IX))=1
+!/REF1                  END IF
+!/REF1                IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).GE.1)) THEN 
+!/REF1                  REFLD(4,MAPFS(IY,IX))=0
+!/REF1                ELSE
+!/REF1                  IF ((NEIGH1(2).GE.1).OR.(NEIGH1(6).GE.1))  REFLD(4,MAPFS(IY,IX))=1
+!/REF1                  END IF
+!/REF1!
+!/REF1! Looks for a locally straight coast in all 8 orientations 
+!/REF1!
+!/REF1                J=0
+!/REF1                REFLD(1,MAPFS(IY,IX))=0
+!/REF1                COSAVG=0
+!/REF1                SINAVG=0
+!/REF1! Shore angle is corrected for grid rotation in w3ref1md.ftn with  REFLD(5:6,MAPFS(IY,IX)) 
+!/REF1                REFLD(5,MAPFS(IY,IX))= MOD(NTH+NINT(ANGLES(0)/TPI*NTH),NTH)
+!/REF1                REFLD(6,MAPFS(IY,IX))= MOD(NTH+NINT((ANGLES(2)/TPI-0.25)*NTH),NTH)
+!/REFT                    IF (IY.EQ.4) THEN 
+!/REFT                      WRITE(6,*) 'POINT (IX,IY):',IX,IY
+!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(3),NEIGH1(2), NEIGH1(1) 
+!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(4),1, NEIGH1(0) 
+!/REFT                      WRITE(6,*) 'REFT:',NEIGH1(5:7)
+!/REFT                      WRITE(6,*) 'ANG:',ANGLES(3)*RADE,ANGLES(2)*RADE, ANGLES(1)*RADE 
+!/REFT                      WRITE(6,*) 'ANG:',ANGLES(4)*RADE,1, ANGLES(0) *RADE
+!/REFT                      WRITE(6,*) 'ANG:',ANGLES(5:7)*RADE
+!/REFT                      WRITE(6,*) 'REFT:',XGRD(IY+1,IX-1:IX+1), YGRD(IY+1,IX-1:IX+1)
+!/REFT                      WRITE(6,*) 'REFT:',XGRD(IY,IX-1:IX+1) , YGRD(IY,IX-1:IX+1)
+!/REFT                      WRITE(6,*) 'REFT:',XGRD(IY-1,IX-1:IX+1), YGRD(IY-1,IX-1:IX+1)
+!/REFT                      WRITE(6,*) 'REFLD:',REFLD(3:6,MAPFS(IY,IX))
+!/REFT                    ENDIF
+!/REF1                DO K=0,7
+!/REF1                  IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
+!/REF1                    .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+!/REF1                    .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                    REFLC(1,MAPFS(IY,IX))= REFPARS(1)
+!/REF1!
+!/REF1! Defines direction index for specular reflection (normal to coast)
+!/REF1!
+!/REF1!  for example, if we have this layout   001
+!/REF1!                                        0X1
+!/REF1!                                        001
+!/REF1!
+!/REF1!  then there is only a coastline detection for K=0, giving J=1 
+!/REF1!  and the final result will be REFLD(1,MAPFS(IY,IX))=1
+!/REF1!  Namely, the direction TH(REFLD) is the direction pointing INTO the coast
+!/REF1!
+!/REF1                    REFLD(2,MAPFS(IY,IX))= 2
+!/REF1                    COSAVG=COSAVG+COS(ANGLES(K))  !ECOS(1+(K*NTH)/8)
+!/REF1                    SINAVG=SINAVG+SIN(ANGLES(K))  !ESIN(1+(K*NTH)/8)
+!/REF1                    J=J+1
+!/REF1                    ENDIF
+!/REF1                  END DO
+!/REF1                IF (J.GT.0) THEN 
+!/REF1                  IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
+!/REF1                  THAVG=ATAN2(SINAVG,COSAVG) 
+!/T                     !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
+!/T                     !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+!/REF1                ELSE
+!/REF1
+!/REF1!                             1 1 1 
+!/REF1! Looks for mild corners like 1 1 1
+!/REF1!                             1 0 0          
+!/REF1                  DO K=0,7
+!/REF1                    IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+!/REF1                      .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                      REFLC(1,MAPFS(IY,IX))= REFPARS(1)
+!/REF1                      REFLD(1,MAPFS(IY,IX))= 1+MOD((K*NTH+(K+1)*NTH)/16,NTH)
+!/REF1                      REFLD(2,MAPFS(IY,IX))= 1
+!/REF1                      ENDIF
+!/REF1                    END DO
+!/REF1!                              1 1 1                        1 1 1
+!/REF1! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
+!/REF1!                              1 0 1                        1 1 0          
+!/REF1                  IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN 
+!/REF1                    DO K=0,7,2
+!/REF1                      IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN 
+!/REF1                        REFLC(1,MAPFS(IY,IX))= REFPARS(1)
+!/REF1                        REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
+!/REF1                        REFLD(2,MAPFS(IY,IX))= 0
+!/REF1                        !WRITE(6,*) 'NEIGH3:',IX,IY,K,NEIGH1,K*(NTH/8)
+!/REF1                        END IF
+!/REF1                      END DO
+!/REF1                    END IF
+!/REF1                  END IF
+!/REF1! End of test if surrounding point is land
+!/REF1                END IF
+!/REFT                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  THEN 
+!/REFT                  WRITE (6,*) 'COAST DIRECTION AT POINT:',IX,IY,' IS ', &
+!/REFT                    REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
+!/REFT                  ENDIF
+!/REF1! End of test if local point is sea
+!/REF1              END IF
+!/REF1            END IF
+!/REF1          END DO
+!/REF1        END DO
+!
+      RETURN
+!
+! Formats
+!
+!/
+!/ End of W3SETREF ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3SETREF
            
 !/
 !/ End of module W3GDATMD -------------------------------------------- /

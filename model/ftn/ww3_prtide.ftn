@@ -343,8 +343,6 @@
           DO IX = 1, NX 
             IF (TINDEX.EQ.1) THEN 
               IF (BADPOINTS(IX,IY).GT.0) THEN 
-                IF (IX.EQ.72167) WRITE(NDSE,*) 'BAD POINT:',IX,IY, &
-                     TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
                 TIDAL_CONST(IX,IY,:,1,1)=0
                 TIDAL_CONST(IX,IY,:,2,1)=0
                 IF (TIDEFILL.AND.(GTYPE.EQ.UNGTYPE)) THEN 
@@ -358,25 +356,27 @@
                       SUMOK = 0
                       DO IND=1,COUNTCON(IX) 
                         IX2=VNEIGH(IX,IND)
-                IF (IX.EQ.72167.OR.IX.EQ.80571.AND.J.EQ.8) WRITE(NDSE,*) 'BAD POINTZ:',ITER, IX,IX2,BADPOINTS(IX2,IY)
                         IF (BADPOINTS(IX2,IY).EQ.0) THEN 
                           SUMOK = SUMOK + 1
                           AMPCOS = AMPCOS+TIDAL_CONST(IX2,IY,J,K,1)*COS(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
                           AMPSIN = AMPSIN+TIDAL_CONST(IX2,IY,J,K,1)*SIN(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
-!IF (IX.EQ.72167.OR.IX.EQ.80571.AND.J.EQ.10) WRITE(6,*) 'TEST 1:',IX,J,K,IX2,AMPCOS/SUMOK,AMPSIN/SUMOK, &
-!               TIDAL_CONST(IX2,IY,J,K,1),TIDAL_CONST(IX2,IY,J,K,2)
                           END IF
                         END DO
                       IF (SUMOK.GT.1) THEN 
-                        TIDAL_CONST(IX,IY,J,K,1) = SQRT(AMPCOS**2+AMPSIN**2)/SUMOK
-                        TIDAL_CONST(IX,IY,J,K,2) = ATAN2(AMPSIN,AMPCOS)/DERA
+!
+! Finalizes the amplitude and phase calculation from COS and SIN. Special case for mean value Z0. 
+!
+                        IF (TIDECON_NAME(J).NE.'Z0   ') THEN 
+                          TIDAL_CONST(IX,IY,J,K,1) = SQRT(AMPCOS**2+AMPSIN**2)/SUMOK
+                          TIDAL_CONST(IX,IY,J,K,2) = ATAN2(AMPSIN,AMPCOS)/DERA
+                        ELSE
+                          TIDAL_CONST(IX,IY,J,K,1) = AMPCOS/SUMOK
+                          TIDAL_CONST(IX,IY,J,K,2) = 0.
+                          END IF
                         IF(K.EQ.2.AND.J.EQ.TIDE_MF) THEN 
                           NBAD=NBAD-1
                           BADPOINTS(IX,IY) = 0
-!IF (IX.EQ.72167.OR.IX.EQ.80571) WRITE(6,*) 'ENDDZ:',ITER, IX, K,J,NBAD,IX2,BADPOINTS(IX,IY)
                           END IF 
-!IF (IX.EQ.72167.OR.IX.EQ.80571.AND.J.EQ.10) WRITE(6,*) 'ENDDD:',ITER, IX, K,J,NBAD,IX2,AMPCOS/SUMOK,AMPSIN/SUMOK, &
-!                                      TIDAL_CONST(IX2,IY,J,K,1),TIDAL_CONST(IX2,IY,J,K,2)
 
                          ENDIF
                        END DO

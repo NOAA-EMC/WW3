@@ -1,11 +1,12 @@
 \vsssub
-\subsubsection{~$S_{??}$: Reflection by shoreline and icebergs} \label{sec:unknown}
+\subsubsection{~$S_{ref}$: Reflection by shoreline and icebergs} \label{sec:REF1}
 \vsssub
 
-\opthead{unknown}{\ws}{F. Ardhuin}
+\opthead{REF1}{\ws}{F. Ardhuin}
 
 \noindent 
-Reflections by shorelines and icebergs is activated by setting namelists
+Reflections by shorelines and icebergs is activated by using the REF1 switch 
+and setting namelists
 parameters REFCOAST, REFSUBGRID or REFBERG (in namelist REF1) to non-zero
 values that are the target reflection coefficients $R_0^2$ for the wave
 energy.  From these values $R_0^2$ may be varied with wave height and period
@@ -25,19 +26,20 @@ Because reflection involve wave trains with different directions, in a model
 like \ws, their interaction can only be represented through a source term in
 the right hand side. Nevertheless, this is physically linked to propagation.
 
-In practice, for the regular grids, the reflection source term puts into the
+In practice, for the regular and curvilinear grids, the reflection source term puts into the
 reflected wave directions the proper amount of energy that will be taken away
 by propagation at the next time step. When neglecting the cross-shore current,
 this is
 
 \begin{equation} 
 \cS_{ref}(k,\theta) = 
-\int R^2(k,\theta,\theta') \frac{C_g(k)}{\Delta A} \left[\cos \theta \Delta y + \sin \theta  \Delta x \right] N(k,\theta') \mathrm{d} \theta'
+\int R^2(k,\theta,\theta') \frac{C_g(k)}{\Delta A} \left[\cos (\theta-\theta_q) \Delta q + \sin (\theta-\theta_p)  \Delta p \right] N(k,\theta') \mathrm{d} \theta'
 \end{equation}
-where $R^2$ is an energy reflection coefficient, and $\Delta x$ and $\Delta y$
-are the grid spacing along the two axes, and $\Delta A$ is the cell area. The
+where $R^2$ is an energy reflection coefficient, and $\Delta p$ and $\Delta q$
+are the grid spacing along the two axes of the grid,  and $\Delta A$ is the cell area. The
 definition of the shoreline direction from the land/sea mask is explained in
-\cite{art:Aea11}. It has not been adapted for curvilinear grids.
+\cite{art:Aea11}. This has not been tested for the SMC grids, and it is not expected to work for 
+that type of grid.  
 
 In the case of unstructured grids, the spectral density of outgoing directions
 on the boundary is directly set to the expected reflected value and the

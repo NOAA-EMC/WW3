@@ -102,7 +102,7 @@ eqs/BT4.tex \
 eqs/DB1.tex \
 eqs/TR0.tex \
 eqs/BS1.tex \
-eqs/unknown.tex \
+eqs/REF1.tex \
 eqs/XXn.tex \
 eqs/output.tex \
 num.tex \

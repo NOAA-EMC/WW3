@@ -1,0 +1,9 @@
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+$  1
+$  fp        sip    thm  ncos xm     six    ym    siy     hmax
+$  0.040469  0.0001 150. 200 210.0 0.5000  83.0  0.5000  2.501
+$ ITYPE=2, JONSWAP with Gaussian in space
+   2
+$  alpha  fp       thm  gamma siga sigb xm     six    ym   siy   
+   0.0081 0.040469 150. 1.0   0.07 0.09 210.0 -0.5000 83.0 0.5000

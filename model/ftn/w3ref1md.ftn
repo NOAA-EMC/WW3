@@ -143,7 +143,7 @@
       REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, EMEAN, FMEAN
       REAL, INTENT(INOUT)     :: A(NSPEC)
       REAL, INTENT(IN)        :: CX1, CY1, DT
-      INTEGER, INTENT(IN)     :: REFLD(4), IX, IY
+      INTEGER, INTENT(IN)     :: REFLD(6), IX, IY
       REAL, INTENT(IN)        :: REFLC(4), DELX, DELY, DELA, TRNX, &
                                  TRNY, BERG
       REAL, INTENT(OUT)       :: S(NSPEC)
@@ -151,7 +151,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/ 
-      INTEGER         :: ISPECI, ISPEC, IK, ITH, ITH2, ITH3, NRS
+      INTEGER         :: ISPECI, ISPEC, IK, ITH, ITH2, ITH3, ITH2X, ITH2Y, NRS
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE   :: FIRST = .TRUE.
        
@@ -169,7 +169,6 @@
 ! 1.  Sets reflection term to zero
 !
       S = 0.
-
       NRS=NINT(REFPARS(8))
       IF (REFPARS(6).GT.0) THEN
 !
@@ -178,7 +177,8 @@
         SLOPE=MAX(0.001,REFLC(3))
         MICHEFAC=0.0001*GRAV**2*(SLOPE**5)  &
                    /(MAX(EMEAN,1E-4)*MAX(FMEAN,0.001)**4)
-        RAMP0=0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC  ! IF REFLC(1)=1, 0.07 should be 0.007
+        RAMP0=0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC  ! This assumes REFLC(1)=0.1
+                                                        ! IF REFLC(1)=1, 0.07 should be 0.007
       ELSE
         RAMP0=1.
         ENDIF
@@ -270,6 +270,8 @@
 !  Adds energy into reflected directions (ITH2)
 !
                   ISPEC=ITH2+(IK-1)*NTH
+                  ITH2X=1+MOD(NTH+ITH2-REFLD(5)-1,NTH)
+                  ITH2Y=1+MOD(NTH+ITH2-REFLD(6)-1,NTH)
                   R3=ECOS(1+MOD(ABS(ITH2-REFLD(1)),NTH))
                   IF (R3.LT.0) THEN 
 !
@@ -285,23 +287,23 @@
                       CASE (0)
                    ! Sharp corner: broad reflection
                           S(ISPEC)=S(ISPEC)+    &
-                            REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*FAC1   &
-                           +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*FAC1
+                            REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2X)/DELX)*FAC1   &
+                           +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2Y)/DELY)*FAC1
                       CASE (1)
                    ! mild corner: average reflection
 !
                           S(ISPEC)=S(ISPEC)+    &
-                            REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX)*ABS(R4)*FAC2 &
-                          + REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY)*ABS(R4)*FAC2
+                            REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2X)/DELX)*ABS(R4)*FAC2 &
+                          + REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2Y)/DELY)*ABS(R4)*FAC2
                       CASE (2)
                    ! straight coast: narrow reflection
 ! Specular for tests 
 !                   S(ISPEC)=S(ISPEC)+REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX)  &
 !                                    +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY)
 !
-                           S(ISPEC)=S(ISPEC)+REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2)/DELX) &
+                           S(ISPEC)=S(ISPEC)+REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2X)/DELX) &
                                                 *(R4**NRS) *FAC3                          & 
-                                            +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2)/DELY) &
+                                            +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2Y)/DELY) &
                                                 *(R4**NRS) *FAC3
                         END SELECT
                       END IF ! (R4.GT.0.)

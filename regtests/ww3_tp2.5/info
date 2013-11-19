@@ -33,6 +33,9 @@
 #     + Spectral grid: ntheta = 36, nf = 3, f1 = 0.0368, fgamma = 1.1       #
 #     + Input spectrum: Gaussian in space, JONSWAP in spectrum              #
 #                                                                           #
+# - Test case input : (input_REF)                                           #
+#   * same as default including coastal reflection                          #
+#                                                                           #
 #                                             W. Erick Rogers, Nov 2009     #
 #                                             Naval Research Laboratory     #
 #                                                   Last Mod : Dec 2010     #

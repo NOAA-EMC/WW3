@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Nov-2013 |
+!/                  | Last update :         13-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -43,8 +43,9 @@
 !/    16-Sep-2013 : Add Arctic part for SMC grid.       ( version 4.11 )
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
+!/    13-Nov-2013 : Moved reflection from ww3_grid.ftn  ( version 4.13 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -1294,7 +1295,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSF, MAPSTA, MAPST2, &
                           ZB, DMIN, NK, NTH, NSPEC, SIG, DSIP,        &
-                          MAPWN, MAPTH, FACHFA, GTYPE, UNGTYPE
+                          MAPWN, MAPTH, FACHFA, GTYPE, UNGTYPE, W3SETREF
       USE W3WDATMD, ONLY: TIME, TLEV, WLV, UST
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3IDATMD, ONLY: TLN, WLEV
@@ -1643,7 +1644,11 @@
 !
 ! 4. Re-generates the boundary data ---------------------------------- *
 !
-      IF (GTYPE.EQ.UNGTYPE) CALL SETUGIOBP
+      IF (GTYPE.EQ.UNGTYPE) THEN 
+        CALL SETUGIOBP
+!/REF1      ELSE 
+!/REF1        CALL W3SETREF
+      ENDIF 
 !
       RETURN
 !

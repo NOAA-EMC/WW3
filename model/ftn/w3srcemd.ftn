@@ -367,7 +367,7 @@
       INTEGER, INTENT(IN)     :: IX, IY, IMOD
       REAL, INTENT(IN)        :: WN1(NK), CG1(NK), D_INP, U10ABS,     &
                                  U10DIR, AS, ICE, CX, CY, DTG, D50,PSIC
-      INTEGER, INTENT(IN)     :: REFLED(4)
+      INTEGER, INTENT(IN)     :: REFLED(6)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG
       REAL, INTENT(INOUT)     :: SPEC(NSPEC), ALPHA(NK), USTAR,       &

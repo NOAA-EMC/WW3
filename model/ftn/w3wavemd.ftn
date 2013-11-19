@@ -220,6 +220,7 @@
 !/    03-Sep-2012 : Fix format 902.                     ( version 4.10 )
 !/    10-Dec-2012 : Modify field output MPI for new     ( version 4.OF )
 !/                  structure and smaller memory footprint.
+!/    16-Nov-2013 : Allows reflection on curvi. grids   ( version 4.13 )
 !/
 !  1. Purpose :
 !
@@ -372,7 +373,7 @@
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
-                                 REFLED(4), IK, ITH, IS, NKCFL 
+                                 REFLED(6), IK, ITH, IS, NKCFL 
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -380,7 +381,7 @@
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
                                  DTL0, DTI0, DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
-                                 FACX, FACY, SXM, SYM, XXX, REFLEC(4),&
+                                 FACX, SXM, SYM, XXX, REFLEC(4),      &
                                  DELX, DELY, DELA, DEPTH, D50, PSIC
 !/SEC1     REAL                    :: DTGTEMP
 !
@@ -481,6 +482,12 @@
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
+      IF (FLAGLL) THEN 
+        FACX   =  1./(DERA * RADIUS) 
+      ELSE 
+        FACX   =  1.
+        END IF
+!
 !/SBS      NDSOFLG = 99
 !
       TAUWX  = 0.
@@ -819,16 +826,6 @@
 !/T              WRITE (NDST,9023)
               GOTO 380
             END IF
-!	  
-           IF(GTYPE .EQ. UNGTYPE) THEN
-             IF (FLAGLL) THEN 
-                FACX   =  1./(DERA * RADIUS) 
-                FACY   =  1./(DERA * RADIUS)
-              ELSE 
-                FACX   =  1.
-                FACY   =  1. 
-              END IF
-            END IF
 !
 ! Estimation of the local maximum CFL for XY propagation
 !
@@ -843,7 +840,7 @@
 !/SHRD                  ISEA   = JSEA
 !/T                     IF (MOD(ISEA,100).EQ.0) WRITE(NDSE,*) 'COMPUTING CFL FOR NODE:',ISEA
 !/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
-!/PR3                        CALL W3CFLUG ( ISEA, NKCFL, FACX, FACY, DTG,  &
+!/PR3                        CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
 !/PR3                             MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
 !/PR3                      ELSE 
 !/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
@@ -939,13 +936,13 @@
 !/PR3               CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
 !/PRX               CALL W3XYPX
                   ELSE IF (GTYPE .EQ. UNGTYPE) THEN
-!/PR1               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PR1               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PR1                                  FIELD, VGX, VGY, UGDTUPDATE )
-!/PR2               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PR2               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PR2                                  FIELD, VGX, VGY, UGDTUPDATE )
-!/PR3               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PR3               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PR3                                  FIELD, VGX, VGY, UGDTUPDATE )
-!/PRX               CALL W3XYPUG ( ISPEC, FACX, FACY, DTG,           &
+!/PRX               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PRX                                  FIELD, VGX, VGY, UGDTUPDATE )
                     END IF
                   CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
@@ -1010,13 +1007,9 @@
 !
 !/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
 !
-            IF (FLAGLL) THEN 
-              SXM    = SX * DERA * RADIUS
-              SYM    = SY * DERA * RADIUS
-            ELSE
-              SXM    = SX
-              SYM    = SY
-              END IF
+!/REF1            SXM    = SX / FACX 
+!/REF1            SYM    = SY / FACX
+
             D50=0.0002
             REFLEC(:)=0.
             REFLED(:)=0.
@@ -1027,15 +1020,21 @@
 !/SHRD                ISEA   = JSEA
                 IX     = MAPSF(ISEA,1)
                 IY     = MAPSF(ISEA,2)
-                IF (GTYPE.EQ.UNGTYPE) THEN 
-                  DELA=1. !SI(IX)* (DERA * RADIUS)**2*CLATS(ISEA)
-                  DELX=1. !UG_BOUNDL(1,IX)*CLATS(ISEA)
-                  DELY=1. !UG_BOUNDL(1,IY)
-                ELSE
-                  DELX=SXM*CLATS(ISEA)
-                  DELY=SYM
-                  DELA=DELX*DELY
-                  END IF
+                DELA=1. 
+                DELX=1. 
+                DELY=1. 
+!/REF1                IF (GTYPE.EQ.RLGTYPE) THEN 
+!/REF1                  DELX=SXM*CLATS(ISEA)
+!/REF1                  DELY=SYM
+!/REF1                  DELA=DELX*DELY
+!/REF1                  END IF
+!/REF1                IF (GTYPE.EQ.CLGTYPE) THEN 
+!/REF1! Maybe what follows works also for RLGTYPE ... to be verified
+!/REF1                  DELX=HPFAC(IY,IX)/ FACX
+!/REF1                  DELY=HQFAC(IY,IX)/ FACX 
+!/REF1                  DELA=DELX*DELY
+!/REF1                  END IF
+!
 !/REF1          REFLEC=REFLC(:,ISEA)
 !/REF1          REFLEC(4)=BERG(ISEA)*REFLEC(4)
 !/REF1          REFLED=REFLD(:,ISEA)

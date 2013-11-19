@@ -1678,6 +1678,10 @@ END SUBROUTINE
     DO IX = 1, NX
       IF (ABS(MAPSTA (1,IX)) .EQ. 2) THEN
         N = N + 1 
+        IF (N.GT.NBI) THEN
+          WRITE(NDSE,*) 'Error: boundary node index > NBI ... nest.ww3 file is not consistent with mod_def.ww3'
+          STOP
+        ENDIF
         IX1(N) = IX
 !/T        WRITE(NDSE ,*)'ADDING BOUNDARY POINT:',N,IX
         END IF
@@ -1756,8 +1760,11 @@ END SUBROUTINE
 
 !  5. Called by :
 !
-!       WW3_GRID
-!       W3UPTD??   forcing field update
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_GRID  Prog. WW3_GRID Grid preprocessor
+!      W3ULEV    Subr. W3UPDTMD Water level update
+!     ----------------------------------------------------------------
 !
 !  6. Error messages :
 !
@@ -1832,10 +1839,10 @@ END SUBROUTINE
         SEA_CELL(:)=0
         J = 0
         DO IX = 1, NX
+! counts the wet connected nodes
           DO I = 1, 2*COUNTRI
             IF (VNEIGH(IX,I).NE.0) THEN 
-              IF (MAPSTA(1,VNEIGH(IX,I)).GT.0) SEANEIGH(IX)=SEANEIGH(IX)+1  ! Loop over all connected points
-              !WRITE(995,*) 'TEST BOUNDARY 1:',IX,VNEIGH(IX,I),SEANEIGH(IX),CCON(IX)
+              IF (MAPSTA(1,VNEIGH(IX,I)).GT.0) SEANEIGH(IX)=SEANEIGH(IX)+1  
               END IF 
             END DO         
           END DO
