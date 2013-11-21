@@ -162,6 +162,7 @@ run/gx_outf.tex \
 run/ww3_grib.tex \
 run/ww3_outp.tex \
 run/ww3_ounp.tex \
+run/ww3_gint.tex \
 run/gx_outp.tex \
 run/ww3_trck.tex \
 run/ww3_systrk.tex \
@@ -227,6 +228,7 @@ ww3_ounf.tex \
 ww3_ounp.tex \
 ww3_systrk.tex \
 ww3_grib.tex \
+ww3_gint.tex \
 gx_outf.tex \
 gx_outp.tex
 

@@ -5,4 +5,37 @@
 \opthead{UNO}{???}{J.-G. Li}
 
 \noindent
-Documentation not yet available.
+\noindent
+
+The upstream non-oscillatory 2nd order (UNO2) advection scheme \citep{art:Li08} is an extension of the MINMOD scheme \citep{bk:Roe85}. In the UNO2
+scheme, the interpolated wave action value at the mid-flux point for
+the cell face between cell \emph{i}-1 and cell \emph{i} is given by
+
+\begin{equation}
+N_{i-}^{*}=N_{c}+sign\left(N_{d}-N_{c}\right)\frac{\left(1-C\right)}{2}\min\left(|N_{u}-N_{c}|,|N_{c}-N_{d}|\right)
+\label{eq:UNO2regular}
+\end{equation}
+where \emph{i}- is the cell face index; $C=\left|\dot{\phi_{b}}\right|\Delta t/\Delta\phi$ is the absolute CFL number; and the subscripts \emph{u}, \emph{c} and
+\emph{d} indicate the \emph{upstream, central} and \emph{downstream}
+cells, respectively, relative to the given \emph{i}- cell face velocity
+$\dot{\phi}_{b}$. If $\dot{\phi}_{b}>0$, \emph{u} = \emph{i}-2,
+\emph{c}=\emph{i}-1, \emph{d}=\emph{i} for the cell face between cell
+\emph{i}-1 and cell \emph{i}. If$\dot{\phi}_{b}\leq0$ then \emph{u}=\emph{i}+1,
+\emph{c}=\emph{i}, \emph{d}=\emph{i}-1. Details of the UNO2 scheme
+are given in \cite{art:Li08} alongside standard numerical tests which demonstrate
+that the UNO2 scheme on Cartesian multiple-cell grids is non-oscillatory,
+conservative, shape-preserving, and faster than its classical counterpart
+as long as the CFL number is less than 1.0.
+
+The flux and cell value update follow the same fornulations as the
+first order upstream scheme, that is,
+
+\[
+\mathcal{F}_{i-}=\dot{\phi_{b}N_{i-}^{*}};\;\;\; N_{i}^{n+1}=N_{i}^{n}+\frac{\Delta t}{\Delta\phi}\left(\mathcal{F}_{i-}-\mathcal{F}_{i+}\right)\]
+ where $\mathcal{F}_{i+}$is the flux for the cell face between cell\emph{
+i} and cell \emph{i}+1. It can be estimated with a mid-flux value
+similar to \ref{UNO2regular} but with \emph{i} replaced with \emph{i}+1.
+An advective-conservative hybrid operator \citep{art:LLM96} that
+reduces the time-splitting error is used to extend the UNO schemes
+to multi-dimensions. 
+

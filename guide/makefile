@@ -23,8 +23,9 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # Set base WAVEWATCH III directory used her
-WW3 = ../../wwatch3
+# WW3 = ../../wwatch3
 # WW3 = ../model
+WW3 = ../.
 
 # Make sure run_test script is there
 RUNTEST ?= $(WW3)/regtests/bin/run_test

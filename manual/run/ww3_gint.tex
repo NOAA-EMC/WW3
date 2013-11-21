@@ -1,5 +1,17 @@
 \vsssub
-\subsubsection{TBD (ww3\_gint)} \label{sub:ww3gint}
+\subsubsection{Grid Integration} \label{sub:ww3gint}
 \vsssub
+\proddefH{ww3\_gint}{w3gint}{ww3\_gint.ftn}
+\proddeff{Input}{ww3\_gint.inp}{Formatted input file for program.}{10}
+\proddefa{mod\_def.*}{Model definition files in \ws\ format for base and target grids}{20}
+\proddefa{out\_grd.*}{Gridded field files in \ws\ format for base grids}{30+}
+\proddeff{Output}{standard out}{Formatted output of program.}{6}
+\proddefa{out\_grd.*}{Gridded field files in \ws\ format for target grid}{30+}
+
+\vspace{\baselineskip}
+\noindent
+This post processor program takes field data from several overlapping grids and produces a unified output file. The different model definition and field output files are identified by the unique identifier associated with each specific grid. At this moment the program works with curvilinear and rectlinear grids. 
+
+\inpfile{ww3_gint.tex}
 
 \pb

@@ -3,4 +3,45 @@
 \opthead{???}{\ws\ (MetOffice)}{J.-G. Li}
 
 \noindent
-Documentation not yet available.
+Rotated grid is a latitude-longitdue (lat-lon) grid and is obtained
+by rotating the North Pole to a new pole position at latitude $\phi_{p}$
+and longitude $\lambda_{p}$ in the standard latitude-longitude system.
+The new pole position is chosen so that an interested model domain
+may be placed around the rotated equatorial area for a evenly spaced
+lat-lon mesh. For this reason the rotated grid is also known as \emph{Equatorial
+grid}. For instance, the North Atlantic and European wave (NAEW) model
+used in the UK Met Office uses a rotated pole at 37.5N, 177.5E so
+that London, UK (\textasciitilde{}51.5N 0.0E) is almost on the rotated
+equator. This rotated grid allows a much more evenly spaced lat-lon
+mesh in the NAE domain than the standard lat-lon grid in the same
+area. In \ws\, the rotated grid is implemeted with minimum changes
+to the origianal lat-lon grid. In fact, the rotated grid is treated
+just like the standard lat-lon grid inside the  model. Only input
+and output files are modified for the rotated grid. Users should choose
+the regular lat-lon grid along with the RTD switch to use the rotated
+grid. Model input files, like wind, current and ice files should be
+mapped on to the rotated grid. For convenience of nesting in standard
+lat-lon grid, boundary conditions for the rotated grid use standard
+lat-lon grid points, which are converted into rotated grid lat-lon
+inside \ws\. List of 2D spectral output locations in ww3\_shel.inp
+are also specified in standard lat-lon. All directional output such
+as wind direction, peak direction, 2D spectra, etc. are converted
+into standard lat-lon orientation. Full grid output are still on rotated
+grid but 2D spectra locations have been converted into standard lat-lon.
+
+Four subroutines are provided in module {\bf w3servmd.ftn} for rotated grid
+conversion:
+\begin{vlist}
+\vit{w3spectn}{}{Turns wave spectrum anti-clockwise by AnglD}
+\vit{w3acturn}{}{Turns wave action(k,nth) anti-clockwise by AnglD}
+\vit{w3lltoeq}{}{Convert standard into rotated lat/lon plus AnglD}
+\vit{w3eqtoll}{}{Reverse of w3lltoeq, but AnglD unchanged}
+\end{vlist}
+These subroutines are self-contained and can be extracted outside
+the model for pre- or post-processing of rotated grid files. Some
+conversion tools have been developed based on these subroutines but
+have not been included in \ws\ yet. Refer to the regression
+test \emph{regtests/ww3\_tp2.11} for an example of a rotated grid
+model (NAEW) and the document \emph{guide/RotatedGrid.pdf} for rotated
+grid formulations. Users may contact \url{Jian-Guo.Li@metoffice.gov.uk}
+for more information.
