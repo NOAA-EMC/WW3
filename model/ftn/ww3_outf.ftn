@@ -1600,29 +1600,6 @@
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY ,MSSY(1:NSEA),     &
                                                              MAPSF, XY )
                 ENDIF
-                DO ISEA=1, NSEA
-                  CABS   = SQRT(MSSX(ISEA)**2+MSSY(ISEA)**2)
-                  IF ( MSSX(ISEA)  .EQ. UNDEF ) THEN
-                      MSSY(ISEA) = UNDEF
-                      CABS       = UNDEF
-                    ELSE IF ( MSSX(ISEA)  .NE. 0. .AND.              &
-                              MSSY(ISEA)  .NE. 0. ) THEN
-                      MSSY(ISEA) = UNDEF
-                    ELSE
-                      MSSY(ISEA) = MOD ( 630. -                      &
-                            RADE*ATAN2(MSSY(ISEA),MSSX(ISEA)) , 360. )
-                    END IF
-                  MSSX(ISEA) = CABS
-                  END DO
-                IF ( ITYPE .EQ. 4 ) THEN
-                   XS3    = MSSX(1:NSEA)
-                   XS4    = MSSY(1:NSEA)
-                ELSE
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSX(1:NSEA),     &
-                                                             MAPSF, X1 )
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSY(1:NSEA),     &
-                                                             MAPSF, X2 )
-                ENDIF
 !
               ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
                 IF ( VECTOR ) THEN
