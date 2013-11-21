@@ -406,7 +406,7 @@
                                  VSIN(NSPEC), VDIN(NSPEC),            &
                                  VSNL(NSPEC), VDNL(NSPEC),            &
                                  VSDS(NSPEC), VDDS(NSPEC),            &
-                                 VSWL(NSPEC), VDWL(NSPEC),            &
+!/ST6                                 VSWL(NSPEC), VDWL(NSPEC),            &
                                  VSBT(NSPEC), VDBT(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
@@ -416,7 +416,7 @@
 !/REF1                                VREF(NSPEC),                         &
 !/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
-      REAL                    :: SWL(NSPEC), DWL(NSPEC)
+!/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
 !/ST3      LOGICAL                 :: LLWS(NSPEC) 
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
@@ -443,10 +443,10 @@
 !/ST0      VDDS = 0.
 !/BT0      VSBT = 0.
 !/BT0      VDBT = 0.
-      VSWL = 0.
-      VDWL = 0.
-      SWL  = 0.
-      DWL  = 0.
+!/ST6      VSWL = 0.
+!/ST6      VDWL = 0.
+!/ST6      SWL  = 0.
+!/ST6      DWL  = 0.
 !
 !/ST0      ZWND   = 10.
 !/ST1      ZWND   = 10.
@@ -652,8 +652,8 @@
 !
 !/ST6        IF (SWL6S6) THEN
 !/ST6           CALL W3SWL6 ( SPEC, CG1, WN1,       SWL,  DWL )
-!/ST6           VSWL = VSWL + SWL 
-!/ST6           VDWL = VDWL + DWL 
+!/ST6           VSWL = VSWL + SWL
+!/ST6           VDWL = VDWL + DWL
 !/ST6        END IF
 !
 ! 2.d Bottom interactions.
@@ -711,7 +711,7 @@
 !
         DO IS=1, NSPECH
           VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS) + VSDS(IS) + VSBT(IS)
-          VS(IS) = VS(IS) + VSWL(IS)
+!/ST6          VS(IS) = VS(IS) + VSWL(IS)
 !/DB1          VS(IS) = VS(IS) + VSDB(IS)
 !/DBX          VS(IS) = VS(IS) + VSDB(IS)
 !/TRX          VS(IS) = VS(IS) + VSTR(IS)
@@ -719,7 +719,7 @@
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/XXX          VS(IS) = VS(IS) + VSXX(IS)
           VD(IS) =            VDIN(IS) + VDNL(IS) + VDDS(IS) + VDBT(IS)
-          VD(IS) = VD(IS) + VDWL(IS)
+!/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/DB1          VD(IS) = VD(IS) + VDDB(IS)
 !/DBX          VD(IS) = VD(IS) + VDDB(IS)
 !/TRX          VD(IS) = VD(IS) + VDTR(IS)
