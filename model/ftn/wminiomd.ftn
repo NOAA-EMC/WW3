@@ -643,7 +643,7 @@
 !/MPI                  NRQ    = NRQ + 1
 !/MPI                  ITAG   = IT0 + I
 !/MPI                  CALL MPI_IRECV ( SBPI(1,I), NSPEC,             &
-!/MPI                                   MPI_INTEGER, ISPROC-1,        &
+!/MPI                                   MPI_REAL, ISPROC-1,           &
 !/MPI                                   ITAG, MPI_COMM_MWAVE,         &
 !/MPI                                   IRQ(NRQ), IERR_MPI )
 !/MPIT                WRITE (MDST,9016) NRQ, JSEA, ISPROC,             &
@@ -1515,7 +1515,7 @@
 !/MPI                    IF ( ISPROC .NE. IMPROC ) THEN
 !/MPI                        NRQ    = NRQ + 1
 !/MPI                        CALL MPI_IRECV ( SHGH(1,ILOC,I),         &
-!/MPI                             SGRDS(J)%NSPEC, MPI_INTEGER,        &
+!/MPI                             SGRDS(J)%NSPEC, MPI_REAL,           &
 !/MPI                             ISPROC-1, ITAG, MPI_COMM_MWAVE,     &
 !/MPI                             IRQ(NRQ), IERR_MPI )
 !/MPIT                        WRITE (MDST,9016) NRQ, JSEA, ISPROC,     &
@@ -2283,7 +2283,7 @@
 !/MPI                    IF ( IP .NE. IMPROC ) THEN
 !/MPI                        NRQ    = NRQ + 1
 !/MPI                        CALL MPI_IRECV ( SEQL(1,I,IA),           &
-!/MPI                             SGRDS(J)%NSPEC, MPI_INTEGER,        &
+!/MPI                             SGRDS(J)%NSPEC, MPI_REAL,           &
 !/MPI                             IP-1, ITAG, MPI_COMM_MWAVE,         &
 !/MPI                             IRQ(NRQ), IERR_MPI )
 !/MPIT                        WRITE (MDST,9016) NRQ, JSEA, IP,         &
