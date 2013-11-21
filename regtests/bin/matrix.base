@@ -119,6 +119,7 @@ then
     echo "$rtst -s PR1          -w work_PR1                                        $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR1          -w work_PR1_curv     -g curv                       $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR1          -w work_PR1                                        $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR1          -w work_REF_PR1      -i input_REF                  $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR1          -w work_PR1_a        -g a                          $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR1          -w work_PR1_b        -g b                          $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -131,6 +132,7 @@ then
     echo "$rtst -s PR1_MPI      -w work_PR1_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR1_MPI      -w work_PR1_curv_MPI -g curv     -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR1_MPI      -w work_PR1_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR1_MPI      -w work_REF_PR1_MPI -i input_REF -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR1_MPI      -w work_PR1_a_MPI    -g a        -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR1_MPI      -w work_PR1_b_MPI    -g b        -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -153,6 +155,7 @@ then
     echo "$rtst -s PR2_UQ       -w work_PR2_UQ                                     $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UQ       -w work_PR2_UQ_curv     -g curv                    $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UQ       -w work_PR2_UQ                                     $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR2_UQ       -w work_REF_PR2_UQ      -i input_REF                  $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR2_UQ       -w work_PR2_UQ_a        -g a                       $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR2_UQ       -w work_PR2_UQ_b        -g b                       $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -165,6 +168,7 @@ then
     echo "$rtst -s PR2_UQ_MPI   -w work_PR2_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UQ_MPI   -w work_PR2_UQ_curv_MPI -g curv  -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UQ_MPI   -w work_PR2_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR2_UQ_MPI   -w work_REF_PR2_UQ_MPI -i input_REF -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR2_UQ_MPI   -w work_PR2_UQ_a_MPI    -g a     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR2_UQ_MPI   -w work_PR2_UQ_b_MPI    -g b     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -187,6 +191,7 @@ then
     echo "$rtst -s PR2_UNO      -w work_PR2_UNO                                    $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UNO      -w work_PR2_UNO_curv     -g curv                   $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UNO      -w work_PR2_UNO                                    $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR2_UNO      -w work_REF_PR2_UNO      -i input_REF                  $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR2_UNO      -w work_PR2_UNO_a        -g a                      $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR2_UNO      -w work_PR2_UNO_b        -g b                      $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -199,6 +204,7 @@ then
     echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_curv_MPI -g curv -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR2_UNO_MPI  -w work_REF_PR2_UNO_MPI -i input_REF -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_a_MPI    -g a    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_b_MPI    -g b    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -221,6 +227,7 @@ then
     echo "$rtst -s PR3_UQ       -w work_PR3_UQ                                     $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UQ       -w work_PR3_UQ_curv     -g curv                    $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UQ       -w work_PR3_UQ                                     $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR3_UQ       -w work_REF_PR3_UQ      -i input_REF                  $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR3_UQ       -w work_PR3_UQ_a        -g a                       $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR3_UQ       -w work_PR3_UQ_b        -g b                       $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -233,6 +240,7 @@ then
     echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_curv_MPI -g curv  -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR2_UQ_MPI   -w work_REF_PR2_UQ_MPI -i input_REF -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_a_MPI    -g a     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_b_MPI    -g b     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -255,6 +263,7 @@ then
     echo "$rtst -s PR3_UNO      -w work_PR3_UNO                                    $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UNO      -w work_PR3_UNO_curv     -g curv                   $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UNO      -w work_PR3_UNO                                    $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR3_UNO      -w work_REF_PR3_UNO      -i input_REF                  $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR3_UNO      -w work_PR3_UNO_a        -g a                      $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR3_UNO      -w work_PR3_UNO_b        -g b                      $ww3 ww3_tp2.9" >> matrix.body
   fi
@@ -267,6 +276,7 @@ then
     echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_curv_MPI -g curv -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
     echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
+    echo "$rtst -s PR3_UNO_MPI  -w work_REF_PR3_UNO_MPI -i input_REF -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
     echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_a_MPI    -g a    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
     echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_b_MPI    -g b    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
   fi
