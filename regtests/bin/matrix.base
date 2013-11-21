@@ -537,11 +537,6 @@ then
     echo "$rtst -s PR3_UQ            -w work_PR3_UQ_f         -m grdset_f                            $ww3 mww3_test_04" >> matrix.body
     echo "$rtst -s PR3_UQ            -w work_PR3_UQ_g         -m grdset_g                            $ww3 mww3_test_04" >> matrix.body
   fi
-  if [ "$multi06" = 'y' ] && [ "$shrd" = 'y' ]
-  then
-    echo "$rtst -s PR3_UQ            -w work_PR3_UQ_b         -m grdset_b                            $ww3 mww3_test_06" >> matrix.body
-    echo "$rtst -s PR3_UQ            -w work_PR3_UQ_c         -m grdset_c                            $ww3 mww3_test_06" >> matrix.body
-  fi
 
   if [ "$multi02" = 'y' ] && [ "$shrd" = 'y' ]
   then
@@ -568,8 +563,6 @@ then
   if [ "$multi06" = 'y' ] && [ "$shrd" = 'y' ]
   then
     echo "$rtst -s PR3_UQ_SCRIP      -w work_PR3_UQ_d         -m grdset_d                            $ww3 mww3_test_06" >> matrix.body
-    echo "$rtst -s PR3_UQ_SCRIP      -w work_PR3_UQ_e         -m grdset_e                            $ww3 mww3_test_06" >> matrix.body
-    echo "$rtst -s PR3_UQ_SCRIP      -w work_PR3_UQ_f         -m grdset_f                            $ww3 mww3_test_06" >> matrix.body
   fi
 
   if [ "$multi01" = 'y' ] && [ "$shrd" = 'y' ]
@@ -598,11 +591,6 @@ then
     echo "$rtst -s PR3_UNO           -w work_PR3_UNO_f        -m grdset_f                            $ww3 mww3_test_04" >> matrix.body
     echo "$rtst -s PR3_UNO           -w work_PR3_UNO_g        -m grdset_g                            $ww3 mww3_test_04" >> matrix.body
   fi
-  if [ "$multi06" = 'y' ] && [ "$shrd" = 'y' ]
-  then
-    echo "$rtst -s PR3_UNO           -w work_PR3_UNO_b        -m grdset_b                            $ww3 mww3_test_06" >> matrix.body
-    echo "$rtst -s PR3_UNO           -w work_PR3_UNO_c        -m grdset_c                            $ww3 mww3_test_06" >> matrix.body
-  fi
 
   if [ "$multi02" = 'y' ] && [ "$shrd" = 'y' ]
   then
@@ -629,8 +617,6 @@ then
   if [ "$multi06" = 'y' ] && [ "$shrd" = 'y' ]
   then
     echo "$rtst -s PR3_UNO_SCRIP     -w work_PR3_UNO_d        -m grdset_d                            $ww3 mww3_test_06" >> matrix.body
-    echo "$rtst -s PR3_UNO_SCRIP     -w work_PR3_UNO_e        -m grdset_e                            $ww3 mww3_test_06" >> matrix.body
-    echo "$rtst -s PR3_UNO_SCRIP     -w work_PR3_UNO_f        -m grdset_f                            $ww3 mww3_test_06" >> matrix.body
   fi
 
   if [ "$multi01" = 'y' ] && [ "$dist" = 'y' ]
@@ -768,10 +754,6 @@ then
     echo "$rtst -s PR3_UQ_MPI_SCRIP  -w work_PR3_UQ_MPI_d_c   -m grdset_d          -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
     echo "$rtst -s PR3_UQ_MPI_SCRIP  -w work_PR3_UQ_MPI_e_c   -m grdset_e          -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
   fi
-  if [ "$multi06" = 'y' ] && [ "$dist" = 'y' ]
-  then
-    echo "$rtst -s PR3_UQ_MPI_SCRIP  -w work_PR3_UQ_MPI_a     -m grdset_a          -f -p $mpi -n $np $ww3 mww3_test_06" >> matrix.body
-  fi
 
   if [ "$multi01" = 'y' ] && [ "$dist" = 'y' ]
   then
@@ -823,10 +805,6 @@ then
     echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_c_c  -m grdset_c          -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
     echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_d_c  -m grdset_d          -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
     echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_e_c  -m grdset_e          -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
-  fi
-  if [ "$multi06" = 'y' ] && [ "$dist" = 'y' ]
-  then
-    echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_a    -m grdset_a          -f -p $mpi -n $np $ww3 mww3_test_06" >> matrix.body
   fi
 
   if [ "$multi05" = 'y' ] && [ "$dist" = 'y' ]
