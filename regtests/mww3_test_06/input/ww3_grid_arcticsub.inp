@@ -5,11 +5,7 @@ $
    1.1 0.03679  3   12  0.
 $
    F T T T F F
-$ geogr. CFL time step is the 2nd one....
 $ 360.  180.0  360.  360.
-$ tp2.4 w/out GSE, 3hr output : 2200 unstable , 1600 stable
-$ arctic_regular, f=0.03679 ; Cg=25.45 ; max(lat)=82, dx=3092; dt=121 s
-$ arctic_curvilinear_subset: 107x121 ; min(dist)=15.2 km dt=597s
   550. 550. 550. 550.
 $
 $ &PRO2 DTIME = 64800. /
@@ -22,39 +18,18 @@ END OF NAMELISTS
 $
   'CURV' T 'NONE'
   107 121
-$ 1st attempt: left-handed grid
-$ 20 1.0 0.0 1 1 '(....)' 'NAME' './../input/lonsubT.dat'
-$ 21 1.0 0.0 1 1 '(....)' 'NAME' './../input/latsubT.dat'
-$ 2nd attempt: flipped left-right
   20 1.0 0.0 1 1 '(....)' 'NAME' './../input/lonsubLR.dat'
   21 1.0 0.0 1 1 '(....)' 'NAME' './../input/latsubLR.dat'
-$ option 1: depth via file:
-$  -0.1 7.50  9  -1. 1 1 '(....)'    'NAME' './../input/depth.arcticreg'
-$ option 2: depth input here: 
   -0.1 0.25  10  -1000. 4 1 '(....)' 'UNIT' 'input'
    12947*1
 $
   10  1 1 '(....)' 'PART' 'input'
 $
-$ List via complaint.txt and deal_with_complaint.m :
-$ using lonsubT.dat etc.:
-$    1    1 F
-$    1   44 T 
-$  107   45 F
-$  107    1 T
-$    1    1 T
-$ using lonsubLR.dat etc.:
      1    1 F
      1   45 T 
    107   44 F
    107    1 T
      1    1 T
-$ Full list:
-$     1   1  T
-$     1 121  T
-$   107 121  T
-$   107   1  T
-$     1   1  T
 $
 $  Close list by defining point (0,0) (mandatory)
 $
@@ -73,11 +48,7 @@ $
     0   0
 $
 $ Output boundary points --------------------------------------------- $
-$ Note, these do
-$ not need to be defined for data transfer between grids in the multi
-$ grid driver.
-$
-$  Close list by defining line with 0 points (mandatory)
+$ Close list by defining line with 0 points (mandatory)
 $
     0. 0. 0. 0.  0
 $

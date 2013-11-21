@@ -1,4 +1,4 @@
-function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,units,plot_bathy)
+function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,units,plot_bathy,iprint)
 
 % Purpose: scan depth (if ploty_bath==1) and Hs files 
 %     and make simple x,y plots and save fields
@@ -24,6 +24,7 @@ wermap=jet;
 wermap(1,:)=[0 0.6 0];
 
 v2=[-10 0 10];
+icount=0;
 
 for itime=1:1000
 
@@ -81,11 +82,14 @@ for itime=1:1000
     time_filenames(itime)=time_filename; % for error checking
     time(itime)=datenum(year,month,day,hour,minute,0);
     icheck=0;
+
+%   This operation is disabled since depth at first time step may not apply for this field
+%   (depth field is affected by nonstationary ice, for example)
+%   if plot_bathy==1
+%     [i]=find(depth<0);
+%     str=['    ' variablename '(i)=-99;'];eval(str)
+%   end
     
-    if plot_bathy==1
-      [i]=find(depth<0);
-      str=['    ' variablename '(i)=-99;'];eval(str)
-    end
     figure(2),clf,hold off
     str=['    imagesc(xgrd,ygrd,' variablename ''')'];eval(str)
     colormap(wermap)
@@ -108,6 +112,14 @@ for itime=1:1000
     end
     title([variablename ' (' units ') ; ' datestr(time(itime),0)])
     pause(0.1)
+    icount=icount+1;
+    if iprint==1
+      if icount==1
+        print -dpsc2 outf.ps
+      else
+        print -dpsc2 -append outf.ps
+      end  
+    end
            
     time_filename=time_filename+dt;
 %   round to nearest minute to avoid limits of precision in dt that causes creepage over many time steps
@@ -127,5 +139,9 @@ if exist('xgrd')==0
 end
 
 disp('saving final .mat file....')
-str=['save ' variablename '.OUTF.mat xgrd ygrd ' variablename '_t time'];eval(str)
+if plot_bathy==1
+  str=['save ' variablename '.OUTF.mat xgrd ygrd depth ' variablename '_t time'];eval(str)
+else
+  str=['save ' variablename '.OUTF.mat xgrd ygrd ' variablename '_t time'];eval(str)
+end
 disp('....done')

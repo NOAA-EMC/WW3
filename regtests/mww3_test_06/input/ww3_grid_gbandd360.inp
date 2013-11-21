@@ -5,11 +5,6 @@ $
    1.1 0.03679  3   12  0.
 $
    F T T T F F
-$ geogr. CFL time step is the 2nd one....
-$ 360.  180.0  360.  360.
-$ tp2.4 w/out GSE, 3hr output : 2200 unstable , 1600 stable
-$ arctic_regular, f=0.03679 ; Cg=25.45 ; max(lat)=82, dx=3092; dt=121 s
-$ global_band, f=0.03679 ; Cg=25.45 ; max(lat)=70, dx=38005; dt=1493 s
   1100.  1100. 1100.  1100.
 $
 $ &PRO2 DTIME = 64800. /
@@ -23,13 +18,7 @@ $
   'RECT' T 'SMPL'
   360  21
   1.00  1.00  1.
-$ option 1: start at 0.0 and go to 359.
    0.0  50.0 1.
-$ option 2: start at -180 and go to 179
-$  -180.0  50.0 1.
-$ option 1: depth via file:
-$  -0.1 7.50  9  -1. 1 1 '(....)'    'NAME' './../input/depth.gband'
-$ option 2: depth input here: 
   -0.1 0.25  10  -1000. 4 1 '(....)' 'UNIT' 'input'
    7560*1
 $

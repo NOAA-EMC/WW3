@@ -249,7 +249,6 @@
 !
 ! 2.  Using native input --------------------------------------------- /
 !
-        IF(SIZE(INPMAP,2).LT.J.OR.SIZE(IDINP,2).LT.J)CALL EXTCDE(895)
         IF ( INPMAP(IMOD,J) .EQ. 0 ) THEN
 !
 !/T            WRITE (MDST,9020)
