@@ -1,15 +1,18 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid splitting input file                              $
 $ -------------------------------------------------------------------- $
-$
-$ Grid identifier (file extension for mod_def file)
+$ Grid identifier (file extension for mod_def file of grid to be split)
 $
   'glo_2d'
 $
-$ Number of sub-grids to be created, maximum number of iterations and
-$ target grid point count std in percent.
+$ Number of sub-grids to be created, maximum number of iterations,
+$ target grid point count std in percent. user defined halo extension
+$ (default should be 2, used because of inconsistencies between halo
+$ computation in this code and in the main wave model code). Increase
+$ the latter number if ww3_multi fails on halo overlaps between 
+$ equally ranked grids.
 $
-  12  250  0.75
+  12  250  0.75  2
 $
 $ IDLA, IDFM, scale and RFORM for bottom, obstruction and mask files.
 $ Note that the third file is integers. Suggest IDFM = 1 and IDLA = 1
@@ -24,7 +27,6 @@ $  F: for test purpuses only, defeats most reasons for spliting
 $  T: normal operations
 $
    0.4  1.  F
-$
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
 $ -------------------------------------------------------------------- $

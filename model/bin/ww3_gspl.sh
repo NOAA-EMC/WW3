@@ -13,7 +13,7 @@
 #       ww3_gspl : Grdi splitter.                                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      Jan 2013               #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -41,10 +41,11 @@
 # 1.a.2 Usage function
 
   scriptname="`basename $0`"
-  optstr="ad:f:hl:n:o:rs:t:v"
+  optstr="ad:e:f:hil:n:o:rs:t:v"
 
   nr_it=350
   target='0.75'
+  halo_ext=2
   comm_first='0.'
   comm_last='1.'
   frflag='T'
@@ -60,9 +61,12 @@ Required:
 Options:
   -a               : use entire assigned cummunicator for each grid
   -h               : help, print this.
+  -i               : create template file ww3_gint.inp_tmpl for
+                     later integration of output into single grid.
   -d data_dir      : directory with ww3_grid.inp and ancilary data
                       * default is working directory
                       * relative unless starting with '/'
+  -e halo_ext      : set halo extension, default is 2
   -o output_dir    : directory for std out redirects
                       * default is working directory
                       * relative unless starting with '/'
@@ -99,8 +103,10 @@ EOF
     -a) frflag='F' ;;
     -c) shift; info_comm="$1" ;;
     -d) shift; data_dir="$1" ;;
+    -e) shift; halo_ext="$1" ;;
     -f) shift; comm_first="$1" ;;
     -h) help=1 ;;
+    -i) gint=1 ;;
     -l) shift; comm_last="$1" ;;
     -n) shift; nr_it="$1" ;;
     -o) shift; outp_dir="$1" ;;
@@ -230,6 +236,7 @@ EOF
   cd $outp_dir
   rm -f *.out
 
+  rm -rf $temp_dir
   mkdir -p $temp_dir
   cd $temp_dir
   rm -f *.$modID $modID.* *.$modID.*
@@ -351,7 +358,7 @@ $ WAVEWATCH III Grid splitting input file                              $
 $ -------------------------------------------------------------------- $
   '$modID'
 $
-  $nr_grid  $nr_it  $target
+  $nr_grid  $nr_it  $target $halo_ext
 $
   $info_bot
   $info_obst
@@ -406,6 +413,37 @@ EOF
 # 4. Process ww3_multi.inp file                                               #
 # --------------------------------------------------------------------------- #
 
+  if [ "$gint" = '1' ]
+  then
+    echo ' '
+    echo " Making ww3_gint.inp_tmpl ..."
+    nr_gint=`expr $nr_grid + 1`
+
+cat > ww3_gint.inp_tmpl << EOF
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid integration input file                            $
+$ -------------------------------------------------------------------- $
+  DATE TIME TSTEP NR_STEPS
+$
+  $nr_gint
+$
+EOF
+
+  cat ww3_multi.$modID.$nr_grid | awk '{ print $1 }' >> ww3_gint.inp_tmpl
+  echo "'$modID'"                                    >> ww3_gint.inp_tmpl
+
+cat >> ww3_gint.inp_tmpl << EOF
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
+EOF
+
+  fi
+
+# --------------------------------------------------------------------------- #
+# 5. Process ww3_multi.inp file                                               #
+# --------------------------------------------------------------------------- #
+
   if [ -z $inp_file ]
   then
     echo ' '
@@ -458,7 +496,7 @@ EOF
   fi
 
 # --------------------------------------------------------------------------- #
-# 5. saving files                                                             #
+# 6. saving files                                                             #
 # --------------------------------------------------------------------------- #
 
   echo ' '
@@ -467,7 +505,8 @@ EOF
   echo "    mod_def files ..."
   mv mod_def.* $home_dir
 
-  for file in ww3_mask.$modID.$nr_grid $out_file ww3_multi.$modID.$nr_grid
+  for file in ww3_mask.$modID.$nr_grid $out_file ww3_multi.$modID.$nr_grid \
+              ww3_gint.inp_tmpl
   do
     if [ -f $file ]
     then
