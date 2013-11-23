@@ -207,11 +207,11 @@
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN                                    !TRAP
-      WRITE(*,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// &         !TRAP
-      'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'            !TRAP
-      STOP                                                              !TRAP
-      END IF                                                            !TRAP
+      IF ( GTYPE .EQ. CLGTYPE ) THEN
+        WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
+        'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'
+        CALL EXTCDE ( 1 )
+      END IF
 !
       IF ( .NOT. FLAGLL ) GOTO 810
 !

@@ -1,0 +1,87 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$ Grid name (C*30, in quotes)
+$
+  '1-D parameterized mud test    '
+$
+$ Frequency increment factor and first frequency (Hz) ---------------- $
+$ number of frequencies (wavenumbers) and directions, relative offset
+$ of first direction in terms of the directional increment [-0.5,0.5].
+$ In versions 1.18 and 2.22 of the model this value was by definiton 0,
+$ it is added to mitigate the GSE for a first order scheme. Note that
+$ this factor is IGNORED in the print plots in ww3_outp.
+$
+   1.25 0.08  3  24  0.
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+$
+   F T F F F T
+$
+$ Set time steps ----------------------------------------------------- $
+$ - Time step information (this information is always read)
+$     maximum global time step, maximum CFL time step for x-y and
+$     k-theta, minimum source term time step (all in seconds).
+$
+  300. 300. 150. 300.
+$
+$ Start of namelist input section ------------------------------------ $
+  &PRO1 CFLTM = 0.75 /
+  &PRO2 CFLTM = 0.75 /
+  &PRO3 CFLTM = 0.75, WDTHCG = 0., WDTHTH = 0. /
+  &PRO4 CFLTM = 0.75, RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$ 
+$
+$ Define grid -------------------------------------------------------- $
+$
+  'RECT' F 'NONE'
+   120 3
+    1.0E3   1.0E3  1.
+   -1.0E3  -1.0E3  1.
+$
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+  -1. 1. 10  -12. 2 1 '(....)' 'UNIT' 'input'
+$ -0.1 0.1 2345  -1.0e-2 1 1 '(....)'  'NAME' '../input/depth1d.wwgrd'
+$
+  360*1
+$
+$ First grid
+$
+$  50 50 50 45 40 35 30 25 20 15 10  5  0
+$  50 50 50 45 40 35 30 25 20 15 10  5  0
+$  50 50 50 45 40 35 30 25 20 15 10  5  0
+$
+$ Second grid
+$
+$  0  5 10 15 20 25 30 35 40 45 50 50 50
+$  0  5 10 15 20 25 30 35 40 45 50 50 50
+$  0  5 10 15 20 25 30 35 40 45 50 50 50
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ Input boundary points from segment data ( FROM = PART ) ------------ $
+$
+$ First grid
+$
+   2  2  F
+$
+$ Second grid
+$
+$ 12  2  F
+   0  0  F
+$
+$  Close list by defining point (0,0) (mandatory)
+   0  0  F
+$   Second, define a point in a closed body of sea points to remove
+$   the entire body of sea points. Also close by point (0,0)
+   0  0
+$
+$ Output boundary points --------------------------------------------- $
+$  Close list by defining line with 0 points (mandatory)
+$
+   0. 0. 0. 0.  0

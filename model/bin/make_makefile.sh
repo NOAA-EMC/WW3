@@ -88,9 +88,9 @@
 
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid GSE \
               prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
-              wind windx rwind curr currx tdyn dss0 pdif miche \
+              wind windx rwind curr currx tdyn dss0 pdif miche s_ice\
               mgwind mgprop mggse nnt mprf reflection mcp netcdf \
-              scrip scripnc tide mpiexp
+              scrip scripnc tide mpiexp refrx
   do
     case $type in
       mach   ) TY='one'
@@ -160,7 +160,10 @@
                OK='NLS' ;;
       s_bot  ) TY='one'
                ID='bottom friction'
-               OK='BT0 BT1 BT4 BTX' ;;
+               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
+      s_ice  ) TY='upto1'
+               ID='ice sink term'
+               OK='IC1 IC2 IC3' ;;
       s_db   ) TY='one'
                ID='depth-induced breaking'
                OK='DB0 DB1 DBX' ;;
@@ -229,6 +232,10 @@
                ID='wave reflections'
                TS='REF1'
                OK='REF1' ;;
+      refrx  ) TY='upto1'
+               ID='use of spectral refraction @C/@x'
+               TS='REFRX'
+               OK='REFRX' ;;
       mcp    ) TY='one'
                ID='model coupling protocol'
                TS='NOPA'
@@ -325,11 +332,13 @@
       s_nl   ) s_nl=$sw ;;
       snls   ) snls=$sw ;;
       s_bot  ) s_bt=$sw ;;
+      s_ice  ) s_ic=$sw ;;
       s_db   ) s_db=$sw ;;
       s_tr   ) s_tr=$sw ;;
       s_bs   ) s_bs=$sw ;;
       s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
+      refrx  ) refrx=$sw ;;
       mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
@@ -483,7 +492,16 @@
    BT1) bt='w3sbt1md' ;;
    BT2) bt='w3sbt2md mod_btffac' ;;
    BT4) bt='w3sbt4md' ;;
+   BT8) bt='w3sbt8md' ;;
+   BT9) bt='w3sbt9md' ;;
    BTX) bt='w3sbtxmd' ;;
+  esac
+
+  ic=$NULL
+  case $s_ic in
+   IC1) ic='w3sic1md' ;;
+   IC2) ic='w3sic2md' ;;
+   IC3) ic='w3sic3md' ;;
   esac
 
   case $s_db in
@@ -601,7 +619,7 @@
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
@@ -610,7 +628,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
@@ -630,7 +648,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode" 
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
@@ -663,14 +681,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
@@ -712,7 +730,7 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
                  IO='w3iogrmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       ww3_systrk) IDstring='Wave system tracking postprocessor'
@@ -810,6 +828,7 @@
                W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD W3SWLDMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
                W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
+               W3SBT8MD W3SBT9MD W3SIC1MD W3SIC2MD W3SIC3MD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
@@ -864,8 +883,13 @@
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
          'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
          'W3SBT4MD'     ) modtest=w3sbt4md.o ;;
-         'm_btffac'     ) modtest=mod_btffac.o ;;
+         'W3SBT8MD'     ) modtest=w3sbt8md.o ;;
+         'W3SBT9MD'     ) modtest=w3sbt9md.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
+         'm_btffac'     ) modtest=mod_btffac.o ;;
+         'W3SIC1MD'     ) modtest=w3sic1md.o ;;
+         'W3SIC2MD'     ) modtest=w3sic2md.o ;;
+         'W3SIC3MD'     ) modtest=w3sic3md.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
          'W3STRXMD'     ) modtest=w3strxmd.o ;;

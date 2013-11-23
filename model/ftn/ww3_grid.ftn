@@ -415,6 +415,13 @@
 !                  (Tolman 1994, Ardhuin & al. 2003)
 !     !/BTX   Open slot.
 !
+!     !/IC1   Sink term for interaction with ice (uniform k_i)
+!     !/IC2   Sink term for interaction with ice (Liu et al. method)
+!                  (Liu et al.    1991: JGR 96 (C3), 4605-4621)
+!                  (Liu and Mollo 1988: JPO 18       1720-1712)
+!     !/IC3   Sink term for interaction with ice (Wang and Shen method)
+!                  (Wang and Shen JGR 2010)
+!
 !     !/DB0   No depth-induced breaking included.
 !     !/DB1   Battjes-Janssen depth-limited breaking.
 !     !/DBX   Open slot.
@@ -491,7 +498,7 @@
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
-                                 IST, NKI, NTHI,                      &
+                                 IST, NKI, NTHI,NRIC,                 &
                                  IDFT, NSTAT, NBT, NLAND, NOSW
 !/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
@@ -558,7 +565,7 @@
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
                                  FLTR, FLBS, FLXX, FLPROP, FLREF,     &
-                                 FIRST, CONNCT, FLNEW, INGRID
+                                 FIRST, CONNCT, FLNEW, INGRID,FLIC
       LOGICAL                 :: FLTC96 = .FALSE.
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
@@ -888,6 +895,7 @@
       NRSRCE = 0
       NRNL   = 0
       NRBT   = 0
+      NRIC   = 0
       NRDB   = 0
       NRTR   = 0
       NRBS   = 0
@@ -897,6 +905,7 @@
       FLINDS = .TRUE.
       FLNL   = .TRUE.
       FLBT   = .TRUE.
+      FLIC   = .FALSE.
       FLDB   = .TRUE.
       FLTR   = .TRUE.
       FLBS   = .TRUE.
@@ -932,7 +941,16 @@
 !/BT0      FLBT   = .FALSE.
 !/BT1      NRBT   = NRBT + 1
 !/BT4      NRBT   = NRBT + 1
+!/BT8      NRBT   = NRBT + 1
+!/BT9      NRBT   = NRBT + 1
 !/BTX      NRBT   = NRBT + 1
+!
+!/IC1      NRIC   = NRIC + 1
+!/IC1      FLIC   = .TRUE.
+!/IC2      NRIC   = NRIC + 1
+!/IC2      FLIC   = .TRUE.
+!/IC3      NRIC   = NRIC + 1
+!/IC3      FLIC   = .TRUE.
 !
 !/DB0      NRDB   = NRDB + 1
 !/DB0      FLDB   = .FALSE.
@@ -955,14 +973,16 @@
 !/XXX      NRXX   = NRXX + 1
 !
       IF ( .NOT.FLLIN .AND. .NOT.FLINDS .AND. .NOT.FLNL .AND.         &
-            .NOT.FLBT .AND.  .NOT.FLDB .AND.  .NOT.FLTR .AND.         &
-            .NOT.FLBS .AND.  .NOT.FLXX .AND.  .NOT.FLREF .AND.  FLSOU ) THEN
+            .NOT.FLBT .AND.  .NOT.FLIC .AND.  .NOT.FLDB .AND.         &
+            .NOT.FLTR .AND.  .NOT.FLBS .AND.  .NOT.FLXX .AND.         &
+            .NOT.FLREF .AND.  FLSOU ) THEN
           WRITE (NDSE,1020)
           CALL EXTCDE ( 10 )
         END IF
 !
       IF ( ( FLLIN .OR. FLINDS .OR. FLNL .OR. FLBT .OR. FLDB .OR.     &
-             FLTR .OR. FLBS .OR. FLREF .OR. FLXX ) .AND. .NOT.FLSOU ) THEN
+             FLTR .OR. FLBS .OR. FLREF .OR. FLXX .OR. FLIC )          &
+             .AND. .NOT.FLSOU ) THEN
           WRITE (NDSE,1021)
         END IF
 !
@@ -1004,6 +1024,11 @@
       IF ( NRXX .NE. 1 ) THEN
           WRITE (NDSE,1029) NRXX
           CALL EXTCDE ( 18 )
+        END IF
+!
+      IF ( NRIC .GT. 1 ) THEN
+          WRITE (NDSE,1034) NRIC
+          CALL EXTCDE ( 19 )
         END IF
 !
 ! 6.c Pre-process namelists into scratch file
@@ -1580,10 +1605,26 @@
 !/BS1      WRITE (NDSO,932)
 !/BSX      WRITE (NDSO,932)
 !
-! 6.k Define Sxx.
+! 6.k Define Sxx and Sic.
 !
 ! !/XX0      WRITE (NDSO,934)
 !/XXX      WRITE (NDSO,934)
+!
+!/IC1      WRITE (NDSO,935)
+!/IC1         WRITE(NDSO,'(A/A)')'    Sice will be calculated using ' &
+!/IC1            //'user-specified ki values.','        Required ' &
+!/IC1            //'field input: ice parameter 1.'
+!
+!/IC2      WRITE (NDSO,935)
+!/IC2         WRITE(NDSO,'(A/A)')'    Sice will be calculated using ' &
+!/IC2            //'Liu et al. method.','        Required '  &
+!/IC2            //'field input: ice parameters 1 and 2.'
+!
+!/IC3      WRITE (NDSO,935)
+!/IC3      WRITE(NDSO,'(A/A)')'    Sice will be calculated using '&
+!/IC3            //'Wang and Shen method.','        '&
+!/IC3            //'Required field input: ice parameters 1, 2, 3 and 4.'
+
 !
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
@@ -1595,7 +1636,6 @@
        IMPFSNIMP = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UNST', STATUS ) 
-               WRITE(NDSO, 950)
 !
 ! 6.m Select propagation scheme
 !
@@ -1824,11 +1864,13 @@
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
-! Notes: Presently, if we want to use CICE0.ne.CICEN we are required to 
-!     input an obstruction grid. This is unfortunate, since we may not 
-!     have this information. However, it is possible to input zeros (as 
-!     a workaround).
-      IF ( FLAGTR .LT. 3 ) CICE0 = CICEN
+! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
+!     grid, that is initialized with zeros as default.
+      IF ( FLAGTR .LT. 3 ) THEN
+         CICE0 = CICEN
+         FICE0 = CICE0
+         IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+      END IF
       IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
 !/MGG      WRITE (NDSO,962) PMOVE
@@ -2291,7 +2333,7 @@
 ! 7.c.3 Unstructured grid
 !
         CASE ( UNGTYPE )
-    
+!
              MAXX = 0.
              MAXY = 0.
              DXYMAX = 0.
@@ -2352,6 +2394,11 @@
             END IF  !( NDSG .EQ. NDSI ) 
 !
           ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
+!
+!         Initialize subgrid obstructions with zeros.
+          OBSX(:,:)=0.
+          OBSY(:,:)=0.
+
           CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
                        IDFM, RFORM, IDLA, VSC, 0.0)
 !
@@ -3095,11 +3142,21 @@
                   CLATIS(ISEA)   = 1.
                   CTHG0S(ISEA)   = 0.
                 END IF
+            END IF
+
+!/ ------------------------------------------------------------------- /
+
+! notes: Oct 22 2012: I moved the following "if-then" statement from 
+! inside the  "IF ( MAPSTA(IY,IX) .NE. 0 )" statement to outside that
+! statement. This is needed since later on, ATRNX is computed from 
+! TRNX(ix-1) , TRNX(ix) etc. which causes boundary effects if the
+! MAPSTA=0 values are set to TRNX=0
+
               IF ( TRFLAG .NE. 0 ) THEN
                   TRNX(IY,IX) = 1. - OBSX(IX,IY)
                   TRNY(IY,IX) = 1. - OBSY(IX,IY)
                 END IF
-            END IF
+
           END DO
         END DO
       ENDIF
@@ -3872,7 +3929,7 @@
                '       Maximum global time step      (s) :',F8.2/     &
                '       Maximum CFL time step X-Y     (s) :',F8.2/     &
                '       Maximum CFL time step k-theta (s) :',F8.2/     &
-               '       Miminum source term time step (s) :',F8.2/)
+               '       Minimum source term time step (s) :',F8.2/)
   913 FORMAT (/ '  WARNING, TIME STEP LESS THAN 1 s, NITER:',I8 /)
   915 FORMAT ( '  Preprocessing namelists ...')
   916 FORMAT ( '  Preprocessing namelists finished.'/)
@@ -4124,6 +4181,7 @@
 !/BT4               ', RIPFAC3 =',F8.4,', RIPFAC4 =',F8.4,','/        &
 !/BT4               '        SIGDEPTH =',F8.4,', BOTROUGHMIN =',F8.4, & 
 !/BT4               ', BOTROUGHFAC =',F4.1,' /')
+!/BTX  926 FORMAT (/'  Experimental bottom friction.'/)
 !
 !/DB0  928 FORMAT (/'  Surf breaking not defined.'/)
 !
@@ -4145,6 +4203,15 @@
 !
 !/XX0  934 FORMAT (/'  Alternative source term slot not used.'/)
 !/XXX  934 FORMAT (/'  Experimental unclasified source term.'/)
+!
+!/IC1  935 FORMAT (/'  Dissipation via ice parameters (IC1).'&
+!/IC1           ,/' --------------------------------------------------')
+!
+!/IC2  935 FORMAT (/'  Dissipation via ice parameters (IC2).'&
+!/IC2           ,/' --------------------------------------------------')
+!
+!/IC3  935 FORMAT (/'  Dissipation via ice parameters (IC3).'&
+!/IC3           ,/' --------------------------------------------------')
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
@@ -4190,6 +4257,9 @@
 !
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')
+ 2961 FORMAT ( ' *** WAVEWATCH-III WARNING IN W3GRID :'/              &
+               '     CICE0.NE.CICEN REQUIRES OBSTRUCTION GRID.'/ &
+               '     PARAMETER CORRECTED: CICE0 = CICE'/)
   961 FORMAT ( '       Ice concentration cut-offs  :',F8.2,F6.2)
 !/MGG  962 FORMAT  ( '       Moving grid GSE cor. power  :',F8.2)
 !/SCRIP  963 FORMAT( ' Grid offset for multi-grid w/SCRIP  : ',E11.3)
@@ -4411,21 +4481,21 @@
  1021 FORMAT (/' *** WAVEWATCH III WARNING IN W3GRID :'/              &
                '     SOURCE TERMS SELECTED BUT NOT REQUESTED'/)
  1022 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/LNn OR SEED SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/LNn OR SEED SWITCHES :',I3)
  1023 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/STn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/STn SWITCHES :',I3)
  1024 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/NLn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/NLn SWITCHES :',I3)
  1025 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/BTn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/BTn SWITCHES :',I3)
  1026 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/DBn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/DBn SWITCHES :',I3)
  1027 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/TRn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/TRn SWITCHES :',I3)
  1028 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/BSn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/BSn SWITCHES :',I3)
  1029 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
-               '     ILLEGAL NUMBED OF !/XXn SWITCHES :',I3)
+               '     ILLEGAL NUMBER OF !/XXn SWITCHES :',I3)
 !
  1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     PROPAGATION REQUESTED BUT NO SCHEME SELECTED '/)
@@ -4436,6 +4506,8 @@
  1033 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     MULTIPLE PROPAGATION SCHEMES SELECTED :',I3/     &
                '     CHECK !/PRn SWITCHES'/)
+ 1034 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+               '     ILLEGAL NUMBER OF !/ICn SWITCHES :',I3)
 !
  1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
                ' -----------------------------------'/)

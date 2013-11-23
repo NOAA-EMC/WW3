@@ -1,0 +1,36 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D parameterized ice test    '
+$
+   1.25 0.08  3  24  0.
+$
+   F T F F F T
+  600. 600. 600. 600.
+$
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   13  3
+    1.E4   1.E4  1.
+   -1.E4  -1.E4  1.
+$
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+  -1. 1. 10  -10. 2 1 '(....)' 'UNIT' 'input'
+$
+$ First grid
+$
+  50 50 50 50 50 50 50 50 50 50 50 50 50
+  50 50 50 50 50 50 50 50 50 50 50 50 50
+  50 50 50 50 50 50 50 50 50 50 50 50 50
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ First grid
+$
+   2  2  F
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

@@ -1300,7 +1300,7 @@
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3IDATMD, ONLY: TLN, WLEV
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
+      USE W3DISPMD, ONLY: WAVNU1
       USE W3TRIAMD, ONLY: SETUGIOBP
       USE W3TIMEMD
 !/TIDE      USE W3GDATMD, ONLY: YGRD
@@ -1323,8 +1323,8 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: MAPDRY(NY,NX)
       REAL                    :: DWO(NSEA), KDCHCK, WNO(0:NK+1),      &
-                                 CGO(0:NK+1), DEPTH, SQRTH, SIX,      &
-                                 R1, R2, RDK, RD1, RD2, TA(NTH,NK),   &
+                                 CGO(0:NK+1), DEPTH,                  &
+                                 RDK, RD1, RD2, TA(NTH,NK),           &
                                  OWN(NK), DWN(NK)
       REAL                    :: KDMAX = 4., RDKMIN = 0.05
 !/T3      REAL                    :: OUT(NK,NTH)
@@ -1445,28 +1445,13 @@
 ! 2.b Update grid and save old grid
 !
             DEPTH  = MAX ( DMIN, DW(ISEA) )
-            SQRTH  = SQRT(DEPTH)
 !
             DO IK=0, NK+1
               WNO(IK) = WN(IK,ISEA)
               CGO(IK) = CG(IK,ISEA)
 !
-!/ --- INLINED WAVNU1 (START) ---------------------------------------- /
-!
-              SIX    = SIG(IK) * SQRTH
-              I1     = INT(SIX/DSIE)
-              IF (I1.LE.N1MAX) THEN
-                  I2 = I1 + 1
-                  R1 = SIX/DSIE - REAL(I1)
-                  R2 = 1. - R1
-                  WN(IK,ISEA) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / DEPTH
-                  CG(IK,ISEA) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
-                ELSE
-                  WN(IK,ISEA) = SIG(IK)*SIG(IK)/GRAV
-                  CG(IK,ISEA) = 0.5 * GRAV / SIG(IK)
-                END IF
-!
-!/ --- INLINED WAVNU1 (END) ------------------------------------------ /
+!             Calculate wavenumbers and group velocities.
+              CALL WAVNU1(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
 !
               END DO
 !
@@ -1743,7 +1728,7 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPSF,                &
                           TRFLAG, FICE0, FICEN, FICEL,                &
                           RLGTYPE, CLGTYPE, GTYPE, FLAGLL,            &
-                          HPFAC, HQFAC, FFACBERG 
+                          HPFAC, HQFAC, FFACBERG
       USE W3WDATMD, ONLY: ICE, BERG
       USE W3ADATMD, ONLY: ATRNX, ATRNY
 !
@@ -1777,7 +1762,6 @@
 !
 ! 2.  Filling arrays from TRNX/Y for obstructions -------------------- *
 ! 2.a TRFLAG = 0, no action needed
-!
       IF ( TRFLAG .EQ. 0 ) THEN
 !/T          WRITE (NDST,9001) 'NO FURTHER ACTION REQUIRED'
           RETURN
@@ -1930,6 +1914,16 @@
                 TRIY(IXY)=1.
               END IF
             ELSE
+
+! begin temporary notes to document method of 3.14 public release: 
+!            LICE0  = FICE0*MIN(DX,DY) ...................................... changed
+!            LICEN  = FICEN*MIN(DX,DY) ...................................... changed
+!            TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 ) ..... unchanged
+!            TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) ) .............. unchanged
+!            TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 ) ..... unchanged
+!            TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) .............. unchanged
+! end temporary notes to document method of 3.14 public release: 
+
 !              LICE0  = FICE0*MIN(DX,DY)
 !              LICEN  = FICEN*MIN(DX,DY)
               IF (FICEL.GT.0.) THEN
@@ -1940,6 +1934,15 @@
                 LICE0  = FICE0*DX
                 LICEN  = FICEN*DX
                 TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+
+! begin temporary notes
+!                TRIX = (   LICEN    - ICE(ISEA)*DX ) / (   LICEN -      LICE0 )
+!    thus, it is TRIX=  ( (FICEN*DX) - ICE(ISEA)*DX ) / ( (FICEN*DX) - (FICE0*DX) )
+!    thus, it is TRIX=  (   FICEN -    ICE(ISEA) )   /  (  FICEN     -   FICE0 )
+!    in other words, the variables DX DY are not used
+!                    and the variables LICE0 LICEN are not necessary.
+! end temporary notes
+
                 LICE0  = FICE0*DY
                 LICEN  = FICEN*DY
                 TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )

@@ -518,7 +518,16 @@
 !
       DO ISEA=1, NSEA
         IXY         = MAPSF(ISEA,3)
-        MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNY(IXY,-1) ,              & 
+
+!notes: Oct 22 2012: I changed this because it *looks* like a bug. 
+!       I have not confirmed that it is a bug.
+!       Old code is given (2 lines). Only the first line is 
+!       changed.
+
+!old    MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNY(IXY,-1) ,              & 
+!old                       ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
+
+        MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNX(IXY,-1) ,              & 
                            ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
         END DO
 !
@@ -1231,7 +1240,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
                           DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
-                          DCYDX, DCYDY, VA, CFLTHMAX, CFLKMAX )
+                          DCYDX, DCYDY, DCDX, DCDY, VA, CFLTHMAX, CFLKMAX )
 !/
 !/    *** THIS ROUTINE SHOULD BE IDENTICAL TO W3KTP2 ***
 !/
@@ -1284,6 +1293,7 @@
 !       DDDx    Real   I   Depth gradients.
 !       CX/Y    Real   I   Current components.
 !       DCxDx   Real   I   Current gradients.
+!       DCDX-Y  Real   I   Phase speed gradients.
 !       VA      R.A.  I/O  Spectrum.
 !     ----------------------------------------------------------------
 !
@@ -1363,6 +1373,7 @@
       REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
                                  WN(0:NK+1), DW, DDDX, DDDY,       &
                                  CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
+      REAL, INTENT(IN)        :: DCDX(0:NK+1), DCDY(0:NK+1)
       REAL, INTENT(INOUT)     :: VA(NSPEC)
       REAL, INTENT(OUT)       :: CFLTHMAX, CFLKMAX
 !/
@@ -1465,16 +1476,34 @@
 !
 ! 3.c Depth refraction and great-circle propagation
 !
+!/REFRX! 3.d @C/@x refraction and great-circle propagation
+!/REFRX          FRK    = 0.
+!/REFRX          FDDMAX = 0.
+!
+!/REFRX          DO ISP=1, NSPEC
+!/REFRX            FDDMAX = MAX ( FDDMAX , ABS (                      &
+!/REFRX               ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
+!/REFRX            END DO
+!/REFRX          DO IK=1, NK
+!/REFRX            FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
+!/REFRX          END DO
+!
           DO ISP=1, NSPEC
             VELNOFILT = VCFLT(MAPTH2(ISP))       &
                + FRG(MAPWN(ISP)) * ECOS(ISP)              &
                + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+!
+!/REFRX! 3.d @C/@x refraction and great-circle propagation
+!/REFRX     VELNOFILT = VCFLT(MAPTH2(ISP))       &
+!/REFRX        + FRG(MAPWN(ISP)) * ECOS(ISP)            &
+!/REFRX        + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(MAPWN(ISP)) &
+!/REFRX        - ECOS(ISP)*DCDY(MAPWN(ISP)) )
             CFLTHMAX = MAX(CFLTHMAX, ABS(VELNOFILT))
 !
 ! Puts filtering on total velocity (including currents and great circle effects)
 ! the filtering limits VCFLT to be less than CTMAX 
 ! this modification was proposed by F. Ardhuin 2011/03/06
-!             
+!
             VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
             END DO
         END IF

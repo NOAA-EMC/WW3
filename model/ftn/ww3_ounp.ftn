@@ -102,6 +102,10 @@
 !     - Transfer file written to ww3.yymmddhh.spc with multiple
 !       spectra and times in file. yymmddhh relates to first
 !       output (NDSTAB).
+!     - !/IC1 !/IC2 !/IC3 are not included in dissipation term
+!       FIXME: ICE is a dummy variable at the moment
+!              Include ice parameters in point output file out_pnt.ww3
+!              Ice coupling to SIN, SDS and SIC similar to w3srcemd.ftn
 !
 !  8. Structure :
 !
@@ -741,6 +745,9 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Time management.
 !
+!/IC1      WRITE(NDSO,3960)
+!/IC2      WRITE(NDSO,3960)
+!/IC3      WRITE(NDSO,3960)
 !
       IOUT   = 0
       iyc=TIME(1)/10000
@@ -1008,6 +1015,15 @@
 !
  1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
                '     ILLEGAL TYPE, OTYPE =',I4/)
+!/IC1 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
+!/IC1               '     Ice source terms !/IC1 skipped'/            &
+!/IC1               '     in dissipation term.'/)
+!/IC2 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
+!/IC2               '     Ice source terms !/IC2 skipped'/            &
+!/IC2               '     in dissipation term.'/)
+!/IC3 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUNP :'/         &
+!/IC3               '     Ice source terms !/IC3 skipped'/            &
+!/IC3               '     in dissipation term.'/)
 !/
 !/ Internal subroutine W3EXNC ---------------------------------------- /
 !/
@@ -1085,6 +1101,7 @@
 !       !/STx    Source term package
 !       !/NLx    Nonlinear interaction package
 !       !/BTx    Bottom friction package
+!       !/ICx    S_ice source term package
 !       !/DBx    depth-induced breaking package
 !       !/TRx    Triad interaction package
 !       !/BSx    Bottom scattering package
@@ -1115,6 +1132,8 @@
 !/NLX      USE W3SNLXMD
 !/BT1      USE W3SBT1MD
 !/BT4      USE W3SBT4MD
+!/BT8      USE W3SBT8MD
+!/BT9      USE W3SBT9MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
@@ -1707,6 +1726,13 @@
 !/BT4                    PSIC= SED_PSIC(ISEA)
 !/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
+
+!/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
+
+!/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
+
+!/BTX                    CALL W3SBTX
+
 !
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &
 !/BS1                           CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)), &
@@ -1749,9 +1775,8 @@
               SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6         SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
               SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
-              STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) +         &
-                            SDS(IK,ITH) + SBT(IK,ITH) +         &
-                            XXX(ITH,IK) * FACTOR
+              STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) + SDS(IK,ITH) + &
+                            SBT(IK,ITH) + XXX(ITH,IK) * FACTOR
               E1  (IK) = E1  (IK) + E(IK,ITH)
               SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
               SNL1(IK) = SNL1(IK) + SNL(IK,ITH)

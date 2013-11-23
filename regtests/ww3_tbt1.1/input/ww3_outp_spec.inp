@@ -1,0 +1,49 @@
+$ WAVEWATCH III Point output post-processing
+$ ------------------------------------------
+$
+  19680606 000000   3600. 12
+$
+   1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  -1
+$
+   1
+$ ITYPE = 1, Spectra.
+$          - Sub-type OTYPE :  1 : Print plots.
+$                              2 : Table of 1-D spectra
+$                              3 : Transfer file.
+$          - Scaling factors for 1-D and 2-D spectra Negative factor
+$            disables, output, factor = 0. gives normalized spectrum.
+$          - Unit number for transfer file, also used in table file
+$            name.
+$          - Flag for unformatted transfer file.
+$
+  3   -1.  0.  33  F
+$
+$ The transfer file contains records with the following contents.
+$
+$ - File ID in quotes, number of frequencies, directions and points.
+$   grid name in quotes (for unformatted file C*21,3I,C*30).
+$ - Bin frequencies in Hz for all bins.
+$ - Bin directions in radians for all bins (Oceanographic conv.).
+$                                                         -+
+$ - Time in yyyymmdd hhmmss format                         | loop
+$                                             -+           |
+$ - Point name (C*10), lat, lon, d, U10 and    |  loop     | over
+$   direction, current speed and direction     |   over    |
+$ - E(f,theta)                                 |  points   | times
+$                                             -+          -+
+$
+$ The formatted file is readable usign free format throughout.
+$ This datat set can be used as input for the bulletin generator
+$ w3split.
+$

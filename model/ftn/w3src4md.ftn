@@ -343,7 +343,7 @@
 !       TAUWX-Y Real  I   Components of the wave-supported stress.
 !       TAUWNX  Real  I   Component of the negative wave-supported stress.
 !       TAUWNY  Real  I   Component of the negative wave-supported stress.
-!       ICE     Real  I   Sea ice fraction.
+!       ICE     Real  I   Sea ice fraction.                        !/Stefan: ICE is DUMMY argument; remove later.
 !       S       R.A.  O   Source term (1-D version).
 !       D       R.A.  O   Diagonal term of derivative.             *)
 !     ----------------------------------------------------------------
@@ -397,7 +397,7 @@
 !/
       REAL, INTENT(IN)        :: A(NSPEC)
       REAL, INTENT(IN)        :: CG(NK), K(NSPEC),Z0,U, CD
-      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT, ICE
+      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT, ICE       !/Stefan: ICE is DUMMY argument; remove later.
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUWX, TAUWY, TAUWNX, TAUWNY
       LOGICAL, INTENT(OUT)    :: LLWS(NSPEC)
       INTEGER, INTENT(IN)     :: IX, IY
@@ -532,6 +532,9 @@
       STRESSSTABN(ISTAB,:)=0.
 !
 ! Coupling coefficient times density ratio DRAT and fraction of free surface (1-ICE)
+! Stefan Zieger: Coupling is permanently disabled and MIN(0.,MAX(1.,1.-ICE)) has
+!      FIXME     no effect because it is always 0.0; remove later.
+!                Implemented in W3SRCE for all source terms. 
 !
       IF (FLICES) THEN 
         CONST0=MIN(0.,MAX(1.,1.-ICE))*BBETA*DRAT/(kappa**2)

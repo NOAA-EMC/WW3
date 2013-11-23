@@ -187,6 +187,12 @@
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
                                    touch gx_outp.ftn ;;
+     's_ice'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3srcemd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch ww3_grid.ftn
+                                   touch ww3_outp.ftn
+                                   touch gx_outp.ftn ;;
      's_db'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
@@ -252,6 +258,10 @@
      'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
                                    touch ww3_ounp.ftn
                                    touch ww3_prnc.ftn ;;
+     'refrx'  ) cd $main_dir/ftn ; touch w3wavemd.ftn
+                                   touch w3pro1md.ftn
+                                   touch w3pro2md.ftn
+                                   touch w3pro3md.ftn ;;
       'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn ;;
       'tide' )        cd $main_dir/ftn ; touch w3tidemd.ftn 
                                          touch w3updtmd.ftn 

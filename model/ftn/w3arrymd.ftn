@@ -1904,6 +1904,11 @@
 !
 !       None.
 !
+!  7. Remarks :
+!
+!       PNUM2: dimensioning changed from 51 to 71 due to "subscript out 
+!           of range" fault (Sep 28 2012)
+!
 !  8. Structure :
 !
 !     ------------------------------------------------
@@ -1948,7 +1953,7 @@
       REAL                    :: FACFR, EMAX, EMIN, DTHDEG, RR, RRC
       CHARACTER               :: PNUM*5, STRA*5, STRANG*5, PNUM2*2,  &
                                  STRA2*2
-      DIMENSION               :: PNUM(25), PNUM2(51)
+      DIMENSION               :: PNUM(25), PNUM2(71)
 !/
 !/ ------------------------------------------------------------------- /
 !/

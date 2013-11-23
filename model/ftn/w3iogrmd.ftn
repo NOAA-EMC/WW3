@@ -252,10 +252,10 @@
       CHARACTER(LEN=10)       :: VERTST, TEMPXT
       CHARACTER(LEN=30)       :: TNAME0, TNAME1, TNAME2, TNAME3,      &
                                  TNAME4, TNAME5, TNAME6, TNAME7,      &
-                                 TNAMEP, TNAMEG, TNAMEF
+                                 TNAMEP, TNAMEG, TNAMEF, TNAMEI
       CHARACTER(LEN=30)       :: FNAME0, FNAME1, FNAME2, FNAME3,      &
                                  FNAME4, FNAME5, FNAME6, FNAME7,      &
-                                 FNAMEP, FNAMEG, FNAMEF
+                                 FNAMEP, FNAMEG, FNAMEF, FNAMEI
       CHARACTER(LEN=35)       :: IDTST
       LOGICAL                 :: GLOBAL
 !/
@@ -274,6 +274,7 @@
       TNAME7 = '------------------------------'
       TNAMEP = '------------------------------'
       TNAMEG = '------------------------------'
+      TNAMEI = '------------------------------'
 !
 !/FLX1      TNAMEF = 'Wu (1980)                     '
 !/FLX2      TNAMEF = 'Tolman and Chalikov (1996)    '
@@ -298,7 +299,11 @@
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
 !/BT4      TNAME3 = 'SHOWEX                        '
+!/BT8      TNAME3 = 'Muddy Bed (D & L)             '
 !/BTX      TNAME3 = 'Experimental                  '
+!/IC1      TNAMEI = 'Ice sink term (uniform k_i)   '
+!/IC2      TNAMEI = 'Ice sink term (Lui et al)     '
+!/IC3      TNAMEI = 'Ice sink term (Wang and Shen) '
 !/DB0      TNAME4 = 'Not defined                   '
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
 !/DBX      TNAME4 = 'Experimental                  '
@@ -331,6 +336,7 @@
       FNAME7 = TNAME7
       FNAMEP = TNAMEP
       FNAMEG = TNAMEG
+      FNAMEI = TNAMEI
 !
 !/T      FLTEST = .TRUE.
 !/NL2      FLSNL2 = .TRUE.
@@ -384,7 +390,8 @@
           WRITE (NDSM)                                                &
                 IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
+                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,       &
+                FNAMEF, FNAMEI
 !
 !/SMC          WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
 !/ARC          WRITE (NDSM) NGLO, NARC, NBGL, NBAC
@@ -393,14 +400,16 @@
                 (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
 !/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
 !/T            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
+!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,        &
+!/T            FNAMEF, FNAMEI
 !/T          WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
 !/T          WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
                 NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
+                FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,       &
+                FNAMEF, FNAMEI
 !
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/SMC                     NCel, NUFc, NVFc, NRLv, MRFct
@@ -413,7 +422,8 @@
           NSPEC  = NK * NTH
 !/T          WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
 !/T            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG, FNAMEF
+!/T            FNAME4, FNAME5, FNAME6, FNAME7, FNAMEP, FNAMEG,        &
+!/T            FNAMEF, FNAMEI
 !
           IF ( IDTST .NE. IDSTR ) THEN
               IF ( IAPROC .EQ. NAPERR )                               &
@@ -448,6 +458,11 @@
           IF ( FNAME3 .NE. TNAME3 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
                   WRITE (NDSE,905) 3, FNAME3, TNAME3
+               CALL EXTCDE ( 17 )
+            END IF
+          IF ( FNAMEI .NE. TNAMEI ) THEN
+               IF ( IAPROC .EQ. NAPERR )                              &
+                  WRITE (NDSE,905) 3, FNAMEI, TNAMEI
                CALL EXTCDE ( 17 )
             END IF
           IF ( FNAME4 .NE. TNAME4 ) THEN
@@ -983,8 +998,6 @@
 !/BT4                SBTCX, SED_D50, SED_PSIC
 !/BT4        END IF
 !
-!/BT1      IF ( FLTEST ) WRITE (NDST,9052) SBTC1
-!
 ! ... Depth induced breaking ...
 !
 !/DB1      IF ( WRITE ) THEN
@@ -1122,7 +1135,8 @@
 !/T              '      FNAME7 : ',A/                                 &
 !/T              '      FNAMEP : ',A/                                 &
 !/T              '      FNAMEG : ',A/                                 &
-!/T              '      FNAMEF : ',A)
+!/T              '      FNAMEF : ',A/                                 &
+!/T              '      FNAMEI : ',A)
 !/T 9002 FORMAT ('      NBO    : ',10I5)
 !/T 9003 FORMAT ('      NBO2   : ',10I5)
 !

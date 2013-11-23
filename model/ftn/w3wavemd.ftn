@@ -352,6 +352,8 @@
 !/
       USE W3SERVMD
       USE W3TIMEMD
+!/IC3      USE W3SIC3MD
+
 !/PALM USE palmlib 	    !interface for palm coupler
 !/PALM USE palm_user_param  !min_palm_time_a etc ...
 !
@@ -387,6 +389,8 @@
 !
       REAL, ALLOCATABLE       :: FIELD(:)
       REAL                    :: TMP1(4), TMP2(3), TMP3(2)
+!/IC3 REAL, ALLOCATABLE       :: WN_I(:)
+!/REFRX REAL, ALLOCATABLE       :: CIK(:)
 !
 ! Orphaned arrays from old data structure
 !
@@ -430,6 +434,7 @@
       IF ( IIDATA .NE. IMOD ) CALL W3SETI ( IMOD, NDSE, NDST )
 !
       ALLOCATE(TAUWX(NSEAL), TAUWY(NSEAL))
+!/REFRX      ALLOCATE(CIK(NSEAL))
 !
 !/PALM     ALLOCATE(vecta(1:NSEAL),vectb(1:NSEAL))
 !/PALM     ALLOCATE(vectg(1:NSEAL),vecth(1:NSEAL),vecti(1:NSEAL))
@@ -582,6 +587,24 @@
 !
       FLFRST = .TRUE.
       DO
+!
+!
+! 2.a Update group velocity and wavenumber from ice parameters ------ /
+!     from W3SIC3MD module. ----------------------------------------- /
+!
+!/IC3        IF (FLFRST.AND.FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
+!/IC3           WRITE(SCREEN,920)
+!/IC3           ALLOCATE(WN_I(SIZE(WN(:,JSEA))))
+!/IC3           WN_I(:) = 0.
+!/IC3           DO JSEA=1,NSEAL
+!/IC3             DEPTH  = MAX( DMIN , DW(JSEA) )
+!/IC3             IX     = MAPSF(JSEA,1)
+!/IC3             IY     = MAPSF(JSEA,2)
+!/IC3             CALL W3IC3WNCG(WN(:,JSEA),WN_I(:),CG(:,JSEA),ICEP1(IX,IY), &
+!/IC3                            ICEP2(IX,IY),ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
+!/IC3           END DO
+!/IC3           DEALLOCATE(WN_I)
+!/IC3        END IF
 !
         IF ( TOFRST(1) .GT. 0 ) THEN
             DTTST  = DSEC21 ( TEND , TOFRST )
@@ -815,6 +838,22 @@
               FLDDIR = .FALSE.
             END IF
 !
+!         Calculate PHASE SPEED GRADIENT.
+          DCDX = 0.
+          DCDY = 0.
+!/REFRX   CIK  = 0.
+!/REFRX!
+!/REFRX          IF (GTYPE .NE. UNGTYPE) THEN
+!/REFRX            DO IK=0,NK+1
+!/REFRX               CIK = SIG(IK) / WN(IK,1:NSEA)
+!/REFRX               CALL W3DZXY(CIK,'m/s',DCDX(IK,:,:),DCDY(IK,:,:))
+!/REFRX            END DO
+!/REFRX          ELSE
+!/REFRX            WRITE (NDSE,1040)
+!/REFRX            CALL EXTCDE(2)
+!/REFRX     !      CALL UG_GRADIENTS(CMN, DCDX, DCDY) !/ Stefan, to be confirmed!
+!/REFRX          END IF
+!
           FLIWND = .FALSE.
           FLFRST = .FALSE.
 !
@@ -897,17 +936,20 @@
 !/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR1                            DCYDX(IY,IX), DCYDY(IY,IX),              &
+!/PR1                             DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
 !/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX),               &
+!/PR2                             DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
 !/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
+!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX),               &
+!/PR3                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
 !/PRX                      CALL W3KTPX
                     END IF
@@ -979,17 +1021,20 @@
 !/PR1                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR1                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR1                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR1                           DCYDX(IY,IX), DCYDY(IY,IX),               &
+!/PR1                             DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
 !/PR2                      CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR2                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR2                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR2                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA)    )
+!/PR2                           DCYDX(IY,IX), DCYDY(IY,IX),               &
+!/PR2                             DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA))
 !/PR3                      CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/PR3                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/PR3                           DDDX(IY,IX), DDDY(IY,IX), CX(ISEA),       &
 !/PR3                           CY(ISEA), DCXDX(IY,IX), DCXDY(IY,IX),     &
-!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX), VA(:,JSEA),   &
+!/PR3                           DCYDX(IY,IX), DCYDY(IY,IX),               &
+!/PR3                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 !/PRX                      CALL W3KTPX
                     END IF
@@ -1555,6 +1600,7 @@
   902 FORMAT (8X,'--------+------+---------------------+'             &
                 ,'-------------+---------------+')
 !
+!/IC3  920 FORMAT ('     Updating k and Cg from ice param. 1,2,3,4.'/)
   950 FORMAT ('  WAVEWATCH III calculating for ',A,' at ',A)
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
@@ -1570,6 +1616,8 @@
  1030 FORMAT (/' *** WAVEWATCH III WARING IN W3WAVE :'/               &
                '     AT LEAST ONE PROCESSOR HAS 0 ACTIVE POINTS',     &
                    ' IN GRID',I3)
+!/REFRX 1040 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
+!/REFRX               '     EXPERIMENTAL FEATURE !/REFRX NOT FULLY IMPLEMENTED.'/)
 !
 !/T 9000 FORMAT (                                                     &
 !/T   '============================================================', &

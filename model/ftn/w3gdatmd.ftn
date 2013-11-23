@@ -712,9 +712,12 @@
       END TYPE SNLP
 !
       TYPE SBTP
+!/BTX        REAL                  :: DUMMY
 !/BT0        REAL                  :: DUMMY
 !/BT1        REAL                  :: SBTC1
 !/BT4        REAL                  :: SBTCX(10)
+!/BT8        REAL                  :: DUMMY
+!/BT9        REAL                  :: DUMMY
       END TYPE SBTP
 !
       TYPE SDBP
@@ -935,7 +938,7 @@
 !/ Data aliasses for structure SBTP(S)
 !/
 !/BT1      REAL, POINTER           :: SBTC1
-!/BT4        REAL, POINTER         :: SBTCX(:)
+!/BT4      REAL, POINTER           :: SBTCX(:)
 !/
 !/ Data aliasses for structure SDBP(S)
 !/

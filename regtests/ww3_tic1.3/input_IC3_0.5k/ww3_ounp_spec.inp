@@ -1,0 +1,34 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III NETCDF Point output post-processing                    $
+$--------------------------------------------------------------------- $
+  19680606 000000   900  9999
+$
+$ Points requested --------------------------------------------------- $
+$ Mandatory end of list.
+ -1
+$
+$ File prefix (for netcdf output).
+ ww3.
+$
+$ Number of characters in date (for netcdf output).
+ 6
+$
+$ Version netCDF [3,4].
+ 3
+$
+$ Points in same file [T] or not [F].
+ T 100
+$
+$ Output type ITYPE [0,1,2,3].
+ 1
+$
+$ Flag for global attributes WW3 [0] or variable version [1-2-3-4].
+ 0
+$
+$ OTYPE.
+ 3  1  0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
+

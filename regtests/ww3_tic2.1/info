@@ -1,0 +1,59 @@
+#############################################################################
+#                                                                           #
+# ww3_tic2.1: Test script for WW III, two-dimensional propagation           #
+#            through a nonstationary and nonuniform ice layer               #
+#  (this test was previously known as ice_test11)                           #
+#                                                                           #
+# For recommended switches, please refer to switch file(s) in the input     #
+# directory "input_IC1"                                                     #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - Test case input:                                                        #
+#   * ww3_grid.inp                                                          #
+#     + Spectral grid                                                       #
+#       Number of directions        :  24                                   #
+#       Directional increment (deg.):  15.0                                 #
+#       First direction       (deg.):   0.0                                 #
+#       Number of frequencies       :   3                                   #
+#       Frequency range        (Hz) :   0.0800-0.1250                       #
+#       Increment factor            :   1.250                               #
+#     + Spatial grid                                                        #
+#       Grid type                   : rectilinear                           #
+#       Coordinate system           : Cartesian                             #
+#       Index closure type          : none                                  #
+#       Dimensions                  :     51      51                        #
+#       Increments             (km) :    5.00    5.00                       #
+#       X range                (km) :    0.00  250.00                       #
+#       Y range                (km) :    0.00  250.00                       #
+#                                                                           #
+#  Test case description:                                                   #
+#  Waves propagate from SE to NW. Initial condition is a uniform field with # 
+#  SWH=1 m. No ice initially. Ice appears at hr 3, in NW quadrant of domain.# 
+#  Increasing decay (in both time and space) is evident. At hour 9, ice     #
+#  disappears, and wave energy fills in the NW quadrant. By hour 12,        #
+#  simulation has not quite reached steady state, but is close (still a     #
+#  little bit of the NW quadrant to fill in). The primary purpose of this   #
+#  test case is to verify that WW3 is handling the input fields correctly.  # 
+#                                                                           #
+#          IC1 = constant dissipation rate                                  #
+#   Scattering of waves by ice floes will be treated separately from        #
+#   IC1/IC2/IC3 and and is not included in this test case.                  #
+#                                                                           #
+#  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
+#  available from http://www7320.nrlssc.navy.mil/pubs.php                   #
+#                                                                           #
+#  Example run_test command(s):                                             #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -w work_IC1 -i input_IC1 ../model ww3_tic2.1              #
+#                                                                           #
+#                                 origination: Erick Rogers, Dec 2012       #
+#                                     updated: Stefan Zieger, Oct 2013      #
+#                                last updated: Erick Rogers, Nov 2013       #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

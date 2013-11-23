@@ -60,7 +60,10 @@
 !/ Public variables
 !/
       INTEGER, PARAMETER      :: NHMAX =    25
-      INTEGER(KIND=4)         :: NH(3), THO(2,3,NHMAX)
+      INTEGER(KIND=4)         :: NH(3)
+!notes: THO is removed. It does not appear to be used, and dimensioning is different from shel
+!       which makes it seem dangerous 
+!       INTEGER(KIND=4)         :: THO(2,3,NHMAX)
       REAL                    :: HA(NHMAX,3), HD(NHMAX,3), HA2(NHMAX,3)
       REAL,    PARAMETER      :: kappa = 0.40       !Von Karman's constant
       !air kinematic viscosity (used in WAM)
@@ -326,7 +329,7 @@
 !       TAUWX-Y Real  I   Components of the wave-supported stress.
 !       TAUWNX  Real  I   Component of the negative wave-supported stress.
 !       TAUWNY  Real  I   Component of the negative wave-supported stress.
-!       ICE     Real  I   Sea ice fraction.
+!       ICE     Real  I   Sea ice fraction.                        !/Stefan: ICE is DUMMY argument; remove later.
 !       S       R.A.  O   Source term (1-D version).
 !       D       R.A.  O   Diagonal term of derivative.             *)
 !       LLWS    L.A.  O   Wind sea true/false array for each component
@@ -381,7 +384,7 @@
 !/
       REAL, INTENT(IN)        :: A(NSPEC)
       REAL, INTENT(IN)        :: CG(NK), K(NSPEC),Z0,U, CD
-      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT, ICE
+      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT, ICE       !/Stefan: ICE is DUMMY argument; remove later.
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUWX, TAUWY, TAUWNX, TAUWNY
       LOGICAL, INTENT(OUT)    :: LLWS(NSPEC)
       INTEGER, INTENT(IN)     :: IX, IY
@@ -447,7 +450,10 @@
       STRESSSTAB(ISTAB,:)=0.
       STRESSSTABN(ISTAB,:)=0.
 !
-! Coupling coefficient times densit ration and fraction of free surface (1-ICE)
+! Coupling coefficient times density ratio and fraction of free surface (1-ICE)
+! Stefan Zieger: Coupling is permanently disabled and MIN(0.,MAX(1.,1.-ICE)) has
+!      FIXME     no effect because it is always 0.0; remove later.
+!                Implemented in W3SRCE for all source terms. 
 !
       CONST0=BBETA*DRAT/(kappa**2)
 ! SSWELLF(1) is IDAMPING in ECMWAM

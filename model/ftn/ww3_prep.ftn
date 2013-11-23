@@ -238,7 +238,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*65, FROMF*4, NAMEF*65
-      CHARACTER(LEN=12)       :: IDSTR1(5)
+      CHARACTER(LEN=12)       :: IDSTR1(-7:5)
       CHARACTER(LEN=15)       :: IDSTR3(3)
       CHARACTER(LEN=32)       :: FORMT(2), FORMF(2)
       CHARACTER(LEN=20)       :: IDSTR2(5)
@@ -250,7 +250,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      DATA IDSTR1 / 'ice         ' , 'water levels' ,                 &
+! notes: Is it possible to combine ice parameters into one group, 
+!        similar to the way 1D spectra are in one group?
+      DATA IDSTR1 / 'ice param. 1' , 'ice param. 2' ,                 &
+                    'ice param. 3' , 'ice param. 4' ,                 &
+                    'ice param. 5' , 'mud density ' ,                 &
+                    'mud thkness ' , 'mud viscos. ' ,                 &
+                    'ice         ' , 'water levels' ,                 &
                     'winds       ' , 'currents    ' ,                 &
                     'data        ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
@@ -333,7 +339,23 @@
 !
       FLSTAB = IDFLD .EQ. 'WNS'
       FLBERG = IDFLD .EQ. 'ISI'
-      IF        ( IDFLD.EQ.'ICE' .OR. FLBERG ) THEN
+      IF        ( IDFLD.EQ.'IC1' ) THEN
+          IFLD    = -7
+        ELSE IF ( IDFLD.EQ.'IC2' ) THEN
+          IFLD    = -6
+        ELSE IF ( IDFLD.EQ.'IC3' ) THEN
+          IFLD    = -5
+        ELSE IF ( IDFLD.EQ.'IC4' ) THEN
+          IFLD    = -4
+        ELSE IF ( IDFLD.EQ.'IC5' ) THEN
+          IFLD    = -3
+        ELSE IF ( IDFLD.EQ.'MDN' ) THEN
+          IFLD    = -2
+        ELSE IF ( IDFLD.EQ.'MTH' ) THEN
+          IFLD    = -1
+        ELSE IF ( IDFLD.EQ.'MVS' ) THEN
+          IFLD    = 0
+        ELSE IF ( IDFLD.EQ.'ICE' .OR. FLBERG ) THEN
           IFLD    = 1
         ELSE IF ( IDFLD.EQ.'LEV' ) THEN
           IFLD    = 2
@@ -971,6 +993,7 @@
 !
 ! ... Input
 !
+!  read in array from ww3_prep.inp
         IF ( ITYPE .LE. 4 ) THEN
             CALL INA2R (XC, MXM, MYM, 1, NXJ(1), 1, NYJ(1),           &
                  NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
@@ -1231,7 +1254,31 @@
 !/T3        IX0    = 1
 !/T3        IXN    = MIN ( IX0+IXWDT-1 , NX )
 !/T3        DO
-!/T3          IF (IFLD.EQ.1) THEN
+!/T3          IF (IFLD.EQ.-7) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'ice param 1', '(-)')
+!/T3            ELSE IF (IFLD.EQ.-6) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'ice param 2', '(-)')
+!/T3            ELSE IF (IFLD.EQ.-5) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'ice param 3', '(-)')
+!/T3            ELSE IF (IFLD.EQ.-4) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'ice param 4', '(-)')
+!/T3            ELSE IF (IFLD.EQ.-3) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'ice param 5', '(-)')
+!/T3            ELSE IF (IFLD.EQ.-2) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'Mud Density', 'kg/m3')
+!/T3            ELSE IF (IFLD.EQ.-1) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'Mud Thkness', '(-)')
+!/T3            ELSE IF (IFLD.EQ.0) THEN
+!/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+!/T3                      IX0, IXN, 1, 1, NY, 1, 'Mud Kin.Visc', 'm2/s')
+!/T3            ELSE IF (IFLD.EQ.1) THEN
 !/T3              CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
 !/T3                      IX0, IXN, 1, 1, NY, 1, 'Fraction ice', '(-)')
 !/T3              IF ( FLBERG )                                       &

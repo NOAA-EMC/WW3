@@ -1,0 +1,78 @@
+#############################################################################
+#                                                                           #
+# ww3_tbt1.1:Test script for WW-III, one-dimensional propagation            #
+#            over flat bottom with with mud layer                           #
+#            1) Dalrymple & Liu formulation (BT8) (slower)                  #
+#            or                                                             #
+#            2) Ng formulation.             (BT9) (faster)                  #
+#  (this test was previously known as mud_test1, mud_test2)                 #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT8 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#    or                                                                     #
+#   !/LN0 !/ST0 !/NL0 !/BT9 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: Switch smoothing off to reproduce 2.           #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#   !/NOPA                                                                  #
+#   !/F90 !/NOGRB !/SHRD !LRB4 !/FLX2                                       #
+#   !/BT8   Muddy bed (Dalrymple & Liu).                                    #
+#      or                                                                   #
+#   !/BT9   Muddy bed (Ng).                                                 #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 33 x 3 rectilinear grid (global)                      #
+#      Grid type                   : rectilinear                            #
+#      Coordinate system           : Cartesian                              #
+#      Index closure type          : none                                   #
+#      Dimensions                  :    120       3                         #
+#      Increments             (km) :    1.00    1.00                        #
+#      X range                (km) :   -1.00  118.00                        #
+#      Y range                (km) :   -1.00    1.00                        #
+#     + Spectral grid:                                                      #
+#      Number of directions        :  24                                    #
+#      Directional increment (deg.):  15.0                                  #
+#      First direction       (deg.):   0.0                                  #
+#      Number of frequencies       :   3                                    #
+#      Frequency range        (Hz) :   0.0800-0.1250                        #
+#      Increment factor            :   1.250                                #
+#                                                                           #
+#  Waves propagate from low-x to high-x. Boundary forcing is constant (not  #
+#      updated) defined at x=0. SWH=1 m at boundary. Direction is 270 deg.  #
+#      Waves propagate over mud, starting from rest (except at boundary).   #
+#      Mud field is uniform.                                                #
+#  Since freq(2)=0.1 Hz, Cg~7.8 m/s, and X=118e+3, then t=4.2 hrs to        #
+#      reach approximate steady-state. However, in the default setup,       #
+#      the mud is so dissipative that no energy reaches high-x, so          #
+#      case is stationary by 3 hrs into simulation.                         #
+#                                                                           #
+#  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
+#      available from http://www7320.nrlssc.navy.mil/pubs.php               #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -n 3 -p mpirun -s BT8_MPI ../model ww3_tbt1.1             #
+#  ./bin/run_test -n 3 -p mpirun -s BT9_MPI ../model ww3_tbt1.1             #
+#  ./bin/run_test                -s BT8     ../model ww3_tbt1.1             #
+#  ./bin/run_test                -s BT9     ../model ww3_tbt1.1             #
+#                                                                           #
+#                                              Mark Orzech, Nov 2012        #
+#                                              Erick Rogers, Nov 2013       #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

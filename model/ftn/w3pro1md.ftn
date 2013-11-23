@@ -628,7 +628,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3KTP1 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
                           DDDX, DDDY, CX, CY, DCXDX, DCXDY, DCYDX,    &
-                          DCYDY, VA )
+                          DCYDY, DCDX, DCDY, VA )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -662,6 +662,7 @@
 !       DDDx    Real   I   Depth gradients.
 !       CX/Y    Real   I   Current components.
 !       DCxDx   Real   I   Current gradients.
+!       DCDX-Y  Real   I   Phase speed gradients.
 !       VA      R.A.  I/O  Spectrum.
 !     ----------------------------------------------------------------
 !
@@ -739,6 +740,7 @@
       REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
                                  WN(0:NK+1), DEPTH, DDDX, DDDY,       &
                                  CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
+      REAL, INTENT(IN)        :: DCDX(0:NK+1), DCDY(0:NK+1)
       REAL, INTENT(INOUT)     :: VA(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /
@@ -813,7 +815,28 @@
               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
             END DO
 !
-! 2.c Current refraction
+!/REFRX! 2.c @C/@x refraction and great-circle propagation
+!/REFRX          VCTH = 0.
+!/REFRX          FRK  = 0.
+!/REFRX          FDDMAX = 0.
+!
+!/REFRX          DO ISP=1, NSPEC
+!/REFRX            FDDMAX = MAX ( FDDMAX , ABS (                      &
+!/REFRX               ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
+!/REFRX            END DO
+!
+!/REFRX          DO IK=1, NK
+!/REFRX            FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
+!/REFRX            FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+!/REFRX            FRG(IK) = FDG * CG(IK)
+!/REFRX          END DO
+!/REFRX          DO ISP=1, NSPEC
+!/REFRX            VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)            &
+!/REFRX              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(MAPWN(ISP)) &
+!/REFRX              - ECOS(ISP)*DCDY(MAPWN(ISP)) )
+!/REFRX          END DO
+!
+! 2.d Current refraction
 !
           IF ( FLCUR ) THEN
 !

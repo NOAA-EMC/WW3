@@ -61,7 +61,8 @@
       REAL, PARAMETER         :: DWAT   = 1000.
       REAL, PARAMETER         :: DAIR   =    1.225
       REAL, PARAMETER         :: nu_air  = 1.4E-5        
-      REAL, PARAMETER         :: nu_water  = 3.E-6        
+!mdo  *** Changing nu_water to be consistent with DWAT=1000 (assumes 10degC)
+      REAL, PARAMETER         :: nu_water  = 1.31E-6    !mdo   WAS: 3.E-6        
       REAL, PARAMETER         :: sed_sg  = 2.65        
       REAL, PARAMETER         :: KAPPA = 0.40       !Von Karman's constant
 !

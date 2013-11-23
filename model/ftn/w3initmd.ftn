@@ -347,8 +347,9 @@
       USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
                           UA, UD, U10, U10D, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
-      USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE
-      USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
+      USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE, FLMDN, FLMTH,  &
+                          FLMVS, FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
+      USE W3DISPMD, ONLY: WAVNU1
 !/
       IMPLICIT NONE
 !
@@ -381,8 +382,7 @@
 !/MPI      INTEGER, ALLOCATABLE    :: TMPRNK(:)
       INTEGER, ALLOCATABLE    :: NT(:), MAPTST(:,:)
 !/T      INTEGER, SAVE           :: NXS = 49
-      REAL                    :: DTTST, DEPTH, SQRTH, SIX, R1, R2,    &
-                                 FRACOS
+      REAL                    :: DTTST, DEPTH, FRACOS
       REAL                    :: FACTOR
 !/T       REAL, ALLOCATABLE      :: XOUT(:,:)
       LOGICAL                 :: OPENED
@@ -906,27 +906,14 @@
         ELSE
           DEPTH = DMIN
           END IF 
-        SQRTH  = SQRT(DEPTH)
 !
 !/T1        WRITE (NDST,9051) IS, DEPTH
 !
 !/NEC/!CDIR LOOPCNT=100000
         DO IK=0, NK+1
 !
-! Inlined version of WAVNU1.
-!
-          SIX    = SIG(IK) * SQRTH
-          I1     = INT(SIX/DSIE)
-          IF (I1.LE.N1MAX) THEN
-              I2 = I1 + 1
-              R1 = SIX/DSIE - REAL(I1)
-              R2 = 1. - R1
-              WN(IK,IS) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / DEPTH
-              CG(IK,IS) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
-            ELSE
-              WN(IK,IS) = SIG(IK)*SIG(IK)/GRAV
-              CG(IK,IS) = 0.5 * GRAV / SIG(IK)
-            END IF
+!         Calculate wavenumbers and group velocities.
+          CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
 !
 !/T1          WRITE (NDST,9052) IK, TPI/SIG(IK), WN(IK,IS), CG(IK,IS)
 !
@@ -966,6 +953,24 @@
           IF (   FLICE    ) WRITE (NDSO,974) 'Prescribed'
           IF (.NOT. FLICE ) WRITE (NDSO,974) 'No'
 !
+          IF (   FLMDN    ) WRITE (NDSO,9972) 'Prescribed'
+          IF (.NOT. FLMDN ) WRITE (NDSO,9972) 'No'
+          IF (   FLMTH    ) WRITE (NDSO,9971) 'Prescribed'
+          IF (.NOT. FLMTH ) WRITE (NDSO,9971) 'No'
+          IF (   FLMVS    ) WRITE (NDSO,9970) 'Prescribed'
+          IF (.NOT. FLMVS ) WRITE (NDSO,9970) 'No'
+
+          IF (   FLIC1    ) WRITE (NDSO,9973) 'Prescribed'
+          IF (.NOT. FLIC1 ) WRITE (NDSO,9973) 'No'
+          IF (   FLIC2    ) WRITE (NDSO,9974) 'Prescribed'
+          IF (.NOT. FLIC2 ) WRITE (NDSO,9974) 'No'
+          IF (   FLIC3    ) WRITE (NDSO,9975) 'Prescribed'
+          IF (.NOT. FLIC3 ) WRITE (NDSO,9975) 'No'
+          IF (   FLIC4    ) WRITE (NDSO,9976) 'Prescribed'
+          IF (.NOT. FLIC4 ) WRITE (NDSO,9976) 'No'
+          IF (   FLIC5    ) WRITE (NDSO,9977) 'Prescribed'
+          IF (.NOT. FLIC5 ) WRITE (NDSO,9977) 'No'
+
           IF ( FLOUT(1) ) THEN
               WRITE (NDSO,975)
               DO J=1,NOGRP
@@ -1070,6 +1075,15 @@
   972 FORMAT ( ' ',A,' curents.')
   973 FORMAT ( ' ',A,' winds.')
   974 FORMAT ( ' ',A,' ice fields.')
+  9972 FORMAT( ' ',A,' mud density.')
+  9971 FORMAT( ' ',A,' mud thickness.')
+  9970 FORMAT( ' ',A,' mud viscosity.')
+  9973 FORMAT( ' ',A,' ice parameter 1')
+  9974 FORMAT( ' ',A,' ice parameter 2')
+  9975 FORMAT( ' ',A,' ice parameter 3')
+  9976 FORMAT( ' ',A,' ice parameter 4')
+  9977 FORMAT( ' ',A,' ice parameter 5')
+
 !
   975 FORMAT (/' Gridded output fields : '/                           &
                '--------------------------------------------------')

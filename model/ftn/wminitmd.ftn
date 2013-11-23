@@ -210,10 +210,14 @@
 !     following.
 !
 !  7. Remarks :
+!
 !     - When running regtests in cases where disk is non-local 
 !       (i.e. NFS used), there can be a huge improvment in compute
 !       time by using /var/tmp/ for log files. 
 !       See commented line at "OPEN (MDSO,FILE=..."
+!
+!     - IDFLDS dimensioning is hardwired as IDFLDS(-7:7) where lowest possible 
+!       value of JFIRST is JFIRST=-7
 !
 !  8. Structure :
 !
@@ -335,7 +339,8 @@
 !/MPI      USE W3GSRUMD
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
-      USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR, FLWIND
+      USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR,        &
+                          FLWIND, JFIRST
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI, &
                           FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
                           NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
@@ -391,8 +396,8 @@
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
                                  RP1(:), RPN(:)
 ! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
-!   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(12)
-      LOGICAL                 :: FLT, TFLAGI, TFLAGS(12), PSHARE
+!   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(-7:12)
+      LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
                                  FLG(:,:), FLG2D(:,:), FLG1D(:)
@@ -408,7 +413,8 @@
       CHARACTER(LEN=12)       :: FORMAT
 !/DIST      CHARACTER(LEN=18)       :: TFILE
 !/MPRF      CHARACTER(LEN=18)       :: PFILE
-      CHARACTER(LEN=13)       :: IDFLDS(7)
+
+      CHARACTER(LEN=13)       :: IDFLDS(-7:7)
       CHARACTER(LEN=23)       :: DTME21
       CHARACTER(LEN=30)       :: IDOTYP(7)
       CHARACTER(LEN=80)       :: TNAME
@@ -424,7 +430,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      DATA IDFLDS / 'water levels ' , 'currents     ' ,               &
+
+      DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
+                    'ice param. 3 ' , 'ice param. 4 ' ,               &
+                    'ice param. 5 ' ,                                 &
+                    'mud density  ' , 'mud thkness  ' ,               &
+                    'mud viscos.  ' ,                                 &
+                    'water levels ' , 'currents     ' ,               &
                     'winds        ' , 'ice fields   ' ,               &
                     'mean param.  ' , '1D spectra   ' ,               &
                     '2D spectra   ' /
@@ -619,8 +631,8 @@
 ! 2.c Set up I/O for individual models (initial)
 !
       ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
-           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLG(NOGRP,NRGRD), &
-           MDSF(-NRINP:NRGRD,7), IPRT(6,NRGRD), LPRT(NRGRD),          &
+           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLG(NOGRP,NRGRD),  &
+           MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
            FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
 !
       MDS    = -1
@@ -666,7 +678,7 @@
 !                   sources, and from communication rather than
 !                   files.
 !
-      ALLOCATE ( INAMES(2*NRGRD,7), MNAMES(-NRINP:2*NRGRD),           &
+      ALLOCATE ( INAMES(2*NRGRD,JFIRST:7), MNAMES(-NRINP:2*NRGRD),           &
                  TMPRNK(2*NRGRD), TMPGRP(2*NRGRD), NINGRP(2*NRGRD),   &
                  RP1(2*NRGRD), RPN(2*NRGRD), BCDTMP(NRGRD+1:2*NRGRD) )
       ALLOCATE ( GRANK(NRGRD), GRGRP(NRGRD), USEINP(NRINP) )
@@ -685,7 +697,7 @@
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         CALL W3SETI ( -I, MDSE, MDST )
         FLAGS = .FALSE.
-        READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), FLAGS(1:7)
+        READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), FLAGS(JFIRST:7)
 !
         END DO
 !
@@ -751,13 +763,13 @@
 !
 ! 3.a.5 Set input flags
 !
-      ALLOCATE ( INPMAP(NRGRD,8), IDINP(-NRINP:NRGRD,8) )
+      ALLOCATE ( INPMAP(NRGRD,JFIRST:8), IDINP(-NRINP:NRGRD,JFIRST:8) )
       INPMAP = 0
       IDINP  = '---'
 !
       DO I=1, NRGRD
         CALL W3SETI ( I, MDSE, MDST )
-        DO J=1, 7
+        DO J=JFIRST, 7
           IF ( INAMES(I,J) .EQ. 'native' ) THEN
               FLAGS(J) = .TRUE.
             ELSE
@@ -792,7 +804,7 @@
       DO I=-NRINP, NRGRD
         IF ( I .EQ. 0 ) CYCLE
         CALL W3SETI ( I, MDSE, MDST )
-        DO J=1, 7
+        DO J=JFIRST, 7
           IF ( FLAGS(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
               CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,               &
@@ -805,7 +817,7 @@
 !/T      WRITE (MDST,9022)
 !/T      DO I=-NRINP, NRGRD
 !/T        IF ( I .EQ. 0 ) CYCLE
-!/T        WRITE (MDST,9023) I, MDSF(I,1:7)
+!/T        WRITE (MDST,9021) I, MDSF(I,JFIRST:7)
 !/T        END DO
 !
 ! 3.c Set rank and group data
@@ -886,7 +898,7 @@
             IF ( .NOT. USEINP(I) ) CYCLE
             CALL W3SETI ( -I, MDSE, MDST )
             ACTION(1:4) = '---   '
-            DO J=1, 4
+            DO J=JFIRST, 4
               IF ( FLAGS(J) ) ACTION(J) = ' X    '
               END DO
             ACTION(5:7) = '-     '
@@ -894,9 +906,9 @@
             IF ( FLAGS(6) ) ACTION(6) = '2     '
             IF ( FLAGS(7) ) ACTION(7) = '3     '
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
-                WRITE (MDSS,925) I, MNAMES(-I), ACTION(1:7)
+                WRITE (MDSS,925) I, MNAMES(-I), ACTION(JFIRST:7)
             IF ( NMPLOG .EQ. IMPROC )                                 &
-                WRITE (MDSO,925) I, MNAMES(-I), ACTION(1:7)
+                WRITE (MDSO,925) I, MNAMES(-I), ACTION(JFIRST:7)
             END DO
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,926)
           IF ( NMPLOG .EQ. IMPROC ) WRITE (MDSO,926)
@@ -918,7 +930,7 @@
       DO I=1, NRGRD
         CALL W3SETI ( I, MDSE, MDST )
         ACTION(1:4) = '---   '
-        DO J=1, 4
+        DO J=JFIRST, 4
           IF ( FLAGS(J) ) THEN
               ACTION(J) = 'native'
             ELSE IF ( INPMAP(I,J) .NE. 0 ) THEN
@@ -2109,7 +2121,7 @@
 !
 ! ..... regular input files
 !
-        DO J=1, 4
+        DO J=JFIRST, 4
           IF ( FLAGS(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(I,J) = IDSTR(J)
@@ -2131,16 +2143,21 @@
 !
 ! ..... finalize file info data base
 !
-        DO J=1, 7
+        DO J=JFIRST, 7
           IF ( MDSF(I,J) .NE. -1 ) CALL WMUINQ ( MDSE, MDST, MDSF(I,J) )
           END DO
 !
 ! ..... Adjust input flags for other than native input,
 !       and initialize input arrays onse set at a time as needed.
 !
+        IF ( SIZE(FLAGS) .NE. SIZE(TFLAGS) ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMINIT: ', &
+                 'SIZE(FLAGS).NE.SIZE(TFLAGS) ***'
+          CALL EXTCDE ( 999 )
+        END IF
         TFLAGS = FLAGS
 !
-        DO J=1, 7
+        DO J=JFIRST, 7
           IF ( INPMAP(I,J) .NE. 0 ) THEN
 !
               TFLAGS(J) = .TRUE.
@@ -2335,7 +2352,7 @@
         CALL W3IOGR ( 'GRID', NDSREC, -I, MNAMES(-I)(1:J) )
         CALL W3DIMI ( -I, MDSE, MDST )
 !
-        DO J=1, 4
+        DO J=JFIRST, 4
           IF ( FLAGS(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(-I,J) = IDSTR(J)
@@ -2353,7 +2370,7 @@
 !
 ! Skipping assimilation input files for now.
 !
-          DO J=1, 7
+          DO J=JFIRST, 7
             IF ( MDSF(-I,J) .NE. -1 ) CALL WMUINQ                     &
                                          ( MDSE, MDST, MDSF(-I,J) )
             END DO
@@ -2361,7 +2378,7 @@
         END DO
 !
       DO I=1, NRGRD
-        DO J=1, 7
+        DO J=JFIRST, 7
           IF ( INPMAP(I,J) .GT. 0 ) IDINP(I,J) = IDINP(-INPMAP(I,J),J)
           END DO
         END DO
@@ -2914,9 +2931,7 @@
 !/T                               15X,'GRID MDS(1-13)',43X,'NTRACE')
 !/T 9021 FORMAT (14X,16I4)
 !/T 9022 FORMAT ( ' TEST WMINIT : UNIT NUMBERS FOR INTPUT FILES'/     &
-!/T                               15X,'GRID MDSF(1-7)')
-!/T 9023 FORMAT (14X,8I4)
-!
+!/T                               15X,'GRID MDSF(JFIRST-7)')
 !/T 9030 FORMAT ( ' TEST WMINIT : FILE EXTENSIONS, INPUT FLAGS,',     &
 !/T               ' RANK AND GROUP, PROC RANGE')
 !/T 9031 FORMAT ( '            ',I3,1X,A,8L2,2I4,2F6.2)
@@ -2945,7 +2960,7 @@
 !/T 9081 FORMAT ( '               MODEL AND TIME   :',I4,I10.8,I8.6)
 !/T 9082 FORMAT ( '               STATUS AND TIMES :',I4,3(I10.8,I8.6))
 !/T 9083 FORMAT ( ' TEST WMINIT : IDINP AFTER INITIALIZATION :')
-!/T 9084 FORMAT ( '               ',I4,7(2X,A3))
+!/T 9084 FORMAT ( '               ',I4,15(2X,A3))
 !/
 !/ End of WMINIT ----------------------------------------------------- /
 !/

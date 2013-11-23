@@ -1,0 +1,14 @@
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  1
+$ ITYPE = 1 ---------------------------------------------------------- $
+$ Gaussian in frequency and space, cos type in direction.
+$ - fp and spread (Hz), mean direction (degr., oceanographic
+$    convention) and cosine power, Xm and spread (degr. or m) Ym and
+$    spread (degr. or m), Hmax (m) (Example for lon-lat grid in degr.).
+$
+$  fp   sip    thm  ncos xm    six   ym  siy  hmax
+   0.1  0.0001 270. 12   0.    1.E2  0.  1.E2  1.0
+$  0.1  0.0001 225. 12   0.    5.E3  0.  5.E3  1.0
+$  0.1  0.0001 315. 12   0.    5.E3  0.  5.E3  1.0
+$

@@ -1,0 +1,76 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '2-D parameterized ice test    '
+$
+   1.25 0.08  3  24  0.
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+$
+   F T T F F T
+  300. 300. 300. 300.
+$
+  &MISC  FLAGTR = 4, CICE0 = 0.25, CICEN = 0.75 /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   101 51
+$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+    5.0E3   10.0E3  1.
+$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
+   0.0 0.0 1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+$ -0.1 0.1 401   -1.0 1 1 '(....)'  'NAME' '../input/bot.dat'
+  -0.1 0.1  10 -50.  4 1 '(....)' 'UNIT' 'input'
+$ -0.1 0.25 10 -1000. 4 1 '(....)' 'UNIT' 'input'
+$
+   5151*1
+$
+$ If sub-grid information is available as indicated by FLAGTR above,
+$ additional input to define this is needed below. In such cases a
+$ field of fractional obstructions at or between grid points needs to
+$ be supplied.  First the location and format of the data is defined
+$ by (as above) :
+$  - Unit number of file (can be 10, and/or identical to bottom depth
+$    unit), scale factor for fractional obstruction, IDLA, IDFM,
+$    format for formatted read, FROM and filename
+$
+$   10  0.2       3  1 '(....)' 'NAME' 'obstr.inp' {example}
+$    13  0.010000  1  1 '(....)' 'NAME'  '../input/obs.dat'
+$   13  1  1  1 '(....)' 'NAME'  '../input/obs.0'
+    10  1         4   1 '(....)' 'UNIT' 'input' 
+$
+$ example for making obstruction file: dim = 101x51
+$         >>  clear ; f=zeros(102,101); save f.txt f -ascii
+$
+$   10302*0 : this does not work : We need to specify the 2 fields separately
+$
+   5151*0
+$
+   5151*0
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$
+$ Input boundary points from segment data ( FROM = PART ) ------------ $
+   2    2   F
+   100  2   T
+   100 50   T
+$
+$  Close list by defining point (0,0) (mandatory)
+   0  0  F
+$ Excluded grid points from segment data ( FROM != PART )
+$   First defined as lines, identical to the definition of the input
+$   boundary points, and closed the same way.
+   0  0  F
+$   Second, define a point in a closed body of sea points to remove
+$   the entire body of sea points. Also close by point (0,0)
+   0  0
+$
+$ Output boundary points --------------------------------------------- $
+$  Close list by defining line with 0 points (mandatory)
+$
+   0. 0. 0. 0.  0

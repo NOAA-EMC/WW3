@@ -1,0 +1,68 @@
+#############################################################################
+#                                                                           #
+# ww3_tic1.2  Test script for WW-III, ice source term shoaling (1-d model)  #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#   !/ST0                Select the 'no source terms' option.               #
+#   !/IC3                Select the 'ice source term' option.               #
+#   !/PR3 !/UQ           Selecting one of the propagation schemes.          #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp :                                                        #
+#     + Spatial grid options: rectilinear Cartesian grid                    #
+#       + input_IC3_A0.5K                                                   #
+#           - dx = 0.5 km, dy = 0.5 km, depth = 500 m                       #
+#           - Xrange = -dx:150 km                                           #
+#           - IC1range= 0.15:1.50m, IC2=0.25m2/s, IC3=917kg/m3 IC4=1.E6Pa   #
+#       + input_IC3_A1.0K                                                   #
+#           - dx = 1.0 km, dy = 1.0 km, depth = 500 m                       #
+#           - Xrange = -dx:150 km                                           #
+#           - IC1range= 0.15:1.50m, IC2=0.25m2/s, IC3=917kg/m3 IC4=1.E6Pa   #
+#       + input_IC3_A2.5K                                                   #
+#           - dx = 2.5 km, dy = 2.5 km, depth = 500 m                       #
+#           - Xrange = -dx:150 km                                           #
+#           - IC1range= 0.15:1.50m, IC2=0.25m2/s, IC3=917kg/m3 IC4=1.E6Pa   #
+#       + input_IC3_B0.5K                                                   #
+#           - dx = 0.5 km, dy = 0.5 km, depth = 100 m                       #
+#           - Xrange = -dx:150 km                                           #
+#           - IC1range= 0.15:1.50m, IC2=0.05m2/s, IC3=917kg/m3 IC4=1.E6Pa   #
+#       + input_IC3_B1.0K                                                   #
+#           - dx = 1.0 km, dy = 1.0 km, depth = 100 m                       #
+#           - Xrange = -dx:150 km                                           #
+#           - IC1range= 0.15:1.50m, IC2=0.05m2/s, IC3=917kg/m3 IC4=1.E6Pa   #
+#       + input_IC3_B2.5K                                                   #
+#           - dx = 2.5 km, dy = 2.5 km, depth = 100 m                       #
+#           - Xrange = -dx:150 km                                           #
+#           - IC1range= 0.15:1.50m, IC2=0.05m2/s, IC3=917kg/m3 IC4=1.E6Pa   #
+#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.145                     #
+#   * switch options :                                                      #
+#     + switch_MPI                                                          #
+#                                                                           #
+# - Examples:                                                               #
+#     bin/run_test -c gnu        -i input_IC3_A0.5k ../model ww3_tic1.2     #
+#     bin/run_test -c gnu        -i input_IC3_A1.0k ../model ww3_tic1.2     #
+#     bin/run_test -c gnu        -i input_IC3_A2.5k ../model ww3_tic1.2     #
+#     bin/run_test -c gnu        -i input_IC3_B0.5k ../model ww3_tic1.2     #
+#     bin/run_test -c gnu        -i input_IC3_B1.0k ../model ww3_tic1.2     #
+#     bin/run_test -c gnu        -i input_IC3_B2.5k ../model ww3_tic1.2     #
+#                                                                           #
+#     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_A0.5k ../model ww3_tic1.2 #
+#     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_A1.0k ../model ww3_tic1.2 #
+#     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_A2.5k ../model ww3_tic1.2 #
+#     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_B0.5k ../model ww3_tic1.2 #
+#     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_B1.0k ../model ww3_tic1.2 #
+#     bin/run_test -c gnu -s MPI -p mpiexec -n 3 -i input_IC3_B2.5k ../model ww3_tic1.2 #
+#                                                                           #
+#                                               Stefan Zieger, Nov 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

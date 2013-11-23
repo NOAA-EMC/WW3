@@ -118,8 +118,10 @@
 !     ----------------------------------------------------------------
 !       INXOUT  C*(*) I  Test string for read/write, valid are:
 !                        'READ' and 'WRITE'.
-!       IDFLD   C*3  I/O ID string for field type, valid are:
-!                        'LEV', 'CUR', 'WND', 'WNS', 'ICE', 'ISI', and 'DTn'.
+!       IDFLD   C*3  I/O ID string for field type, valid are: 'IC1',
+!                        'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',
+!                        'MVS', 'LEV', 'CUR', 'WND', 'WNS', 'ICE',
+!                        'ISI', and 'DTn'.
 !       NDS     Int.  I  Dataset number for fields file.
 !       NDST    Int.  I  Dataset number for test output.
 !       NDSE    Int.  I  Dataset number for error output.
@@ -238,7 +240,11 @@
         END IF
 
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
-      IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
+      IF ( IDFLD.NE.'IC1' .AND. IDFLD.NE.'IC2' .AND.                  &
+           IDFLD.NE.'IC3' .AND. IDFLD.NE.'IC4' .AND.                  &
+           IDFLD.NE.'IC5' .AND. IDFLD.NE.'MDN' .AND.                  &
+           IDFLD.NE.'MTH' .AND. IDFLD.NE.'MVS' .AND.                  &
+           IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
            IDFLD.NE.'ICE' .AND. IDFLD.NE.'DT0' .AND.                  &
            IDFLD.NE.'DT1' .AND. IDFLD.NE.'DT2' .AND.                  &
@@ -276,9 +282,33 @@
         ELSE IF ( IDFLD.EQ.'DT1' ) THEN
           FNAME = 'data1.' // TEMPXT(:I)
           I     = I + 6
-        ELSE
+        ELSE IF ( IDFLD.EQ.'DT2' ) THEN
           FNAME = 'data2.' // TEMPXT(:I)
           I     = I + 6
+        ELSE IF ( IDFLD.EQ.'MDN' ) THEN
+          FNAME = 'muddens.' // TEMPXT(:I)
+          I     = I + 8
+        ELSE IF ( IDFLD.EQ.'MTH' ) THEN
+          FNAME = 'mudthk.' // TEMPXT(:I)
+          I     = I + 7
+        ELSE IF ( IDFLD.EQ.'MVS' ) THEN
+          FNAME = 'mudvisc.' // TEMPXT(:I)
+          I     = I + 8
+        ELSE IF ( IDFLD.EQ.'IC1' ) THEN
+          FNAME = 'ice1.' // TEMPXT(:I)
+          I     = I + 5
+        ELSE IF ( IDFLD.EQ.'IC2' ) THEN
+          FNAME = 'ice2.' // TEMPXT(:I)
+          I     = I + 5
+        ELSE IF ( IDFLD.EQ.'IC3' ) THEN
+          FNAME = 'ice3.' // TEMPXT(:I)
+          I     = I + 5
+        ELSE IF ( IDFLD.EQ.'IC4' ) THEN
+          FNAME = 'ice4.' // TEMPXT(:I)
+          I     = I + 5
+        ELSE IF ( IDFLD.EQ.'IC5' ) THEN
+          FNAME = 'ice5.' // TEMPXT(:I)
+          I     = I + 5
         END IF
 !
       WRITE  = INXOUT .EQ. 'WRITE'
@@ -883,7 +913,8 @@
 !     ----------------------------------------------------------------
 !       INXOUT  C*(*)  I   Test string for read/write, valid are:
 !                          'READ' and 'WRITE'.
-!       IDFLD   C*3    I   ID string for field type, valid are:
+!       IDFLD   C*3    I   ID string for field type, valid are: 'IC1',
+!                          'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH', 'MVS', 
 !                          'LEV', 'CUR', 'WND', 'WNS', 'ICE' and 'ISI'.
 !       NDS     Int.   I   Dataset number for fields file.
 !       NDST    Int.   I   Dataset number for test output.
@@ -894,6 +925,13 @@
 !       T0-N    I.A.   I   Time interval considered (dummy for write).
 !       TF0-N   I.A.  I/O  Field times (TFN dummy for write).
 !       Fxx     R.A.  I/O  Input fields (FxN dummy for write).
+!            subtypes: FX0, FY0, FA0, FXN, FYN, FAN
+!                    (meaning is inferred from context as follows)
+!                      "0" denotes "prior time level"
+!                      "N" denotes "next time level"
+!                      "X" denotes x in a vector
+!                      "Y" denotes y in a vector
+!                      "A" denotes scalar
 !       IERR    Int.   O   Error indicator,
 !                          -1 Past last data
 !                           0 OK,
@@ -984,7 +1022,11 @@
 ! test input parameters ---------------------------------------------- *
 !
       IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
-      IF ( IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
+      IF ( IDFLD.NE.'IC1' .AND. IDFLD.NE.'IC2' .AND.                  & 
+           IDFLD.NE.'IC3' .AND. IDFLD.NE.'IC4' .AND.                  &
+           IDFLD.NE.'IC5' .AND. IDFLD.NE.'MDN' .AND.                  &
+           IDFLD.NE.'MTH' .AND. IDFLD.NE.'MVS' .AND.                  &
+           IDFLD.NE.'LEV' .AND. IDFLD.NE.'CUR' .AND.                  &
            IDFLD.NE.'WND' .AND. IDFLD.NE.'WNS' .AND.                  &
            IDFLD.NE.'ICE' .AND. IDFLD.NE.'ISI'  )    GOTO 802
 !
@@ -1003,13 +1045,31 @@
 !
       DO
 !
-! Shift fields
+! Shift fields (2d fields only)
 !
+!---------------------------------------------
+! begin temporary notes
+! Why are fields shifted only if 2d? This does not make sense.
+! My guess is that this is a false association: 
+!    at present the fields that are 2d also happen to be the fields 
+!    that are interpolated in time (winds and currents)
+
+!      SUBROUTINE W3UCUR ( FLFRST )
+!     Interpolate the current field to the present time.
+!      SUBROUTINE W3UWND ( FLFRST, VGX, VGY )
+!     Interpolate wind fields to the given time.
+
+!      The "0" variables are needed only if there is interpolation in time.
+! end temporary notes
+!---------------------------------------------
+
         IF ( (.NOT.WRITE) .AND. FL2D ) THEN
 !
             TF0(1) = TFN(1)
             TF0(2) = TFN(2)
 !/T            WRITE (NDST,9020)
+ ! unless TFN has been changed in the do loop, the following line is essentally 
+ !       "if not.flfrst"
             IF ( TFN(1) .NE. -1 ) THEN
                 DO IX=1, NX
                   DO IY=1, NY
@@ -1027,6 +1087,7 @@
               END IF
 !
           END IF
+
 !
 ! Process fields, write --------------------------------------------- *
 !
@@ -1059,6 +1120,8 @@
             READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
 !/T            WRITE (NDST,9031) TFN
             IF ( .NOT. FL2D ) THEN
+! note: "J" here does *not* refer to data type, wlev etc.
+!       It refers to the dimension.
                 J      = 1
                 READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
                            ((FAN(IX,IY),IX=1,NX),IY=1,NY)
@@ -1069,7 +1132,11 @@
                 J      = 2
                 READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
                            ((FYN(IX,IY),IX=1,NX),IY=1,NY)
-                FAN(:,:) = FXN(:,:)    ! this was added for ISI files
+                FAN(:,:) = FXN(:,:)    ! this was added for ISI files 
+
+! note: it appears that FAN is immediately overwritten below if FLST.
+!       I do not know if this is intended.
+
                 J      = 3
                 IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
                            ((FAN(IX,IY),IX=1,NX),IY=1,NY)
@@ -1078,19 +1145,37 @@
 ! Check time, branch back if necessary
 !
             DTTST  = DSEC21 ( T0 , TFN )
-            IF ( .NOT.FL2D .AND. FLFRST .AND. DTTST .EQ. 0. ) EXIT
-            IF ( DTTST .GT. 0. ) EXIT
+
+! notes: my guess is that DTTST is the difference between the time of
+! computations (T0) and the time that we just read (TFN).  Again, 
+! this code appears to be using a false association between "is this
+! 2d?" vs. "is this field interpolated in time"?
+
+            IF ( .NOT.FL2D .AND. FLFRST .AND. DTTST .EQ. 0. )EXIT
+
+! notes: If it will be interpolated in time, we need to continue until
+! we have one that has a date larger than the current time, so we have
+! something to interpolate to.
+
+            IF ( DTTST .GT. 0. )EXIT
 !
           END IF
 !
         END DO
 !
-! Branch point for EOF in current and wind
+! Branch point for EOF in 2d fields, current and wind
 !
   300 CONTINUE
 !
-! Check first field
+! Check first field (2d fields only)
 !
+! note: Nothing appears to be checked here. Rather, this is setting 
+!       "0" values as "N" values
+
+! note: Again, this code appears to be using a false association between
+!      "is this 2d" and "is this field interpolated in time"?
+!      The "0" variables are needed only if there is interpolation in time.
+
       IF ( .NOT.WRITE .AND. FL2D .AND. TF0(1) .EQ. -1 ) THEN
 !
 !/T          WRITE (NDST,9040)
@@ -1111,7 +1196,7 @@
 !
         END IF
 !
-! Branch point for EOF in level and ice
+! Branch point for EOF in 1d fields, e.g. level and ice 
 !
   500 CONTINUE
 !
@@ -1125,7 +1210,7 @@
 !
       RETURN
 !
-! EOF escape location
+! EOF escape location (have read to end of file)
 !
   800 CONTINUE
       IERR   = -1
@@ -1877,6 +1962,14 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       J       Int    I   Field number of input field as in shell.
+!                          -7 : ice parameter 1
+!                          -6 : ice parameter 2
+!                          -5 : ice parameter 3
+!                          -4 : ice parameter 4
+!                          -3 : ice parameter 5
+!                          -2 : mud parameter 1
+!                          -1 : mud parameter 2
+!                           0 : mud parameter 3
 !                           1 : water levels
 !                           2 : currents
 !                           3 : winds
@@ -1949,9 +2042,9 @@
 !/
       INTEGER, INTENT(IN)     :: J, NDST, NDSE, MX, MY, NX, NY,       &
                                  T0(2), TN(2), NHM
-      INTEGER, INTENT(INOUT)  :: NH, THO(2,4,NHM), TF0(2), TFN(2)
+      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:4,NHM), TF0(2), TFN(2)
       INTEGER, INTENT(OUT)    :: IERR
-      REAL, INTENT(INOUT)     :: HA(NHM,4), HD(NHM,4), HS(NHM,4),     &
+      REAL, INTENT(INOUT)     :: HA(NHM,-7:4), HD(NHM,-7:4), HS(NHM,-7:4),  &
                                  FX0(MX,MY), FY0(MX,MY), FS0(MX,MY),  &
                                  FXN(MX,MY), FYN(MX,MY), FSN(MX,MY)
 !/
@@ -1969,13 +2062,16 @@
 !
       IERR   = 0
       DERA   = ATAN(1.)/45.
+
+
 !
 !/T      WRITE (NDST,9000) J, NDST, NDSE, MX, MY, NX, NY, T0, TN,     &
 !/T                        NH, NHM, TF0, TFN, IERR
 !
 ! Test field ID number for validity
 !
-      IF ( J.LE.0 .OR. J .GT.3 ) GOTO 801
+!old: IF ( J.LE.0 .OR. J .GT.3 ) GOTO 801
+      IF ( J.LT.-7 .OR. J .GT.3 ) GOTO 801
       FLFRST = TFN(1) .EQ. -1
 !
 !/T      WRITE (NDST,9001) FLFRST
@@ -2017,10 +2113,11 @@
             TFN(1) = THO(1,J,1)
             TFN(2) = THO(2,J,1)
 !
-            IF ( J .EQ. 1 ) THEN
+            IF ( J.GE.(-7).AND.(J.LE.1)) THEN
                 DO IX=1, NX
                   DO IY=1, NY
                     FSN(IX,IY) = HS(1,J)
+
                     END DO
                   END DO
 !/T                WRITE (NDST,9050) HS(1,J)
@@ -2078,7 +2175,7 @@
 ! Check time
 !
         DTTST  = DSEC21 ( T0 , TFN )
-        IF ( J.EQ.1 .AND. FLFRST .AND. DTTST.EQ.0. ) EXIT
+        IF ( J.GE.(-7).AND.(J.LE.1).AND.FLFRST .AND. DTTST.EQ.0. ) EXIT
         IF ( DTTST .GT. 0. ) EXIT
         END DO
 !
@@ -2098,7 +2195,7 @@
             END DO
         END IF
 !
-!/T      IF ( J .NE. 1 ) THEN
+!/T      IF ( J .GT. 1 ) THEN
 !/T          WRITE (NDST,9061) TF0, TFN
 !/T        ELSE
 !/T          WRITE (NDST,9062) TFN
@@ -2232,9 +2329,9 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: J, NDST, NDSE, T0(2), TN(2), NHM
-      INTEGER, INTENT(INOUT)  :: NH, THO(2,4,NHM), TF0(2), TFN(2)
+      INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:4,NHM), TF0(2), TFN(2)
       INTEGER, INTENT(OUT)    :: IERR
-      REAL, INTENT(INOUT)     :: HA(NHM,4), HD(NHM,4), A0, AN, D0, DN
+      REAL, INTENT(INOUT)     :: HA(NHM,-7:4), HD(NHM,-7:4), A0, AN, D0, DN
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters

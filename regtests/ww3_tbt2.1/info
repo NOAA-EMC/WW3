@@ -1,0 +1,81 @@
+#############################################################################
+#                                                                           #
+# ww3_tbt2.1:Test script for WW III, two-dimensional propagation            #
+#            over flat bottom with with mud layer                           #
+#            1) Dalrymple & Liu formulation (BT8) (slower)                  #
+#            or                                                             #
+#            2) Ng formulation.             (BT9) (faster)                  #
+#  (this test was previously known as mud_test15b)                          #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   LN0 ST0 NL0 BT8 DB0 TR0 BS0 XX0                                         #
+#    or                                                                     #
+#   LN0 ST0 NL0 BT9 DB0 TR0 BS0 XX0                                         #
+#                        Select the 'no source terms' option.               #
+#   PR3 UQ   Propagation scheme                                             #
+#   WNX1 WNT1 CRX1 CRT1      Wind and current interpolation.                #
+#   O0 O1 O2 O3 O4 O5 O6 O7   Sdt out output options.                       #
+#   NOPA                                                                    #
+#   F90 NOGRB  LRB4 FLX2                                                    #
+#   SHRD or DIST MPI                                                        #
+#   BT8   Muddy bed (Dalrymple & Liu).                                      #
+#      or                                                                   #
+#   BT9   Muddy bed (Ng).                                                   #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spectral grid :                                                     #
+#      Number of directions        :  24                                    #
+#      Directional increment (deg.):  15.0                                  #
+#      First direction       (deg.):   0.0                                  #
+#      Number of frequencies       :   3                                    #
+#      Frequency range        (Hz) :   0.0800-0.1250                        #
+#      Increment factor            :   1.250                                #
+#     + Spatial grid :                                                      #
+#      Grid type                   : rectilinear                            #
+#      Coordinate system           : Cartesian                              #
+#      Index closure type          : none                                   #
+#      Dimensions                  :    101      51                         #
+#      Increments             (km) :    5.00   10.00                        #
+#      X range                (km) :    0.00  500.00                        #
+#      Y range                (km) :    0.00  500.00                        #
+#                                                                           #
+#  Initial condition (hour 0) is uniform field of SWH=1 m, waves            #
+#  propagating from the SE to NW. S&E boundaries are held constant (i.e.    #
+#  not updated). At first time step, waves are eliminated inside the domain #
+#  by an ice field. So at this time, SWH is 1 m at S and E boundaries, but  #
+#  zero in the interior. After that time, it is a case of swell propagating #
+#  from SE to NW. Mud is defined in the NW quadr. The interior of the swell #
+#  field is uniform until it enounters the mud, which happens around hr 9.  #
+#  The swells are dissipated over the mud patch (NW quadrant). By hour 24,  #
+#  the results are almost stationary: uniform SWH outside the mud field and #
+#  gradual damping (from SE to NW) over the mud field. Note: ice is used    #
+#  in this case simply as a mechanism to eliminate wave energy at the first #
+#  time step and this test case is not concerned with the physics of waves  #
+#  through ice.                                                             #
+#                                                                           #
+#  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
+#  available from http://www7320.nrlssc.navy.mil/pubs.php                   #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -n 3 -p mpirun -s BT8_MPI -w BT8_MPI ../model ww3_tbt2.1  #
+#  ./bin/run_test -n 3 -p mpirun -s BT9_MPI -w BT9_MPI ../model ww3_tbt2.1  #
+#  ./bin/run_test                -s BT8     -w BT8_SER ../model ww3_tbt2.1  #
+#  ./bin/run_test                -s BT9     -w BT9_SER ../model ww3_tbt2.1  #
+#  On a workstation of 2010 vintage, the run-times for the above 4 test     #
+#     cases are as follows: 1m28s, 12m2s, 1m14s, 16m36s                     #
+#                                                                           #
+#                                 origination: Erick Rogers, Oct 2012       #
+#                                last updated: Erick Rogers, Nov 2013       #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

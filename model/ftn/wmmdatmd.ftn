@@ -639,9 +639,9 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-      IF ( J .EQ. 0 ) ALLOCATE ( MDATAS(IMOD)%TMV(2,4,NMV) ,          &
-                                 MDATAS(IMOD)%AMV(NMV,4)   ,          &
-                                 MDATAS(IMOD)%DMV(NMV,4)     )
+      IF ( J .EQ. 0 ) ALLOCATE ( MDATAS(IMOD)%TMV(2,-7:4,NMV) ,          &
+                                 MDATAS(IMOD)%AMV(NMV,-7:4)   ,          &
+                                 MDATAS(IMOD)%DMV(NMV,-7:4)     )
 !
       IF ( J .EQ. 1 ) THEN
           IF ( FLDAT0 ) DEALLOCATE ( MDATAS(IMOD)%DATA0 )

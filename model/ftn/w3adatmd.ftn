@@ -29,7 +29,7 @@
 !/    14-Nov-2013 : Move orphaned arrays as scalar to W3SRCE.
 !/                  Here update of documentation only.
 !/                  (Z0S, CDS, EMN, FMN, WNM, AMX)      ( version 4.13 )
-!                   
+!
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -394,6 +394,7 @@
 !
         REAL, POINTER         :: DDDX(:,:), DDDY(:,:), DCXDX(:,:),    &
                                  DCYDX(:,:), DCXDY(:,:), DCYDY(:,:)
+        REAL, POINTER         :: DCDX(:,:,:), DCDY(:,:,:)
 !/SMC        REAL, POINTER         :: DHDX(:), DHDY(:), DHLMT(:,:)
 !
 !/PR1        INTEGER, POINTER      :: IS0(:), IS2(:)
@@ -500,6 +501,7 @@
 !
       REAL, POINTER           :: DDDX(:,:), DDDY(:,:), DCXDX(:,:),    &
                                  DCYDX(:,:), DCXDY(:,:), DCYDY(:,:)
+      REAL, POINTER           :: DCDX(:,:,:), DCDY(:,:,:)
 !/SMC        REAL, POINTER         :: DHDX(:), DHDY(:), DHLMT(:,:)
 !
 !/PR1      INTEGER, POINTER        :: IS0(:), IS2(:)
@@ -1024,6 +1026,8 @@
 !
           ALLOCATE ( WADATS(IMOD)%DDDX(NY,NX)  ,                      &
                      WADATS(IMOD)%DDDY(NY,NX)  ,                      &
+                     WADATS(IMOD)%DCDX(0:NK+1,NY,NX)  ,               &
+                     WADATS(IMOD)%DCDY(0:NK+1,NY,NX)  ,               &
                      WADATS(IMOD)%DCXDX(NY,NX) ,                      &
                      WADATS(IMOD)%DCYDX(NY,NX) ,                      &
                      WADATS(IMOD)%DCXDY(NY,NX) ,                      &
@@ -2084,6 +2088,8 @@
 !
               DDDX   => WADATS(IMOD)%DDDX
               DDDY   => WADATS(IMOD)%DDDY
+              DCDX   => WADATS(IMOD)%DCDX
+              DCDY   => WADATS(IMOD)%DCDY
               DCXDX  => WADATS(IMOD)%DCXDX
               DCYDX  => WADATS(IMOD)%DCYDX
               DCXDY  => WADATS(IMOD)%DCXDY

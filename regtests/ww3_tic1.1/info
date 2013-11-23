@@ -1,0 +1,78 @@
+#############################################################################
+#                                                                           #
+# ww3_tic1.1:Test script for WW III, one-dimensional propagation            #
+#            through an ice layer                                           #
+#  (this test was previously known as ice_test6)                            #
+#                                                                           #
+# For recommended switches, please refer to switch files in the input       #
+# directories input_IC1, input_IC2, input_IC3                               #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - Test case input (default):                                              #
+#   * ww3_grid_2500m.inp                                                    #
+#     + Spectral grid (applies to all)                                      #
+#      Number of directions        :  24                                    #
+#      Directional increment (deg.):  15.0                                  #
+#      First direction       (deg.):   0.0                                  #
+#      Number of frequencies       :   3                                    #
+#      Frequency range        (Hz) :   0.0800-0.1250                        #
+#      Increment factor            :   1.250                                #
+#     + Spatial grid (applies to ww3_grid_2500m.inp only, many others       #
+#                    are avaliable)                                         #
+#      Dimensions                  :    156       3                         #
+#      Increments             (km) :    2.50    2.50                        #
+#      X range                (km) :   -2.50  385.00                        #
+#      Y range                (km) :   -2.50    2.50                        #
+#                                                                           #
+#  Waves propagate from low-x to high-x. Boundary forcing is constant (not  #
+#      updated) defined at x=0. SWH~1 m at boundary. Direction is 270 deg.  #
+#      Waves propagate through ice, starting from rest (except at           #
+#      boundary). Ice field is uniform. See tab50.ww3 for summary output.   #
+#      This test case is provided with many different ww3_grid.inp files,   #
+#      each with different resolution, to demonstrate that results are      #
+#      sensitive to spatial resulution, but converge to a proper result     #
+#      if adequate resolution is used. Also, there are tests for three      #
+#      alternative routines to represent S_{ice}. These are identified by   #
+#      their switches : IC1, IC2, IC3                                       #
+#          IC1 = constant dissipation rate                                  #
+#          IC2 = Liu and M-C (JPO 1988), Liu et al (JGR 1991): dissipation  #
+#                is caused by interaction between waves and turbulence at   #
+#                ice-water interface                                        #
+#          IC3 = Wang and Shen (JGR 2010), dissipation is caused by         #
+#                interaction between waves and ice, where ice layer is      #
+#                represented as a continuous viscoelastic layer             #
+#   Scattering of waves by ice floes will be treated separately from        #
+#   IC1/IC2/IC3 and and is not included in this test case.                  #
+#                                                                           #
+#  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
+#  available from http://www7320.nrlssc.navy.mil/pubs.php                   #
+#  (This report only covers IC1 and IC2, not IC3, which is newer)           #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#                                                                           #
+# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 5km   -w w5km_IC1   -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../model ww3_tic1.1    #
+#                                                                           #
+# ./bin/run_test -g 1000m -w w1000m_IC2 -i input_IC2 ../model ww3_tic1.1    #
+#                                                                           #
+# ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../model ww3_tic1.1    #
+# ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../model ww3_tic1.1    #
+# ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../model ww3_tic1.1    #
+#                                                                           #
+#                                 origination: Erick Rogers, Dec 2012       #
+#                                     updated: Stefan Zieger, Oct 2013      #
+#                                last updated: Erick Rogers, Nov 2013       #
+#                                                                           #
+#    Copyright 2009 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

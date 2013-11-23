@@ -735,7 +735,7 @@
                                  ETMSSL(NSEAL), ETMSSCL(NSEAL),       &
                                  ETTPMM(NSEAL), ETF(NSEAL), ET1(NSEAL)
       REAL                       USSCO, FT1
-      REAL, SAVE              :: HSMIN = 0.05
+      REAL, SAVE              :: HSMIN = 0.01
 !/
 !/ ------------------------------------------------------------------- /
 !/

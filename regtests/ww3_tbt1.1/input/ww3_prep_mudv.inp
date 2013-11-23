@@ -1,0 +1,76 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Field preprocessor input file                          $
+$ -------------------------------------------------------------------- $
+$ Mayor types of field and time flag
+$   Field types  :  IC1, IC2, IC3, IC4, IC5 => Ice parameters (5)
+$                   MDN   Mud densities
+$                   MTH   Mud thicknesses
+$                   MVS   Mud viscosities 
+$                   ICE   Ice concentrations.
+$                   LEV   Water levels.
+$                   WND   Winds.
+$                   WNS   Winds (including air-sea temp. dif.)
+$                   CUR   Currents.
+$   Format types :  AI    Transfer field 'as is'.
+$                   LL    Field defined on longitude-latitude grid.
+$                   F1    Arbitrary grid, longitude and latitude of
+$                         each grid point given in separate file.
+$                   F2    Like F1, composite of 2 fields.
+$   Time flag    : If true, time is included in file.
+$   Header flag  : If true, write header on "*.ww3" data file
+$
+   'MVS' 'AI' T T
+$
+$ Additional time input ---------------------------------------------- $
+$ If time flag is .FALSE., give time of field in yyyymmdd hhmmss format.
+$
+$   19680606 060000
+$
+$ Additional input format type 'LL' ---------------------------------- $
+$ Grid range (degr.) and number of points for longitudes and latitudes,
+$ respectively.
+$
+$    -0.25 2.5  15  -0.25  2.5  4
+$  200.0 246.0  47 29.0 60.0  32
+$   -97.0 -82.0 301 18.0 32.0 281
+$    262.0 278.0 81 18.0 31.0 66
+$
+$ Additional input format type 'F1' or 'F2' -------------------------- $
+$ Three or four additional input lines, to define the file(s) with
+$ the latitude-longitude information :
+$ 1) Discrete size of input grid (NXI,NYI) and flag identifying closure
+$    in longitudes.
+$ 2) Define type of file using the parameters FROM, IDLA, IDFM (see
+$    input for grid preprocessor), and a format
+$ 3) Unit number and (dummy) name of first file.
+$ 4) Unit number and (dummy) name of second file (F2 only).
+$
+$ 3 13                                              
+$ 'UNIT' 3 1 '(.L.L.)'
+$ 10 'll_file.1'
+$ 10 'll_file.2'      
+$
+$ Define data files -------------------------------------------------- $
+$ The first input line identifies the file format with FROM, IDLA and
+$ IDFM, the second (third) lines give the file unit number and name.
+$
+  'NAME' 3 1 '(..T..)' '(..F..)' 
+$  'UNIT' 3 1 '(..T..)' '(..F..)' 
+$  'NAME' 1 2 '(I10,1x,I10)' '(1000(F9.2))' 
+$ 
+  2345 '../input/mudvis.txt'
+$  10 'data_file.2'
+$
+$ If the above unit numbers are 10, data is read from this file
+$ (no intermediate comment lines allowed),
+$
+$ 39*0.0076 
+$
+$   1. 1. 1. 1. 1. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$   1. 1. 1. 1. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$   1. 1. 1. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$   1. 1. 1. 1. 1. 1. 1. 0. 0. 0. 0. 0. 0. 0. 0.
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

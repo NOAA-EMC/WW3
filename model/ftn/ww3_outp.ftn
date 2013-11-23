@@ -88,7 +88,7 @@
 !                                      3 : Table of 1-D time scales.
 !                                      4 : Transfer file.
 !
-!       4 : Partitioning and bulletins 
+!       4 : Partitioning and bulletins
 !                                      1 : Spectral partitions table
 !                                      2 : Bulletins ASCII format
 !                                      3 : Bulletins CSV format
@@ -135,6 +135,10 @@
 !     - Transfder file written to ww3.yymmddhh.spc with multiple
 !       spectra and times in file. yymmddhh relates to first
 !       output (NDSTAB).
+!     - !/IC1 !/IC2 !/IC3 are not included in dissipation term
+!       FIXME: ICE is a dummy variable at the moment
+!              Include ice parameters in point output file out_pnt.ww3
+!              Ice coupling to SIN, SDS and SIC similar to w3srcemd.ftn
 !
 !  8. Structure :
 !
@@ -633,6 +637,10 @@
 !
       IOUT   = 0
 !
+!/IC1      WRITE(NDSO,3960)
+!/IC2      WRITE(NDSO,3960)
+!/IC3      WRITE(NDSO,3960)
+
       DO
         DTEST  = DSEC21 ( TIME , TOUT )
         IF ( DTEST .GT. 0. ) THEN
@@ -822,6 +830,16 @@
  1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
                '     MULTIPLE OUTPUT POINTS DEFINED, ITYPE =',I4,/    &
                '     ONLY SINGLE POINT ALLOWED IN THIS VERSION'/)
+!/IC1 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
+!/IC1               '     Ice source terms !/IC1 skipped'/            &
+!/IC1               '     in dissipation term.'/)
+!/IC2 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
+!/IC2               '     Ice source terms !/IC2 skipped'/            &
+!/IC2               '     in dissipation term.'/)
+!/IC3 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
+!/IC3               '     Ice source terms !/IC3 skipped'/            &
+!/IC3               '     in dissipation term.'/)
+!
 !/
 !/ Internal subroutine W3EXPO ---------------------------------------- /
 !/
@@ -926,6 +944,7 @@
 !       !/STx    Source term package
 !       !/NLx    Nonlinear interaction package
 !       !/BTx    Bottom friction package
+!       !/ICx    S_ice source term package
 !       !/DBx    Depth-induced breaking package
 !       !/TRx    Triad interaction package
 !       !/BSx    Bottom scattering package
@@ -958,6 +977,8 @@
 !/BT1      USE W3SBT1MD
 !/BT2      USE W3SBT2MD
 !/BT4      USE W3SBT4MD
+!/BT8      USE W3SBT8MD
+!/BT9      USE W3SBT9MD
 !/BTX      USE W3SBTXMD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
@@ -1519,6 +1540,13 @@
 
 !/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
+
+!/BT8                    CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
+
+!/BT9                    CALL W3SBT9 ( A, DEPTH, XBT, DIA, IX, IY )
+
+!/BTX                    CALL W3SBTX
+
 !
 !/BS1                    CALL W3SBS1 ( A, CG, WN, DEPTH,              &
 !/BS1                           CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)), &
@@ -1561,9 +1589,8 @@
                     SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6               SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
                     SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
-                    STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) +         &
-                                  SDS(IK,ITH) + SBT(IK,ITH) +         &
-                                  XXX(ITH,IK) * FACTOR
+                    STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) + SDS(IK,ITH) + &
+                                  SBT(IK,ITH) + XXX(ITH,IK) * FACTOR
                     E1  (IK) = E1  (IK) + E(IK,ITH)
                     SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
                     SNL1(IK) = SNL1(IK) + SNL(IK,ITH)
