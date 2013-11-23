@@ -72,6 +72,7 @@
   export    unstr='n' # unstructured grid tests
   export    smcgr='n' # SMC/Rotated grid test
   export   hur1mg='n' # Hurricane with one moving grid
+  export   mudice='n' # Mud/Ice and wave interaction tests 
   export  multi01='y' # mww3_test_01 (wetting and drying)
   export  multi02='y' # mww3_test_02 (basic two-way nesting test))
   export  multi03='y' # mww3_test_03 (three high and three low res grids).
