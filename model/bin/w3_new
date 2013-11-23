@@ -262,7 +262,8 @@
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn ;;
-      'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn ;;
+      'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn 
+                                         touch w3srcemd.ftn ;;
       'tide' )        cd $main_dir/ftn ; touch w3tidemd.ftn 
                                          touch w3updtmd.ftn 
                                          touch w3idatmd.ftn 
