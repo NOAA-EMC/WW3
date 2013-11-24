@@ -4,8 +4,6 @@ $ -------------------------------------------------------------------- $
 $ types of field
 $   Field types  :  LEV   Water levels.
 $                   CUR   Currents.
-$
-$
   'CUR'
 $
 $ List of tidal constituents------------------------------------------ $
@@ -24,9 +22,6 @@ $ Define data files -------------------------------------------------- $
 $ The input line identifies the filename using for the forcing field.
 $
   'ww3_tide'
-$
-$
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
 $ -------------------------------------------------------------------- $
-

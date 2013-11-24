@@ -75,8 +75,18 @@ run_test.out : $(RUNTEST)
 $(TARGET).dvi: $(DEPFILES)
 	$(LATEX) $(TARGET)
 	$(BIBTEX) $(TARGET)
+	-@\echo  '\begin{thebibliography}{}'   > tempfile
+	-@\echo  '\itemsep 0mm'               >> tempfile
+	-@\cat $(TARGET).bbl                  >> tempfile
+	-@\sed -n '3!p' tempfile               > $(TARGET).bbl
+	-@\rm -f tempfile
 	$(LATEX) $(TARGET)
 	$(BIBTEX) $(TARGET)
+	-@\echo  '\begin{thebibliography}{}'   > tempfile
+	-@\echo  '\itemsep 0mm'               >> tempfile
+	-@\cat $(TARGET).bbl                  >> tempfile
+	-@\sed -n '3!p' tempfile               > $(TARGET).bbl
+	-@\rm -f tempfile
 	$(LATEX) $(TARGET)
 
 $(TARGET).pdf: $(TARGET).dvi

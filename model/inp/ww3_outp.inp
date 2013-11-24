@@ -140,12 +140,6 @@ $ - Point name (C*10), lat, lon, d, U10 and    |  loop     | over
 $   direction, current speed and direction     |   over    |
 $ - E(f,theta)                                 |  points   | times
 $                                             -+          -+
-$
-$ The formatted file is readable usign free format throughout.
-$ This datat set can be used as input for the bulletin generator
-$ w3split.
-$
-$
 $ 
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

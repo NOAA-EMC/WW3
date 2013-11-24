@@ -17,6 +17,17 @@
 
 \inpfile{ww3_prep.tex}
 
-\noindent 
+\vspace{\baselineskip} 
+\vspace{\baselineskip} 
 
+\noindent 
+Note that the optional output files are specific to {\file ww3\_shel} and
+{\file ww3\_multi}, but are not processed by the actual wave model
+routines. These files are consequently not needed if the wave model routines
+are used in a different shell or in an integrated program. However, the
+routines reading and writing these files are system-independent and could
+therefore be used in customized applications of the basic wave model. The
+reading and writing of these files is performed by the subroutine {\F w3fldg}
+({\file w3fldsmd.ftn}). For additional documentation and file formats
+reference if made to this routine.
 \pb

@@ -35,7 +35,6 @@ $ Variables to use --------------------------------------------------- $
 $
   U V
 $
-$
 $ Additional time input ---------------------------------------------- $
 $ If time flag is .FALSE., give time of field in yyyymmdd hhmmss format.
 $
@@ -45,7 +44,6 @@ $ Define data files -------------------------------------------------- $
 $ The input line identifies the filename using for the forcing field.
 $
   'wind.nc'
-$
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

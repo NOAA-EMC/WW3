@@ -1,20 +1,29 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Boundary input processing                              $
 $--------------------------------------------------------------------- $
-$ boundary option: READ or WRITE
- WRITE 
+$ Boundary option: READ or WRITE
+$
+  WRITE 
 $
 $ Interpolation method: 1: nearest
 $                       2: linear interpolation
- 2 
+  2 
 $
-$ verbose mode [0-1]
- 0
+$ Verbose mode [0-1]
 $
-$ list of spectra files. These ASCII files use the WAVEWATCH III format
-$ examples of such files can be found at (for example): 
-$   ftp://polar.ncep.noaa.gov/pub/waves/develop/glw.latest_run/   (the *.spec.gz files)
+  0
+$
+$ List of spectra files. These ASCII files use the WAVEWATCH III
+$ format as described in the ww3_outp.inp file. The files are 
+$ defined relative to the directory in which the program is run.
+$
+$ Examples of such files can be found at (for example): 
+$   ftp://polar.ncep.noaa.gov/pub/waves/develop/glw.latest_run/
+$                                              (the *.spec.gz files)
 $   http://tinyurl.com/iowagaftp/HINDCAST/GLOBAL/2009_ECMWF/SPEC
+$
+$ IF data it used other han from previous WAVEWATCH III runs, then
+$ these data will need to be converted to the WAVEWATCH III format.
 $
 $ In the case of NetCDF files see ww3_bounc.inp  
 $

@@ -12,8 +12,8 @@ $   Format types :  AI    Transfer field 'as is'.
 $                   LL    Field defined on rectilinear grid (in same
 $                         coordinate system as model grid)
 $                   F1    Field defined on curvilinear grid (in same
-$                         coordinate system as model grid), coordinates of
-$                         each grid point given in separate file.
+$                         coordinate system as model grid), coordinates
+$                         of each grid point given in separate file.
 $                   F2    Like F1, composite of 2 fields.
 $
 $   NOTE : Format type not used for field type 'DAT'.

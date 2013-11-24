@@ -5,60 +5,12 @@ $ Time, time increment and number of outputs
 $
  20020101 120000  100  10000
 $
-$--------------------------------------------------------------------- $
-$ Output request. Here a namelist is used. It is also possible to use 
-$ alist of flags for each group. See ww3_shel.inp
-$ See section 2.4 fo the manual. 
 $
-$ Output fields may be requested as a series of flags for groups and
-$ elements or as a namelist
+$ Output request flags identifying fields as in ww3_shel.inp. See this
+$ file for a full documentation of the field output options.
 $
-$ 1) Flag requests
-$$ (1) Forcing Fields
-$  T
-$$ DPT CUR WND AST WLV ICE IBG D50
-$  T   T   T   T   T   T   F   F
-$$ (2) Standard mean wave Parameters
-$  T
-$$ HS  LM  T02 T0M1 T01 FP DIR SPR DP
-$  T   T   T   T   T   T   T   T   T
-$$ (3) Frequency-dependent parameters
-$  T
-$$ EF TH1M STH1M TH2M STH2M WN
-$  T   T   T   F   F   F
-$$ (4) Spectral Partition Parameters
-$  T
-$$ PHS PTP PLP PDIR PSPR PWS TWS PNR
-$  T   T   T   T   T   T   T   T
-$$ (5) Atmosphere-waves layer
-$  T
-$$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM
-$  T   T   T   T   T   T   T   T   T   T
-$$ (6) Wave-Ocean layer
-$  T
-$$ SXY TWO BHD FOC TUS USS P2S USF P2L
-$  T   T   T   T   T   T   T   F   F   F
-$$ (7) Wave-bottom layer
-$  T
-$$ ABR UBR BED FBB TBB
-$  T   T   T   T   T
-$$ (8) Spectrum parameters
-$  T
-$$ MSS MSC
-$  T   T
-$$ (9) Numerical diagnostics
-$  T
-$$ DTD FC  CFX CFD CFK
-$  T   T   T   T   T
-$$ (10) User defined (NOEXTR flags needed)
-$  F
-$$  U1  U2
-$ T   T
-$
-$ 2) Namelist requests (requires the N flag precending namelist)
-  N 
-$  DPT CUR WND DT  WLV ICE HS  L T02 T01 TM1 FP  DIR SPR DP  EF TH1M STH1M PHS PTP PLP PTH PSP WSF TWS PNR UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S WN  USF P2L ABR UBR BED FBB TBB MSS MSC DTD FCT CFX CFT CFK US1 US2
-  HS L T02 T01 TM1 FP  DIR SPR EF
+  N
+  DPT HS FP T01
 $
 $--------------------------------------------------------------------- $
 $ Output type 4 [3,4] (version netCDF)   
@@ -83,7 +35,6 @@ $ For each field and time a new file is generated with the file name
 $ ww3.date_xxx.nc , where date is a conventional time idicator with S3
 $ characters,
 $ and xxx is a field identifier.
-$
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

@@ -10,11 +10,9 @@ $ Points requested --------------------------------------------------- $
 $
 $ Define points index for which output is to be generated. 
 $ If no one defined, all points are selected
-$ One index number per line
+$ One index number per line, negetive number identifies end of list.
 $ 1
 $ 2
-$ 3
-$ mandatory end of list
  -1
 $
 $ file prefix
@@ -35,8 +33,6 @@ $ Output type ITYPE [0,1,2,3]
 $
 $ Flag for global attributes WW3 [0] or variable version [1-2-3-4]
  0
-$
-$
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
 $            No additional input, the above time range is ignored.
@@ -66,10 +62,6 @@ $   direction, current speed and direction     |   over    |
 $ - E(f,theta)                                 |  points   | times
 $                                             -+          -+
 $
-$ The formatted file is readable usign free format throughout.
-$ This datat set can be used as input for the bulletin generator
-$ w3split.
-$
 $ -------------------------------------------------------------------- $
 $ ITYPE = 2, netCDF Tables of (mean) parameter
 $          - Sub-type OTYPE :  1 : Depth, current, wind
@@ -78,9 +70,7 @@ $                              3 : Nondimensional pars. (U*)
 $                              4 : Nondimensional pars. (U10)
 $                              5 : 'Validation table'
 $                              6 : WMO standard output 
-$
 $  4
-$
 $
 $ -------------------------------------------------------------------- $
 $ ITYPE = 3, netCDF Source terms
@@ -120,7 +110,6 @@ $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
-$
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
