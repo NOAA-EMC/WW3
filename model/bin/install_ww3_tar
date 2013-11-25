@@ -43,7 +43,13 @@
 # 1.c Test present directory and set location of environment file  - - - - - -
 
   main_dir=`pwd`
-  cd
+# homedir may be different than where cd takes...
+  if [ $HOME ]
+  then
+    cd $HOME
+  else  
+    cd
+  fi
   home_dir=`pwd`
   cd $main_dir
 
@@ -65,24 +71,21 @@
       set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
       echo "Install directory: " $main_dir
       mkdir -p $main_dir
-      cp install_ww3_tar wwatch*tar  $main_dir
+      if [ ! -f $main_dir/wwatch*tar ]
+      then
+        cp install_ww3_tar wwatch*tar  $main_dir
+      fi
     else
-      echo "Generic wwatch3.env file not found at ${home_dir}          "
-      echo 'Enter correct location of env file relative to there.' ; echo ' '
-      echo ' Alternatively, quit and choose local env file [option L] '
-      main_dir=nodir.$$
-      until [ -d $main_dir ]
-      do
-        echo -n "   Directory (relative to $home_dir) : "
-        read OK
-        if [ -n "$OK" ]
-        then
-          main_dir="$OK"
-        fi
-      done
-      cd $main_dir
-      main_dir=`pwd`
       echo ' '
+      echo "Generic .wwatch3.env file not found at ${home_dir}          "
+      echo 'Would you like to create one from scratch? [Y|n]' ; echo ' '
+      read OK
+      if [ "$OK" = "Y" ] || [ "$OK" = "y" ]
+      then
+         do_set='y'
+      else
+         echo ' ' ; echo '   *** INSTALL ABORTED *** ' ; echo ' ' ; exit
+      fi
     fi
 
   elif [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
@@ -102,25 +105,9 @@
 
   echo ' ';echo "Installing in $main_dir"
 
-  OK="$NULL"
-  until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
-        [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
-  do
-    echo -n "   OK ? [y/n] "
-    read OK
-  done
-  if [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
-  then
-    echo ' ' ; echo 'Change to correct directory '
-    echo ' ' ; echo '   *** INSTALL ABORTED *** ' ; echo ' ' ; exit
-  fi
-
   cd $main_dir
 
 # 1.d Set up environment - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  echo ' '
-  echo 'Setting up environment variables.'
 
   if [ -s ${ww3_env} ]
   then
@@ -147,20 +134,28 @@
     newfile='no'
 
   else
-    echo ' ';echo '   No setup file found. Variables being set to defaults: '
+    echo ' ';echo '   No setup file found. Setting first envs to usual defaults'
     prnt=printer
     fort=f77
     cc=cc
     temp_dir=${main_dir}/tmp
     s_source=yes
     s_list=yes
-    do_set='n'
 
-    echo ' ';echo 'Creating local wwatch3.env for use in regression testing'
-    ww3_env=${main_dir}/wwatch3.env 
-    newfile='yes'  
+    if [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
+    then
+      echo ' ';echo 'Creating local wwatch3.env for use in regression testing'
+      do_set='n'
+      ww3_env=${main_dir}/wwatch3.env 
+      newfile='yes'  
+    elif [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ]
+    then
+      echo ' '; echo 'Creating generic .wwatch3.env'
+    fi
   fi
-    
+   
+  if [ -s ${ww3_env} ]
+  then
     echo "      Printer (listings)       : $prnt"
     echo "      FORTRAN comp. (aux only) : $fort"
     echo "      C Compiler (aux only)    : $cc"
@@ -179,11 +174,12 @@
        'n'|'N') do_set='n' ;;
       esac
     done
+  fi
 
   if [ "$do_set" = 'y' ]
   then
     echo ' '
-    echo "Modifying set-up :"
+    echo "Verify environment settings and change defaults if required :"
     newfile='yes'
     OK="$NULL"
     until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ]
@@ -276,7 +272,7 @@
 
 # 1.e Save environment in file - - - - - - - - - - - - - - - - - - - - - - - -
 
- if [ "${newfile}" == "yes" ]
+ if [ "${newfile}" = "yes" ]
  then
 
 #  cd $home_dir
@@ -296,6 +292,10 @@
   echo "WWATCH3_LIST     $s_list"                            >> $ww3_env
   echo ' '                                                   >> $ww3_env
 
+  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ]
+  then
+    cp -f $ww3_env ~/.wwatch3.env
+  fi
  fi
 
   if [ ! -d $temp_dir ]
@@ -889,6 +889,9 @@
 
 # Cleanup arc
   rm -rf ${main_dir}/arc_tmp
+
+  mkdir -p ${main_dir}/arc
+  mv ${main_dir}/wwatch3.*.tar* ${main_dir}/arc
 
 # --------------------------------------------------------------------------- #
 # 9. The end                                                                  #

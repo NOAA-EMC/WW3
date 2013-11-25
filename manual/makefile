@@ -23,18 +23,17 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # Set base WAVEWATCH III directory used her
-#WW3 = ../../wwatch3
- WW3 = ../
+ WW3 = ../.
 
 # INPDIR: location of ww3_*.inp input files used for documentation.
 # The default can be overridden by specifying INPDIR on the make
 # command-line or in the environment.
-INPDIR ?= ${WW3}/model/inp
+INPDIR ?= ${WW3}/inp
 
 # Make sure INPDIR exists (if not clean)
 ifneq ($(MAKECMDGOALS),clean)
   ifeq ($(shell if [ ! -e $(INPDIR) ]; then echo 1; fi),1)
-    INPDIR = ${WW3}/model/inp
+    INPDIR = ${WW3}/inp
   endif
   ifeq ($(shell if [ ! -e $(INPDIR) ]; then echo 1; fi),1)
     $(error INPDIR=$(INPDIR) does not exist.  INPDIR must point to the \
@@ -43,11 +42,11 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # Make sure ww3_gspl.sh script is there
-GSPL ?= $(WW3)/model/bin/ww3_gspl.sh
+GSPL ?= $(WW3)/bin/ww3_gspl.sh
 
 ifneq ($(MAKECMDGOALS),clean)
   ifeq ($(shell if [ ! -e $(GSPL) ]; then echo 1; fi),1)
-    GSPL = $(WW3)/model/bin/ww3_gspl.sh
+    GSPL = $(WW3)/bin/ww3_gspl.sh
   endif
   ifeq ($(shell if [ ! -e $(GSPL) ]; then echo 1; fi),1)
     $(error GSPL=$(GSPL) does not exist.  GSPL must point to the \
