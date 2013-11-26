@@ -124,7 +124,10 @@
       echo -e '\n Creating new env file from scratch.'
       ww3_env="${main_dir}/wwatch3.env"
     fi
- fi
+  else
+      echo -e "\n\n\n Chosen install type ${sww3dir} not available, aborting. \n"
+      exit
+  fi
 
   echo -e "\n\n Installing in "
   echo -e "   $main_dir"
@@ -392,16 +395,37 @@
       if [ "$torb" = "T" ] || [ "$torb" = "t" ]
       then
          address="${svn_arc}/trunk"
+# Check if this is a valid svn server location
+         svni=`svn info ${address}`
+         svntest=`echo $svni | awk '{print $1}'`
+         if [ "${svntest}" != "Path:" ]
+         then
+           echo -e "\n Wrong svn path provided as per message above."
+         fi 
       elif [ "$torb" = "B" ] || [ "$torb" = "b" ]
       then
         echo -en "\n   Enter branch name now : " 
         read nbranch
         address="${svn_arc}/branches/${nbranch}"
+# Check if this is a valid svn server location
+        svni=`svn info ${address}`
+        svntest=`echo $svni | awk '{print $1}'`
+        if [ "${svntest}" != "Path:" ]
+        then
+          echo -e "\n Wrong svn path provided as per message above."
+        fi
       elif [ "$torb" = "A" ] || [ "$torb" = "a" ]
       then
         echo -en "\n   Enter tag name now : "
         read nbranch
         address="${svn_arc}/tags/${nbranch}"
+# Check if this is a valid svn server location
+        svni=`svn info ${address}`
+        svntest=`echo $svni | awk '{print $1}'`
+        if [ "${svntest}" != "Path:" ]
+        then
+          echo -e "\n Wrong svn path provided as per message above."
+        fi
       fi 
       echo -e "\n Installing from: : "
       echo -e "  ${bold}${address}${unbold} \n"
@@ -501,6 +525,7 @@
     then
       echo -e "\n Updating.... "
       svn update 2> ${main_dir}/tmp/svn_update.err | tee ${main_dir}/tmp/svn_update.out 
+
 # Check if update produced errors
       if [ -s ${main_dir}/tmp/svn_update.err ]
       then
@@ -563,14 +588,16 @@
 
 # 2.e Set file permissions - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  echo -e " \n\n Setting file permissions."
+
   cd $main_dir/svn/model/aux
   chmod 644 *.gs
   chmod 644 spec_ids*
   chmod 644 *.f
 
   cd $main_dir/svn/model/bin
-  chmod 744 *
-  chmod 644 comp* link* switch*
+  chmod 644 switch*
+  chmod 744 install* comp* link*
 
   cd $main_dir/svn/model/ftn
   chmod 644 *.ftn
@@ -583,7 +610,6 @@
   chmod 744 mww3_case_*
   chmod 755 mww3_data_*
 
-# Include regtests in the loop
   cd $main_dir/svn/regtests/bin
   chmod 744 *
 
@@ -604,6 +630,8 @@
     chmod 644 ww3_*
 
   done
+
+sleep 2
 
 # --------------------------------------------------------------------------- #
 # 3. Set-up / update aux directory                                            #
@@ -744,6 +772,25 @@
   echo -e "  This section: $nr_new links or files created."
   tnr_lnk=`expr $tnr_lnk + $nr_new`
   tnr_old=`expr $tnr_old + $nr_old`
+
+# Check if any other subdirectories present (temporary prior to subdir generalization)
+  cd ${main_dir}/${src_dir}/model/${ldir}
+  ndirs=`ls -p | grep '/$'`
+  issd=`echo $ndirs | awk '{print $1}'`
+
+  cd ${main_dir}/${ldir}
+
+  if [ ${issd} ]
+  then
+    for sdir in $ndirs
+    do
+      echo -e "\n Sub-directory ${sdir} found in ${ldir}, Creating..."
+      mkdir ${sdir}
+      cd ${sdir}
+      ln -fs -r ${main_dir}/${src_dir}/model/${ldir}/${sdir}/* .
+      cd ../
+    done
+  fi
 
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
   echo -e ' ---------------------------- '

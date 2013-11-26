@@ -19,20 +19,16 @@
 # 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   clear
-  echo ' '
-  echo '               **************************************'
-  echo '             ***   WAVEWATCH III archiving program  ***'
-  echo '               **************************************'
-  echo ' '
+  echo -e '\n\n\n               ======================================'
+  echo -e '             ---   WAVEWATCH III archiving program  ---'
+  echo -e '               ======================================'
 
 # 1.b Test present directory and set location of environment file  - - - - - -
 
-  echo ' '
-  echo ' Choose now where you configuration file wwatch3.env is located.'
-  echo ' If you use a generic/system-wide wwatch3.env, type G. '
-  echo ' If you use a local wwatch3.env, type L. ' 
-  echo ' '
-  echo ' Type your choice now [G|L]: '
+  echo -e '\n\n Choose now where you configuration file wwatch3.env is located.'
+  echo -e ' If you use a generic/system-wide wwatch3.env, type G. '
+  echo -e ' If you use a local wwatch3.env, type L. ' 
+  echo -en '\n\n Type your choice now [G|L]: '
   read sww3dir
 
   if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ]
@@ -43,43 +39,49 @@
     if [ -s $ww3_env ]
     then
       set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
-      echo "Install directory: " $main_dir
+      echo -e "\n Install directory: " 
+      echo -e "  $main_dir"
     else
-      echo "Generic wwatch3.env file not found at ${home_dir}          "
-      echo 'Enter correct location of env file relative to there.' ; echo ' '
-      echo ' Alternatively, quit and choose local env file [option L] '
+      echo -e "\n\n Generic wwatch3.env file not found in"
+      echo -e "  ${home_dir} "
+      echo -e '\n  Enter correct location of env file relative to there.'
+      echo -e '  Alternatively, quit and choose local env file [option L]. \n'
       main_dir=nodir.$$
       until [ -d $main_dir ]
       do
-        echo -n "   Directory (relative to $home_dir) : "
-        read OK
-        if [ -n "$OK" ]
+        echo -en "\n\n   Directory (relative to $home_dir) : "
+        read mdir
+        if [ -n "$mdir" ]
         then
-          main_dir="$OK"
+          main_dir="$mdir"
         fi
       done
       cd $main_dir
       main_dir=`pwd`
-      echo ' '
     fi
 
   elif [ "${sww3dir}" == "L" ] || [ "${sww3dir}" == "l" ]
   then
-
-    main_dir=`pwd`
+ 
+    echo -e "\n\n Enter the path for local wwatch3.env file."
+    echo -e "  This may be the full or relative path ( ./ and ../ ): "
+    echo -en "  " 
+    read main_dir
 
     if [ -f ${main_dir}/wwatch3.env ]
     then
-      echo ' ';echo ' Local wwatch3.env found, moving ahead.'
+      echo -e '\n Local wwatch3.env found, moving ahead.'
       ww3_env="${main_dir}/wwatch3.env"
     else
-      echo ' ';echo ' wwatch3.env file not found. Exiting. '
-      echo ' Run the arc script from your base WW3 directory (where wwatch3.env is).'
+      echo -e '\n\n Local file wwatch3.env not found. Exiting. \n\n'
       exit
     fi
- fi
+  fi
 
-  echo ' ';echo "Archiving in $main_dir/arc"
+  cd ${main_dir}
+  main_dir=`pwd`
+
+  echo -e "\n Archiving in $main_dir/arc"
 
   OK="$NULL"
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
@@ -90,13 +92,14 @@
   done
   if [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
   then
-    echo ' ' ; echo 'Change to correct directory '
-    echo ' ' ; echo '   *** INSTALL ABORTED *** ' ; echo ' ' ; exit
+    echo -e '\n Change to correct directory '
+    echo -e '\n   --- INSTALL ABORTED --- '
+    exit
   fi
 
   if test ! -d arc
   then
-    mkdir arc
+    mkdir ${main_dir}/arc
   fi
 
 # --------------------------------------------------------------------------- #
@@ -104,6 +107,7 @@
 # --------------------------------------------------------------------------- #
 # 2.a Requested files
 
+  echo -e "\n"
   is="1 2 3 4"
   for i in $is
   do
@@ -112,10 +116,10 @@
           test "$OK" = 'n' || test "$OK" = 'N'
     do
       case $i in
-        1) echo -n "Make guide file ? [y/n] : " ;;
-        2) echo -n "Make manual file ? [y/n] : " ;;
-        3) echo -n "Make model file ? [y/n] : " ;;
-        4) echo -n "Make regtests file  ? [y/n] : " ;;
+        1) echo -en " Make guide file ? [y/n] : " ;;
+        2) echo -en " Make manual file ? [y/n] : " ;;
+        3) echo -en " Make model file ? [y/n] : " ;;
+        4) echo -en " Make regtests file  ? [y/n] : " ;;
       esac
       read OK
     done
@@ -139,28 +143,27 @@
 
   OK="$NULL"
   ID="$NULL"
+
+  echo -e "\n\n You are required to enter an identification tag for archiving."
+  echo -e "  This should be a short string (eg, v4.14, alpha.v4.14 etc)."
+
   until test "$OK" = 'y' || test "$OK" = 'Y'
   do
-    echo ' '
-    echo -n "Identifier tag for this archive version [$ID] : " ; read ID
-    echo -n "   Are you sure ? [y/-] : " ; read OK
+    until test "$ID"
+    do
+      echo -en "\n Enter identifier tag for this archive version [$ID] : " 
+      read ID
+    done
+    echo -en "\n  Are you sure ? [y/-] : "
+    read OK
   done
-  echo ' '
 
 # 2.c Check for existence of files - - - - - - - - - - - - - - - - - - - - - -
 
-  if test -z "$ID"
-  then
-    file_gde="$main_dir/arc/wwatch3.guide.tar"
-    file_man="$main_dir/arc/wwatch3.manual.tar"
-    file_mod="$main_dir/arc/wwatch3.model.tar"
-    file_reg="$main_dir/arc/wwatch3.regtests.tar"
-  else
-    file_gde="$main_dir/arc/wwatch3.$ID.guide.tar"
-    file_man="$main_dir/arc/wwatch3.$ID.manual.tar"
-    file_mod="$main_dir/arc/wwatch3.$ID.model.tar"
-    file_reg="$main_dir/arc/wwatch3.$ID.regtests.tar"
-  fi
+  file_gde="$main_dir/arc/guide.$ID.pdf"
+  file_man="$main_dir/arc/wwatch3.$ID.manual.tar"
+  file_mod="$main_dir/arc/manual.$ID.pdf"
+  file_reg="$main_dir/arc/wwatch3.$ID.regtests.tar"
 
   for i in 1 2 3 4
   do
@@ -172,8 +175,8 @@
     esac
     if test -f $file && test "$make" = 'y'
     then
-      echo "File $file exists."
-      echo -n "   Replace ? [y/-] : "
+      echo -e "\n File $file exists."
+      echo -en "  Replace ? [y/-] : "
       read OK
       if test "$OK" != 'y' && test "$OK" != 'Y'
       then
@@ -196,12 +199,11 @@
     action='n'
   else
     action='y'
-    echo ' '
-    echo 'Files to be generated :'
-    echo '-----------------------'
+    echo -e '\n Files to be generated :'
+    echo -e ' -----------------------'
     if test "$make_gde" = 'y'
     then
-      echo "   $file_gde"
+      echo -e "   $file_gde"
       if [ -f arc/$file_gde ]
       then
         rm -f arc/$file_gde
@@ -209,7 +211,7 @@
     fi
     if test "$make_man" = 'y'
     then
-      echo "   $file_man"
+      echo -e "   $file_man"
       if [ -f arc/$file_man ]
       then
         rm -f arc/$file_man
@@ -217,7 +219,7 @@
     fi
     if test "$make_mod" = 'y'
     then
-      echo "   $file_mod"
+      echo -e "   $file_mod"
       if [ -f arc/$file_mod ]
       then
         rm -f arc/$file_mod
@@ -225,7 +227,7 @@
     fi
     if test "$make_reg" = 'y'
     then
-      echo "   $file_reg"
+      echo -e "   $file_reg"
       if [ -f arc/$file_reg ]
       then
         rm -f arc/$file_reg
@@ -233,49 +235,70 @@
     fi
   fi
 
-  echo ' '
-  echo -n "Continue ? [y/-] : "
+  echo -en "\n Continue ? [y/-] : "
   read OK
   if test "$OK" != 'y' && test "$OK" != 'Y'
   then
     action='n'
   fi
-  echo ' '
 
   if test "$action" = 'n'
   then
-    echo ' '
-    echo '                   *******************************'
-    echo '                 ***       End of program        ***'
-    echo '                   *******************************'
-    echo ' ' ; exit 0
+    echo -e '\n\n\n                   ==============================='
+    echo -e '                 ---       End of program        ---'
+    echo -e '                   =============================== \n'
   fi
 
 # 6.c genarate data tar files  - - - - - - - - - - - - - - - - - - - - - - - -
 
-    mkdir -p ./arc
- 
-    cd $main_dir/svn
+  mkdir -p ${main_dir}/arc
 
-  if test -z "$ID"
+  if test "$make_gde" = 'y'
   then
-    echo ' '
-    echo ' No identifier chosen for this archive, please re-run and choose one'
-  else
-    if test "$make_gde" = 'y'
-    then
-      tar cf ${main_dir}/arc/wwatch3.$ID.guide.tar guide --exclude=.svn
-    fi
-    if test "$make_man" = 'y'
-    then
-      tar cf ${main_dir}/arc/wwatch3.$ID.manual.tar manual --exclude=.svn
-    fi
-    if test "$make_mod" = 'y'
-    then
-      tar cf ${main_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn
-    fi
-    if test "$make_reg" = 'y'
-    then
-      tar cf ${main_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
-    fi
+    echo -e "\n Compiling guide.${ID}.pdf and copying to archive location..."
+    cd ${main_dir}/guide
+    make -B > make_guide.out
+    make -B > make_guide.out
+    cp -f guide.pdf ${main_dir}/arc/guide.${ID}.pdf
+    make clean
   fi
+  if test "$make_man" = 'y'
+  then
+    echo -e "\n Compiling manual.${ID}.pdf and copying to archive location..."
+    cd ${main_dir}/manual
+    make -B > make_man.out
+    make -B > make_man.out
+    cp -f manual.pdf ${main_dir}/arc/manual.${ID}.pdf
+    make clean
+  fi
+  if test "$make_mod" = 'y'
+  then
+    echo -e "\n Creating wwatch3.$ID.model.tar and copying to archive location..."
+    cd $main_dir/svn
+    tar cf ${main_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn
+  fi
+  if test "$make_reg" = 'y'
+  then
+    echo -e "\n Creating wwatch3.$ID.regtests.tar and copying to archive location..."
+    cd $main_dir/svn
+    tar cf ${main_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
+  fi
+
+# Copy install_ww3_tar to arc
+  cp -f ${main_dir}/bin/install_ww3_tar ${main_dir}/arc
+
+# Create master gziped tar file
+  echo -e "\n Creating wwatch3.${ID}.tar.gz file with stand-alone package."
+  cd ${main_dir}/arc
+  tar zcvf wwatch3.${ID}.tar.gz install* *.pdf wwatch3.$ID.*.tar
+
+# Cleanup
+  echo -e "\n Cleaning up arc location (only package file is left)." 
+  rm -f *.pdf wwatch3.$ID.*.tar install*
+
+# All done (one hopes...)
+
+    echo -e '\n\n\n                   ==============================='
+    echo -e '                 ---       End of program        ---'
+    echo -e '                   =============================== \n'
+

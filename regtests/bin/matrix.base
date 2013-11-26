@@ -471,7 +471,7 @@ then
     echo "$rtst -s PR3_UQ_REFRX      -w work_IC3_2.5k_PR3_UQ -i input_IC3_2.5k                       $ww3 ww3_tic1.3" >> matrix.body
     echo "$rtst -s PR3_UNO_REFRX     -w work_IC3_0.5k_PR3_UNO -i input_IC3_0.5k                      $ww3 ww3_tic1.3" >> matrix.body
     echo "$rtst -s PR3_UNO_REFRX     -w work_IC3_2.5k_PR3_UNO -i input_IC3_2.5k                      $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst                      -w work_IC1              -i input_IC1                           $ww3 ww3_tic2.1" >> matrix.body
+    echo "$rtst                      -w work_IC1                                                     $ww3 ww3_tic2.1" >> matrix.body
   fi
 
   if [ "$mudice" = 'y' ] && [ "$dist" = 'y' ]

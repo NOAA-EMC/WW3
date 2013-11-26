@@ -135,10 +135,8 @@ EOF
 # 3. Work and test directories                                                #
 # --------------------------------------------------------------------------- #
 
-# test has become oldtests, will be phased out 
-# (Will need cleanup for new regtests area)
   mkdir -p $main_dir/work
-  for dir in $main_dir/work $main_dir/oldtests
+  for dir in $main_dir/work 
   do
     cd $dir
     rm -f core

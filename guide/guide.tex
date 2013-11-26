@@ -11,8 +11,8 @@
 \usepackage{svn}
 \usepackage{hyperref}
 
-\SVN $Revision$
-\SVN $Date$
+\SVN $Revision: 33758 $
+\SVN $Date: 2013-11-19 10:26:12 -0500 (Tue, 19 Nov 2013) $
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % proper link to most recent manual %
@@ -165,10 +165,10 @@ $^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\
 \addcontentsline{toc}{section}{Abstract}
 
 \begin{abstract}
-This report describes best practices for code development of \wwt. This
+This guide describes best practices for code development of \wwt. This
 includes guidelines for packaging of codes delivered by general users to NCEP
 according to the \ww\ license, as well as instructions for co-developers on
-the use of the subversion depository at NCEP. The report addresses codes,
+the use of the subversion depository at NCEP. The guide addresses codes,
 documentation and manuals.
 \end{abstract}
 
@@ -207,11 +207,11 @@ version & svn rev.     & date    & comment    \\ \hline \hline
 
 \noindent
 {\it Acknowledgments.} Code management for \ww\ is provided by NCEP. Arun
-Chawla (NCEP), Henrique Alves (RSG at NCEP), Erick Rogers and Tim Campbell
-(NRL Stennis) contributed to this report.
+Chawla (NCEP), Henrique Alves (SRG at NCEP), Erick Rogers and Tim Campbell
+(NRL Stennis) contributed to this guide.
 
 \vspace{\baselineskip} \noindent
-This report is available as a pdf file from
+This guide is available as a pdf file from
 
 \vspace{\baselineskip}
 \centerline{http://polar.ncep.noaa.gov/waves}
@@ -261,7 +261,7 @@ site\footnote{~http://polar.ncep.noaa.gov/waves/wavewatch/license.shtml
 
 Four public releases of \ws\ have been made available
 \citep{tol:OMB99a,tol:OMB02c, tol:MMAB09a, tol:MMABmanual}. This best
-practices report was first provided with model versions 3.14 for two
+practices guide was first provided with model versions 3.14 for two
 reasons. First, coding standards are needed to foster and support community
 model development. This has become particularly important with the National
 Oceanographic Partnership Program (NOPP) project to improve all basic wave
@@ -273,7 +273,7 @@ Community Radiative Transfer Model (CRTM) as presented in
 \cite{rep:PvD08}. Whereas it is unrealistic to retrofit all NCEP codes to a
 completely homogeneous coding standard due to the shear size of legacy codes,
 all basic precepts should be the same, and are consistent between the present
-report and \cite{rep:PvD08}.
+guide and \cite{rep:PvD08}.
 
 From the beginning, \ws\ has been envisioned as a modeling framework, with
 various options for numerical and physical approaches, both for operational
@@ -309,7 +309,7 @@ Sections~\ref{sec:style} (also including copyright statements), \ref{sec:add},
 Section~\ref{sec:svn} discusses standards of code management using the
 subversion server at NCEP.
 
-Some formatting practices for the \ws\ manual are used in this report. The
+Some formatting practices for the \ws\ manual are used in this guide. The
 {\file file} font will be used to identify files, scripts and command line
 entries. The {\code CODE} font is used to identify source code. Previous
 experience with \ws\ is expected, and the use of, for instance, optional
@@ -507,7 +507,7 @@ experiment with new approaches in user slots that are provided as dummy model
 slots like {\code W3SNLX} in the file {\file w3snlxmd.ftn} for the nonlinear
 interactions. General users are expected to provide these `user slot' routines
 to NCEP for inclusion in subsequent versions of \ws, following the instruction
-in this report and in the documentation of routines like {\code W3SNLX}.  Such
+in this guide and in the documentation of routines like {\code W3SNLX}.  Such
 codes should be self-contained in the way described below.
 
 When providing a module for a source term like {\code W3SNLX} or for a
@@ -718,7 +718,7 @@ many examples of {\file run\_test} commands.
 \section{Manual and documentation} \label{sec:man}
 \newsec
 
-The \ws\ manual and other \ws\ documents like this report are written in
+The \ws\ manual and other \ws\ documents like this guide are written in
 \LaTeX. Since these are dynamic documents, the corresponding files are
 maintained in svn, together with the \ws\ source code, script and auxiliary
 files. Because the manual is rather large, it has been stored in several
@@ -949,8 +949,8 @@ ww3/branches/hendrik/workcopy/model/bin subdirectory
  * install_ww3_svn: New script to install wave model from svn reporitory.
 
 ww3/branches/hendrik/workcopy/guide subdirectry (new subdirectory)
- * report.tex: the latex file with the guide
- * report.bib: bibtex bibliography information for guide
+ * guide.tex: the latex file with the guide
+ * guide.bib: bibtex bibliography information for guide
 
 ww3/branches/hendrik/workcopy/model/ftn subdirectory
  * w3sbtxmd.ftn: added copyright statement
@@ -1105,7 +1105,7 @@ WW3 code under the following conditions:
 
 \bibliographystyle{jas}
 %\bibliography{short,articles,books,reports,conf,mine}
-\bibliography{report}
+\bibliography{guide}
 
 
 \pb
