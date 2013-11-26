@@ -278,6 +278,7 @@ ww3_gspl.sh.out : $(GSPL)
 	-@printf '%s\n' \\begin\{verbatim\} >> $@
 	-@ $< -h >> $@
 	-@printf '%s\n' \\end\{verbatim\} >> $@
+	-@echo "   *** NOTE: Error 1 expected ***"
 
 run_test.out : $(RUNTEST)
 	-@echo "Processing $<"
@@ -287,6 +288,7 @@ run_test.out : $(RUNTEST)
 	-@printf '%s\n' \\begin\{verbatim\} >> $@
 	-@ $< -h >> $@
 	-@printf '%s\n' \\end\{verbatim\} >> $@
+	-@echo "   *** NOTE: Error 1 expected ***"
 
 $(TARGET).dvi: $(DEPFILES)
 	$(LATEX) $(TARGET)
