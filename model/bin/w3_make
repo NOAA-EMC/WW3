@@ -17,7 +17,7 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
-#                                                      July 2013              #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -133,7 +133,10 @@
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
   reg_programs="$reg_programs ww3_systrk"
-  reg_programs="$reg_programs ww3_prtide"
+  if [ -n "`grep TIDE $switch_file`" ]
+  then
+    reg_programs="$reg_programs ww3_prtide"
+  fi
 
 # cdf_programs = NetCDF programs
   cdf_programs="ww3_prnc"

@@ -163,6 +163,7 @@
                OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
       s_ice  ) TY='upto1'
                ID='ice sink term'
+               TS='IC'
                OK='IC1 IC2 IC3' ;;
       s_db   ) TY='one'
                ID='depth-induced breaking'
@@ -697,7 +698,7 @@
                prop=
              source=
                  IO=
-                aux="w3servmd w3timemd w3gsrumd" ;;
+                aux="constants w3servmd w3timemd w3gsrumd" ;;
      ww3_grib) IDstring='Gridded output (GRIB)'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
