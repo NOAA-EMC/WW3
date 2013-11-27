@@ -161,8 +161,8 @@
 # 2.c Check for existence of files - - - - - - - - - - - - - - - - - - - - - -
 
   file_gde="$main_dir/arc/guide.$ID.pdf"
-  file_man="$main_dir/arc/wwatch3.$ID.manual.tar"
-  file_mod="$main_dir/arc/manual.$ID.pdf"
+  file_mod="$main_dir/arc/wwatch3.$ID.model.tar"
+  file_man="$main_dir/arc/manual.$ID.pdf"
   file_reg="$main_dir/arc/wwatch3.$ID.regtests.tar"
 
   for i in 1 2 3 4

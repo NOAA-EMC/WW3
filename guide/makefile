@@ -76,10 +76,10 @@ run_test.out : $(RUNTEST)
 $(TARGET).dvi: $(DEPFILES)
 	$(LATEX) $(TARGET)
 	$(BIBTEX) $(TARGET)
-	-@bib_strip.sh $(TARGET)
+	-@sh bib_strip.sh $(TARGET)
 	$(LATEX) $(TARGET)
 	$(BIBTEX) $(TARGET)
-	-@bib_strip.sh $(TARGET)
+	-@sh bib_strip.sh $(TARGET)
 	$(LATEX) $(TARGET)
 
 $(TARGET).pdf: $(TARGET).dvi
