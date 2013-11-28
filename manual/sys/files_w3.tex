@@ -410,8 +410,8 @@ Bottom scattering module \hfill {\file w3sbs1md.ftn}
 \begin{flisti}
 \fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the bottom.}
 \fit{insbs1}{Initialization of $S_{bs}$.}
-\fit{diagonalize}{\ldots}
-\fit{rotate}{\ldots}
+\fit{diagonalize}{Square matrix diagonalization}
+\fit{rotate}{Square matrix rotation, used by DIAGONALIZE}
 \end{flisti}
 
 \noindent
@@ -426,7 +426,9 @@ w3sbsxmd.ftn}
 \noindent
 Shoreline reflection \hfill {\file w3ref1md.ftn}
 
-\ldots where does this one go ??? why is it right here ??? \ldots \pb
+\begin{flisti}
+\fit{w3ref1}{Calculation of $S_{ref}$, possibly including a free infragravity source.}
+\end{flisti}
 
 \noindent
 Module for unclassified source term (slot for user supplied routines) \hfill

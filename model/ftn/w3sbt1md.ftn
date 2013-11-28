@@ -75,14 +75,6 @@
 !                 = -0.067 m2/s3 (Bouws and Komen 1983)
 !
 !     In the routine, the constant 2 GAMMA / GRAV = SBTC1.
-!     D(IS) = (SBTC1 / DEPTH) * (CG(IK)*WN(IK)/SIG(IK)-0.5)
-! 
-!     However, note that in the code, we have
-!               S = D * A
-!                 rather than
-!               S = D * E
-!     This suggests that the calling routine is
-!           expecting "S/sigma" not "S"
 !
 !  3. Parameters :
 !
@@ -171,7 +163,6 @@
 ! 2.  Shallow water ================================================== *
 !
         ELSE
-
 !
 ! 2.a Set constant
 !

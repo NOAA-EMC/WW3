@@ -98,6 +98,7 @@
 !      THM       R.A.  Public   Mean wave direction.
 !      THS       R.A.  Public   Mean directional spread.
 !      THP0      R.A.  Public   Peak direction.
+!      HSIG      R.A.  Public   Height of infragravity waves
 !
 !      CHARN     R.A.  Public   Charnock parameter for air-sea friction.
 !      CGE       R.A.  Public   Energy flux.
@@ -321,10 +322,12 @@
 !
         REAL, POINTER         ::  HS(:),  WLM(:),  T02(:), T0M1(:),   &
                                   T01 (:),  FP0(:),  THM(:),          &
-                                  THS(:),  THP0(:),  FP1(:),  THP1(:)
+                                  THS(:),  THP0(:),  FP1(:), THP1(:), &
+                                  HSIG(:)
         REAL, POINTER         :: XHS(:), XWLM(:), XT02(:), XT0M1(:),  &
                                  XT01 (:), XFP0(:), XTHM(:),          &
-                                 XTHS(:), XTHP0(:), XFP1(:), XTHP1(:)
+                                 XTHS(:), XTHP0(:), XFP1(:), XTHP1(:),&
+                                 XHSIG(:)
 !
 ! Output fields group 3)
 !
@@ -468,7 +471,7 @@
 !
       REAL, POINTER           :: HS(:), WLM(:),  T02(:), T0M1(:),     &
                                  T01 (:), FP0(:), THM(:), THS(:),     &
-                                 THP0(:), FP1(:), THP1(:)
+                                 THP0(:), FP1(:), THP1(:), HSIG(:)
 !
       REAL, POINTER           :: EF(:,:), TH1M(:,:), STH1M(:,:),      &
                                  TH2M(:,:), STH2M(:,:)
@@ -836,12 +839,12 @@
 !    are allocated in W3MPIO only as needed to keep the memory
 !    footprint down.
 !
-      ALLOCATE ( WADATS(IMOD)%HS   (NSEALM), WADATS(IMOD)%WLM(NSEALM), &
-                 WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM),&
-                 WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0(NSEALM), &
-                 WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS(NSEALM), &
-                 WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%FP1(NSEALM), &
-                 WADATS(IMOD)%THP1 (NSEALM) )
+      ALLOCATE ( WADATS(IMOD)%HS   (NSEALM), WADATS(IMOD)%WLM (NSEALM), &
+                 WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM), &
+                 WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0 (NSEALM), &
+                 WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS (NSEALM), &
+                 WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%FP1 (NSEALM), &
+                 WADATS(IMOD)%THP1 (NSEALM), WADATS(IMOD)%HSIG(NSEALM) )
 !
       WADATS(IMOD)%HS     = UNDEF
       WADATS(IMOD)%WLM    = UNDEF
@@ -854,6 +857,7 @@
       WADATS(IMOD)%THP0   = UNDEF
       WADATS(IMOD)%FP1    = UNDEF
       WADATS(IMOD)%THP1   = UNDEF
+      WADATS(IMOD)%HSIG   = UNDEF
 !
 ! 3) Frequency-dependent standard parameters
 !
@@ -1247,6 +1251,12 @@
           ALLOCATE ( WADATS(IMOD)%XTHP0(1) )
         END IF
 !
+      IF ( FLAGS( 2, 10) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XHSIG(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XHSIG(1) )
+        END IF
+!
 !     IF ( FLAGS( 2,xx) ) THEN
 !         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX) )
 !       ELSE
@@ -1268,6 +1278,7 @@
       WADATS(IMOD)%XTHM   = UNDEF
       WADATS(IMOD)%XTHS   = UNDEF
       WADATS(IMOD)%XTHP0  = UNDEF
+      WADATS(IMOD)%XHSIG  = UNDEF
 !     WADATS(IMOD)%XFP1   = UNDEF
 !     WADATS(IMOD)%XTHP1  = UNDEF
 !
@@ -2016,6 +2027,7 @@
           THP0   => WADATS(IMOD)%THP0
           FP1    => WADATS(IMOD)%FP1
           THP1   => WADATS(IMOD)%THP1
+          HSIG   => WADATS(IMOD)%HSIG
 !
           EF     => WADATS(IMOD)%EF
           TH1M   => WADATS(IMOD)%TH1M
@@ -2286,6 +2298,7 @@
           THM    => WADATS(IMOD)%XTHM
           THS    => WADATS(IMOD)%XTHS
           THP0   => WADATS(IMOD)%XTHP0
+          HSIG   => WADATS(IMOD)%XHSIG
 !         FP1    => WADATS(IMOD)%XFP1
 !         THP1   => WADATS(IMOD)%XTHP1
 !

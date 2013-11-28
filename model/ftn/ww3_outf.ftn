@@ -123,7 +123,7 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
-                          CGE, T01
+                          CGE, T01, HSIG
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,     &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -954,6 +954,17 @@
                 ELSE
                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THP0  , MAPSF, X1 )
                 ENDIF 
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.001
+                UNITS  = 'm'
+                ENAME  = '.hig'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = HSIG
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HSIG  , MAPSF, X1 )
+                  END IF
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLONE  = .TRUE.

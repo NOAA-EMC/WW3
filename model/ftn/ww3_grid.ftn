@@ -86,6 +86,7 @@
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
+!/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -582,6 +583,12 @@
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
 !/REF1                                 REFFREQPOW
 !
+!/IG1  LOGICAL                 :: IGSWELLMAX
+!/IG1  INTEGER                 :: IGMETHOD, IGADDOUTP, IGSOURCE,      &
+!/IG1                             IGSOURCEATBP, IGBCOVERWRITE, IGSTERMS
+!/IG1  REAL                    :: IGMAXFREQ, IGMINDEP, IGMAXDEP,      &
+!/IG1                             IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL
+
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
                                  STATUS*20,FNAME2*60, PNAME2*40
@@ -644,6 +651,9 @@
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
+!/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
+!/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
+!/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
 !/ST1      NAMELIST /SIN1/ CINP
 !/ST2      NAMELIST /SIN2/ ZWND, SWELLF, STABSH, STABOF, CNEG, CPOS, FNEG
@@ -1809,6 +1819,22 @@
 !
 !/REF1      CALL READNL ( NDSS, 'REF1', STATUS )
 !/REF1      WRITE (NDSO,969) STATUS
+!
+!/IG1       IGMETHOD = 2
+!/IG1       IGADDOUTP= 0 
+!/IG1       IGSOURCE = 1
+!/IG1       IGSTERMS = 0
+!/IG1       IGMAXFREQ=0.035
+!/IG1       IGSOURCEATBP = 0
+!/IG1       IGBCOVERWRITE = 1
+!/IG1       IGSWELLMAX = .FALSE.
+!/IG1       IGKDMIN = 1.1
+!/IG1       IGFIXEDDEPTH = 0.
+!/IG1       IGEMPIRICAL = 0.0008
+!
+!/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
+!/IG1      WRITE (NDSO,970) STATUS
+!
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
 !
@@ -1994,6 +2020,10 @@
 !/REF1         WRITE(NDSO,2986) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
 !/REF1                    REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
 !/REF1                    REFICEBERG, REFCOSP_STRAIGHT
+!/IG1         WRITE(NDSO,2977) IGMETHOD, IGADDOUTP, IGSOURCE,         &
+!/IG1                    IGSTERMS, IGBCOVERWRITE, IGSWELLMAX,         &
+!/IG1                    IGMAXFREQ, IGSOURCEATBP, IGKDMIN,            &
+!/IG1                    IGFIXEDDEPTH, IGEMPIRICAL 
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -3417,6 +3447,26 @@
 !/O2c      CLOSE (NDSM)
 !
 
+!/IG1       IGPARS(1)=IGMETHOD
+!/IG1       IGPARS(2)=IGADDOUTP
+!/IG1       IGPARS(3)=IGSOURCE
+!/IG1       IGPARS(4)=IGBCOVERWRITE
+!/IG1       IF (IGSWELLMAX) IGPARS(4)=IGPARS(4)*2
+!/IG1       IGPARS(5)=1
+!/IG1       DO IK=1,NK
+!/IG1         IF (SIG(IK)*TPIINV.LT.IGMAXFREQ) IGPARS(5)=IK
+!/IG1         END DO
+!/IG1       IGMINDEP=MINVAL(ZB*(-1.)-2)  ! -2 / +2 is there for water level changes
+!/IG1       IGMAXDEP=MAXVAL(ZB*(-1.)+2)
+!/IG1       IF (IGSOURCEATBP.EQ.1)  IGMINDEP=1.   ! should use true minimum depth ... 
+!/IG1       IGPARS(6)=1+NINT(LOG(MAX(IGMAXDEP,1.0)/MAX(IGMINDEP,1.0))/LOG(1.1))
+!/IG1       IGPARS(7)=MAX(IGMINDEP,1.0)
+!/IG1       IGPARS(8)=IGSOURCEATBP
+!/IG1       IGPARS(9)=IGKDMIN
+!/IG1       IGPARS(10)=IGFIXEDDEPTH
+!/IG1       IGPARS(11)=IGEMPIRICAL**2
+!/IG1       IGPARS(12)=IGSTERMS
+!
 !
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
@@ -3507,7 +3557,7 @@
 !
 !/REF1          NMAPB  = 1 + (NX-1)/NCOL
 !/REF1          WRITE (NDSO,1105) NMAPB
-!/REF1          WRITE(6,*) 'TEST 000:',MAXVAL(REFS)
+!/REF1          WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS)
 !
 !/REF1          DO IMAPB=1, NMAPB
 !/REF1            IX0    = 1 + (IMAPB-1)*NCOL
@@ -4252,9 +4302,6 @@
                ',       EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
                L3,',GMSH =',L3,         / )
 !
-!/REF1  969 FORMAT (/'  Shoreline reflection     ',A/                  &
-!/REF1               ' --------------------------------------------------')
-!
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')
  2961 FORMAT ( ' *** WAVEWATCH-III WARNING IN W3GRID :'/              &
@@ -4281,6 +4328,13 @@
                '       Limiter activated           :  ',A)
   968 FORMAT ( '          *** FACTOR DANGEROUSLY LOW ***')
 !
+!/REF1  969 FORMAT (/'  Shoreline reflection     ',A/                  &
+!/REF1               ' --------------------------------------------------')
+!
+!/IG1  970 FORMAT (/'  Second order and infragravity waves  ',A/      &
+!/IG1               ' --------------------------------------------------')
+!
+!
  4970 FORMAT (/'  Spectral output on full grid ',A/                   &
                ' --------------------------------------------------')
  4971 FORMAT ( '       Second order pressure at K=0:',3I4)
@@ -4291,6 +4345,11 @@
                ' --------------------------------------------------')
  4981 FORMAT ( '       Coefficient for shorelines  :',F6.4)
  4989 FORMAT ( '          *** CURVLINEAR GRID: REFLECTION NOT IMPLEMENTED YET ***')
+ 2977 FORMAT ( '  &IG1  IGMETHOD =',I2,', IGADDOUTP =',I2,', IGSOURCE =',I2, &
+               ', IGSTERMS = ',I2,', IGBCOVERWRITE =', I2,','/        & 
+               '        IGSWELLMAX =', L3,', IGMAXFREQ =',F6.4,       &
+               ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
+               '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1, ', PMOVE =',F6.3,','/          &
@@ -4705,6 +4764,8 @@
 !/PR3                          READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
 !/REF1                        CASE('REF1') 
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
+!/IG1                        CASE('IG1 ') 
+!/IG1                         READ (NDS,NML=IG1,END=801,ERR=802,IOSTAT=J)
                         CASE('UNST')
                           READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')

@@ -900,7 +900,9 @@
 !/T         DO JSEA = 1, MIN(NSEAL,200) 
 !/T           ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
 !/T           IX     = MAPSF(ISEA,1)
-!/T           WRITE(995,'(2I8,F10.2,3F10.4)') IX, ISEA, DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
+!/T           IF (JSEA.EQ.1) &
+!/T             WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
+!/T           WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
 !/T           END DO ! JSEA
 !/T         CLOSE(995)
 !/T         END IF
@@ -913,7 +915,7 @@
 
 !/SEC1      DO ISEC1=1,NITERSEC1
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
-!/SEC1        WRITE(6,*) 'SUBSECOND ITERATION:',ISEC1,NITERSEC1, DTG*ISEC1,DTMAX,DTGTEMP
+!/SEC1    IF ( IAPROC .EQ. NAPOUT )    WRITE(NDSE,'(A,I4,A,I4)') '   SUBSECOND STEP:',ISEC1,' out of ',NITERSEC1
 !
           FACTH  = DTG / (DTH*REAL(NTLOC))
           FACK   = DTG / REAL(NTLOC)

@@ -69,6 +69,7 @@
 #    'all'    ) cd $main_dir/obj ; rm -f *.o 
 #               cd $main_dir/mod ; rm -f *.mod
 #               cd $main_dir/exe ; rm -f ww3_* gx_* ;;
+     'ig'     ) cd $main_dir/ftn ; touch w3iogomd.ftn ;;
      'mach'   ) cd $main_dir/ftn ; touch w3servmd.ftn
                                    touch wmmdatmd.ftn
                                    touch wminitmd.ftn
@@ -135,6 +136,14 @@
                                    touch wmgridmd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_gspl.ftn ;; 
+'reflection'  )cd $main_dir/ftn ;  touch w3gdatmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3profsmd.ftn
+                                   touch w3srcemd.ftn
+                                   touch w3triamd.ftn
+                                   touch w3updtmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch ww3_grid.ftn ;; 
      'stress' ) cd $main_dir/ftn ; touch w3srcemd.ftn
                                    touch w3gdatmd.ftn
                                    touch w3iogrmd.ftn
@@ -258,6 +267,11 @@
      'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
                                    touch ww3_ounp.ftn
                                    touch ww3_prnc.ftn ;;
+      'ig'    ) cd $main_dir/ftn ; touch w3ref1md.ftn 
+                                   touch w3canomd.ftn 
+                                   touch w3gdatmd.ftn 
+                                   touch w3gig1md.ftn 
+                                   touch ww3_grid.ftn ;;
      'refrx'  ) cd $main_dir/ftn ; touch w3wavemd.ftn
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn

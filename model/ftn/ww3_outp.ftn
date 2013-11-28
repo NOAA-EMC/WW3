@@ -10,7 +10,7 @@
 !/                  |             E. Rogers             |
 !/                  |            T. Campbell            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         10-Sep-2013 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -51,6 +51,8 @@
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.08 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
+!/    10-Sep-2013 : Implement second order correction   ( version 4.12 )
+!/                  (F. Ardhuin)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -175,6 +177,8 @@
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
 !/NCO       USE W3BULLMD, ONLY: CASCBLINE
 !/O14      USE W3ODATMD, ONLY: GRDID
+!/IG1       USE W3GIG1MD, ONLY: W3ADDIG
+!/IG1       USE W3CANOMD, ONLY: W3ADD2NDORDER
 !
       IMPLICIT NONE
 !/
@@ -1191,6 +1195,17 @@
 !/T              WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 !
               END DO
+
+!
+! Computes 2nd order spectrum 
+!
+!/IG1      IF (IGPARS(2).EQ.1) THEN 
+!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1        ELSE
+!/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1          END IF
+!/IG1        END IF
 !
 ! 3.  Prepare spectra etc.
 ! 3.a Mean wave parameters.

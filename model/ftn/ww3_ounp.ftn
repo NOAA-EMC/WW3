@@ -1147,6 +1147,8 @@
       USE W3ARRYMD, ONLY: PRT1DS, PRT2DS, PRT1DM
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
       USE NETCDF
+!/IG1       USE W3GIG1MD, ONLY: W3ADDIG
+!/IG1       USE W3CANOMD, ONLY: W3ADD2NDORDER
 
       IMPLICIT NONE
 
@@ -1380,6 +1382,17 @@
 !/T              WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 !
             END DO
+!
+! Computes 2nd order spectrum 
+!
+!/IG1      IF (IGPARS(2).EQ.1) THEN 
+!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1        ELSE
+!/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1          END IF
+!/IG1        END IF
+!
 !
 ! 3.  Prepare spectra etc.
 ! 3.a Mean wave parameters.

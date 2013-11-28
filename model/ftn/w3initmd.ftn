@@ -1558,8 +1558,9 @@
 !/MPI                          MSCX, MSCY, PRMS, TPMS, CHARN,         &
 !/MPI                          TAUWNX, TAUWNY, BHD, CGE,           &
 !/MPI                          CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP, &
-!/MPI                          BEDFORMS, PHIBBL, TAUBBL, T01,        &
-!/MPI                          P2SMS, US3D, EF,  TH1M, STH1M, TH2M, STH2M
+!/MPI                          BEDFORMS, PHIBBL, TAUBBL, T01,         &
+!/MPI                          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
+!/MPI                          STH2M, HSIG
 !/MPI      USE W3GDATMD, ONLY: NK
 !/MPI      USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
 !/MPI                          NAPFLD, NAPPNT, NAPRST, NAPBPT, NAPTRK,&
@@ -1716,6 +1717,14 @@
 !/MPI      CALL MPI_SEND_INIT (THP0 (1),NSEALM , MPI_REAL, IROOT,    &
 !/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 !/MPIT      WRITE (NDST,9011) IH, ' 2/09', IROOT, IT, IRQGO(IH), IERR
+!/MPI                END IF
+!
+!/MPI              IF ( FLGRDALL( 2, 10) ) THEN
+!/MPI                  IH     = IH + 1
+!/MPI                  IT     = IT + 1
+!/MPI      CALL MPI_SEND_INIT (HSIG (1),NSEALM , MPI_FLOAT, IROOT,    &
+!/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+!/MPIT      WRITE (NDST,9011) IH, ' 2/10', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
 !
 !/MPI              IF ( FLGRDALL( 3, 1) ) THEN 
@@ -2290,6 +2299,14 @@
 !/MPI      CALL MPI_RECV_INIT (THP0 (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
 !/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, ' 2/09', IFROM, IT, IRQGO2(IH), IERR
+!/MPI                  END IF
+!
+!/MPI                IF ( FLGRDALL( 2, 10) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI      CALL MPI_RECV_INIT (HSIG (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+!/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, ' 2/10', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                  END IF
 !
 !/MPI                IF ( FLGRDALL( 3, 1) ) THEN 

@@ -55,7 +55,9 @@
 !/    16-Sep-2013 : Add Arctic part SMC grid.           ( version 4.11 )
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
-!/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.15 )
+!/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
+!/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
+!/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -588,6 +590,7 @@
 !/BT4   REAL, POINTER         :: SED_D50(:), SED_PSIC(:) 
 !/REF1        LOGICAL, POINTER      :: RREF(:)
 !/REF1        REAL,    POINTER      :: REFPARS(:)
+!/IG1        REAL,    POINTER      :: IGPARS(:)
 !
 ! unstructured data	
 !
@@ -802,6 +805,7 @@
       REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
       REAL,    POINTER        :: REFPARS(:)
+!/IG1      REAL,    POINTER        :: IGPARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !
@@ -1275,6 +1279,7 @@
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLD(6,0:NSEA))
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
+!/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12) )
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
@@ -1658,6 +1663,7 @@
       FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
+!/IG1       IGPARS => GRIDS(IMOD)%IGPARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0

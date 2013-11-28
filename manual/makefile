@@ -28,7 +28,7 @@ endif
 # INPDIR: location of ww3_*.inp input files used for documentation.
 # The default can be overridden by specifying INPDIR on the make
 # command-line or in the environment.
-INPDIR ?= ${WW3}/inp
+INPDIR ?= ${WW3}/model/inp
 
 # Make sure INPDIR exists (if not clean)
 ifneq ($(MAKECMDGOALS),clean)
@@ -46,7 +46,7 @@ GSPL ?= $(WW3)/bin/ww3_gspl.sh
 
 ifneq ($(MAKECMDGOALS),clean)
   ifeq ($(shell if [ ! -e $(GSPL) ]; then echo 1; fi),1)
-    GSPL = $(WW3)/bin/ww3_gspl.sh
+    GSPL = $(WW3)/model/bin/ww3_gspl.sh
   endif
   ifeq ($(shell if [ ! -e $(GSPL) ]; then echo 1; fi),1)
     $(error GSPL=$(GSPL) does not exist.  GSPL must point to the \
@@ -102,6 +102,7 @@ eqs/DB1.tex \
 eqs/TR0.tex \
 eqs/BS1.tex \
 eqs/REF1.tex \
+eqs/IG1.tex \
 eqs/XXn.tex \
 eqs/output.tex \
 num.tex \
@@ -121,7 +122,6 @@ num/GSE_BH.tex \
 num/GSE_avg.tex \
 num/obst.tex \
 num/move.tex \
-num/shore.tex \
 num/rotagrid.tex \
 num/spec.tex \
 num/spec_1up.tex \

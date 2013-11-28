@@ -5,13 +5,14 @@
 !/                  | WAVEWATCH III                SHOM |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         08-Sep-2011 |
+!/                  | Last update :         13-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Origination.                        ( version 3.14-Ifremer )
 !/    02-Nov-2010 : Addding fudge factor for low freq.  ( version 4.03 )
 !/    02-Sep-2011 : Clean up and time optimization      ( version 4.04 )
 !/    04-Sep-2011 : Estimation of whitecap stats.       ( version 4.04 )
+!/    13-Nov-2013 : Reduced frequency range with IG     ( version 4.13 )
 !/
 !  1. Purpose :
 !
@@ -562,8 +563,6 @@
            ! CM parameter is 1 / C_phi
            ! Z0 corresponds to Z0+Z1 of the Janssen eq. 14
         ZCN=ALOG(K(IS)*Z0)
-           ! below is the original WAM version (OK for deep water)  g*z0/C^2
-           ! ZCN=ALOG(G*Z0b(I)*CM(I)**2)
 !
 ! precomputes swell factors
 !
@@ -632,7 +631,7 @@
         YSTRESS=STRESSSTAB (3,2)
         TAUWNX =STRESSSTABN(3,1)
         TAUWNY =STRESSSTABN(3,2)
-!/STAB3      END DO 
+!/STAB3        END DO 
 !/STAB3      D(:)=0.5*(DSTAB(1,:)+DSTAB(2,:))
 !/STAB3      XSTRESS=0.5*(STRESSSTAB(1,1)+STRESSSTAB(2,1))
 !/STAB3      YSTRESS=0.5*(STRESSSTAB(1,2)+STRESSSTAB(2,2))
@@ -1513,6 +1512,7 @@
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Clean up from common ST3-ST4 routine( version 3.14-Ifremer )
+!/    13-Nov-2012 : Reduced frequency range with IG1 switch 
 !/
 !  1. Purpose :
 !
@@ -1599,7 +1599,7 @@
 !/
       INTEGER                 :: IS, IS2, IS0, IS20, IA, J, IKL, ITOT, NTOT, ID, NKL, IO
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER                 :: IK, ITH, I_INT, IK2, ITH2, IKIND, L,            & 
+      INTEGER                 :: IK, IK1, ITH, I_INT, IK2, ITH2, IKIND, L,       & 
                                  IKHS, IKD, SDSNTH, IT 
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO
@@ -1652,7 +1652,9 @@
 ! 2.a.1 Computes saturation
 !
         SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
-        DO  IK=1, NK
+        IK1=1
+!/IG1  IK1=NINT(IGPARS(5))+1
+        DO  IK=IK1, NK
           FACSAT=SIG(IK)*K(IK)**3*DTH
           IS0=(IK-1)*NTH
           BTH(IS0+1)=0.
@@ -1689,7 +1691,7 @@
               BTHS(ITH+SSDSBRFDF*NTH)=BTHS(ITH+SSDSBRFDF*NTH)+BTH(IS)
               END DO
             END DO
-          DO IK=2+SSDSBRFDF,1+2*SSDSBRFDF
+          DO IK=IK1+1+SSDSBRFDF,1+2*SSDSBRFDF
             BTH0S(1+SSDSBRFDF)=BTH0S(1+SSDSBRFDF)+BTH0(IK)
             NSMOOTH(1+SSDSBRFDF)=NSMOOTH(1+SSDSBRFDF)+1
             DO ITH=1,NTH       
@@ -1697,7 +1699,7 @@
               BTHS(ITH+SSDSBRFDF*NTH)=BTHS(ITH+SSDSBRFDF*NTH)+BTH(IS)
               END DO
             END DO
-          DO IK=SSDSBRFDF,1,-1
+          DO IK=SSDSBRFDF,IK1,-1
             BTH0S(IK)=BTH0S(IK+1)-BTH0(IK+SSDSBRFDF+1)
             NSMOOTH(IK)=NSMOOTH(IK+1)-1
             DO ITH=1,NTH       
@@ -1706,7 +1708,7 @@
               END DO
             END DO
 ! 
-          DO IK=2+SSDSBRFDF,NK-SSDSBRFDF
+          DO IK=IK1+1+SSDSBRFDF,NK-SSDSBRFDF
             BTH0S(IK)=BTH0S(IK-1)-BTH0(IK-SSDSBRFDF-1)+BTH0(IK+SSDSBRFDF)
             NSMOOTH(IK)=NSMOOTH(IK-1)
             DO ITH=1,NTH       
@@ -1727,7 +1729,7 @@
 !    final division by NSMOOTH
 ! 
          BTH0(:)=MAX(0.,BTH0S(:)/NSMOOTH(:))
-          DO IK=1,NK
+          DO IK=IK1,NK
             IS0=(IK-1)*NTH
             BTH(IS0+1:IS0+NTH)=MAX(0.,BTHS(IS0+1:IS0+NTH)/NSMOOTH(IK))
             END DO 
@@ -1735,7 +1737,7 @@
 ! 
 !  2.a.2  Computes spontaneous breaking dissipation rate
 ! 
-        DO  IK=1, NK
+        DO  IK=IK1, NK
 !
 !  Correction of saturation level for shallow-water kinematics
 !
@@ -1783,7 +1785,7 @@
 !
 ! Computes Wavenumber spectrum E1 integrated over direction and computes dk
 !
-        DO IK=1, NK
+        DO IK=IK1, NK
           E1(IK)=0.
           DO ITH=1,NTH
             IS=ITH+(IK-1)*NTH
@@ -1931,7 +1933,7 @@
 !
 ! loop over spectrum
 !
-      DO  IK=1, NK
+      DO  IK=IK1, NK
         DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
 !
@@ -1939,7 +1941,7 @@
 !
           RENEWALFREQ = 0.
           IF (SSDSC(3).NE.0 .AND. IK.GT.DIKCUMUL) THEN
-            DO IK2=1,IK-DIKCUMUL
+            DO IK2=IK1,IK-DIKCUMUL
               IF (BTH0(IK2).GT.SSDSBR) THEN
                 IS2=(IK2-1)*NTH
                 RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULW(IS2+1:IS2+NTH,IS),LAMBDA(IS2+1:IS2+NTH))
@@ -1981,7 +1983,7 @@
 ! precomputes integration of Lambda over direction 
 ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
 !
-      DO IK=1,NK
+      DO IK=IK1,NK
         COEF4(IK) = SUM(LAMBDA((IK-1)*NTH+1:IK*NTH) * DTH) *(2*PI/K(IK)) *  &
                     SSDSC(7) * DDEN(IK)/(DTH*SIG(IK)*CG(IK))
 !                   NB: SSDSC(7) is WHITECAPWIDTH
@@ -1991,7 +1993,7 @@
 !/
 !/ Computes the Total WhiteCap Coverage (a=5. ; Reul and Chapron, 2003)
 !/
-        DO IK=1,NK
+        DO IK=IK1,NK
           WHITECAP(1) = WHITECAP(1) + COEF4(IK) * (1-WHITECAP(1))
           END DO
         END IF
@@ -2000,7 +2002,7 @@
 !/
 !/ Calculates the Mean Foam Thickness for component K(IK) => Fig.3, Reul and Chapron, 2003 
 !/
-        DO IK=1,NK
+        DO IK=IK1,NK
 ! Duration of active breaking (TAU*)
           TSTR = 0.8 * 2*PI/SIG(IK)                                
 ! Time persistence of foam (a=5.)

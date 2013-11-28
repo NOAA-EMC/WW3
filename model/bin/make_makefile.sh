@@ -90,7 +90,7 @@
               prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
               wind windx rwind curr currx tdyn dss0 pdif miche s_ice\
               mgwind mgprop mggse nnt mprf reflection mcp netcdf \
-              scrip scripnc tide mpiexp refrx
+              scrip scripnc tide mpiexp refrx ig
   do
     case $type in
       mach   ) TY='one'
@@ -257,6 +257,10 @@
                ID='use of tidal analysis'
                TS='TIDE'
                OK='TIDE' ;;
+      ig     ) TY='upto1'
+               ID='infragravity waves'
+               TS='IG1'
+               OK='IG1' ;;
     esac
 
     n_found='0'
@@ -340,6 +344,7 @@
       s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
       refrx  ) refrx=$sw ;;
+      ig     ) ig=$sw ;;
       mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
@@ -549,6 +554,11 @@
          tideprog='ww3_prtide'
    esac
 
+  case $ig in
+   IG1) igcode='w3gig1md w3canomd'
+   esac
+
+
   if [ "$nr_thr" != '0' ] && [ "$s_nl" = 'NL2' ]
   then
       echo ' '
@@ -620,7 +630,7 @@
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
@@ -629,7 +639,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
@@ -649,7 +659,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode" 
+               source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
@@ -682,14 +692,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
@@ -823,7 +833,7 @@
                W3TRIAMD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
                W3IOSFMD W3PARTMD W3PSMCMD \
-               W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3UNO2MD W3PROFSMD \
+               W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3PROFSMD \
                W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLX4MD W3FLXXMD \
                W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRC6MD W3SRCXMD \
                W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD W3SWLDMD \
@@ -833,7 +843,8 @@
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD WMSCRPMD m_btffac W3STRKMD W3TIDEMD  
+               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD WMSCRPMD m_btffac \
+               W3STRKMD W3TIDEMD W3GIG1MD W3CANOMD 
       do
       case $mod in
          'CONSTANTS'    ) modtest=constants.o ;;
@@ -926,6 +937,8 @@
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;
          'W3STRKMD'     ) modtest=w3strkmd.o ;;
+         'W3GIG1MD'     ) modtest=w3gig1md.o ;;
+         'W3CANOMD'     ) modtest=w3canomd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
