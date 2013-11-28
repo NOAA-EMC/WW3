@@ -774,7 +774,7 @@ sleep 2
   tnr_old=`expr $tnr_old + $nr_old`
 
 # Check if any other subdirectories present (temporary prior to subdir generalization)
-  cd ${main_dir}/${src_dir}/model/${ldir}
+  cd ${main_dir}/svn/model/${ldir}
   ndirs=`ls -p | grep '/$'`
   issd=`echo $ndirs | awk '{print $1}'`
 
@@ -787,7 +787,7 @@ sleep 2
       echo -e "\n Sub-directory ${sdir} found in ${ldir}, Creating..."
       mkdir ${sdir}
       cd ${sdir}
-      ln -fs -r ${main_dir}/${src_dir}/model/${ldir}/${sdir}/* .
+      ln -fs -r ${main_dir}/svn/${ldir}/${sdir}/* .
       cd ../
     done
   fi
