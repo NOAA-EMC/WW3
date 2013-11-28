@@ -98,9 +98,14 @@ eqs/BT1.tex \
 eqs/BT2.tex \
 eqs/BT3.tex \
 eqs/BT4.tex \
+eqs/BT8.tex \
+eqs/BT9.tex \
 eqs/DB1.tex \
 eqs/TR0.tex \
 eqs/BS1.tex \
+eqs/ICE1.tex \
+eqs/ICE2.tex \
+eqs/ICE3.tex \
 eqs/REF1.tex \
 eqs/IG1.tex \
 eqs/XXn.tex \
