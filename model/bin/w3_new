@@ -16,7 +16,7 @@
 # programs used :                                                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      August 2013            #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -61,8 +61,8 @@
   for key in $keys
   do
     case $key in
-     'all'    ) cd $main_dir     ; rm -f obj_????/*.o 
-                                   rm -f mod_????/*.mod
+     'all'    ) cd $main_dir     ; rm -f obj_*/*.o 
+                                   rm -f mod_*/*.mod
                                    rm -f exe/ww3_*
                                    rm -f exe/gx_*
                                    rm -f exe/exec_type ;;

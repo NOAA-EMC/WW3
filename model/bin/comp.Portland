@@ -79,7 +79,7 @@
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
-  opt="-c -Mlist -module $path_m" ; fast="no"
+  opt="-c -Mlist -module $path_m" ; fast="yes"
 #   opt="-c -Mlist -fast -module $path_m"
 
 # opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m" ; fast=
