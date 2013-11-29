@@ -166,16 +166,25 @@
                                    touch gx_outp.ftn ;;
      'source' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
+                                   touch w3src6md.ftn
+                                   touch w3flx1md.ftn
+                                   touch w3flx2md.ftn
+                                   touch w3flx3md.ftn
                                    touch w3updtmd.ftn
                                    touch w3iogrmd.ftn
                                    touch w3iogomd.ftn
+                                   touch w3updtmd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
+                                   touch ww3_ounp.ftn
+                                   touch ww3_ounf.ftn
                                    touch gx_outp.ftn ;;
      'stab'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch w3src3md.ftn
+                                   touch w3src4md.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
+                                   touch ww3_ounp.ftn
                                    touch gx_outp.ftn ;;
      's_nl'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3adatmd.ftn
@@ -250,6 +259,7 @@
                                    touch ww3_outp.ftn
                                    touch gx_outp.ftn ;;
      'wind'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
+                                   touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 
      'windx'  ) cd $main_dir/ftn ; touch wmupdtmd.ftn ;;
      'rwind'  ) cd $main_dir/ftn ; touch w3updtmd.ftn
@@ -260,9 +270,12 @@
                                    touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 
      'currx'  ) cd $main_dir/ftn ; touch wmupdtmd.ftn ;;
-     'tdyn'   ) cd $main_dir/ftn ; touch w3pro2md.ftn ;;
-     'dss0'   ) cd $main_dir/ftn ; touch w3pro2md.ftn ;;
-     'pdif'   ) cd $main_dir/ftn ; touch w3pro2md.ftn ;;
+     'tdyn'   ) cd $main_dir/ftn ; touch w3pro2md.ftn 
+                                   touch w3psmcmd.ftn ;;
+     'dss0'   ) cd $main_dir/ftn ; touch w3pro2md.ftn
+                                   touch w3psmcmd.ftn ;;
+     'pdif'   ) cd $main_dir/ftn ; touch w3pro2md.ftn 
+                                   touch w3psmcmd.ftn ;;
      'miche'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch ww3_grid.ftn ;;
@@ -272,6 +285,8 @@
      'mgprop' ) cd $main_dir/ftn ; touch w3pro1md.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn
+                                   touch w3profsmd.ftn
+                                   touch w3psmcmd.ftn
                                    touch wminitmd.ftn
                                    touch ww3_shel.ftn ;; 
      'mggse'  ) cd $main_dir/ftn ; touch w3pro3md.ftn
