@@ -488,7 +488,6 @@
           FCUT  = SIG(NK) * TPIINV
         END IF
 !
-write (*,*) FLOMP, '    in'
       IF ( .NOT. FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
       LOCAL   = IAPROC .LE. NAPROC
@@ -1596,7 +1595,6 @@ write (*,*) FLOMP, '    in'
 !
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
 !
-write (*,*) FLOMP, '    out'
       IF ( .NOT. FLOMP ) DEALLOCATE ( FIELD )
 !
       DEALLOCATE(TAUWX, TAUWY)
