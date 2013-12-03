@@ -66,33 +66,30 @@
                                    rm -f exe/ww3_*
                                    rm -f exe/gx_*
                                    rm -f exe/exec_type ;;
-#    'all'    ) cd $main_dir/obj ; rm -f *.o 
-#               cd $main_dir/mod ; rm -f *.mod
-#               cd $main_dir/exe ; rm -f ww3_* gx_* ;;
-     'ig'     ) cd $main_dir/ftn ; touch w3iogomd.ftn ;;
      'mach'   ) cd $main_dir/ftn ; touch w3servmd.ftn
                                    touch wmmdatmd.ftn
                                    touch wminitmd.ftn
                                    touch wmfinlmd.ftn
-                                   touch ww3_shel.ftn ;; 
-     'nco'    ) cd $main_dir/ftn ; touch ww3_prep.ftn
                                    touch ww3_shel.ftn
+                                   touch ww3_sbs1.ftn ;; 
+     'nco'    ) cd $main_dir/ftn ; touch w3bullmd.ftn 
+                                   touch ww3_prep.ftn
+                                   touch ww3_shel.ftn
+                                   touch ww3_ounp.ftn
+                                   touch ww3_prnc.ftn
                                    touch ww3_outp.ftn
+                                   touch ww3_prtide.ftn
                                    touch ww3_grib.ftn ;; 
      'grib'   ) cd $main_dir/ftn ; touch ww3_grib.ftn ;; 
-     'shared' ) ;;
-#    'shared' ) cd $main_dir/obj ; rm -f *.o 
-#               cd $main_dir/mod ; rm -f *.mod ;;
-     'mpp'    );;
-#    'mpp'    ) cd $main_dir/obj ; rm -f *.o 
-#               cd $main_dir/mod ; rm -f *.mod ;;
-     'thr0'   ) cd $main_dir/ftn ; touch w3wavemd.ftn ;;
-     'thr1'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
-                                   touch w3iogomd.ftn ;;
+     'mcp'    ) cd $main_dir/ftn ; touch w3wavemd.ftn
+                                   touch ww3_shel.ftn 
+                                   touch ww3_grid.ftn ;;
      'c90'    ) cd $main_dir/ftn ; touch w3iogomd.ftn
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn
+                                   touch w3profsmd.ftn
+                                   touch w3uno2md.ftn
                                    touch w3uqckmd.ftn ;;
      'nec'    ) cd $main_dir/ftn ; touch w3initmd.ftn
                                    touch w3iogomd.ftn
@@ -100,30 +97,22 @@
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn
                                    touch w3uqckmd.ftn ;;
-     'lrecl'  ) cd $main_dir/ftn ; touch w3iorsmd.ftn ;;
-     'grid'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
-                                   touch w3updtmd.ftn
-                                   touch w3iopomd.ftn
-                                   touch w3iotrmd.ftn
-                                   touch w3iosfmd.ftn
-                                   touch w3bullmd.ftn
-                                   touch w3pro2md.ftn
-                                   touch w3initmd.ftn
-                                   touch w3wavemd.ftn
-                                   touch wmupdtmd.ftn
-                                   touch wmgridmd.ftn
-                                   touch wminitmd.ftn
-                                   touch wmiopomd.ftn
-                                   touch ww3_grid.ftn
-                                   touch ww3_strt.ftn
-                                   touch ww3_prep.ftn
-                                   touch ww3_shel.ftn
-                                   touch ww3_outp.ftn
-                                   touch ww3_outf.ftn
-                                   touch ww3_trck.ftn
-                                   touch ww3_grib.ftn
-                                   touch gx_outp.ftn
-                                   touch gx_outf.ftn ;;
+     'lrecl'  ) cd $main_dir/ftn ; touch w3iorsmd.ftn
+                                   touch ww3_prnc.ftn ;;
+     'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
+                                   touch ww3_ounp.ftn
+                                   touch ww3_prnc.ftn ;;
+     'scrip'  ) cd $main_dir/ftn ; touch wmgridmd.ftn 
+                                   touch wmscrpmd.ftn
+                                   touch ww3_grid.ftn ;;
+     'scripnc') cd $main_dir/ftn ; touch wmgridmd.ftn
+                cd $main_dir/ftn/SCRIP ; touch scrip_interface.ftn ;;
+     'shared' ) ;;
+     'mpp'    );;
+     'mpiexp' ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
+     'thr0'   ) cd $main_dir/ftn ; touch w3wavemd.ftn ;;
+     'thr1'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
+                                   touch w3iogomd.ftn ;;
      'GSE'    ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3adatmd.ftn
                                    touch w3iogrmd.ftn
@@ -132,23 +121,15 @@
                                    touch wmgridmd.ftn
                                    touch ww3_gspl.ftn
                                    touch ww3_grid.ftn ;; 
-     'prop'   ) cd $main_dir/ftn ; touch w3iogrmd.ftn
-                                   touch w3gdatmd.ftn
+     'prop'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3adatmd.ftn
+                                   touch w3iogrmd.ftn
                                    touch w3wavemd.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn
                                    touch wmgridmd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_gspl.ftn ;; 
-'reflection'  )cd $main_dir/ftn ;  touch w3gdatmd.ftn
-                                   touch w3iogrmd.ftn
-                                   touch w3profsmd.ftn
-                                   touch w3srcemd.ftn
-                                   touch w3triamd.ftn
-                                   touch w3updtmd.ftn
-                                   touch w3wavemd.ftn
-                                   touch ww3_grid.ftn ;; 
      'stress' ) cd $main_dir/ftn ; touch w3srcemd.ftn
                                    touch w3gdatmd.ftn
                                    touch w3iogrmd.ftn
@@ -166,7 +147,6 @@
                                    touch gx_outp.ftn ;;
      'source' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
-                                   touch w3src6md.ftn
                                    touch w3flx1md.ftn
                                    touch w3flx2md.ftn
                                    touch w3flx3md.ftn
@@ -190,9 +170,7 @@
                                    touch w3adatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
-                                   touch wminitmd.ftn
                                    touch ww3_grid.ftn
-                                   touch ww3_strt.ftn
                                    touch ww3_prep.ftn
                                    touch ww3_outp.ftn
                                    touch ww3_ounp.ftn
@@ -200,20 +178,16 @@
                                    touch ww3_prtide.ftn
                                    touch gx_outp.ftn ;;
      'snls'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
-                                   touch w3adatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
-                                   touch wminitmd.ftn
                                    touch ww3_grid.ftn
-                                   touch ww3_strt.ftn
-                                   touch ww3_prep.ftn
                                    touch ww3_outp.ftn
                                    touch gx_outp.ftn ;;
      's_bot'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3odatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
                                    touch w3iogomd.ftn
-                                   touch w3odatmd.ftn
                                    touch w3wavemd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_gint.ftn
@@ -223,14 +197,6 @@
                                    touch ww3_ounf.ftn
                                    touch ww3_shel.ftn
                                    touch gx_outp.ftn ;;
-     's_ice'  ) cd $main_dir/ftn ; touch w3wavemd.ftn
-                                   touch w3srcemd.ftn
-                                   touch w3iogrmd.ftn
-                                   touch ww3_grid.ftn
-                                   touch ww3_outp.ftn
-                                   touch ww3_ounp.ftn
-                                   touch ww3_shel.ftn
-                                   touch gx_outp.ftn ;;
      's_db'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
@@ -238,25 +204,45 @@
                                    touch ww3_outp.ftn
                                    touch ww3_ounp.ftn
                                    touch gx_outp.ftn ;;
+     'miche'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3srcemd.ftn
+                                   touch ww3_grid.ftn ;;
      's_tr'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
+                                   touch ww3_ounp.ftn
                                    touch gx_outp.ftn ;;
      's_bs'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
-                                   touch w3sbsxmd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
                                    touch ww3_ounp.ftn
                                    touch gx_outp.ftn ;;
+     's_ice'  ) cd $main_dir/ftn ; touch w3iogrmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch w3srcemd.ftn
+                                   touch ww3_grid.ftn
+                                   touch ww3_outp.ftn
+                                   touch ww3_ounp.ftn
+                                   touch ww3_shel.ftn
+                                   touch gx_outp.ftn ;;
+'reflection'  )cd $main_dir/ftn ;  touch w3gdatmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3profsmd.ftn
+                                   touch w3srcemd.ftn
+                                   touch w3triamd.ftn
+                                   touch w3updtmd.ftn
+                                   touch w3wavemd.ftn
+                                   touch ww3_grid.ftn ;; 
      's_xx'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
+                                   touch ww3_ounp.ftn
                                    touch gx_outp.ftn ;;
      'wind'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prnc.ftn
@@ -270,15 +256,6 @@
                                    touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 
      'currx'  ) cd $main_dir/ftn ; touch wmupdtmd.ftn ;;
-     'tdyn'   ) cd $main_dir/ftn ; touch w3pro2md.ftn 
-                                   touch w3psmcmd.ftn ;;
-     'dss0'   ) cd $main_dir/ftn ; touch w3pro2md.ftn
-                                   touch w3psmcmd.ftn ;;
-     'pdif'   ) cd $main_dir/ftn ; touch w3pro2md.ftn 
-                                   touch w3psmcmd.ftn ;;
-     'miche'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
-                                   touch w3srcemd.ftn
-                                   touch ww3_grid.ftn ;;
      'mgwind' ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch wminitmd.ftn
                                    touch ww3_shel.ftn ;; 
@@ -291,41 +268,51 @@
                                    touch ww3_shel.ftn ;; 
      'mggse'  ) cd $main_dir/ftn ; touch w3pro3md.ftn
                                    touch ww3_shel.ftn ;;
-     'mpiexp' ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
-     'scrip'  ) cd $main_dir/ftn ; touch wmgridmd.ftn 
-                                   touch wmscrpmd.ftn
+     'subsec' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3wavemd.ftn
                                    touch ww3_grid.ftn ;;
-     'scripnc') cd $main_dir/ftn ; touch wmgridmd.ftn
-                cd $main_dir/ftn/SCRIP ; touch scrip_interface.ftn ;;
+     'tdyn'   ) cd $main_dir/ftn ; touch w3pro2md.ftn 
+                                   touch w3psmcmd.ftn ;;
+     'dss0'   ) cd $main_dir/ftn ; touch w3pro2md.ftn
+                                   touch w3psmcmd.ftn ;;
+     'pdif'   ) cd $main_dir/ftn ; touch w3pro2md.ftn 
+                                   touch w3psmcmd.ftn ;;
+     'tide'   ) cd $main_dir/ftn ; touch w3updtmd.ftn 
+                                   touch w3idatmd.ftn 
+                                   touch w3fldsmd.ftn 
+                                   touch ww3_prnc.ftn 
+                                   touch ww3_shel.ftn ;;
+     'refrx'  ) cd $main_dir/ftn ; touch w3wavemd.ftn
+                                   touch w3pro1md.ftn
+                                   touch w3pro2md.ftn
+                                   touch w3pro3md.ftn ;;
+     'ig'     ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3iogomd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3ref1md.ftn
+                                   touch w3src4md.ftn
+                                   touch w3srcemd.ftn
+                                   touch ww3_grid.ftn
+                                   touch ww3_ounp.ftn
+                                   touch ww3_outp.ftn ;;
+     'rotag'  ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3iobcmd.ftn
+                                   touch w3iogomd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3iopomd.ftn
+                                   touch w3updtmd.ftn
+                                   touch ww3_grid.ftn ;;
+     'arctic' ) cd $main_dir/ftn ; touch w3gdatmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3psmcmd.ftn
+                                   touch w3updtmd.ftn
+                                   touch ww3_grid.ftn ;;
      'nnt'    ) cd $main_dir/ftn ; touch w3srcemd.ftn ;;
      'mprf'   ) cd $main_dir/ftn ; touch wmmdatmd.ftn
                                    touch wminitmd.ftn
                                    touch wmwavemd.ftn
                                    touch wmfinlmd.ftn ;;
-     'mcp'    ) cd $main_dir/ftn ; touch w3wavemd.ftn
-                                   touch ww3_shel.ftn 
-                                   touch ww3_grid.ftn ;;
-     'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
-                                   touch ww3_ounp.ftn
-                                   touch ww3_prnc.ftn ;;
-      'ig'    ) cd $main_dir/ftn ; touch w3ref1md.ftn 
-                                   touch w3canomd.ftn 
-                                   touch w3gdatmd.ftn 
-                                   touch w3gig1md.ftn 
-                                   touch ww3_grid.ftn ;;
-     'refrx'  ) cd $main_dir/ftn ; touch w3wavemd.ftn
-                                   touch w3pro1md.ftn
-                                   touch w3pro2md.ftn
-                                   touch w3pro3md.ftn ;;
-      'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn 
-                                         touch w3srcemd.ftn ;;
-      'tide' )        cd $main_dir/ftn ; touch w3tidemd.ftn 
-                                         touch w3updtmd.ftn 
-                                         touch w3idatmd.ftn 
-                                         touch w3fldsmd.ftn 
-                                         touch ww3_prtide.ftn 
-                                         touch ww3_prnc.ftn 
-                                         touch ww3_shel.ftn ;;
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac
   done

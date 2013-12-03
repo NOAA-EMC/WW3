@@ -11,7 +11,7 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      July 2013              #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -86,181 +86,246 @@
     $new_sw all
   fi
 
-  for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid GSE \
-              prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
-              wind windx rwind curr currx tdyn dss0 pdif miche s_ice\
-              mgwind mgprop mggse nnt mprf reflection mcp netcdf \
-              scrip scripnc tide mpiexp refrx ig
+# NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
+
+  for type in mach nco grib mcp c90 nec lrecl netcdf scrip scripnc \
+              shared mpp mpiexp thr0 thr1 GSE prop \
+              stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
+                     s_ice reflection s_xx \
+              wind windx rwind curr currx mgwind mgprop mggse \
+              subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf
   do
     case $type in
+#sort:mach:
       mach   ) TY='one'
                ID='hardware or compiler'
                OK='DUM F90' ;;
+#sort:nco:
       nco    ) TY='upto1'
                ID='NCO modifications'
                TS='NCO'
                OK='NCO' ;;
+#sort:grib:
       grib   ) TY='one'
                ID='GRIB package'
                OK='NOGRB NCEP1 NCEP2' ;;
-      shared ) TY='one'
-               ID='shared / distributed memory'
-               OK='SHRD DIST' ;;
-      mpp    ) TY='one'
-               ID='message passing protocol'
-               OK='SHRD MPI' ;;
-      mpiexp ) TY='upto1'
-               ID='experimental MPI option'
-               TS='MPIBDI'
-               OK='MPIBDI' ;;
-      thr0   ) TY='upto1'
-               ID='directive controlled threading (subs)'
-               TS='OMP0'
-               OK='OMP0' ;;
-      thr1   ) TY='upto1'
-               ID='directive controlled threading (loop)'
-               TS='OMP1'
-               OK='OMP1' ;;
-      c90    ) TY='upto1'
-               ID='Cray C90 compiler directives'
-               TS='C90'
-               OK='C90' ;;
-      nec    ) TY='upto1'
-               ID='NEC compiler directives'
-               TS='NEC'
-               OK='NEC' ;;
-      lrecl  ) TY='one'
-               ID='word length in record length'
-               OK='LRB4 LRB8' ;;
-      GSE    ) TY='one'
-               ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
-      prop   ) TY='one'
-               ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO SMC' ;;
-      stress ) TY='one'
-               ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
-      s_ln   ) TY='one'
-               ID='linear input'
-               OK='LN0 SEED LN1 LNX' ;;
-      source ) TY='one'
-               ID='input/whitecapping'
-               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
-      stab   ) TY='upto1'
-               ID='stability correction'
-               TS='STAB'
-               OK='STAB0 STAB2 STAB3' ;;
-      s_nl   ) TY='one'
-               ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NL3 NLX' ;;
-      snls   ) TY='upto1'
-               ID='quadruplet smoother'
-               TS='NLS'
-               OK='NLS' ;;
-      s_bot  ) TY='one'
-               ID='bottom friction'
-               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
-      s_ice  ) TY='upto1'
-               ID='ice sink term'
-               TS='IC'
-               OK='IC1 IC2 IC3' ;;
-      s_db   ) TY='one'
-               ID='depth-induced breaking'
-               OK='DB0 DB1 DBX' ;;
-      s_tr   ) TY='one'
-               ID='triad interactions'
-               OK='TR0 TRX' ;;
-      s_bs   ) TY='one'
-               ID='bottom scattering'
-               OK='BS0 BS1 BSX' ;;
-      s_xx   ) TY='one'
-               ID='arbitrary source'
-               OK='XX0 XXX' ;;
-      wind   ) TY='one'
-               ID='wind interpolation in time'
-               OK='WNT0 WNT1 WNT2' ;;
-      windx  ) TY='one'
-               ID='wind interpolation in space'
-               OK='WNX0 WNX1 WNX2' ;;
-      rwind  ) TY='upto1'
-               ID='wind vs. current definition'
-               TS='RWND'
-               OK='RWND' ;;
-      curr   ) TY='one'
-               ID='current interpolation in time'
-               OK='CRT1 CRT2' ;;
-      currx  ) TY='one'
-               ID='current interpolation in space'
-               OK='CRX0 CRX1 CRX2' ;;
-      tdyn   ) TY='upto1'
-               ID='dynamic diffusion time'
-               TS='TDYN'
-               OK='TDYN' ;;
-      dss0   ) TY='upto1'
-               ID='diffusion tensor'
-               TS='DSS0'
-               OK='DSS0' ;;
-      pdif   ) TY='upto1'
-               ID='propagation diffusion'
-               TS='XW'
-               OK='XW0 XW1' ;;
-      miche  ) TY='upto1'
-               ID='Miche style limiter'
-               TS='MLIM'
-               OK='MLIM' ;;
-      mgwind ) TY='upto1'
-               ID='moving grid wind correction'
-               TS='MGW'
-               OK='MGW' ;;
-      mgprop ) TY='upto1'
-               ID='moving grid propagation correction'
-               TS='MGP'
-               OK='MGP' ;;
-      mggse  ) TY='upto1'
-               ID='moving grid GSE correction'
-               TS='MGG'
-               OK='MGG' ;;
-      nnt    ) TY='upto1'
-               ID='NN training/test data generation'
-               TS='NNT'
-               OK='NNT' ;;
-      mprf   ) TY='upto1'
-               ID='multi-grid model profiling'
-               TS='MPRF'
-               OK='MPRF' ;;
-      reflection ) TY='upto1'
-               ID='wave reflections'
-               TS='REF1'
-               OK='REF1' ;;
-      refrx  ) TY='upto1'
-               ID='use of spectral refraction @C/@x'
-               TS='REFRX'
-               OK='REFRX' ;;
+#sort:mcp:
       mcp    ) TY='one'
                ID='model coupling protocol'
                TS='NOPA'
                OK='NOPA PALM' ;;
+#sort:c90:
+      c90    ) TY='upto1'
+               ID='Cray C90 compiler directives'
+               TS='C90'
+               OK='C90' ;;
+#sort:nec:
+      nec    ) TY='upto1'
+               ID='NEC compiler directives'
+               TS='NEC'
+               OK='NEC' ;;
+#sort:lrecl:
+      lrecl  ) TY='one'
+               ID='word length in record length'
+               OK='LRB4 LRB8' ;;
+#sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'
                TS='NC4'
                OK='NC4' ;;
+#sort:scrip:
       scrip  ) TY='upto1'
                ID='grid to grid interpolation '
                TS='SCRIP'
                OK='SCRIP' ;;
+#sort:scripnc:
       scripnc ) TY='upto1'
                ID='use of netcdf in grid to grid interpolation '
                TS='SCRIPNC'
                OK='SCRIPNC' ;;
+#sort:shared:
+      shared ) TY='one'
+               ID='shared / distributed memory'
+               OK='SHRD DIST' ;;
+#sort:mpp:
+      mpp    ) TY='one'
+               ID='message passing protocol'
+               OK='SHRD MPI' ;;
+#sort:mpiexp:
+      mpiexp ) TY='upto1'
+               ID='experimental MPI option'
+               TS='MPIBDI'
+               OK='MPIBDI' ;;
+#sort:thr0:
+      thr0   ) TY='upto1'
+               ID='directive controlled threading (subs)'
+               TS='OMP0'
+               OK='OMP0' ;;
+#sort:thr1:
+      thr1   ) TY='upto1'
+               ID='directive controlled threading (loop)'
+               TS='OMP1'
+               OK='OMP1' ;;
+#sort:GSE:
+      GSE    ) TY='one'
+               ID='GSE aleviation'
+               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
+#sort:prop:
+      prop   ) TY='one'
+               ID='propagation scheme'
+               OK='PR0 PR1 UQ UNO SMC' ;;
+#sort:stress:
+      stress ) TY='one'
+               ID='stress computation'
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+#sort:s_ln:
+      s_ln   ) TY='one'
+               ID='linear input'
+               OK='LN0 SEED LN1 LNX' ;;
+#sort:source:
+      source ) TY='one'
+               ID='input/whitecapping'
+               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
+#sort:stab:
+      stab   ) TY='upto1'
+               ID='stability correction'
+               TS='STAB'
+               OK='STAB0 STAB2 STAB3' ;;
+#sort:s_nl:
+      s_nl   ) TY='one'
+               ID='quadruplet interactions'
+               OK='NL0 NL1 NL2 NL3 NLX' ;;
+#sort:snls:
+      snls   ) TY='upto1'
+               ID='quadruplet smoother'
+               TS='NLS'
+               OK='NLS' ;;
+#sort:s_bot:
+      s_bot  ) TY='one'
+               ID='bottom friction'
+               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
+#sort:s_db:
+      s_db   ) TY='one'
+               ID='depth-induced breaking'
+               OK='DB0 DB1 DBX' ;;
+#sort:miche:
+      miche  ) TY='upto1'
+               ID='Miche style limiter'
+               TS='MLIM'
+               OK='MLIM' ;;
+#sort:s_tr:
+      s_tr   ) TY='one'
+               ID='triad interactions'
+               OK='TR0 TRX' ;;
+#sort:s_bs:
+      s_bs   ) TY='one'
+               ID='bottom scattering'
+               OK='BS0 BS1 BSX' ;;
+#sort:s_ice:
+      s_ice  ) TY='upto1'
+               ID='ice sink term'
+               TS='IC'
+               OK='IC1 IC2 IC3' ;;
+#sort:reflection:
+      reflection ) TY='upto1'
+               ID='wave reflections'
+               TS='REF1'
+               OK='REF1' ;;
+#sort:s_xx:
+      s_xx   ) TY='one'
+               ID='arbitrary source'
+               OK='XX0 XXX' ;;
+#sort:wind:
+      wind   ) TY='one'
+               ID='wind interpolation in time'
+               OK='WNT0 WNT1 WNT2' ;;
+#sort:windx:
+      windx  ) TY='one'
+               ID='wind interpolation in space'
+               OK='WNX0 WNX1 WNX2' ;;
+#sort:rwind:
+      rwind  ) TY='upto1'
+               ID='wind vs. current definition'
+               TS='RWND'
+               OK='RWND' ;;
+#sort:curr:
+      curr   ) TY='one'
+               ID='current interpolation in time'
+               OK='CRT1 CRT2' ;;
+#sort:currx:
+      currx  ) TY='one'
+               ID='current interpolation in space'
+               OK='CRX0 CRX1 CRX2' ;;
+#sort:mgwind:
+      mgwind ) TY='upto1'
+               ID='moving grid wind correction'
+               TS='MGW'
+               OK='MGW' ;;
+#sort:mgprop:
+      mgprop ) TY='upto1'
+               ID='moving grid propagation correction'
+               TS='MGP'
+               OK='MGP' ;;
+#sort:mggse:
+      mggse  ) TY='upto1'
+               ID='moving grid GSE correction'
+               TS='MGG'
+               OK='MGG' ;;
+#sort:subsec:
+      subsec ) TY='upto1'
+               ID='sub-second time stepping'
+               TS='SEC1'
+               OK='SEC1' ;;
+#sort:tdyn:
+      tdyn   ) TY='upto1'
+               ID='dynamic diffusion time'
+               TS='TDYN'
+               OK='TDYN' ;;
+#sort:dss0:
+      dss0   ) TY='upto1'
+               ID='diffusion tensor'
+               TS='DSS0'
+               OK='DSS0' ;;
+#sort:pdif:
+      pdif   ) TY='upto1'
+               ID='propagation diffusion'
+               TS='XW'
+               OK='XW0 XW1' ;;
+#sort:tide:
       tide   ) TY='upto1'
                ID='use of tidal analysis'
                TS='TIDE'
                OK='TIDE' ;;
+#sort:refrx:
+      refrx  ) TY='upto1'
+               ID='use of spectral refraction @C/@x'
+               TS='REFRX'
+               OK='REFRX' ;;
+#sort:ig:
       ig     ) TY='upto1'
                ID='infragravity waves'
                TS='IG1'
                OK='IG1' ;;
+#sort:rotag:
+      rotag  ) TY='upto1'
+               ID='rotated grid'
+               TS='RTD'
+               OK='RTD' ;;
+#sort:arctic:
+      arctic ) TY='upto1'
+               ID='Arctic grid'
+               TS='ARC'
+               OK='ARC' ;;
+#sort:nnt:
+      nnt    ) TY='upto1'
+               ID='NN training/test data generation'
+               TS='NNT'
+               OK='NNT' ;;
+#sort:mprf:
+      mprf   ) TY='upto1'
+               ID='multi-grid model profiling'
+               TS='MPRF'
+               OK='MPRF' ;;
     esac
 
     n_found='0'
