@@ -45,7 +45,7 @@ Usage: $scriptname [options]
 Options:
   -h               : help, print this.
   -u               : allow updating (adding) switches,
-                     otherwse this gives an error exit
+                     otherwise this gives an error exit
 EOF
 }
  

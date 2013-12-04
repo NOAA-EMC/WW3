@@ -30,7 +30,7 @@
   echo '#PBS -A omd'                                        >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
-  echo '#PBS -o matrix_b.out'                               >> matrix.head
+  echo '#PBS -o matrix_a.out'                               >> matrix.head
   echo ' '                                                  >> matrix.head
 
   export home_dir=`pwd`
@@ -58,27 +58,27 @@
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 #     Addition selection by commenting out lines as below
 
-  export testtest='y' # Run a single case of each test only
+  export testtest='-' # Run a single case of each test only
 
   export     shrd='y' # Do shared architecture tests
   export     dist='y' # Do distributed architecture tests
-  export      omp='X' # NEED TO IMPLEMENT STILL ....
+  export      omp='-' # NEED TO IMPLEMENT STILL ....
 
-  export   prop1D='n' # 1-D propagation tests (ww3_tp1.X)
-  export   prop2D='n' # 2-D propagation tests (ww3_tp2.X)
-  export     time='n' # time linmited growth
-  export    fetch='n' # fetch linmited growth
-  export    shwtr='n' # shallow water tests
-  export    unstr='n' # unstructured grid tests
-  export    smcgr='n' # SMC/Rotated grid test
-  export   hur1mg='n' # Hurricane with one moving grid
-  export   mudice='n' # Mud/Ice and wave interaction tests 
-  export  multi01='y' # mww3_test_01 (wetting and drying)
-  export  multi02='y' # mww3_test_02 (basic two-way nesting test))
-  export  multi03='y' # mww3_test_03 (three high and three low res grids).
-  export  multi04='y' # mww3_test_04 (swell on sea mount and/or current)
-  export  multi05='y' # mww3_test_05 (three-grid moving hurricane)
-  export  multi06='y' # mww3_test_06 (curvilinear grid tests)
+  export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
+  export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)
+  export     time='y' # time linmited growth
+  export    fetch='y' # fetch linmited growth
+  export   hur1mg='y' # Hurricane with one moving grid
+  export    shwtr='-' # shallow water tests
+  export    unstr='-' # unstructured grid tests
+  export    smcgr='-' # SMC/Rotated grid test
+  export   mudice='-' # Mud/Ice and wave interaction tests 
+  export  multi01='-' # mww3_test_01 (wetting and drying)
+  export  multi02='-' # mww3_test_02 (basic two-way nesting test))
+  export  multi03='-' # mww3_test_03 (three high and three low res grids).
+  export  multi04='-' # mww3_test_04 (swell on sea mount and/or current)
+  export  multi05='-' # mww3_test_05 (three-grid moving hurricane)
+  export  multi06='-' # mww3_test_06 (curvilinear grid tests)
 
 # export   filter='PR1'
                       # The filter does a set of consecutinve greps on the 

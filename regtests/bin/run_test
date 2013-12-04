@@ -30,7 +30,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:efg:Ghi:m:n:o:p:q:r:s:w:"  #option string for getopt function
+optstr="a:c:efg:Ghi:m:n:o:p:q:r:s:Sw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -74,6 +74,8 @@ Options:
   -q program       : exit script after program <program> executes
   -r program       : only execute program <program>
   -s switch_string : use switch_<switch_string>
+  -S               : create stub file <finished. with end data and time.
+                     tests not executed if file is found.
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
 
 EOF
@@ -125,6 +127,7 @@ do
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
+  -S) stub=1 ;;
   -t) shift; trkstr="$1" ;;
   -w) shift; wrkdir="$1" ;;
   --) break ;;
@@ -309,7 +312,10 @@ cd $path_w
 if [ $exec_p = "none" ]
 then
   ncfiles=`\ls *.nc 2>/dev/null | grep -v rmp_`
-  \rm -f *.inp *.ww3 *.out *.txt $ncfiles
+  if [ ! $stub ]
+  then
+    \rm -f *.inp *.ww3 *.out *.txt $ncfiles finished
+  fi
 fi
 
 # 3.b Header
@@ -324,7 +330,15 @@ then
 fi
 echo ' '
 echo " Input directory: $path_i"
+echo " Switch file: $file_c"
 echo ' '
+
+if [ $stub ] && [ -f finished ]
+then
+  echo " Test already finished, skipping ..."
+  echo ' '
+  exit 0
+fi
 
 # 3.c Grid pre-processor ---------------------------------------------------- #
 
@@ -1192,6 +1206,11 @@ then
 fi
 
 # 3.j End ------------------------------------------------------------------- #
+
+if [ "$stub" ]
+then
+  date > finished
+fi
 
 echo ' ' ; echo ' ' ; echo "Files in `pwd` :" ; echo ' '
 ls -l

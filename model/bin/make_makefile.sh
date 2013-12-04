@@ -222,15 +222,13 @@
                ID='bottom scattering'
                OK='BS0 BS1 BSX' ;;
 #sort:s_ice:
-      s_ice  ) TY='upto1'
+      s_ice  ) TY='one'
                ID='ice sink term'
-               TS='IC'
-               OK='IC1 IC2 IC3' ;;
+               OK='IC0 IC1 IC2 IC3' ;;
 #sort:reflection:
-      reflection ) TY='upto1'
+  reflection ) TY='one'
                ID='wave reflections'
-               TS='REF1'
-               OK='REF1' ;;
+               OK='REF0 REF1' ;;
 #sort:s_xx:
       s_xx   ) TY='one'
                ID='arbitrary source'
@@ -568,13 +566,6 @@
    BTX) bt='w3sbtxmd' ;;
   esac
 
-  ic=$NULL
-  case $s_ic in
-   IC1) ic='w3sic1md' ;;
-   IC2) ic='w3sic2md' ;;
-   IC3) ic='w3sic3md' ;;
-  esac
-
   case $s_db in
    DB0) db=$NULL
         dbx=$NULL ;;
@@ -600,17 +591,24 @@
         bsx=$NULL ;;
   esac
 
-  case $s_xx in
-   XX0) xx=$NULL
-        xxx=$NULL ;;
-   XXX) xx='w3sxxxmd'
-        xxx=$NULL ;;
+  ic=$NULL
+  case $s_ic in
+   IC1) ic='w3sic1md' ;;
+   IC2) ic='w3sic2md' ;;
+   IC3) ic='w3sic3md' ;;
   esac
 
   refcode=$NULL
   case $reflection in
    REF1) refcode='w3ref1md'
    esac
+
+  case $s_xx in
+   XX0) xx=$NULL
+        xxx=$NULL ;;
+   XXX) xx='w3sxxxmd'
+        xxx=$NULL ;;
+  esac
 
   tidecode=$NULL
   tideprog=$NULL
@@ -893,45 +891,64 @@
     grep use $file.$fext >> check_file
     rm -f $file.$fext
 
-    for mod in W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
-               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD \
-               W3TRIAMD \
+    for mod in W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
+               W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
-               W3IOSFMD W3PARTMD W3PSMCMD \
-               W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3PROFSMD \
+                        W3IOSFMD W3PARTMD W3BULLMD \
+               W3TIDEMD W3CANOMD W3GIG1MD W3STRKMD \
+               W3PRO1MD W3PRO2MD W3PRO3MD W3PROXMD \
+                        W3UQCKMD W3UNO2MD W3PSMCMD W3PROFSMD \
                W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLX4MD W3FLXXMD \
-               W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRC6MD W3SRCXMD \
-               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD W3SWLDMD \
-               m_xnldata serv_xnl4v5 m_fileio m_constants \
-               W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
-               W3SBT8MD W3SBT9MD W3SIC1MD W3SIC2MD W3SIC3MD \
-               W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
-               W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
-               WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD WMSCRPMD m_btffac \
-               W3STRKMD W3TIDEMD W3GIG1MD W3CANOMD 
+               W3SLN1MD W3SLNXMD \
+               W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD \
+                        W3SRC6MD W3SRCXMD \
+               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD \
+                        m_xnldata serv_xnl4v5 m_fileio m_constants \
+               W3SWLDMD \
+               W3SBT1MD W3SBT4MD W3SBT8MD W3SBT9MD W3SBTXMD \
+               W3SDB1MD W3SDBXMD \
+               W3STRXMD \
+               W3SBS1MD W3SBSXMD \
+               W3SIC1MD W3SIC2MD W3SIC3MD \
+               W3REF1MD \
+               W3SXXXMD \
+              CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
+               WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD
       do
       case $mod in
-         'CONSTANTS'    ) modtest=constants.o ;;
+         'W3INITMD'     ) modtest=w3initmd.o ;;
+         'W3WAVEMD'     ) modtest=w3wavemd.o ;;
+         'W3WDASMD'     ) modtest=w3wdasmd.o ;;
+         'W3UPDTMD'     ) modtest=w3updtmd.o ;;
+         'W3FLDSMD'     ) modtest=w3fldsmd.o ;;
+         'W3CSPCMD'     ) modtest=w3cspcmd.o ;;
          'W3GDATMD'     ) modtest=w3gdatmd.o ;;
          'W3WDATMD'     ) modtest=w3wdatmd.o ;;
          'W3ADATMD'     ) modtest=w3adatmd.o ;;
          'W3ODATMD'     ) modtest=w3odatmd.o ;;
          'W3IDATMD'     ) modtest=w3idatmd.o ;;
-         'W3TRIAMD'     ) modtest=w3triamd.o ;;
-         'W3WAVEMD'     ) modtest=w3wavemd.o ;;
-         'W3INITMD'     ) modtest=w3initmd.o ;;
-         'W3WDASMD'     ) modtest=w3wdasmd.o ;;
-         'W3UPDTMD'     ) modtest=w3updtmd.o ;;
-         'W3PSMCMD'     ) modtest=w3psmcmd.o ;;
+         'W3IOGRMD'     ) modtest=w3iogrmd.o ;;
+         'W3IOGOMD'     ) modtest=w3iogomd.o ;;
+         'W3IOPOMD'     ) modtest=w3iopomd.o ;;
+         'W3IOTRMD'     ) modtest=w3iotrmd.o ;;
+         'W3IORSMD'     ) modtest=w3iorsmd.o ;;
+         'W3IOBCMD'     ) modtest=w3iobcmd.o ;;
+         'W3IOSFMD'     ) modtest=w3iosfmd.o ;;
+         'W3PARTMD'     ) modtest=w3partmd.o ;;
+         'W3BULLMD'     ) modtest=w3bullmd.o ;;
+         'W3TIDEMD'     ) modtest=w3tidemd.o ;;
+         'W3CANOMD'     ) modtest=w3canomd.o ;;
+         'W3GIG1MD'     ) modtest=w3gig1md.o ;;
+         'W3STRKMD'     ) modtest=w3strkmd.o ;;
          'W3PRO1MD'     ) modtest=w3pro1md.o ;;
          'W3PRO2MD'     ) modtest=w3pro2md.o ;;
          'W3PRO3MD'     ) modtest=w3pro3md.o ;;
-         'W3PRO4MD'     ) modtest=w3pro4md.o ;;
+         'W3PROXMD'     ) modtest=w3proxmd.o ;;
          'W3UQCKMD'     ) modtest=w3uqckmd.o ;;
          'W3UNO2MD'     ) modtest=w3uno2md.o ;;
+         'W3PSMCMD'     ) modtest=w3psmcmd.o ;;
          'W3PROFSMD'    ) modtest=w3profsmd.o ;;
-         'W3PROXMD'     ) modtest=w3proxmd.o ;;
          'W3SRCEMD'     ) modtest=w3srcemd.o ;;
          'W3FLX1MD'     ) modtest=w3flx1md.o ;;
          'W3FLX2MD'     ) modtest=w3flx2md.o ;;
@@ -949,61 +966,46 @@
          'W3SRCXMD'     ) modtest=w3srcxmd.o ;;
          'W3SNL1MD'     ) modtest=w3snl1md.o ;;
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
-         'W3SWLDMD'     ) modtest=w3swldmd.o ;;
+         'W3SNL3MD'     ) modtest=w3snl3md.o ;;
+         'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
+         'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
          'm_xnldata'    ) modtest=mod_xnl4v5.o ;;
          'serv_xnl4v5'  ) modtest=serv_xnl4v5.o ;;
          'm_fileio'     ) modtest=mod_fileio.o ;;
          'm_constants'  ) modtest=mod_constants.o ;;
-         'W3SNL3MD'     ) modtest=w3snl3md.o ;;
-         'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
-         'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
+         'W3SWLDMD'     ) modtest=w3swldmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
-         'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
          'W3SBT4MD'     ) modtest=w3sbt4md.o ;;
          'W3SBT8MD'     ) modtest=w3sbt8md.o ;;
          'W3SBT9MD'     ) modtest=w3sbt9md.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
-         'm_btffac'     ) modtest=mod_btffac.o ;;
-         'W3SIC1MD'     ) modtest=w3sic1md.o ;;
-         'W3SIC2MD'     ) modtest=w3sic2md.o ;;
-         'W3SIC3MD'     ) modtest=w3sic3md.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
          'W3STRXMD'     ) modtest=w3strxmd.o ;;
          'W3SBS1MD'     ) modtest=w3sbs1md.o ;;
          'W3SBSXMD'     ) modtest=w3sbsxmd.o ;;
+         'W3SIC1MD'     ) modtest=w3sic1md.o ;;
+         'W3SIC2MD'     ) modtest=w3sic2md.o ;;
+         'W3SIC3MD'     ) modtest=w3sic3md.o ;;
+         'W3REF1MD'     ) modtest=w3ref1md.o ;;
          'W3SXXXMD'     ) modtest=w3sxxxmd.o ;;
-         'W3IOGRMD'     ) modtest=w3iogrmd.o ;;
-         'W3IOGOMD'     ) modtest=w3iogomd.o ;;
-         'W3IOPOMD'     ) modtest=w3iopomd.o ;;
-         'W3IOTRMD'     ) modtest=w3iotrmd.o ;;
-         'W3IORSMD'     ) modtest=w3iorsmd.o ;;
-         'W3IOBCMD'     ) modtest=w3iobcmd.o ;;
-         'W3IOSFMD'     ) modtest=w3iosfmd.o ;;
-         'W3PARTMD'     ) modtest=w3partmd.o ;;
-         'W3DISPMD'     ) modtest=w3dispmd.o ;;
-         'W3TIMEMD'     ) modtest=w3timemd.o ;;
-         'W3TIDEMD'     ) modtest=w3tidemd.o ;;
+         'CONSTANTS'    ) modtest=constants.o ;;
          'W3SERVMD'     ) modtest=w3servmd.o ;;
+         'W3TIMEMD'     ) modtest=w3timemd.o ;;
          'W3ARRYMD'     ) modtest=w3arrymd.o ;;
+         'W3DISPMD'     ) modtest=w3dispmd.o ;;
          'W3GSRUMD'     ) modtest=w3gsrumd.o ;;
-         'W3FLDSMD'     ) modtest=w3fldsmd.o ;;
-         'W3CSPCMD'     ) modtest=w3cspcmd.o ;;
-         'W3BULLMD'     ) modtest=w3bullmd.o ;;
-         'WMMDATMD'     ) modtest=wmmdatmd.o ;;
+         'W3TRIAMD'     ) modtest=w3triamd.o ;;
          'WMINITMD'     ) modtest=wminitmd.o ;;
          'WMWAVEMD'     ) modtest=wmwavemd.o ;;
          'WMFINLMD'     ) modtest=wmfinlmd.o ;;
+         'WMMDATMD'     ) modtest=wmmdatmd.o ;;
          'WMGRIDMD'     ) modtest=wmgridmd.o ;;
          'WMUPDTMD'     ) modtest=wmupdtmd.o ;;
          'WMINIOMD'     ) modtest=wminiomd.o ;;
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
-         'W3REF1MD'     ) modtest=w3ref1md.o ;;
-         'W3STRKMD'     ) modtest=w3strkmd.o ;;
-         'W3GIG1MD'     ) modtest=w3gig1md.o ;;
-         'W3CANOMD'     ) modtest=w3canomd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
