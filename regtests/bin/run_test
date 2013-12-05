@@ -888,7 +888,7 @@ case $outopt in
   *)      out_progs="" ;;
 esac
 
-if [ "$grads" ]
+if [ "$grads" = '1' ]
 then
   out_progs="$out_progs gx_outf"
   if [ `ls $path_i | grep '.gs' | wc -l` -gt '0' ]
