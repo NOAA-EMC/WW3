@@ -391,9 +391,9 @@
              FLG2D(2,2)=.TRUE.
            CASE('T02')
              FLG2D(2,3)=.TRUE.
-           CASE('T01')
-             FLG2D(2,4)=.TRUE.
            CASE('T0M1')
+             FLG2D(2,4)=.TRUE.
+           CASE('T01')
              FLG2D(2,5)=.TRUE.
            CASE('FP')
              FLG2D(2,6)=.TRUE.
