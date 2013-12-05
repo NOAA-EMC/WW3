@@ -88,7 +88,6 @@
 
   opt="-c -O3 -J$path_m -fno-second-underscore -ffree-line-length-none -fconvert=big-endian"
 # opt="$opt -I$HOME/g2lib -I/opt/local/include"
-# opt="$opt -I$HOME/g2lib -I/opt/local/include"
 
   if [ "$mpi_mod" = 'yes' ]
   then
