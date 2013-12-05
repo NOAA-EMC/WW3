@@ -154,12 +154,12 @@
          WN2(IKN+(ITH-1)) = WN        ! Wavenumbers to all directions.
       END DO
 !
-      EB     = SUM(RESHAPE(A,[NTH,NK]),1) * DDEN(1:NK) / CG
+      EB     = SUM(RESHAPE(A,(/ NTH,NK /)),1) * DDEN(1:NK) / CG
       EMEAN  = SUM(EB) + (EB(NK) / DDEN(NK)) * FTE
 !
       AORB   = 2.0*SQRT(EMEAN)
 !     
-      EB     = SUM(RESHAPE(A*SIG2**2,[NTH,NK]),1) * DDEN(1:NK) / CG
+      EB     = SUM(RESHAPE(A*SIG2**2,(/ NTH,NK /)),1) * DDEN(1:NK) / CG
       UOSIG  = 2.0*SQRT(SUM(EB))
 
       FE     = SWL6B1    ! (from NAMELIST)
@@ -183,7 +183,7 @@
 !  WRITE(*,*) ' UOSIG    =',UOSIG
 !  WRITE(*,*) ' AORB     =',AORB
 !  WRITE(*,*) ' RE/RECRIT=',RE/RECRIT
-!  WRITE(*,*) ' SWL4_tot =',SUM(SUM(RESHAPE(S,[NTH,NK]),1)*DDEN/CG)
+!  WRITE(*,*) ' SWL4_tot =',SUM(SUM(RESHAPE(S,(/ NTH,NK /)),1)*DDEN/CG)
 !/
 !/ End of W3SWL4 ----------------------------------------------------- /
 !/
@@ -286,7 +286,7 @@
 !/ 0) --- Initialize parameters -------------------------------------- /
       IKN   = IRANGE(1,NSPEC,NTH)            ! Index vector for array access, e.g.  
 !                                            ! in form of WN(1:NK) == WN2(IKN).
-      ABAND = SUM(RESHAPE(A,[NTH,NK]),1)     ! action density as function of wavenumber
+      ABAND = SUM(RESHAPE(A,(/ NTH,NK /)),1) ! action density as function of wavenumber
       DDIS  = 0.
       D     = 0.
       B1    = SWL6B1                         ! empirical constant from NAMELIST
@@ -294,7 +294,7 @@
 !/ 1) --- Choose calculation of steepness a*k ------------------------ /
 !/        Replace the measure of steepness with the spectral
 !         saturation after Banner et al. (2002) ---------------------- /
-      K     = RESHAPE(A,[NTH,NK])
+      K     = RESHAPE(A,(/ NTH,NK /))
       KMAX  = MAXVAL(K,1)
       DO IK = 1,NK
          IF (KMAX(IK).LT.1.0E-34) THEN
@@ -325,7 +325,7 @@
 !  WRITE(*,*) ' EDENS_tot=',sum(aband*dden/cg)
 !  WRITE(*,*) ' EDENS_tot=',sum(aband*sig*dth*dsii/cg)
 !  WRITE(*,*) ' '
-!  WRITE(*,*) ' SWL6_tot =',sum(SUM(RESHAPE(S,[NTH,NK]),1)*DDEN/CG)
+!  WRITE(*,*) ' SWL6_tot =',sum(SUM(RESHAPE(S,(/ NTH,NK /)),1)*DDEN/CG)
 !
 !/
 !/ End of W3SWL6 ----------------------------------------------------- /
