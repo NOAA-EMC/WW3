@@ -58,13 +58,19 @@ tests are available in the {\file regtests} directory.
 \fit{ww3\_tp2.4}{2D propagation, East Pacific curvilinear grid test.}
 \fit{ww3\_tp2.5}{2D propagation, Arctic Grid, curvilinear grid test.}
 \fit{ww3\_tp2.6}{2D propagation, Limon Harbor unstructured grid test.}
-\fit{ww3\_tp2.7}{\ldots}
-\fit{ww3\_tp2.8}{\ldots}
-\fit{ww3\_tp2.9}{\ldots}
+\fit{ww3\_tp2.7}{Reflection on a 2D unstructured grid}
+\fit{ww3\_tp2.8}{Tidal constituents on a 2D regular grid}
+\fit{ww3\_tp2.9}{Tests for obstruction grids}
 \fit{ww3\_ts1  }{Source term test, time limited growth.}
 \fit{ww3\_ts2  }{Source term test, fetch limited growth.}
 \fit{ww3\_ts3  }{Source term test, hurricane with single moving grid.}
-\fit{ww3\_ts4  }{\ldots}
+\fit{ww3\_ts4  }{Like ww3\_ts1, but with tidal currents}
+\fit{ww3\_tic1.1}{Wave-ice interaction, 1D test of $S_{ice}$}
+\fit{ww3\_tic1.2}{Wave-ice interaction, 1D test of ``shoaling'' effect}
+\fit{ww3\_tic1.3}{Wave-ice interaction, 1D test of refraction effect}
+\fit{ww3\_tic2.1}{Wave-ice interaction, 2D test of $S_{ice}$}
+\fit{ww3\_tbt1.1}{Wave-mud interaction, 1D test of $S_{mud}$}
+\fit{ww3\_tbt2.1}{Wave-mud interaction, 2D test of $S_{mud}$}
 \fit{ww3\_systrk\_test\_01}{Test for system tracking.}
 \fit{mww3\_test\_01}{Test for expanded grid mask with wetting and drying, etc.}
 \fit{mww3\_test\_02}{Two-way nesting test with single inner grid.}
@@ -73,12 +79,12 @@ tests are available in the {\file regtests} directory.
 \fit{mww3\_test\_04}{Current or sea-mount test for two-way nesting with
                      stationary swell conditions.}
 \fit{mww3\_test\_05}{Three nested hurricane grids with moving grids test.}
-\fit{mww3\_test\_06}{\ldots}
-\fit{mww3\_test\_07}{\ldots}
+\fit{mww3\_test\_06}{Tests for irregular grid(s) w/ {\file ww3\_multi}}
+\fit{mww3\_test\_07}{Tests for unstructured grid(s) w/ {\file ww3\_multi}}
 \end{flist}
 
 \noindent These regression tests are now run using the {\file run\_test}
-script in the {\file regtests/bin} directory. How to run this script,
+script in the {\file regtests/bin} directory (primary author: Tim Campbell). How to run this script,
 including options, is shown by running \command{run\_test -h} The output of
 running this command is shown here in Fig.~\ref{fig:runtest}.  The test cases
 are stored in directories under the {\file regtests} directory, e.g.  {\file

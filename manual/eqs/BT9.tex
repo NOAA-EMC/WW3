@@ -1,8 +1,15 @@
 \vsssub
-\subsubsection{~$S_{bt}$: mud \ldots} \label{sec:BT9}
+\subsubsection{~$S_{mud}$: Dissipation by viscous mud (Ng)} \label{sec:BT9}
 \vsssub
 
-\opthead{BT9}{---}{Rogers / Zieger}
+\opthead{BT9}{NRL/SWAN}{M. Orzech and E. Rogers}
 
 \noindent
-\ldots
+
+To activate viscous mud effects with the (Ng) routines, the user specifies {\code BT9} in the switch parameter file. The Ng method computes $k_i$ as:
+\begin{equation}\label{eq:dmud3}
+  k_i \approx {D_{mud}} \equiv \frac{\delta_m({B_r'}+{B_i'}){k_1}^2}{sinh2{k_1}{h}+2{k_1}{h}}
+\end{equation}
+Here, ${\delta_m}$ is the Stokes boundary layer thickness for mud, ${h}$ is water depth, 
+and ${k_1}$ is leading order term of the real part of the mud-modified wave number $k_{mud}$, respectively, in a Taylor expansion about the mud-water interface, and ${D_{mud}}$ is the leading order term in the full expansion of $k_i$. $B'$ is a complex coefficient affecting the
+depth profile of the velocities.  For additional details, see \ref{sec:BT8} and \cite{art:Ng00}. 

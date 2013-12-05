@@ -21,14 +21,14 @@ G                &=& 2.8-\Bigl (1+\tanh (10\sqrt{B_n}W-11) \Bigr) \:\:\: ,
 \label{eq:ST603} \\
 B_n              &=& A(k)\,N(k)\sigma\,k^3 \:\:\: ,
 \label{eq:ST604} \\
-W                &=& \left (\frac{U_{10}}{C}\,-\,1 \right )^2 \:\:\: .
+W                &=& \left (\frac{U_{10}}{c}\,-\,1 \right )^2 \:\:\: .
 \label{eq:ST605}
 \end{eqnarray}
 
 \noindent
 In (\ref{eq:ST601})$-$(\ref{eq:ST605}) $\rho_a$ and $\rho_w$ are the densities
 of air and water, respectively, $U_{10}$ is the wind speed at 10\,m height,
-$C$ refers to the phase speed, $k$ is the wavenumber, and $A(k)$ is the
+$k$ is the wavenumber, $c$ refers to the phase speed $\sigma/k$, and $A(k)$ is the
 directional narrowness. The spectral saturation (\ref{eq:ST604}), introduced
 by \citet{art:Phi84}, is a convenient measure of steepness $ak$ and was
 implemented as a function of omni-directional wave action density and
@@ -41,17 +41,16 @@ $N_{\max}(k)=\max\bigl \{N(k,\theta)\bigr \}$, for all directions
 $\theta\in[0,2\pi]$ \citep{art:BS87}.
 
 
-\citet{art:Dea06} measured the growth rate (\ref{eq:ST602}) 
-based on winds 10\,m above the mean surface. Wave models typically scale
+Wave models typically scale
 growth with friction velocity $u_\star$ rather than $U_{10}$ following scaling
 in the form of $C_d=u^2_\star/U^2_{10}$, where $C_d$ is the drag
 coefficient. Therefore a flag ({\code \&SIN6 SINU10=F}) was implemented to
 allow selection of wind speed scaling $U_{10} = 28\,u_{\star}$ adopted in
 equation (\ref{eq:Snyder}) based on \citet{art:Sea81} and \citet{art:KHH84}.
 \begin{eqnarray}
-W_1 & = & \mathrm{max}^2 \left \{ 0,\frac{U_{10}}{C}\ \cos(\theta-\theta_w)-1
+W_1 & = & \mathrm{max}^2 \left \{ 0,\frac{U_{10}}{c}\ \cos(\theta-\theta_w)-1
 \right \} \:\:\: , \label{eq:ST606-1} \\
-W_2 & = & \mathrm{min}^2 \left \{ 0,\frac{U_{10}}{C}\ \cos(\theta-\theta_w)-1
+W_2 & = & \mathrm{min}^2 \left \{ 0,\frac{U_{10}}{c}\ \cos(\theta-\theta_w)-1
 \right \} \:\:\: .\label{eq:ST606-2} 
 \end{eqnarray}
 
@@ -76,7 +75,7 @@ can be calculated by integration over the wind-momentum-input function:
 
 \begin{equation}\label{eq:ST609}
    \vec{\tau}_w = \rho_w g \int_{0}^{2\pi} \int_{0}^{k_{max}}
-   \frac{S_{in}(k^\prime,\theta)}{C} \Bigl (\cos\theta,\sin\theta \Bigr )
+   \frac{S_{in}(k^\prime,\theta)}{c} \Bigl (\cos\theta,\sin\theta \Bigr )
    dk^\prime d\theta \:\:\: . 
 \end{equation}
 
@@ -91,7 +90,7 @@ spectrum. In order to satisfy the constraint and in the case of $\vec{\tau} >
 the spectrum: $S_{in}(k^\prime)=L(k^\prime)\,S_{in}(k^\prime)$.
 
 \begin{equation}\label{eq:ST610}
-L(k^\prime) = \min \Bigl \{ 1, \exp \bigl ( \mu\,[1- U_{10}/C] \bigr ) \Bigr
+L(k^\prime) = \min \Bigl \{ 1, \exp \bigl ( \mu\,[1- U_{10}/c] \bigr ) \Bigr
 \}  \:\:\: .
 \end{equation}
 

@@ -298,15 +298,16 @@ Furthermore the following miscellaneous switches are available:
 \sit{nnt} {Generate file test\_data\_{\it{nnn}}.ww3 with spectra and 
            nonlinear interactions for training and testing of NNIA}.
 \sit{ref1} {Enables reflection of shorelines and icebergs}
+\sit{refrx} {Enables refraction based on spatial gradients in phase velocity (\para\ref{sec:ICE3})}
 \sit{reft}{Test output for shoreline reflection (which is activated with
           {\F ref1}).}
 \sit{rwnd}{Correct wind speed for current velocity.}
 \sit{s}   {Enable subroutine tracing in the main \ws\
            subroutines by activating calls to the
            subroutine {\F strace}.}
-\sit{scrip   }{??? \ldots}
-\sit{scripnc }{??? \ldots}
-\sit{scriptst}{??? \ldots}
+\sit{scrip   }{Enable SCRIP remapping routines (Sect. \ref{sec:scripC})}
+\sit{scripnc }{Enable storage of remapping weights in NetCDF files
+ (Sect. \ref{sec:scripC})}
 \sit{sec1}{Enable the use of global time steps less than 1~s, but does not
            allow output at time steps less than 1~s.}
 \sit{t}   {Enable test output throughout the program(s).}

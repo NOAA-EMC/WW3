@@ -1,8 +1,30 @@
 \vsssub
-\subsubsection{~$S_{ice}$: \ldots} \label{sec:ICE3}
+\subsubsection{~$S_{ice}$: Damping by sea ice (Shen et al.)} \label{sec:ICE3}
 \vsssub
 
-\opthead{ICE3}{ONR}{Rogers / Zieger}
+\opthead{ICE3}{Clarkson U. Fortran-77 code}{E. Rogers and S. Zieger}
 
 \noindent
-\ldots
+The third method for representing wave-ice interaction is taken
+from\linebreak \cite{art:WS10}. This model treats the ice as a visco-elastic
+layer. ${C_{ice,1}}$ is used for ice thickness (m);  ${C_{ice,2}}$
+is used for the viscosity ($\mathrm{m^2\,s^{-1}}$); ${C_{ice,3}}$ is
+used for density ($\mathrm{kg\,m^{-3}}$); ${C_{ice,4}}$ is used for
+effective shear modulus (Pa); ${C_{ice,5}}$ is not used.
+
+\vspace{\baselineskip} \noindent
+The ${k_r}$ modified by ice is incorporated into the governing
+equation~(\ref{eq:bal_plane}) via the $C_g$ and $C$ calculations on the
+left-hand side; e.g. \citet[][and subsequent unpublished work]{art:RogHol09}.
+The modified wavenumber ${k_r}$ produces effects analogous to shoaling
+and refraction by bathymetry. No special action is required to activate
+the shoaling effect. To activate the refraction effect, the model should
+be compiled with switch {\code REFRX}. With this switch, the model
+computes refraction based on spatial gradients in phase velocity,
+rather than the simpler, original approach of computing refraction
+based on spatial gradients in water depth. These effects are demonstrated
+in the regression test {\file ww3\_tic1.3} which is provided with
+the code.
+
+
+\vspace{\baselineskip} \noindent

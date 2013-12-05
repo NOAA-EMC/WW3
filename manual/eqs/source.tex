@@ -96,3 +96,13 @@ of reference moving with the current. Both definitions are available in \ws,
 and can be selected during compilation. The output of the program, however,
 will always be the wind speed which is not in any way corrected for the
 current.
+
+\vspace{\baselineskip} \noindent
+The treatment of partial ice coverage (ice concentration) in the source term
+follows the concept of a limited air-sea interface. This means that the momentum
+transferred from the atmosphere to the waves is limited. Therefore, input and
+dissipation terms are scaled by the fraction of ice concentration. The
+nonlinear wave-wave interaction term can be used in areas of open water
+and ice \citep{art:PL07}. The scaling is implemented so that it is independent
+of the source term selected.
+
