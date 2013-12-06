@@ -623,11 +623,11 @@
 !
         WRITE (NDSO,910) 
         DO I = 1, NOGRP
+          OUTPTS(NG)%OUT1%FLOGRD(I,:) = OUTPTS(1)%OUT1%FLOGRD(I,:)
           WRITE (NDSO,911) I
-          WRITE (NDSO, 912) (OUTPTS(1)%OUT1%FLOGRD(I,J),J=1,NGRPP)
+          WRITE (NDSO, 912) (OUTPTS(NG)%OUT1%FLOGRD(I,J),J=1,NGRPP)
         END DO
         WRITE (NDSO, 913) 
-        OUTPTS(NG)%OUT1%FLOGRD = OUTPTS(1)%OUT1%FLOGRD
 !
 ! 5.d Carry out interpolation in an infinite loop till appropriate 
 !     time steps are interpolated 
