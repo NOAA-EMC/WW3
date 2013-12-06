@@ -1,0 +1,438 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# comp_switch: Script to compare switches used in regtests. This utility is   #
+#              used at NCEP to organize matrix.base insuch a way that the     #
+#              compile efforts are minimized.                                 #
+#                                                                             #
+# use        : sort_switch [options] switch_file                              #
+#              See usage function for options.                                #
+#                                                                             #
+# error codes : Various error outputs with explanaition.                      #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      December 2013          #
+# remarks:                                                                    #
+#  * An underlying assumption of using this script is that the name of the    #
+#    script identifies the main switch choices in the test.                   #
+# * It is assumed that all switch files are SORTED using sort_switch.         #
+#                                                                             #
+#    Copyright 2013 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+# 1.a Internal variables
+
+  set -e
+
+# 1.a.1 Setup file
+
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate
+
+  home_dir=`pwd`
+
+# 1.a.2 Usage function
+
+  scriptname="`basename $0`"
+  optstr="dfh"
+
+  usage ()
+{
+cat 2>&1 << EOF
+
+Usage: $scriptname [options] base_test base_input base_switch
+Required:
+  base_test    : directory of switch file to be used in comparison.
+                 Defined relative to regtests directory.
+  base_test    : input directory under base_test used.
+  base_switch  : name of switch file to be used.
+Options:
+  -d           : compare switch files in directory
+  -f           : compare swiich_file accross directories
+  -h           : help, print this.
+Notes: - At least one of -d or -f options needs to be used
+       - It is assumed that the switches are run through sort_switch
+EOF
+}
+ 
+# 1.a.3 Process input (part 1)
+
+  args=`getopt $optstr $*`
+
+  if [ $? != 0 ]
+  then
+    usage
+    exit 1
+  fi
+
+  set -- $args
+
+  while :
+  do
+    case "$1" in
+    -d) cdir=1 ;;
+    -f) cfle=1 ;;
+    -h) help=1 ;;
+    --) break ;;
+    esac
+    shift
+  done
+  shift
+
+  if [ $help ]
+  then
+    usage
+    exit 1
+  fi
+
+  if [ ! $# = 0 ]
+  then
+    base_test="$1" ; shift
+  else
+    usage
+    exit 3
+  fi
+
+  if [ ! $# = 0 ]
+  then
+    base_input="$1" ; shift
+  else
+    usage
+    exit 4
+  fi
+
+  if [ ! $# = 0 ]
+  then
+    base_switch="$1" ; shift
+  else
+    usage
+    exit 5
+  fi
+
+# 1.a.4 Setup WW3 environment
+
+  if [ -f $ww3_env ]
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+    set `grep WWATCH3_TMP $ww3_env` ; shift
+    temp_dir="$*"
+    set `grep WWATCH3_SOURCE $ww3_env` ; shift
+    source="$*"
+    set `grep WWATCH3_LIST $ww3_env` ; shift
+    list="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"; echo ' '
+    exit 6
+  fi
+
+  test_dir="$main_dir/regtests"
+  cd $test_dir
+ 
+# 1.a.5 Process input (part 2)
+
+  if [ ! -d $base_test ]
+  then
+     echo "comp_switch: base_test $base_test not found" 
+     exit 7
+  fi
+
+  if [ ! -d $base_test/$base_input ]
+  then
+     echo "comp_switch: base_input $base_test/$base_input not found" 
+     exit 8
+  fi
+
+  if [ ! -f $base_test/$base_input/$base_switch ]
+  then
+     echo "comp_switch: base_switch $base_test/$base_input/$base_switch not found" 
+     exit 9
+  fi
+
+# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo '              *************************************'
+  echo '            *** sorting WAVEWATCH III switch file ***'
+  echo '              *************************************'
+  echo ' '
+  echo " Main directory    : $main_dir"
+  echo " Local directory   : $test_dir"
+  echo " Scratch directory : $temp_dir"
+  echo ' '
+  echo " Comparing to      : $base_test/$base_input/$base_switch"
+
+  string="                    "
+  count='0'
+  check='10'
+  for sw in `cat $base_test/$base_input/$base_switch`
+  do
+    string="$string $sw"
+    count=`expr $count + 1`
+    if [ "$count" -ge "$check" ]
+    then
+      echo "$string"
+      string="                    "
+      count='0'
+    fi
+  done
+  if [ "$count" != '0' ] ; then
+    echo "$string" ; fi
+
+  if [ "$cdir" ] ; then
+  echo " Comparing accross test directories" ; fi
+  if [ "$cfle" ] ; then
+  echo " Comparing accross switch files" ; fi
+  echo ' '
+
+# 1.d Set up work space  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  cd $test_dir
+
+# --------------------------------------------------------------------------- #
+# 2. Setting up processing                                                    #
+# --------------------------------------------------------------------------- #
+
+  echo " Starting comparison ..."
+
+# 2.a loop over test directories
+
+  if [ "$cdir" ]
+  then
+    dirs=`ls -d mww3_* ww3_*`
+  else
+    dirs="$base_test"
+  fi
+
+  for dir in $dirs
+  do
+    cd $test_dir/$dir
+
+# 2.b loop over input directories
+
+    if [ "$cdir" ]
+    then
+      inps=`ls -d input*`
+    else
+      inps="$base_input"
+    fi
+  
+    for inp in $inps
+    do
+      cd $test_dir/$dir/$inp
+
+# 2.c loop over switch files
+
+      if [ "$cfle" ]
+      then
+        switches=`ls -d switch*`
+      else
+        switches="$base_switch"
+      fi
+      cd $test_dir
+
+      for sw in $switches
+      do
+
+# 2.d Check if this is there or is the base case
+
+        if [ ! -f "$dir/$inp/$sw" ]
+        then
+          echo "    $dir/$inp/$sw not found" > /dev/null
+        else
+
+          if [ "$base_test/$base_input/$base_switch" = "$dir/$inp/$sw" ]
+          then
+            echo "    $dir/$inp/$sw is the reference file"
+          else
+
+# 2.e Process selected switch file
+
+            echo "    Looking at $dir/$inp/$sw ..."
+
+# 2.e.1 Set it up
+
+            base_sw=`cat $base_test/$base_input/$base_switch`
+            comp_sw=`cat $dir/$inp/$sw`
+            base_only=
+            comp_only=
+
+# 2.e.2 Endless loop
+
+            while [ -n "$base_sw" ] && [ -n "$comp_sw" ]
+            do
+
+# 2.e.3 Get next switches
+
+              if [ -z "$base_sw" ]
+              then
+                sw1=
+              else
+                set $base_sw
+                sw1=$1 ; shift
+                base_sw="$*"
+              fi
+  
+              if [ -z "$comp_sw" ]
+              then
+                sw2=
+              else
+                set $comp_sw
+                sw2=$1 ; shift
+                comp_sw="$*"
+              fi
+
+# 2.e.4 Switches are not identical, more to do
+
+              if [ "$sw1" != "$sw2" ]
+              then
+                found='0'
+
+# 2.e.5 Check remaining switches in base
+
+                if [ -n "$base_sw" ]
+                then
+                  set $base_sw
+                  skipped1="$sw1"
+                  found1='0'
+                  while [ "$found1" = '0' ] && [ "$#" -gt '0' ]
+                  do
+                    swx=$1 ; shift
+                    if [ "$sw2" = "$swx" ]
+                    then
+                      found1='1'
+                      base_sw="$swx $*"
+                      set $comp_sw
+                      comp_sw="$sw2 $*"
+                      if [ -z "$base_only" ]
+                      then
+                        base_only="$skipped1"
+                      else
+                        base_only="$base_only $skipped1"
+                      fi
+                    else
+                      skipped1="$skipped1 $swx"
+                    fi
+                  done
+                fi
+
+# 2.e.6 Check remaining switches in comp
+
+                if [ -n "$comp_sw" ]
+                then
+                  set $comp_sw
+                  skipped2="$sw2"
+                  found2='0'
+                  while [ "$found2" = '0' ] && [ "$#" -gt '0' ]
+                  do
+                    swx=$1 ; shift
+                    if [ "$sw1" = "$swx" ]
+                    then
+                      found2='1'
+                      comp_sw="$swx $*"
+                      set $base_sw
+                      base_sw="$sw1 $*"
+                      if [ -z "$comp_only" ]
+                      then
+                        comp_only="$skipped2"
+                      else
+                        comp_only="$comp_only $skipped2"
+                      fi
+                    else
+                      skipped2="$skipped2 $swx"
+                    fi
+                  done
+                fi
+
+# 2.e.7 Not found in either
+
+                if [ "$found1" = '0' ] && [ "$found2" = '0' ]
+                then
+                  if [ -z "$base_only" ]
+                  then
+                    base_only="$sw1"
+                  else
+                    base_only="$base_only $sw1"
+                  fi
+                  if [ -z "$comp_only" ]
+                  then
+                    comp_only="$sw2"
+                  else
+                    comp_only="$comp_only $sw2"
+                  fi
+                fi
+
+# ... End of check started in 2.e.4
+
+              fi
+
+# ... End of loop started in 2.e.2
+
+            done
+
+# 2.e.8 One switch is NULL
+
+            if [ -n "$base_sw" ]
+            then
+              if [ -z "$base_only" ]
+              then
+                base_only="$base_sw"
+              else
+                base_only="$base_only $base_sw"
+              fi
+            fi
+
+            if [ -n "$comp_sw" ]
+            then
+              if [ -z "$comp_only" ]
+              then
+                comp_only="$comp_sw"
+              else
+                comp_only="$comp_only $comp_sw"
+              fi
+            fi
+
+# ... End of check started in 2.d
+
+          fi
+
+          if [ "$base_test/$base_input/$base_switch" != "$dir/$inp/$sw" ]
+          then
+            if [ -z "$base_only" ] && [ -z "$comp_only" ]
+            then
+              echo "       files are identical"
+            else
+              echo "       in base only    : $base_only"
+              echo "       in compare only : $comp_only"
+            fi
+          fi
+
+        fi
+
+# ... End of loop started in 2.c
+
+      done
+
+# ... End of loop started in 2.b
+
+    done
+
+# ... End of loop started in 2.a
+
+  done
+
+# --------------------------------------------------------------------------- #
+# 3. End of program ID / clean up                                             #
+# --------------------------------------------------------------------------- #
+
+  echo ' '
+  echo '                     ***************************'
+  echo '                   *** end of switch comparing ***'
+  echo '                     ***************************'
+  echo ' '
+
+# End of sort_switch -------------------------------------------------------- #

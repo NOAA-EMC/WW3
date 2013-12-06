@@ -1037,7 +1037,7 @@ case $outopt in
   *)      out_progs="" ;;
 esac
 
-if [ "$grads" ]
+if [ "$grads" = '1' ]
 then
   out_progs="$out_progs gx_outp"
   if [ `ls $path_i | grep 'gx_outp' | wc -l` -gt '0' ]

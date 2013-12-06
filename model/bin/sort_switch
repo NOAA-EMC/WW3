@@ -39,7 +39,7 @@
 # 1.a.2 Usage function
 
   scriptname="`basename $0`"
-  optstr="ho:rsuv"
+  optstr="a:e:ho:rsuv"
 
   usage ()
 {
@@ -49,6 +49,8 @@ Usage: $scriptname [options] switch_file
 Required:
   switch_file: name of switch file to be processed
 Options:
+  -a switch_add    : switch to add to file.
+  -e switch_ext    : switch to extract from file.
   -h               : help, print this.
   -o output_file   : name of output file
                       * default is switch_file.new
@@ -78,6 +80,8 @@ EOF
   while :
   do
     case "$1" in
+    -a) shift; add=$1 ;;
+    -e) shift; extract=$1 ;;
     -h) help=1 ;;
     -o) shift; outp_file="$1" ;;
     -r) replace=1 ;;
@@ -163,6 +167,10 @@ EOF
     echo " Main directory    : $main_dir"
     echo " Scratch directory : $temp_dir"
     echo " Base script       : $script"
+    if [ -n "$add" ] ; then
+      echo " Add               : $add" ; fi
+    if [ -n "$extract" ] ; then
+      echo " Extract           : $extract" ; fi
     echo ' '
   fi
 
@@ -182,9 +190,47 @@ EOF
     echo " Reading $switch_file ..."
   fi
 
+  old_switches="`head -1 $home_dir/$switch_file`"
+
+# add switch as requested
+
+  found=0
+  if [ -n "add" ]
+  then
+    work_sw="$old_switches"
+    for sw in $work_sw
+    do
+      if [ "$sw" = "$add" ] ; then
+        found=`expr $found + 1` ; fi
+    done
+    if [ "$found" = '0' ] ; then
+      old_switches="$old_switches $add" ; fi
+  fi
+
+# remove switch as requested
+
+  if [ -n "extract" ]
+  then
+    work_sw="$old_switches"
+    old_switches=
+    for sw in $work_sw
+    do
+      if [ "$sw" != "$extract" ]
+      then
+        if [ -z "$old_switches" ]
+        then
+          old_switches="$sw"
+        else
+          old_switches="$old_switches $sw"
+        fi
+      fi
+    done
+  fi
+
 # spaces added to old_switches start and end to make searching easy
 
-  old_switches=" `head -1 $home_dir/$switch_file` "
+  old_switches=" $old_switches "
+
   work_sw="$old_switches"
   new_switches=
   i_tot='0'

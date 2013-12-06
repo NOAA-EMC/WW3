@@ -12,6 +12,7 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
+#                                                      December 2013          #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -25,7 +26,7 @@
   echo '#!/bin/sh'                                           > matrix.head
   echo ' '                                                  >> matrix.head
   echo '#PBS -l procs=12'                                   >> matrix.head
-  echo '#PBS -q urgent'                                     >> matrix.head
+  echo '#PBS -q batch'                                      >> matrix.head
   echo '#PBS -l walltime=08:00:00'                          >> matrix.head
   echo '#PBS -A omd'                                        >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
@@ -57,8 +58,6 @@
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 #     Addition selection by commenting out lines as below
-
-  export testtest='-' # Run a single case of each test only
 
   export     shrd='y' # Do shared architecture tests
   export     dist='y' # Do distributed architecture tests
