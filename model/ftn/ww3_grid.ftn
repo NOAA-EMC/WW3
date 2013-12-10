@@ -2176,9 +2176,9 @@
 !/SMC !!Li   Read refined level number for SMC grid. 
 !/SMC      CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC      READ (NDSI,*,END=2001,ERR=2002) NRLv, JEQT, NBISMC
-!/SMC      WRITE (NDSO,'("  SMC refined levels NRLv =", I8)') NRLv
-!/SMC      WRITE (NDSO,'("  SMC Equator j shift no. =", I8)') JEQT
-!/SMC      WRITE (NDSO,'("  SMC input boundary  no. =", I8)') NBISMC
+!/SMC      WRITE (NDSO,4001) NRLv
+!/SMC      WRITE (NDSO,4002) JEQT
+!/SMC      WRITE (NDSO,4003) NBISMC
 ! 
         ELSE 
           NY =1 
@@ -2565,12 +2565,12 @@
 !/RTD       IX=NX*NY
 !/RTD       CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon,   &
 !/RTD     &                AnglDin, Polat, Polon,  IX )
-!/RTD       WRITE (NDSO,*) ' *** AnglDin(NX,NY) defined. *** '
-!/RTD       WRITE (NDSO,'(" JY/IX",9I8)')    (        ix,     ix=1,NX,100)
-!/RTD       WRITE (NDSO,'(  I6,9F8.2)')    1,(AnglDin(ix, 1), ix=1,NX,100)
-!/RTD       WRITE (NDSO,'(  I6,9F8.2)')   NY,(AnglDin(ix,NY), ix=1,NX,100)
-!/RTD       WRITE (NDSO,'(" Polat/lon=",2F9.3)')   Polat, Polon
-!/RTD       WRITE (NDSO,*)
+!/RTD       WRITE (NDSO,4200) 
+!/RTD       WRITE (NDSO,4201)    (        ix,     ix=1,NX,100)
+!/RTD       WRITE (NDSO,4202)    1,(AnglDin(ix, 1), ix=1,NX,100)
+!/RTD       WRITE (NDSO,4202)   NY,(AnglDin(ix,NY), ix=1,NX,100)
+!/RTD       WRITE (NDSO,4203)   Polat, Polon
+!/RTD       WRITE (NDSO,*) ' '
 !/RTD
 !
 !/SMC !! 7.i  Read SMC grid cell and face integer arrays.  
@@ -2583,7 +2583,7 @@
 !/SMC       READ (NDSTR,*) NLvCelsk
 !/SMC       NCel=NLvCelsk(0)
 !/ARC       NGLO=NCel
-!/SMC       WRITE (NDSO,'("  SMC NCel =",(6I9))')  NCel, NLvCelsk
+!/SMC       WRITE (NDSO,4004)  NCel, NLvCelsk
 !/SMC
 !/SMC       ALLOCATE (   IJKCelin( 5, NCel) )
 !/SMC       CALL INA2I ( IJKCelin, 5, NCel, 1, 5, 1, NCel, NDSTR, NDST, NDSE, &
@@ -2592,10 +2592,10 @@
 !/SMC !!Li     Offset to change Equator index = 0 to regular grid index JEQT
 !/SMC       IJKCelin( 2, :) = IJKCelin( 2, :) + JEQT 
 !/SMC
-!/SMC       WRITE (NDSO,*) ' *** IJKCel(5,NCel) read from ', TNAME
-!/SMC       WRITE (NDSO,'(6I8)')    1,(IJKCelin(ix,    1), ix=1,5)
-!/SMC       WRITE (NDSO,'(6I8)') NCel,(IJKCelin(ix, NCel), ix=1,5)
-!/SMC       WRITE (NDSO,*)
+!/SMC       WRITE (NDSO,4005) TNAME
+!/SMC       WRITE (NDSO,4006)    1,(IJKCelin(ix,    1), ix=1,5)
+!/SMC       WRITE (NDSO,4006) NCel,(IJKCelin(ix, NCel), ix=1,5)
+!/SMC       WRITE (NDSO,*) ' '
 !/SMC
 !/SMC       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
@@ -2606,7 +2606,7 @@
 !/SMC       READ (NDSTR,*)  NLvUFcsk
 !/SMC       NUFc = NLvUFcsk(0)
 !/SMC       NGUI = NUFc 
-!/SMC       WRITE (NDSO,'("  SMC NUFc =",(6I9))')   NUFc, NLvUFcsk
+!/SMC       WRITE (NDSO,4007)   NUFc, NLvUFcsk
 !/SMC
 !/SMC       ALLOCATE (   IJKUFcin( 7, NUFc) )
 !/SMC       CALL INA2I ( IJKUFcin, 7, NUFc, 1, 7, 1, NUFc, NDSTR, NDST, NDSE, &
@@ -2615,10 +2615,10 @@
 !/SMC !!Li     Offset to change Equator index = 0 to regular grid index
 !/SMC       IJKUFcin( 2, :) = IJKUFcin( 2, :) + JEQT 
 !/SMC
-!/SMC       WRITE (NDSO,*) ' *** IJKUFc(7,NUFc) read from ', TNAME
-!/SMC       WRITE (NDSO,'(8I8)')    1,(IJKUFcin(ix,    1), ix=1,7)
-!/SMC       WRITE (NDSO,'(8I8)') NUFc,(IJKUFcin(ix, NUFc), ix=1,7)
-!/SMC       WRITE (NDSO,*)
+!/SMC       WRITE (NDSO,4008) TNAME
+!/SMC       WRITE (NDSO,4009)    1,(IJKUFcin(ix,    1), ix=1,7)
+!/SMC       WRITE (NDSO,4009) NUFc,(IJKUFcin(ix, NUFc), ix=1,7)
+!/SMC       WRITE (NDSO,*) ' '
 !/SMC
 !/SMC       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/SMC       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
@@ -2629,7 +2629,7 @@
 !/SMC       READ (NDSTR,*) NLvVFcsk
 !/SMC       NVFc= NLvVFcsk(0)
 !/SMC       NGVJ= NVFc
-!/SMC       WRITE (NDSO,'("  SMC NVFc =",(6I9))')   NVFc, NLvVFcsk
+!/SMC       WRITE (NDSO,4010)   NVFc, NLvVFcsk
 !/SMC
 !/SMC       ALLOCATE (   IJKVFcin( 8, NVFc) )
 !/SMC       CALL INA2I ( IJKVFcin, 8, NVFc, 1, 8, 1, NVFc, NDSTR, NDST, NDSE, &
@@ -2638,10 +2638,10 @@
 !/SMC !!Li     Offset to change Equator index = 0 to regular grid index
 !/SMC       IJKVFcin( 2, :) = IJKVFcin( 2, :) + JEQT 
 !/SMC
-!/SMC       WRITE (NDSO,*) ' *** IJKVFc(8,NVFc) read from ', TNAME
-!/SMC       WRITE (NDSO,'(9I8)')    1,(IJKVFcin(ix,    1), ix=1,8)
-!/SMC       WRITE (NDSO,'(9I8)') NVFc,(IJKVFcin(ix, NVFc), ix=1,8)
-!/SMC       WRITE (NDSO,*)
+!/SMC       WRITE (NDSO,4011) TNAME
+!/SMC       WRITE (NDSO,4012)    1,(IJKVFcin(ix,    1), ix=1,8)
+!/SMC       WRITE (NDSO,4012) NVFc,(IJKVFcin(ix, NVFc), ix=1,8)
+!/SMC       WRITE (NDSO,*) ' '
 !/SMC
 !/SMC !!Li     Bounary cell sequential numbers are read only if NBISMC>0
 !/SMC       IF( NBISMC .GT. 0 ) THEN
@@ -2655,10 +2655,10 @@
 !/SMC                    NDSE, IDFM, RFORM, IDLA, 1, 0)
 !/SMC       CLOSE(NDSTR)
 !/SMC
-!/SMC       WRITE (NDSO,*) ' *** NBICelin(NBISMC) read from ', TNAME
-!/SMC       WRITE (NDSO,'(2I8)')      1, NBICelin(     1)
-!/SMC       WRITE (NDSO,'(2I8)') NBISMC, NBICelin(NBISMC)
-!/SMC       WRITE (NDSO,*)
+!/SMC       WRITE (NDSO,4013) TNAME
+!/SMC       WRITE (NDSO,4014)      1, NBICelin(     1)
+!/SMC       WRITE (NDSO,4014) NBISMC, NBICelin(NBISMC)
+!/SMC       WRITE (NDSO,*) ' '
 !/SMC       ENDIF
 !/SMC
 !
@@ -2669,7 +2669,7 @@
 !/ARC       OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
 !/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
 !/ARC       READ (NDSTR,*) NARC, NBGL, NBAC
-!/ARC       WRITE (NDSO,'("  ARC NARC =",(6I9))')  NARC, NBGL, NBAC
+!/ARC       WRITE (NDSO,4015)  NARC, NBGL, NBAC
 !/ARC
 !/ARC       ALLOCATE (   IJKCelAC( 5, NARC) )
 !/ARC       CALL INA2I ( IJKCelAC, 5, NARC, 1, 5, 1, NARC, NDSTR, NDST, NDSE, &
@@ -2678,10 +2678,10 @@
 !/ARC !!Li     Offset to change Equator index = 0 to regular grid index JEQT
 !/ARC       IJKCelAC( 2, :) = IJKCelAC( 2, :) + JEQT 
 !/ARC
-!/ARC       WRITE (NDSO,*) ' *** IJKCel(5,NARC) read from ', TNAME
-!/ARC       WRITE (NDSO,'(6I8)')    1,(IJKCelAC(ix,    1), ix=1,5)
-!/ARC       WRITE (NDSO,'(6I8)') NARC,(IJKCelAC(ix, NARC), ix=1,5)
-!/ARC       WRITE (NDSO,*)
+!/ARC       WRITE (NDSO,4016) TNAME
+!/ARC       WRITE (NDSO,4006)    1,(IJKCelAC(ix,    1), ix=1,5)
+!/ARC       WRITE (NDSO,4006) NARC,(IJKCelAC(ix, NARC), ix=1,5)
+!/ARC       WRITE (NDSO,*) ' '
 !/ARC
 !/ARC       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/ARC       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
@@ -2689,7 +2689,7 @@
 !/ARC       OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
 !/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
 !/ARC       READ (NDSTR,*)  NAUI
-!/ARC       WRITE (NDSO,'("  ARC NAUI =",(6I9))')   NAUI
+!/ARC       WRITE (NDSO,4017)   NAUI
 !/ARC
 !/ARC       ALLOCATE (   IJKUFcAC( 7, NAUI) )
 !/ARC       CALL INA2I ( IJKUFcAC, 7, NAUI, 1, 7, 1, NAUI, NDSTR, NDST, NDSE, &
@@ -2704,10 +2704,10 @@
 !/ARC         ENDDO
 !/ARC       ENDDO
 !/ARC
-!/ARC       WRITE (NDSO,*) ' *** IJKUFc(7,NAUI) read from ', TNAME
-!/ARC       WRITE (NDSO,'(8I8)')    1,(IJKUFcAC(ix,    1), ix=1,7)
-!/ARC       WRITE (NDSO,'(8I8)') NAUI,(IJKUFcAC(ix, NAUI), ix=1,7)
-!/ARC       WRITE (NDSO,*)
+!/ARC       WRITE (NDSO,4018) TNAME
+!/ARC       WRITE (NDSO,4009)    1,(IJKUFcAC(ix,    1), ix=1,7)
+!/ARC       WRITE (NDSO,4009) NAUI,(IJKUFcAC(ix, NAUI), ix=1,7)
+!/ARC       WRITE (NDSO,*) ' '
 !/ARC
 !/ARC       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/ARC       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
@@ -2715,7 +2715,7 @@
 !/ARC       OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
 !/ARC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
 !/ARC       READ (NDSTR,*) NAVJ 
-!/ARC       WRITE (NDSO,'("  ARC NAVJ =",(6I9))')   NAVJ
+!/ARC       WRITE (NDSO,4019)   NAVJ
 !/ARC
 !/ARC       ALLOCATE (   IJKVFcAC( 8, NAVJ) )
 !/ARC       CALL INA2I ( IJKVFcAC, 8, NAVJ, 1, 8, 1, NAVJ, NDSTR, NDST, NDSE, &
@@ -2730,10 +2730,10 @@
 !/ARC         ENDDO
 !/ARC       ENDDO
 !/ARC
-!/ARC       WRITE (NDSO,*) ' *** IJKVFc(8,NAVJ) read from ', TNAME
-!/ARC       WRITE (NDSO,'(9I8)')    1,(IJKVFcAC(ix,    1), ix=1,8)
-!/ARC       WRITE (NDSO,'(9I8)') NAVJ,(IJKVFcAC(ix, NAVJ), ix=1,8)
-!/ARC       WRITE (NDSO,*)
+!/ARC       WRITE (NDSO,4020) TNAME
+!/ARC       WRITE (NDSO,4012)    1,(IJKVFcAC(ix,    1), ix=1,8)
+!/ARC       WRITE (NDSO,4012) NAVJ,(IJKVFcAC(ix, NAVJ), ix=1,8)
+!/ARC       WRITE (NDSO,*) ' '
 !/ARC
 !/ARC !!Li  Reset total cell and face numbers
 !/ARC       NCel = NGLO + NARC
@@ -3083,7 +3083,7 @@
 !/SMC                , NCel, NUFc, NVFc, NRLv     &
 !/ARC                , NARC, NBAC, NSPEC          &
                   )
-!/SMC       WRITE (NDSO,'("  Varables by W3DIMX NCel =",I9)')   NCel
+!/SMC       WRITE (NDSO,4021)   NCel
 !
 ! 8.g Activation of reflections and scattering 
 !
@@ -3201,9 +3201,9 @@
 !/SMC          NLvUFc(IP)=NLvUFcsk(IP) + NLvUFc(IP-1)
 !/SMC          NLvVFc(IP)=NLvVFcsk(IP) + NLvVFc(IP-1)
 !/SMC       ENDDO
-!/SMC       WRITE (NDSO,'("  Defined NLvCel",(6I9))')   NLvCel
-!/SMC       WRITE (NDSO,'("  Defined NLvUFc",(6I9))')   NLvUFc
-!/SMC       WRITE (NDSO,'("  Defined NLvVFc",(6I9))')   NLvVFc
+!/SMC       WRITE (NDSO,4022)   NLvCel
+!/SMC       WRITE (NDSO,4023)   NLvUFc
+!/SMC       WRITE (NDSO,4024)   NLvVFc
 !/SMC
 !/SMC !Li     Redefine MAPSF MAPFS MAPSTA MAPST2 CLATS and ZB for SMC Grid,
 !/SMC !Li     using SMC grid cell array and assuming NSEA=NCel.
@@ -3212,7 +3212,7 @@
 !/SMC       MAPFS  = 0
 !/SMC
 !/SMC !Li     Pass input SMC arrays to newly declared grid arrays.
-!/SMC       WRITE (NDSO,'("  Define IJKCel from -9 to",I9)')   NCel
+!/SMC       WRITE (NDSO,4025)   NCel
 !/SMC       JJ=NCel
 !/ARC       JJ=NGLO
 !/SMC       IJKCel(:, 1:JJ  )=IJKCelin(:, 1:JJ  )
@@ -3223,18 +3223,21 @@
 !/ARC       IJKUFc(:, NGUI+1:NUFc)=IJKUFcAC(:, 1:NAUI)
 !/ARC       IJKVFc(:, NGVJ+1:NVFc)=IJKVFcAC(:, 1:NAVJ)
 !/SMC
-!/SMC       WRITE (NDSO,*) ' *** IJKCel(5,NCel) defined *** '
-!/SMC       WRITE (NDSO,'(6I8)')    1,(IJKCel(ix,    1), ix=1,5)
-!/SMC       WRITE (NDSO,'(6I8)') NCel,(IJKCel(ix, NCel), ix=1,5)
-!/SMC       WRITE (NDSO,*)
-!/SMC       WRITE (NDSO,*) ' *** IJKUFc(7,NUFc) defined *** '
-!/SMC       WRITE (NDSO,'(8I8)')    1,(IJKUFc(ix,    1), ix=1,7)
-!/SMC       WRITE (NDSO,'(8I8)') NUFc,(IJKUFc(ix, NUFc), ix=1,7)
-!/SMC       WRITE (NDSO,*)
-!/SMC       WRITE (NDSO,*) ' *** IJKVFc(8,NVFc) defined ***' 
-!/SMC       WRITE (NDSO,'(9I8)')    1,(IJKVFc(ix,    1), ix=1,8)
-!/SMC       WRITE (NDSO,'(9I8)') NVFc,(IJKVFc(ix, NVFc), ix=1,8)
-!/SMC       WRITE (NDSO,*)
+!/SMC       WRITE (NDSO,4026) 
+!/SMC       WRITE (NDSO,4006)    1,(IJKCel(ix,    1), ix=1,5)
+!/SMC       JJ=NCel
+!/SMC       WRITE (NDSO,4006) JJ,(IJKCel(ix, JJ), ix=1,5)
+!/SMC       WRITE (NDSO,*) ' '
+!/SMC       WRITE (NDSO,4027) 
+!/SMC       WRITE (NDSO,4009)    1,(IJKUFc(ix,    1), ix=1,7)
+!/SMC       JJ=NUFc
+!/SMC       WRITE (NDSO,4009) JJ,(IJKUFc(ix, JJ), ix=1,7)
+!/SMC       WRITE (NDSO,*) ' '
+!/SMC       WRITE (NDSO,4028) 
+!/SMC       WRITE (NDSO,4012)    1,(IJKVFc(ix,    1), ix=1,8)
+!/SMC       JJ=NVFc
+!/SMC       WRITE (NDSO,4012) JJ,(IJKVFc(ix, JJ), ix=1,8)
+!/SMC       WRITE (NDSO,*) ' '
 !/SMC
 !/SMC !Li    Boundary -9 to 0 cells for cell x-size 2**n
 !/SMC !Li    Note the position indice for bounary cell are not used.
@@ -3255,16 +3258,16 @@
 !/SMC          IJKCel(4,-ip)=2**IK 
 !/SMC          IJKCel(5,-ip)=10
 !/SMC       ENDDO
-!/SMC       WRITE (NDSO,*) ' *** Boundary cells IJKCel(:,-9:0) *** '
+!/SMC       WRITE (NDSO,4029) 
 !/SMC       DO ip=0, -9, -1
-!/SMC       WRITE (NDSO,'(5I8)')  IJKCel(:,ip)
+!/SMC       WRITE (NDSO,4030)  IJKCel(:,ip)
 !/SMC       ENDDO
 !/SMC
-!/SMC       WRITE (NDSO,'("  Define MAPSF ... 1 to",I9)')   NCel
+!/SMC       WRITE (NDSO,4031)   NCel
 !/SMC !Li    Multi-resolution SMC grid requires rounding of x, y indices
 !/SMC !Li    by a factor MRFct. 
 !/SMC       MRFct = 2**(NRLv - 1)
-!/SMC       WRITE (NDSO,'("  Multi-Resolution factor =",I6)')   MRFct
+!/SMC       WRITE (NDSO,4032)   MRFct
 !/SMC
 !/SMC !Li   Cosine for SMC uses refined latitude increment.
 !/SMC       SYMR = SY*DERA/FLOAT( MRFct )
@@ -3318,14 +3321,10 @@
 !/SMC           CTRNX(-9:0) = 1.0 
 !/SMC           CTRNY(-9:0) = 1.0 
 !/SMC !!Li  Check range of MAPSF and MAPFS
-!/SMC       WRITE (NDSO,'("  Range of MAPSF(:,1)",2I9)')  &
-!/SMC                         MINVAL( MAPSF(:,1) ), MAXVAL( MAPSF(:,1) )
-!/SMC       WRITE (NDSO,'("  Range of MAPSF(:,2)",2I9)')  &
-!/SMC                         MINVAL( MAPSF(:,2) ), MAXVAL( MAPSF(:,2) )
-!/SMC       WRITE (NDSO,'("  Range of MAPSF(:,3)",2I9)')  &
-!/SMC                         MINVAL( MAPSF(:,3) ), MAXVAL( MAPSF(:,3) )
-!/SMC       WRITE (NDSO,'("  Range of MAPFS(:,:)",2I9)')  &
-!/SMC                         MINVAL( MAPFS(:,:) ), MAXVAL( MAPFS(:,:) )
+!/SMC       WRITE (NDSO,4033) MINVAL( MAPSF(:,1) ), MAXVAL( MAPSF(:,1) )
+!/SMC       WRITE (NDSO,4034) MINVAL( MAPSF(:,2) ), MAXVAL( MAPSF(:,2) )
+!/SMC       WRITE (NDSO,4035) MINVAL( MAPSF(:,3) ), MAXVAL( MAPSF(:,3) )
+!/SMC       WRITE (NDSO,4036) MINVAL( MAPFS(:,:) ), MAXVAL( MAPFS(:,:) )
 !/SMC 
 !/SMC !Li   New variable CLATF to hold cosine latitude at cell V face.
 !/SMC       DO IP = 1, NVFC
@@ -3369,8 +3368,8 @@
 !/ARC        CALL W3LLTOEQ ( YLATAC, XLONAC, ELATAC, ELONAC,   &
 !/ARC      &                 ANGARC, PoLatAC, PoLonAC, NARC  )
 !/ARC
-!/ARC       WRITE (NDSO,'("  Arctic AngArc(",I6,") defined")')  NARC 
-!/ARC       WRITE (NDSO,'(9F8.2)') (ANGARC(ix), ix=1,NARC,NARC/8)
+!/ARC       WRITE (NDSO,4037)  NARC 
+!/ARC       WRITE (NDSO,4038) (ANGARC(ix), ix=1,NARC,NARC/8)
 !/ARC
 !
 !/ARC !Li   Mapping Arctic boundary cells with inner model cells
@@ -3384,8 +3383,8 @@
 !/ARC             ENDIF
 !/ARC          ENDDO
 !/ARC       ENDDO
-!/ARC       WRITE (NDSO,'("  Arctic ICLBAC(",I6,") defined")')  NBAC 
-!/ARC       WRITE (NDSO,'(9F8.2)') (ICLBAC(ix), ix=1,NBAC,NBAC/8)
+!/ARC       WRITE (NDSO,4039)  NBAC 
+!/ARC       WRITE (NDSO,4038) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
 !
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 0, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Sea points', 'm')
@@ -3576,7 +3575,7 @@
       DEALLOCATE ( ZBIN, TMPSTA, TMPMAP )
 !/RTD      DEALLOCATE ( AnglDin )
 !/RTD      WRITE (NDSO,*) ' '
-!/RTD      WRITE (NDSO,*) ' *** AnglD(NSEA) set up *** '
+!/RTD      WRITE (NDSO,4204) 
 !/RTD      WRITE (NDSO,*) ' '
 !
 ! 9.e Reads bottom information from file
@@ -4399,6 +4398,50 @@
                '       Format indicator            :',I6)
  3008 FORMAT ( '       Format                      : ',A)
  3009 FORMAT ( '       File name                   : ',A)
+!/SMC 4001 FORMAT ( '       SMC refined levels NRLv   = ',I8) 
+!/SMC 4002 FORMAT ( '       SMC Equator j shift no.   = ',I8) 
+!/SMC 4003 FORMAT ( '       SMC input boundary  no.   = ',I8)
+!/SMC 4004 FORMAT ( '       SMC NCel   = ',6I9)  
+!/SMC 4005 FORMAT ( '       IJKCel(5,NCel) read from ', A)
+!/SMC 4006 FORMAT (6I8)
+!/SMC 4007 FORMAT ( '       SMC NUFc   = ',6I9)
+!/SMC 4008 FORMAT ( '       IJKUFc(7,NCel) read from ', A)
+!/SMC 4009 FORMAT (8I8)
+!/SMC 4010 FORMAT ( '       SMC NVFc   = ',6I9)
+!/SMC 4011 FORMAT ( '       IJKVFc(8,NCel) read from ', A)
+!/SMC 4012 FORMAT (9I8)
+!/SMC 4013 FORMAT ( '       NBICelin(NBISMC) read from ', A)
+!/SMC 4014 FORMAT (2I8)
+!/ARC 4015 FORMAT ( '       ARC NARC   = ',6I9)
+!/ARC 4016 FORMAT ( '       IJKCel(5,NARC) read from ', A)
+!/ARC 4017 FORMAT ( '       ARC NAUI   = ',6I9)
+!/ARC 4018 FORMAT ( '       IJKUFc(7,NAUI) read from ', A)
+!/ARC 4019 FORMAT ( '       ARC NAVJ   = ',6I9)
+!/ARC 4020 FORMAT ( '       IJKVFc(8,NAVJ) read from ', A)
+!/SMC 4021 FORMAT ( '       Varables by W3DIMX NCel = ',I9)
+!/SMC 4022 FORMAT ( '       Defined NLvCel ',6I9)
+!/SMC 4023 FORMAT ( '       Defined NLvUFc ',6I9)
+!/SMC 4024 FORMAT ( '       Defined NLvVFc ',6I9)
+!/SMC 4025 FORMAT ( '       Define IJKCel from -9 to ',I9)
+!/SMC 4026 FORMAT ( '       IJKCel(5,NCel) defined : ')
+!/SMC 4027 FORMAT ( '       IJKUFc(7,NUFc) defined : ')
+!/SMC 4028 FORMAT ( '       IJKVFc(8,NVFc) defined : ')
+!/SMC 4029 FORMAT ( '       Boundary cells IJKCel(:,-9:0) : ')
+!/SMC 4030 FORMAT (5I8)
+!/SMC 4031 FORMAT ( '       Define MAPSF ...    1 to ',I9)
+!/SMC 4032 FORMAT ( '       Multi-Resolution factor = ',I6)
+!/SMC 4033 FORMAT ( '       Range of MAPSF(:,1)    : ',2I9)
+!/SMC 4034 FORMAT ( '       Range of MAPSF(:,2)    : ',2I9)
+!/SMC 4035 FORMAT ( '       Range of MAPSF(:,3)    : ',2I9)
+!/SMC 4036 FORMAT ( '       Range of MAPFS(:,:)    : ',2I9)
+!/ARC 4037 FORMAT ( '       Arctic AngArc defined as ',I6)
+!/ARC 4038 FORMAT (9F8.2)
+!/ARC 4039 FORMAT ( '       Arctic ICLBAC defined as ',I6)
+!/RTD 4200 FORMAT ( '       AnglDin(NX,NY) defined : ')
+!/RTD 4201 FORMAT ( '       JY/IX',9I8)
+!/RTD 4202 FORMAT (I6,9F8.2)
+!/RTD 4203 FORMAT ( '       Polat/lon  =  ',2F9.3)
+!/RTD 4204 FORMAT ( '       AnglD(NSEA) set up ')
   972 FORMAT (/'       Bottom level unit           :',I6/             &
                '       Limiting depth          (m) :',F8.2/           &
                '       Minimum depth           (m) :',F8.2/           &
