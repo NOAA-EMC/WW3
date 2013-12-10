@@ -857,8 +857,8 @@
 !/ST4          CALL INSIN4(.TRUE.)
 !/ST4          WRITE (NDSM)                                           &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+!/ST4                ZZ0RAT, SSDSC,                                   &
 !/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
@@ -871,8 +871,8 @@
 !/ST4        ELSE
 !/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+!/ST4                ZZ0RAT, SSDSC,                                   &
 !/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &

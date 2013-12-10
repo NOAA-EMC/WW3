@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Nov-2013 |
+!/                  | Last update :         02-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -87,6 +87,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
+!/    02-Dec-2013 : Update of ST4                       ( version 4.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -617,16 +618,19 @@
 !
 !/ST4      INTEGER                 :: SWELLFPAR,SDSISO,SDSBRFDF
 !/ST4      REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
-!/ST4                                 ZALP, Z0RAT, TAUWSHELTER,     &
-!/ST4                                 SWELLF, SWELLF2,SWELLF3,SWELLF4, SWELLF5,&
-!/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3, &
-!/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF, STXFTWN
-!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,     &
-!/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH, SDSBR, SDSP,    &
-!/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK, SDSPBK, &
-!/ST4                                 SDSBINT, SDSHCK,  &               
-!/ST4                                 SDSBR2, SDSBRF1, SDSBRF2,            &
-!/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4
+!/ST4                                 ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
+!/ST4                                 SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
+!/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3,      &
+!/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF,        &
+!/ST4                                 STXFTWN, SINBR
+!/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,    &
+!/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH,  &
+!/ST4                                 SDSSTRAIN, SDSBR, SDSP,              &
+!/ST4                                 SDSCOS, SDSDTH, SDSBCK, SDSABK,      &
+!/ST4                                 SDSPBK, SDSBINT, SDSHCK,             &               
+!/ST4                                 SDSBR2, SDSBRF1,                     &
+!/ST4                                 SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
+!/ST4                                 SDSBM4, SDSLFGEN, SDSHFGEN
 !
 !/ST6      REAL                    :: SINA0, SDSA1, SDSA2, SWLB1
 !/ST6      INTEGER                 :: SDSP1, SDSP2
@@ -647,7 +651,7 @@
 !/PR3      REAL                    :: WDTHCG, WDTHTH
            REAL                    :: UGOBCDEPTH
            LOGICAL                 :: UGOBCAUTO, EXPFSN, EXPFSPSI,     &
-                                      EXPFSFCT,IMPFSNIMP
+                                      EXPFSFCT,IMPFSN
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
@@ -662,7 +666,7 @@
 !/ST4      NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
 !/ST4                      TAUWSHELTER, SWELLFPAR, SWELLF,                 &
 !/ST4                      SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
-!/ST4                      SWELLF7, Z0RAT
+!/ST4                      SWELLF7, Z0RAT, SINBR
 !/NL1      NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
 !/NL1                      SNLCS1, SNLCS2, SNLCS3
 !/NL2      NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
@@ -678,7 +682,7 @@
 !/ST4                      SDSC2, SDSCUM, SDSC4,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
-!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRF2, SDSBRFDF,     &
+!/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
 !/ST6      NAMELIST /SIN6/ SINA0, SINU10
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
@@ -696,7 +700,7 @@
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH,                     &
                            EXPFSN, EXPFSPSI, EXPFSFCT,                &
-                           IMPFSNIMP
+                           IMPFSN
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FLAGICESOURCE,FACBERG,NOSW, GSHIFT
@@ -1149,6 +1153,7 @@
 !/ST4      SWELLF7 = 230000. 
 !/ST4      TAUWSHELTER = 1.
 !/ST4      ZALP   = 0.006
+!/ST4      SINBR   = 0.
 !
 !/ST6      SINA0  = 0.04
 !/ST6      SINU10 = .FALSE.
@@ -1203,6 +1208,7 @@
 !/ST4      ZZWND  = ZWND
 !/ST4      AALPHA = ALPHA0
 !/ST4      BBETA  = BETAMAX
+!/ST4      SSINBR  = SINBR
 !/ST4      SSINTHP  = SINTHP
 !/ST4      ZZ0MAX  = Z0MAX
 !/ST4      ZZ0RAT  = Z0RAT
@@ -1406,8 +1412,8 @@
 !/ST3      SDSDELTA1 = 0.4 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !/ST3      SDSDELTA2 = 0.6 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !
-!/ST4      SDSC1  = 0.0                                                                
-!/ST4      WNMEANP = 0.5 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses -0.5
+!/ST4      SDSC1  = 0.0     ! not used in ST4, should be cleaned up                                                             
+!/ST4      WNMEANP = 0.5    ! taken from Bidlot et al. 2005
 !/ST4      FXFM3 = 9.9 
 !/ST4      FXPM3 = 4.
 !/ST4      WNMEANPTAIL = -0.5 
@@ -1419,8 +1425,7 @@
 !/ST4      SDSBR     = 0.90E-3                                     
 !/ST4      SDSBRFDF  = 0
 !/ST4      SDSBRF1   = 0.5
-!/ST4      SDSBRF2   = 0.
-!/ST4      SDSP      = 2.   ! this is now fixed in w3sds4 
+!/ST4      SDSP      = 2.   ! this is now fixed in w3sds4, should be cleaned up 
 !/ST4      SDSDTH    = 80.
 !/ST4      SDSCOS    = 2.
 !/ST4      SDSISO    = 2
@@ -1436,6 +1441,9 @@
 !/ST4      SDSBINT   = 0.3
 !/ST4      SDSHCK    = 1.
 !/ST4      WHITECAPWIDTH = 0.3
+!/ST4      SDSSTRAIN = 0.
+!/ST4      SDSHFGEN  = 0.
+!/ST4      SDSLFGEN  = 0.
 !
 !/ST6      SDSET  = .TRUE.
 !/ST6      SDSA1  = 6.24E-7
@@ -1493,16 +1501,17 @@
 !/ST4      CALL READNL ( NDSS, 'SDS4', STATUS )
 !/ST4      WRITE (NDSO,924) STATUS
 !/ST4      WRITE (NDSO,925) SDSC2, SDSBCK, SDSCUM, WNMEANP 
-!/ST4      SSDSC(1)   = SDSC1
+!/ST4      SSDSC(1)   = SDSLFGEN
 !/ST4      SSDSC(2)   = SDSC2
 !/ST4      SSDSC(3)   = SDSCUM
 !/ST4      SSDSC(4)   = SDSC4
 !/ST4      SSDSC(5)   = SDSC5
 !/ST4      SSDSC(6)   = SDSC6
 !/ST4      SSDSC(7)   = WHITECAPWIDTH
+!/ST4      SSDSC(8)   = SDSSTRAIN ! Straining constant ... 
+!/ST4      SSDSC(9)   = SDSHFGEN
 !/ST4      SSDSBR   = SDSBR
 !/ST4      SSDSBRF1 = SDSBRF1
-!/ST4      SSDSBRF2 = SDSBRF2
 !/ST4      SSDSBRFDF= SDSBRFDF
 !/ST4      SSDSBM(0)   = SDSBM0
 !/ST4      SSDSBM(1)   = SDSBM1
@@ -1643,7 +1652,7 @@
        EXPFSN    = .TRUE.
        EXPFSPSI  = .FALSE.
        EXPFSFCT  = .FALSE.
-       IMPFSNIMP = .FALSE.
+       IMPFSN    = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UNST', STATUS ) 
 !
@@ -1956,7 +1965,7 @@
 !/ST3            SWELLF
 !/ST4          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
 !/ST4            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-!/ST4            SWELLF5, SWELLF6, SWELLF7, Z0RAT
+!/ST4            SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
 !/ST6          WRITE (NDSO,2920) SINA0, SINU10
 !/NL1          WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
 !/NL1                            SNLCS1, SNLCS2, SNLCS3
@@ -1988,9 +1997,10 @@
 !/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
 !/ST4                    WNMEANP, FXPM3, FXFM3,                            &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
-!/ST4                    SDSBR, SDSBR2, SDSP, SDSISO, SDSCOS, SDSDTH,      &
-!/ST4                    SDSBRF1, SDSBRF2, SDSBRFDF,                       &
-!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH 
+!/ST4                    SDSBR, SDSSTRAIN, SDSBR2, SDSP, SDSISO, SDSCOS,   &
+!/ST4                    SDSDTH, SDSBRF1, SDSBRFDF,                        &
+!/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,           &
+!/ST4                    SDSLFGEN, SDSHFGEN, WHITECAPWIDTH 
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6          WRITE (NDSO,2937) SWLB1
 !/BT1          WRITE (NDSO,2926) GAMMA
@@ -2008,7 +2018,7 @@
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
         WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
-                          EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSNIMP
+                          EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN
 !
         WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF, US3D, I1US3D, I2US3D,  & 
                              E3D, I1E3D, I2E3D,                       &
@@ -2199,8 +2209,8 @@
           FSFCT = EXPFSFCT
           PNAME2 = ' Flux Corrected Transport Explicit'
           END IF
-        IF (IMPFSNIMP) THEN
-          FSNIMP = IMPFSNIMP 
+        IF (IMPFSN) THEN
+          FSNIMP = IMPFSN 
           PNAME2 = 'N Implicit (Fluctuation Splitting) '
           END IF
           WRITE (NDSO,2951) PNAME2
@@ -4176,22 +4186,24 @@
 !/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
 !/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSCUM =',E12.4,','/                            &
+!/ST4               ', SDSCUM =',E12.4,','/                           &
 !/ST4               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
 !/ST4               ',FXFM3 =',F4.2,','/                              &
 !/ST4               '        SDSBINT =',E12.4,', SDSBCK =',E12.4,     &
 !/ST4               ', SDSABK =',F6.3,', SDSPBK =',F6.3,', '/         &
-!/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4, ',  '/&
+!/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4,       &
+!/ST4               ', SDSSTRAIN =',F6.3,', '/                        &
 !/ST4               '        SDSBR2 =',F5.2,', SDSP =',F5.2,          &
 !/ST4               ', SDSISO =',I2, &
 !/ST4               ', SDSCOS =',F3.1,', SDSDTH =',F5.1,', '/         &
-!/ST4               '        SDSBRF1 = ',F5.2,',  SDSBRF2 = ',F5.2,   &
-!/ST4               ', SDSBRFDF =',I2,', '/                           &
+!/ST4               '        SDSBRF1 = ',F5.2,', SDSBRFDF =',I2,', '/ &
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
-!/ST4               F5.2,', WHITECAPWIDTH =',F5.2,' /')
+!/ST4               F5.2,', '/,                                       &
+!/ST4               ',       WHITECAPWIDTH =',F5.2,', SDSLFGEN = ',   &
+!/ST4               F5.2,', SDSHFGEN = ',F5.2,' /')
 !
 !/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &
 !/ST6               ' --------------------------------------------------')
@@ -4297,9 +4309,9 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3/   &
+ 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3/      &
                ',       EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
-               L3,',GMSH =',L3,         / )
+               L3,',IMPFSN =',L3         / )
 !
   960 FORMAT (/'  Miscellaneaous ',A/                                 &
                ' --------------------------------------------------')

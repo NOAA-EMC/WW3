@@ -438,6 +438,7 @@
 !/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
 !/ST3      LOGICAL                 :: LLWS(NSPEC) 
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
+!/ST4      REAL                    :: BRLAMBDA(NSPEC)
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
       LOGICAL                 :: SHAVE
@@ -559,9 +560,11 @@
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,   &
-!/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,   &
-!/ST4                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
+!/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+!/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
+!/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 !/ST4        END IF
 !/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
@@ -644,9 +647,11 @@
 !/ST3        CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST3                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST3                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
-!/ST4                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 !/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, USTAR, USTDIR, CD,             &
 !/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 !/STX        CALL W3SINX
@@ -660,15 +665,13 @@
 !
 !/TRX        CALL W3STRX
 !
-! 2.c Dissipation.
+! 2.c Dissipation... except for ST4
 ! 2.c1   as in source term package
 !
 !/ST1        CALL W3SDS1 ( SPEC, WN2, EMEAN, FMEAN, WNMEAN,  VSDS, VDDS )
 !/ST2        CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1,              &
-!/ST4                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY, WHITECAP )
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !
@@ -957,7 +960,7 @@
 !/ST3                      ICE, VSIN, VDIN, LLWS, IX, IY )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
 !/ST4                      U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
-!/ST4                      ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4                      VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 
 !
 ! 7.  Check if integration complete ---------------------------------- *

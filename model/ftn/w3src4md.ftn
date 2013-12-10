@@ -301,18 +301,20 @@
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SIN4 (A, CG, K, U, USTAR, DRAT, AS, USDIR, Z0, CD,    &
-                         TAUWX, TAUWY, TAUWNX, TAUWNY, ICE, S, D, LLWS, IX, IY)
+                         TAUWX, TAUWY, TAUWNX, TAUWNY, S, D, LLWS,       &
+                         IX, IY, BRLAMBDA)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III                SHOM |
 !/                  !            F. Ardhuin             !
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-May-2010 |
+!/                  | Last update :         05-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    09-Oct-2007 : Origination.                        ( version 3.13 )
-!/    16-May-2010 : Adding sea ice                      ( version 3.14_Ifremer ) 
+!/    24-Jan-2013 : Adding breaking-related input       ( version 4.16 )
+!/    05-Dec-2013 : Cleaning up the ICE input           ( version 4.16 )
 !/
 !  1. Purpose :
 !
@@ -344,7 +346,6 @@
 !       TAUWX-Y Real  I   Components of the wave-supported stress.
 !       TAUWNX  Real  I   Component of the negative wave-supported stress.
 !       TAUWNY  Real  I   Component of the negative wave-supported stress.
-!       ICE     Real  I   Sea ice fraction.                        !/Stefan: ICE is DUMMY argument; remove later.
 !       S       R.A.  O   Source term (1-D version).
 !       D       R.A.  O   Diagonal term of derivative.             *)
 !     ----------------------------------------------------------------
@@ -384,7 +385,7 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           TTAUWSHELTER, SSWELLF, DDEN2, DTH, SSINTHP,  &
-                          ZZ0RAT, FLICES
+                          ZZ0RAT, FLICES, SSINBR
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ODATMD, ONLY: NDST
@@ -396,9 +397,9 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: A(NSPEC)
+      REAL, INTENT(IN)        :: A(NSPEC), BRLAMBDA(NSPEC)
       REAL, INTENT(IN)        :: CG(NK), K(NSPEC),Z0,U, CD
-      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT, ICE       !/Stefan: ICE is DUMMY argument; remove later.
+      REAL, INTENT(IN)        :: USTAR, USDIR, AS, DRAT
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUWX, TAUWY, TAUWNX, TAUWNY
       LOGICAL, INTENT(OUT)    :: LLWS(NSPEC)
       INTEGER, INTENT(IN)     :: IX, IY
@@ -427,7 +428,7 @@
       REAL XK,DELK1,DELK2
       REAL                    :: CONST, CONST0, CONST2, TAU1
       REAL X,ZARG,ZLOG,UST
-      REAL COSWIND,XSTRESS,YSTRESS,TAUHF
+      REAL                    :: COSWIND, XSTRESS, YSTRESS, TAUHF
       REAL TEMP, TEMP2
       INTEGER IND,J,I,ISTAB
       REAL DSTAB(3,NSPEC), DVISC, DTURB
@@ -532,16 +533,10 @@
       STRESSSTAB(ISTAB,:)=0.
       STRESSSTABN(ISTAB,:)=0.
 !
-! Coupling coefficient times density ratio DRAT and fraction of free surface (1-ICE)
-! Stefan Zieger: Coupling is permanently disabled and MIN(0.,MAX(1.,1.-ICE)) has
-!      FIXME     no effect because it is always 0.0; remove later.
-!                Implemented in W3SRCE for all source terms. 
+! Coupling coefficient times density ratio DRAT
 !
-      IF (FLICES) THEN 
-        CONST0=MIN(0.,MAX(1.,1.-ICE))*BBETA*DRAT/(kappa**2)
-      ELSE
-        CONST0=BBETA*DRAT/(kappa**2)
-        END IF
+      CONST0=BBETA*DRAT/(kappa**2)
+!
       DO IK=1, NK
         TAUPX=TAUX-ABS(TTAUWSHELTER)*STRESSSTAB(ISTAB,1)
         TAUPY=TAUY-ABS(TTAUWSHELTER)*STRESSSTAB(ISTAB,2)
@@ -585,7 +580,8 @@
               ! The source term Sp is beta * omega * X**2
               ! as given by Janssen 1991 eq. 19
               ! for a faster performance EXP(X)*X**4 should be tabulated   
-              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN*UCN*COSWIND**SSINTHP 
+              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
+                                *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
               LLWS(IS)=.TRUE.
             ELSE
               DSTAB(ISTAB,IS) = 0.
@@ -1332,9 +1328,30 @@
       REAL                    :: ZX,ZARG,ZMU,ZLOG,ZBETA
       REAL                    :: Y,YC,DELY
       INTEGER                 :: I, J, K, L
-      REAL                    :: X0
+      REAL                    :: X0, INFRMAX, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
+      INTEGER                 :: INIUSTAR, INIALPHA, INILEVTAIL, IERR
+      CHARACTER(160)          :: FNAMETAB
+      LOGICAL                 :: NOFILE
+      CHARACTER(LEN=10), PARAMETER :: VERGRD = 'III  4.12 '
+      CHARACTER(LEN=35), PARAMETER :: IDSTR = 'WAVEWATCH III ST4 TABLE FOR STRESS '
+      CHARACTER(LEN=10)       :: VERTST
+      CHARACTER(LEN=35)       :: IDTST 
 !
 !/S      CALL STRACE (IENT, 'TABU_HF')
+!
+      FNAMETAB='ST4TABUHF2.bin'
+      NOFILE=.TRUE.
+      OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
+      IF (IERR.EQ.0) THEN 
+        READ(993,IOSTAT=IERR) IDTST, VERTST, INFRMAX, INAALPHA, INBBETA, INIUSTAR,  &
+                              INIALPHA, INILEVTAIL, INZZALP, INKAPPA, INGRAV
+        IF (IERR.EQ.0.AND.INFRMAX.EQ.FRMAX.AND.INAALPHA.EQ.AALPHA.AND.INBBETA.EQ.BBETA) THEN 
+          IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
+              INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
+            NOFILE=.FALSE.
+            END IF
+          END IF
+        END IF 
 !
       USTARM = 5.
       ALPHAM = 20.*AALPHA
@@ -1344,60 +1361,79 @@
       DELTAIL = ALPHAM/REAL(ILEVTAIL)
       CONST1  = BBETA/KAPPA**2
       OMEGAC  = TPI*FRMAX
+      IF ( NOFILE ) THEN      
 !   
-      TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
+        TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
 !
-      ALLOCATE(W(JTOT))
-      W(2:JTOT-1)=1.
-      W(1)=0.5
-      W(JTOT)=0.5
-      X0 = 0.05
+        ALLOCATE(W(JTOT))
+        W(2:JTOT-1)=1.
+        W(1)=0.5
+        W(JTOT)=0.5
+        X0 = 0.05
 !
-      DO K=0,IUSTAR
-        UST0      = MAX(REAL(K)*DELUST,0.000001)
-        DO L=0,IALPHA
-          UST=UST0
-          ZZ0       = UST0**2*(AALPHA+FLOAT(L)*DELALP)/GRAV
-          OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
-          YC       = OMEGACC*SQRT(ZZ0/GRAV)
-          DELY     = MAX((1.-YC)/REAL(JTOT),0.)
+        DO K=0,IUSTAR
+          UST0      = MAX(REAL(K)*DELUST,0.000001)
+          DO L=0,IALPHA
+            UST=UST0
+            ZZ0       = UST0**2*(AALPHA+FLOAT(L)*DELALP)/GRAV
+            OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
+            YC       = OMEGACC*SQRT(ZZ0/GRAV)
+            DELY     = MAX((1.-YC)/REAL(JTOT),0.)
           ! For a given value of UST and ALPHA, 
           ! the wave-supported stress is integrated all the way
           ! to 0.05*g/UST
-          DO I=0,ILEVTAIL
-            LEVTAIL=REAL(I)*DELTAIL
-            TAUHFT(K,L)=0.  
-            TAUHFT2(K,L,I)=0. 
-            TAUW0=UST0**2
-            TAUW=TAUW0
-            DO J=1,JTOT
-               Y        = YC+REAL(J-1)*DELY
-               OMEGA    = Y*SQRT(GRAV/ZZ0)
-               ! This is the deep water phase speed
-               CM       = GRAV/OMEGA   
-               !this is the inverse wave age, shifted by ZZALP (tuning)
-               ZX       = UST0/CM +ZZALP
-               ZARG     = MIN(KAPPA/ZX,20.)
-               ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
-               ZLOG     = MIN(ALOG(ZMU),0.)
-               ZBETA        = CONST1*ZMU*ZLOG**4
-               ! Power of Y in denominator should be FACHFE-4
-               TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
-               ZX       = UST/CM +ZZALP
-               ZARG     = MIN(KAPPA/ZX,20.)
-               ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
-               ZLOG     = MIN(ALOG(ZMU),0.)
-               ZBETA        = CONST1*ZMU*ZLOG**4
-               ! Power of Y in denominator should be FACHFE-4
-               TAUHFT2(K,L,I)  = TAUHFT2(K,L,I)+W(J)*ZBETA*(UST/UST0)**2/Y*DELY
-               TAUW=TAUW-W(J)*UST**2*ZBETA*LEVTAIL/Y*DELY
-               UST=SQRT(MAX(TAUW,0.))
-               END DO
+            DO I=0,ILEVTAIL
+              LEVTAIL=REAL(I)*DELTAIL
+              TAUHFT(K,L)=0.  
+              TAUHFT2(K,L,I)=0. 
+              TAUW0=UST0**2
+              TAUW=TAUW0
+              DO J=1,JTOT
+                Y        = YC+REAL(J-1)*DELY
+                OMEGA    = Y*SQRT(GRAV/ZZ0)
+                ! This is the deep water phase speed
+                CM       = GRAV/OMEGA   
+                !this is the inverse wave age, shifted by ZZALP (tuning)
+                ZX       = UST0/CM +ZZALP
+                ZARG     = MIN(KAPPA/ZX,20.)
+                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+                ZLOG     = MIN(ALOG(ZMU),0.)
+                ZBETA        = CONST1*ZMU*ZLOG**4
+                ! Power of Y in denominator should be FACHFE-4
+                TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
+                ZX       = UST/CM +ZZALP
+                ZARG     = MIN(KAPPA/ZX,20.)
+                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+                ZLOG     = MIN(ALOG(ZMU),0.)
+                ZBETA        = CONST1*ZMU*ZLOG**4
+                ! Power of Y in denominator should be FACHFE-4
+                TAUHFT2(K,L,I)  = TAUHFT2(K,L,I)+W(J)*ZBETA*(UST/UST0)**2/Y*DELY
+                TAUW=TAUW-W(J)*UST**2*ZBETA*LEVTAIL/Y*DELY
+                UST=SQRT(MAX(TAUW,0.))
+                END DO
 !/T      WRITE (NDST,9000) K,L,I,UST0,AALPHA+FLOAT(L)*DELALP,LEVTAIL,TAUHFT2(K,L,I)
-             END DO
-           END DO
-        END DO
-      DEALLOCATE(W)
+              END DO
+            END DO
+          END DO
+        DEALLOCATE(W)
+        OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR)
+        WRITE(993) IDSTR, VERGRD, FRMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
+        WRITE(993) TAUHFT
+        WRITE(993) TAUHFT2
+        CLOSE(993)
+        !DO K=0,IUSTAR
+        !  DO L=0,IALPHA
+        !    DO I=0,ILEVTAIL
+        !      WRITE(995,*) K,L,I,MAX(REAL(K)*DELUST,0.000001),AALPHA+FLOAT(L)*DELALP,REAL(I)*DELTAIL,TAUHFT(K,L),TAUHFT2(K,L,I)
+        !      END DO
+        !    END DO
+        !  END DO 
+!
+      ELSE 
+        READ(993) TAUHFT
+        READ(993) TAUHFT2
+        CLOSE(993)
+        END IF
       RETURN
 !/T 9000 FORMAT (' TEST TABU_HFT2, K, L, I, UST, ALPHA, LEVTAIL, TAUHFT2(K,L,I) :',(3I4,4F10.5))    
       END SUBROUTINE TABU_TAUHF2
@@ -1502,17 +1538,18 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, S,      &
 
-                         D, IX, IY, WHITECAP )
+                         D, IX, IY, BRLAMBDA, WHITECAP )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  !            F. Ardhuin             !
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Aug-2010 |
+!/                  | Last update :         13-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    30-Aug-2010 : Clean up from common ST3-ST4 routine( version 3.14-Ifremer )
-!/    13-Nov-2012 : Reduced frequency range with IG1 switch 
+!/    23-Jan-2012 : Add output of lambdas to be used in SIN
+!/    13-Nov-2013 : Reduced frequency range with IG1 switch 
 !/
 !  1. Purpose :
 !
@@ -1528,13 +1565,14 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       A       R.A.  I   Action density spectrum (1-D).
-!       K       R.A.  I   Wavenumber for entire spectrum.          *)
-!       USTAR   Real  I   Friction velocity.
-!       USDIR   Real  I   wind stress direction.
-!       DEPTH   Real  I   Water depth.
-!       S       R.A.  O   Source term (1-D version).
-!       D       R.A.  O   Diagonal term of derivative.             *)
+!       A         R.A.  I   Action density spectrum (1-D).
+!       K         R.A.  I   Wavenumber for entire spectrum.          *)
+!       USTAR     Real  I   Friction velocity.
+!       USDIR     Real  I   wind stress direction.
+!       DEPTH     Real  I   Water depth.
+!       S         R.A.  O   Source term (1-D version).
+!       D         R.A.  O   Diagonal term of derivative.             *)
+!       BRLAMBDA  R.A.  O   Phillips' Lambdas
 !     ----------------------------------------------------------------
 !                         *) Stored in 1-D array with dimension NTH*NK
 !
@@ -1591,7 +1629,7 @@
       REAL, INTENT(IN)        :: A(NSPEC), K(NK), CG(NK),            &
                                  DEPTH, USTAR, USDIR 
       INTEGER, INTENT(IN)     :: IX, IY
-      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
+      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), BRLAMBDA(NSPEC)
       REAL, INTENT(OUT)       :: WHITECAP(1:4)
 !/
 !/ ------------------------------------------------------------------- /
@@ -1604,7 +1642,7 @@
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO
       REAL                    :: COEF1, COEF2, COEF3, COEF4(NK)
-      REAL                    :: ALFAMEAN, KB
+      REAL                    :: ALFAMEAN, KB, MSSLONG(NK)
       REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
       REAL                    :: NTIMES(NK), S1(NK), E1(NK)
@@ -1613,7 +1651,7 @@
       REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
       INTEGER                 :: IKSUP(NK)
       REAL                    :: Q1(NK) 
-      REAL                    :: FACSAT, DKHS
+      REAL                    :: FACSAT, DKHS, FACSTRAIN 
       REAL                    :: BTH0(NK)     !saturation spectrum 
       REAL                    :: BTH(NSPEC)   !saturation spectrum 
       REAL                    :: BTH0S(NK)    !smoothed saturation spectrum 
@@ -1654,11 +1692,25 @@
         SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
         IK1=1
 !/IG1  IK1=NINT(IGPARS(5))+1
+        MSSLONG(:) = 0.
+!       SSDSDIK is the integer difference in frequency bands
+!       between the "large breakers" and short "wiped-out waves"
+!
         DO  IK=IK1, NK
-          FACSAT=SIG(IK)*K(IK)**3*DTH
+          FACSTRAIN=1+SSDSC(8)*MSSLONG(MAX(1,IK-DIKCUMUL))
+          FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
           IS0=(IK-1)*NTH
           BTH(IS0+1)=0.
-          BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
+!          BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
+! Testing straining effect of long waves on short waves
+! From Longuet-Higgins and Stewart (1963) the amplitude modulation 
+! in deep water is equal to the long wave slope k*a 
+! Here we assume that the saturation is likewise modulated by a factor (ka)^2
+          ASUM = SUM(A(IS0+1:IS0+NTH))
+          MSSLONG(IK:NK) = MSSLONG(IK:NK) + K(IK)**2 *  &
+                                    ASUM * DDEN(IK) / CG(IK)
+          BTH0(IK)=ASUM*FACSAT
+!WRITE(6,*) 'SDS IK:',IK,ASUM,MSSLONG(IK),BTH0(IK),FACSTRAIN
           IF (SSDSDTH.GE.180) THEN  ! integrates around full circle
             BTH(IS0+1:IS0+NTH)=BTH0(IK)
           ELSE
@@ -1924,7 +1976,7 @@
 ! Compute Lambda = PB* l(k,th) 
 ! with l(k,th)=1/(2*pi²)= the breaking crest density
 !
-      LAMBDA = PB / (2.*PI**2.)
+      BRLAMBDA = PB / (2.*PI**2.)
 !
 !/ ------------------------------------------------------------------- /
 !             WAVE-TURBULENCE INTERACTION AND CUMULATIVE EFFECT
@@ -1944,10 +1996,10 @@
             DO IK2=IK1,IK-DIKCUMUL
               IF (BTH0(IK2).GT.SSDSBR) THEN
                 IS2=(IK2-1)*NTH
-                RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULW(IS2+1:IS2+NTH,IS),LAMBDA(IS2+1:IS2+NTH))
+                RENEWALFREQ=RENEWALFREQ+DOT_PRODUCT(CUMULW(IS2+1:IS2+NTH,IS),BRLAMBDA(IS2+1:IS2+NTH))
                 !DO ITH2=1,NTH
                 !  IS2=ITH2+(IK2-1)*NTH
-                !  RENEWALFREQ=RENEWALFREQ+CUMULW(IS2,IS)*LAMBDA(IS2)
+                !  RENEWALFREQ=RENEWALFREQ+CUMULW(IS2,IS)*BRLAMBDA(IS2)
                 !  END DO
                 END IF
               END DO
@@ -1983,8 +2035,8 @@
 ! precomputes integration of Lambda over direction 
 ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
 !
-      DO IK=IK1,NK
-        COEF4(IK) = SUM(LAMBDA((IK-1)*NTH+1:IK*NTH) * DTH) *(2*PI/K(IK)) *  &
+      DO IK=1,NK
+        COEF4(IK) = SUM(BRLAMBDA((IK-1)*NTH+1:IK*NTH) * DTH) *(2*PI/K(IK)) *  &
                     SSDSC(7) * DDEN(IK)/(DTH*SIG(IK)*CG(IK))
 !                   NB: SSDSC(7) is WHITECAPWIDTH
         END DO
