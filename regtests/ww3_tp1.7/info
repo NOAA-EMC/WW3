@@ -15,10 +15,14 @@
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
 #                                                                           #
 # Remarks :                                                                 #
-#   * Presently not added in regresssion text matrix.                       #
+#   * This test cases uses the PR3-UQ as the default option. No other       #
+#     switches are presently provided                                       #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test                     ../model ww3_tp1.7                    # 
 #                                                                           #
 #                                             Fabrice Ardhuin, Sep 2013     #
-#                                                   Last Mod : Sep 2013     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

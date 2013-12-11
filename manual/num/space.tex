@@ -45,11 +45,12 @@ selected at compile time with the {\code XYG} or {\code LLG} switches. In more
 recent model versions, the grid type is now a variable defined in {\file
 ww3\_grid} and stored in the {\file mod\_def.ww3} file.
 
-Up to model version 3.14, \ws\ considered only regular discrete grids, where
-the two main grid axes ($x,y$) are discretized using constant increments
-$\Delta x$ and $\Delta y$. In model version \WWver\ additional options have
-been included, including curvilinear grids and unstructured grids. In the
-following sections these grid approached will be discussed, before additional
-propagation issues are addressed, covering the Garden Sprinkler Effect
-(\ref{sub:num_GSE}), continuously moving grids (\ref{sub:num_move}) unresolved
-islands (\ref{sub:num_obst}), and shoreline reflection (\ref{sub:num_refl})
+Up to model version 3.14, \ws\ considered only regular discrete grids,
+where the two main grid axes ($x,y$) are discretized using constant
+increments $\Delta x$ and $\Delta y$. In model version \WWver\
+additional options have been included, including curvilinear grids and
+unstructured grids. In the following sections these grid approached
+will be discussed, before additional propagation issues are addressed,
+covering the Garden Sprinkler Effect (\ref{sub:num_GSE}), continuously
+moving grids (\ref{sub:num_move}) unresolved islands
+(\ref{sub:num_obst}), and rotated grids (\ref{sub:num_space_rotagrid})

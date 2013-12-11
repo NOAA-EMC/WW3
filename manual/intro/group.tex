@@ -11,35 +11,58 @@ order) :
 
 \begin{list}{\ldots}{ }
 
+\item [Mickael Accensi] (Ifremer, France) \\
+  NetCDF for input and output (ww3\_prnc , ww3\_ounf, ww3\_ounp).
+
 \item [Henrique Alves] (SRG at NOAA/NCEP/EMC, USA) \\
   Support of code development while at NCEP, shallow water physics packages.
 
 \item [Fabrice Ardhuin] (Ifremer, France, previously at SHOM, France) \\
-  Various physics packages, interface with unstructured grid schemes.
+  Various physics packages (ST3, ST4, BS1, BT4, IG1, REF1...), interface with unstructured grid schemes, tidal analysis, and some I/O aspects (estimation of fluxes, adaptation of NetCDF). 
 
-\item [Nico Booij] (Delft University of Technology, The Netherlands) \\
+\item [Nico Booij] (Delft University of Technology, The Netherlands, retired) \\
   Original design of source code pre-processor ({\code w3adc}), basic method
   of documentation and other programming habits. Spatially varying wavenumber
   grid.
 
-\item [Dmitry V. Chalikov] (\ldots) \\ Co-author of the
-  \cite{tol:JPO96} input and dissipation parameterizations and source code.
+\item [Anne-Claire Bennis] (University of Caen, France, previously at SHOM, France) \\
+  Coupling with 3D flow model using PALM.
 
-\item [Tim Campbell] \ldots
+\item [Tim Campbell] (Naval Research Laboratory, USA)\\ 
+  Search and regrid utilities, irregular grids, regression testing
+  shell script.
+
+\item [Dmitry V. Chalikov] (Formerly UCAR at NOAA/NCEP/EMC) \\ Co-author of the
+  \cite{tol:JPO96} input and dissipation parameterizations and source code.
 
 \item [Arun Chawla](NOAA/NCEP/EMC, USA) \\
   Support of code development at NCEP, GRIB packing, automated grid generation
   software \citep{tol:MMAB07a, tol:OMOD08a}.
 
-\item [W. Erick Rogers] \ldots
+\item [Jean-Fran{\c c}ois Filipot] (France Energy Marine, formerly at SHOM, France).\\
+  Unification of whitecapping and breaking in ST4. 
 
+\item [Fabien Leckler] (Ifremer, France) \\
+  Breaking parameters from source terms and contributions to ST4.
+
+\item [Mark Orzech]  (Naval Research Laboratory, USA)\\ 
+  Source terms for effects of mud.
+  
+\item [W. Erick Rogers]  (Naval Research Laboratory, USA)\\ 
+  Irregular grids, source terms for effects of sea ice and mud, 
+  adaptation/interfacing of conservative remapping software.
+
+\item [Arshad Rawat] (MIO, Mauritius and Ifremer, France) \\
+  Contribution to second order spectrum and free infragravity wave sources (IG1).
+    
 \item [Aron Roland] (T. U. Darmstadt, Germany) \\
   Advection on unstructured (triangle-based) grids and meshing tools.
 
-\item [Hendrik L. Tolman] (NOAA/NCEP/EMC). General code architecture,
+\item [Hendrik L. Tolman] (NOAA/NCEP/EMC, formerly through UCAR and SAIC). \\
+  General code architecture, original \wt-I, II and III models. ongoing model
   development and management.
 
-\item [Barbara Tracy] (US Army Corps of Engineers, ERDC-CHL, retired, USA) \\
+\item [Barbara Tracy] (US Army Corps of Engineers, ERDC-CHL, USA, retired) \\
   Spectral partitioning
 
 \item [Gerbrant Ph. van Vledder] (Delft University of Technology, NL) \\
@@ -49,5 +72,8 @@ order) :
 \item [Andr\'e van der Westhuysen](IMSG at NOAA/NCEP/EMC, USA) \\
   Support of code development at NCEP, wave system tracking.
 
-\item [Stephan Zieger] \ldots
+\item [Stefan Zieger] (Swinburne Univ., Australia) \\
+  Deepwater source term package ``ST6''
+  and source terms for effects of sea ice.
+
 \end{list}

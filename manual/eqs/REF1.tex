@@ -5,21 +5,22 @@
 \opthead{REF1}{\ws}{F. Ardhuin}
 
 \noindent 
-Reflections by shorelines and icebergs is activated by using the REF1 switch 
-and setting namelists
-parameters REFCOAST, REFSUBGRID or REFBERG (in namelist REF1) to non-zero
-values that are the target reflection coefficients $R_0^2$ for the wave
-energy.  if the IG1 switch is also used, then the energy source at the shoreline 
-also includes free infragravity waves in both ingoing and outgoing directions. 
-That particular source is described in section \ref{sec:IG1}.
+Reflections by shorelines and icebergs is activated by using the {\code REF1}
+switch and setting namelists parameters {\code REFCOAST}, {\code REFSUBGRID}
+or {\code REFBERG} (in namelist {\code REF1}) to non-zero values that are the
+target reflection coefficients $R_0^2$ for the wave energy.  if the {\code
+IG1} switch is also used, then the energy source at the shoreline also
+includes free infragravity waves in both ingoing and outgoing directions.
+That particular source is described in section
+\ref{sec:IG1}.
 
-
-From these values $R_0^2$ may be varied with wave height and period
-following a Miche-type parameter: this is activated by setting REFFREQ to a
+From these values $R_0^2$ may be varied with wave height and period following
+a Miche-type parameter: this is activated by setting {\code REFFREQ} to a
 non-zero value, and is based on the field measurements of \cite{art:EHG94}.
-These coefficients can also be made to vary spatially, by setting REFMAP to a
-non-zero value. In that case ww3\_grid will expect to find a extra line after
-the reading of the water depths and obstructions in ww3\_grid.inp.
+These coefficients can also be made to vary spatially, by setting {\code
+REFMAP} to a non-zero value. In that case ww3\_grid will expect to find a
+extra line after the reading of the water depths and obstructions in
+ww3\_grid.inp.
 
 Wave reflection at the shoreline varies from a fraction of a percent to about
 50\% of the incoming wave energy, and may have important consequences for the
@@ -31,20 +32,22 @@ Because reflection involve wave trains with different directions, in a model
 like \ws, their interaction can only be represented through a source term in
 the right hand side. Nevertheless, this is physically linked to propagation.
 
-In practice, for the regular and curvilinear grids, the reflection source term puts into the
-reflected wave directions the proper amount of energy that will be taken away
-by propagation at the next time step. When neglecting the cross-shore current,
-this is
+In practice, for the regular and curvilinear grids, the reflection source term
+puts into the reflected wave directions the proper amount of energy that will
+be taken away by propagation at the next time step. When neglecting the
+cross-shore current, this is
 
 \begin{equation} 
 \cS_{ref}(k,\theta) = 
-\int R^2(k,\theta,\theta') \frac{C_g(k)}{\Delta A} \left[\cos (\theta-\theta_q) \Delta q + \sin (\theta-\theta_p)  \Delta p \right] N(k,\theta') \mathrm{d} \theta'
+\int R^2(k,\theta,\theta') \frac{C_g(k)}{\Delta A} \left[\cos (\theta-\theta_q) \Delta q + \sin (\theta-\theta_p)  \Delta p \right] N(k,\theta') \mathrm{d} \theta' \; ,
 \end{equation}
+
+\noindent
 where $R^2$ is an energy reflection coefficient, and $\Delta p$ and $\Delta q$
-are the grid spacing along the two axes of the grid,  and $\Delta A$ is the cell area. The
-definition of the shoreline direction from the land/sea mask is explained in
-\cite{art:Aea11}. This has not been tested for the SMC grids, and it is not expected to work for 
-that type of grid.  
+are the grid spacing along the two axes of the grid, and $\Delta A$ is the
+cell area. The definition of the shoreline direction from the land/sea mask is
+explained in \cite{art:Aea11}. This has not been tested for the SMC grids, and
+it is not expected to work for that type of grid.
 
 In the case of unstructured grids, the spectral density of outgoing directions
 on the boundary is directly set to the expected reflected value and the
@@ -56,10 +59,12 @@ directions for which $\cos(\theta-\theta')<0$, and its magnitude is the
 product of a reflection coefficient $R_0^2(k)$, integrated over the scattered
 directions $\theta$, and a directional distribution $R_2(\theta,\theta')$
 around the specular direction $\theta_s$,
+
 \begin{equation} 
-R^2(k,\theta,\theta')  =  R_0^2(k) R_2(\theta,\theta').
+R^2(k,\theta,\theta')  =  R_0^2(k) R_2(\theta,\theta') \:\:\: .
 \end{equation}
 
+\noindent
 This directional distribution takes three forms: 
 \begin{itemize}
 
@@ -70,8 +75,8 @@ This directional distribution takes three forms:
 
 \item proportional to $\cos(\theta-\theta_s)^n$ for small shoreline angles
       (nearly straight shoreline). Where $n=4$ by default and can be changed
-      to any value using the REFCOSP\_STRAIGHT namelist parameter in the REF1
-      namelist.
+      to any value using the {\code REFCOSP\_STRAIGHT} namelist parameter in
+      the {\code REF1} namelist.
 
 \end{itemize}
 

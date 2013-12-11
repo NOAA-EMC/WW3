@@ -50,6 +50,7 @@ tests are available in the {\file regtests} directory.
 \fit{ww3\_tp1.4}{1D propagation, spectral refraction ($x$).}
 \fit{ww3\_tp1.5}{1D propagation, spectral refraction ($y$)}.
 \fit{ww3\_tp1.6}{1D propagation, wave blocking by current.}
+\fit{ww3\_tp1.7}{1D propagation, IG wave generation.}
 \fit{ww3\_tp1.8}{1D propagation, wave breaking on a beach.}
 \fit{ww3\_tp2.1}{2D propagation under angle with grid.}
 \fit{ww3\_tp2.2}{2D propagation over half the globe without land (with
@@ -58,19 +59,20 @@ tests are available in the {\file regtests} directory.
 \fit{ww3\_tp2.4}{2D propagation, East Pacific curvilinear grid test.}
 \fit{ww3\_tp2.5}{2D propagation, Arctic Grid, curvilinear grid test.}
 \fit{ww3\_tp2.6}{2D propagation, Limon Harbor unstructured grid test.}
-\fit{ww3\_tp2.7}{Reflection on a 2D unstructured grid}
-\fit{ww3\_tp2.8}{Tidal constituents on a 2D regular grid}
-\fit{ww3\_tp2.9}{Tests for obstruction grids}
+\fit{ww3\_tp2.7}{Reflection on a 2D unstructured grid.}
+\fit{ww3\_tp2.8}{Tidal constituents on a 2D regular grid.}
+\fit{ww3\_tp2.9}{Tests for obstruction grids.}
+\fit{ww3\_tp2.10}{Tests for SMC grid.}
+\fit{ww3\_tp2.11}{Tests for rotated grid.}
 \fit{ww3\_ts1  }{Source term test, time limited growth.}
 \fit{ww3\_ts2  }{Source term test, fetch limited growth.}
 \fit{ww3\_ts3  }{Source term test, hurricane with single moving grid.}
-\fit{ww3\_ts4  }{Like ww3\_ts1, but with tidal currents}
-\fit{ww3\_tic1.1}{Wave-ice interaction, 1D test of $S_{ice}$}
-\fit{ww3\_tic1.2}{Wave-ice interaction, 1D test of ``shoaling'' effect}
-\fit{ww3\_tic1.3}{Wave-ice interaction, 1D test of refraction effect}
-\fit{ww3\_tic2.1}{Wave-ice interaction, 2D test of $S_{ice}$}
-\fit{ww3\_tbt1.1}{Wave-mud interaction, 1D test of $S_{mud}$}
-\fit{ww3\_tbt2.1}{Wave-mud interaction, 2D test of $S_{mud}$}
+\fit{ww3\_tic1.1}{Wave-ice interaction, 1D test of $S_{ice}$.}
+\fit{ww3\_tic1.2}{Wave-ice interaction, 1D test of ``shoaling'' effect.}
+\fit{ww3\_tic1.3}{Wave-ice interaction, 1D test of refraction effect.}
+\fit{ww3\_tic2.1}{Wave-ice interaction, 2D test of $S_{ice}$.}
+\fit{ww3\_tbt1.1}{Wave-mud interaction, 1D test of $S_{mud}$.}
+\fit{ww3\_tbt2.1}{Wave-mud interaction, 2D test of $S_{mud}$.}
 \fit{ww3\_systrk\_test\_01}{Test for system tracking.}
 \fit{mww3\_test\_01}{Test for expanded grid mask with wetting and drying, etc.}
 \fit{mww3\_test\_02}{Two-way nesting test with single inner grid.}
@@ -110,11 +112,30 @@ computer\footnote{~Please build your own driver for your own setup using this
 it in the {\file regtests} directory and execute after setting the desired
 option flags in the script. This will make a file {\file matrix} in {\file
   retests}, which can then be run interactively or in batch mode as
-desired. The file can also be manually edited further if so desired.
+desired. The file can also be manually edited further if so desired. The
+{\file bin} directory under {\file regtests} contains the following tools.
 
+\begin{flist}
+\fit{cleanup          }{Cleanup work directories.}
+\fit{comp\_switch     }{Compare switches inside and across test cases.
+                        {\file comp\_switch -h}  provides documentation.}
+\fit{matrix.base      }{Core script to generate matrix of test cases.}
+\fit{matrix.comp      }{Script to compare output of matrix of test cases
+                        between separately checked out model versions.}
+\fit{matrix\_zeus\_HLT}{Example of driver for {\file matrix.base}.}
+\fit{run\_test        }{Basic test script as described above.}
+\end{flist}
 
-\vspace{\baselineskip}
-\centerline{*** document rest of {\file bin} directory here ***}
+\noindent
+Note that efficient running of the matrix of regression tests requires a
+minimization of the need to recompile code between regression tests. This is
+achieved by the ordering of the regression tests in {\file matrix.base}. A
+tool to assure that identical switch files are identified as such is to
+systematically sort them. This can be done with the script {\file
+  sort\_switch} in the main {\file bin} directory. This script will add
+default values of missing switches and can also be used to remove or add
+switches from the file. Run {\command{comp\_switch -h} for documentation of
+  the script.
 
 \vspace{\baselineskip} \noindent Finally, the {\file cases} directory hold the
 real-world test cases as described below.

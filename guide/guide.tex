@@ -122,7 +122,8 @@ College Park, MD 20740
 
 \vspace{15mm}
 
-{\large \wwt\ development best practices $^\dag$.}
+{\large \wwt\ development best practices $^\dag$.} \\
+Version 1.1
 
 \vspace{20mm}
 
@@ -577,31 +578,42 @@ developing and providing code upgrades.
 \section{Regression testing} \label{sec:testing}
 \newsec
 
-Up to model version 3.14m the wave model was distributed with a suite of test
+Up to model version 3.14, the wave model was distributed with a suite of test
 cases in the {\file tests} directory. This set of tests was inconvenient to
 use for regression testing, as it needed manual intervention and compilation
 of the code for each individual test. In model version 4.07, an automated
-script was introduced by Erick Rogers and Tim Campbell of NRL to convert the
-traditional tests cases to regression tests that could be run in a more
-automated manner. The automated regression tests were first maintained in the
-{\file nrltest} directory, and are now kept in the {\file regtests} directory.
-The previous {\file tests} directory has been removed, moving the remaining
-real-world examples in the new {\file cases} directory. A more complete
-documentation of the test cases and of the regression test tools can be found
-in Section~\manregtestsec\ in \cite{\manref}.  The regression tests in {\file
-  regtests} cover basic tests to assure that features such as propagation and
-source terms work. The following conventions are used in naming the test
-cases:
+script was introduced by Erick Rogers and Tim Campbell of NRL Stennis to
+convert the traditional tests cases to regression tests that could be run in
+an automated manner. The automated regression tests were first maintained in
+the {\file nrltest} directory, and are now kept in the {\file regtests}
+directory.  The previous {\file tests} directory has been removed, moving the
+remaining real-world examples in the new {\file cases} directory. A more
+complete documentation of the test cases and of the regression test tools can
+be found in Section~\manregtestsec\ in \cite{\manref}.  The regression tests
+in {\file regtests} cover basic tests to assure that features such as
+propagation and source terms work. The following conventions are used in
+naming the test cases:
 
 \begin{itemize}
+
 \item {\file ww3\_tp1.{\it n}}: Tests for one-dimensional propagation (regular
        grids). 
+
 \item {\file ww3\_tp2.{\it n}}: Tests for two-dimensional propagation (all
        grids).
+
 \item {\file ww3\_ts{\it n}}: Tests for source term integration (some
        including propagation).
-\item {\file ww3\_bt{\it d}.{\it n}}: Tests for wave-bottom interaction. ({\it d} = 1 or 2, indicating one- or two-dimensional test case.)
-\item {\file ww3\_ic{\it d}.{\it n}}: Tests for wave-ice interaction. ({\it d} = 1 or 2, indicating one- or two-dimensional test case.)
+
+\item {\file ww3\_bt{\it d}.{\it n}}: Tests for wave-bottom  interaction.
+       ({\it d} = 1 or 2, indicating one- or two-dimensional test cases.)
+
+\item {\file ww3\_ic{\it d}.{\it n}}: Tests for wave-ice interaction.
+       ({\it d} = 1 or 2, indicating one- or two-dimensional test case.)
+
+\item {\file ww3\_systrk\_test\_{\it nn}}: Test cases for reconstructing full
+        wave fields in space and time from local spectral wave partitions.
+
 \item {\file mww3\_test\_{\it nn}}: Tests cases for the multi-grid wave model.
 \end{itemize}
 
@@ -614,14 +626,14 @@ More generally, there are two reasons for providing regression tests. The
 first is the responsibility of a code developer not to break previously
 existing code. The regression testing gives a developer the tools to check
 this systematically and rigorously. The second is to avoid that a contributor
-of code has to provide large time efforts in keeping the code running. By
-providing a regression test for your new code / features, the responsibility
-of keeping this running first will fall on developers of new code, not on the
-contributor of already accepted code. this implies that developers of new
-model options should both run relevant regression tests during development,
-and provide new (options for existing) regression tests for their code
-additions. Some more details of how and when to regression test will follow
-below.
+of code has to provide large efforts in keeping the contributed code
+functional. By providing a regression testing for your new code, the
+responsibility of keeping code function will first and foremost fall on
+developers of new code, not on the contributor of already accepted code. As
+already outlined above, this implies that developers of new model options
+should both run relevant regression tests during development, and provide new
+(options for existing) regression tests for their code additions. Some more
+details of how and when to regression test will follow below.
 
 
 To facilitate regression testing, a shell script, {\file
@@ -630,9 +642,9 @@ cases. The test cases are organized such that each major test case has its own
 directory. Within each test case directory, it is possible to have more test
 cases, for instance by compiling the code with different switches, using
 different grid configurations, using different model inputs, and running the
-code in either shared or distributed compute environment. Running a regression
-test is done using using command-line commands. All options can be displayed
-by running the script without arguments or with the {\file -h} option
+code in either a shared or a distributed compute environment. A regression
+test is run using command-line commands only. All options can be displayed by
+running the script without arguments or with the {\file -h} option
 \command{run\_test} \command{run\_test -h} the output of which is displayed in
 Fig.~\ref{fig:run_test} at the end of this section.
 
@@ -654,10 +666,10 @@ have been created. A matrix of all possible regression tests can be generated
 with the tools provided in the {\file regtests/bin} directory, as described in
 Section~\manregtestsec\ in \cite{\manref}. The tools also allow for quickly
 sub-setting the full matrix by test case or other filter options. The NCEP
-code managers will run the full matrix of regression tests for most trunk
-updates, running the matrix on both the old trunk, and the proposed new trunk,
-and using the tools in {\file regtests/bin} to do bit-wise comparisons of the
-model results. As it may take up to 10 hours to run the full matrix on our
+code managers will run the full matrix of regression tests for trunk updates,
+running the matrix on both the old trunk, and the proposed new trunk, and
+using the tools in {\file regtests/bin} to do bit-wise comparisons of the
+model results. As it may take up to 12 hours to run the full matrix on our
 supercomputers, it makes no sense to run the full set of regression tests
 during development of new options.
 
@@ -666,8 +678,8 @@ developing a new source term package, it is worth while to regularly run some
 of the source term tests to assure that the other source term options are not
 broken, and only occasionally run the entire matrix. Note that the NCEP
 developers do expect that a branch presented for integration with the trunk
-has been tested at least once with the entire matrix of regression test by the
-developer.
+has been tested at least once with the entire matrix of regression tests by
+the developer.
 
 There are two basic ways in which the regression testing can be done. One is
 to keep copy of the trunk from which the development branch is created, and
@@ -681,7 +693,7 @@ possibly other command line options) \command{./bin/run\_test -s PR3 -w
   work\_PR3\_OQ\_v4.00 ../. ww3\_tp1.1} and after modifications are made to
 the code, the regression test is re-run in a in a different work directory,
 e.g., \command{./bin/run\_test -s PR3 -w work\_PR3\_UQ\_v4.01 ../. ww3\_tp1.1}
-after which results can be compared using tools provided or with direct UNIX
+after which results can be compared using tools provided or with direct Linux
 file comparison tools.  Note that for a test case to run to completion is a
 necessary but not sufficient indication of success.
 
@@ -693,20 +705,27 @@ for direct comparison of options in the model. For instance, the GSE test can
 be used to easily generate GrADS output for all different propagation schemes
 on a regular grid with otherwise identical model settings.
 
-Note, furthermore, that for those who have access, a wiki describing each test
-case has been installed in {\file
-  https://svnemc.ncep.noaa.gov/trac/ww3/wiki/NrlTest }. This also includes
-many examples of {\file run\_test} commands.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Hendrik: took this text out as we have not maintained this well  %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Note, furthermore, that for those who have access, a wiki describing each
+% test case has been installed in {\file
+%   https://svnemc.ncep.noaa.gov/trac/ww3/wiki/NrlTest }. This also includes
+% many examples of {\file run\_test} commands.
 
 \pb
 
 \begin{myfig}{tbp}
+\topline
 \begin{center}
 {\scriptsize \begin{minipage}[c]{4.5in}
 %\vspace{-10mm}
 \input{run_test.out}
 \end{minipage} }
+
 \end{center}
+\botline
 \myfcapc{Description of arguments for {\file run\_test} script.}
 \label{fig:run_test}
 \end{myfig}
@@ -724,7 +743,10 @@ The \ws\ manual and other \ws\ documents like this guide are written in
 \LaTeX. Since these are dynamic documents, the corresponding files are
 maintained in svn, together with the \ws\ source code, script and auxiliary
 files. Because the manual is rather large, it has been stored in several
-{\file .tex} files. The main files making up the manual are
+{\file .tex} files. During the development of model version 4.18, most
+ub-sections were places in their own file, to minimize conflicts in editing
+when many contributors work on the manual simutaneously.  The main files (and
+directories) making up the manual are
 
 \begin{flist}
 \fit{manual.tex}{Main {\file .tex} file, mainly combining the {\file .tex}
@@ -766,9 +788,9 @@ files are copied from {\file \$(INPDIR)}.  The default setting for {\file
 make command-line or in the environment. This method assures that the example
 input files provided with the code are the files displayed in the manual.
 
-\pb \noindent Note that the manual consist of both a conventional manual and a
-basic system documentation. The following standards should be used in writing
-\LaTeX\ contributions to the manual:
+\vspace{\baselineskip} \noindent Note that the manual consist of both a
+conventional manual and a basic system documentation. The following standards
+should be used in writing \LaTeX\ contributions to the manual:
 
 \begin{itemize}
 \item Use American spelling and grammar.
@@ -794,17 +816,18 @@ For general users we will provide a recent manual package when they are ready
 to provide their manual contributions. For co-developers, the most recent
 version of the manual will be available on the svn server.
 
-\vspace{\baselineskip}
-\begin{center}
-\rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
-\vspace{\baselineskip}
-\parbox{120mm}{This guide and other \LaTeX\ \ws\ documents like the manual use
-the svn package for \LaTeX. This package is generally not automatically
-installed with \LaTeX\ and therefore might result in failure of compiling the
-{\file .dvi} files. The package is available from the CTAN web site
-(http://www.ctan.org).} \\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm}
-WARNING \rule[1mm]{55mm}{1.0mm}
-\end{center}
+% \vspace{\baselineskip}
+% \begin{center}
+% \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\ 
+% \vspace{\baselineskip}
+% \parbox{120mm}{This guide and other \LaTeX\ \ws\ documents like the manual
+%   use the svn package for \LaTeX. This package is generally not
+%   automatically installed with \LaTeX\ and therefore might result in failure
+%   of compiling the {\file .dvi} files. The package is available from the
+%   CTAN web site (http://www.ctan.org).} \\ \vspace{\baselineskip}
+% \rule[1mm]{55mm}{1.0mm}
+% WARNING \rule[1mm]{55mm}{1.0mm}
+% \end{center}
 
 
 %\bpage

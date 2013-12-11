@@ -5,51 +5,60 @@
 \opthead{IG1}{\ws}{F. Ardhuin}
 
 \noindent 
-The linear dispersion relation used in section  \ref{sec:intro} is a good approximation 
-for most of the wave energy but a significant part of the spectrum at high frequencies, 
-with typical frequencies above three times the windsea wave peak \citep[e.g.][]{rep:Leckler2013}. 
-In shallow water, another strongly nonlinear part of the spectrum is found at very low 
-frequencies, which are called infragravity waves. 
+The linear dispersion relation used in section \ref{sec:intro} is a good
+approximation for most of the wave energy but a significant part of the
+spectrum at high frequencies, with typical frequencies above three times the
+windsea wave peak \citep[e.g.][]{rep:Lec13}.  In shallow water, another
+strongly nonlinear part of the spectrum is found at very low frequencies,
+which are called infragravity waves.
 
-In the case of horizontally homogeneous conditions over a flat bottom, both low and high frequency 
-non-linear components can be estimated from the underlying linear wave spectrum, using 
-perturbation theory \citep[e.g.][]{art:Has62}. Also, the non-linear evolution of a homogeneous 
-wave field is better described in terms of this 'linearized spectrum'. It is thus practical 
-to work with this 'linearized spectrum' and convert to the observable spectrum that contains 
-non-linear components when post-processing the model results. One method to perform this 
-transformation is a canonical transformation proposed by \cite{art:Kra94}. The 
-properties of this transformation were further explored by \cite{art:Jan09} and implemented 
-for post-processing in the ECMWF version of the WAM model. 
+In the case of horizontally homogeneous conditions over a flat bottom, both
+low and high frequency non-linear components can be estimated from the linear
+wave spectrum, using perturbation theory \citep[e.g.][]{art:Has62}. Also, the
+non-linear evolution of a homogeneous wave field is better described in terms
+of this 'linearized spectrum'. It is thus practical to work with this
+'linearized spectrum' and convert to the observable spectrum that contains
+non-linear components when post-processing the model results. One method to
+perform this transformation is a canonical transformation proposed by
+\cite{art:Kra94}. The properties of this transformation were further explored
+by \cite{art:Jan09} and implemented for post-processing in the ECMWF version
+of the WAM model.
 
-The code for the canonical transform written by P. Janssen was interfaced with \ws. 
-Using the IG1 switch and setting the parameter IGADDOUTP = 2 in the IG1 namelist, this canonical 
-transformed, which conserves energy, will be used for the output point spectra. 
-If IGADDOUTP = 1, then the second order spectrum is added on top of the model spectrum using 
-the theory by \citep[e.g.][]{art:Has62}. That option does not conserve energy and is not consistent 
-at high frequency because the quasi-linear term in the second order spectrum are ignored  \citep{art:Jan09}. 
+The code for the canonical transform written by P. Janssen was interfaced with
+\ws.  Using the {\code IG1} switch and setting the parameter {\code IGADDOUTP
+= 2} in the {\code IG1} namelist, this canonical transformed, which conserves
+energy, will be used for the output point spectra.  If {\code IGADDOUTP = 1},
+then the second order spectrum is added on top of the model spectrum using the
+theory by \citep[e.g.][]{art:Has62}. That option does not conserve energy and
+is not consistent at high frequency because the quasi-linear term in the
+second order spectrum are ignored \citep{art:Jan09}.
 
-However, when comparing to measurements, one should be aware that different 
-measuring devices have different responses to the nonlinear part of the spectrum. In particular
-surface-following buoys also linearize the spectrum, and the second order 
-pressure field is not related to the second order elevation via the relations used for 
-linear waves. The canonical transform is thus only applicable for wave gauges that measure elevation 
-at a fixed location. 
+However, when comparing to measurements, one should be aware that different
+measuring devices have different responses to the nonlinear part of the
+spectrum. In particular surface-following buoys also linearize the spectrum,
+and the second order pressure field is not related to the second order
+elevation via the relations used for linear waves. The canonical transform is
+thus only applicable for wave gauges that measure elevation at a fixed
+location.
 
-When the wave field is not homogeneous, the nonlinear properties of the waves lead to 
-an exchange of energy between different modes. In shallow water this usually results in the 
-transfer of energy to infragravity waves, that are realeased along shorelines and travel 
-as free waves. The IG1 switch allows the parameterization of that effect with several methods.
-These are very crude parameterizations compared to the full hydrodynamic solution that would 
-require solving the bispectral evolution across the surf zone at a very high spatial resolution 
-\citep[e.g.][]{art:HB97}.  
-In practice this energy is added via the $S_{ref}$ source term, by setting the 
-IG1 namelist IGSOURCE to 1 or 2. 
+When the wave field is not homogeneous, the nonlinear properties of the waves
+lead to an exchange of energy between different modes. In shallow water this
+usually results in the transfer of energy to infragravity waves, that are
+realeased along shorelines and travel as free waves. The {\code IG1} switch
+allows the parameterization of that effect with several methods.  These are
+very crude parameterizations compared to the full hydrodynamic solution that
+would require solving the bispectral evolution across the surf zone at a very
+high spatial resolution \citep[e.g.][]{art:HB97}.  In practice this energy is
+added via the $S_{ref}$ source term, by setting the {\code IG1} namelist
+{\code IGSOURCE} to 1 or 2.
 
-In the first method, activated with IGSOURCE =1, the second order spectrum is computed 
-using either the Hasselmann perturbation ( IGMETHOD = 1 ) or the canonical transform (any other 
-value of IGMETHOD ). This approach may lead to better directional distribution of IG wave 
-energy but it is still being tested.  The second method, activated with IGSOURCE =2, and 
-the free IG spectrum is given by the following expressions, 
+In the first method, activated with {\code IGSOURCE =1}, the second order
+spectrum is computed using either the Hasselmann perturbation ({\code IGMETHOD
+= 1}) or the canonical transform (any other value of {\code IGMETHOD}). This
+approach may lead to better directional distribution of IG wave energy but it
+is still being tested.  The second method, activated with {\code IGSOURCE =
+2}, and the free IG spectrum is given by the following expressions,
+
 \begin{eqnarray}
  A_{IG} & =&    H_s T_{m0,-2}^2\label{eq:IGfit0} \\
 \widehat{E}_{IG}(f)& = & 1.2 \alpha_1^2 \frac{k g^2}{C_g 2 \pi f} \frac{(A_{IG}/4)^2}{\Delta_f}  
@@ -57,23 +66,33 @@ the free IG spectrum is given by the following expressions,
  \widehat{E}_{IG}(f,\theta) & = & \widehat{E}_{IG}(f) / (2 \pi )
 \label{eq:fit2} 
 \end{eqnarray}
-where the mean period is defined as $ T_{m0,-2} =\sqrt{m_{-2}/m_{0}}$ with 
-the moments 
+
+\noindent
+where the mean period is defined as $ T_{m0,-2} =\sqrt{m_{-2}/m_{0}}$ with the
+moments
+
 \begin{equation}
  m_n= \int_{f_{min}~\mathrm{Hz}}^{0.5~\mathrm{Hz}} E(f) f^n {\mathrm d}f,\label{eq:mn}
 \end{equation}
-and the empirical coefficient $\alpha_1$ is of the order of $10^{-3}$~s$^{-1}$, and is set by the IG1 namelist 
-parameter IGEMPIRICAL. The minimum frequency $f_{min}$ used to define  $ T_{m0,-2}$ is set by the namelist parameter IGMAXFREQ
-and it is also the maximum frequency of the IG band over which this source of energy is applied. 
-Also, in this band the IG energy at the coast can be added on top of pre-existing energy, or the pre-existing energy 
-can be reset to zero. That latter behavior is the default and controlled by IGBCOVERWRITE = 1. For other choices, 
-( IGBCOVERWRITE = 0), the results are very sensitive to the maximim shoreline reflection coefficient allowed (REFRMAX parameter 
-in namelist REF1). 
 
-Finally, IG energy can also be added for frequencies beyond $f_{min}$, this is activated by setting IGSWELLMAX = T . 
-For that part of the IG wave field, the IG wave source is now reduced by a factor 4 which is 
-now hard-coded in w3ref1md.ftn . This should be adjusted together 
-with REFRMAX.
+\noindent
+and the empirical coefficient $\alpha_1$ is of the order of
+$10^{-3}$~s$^{-1}$, and is set by the IG1 namelist parameter {\code
+IGEMPIRICAL}. The minimum frequency $f_{min}$ used to define $ T_{m0,-2}$ is
+set by the namelist parameter {\code IGMAXFREQ} and it is also the maximum
+frequency of the IG band over which this source of energy is applied.  Also,
+in this band the IG energy at the coast can be added on top of pre-existing
+energy, or the pre-existing energy can be reset to zero. That latter behavior
+is the default and controlled by {\code IGBCOVERWRITE = 1}. For other choices,
+({\code IGBCOVERWRITE = 0}), the results are very sensitive to the maximim
+shoreline reflection coefficient allowed ({\code REFRMAX} parameter in
+namelist {\code REF1}).
+
+Finally, IG energy can also be added for frequencies beyond $f_{min}$, this is
+activated by setting {\code IGSWELLMAX = T}.  For that part of the IG wave
+field, the IG wave source is now reduced by a factor 4 which is now hard-coded
+in {\file w3ref1md.ftn}. This should be adjusted together with {\code
+REFRMAX}.
 
 
 

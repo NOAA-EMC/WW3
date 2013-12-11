@@ -31,8 +31,14 @@
 #     + switch_PR3_UQ  : UQ scheme with averaging (off) (default)           #
 # - Test case input2: Like input but with waves traveling in the opp. dir.  #
 #                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp1.1   #
+#  ./bin/run_test -i input2 -w work_input2    -s PR1   ../model ww3_tp1.1   #
+#                                                                           #
+#     Other switch options are PR2_UNO, PR2_UQ, PR3_UNO and PR3_UQ          #
+#                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Sep 2013     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
