@@ -1,0 +1,186 @@
+# @ shell = /usr/bin/ksh
+# @ output=S50Wmrun.o$(jobid)
+# @ error=S50Wmrun.e$(jobid)
+# @ wall_clock_limit = 0:15:00
+# @ class=parallel
+# @ job_type = parallel
+# @ node = 1
+# @ task_affinity   = cpu(1)
+# @ network.MPI     = sn_all,shared,US
+# @ node_usage = not_shared
+# @ notification = error
+# @ tasks_per_node = 32
+# @ resources = ConsumableMemory(40000mb)
+# @ queue
+##
+## @ resources = ConsumableCpus(4) ConsumableMemory(3600mb)
+## @ environment = OMP_NUM_THREADS=4
+## @ task_affinity   = core
+## @ tasks_per_node = 32
+##   Reduced total run time to 10min.  JGLi11May2011
+## @ wall_clock_limit = 1:00:00
+#
+#######################################################################
+#
+# First Created:   3 Feb 2009        Jian-Guo Li 
+# Last Modified:  19 Nov 2013        Jian-Guo Li
+#
+#######################################################################
+#
+#----------------------------------------------------------------------
+# Set up directory path:
+RUNDIR='/home/nwp/ofrd/frjl/WW3Runs'
+WW3DIR='/data/nwp/ofrd/frjl/WW3Vn4'
+SCRDIR="/scratch/frjl_ww3"
+
+# Change to scratch directory for this run:
+cd $SCRDIR
+CC=$?
+if test $CC -ne 0
+then
+ echo "*** $SCRDIR *** not available, exit!!!"
+ exit 1
+fi
+
+##############################################################################
+## Copy executable and input files to scratch dir
+echo "Copy executables and input files ..."
+cp $WW3DIR/exesmc/ww3_strt         ./
+cp $WW3DIR/exesmc/ww3_shel         ./
+cp $WW3DIR/exesmc/ww3_outp         ./
+cp $WW3DIR/exesmc/ww3_outf         ./
+cp $WW3DIR/inps50/mod_def.ww3      ./
+
+ls -l
+
+##############################################################################
+##  Run the grid preprocessor:
+##############################################################################
+
+# set mandatory WW3 environment variables:
+export WW3_RUN_DIR="$SCRDIR"
+export WW3_STRT_INP=ww3_strt
+export WW3_SHEL_INP=ww3_shel
+export WW3_GRID_INP=ww3_grid
+export WW3_OUTP_INP=ww3_outp
+export WW3_OUTF_INP=ww3_outf
+export WW3_MOD_DEF=mod_def
+export WW3_WIND=wind
+export WW3_RESTART=restart
+export WW3_LOG=log
+export WW3_OUT_GRD=out_grd
+export WW3_OUT_PNT=out_pnt
+export WW3_NEST=nest
+export WW3_ICE=ice
+#export WW3_PP_BPLAT=37.5 
+#export WW3_PP_BPLON=177.5 
+
+##############################################################################
+# 2. Move restart file from previous run so it will be used on this run:
+if [[ -f restart.ww3 ]]; then
+        echo "Using restart file from previous run"
+        ls -l  restart.ww3
+else
+	# no restart file, run the ww3_strt start file preprocessor
+	# (creates a calm start condition)
+        echo "WARNING! No restart file available from previous run: running ww3_strt"
+
+        poe  ./ww3_strt
+
+	if [[ $? -ne 0 ]]; then
+		echo "ERROR: ww3_strt failed."
+	        exit 1
+	fi
+fi
+
+##############################################################################
+# 3. Run the model
+
+     banner G50SMC
+     poe  ./ww3_shel
+
+if [[ $? -ne 0 ]]; then
+	echo "WW3 Shell crashed..."
+	#echo "ERROR: ww3_shel failed." | mail -s "G50SMC shell Failed" frjl
+fi
+
+ ls -lt
+
+##############################################################################
+
+# 4. Save restart1.ww3, nest1.ww3 and out_grd.pp files
+if [[ -f date_glb ]]; then
+# DATEGLB=`cut -c3-10 date_glb`
+  DATEGLB=`cut -c1-8 date_glb`
+else
+  DATEGLB=`date +%y%m%d%H `
+fi
+  echo "Date stamp for output $DATEGLB"
+  cp out_grd.ww3   $DATADIR/G50SMCout/g50w${DATEGLB}.ww3
+# cp nest1.ww3     $DATADIR/G50SMCbdy/nest${DATEGLB}00
+
+## Save test message file if non-zero
+  if [[ -s fort.21 ]];  then
+     cp fort.21    $DATADIR/G50SMCout/msge${DATEGLB}.txt
+  fi
+
+##  Restart file saved for run end time
+  rstfile=`shiftdate -u -s +18h +"%Y%m%d%H"  ${DATEGLB}060606`
+  echo " Restart file to be saved as restart$rstfile "
+  cp -p restart001.ww3  $DATADIR/G50SMCrst/restart$rstfile
+
+# 5. Post-process out_pnt.ww3 into type 1 (2D spectral) ASCII files
+  echo " Converting out_pnt.ww3 into 2D spectral text file ..."
+  ./ww3_outp
+ 
+  if [[ $? -ne 0 ]]; then
+        echo "ERROR: ww3_outp failed."
+  else
+        echo " Point output 2D conversion done."
+        cp -p ww3*.spc  $DATADIR/G50SMCf2d/g50w${DATEGLB}.spc
+  fi
+
+# 6. Post-process out_grd.ww3 into type 1 ASCII files
+  if [[ -s out_grd.ww3 ]];  then
+      echo " Converting out_grd.ww3 into sea-point text file ..."
+      ./ww3_outf
+     if [[ $? -ne 0 ]]; then
+        echo "ERROR: ww3_outf failed."
+     else
+        echo " Sea-point text output done."
+        cp -p  *.wnd *.hs *.t01  $DATADIR/G50SMCtxt/
+     fi
+  fi
+ 
+  ls -lt
+
+echo  "--------- "
+
+# 6. Submit next run if finished ok.  12 Feb 2009
+ cd $HOME/WW3Runs
+ if test -f $DATADIR/G50SMCrst/restart$rstfile 
+    then
+    nextrun=`shiftdate -u -s +24h +"%Y%m%d%H%M"  ${DATEGLB}060000`
+    datend=`cut -c1-12 date_end`
+    echo $nextrun > date_glb
+
+##  Exit if reaches given date
+    if test $nextrun -eq $datend
+       then
+       echo " Reached end date $nextrun, stop."
+       exit 0
+    else
+##  Submit next run
+#      echo $nextrun > date_glb
+#      llsubmit  glbww3init
+       llsubmit  smc50init
+       echo " smc50init llsubmit-ed for $nextrun "
+    fi
+
+ fi
+
+banner End 
+
+exit 0
+
+

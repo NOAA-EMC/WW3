@@ -1,0 +1,227 @@
+#!/usr/bin/ksh
+#
+# @ error   = Error
+# @ output  = Output
+# @ output=S50WInit.o$(jobid)
+# @ error=S50WInit.e$(jobid)
+# @ notification  = never
+# @ wall_clock_limit=1200
+## @ job_type = parallel
+## @ node = 1
+## @ tasks_per_node = 1
+# @ class = serial
+# @ node_usage = shared
+## @ resources = ConsumableCpus(1) ConsumableMemory(3600 mb)
+# @ queue
+
+##-----------------------------------------------------------------------------
+#
+# Description:  IBM Job script to prepare forcing files for GLBWW3
+# 
+# First Created:    Jian-Guo Li   2 Feb 2009
+# Last modified:    Jian-Guo Li  19 Nov 2013
+#------------------------------------------------------------------------------
+
+cd $HOME/WW3Runs
+######################### Set date ############################################
+ obsdate=`cut -c1-12 date_glb`
+  yymmdd=`cut -c3-8  date_glb`
+    hhmm=`cut -c9-12 date_glb`
+echo " obsdate set as $obsdate"
+echo " yymmdd set as $yymmdd"
+
+##  Year Month Day Hour for wind namelist input
+    Year=`cut -c1-4  date_glb`
+   Month=`cut -c5-6  date_glb`
+     Day=`cut -c7-8  date_glb`
+    mdhr=`cut -c9-10 date_glb`
+    Hour=`expr $mdhr - 6 `
+
+##  hkfile for 1800 run needs date one day ahead (run end date)
+if test $Hour -ge 12
+   then
+ hkdate=`shiftdate -s +24h '+%y%m%d' ${obsdate}00`
+else
+ hkdate=$yymmdd
+fi
+
+######################### Set up directories ##################################
+##  Updated for hpc1e/f  on 16 Jun 2009
+ RUNDIR='/home/nwp/ofrd/frjl/WW3Runs'
+ WW3DIR='/data/nwp/ofrd/frjl/WW3Vn4'
+ WINDIR='/data/nwp/ofrd/frjl/Wind25km'
+#WINDIR='/data/nwp/ofrd/share/downstream_impact/global/NWP'
+ SCRDIR="/scratch/frjl_ww3"
+
+ SMCWW3rst='/data/nwp/ofrd/frjl/G50SMCrst'
+
+################# Set mandatory WW3 environment variables #####################
+export WW3_STRT_INP=ww3_strt
+export WW3_SHEL_INP=ww3_shel
+export WW3_GRID_INP=ww3_grid
+export WW3_MOD_DEF=mod_def
+export WW3_WIND=wind
+export WW3_ICE=ice
+export WW3_RESTART=restart
+export WW3_LOG=log
+export WW3_NEST=nest
+export WW3_OUT_GRD=out_grd
+export WW3_OUT_PNT=out_pnt
+
+############### Change to scratch directory for this run ######################
+cd $SCRDIR
+CC=$?
+if test $CC -ne 0
+then
+ mkdir $SCRDIR
+ cd    $SCRDIR
+fi
+
+echo "Clearing working dir `pwd`"
+rm -f $SCRDIR/*
+
+####### Copy executable and input files to scratch dir #######################
+echo "Copy executables and input files ..."
+cp $WW3DIR/exesmc/ww3_shel        ./
+cp $WW3DIR/exesmc/ww3_strt        ./
+cp $WW3DIR/exesmc/ww3_outp        ./
+cp $WW3DIR/exesmc/ww3_outf        ./
+cp $WW3DIR/exesmc/ff2ww           ./
+cp $WW3DIR/inps50/mod_def.ww3     ./
+
+ls -l
+
+###################### Select input files ####################################
+##  Insert the correct dates in the ww3_shel.inp file.
+##  Use the mid-run date $obsdate as a reference point.
+  START_TIME=`shiftdate -u -s  -6h +"%Y%m%d %H%M00"  ${obsdate}00`
+#   END_TIME=`shiftdate -u -s +6h +"%Y%m%d %H%M00"  ${obsdate}00`
+##  One day run
+    END_TIME=`shiftdate -u -s +18h +"%Y%m%d %H%M00"  ${obsdate}00`
+RESTART_TIME="${END_TIME}"
+
+echo "START TIME IS   ${START_TIME}"
+echo "END TIME IS     ${END_TIME}"
+echo "RESTART TIME IS ${RESTART_TIME}"
+cat  $WW3DIR/inps50/ww3_shel.inp.template  \
+     | sed "s/<START_TIME>/${START_TIME}/g" \
+     | sed "s/<END_TIME>/${END_TIME}/g" \
+     | sed "s/<RESTART_TIME>/${RESTART_TIME}/g" > ww3_shel.inp
+
+##  Restart file from saved copy
+  rstfile=restart`shiftdate -u -s -6h +"%Y%m%d%H"  ${obsdate}00`
+
+if [[ ! -f $SMCWW3rst/${rstfile} ]]; then
+     echo "WARNING! No restart file available for $obsdate SMCWW3 run." 
+      cp  $WW3DIR/inps50/ww3_strt.inp   ./
+else
+   echo " Restart file to be used is"
+   ls -t  $SMCWW3rst/${rstfile}
+   cp     $SMCWW3rst/${rstfile}  ./restart.ww3
+fi
+
+##  Get a copy of date_glb in working directory for mrun
+ echo ${obsdate} >              ./date_glb
+
+# 5. Insert the correct dates in the ww3_outp.inp file.
+echo "START TIME IS   ${START_TIME}"
+cat  $WW3DIR/inps50/ww3_outp.inp.template  \
+     | sed "s/<START_TIME>/${START_TIME}/g" > ww3_outp.inp
+
+# 6. Insert the correct dates in the ww3_outf.inp file.
+cat  $WW3DIR/inps50/ww3_outf.inp.template  \
+     | sed "s/<START_TIME>/${START_TIME}/g" > ww3_outf.inp
+
+ ls -lt
+
+##  Use saved 25km wind forcing with date stamp.  23 Aug 2010
+ DATAWND=$WINDIR/$Year$Month$Day/
+ DATEMRK=$Year$Month$Day
+
+ WINDFILE1=$DATAWND/${DATEMRK}_qwqu00.marine0_10m
+ WINDFILE2=$DATAWND/${DATEMRK}_qwqu06.marine0_10m
+ WINDFILE3=$DATAWND/${DATEMRK}_qwqu12.marine0_10m
+ WINDFILE4=$DATAWND/${DATEMRK}_qwqu18.marine0_10m
+
+## Use saved ice file in the same directory 
+  ICEFILE=$DATAWND/qwgl.daily.ice
+
+################ Create input parameter files ff2ww ###########################
+# 
+# -0.41670 -79.16664  0.83333333   0.55555556
+# 1024  688
+# 0.17578125  -78.63281250  0.35156250  0.23437500 
+
+cat >> f2wndinput << ENDHK
+ WND
+ 512  350
+ 0.35156250  -78.0468750  0.7031250  0.4687500
+ 0.0   90.0
+ 3225  3226
+ $START_TIME 3600 25
+ $WINDFILE1
+ $WINDFILE2
+ $WINDFILE3
+ $WINDFILE4
+ENDHK
+
+
+cat >> f2iceinput << ENDHK
+ ICE
+ 512  350
+ 0.35156250  -78.0468750  0.7031250  0.4687500
+ 0.0   90.0
+ 31    -1
+ -1    -1   3600  1
+ $ICEFILE
+ENDHK
+
+################ Convert wind and ice files to ww format ######################
+ banner ice
+
+ ./ff2ww  f2iceinput  ice.ww3
+
+#
+  CC=$?
+  if test $CC -ne 0
+  then
+    banner ICE Crash
+  else
+##  Save converted ice.ww3 file
+  echo " The converted ice.ww3 file ..."
+  ls -l ice.ww3
+  fi
+
+ 
+ banner wind
+ 
+ ./ff2ww  f2wndinput  wind.ww3
+
+#
+  CC=$?
+  if test $CC -ne 0
+  then
+    banner WND Crash
+  else
+##  Save converted wind.ww3 file
+  echo " The converted wind.ww3 file ..."
+  ls -l wind.ww3
+  fi
+
+
+#######################################################################
+# Appended script to run the NAEWW3, adapted from Chris' run.sh
+#               JGLi  29 Feb 2008
+# Grabs the relavent wind file from the operational suite
+# and creates an ww3_shel.inp file with the right dates in.
+#
+# Submit GLBWW3 run script into queue:
+ cd $HOME/WW3Runs
+ llsubmit  smc50mrun
+
+ echo "Done llsubmit smc50mrun "
+
+banner END
+
+exit 0
+

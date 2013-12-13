@@ -21,7 +21,7 @@ should choose the regular lat-lon grid along with the RTD switch to use the
 rotated grid. Model input files, like wind, current and ice files should be
 mapped on to the rotated grid. For convenience of nesting in standard lat-lon
 grid, boundary conditions for the rotated grid use standard lat-lon grid
-points, which are converted into rotated grid lat-lon inside \ws\. List of 2D
+points, which are converted into rotated grid lat-lon inside \ws\.  List of 2D
 spectral output locations in ww3\_shel.inp are also specified in standard
 lat-lon. All directional output such as wind direction, peak direction, 2D
 spectra, etc. are converted into standard lat-lon orientation. Full grid
@@ -37,9 +37,10 @@ conversion:
 \vit{w3eqtoll}{}{Reverse of w3lltoeq, but AnglD unchanged}
 \end{vlist}
 These subroutines are self-contained and can be extracted outside the model
-for pre- or post-processing of rotated grid files. Some conversion tools have
+for pre- or post-processing of rotated grid files.  Some conversion tools have
 been developed based on these subroutines but have not been included in \ws\
 yet. Refer to the regression test \emph{regtests/ww3\_tp2.11} for an example
-of a rotated grid model (NAEW) and the document \emph{RotatedGrid.pdf} for
-rotated grid formulations. For more information, users may contact
-\url{Jian-Guo.Li@metoffice.gov.uk}.
+of a rotated grid model (NAEW).  Users may find more information in 
+\emph{model/aux/Rotated\_Grid.pdf} or contact \url{Jian-Guo.Li@metoffice.gov.uk} 
+for help.
+
