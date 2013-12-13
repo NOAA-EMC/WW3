@@ -60,7 +60,7 @@
 
   echo "  echo '    Tests for single CPU codes         : $shrd'"             >> matrix.head
   echo "  echo '    Tests for multiple CPU codes (MPI) : $dist'"             >> matrix.head
-# echo "  echo '    Tests for multiple CPU codes (OMP) : $omp'"              >> matrix.head
+  echo "  echo '    Tests for multiple CPU codes (OMP) : $omp'"              >> matrix.head
   echo "  echo ' '"                                                          >> matrix.head
 
   echo "  echo '    1D pure propagation tests          : $prop1D'"           >> matrix.head
@@ -884,9 +884,9 @@
     echo "$rtst -s ST6_PR3_UNO -w work_ST6_PR3_UNO $ww3 ww3_ts2" >> matrix.body
   fi
 
-# ww3_st3, no switch sharing here, but run only if you do not run MPI
+# ww3_st3, no switch sharing here, but run only if you do not run MPI or OpenMP
 
-  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ] && [ "$dist" != 'y' ]
+  if [ "$hur1mg" = 'y' ] && [ "$shrd" = 'y' ] && [ "$dist" != 'y' ]  && [ "$omp" != 'y' ]
   then
     echo ' ' >> matrix.body
     echo "$rtst -s ST1_PR1      -w work_ST1_PR1     $ww3 ww3_ts3" >> matrix.body
@@ -1201,6 +1201,297 @@
     if [ "$multi05" = 'y' ]
     then
       echo "$rtst -s ST6_PR3_UNO_MPI -w work_ST6_PR3_UNO_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+# - - - - - - - - - - - - 
+
+  fi
+
+# Moving grid cases for OpenMP, ww3_ts3 and mww3_test_05 share switches
+
+
+  if [ "$omp" = 'y' ]
+  then
+
+# - - - - - - - - - - - - 
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR1_OMP     -w work_ST1_PR1_OMP                 -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR1_OMP     -w work_ST1_PR1_OMP     -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR2_UQ_OMP  -w work_ST1_PR2_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR2_UQ_OMP  -w work_ST1_PR2_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR2_UNO_OMP -w work_ST1_PR2_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR2_UNO_OMP -w work_ST1_PR2_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR3_UQ_OMP  -w work_ST1_PR3_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR3_UQ_OMP  -w work_ST1_PR3_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR3_UNO_OMP -w work_ST1_PR3_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST1_PR3_UNO_OMP -w work_ST1_PR3_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+# - - - - - - - - - - - - 
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR1_OMP     -w work_ST2_PR1_OMP                 -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR1_OMP     -w work_ST2_PR1_OMP     -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR2_UQ_OMP  -w work_ST2_PR2_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR2_UQ_OMP  -w work_ST2_PR2_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR2_UNO_OMP -w work_ST2_PR2_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR2_UNO_OMP -w work_ST2_PR2_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR3_UQ_OMP  -w work_ST2_PR3_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR3_UQ_OMP  -w work_ST2_PR3_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR3_UNO_OMP -w work_ST2_PR3_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST2_PR3_UNO_OMP -w work_ST2_PR3_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+# - - - - - - - - - - - - 
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR1_OMP     -w work_ST3_PR1_OMP                 -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR1_OMP     -w work_ST3_PR1_OMP     -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR2_UQ_OMP  -w work_ST3_PR2_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR2_UQ_OMP  -w work_ST3_PR2_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR2_UNO_OMP -w work_ST3_PR2_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR2_UNO_OMP -w work_ST3_PR2_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR3_UQ_OMP  -w work_ST3_PR3_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR3_UQ_OMP  -w work_ST3_PR3_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR3_UNO_OMP -w work_ST3_PR3_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST3_PR3_UNO_OMP -w work_ST3_PR3_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+# - - - - - - - - - - - - 
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR1_OMP     -w work_ST4_PR1_OMP                 -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR1_OMP     -w work_ST4_PR1_OMP     -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR2_UQ_OMP  -w work_ST4_PR2_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR2_UQ_OMP  -w work_ST4_PR2_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR2_UNO_OMP -w work_ST4_PR2_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR2_UNO_OMP -w work_ST4_PR2_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR3_UQ_OMP  -w work_ST4_PR3_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR3_UQ_OMP  -w work_ST4_PR3_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR3_UNO_OMP -w work_ST4_PR3_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST4_PR3_UNO_OMP -w work_ST4_PR3_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+# - - - - - - - - - - - - 
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR1_OMP     -w work_ST6_PR1_OMP                 -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR1_OMP     -w work_ST6_PR1_OMP     -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR2_UQ_OMP  -w work_ST6_PR2_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR2_UQ_OMP  -w work_ST6_PR2_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR2_UNO_OMP -w work_ST6_PR2_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR2_UNO_OMP -w work_ST6_PR2_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR3_UQ_OMP  -w work_ST6_PR3_UQ_OMP              -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR3_UQ_OMP  -w work_ST6_PR3_UQ_OMP  -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
+    fi
+
+    if [ "$hur1mg" = 'y' ] || [ "$multi05" = 'y' ] ; then 
+      echo ' ' >> matrix.body ; fi
+    if [ "$hur1mg" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR3_UNO_OMP -w work_ST6_PR3_UNO_OMP             -f -O -n $np $ww3 ww3_ts3" >> matrix.body
+    fi
+    if [ "$multi05" = 'y' ]
+    then
+      echo "$rtst -s ST6_PR3_UNO_OMP -w work_ST6_PR3_UNO_OMP -m grdset_a -f -O -n $np $ww3 mww3_test_05" >> matrix.body
     fi
 
 # - - - - - - - - - - - - 

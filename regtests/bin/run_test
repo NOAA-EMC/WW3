@@ -30,7 +30,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:efg:Ghi:m:n:o:p:q:r:s:Sw:"  #option string for getopt function
+optstr="a:c:efg:Ghi:m:n:o:Op:q:r:s:Sw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -59,7 +59,7 @@ Options:
                    :    grid_set = none
   -n nproc         : specify <nproc> processors for parallel run
                    :   *some <runcmd> programs do not require <nproc>
-                   :   *ignored if -p <runcmd> is not specified
+                   :   *ignored if -p <runcmd> or -O is not specified
   -o outopt        : limit output post-processing based on <outopt>
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
@@ -67,6 +67,9 @@ Options:
                    :   * default is native
                    :   * note that required input files must be present for
                    :     selected output post-processing to occur
+  -O               : parallel run using OpenMP paradigm and OMP_NUM_THREADS
+                     environment variable and number of processors defined with
+                     the -n np option
   -p runcmd        : run in parallel using <runcmd> to start program
                    :   *MPICH or OpenMPI: mpirun or mpiexec (default <nproc> = 1)
                    :   *IBM with Loadleveler: poe (no <nproc> required)
@@ -74,7 +77,7 @@ Options:
   -q program       : exit script after program <program> executes
   -r program       : only execute program <program>
   -s switch_string : use switch_<switch_string>
-  -S               : create stub file <finished. with end data and time.
+  -S               : create stub file <finished>. with end data and time.
                      tests not executed if file is found.
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
 
@@ -123,6 +126,7 @@ do
       fi ;;
   -n) shift; nproc="$1" ;;
   -o) shift; outopt="$1" ;;
+  -O) pomp=1 ;;
   -p) shift; runcmd="$1" ; pmpi=1 ;;
   -q) shift; exit_p="$1" ;;
   -r) shift; exec_p="$1" ;;
@@ -235,11 +239,21 @@ then
   if [ "`grep MPI $file_c`" ]
   then :
   else
-    errmsg "Improper switch setup for parallel run"
+    errmsg "Improper switch setup for MPI run"
     exit 1
   fi
 else
   runcmd=''
+fi
+
+if [ $pomp ]
+then
+  if [ "`grep OMP $file_c`" ]
+  then :
+  else
+    errmsg "Improper switch setup for OpenMP run"
+    exit 1
+  fi
 fi
 
 # 2.k Setup for multi-model (and defaults for non-multi-model)
@@ -302,7 +316,6 @@ else
   exit 1
 fi
 
-
 # --------------------------------------------------------------------------- #
 # 3. Execute Test                                                             #
 # --------------------------------------------------------------------------- #
@@ -354,7 +367,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -434,7 +448,9 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -512,7 +528,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -589,7 +606,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -672,7 +690,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -797,6 +816,13 @@ then
       runcmd="$runcmd -np $nproc"
     fi
   fi
+  if [ $pomp ]
+  then
+    if [ $nproc ]
+    then
+      export OMP_NUM_THREADS=$nproc
+    fi
+  fi
 
   if $runcmd $path_e/$prog | tee $ofile
   then
@@ -839,7 +865,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -927,7 +954,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -1074,7 +1102,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -1165,7 +1194,8 @@ then
 
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI//' > $path_b/switch
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi

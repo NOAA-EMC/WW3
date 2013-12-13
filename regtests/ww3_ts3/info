@@ -82,9 +82,35 @@
 #       - switch_ST6_PR3_MPI                                                #
 #       - switch_ST6_PR3_UQ_MPI                                             #
 #       - switch_ST6_PR3_UNO_MPI                                            #
+#       - switch_ST1_PR1_OMP                                                #
+#       - switch_ST1_PR2_UNO_OMP                                            #
+#       - switch_ST1_PR2_UQ_OMP                                             #
+#       - switch_ST1_PR3_UNO_OMP                                            #
+#       - switch_ST1_PR3_UQ_OMP                                             #
+#       - switch_ST2_PR1_OMP                                                #
+#       - switch_ST2_PR2_UNO_OMP                                            #
+#       - switch_ST2_PR2_UQ_OMP                                             #
+#       - switch_ST2_PR3_UNO_OMP                                            #
+#       - switch_ST2_PR3_UQ_OMP                                             #
+#       - switch_ST3_PR1_OMP                                                #
+#       - switch_ST3_PR2_UNO_OMP                                            #
+#       - switch_ST3_PR2_UQ_OMP                                             #
+#       - switch_ST3_PR3_UNO_OMP                                            #
+#       - switch_ST3_PR3_UQ_OMP                                             #
+#       - switch_ST4_PR1_OMP                                                #
+#       - switch_ST4_PR2_UNO_OMP                                            #
+#       - switch_ST4_PR2_UQ_OMP                                             #
+#       - switch_ST4_PR3_UNO_OMP                                            #
+#       - switch_ST4_PR3_UQ_OMP                                             #
+#       - switch_ST6_PR1_OMP                                                #
+#       - switch_ST6_PR2_UQ_OMP                                             #
+#       - switch_ST6_PR2_UNO_OMP                                            #
+#       - switch_ST6_PR3_OMP                                                #
+#       - switch_ST6_PR3_UQ_OMP                                             #
+#       - switch_ST6_PR3_UNO_OMP                                            #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2002     #
-#                                                   Last Mod : Aug 2013     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
