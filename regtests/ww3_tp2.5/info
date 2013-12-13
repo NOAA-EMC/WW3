@@ -36,8 +36,15 @@
 # - Test case input : (input_REF)                                           #
 #   * same as default including coastal reflection                          #
 #                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.5   #
+#  ./bin/run_test -g 36dirs                   -s PR1   ../model ww3_tp2.5   #
+#  ./bin/run_test -g 36dirs -i input_REF      -s PR1   ../model ww3_tp2.5   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.5   #
+#                                                                           #
 #                                             W. Erick Rogers, Nov 2009     #
 #                                             Naval Research Laboratory     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #############################################################################

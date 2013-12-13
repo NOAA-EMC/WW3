@@ -49,8 +49,13 @@
 #     + switch_PR3_UNO_MPI                                                  #
 #     + switch_PR3_UQ_MPI                                                   #
 #                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.1   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.1   # 
+#                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Sep 2013     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

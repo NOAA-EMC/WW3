@@ -30,8 +30,14 @@
 #      guide/RotatedGrid.pdf                                                #
 #   or contact me at Jian-Guo.Li@metoffice.gov.uk                           #
 #                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                           ../model ww3_tp2.11             #
+#  ./bin/run_test -n 3 -p mpirun -f         ../model ww3_tp2.11             #
 #                                                                           #
-#                                               Jian-Guo Li 16 Oct 2013     #
+#                                               Jian-Guo Li,   Oct 2013     #
+#                                                     U. K.  Met Office     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
