@@ -3,7 +3,7 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |    E. Rogers and M. Orzech        |
+!/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         11-Oct-2013 |
@@ -64,7 +64,8 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |    E. Rogers and M. Orzech        |
+!/                  |           E. Rogers               |
+!/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         11-Oct-2013 |
 !/                  +-----------------------------------+
@@ -265,9 +266,6 @@
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
-! Note to self: When I put in dependency on ice concentration, I should
-!     have the model skip computations if ice concentration=0 *or*
-!     ice_thickness=0 (presently I only use the latter)
       IF ( ICECOEF1==0.0 ) THEN
          D = 0.0
 !

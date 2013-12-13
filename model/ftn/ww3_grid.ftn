@@ -1769,7 +1769,7 @@
 !
       CTMAX  = CFLTM
 !
-! 6.n Set miscellaneaous parameters (ice, seeding, numerics ... )
+! 6.n Set miscellaneous parameters (ice, seeding, numerics ... )
 !
       CICE0  = 0.5
       CICEN  = 0.5
@@ -1894,20 +1894,40 @@
       FICEN  = CICEN
       GRIDSHIFT=GSHIFT
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
-      FICE0  = CICE0
       FICEL  = LICE
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
-! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
-!     grid, that is initialized with zeros as default.
-      IF ( FLAGTR .LT. 3 ) THEN
+      IF (CICE0.EQ.CICEN .AND. FLAGTR.GE.3) THEN
+         WRITE(NDSO,2962)
+         WRITE(NDSO,'(7x,A,I3)')' Old FLAGTR = ',FLAGTR
+         IF(FLAGTR.GT.4)THEN ! Fabrice's option for 5 or 6
+            FLAGTR=FLAGTR-4 ! becomes 1 or 2
+         ELSE ! 3 or 4
+            FLAGTR=FLAGTR-2 ! becomes 1 or 2
+         ENDIF
+         WRITE(NDSO,'(7x,A,I3)')' New FLAGTR = ',FLAGTR
+      END IF
+
+      IF (FLIC .AND. FLAGTR.GE.3) THEN
+         WRITE(NDSO,2963)
+         WRITE(NDSO,'(7x,A,I3)')' Old FLAGTR = ',FLAGTR
+         IF(FLAGTR.GT.4)THEN ! Fabrice's option for 5 or 6
+            FLAGTR=FLAGTR-4 ! becomes 1 or 2
+         ELSE ! 3 or 4
+            FLAGTR=FLAGTR-2 ! becomes 1 or 2
+         ENDIF
+         WRITE(NDSO,'(7x,A,I3)')' New FLAGTR = ',FLAGTR
+      END IF
+
+      IF ( FLAGTR.LT.3 .AND. CICE0.NE.CICEN ) THEN
          CICE0 = CICEN
-         FICE0 = CICE0
          IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
       END IF
-      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
+
       WRITE (NDSO,961) CICE0, CICEN
+      FICE0  = CICE0
+
 !/MGG      WRITE (NDSO,962) PMOVE
 !
 !/SEED      XSEED  =  MAX ( 1. , XSEED )
@@ -3096,7 +3116,8 @@
 !/SMC       WRITE (NDSO,4021)   NCel
 !
 ! 8.g Activation of reflections and scattering 
-!
+!     FLAGICESOURCE is Fabrice's old flag related to wind input :
+!       (delete as obsolete now?) (see notes in w3src4md.ftn for FLICES)
       FLICES = FLAGICESOURCE
       FFACBERG=FACBERG
 !/REF1      REFPARS(1)=REFCOAST
@@ -4313,11 +4334,16 @@
                ',       EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
                L3,',IMPFSN =',L3         / )
 !
-  960 FORMAT (/'  Miscellaneaous ',A/                                 &
+  960 FORMAT (/'  Miscellaneous ',A/                                   &
                ' --------------------------------------------------')
- 2961 FORMAT ( ' *** WAVEWATCH-III WARNING IN W3GRID :'/              &
-               '     CICE0.NE.CICEN REQUIRES OBSTRUCTION GRID.'/ &
-               '     PARAMETER CORRECTED: CICE0 = CICE'/)
+ 2961 FORMAT ( ' *** WAVEWATCH-III WARNING IN W3GRID :'/               &
+               '     CICE0.NE.CICEN requires FLAGTR>2'/                &
+               '     Parameters corrected: CICE0 = CICEN'/)
+ 2962 FORMAT (/' *** WAVEWATCH-III WARNING IN W3GRID : User requests', &
+         'CICE0=CICEN corresponding to discontinuous treatment of ',   &
+         'ice, so we will change FLAGTR')
+ 2963 FORMAT (/' *** WAVEWATCH-III WARNING IN W3GRID :'/               &
+               '     Ice physics used, so we will change FLAGTR.')
   961 FORMAT ( '       Ice concentration cut-offs  :',F8.2,F6.2)
 !/MGG  962 FORMAT  ( '       Moving grid GSE cor. power  :',F8.2)
 !/SCRIP  963 FORMAT( ' Grid offset for multi-grid w/SCRIP  : ',E11.3)
