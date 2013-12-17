@@ -25,8 +25,13 @@
 #     + switch_ST4      : Ardhuin et al. (2010).                            #
 #     + switch_ST6      : BYDRZ physics (2013).                             #
 #                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -s ST1  -w work_ST1 ../model ww3_ts1                      #
+#  ./bin/run_test -s ST2  -w work_ST2 ../model ww3_ts1                      #
+#                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Jul 2013     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

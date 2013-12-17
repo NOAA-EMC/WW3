@@ -30,7 +30,7 @@
 #     set to 0.5 s was to demonstrate the use of the SEC1 switch            #
 #     Results are probably as good with time steps: 2 0.5 0.5 0.2           #
 #                                                                           #
-#  Sample run_test commands :                                               #
+#  Example run_test commands:                                               #
 #  ./bin/run_test                             ../model ww3_tp1.8            #
 #  ./bin/run_test -i input_BJ -w work_BJ      ../model ww3_tp1.8            #
 #                                                                           #

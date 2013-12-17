@@ -19,28 +19,30 @@ to run all model elements by typing
   ww3\_trck | more \\
   ww3\_grib | more \\
   gx\_outf | more \\
-  gx\_outp | more } where the {\code more} command is added to allow for
-on-screen inspection of the output. This {\code | more} can be replaced by
-redirection to an output file, e.g. \command{ww3\_grid > ww3\_grid.out } Note
-that {\code ww3\_grib} will only provide GRIB output if a user-supplied
-packing routine is linked in. Note furthermore that no simple interactive test
-case for {\file ww3\_multi} is provided. GrADS can then be run from the work
-directory to generate graphical output for these calculations. All
-intermediate output files are placed in the {\file work} directory, and can be
-removed conveniently by typing \command{w3\_clean}
+  gx\_outp | more } 
+where the {\code more} command is added to allow for on-screen inspection of
+the output. This {\code | more} can be replaced by redirection to an output
+file, e.g. \command{ww3\_grid > ww3\_grid.out } Note that {\code ww3\_grib}
+will only provide GRIB output if a user-supplied packing routine is linked
+in. Note furthermore that no simple interactive test case for {\file
+ww3\_multi} is provided. GrADS can then be run from the work directory to
+generate graphical output for these calculations. All intermediate output
+files are placed in the {\file work} directory, and can be removed
+conveniently by typing \command{w3\_clean}
 
-\vspace{\baselineskip} \noindent Up to version 3.14, \ws\ was provided with a
-set of simple tests to established assess the proper behavior of the basic
-functionality of the model. In the early development of the next release of
-the model, Erick Rogers and Tim Campbell converted these in regression tests
-that could be run more easily in an automated version. Up to model version
-4.06, these modified tests were gathered in the {\file nrltest} directory,
-while keeping the old tests in the {\file test} directory. In model version
-4.07, the {\file nrltest} were adopted as the new test cases for \ws\ in a new
-{\file regtests} directory, while eventually the remaining real-world test
-cases in {\file test} were moved to the {\file cases} directory, while
-discontinuing the {\file test} directory completely. The following regression
-tests are available in the {\file regtests} directory.
+\vspace{\baselineskip} \noindent
+Up to version 3.14, \ws\ was provided with a set of simple tests to
+established assess the proper behavior of the basic functionality of the
+model. In the early development of the next release of the model, Erick Rogers
+and Tim Campbell converted these in regression tests that could be run more
+easily in an automated version. Up to model version 4.06, these modified tests
+were gathered in the {\file nrltest} directory, while keeping the old tests in
+the {\file test} directory. In model version 4.07, the {\file nrltest} were
+adopted as the new test cases for \ws\ in a new {\file regtests} directory,
+while eventually the remaining real-world test cases in {\file test} were
+moved to the {\file cases} directory, while discontinuing the {\file test}
+directory completely. The following regression tests are available in the
+{\file regtests} directory.
 
 \begin{flist}
 \fit{ww3\_tp1.1}{1D propagation around the world along the
@@ -85,13 +87,14 @@ tests are available in the {\file regtests} directory.
 \fit{mww3\_test\_07}{Tests for unstructured grid(s) w/ {\file ww3\_multi}}
 \end{flist}
 
-\noindent These regression tests are now run using the {\file run\_test}
-script in the {\file regtests/bin} directory (primary author: Tim Campbell). How to run this script,
-including options, is shown by running \command{run\_test -h} The output of
-running this command is shown here in Fig.~\ref{fig:runtest}.  The test cases
-are stored in directories under the {\file regtests} directory, e.g.  {\file
-  regtests/ww3\_tp1.1}. For example, the contents of {\file /ww3\_tp1.1} might
-be
+\noindent
+These regression tests are now run using the {\file run\_test} script in the
+{\file regtests/bin} directory (primary author: Tim Campbell). How to run this
+script, including options, is shown by running \command{run\_test -h} The
+output of running this command is shown here in Fig.~\ref{fig:runtest}.  The
+test cases are stored in directories under the {\file regtests} directory,
+e.g.  {\file regtests/ww3\_tp1.1}. For example, the contents of {\file
+/ww3\_tp1.1} might be
 
 \begin{flist}
 \fit{info }{A file containing information about the test case.} 
@@ -108,12 +111,12 @@ of this matrix is the file {\file regtests/bin/matrix.base}. An example of how
 to run this is given in {\file regtests/bin/matrix\_zeus\_HLT}, which is
 Hendrik's driver for the matrix at the NCEP Zeus R\&D
 computer\footnote{~Please build your own driver for your own setup using this
-  as a blueprint, rather than editing this file.}. To run this, make a link to
+as a blueprint, rather than editing this file.}. To run this, make a link to
 it in the {\file regtests} directory and execute after setting the desired
 option flags in the script. This will make a file {\file matrix} in {\file
-  retests}, which can then be run interactively or in batch mode as
-desired. The file can also be manually edited further if so desired. The
-{\file bin} directory under {\file regtests} contains the following tools.
+retests}, which can then be run interactively or in batch mode as desired. The
+file can also be manually edited further if so desired. The {\file bin}
+directory under {\file regtests} contains the following tools.
 
 \begin{flist}
 \fit{cleanup          }{Cleanup work directories.}
@@ -126,19 +129,19 @@ desired. The file can also be manually edited further if so desired. The
 \fit{run\_test        }{Basic test script as described above.}
 \end{flist}
 
-\noindent
+\noindent 
 Note that efficient running of the matrix of regression tests requires a
 minimization of the need to recompile code between regression tests. This is
-achieved by the ordering of the regression tests in {\file matrix.base}. A
-tool to assure that identical switch files are identified as such is to
+achieved by the ordering of the regression tests in {\file matrix.base}. A way
+to assure that identical switch files are identified as such is to
 systematically sort them. This can be done with the script {\file
-  sort\_switch} in the main {\file bin} directory. This script will add
-default values of missing switches and can also be used to remove or add
-switches from the file. Run {\command{comp\_switch -h} for documentation of
-  the script.
+sort\_switch} in the main {\file bin} directory. This script will add default
+values of missing switches and can also be used to remove or add switches from
+the file. Run \command{comp\_switch -h} for documentation of the script.
 
-\vspace{\baselineskip} \noindent Finally, the {\file cases} directory hold the
-real-world test cases as described below.
+\vspace{\baselineskip} \noindent 
+Finally, the {\file cases} directory hold the real-world test cases as
+described below.
 
 \begin{flist}
 \fit{mww3\_case\_01}{Atlantic case with five grids focusing on Trondheim.}
@@ -146,7 +149,7 @@ real-world test cases as described below.
 \fit{mww3\_case\_03}{Original multi-grid case used as global model at NCEP.}
 \end{flist}
 
-\noindent
+\noindent 
 Each of these cases is a single script executing the entire model run. Before
 executing the script, compile the model with the switches indicated in the
 documentation at the head of the script. Additional data used by these scripts
@@ -158,8 +161,8 @@ is contained in the directories
                            mww3\_case\_{\it nn}}.}
 \end{flist}
 
-\noindent
+\noindent 
 These examples can be used as blueprints for setting up other real model
-applications. 
+applications.
 
 \input{impl/fig_runtest}

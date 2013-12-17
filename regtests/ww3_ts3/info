@@ -10,7 +10,7 @@
 #                         2: Tolman and Chalikov (1996)                     #
 #                         3: WAM 4.                                         #
 #                         4: Ardhuin et al. (2010)                          #
-#                         6: BYDRZ (2013)i                                  #
+#                         6: BYDRZ (2013)                                   #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #                         1: First order.                                   #
 #                         2: UQ schemes                                     #   
@@ -108,6 +108,14 @@
 #       - switch_ST6_PR3_OMP                                                #
 #       - switch_ST6_PR3_UQ_OMP                                             #
 #       - switch_ST6_PR3_UNO_OMP                                            #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test  -s ST1_PR1 -w work_ST1_PR1 ../model ww3_ts3              #
+#  ./bin/run_test  -s ST1_PR1_OMP -w work_ST1_PR1_OMP -f -O -n 3  \         #
+#                                             ../model ww3_ts3              #
+#  ./bin/run_test  -s ST1_PR1_MPI -w work_ST1_PR1_MPI -f -p mpirun -n 3  \  #
+#                                             ../model ww3_ts3              #
 #                                                                           #
 #                                              Hendrik Tolman, Nov 2002     #
 #                                                   Last Mod : Dec 2013     #

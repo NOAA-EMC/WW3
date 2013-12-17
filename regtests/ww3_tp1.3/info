@@ -30,10 +30,11 @@
 #     + switch_PR3_UNO : UNO scheme with averaging (off)                    #
 #     + switch_PR3_UQ  : UQ scheme with averaging (off) (default)           #
 #                                                                           #
-#  Sample run_test commands :                                               #
-#  ./bin/run_test                             -s PR1   ../model ww3_tp1.3   #
-#                                                                           #
-#     Other switch options are PR2_UNO, PR2_UQ, PR3_UNO and PR3_UQ          #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -s PR1    -w work_PR1 ../model ww3_tp1.3                  #
+#  ./bin/run_test -s PR2_UQ -w work_PR2 ../model ww3_tp1.3                  #
+#  ./bin/run_test -s PR3_UQ -w work_PR3 ../model ww3_tp1.3                  #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Aug 2013     #

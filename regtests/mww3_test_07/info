@@ -18,8 +18,11 @@
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
+#  Example run_test commands:                                               #
+#  ./bin/run_test -m grdset           ../model mww3_test_07                 #
+#                                                                           #
 #                                             Fabrice Ardhuin, Dec 2011     #
-#                                                   Last Mod : Sep 2012     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #

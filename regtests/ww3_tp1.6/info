@@ -37,11 +37,10 @@
 #   * All else as in default tests.                                         #
 #   * Presently not added in regresssion text matrix.                       #
 #                                                                           #
-#  Sample run_test commands :                                               #
-#  ./bin/run_test                             -s PR1   ../model ww3_tp1.6   #
-#  ./bin/run_test -i input_moderate_current   -s PR1   ../model ww3_tp1.6   #
-#                                                                           #
-#     Other switch options are PR2_UNO, PR2_UQ, PR3_UNO and PR3_UQ          #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -s PR1                           ../model ww3_tp1.6       #
+#  ./bin/run_test -s PR1 -i input_moderate_current ../model ww3_tp1.6       #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Dec 2013     #
