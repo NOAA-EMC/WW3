@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Nov-2013 |
+!/                  | Last update :         18-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -57,6 +57,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
 !/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
+!/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -522,8 +523,6 @@
       INTEGER, PARAMETER      :: ICLOSE_NONE = ICLO_NONE
       INTEGER, PARAMETER      :: ICLOSE_SMPL = ICLO_SMPL
       INTEGER, PARAMETER      :: ICLOSE_TRPL = ICLO_TRPL
-
-      LOGICAL                 :: FLAGLL
 !
 ! Dimensions of tables for pre-computing of dissipation 
 !  
@@ -575,6 +574,7 @@
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
         LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+        LOGICAL          :: FLAGLL
         LOGICAL, POINTER :: FLAGST(:)
         CHARACTER(LEN=30):: GNAME
         CHARACTER(LEN=10):: FILEXT
@@ -841,6 +841,7 @@
 !/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
       LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      LOGICAL, POINTER :: FLAGLL
       LOGICAL, POINTER :: FLAGST(:)
 
       CHARACTER(LEN=30), POINTER :: GNAME
@@ -1642,6 +1643,7 @@
       NSEA   => GRIDS(IMOD)%NSEA
       NSEAL  => GRIDS(IMOD)%NSEAL
       TRFLAG => GRIDS(IMOD)%TRFLAG
+      FLAGLL => GRIDS(IMOD)%FLAGLL
 !
 !/SMC      NCel   => GRIDS(IMOD)%NCel 
 !/SMC      NUFc   => GRIDS(IMOD)%NUFc 
