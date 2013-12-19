@@ -1010,6 +1010,12 @@
 !
 !/DB1      IF ( FLTEST ) WRITE (NDST,9053) SDBC1, SDBC2, FDONLY
 !
+!/IS1      IF ( WRITE ) THEN
+!/IS1          WRITE (NDSM)                            IS1C1, IS1C2
+!/IS1        ELSE
+!/IS1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
+!/IS1        END IF
+!
 ! Propagation scheme ------------------------------------------------- *
 !                                                 Module W3GDATMD PROP
 !

@@ -87,8 +87,8 @@
   fi
 
   for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid GSE \
-              prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_xx \
-              wind windx rwind curr currx tdyn dss0 pdif miche s_ice\
+              prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_is s_ice s_xx \
+              wind windx rwind curr currx tdyn dss0 pdif miche \
               mgwind mgprop mggse nnt mprf reflection mcp netcdf \
               scrip scripnc tide mpiexp refrx
   do
@@ -173,6 +173,10 @@
       s_bs   ) TY='one'
                ID='bottom scattering'
                OK='BS0 BS1 BSX' ;;
+      s_is   ) TY='one'
+               ID='diffusive ice scattering'
+               TS='IS'
+               OK='IS0 IS1' ;;
       s_xx   ) TY='one'
                ID='arbitrary source'
                OK='XX0 XXX' ;;
@@ -333,6 +337,7 @@
       snls   ) snls=$sw ;;
       s_bot  ) s_bt=$sw ;;
       s_ice  ) s_ic=$sw ;;
+      s_is   ) s_is=$sw ;;
       s_db   ) s_db=$sw ;;
       s_tr   ) s_tr=$sw ;;
       s_bs   ) s_bs=$sw ;;
@@ -497,6 +502,11 @@
    BTX) bt='w3sbtxmd' ;;
   esac
 
+  is=$NULL
+  case $s_is in
+   IS1) is='w3sis1md' ;;
+  esac
+
   ic=$NULL
   case $s_ic in
    IC1) ic='w3sic1md' ;;
@@ -619,7 +629,7 @@
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
@@ -628,7 +638,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
@@ -648,7 +658,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode" 
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
@@ -681,14 +691,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
@@ -730,7 +740,7 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx"
                  IO='w3iogrmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       ww3_systrk) IDstring='Wave system tracking postprocessor'
@@ -828,7 +838,7 @@
                W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD W3SWLDMD \
                m_xnldata serv_xnl4v5 m_fileio m_constants \
                W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
-               W3SBT8MD W3SBT9MD W3SIC1MD W3SIC2MD W3SIC3MD \
+               W3SBT8MD W3SBT9MD W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD \
                W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
                W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
@@ -890,6 +900,7 @@
          'W3SIC1MD'     ) modtest=w3sic1md.o ;;
          'W3SIC2MD'     ) modtest=w3sic2md.o ;;
          'W3SIC3MD'     ) modtest=w3sic3md.o ;;
+         'W3SIS1MD'     ) modtest=w3sis1md.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
          'W3STRXMD'     ) modtest=w3strxmd.o ;;

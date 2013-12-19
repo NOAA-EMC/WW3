@@ -446,6 +446,15 @@
 !     ----------------------------------------------------------------
 !     ----------------------------------------------------------------
 !
+!     The structure SICP contains parameters for arbitrary source 
+!     term and is aliased as above:
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     IS1C1      Real  Public   Scale factor for icecon.     (!/IS1)
+!     IS1C2      Real  Public   Offset for ice concentration (!/IS1)
+!     ----------------------------------------------------------------
+!
 !     The structure SXXP contains parameters for arbitrary source 
 !     term and is aliased as above:
 !
@@ -738,6 +747,11 @@
 !/BSX        REAL                  :: DUMMY
       END TYPE SBSP
 !
+      TYPE SICP
+!/IS0        REAL                  :: DUMMY
+!/IS1        REAL                  :: IS1C1, IS1C2
+      END TYPE SICP
+!
       TYPE SXXP
 !/XX0        REAL                  :: DUMMY
 !/XXX        REAL                  :: DUMMY
@@ -761,6 +775,7 @@
         TYPE(SDBP)            :: SDBPS
         TYPE(STRP)            :: STRPS
         TYPE(SBSP)            :: SBSPS
+        TYPE(SICP)            :: SICPS
         TYPE(SXXP)            :: SXXPS
         TYPE(SCHM)            :: SCHMS
       END TYPE MPAR
@@ -947,6 +962,9 @@
 !/
 !/ Data aliasing for structure SCHM(S)
       LOGICAL, POINTER        :: FSN,FSPSI,FSFCT,FSNIMP
+!/
+!/ Data aliasing for structure SICP(S)
+!/IS1      REAL, POINTER           :: IS1C1, IS1C2
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -2011,6 +2029,12 @@
 !/DB1      SDBC1  => MPARS(IMOD)%SDBPS%SDBC1
 !/DB1      SDBC2  => MPARS(IMOD)%SDBPS%SDBC2
 !/DB1      FDONLY => MPARS(IMOD)%SDBPS%FDONLY
+!
+!     Structure SICPS
+!
+!/IS1      IS1C1  => MPARS(IMOD)%SICPS%IS1C1
+!/IS1      IS1C2  => MPARS(IMOD)%SICPS%IS1C2
+!
 !    Structure SCHM
        FSN => MPARS(IMOD)%SCHMS%FSN
        FSPSI => MPARS(IMOD)%SCHMS%FSPSI

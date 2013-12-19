@@ -577,6 +577,7 @@
 !!Li
       LOGICAL                 :: FLAGICESOURCE
       REAL                    :: FACBERG, REFSLOPE
+!/IS1      REAL                    :: ISC1, ISC2
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
@@ -697,6 +698,7 @@
                              STH1MF, I1STH1M, I2STH1M,                &
                              TH2MF, I1TH2M, I2TH2M,                   &
                              STH2MF, I1STH2M, I2STH2M
+!/IS1           NAMELIST /SIS1/ ISC1,ISC2
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -1795,6 +1797,15 @@
 !
       FLAGICESOURCE=.FALSE.
       FACBERG=1.
+!/IS0      WRITE (NDSO,944)
+!/IS1      ISC1 = 1.
+!/IS1      ISC2 = 0.
+!/IS1      CALL READNL ( NDSS, 'SIS1', STATUS )
+!/IS1      WRITE (NDSO,945) STATUS
+!/IS1      WRITE (NDSO,946) ISC1, ISC2
+!/IS1      IS1C1 = ISC1
+!/IS1      IS1C2 = ISC2
+
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -1971,6 +1982,7 @@
 !/BT4          WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
+!/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -4213,6 +4225,14 @@
 !/IC3  935 FORMAT (/'  Dissipation via ice parameters (IC3).'&
 !/IC3           ,/' --------------------------------------------------')
 !
+!/IS0 944 FORMAT  (/'  Ice scattering not defined.'/)
+!/IS1 945 FORMAT  (/'  Ice scattering ',A,/ &
+!/IS1              ' --------------------------------------------------')
+!/IS1 946 FORMAT  ('  Isotropic (linear function of ice concentration)'/&
+!/IS1              '        slope                      : ',E10.3/ &
+!/IS1              '        offset                     : ',E10.3)
+!/IS1 2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+!
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
   951 FORMAT ( '       Type of scheme (structured) :',1X,A)
@@ -4693,6 +4713,8 @@
 !/BT1                          READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
 !/BT4                        CASE('SBT4')
 !/BT4                          READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
+!/IS1                        CASE('SIS1')
+!/IS1                          READ (NDS,NML=SIS1,END=801,ERR=802,IOSTAT=J)
 !/DB1                        CASE('SDB1')
 !/DB1                          READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
 !/PR1                        CASE('PRO1')

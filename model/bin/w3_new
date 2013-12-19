@@ -193,6 +193,9 @@
                                    touch ww3_grid.ftn
                                    touch ww3_outp.ftn
                                    touch gx_outp.ftn ;;
+     's_is'   ) cd $main_dir/ftn ; touch w3srcemd.ftn
+                                   touch ww3_outp.ftn
+                                   touch gx_outp.ftn ;;
      's_db'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn
@@ -262,8 +265,7 @@
                                    touch w3pro1md.ftn
                                    touch w3pro2md.ftn
                                    touch w3pro3md.ftn ;;
-      'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn 
-                                         touch w3srcemd.ftn ;;
+      'reflection' )  cd $main_dir/ftn ; touch w3ref1md.ftn ;;
       'tide' )        cd $main_dir/ftn ; touch w3tidemd.ftn 
                                          touch w3updtmd.ftn 
                                          touch w3idatmd.ftn 
