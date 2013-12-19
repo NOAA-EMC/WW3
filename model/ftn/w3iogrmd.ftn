@@ -122,7 +122,6 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    23-Dec-2009 : Addition of COU namelists           ( version 3.14 )
-!/    23-Jun-2010 : Addition of US3DF namelists         ( version 3.14 )
 !/    31-Oct-2010 : Implement unstructured grids        ( version 3.14 )
 !/                  (A. Roland and F. Ardhuin) 
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
@@ -134,6 +133,7 @@
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    19-Dec-2012 : Add NOSWLL to file.                 ( version 4.11 )
 !/    01-Jul-2013 : Document UQ / UNO switches in file  ( version 4.12 )
+!/    10-Sep-2013 : Add IG1 parameters                  ( version 4.12 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -746,6 +746,8 @@
 !/RWND                RWINDC
 !/REF1          WRITE (NDSM)                                                &
 !/REF1                RREF, REFPARS, REFLC, REFLD
+!/IG1          WRITE   (NDSM)                                              &
+!/IG1                IGPARS(1:12)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
@@ -755,6 +757,8 @@
 !/RWND                RWINDC
 !/REF1         READ   (NDSM)                                                &
 !/REF1                RREF, REFPARS, REFLC, REFLD
+!/IG1         READ   (NDSM)                                                &
+!/IG1                IGPARS(1:12)
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
@@ -853,8 +857,8 @@
 !/ST4          CALL INSIN4(.TRUE.)
 !/ST4          WRITE (NDSM)                                           &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+!/ST4                ZZ0RAT, SSDSC,                                   &
 !/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
@@ -867,8 +871,8 @@
 !/ST4        ELSE
 !/ST4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF,               &
-!/ST4                ZZ0RAT, SSDSC(1:7),                              &
+!/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+!/ST4                ZZ0RAT, SSDSC,                                   &
 !/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
 !/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &

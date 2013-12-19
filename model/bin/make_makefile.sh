@@ -11,7 +11,7 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      July 2013              #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -86,180 +86,248 @@
     $new_sw all
   fi
 
-  for type in mach nco grib shared mpp thr0 thr1 c90 nec lrecl grid GSE \
-              prop stress s_ln source stab s_nl snls s_bot s_db s_tr s_bs s_is s_ice s_xx \
-              wind windx rwind curr currx tdyn dss0 pdif miche \
-              mgwind mgprop mggse nnt mprf reflection mcp netcdf \
-              scrip scripnc tide mpiexp refrx
+# NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
+
+  for type in mach nco grib mcp c90 nec lrecl netcdf scrip scripnc \
+              shared mpp mpiexp thr0 thr1 GSE prop \
+              stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
+                     s_ice s_is reflection s_xx \
+              wind windx rwind curr currx mgwind mgprop mggse \
+              subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf
   do
     case $type in
+#sort:mach:
       mach   ) TY='one'
                ID='hardware or compiler'
                OK='DUM F90' ;;
+#sort:nco:
       nco    ) TY='upto1'
                ID='NCO modifications'
                TS='NCO'
                OK='NCO' ;;
+#sort:grib:
       grib   ) TY='one'
                ID='GRIB package'
                OK='NOGRB NCEP1 NCEP2' ;;
-      shared ) TY='one'
-               ID='shared / distributed memory'
-               OK='SHRD DIST' ;;
-      mpp    ) TY='one'
-               ID='message passing protocol'
-               OK='SHRD MPI' ;;
-      mpiexp ) TY='upto1'
-               ID='experimental MPI option'
-               TS='MPIBDI'
-               OK='MPIBDI' ;;
-      thr0   ) TY='upto1'
-               ID='directive controlled threading (subs)'
-               TS='OMP0'
-               OK='OMP0' ;;
-      thr1   ) TY='upto1'
-               ID='directive controlled threading (loop)'
-               TS='OMP1'
-               OK='OMP1' ;;
-      c90    ) TY='upto1'
-               ID='Cray C90 compiler directives'
-               TS='C90'
-               OK='C90' ;;
-      nec    ) TY='upto1'
-               ID='NEC compiler directives'
-               TS='NEC'
-               OK='NEC' ;;
-      lrecl  ) TY='one'
-               ID='word length in record length'
-               OK='LRB4 LRB8' ;;
-      GSE    ) TY='one'
-               ID='GSE aleviation'
-               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
-      prop   ) TY='one'
-               ID='propagation scheme'
-               OK='PR0 PR1 UQ UNO SMC' ;;
-      stress ) TY='one'
-               ID='stress computation'
-               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
-      s_ln   ) TY='one'
-               ID='linear input'
-               OK='LN0 SEED LN1 LNX' ;;
-      source ) TY='one'
-               ID='input/whitecapping'
-               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
-      stab   ) TY='upto1'
-               ID='stability correction'
-               TS='STAB'
-               OK='STAB0 STAB2 STAB3' ;;
-      s_nl   ) TY='one'
-               ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NL3 NLX' ;;
-      snls   ) TY='upto1'
-               ID='quadruplet smoother'
-               TS='NLS'
-               OK='NLS' ;;
-      s_bot  ) TY='one'
-               ID='bottom friction'
-               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
-      s_ice  ) TY='upto1'
-               ID='ice sink term'
-               OK='IC1 IC2 IC3' ;;
-      s_db   ) TY='one'
-               ID='depth-induced breaking'
-               OK='DB0 DB1 DBX' ;;
-      s_tr   ) TY='one'
-               ID='triad interactions'
-               OK='TR0 TRX' ;;
-      s_bs   ) TY='one'
-               ID='bottom scattering'
-               OK='BS0 BS1 BSX' ;;
-      s_is   ) TY='one'
-               ID='diffusive ice scattering'
-               TS='IS'
-               OK='IS0 IS1' ;;
-      s_xx   ) TY='one'
-               ID='arbitrary source'
-               OK='XX0 XXX' ;;
-      wind   ) TY='one'
-               ID='wind interpolation in time'
-               OK='WNT0 WNT1 WNT2' ;;
-      windx  ) TY='one'
-               ID='wind interpolation in space'
-               OK='WNX0 WNX1 WNX2' ;;
-      rwind  ) TY='upto1'
-               ID='wind vs. current definition'
-               TS='RWND'
-               OK='RWND' ;;
-      curr   ) TY='one'
-               ID='current interpolation in time'
-               OK='CRT1 CRT2' ;;
-      currx  ) TY='one'
-               ID='current interpolation in space'
-               OK='CRX0 CRX1 CRX2' ;;
-      tdyn   ) TY='upto1'
-               ID='dynamic diffusion time'
-               TS='TDYN'
-               OK='TDYN' ;;
-      dss0   ) TY='upto1'
-               ID='diffusion tensor'
-               TS='DSS0'
-               OK='DSS0' ;;
-      pdif   ) TY='upto1'
-               ID='propagation diffusion'
-               TS='XW'
-               OK='XW0 XW1' ;;
-      miche  ) TY='upto1'
-               ID='Miche style limiter'
-               TS='MLIM'
-               OK='MLIM' ;;
-      mgwind ) TY='upto1'
-               ID='moving grid wind correction'
-               TS='MGW'
-               OK='MGW' ;;
-      mgprop ) TY='upto1'
-               ID='moving grid propagation correction'
-               TS='MGP'
-               OK='MGP' ;;
-      mggse  ) TY='upto1'
-               ID='moving grid GSE correction'
-               TS='MGG'
-               OK='MGG' ;;
-      nnt    ) TY='upto1'
-               ID='NN training/test data generation'
-               TS='NNT'
-               OK='NNT' ;;
-      mprf   ) TY='upto1'
-               ID='multi-grid model profiling'
-               TS='MPRF'
-               OK='MPRF' ;;
-      reflection ) TY='upto1'
-               ID='wave reflections'
-               TS='REF1'
-               OK='REF1' ;;
-      refrx  ) TY='upto1'
-               ID='use of spectral refraction @C/@x'
-               TS='REFRX'
-               OK='REFRX' ;;
+#sort:mcp:
       mcp    ) TY='one'
                ID='model coupling protocol'
                TS='NOPA'
                OK='NOPA PALM' ;;
+#sort:c90:
+      c90    ) TY='upto1'
+               ID='Cray C90 compiler directives'
+               TS='C90'
+               OK='C90' ;;
+#sort:nec:
+      nec    ) TY='upto1'
+               ID='NEC compiler directives'
+               TS='NEC'
+               OK='NEC' ;;
+#sort:lrecl:
+      lrecl  ) TY='one'
+               ID='word length in record length'
+               OK='LRB4 LRB8' ;;
+#sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'
                TS='NC4'
                OK='NC4' ;;
+#sort:scrip:
       scrip  ) TY='upto1'
                ID='grid to grid interpolation '
                TS='SCRIP'
                OK='SCRIP' ;;
+#sort:scripnc:
       scripnc ) TY='upto1'
                ID='use of netcdf in grid to grid interpolation '
                TS='SCRIPNC'
                OK='SCRIPNC' ;;
+#sort:shared:
+      shared ) TY='one'
+               ID='shared / distributed memory'
+               OK='SHRD DIST' ;;
+#sort:mpp:
+      mpp    ) TY='one'
+               ID='message passing protocol'
+               OK='SHRD MPI' ;;
+#sort:mpiexp:
+      mpiexp ) TY='upto1'
+               ID='experimental MPI option'
+               TS='MPIBDI'
+               OK='MPIBDI' ;;
+#sort:thr0:
+      thr0   ) TY='upto1'
+               ID='directive controlled threading (subs)'
+               TS='OMP0'
+               OK='OMP0' ;;
+#sort:thr1:
+      thr1   ) TY='upto1'
+               ID='directive controlled threading (loop)'
+               TS='OMP1'
+               OK='OMP1' ;;
+#sort:GSE:
+      GSE    ) TY='one'
+               ID='GSE aleviation'
+               OK='PR0 PR1 PR2 PR3 PRX SMC' ;;
+#sort:prop:
+      prop   ) TY='one'
+               ID='propagation scheme'
+               OK='PR0 PR1 UQ UNO SMC' ;;
+#sort:stress:
+      stress ) TY='one'
+               ID='stress computation'
+               OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+#sort:s_ln:
+      s_ln   ) TY='one'
+               ID='linear input'
+               OK='LN0 SEED LN1 LNX' ;;
+#sort:source:
+      source ) TY='one'
+               ID='input/whitecapping'
+               OK='ST0 ST1 ST2 ST3 ST4 ST6 STX' ;;
+#sort:stab:
+      stab   ) TY='upto1'
+               ID='stability correction'
+               TS='STAB'
+               OK='STAB0 STAB2 STAB3' ;;
+#sort:s_nl:
+      s_nl   ) TY='one'
+               ID='quadruplet interactions'
+               OK='NL0 NL1 NL2 NL3 NLX' ;;
+#sort:snls:
+      snls   ) TY='upto1'
+               ID='quadruplet smoother'
+               TS='NLS'
+               OK='NLS' ;;
+#sort:s_bot:
+      s_bot  ) TY='one'
+               ID='bottom friction'
+               OK='BT0 BT1 BT4 BT8 BT9 BTX' ;;
+#sort:s_db:
+      s_db   ) TY='one'
+               ID='depth-induced breaking'
+               OK='DB0 DB1 DBX' ;;
+#sort:miche:
+      miche  ) TY='upto1'
+               ID='Miche style limiter'
+               TS='MLIM'
+               OK='MLIM' ;;
+#sort:s_tr:
+      s_tr   ) TY='one'
+               ID='triad interactions'
+               OK='TR0 TRX' ;;
+#sort:s_bs:
+      s_bs   ) TY='one'
+               ID='bottom scattering'
+               OK='BS0 BS1 BSX' ;;
+#sort:s_ice:
+      s_ice  ) TY='one'
+               ID='ice sink term'
+               OK='IC0 IC1 IC2 IC3' ;;
+#sort:s_is:
+      s_is   ) TY='one'
+               ID='ice scattering'
+               OK='IS0 IS1' ;;
+#sort:reflection:
+  reflection ) TY='one'
+               ID='wave reflections'
+               OK='REF0 REF1' ;;
+#sort:s_xx:
+      s_xx   ) TY='one'
+               ID='arbitrary source'
+               OK='XX0 XXX' ;;
+#sort:wind:
+      wind   ) TY='one'
+               ID='wind interpolation in time'
+               OK='WNT0 WNT1 WNT2' ;;
+#sort:windx:
+      windx  ) TY='one'
+               ID='wind interpolation in space'
+               OK='WNX0 WNX1 WNX2' ;;
+#sort:rwind:
+      rwind  ) TY='upto1'
+               ID='wind vs. current definition'
+               TS='RWND'
+               OK='RWND' ;;
+#sort:curr:
+      curr   ) TY='one'
+               ID='current interpolation in time'
+               OK='CRT1 CRT2' ;;
+#sort:currx:
+      currx  ) TY='one'
+               ID='current interpolation in space'
+               OK='CRX0 CRX1 CRX2' ;;
+#sort:mgwind:
+      mgwind ) TY='upto1'
+               ID='moving grid wind correction'
+               TS='MGW'
+               OK='MGW' ;;
+#sort:mgprop:
+      mgprop ) TY='upto1'
+               ID='moving grid propagation correction'
+               TS='MGP'
+               OK='MGP' ;;
+#sort:mggse:
+      mggse  ) TY='upto1'
+               ID='moving grid GSE correction'
+               TS='MGG'
+               OK='MGG' ;;
+#sort:subsec:
+      subsec ) TY='upto1'
+               ID='sub-second time stepping'
+               TS='SEC1'
+               OK='SEC1' ;;
+#sort:tdyn:
+      tdyn   ) TY='upto1'
+               ID='dynamic diffusion time'
+               TS='TDYN'
+               OK='TDYN' ;;
+#sort:dss0:
+      dss0   ) TY='upto1'
+               ID='diffusion tensor'
+               TS='DSS0'
+               OK='DSS0' ;;
+#sort:pdif:
+      pdif   ) TY='upto1'
+               ID='propagation diffusion'
+               TS='XW'
+               OK='XW0 XW1' ;;
+#sort:tide:
       tide   ) TY='upto1'
                ID='use of tidal analysis'
                TS='TIDE'
                OK='TIDE' ;;
+#sort:refrx:
+      refrx  ) TY='upto1'
+               ID='use of spectral refraction @C/@x'
+               TS='REFRX'
+               OK='REFRX' ;;
+#sort:ig:
+      ig     ) TY='upto1'
+               ID='infragravity waves'
+               TS='IG1'
+               OK='IG1' ;;
+#sort:rotag:
+      rotag  ) TY='upto1'
+               ID='rotated grid'
+               TS='RTD'
+               OK='RTD' ;;
+#sort:arctic:
+      arctic ) TY='upto1'
+               ID='Arctic grid'
+               TS='ARC'
+               OK='ARC' ;;
+#sort:nnt:
+      nnt    ) TY='upto1'
+               ID='NN training/test data generation'
+               TS='NNT'
+               OK='NNT' ;;
+#sort:mprf:
+      mprf   ) TY='upto1'
+               ID='multi-grid model profiling'
+               TS='MPRF'
+               OK='MPRF' ;;
     esac
 
     n_found='0'
@@ -344,6 +412,7 @@
       s_xx   ) s_xx=$sw ;;
       reflection    ) reflection=$sw ;;
       refrx  ) refrx=$sw ;;
+      ig     ) ig=$sw ;;
       mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
@@ -502,18 +571,6 @@
    BTX) bt='w3sbtxmd' ;;
   esac
 
-  is=$NULL
-  case $s_is in
-   IS1) is='w3sis1md' ;;
-  esac
-
-  ic=$NULL
-  case $s_ic in
-   IC1) ic='w3sic1md' ;;
-   IC2) ic='w3sic2md' ;;
-   IC3) ic='w3sic3md' ;;
-  esac
-
   case $s_db in
    DB0) db=$NULL
         dbx=$NULL ;;
@@ -539,11 +596,16 @@
         bsx=$NULL ;;
   esac
 
-  case $s_xx in
-   XX0) xx=$NULL
-        xxx=$NULL ;;
-   XXX) xx='w3sxxxmd'
-        xxx=$NULL ;;
+  ic=$NULL
+  case $s_ic in
+   IC1) ic='w3sic1md' ;;
+   IC2) ic='w3sic2md' ;;
+   IC3) ic='w3sic3md' ;;
+  esac
+
+  is=$NULL
+  case $s_is in
+   IS1) is='w3sis1md' ;;
   esac
 
   refcode=$NULL
@@ -551,12 +613,24 @@
    REF1) refcode='w3ref1md'
    esac
 
+  case $s_xx in
+   XX0) xx=$NULL
+        xxx=$NULL ;;
+   XXX) xx='w3sxxxmd'
+        xxx=$NULL ;;
+  esac
+
   tidecode=$NULL
   tideprog=$NULL
   case $tide in
    TIDE) tidecode='w3tidemd'
          tideprog='ww3_prtide'
    esac
+
+  case $ig in
+   IG1) igcode='w3gig1md w3canomd'
+   esac
+
 
   if [ "$nr_thr" != '0' ] && [ "$s_nl" = 'NL2' ]
   then
@@ -629,7 +703,7 @@
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
@@ -638,7 +712,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
@@ -658,7 +732,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode" 
+               source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
@@ -691,14 +765,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
@@ -707,7 +781,7 @@
                prop=
              source=
                  IO=
-                aux="w3servmd w3timemd w3gsrumd" ;;
+                aux="constants w3servmd w3timemd w3gsrumd" ;;
      ww3_grib) IDstring='Gridded output (GRIB)'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -827,44 +901,64 @@
     grep use $file.$fext >> check_file
     rm -f $file.$fext
 
-    for mod in W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
-               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD \
-               W3TRIAMD \
+    for mod in W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
+               W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
-               W3IOSFMD W3PARTMD W3PSMCMD \
-               W3PRO1MD W3PRO2MD W3PRO3MD W3PRO4MD W3PROXMD W3UQCKMD W3UNO2MD W3PROFSMD \
+                        W3IOSFMD W3PARTMD W3BULLMD \
+               W3TIDEMD W3CANOMD W3GIG1MD W3STRKMD \
+               W3PRO1MD W3PRO2MD W3PRO3MD W3PROXMD \
+                        W3UQCKMD W3UNO2MD W3PSMCMD W3PROFSMD \
                W3SRCEMD W3FLX1MD W3FLX2MD W3FLX3MD W3FLX4MD W3FLXXMD \
-               W3SLN1MD W3SLNXMD W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD W3SRC6MD W3SRCXMD \
-               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD W3SWLDMD \
-               m_xnldata serv_xnl4v5 m_fileio m_constants \
-               W3SBT1MD W3SBT4MD W3SBTXMD W3SDB1MD W3SDBXMD \
-               W3SBT8MD W3SBT9MD W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD \
-               W3STRXMD W3SBS1MD W3SBSXMD W3SXXXMD W3REF1MD \
-               W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
-               WMMDATMD WMINITMD WMWAVEMD WMFINLMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD W3BULLMD WMSCRPMD m_btffac W3STRKMD W3TIDEMD  
+               W3SLN1MD W3SLNXMD \
+               W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD \
+                        W3SRC6MD W3SRCXMD \
+               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD \
+                        m_xnldata serv_xnl4v5 m_fileio m_constants \
+               W3SWLDMD \
+               W3SBT1MD W3SBT4MD W3SBT8MD W3SBT9MD W3SBTXMD \
+               W3SDB1MD W3SDBXMD \
+               W3STRXMD \
+               W3SBS1MD W3SBSXMD \
+               W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD \
+               W3REF1MD \
+               W3SXXXMD \
+              CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
+               WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD
       do
       case $mod in
-         'CONSTANTS'    ) modtest=constants.o ;;
+         'W3INITMD'     ) modtest=w3initmd.o ;;
+         'W3WAVEMD'     ) modtest=w3wavemd.o ;;
+         'W3WDASMD'     ) modtest=w3wdasmd.o ;;
+         'W3UPDTMD'     ) modtest=w3updtmd.o ;;
+         'W3FLDSMD'     ) modtest=w3fldsmd.o ;;
+         'W3CSPCMD'     ) modtest=w3cspcmd.o ;;
          'W3GDATMD'     ) modtest=w3gdatmd.o ;;
          'W3WDATMD'     ) modtest=w3wdatmd.o ;;
          'W3ADATMD'     ) modtest=w3adatmd.o ;;
          'W3ODATMD'     ) modtest=w3odatmd.o ;;
          'W3IDATMD'     ) modtest=w3idatmd.o ;;
-         'W3TRIAMD'     ) modtest=w3triamd.o ;;
-         'W3WAVEMD'     ) modtest=w3wavemd.o ;;
-         'W3INITMD'     ) modtest=w3initmd.o ;;
-         'W3WDASMD'     ) modtest=w3wdasmd.o ;;
-         'W3UPDTMD'     ) modtest=w3updtmd.o ;;
-         'W3PSMCMD'     ) modtest=w3psmcmd.o ;;
+         'W3IOGRMD'     ) modtest=w3iogrmd.o ;;
+         'W3IOGOMD'     ) modtest=w3iogomd.o ;;
+         'W3IOPOMD'     ) modtest=w3iopomd.o ;;
+         'W3IOTRMD'     ) modtest=w3iotrmd.o ;;
+         'W3IORSMD'     ) modtest=w3iorsmd.o ;;
+         'W3IOBCMD'     ) modtest=w3iobcmd.o ;;
+         'W3IOSFMD'     ) modtest=w3iosfmd.o ;;
+         'W3PARTMD'     ) modtest=w3partmd.o ;;
+         'W3BULLMD'     ) modtest=w3bullmd.o ;;
+         'W3TIDEMD'     ) modtest=w3tidemd.o ;;
+         'W3CANOMD'     ) modtest=w3canomd.o ;;
+         'W3GIG1MD'     ) modtest=w3gig1md.o ;;
+         'W3STRKMD'     ) modtest=w3strkmd.o ;;
          'W3PRO1MD'     ) modtest=w3pro1md.o ;;
          'W3PRO2MD'     ) modtest=w3pro2md.o ;;
          'W3PRO3MD'     ) modtest=w3pro3md.o ;;
-         'W3PRO4MD'     ) modtest=w3pro4md.o ;;
+         'W3PROXMD'     ) modtest=w3proxmd.o ;;
          'W3UQCKMD'     ) modtest=w3uqckmd.o ;;
          'W3UNO2MD'     ) modtest=w3uno2md.o ;;
+         'W3PSMCMD'     ) modtest=w3psmcmd.o ;;
          'W3PROFSMD'    ) modtest=w3profsmd.o ;;
-         'W3PROXMD'     ) modtest=w3proxmd.o ;;
          'W3SRCEMD'     ) modtest=w3srcemd.o ;;
          'W3FLX1MD'     ) modtest=w3flx1md.o ;;
          'W3FLX2MD'     ) modtest=w3flx2md.o ;;
@@ -882,60 +976,47 @@
          'W3SRCXMD'     ) modtest=w3srcxmd.o ;;
          'W3SNL1MD'     ) modtest=w3snl1md.o ;;
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
-         'W3SWLDMD'     ) modtest=w3swldmd.o ;;
+         'W3SNL3MD'     ) modtest=w3snl3md.o ;;
+         'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
+         'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
          'm_xnldata'    ) modtest=mod_xnl4v5.o ;;
          'serv_xnl4v5'  ) modtest=serv_xnl4v5.o ;;
          'm_fileio'     ) modtest=mod_fileio.o ;;
          'm_constants'  ) modtest=mod_constants.o ;;
-         'W3SNL3MD'     ) modtest=w3snl3md.o ;;
-         'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
-         'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
+         'W3SWLDMD'     ) modtest=w3swldmd.o ;;
          'W3SBT1MD'     ) modtest=w3sbt1md.o ;;
-         'W3SBT2MD'     ) modtest=w3sbt2md.o ;;
          'W3SBT4MD'     ) modtest=w3sbt4md.o ;;
          'W3SBT8MD'     ) modtest=w3sbt8md.o ;;
          'W3SBT9MD'     ) modtest=w3sbt9md.o ;;
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
-         'm_btffac'     ) modtest=mod_btffac.o ;;
-         'W3SIC1MD'     ) modtest=w3sic1md.o ;;
-         'W3SIC2MD'     ) modtest=w3sic2md.o ;;
-         'W3SIC3MD'     ) modtest=w3sic3md.o ;;
-         'W3SIS1MD'     ) modtest=w3sis1md.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
          'W3STRXMD'     ) modtest=w3strxmd.o ;;
          'W3SBS1MD'     ) modtest=w3sbs1md.o ;;
          'W3SBSXMD'     ) modtest=w3sbsxmd.o ;;
+         'W3SIC1MD'     ) modtest=w3sic1md.o ;;
+         'W3SIC2MD'     ) modtest=w3sic2md.o ;;
+         'W3SIC3MD'     ) modtest=w3sic3md.o ;;
+         'W3SIS1MD'     ) modtest=w3sis1md.o ;;
+         'W3REF1MD'     ) modtest=w3ref1md.o ;;
          'W3SXXXMD'     ) modtest=w3sxxxmd.o ;;
-         'W3IOGRMD'     ) modtest=w3iogrmd.o ;;
-         'W3IOGOMD'     ) modtest=w3iogomd.o ;;
-         'W3IOPOMD'     ) modtest=w3iopomd.o ;;
-         'W3IOTRMD'     ) modtest=w3iotrmd.o ;;
-         'W3IORSMD'     ) modtest=w3iorsmd.o ;;
-         'W3IOBCMD'     ) modtest=w3iobcmd.o ;;
-         'W3IOSFMD'     ) modtest=w3iosfmd.o ;;
-         'W3PARTMD'     ) modtest=w3partmd.o ;;
-         'W3DISPMD'     ) modtest=w3dispmd.o ;;
-         'W3TIMEMD'     ) modtest=w3timemd.o ;;
-         'W3TIDEMD'     ) modtest=w3tidemd.o ;;
+         'CONSTANTS'    ) modtest=constants.o ;;
          'W3SERVMD'     ) modtest=w3servmd.o ;;
+         'W3TIMEMD'     ) modtest=w3timemd.o ;;
          'W3ARRYMD'     ) modtest=w3arrymd.o ;;
+         'W3DISPMD'     ) modtest=w3dispmd.o ;;
          'W3GSRUMD'     ) modtest=w3gsrumd.o ;;
-         'W3FLDSMD'     ) modtest=w3fldsmd.o ;;
-         'W3CSPCMD'     ) modtest=w3cspcmd.o ;;
-         'W3BULLMD'     ) modtest=w3bullmd.o ;;
-         'WMMDATMD'     ) modtest=wmmdatmd.o ;;
+         'W3TRIAMD'     ) modtest=w3triamd.o ;;
          'WMINITMD'     ) modtest=wminitmd.o ;;
          'WMWAVEMD'     ) modtest=wmwavemd.o ;;
          'WMFINLMD'     ) modtest=wmfinlmd.o ;;
+         'WMMDATMD'     ) modtest=wmmdatmd.o ;;
          'WMGRIDMD'     ) modtest=wmgridmd.o ;;
          'WMUPDTMD'     ) modtest=wmupdtmd.o ;;
          'WMINIOMD'     ) modtest=wminiomd.o ;;
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
-         'W3REF1MD'     ) modtest=w3ref1md.o ;;
-         'W3STRKMD'     ) modtest=w3strkmd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]

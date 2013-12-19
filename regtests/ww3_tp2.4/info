@@ -37,8 +37,16 @@
 #       - input depth: depth.169x139.IDLA1.dat                              #
 #     + Spectral grid: ntheta = 12, nf =  3, f1 = 0.03679, fgamma = 1.1     #
 #                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.4   #
+#  ./bin/run_test -g curv                     -s PR1   ../model ww3_tp2.4   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.4   #
+#  ./bin/run_test -g curv -n 3 -p mpirun      -s PR3_UQ_MPI \               #          
+#       -w work_curv   ../model ww3_tp2.4                                   #
+#                                                                           #
 #                                             W. Erick Rogers, Nov 2009     #
 #                                             Naval Research Laboratory     #
-#                                                   Last Mod : Dec 2010     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #############################################################################

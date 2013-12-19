@@ -1633,7 +1633,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER, PARAMETER      :: NFRMAX = 50
+      INTEGER, PARAMETER      :: NFRMAX = 100
       INTEGER, PARAMETER      :: NFM2   = NFRMAX+1
       INTEGER                 :: NFRB, IFR, IE, IL
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -1953,7 +1953,7 @@
       REAL                    :: FACFR, EMAX, EMIN, DTHDEG, RR, RRC
       CHARACTER               :: PNUM*5, STRA*5, STRANG*5, PNUM2*2,  &
                                  STRA2*2
-      DIMENSION               :: PNUM(25), PNUM2(71)
+      DIMENSION               :: PNUM(25), PNUM2(101)
 !/
 !/ ------------------------------------------------------------------- /
 !/

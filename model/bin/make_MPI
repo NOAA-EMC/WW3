@@ -6,9 +6,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      April 2010             #
-#                                                      Sep. 2012              #
+#                                                      Nov. 2013              #
 #                                                                             #
-#    Copyright 2010-2012 National Weather Service (NWS),                      #
+#    Copyright 2010-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -66,6 +66,8 @@
 
   cp switch                             switch.hold
   sed -e 's/DIST/SHRD/g' \
+      -e 's/OMP0 //g'\
+      -e 's/OMP1 //g'\
       -e 's/MPI //g'      switch.hold > switch.shrd
   sed 's/SHRD/DIST MPI/g' switch.hold > switch.MPI
 

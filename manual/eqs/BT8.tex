@@ -1,0 +1,75 @@
+\vsssub
+\subsubsection{~$S_{mud}$: Dissipation by viscous mud (D\&L)} \label{sec:BT8}
+\vsssub
+
+\opthead{BT8}{NRL/SWAN}{M. Orzech and E. Rogers}
+
+\noindent
+Two formulations for wave damping by viscous fluid mud have been implemented
+in \ws\, based on earlier implementations in a SWAN code at NRL.  As with wave
+damping by ice (Sect. \ref{sec:ICE1}), both rely on the concept of complex
+wave number (Eq. (\ref{eq:waveno})). Both treat the mud layer as a viscous
+fluid, and both assume that the mud depth is comparable to its Stokes'
+boundary layer thickness. The first formulation (\cite{art:DL78}; hereafter
+D\&L) is a numerical solution.  The second formulation (\cite{art:Ng00};
+hereafter Ng) is an analytical, asymptotic solution, so calculations tend to
+be much faster than with D\&L. For the range of mud characteristics used by
+\cite{art:RH09}, which are based on field measurements (and estimates),
+the methods produce very similar results.
+
+In each case, the mud-induced dissipation is added to contributions from other
+source/sink terms in Eq.~(\ref{eq:bal_plane}).
+
+\begin{equation}\label{eq:dmud1}
+  {S_{mud}} = 2  k_i {C_{g,mud}}
+\end{equation}
+
+\noindent
+where $k_i=imag({k_{mud}})$ and ${C_{g,mud}}$ is the mud-modified wave group
+velocity.
+
+The above follows from exponential decay of a single wave train with initial
+amplitude $a_0$:
+\begin{equation}\label{eq:dmud2}
+ a=a_0e^{-k_ix}
+\end{equation}
+
+\noindent
+Both methods operate by solving for a modified dispersion relation, where the
+wavenumber being solved for, ${k_{mud}}$, is a complex number. The D\&L method
+uses an iterative procedure for this dispersion relation. For details, see
+Section 2 and Appendix B of \cite{art:DL78}. Descriptions specific to {\code
+BT9} (Ng) are given in the following section.
+
+To activate viscous mud effects with the (D\&L) routines, the user specifies
+{\code BT8} in the switch parameter file.
+
+In the case where any of the new ice and mud source functions are activated
+with the switches {\code IC1}, {\code IC2}, {\code IC3}, {\code BT8}, or
+{\code BT9}, {\file ww3\_shel} will anticipate instructions for 8 new fields
+(5 for ice, then 3 for mud). These are given prior to the ``water levels''
+information. The new fields can also be specified as homogeneous field using
+{\file ww3\_shel.inp}. The mud parameters are mud density (kg/m3), mud
+thickness (m), and mud viscosity (m2/s), in that order.
+
+The user is referred to the regression tests {\file ww3\_tbt1.1} {\file
+ww3\_tbt2.1} for examples of how to use the new mud source functions.
+
+\textrm{\textit{\underline{Limitations of the code}}}: The interface for the
+new mud and ice coefficients have only been implemented for {\file
+ww3\_shel}. Interface for {\file ww3\_multi} will be available in a future
+revision. In the case of mud, though the ${k_r}$ is calculated, its effect is
+not passed back to the main program. The only effect is via ${k_i}$
+(dissipation). Full implementation of ${k_r}$, already possible with IC3, and
+will be available in a future version of the model.
+
+\textrm{\textit{\underline{Limitations of the physics}}}: 1) Both models
+({\code BT8}, {\code BT9}) neglect elasticity in the mud layer. 2)
+Non-Newtonian response of the mud (e.g. as a thixotropic fluid) is not
+available. 3) Mud thickness should be interpreted not as the total mud
+thickness, but rather as the thickness of the fluidized mud layer. This value
+is notoriously difficult to determine in practice
+(\cite{art:RH09}). Fortunately, since \ws\ supports nonstationary and
+non-uniform input for the mud parameters, it is possible to address items (2)
+and (3) via coupling with a numerical model of the mud layer: no additional
+changes to the \ws\ code are required for this.

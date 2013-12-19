@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Nov-2013 |
+!/                  | Last update :         27-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -68,6 +68,7 @@
 !/                  structure and smaller memory footprint.
 !/    26-Dec-2012 : Move FIELD init. to W3GATH.         ( version 4.OF )
 !/    14-Nov-2013 : Remove orphaned work arrays.        ( version 4.13 )
+!/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -166,7 +167,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2012 |
+!/                  | Last update :         27-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -221,6 +222,7 @@
 !/    10-Dec-2012 : Modify field output MPI for new     ( version 4.OF )
 !/                  structure and smaller memory footprint.
 !/    16-Nov-2013 : Allows reflection on curvi. grids   ( version 4.13 )
+!/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
 !/
 !  1. Purpose :
 !
@@ -395,18 +397,19 @@
 ! Orphaned arrays from old data structure
 !
       REAL, ALLOCATABLE       :: TAUWX(:), TAUWY(:)
+!
       LOGICAL                 :: FLACT, FLZERO, FLFRST, FLMAP, TSTAMP,&
                                  SKIP_O, FLAG_O, FLDDIR, READBC,      &
-                                 FLAG0=.FALSE., FLOUTG, FLPFLD,       &
-                                 FLPART, LOCAL, FLOUTG2
+                                 FLAG0 = .FALSE., FLOUTG, FLPFLD,     &
+                                 FLPART, LOCAL, FLOUTG2,              &
+                                 FLOMP = .FALSE.
 !/MPI      LOGICAL                 :: FLGMPI(0:6)
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=11)       :: IDACT 
       CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
-
-
+!
 !/SBS      CHARACTER(LEN=30)       :: FOUTNAME
 !
 !/PALM integer ::il_err, palm_time_a,palm_time_b
@@ -425,6 +428,9 @@
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
 ! 0.a Set pointers to data structure
+!
+!/OMP0      FLOMP  = .TRUE.
+!
 !/PALM  PALMED = 1
 !
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
@@ -482,8 +488,7 @@
           FCUT  = SIG(NK) * TPIINV
         END IF
 !
-      ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
-!     FIELD(:) = 0.
+      IF ( .NOT. FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
@@ -900,7 +905,9 @@
 !/T         DO JSEA = 1, MIN(NSEAL,200) 
 !/T           ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
 !/T           IX     = MAPSF(ISEA,1)
-!/T           WRITE(995,'(2I8,F10.2,3F10.4)') IX, ISEA, DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
+!/T           IF (JSEA.EQ.1) &
+!/T             WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
+!/T           WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XYB(IX,1), XYB(IX,2), XYB(IX,3)  
 !/T           END DO ! JSEA
 !/T         CLOSE(995)
 !/T         END IF
@@ -913,7 +920,7 @@
 
 !/SEC1      DO ISEC1=1,NITERSEC1
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
-!/SEC1        WRITE(6,*) 'SUBSECOND ITERATION:',ISEC1,NITERSEC1, DTG*ISEC1,DTMAX,DTGTEMP
+!/SEC1    IF ( IAPROC .EQ. NAPOUT )    WRITE(NDSE,'(A,I4,A,I4)') '   SUBSECOND STEP:',ISEC1,' out of ',NITERSEC1
 !
           FACTH  = DTG / (DTH*REAL(NTLOC))
           FACK   = DTG / REAL(NTLOC)
@@ -967,8 +974,11 @@
 !/MPI                  CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
 !/MPI                END IF
 !
-!/OMP0/!$OMP PARALLEL DO PRIVATE (ISPEC,FIELD) SCHEDULE (DYNAMIC,1)
-
+!/OMP0/!$OMP PARALLEL PRIVATE (ISPEC,FIELD)
+!
+              IF ( FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+!
+!/OMP0/!$OMP DO SCHEDULE (DYNAMIC,1)
               DO ISPEC=1, NSPEC
                 IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
                   CALL W3GATH ( ISPEC, FIELD )
@@ -999,6 +1009,12 @@
 !/MPI                                    IERR_MPI)
 !/MPI                  DEALLOCATE ( STATCO )
 !/MPI                END IF
+
+!/OMP0/!$OMP END DO
+
+              IF ( FLOMP ) DEALLOCATE ( FIELD )
+
+!/OMP0/!$OMP END PARALLEL
 !
 ! End of test FLCX.OR.FLCY
 !
@@ -1050,8 +1066,6 @@
 !
           IF ( FLSOU ) THEN
 !
-!/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
-!
 !/REF1            SXM    = SX / FACX 
 !/REF1            SYM    = SY / FACX
 
@@ -1059,6 +1073,8 @@
             REFLEC(:)=0.
             REFLED(:)=0.
             PSIC=0.
+!
+!/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
 !
               DO JSEA=1, NSEAL
 !/DIST                ISEA   = IAPROC + (JSEA-1)*NAPROC
@@ -1579,7 +1595,7 @@
 !
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
 !
-      DEALLOCATE ( FIELD )
+      IF ( .NOT. FLOMP ) DEALLOCATE ( FIELD )
 !
       DEALLOCATE(TAUWX, TAUWY)
 !

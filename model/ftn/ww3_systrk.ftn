@@ -7,12 +7,14 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :          4-Jan-2013 |
+!/                  | Last update :         29-Nov-2013 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
 !/                  by Jeff Hanson & Eve-Marie Devaliere
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    29-Nov-2013 : Remove DOC control characters,
+!/                  update MPI! to MPI/! (H.L. Tolman). ( version 4.15 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -111,7 +113,7 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-!/MPI!     Start of parallel region
+!/MPI/!     Start of parallel region
 !/MPI      CALL MPI_INIT(ierr)
 !/MPI    
 !/MPI      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
@@ -227,7 +229,7 @@
       END DO
 !/MPI      END IF
 
-!/MPI!     MPI communication block 
+!/MPI/!     MPI communication block 
 !/MPI      CALL MPI_BCAST(filename,80,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
 !/MPI      CALL MPI_BCAST(tstart,1,MPI_DOUBLE_PRECISION,0, &
 !/MPI                     MPI_COMM_WORLD,IERR)
@@ -772,6 +774,6 @@
 !/MPI      END IF
 
 !/MPI      CALL MPI_FINALIZE(IERR)
-!/MPI!     End of parallel region
+!/MPI/!     End of parallel region
 
       END PROGRAM WW3_SYSTRK

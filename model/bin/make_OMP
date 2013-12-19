@@ -1,0 +1,111 @@
+#!/bin/sh
+# --------------------------------------------------------------------------- #
+# make_OMP    : Script to manage consecutinve compiling of OpenMP and non-    #
+#               OpenMP elemensts of WAVEWATCH III, using standard compile     #
+#               scripts. Only ww3_shel and ww3_multi compiled for OpenMP.     #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      Nov. 2013              #
+#                                                      Nov. 2013              #
+#                                                                             #
+#    Copyright 2013 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+# 1.a Internal variables
+
+  tmp='ww3_temp'           # temporary working directory
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+
+# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  clear
+  echo ' '
+  echo '                ***************************************'
+  echo '              ***   WAVEWATCH III compile for OpenMP  ***'
+  echo '                ***************************************'
+  echo ' '
+
+# 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
+
+  if test -f $ww3_env
+  then
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    main_dir="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"
+    exit
+  fi
+
+# 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
+
+  if test -d $main_dir
+  then
+    cd $main_dir
+  else
+    echo "*** Directory $main_dir not found ***"
+    exit
+  fi
+
+  if test -d work
+  then
+    cd work
+  else
+    echo "*** Directory $main_dir/work not found ***"
+    exit
+  fi
+
+# --------------------------------------------------------------------------- #
+# 2. Process switch files                                                     #
+# --------------------------------------------------------------------------- #
+
+  cp switch                                   switch.hold
+  sed -e 's/DIST/SHRD/g' \
+      -e 's/OMP0 //g'\
+      -e 's/OMP1 //g'\
+      -e 's/MPI //g'            switch.hold > switch.shrd
+  sed 's/SHRD/SHRD OMP0 OMP1/g' switch.hold > switch.OMP
+
+# --------------------------------------------------------------------------- #
+# 3. Compile non-OpenMP codes                                                 #
+# --------------------------------------------------------------------------- #
+
+  cp switch.shrd switch
+  w3_make ww3_grid ww3_strt ww3_prep ww3_outf ww3_outp ww3_trck ww3_grib \
+          ww3_gspl ww3_gint gx_outf gx_outp
+
+# --------------------------------------------------------------------------- #
+# 3. Compile OpenMP codes                                                     #
+# --------------------------------------------------------------------------- #
+
+  cp switch.OMP switch
+  w3_make ww3_shel ww3_multi # ww3_prnc # ww3_sbs1
+
+# --------------------------------------------------------------------------- #
+# 4. Reset switch file                                                        #
+# --------------------------------------------------------------------------- #
+
+# cp switch.shrd switch
+# cp switch.OMP  switch
+  cp switch.hold switch
+
+# --------------------------------------------------------------------------- #
+# 5. Clean up                                                                 #
+# --------------------------------------------------------------------------- #
+
+  rm -f switch.hold switch.shrd switch.OMP
+  w3_clean
+
+  echo ' '
+  echo ' '
+  echo '                   *******************************'
+  echo '                 ***       End of program        ***'
+  echo '                   *******************************'
+  echo ' '
+
+# end of script ------------------------------------------------------------- #

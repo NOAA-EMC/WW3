@@ -17,7 +17,7 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
-#                                                      July 2013              #
+#                                                      November 2013          #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -80,6 +80,7 @@
   fi
 
   flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
+  flag_OMP=`grep OMP $switch_file | wc -l | awk '{ print $1}'`
 
   switch_file_old=$main_dir/bin/switch.old
   exec_type_file=$main_dir/exe/exec_type
@@ -90,22 +91,37 @@
      mkdir  $main_dir/obj_SHRD ; fi
   if [ ! -d $main_dir/obj_DIST ] ; then
      mkdir  $main_dir/obj_DIST ; fi
+  if [ ! -d $main_dir/obj_OMP ] ; then
+     mkdir  $main_dir/obj_OMP ; fi
   rm -rf $main_dir/obj
   if [ ! -d $main_dir/mod_SHRD ] ; then
      mkdir  $main_dir/mod_SHRD ; fi
   if [ ! -d $main_dir/mod_DIST ] ; then
      mkdir  $main_dir/mod_DIST ; fi
+  if [ ! -d $main_dir/mod_OMP ] ; then
+     mkdir  $main_dir/mod_OMP ; fi
   rm -rf $main_dir/mod
 
   if [ "$flag_SHRD" -gt '0' ]
   then
-    pres_type='SHRD'
-    if [ -f ${switch_file_old}_SHRD ] ; then
-         cp ${switch_file_old}_SHRD $switch_file_old ; fi
-    if [ -f ${makefile}_SHRD ] ; then
-         cp ${makefile}_SHRD $makefile ; fi
-    cd $main_dir ; ln -sf obj_SHRD obj
-                   ln -sf mod_SHRD mod ; cd $here
+    if [ "$flag_OMP" -gt '0' ]
+    then
+      pres_type='OMP'
+      if [ -f ${switch_file_old}_OMP ] ; then
+           cp ${switch_file_old}_OMP $switch_file_old ; fi
+      if [ -f ${makefile}_OMP ] ; then
+           cp ${makefile}_OMP $makefile ; fi
+      cd $main_dir ; ln -sf obj_OMP obj
+                     ln -sf mod_OMP mod ; cd $here
+    else
+      pres_type='SHRD'
+      if [ -f ${switch_file_old}_SHRD ] ; then
+           cp ${switch_file_old}_SHRD $switch_file_old ; fi
+      if [ -f ${makefile}_SHRD ] ; then
+           cp ${makefile}_SHRD $makefile ; fi
+      cd $main_dir ; ln -sf obj_SHRD obj
+                     ln -sf mod_SHRD mod ; cd $here
+    fi
   else
     pres_type='DIST'
     if [ -f ${switch_file_old}_DIST ] ; then
@@ -133,7 +149,10 @@
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
   reg_programs="$reg_programs ww3_systrk"
-  reg_programs="$reg_programs ww3_prtide"
+  if [ -n "`grep TIDE $switch_file`" ]
+  then
+    reg_programs="$reg_programs ww3_prtide"
+  fi
 
 # cdf_programs = NetCDF programs
   cdf_programs="ww3_prnc"
@@ -369,8 +388,14 @@ EOF
     then
       if [ "$flag_SHRD" -gt '0' ]
       then
-        cp $switch_file ${switch_file_old}_SHRD
-        cp $makefile ${makefile}_SHRD
+        if [ "$flag_OMP" -gt '0' ]
+        then
+          cp $switch_file ${switch_file_old}_OMP
+          cp $makefile ${makefile}_OMP
+        else
+          cp $switch_file ${switch_file_old}_SHRD
+          cp $makefile ${makefile}_SHRD
+        fi
       else
         cp $switch_file ${switch_file_old}_DIST
         cp $makefile ${makefile}_DIST

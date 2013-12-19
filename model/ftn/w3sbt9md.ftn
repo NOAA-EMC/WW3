@@ -60,6 +60,10 @@
 !        (CSR 2009). The code was adapted for WW3 by Mark Orzech in Nov 2012 
 !        (he had installed the D&L routines as BT8 in July 2011).
 !
+!     Reference: Ng, C.O.,2000. Water waves over a muddy bed: 
+!                a two-layer Stokes’ boundary layer model. 
+!                Coastal Engineering 40(3),221–242.
+!
 !  6. Switches :
 !
 !     !/S  Enable subroutine tracing.
@@ -378,23 +382,26 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       xxxxxxxx  Real  I   xxxxxxxxxxxxxxxxx
-!       x         R.A.  O   xxxxxxxxxxxxxxxxxxxxxxxxxxx
-!       x         R.A.  O   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+!       SIGMA     Real  I  radian frequency (rad)
+!       H_WDEPTH  Real  I  water depth
+!       DTILDE    Real  I  normalized mud depth
+!       ZETA      Real  I  zeta as used in Ng
+!       SBLTM     Real  I  mud Stokes boundary layer thickness
+!       GAMMA     Real  I  gamma as used in Ng
+!       WK        Real  I  wavenumber w/out mud
+!       WKDR      Real  O  wavenumber w/mud
+!       DISS      Real  O  dissipation rate
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
 !
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      xxxxxx    Subr. xxxxxxxx xxxxxxxxxxxxxxxxxxx
-!     ----------------------------------------------------------------
+!      None.
 !
 !  5. Called by :
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      W3SBT9    Subr. xxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxx
+!      W3SBT9    Subr. W3SBT9MD Main routine (all freqs)
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -410,7 +417,7 @@
 !
 !  9. Switches :
 !
-!     !/x  xxxxxxxxxxxxxxxxxxxxxxxxxx
+!       None.
 !
 ! 10. Source code :
 !
@@ -423,13 +430,13 @@
 
     ! INPUT VARIABLES :
       REAL, INTENT(IN)  ::  SIGMA   ! radian frequency (rad)
-      REAL, INTENT(IN)  ::  H_WDEPTH! water depth, denoted "h" in ng (m)
+      REAL, INTENT(IN)  ::  H_WDEPTH! water depth, denoted "h" in Ng (m)
       REAL, INTENT(IN)  ::  DTILDE  ! normalized mud depth = mud depth / sbltm,
                                     ! delta is the sblt= sqrt(2*visc/sigma)
-      REAL, INTENT(IN)  ::  ZETA    ! this is zeta as used in ng pg. 238. it is
+      REAL, INTENT(IN)  ::  ZETA    ! this is zeta as used in Ng pg. 238. it is
                                     ! the ratio of stokes' boundary layer 
                                     ! thicknesses, or sbltm/delta_w
-      REAL, INTENT(IN)  ::  GAMMA   ! this is the gamma used in ng pg. 238. 
+      REAL, INTENT(IN)  ::  GAMMA   ! this is the gamma used in Ng pg. 238. 
                                     ! this is density(water)/density(mud)
       REAL, INTENT(IN)  ::  SBLTM   ! sbltm is what you get if you calculate 
                                     ! sblt using the viscosity of the mud, 

@@ -42,8 +42,16 @@
 #     + switch_PR3_UNO_MPI                                                  #
 #     + switch_PR3_UQ_MPI                                                   #
 #                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                             -s PR1   ../model ww3_tp2.3   #
+#  ./bin/run_test -n 3 -p mpirun -f           -s PR1   ../model ww3_tp2.3   #
+#  ./bin/run_test -o netcdf            -s PR3_UQ_NC4   ../model ww3_tp2.3   #
+#   (Note: Make sure that appropariate env variables are set for using      #
+#   netcdf procesessing. See w3_make in model/bin for details )             #
+#                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Aug 2013     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

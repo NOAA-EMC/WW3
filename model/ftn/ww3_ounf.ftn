@@ -105,7 +105,7 @@
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
-                          TAUWNX, TAUWNY, BHD, T02, CGE,            &
+                          TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
                           CFLTHMAX, CFLXYMAX, CFLKMAX ,                &
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M, WN
@@ -974,6 +974,20 @@
               varnc(1)=''
               vmin = 0 
               vmax = 360
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
+              FSC    = 0.0002
+              UNITS  = 'm'
+              ENAME  = '.hig'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HSIG, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='hig'
+              varnl(1)='infragravity_wave_height'
+              varns(1)='sea_surface_wave_infragravity_significant_height' 
+              varng(1)='infragravity_significant_wave_height' 
+              varnc(1)=''
+              vmin = 0 
+              vmax = 5000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               NFIELD = 1

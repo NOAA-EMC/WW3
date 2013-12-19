@@ -10,7 +10,7 @@
 !/                  |             E. Rogers             |
 !/                  |            T. Campbell            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         10-Sep-2013 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -51,6 +51,8 @@
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    23-Aug-2012 : Adding movable bed friction BT4     ( version 4.08 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
+!/    10-Sep-2013 : Implement second order correction   ( version 4.12 )
+!/                  (F. Ardhuin)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -175,6 +177,8 @@
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
 !/NCO       USE W3BULLMD, ONLY: CASCBLINE
 !/O14      USE W3ODATMD, ONLY: GRDID
+!/IG1       USE W3GIG1MD, ONLY: W3ADDIG
+!/IG1       USE W3CANOMD, ONLY: W3ADD2NDORDER
 !
       IMPLICIT NONE
 !/
@@ -1038,6 +1042,7 @@
                                  SBT1(NK), STT1(NK), E1ALL(NK,5)
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
+!/ST4      REAL                    :: LAMBDA(NSPEC)
       CHARACTER               :: DTME21*23
       CHARACTER(LEN=4)         VAR1(5)
       CHARACTER(LEN=1)         IDLAT, IDLON
@@ -1191,6 +1196,17 @@
 !/T              WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 !
               END DO
+
+!
+! Computes 2nd order spectrum 
+!
+!/IG1      IF (IGPARS(2).EQ.1) THEN 
+!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1        ELSE
+!/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1          END IF
+!/IG1        END IF
 !
 ! 3.  Prepare spectra etc.
 ! 3.a Mean wave parameters.
@@ -1362,7 +1378,7 @@
 !/ST4                  IY=1
 !/ST4                  CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
 !/ST4                               ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
-!/ST4                               TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
+!/ST4                               TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
 !/ST4                  CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
 !/ST4                             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
@@ -1475,7 +1491,7 @@
 !/ST4                             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 !/ST4                  CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
 !/ST4                                ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
-!/ST4                                TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
+!/ST4                                TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
 !/FLX2                  CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
 !/FLX2                                            USTAR, USTD, Z0, CD )
 !/FLX3                  CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
@@ -1498,7 +1514,7 @@
 !/ST4                    CALL W3SIN4 ( A, CG, WN2, UABS, USTAR,       &
 !/ST4                                  DAIR/DWAT, ASO(J), UDIRR,      &
 !/ST4                            Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
-!/ST4                            ICE, XIN, DIA, LLWS, IX, IY )
+!/ST4                            XIN, DIA, LLWS, IX, IY, LAMBDA )
 !/ST6                    CALL W3SIN6 (A, CG, WN2, USTAR, UDIRR, CD,   &
 !/ST6                          TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 !/STX                    CALL W3SINX
@@ -1519,7 +1535,7 @@
 !/ST3                    CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,  &
 !/ST3                                  USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
 !/ST4                    CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, XDS, &
-!/ST4                                  DIA, IX, IY, WHITECAP )
+!/ST4                                  DIA, IX, IY, LAMBDA, WHITECAP )
 !/ST6                    CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
 !/ST6                    IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
 !/STX                    CALL W3SDSX

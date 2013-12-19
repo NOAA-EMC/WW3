@@ -2,7 +2,7 @@
 SHELL = /bin/sh
 
 # Target document
-TARGET = report
+TARGET = guide
 
 # External programs required (assumed to be in user path)
 LATEX = latex
@@ -41,10 +41,10 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # TeX files in this directory
-TEXFILES = report.tex docu_subr.tex docu_mod.tex
+TEXFILES = guide.tex docu_subr.tex docu_mod.tex
 
 # Bibliography inputs
-BIBFILES = report.bib
+BIBFILES = guide.bib
 BSTFILES = jas.bst
 
 # Style inputs
@@ -71,14 +71,15 @@ run_test.out : $(RUNTEST)
 	-@printf '%s\n' \\begin\{verbatim\} >> $@
 	-@ $< -h >> $@
 	-@printf '%s\n' \\end\{verbatim\} >> $@
+	-@echo "   *** NOTE: Error 1 expected ..."
 
 $(TARGET).dvi: $(DEPFILES)
 	$(LATEX) $(TARGET)
 	$(BIBTEX) $(TARGET)
-	-@bib_strip.sh $(TARGET)
+	-@sh bib_strip.sh $(TARGET)
 	$(LATEX) $(TARGET)
 	$(BIBTEX) $(TARGET)
-	-@bib_strip.sh $(TARGET)
+	-@sh bib_strip.sh $(TARGET)
 	$(LATEX) $(TARGET)
 
 $(TARGET).pdf: $(TARGET).dvi

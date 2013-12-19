@@ -18,9 +18,10 @@ In shallow water additional processes have to be considered, most notably
 wave-bottom interactions $S_{bot}$ \cite[e.g.,][]{pro:Sea78}. In extremely
 shallow water, depth-induced breaking ($S_{db}$) and triad wave-wave
 interactions ($S_{tr}$) become important. Also available in \ws\ are source
-terms for scattering of waves by bottom features ($S_{sc}$), reflection off
-shorelines or floating objects such as icebergs ($S_{ref}$) and a general
-purpose slot for additional, user defined source terms ($S_{xx}$).
+terms for scattering of waves by bottom features ($S_{sc}$), wave-ice
+interactions ($S_{ice}$), reflection off shorelines or floating objects such
+as icebergs ($S_{ref}$) and a general purpose slot for additional, user
+defined source terms ($S_{xx}$).
 
 This defines the general source terms used in \ws\ as
 
@@ -30,8 +31,8 @@ This defines the general source terms used in \ws\ as
 % eq:general_st
 
 \begin{equation}
-S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} + S_{sc} + S_{ref} +
-    S_{xx}\: .
+S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} +
+    S_{sc} + S_{ice} + S_{ref} + S_{xx}\: .
 \label{eq:general_st}
 \end{equation}
 
@@ -49,8 +50,8 @@ because the balance of these two source terms governs the integral growth
 characteristics of the wave model. Several combinations of these basic source
 terms are available, and are described in section~\ref{sec:ST1} and following.
 The description of linear input starts in section~\ref{sec:LN1}, and
-section~\ref{sec:BT1} and following describe available additional (shallow
-water) processes.
+section~\ref{sec:BT1} and following describe available additional (mostly
+shallow water) processes.
 
 \vspace{\baselineskip} \noindent
 A third-generation wave model effectively integrates the spectrum only up to a
@@ -95,3 +96,13 @@ of reference moving with the current. Both definitions are available in \ws,
 and can be selected during compilation. The output of the program, however,
 will always be the wind speed which is not in any way corrected for the
 current.
+
+\vspace{\baselineskip} \noindent
+The treatment of partial ice coverage (ice concentration) in the source term
+follows the concept of a limited air-sea interface. This means that the momentum
+transferred from the atmosphere to the waves is limited. Therefore, input and
+dissipation terms are scaled by the fraction of ice concentration. The
+nonlinear wave-wave interaction term can be used in areas of open water
+and ice \citep{art:PL07}. The scaling is implemented so that it is independent
+of the source term selected.
+

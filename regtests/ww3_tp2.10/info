@@ -28,7 +28,14 @@
 #   or contact me at Jian-Guo.Li@metoffice.gov.uk                           #
 #                                                                           #
 #                                                                           #
-#                                               Jian-Guo Li  6 Nov 2013     #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                           ../model ww3_tp2.10             #
+#  ./bin/run_test -n 3 -p mpirun -f         ../model ww3_tp2.10             #
+#                                                                           #
+#                                                Jian-Guo Li,  Nov 2013     #
+#                                                     U. K.  Met Office     #
+#                                                   Last Mod : Dec 2013     #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

@@ -100,6 +100,7 @@
 !/    13-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    28-Aug-2013 : Corrected MLIM application          ( version 4.11 )
+!/    10-Sep-2013 : Special treatment for IG band       ( version 4.15 )
 !/    14-Nov-2013 : Make orphaned pars in par lst local ( version 4.13 )
 !/    17-Nov-2013 : Coupling fraction of ice-free       ( version 4.13 )
 !/                  surface to SIN and SDS. (S. Zieger)
@@ -372,6 +373,7 @@
 !/BS1      USE W3SBS1MD
 !/REF1     USE W3REF1MD
 !/BSX      USE W3SBSXMD
+!/IG1      USE W3GDATMD, ONLY : IGPARS
 !/XXX      USE W3SXXXMD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/NNT      USE W3SERVMD, ONLY: EXTCDE
@@ -399,7 +401,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, IS, IS0, NSTEPS,  NKH, NKH1,&
-                                 NSPECH, IDT, IERR
+                                 IKS1, IS1, NSPECH, IDT, IERR
 !/S      INTEGER, SAVE           :: IENT = 0
 !/NNT      INTEGER, SAVE           :: NDSD = 89, NDSD2 = 88, J
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
@@ -438,6 +440,7 @@
 !/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
 !/ST3      LOGICAL                 :: LLWS(NSPEC) 
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
+!/ST4      REAL                    :: BRLAMBDA(NSPEC)
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
       LOGICAL                 :: SHAVE
@@ -452,6 +455,12 @@
 !/T      FLTEST = .TRUE.
 !
       DEPTH  = MAX ( DMIN , D_INP )
+      IKS1 = 1
+!/IG1! 
+!/IG1! Does not integrate source terms for IG band if IGPARS(12) = 0. 
+!/IG1! 
+!/IG1      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5)) 
+      IS1=IKS1*NTH+1
 !
 !/LN0      VSLN = 0.
 !/SEED      VSLN = 0.
@@ -554,9 +563,11 @@
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,   &
-!/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,   &
-!/ST4                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
+!/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+!/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
+!/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 !/ST4        END IF
 !/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
@@ -639,9 +650,11 @@
 !/ST3        CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST3                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST3                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
-!/ST4                 ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 !/ST6        CALL W3SIN6 ( SPEC, CG1, WN2, USTAR, USTDIR, CD,             &
 !/ST6                      TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 !/STX        CALL W3SINX
@@ -655,15 +668,13 @@
 !
 !/TRX        CALL W3STRX
 !
-! 2.c Dissipation.
+! 2.c Dissipation... except for ST4
 ! 2.c1   as in source term package
 !
 !/ST1        CALL W3SDS1 ( SPEC, WN2, EMEAN, FMEAN, WNMEAN,  VSDS, VDDS )
 !/ST2        CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1,              &
-!/ST4                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY, WHITECAP )
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !
@@ -753,7 +764,7 @@
           VDIC(1:NSPECH) =                  ICE   * VDIC(1:NSPECH)
         END IF
 !
-        DO IS=1, NSPECH
+        DO IS=IS1, NSPECH
           VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
                  + VSDS(IS) + VSBT(IS) + VSIC(IS)
 !/IS1          VS(IS) = VS(IS) + VSIR(IS)
@@ -797,7 +808,7 @@
 !
         IF ( SHAVE ) THEN
 !
-            DO IS=1, NSPECH
+            DO IS=IS1, NSPECH
               VS(IS) = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
               VS(IS) = SIGN ( MIN (DAM(IS),ABS(VS(IS))) , VS(IS) )
               SPEC(IS) = MAX ( 0. , SPEC(IS)+VS(IS) )
@@ -805,7 +816,7 @@
 !
           ELSE
 !
-            DO IS=1, NSPECH
+            DO IS=IS1, NSPECH
               VS(IS) = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
               SPEC(IS) = MAX ( 0. , SPEC(IS)+VS(IS) )
               END DO
@@ -818,7 +829,7 @@
 ! 
        WHITECAP(3)=0.
        HSTOT=0.
-       DO IK=1, NK
+       DO IK=IKS1, NK
          FACTOR=DDEN(IK)/CG1(IK) !&       !Jacobian to get energy in band
             !*GRAV/(SIG(IK)/WN1(IK)*DRAT)  ! coefficient to get momentum
          ! Wave direction is "direction to"
@@ -831,7 +842,7 @@
            PHIBBL= PHIBBL- (VSBT(IS))* DT * FACTOR                    &
              / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
            PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
-             / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
+             / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
            IF (VSIN(IS).GT.0.) THEN 
              WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
            ELSE
@@ -955,7 +966,7 @@
 !/ST3                      ICE, VSIN, VDIN, LLWS, IX, IY )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
 !/ST4                      U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
-!/ST4                      ICE, VSIN, VDIN, LLWS, IX, IY )
+!/ST4                      VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 
 !
 ! 7.  Check if integration complete ---------------------------------- *

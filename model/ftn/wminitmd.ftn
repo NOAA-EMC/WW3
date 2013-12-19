@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2012 |
+!/                  | Last update :         18-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -32,6 +32,7 @@
 !/                  Set up output for  > 999 procs.
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
 !/                  Switch test file on/off (TSTOUT)
+!/    18-Dec-2013 : Adding error checking for FLAGLL    ( version 4.16 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -330,7 +331,7 @@
       USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
-      USE W3GDATMD, ONLY: GTYPE, NX, NY, FILEXT, NSEA, FLAGST
+      USE W3GDATMD, ONLY: GTYPE, NX, NY, FILEXT, NSEA, FLAGST, GRIDS
 !/MPI      USE W3GDATMD, ONLY: FLAGLL, ICLOSE, GSU, X0, Y0, SX, SY,   &
 !/MPI                          XGRD, YGRD, DXDP, DXDQ, DYDP, DYDQ,    &
 !/MPI                          HQFAC, HPFAC, MAPSTA, MAPST2,          &
@@ -2323,6 +2324,12 @@
 !/T        WRITE (MDST,9021) I, MDS(:,I), NTRACE(:,I)
 !/T        END DO
 !
+! 8.a.6 Check for coordinate system
+!
+      DO I=1, NRGRD-1
+        IF ( GRIDS(I)%FLAGLL .NE. GRIDS(I+1)%FLAGLL ) GOTO 2070
+        END DO
+!
 ! 8.b Unified point output
 !
       IF ( UNIPTS ) THEN
@@ -2734,8 +2741,13 @@
       RETURN
 !
  2060 CONTINUE
-      CALL EXTCDE ( 2060 )
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
+      CALL EXTCDE ( 2060 )
+      RETURN
+!
+ 2070 CONTINUE
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
+      CALL EXTCDE ( 2070 )
       RETURN
 !
  2080 CONTINUE
@@ -2919,6 +2931,8 @@
                '     WHEN UNIFIED POINT OUTPUT IS REQUESTED'/)
  1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
                '     NO MOVING GRID DATA PRESENT'/)
+ 1070 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : ***'/            &
+               '     ALL GRIDS ARE NOT USING THE SAME COORDINATE SYSTEM'/)
  1080 FORMAT (/' *** BOUNDARY DATA READ, WILL NOT DUMP, GRID :',I4,   &
                ' ***')
  1081 FORMAT (/' *** NO BOUNDARY DATA TO DUMP, GRID :',I4,' ***')

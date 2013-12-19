@@ -977,13 +977,13 @@
 !
               ELSE IF ( J.EQ.2 .AND. K.EQ.4 ) THEN
                 FLONE = .TRUE.
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, T0M1   , MAPSF, X1 )
 !
 !     Mean energy wave period Te
 !
               ELSE IF ( J.EQ.2 .AND. K.EQ.5 ) THEN
                 FLONE = .TRUE.
-                CALL W3S2XY ( NSEA, NSEA, NX, NY, T0M1   , MAPSF, X1 )
+                CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
 !     Peak period
 !

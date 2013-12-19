@@ -1,0 +1,31 @@
+#############################################################################
+#                                                                           #
+# ww3_tp1.7 Test script for WW-III, one-dimensional propagation.            #
+#           including IG wave generation near the shore                     #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB1 !/REF1 !/IG1 !/TR0 !/BS0 !/XX0            #
+#                        Activates breaking, reflection and IG generation   #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: Switch smoothing off to reproduce 2.           #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#   * Presently not added in regresssion text matrix.                       #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  ./bin/run_test        ../model ww3_tp1.7                                 #
+#                                                                           #
+#                                             Fabrice Ardhuin, Sep 2013     #
+#                                                   Last Mod : Dec 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

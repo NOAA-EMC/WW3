@@ -1,0 +1,41 @@
+\vsssub
+\subsubsection{~$S_{ice}$: Damping by sea ice (Liu et al.)} \label{sec:ICE2}
+\vsssub
+
+\opthead{IC2}{\ws/NRL}{E. Rogers and S. Zieger}
+
+\noindent
+The second method for representing wave-ice interaction is based on the papers
+by \cite{art:LMC88} and \cite{art:LHV91}. This is a model for attenuation by a
+sea ice cover, derived on the assumption that dissipation is caused by
+turbulence in the boundary layer between the ice floes and the water layer,
+with the ice modeled as a continuous thin elastic plate. Input ice parameters
+are ice thickness (in meters) and an eddy viscosity in the turbulent boundary
+layer beneath the ice, ${\nu}$. Here, ${C_{ice,1}}$ represents the former and
+${C_{ice,2}}$ represents the latter. This source function ({\code IC2}) is
+non-uniform in frequency space. The parameters ${C_{ice,3}}$,...,${C_{ice,5}}$
+are not used.
+
+With {\code IC2} and {\code IC3}, the sea ice effects requires solution of a
+new dispersion relation. For {\code IC2}, the key equations are:
+
+\begin{equation}\label{eq:ice1}
+  {\sigma}^2 = ({gk_r} + {Bk_r^5})/(\coth({k_r}{h_w}) + {k_r}{M})
+\end{equation}
+\begin{equation}\label{eq:ice2}
+  {C_g} = (g + (5 + 4{k_r}{M}){B}{k_r^5})/(2{\sigma}(1+{k_r}{M})^2)
+\end{equation}
+\begin{equation}\label{eq:ice3}
+  {\alpha} = (\sqrt{{\nu\sigma}}{k_r)}/({C_g}\sqrt{2}(1+{k_r}{M}))
+\end{equation}
+
+\noindent
+In our notation, $h_w$ is water depth and $h_i$ is ice thickness.  The
+variables $B$ and $M$ quantify the effects of the bending of the ice and
+inertia of the ice, respectively. Both of these variables depend on $h_i$ 
+\citep[see][]{art:LMC88, art:LHV91}.
+
+\vspace{\baselineskip} \noindent
+In the case of {\code IC2}, though the ${k_r}$ is calculated, its effect is
+not passed back to the main program. The only effect is via ${k_i}$
+(dissipation).

@@ -54,6 +54,10 @@
 !        Erick Rogers brought it over to the NCEP repository May 2013
 !        and has been updating and maintaining it there.
 !
+!     Reference: Dalrymple, R.A., Liu,P.L.-F.,1978: 
+!                Waves over soft muds :a 2-layer fluid model.
+!                Journal of Physical Oceanography, 8, 1121–1131.
+!
 !  6. Switches :
 !
 !     !/S  Enable subroutine tracing.
@@ -152,15 +156,7 @@
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE           :: FIRST = .TRUE.
-
-! *** Description of PMUD contents      
-! PMUD(MMUD)      coefficients for the fluid mud-induced dissipation model
-!  ( 1)  [    1.] =alpha; set by command MUD [alpha] ...                  
-!  ( 2)  [ 1300.] =rhom; set by command MUD ... [rhom] ...                
-!  ( 3)  [   RHO] =rho0; set by command MUD ... [rho0] ...                
-!  ( 4)  [0.0027] =nu; set by command MUD ... [nu] ...                    
-!  ( 5)  [    0.] =layer; set by command MUD ... [layer] ...             
-      
+     
       COMPLEX    :: K           
       COMPLEX    :: SHH         
       COMPLEX    :: CHH         
@@ -237,7 +233,7 @@
 ! 0.  Initializations ------------------------------------------------ *
 !
       !     Dalrymple and Liu, Waves over soft muds:  1978. 
-      !     THIN LAYER SOLUTION
+      !     Thin layer solution.
       !     Matlab code provided by Tony Dalrymple
       !     Converted to Fortran by Erick Rogers
 
@@ -393,10 +389,8 @@
            ELSE 
               KCHECK=ABS(IMAG(K)-IMAG(KM1))
               IF((F.EQ.FM1).OR.(K.EQ.KM1).OR.(KCHECK<KTHRESHOLD))THEN
-              
 ! notes: I have noticed that if iterations are not stopped early enough, NaNs result
-
-                 KMUD=K  ! may not be necessary
+                 KMUD=K
                  EXIT
               END IF
               FP=(F-FM1)/(K-KM1)
@@ -451,7 +445,7 @@
 !/ ------------------------------------------------------------------- /
 
       SUBROUTINE Z_WNUMB(OM,DEPTH,GRAV,ZWN)
-    !-----------------------------------------------------------------------------!
+    !------------------------------------------------------------------/
     !
     !   +-------+    ALKYON HYDRAULIC CONSULTANCY & RESEARCH
     !   |       |    GERBRANT VAN VLEDDER
@@ -479,11 +473,11 @@
     !  3. PARAMETER LIST:
     !
     !TYPE   I/O           NAME     DESCRIPTION
-    !------------------------------------------------------------------------------
-        REAL, INTENT(IN)  ::  OM      ! RADIAN FREQUENCY (RAD)
-        REAL, INTENT(IN)  ::  DEPTH      ! WATER DEPTH (M)
-        REAL, INTENT(IN)  ::  GRAV   ! GRAVIATIONAL ACCELERATION (M/S^2)
-        REAL, INTENT(OUT)  ::  ZWN   ! WAVE NUMBER
+    !------------------------------------------------------------------/
+        REAL, INTENT(IN)  ::  OM    ! radian frequency (rad)
+        REAL, INTENT(IN)  ::  DEPTH ! water depth (m)
+        REAL, INTENT(IN)  ::  GRAV  ! gravitational acceleration (m/s^2)
+        REAL, INTENT(OUT) ::  ZWN   ! wave number
     !
     !  4. SUBROUTINES USED
     !
@@ -491,9 +485,12 @@
     !
     !  6. REMARKS
     !
-    !     THE PADE APPROXIMATION HAS BEEN DESCRIBED IN HUNT, 198.
-    !
-    !     
+    !   1) The PADE approximation has been described in Hunt, 198?.
+    !   2) In WW3, this might be better done as a call to WAVNU1, 
+    !      For example:
+    !      USE W3DISPMD, ONLY: WAVNU1
+    !      CALL WAVNU1(SIGMA(IK),DPT,K_OCEAN,CG_OCEAN)
+
         REAL X,XX,Y,OMGG
 
         IF(DEPTH<=0 .OR. OM<= 0.) THEN

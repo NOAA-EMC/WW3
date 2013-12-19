@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Nov-2013 |
+!/                  | Last update :         18-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -55,7 +55,10 @@
 !/    16-Sep-2013 : Add Arctic part SMC grid.           ( version 4.11 )
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
-!/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.15 )
+!/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
+!/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
+!/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
+!/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -529,8 +532,6 @@
       INTEGER, PARAMETER      :: ICLOSE_NONE = ICLO_NONE
       INTEGER, PARAMETER      :: ICLOSE_SMPL = ICLO_SMPL
       INTEGER, PARAMETER      :: ICLOSE_TRPL = ICLO_TRPL
-
-      LOGICAL                 :: FLAGLL
 !
 ! Dimensions of tables for pre-computing of dissipation 
 !  
@@ -582,6 +583,7 @@
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
         LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+        LOGICAL          :: FLAGLL
         LOGICAL, POINTER :: FLAGST(:)
         CHARACTER(LEN=30):: GNAME
         CHARACTER(LEN=10):: FILEXT
@@ -597,6 +599,7 @@
 !/BT4   REAL, POINTER         :: SED_D50(:), SED_PSIC(:) 
 !/REF1        LOGICAL, POINTER      :: RREF(:)
 !/REF1        REAL,    POINTER      :: REFPARS(:)
+!/IG1        REAL,    POINTER      :: IGPARS(:)
 !
 ! unstructured data	
 !
@@ -680,11 +683,11 @@
 !/ST4        REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
 !/ST4        REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
 !/ST4                                 SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
-!/ST4                                 SSDSC(1:7), SSDSBR,      &
+!/ST4                                 SSDSC(1:9), SSDSBR,                  &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
 !/ST4                                 FFXPM, FFXFM, SSDSBRF1, SSDSBRF2,    &
 !/ST4                                 SSDSBINT,SSDSBCK,SSDSHCK, SSDSABK,   &
-!/ST4                                 SSDSPBK
+!/ST4                                 SSDSPBK, SSINBR
 !/ST4        REAL                  :: ZZWND
 !/ST4        REAL                  :: SSDSCOS, SSDSDTH, SSDSBR2, SSDSBM(0:4)
 !
@@ -817,6 +820,7 @@
       REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
       REAL,    POINTER        :: REFPARS(:)
+!/IG1      REAL,    POINTER        :: IGPARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !
@@ -852,6 +856,7 @@
 !/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
       LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      LOGICAL, POINTER :: FLAGLL
       LOGICAL, POINTER :: FLAGST(:)
 
       CHARACTER(LEN=30), POINTER :: GNAME
@@ -915,12 +920,12 @@
 !/ST3                                 DDELTA1, DDELTA2,                    &
 !/ST3                                 SSDSCOS, SSDSDTH, SSDSBM(:)
 !/ST4      INTEGER, POINTER        :: SSWELLFPAR, SSDSISO,SSDSBRFDF,       &
-!/ST4                                 IKTAB(:,:), SATINDICES(:,:)
+!/ST4                                 IKTAB(:,:), SATINDICES(:,:),SSDSDIK
 !/ST4      REAL, POINTER           :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
 !/ST4      REAL, POINTER           :: ZZWND, AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP, &
 !/ST4                                 FFXFM, FFXPM,SSDSBRF1, SSDSBRF2, &
 !/ST4                                 SSDSBINT, SSDSBCK, SSDSHCK, SSDSABK, SSDSPBK, &
-!/ST4                                 SSINTHP, TTAUWSHELTER, SSWELLF(:),   &
+!/ST4                                 SSINBR, SSINTHP, TTAUWSHELTER, SSWELLF(:),   &
 !/ST4                                 SSDSC(:), SSDSBR,                    &
 !/ST4                                 SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
 !/ST4                                 SSDSBR2, SSDSCOS, SSDSDTH, SSDSBM(:)
@@ -1293,6 +1298,7 @@
 !/REF1      ALLOCATE ( GRIDS(IMOD)%REFLD(6,0:NSEA))
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
+!/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12) )
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
@@ -1655,6 +1661,7 @@
       NSEA   => GRIDS(IMOD)%NSEA
       NSEAL  => GRIDS(IMOD)%NSEAL
       TRFLAG => GRIDS(IMOD)%TRFLAG
+      FLAGLL => GRIDS(IMOD)%FLAGLL
 !
 !/SMC      NCel   => GRIDS(IMOD)%NCel 
 !/SMC      NUFc   => GRIDS(IMOD)%NUFc 
@@ -1676,6 +1683,7 @@
       FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
+!/IG1       IGPARS => GRIDS(IMOD)%IGPARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0
@@ -1956,6 +1964,7 @@
 !/ST4      CUMULW   => MPARS(IMOD)%SRCPS%CUMULW
 !/ST4      SATINDICES    => MPARS(IMOD)%SRCPS%SATINDICES
 !/ST4      SATWEIGHTS   => MPARS(IMOD)%SRCPS%SATWEIGHTS
+!/ST4      SSINBR   => MPARS(IMOD)%SRCPS%SSINBR
 !
 !/ST6      SIN6A0 => MPARS(IMOD)%SRCPS%SIN6A0
 !/ST6      SIN6U10 => MPARS(IMOD)%SRCPS%SIN6U10

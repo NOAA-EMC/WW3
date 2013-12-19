@@ -3,7 +3,7 @@
 \opthead{UNO}{Met Office}{J.-G. Li}
 
 \noindent
-The UNO2 scheme for the directional$\theta$-space is identical to the regular
+The UNO2 scheme for the directional $\theta$-space is identical to the regular
 grid one assuming that the directional bins are regularly spaced. For the
 \emph{k}-space, however, the UNO2 scheme uses its irregular version, which
 uses local gradients instead of differences to estimate wave action value at
@@ -12,8 +12,8 @@ the mid-flux point for the cell face between spectral bin \emph{i}-1 and
 \begin{equation}
   N_{i-}^{*}=N_{c}+sign\left(N_{d}-N_{c}\right)\frac{\left(\Delta
       k_{c}-|\dot{k}_{i-}|\Delta
-      t\right)}{2}\min\left(|\frac{N_{u}-N_{c}}{k_{u}-k_{c}}|,|\frac{N_{c}-N_{d}|}{k_{c}-k_{d}}\right)
-  \:\:\: ,
+      t\right)}{2}\min\left(|\frac{N_{u}-N_{c}}{k_{u}-k_{c}}|,|\frac{N_{c}-N_{d}}{k_{c}-k_{d}}|\right)
+  \:\:\:,
 \label{eq:UNO2irregular}
 \end{equation}
 
