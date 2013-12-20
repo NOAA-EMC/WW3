@@ -1,0 +1,38 @@
+#############################################################################
+#                                                                           #
+# ww3_tp1.9 Test script for WW-III, one-dimensional propagation.            #
+#           Nonlinear shoaling (triad interactions) for                     # 
+#           Beji and Battjes (1993) barred flume case.                      #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR1 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: No real impact of smoothing.                   #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - User must select one of available switch inputs:                        #
+#       switch_PRn : where n=1,2,3 indicating the propagation scheme        #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 303 x 3 rectilinear Cartesian grid                    #
+#       - dx = 0.1 m, dy = 0.1 m                                            #
+#       - Xrange = -0.1:30.1 m, Yrange = -0.1:0.1 m                         #
+#     + Spectral grid: ntheta =  180, nf =  35, f1 = 0.10, fgamma = 1.1     #
+#                                                                           #
+#                                    Andre van der Westhuysen, Nov 2013     #
+#                                                   Last Mod : Nov 2013     #
+#                                                                           #
+#    Copyright 2013 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

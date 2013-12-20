@@ -653,6 +653,7 @@
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.7" >> matrix.body
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.8" >> matrix.body
       echo "$rtst -i input_BJ -w work_BJ_PR3_UQ $ww3 ww3_tp1.8" >> matrix.body
+      echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.9" >> matrix.body
     fi
 
     if [ "$unstr" = 'y' ]
@@ -756,6 +757,7 @@
     if [ "$prop2D" = 'y' ]
     then
       echo ' ' >> matrix.body
+      echo "$rtst -s MPI          -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp1.9" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.1" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.2" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.3" >> matrix.body
