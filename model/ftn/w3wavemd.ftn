@@ -66,7 +66,11 @@
 !/    07-Dec-2012 : Wrap W3SRCE with TMPn to limit WARN ( version 4.OF )
 !/    10-Dec-2012 : Modify field output MPI for new     ( version 4.OF )
 !/                  structure and smaller memory footprint.
+!/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
 !/    26-Dec-2012 : Move FIELD init. to W3GATH.         ( version 4.OF )
+!/    16-Sep-2013 : Add Arctic part for SMC grid.       ( version 4.11 )
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/                  trunk                               ( version 4.13 )
 !/    14-Nov-2013 : Remove orphaned work arrays.        ( version 4.13 )
 !/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
 !/
@@ -147,6 +151,7 @@
 !       !/PR2   ULTIMATE QUICKEST scheme.
 !       !/PR3   Averaged ULTIMATE QUICKEST scheme.
 !       !/PRX   User-defined scheme.
+!       !/SMC   UNO2 scheme on SMC grid.
 !
 !       !/S     Enable subroutine tracing.
 !       !/T     Test output.
@@ -338,6 +343,8 @@
 !/PR2      USE W3PRO2MD
 !/PR3      USE W3PRO3MD
 !/PRX      USE W3PROXMD
+!/SMC      USE W3PSMCMD
+!
 !/PR1      USE W3PROFSMD
 !/PR2      USE W3PROFSMD
 !/PR3      USE W3PROFSMD
@@ -403,6 +410,10 @@
                                  FLAG0 = .FALSE., FLOUTG, FLPFLD,     &
                                  FLPART, LOCAL, FLOUTG2,              &
                                  FLOMP = .FALSE.
+!
+!!Li   Logical variable to control regular gird lines in conflict with SMC option.
+      LOGICAL                 :: RGLGRD = .TRUE.
+!!Li
 !/MPI      LOGICAL                 :: FLGMPI(0:6)
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
@@ -425,8 +436,16 @@
 !/PALM  LOGICAL :: MEL03
 !/T     REAL             :: INDSORT(NSEA), DTCFL1(NSEA)
 !/
+!/ARC  !Li   Temperature spectra for Arctic boundary update.
+!/ARC      REAL, ALLOCATABLE       :: BACSPEC(:)
+!/ARC      REAL                    :: BACANGL
+!/ARC
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
+
+!/SMC !!Li  Switch off lat-lon grid lines in conflict with SMC option.
+!/SMC        RGLGRD = .FALSE.
+!
 ! 0.a Set pointers to data structure
 !
 !/OMP0      FLOMP  = .TRUE.
@@ -488,7 +507,13 @@
           FCUT  = SIG(NK) * TPIINV
         END IF
 !
-      IF ( .NOT. FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+!!Li  ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+      IF( RGLGRD .AND. .NOT. FLOMP ) ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+!
+!/SMC !!Li   Otherwise use sea point only field
+!/SMC       ALLOCATE ( FIELD(NCel) )
+!
+!     FIELD(:) = 0.
 !
       LOCAL   = IAPROC .LE. NAPROC
       UGDTUPDATE = .FALSE.
@@ -822,7 +847,8 @@
 !
 ! 3.5 Update maps and derivatives.
 !
-          IF ( FLMAP ) THEN
+!!Li      IF ( FLMAP ) THEN
+          IF ( FLMAP .AND. RGLGRD ) THEN
 !/PR1              CALL W3MAP1 ( MAPSTA )
 !/PR2              CALL W3MAP2
 !/PR3              CALL W3MAP3
@@ -834,9 +860,21 @@
               FLMAP  = .FALSE.
             END IF
 !
+!/SMC  !!Li   The sea point nubmer per pe is also checked for SMC grid.
+!/SMC          IF ( FLMAP ) THEN
+!/SMC              CALL W3NMIN ( MAPSTA, FLAG0 )
+!/SMC              IF ( FLAG0 .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,1030) IMOD
+!/SMC              FLMAP  = .FALSE.
+!/SMC            END IF
+!
           IF ( FLDDIR ) THEN
             IF (GTYPE .NE. UNGTYPE) THEN  
-              CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
+!!Li          CALL W3DZXY(DW(1:NSEA),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
+              IF( RGLGRD ) CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
+!/SMC !!Li  Use new sub for DDDX and DDDY assignment.  
+!/SMC         CALL SMCDHXY 
+!/SMCT        WRITE (NDST,*) " * SMCDHXY completed IT DTG =", IT, DTG
+!
             ELSE
               CALL UG_GRADIENTS(DW, DDDX, DDDY)
               END IF 
@@ -959,6 +997,15 @@
 !/PR3                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
 !/PRX                      CALL W3KTPX
+!
+!/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
+!/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+!/SMC               DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA), VA(:,JSEA) )  
+!/SMCT              IF(ITLOC .EQ. ITLOCH .AND. ISEA .EQ. NSEAL/2)        &
+!/SMCT                 WRITE (NDST,*) " * W3KRTN completed ITLOC ISEA=", &
+!/SMCT                              ITLOC, ISEA 
+!
                     END IF
                   END DO
                 END DO
@@ -981,12 +1028,21 @@
 !/OMP0/!$OMP DO SCHEDULE (DYNAMIC,1)
               DO ISPEC=1, NSPEC
                 IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
-                  CALL W3GATH ( ISPEC, FIELD )
+!!Li              CALL W3GATH ( ISPEC, FIELD )
+                  IF( RGLGRD ) CALL W3GATH ( ISPEC, FIELD )
+!/SMC !!Li   Otherwise use SMC sub to gether field
+!/SMC                    CALL W3GATHSMC ( ISPEC, FIELD )
+!
                   IF (GTYPE .NE. UNGTYPE) THEN
 !/PR1               CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
 !/PR2               CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
 !/PR3               CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
 !/PRX               CALL W3XYPX
+!/SMC   !!Li   Propagation on SMC grid uses UNO2 scheme.
+!/SMC                    CALL W3PSMC ( ISPEC, DTG, FIELD )
+!/SMCT              IF(ISPEC .EQ. NSPEC/2)  WRITE (NDST,*)   &
+!/SMCT                    " * W3PSMC completed IT ISPEC=", IT, ISPEC
+!
                   ELSE IF (GTYPE .EQ. UNGTYPE) THEN
 !/PR1               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PR1                                  FIELD, VGX, VGY, UGDTUPDATE )
@@ -997,7 +1053,11 @@
 !/PRX               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
 !/PRX                                  FIELD, VGX, VGY, UGDTUPDATE )
                     END IF
-                  CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
+!!Li              CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
+                  IF( RGLGRD ) CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
+!/SMC !!Li   Otherwise use SMC sub to scatter field
+!/SMC                    CALL W3SCATSMC ( ISPEC, MAPSTA, FIELD )
+!
                   END IF
                 END DO
 !
@@ -1015,6 +1075,35 @@
               IF ( FLOMP ) DEALLOCATE ( FIELD )
 
 !/OMP0/!$OMP END PARALLEL
+!
+!/ARC  !Li    Update Arctic boundary cell spectra if within local range
+!/ARC  !Li    Have to use mpi options so will be empty if ARC not selected.
+!/ARC           ALLOCATE ( BACSPEC(NSPEC) )
+!/ARC        DO IK = 1, NBAC
+!/ARC           IF( IK .LE. NBGL ) THEN
+!/ARC                   IX = NGLO + IK 
+!/ARC                   BACANGL = ANGARC(IK)
+!/ARC           ELSE
+!/ARC                   IX = ICLBAC(IK)
+!/ARC                   BACANGL = - ANGARC(IK)
+!/ARC           ENDIF 
+!
+                DO JSEA=1, NSEAL
+!/DIST                  ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD                  ISEA   = JSEA
+!
+!/ARC              IF( ISEA .EQ. IX ) THEN
+!/ARC                  BACSPEC = SPCBAC(:,IK)
+!/ARC                  
+!/ARC                  CALL w3acturn( NTH, NK, BACANGL, BACSPEC )
+!/ARC
+!/ARC                  VA(:,JSEA) = BACSPEC 
+!/ARC              ENDIF
+!
+                END DO
+!
+!/ARC         END DO
+!/ARC         DEALLOCATE ( BACSPEC )
 !
 ! End of test FLCX.OR.FLCY
 !
@@ -1053,6 +1142,12 @@
 !/PR3                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA), &
 !/PR3                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 !/PRX                      CALL W3KTPX
+!
+!/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
+!/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
+!/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+!/SMC               DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA), VA(:,JSEA) )  
+!
                     END IF
                   END DO
                 END DO
@@ -2252,6 +2347,10 @@
           IXY    = MAPSF(ISEA,3)
           IF ( MAPSTA(IXY) .EQ. 1 ) NLOC = NLOC + 1
           END DO
+!/SMC !!Li   For SMC grid, local sea points are equally NSEA/NAPROC
+!/SMC !!Li   so the NLOC is overwirte by a constant.  
+!/SMC        NLOC = NSEA/NAPROC
+!
 !/T        WRITE (NDST,9000) IPROC, NLOC
         NMIN   = MIN ( NMIN , NLOC )
         END DO
