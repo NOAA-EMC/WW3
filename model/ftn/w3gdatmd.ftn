@@ -732,6 +732,7 @@
 !
       TYPE STRP
 !/TR0        REAL                  :: DUMMY
+!/TR1        REAL                  :: DUMMY
 !/TRX        REAL                  :: DUMMY
       END TYPE STRP
 !
