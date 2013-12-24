@@ -216,7 +216,7 @@
 #sort:s_tr:
       s_tr   ) TY='one'
                ID='triad interactions'
-               OK='TR0 TRX' ;;
+               OK='TR0 TR1 TRX' ;;
 #sort:s_bs:
       s_bs   ) TY='one'
                ID='bottom scattering'
@@ -583,6 +583,8 @@
   case $s_tr in
    TR0) tr=$NULL
         trx=$NULL ;;
+   TR1) tr='w3str1md'
+        trx=$NULL ;;
    TRX) tr='w3strxmd'
         trx=$NULL ;;
   esac
@@ -917,7 +919,7 @@
                W3SWLDMD \
                W3SBT1MD W3SBT4MD W3SBT8MD W3SBT9MD W3SBTXMD \
                W3SDB1MD W3SDBXMD \
-               W3STRXMD \
+               W3STR1MD W3STRXMD \
                W3SBS1MD W3SBSXMD \
                W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD \
                W3REF1MD \
@@ -991,6 +993,7 @@
          'W3SBTXMD'     ) modtest=w3sbtxmd.o ;;
          'W3SDB1MD'     ) modtest=w3sdb1md.o ;;
          'W3SDBXMD'     ) modtest=w3sdbxmd.o ;;
+         'W3STR1MD'     ) modtest=w3str1md.o ;;
          'W3STRXMD'     ) modtest=w3strxmd.o ;;
          'W3SBS1MD'     ) modtest=w3sbs1md.o ;;
          'W3SBSXMD'     ) modtest=w3sbsxmd.o ;;

@@ -78,6 +78,7 @@
   echo "  echo '    Multi 04 (swell on mount/current)  : $multi04'"          >> matrix.head
   echo "  echo '    Multi 05 (hurricane 3 moving grds) : $multi05'"          >> matrix.head
   echo "  echo '    Multi 06 (curv. + reg. grds)       : $multi06'"          >> matrix.head
+  echo "  echo '    Multi 07 (unstr. + reg. grds)      : $multi07'"          >> matrix.head
   echo "  echo ' '"                                                          >> matrix.head
   if [ -n "$filter" ]
   then
@@ -653,6 +654,7 @@
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.7" >> matrix.body
       echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.8" >> matrix.body
       echo "$rtst -i input_BJ -w work_BJ_PR3_UQ $ww3 ww3_tp1.8" >> matrix.body
+      echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.9" >> matrix.body
     fi
 
     if [ "$unstr" = 'y' ]
@@ -747,6 +749,11 @@
       echo ' ' >> matrix.body
       echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d   -m grdset_d                            $ww3 mww3_test_06" >> matrix.body
     fi
+    if [ "$multi07" = 'y' ]
+    then
+      echo ' ' >> matrix.body
+      echo "$rtst                 -w work_PR3_UQ     -m grdset                              $ww3 mww3_test_07" >> matrix.body
+    fi
 
   fi
 
@@ -756,6 +763,7 @@
     if [ "$prop2D" = 'y' ]
     then
       echo ' ' >> matrix.body
+      echo "$rtst -s MPI          -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp1.9" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.1" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.2" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.3" >> matrix.body

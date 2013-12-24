@@ -161,6 +161,7 @@
                     *.ctl           ) form='f' ; do='y' ; drop='-' ;;
                     ww3.*           ) form='u' ; do='y' ; drop='-' ;;
                     prf.*.mww3      ) form='f' ; do='-' ; drop='-' ;;
+                    finished        ) form='f' ; do='-' ; drop='-' ;;
                     *               ) echo " *** do not recognize $file ; fix script ..."
                                       echo ' ' ; exit 5 ;;
                   esac

@@ -304,7 +304,8 @@
 !     !/DBX   User-defined bottom friction.
 !
 !     !/TR0   No triad interactions.                     ( Choose one )
-!     !/TRX   User-defined bottom friction.
+!     !/TR1   Lumped Triad Approximation (LTA).
+!     !/TRX   User-defined triad interactions.
 !
 !     !/BS0   No bottom scattering.                      ( Choose one )
 !     !/BS1   Scattering term by Ardhuin and Magne (2007).
@@ -369,6 +370,7 @@
 !/IS1      USE W3SIS1MD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
+!/TR1      USE W3STR1MD
 !/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
 !/REF1     USE W3REF1MD
@@ -430,6 +432,7 @@
                                  VSIC(NSPEC), VDIC(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
+!/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
 !/TRX                                 VSTR(NSPEC), VDTR(NSPEC),            &
 !/BS1                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/BSX                                 VSBS(NSPEC), VDBS(NSPEC),            &
@@ -666,6 +669,7 @@
 !/NL3        CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,            VSNL, VDNL )
 !/NLX        CALL W3SNLX 
 !
+!/TR1        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
 !/TRX        CALL W3STRX
 !
 ! 2.c Dissipation... except for ST4
@@ -771,6 +775,7 @@
 !/ST6          VS(IS) = VS(IS) + VSWL(IS)
 !/DB1          VS(IS) = VS(IS) + VSDB(IS)
 !/DBX          VS(IS) = VS(IS) + VSDB(IS)
+!/TR1          VS(IS) = VS(IS) + VSTR(IS)
 !/TRX          VS(IS) = VS(IS) + VSTR(IS)
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
@@ -780,6 +785,7 @@
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/DB1          VD(IS) = VD(IS) + VDDB(IS)
 !/DBX          VD(IS) = VD(IS) + VDDB(IS)
+!/TR1          VD(IS) = VD(IS) + VDTR(IS)
 !/TRX          VD(IS) = VD(IS) + VDTR(IS)
 !/BS1          VD(IS) = VD(IS) + VDBS(IS)
 !/BSX          VD(IS) = VD(IS) + VDBS(IS)

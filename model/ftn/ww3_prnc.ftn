@@ -17,7 +17,8 @@
 !/    13-Mar-2012 : Makes compatible with NC3           ( version 4.10 ) 
 !/    18-Oct-2013 : Debug compile issue with TIDE switch( version 4.12 )
 !/    18-Oct-2013 : Initialize interpolation weights    ( version 4.12 )
-
+!/    20-Dec-2013 : Allow scale factor and offset in    ( version 4.16 )
+!/                  NetCDF variables (S. Zieger)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -59,8 +60,12 @@
 !       FORMT   C.A.  Format or time in field.
 !       XC      R.A.  Components of input vector field or first
 !                     input scalar field
+!       XCFAC   Real  Scale factor for input scalar field
+!       XCOFF   Real  Offset for input scalar field
 !       YC      R.A.  Components of input vector field or second
 !                     input scalar field
+!       YCFAC   Real  Scale factor for input scalar field
+!       YCOFF   Real  Offset for input scalar field
 !       FX,FY   R.A.  Output fields.
 !       ACC     Real  Required interpolation accuracy.
 !     ----------------------------------------------------------------
@@ -233,6 +238,7 @@
                                  A1(:,:), A2(:,:), A3(:,:)
       REAL, POINTER           :: ALA(:,:), ALO(:,:)
       REAL, ALLOCATABLE       :: XC(:,:), YC(:,:), AC(:,:), DATA(:,:)
+      REAL                    :: XCFAC, XCOFF, YCFAC, YCOFF
       LOGICAL                 :: INGRID
       LOGICAL                 :: FLSTAB, FLBERG, CLO(2), FLTIME, FLHDR
       INTEGER                 :: ICLO
@@ -271,6 +277,7 @@
       CHARACTER                 :: TIDECONSTNAMES*1024
       CHARACTER(LEN=100)         :: LIST(70)
       LOGICAL                   :: TIDESWITCH, DISTSWITCH 
+
 !/TIDET  INTEGER                   ::   LRECL
 !/TIDET      CHARACTER(LEN=21)       :: FNAMETXT
 !/MPI      INTEGER                   :: STAT_MPI(MPI_STATUS_SIZE)
@@ -1314,6 +1321,33 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6   Begin loop over input fields
 !
+!     Read scale factor and offset for input fields
+        XCFAC = 1.0
+        YCFAC = 1.0
+        XCOFF = 0.0
+        YCOFF = 0.0
+!
+        IF ( ITYPE .LE. 4 .OR. ITYPE.EQ.6 ) THEN
+          IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'scale_factor')
+          IF ( IRET .EQ. NF90_NOERR ) THEN
+             IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',XCFAC)
+          ENDIF
+          IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'add_offset')
+          IF ( IRET .EQ. NF90_NOERR) THEN
+             IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
+          END IF
+          IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+            IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'scale_factor')
+            IF (IRET .EQ. NF90_NOERR) THEN
+               IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
+            ENDIF
+            IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'add_offset')
+            IF (IRET .EQ. NF90_NOERR) THEN
+               IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
+            END IF
+          END IF
+        END IF
+!
 !/O15      J      = LEN_TRIM(FNMPRE)
 !/O15      OPEN (NDSTIME,FILE=FNMPRE(:J)//'times.'//IDFLD,      &
 !/O15            ERR=870,IOSTAT=IERR )
@@ -1362,8 +1396,7 @@
                 END IF
               END IF
             CALL check_err(iret)
-            !XC(:,:)=XC(:,MYM:1:-1)
-
+            XC  = XC * XCFAC + XCOFF
 !
 !/T2            WRITE (NDST,9060) 1
 !/T2            IXP0   = 1
@@ -1393,6 +1426,7 @@
                         END IF
                       END IF
                     CALL check_err(iret)
+                    YC  = YC * YCFAC + YCOFF
 !
 !/T2                WRITE (NDST,9060) 2
 !/T2                IXP0   = 1
