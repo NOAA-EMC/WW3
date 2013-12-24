@@ -108,7 +108,7 @@
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN2
-      USE W3GDATMD, ONLY: DTMIN, TH, DTH, ECOS
+      USE W3GDATMD, ONLY: DTMIN, TH, DTH, ECOS, DTMIN
       USE W3GDATMD, ONLY: IS1C1, IS1C2
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -158,6 +158,8 @@
               END IF
            END DO
          END DO
+!
+         S = S / DTMIN
 !
 !/T         DO IK = 1, NK
 !/T           DO ITH = 1, NTH
