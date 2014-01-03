@@ -85,8 +85,8 @@
         USE W3IOGOMD, ONLY : W3IOGO
         USE W3ADATMD, ONLY : W3DIMA, W3NAUX, W3SETA
         USE W3GDATMD
-        USE W3ODATMD, ONLY : FNMPRE, NOGRP, NGRPP, OUTPTS, UNDEF, NDSE,        &
-                             NDST, FLOGRD, NAPROC, NOSWLL
+        USE W3ODATMD, ONLY : FNMPRE, NOGRP, NGRPP, OUTPTS, UNDEF, FLOGRD,      &
+                             NAPROC, NOSWLL
         USE W3ODATMD, ONLY : W3NOUT, W3SETO
         USE W3IDATMD
         USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
@@ -118,7 +118,7 @@
         TYPE(GR_INT), TARGET, ALLOCATABLE :: GR_INTS(:)
         INTEGER                 :: I, J, K, IERR, NG, IG, ISEA, IX, IY, IXT,   &
                                    IYT, NS, COUNTF, COUNTG, NOSWLL_MIN
-        INTEGER                 :: NDSM, NDSI, NDSO, NDSTRC, NTRACE, IOTST
+        INTEGER                 :: NDSM, NDSI, NDSE, NDSO, NDSTRC, NTRACE, IOTST
         INTEGER, ALLOCATABLE    :: FIDOUT(:), MAP(:,:), TMP_INDX(:)
 	REAL                    :: SXT, SYT, DAREA, XT, YT, XTT
         REAL                    :: XCRNR(5),YCRNR(5),DT(4)
@@ -138,6 +138,7 @@
 !
         NDSM   = 20
         NDSI   = 10
+        NDSE   = 6
         NDSO   = 6
 !
         NDSTRC = 6
