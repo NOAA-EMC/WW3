@@ -24,6 +24,7 @@
 !/    12-Mar-2012 : Remove net flux bug and optimise upstream code.
 !/    16-Jan-2013 : Adapted for Version 4.08, removing FACX/Y.
 !/    16-Sep-2013 : Add Arctic part for SMC grid in WW3 V4.11 
+!/     3-Jan-2014 : Remove bug in SMCDHXY for AU/V as cell size.  
 !/
 !  1. Purpose :
 !
@@ -1383,9 +1384,9 @@
          INTEGER :: I, J, K, L, M, N
          REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
          REAL :: DX0I, DY0I, Frqcy=0.0625
-         REAL, Dimension(NUFc) :: AU, FU
-         REAL, Dimension(NVFc) :: AV, FV
-         REAL, Dimension(-9:NSEA) :: CGrp, REFR, HCel
+         REAL, Dimension(NUFc) ::    FU
+         REAL, Dimension(NVFc) ::    FV
+         REAL, Dimension(-9:NSEA) :: AU, AV, CGrp, REFR, HCel
 
 !!   Assign water depth to HCel from DW integer values.
 !!   set half the minimum depth DMIN for negative cells.
