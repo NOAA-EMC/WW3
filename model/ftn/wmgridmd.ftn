@@ -2564,11 +2564,10 @@
 
 !/T38       WRITE(MDST,*)'WMGHGH Section 2.b.6 completed.'
 
-! Notes: We are done with the counting. If we didn't use SCRIP to get NLOC,
-!     etc., then we need to set them using the _OM variables.
+! Notes: We are done with the counting. If we didn't use SCRIP to get 
+!     TMPINT, TMPRL, then we need to set them using the _OM variables.
 
             IF(.NOT.LSCRIP)THEN
-               NLOC=NLOC_OM
                TMPINT=TMPINT_OM
                TMPRL=TMPRL_OM
             END IF
