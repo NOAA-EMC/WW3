@@ -267,7 +267,10 @@
 !!Li  Minimum time step should not be less than sub w3init requirement,
 !!Li  where IAPPRO array is initialised for propagation parallization.
       CGN   = 0.9999 * MAX( CGX, CGY, 0.001*CG0 )
-      DTLOC = MIN( 0.4*DX0/CGX, 0.8*DY0/CGY, DTCFL*CG0/CGN )
+!!      DTLOC = MIN( 0.4*DX0/CGX, 0.8*DY0/CGY, DTCFL*CG0/CGN )
+!!AC  Replacing DTLOC with one below to avoid divide by zero error when 
+!!AC  waves are travelling in one direction only
+      DTLOC = DTCFL*CG0/CGN 
       NTLOC  = 1 + INT(DTG/DTLOC - 0.001)
       DTLOC  = DTG / REAL(NTLOC)
 
@@ -692,7 +695,10 @@
 !        DPH2K(IK) = 2.0*WN(IK)*DEPTH
 !        SNH2K(IK) = SINH( DPH2K(IK) )
 !Li   For old refraction scheme using phase speed.  JGLi8Jun2011
-        SIGSNH(IK) = SIG(IK)/SINH(2.0*WN(IK)*DEPTH)
+!!        SIGSNH(IK) = SIG(IK)/SINH(2.0*WN(IK)*DEPTH)
+!!AC  Replacing SIGSINH with a delimiter to prevent the SINH value from 
+!!AC  becoming significantly large. Right now set to a max around 1E21
+        SIGSNH(IK) = SIG(IK)/SINH(MIN(2.0*WN(IK)*DEPTH,50.0))
         END DO
 !
 ! 2.  Extract spectrum without mapping
