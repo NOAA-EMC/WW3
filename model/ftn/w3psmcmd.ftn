@@ -25,6 +25,7 @@
 !/    16-Jan-2013 : Adapted for Version 4.08, removing FACX/Y.
 !/    16-Sep-2013 : Add Arctic part for SMC grid in WW3 V4.11 
 !/     3-Jan-2014 : Remove bug in SMCDHXY for AU/V as cell size.  
+!/     7-Jan-2014 : Remove bug in SMCGtCrfr for K definition.     
 !/
 !  1. Purpose :
 !
@@ -1226,18 +1227,19 @@
          DO j=1, NTH
 
 !    GCT + refraction Courant number for this dirctional bin
-         CNST6=CoRfr(j,n)
-
-!    For positive turning case
-         IF(CNST6 > 0.0)  THEN
+           CNST6=CoRfr(j,n)
 
 !    Work out integer number of bins to be skipped.
 !    If K is great than NTH, full circle turning is removed.
-           K= MOD( INT(CNST6), NTH ) 
+           CNST5=ABS( CNST6 )
+           K= MOD( INT(CNST5), NTH ) 
 
 !    Partitioning faraction of the spectral component
-           CNST1=CNST6 - FLOAT( INT(CNST6) )
+           CNST1=CNST5 - FLOAT( INT(CNST5) )
            CNST2=1.0 - CNST1
+
+!    For positive turning case
+         IF(CNST6 > 0.0)  THEN
  
 !    Select the upstream and downstream bins to rotate in, wrap at end
            L=j+K
@@ -1251,11 +1253,6 @@
 
 !    For negative or no turning case
          ELSE 
-
-!    Work out integer number of bins to be skipped.
-!    Partitioning faraction of the spectral component
-           CNST1= -CNST6 - FLOAT( INT(-CNST6) )
-           CNST2=1.0 - CNST1
 
 !    Select the upstream and downstream bins to rotate in, wrap at end
            L=j-K
