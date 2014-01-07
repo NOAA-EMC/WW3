@@ -23,7 +23,8 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # Set base WAVEWATCH III directory used her
- WW3 = ../.
+  WW3 = ../.
+# WW3 = ~/wwatch3/.
 
 # INPDIR: location of ww3_*.inp input files used for documentation.
 # The default can be overridden by specifying INPDIR on the make
@@ -263,7 +264,7 @@ inp : $(INPFILES) ww3_gspl.sh.out run_test.out
 
 clean:
 	\rm -f $(INPFILES)
-	\rm -f *.log */*.aux *.aux *.bbl *.blg *.toc *.out
+	\rm -f *.log */*.aux *.aux *.bbl *.blg *.toc *.out *~ */*~
 	\rm -f *.dvi *.pdf
 
 %.tex : $(INPDIR)/%.inp

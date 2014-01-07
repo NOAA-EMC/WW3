@@ -3,31 +3,36 @@
 \vssub
 
 \noindent
-In its packaged version, \ws\ is contained in several files:
+In its packaged public version (tar file distribution), \ws\ is contained in several files:
 
 \begin{list}{???}{\parsep 0mm \itemsep 0mm 
                   \leftmargin 40mm \rightmargin 5mm
                   \labelwidth 30mm \labelsep 5mm}
-\item[{\file install\_wwatch3} \hfill]
+\item[{\file install\_wwatch3\_tar} \hfill]
 The \ws\ install program. 
-\item[{\file wwatch3.aux.tar} \hfill] Archive file containing programs and
-scripts controlling the compiling and linking of and code management of \ws.
-\item[{\file wwatch3.ftn.tar} \hfill]
-Archive file containing source code.
-\item[{\file wwatch3.inp.tar} \hfill]
-Archive file containing example input files. 
-\item[{\file wwatch3.tst.tar} \hfill]
-Archive file containing test cases with results. 
+\item[{\file wwatch3.[VERTAG].model.tar} \hfill] Archive file containing 
+FORTRAN source codes (ftn directory), programs and scripts controlling the 
+compiling and linking of and code management of \ws (aux and bin directories),
+and sample input files (inp directory).
+\item[{\file wwatch3.[VERTAG].regtests.tar} \hfill]
+Archive file containing several regression test cases.
+\item[{\file wwatch3.[VERTAG].cases.tar} \hfill]
+Archive file containing several large tests involving real case scenarios. 
 \end{list}
+
+The label [VERTAG] is tyipically a version number for the model package, 
+which may be followed or preceded by alpha-numeric tags describing other
+characteristics of the distribution package (eg, v4.18.beta for the beta
+version 4.18 etc).
 
 \noindent
 As the first step of installing \ws, these files have to be copied to a work
 directory on the machine on which \ws\ will be installed. Because this
 directory will be the `home' directory of \ws, it is suggested that a new
 directory is created (see also warning in previous section). Furthermore
-{\file install\_wwatch3} has to be made executable by typing \command{chmod
-700 install\_wwatch3} after which the installation of the files is started by
-typing \command{install\_wwatch3}
+{\file install\_wwatch3\_tar} has to be made executable by typing \command{chmod
+700 install\_wwatch3\_tar} after which the installation of the files is started by
+typing \command{install\_wwatch3\_tar} at your Linux/Unix prompt.
 
 
 \begin{center}
@@ -39,19 +44,23 @@ auxiliary \fortran\ codes used in putting \ws\ together. Unlike the actual
 therefore sufficient to point toward the generic \fortran-77 compiler on the
 system. This choice of mixed codes was made to assure that if \ws\ is put on a
 \unix/Linux box only to put the code together, it will not be necessary to buy
-a \fortran-90 compiler.} \\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm}
+a \fortran-90 compiler.} The {\file install\_ww3\_tar} script allows the user to 
+set pre-defined choices that will point the \fortran-77 to a generic executable
+{\file f77}. This may not be available on your system, so make sure that an appropriate
+choice is made during the installation process!
+\\ \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm}
 WARNING \rule[1mm]{55mm}{1.0mm}
 \end{center}
 
-When {\file install\_wwatch3} is executed for the first time, it will ask the
+When {\file install\_wwatch3\_tar} is executed for the first time, it will ask the
 user to identify the directory in which \ws\ will be installed. This has to be
-the directory in which the above five files reside. The program will then
+confirm that the installation directory is the current directory. The program will then
 print a message that it cannot find the setup file, and ask some
 questions. The default answer or options are shown in square brackets. After
 the user has verified that the setup parameters are satisfactorily, the
 install program will, by default, create the (hidden) setup file {\file
   .wwatch3.env} in the user's home directory.  An alternate setup file may be
-specified prior to running {\file install\_wwatch3} by setting {\code
+specified prior to running {\file install\_wwatch3\_tar} by setting {\code
   WWATCH3\_ENV} in the user environment.  The setup can be modified by
 rerunning the install program, or by manually editing the setup file. The
 `home' directory of \ws\ can only be changed by editing or removing {\file

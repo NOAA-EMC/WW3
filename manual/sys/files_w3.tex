@@ -14,12 +14,8 @@ Main wave model initialization module \hfill {\file w3initmd.ftn}
 \fit{w3mpio}{\mpi\ initialization for I/O (internal).}
 \fit{w3mpip}{\mpi\ initialization for I/O (internal, point output only).}
 \end{flisti}
-   
-% fig:w3init
 
-\input{sys/fig_w3init}
-
-\vspace{\baselineskip} \noindent
+\noindent
 Main wave model module \hfill {\file w3wavemd.ftn}
 
 \begin{flisti}
@@ -30,10 +26,10 @@ Main wave model module \hfill {\file w3wavemd.ftn}
 \fit{w3nmin}{Calculate minimum number of sea points per processor
              (internal).}
 \end{flisti}
+
 \noindent
 The main wave model routines and all other subroutines require a data
-structure to exist. The data structure is contained in the following
-modules. 
+structure to exist. The data structure is contained in the following modules.
 
 \vspace{\baselineskip} \noindent
 Define model grids and parameter settings \hfill {\file w3gdatmd.ftn}
@@ -67,7 +63,7 @@ Auxiliary storage \hfill {\file w3adatmd.ftn}
 \fit{      }{Set pointers to selected grid.}
 \end{flisti}
 
-\noindent
+\pb \noindent
 Model output \hfill {\file w3odatmd.ftn}
 
 \begin{flisti}
@@ -84,6 +80,84 @@ Model input \hfill {\file w3idatmd.ftn}
 \fit{w3ninp}{Set number of grids to be considered.}
 \fit{w3dimi}{Set dimensions and allocate storage.}
 \fit{w3seti}{Set pointers to selected grid.}
+\end{flisti}
+
+\noindent
+The input fields such as winds and currents are transferred to the model
+through the parameter list of {\F w3wave}. The information is processed within
+{\F w3wave} by the routines in the following module.
+
+\vspace{\baselineskip} \noindent
+Input update module \hfill {\file w3updtmd.ftn}
+
+\begin{flisti}
+\fit{w3ucur}{Interpolation in time of current fields.}
+\fit{w3uwnd}{Interpolation in time of wind fields.}
+\fit{w3uini}{Generate initial conditions from the initial
+             wind field.}
+\fit{w3ubpt}{Updating of boundary conditions in nested runs.}
+\fit{w3uice}{Updating of the ice coverage.}
+\fit{w3ulev}{Updating of water levels.}
+\fit{w3utrn}{Updating grid box transparencies.}
+\fit{w3ddxy}{Calculation of spatial derivatives of the water depth.}
+\fit{w3dcxy}{Calculation of spatial derivatives of the currents.} 
+\end{flisti}
+
+\noindent
+There are seven types of \ws\ data files (other than the preprocessed input
+fields, which are part of the program shall rather than the actual wave
+model). The corresponding routines are gathered in six modules.
+
+\vspace{\baselineskip} \noindent
+I/O module ({\file mod\_def.ww3}) \hfill {\file w3iogrmd.ftn}
+
+\begin{flisti}
+\fit{w3iogr}{Reading and writing of {\file mod\_def.ww3}.}
+\end{flisti}
+
+\noindent
+I/O module ({\file out\_grd.ww3}) \hfill {\file w3iogomd.ftn}
+
+\begin{flisti}
+\fit{w3outg}{Calculation of gridded output parameters.}
+\fit{w3iogo}{Reading and writing of {\file out\_grd.ww3}.}
+\end{flisti}
+
+\noindent
+I/O module ({\file out\_pnt.ww3}) \hfill {\file w3iopomd.ftn}
+
+\begin{flisti}
+\fit{w3iopp}{Processing of requests for point output.}
+\fit{w3iope}{Calculating point output data.}
+\fit{w3iopo}{Reading and writing of {\file out\_pnt.ww3}.}
+\end{flisti}
+
+\noindent
+I/O module ({\file track\_o.ww3}) \hfill {\file w3iotrmd.ftn}
+
+\begin{flisti}
+\fit{w3iotr}{Generate track output in {\file track\_o.ww3}.}
+\end{flisti}
+
+\noindent
+I/O module ({\file restart.ww3}) \hfill {\file w3iorsmd.ftn}
+
+\begin{flisti}
+\fit{w3iors}{Reading and writing of {\file restart{\sl{n}}.ww3}.}
+\end{flisti}
+
+\noindent
+I/O module ({\file nest.ww3}) \hfill {\file w3iobcmd.ftn}
+
+\begin{flisti}
+\fit{w3iobc}{Reading and writing of {\file nest{\sl{n}}.ww3}.}
+\end{flisti}
+
+\noindent
+I/O module ({\file partition.ww3}) \hfill {\file w3iofsmd.ftn}
+
+\begin{flisti}
+\fit{w3iofs}{Writing of {\file partition.ww3}.}
 \end{flisti}
 
 \noindent
@@ -150,6 +224,23 @@ Propagation module (generic UNO) \hfill {\file w3uqckmd.ftn}
 \end{flisti}
 
 \noindent
+SMC grid routines \hfill {\file w3psmcmd.ftn}
+
+\begin{flisti}
+\fit{W3PSMC   }{Spatial propagation on SMC grid.}
+\fit{W3KSMC   }{Spectral modification by GCT and refraction.}
+\fit{SMCxUNO2 }{Irregular grid mid-flux on U-faces by UNO2.}
+\fit{SMCyUNO2 }{Irregular grid mid-flux on V-faces by UNO2.}
+\fit{SMCxUNO2r}{Regular grid mid-flux on U-faces by UNO2.}
+\fit{SMCyUNO2r}{Regular grid mid-flux on V-faces by UNO2.}
+\fit{SMCkUNO2 }{Shift in k-space due to refraction by UNO2.}
+\fit{SMCGtCrfr}{Refraction and GCT rotation in theta.}
+\fit{SMCDHXY  }{Evaluate depth gradient and refraction limiter.}
+\fit{W3GATHSMC W3SCATSMC}{}
+\fit{         }{Gather and scatter spectral components.}
+\end{flisti}
+
+\noindent
 Triangle-based propagation schemes \hfill {\file w3profsmd.ftn}
 
 \begin{flisti}
@@ -161,7 +252,8 @@ Triangle-based propagation schemes \hfill {\file w3profsmd.ftn}
 \fit{w3xypfsfct2}{FCT-scheme}
 \fit{bcgstab}{Part of the iterative SPARSKIT solver, used for the implicit scheme}
 \end{flisti}
-\noindent
+
+\vspace{\baselineskip} \noindent
 The source term calculation and integration is contained in several
 modules. The module {\file w3srcemd.ftn} manages the general calculation and
 integration. Additional modules contain the actual source term options.
@@ -210,7 +302,7 @@ Linear input (Cavaleri and Malanotte Rizzoli) \hfill {\file w3sln1md.ftn}
 \fit{w3sln1}{Calculation $S_{lin}$.}
 \end{flisti}
 
-\noindent
+\pb \noindent
 Linear input (slot for user supplied routines) \hfill {\file w3slnxmd.ftn}
 
 \begin{flisti}
@@ -274,12 +366,6 @@ Input and dissipation module Ardhuin et al. 2010 \hfill {\file w3src4md.ftn}
 \end{flisti}
 
 \noindent
-%Input and dissipation module (slot for user supplied routines) \hfill {\file
-%w3src5md.ftn}
-
-%\ldots
-
-\noindent
 Input and dissipation module BYDRZ \hfill {\file w3src6md.ftn}
 
 \begin{flisti}
@@ -300,6 +386,15 @@ w3srcxmd.ftn}
 \fit{w3sinx}{Calculation of $S_{in}$.}
 \fit{w3sdsx}{Calculation of $S_{ds}$.}
 \end{flisti}
+
+\noindent
+Swell dissipation module \hfill {\file w3swldmd.ftn}
+
+\begin{flist}
+\fit{w3swl4}{Ardhuin et al (2010+) swell dissipation.}
+\fit{w3swl6}{Babanin (2011) swell dissipation.}
+\fit{irange}{Generate a sequence of integer values.}
+\end{flist}
 
 \noindent
 Nonlinear interaction module (\dia) \hfill {\file w3snl1md.ftn}
@@ -352,7 +447,7 @@ Nonlinear high-frequency filter \hfill {\file w3snlsmd.ftn}
 \fit{insnls}{Initialization for filter.}
 \end{flisti}
 
-\pb \noindent
+\noindent
 Bottom friction module (\js) \hfill {\file w3sbt1md.ftn}
 
 \begin{flisti}
@@ -360,14 +455,27 @@ Bottom friction module (\js) \hfill {\file w3sbt1md.ftn}
 \end{flisti}
 
 \noindent
-Bottom friction module (\showex) \hfill {\file
-w3sbtxmd.ftn}
+Bottom friction module (\showex) \hfill {\file w3sbt4md.ftn}
 
 \begin{flisti}
 \fit{insbt4}{Initialization of $S_{bot}$})
 \fit{tabu\_erf}{Table or error function.} 
 \fit{w3sbt4}{Calculation of $S_{bot}$, and energy and momentum fluxes to the 
 bottom boundary layer.}
+\end{flisti}
+
+\noindent
+Fluid mud dissipation \citep{art:DL78}  \hfill {\file w3sbt8md.ftn}
+
+\begin{flisti}
+\fit{w3sbt8}{Source term.}
+\end{flisti}
+
+\pb \noindent
+Fluid mud dissipation \citep{art:Ng00}  \hfill {\file w3sbt9md.ftn}
+
+\begin{flisti}
+\fit{w3sbt9}{Source term.}
 \end{flisti}
 
 \noindent
@@ -396,6 +504,13 @@ w3sdbxmd.ftn}
 \end{flisti}
 
 \noindent
+Triad interactions module (LTA) \hfill {\file w3str1md.ftn}
+
+\begin{flisti}
+\fit{w3str1}{Calculation of $S_{tr}$.)}
+\end{flisti}
+
+\noindent
 Triad interactions module (slot for user supplied routines) \hfill {\file
 w3strxmd.ftn}
 
@@ -408,10 +523,11 @@ w3strxmd.ftn}
 Bottom scattering module \hfill {\file w3sbs1md.ftn}
 
 \begin{flisti}
-\fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the bottom.}
+\fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the
+             bottom.}  
 \fit{insbs1}{Initialization of $S_{bs}$.}
-\fit{diagonalize}{Square matrix diagonalization}
-\fit{rotate}{Square matrix rotation, used by DIAGONALIZE}
+\fit{diagonalize}{Square matrix diagonalization} \fit{rotate}{Square matrix
+    rotation, used by DIAGONALIZE}
 \end{flisti}
 
 \noindent
@@ -423,11 +539,39 @@ w3sbsxmd.ftn}
 \fit{insbsx}{Initialization of $S_{bs}$.}
 \end{flisti}
 
+\pb \noindent
+Wave-ice interactions (simple) \hfill {\file w3sic1md.ftn}
+
+\begin{flisti}
+\fit{w3sic1}{Calculation of $S_{ice}$.}
+\end{flisti}
+
+\noindent
+Wave-ice interactions (Liu et al.) \hfill {\file w3sic2md.ftn}
+
+\begin{flisti}
+\fit{w3sic2}{Calculation of $S_{ice}$.}
+\fit{liu\_foreward\_dispersion, liu\_inverse\_dispersion}{}
+\fit{      }{Interpolation tables.}
+\end{flisti}
+
+\noindent
+Wave-ice interactions \cite{art:WS10} \hfill {\file w3sic3md.ftn}
+
+\begin{flisti}
+\fit{w3sic3}{Calculation of $S_{ice}$.}
+\fit{bsdet }{Calculate the determinant for the dispersion relation.}
+\fit{wn\_complex}{Calculate complex wavenumber in ice.}
+\fit{cmplx\_root\_muller}{Find root for complex numbers.}
+\fit{fun\_zhao}{Wrapper for functions below.}
+\fit{func0\_zhao, finc1\_zhao}{}
+\end{flisti}
+
 \noindent
 Shoreline reflection \hfill {\file w3ref1md.ftn}
 
 \begin{flisti}
-\fit{w3ref1}{Calculation of $S_{ref}$, possibly including a free infragravity source.}
+\fit{w3ref1}{Calculation of $S_{ref}$.}
 \end{flisti}
 
 \noindent
@@ -437,89 +581,6 @@ Module for unclassified source term (slot for user supplied routines) \hfill
 \begin{flisti}
 \fit{w3sxxx}{Calculation of $S_{xx}$.}
 \fit{insxxx}{Initialization of $S_{xx}$.}
-\end{flisti}
-
-% fig:w3wave
-
-\input{sys/fig_w3wave}
-\centerline{\ldots update w3wave figure \ldots}
-\vspace{\baselineskip}
-
-\noindent
-The input fields such as winds and currents are transferred to the model
-through the parameter list of {\F w3wave}. The information is processed within
-{\F w3wave} by the routines in the following module.
-
-\vspace{\baselineskip} \noindent
-Input update module \hfill {\file w3updtmd.ftn}
-
-\begin{flisti}
-\fit{w3ucur}{Interpolation in time of current fields.}
-\fit{w3uwnd}{Interpolation in time of wind fields.}
-\fit{w3uini}{Generate initial conditions from the initial
-             wind field.}
-\fit{w3ubpt}{Updating of boundary conditions in nested runs.}
-\fit{w3uice}{Updating of the ice coverage.}
-\fit{w3ulev}{Updating of water levels.}
-\fit{w3utrn}{Updating grid box transparencies.}
-\fit{w3ddxy}{Calculation of spatial derivatives of the water depth.}
-\fit{w3dcxy}{Calculation of spatial derivatives of the currents.} 
-\end{flisti}
-\noindent
-There are seven types of \ws\ data files (other than the preprocessed input
-fields, which are part of the program shall rather than the actual wave
-model). The corresponding routines are gathered in six modules.
-
-\vspace{\baselineskip} \noindent
-I/O module ({\file mod\_def.ww3}) \hfill {\file w3iogrmd.ftn}
-
-\begin{flisti}
-\fit{w3iogr}{Reading and writing of {\file mod\_def.ww3}.}
-\end{flisti}
-
-\noindent
-I/O module ({\file out\_grd.ww3}) \hfill {\file w3iogomd.ftn}
-
-\begin{flisti}
-\fit{w3outg}{Calculation of gridded output parameters.}
-\fit{w3iogo}{Reading and writing of {\file out\_grd.ww3}.}
-\end{flisti}
-
-\noindent
-I/O module ({\file out\_pnt.ww3}) \hfill {\file w3iopomd.ftn}
-
-\begin{flisti}
-\fit{w3iopp}{Processing of requests for point output.}
-\fit{w3iope}{Calculating point output data.}
-\fit{w3iopo}{Reading and writing of {\file out\_pnt.ww3}.}
-\end{flisti}
-
-\noindent
-I/O module ({\file track\_o.ww3}) \hfill {\file w3iotrmd.ftn}
-
-\begin{flisti}
-\fit{w3iotr}{Generate track output in {\file track\_o.ww3}.}
-\end{flisti}
-
-\noindent
-I/O module ({\file restart.ww3}) \hfill {\file w3iorsmd.ftn}
-
-\begin{flisti}
-\fit{w3iors}{Reading and writing of {\file restart{\sl{n}}.ww3}.}
-\end{flisti}
-
-\noindent
-I/O module ({\file nest.ww3}) \hfill {\file w3iobcmd.ftn}
-
-\begin{flisti}
-\fit{w3iobc}{Reading and writing of {\file nest{\sl{n}}.ww3}.}
-\end{flisti}
-
-\noindent
-I/O module ({\file partition.ww3}) \hfill {\file w3iofsmd.ftn}
-
-\begin{flisti}
-\fit{w3iofs}{Writing of {\file partition.ww3}.}
 \end{flisti}
 
 \noindent
@@ -536,20 +597,29 @@ code files.
 
 \fit{w3arrymd.ftn}{Array manipulation routines including
                    'print plot' routines.}
+\fit{w3bullmd.ftn}{Perform bulletin style output for output points.}
 \fit{w3cspcmd.ftn}{Conversion of spectral discretization.}
 \fit{w3dispmd.ftn}{Routines to solve the dispersion relation,
                    including interpolation tables.}
+\fit{w3gsrumd.ftn}{Regridding utilities.}
 \fit{w3partmd.ftn}{Perform spectral partitioning for a single spectrum.}
 \fit{w3servmd.ftn}{General service routines.}
 \fit{w3timemd.ftn}{Time management routines.}
-\fit{w3triamd.ftn}{Basic routines for triangle-based grids: reading, interpolation, 
-definition of miscellaneous arrays.}
+\fit{w3triamd.ftn}{Basic routines for triangle-based grids: reading, 
+                   interpolation, definition of miscellaneous arrays.}
 \end{flist}
 
 \noindent
 This completes the description of the basic wave model routines. The relation
 between the initialization routine and other routines is illustrated in
-Fig.~\ref{fig:w3init} (page~\pageref{fig:w3init}). A similar relational
-diagram for the wave model routine is presented in Fig.~\ref{fig:w3wave}
-(page~\pageref{fig:w3wave}).
+Fig.~\ref{fig:w3init}.%  (page~\pageref{fig:w3init}). 
+A similar relational
+diagram for the wave model routine is presented in Fig.~\ref{fig:w3wave}. 
+% (page~\pageref{fig:w3wave}).
+   
+% fig:w3init
+% fig:w3wave
 
+\input{sys/fig_w3init}
+
+\input{sys/fig_w3wave}

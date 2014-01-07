@@ -23,9 +23,8 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # Set base WAVEWATCH III directory used her
-# WW3 = ../../wwatch3
-# WW3 = ../model
-WW3 = ../.
+  WW3 = ../.
+# WW3 = ~/wwatch3
 
 # Make sure run_test script is there
 RUNTEST ?= $(WW3)/regtests/bin/run_test
@@ -60,7 +59,7 @@ DEPFILES = $(TEXFILES) run_test.out $(BIBFILES) $(BSTFILES) $(STYFILES)
 $(TARGET): $(TARGET).dvi $(TARGET).pdf
 
 clean:
-	\rm -f *.log *.aux *.bbl *.blg *.toc *.out
+	\rm -f *.log *.aux *.bbl *.blg *.toc *.out *~
 	\rm -f *.dvi *.pdf
 
 run_test.out : $(RUNTEST)

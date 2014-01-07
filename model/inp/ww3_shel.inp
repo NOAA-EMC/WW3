@@ -143,7 +143,7 @@ $
 $
 $ Type 5 : Boundary data (no additional data required).
 $                               The data file is nestN.ww3, see
-$                               w3iobp.ftn for additional doc.
+$                               w3iobcmd.ftn for additional doc.
 $
    19680606 000000   3600  20010102 000000
 $
