@@ -1675,6 +1675,9 @@
       FACTURB=SSDSC(5)*USTAR**2/GRAV*DAIR/DWAT
       BREAKFRACTION=0.
       RENEWALFREQ=0.
+      IK1=1
+!/IG1  IK1=NINT(IGPARS(5))+1
+
 !
 ! 2.   Estimation of spontaneous breaking 
 !
@@ -1690,8 +1693,6 @@
 ! 2.a.1 Computes saturation
 !
         SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
-        IK1=1
-!/IG1  IK1=NINT(IGPARS(5))+1
         MSSLONG(:) = 0.
 !       SSDSDIK is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
