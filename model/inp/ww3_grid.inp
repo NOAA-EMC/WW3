@@ -224,6 +224,13 @@ $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSNIMP : Activation of N implicit scheme
 $
+$ SMC grid propagation    : Namelist PSMC
+$                           CFLTM  : Maximum CFL number for propagation.
+$                           DTIME  : Swell age (s) for diffusion term.
+$                           LATMIN : Maximum latitude (deg) for GCT. 
+$                           RFMAXD : Maximum refraction turning (deg).
+$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0  /
+$
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
 $                           CICE0  : Ice concentration cut-off.
@@ -443,6 +450,32 @@ $  6 6 6 6 6 6 6 6 6 6 6 6
 $  6 6 6 6 6 6 6 6 6 6 6 6
 $  6 6 6 6 6 6 6 6 6 6 6 6
 $  6 6 6 6 6 6 6 6 6 6 6 6
+$
+$ -------------------------------------------------------------
+$ SMC grid use the same spherical lat-lon grid parameters 
+$     'RECT'  T  'NONE'
+$   1024    704
+$ plus 3 extra parameter: 
+$ Number of refined level NRLv, j-count shift, and boundary cell number. 
+$ See aux/SMC_Grid_Guide.pdf for explaination of j-count shift.
+$ Zero boundary cell number will make the model to skip all boundary update lines.
+$ Non-zero boundary cell number will require an extra boundary cell list input file.
+$   3  1344   0
+$ SMC grid base level resolution dlon dlat and start lon lat 
+$ 0.35156250  0.23437500   1.
+$ 0.17578125 -78.6328125   1.
+$ And the usual depth, subgrid-obstruction, and mask as in spherical lat-lon grid
+$ plus SMC cell and face arrays:
+$  -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'SMC25Depth.dat'
+$  31  1.0  1  1 '(...)' 'NAME'  'SMC25Subtr.dat'
+$  32  1  1  '(....)'  'S6125MCels.dat'
+$  33  1  1  '(....)'  'S6125ISide.dat'
+$  34  1  1  '(....)'  'S6125JSide.dat'
+$$ 35  1  1  '(....)'  'S6125Bundy.dat'
+$  36  1  1  '(....)'  'NAME'  'SMC25Masks.dat'
+$    Boundary cell id list file (unit 35) is only required if boundary 
+$    cell number entered above is non-zero.  The cell id number should be 
+$    the sequential number in the cell array (unit 32) S625MCels.dat.
 $
 $ If sub-grid information is available as indicated by FLAGTR above,
 $ additional input to define this is needed below. In such cases a
