@@ -196,6 +196,18 @@ $                           BJALFA  :
 $                           BJGAM   :
 $                           BJFLAG  :
 $
+$ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
+$   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
+$                           PTRIAD1 : Proportionality coefficient (default 0.05)
+$                           PTRIAD2 : Multiple of Tm01 up to which interaction 
+$                                     is computed (2.5)
+$                           PTRIAD3 : Ursell upper limit for computing
+$                                     interactions (not used, default 10.)
+$                           PTRIAD4 : Shape parameter for biphase
+$                                     computation (0.2)
+$                           PTRIAD5 : Ursell number treshold for computing 
+$                                     interactions (0.01)
+$
 $ Propagation schemes ------------------------------------------------ $
 $   First order         : Namelist PRO1
 $                           CFLTM  : Maximum CFL number for refraction.
