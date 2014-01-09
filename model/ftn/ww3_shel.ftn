@@ -631,8 +631,12 @@
 !/MPI                      CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
                       OPEN (NDSS,FILE=FNMPRE(:JJ)//'ww3_shel.scratch')
                       REWIND (NDSS)
-!AF: Added IF test 2011/04/04
-                      IF (NPTS.GT.0) ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+!
+                      IF (NPTS.GT.0) THEN
+                         ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                      ELSE
+                         GOTO 2004 
+                      END IF
                     END IF
 !
                   NPTS   = 0
@@ -1336,6 +1340,10 @@
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003)
       GOTO 2222
 !
+ 2004 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004)
+      GOTO 2222
+!
  2005 CONTINUE
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1005) IDTST
       GOTO 2222
@@ -1456,6 +1464,9 @@
 !
  1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
                '     ILLEGAL TIME INTERVAL'/)
+!
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     POINT OUTPUT ACTIVATED, BUT NO POINTS DEFINED'/)
 !
  1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
                '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)

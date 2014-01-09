@@ -1100,7 +1100,11 @@
                       OPEN                                            &
                          (SCRATCH,FILE=FNMPRE(:JJ)//'ww3_multi.scratch')
                       REWIND (SCRATCH)
-                      ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                      IF (NPTS.GT.0) THEN
+                         ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                      ELSE
+                         GOTO 2054
+                      END IF
                     END IF
 !
                   NPTS = 0
@@ -2740,6 +2744,11 @@
       CALL EXTCDE ( 2053 )
       RETURN
 !
+ 2054 CONTINUE
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
+      CALL EXTCDE ( 2054 )
+      RETURN
+!
  2060 CONTINUE
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
       CALL EXTCDE ( 2060 )
@@ -2929,6 +2938,8 @@
  1053 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
          '     OUTPUT POINTS FOR INDIVIDUAL GRIDS CANNOT BE DEFINED'/ &
                '     WHEN UNIFIED POINT OUTPUT IS REQUESTED'/)
+ 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
+         '     POINT OUTPUT ACTIVATED, BUT NO POINTS DEFINED'/)
  1060 FORMAT (/' *** WAVEWATCH III ERROR IN W3MLTI : ***'/            &
                '     NO MOVING GRID DATA PRESENT'/)
  1070 FORMAT (/' *** WAVEWATCH III ERROR IN WMINIT : ***'/            &
