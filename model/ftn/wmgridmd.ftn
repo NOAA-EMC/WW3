@@ -744,8 +744,7 @@
                DX_MAX_GRIDI=DIST_MAX
                DY_MAX_GRIDI=DIST_MAX
             ELSE
-               print *, 'unknown grid type. stopping.'
-               stop
+               CALL EXTCDE ( 601 )
             END IF
 
             IF ( GRIDS(J)%GTYPE .EQ. CLGTYPE ) THEN
@@ -793,8 +792,7 @@
                DX_MAX_GRIDJ=DIST_MAX
                DY_MAX_GRIDJ=DIST_MAX
            ELSE
-               PRINT *, 'UNKNOWN GRID TYPE. STOPPING.'
-               STOP
+               CALL EXTCDE ( 602 )
            END IF
 
            RESOL_CHECK=.FALSE.

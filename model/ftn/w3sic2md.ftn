@@ -211,7 +211,7 @@
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
-      USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, WLEV
+      USE W3IDATMD, ONLY: FLAGS,ICEP1,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
@@ -235,10 +235,11 @@
       INTEGER                 :: IKTH, IK
       REAL                    :: D1D(NK) !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
-                                 ICECOEF4, ICECOEF5
+                                 ICECOEF4, ICECOEF5, ICECONC
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential decay rate for amplitude
       REAL                    :: WN_R, CG_ICE(NK)
       REAL                    :: ALPHA ! exponential decay rate for energy
+      LOGICAL                 :: NOICE=.FALSE.
                                        ! ALPHA = 2 * WN_I
 !/
 !/ ------------------------------------------------------------------- /
@@ -256,17 +257,24 @@
       ICECOEF3 = 0.0
       ICECOEF4 = 0.0
       ICECOEF5 = 0.0
+      ICECONC  = 0.0
 !
       IF (FLAGS(-7)) ICECOEF1 = ICEP1(IX,IY)
       IF (FLAGS(-6)) ICECOEF2 = ICEP2(IX,IY)
       IF (FLAGS(-5)) ICECOEF3 = ICEP3(IX,IY)
       IF (FLAGS(-4)) ICECOEF4 = ICEP4(IX,IY)
       IF (FLAGS(-3)) ICECOEF5 = ICEP5(IX,IY)
+      IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
+
 !
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
-      IF ( ICECOEF1==0.0 ) THEN
+      NOICE=.FALSE.
+      IF (ICECOEF1==0.0) NOICE=.TRUE.
+      IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
+
+      IF ( NOICE ) THEN
          D = 0.0
 !
 ! 2.  Ice ------------------------------------------------------------ /
