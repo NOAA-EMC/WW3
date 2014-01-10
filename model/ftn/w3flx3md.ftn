@@ -153,8 +153,7 @@
 !
 ! ----- start of inlined and reduced WAVNU1 -----
 !
-        FP     = MAX ( FP, 0.001)
-        AFP    = TPI * FP
+        AFP    = TPI * MAX ( FP, 0.001) 
 !
         SQRTH  = SQRT ( DEPTH )
         SIX    = AFP * SQRTH
