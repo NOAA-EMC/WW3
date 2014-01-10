@@ -776,7 +776,7 @@
       TAUWY    = TAUWINDS(SDENSY10Hz,CINV10Hz,DSII10Hz)   ! normal stress (y-component)
       TAU_NND  = TAUWINDS(SDENS10Hz, CINV10Hz,DSII10Hz)   ! normal stress (non-directional)
       TAU_WAV  = SQRT(TAUWX**2 + TAUWY**2)                ! normal stress (magnitude)
-      TAU_INIT = [TAUWX,TAUWY]                            ! unadjusted normal stress components
+      TAU_INIT = (/TAUWX,TAUWY/)                          ! unadjusted normal stress components
 !
       TAUX     = TAUVX + TAUWX                            ! total stress (x-component)
       TAUY     = TAUVY + TAUWY                            ! total stress (y-component)
