@@ -192,9 +192,11 @@ $
 $
 $ Surf breaking  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   Battjes and Janssen : Namelist SDB1
-$                           BJALFA  :
-$                           BJGAM   :
-$                           BJFLAG  :
+$                           BJALFA  : Dissipation constant (default = 1)
+$                           BJGAM   : Breaking threshold (default = 0.73)
+$                           BJFLAG  : TRUE  - Use Hmax/d ratio only (default)
+$                                     FALSE - Use Hmax/d in Miche formulation
+
 $
 $ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
 $   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
@@ -212,7 +214,7 @@ $ Propagation schemes ------------------------------------------------ $
 $   First order         : Namelist PRO1
 $                           CFLTM  : Maximum CFL number for refraction.
 $
-$   UQ with diffusion   : Namelist PRO2
+$   UQ/UNO with diffusion : Namelist PRO2
 $                           CFLTM  : Maximum CFL number for refraction.
 $                           DTIME  : Swell age (s) in garden sprinkler
 $                                    correction. If 0., all diffusion
@@ -222,10 +224,14 @@ $                                    diffusion.
 $                           LATMIN : Maximum latitude used in calc. of
 $                                    strength of diffusion for prop.
 $
-$   UQ with averaging   : Namelist PRO3
+$   UQ/UNO with averaging : Namelist PRO3
 $                           CFLTM  : Maximum CFL number for refraction.
 $                           WDTHCG : Tuning factor propag. direction.
 $                           WDTHTH : Tuning factor normal direction.
+$
+$   Note that UQ and UNO schemes have no tunable parameters.
+$   All tuneable parameters are associated with the refraction
+$   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST 

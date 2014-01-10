@@ -3,6 +3,8 @@
 \newcommand{\wA }{  50}
 \newcommand{\wb }{ 450}
 \newcommand{\wB }{ 350}
+\newcommand{\wbb}{ 400}
+\newcommand{\wBB}{ 375}
 \newcommand{\wc }{ 750}
 \newcommand{\wcx}{ 850}
 \newcommand{\we }{1050}
@@ -12,6 +14,7 @@
 \newcommand{\waby}{600}
 \newcommand{\wac}{ 200}
 \newcommand{\wbc}{ 700}
+\newcommand{\wBC}{ 725}
 \newcommand{\wcl}{ 950}
 \newcommand{\wce}{1000}
 \newcommand{\wcf}{ 950}
@@ -30,7 +33,7 @@
 \subx{\wb }{ -000}{w3ice3wncg}
 \subr{\wcx}{ -000}{w3ucur}
 \subx{\wb }{ -100}{ug\_gradients}
-\subr{\wcx}{ -100}{w3dzxy}
+\subd{\wcx}{ -100}{w3dzxy / smcdxy}
 \subr{\wb }{ -200}{w3uwnd}
 \subr{\wc }{ -200}{w3uini}
 \subr{\we }{ -200}{w3iobc}
@@ -57,22 +60,24 @@
 \put(350,-980){\dashbox{10}(950,420)[tl] {\small ~propagation}}
 
 \subn{\wc}{ -650}{w3ktp}
-\subr{\wb}{ -700}{w3gath}
+\subx{\wbb}{ -700}{w3gath(smc)}
 \subn{\wc}{ -750}{w3xyp}
 \subr{\wc}{ -850}{w3xypug}
-\subr{\wb}{ -800}{w3scat}
+\subr{\wc}{ -950}{w3psmc}
+\subx{\wbb}{ -900}{w3scat(smc)}
 \subn{\we}{ -650}{w3qck}
 \subn{\we}{ -750}{w3uno}
 
 \put(\waa,-620){\line(1,0){450}}
 \put(\wcl,-620){\line(1,0){100}}
-\put(\wab,-620){\line(0,-1){150}}
-\put(\wab,-720){\line(1,0){350}}
+\put(\wBB,-620){\line(0,-1){250}}
+\multiput(\wBB,-870)(0,200){2}{\line(1,0){25}}
+\put(\wBB,-770){\line(1,0){350}}
 \put(\wcl,-720){\line(1,0){100}}
 \put(\wce,-720){\line(0,1){100}}
-\put(\wbc,-720){\line(0,-1){100}}
-\put(\wbc,-820){\line(1,0){ 50}}
-\multiput(\wab,-770)(0,100){2}{\line(1,0){50}}
+\put(\wBC,-720){\line(0,-1){200}}
+\multiput(\wBC,-920)(0,100){3}{\line(1,0){25}}
+%\put(\wbc,-820){\line(1,0){ 50}}
 
 % Source terms
 
