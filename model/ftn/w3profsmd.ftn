@@ -14,6 +14,7 @@
 !/    03-Jun-2013 : Removed assign statements           ( version 4.10 )
 !/    20-Jun-2013 : Update test output for time steps   ( version 4.10 )
 !/    17-Oct-2013 : Removes boundary nodes from CFL     ( version 4.12 )
+!/    15-Dec-2013 : Bug fix for implicit scheme         ( version 4.16 )
 !
 !  1. Purpose :
 !
@@ -968,8 +969,10 @@
 !/                  |  by Aron Roland                   |
 !/                  |  for use in WWIII                 |
 !/                  |  GPL License                      |
-!/                  |  Last update :        19-Dec-2007 |
+!/                  |  Last update :        15-Dec-2013 |
 !/                  +-----------------------------------+
+!/
+!/    15-Dec-2013 : Bug fix for implicit scheme         ( version 4.16 )
 !/
 !  1. Purpose :
 !     Advection of a scalar in a arbitary velocity field on unstructured meshes
@@ -1244,7 +1247,7 @@
 ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
             IF ( FLBPI ) THEN 
-             RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+             RD1=RD10
              RD2=RD20
              IF ( RD2 .GT. 0.001 ) THEN
                  RD2    = MIN(1.,MAX(0.,RD1/RD2))
