@@ -324,6 +324,7 @@
 !
 ! 1.  Integral over directions
 !
+      SIGM01 = 0.
       EMEAN  = 0.
 !      FMEAN  = 0.
 

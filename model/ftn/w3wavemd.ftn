@@ -623,7 +623,7 @@
 !     from W3SIC3MD module. ----------------------------------------- /
 !
 !/IC3        IF (FLFRST.AND.FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
-!/IC3           WRITE(SCREEN,920)
+!/IC3           IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)
 !/IC3           ALLOCATE(WN_I(SIZE(WN(:,JSEA))))
 !/IC3           WN_I(:) = 0.
 !/IC3           DO JSEA=1,NSEAL

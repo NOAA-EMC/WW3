@@ -64,6 +64,7 @@
 !/    03-Jul-2006 : Origination.                        ( version 3.09 )
 !/    20-Apr-2010 : Fix INTENT of UST.                ( version 3.14.1 )
 !/    16-Sep-2011 : Add max on division by UST        ( version 4.05   )
+!/    10-Jan-2014 : Add a min value for FP              ( version 4.18 )
 !/
 !  1. Purpose :
 !
@@ -149,7 +150,7 @@
 !
 ! ----- start of inlined and reduced WAVNU1 -----
 !
-        AFP    = TPI * FP
+        AFP    = TPI * MAX ( FP, 0.001) 
 !
         SQRTH  = SQRT ( DEPTH )
         SIX    = AFP * SQRTH

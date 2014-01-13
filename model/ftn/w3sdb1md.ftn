@@ -70,10 +70,12 @@
 !
 !       Sdb = - CDB * FMEAN * QB * B * B * SPEC
 !
-!     Where CDB   =  2.00
+!     Where CDB   =  SDBC1 = 0.25 * BJALFA (defaults to BJALFA = 1)
+!                    modified via ww3_grid namelist parameter BJALFA
 !           B     =  HM / HRMS
 !           HM    =  GAMMA * DEP
-!           GAMMA =  0.73 (average Battjes and Janssen value)
+!           GAMMA =  SDBC2 defaults to 0.73 (mean Battjes/Janssen value)
+!                    modified via ww3_grid namelist parameter BJGAM
 !
 !     And QB is estimated by iterations using the nonlinear expression 
 !

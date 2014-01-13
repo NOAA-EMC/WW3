@@ -416,6 +416,7 @@
       mcp    ) mcp=$sw ;;
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
+      arctic ) arctic=$sw ;;
               *    ) ;;
     esac
   done
@@ -425,6 +426,13 @@
       echo ' '
       echo "   *** !/OMPn has to be used in combination with !/SHRD"
       echo ' ' ; exit 5
+  fi
+
+  if [ "$arctic" = 'ARC' ] && [ "$p_switch" != 'SMC' ]
+  then
+      echo ' '
+      echo "   *** !/ARC has to be used in combination with !/SMC"
+      echo ' ' ; exit 6
   fi
 
   case $g_switch in

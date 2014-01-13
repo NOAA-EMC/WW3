@@ -201,7 +201,7 @@
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
-      USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5,WLEV
+      USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
@@ -224,8 +224,9 @@
 !/T0      REAL                   :: DOUT(NK,NTH)
       INTEGER                    :: IKTH, IK
       REAL                       :: ICECOEF1, ICECOEF2, ICECOEF3, &
-                                    ICECOEF4, ICECOEF5
+                                    ICECOEF4, ICECOEF5, ICECONC
       REAL, DIMENSION(NK)        :: D1D, WN_I, WN_R, CG_IC3
+      LOGICAL                    :: NOICE
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -247,6 +248,7 @@
       ICECOEF3 = 0.0
       ICECOEF4 = 0.0
       ICECOEF5 = 0.0
+      ICECONC  = 0.0
 !
 !     --- Verify that required variables are here -------------------- /
       IF (.NOT.FLAGS(-7)) THEN
@@ -273,13 +275,15 @@
       ICECOEF3 = ICEP3(IX,IY) ! density of ice
       ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
 !     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
+      IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
-! Note to self: When I put in dependency on ice concentration, I should
-!     have the model skip computations if ice concentration=0 *or*
-!     ice_thickness=0 (presently I only use the latter)
-      IF ( ICECOEF1==0.0 ) THEN
+      NOICE=.FALSE.
+      IF (ICECOEF1==0.0) NOICE=.TRUE.
+      IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
+
+      IF ( NOICE ) THEN
          D = 0.0
 !
 ! 2.  Ice ------------------------------------------------------------ /
@@ -403,6 +407,12 @@
 !
 !  7. Remarks :
 !
+!     WN_I is capped at 2.0E-4, since in simple tests with "normal
+!     resolution" (not finer than 1 km), WW3 has trouble resolving the
+!     dissipation if k_i>2e-4. Also, very large values of dissipation
+!     (e.g. k_i=100e-4) with IC3 occurs more in the higher frequencies
+!     which makes WW3 slow down quite a bit.
+!
 !  8. Structure :
 !
 !     See source code.
@@ -470,6 +480,7 @@
 !     --- Output from function is type of DOUBLE COMPLEX. Set 
 !         precision of imaginary to single precision array element --- /
          WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))
+         WN_I(IK)  = MIN(WN_I(IK),2.0E-4) ! see Remarks above
          WN_R(IK)  = REAL(WNCOMPLEX)
 
       END DO

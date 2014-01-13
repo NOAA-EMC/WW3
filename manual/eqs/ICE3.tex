@@ -10,7 +10,8 @@ The third method for representing wave-ice interaction is taken from\linebreak
 layer. ${C_{ice,1}}$ is used for ice thickness (m); ${C_{ice,2}}$ is used for
 the viscosity ($\mathrm{m^2\,s^{-1}}$); ${C_{ice,3}}$ is used for density
 ($\mathrm{kg\,m^{-3}}$); ${C_{ice,4}}$ is used for effective shear modulus
-(Pa); ${C_{ice,5}}$ is not used.
+(Pa); ${C_{ice,5}}$ is not used. An example setting is 
+${C_{ice,1...4}}=[0.1, 1.0, 917.0, 0.0]$.
 
 The ${k_r}$ modified by ice is incorporated into the governing
 equation~(\ref{eq:bal_plane}) via the $C_g$ and $C$ calculations on the
@@ -23,3 +24,8 @@ refraction based on spatial gradients in phase velocity, rather than the
 simpler, original approach of computing refraction based on spatial gradients
 in water depth. These effects are demonstrated in the regression test {\file
 ww3\_tic1.3} which is provided with the code.
+
+This method of $S_{ice}$ ({\code IC3}) is much more expensive than
+ {\code IC1} or {\code IC2}.  Relative efficiency improves with larger 
+numbers of MPI processes (due to  better scaling), but a factor 3 increase 
+in overall computation time is not unusual. 

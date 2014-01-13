@@ -1424,6 +1424,10 @@
 !
 !     Fields in file are determined by flags in FLOGRD in W3ODATMD.
 !
+!     Full documentation of output types, availability of parameters
+!     per output file type, and full parameter definitions are provided
+!     in table included in the sample ww3_shel.inp file, in the model
+!     package installation directory inp.
 ! First two columns: fields in gx_outf (GXO) and ww3_grib (GRB)
 !
 ! G  G

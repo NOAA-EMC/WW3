@@ -28,7 +28,8 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    05-Oct-2011 : Updating to the 53 output parameter ( version 4.05 )
 !/                  (Arun Chawla)
-!/    01-Mar-2013 : Adding double-index output fields   ( version 4.OF )
+!/    01-Mar-2013 : Adding double-index output fields   ( version 4.11 )
+!/                  (J-Henrique Alves)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -335,9 +336,11 @@
       IFIA = (/ 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 5, 9, 9, 9, 9 /)
       IFJA = (/ 1, 4, 2 ,3, 5, 8, 3, 5, 6, 7, 8, 1, 1, 2, 3, 4 /)
       DO I = 1, 16 
-        FLREQ(IFIA(I),IFJA(I)) = .FALSE. ! Water depth
-        WRITE(NDSO,946) IDOUT(IFIA(I),IFJA(I)),                        &
+        IF ( FLREQ(IFIA(I),IFJA(I)) ) THEN
+          FLREQ(IFIA(I),IFJA(I)) = .FALSE. 
+          WRITE(NDSO,946) IDOUT(IFIA(I),IFJA(I)),                      &
                         '*** EXCLUDED FROM GRIB OUTPUT ***'
+        END IF
       END DO
 !
 ! Write to stdout parameters that have successfully been requested

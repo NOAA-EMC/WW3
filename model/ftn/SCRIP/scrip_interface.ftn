@@ -393,9 +393,9 @@
 
 !/SCRIPNC      character (LEN=3) :: cdst  ! 3 character number of destination map
 !/SCRIPNC      character (LEN=3) :: csrc  ! 3 character number of source map
-!/SCRIPTST      CHARACTER (LEN=10) :: CDATE_TIME(3)
-!/SCRIPTST      INTEGER            :: DATE_TIME(8)
-!/SCRIPTST      INTEGER            :: ELAPSED_TIME, BEG_TIME, END_TIME
+!/T38      CHARACTER (LEN=10) :: CDATE_TIME(3)
+!/T38      INTEGER            :: DATE_TIME(8)
+!/T38      INTEGER            :: ELAPSED_TIME, BEG_TIME, END_TIME
 
 !-----------------------------------------------------------------------
 !
@@ -504,26 +504,26 @@
 !
 !-----------------------------------------------------------------------
 
-!/SCRIPTST      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
       
 !/SCRIPNC      if (l_read) then
 !/SCRIPNC         if(l_master)write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
 !/SCRIPNC         call read_remap_ww3(map1_name, interp_file1, errorCode)
-!/SCRIPTST         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST         end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/SCRIPTST         elapsed_time = end_time - beg_time
-!/SCRIPTST         write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
+!/T38         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38         end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38         elapsed_time = end_time - beg_time
+!/T38         write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
 !/SCRIPNC      else
          select case(map_type)
          case(map_type_conserv)
 !/T38       if(l_master)write(SCRIP_stdout,*)'calling remap_conserv'
             call remap_conserv(l_master,l_test)
 !/T38       if(l_master)write(SCRIP_stdout,*)'back from remap_conserv'
-!/SCRIPTST            call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST            end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/SCRIPTST            elapsed_time = end_time - beg_time
-!/SCRIPTST            write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
+!/T38            call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38            end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38            elapsed_time = end_time - beg_time
+!/T38            write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
          case default
             call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
             call SCRIP_driverExit(errorCode, 'Invalid Map Type')
@@ -535,8 +535,8 @@
 !
 !-----------------------------------------------------------------------
       
-!/SCRIPTST         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST         beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38         call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38         beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
 
          if (num_links_map1 /= max_links_map1) then
             call resize_remap_vars(1, num_links_map1-max_links_map1)
@@ -557,12 +557,12 @@
 !/SCRIPNC            write(SCRIP_stdout, *) 'Writing remapping data to ', interp_file1
 !/SCRIPNC         endif
 
-!/SCRIPTST        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST        end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/SCRIPTST        elapsed_time = end_time - beg_time
-!/SCRIPTST        write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
-!/SCRIPTST        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST        beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38        end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38        elapsed_time = end_time - beg_time
+!/T38        write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
+!/T38        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38        beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
 
 ! Use  write_remap if you want the extra variables in the .nc files for diagnostics
 ! Use  write_remap_ww3 if you don't want any extra variables in the .nc files

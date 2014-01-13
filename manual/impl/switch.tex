@@ -86,6 +86,7 @@ Selection of flux computation:
 \sit{flx1} {Friction velocity according to Eq.~(\ref{eq:Wu}).}
 \sit{flx2} {Friction velocity from Tolman and Chalikov input.}
 \sit{flx3} {Idem, with cap of Eq.~(\ref{eq:Cd_cap_1}) or (\ref{eq:Cd_cap_2}).}
+\sit{flx4} {Friction velocity according to Eq.~(\ref{eq:ST607}).}
 \sit{flxx} {Experimental (user supplied).}
 \end{slist}
 
@@ -112,7 +113,7 @@ additional to corresponding {\F st{\it n}} switch:
 \sit{stab3}{Enable stability correction from \cite{rep:AB02} for {\F st4}.}
 \sit{st4} {\cite{art:Aea10} source term package.}
 %\sit{st5} {UNSW source term package.}
-%\sit{st6} {Swinburne source term package.}
+\sit{st6} {BYDRZ source term package.}
 \sit{stx} {Experimental (user supplied).}
 \end{slist}
 
@@ -149,10 +150,10 @@ Selection of term for damping by sea ice:
 \end{slist}
 
 \noindent
-Selection of term for scattering by sea ice:
+Selection of term for reflection:
 \begin{slist}
-\sit{is0} {No scattering by sea ice.}
-\sit{is1} {Isotropic (linear function of ice concentration).}
+\sit{ref0} {No reflection.}
+\sit{ref1} {Enables reflection of shorelines and icebergs}
 \end{slist}
 
 \noindent
@@ -300,7 +301,7 @@ been maintained for recent compiler versions.
 \noindent
 Furthermore the following miscellaneous switches are available:
 \begin{slist}
-\sit{arc} {Arctic grid option for SMC grid.}
+\sit{arc} {Arctic grid option for SMC grid\footnote{~Not yet fully tested according to author.}.}
 \sit{cou} {Activates the calculation of variables required for coupling}
 \sit{dss0}{Switch off frequency dispersion in diffusive
            dispersion correction.}
@@ -316,7 +317,6 @@ Furthermore the following miscellaneous switches are available:
 \sit{nls }{Activate nonlinear smoother (\para\ref{sec:NLS}).}
 \sit{nnt} {Generate file test\_data\_{\it{nnn}}.ww3 with spectra and 
            nonlinear interactions for training and testing of NNIA}.
-\sit{ref1} {Enables reflection of shorelines and icebergs}
 \sit{refrx} {Enables refraction based on spatial gradients in phase velocity (\para\ref{sec:ICE3})}
 \sit{reft}{Test output for shoreline reflection (which is activated with
           {\F ref1}).}

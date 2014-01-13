@@ -148,10 +148,10 @@
       REAL   (SCRIP_R8)                 :: LAT_CONVERSION,OFFSET
       REAL   (SCRIP_R8)                 :: CONV_DX,CONV_DY,WEIGHT
       REAL   (SCRIP_R8)                 :: WTSUM
-!/SCRIPTST      CHARACTER (LEN=10)      :: CDATE_TIME(3)
-!/SCRIPTST      INTEGER                 :: DATE_TIME(8)
-!/SCRIPTST      INTEGER                 :: ELAPSED_TIME, BEG_TIME, &
-!/SCRIPTST                                 END_TIME
+!/T38      CHARACTER (LEN=10)      :: CDATE_TIME(3)
+!/T38      INTEGER                 :: DATE_TIME(8)
+!/T38      INTEGER                 :: ELAPSED_TIME, BEG_TIME, &
+!/T38                                 END_TIME
 
 ! test output for input variables
 
@@ -251,13 +251,13 @@
       WT_LOWEST   =ZERO
       WT_HIGHEST  =ONE+1.E-7_SCRIP_R8
 
-!/SCRIPTST      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
       CALL SCRIP(ID_SRC, ID_DST, L_MASTER, L_READ, L_TEST)
-!/SCRIPTST      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-!/SCRIPTST      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-!/SCRIPTST      elapsed_time = end_time - beg_time
-!/SCRIPTST      write(0,*) "SCRIP: ", elapsed_time, " MSEC"
+!/T38      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+!/T38      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+!/T38      elapsed_time = end_time - beg_time
+!/T38      write(0,*) "SCRIP: ", elapsed_time, " MSEC"
 
 !/T38      if(l_master)write(*,*)'new minval(grid1_center_lon) = ',minval(grid1_center_lon)
 !/T38      if(l_master)write(*,*)'new maxval(grid1_center_lon) = ',maxval(grid1_center_lon)

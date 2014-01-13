@@ -12,9 +12,12 @@ turbulence in the boundary layer between the ice floes and the water layer,
 with the ice modeled as a continuous thin elastic plate. Input ice parameters
 are ice thickness (in meters) and an eddy viscosity in the turbulent boundary
 layer beneath the ice, ${\nu}$. Here, ${C_{ice,1}}$ represents the former and
-${C_{ice,2}}$ represents the latter. This source function ({\code IC2}) is
+${C_{ice,2}}$ represents the latter.  An example setting is 
+${C_{ice,1...2}}=[0.20, 15.0\times 10^{-6}]$. This source function ({\code IC2}) is
 non-uniform in frequency space. The parameters ${C_{ice,3}}$,...,${C_{ice,5}}$
-are not used.
+are not used. The solution method for {\code IC2} is very efficient and 
+overall computation time should not be significantly more than that with 
+{\code IC1}.
 
 With {\code IC2} and {\code IC3}, the sea ice effects requires solution of a
 new dispersion relation. For {\code IC2}, the key equations are:
