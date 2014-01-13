@@ -117,6 +117,7 @@
       echo "$rtst -s PR1 -w work_PR1               $ww3 ww3_tp2.5" >> matrix.body
       echo "$rtst -s PR1 -w work_PR1_a    -g a     $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR1 -w work_PR1_b    -g b     $ww3 ww3_tp2.9" >> matrix.body
+      echo "$rtst -s PR1 -w work_PR1               $ww3 ww3_tp2.12" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
@@ -166,6 +167,7 @@
       echo "$rtst -s PR1_MPI -w work_PR1_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
       echo "$rtst -s PR1_MPI -w work_PR1_a_MPI    -g a    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR1_MPI -w work_PR1_b_MPI    -g b    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
+      echo "$rtst -s PR1_MPI -w work_PR1_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.12" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
