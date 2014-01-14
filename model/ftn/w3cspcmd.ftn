@@ -205,7 +205,7 @@
       TYPE(CASE), POINTER     :: CURRENT
 !/
 !/ ------------------------------------------------------------------- /
-!/ Pointers for alieases
+!/ Pointers for aliases
 !/ 
       INTEGER, POINTER        :: IDTH(:,:), IDFR(:,:), NFR2T
       REAL, POINTER           :: DTH1, DTH2, RDTH(:,:), FRQ1(:),      &
@@ -443,12 +443,12 @@
 !/T2      WRITE (NDST,9022)
 !/T2      DO I=1, NTH1
 !/T2        WRITE (NDST,9024) I, IDTH(0,I),                           &
-!/T2                          ((IDTH(J,I),RDTH(J,I)),J=1,IDTH(0,I))
+!/T2                          (IDTH(J,I),RDTH(J,I),J=1,IDTH(0,I))
 !/T2        END DO
 !/T2      WRITE (NDST,9023) NFR2T
 !/T2      DO I=1, NFR1
 !/T2        WRITE (NDST,9024) I, IDFR(0,I),                           &
-!/T2                          ((IDFR(J,I),RDFR(J,I)),J=1,IDFR(0,I))
+!/T2                          (IDFR(J,I),RDFR(J,I),J=1,IDFR(0,I))
 !/T2        END DO
 !
 ! -------------------------------------------------------------------- /
@@ -492,6 +492,8 @@
       DO J2=NFR2T, NFR2
         SP2(:,J2,:) = FTL * SP2(:,J2-1,:)
         END DO
+   WRITE(6,*) 'SP2:',MAXVAL(SP2),SP2(19,11,:)
+
 !
       RETURN
 !
