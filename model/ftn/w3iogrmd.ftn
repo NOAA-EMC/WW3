@@ -740,8 +740,7 @@
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FLICES, FFACBERG,                                     &
-                E3DF, P2MSF, US3DF, DELAB, FWTABLE
+                FFACBERG, E3DF, P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
 !/REF1          WRITE (NDSM)                                                &
@@ -751,8 +750,7 @@
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FLICES, FFACBERG,                                     &
-                E3DF, P2MSF, US3DF, DELAB, FWTABLE
+                FFACBERG, E3DF, P2MSF, US3DF, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
 !/REF1         READ   (NDSM)                                                &

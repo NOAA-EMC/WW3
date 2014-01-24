@@ -585,7 +585,6 @@
 !
         TYPE(T_GSU) :: GSU ! Grid search utility object
 !
-        LOGICAL               :: FLICES      ! flag for source terms in sea ice
         REAL                  :: FFACBERG    ! mutiplicative factor for iceberg mask
 !/BT4   REAL, POINTER         :: SED_D50(:), SED_PSIC(:) 
 !/REF1        LOGICAL, POINTER      :: RREF(:)
@@ -802,7 +801,6 @@
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       
 !
-      LOGICAL, POINTER        :: FLICES
       REAL,    POINTER        :: FFACBERG
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
       REAL,    POINTER        :: REFPARS(:)
@@ -1662,7 +1660,6 @@
       US3DF  => GRIDS(IMOD)%US3DF
       REFLC  => GRIDS(IMOD)%REFLC
       REFLD  => GRIDS(IMOD)%REFLD
-      FLICES => GRIDS(IMOD)%FLICES
       FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
@@ -2511,6 +2508,8 @@
                  GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX) )
+!
+                 IOBP(:)=1
 !
 !/T      WRITE (NDST,9001)
 !

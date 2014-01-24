@@ -662,7 +662,6 @@
 !/T        WRITE (NDST,9020) IT0, NT, DTGA
 !
 ! ==================================================================== /
-!/PALM! write(*,*)'itime',itime
 !
 ! 3.  Loop over time steps
 !
@@ -670,9 +669,7 @@
 !
         DO IT=IT0, NT
 !
-!/PALM! write(*,*)'itime',itime
           ITIME  = ITIME + 1
-!/PALM! write(*,*)'itime',itime
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
           DTRES  = DTRES + DTGA - DTG
           IF ( ABS(DTRES) .LT. 0.001 ) DTRES  = 0.
@@ -904,7 +901,11 @@
 !/T              WRITE (NDST,9022)
               GOTO 400
             END IF
-          IF ( FLDRY .OR. IT.EQ.0 .OR. IAPROC.GT.NAPROC ) THEN
+          IF ( IT.EQ.0 ) THEN 
+            IF (IT.EQ.0) DTG = 60.
+            GOTO 370
+            END IF
+          IF ( FLDRY .OR. IAPROC.GT.NAPROC ) THEN
 !/T              WRITE (NDST,9023)
               GOTO 380
             END IF
@@ -1159,6 +1160,7 @@
 !
 ! 3.7 Calculate and integrate source terms.
 !
+  370     CONTINUE
           IF ( FLSOU ) THEN
 !
 !/REF1            SXM    = SX / FACX 
@@ -1201,7 +1203,7 @@
                      TMP2   = BEDFORMS(JSEA,1:3)
                      TMP3   = TAUBBL(JSEA,1:2)
 
-                     CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
+                     CALL W3SRCE ( IT, IX, IY, IMOD, VA(:,JSEA),      &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                           CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
                           U10D(ISEA), AS(ISEA), UST(ISEA),            &
@@ -1290,13 +1292,6 @@
 !/PALM  vectj(JSEA)=THM(ISEA)
 !/PALM  vectk(JSEA)=TAUWX(ISEA)
 !/PALM  vectl(JSEA)=TAUWY(ISEA)
-!/PALM  !if ((TAUWY(ISEA).ne.0).and.(iaproc.eq.1)) then
-!/PALM  !write(*,*)'TAUWY non nul pour ISEA',ISEA
-!/PALM  !else if ((TAUOY(ISEA).ne.0).and.(iaproc.eq.1)) then
-!/PALM  !write(*,*)'TAUOY non nul pour ISEA',ISEA
-!/PALM  !else if ((BHD(ISEA).ne.0).and.(iaproc.eq.1)) then
-!/PALM  !write(*,*)'BHD non nul pour ISEA',ISEA
-!/PALM  !end if
 !/PALM  END DO
 !/PALM  ELSE
 !/PALM  if (iaproc==1) write(*,*)'je suis dans le else de MEL03'
@@ -1322,15 +1317,6 @@
 !/PALM  end if
 !/PALM  if (iaproc==1) write(*,*)'HS: 1933-2008',HS(1933:2008)
 !/PALM !fin modif ac
-!/PALM !
-!/PALM !do JSEA=1, NSEAL
-!/PALM !   ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/PALM !if (iaproc.eq.1) then
-!/PALM !if (BHD(ISEA).ne.0) write(*,*)'ISEA, BHD',ISEA,BHD(ISEA)
-!/PALM !end if
-!/PALM !end do
-!/PALM ! Rajouter: WN(IK,ISEA),  US3D  et/ou  SXX3D 
-!/PALM !
 !/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
 !/PALM  cl_space  = 'vect1d'
 !/PALM  cl_object = 'vectg'
@@ -1379,10 +1365,6 @@
 !/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectwlm, il_err)
 !/PALM  if (iaproc==1) write(*,*)'PALM:ww sent vect g...rs wlm',palm_time_b,itime,iaproc
 !/PALM  endif
-!/PALM !
-!/PALM !
-!/PALM ! END of PALM COUPLER Calls
-!/PALM !
 !
 !
 ! 3.8 Update global time step.

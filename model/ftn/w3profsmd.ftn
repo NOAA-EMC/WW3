@@ -664,7 +664,7 @@
              DO IP = 1, NX
 !
 ! IOBPD=0  : waves coming from land
-! IOBPDR=1 : waves coming from the coast
+! IOBPDR=1 : waves coming from land with energy reflected
 !
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) 
                END DO

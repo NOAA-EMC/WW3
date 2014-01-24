@@ -385,7 +385,7 @@ CONTAINS
 !/
       INTEGER                 :: IBC,IX
 
-!/S      CALL STRACE (IENT, 'SETUGIOBP')      
+!/S      CALL STRACE (IENT, 'UG_GETOPENBOUNDARY')      
         DO IBC = 1, N_OUTSIDE_BOUNDARY
            IX = OUTSIDE_BOUNDARY(IBC)
            IF (IX.NE.0) THEN  ! There was a bug in the mesh conversion, OUTSIDE_BOUNDARY(IBC) should not be zero 
@@ -1934,7 +1934,12 @@ END SUBROUTINE
  
               CALL line_angle( x2, y2, x1, y1, DIRMIN )
               CALL line_angle( x3, y3, x1, y1, DIRMAX )
-                IF (DIRMAX.LT.DIRMIN) CALL d_swap(DIRMIN,DIRMAX)
+                IF (DIRMAX.LT.DIRMIN) THEN 
+                  TEMPO=DIRMAX 
+                  DIRMAX=DIRMIN
+                  DIRMIN=TEMPO
+                  END IF
+!
                 SHIFT=0
                 IF (ABS(DIRMAX-DIRMIN).GT.PI) THEN 
                   TEMPO=DIRMAX
@@ -2094,19 +2099,4 @@ END SUBROUTINE
         
         return
       end subroutine       
-!C
-!C******************************************************************************
-!C
-      subroutine d_swap( a, b )
-        implicit none
-        real (kind = 8) a, b
-        real (kind = 8) dtmp
-        
-        dtmp = a
-        a = b
-        b = dtmp
-        
-        return
-      end subroutine                                 
-!/      
 END MODULE W3TRIAMD

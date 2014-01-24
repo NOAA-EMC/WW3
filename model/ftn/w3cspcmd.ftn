@@ -492,8 +492,6 @@
       DO J2=NFR2T, NFR2
         SP2(:,J2,:) = FTL * SP2(:,J2-1,:)
         END DO
-   WRITE(6,*) 'SP2:',MAXVAL(SP2),SP2(19,11,:)
-
 !
       RETURN
 !

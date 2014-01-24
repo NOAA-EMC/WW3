@@ -663,7 +663,7 @@
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iorsmd'
-                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
+                aux='constants w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_bound) IDstring='boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'

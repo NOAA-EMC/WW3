@@ -370,7 +370,7 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           SSWELLF,                                     &
-                          DDEN2, DTH, SSINTHP,ZZ0RAT, FLICES
+                          DDEN2, DTH, SSINTHP,ZZ0RAT
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T1      USE W3ODATMD, ONLY: NDST
@@ -449,16 +449,9 @@
 !
       STRESSSTAB(ISTAB,:)=0.
       STRESSSTABN(ISTAB,:)=0.
-!
-! Coupling coefficient times density ratio and fraction of free surface (1-ICE)
-! Stefan Zieger: Coupling is permanently disabled and MIN(0.,MAX(1.,1.-ICE)) has
-!      FIXME     no effect because it is always 0.0; remove later.
-!                Implemented in W3SRCE for all source terms. 
-!
       CONST0=BBETA*DRAT/(kappa**2)
 ! SSWELLF(1) is IDAMPING in ECMWAM
       CONST3 = SSWELLF(1)*2.*KAPPA*DRAT
-      IF (FLICES) CONST0=MIN(0.,MAX(1.,1.-ICE))*CONST0
 !
       COSU   = COS(USDIR)
       SINU   = SIN(USDIR)

@@ -156,7 +156,7 @@
 !       Note that the original MAPSTA is dumped in the model def. file
 !       for use in the initial conditions (and output) programs.
 !     - Note that MAPSTA and MAPST2 data is combinded in the file.
-!     - The depth is recalculated in a write to avoid floting point
+!     - The depth is recalculated in a write to avoid floating point
 !       errors in W3STRT.
 !     - Fields and field info read by all, written by las processor
 !       only.
@@ -219,11 +219,12 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: W3SETG
+      USE W3GDATMD, ONLY: W3SETG, W3SETREF
       USE W3ODATMD, ONLY: W3SETO
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
-                          GNAME, FILEXT
+                          GNAME, FILEXT, GTYPE, UNGTYPE
+      USE W3TRIAMD, ONLY: SETUGIOBP
       USE W3WDATMD
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
                           IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP
@@ -630,6 +631,15 @@
               MAPSTA = MOD(MAPTMP+2,8) - 2
               MAPST2 = (MAPTMP-MAPSTA) / 8
               DEALLOCATE ( MAPTMP )
+!
+! Updates reflections maps: 
+!
+              IF (GTYPE.EQ.UNGTYPE) THEN 
+                CALL SETUGIOBP
+!/REF1              ELSE 
+!/REF1                CALL W3SETREF
+                ENDIF 
+!
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &

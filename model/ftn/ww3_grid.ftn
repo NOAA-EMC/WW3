@@ -577,7 +577,6 @@
 !!Li  Add a logical variable to shelter regular grid lines from SMC grid.
       LOGICAL                 :: RGLGRD = .TRUE.
 !!Li
-      LOGICAL                 :: FLAGICESOURCE
       REAL                    :: FACBERG, REFSLOPE
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
@@ -703,7 +702,7 @@
                            IMPFSN
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
-                      RWNDC, FLAGICESOURCE,FACBERG,NOSW, GSHIFT
+                      RWNDC, FACBERG, NOSW, GSHIFT
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              E3D, I1E3D, I2E3D,                       &
@@ -1813,7 +1812,6 @@
       I1STH2M=1
       I2STH2M=NK
 !
-      FLAGICESOURCE=.FALSE.
       FACBERG=1.
 !
 !/REF1      REFCOAST=0.
@@ -2060,12 +2058,12 @@
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
-                                RWNDC, FLAGICESOURCE, FACBERG,GSHIFT
+                                RWNDC, FACBERG,GSHIFT
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
-                                RWNDC, FLAGICESOURCE, FACBERG, GSHIFT
+                                RWNDC, FACBERG, GSHIFT
 
           END IF
 !
@@ -3117,9 +3115,6 @@
 !/SMC       WRITE (NDSO,4021)   NCel
 !
 ! 8.g Activation of reflections and scattering 
-!     FLAGICESOURCE is Fabrice's old flag related to wind input :
-!       (delete as obsolete now?) (see notes in w3src4md.ftn for FLICES)
-      FLICES = FLAGICESOURCE
       FFACBERG=FACBERG
 !/REF1      REFPARS(1)=REFCOAST
 !/REF1      REFPARS(2)=REFSUBGRID
@@ -4396,7 +4391,7 @@
                '        IHM =',I5,', HSPM =',F6.3,', WSM =',F6.3,     &
                      ', WSC =',F6.3,', FLC = ',A/                     &
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
-                        F6.3,', FLAGICESOURCE =',L3,','/              &
+                        F6.3,','/                                     &
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
