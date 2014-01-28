@@ -370,7 +370,7 @@
 !        in not in grid, cycle (search next grid)
 !
         IF (GRIDS(J)%GTYPE .EQ. UNGTYPE) THEN
-          CALL IS_IN_UNGRID_PLUS_COEFFICIENT(J, XA, YA, ITOUT, IVER, JVER, RW)
+          CALL IS_IN_UNGRID(J, XA, YA, ITOUT, IVER, JVER, RW)
           IF (ITOUT.EQ.0) THEN
             INGRID=.FALSE.
           ELSE

@@ -2509,7 +2509,7 @@
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX) )
 !
-                 IOBP(:)=1
+                 GRIDS(IMOD)%IOBP(:)=1
 !
 !/T      WRITE (NDST,9001)
 !

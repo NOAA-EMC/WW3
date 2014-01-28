@@ -121,6 +121,7 @@
 #                                         ../model mww3_test_03             #
 #  ./bin/run_test -m grdset_d -n 3 -p mpirun -s PR3_UQ_MPI -w work_d \      #
 #                                         ../model mww3_test_03             #
+#  ./bin/run_test ../model -m grdset_c -c gnu_debug -o netcdf mww3_test_03  #
 #                                                                           #
 #                                              Hendrik Tolman, Feb 2006     #
 #                                                   Last Mod : Nov 2013     #
