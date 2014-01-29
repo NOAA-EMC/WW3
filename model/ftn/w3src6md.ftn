@@ -285,7 +285,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: DAIR, DWAT, TPI, GRAV
       USE W3GDATMD,  ONLY: NK, NTH, NSPEC, DTH, SIG2, DDEN2
-      USE W3GDATMD,  ONLY: ECOS, ESIN, SIN6A0, SIN6U10
+      USE W3GDATMD,  ONLY: ECOS, ESIN, SIN6A0
       USE W3ODATMD,  ONLY: NDSE
       USE W3SERVMD,  ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -324,11 +324,7 @@
 !
 !/    --- scale  friction velocity to wind speed (10m) in 
 !/        the boundary layer ----------------------------------------- /
-      IF ( SIN6U10 ) THEN
-         U10 = USTAR / SQRT(CD)      ! scale with drag coefficient
-      ELSE
-         U10 = 28.0 * USTAR          ! formulation by Komen et al (1984)
-      END IF
+      U10    = 28.0 * USTAR          ! Scale according to Komen et al (1984).
 !
       ECOS2  = ECOS(1:NSPEC)         ! Only indices from 1 to NSPEC
       ESIN2  = ESIN(1:NSPEC)         ! are requested.

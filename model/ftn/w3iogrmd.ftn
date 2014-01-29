@@ -883,11 +883,11 @@
 !/ST4        END IF
 !
 !/ST6      IF ( WRITE ) THEN
-!/ST6          WRITE (NDSM) SIN6A0, SIN6U10, SDS6ET, SDS6A1, SDS6A2,  &
+!/ST6          WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
 !/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1
 !/ST6        ELSE
 !/ST6          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/ST6                       SIN6A0, SIN6U10, SDS6ET, SDS6A1, SDS6A2,  &
+!/ST6                       SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
 !/ST6                       SDS6P1, SDS6P2, SWL6S6, SWL6B1
 !/ST6        END IF
 !

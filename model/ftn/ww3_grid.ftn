@@ -633,7 +633,7 @@
 !
 !/ST6      REAL                    :: SINA0, SDSA1, SDSA2, SWLB1
 !/ST6      INTEGER                 :: SDSP1, SDSP2
-!/ST6      LOGICAL                 :: SINU10, SDSET
+!/ST6      LOGICAL                 :: SDSET
 !
 !/NL1      REAL                    :: LAMBDA, KDCONV, KDMIN,               &
 !/NL1                                 SNLCS1, SNLCS2, SNLCS3
@@ -683,7 +683,7 @@
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
-!/ST6      NAMELIST /SIN6/ SINA0, SINU10
+!/ST6      NAMELIST /SIN6/ SINA0
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6      NAMELIST /SWL6/ SWLB1
 !/BT1      NAMELIST /SBT1/ GAMMA
@@ -1156,7 +1156,6 @@
 !/ST4      SINBR   = 0.
 !
 !/ST6      SINA0  = 0.04
-!/ST6      SINU10 = .FALSE.
 !
 !/ST1      CALL READNL ( NDSS, 'SIN1', STATUS )
 !/ST1      WRITE (NDSO,920) STATUS
@@ -1226,12 +1225,9 @@
 !/ST6      CALL READNL ( NDSS, 'SIN6', STATUS )
 !/ST6      WRITE (NDSO,920) STATUS
 !/ST6      SIN6A0 = SINA0
-!/ST6      SIN6U10 = SINU10
 !/ST6      J = 1
-!/ST6      JJ = 2
-!/ST6      IF ( SIN6U10 ) JJ = 1
 !/ST6      IF ( SIN6A0.LE.0. ) J = 2
-!/ST6      WRITE (NDSO,921) YESXNO(JJ), YESXNO(3-JJ), YESXNO(J), SIN6A0
+!/ST6      WRITE (NDSO,921) YESXNO(J), SIN6A0
 !
 ! 6.e Define Snl.
 !
@@ -1985,7 +1981,7 @@
 !/ST4          WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
 !/ST4            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
 !/ST4            SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
-!/ST6          WRITE (NDSO,2920) SINA0, SINU10
+!/ST6          WRITE (NDSO,2920) SINA0
 !/NL1          WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
 !/NL1                            SNLCS1, SNLCS2, SNLCS3
 !/NL2          WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -4102,12 +4098,9 @@
 !
 !/ST6  920 FORMAT (/'  Wind input (Donelan et al, 2006) ',A/       &
 !/ST6         ' --------------------------------------------------')
-!/ST6  921 FORMAT ( '  friction velocity scaling to 10m winds',/   &
-!/ST6               '         U10 = USTAR / SQRT(CD)    :  ',A/    &
-!/ST6               '         U10 = 28 * USTAR          :  ',A/    &
-!/ST6               '  negative wind input active       :  ',A/    &
+!/ST6  921 FORMAT ( '  negative wind input active       :  ',A/    &
 !/ST6               '    attenuation factor             :  ',F6.2/ )
-!/ST6 2920 FORMAT ( '  &SIN6 SINA0 =',F6.3,', SINU10 =',L,' /')
+!/ST6 2920 FORMAT ( '  &SIN6 SINA0 =',F6.3,' /')
 !
 !/STX  920 FORMAT (/'  Experimental wind input.'/)
 !

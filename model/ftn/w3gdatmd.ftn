@@ -683,7 +683,7 @@
 !
 !/ST6        REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
 !/ST6        INTEGER               :: SDS6P1, SDS6P2
-!/ST6        LOGICAL               :: SIN6U10, SDS6ET, SWL6S6
+!/ST6        LOGICAL               :: SDS6ET, SWL6S6
 !
 !/STX        REAL                  :: DUMMY
       END TYPE SRCP
@@ -915,7 +915,7 @@
 !/ST4                                 SSDSBR2, SSDSCOS, SSDSDTH, SSDSBM(:)
 !/ST6      REAL, POINTER           :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
 !/ST6      INTEGER, POINTER        :: SDS6P1, SDS6P2
-!/ST6      LOGICAL, POINTER        :: SIN6U10, SDS6ET, SWL6S6
+!/ST6      LOGICAL, POINTER        :: SDS6ET, SWL6S6
       REAL, POINTER           :: WWNMEANPTAIL, SSTXFTFTAIL
 !/
 !/ Data aliasses for structure SNLP(S)
@@ -1947,7 +1947,6 @@
 !/ST4      SSINBR   => MPARS(IMOD)%SRCPS%SSINBR
 !
 !/ST6      SIN6A0 => MPARS(IMOD)%SRCPS%SIN6A0
-!/ST6      SIN6U10 => MPARS(IMOD)%SRCPS%SIN6U10
 !/ST6      SDS6ET => MPARS(IMOD)%SRCPS%SDS6ET
 !/ST6      SDS6A1 => MPARS(IMOD)%SRCPS%SDS6A1
 !/ST6      SDS6P1 => MPARS(IMOD)%SRCPS%SDS6P1
