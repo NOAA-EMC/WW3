@@ -13,9 +13,9 @@
 #       ww3_gspl : Grdi splitter.                                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      November 2013          #
+#                                                      January 2014           #
 #                                                                             #
-#    Copyright 2013 National Weather Service (NWS),                           #
+#    Copyright 2013-2014 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -229,6 +229,7 @@ EOF
   rm -f mod_def.$modID
   rm -f mod_def.$modID.*
   rm -f ww3_multi.$modID.*
+  rm -f part_*
 
   cd $data_dir
   filelist=`ls`
@@ -392,7 +393,7 @@ EOF
   echo ' '
   echo " Process individual grids ..."
 
-  for file in ${modID}*.tmpl
+  for file in `ls *.tmpl`
   do
     grdID=`echo $file | sed 's/\./ /g' | awk '{ print $1 }'`
     echo "   Grid $grdID (ww3_grid.$grdID.out) ..."
@@ -410,7 +411,7 @@ EOF
   rm -f namelist.data
 
 # --------------------------------------------------------------------------- #
-# 4. Process ww3_multi.inp file                                               #
+# 4. Process ww3_ginf.inp_tmpl                                                #
 # --------------------------------------------------------------------------- #
 
   if [ "$gint" = '1' ]
