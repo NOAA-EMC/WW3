@@ -33,7 +33,7 @@
 !      NTRACE    Int.  Private  Maximum number of trace prints in
 !                               strace (set in ITRACE).
 !
-!      PRFTB     Int.  Private  Base time for profiling.
+!      PRFTB     I.A.  Private  Base time for profiling.
 !      FLPROF    Log.  Private  Flag for profiling initialization.
 !     ----------------------------------------------------------------
 !
@@ -79,7 +79,7 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !
-      INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0, PRFTB
+      INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0, PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
 !
       CONTAINS
@@ -780,7 +780,7 @@
 !/
 ! -------------------------------------------------------------------- /
 !
-!/F90      CALL SYSTEM_CLOCK ( PRFTB )
+!/F90      CALL DATE_AND_TIME ( VALUES=PRFTB )
 !
       FLPROF = .TRUE.
 !
@@ -844,6 +844,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE W3TIMEMD, ONLY: TDIFF
+!/
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -854,7 +856,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: PRFTA, PRFINC, PRFMAX, PRFDT
+      INTEGER                 :: PRFTA(8)
 !
 ! -------------------------------------------------------------------- /
 !
@@ -862,15 +864,8 @@
 !
       IF ( .NOT. FLPROF ) RETURN
 !
-!/F90      CALL SYSTEM_CLOCK ( PRFTA, PRFINC, PRFMAX )
-!/F90      IF ( PRFMAX .NE. 0 ) THEN
-!/F90          IF ( PRFTA-PRFTB .GE. 0 ) THEN
-!/F90              PRFDT  = PRFTA-PRFTB
-!/F90            ELSE
-!/F90              PRFDT  = PRFTA-PRFTB + PRFMAX
-!/F90            END IF
-!/F90          PTIME  = REAL(PRFDT)/REAL(PRFINC)
-!/F90        END IF
+!/F90      CALL DATE_AND_TIME ( VALUES=PRFTA )
+!/F90      PTIME  = TDIFF ( PRFTB,PRFTA )
 !
       RETURN
 !/

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Dec-2013 |
+!/                  | Last update :         04-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -33,6 +33,8 @@
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
 !/                  Switch test file on/off (TSTOUT)
 !/    18-Dec-2013 : Adding error checking for FLAGLL    ( version 4.16 )
+!/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
+!/                  (A. Chawla and Mark Szyska) 
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -328,7 +330,7 @@
       USE W3SERVMD, ONLY: ITRACE, EXTCDE, WWDATE, WWTIME, NEXTLN
 !/S      USE W3SERVMD, ONLY: STRACE
 !/MPRF      USE W3SERVMD, ONLY: PRINIT, PRTIME
-      USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21
+      USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21, TDIFF
       USE WMUNITMD, ONLY: WMUINI, WMUDMP, WMUSET, WMUGET, WMUINQ
 !/
       USE W3GDATMD, ONLY: GTYPE, NX, NY, FILEXT, NSEA, FLAGST, GRIDS
@@ -356,7 +358,7 @@
                           ALLPRC, MODMAP, TSYNC, TMAX, TOUTP, TDATA,  &
                           GRSTAT, DTRES, BCDUMP, FLGHG1, FLGHG2,      &
                           INPMAP, IDINP
-!/F90      USE WMMDATMD, ONLY: CLKT0, CLKTN, CLKINC, CLKMAX, CLKFIN
+!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKDT3, CLKFIN
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD,          &
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
@@ -385,7 +387,6 @@
                                  TLST(2), NCPROC, NPOUTT, NAPLOC,     &
                                  NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
                                  IFT
-!/F90      INTEGER                 :: CLKDT
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
@@ -458,7 +459,7 @@
 !/MPRF      CALL PRINIT
 !/MPRF      CALL PRTIME ( PRFT0 )
 !
-!/F90      CALL SYSTEM_CLOCK ( CLKT0, CLKINC, CLKMAX )
+!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
       MPI_COMM_LOC   = MPI_COMM
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
@@ -2655,15 +2656,8 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
-!/F90      IF ( CLKMAX .NE. 0 ) THEN
-!/F90          IF ( CLKTN-CLKT0 .GE. 0 ) THEN
-!/F90              CLKDT  = CLKTN-CLKT0
-!/F90            ELSE
-!/F90              CLKDT  = CLKTN-CLKT0 + CLKMAX
-!/F90            END IF
-!/F90          CLKFIN = REAL(CLKDT)/REAL(CLKINC)
-!/F90        END IF
+!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT2 )
+!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN

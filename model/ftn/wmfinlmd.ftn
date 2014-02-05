@@ -5,12 +5,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Sep-2012 |
+!/                  | Last update :         04-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2005 : Origination.                        ( version 3.07 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
+!/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
+!/                  (A. Chawla and Mark Szyska) 
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -115,8 +117,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE W3TIMEMD, ONLY: TDIFF
       USE WMMDATMD, ONLY: MDSS, MDSO, NMPSCR, NMPLOG, IMPROC
-!/F90      USE WMMDATMD, ONLY: CLKT0, CLKTN, CLKINC, CLKMAX, CLKFIN
+!/F90      USE WMMDATMD, ONLY: CLKDT1, CLKDT2, CLKDT3, CLKFIN
 !/MPRF      USE WMMDATMD, ONLY: MDSP
 !/MPI      USE WMMDATMD, ONLY: MPI_COMM_MWAVE
 !/
@@ -134,7 +137,6 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      INTEGER                 :: CLKDT
 !/MPI      INTEGER                 :: IERR_MPI
 !/MPRF      REAL                    :: PRFT0, PRFTN
 !/S      INTEGER, SAVE           :: IENT = 0
@@ -152,25 +154,16 @@
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 !
-!/F90      IF ( CLKMAX .NE. 0 ) THEN
-!/F90          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
-!/F90               WRITE (MDSS,920) CLKFIN
-!/F90          IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,920) CLKFIN
-!/F90        END IF
+!/F90      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
+!/F90           WRITE (MDSS,920) CLKFIN
+!/F90      IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,920) CLKFIN
 !
-!/F90      CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
+!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT3 )
 !
-!/F90      IF ( CLKMAX .NE. 0 ) THEN
-!/F90          IF ( CLKTN-CLKT0 .GE. 0 ) THEN
-!/F90              CLKDT  = CLKTN-CLKT0
-!/F90            ELSE
-!/F90              CLKDT  = CLKTN-CLKT0 + CLKMAX
-!/F90            END IF
-!/F90          CLKFIN = REAL(CLKDT)/REAL(CLKINC)
-!/F90          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
-!/F90               WRITE (MDSS,921) CLKFIN
-!/F90          IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,921) CLKFIN
-!/F90        END IF
+!/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT3 )
+!/F90      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
+!/F90           WRITE (MDSS,921) CLKFIN
+!/F90      IF ( NMPLOG.EQ.IMPROC ) WRITE (MDSO,921) CLKFIN
 !
 !/ ------------------------------------------------------------------- /
 ! 3.  Identification at end
