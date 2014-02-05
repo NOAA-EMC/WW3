@@ -642,8 +642,8 @@
       IDOUT( 2, 1)  = 'Wave height         '
       IDOUT( 2, 2)  = 'Mean wave length    '
       IDOUT( 2, 3)  = 'Mean wave period(+2)'
-      IDOUT( 2, 4)  = 'Mean wave period(+1)'
-      IDOUT( 2, 5)  = 'Mean wave period(-1)'
+      IDOUT( 2, 4)  = 'Mean wave period(-1)'
+      IDOUT( 2, 5)  = 'Mean wave period(+1)'
       IDOUT( 2, 6)  = 'Peak frequency      '
       IDOUT( 2, 7)  = 'Mean wave dir. a1b1 '
       IDOUT( 2, 8)  = 'Mean dir. spr. a1b1 '
@@ -728,7 +728,7 @@
       NOGE(8) = 2
 !
       IDOUT( 8, 1)  = 'Mean square slopes  '
-      IDOUT( 8, 2)  = 'Philllips tail const'
+      IDOUT( 8, 2)  = 'Phillips tail const'
 !      IDOUT( 8, 3)  = '3rd spectral moment '
 !      IDOUT( 8, 4)  = '4th spectral moment '
 !      IDOUT( 8, 5)  = 'Goda peakedness parm'

@@ -34,7 +34,7 @@
 !/                  Switch test file on/off (TSTOUT)
 !/    18-Dec-2013 : Adding error checking for FLAGLL    ( version 4.16 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
-!/                  (A. Chawla and Mark Szyska) 
+!/                  (A. Chawla and Mark Szyszka) 
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

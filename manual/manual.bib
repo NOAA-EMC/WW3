@@ -28,6 +28,7 @@
   @STRING{ MWR   = "Mon. Wea. Rev."}
   @STRING{ NPG   = "Nonlinear Proc. Geoph."}
   @STRING{ OCEAN = "Oceanogr."}
+  @STRING{ OCEANOL = "Oceanol,"}
   @STRING{ OE    = "Ocean Eng."}
   @STRING{ OPE   = "Int. J. Offshore Polar Eng."}
   @STRING{ OMOD  = "Ocean Mod."}
@@ -180,27 +181,6 @@
   JOURNAL = OMOD,
   VOLUME = "39",
   PAGES  = "405--410" }
-
-% item Ardhuin2012
-
-@article{Ardhuin2012,
-Author = {Ardhuin, Fabrice and Roland, Aron and Dumas, Franck and Bennis,
-   Anne-Claire and Sentchev, Alexei and Forget, Philippe and Wolf, Judith
-   and Girard, Francoise and Osuna, Pedro and Benoit, Michel},
-Title = {{Numerical Wave Modeling in Conditions with Strong Currents: Dissipation,
-   Refraction, and Relative Wind}},
-Journal = {{JOURNAL OF PHYSICAL OCEANOGRAPHY}},
-Year = {{2012}},
-Volume = {{42}},
-Number = {{12}},
-Pages = {{2101-2120}},
-Month = {{DEC}},
-DOI = {{10.1175/JPO-D-11-0220.1}},
-ISSN = {{0022-3670}},
-ResearcherID-Numbers = {{Ardhuin, Fabrice/A-1364-2011}},
-ORCID-Numbers = {{Ardhuin, Fabrice/0000-0002-9309-9681}},
-Unique-ID = {{ISI:000313054800002}},
-}
 
 % item art:Bab09
 
@@ -881,22 +861,15 @@ Unique-ID = {{ISI:000313054800002}},
   VOLUME = "20(4)",
   PAGES  = "359--388" }
 
-% item Magne2010
+% item art:Mea10
 
-@article{Magne2010,
-Author = {Magne, Rudy and Ardhuin, Fabrice and Roland, Aaron},
-Title = {{Waves forecast and hincast from global ocean to the beach}},
-Journal = {{EUROPEAN JOURNAL OF ENVIRONMENTAL AND CIVIL ENGINEERING}},
-Year = {{2010}},
-Volume = {{14}},
-Number = {{2}},
-Pages = {{149-162}},
-DOI = {{10.3166/EJECE.14.149-162}},
-ISSN = {{1964-8189}},
-ResearcherID-Numbers = {{Ardhuin, Fabrice/A-1364-2011}},
-ORCID-Numbers = {{Ardhuin, Fabrice/0000-0002-9309-9681}},
-Unique-ID = {{ISI:000275380100003}},
-}
+@ARTICEL{art:Mea10,
+  AUTHOR  = {Magne, Rudy and Ardhuin, Fabrice and Roland, Aaron},
+  TITLE   = {Waves forecast and hincast from global ocean to the beach},
+  JOURNAL = {EUROPEAN JOURNAL OF ENVIRONMENTAL AND CIVIL ENGINEERING},
+  YEAR    = "2010",
+  VOLUME  = "14",
+  PAGES   = "149--162" }
 
 % item art:M1894
 
@@ -1015,7 +988,7 @@ Unique-ID = {{ISI:000275380100003}},
   YEAR    = "2007",
   TITLE   = "Calculation of the nonlinear energy transfer through the
              wave spectrum at the sea surface covered with broken ice",
-  JOURNAL = OCENOL,
+  JOURNAL = OCEANOL,
   VOLUME  = 47,
   PAGES   = "334--343" }
 
@@ -1155,9 +1128,9 @@ Unique-ID = {{ISI:000275380100003}},
 
 @ARTICLE{art:WHD13,
   AUTHOR  = "A. J. {Van der Westhuysen} and J. L. Hanson and E. -M. Devaliere",
-  YEAR    = "2014",
+  YEAR    = "2013",
   TITLE   = "Spatial and temporal tracking of wave systems",
-  JOURNAL = WaF,
+  JOURNAL = JTech,
   NOTE    = "`In prep." }
 % VOLUME  = "",
 % PAGES   = "" }
@@ -1275,8 +1248,21 @@ Unique-ID = {{ISI:000275380100003}},
 @ARTICLE{art:ZBRY13,
   AUTHOR       = "S. Zieger and A. Babanin and E. Rogers and I.R. Young",
   YEAR         = "{Submitted.}",
-  TITLE        = "Observation-based source terms in the third-generation wave model {WAVEWATCH III}",
+  TITLE        = "Observation-based source terms in the third-generation wave model
+                   {WAVEWATCH III}",
  }
+
+% item art:Zij10
+
+@ARTICLE{art:Zij10,
+  AUTHOR  = "M. Zijlema",
+  YEAR    = "2010",
+  TITLE   = "Computation of wind-wave spectra in coastal waters with {SWAN} on unstructured
+              grids ",
+  JOURNAL = CE,
+  VOLUME  = "57",
+  NUMBER  = "3",
+  PAGES   = "267 - 277" }
 
 % item pro:Aea11
 
@@ -1389,6 +1375,16 @@ Unique-ID = {{ISI:000275380100003}},
   TITLE        = "Wave Prediction in  the  {Santa  Barbara}  Channel",
   BOOKTITLE    = "5th California Islands Symposium, March 29-31",
   PUBLISHER    = "Mineral Management  Service, Santa Barbara CA" }
+
+% item pro:Rol12
+
+@INPROCEEDINGS{pro:Rol12,
+   AUTHOR      = "Aron Roland",
+   title       = "Application of Residual Distribution (RD) schemes to the
+                  geographical part of the wave action equation",
+   booktitle   = "Proceedings of ECMWF workshop on ocean wave forecasting, June",
+   year        = 2012,
+   INSTITUTION = "ECMWF, Reading, U. K." }
 
 % item pro:Sea78
 
@@ -1518,16 +1514,6 @@ Unique-ID = {{ISI:000275380100003}},
    year   = 2009,
   NUMBER  = "Heft 146",
   NOTES   = "212 pp." }
-
-% item RolandECMWF
-
-@INPROCEEDINGS{RolandECMWF,
-   author = "Aron Roland",
-   title = "Application of Residual Distribution (RD) schemes to the geographical part of the wave action equation",
-   booktitle = "Proceedings of ECMWF workshop on ocean wave forecasting, June",
-   year = 2012,
-   INSTITUTION = "ECMWF, Reading, U. K.",
-}
 
 % item rep:TR82
 
@@ -2089,19 +2075,6 @@ Unique-ID = {{ISI:000275380100003}},
   VOLUME  = "70",
   PAGES   = "11--24" }
 
-% item tol:MMABgenes
-
-@TECHREPORT{tol:MMABgenes,
-  AUTHOR      = "H. L. Tolman",
-  YEAR        = "2013",
-  TITLE       = "A genetic optimization package for the {G}eneralized 
-                {M}ultiple {DIA} in
-                {WAVEWATCH III}~\textsuperscript\textregistered",
-  INSTITUTION = "{NOAA/NWS/NCEP/MMAB}",
-  TYPE        = "Tech. Note",
-  NUMBER      = "289, Ver. 1.3",
-  NOTE        = "22 pp. + Appendices" }
-
 % item tol:MMAB13b
 
 @TECHREPORT{tol:MMAB13b,
@@ -2116,9 +2089,22 @@ Unique-ID = {{ISI:000275380100003}},
   NUMBER      = "310",
   NOTE        = "25 pp. + Appendices" }
 
-% item tol:MMABguide
+% item tol:MMAB14c
 
-@TECHREPORT{tol:MMABguide,
+@TECHREPORT{tol:MMAB14c,
+  AUTHOR      = "H. L. Tolman",
+  YEAR        = "2014",
+  TITLE       = "A genetic optimization package for the {G}eneralized 
+                {M}ultiple {DIA} in
+                {WAVEWATCH III}~\textsuperscript\textregistered",
+  INSTITUTION = "{NOAA/NWS/NCEP/MMAB}",
+  TYPE        = "Tech. Note",
+  NUMBER      = "289, Ver. 1.4",
+  NOTE        = "21 pp. + Appendix" }
+
+% item tol:MMAB14b
+
+@TECHREPORT{tol:MMAB14b,
   AUTHOR      = "H. L. Tolman",
   YEAR        = "2014",
   TITLE       = "{WAVEWATCH III}$\:$\textsuperscript\textregistered\
@@ -2215,23 +2201,4 @@ Unique-ID = {{ISI:000275380100003}},
   JOURNAL = "Progress in Oceanography" ,
   VOLUME  = "75",
   PAGES   = "603--674" }
-
-% item Zijlema2010267
-
-@ARTICLE{Zijlema2010267,
-  AUTHOR  = "M. Zijlema",
-  YEAR    = "2010",
-  TITLE   = "Computation of wind-wave spectra in coastal waters with {SWAN} on unstructured grids ",
-  JOURNAL = "Coastal Engineering ",
-  VOLUME  = "57",
-  NUMBER  = "3",
-  PAGES   = "267 - 277",
-  issn    = "0378-3839",
-  doi     = "http://dx.doi.org/10.1016/j.coastaleng.2009.10.011",
-  url     = "http://www.sciencedirect.com/science/article/pii/S0378383909001616",
-  keywords = "Wind-wave spectra",
-  keywords = "{SWAN}",
-  keywords = "Unstructured grid",
-  keywords = "Finite difference",
-  keywords = "Fully implicit "}
 

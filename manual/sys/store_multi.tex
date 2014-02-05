@@ -9,8 +9,6 @@ arrays for all models are retained simultaneously, with a simple mechanism to
 choose the actual wave model grid to work on. In order to achieve this, some
 FORTRAN 90 features \citep[e.g.,][]{bk:MR99} are used in the following way:
 
-\input{sys/fig_struc1}
-
 \begin{list}{}{\rightmargin 8mm \leftmargin 10mm \labelsep 2mm}
 
 \item [1)] Define one or more data structures in the model code that contain
@@ -26,6 +24,8 @@ FORTRAN 90 features \citep[e.g.,][]{bk:MR99} are used in the following way:
            generate instantaneous aliases.
 
 \end{list}
+
+\input{sys/fig_struc1}
 
 \noindent
 In this way it is possible to define a multi-model data structure, while

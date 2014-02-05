@@ -12,7 +12,7 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
-!/                  (A. Chawla and Mark Szyska) 
+!/                  (A. Chawla and Mark Szyszka) 
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

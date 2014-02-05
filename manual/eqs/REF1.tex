@@ -83,19 +83,6 @@ This directional distribution takes three forms:
 \noindent
 That parameterization is described in detail by \cite{art:AR12}.
 
-\begin{figure} \begin{center}
-\epsfig{file=./num/coast_reflection.eps,angle=0,width=3in}
-\caption{Examples of determination of the shoreline orientation and geometry
-  using the land / sea mask. For any sea point (number 0) which is the ocean
-  (in blue) and has at least one neighbor in land (in white) the eight
-  neighbors, numbered from 1 to 8 are used to define the shoreline geometry.
-  For `mild' corners and straight coasts, the estimated shoreline orientation
-  (dashed line) is used to compute the directional distribution of the
-  reflected wave energy.  }
-\label{fig:refl} \botline
-\end{center}
-\end{figure}
-
 In the case of icebergs and sub-grid islands, the reflected energy is
 redistributed evenly in all directions within 90$\degree$ of the direction
 opposite to the incoming waves.  For resolved lands, a mean direction
@@ -113,6 +100,19 @@ redistributed over directions around the specular reflection direction
 $\theta_r$, with a broad distribution taken proportional to
 $\cos^n(\theta-\theta_r)$, where the power $n$ is a function of the local
 shoreline geometry.
+
+\begin{figure} \begin{center}
+\epsfig{file=./num/coast_reflection.eps,angle=0,width=3in}
+\caption{Examples of determination of the shoreline orientation and geometry
+  using the land / sea mask. For any sea point (number 0) which is the ocean
+  (in blue) and has at least one neighbor in land (in white) the eight
+  neighbors, numbered from 1 to 8 are used to define the shoreline geometry.
+  For `mild' corners and straight coasts, the estimated shoreline orientation
+  (dashed line) is used to compute the directional distribution of the
+  reflected wave energy.  }
+\label{fig:refl} \botline
+\end{center}
+\end{figure}
 
 For this purpose we distinguish three different shoreline geometries relative
 to the local point as illustrated by figure \ref{fig:refl}: we set $n=2$ for a

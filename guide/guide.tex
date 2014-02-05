@@ -18,11 +18,11 @@
 % proper link to most recent manual %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\manver}{4.18}
-\newcommand{\manref}{tol:MMABmanual}
+\newcommand{\manref}{tol:MMAB14a}
 \newcommand{\manregtestsec}{5.6}
 
-\newcommand{\pstyle}{myheadings}
-%\newcommand{\pstyle}{plain}
+%\newcommand{\pstyle}{myheadings}
+\newcommand{\pstyle}{plain}
 \newfont{\ff}{cmsl12}
 
 \newcommand{\topline}{\rule{152mm}{0.5mm}}
@@ -135,9 +135,9 @@ Marine Modeling and Analysis Branch
 
 % Version 0.1, May 2010
 % Version 1.0, Feb. 2011
-% Version 1.1, Feb. 2014
-Version 1.1 (DRAFT), \today \\
-Last Changed Rev: \SVNRevision\ on \SVNDate \\
+Version 1.1, Feb. 2014
+% Version 1.2 (DRAFT), \today 
+%\\ Last Changed Rev: \SVNRevision\ on \SVNDate \\
 \vspace{\baselineskip}
 \vfill {\sc this is an unreviewed manuscript, primarily
 intended for informal exchange of information among ncep staff
@@ -180,18 +180,18 @@ documentation and manuals.
 \vspace{\baselineskip}
 \begin{tabular}{|c|c|c|l|} \hline
 version & svn rev.     & date    & comment    \\ \hline \hline
-  0.1   &   7869       & May 14, 2010 & Initial MMAB No. 286.      \\ 
-        &              &              & Sec.~\ref{sec:testing} (regression testing) \\
-        &              &              & as placeholder only                   \\
-  1.0   &  12398       & Feb 18, 2011 & Adding svn note p.~\pageref{svn_n}.   \\
-        &              &              & Adding svn warning p.~\pageref{svn_w}.\\
-        &              &              & Section~\ref{sec:testing} updated.    \\
-  1.1   & \SVNRevision &   \SVNDate   & Changed address on title page.        \\
-        &              &              & Updating most sections.               \\
-        &              &              & Adding Sec.~\ref{sec:dist} (code distr.). \\
-%         &              &              & Finalize for release of v. 4.18.      \\
-%   1.2   & \SVNRevision &   \SVNDate   &                                       \\
-(draft) &              &              & Prepare for release of v. \manver.    \\
+  0.1   &   7869       & May 14, 2010  & Initial MMAB No. 286.      \\ 
+        &              &               & Sec.~\ref{sec:testing} (regression testing) \\
+        &              &               & as placeholder only                   \\
+  1.0   &  12398       & Feb. 18, 2011 & Adding svn note p.~\pageref{svn_n}.   \\
+        &              &               & Adding svn warning p.~\pageref{svn_w}.\\
+        &              &               & Section~\ref{sec:testing} updated.    \\
+  1.1   &  36335       & Feb.  4, 2014 & Changed address on title page.        \\
+        &              &               & Updating most sections.               \\
+        &              &               & Adding Sec.~\ref{sec:dist} (code distr.). \\
+        &              &               & Finalize for release of v. 4.18.      \\
+%  1.2   & \SVNRevision &   \SVNDate    &                                       \\
+%(draft) &              &               & Prepare for release of v. \manver.    \\
 \hline \end{tabular}
 \end{center}
 \vspace{-3mm}
@@ -261,10 +261,10 @@ site\footnote{~http://polar.ncep.noaa.gov/waves/wavewatch/license.shtml
 }]{tol:MMAB09a}. Henceforth, \ww\ will be denoted as \ws.
 
 Four public releases of \ws\ have been made available
-\citep{tol:OMB99a,tol:OMB02c, tol:MMAB09a, tol:MMABmanual}. This best
-practices guide was first provided with model versions 3.14 for two
-reasons. First, coding standards are needed to foster and support community
-model development. This has become particularly important with the National
+\citep{tol:OMB99a,tol:OMB02c, tol:MMAB09a, tol:MMAB14a}. This best practices
+guide was first provided with model versions 3.14 for two reasons. First,
+coding standards are needed to foster and support community model
+development. This has become particularly important with the National
 Oceanographic Partnership Program (NOPP) project to improve all basic wave
 model source terms, which will run from 2010 through 2014, and which will use
 \ws\ as a main development vehicle. This means that several teams will work
@@ -1129,8 +1129,8 @@ WW3 code under the following conditions:
 \setcounter{footnote}{0}
 
 \bibliographystyle{jas}
-% leaveline below, used by Hendrik
-%\bibliography{short,articles,books,reports,conf,mine}
+% leave line below, used by Hendrik
+% \bibliography{short,articles,books,reports,conf,mine}
 \bibliography{guide}
 
 
