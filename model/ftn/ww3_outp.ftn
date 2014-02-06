@@ -10,7 +10,7 @@
 !/                  |             E. Rogers             |
 !/                  |            T. Campbell            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Sep-2013 |
+!/                  | Last update :         06-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -53,8 +53,9 @@
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
 !/    10-Sep-2013 : Implement second order correction   ( version 4.12 )
 !/                  (F. Ardhuin)
+!/    06-Feb-2014 : Fix header format in part. files.   ( version 4.18 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -858,7 +859,7 @@
 !/                  |            F. Ardhuin             |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         06-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    08-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -888,6 +889,7 @@
 !/    16-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
+!/    06-Feb-2014 : Fix header format in part. files.   ( version 4.18 )
 !/
 !  1. Purpose :
 !
@@ -2086,9 +2088,9 @@
   922 FORMAT (' '/' ')
 !
   940 FORMAT (1X,I8.8,1X,I6.6,2F8.3,2X,'''',A10,'''',            &
-              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
+              1X,I3,F7.1,F5.1,f6.1,F5.2,F6.1)
   943 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
-              1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
+              1X,I3,F7.1,F5.1,f6.1,F5.2,F6.1)
   941 FORMAT ('        hs     tp     lp       theta     sp      wf')
   942 FORMAT (I3,3F8.2,2F9.2,F7.2)
 !
