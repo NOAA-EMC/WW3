@@ -3337,7 +3337,7 @@
 !/SMC          JJ=IJKCel(2,ISEA) - JEQT 
 !/SMC          Y = SYMR*( FLOAT(JJ)+0.5*FLOAT(IJKCel(4,ISEA)) )
 !/ARC !Li   Arctic polar cell does not need COS(LAT), set 1 row down.
-!/ARC          IF(Y .GE. HPI) Y=HPI - SYMR*0.5*FLOAT( MRFct )
+!/ARC          IF(Y .GE. HPI-0.1*SYMR) Y=HPI - SYMR*0.5*FLOAT( MRFct )
 !/ARC
 !/SMC          CLATS(ISEA) = COS( Y )
 !/SMC          CLATIS(ISEA)= 1. / CLATS(ISEA)
@@ -3422,7 +3422,7 @@
 !/ARC          ENDDO
 !/ARC       ENDDO
 !/ARC       WRITE (NDSO,4039)  NBAC 
-!/ARC       WRITE (NDSO,4038) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
+!/ARC       WRITE (NDSO,4040) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
 !
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 0, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Sea points', 'm')
@@ -4479,6 +4479,7 @@
 !/ARC 4037 FORMAT ( '       Arctic AngArc defined as ',I6)
 !/ARC 4038 FORMAT (9F8.2)
 !/ARC 4039 FORMAT ( '       Arctic ICLBAC defined as ',I6)
+!/ARC 4040 FORMAT (9I8)
 !/RTD 4200 FORMAT ( '       AnglDin(NX,NY) defined : ')
 !/RTD 4201 FORMAT ( '       JY/IX',9I8)
 !/RTD 4202 FORMAT (I6,9F8.2)

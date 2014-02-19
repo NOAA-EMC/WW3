@@ -51,11 +51,12 @@
  Print, ael(*,0)
  Print, ael(*,na-1)
 
-;;  Merge Arctic part but excluding boundary cells together
+;;  Merge Arctic part, including boundary cells together
  nb=n8+n9  
- nc=ng + na - nb 
- arl=ael(*,nb:na-1)
- cel=transpose([transpose(cel), transpose(arl)])
+ nc=ng + na  
+;nc=ng + na - nb 
+;arl=ael(*,nb:na-1)
+ cel=transpose([transpose(cel), transpose(ael)])
 
  Print, ' Total cell number =', nc
  Print, ' Excluded Boundary =', nb

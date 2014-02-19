@@ -6,7 +6,7 @@
 !/                  | Adv, GCT, Rfr, Dif subroutines.    |
 !/                  |           Jian-Guo Li              |
 !/                  | First created:     8 Nov 2010      |
-!/                  | Last modified:    16 Sep 2013      |
+!/                  | Last modified:    28 Jan 2014      |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Coding started by adapting w3pro2md.ftn.
@@ -26,6 +26,7 @@
 !/    16-Sep-2013 : Add Arctic part for SMC grid in WW3 V4.11 
 !/     3-Jan-2014 : Remove bug in SMCDHXY for AU/V as cell size.  
 !/     7-Jan-2014 : Remove bug in SMCGtCrfr for K definition.     
+!/    28-Jan-2014 : Move Arctic boundary condition update out.  
 !/
 !  1. Purpose :
 !
@@ -200,7 +201,7 @@
                           IJKCel, IJKUFc, IJKVFc, NCel, NUFc, NVFc,    &
                           NLvCel, NLvUFc, NLvVFc, NRLv, MRFct,         &
                           DTCFL, CLATS, DTME, CLATMN, CTRNX, CTRNY 
-!/ARC      USE W3GDATMD, ONLY: NGLO, NARC, NBGL, NBAC, ICLBAC, ANGARC, SPCBAC 
+!/ARC      USE W3GDATMD, ONLY: NGLO, ANGARC 
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, WN, U10, CX, CY, ATRNX, ATRNY, ITIME
       USE W3ODATMD, ONLY: NDSE, NDST
@@ -325,7 +326,10 @@
 !/ARC       ENDIF
       END DO
 !/ARC  !Li   Polar cell area factor for V-flux update 
-!/ARC        PCArea = DX0/(PI*DY0)
+!/ARC        PCArea = DX0/(MRFct*PI*DY0*FLOAT(IJKCel(4,NSEA)))
+!/ARC  !Li   V-component is reset to zero for Polar cell as direction
+!/ARC  !Li   is undefined there.  
+!/ARC          VCFL(NSEA) = 0.0
 
 !Li  Initialise boundary cell CQ and Velocity values.
            CQ(-9:0)=0.0
@@ -344,9 +348,6 @@
 !     Single-resolution SMC grid uses regular grid advection with
 !     partial blocking enabled when NRLv = 1
        IF ( NRLv .EQ. 1 ) THEN
-!     Test multi-resolution code for single resolution by skipping this
-!     block with a false condition.  JGLi12Mar2012
-!      IF ( NRLv .LT. 0 ) THEN
 
 !  Call SMCxUNO2 to calculate MFx value
           CALL SMCxUNO2r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
@@ -442,7 +443,6 @@
 
 !  Store fineset level conservative flux in FCNt advective one in AFCN
 !! No partial blocking for multi-resolution SMC grid.  JGLi02Feb2012
-!          DO i=1, NUFc
            DO i=iuf, juf 
               L=IJKUFc(5,i)
               M=IJKUFc(6,i)
@@ -456,7 +456,6 @@
 !  Store conservative update in D and advective update in C
 !  The side length in MF value has to be cancelled with cell y-length.
 !  Also divided by another cell x-size as UCFL is in size-1 unit.
-!          DO n=1, NSEA
            DO n=icl, jcl 
               CQA(n)=CQ(n) + FCNt(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
               CQ (n)=CQ(n) + AFCN(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
@@ -469,7 +468,6 @@
 !
 !  Store conservative flux in F
 !! No partial blocking for multi-resolution SMC grid.  JGLi02Feb2012
-!          DO j=1, NVFc
            DO j=ivf, jvf 
               L=IJKVFc(5,j)
               M=IJKVFc(6,j)
@@ -482,7 +480,6 @@
 !  The v side length in MF value has to be cancelled with x-size. 
 !  Also divided by cell y-size as VCFL is in size-1 unit.
 !! One cosine factor is also needed to be divided for SMC grid
-!          DO n=1, NSEA
            DO n=icl, jcl
               CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*            &
       &             FLOAT( IJKCel(3, n)*IJKCel(4, n) ) )
@@ -490,7 +487,7 @@
            ENDDO
 !/ARC  !Li  Polar cell needs a special area factor, multi-level case.
 !/ARC       IF( jcl .EQ. NSEA ) THEN
-!/ARC         CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea/FLOAT(IJKCel(4,NSEA))
+!/ARC         CQ(NSEA) = CQA(NSEA) + BCNt(NSEA)*PCArea
 !/ARC       ENDIF
 !
 !  End of refine level if block  MOD(LMN, LvR) .EQ. 0 
@@ -514,17 +511,6 @@
       DO ISEA=1, NSEA
             VQ(ISEA) =  MAX ( 0. , CQ(ISEA)*CG(IK,ISEA) )
         END DO
-!
-!/ARC  !Li  Store Arctic boundary spectra in universal variable SPCBAC
-!/ARC       DO I=1, NBAC
-!/ARC              IF( I .LE. NBGL ) THEN
-!/ARC                  J = ICLBAC(I)
-!/ARC                  SPCBAC( ISP, I ) = VQ( J )
-!/ARC              ELSE
-!/ARC                  J = NGLO + I 
-!/ARC                  SPCBAC( ISP, I ) = VQ( J )
-!/ARC              END IF 
-!/ARC       END DO 
 !
       RETURN
 !
@@ -676,7 +662,7 @@
 !/
       INTEGER    :: ITH, IK, ISP
       REAL       :: FGC, FKD, FKS, FRK(NK), FRG(NK), DDNorm(NTH),     & 
-                    FKC(NTH), VQ(NSPEC), VCFLT(NSPEC),                &
+                    FKC(NTH), VQ(NSPEC), VCFLT(NSPEC), DEPTH30,       &
                     DB(0:NK+1), DM(-1:NK+1), CFLK(NTH,0:NK),          &
 !Li   For new refraction scheme using Cg.  JGLi26Jul2011
 !                   DPH2K(0:NK+1), SNH2K(0:NK+1)
@@ -689,16 +675,20 @@
 !
 ! 1.  Preparation for point ------------------------------------------ *
 !     Array with partial derivative of sigma versus depth
-!
+!Li   Use of minimum depth 30 m for refraction factor.  JGLi12Feb2014
+      DEPTH30=MAX(30.0, DEPTH)
+
       DO IK=0, NK+1
-!Li   For new refraction scheme using Cg.  JGLi3Jun2011
+!Li   For old refraction scheme using phase speed.  JGLi8Jun2011
 !        DPH2K(IK) = 2.0*WN(IK)*DEPTH
 !        SNH2K(IK) = SINH( DPH2K(IK) )
-!Li   For old refraction scheme using phase speed.  JGLi8Jun2011
+!Li   For new refraction scheme using Cg.  JGLi3Jun2011
 !!        SIGSNH(IK) = SIG(IK)/SINH(2.0*WN(IK)*DEPTH)
 !!AC  Replacing SIGSINH with a delimiter to prevent the SINH value from 
 !!AC  becoming significantly large. Right now set to a max around 1E21
-        SIGSNH(IK) = SIG(IK)/SINH(MIN(2.0*WN(IK)*DEPTH,50.0))
+!         SIGSNH(IK) = SIG(IK)/SINH(MIN(2.0*WN(IK)*DEPTH,50.0))
+!Li   Refraction factor uses minimum depth of 30 m.  JGLi12Feb2014
+          SIGSNH(IK) = SIG(IK)/SINH(MIN(2.0*WN(IK)*DEPTH30,50.0))
         END DO
 !
 ! 2.  Extract spectrum without mapping
@@ -734,21 +724,13 @@
                 ISP = (IK-1)*NTH + ITH
 !Li   Apply depth gradient limited refraction and add GCT term
                 VCFLT(ISP)=FRG(IK)*ECOS(ITH) +                     & 
-                SIGN(MIN(ABS(FRK(IK)*DDNorm(ITH)), ALFLMT(ITH)),   &
+                SIGN( MIN(ABS(FRK(IK)*DDNorm(ITH)), ALFLMT(ITH)),  &
 !Li   For new refraction scheme using Cg.  JGLi26Jul2011
-!                            FRK(IK)*DDNorm(ITH) )
+!                             FRK(IK)*DDNorm(ITH) )
 !Li   For old refraction scheme using phase speed.  JGLi26Jul2011
-                                     DDNorm(ITH) )
+                                      DDNorm(ITH) )
              END DO
           END DO
-
-!Li   Check limited total refraction angle in bin width.  JGLi22Jul2011
-!      IF( ITIME .EQ. 3 .AND. MOD(ISEA, 500) .EQ. 0 ) THEN
-!        ISP=5*NTH + 1
-!        WRITE(NDST,'(i8,16F5.1)' ) ISEA, (ALFLMT(ITH), ITH=1, 16)
-!        WRITE(NDST,'(8x,16F5.2)' )       (DDNorm(ITH), ITH=ISP, ISP+15)
-!        WRITE(NDST,'(8x,6E12.3)' ) FGC,ECOS(4),FRK(4),DEPTH,DDDX,DDDY
-!      ENDIF
 
       END IF
 !
@@ -811,7 +793,7 @@
           IF ( FLCK )  THEN
 !!Li  Refraction caused k-space shift.
               CALL SMCkUNO2(CFLK, VQ, DB, DM)
-          END IF
+            END IF
         END IF
 !
 ! 6.  Store reults --------------------------------------------------- *
@@ -1398,6 +1380,11 @@
        HCel(-9:0)=0.5*DMIN
        HCel(1:NSEA)= DW(1:NSEA) 
 
+!!   Reset shallow water depth with minimum depth
+       DO k=1, NSEA
+          IF(DW(k) .LT. DMIN)  HCel(k)=DMIN
+       ENDDO
+
 !!   Initialize arrays
        DDDX = 0.
        DDDY = 0.
@@ -1437,14 +1424,14 @@
 
 !  Assign averaged side-gradient to DHDX, plus latitude factor
 !  Note averaging over 2 times of cell y-width factor. 
-!  A limiter of gradient 0.1 is applied.
        DO n=1,NSEA
 !  Cell y-size IJKCel(4,i) is used to cancel the face size-factor in AU. 
 !  Note AU has already been divied by two cell lengths.
-!          CNST3=CLats( n )*2.0
-           CNST3=CLats( n )*IJKCel(4,n)
-           DHDX(n)=AU(n)/CNST3
+           DHDX(n)=AU(n)/( CLats( n )*IJKCel(4,n) )
+
+!  A limiter of gradient <= 0.1 is applied.
            IF( ABS( DHDX(n) ) .GT.  0.1) DHDX(n)=SIGN( 0.1, DHDX(n))
+
 !! Asign DHDX value to full grid variable DDDX
            i= IJKCel(1,n)/MRFct + 1
            j= IJKCel(2,n)/MRFct + 1
@@ -1503,15 +1490,16 @@
           IF ( CNST4 .GT. 1.0E-5 ) THEN
              L = L + 1
              DO i=1, NTH
-!Li   Refraction is done only when depth gradient is non-zero
+!Li   Refraction is done only when depth gradient is non-zero.
+!Li   Note ACOS returns value between [0, Pi), always positive.
                CNST6 = ACOS(-(DHDX(n)*ECOS(i)+DHDY(n)*ESIN(i))/CNST4 )
 !Li            DHLMT(i,n)=0.75*MIN(CNST6,ABS(PI-CNST6))/DTH
 !Li   User-defined refraction limiter added.   JGLi09Jan2012 
                DHLMT(i,n)=MIN(Refran, 0.75*MIN(CNST6,ABS(PI-CNST6)))/DTH
              END DO
 !Li   Output some values for inspection.  JGLi22Jul2011
-!      IF( MOD(n, 1000) .EQ. 0 )   &
-!     &    WRITE(NDST,'(i8,18F5.1)' ) n, (DHLMT(i,n), i=1,18)
+!/T       IF( MOD(n, 1000) .EQ. 0 )   &
+!/T     &    WRITE(NDST,'(i8,18F5.1)' ) n, (DHLMT(i,n), i=1,18)
 
           ELSE
                DHLMT(:,n) = 0.0
@@ -1519,9 +1507,9 @@
 
        ENDDO
 
-!      WRITE(NDST,*) ' No. Refraction points =', L 
+!/T       WRITE(NDST,*) ' No. Refraction points =', L 
 
-! 999  PRINT*, ' Sub SMCDHXY ended.'
+!/T 999  PRINT*, ' Sub SMCDHXY ended.'
 
        RETURN
        END SUBROUTINE SMCDHXY 

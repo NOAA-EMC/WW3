@@ -10,8 +10,12 @@
 ; Adapted for SMC50 model input file creation.
 ;                    8 Aug 2011   Jian-Guo Li
 ; Prepared for WW3 users outside UKMO.  JGLi15Nov2013
+; Extended to include Arctic part.   JGLi10Feb2014
 ;               
  
+;; Decide whether Arctic part is included (1) or not (0).
+   ARCTIC = 1 
+
 ;; Open the 50km global bathymetry data file
    OPENR, 9, "./G50kmBathy.dat"
 
@@ -58,14 +62,44 @@
  Print, cel(*,0)
  Print, cel(*,ng-1)
 
+ IF( ARCTIC GT 0 ) THEN Begin
+
+   na=0L
+   n8=0L
+   n9=0L
+   openr, 9, './G50SMCBAr.dat'
+   readf, 9, na, n9, n8 
+   ael=intarr(5,na)
+   readf, 9, ael
+   close, 9
+
+   Print, ' SMCArcels read done'
+   Print, na, n9, n8
+   Print, ael(*,0)
+   Print, ael(*,na-1)
+
+;;  Merge Arctic part, including boundary cells together
+   nb=n8+n9  
+   ng =ng + na - nb 
+   arl=ael(*,nb:na-1)
+   cel=transpose([transpose(cel), transpose(arl)])
+
+ Print, ' Excluded Boundary =', nb
+
+  ENDIF
+;; End of adding Arctic cells.
+
+ Print, ' Total cell number =', ng
+
 ;; Work out Equator index for G50SMC model row
    EqtDlt= 0.0 - FLat + 0.5*DLAT
    NEqutr= FIX( EqtDlt/DLAT + 0.001 )
-  Print, ' Equator index NEqutr =', NEqutr
+   Print, ' Equator index NEqutr =', NEqutr
+
    ICel = cel(0,*)
    JCel = cel(1,*) + NEqutr
    KCel = cel(2,*)
-   HCel = FLOAT( cel(3,*) )
+   HCel = FLOAT( cel(4,*) )
 
 ;; Select N boundary latitude 
 ; NR = 344  ;; about 83N
@@ -82,7 +116,10 @@
 ;; Set land points to be -1.0 m 
    Depth = fltarr(NC, NR)
    Depth(*,*) = -1.0 
-   FOR n=0L, ng-1 do begin
+
+   nga=ng - 1L
+   IF( ARCTIC GT 0 ) THEN nga = ng - 2L
+   FOR n=0L, nga do begin
        i=ICel(n)
        j=JCel(n)
        k=KCel(n)
@@ -90,6 +127,14 @@
        for m=i, i+k-1 do Depth(m, j) = HCel(n)
 ;      Depth(i:i+k-1, j) = HCel(n)
    ENDFOR
+
+   IF( ARCTIC GT 0 ) THEN Begin 
+;; Polar cell covers the last row
+       n=ng-1L
+       m=ICel(n)
+       Depth(m, *) = HCel(n)
+   ENDIF
+
    
 ;; Count land points.
  lands=where(Depth LE 0.0,   landscnt)
@@ -97,10 +142,12 @@
 
 ;; Limit maximum depth to 999 m
  deeps=where(Depth GE 999.0, deepscnt)
+ PRINT, 'Deep points=', deepscnt
  Depth(deeps)=999.0
 
 ;;  Make minimum depth 10 m 
  lwlnd=where((Depth GE 0.0) AND (Depth LE 10.0), lwlndcnt)
+ PRINT, 'Low  points=', lwlndcnt
  Depth(lwlnd)= 10.0
  
 ;;  Sea points and minimum and maximum sea depth
