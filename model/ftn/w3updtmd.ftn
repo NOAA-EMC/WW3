@@ -465,7 +465,7 @@
                                  UXR, UYR
 !/WNT2      REAL                    :: RD2
 !/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1, COR2
-!/ARC       REAL                    :: UDARC
+      REAL                    :: UDARC
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -521,7 +521,7 @@
 !
 ! 3.  Actual wind for all grid points
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR)
+!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
       DO ISEA=1, NSEA
 !
         UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)

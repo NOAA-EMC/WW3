@@ -827,7 +827,7 @@
 ! 2.b Integrate energy in band
 !
         DO ITH=1, NTH
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA)
+!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR)
           DO JSEA=1, NSEAL
             NKH(JSEA)    =MIN ( NK ,   &
                     INT(FACTI2+FACTI1*LOG(MAX(1.E-7,FCUT(JSEA)))) )
@@ -852,7 +852,7 @@
 !
 ! 2.c Finalize integration over band and update mean arrays
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR)
+!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
         DO JSEA=1, NSEAL
 !/DIST          ISEA         = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA         = JSEA
