@@ -1,7 +1,7 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Boundary input processing                              $
 $--------------------------------------------------------------------- $
-$ This program works line ww3_bound, but using input spectra in NetCDF
+$ This program works like ww3_bound, but using input spectra in NetCDF
 $ rather than ASCI format. For a detailed description see the
 $ ww3_bound.inp input file.
 $

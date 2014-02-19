@@ -403,7 +403,6 @@
              FLG2D(2,9)=.TRUE.
            CASE('HIG')
              FLG2D(2,10)=.TRUE.
-             FLOG(2)=.TRUE.   
 !
 ! Group 3
 !
@@ -424,9 +423,9 @@
              FLG2D(4,2)=.TRUE.
            CASE('PLP')
              FLG2D(4,3)=.TRUE.
-           CASE('PTH')
+           CASE('PDIR')
              FLG2D(4,4)=.TRUE.
-           CASE('PSP')
+           CASE('PSPR')
              FLG2D(4,5)=.TRUE.
            CASE('PWS')
              FLG2D(4,6)=.TRUE.
@@ -704,7 +703,8 @@
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS,         &
                           US3D, EF, TH1M, STH1M, TH2M, STH2M, HSIG
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
-                          ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2
+                          ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
+                          NOGRP, NGRPP
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -739,11 +739,18 @@
                                  ETTPMM(NSEAL), ETF(NSEAL), ET1(NSEAL)
       REAL                       USSCO, FT1
       REAL, SAVE              :: HSMIN = 0.01
+      LOGICAL                 :: FLOLOC(NOGRP,NGRPP)
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3OUTG')
 !
+      DO I=1,NOGRP 
+        DO J=1,NGRPP
+          FLOLOC(I,J)=((FLOUTG.AND.FLOGRD(I,J)).OR.(FLOUTG2.AND.FLOGR2(I,J)))
+          END DO
+        END DO
+! 
       FXPMC  = 0.66 * GRAV / 28.
       HSMIN  = HSMIN
       FT1    =  0.3333 * SIG(NK)**2 * DTH * SIG(NK)
@@ -881,7 +888,10 @@
 !
             UBS(JSEA) = UBS(JSEA) + AB(JSEA) * SIG(IK)**2     
 !
-!   Microseismic equivalent pressure spectral density
+!   2nd order equivalent surface pressure spectral density at K=0
+!   this is used for microseismic or microbarom sources 
+!   Finite water depth corrections (Ardhuin & Herbers 2013) are not 
+!   included here. 
 !                                                               
             FACTOR2 = DTH*2/(TPI**2)                        &
                       * SIG(IK)                             &
@@ -891,7 +901,7 @@
 !   Integration over seismic radian frequency : *2*dsigma
 !
               PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
-              IF ( FLOGRD (6, 9).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
+              IF ( FLOLOC (6, 9).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
                 P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI  
               IF (FACTOR2 .GT. ETTPMM(JSEA)) THEN
                 ETTPMM(JSEA) = FACTOR2 
@@ -935,7 +945,7 @@
           SXY(JSEA)    = SXY(JSEA)  + ABXY(JSEA)
           EBD(IK,JSEA) = EBD(IK,JSEA) / DSII(IK)
 !
-          IF ( FLOGRD( 3, 1).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,1)))   &
+          IF ( FLOLOC( 3, 1).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,1)))   &
             EF(JSEA,IK)  = EBD(IK,JSEA) * TPI
 !
           USSX(JSEA)  = USSX(JSEA) + ABX(JSEA)*USSCO               
@@ -943,14 +953,14 @@
 !
 ! Fills the 3D Stokes drift spectrum array
 !
-          IF ( FLOGRD( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
+          IF ( FLOLOC( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
             US3D(JSEA,IK)    =  ABX(JSEA)*USSCO    
             US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO  
             END IF  
-          IF ( FLOGRD( 3, 2).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,2)))  &
+          IF ( FLOLOC( 3, 2).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,2)))  &
             TH1M(JSEA,IK)= MOD ( 630. - RADE*ATAN2(ABY(JSEA),ABX(JSEA)) , 360. )
           M1 = SQRT(ABX(JSEA)**2+ABY(JSEA)**2)/MAX(1E-20,AB(JSEA))
-          IF ( FLOGRD( 3, 3).AND.(IK.GE.E3DF(2,3).AND.IK.LE.E3DF(3,3)))  &
+          IF ( FLOLOC( 3, 3).AND.(IK.GE.E3DF(2,3).AND.IK.LE.E3DF(3,3)))  &
              STH1M(JSEA,IK)= SQRT(ABS(2.*(1-M1)))*RADE
           END DO
 !FA  TH2M AND STH2M CAN BE ADDED HERE 
@@ -1396,6 +1406,7 @@
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    21-Aug-2013 : Added missing cos,sin for UBA, ABA  ( version 4.11 )
+!/    27-Nov-2013 : Management of coupling output       ( version 4.18 )
 !  1. Purpose :
 !
 !     Read/write gridded output.

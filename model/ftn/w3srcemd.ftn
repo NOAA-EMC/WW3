@@ -331,7 +331,8 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
-                          FTE, FTF, FHMAX, ECOS, ESIN, IOBP, IOBPD
+                          FTE, FTF, FHMAX, ECOS, ESIN
+!/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
       USE W3IDATMD, ONLY: FLAGS
@@ -417,8 +418,8 @@
 !/MLIM      REAL                    :: HM, EM
 !/NNT      REAL                    :: FACNN
 !/T      REAL                    :: DTRAW
-      REAL                    :: EBAND, EFINISH, HSTOT, PHINL,        &
-                                 FMEAN1, FMEANWS, DIFF,               &
+      REAL                    :: EBAND, DIFF, EFINISH, HSTOT, PHINL, &
+                                 FMEAN1, FMEANWS, MWXINIT, MWYINIT,   &
                                  FACTOR, DRAT, TAUWAX, TAUWAY,        &
                                  MWXFINISH, MWYFINISH, A1BAND, B1BAND
       REAL                    :: SPECINIT(NSPEC)
@@ -525,6 +526,7 @@
       TAUSCX = 0.
       TAUSCY = 0.
       TAUBBL(:)= 0.
+      BRLAMBDA(:)=0.
 !
 ! 1.c Set mean parameters
 !
@@ -564,8 +566,6 @@
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
-!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
@@ -575,10 +575,10 @@
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !/ST6      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)  
 !
-! 1.c2 Stores the initial spectrum
+! 1.c2 Stores the initial data
 !
       SPECINIT = SPEC
-
+!
 ! 1.d Stresses
 !
 !/FLX1      CALL W3FLX1 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
@@ -634,8 +634,6 @@
 !/ST3        CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST3                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST3                 ICE, VSIN, VDIN, LLWS, IX, IY )
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
-!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
@@ -660,6 +658,8 @@
 !/ST2        CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !
@@ -1029,12 +1029,14 @@
 !/REF1        ELSE
 !/REF1! Treatment specific to unstructured grids: Dirichlet boundary condition
 !/REF1! the energies in directions from shore are set to zero. 
+!/REF1          IF (GTYPE.EQ.UNGTYPE) THEN 
 !/REF1          IF (IOBP(IX).EQ.0) THEN 
 !/REF1            DO IK=1, NK 
 !/REF1              DO ITH=1, NTH
 !/REF1                IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH)=0.
 !/REF1                END DO
 !/REF1              END DO 
+!/REF1            END IF
 !/REF1            END IF
 !/REF1          END IF
 !

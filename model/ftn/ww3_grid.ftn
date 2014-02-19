@@ -651,6 +651,7 @@
            REAL                    :: UGOBCDEPTH
            LOGICAL                 :: UGOBCAUTO, EXPFSN, EXPFSPSI,     &
                                       EXPFSFCT,IMPFSN
+           INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
@@ -1645,10 +1646,10 @@
 ! initialisation of logical related to unstructured grid
        UGOBCAUTO = .TRUE.
        UGOBCDEPTH= -10.
-       EXPFSN    = .TRUE.
-       EXPFSPSI  = .FALSE.
-       EXPFSFCT  = .FALSE.
-       IMPFSN    = .FALSE.
+       EXPFSN = .TRUE.
+       EXPFSPSI = .FALSE.
+       EXPFSFCT = .FALSE.
+       IMPFSN = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UNST', STATUS ) 
 !
@@ -1826,12 +1827,12 @@
 !
 !/IG1       IGMETHOD = 2
 !/IG1       IGADDOUTP= 0 
-!/IG1       IGSOURCE = 1
+!/IG1       IGSOURCE = 2
 !/IG1       IGSTERMS = 0
-!/IG1       IGMAXFREQ=0.035
+!/IG1       IGMAXFREQ=0.03
 !/IG1       IGSOURCEATBP = 0
 !/IG1       IGBCOVERWRITE = 1
-!/IG1       IGSWELLMAX = .FALSE.
+!/IG1       IGSWELLMAX = .TRUE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
 !/IG1       IGEMPIRICAL = 0.0008
@@ -2016,7 +2017,7 @@
 !/ST4                    SDSBR, SDSSTRAIN, SDSBR2, SDSP, SDSISO, SDSCOS,   &
 !/ST4                    SDSDTH, SDSBRF1, SDSBRFDF,                        &
 !/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,           &
-!/ST4                    SDSLFGEN, SDSHFGEN, WHITECAPWIDTH 
+!/ST4                    WHITECAPWIDTH, SDSLFGEN, SDSHFGEN
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6          WRITE (NDSO,2937) SWLB1
 !/BT1          WRITE (NDSO,2926) GAMMA
@@ -2213,23 +2214,36 @@
 ! Propagation specific to unstructured grids
 !
       IF ( GTYPE.EQ.UNGTYPE) THEN 
-        IF (EXPFSN) THEN
+        UNSTSCHEMES(:)=0
+        IF (EXPFSN)   UNSTSCHEMES(1)=1
+        IF (EXPFSPSI) UNSTSCHEMES(2)=1
+        IF (EXPFSFCT) UNSTSCHEMES(3)=1
+        IF (IMPFSN)   UNSTSCHEMES(4)=1
+
+        DO IX=1,4
+          IF (UNSTSCHEMES(IX).EQ.1) THEN 
+            UNSTSCHEME=IX
+            EXIT
+            END IF
+          END DO
+ 
+        SELECT CASE (UNSTSCHEME)
+        CASE (1) 
           FSN = EXPFSN
           PNAME2 = 'N Explicit (Fluctuation Splitting) '
-          END IF
-        IF (EXPFSPSI) THEN
+        CASE (2) 
           FSPSI = EXPFSPSI
           PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
-          END IF
-        IF (EXPFSFCT) THEN
+        CASE (3) 
           FSFCT = EXPFSFCT
           PNAME2 = ' Flux Corrected Transport Explicit'
-          END IF
-        IF (IMPFSN) THEN
+        CASE (4) 
           FSNIMP = IMPFSN 
           PNAME2 = 'N Implicit (Fluctuation Splitting) '
-          END IF
-          WRITE (NDSO,2951) PNAME2
+          END SELECT
+!
+        IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
+        WRITE (NDSO,2951) PNAME2
         END IF
 !
 ! 7.c Grid coordinates (branch here based on grid type)
@@ -3474,7 +3488,7 @@
 !/IG1       IGPARS(2)=IGADDOUTP
 !/IG1       IGPARS(3)=IGSOURCE
 !/IG1       IGPARS(4)=IGBCOVERWRITE
-!/IG1       IF (IGSWELLMAX) IGPARS(4)=IGPARS(4)*2
+!/IG1       IF (IGSWELLMAX) IGPARS(4)=IGPARS(4)+2
 !/IG1       IGPARS(5)=1
 !/IG1       DO IK=1,NK
 !/IG1         IF (SIG(IK)*TPIINV.LT.IGMAXFREQ) IGPARS(5)=IK
@@ -4638,6 +4652,8 @@
                '     CHECK !/PRn SWITCHES'/)
  1034 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     ILLEGAL NUMBER OF !/ICn SWITCHES :',I3)
+ 1035 FORMAT (/' *** WAVEWATCH III WARNING IN W3GRID :'/              &
+               '     ONLY FIRST PROPAGATION SCHEME WILL BE USED: ')
 !
  1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
                ' -----------------------------------'/)

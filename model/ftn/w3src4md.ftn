@@ -580,8 +580,9 @@
               ! The source term Sp is beta * omega * X**2
               ! as given by Janssen 1991 eq. 19
               ! for a faster performance EXP(X)*X**4 should be tabulated   
-              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
-                                *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
+              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN*UCN*COSWIND**SSINTHP 
+              !DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
+              !                  *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
               LLWS(IS)=.TRUE.
             ELSE
               DSTAB(ISTAB,IS) = 0.
@@ -815,7 +816,7 @@
         CALL TABU_STRESS
         CALL TABU_TAUHF(SIG(NK) * TPIINV)   !tabulate high-frequency stress
         IF (TTAUWSHELTER.GT.0) THEN
-          WRITE(NDSE,*) 'Computing 3D lookup table... please wait ...'
+          WRITE(NDSE,*) 'Computing 3D lookup table for SIN4... please wait ...'
           CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress
           END IF
         END IF
@@ -1614,6 +1615,7 @@
                           SSDSBRFDF, SSDSBCK, SSDSBINT, IKTAB, DCKI, &
                           SATINDICES, SATWEIGHTS, CUMULW, NKHS, NKD, &
                           NDTAB, QBI
+!/IG1      USE W3GDATMD, ONLY: IGPARS
       USE W3ODATMD, ONLY: UNDEF, FLOGRD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
@@ -1697,9 +1699,10 @@
 !       SSDSDIK is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
 !
+        BTH(:)=0.
         DO  IK=IK1, NK
           FACSTRAIN=1+SSDSC(8)*MSSLONG(MAX(1,IK-DIKCUMUL))
-          FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
+          FACSAT=SIG(IK)*K(IK)**3*DTH !*FACSTRAIN
           IS0=(IK-1)*NTH
           BTH(IS0+1)=0.
 !          BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
@@ -1722,6 +1725,7 @@
 !              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
 !                     A(IS0+SATINDICES(:,ITH)) )*FACSAT
               END DO
+
             IF (SSDSISO.EQ.1) THEN
               BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
             ELSE
