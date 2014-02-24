@@ -823,7 +823,7 @@
                prop=
              source=
                  IO=
-                aux= ;;
+                aux='w3servmd w3timemd' ;;
     esac
 
     d_string='$(aPe)/'"$prog"' : $(aPo)/'

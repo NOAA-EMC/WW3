@@ -1261,13 +1261,14 @@ then
   echo '+-------------------------+'
   echo ' '
 
-  if [ $force_shrd ]
-  then # build pre- & post-processing programs with SHRD only
-    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
-  else
     \cp -f $file_c $path_b/switch
-  fi
+#  if [ $force_shrd ]
+#  then # build pre- & post-processing programs with SHRD only
+#    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+#                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+#  else
+#    \cp -f $file_c $path_b/switch
+#  fi
   if $path_b/w3_make $prog
   then :
   else
@@ -1280,20 +1281,34 @@ then
   \ln -f $ifile $prog.inp
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
-  if $path_e/$prog > $ofile
+  if [ $pmpi ]
+  then
+    if [ $nproc ]
+    then
+      runcmd="$runcmd -np $nproc"
+    fi
+  fi
+  if $runcmd $path_e/$prog | tee $ofile
   then
     \rm -f $prog.inp
-    for g in $intgl_grids
-    do
-      if [ -f "out_grd.$g" ]
-      then
-        model_grids="$model_grids $g"
-      fi
-    done
   else
     errmsg "Error occured during $path_e/$prog execution"
     exit 1
   fi
+#  if $path_e/$prog > $ofile
+#  then
+#    \rm -f $prog.inp
+#    for g in $intgl_grids
+#    do
+#      if [ -f "out_grd.$g" ]
+#      then
+#        model_grids="$model_grids $g"
+#      fi
+#    done
+#  else
+#    errmsg "Error occured during $path_e/$prog execution"
+#    exit 1
+#  fi
 
 fi
 
