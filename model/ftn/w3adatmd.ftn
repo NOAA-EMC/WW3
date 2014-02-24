@@ -441,7 +441,7 @@
         INTEGER, POINTER      :: IAPPRO(:)
 !/MPI        INTEGER               :: MPI_COMM_WAVE, MPI_COMM_WCMP,        &
 !/MPI                                 WW3_FIELD_VEC, WW3_SPEC_VEC,         &
-!/MPI                                 NRQSG1, NRQSG2, IBFLOC, ISPLOC,      &
+!/MPI                                 NRQSG1 = 0, NRQSG2, IBFLOC, ISPLOC,  &
 !/MPI                                 NSPLOC
 !/MPI        INTEGER               :: BSTAT(MPIBUF), BISPL(MPIBUF)
 !/MPI        INTEGER, POINTER      :: IRQSG1(:,:), IRQSG2(:,:)

@@ -338,7 +338,7 @@
       TYPE OTYPE5
         INTEGER               :: NBI, NBI2, NFBPO, NBO(0:9),          &
                                  NBO2(0:9), NDSL(9), NKI, NTHI
-!/MPI        INTEGER               :: NRQBP, NRQBP2
+!/MPI        INTEGER               :: NRQBP = 0, NRQBP2 = 0
         INTEGER, POINTER      :: IPBPI(:,:), ISBPI(:),                &
                                  IPBPO(:,:), ISBPO(:)
 !/MPI        INTEGER, POINTER      :: IRQBP1(:), IRQBP2(:)

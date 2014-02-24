@@ -596,7 +596,7 @@
         INTEGER               :: NTRI
         DOUBLE PRECISION, POINTER         :: XYB(:,:)
         INTEGER, POINTER      :: TRIGP(:,:)
-        REAL, POINTER         :: LEN(:,:),SI(:), IEN(:,:)
+        DOUBLE PRECISION, POINTER         :: LEN(:,:),SI(:), IEN(:,:)
 
         REAL                  :: MAXX, MAXY, DXYMAX
         REAL, POINTER         :: ANGLE(:,:),ANGLE0(:,:)
@@ -604,7 +604,7 @@
         INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), VNEIGH(:,:),  &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),   &
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
-        REAL, POINTER         :: TRIA(:)
+        DOUBLE PRECISION, POINTER         :: TRIA(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
       END TYPE GRID
 !
@@ -790,13 +790,13 @@
 !  but these XGRD and YGRD should probably be double precision
       DOUBLE PRECISION, POINTER  ::     XYB(:,:)   
       INTEGER, POINTER        :: TRIGP(:,:)
-      REAL, POINTER           :: IEN(:,:), LEN(:,:), SI(:)
+      DOUBLE PRECISION, POINTER  :: IEN(:,:), LEN(:,:), SI(:)
       REAL, POINTER           :: ANGLE(:,:),ANGLE0(:,:)
       INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),    &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),     &
                                  IAA(:), JAA(:), POSI(:,:),            &
                                  VNEIGH(:,:), INDEX_CELL(:)
-      REAL, POINTER           :: TRIA(:)
+      DOUBLE PRECISION, POINTER  :: TRIA(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
       LOGICAL, POINTER        :: GUGINIT       

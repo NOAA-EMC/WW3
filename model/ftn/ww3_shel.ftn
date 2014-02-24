@@ -250,7 +250,7 @@
                              IERR, J, I, ODAT(35), ILOOP, NPTS,       &
                              NH(-7:4), THO(2,-7:4,NHMAX), RCLD(5:7),  &
                              NDT(5:7), NDTNEW, MPI_COMM = -99, JJ,    &
-                             IPRT(6), IFI, IFJ
+                             IPRT(6) = 0, IFI, IFJ
 !/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
       INTEGER             :: NODATA(5:7), FLAGTIDE

@@ -526,7 +526,7 @@
       TAUSCX = 0.
       TAUSCY = 0.
       TAUBBL(:)= 0.
-      BRLAMBDA(:)=0.
+!/ST4      BRLAMBDA(:)=0.
 !
 ! 1.c Set mean parameters
 !

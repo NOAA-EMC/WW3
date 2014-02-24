@@ -1042,6 +1042,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
+       REAL*8,  PARAMETER :: ONETHIRD  = 1.0d0/3.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
        REAL,    PARAMETER :: THR       = TINY(1.0) 
 !/
@@ -1167,14 +1168,14 @@
                I1    =  POSI(1,J)
                I2    =  POSI(2,J)
                I3    =  POSI(3,J)
-               ASPAR(I1) =  1./3. * TRIA(IE) + DTK - TMP3 * DELTAL(POS,IE)              + ASPAR(I1) 
+               ASPAR(I1) =  ONETHIRD * TRIA(IE) + DTK - TMP3 * DELTAL(POS,IE)              + ASPAR(I1) 
                ASPAR(I2) =                         - TMP3 * DELTAL(POS_TRICK(POS,1),IE) + ASPAR(I2)
                ASPAR(I3) =                         - TMP3 * DELTAL(POS_TRICK(POS,2),IE) + ASPAR(I3) 
-               B(IP)     =  B(IP) + 1./3. * TRIA(IE) * U(IP)
+               B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
              ELSE
                I1    =  POSI(1,J)
-               ASPAR(I1) =  1./3. * TRIA(IE) + ASPAR(I1)
-               B(IP)     =  B(IP) + 1./3. * TRIA(IE) * U(IP)
+               ASPAR(I1) =  ONETHIRD * TRIA(IE) + ASPAR(I1)
+               B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
              END IF
            END DO ! End loop over connected elements ...
          END DO
