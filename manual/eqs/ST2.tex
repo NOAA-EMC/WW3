@@ -28,10 +28,10 @@ approximated as
 10^4 \beta = \left \{
 \begin{array}{ccrcl}
 -a_1\toa^2 -a_2          &,&             & \toa & \leq -1     \\
-a_3\toa(a_4\toa-a_5)-a_6 &,&         -1< & \toa & <\Omega_1/2 \\
-(a_4\toa-a_5)\toa        &,& \Omega_1/2< & \toa & <\Omega_1   \\
-a_7\toa-a_8              &,&   \Omega_1< & \toa & <\Omega_2   \\
-a_9(\toa-1)^2+a_{10}     &,&   \Omega_2< & \toa &
+a_3\toa(a_4\toa-a_5)-a_6 &,&         -1 \leq & \toa & <\Omega_1/2 \\
+(a_4\toa-a_5)\toa        &,& \Omega_1/2 \leq & \toa & <\Omega_1   \\
+a_7\toa-a_8              &,&   \Omega_1 \leq & \toa & <\Omega_2   \\
+a_9(\toa-1)^2+a_{10}     &,&   \Omega_2 \leq & \toa &
 \end{array} \right . \label{eq:CB93_beta}
 \end{equation}
 
@@ -63,12 +63,12 @@ depend on the drag coefficient $\CL$ at the height $z=\lambda_a$:
 
 \begin{equation} \begin{array}{lcl}
 \Om_1=1.075+75\CL  &\Om_2=& 1.2+300\CL                     \\
-a_1=0.25+395\CL,    &a_3 =& (a_0-a_2-a_1)/(a_0-a_4+a_5)    \\
+a_1=0.25+395\CL,    &a_3 =& (a_0-a_2-a_1)/(a_0+a_4+a_5)    \\
 a_2=0.35+150\CL,    &a_5 =& a_4\Om_1                       \\
 a_4=0.30+300\CL,    &a_6 =& a_0(1-a_3)                     \\
 a_9=0.35+240\CL,    &a_7 =&
                      (a_9(\Om_2-1)^2+a_{10})/(\Om_2-\Om_1) \\
-a_{10}=-0.05+470\CL,&a_8 =& a_7\Om_1                       \\
+a_{10}=-0.06+470\CL,&a_8 =& a_7\Om_1                       \\
                     &a_0 =& 0.25 a_5^2/a_4
 \end{array} \label{eq:omapar} \end{equation}
 
@@ -199,7 +199,7 @@ input source term is defined as
 \cS_{i,m} = \left \{ \begin{array}{ccccc}
     \cS_i         & \mbox{for} & \beta \geq 0 & \mbox{or}  & f > 0.8 f_p \\
   X_s \cS_i       & \mbox{for} & \beta < 0    & \mbox{and} & f < 0.6 f_p \\
-{\cal{X}}_s \cS_i & \mbox{for} & \beta < 0    & \mbox{and} & 06 f_p < f < 0.8 f_p
+{\cal{X}}_s \cS_i & \mbox{for} & \beta < 0    & \mbox{and} & 0.6 f_p < f < 0.8 f_p
 \end{array} \right . \: , \label{eq:swellf} \end{equation}
 
 \noindent
@@ -217,7 +217,7 @@ coefficient at the reference height $C_r$ can be capped with a maximum allowed
 drag coefficient $C_{r,max}$, either as a simple hard limit
 
 \begin{equation}
-C_r = \min ( C_r , C_{r,max} \:\:\: , \label{eq:Cd_cap_1}
+C_r = \min ( C_r , C_{r,max}) \:\:\: , \label{eq:Cd_cap_1}
 \end{equation}
 
 \noindent

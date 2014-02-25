@@ -6,7 +6,7 @@
 
 \noindent
 The \gmd\ has been developed as an extension to the \dia. Its development is
-documented in a set of reports \citep{tol:MMAB03a, tol:MMAB05a, tol:MMAB08b,
+documented in a set of Technical notes \citep{tol:MMAB03a, tol:MMAB05a, tol:MMAB08b,
 tol:MMAB10d}, reports \citep{tol:Oahu04a, tol:Hal09a, tol:Kona11b}, and papers
 \citep{tol:OMOD04, tol:OMOD13d}. As part of the development of the \gmd, a
 holistic genetic optimization technique was developed \citep{tol:OMOD13e}. A
@@ -68,7 +68,7 @@ where $a_1 + a_2 = a_3 + a_4$ to satisfy the general resonance conditions
 is the angular gap between the wavenumbers $\bk_1$ and $\bk_2$. The latter
 parameter can either be implicit to the quadruplet definition, or can be an
 explicitly tunable parameter. With this, a one- ($\lambda$), two- ($\lambda,
-\mu$) or three-parameter ($\lambda, \mu \theta_{12}$) quadruplet definition
+\mu$) or three-parameter ($\lambda, \mu, \theta_{12}$) quadruplet definition
 have been constructed as outlined in Table~\ref{tab:gmd_quad_def}. Note that,
 unlike in the \dia, all quadruplets are evaluated for the actual water depth
 and frequency.
@@ -120,7 +120,7 @@ B_{\rm{shal}} = \frac{g^2 \: k^{11}}{(2\pi)^{11} \: c_g} (kd)^n
 \end{equation}
 
 \noindent
-with $m$m and $n$ as tunable parameters, $C_{\rm{deep}}$ and $C_{\rm{shal}}$
+with $m$ and $n$ as tunable parameters, $C_{\rm{deep}}$ and $C_{\rm{shal}}$
 in Eq.~(\ref{eq:gmd_dsnl}) are the corresponding tunable proportionality
 constants, and $n_{q,d}$ and $n_{q,d}$ are the number of representative
 quadruplets with deep and shallow water scaling, respectively, representing
@@ -142,9 +142,9 @@ and requires evaluation of the quadruplet layout for every spectral frequency
 quadruplet layouts are pre-computed and stored in memory for a set of
 nondimensional depths. Even with these and other optimizations, the \gmd\ is
 roughly twice as expensive to compute for a single representative quadruplet
-than the \dia\ when using the one-parameter quadruplet layout. Using the two=
+than the \dia\ when using the one-parameter quadruplet layout. Using the two-
 or three-parameter quadruplet layout, the \gmd\ has four rather than two
-quadruplet realizations, making a the \gmd\ per quadruplet four times as
+quadruplet realizations, making the \gmd\ per quadruplet four times as
 expensive as the traditional \dia. Using multiple representative quadruplets
 is linearly additive in computational costs. For more in depth assessment of
 computational costs of a model including the \gmd, see \cite{tol:MMAB10d} and

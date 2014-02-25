@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Jan-2014 |
+!/                  | Last update :         10-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -42,6 +42,7 @@
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
+!/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -620,6 +621,7 @@
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
+!/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
 !/
 !  1. Purpose :
 !
@@ -954,8 +956,8 @@
 ! Fills the 3D Stokes drift spectrum array
 !
           IF ( FLOLOC( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
-            US3D(JSEA,IK)    =  ABX(JSEA)*USSCO    
-            US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO  
+            US3D(JSEA,IK)    =  ABX(JSEA)*USSCO/(DSII(IK)*TPIINV) 
+            US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO/(DSII(IK)*TPIINV)   
             END IF  
           IF ( FLOLOC( 3, 2).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,2)))  &
             TH1M(JSEA,IK)= MOD ( 630. - RADE*ATAN2(ABY(JSEA),ABX(JSEA)) , 360. )

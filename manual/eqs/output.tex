@@ -44,10 +44,14 @@ line is set to F then that group will not produce output, and a second line for
 parameter flags is not expected. If the group flag is set to T, then
 a second group line is expected containing parameter flags. Example of F/T flag 
 use is given in  \para\ref{sec:ww3shel}.
+All parameters that are a function of frequency (e.g.  \textbf{EF} or \textbf{USF}) require the setting 
+of specific namelist parameters, in the OUTS namelist. This is to reduce the memory use
+if these parameters are not needed. 
 
 For Namelists, the first line is set to N, and the next line contains parameter
 symbols as per table in Section \para\ref{sec:ww3shel}.  An example is given in  
-\para\ref{sec:ww3ounf}.
+\para\ref{sec:ww3ounf}. The names for these namelists are the bold names below, for 
+example \textbf{HS}. 
 
 All parameters listed below are available in output file of the types
 ASCII and NetCDF. If selected output file types are grads or grib,
@@ -67,18 +71,18 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
-\item The mean water depth (m).
-\item The mean current velocity (vector, m/s).
-\item The mean wind speed (vector, m/s). This wind speed is always the
+\item \textbf{DPT} The mean water depth (m). This includes varying water levels. 
+\item \textbf{CUR} The mean current velocity (vector, m/s).
+\item \textbf{WND} The mean wind speed (vector, m/s). This wind speed is always the
       speed as input to the model, i.e., is not corrected for the current
       speed.
-\item The air-sea temperature difference ($^\circ$C).
-\item Water level.
-\item Ice concentration.
-\item Wave attenuation due to icebergs: this parameter is the inverse of the
+\item \textbf{AST} The air-sea temperature difference ($^\circ$C).
+\item \textbf{WLV} Water level.
+\item \textbf{ICE} Ice concentration.
+\item \textbf{IBG} Wave attenuation due to icebergs: this parameter is the inverse of the
   e-folding scale associated to the loss of wave energy in a field of small
   icebergs \citep{art:Aea11}.
-\item Sediment median grain size ($D_{50}$). 
+\item \textbf{D50} Sediment median grain size ($D_{50}$). 
 \end{list}
 
 \item{Standard mean wave parameters}
@@ -86,34 +90,34 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
-\item Significant wave height (m) [see Eq.~(\ref{eq:etot})]
+\item \textbf{HS} Significant wave height (m) [see Eq.~(\ref{eq:etot})]
       \begin{equation} H_s = 4 \sqrt{E} \: . \label{eq:Hs} \end{equation}
-\item Mean wave length (m) [see Eq.~(\ref{eq:zbar})]
+\item \textbf{LM} Mean wave length (m) [see Eq.~(\ref{eq:zbar})]
       \begin{equation} L_m = 2\pi \overline{k^{-1}}
       \: . \label{eq:Lm} \end{equation}
-\item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
+\item \textbf{T02} Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
       \begin{equation} T_{m02} = 2\pi /\sqrt{\overline{\sigma^{2}}}
       \: . \label{eq:Tm02} \end{equation}
-\item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
+\item \textbf{T0M1} Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
       \begin{equation} T_{m0,-1} = 2\pi \overline{\sigma^{-1}}
       \: . \label{eq:Tm0m1} \end{equation}
-\item Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
+\item \textbf{T01} Mean wave period (s) [see Eq.~(\ref{eq:zbar})]
       \begin{equation} T_{m0,-1} = 2\pi \overline{\sigma^{-1}}
       \: . \label{eq:Tm} \end{equation}
-\item Peak frequency (Hz), calculated from the one-dimensional frequency
+\item \textbf{FP} Peak frequency (Hz), calculated from the one-dimensional frequency
       spectrum using a parabolic fit around the discrete peak.
-\item Mean wave direction (degr., meteorological convention)
+\item \textbf{DIR} Mean wave direction (degr., meteorological convention)
       \begin{equation} \theta_m = \mbox{atan} \left ( \frac{b}{a} \right )
       \: , \label{eq:theta_m} \end{equation} \begin{equation}
       a = \int_0^{2\pi} \int_0^\infty \cos(\theta) F(\sigma,\theta) \:
       d\sigma \: d\theta \: , \end{equation} \begin{equation}
       b = \int_0^{2\pi} \int_0^\infty \sin(\theta) F(\sigma,\theta) \:
       d\sigma \: d\theta \: . \end{equation}
-\item Mean directional spread \citep[degr.;][]{art:KVH88}
+\item \textbf{SPR} Mean directional spread \citep[degr.;][]{art:KVH88}
       \begin{equation} \sigma_\theta = \left [ 2 \left \{ 1 - \left (
       \frac{a^2+b^2}{E^2} \right )^{1/2} \right \} \right ]^{1/2}
       \: , \label{eq:sig_th} \end{equation}
-\item Peak direction (degr.), defined like the mean direction, using the
+\item \textbf{DP} Peak direction (degr.), defined like the mean direction, using the
       frequency/wavenumber bin containing of the spectrum $F(k)$ that
       contains the peak frequency only.
 \end{list}
@@ -124,23 +128,23 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
    
-\item Wave frequency spectrum (m$^2$/Hz)
+\item \textbf{EF} Wave frequency spectrum (m$^2$/Hz)
       \begin{equation} E(f) = 2 \pi  \int F(\sigma,\theta) \mathrm{d} \theta 
       \: . \label{eq:Ef} \end{equation}
-\item Mean direction for each frequency  \citep[degr.;][]{art:KVH88}
+\item \textbf{TH1M} Mean direction for each frequency  \citep[degr.;][]{art:KVH88}
        \begin{equation} \theta_1 (f)= \mbox{atan} \left ( \frac{b_1(f)}{a_1(f)} \right )
       \: , \label{eq:theta_b} \end{equation} \begin{equation}
       a_1(f) = 2 \pi \int_0^{2\pi} \int_0^\infty \cos(\theta) F(\sigma,\theta) \:
        \mathrm{d}\theta \: , \end{equation} \begin{equation}
       b_1(f) = 2 \pi \int_0^{2\pi} \int_0^\infty \sin(\theta) F(\sigma,\theta) \:
        \mathrm{d}\theta \: . \end{equation}
-\item First directional spread for each frequency  (degr.; )
+\item \textbf{STH1M} First directional spread for each frequency  (degr.; )
       \begin{equation} \sigma_1(f) = \left [ 2 \left \{ 1 - \left (
       \frac{a_1(f)^2+b_1(f)^2}{E(f)^2} \right )^{1/2} \right \} \right ]^{1/2}
       \: , \label{eq:sig_th1} \end{equation}
-\item Mean direction from $a_2$ and $b_2$ (degr.) (NOT PLUGGED YET)
-\item Spread from $a_2$ and $b_2$ (degr.)  (NOT PLUGGED YET)
-\item Wavenumbers $k(\sigma)$ (rad/m)
+\item \textbf{TH2M} Mean direction from $a_2$ and $b_2$ (degr.) (NOT PLUGGED YET)
+\item \textbf{STH2M} Spread from $a_2$ and $b_2$ (degr.)  (NOT PLUGGED YET)
+\item \textbf{WN}  Wavenumbers $k(\sigma)$ (rad/m)
       \begin{equation} \sigma^2 = g k \tanh (k D) 
       \: , \label{eq:k} \end{equation}
 \end{list}
@@ -152,37 +156,37 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
              \rightmargin 5mm \itemsep 0mm \parsep 0mm}
 
 
-\item Wave heights $H_s$ of partitions of the spectrum (see
+\item \textbf{PHS}  Wave heights $H_s$ of partitions of the spectrum (see
       below). \label{out:first_part}
-\item Peak (relative) periods of partitions of the spectrum (parabolic fit).
-\item Peak wave lengths of partitions of the spectrum (from peak period).
-\item Mean direction of partitions of the spectrum.
+\item \textbf{PTP} Peak (relative) periods of partitions of the spectrum (parabolic fit).
+\item \textbf{PLP} Peak wave lengths of partitions of the spectrum (from peak period).
+\item \textbf{PSP} Mean direction of partitions of the spectrum.
 \item Directional spread of partition of the spectrum
       Cf. Eq.~(\ref{eq:sig_th}).
-\item Wind sea fraction of partition of the spectrum (see below).
-\item Wind sea fraction of the entire spectrum.
-\item Number of partitions found in the spectrum. \label{out:last_part}
+\item \textbf{PWS} Wind sea fraction of partition of the spectrum (see below).
+\item \textbf{TWS} Wind sea fraction of the entire spectrum.
+\item \textbf{PNR} Number of partitions found in the spectrum. \label{out:last_part}
 \end{list}
 
 \item{Atmosphere-waves layer}
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
-\item The friction velocity $u_\ast$ (scalar). Definition depends on
+\item \textbf{UST}  The friction velocity $u_\ast$ (scalar). Definition depends on
       selected source term parameterization (m/s). An alternative vector version
       of the stresses is available for research (requires user intervention in
       the code).
-\item Charnock parameter for air-sea friction (without dimensions)
-\item Energy flux (W/m)
+\item \textbf{CHA}  Charnock parameter for air-sea friction (without dimensions)
+\item \textbf{CGE} Energy flux (W/m)
       \begin{equation} C_g E =  \rho_w g \overline{C_g} E
       \: . \label{eq:CgE} \end{equation}
-\item Wind to wave energy flux
-\item Net wave-supported stress (wind to wave momentum flux) 
-\item Wave to wind momentum flux
-\item Whitecap coverage (without dimensions) 
-\item Whitecap mean thickness (m) (NOT PLUGGED YET)
-\item Mean breaking wave height (m) (NOT PLUGGED YET)
-\item Moment of whitecap distribution (?) (NOT PLUGGED YET)
+\item \textbf{FAW} Wind to wave energy flux
+\item \textbf{TWA} Net wave-supported stress (wind to wave momentum flux) 
+\item \textbf{WCC} Wave to wind momentum flux
+\item \textbf{WCF} Whitecap coverage (without dimensions) 
+\item \textbf{WCH} Whitecap mean thickness (m) 
+\item \textbf{WCM} Mean breaking wave height (m) (NOT PLUGGED YET)
+%\item \textbf{PWS} Moment of whitecap distribution (?) (NOT PLUGGED YET)
 \end{list}
 
 \item{Wave-ocean layer}
@@ -190,7 +194,7 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
-\item Radiation stresses
+\item \textbf{SXY} Radiation stresses
       \begin{equation} S_{xx} = \rho_w g \int \!\!\!\! \int \left
         ( n - 0.5 + n \cos^2 \theta \right )  \: F(k,\theta) \: dk d\theta
       \: , \label{eq:Sxx} \end{equation}
@@ -203,37 +207,50 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
       where
       \begin{equation} n = \frac{1}{2} + \frac{kd}{\sinh 2kd}
       \: . \label{eq:n} \end{equation}
-\item Wave to ocean energy flux
-\item Bernoulli head
-\item Wave to ocean momentum flux
-\item Stokes volume transport (m$^2$/s)
-\item Stokes drift at the sea surface (m/s)
-\item Frequency spectrum of Stokes drift at the sea surface (m/s/Hz)
-\item Second order pressure variance (m$^2$) and peak period of this pressure (s) which contributes to acoustic and seismic noise, 
-      \begin{equation} F_{p2D} = \int_0^{\infty} \frac{4 \sigma}{C_g} \int_0^{\pi}  F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta dk
+\item \textbf{TWO} Wave to ocean momentum flux
+\item \textbf{BHD} Bernoulli head (m$^2$/s$^2$)
+      \begin{equation} J =  g \int \!\!\!\! \int  \frac{k}
+        {\sinh 2kd}  \: F(k,\theta) \: dk d\theta
+      \: , \label{eq:BHD} \end{equation}
+\item \textbf{FOC} Wave to ocean energy flux (W/m$^2$)
+\item \textbf{TUS} Stokes volume transport (m$^2$/s)
+     \begin{equation} (M^w_x,M^w_y) =  g \int \!\!\!\! \int  \frac{(k \cos(\theta),k \sin(\theta))}
+        {\sigma}  \: F(k,\theta) \: dk d\theta
+      \: , \label{eq:Mw} \end{equation}
+\item \textbf{USS} Stokes drift at the sea surface (m/s)
+     \begin{equation} (U_{ssx},U_{ssy}) =  g \int \!\!\!\! \int  \sigma \cosh 2kd \frac{(k \cos(\theta),k \sin(\theta))}
+        {\sinh^2 kd}  \: F(k,\theta) \: dk d\theta
+      \: , \label{eq:Uss} \end{equation}
+\item \textbf{P2S} Second order pressure variance (m$^2$) and peak period of this pressure (s) which contributes to acoustic and seismic noise, 
+      \begin{equation} F_{p2D}(k=0) = \int_0^{\infty} \frac{4 \sigma}{C_g} \int_0^{\pi}  F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta dk
       \: , \label{eq:sop} \end{equation}
-      \begin{equation} S_{xy} =\rho_w g \int \!\!\!\! \int
-        n \sin \theta \cos \theta  \: F(k,\theta) \: dk d\theta
-      \: , \label{eq:sopT} \end{equation}
+\item \textbf{USF} Frequency spectrum of Stokes drift at the sea surface (m/s/Hz)
+     \begin{equation} (U_{ssx}(f),U_{ssy}(f)) =  g \int \!\!\!\! \int  \sigma \cosh 2kd \frac{(k \cos(\theta),k \sin(\theta))}
+        {\sinh^2 kd}  \: F(k,\theta) \frac{2 \pi}{C_g} d\theta
+      \: , \label{eq:Ussf} \end{equation}
+\item \textbf{P2L} Frequency spectrum of the second order pressure (m$^2$s)  which contributes to acoustic and seismic noise,
+      \begin{equation} F_{p2D}(k=0,f) =  \frac{2 \sigma}{\pi} \int_0^{\pi}  \frac{4 \pi^2}{C_g^2} F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta
+      \: . \label{eq:sopf} \end{equation}
+
 \end{list}
 
-\item{Wave-bottom layer}
+\item{Wave-bottom layer}²
 
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
 
-\item Near-bottom rms excursion amplitude
+\item \textbf{ABR} Near-bottom rms excursion amplitude
       \begin{equation} a_{b,rms} = \left [ 2 \int \!\!\!\! \int
       \frac{1}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
       \: . \label{eq:ab_rms} \end{equation}
-\item Near-bottom rms orbital velocity
+\item \textbf{UBR} Near-bottom rms orbital velocity
       \begin{equation} u_{b,rms} = \left [ 2 \int \!\!\!\! \int
       \frac{\sigma^2}{\sinh^2 kd} \: F(k,\theta) \: dk d\theta \right ] ^{1/2}
       \: . \label{eq:ub_rms} \end{equation}
-\item Bedform parameters  
-\item Energy dissipation in WBBL 
-\item Momentum loss in WBBL 
+\item \textbf{BED} Bedform parameters: ripple height and directions (NOT TESTED YET)   
+\item \textbf{FBB} Energy dissipation in WBBL 
+\item \textbf{TBB} Momentum loss in WBBL 
 \end{list}
 
 \item{Remote sensing and spectral tail}
@@ -242,8 +259,8 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
 
-\item Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
-\item Spectral tail level (without dimensions) 
+\item \textbf{MSS} Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
+\item \textbf{MSC} Spectral tail level (without dimensions) 
 \end{list}
 
 \item{Numerical diagnostics }
@@ -251,12 +268,12 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
-\item Average time step in the source term integration (s).
-\item Cut-off frequency $f_c$ (Hz, depends on parameterization of
+\item \textbf{DTD} Average time step in the source term integration (s).
+\item \textbf{FC} Cut-off frequency $f_c$ (Hz, depends on parameterization of
       input and dissipation).
-\item Maximum CFL number for spatial advection 
-\item Maximum CFL number for angular advection 
-\item Maximum CFL number for wavenumber advection 
+\item \textbf{CFX} Maximum CFL number for spatial advection 
+\item \textbf{CFD} Maximum CFL number for angular advection 
+\item \textbf{CFK} Maximum CFL number for wavenumber advection 
 \end{list}
 
 \item{User defined }
@@ -265,8 +282,8 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
              \rightmargin 0mm \itemsep 0mm \parsep 0mm}
 
-\item Slot for user defined parameter (requires modification of code).
-\item Idem.
+\item \textbf{U1} Slot for user defined parameter (requires modification of code).
+\item \textbf{U2} Idem.
 \end{list}
 
 \end{list}
