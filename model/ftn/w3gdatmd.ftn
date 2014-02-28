@@ -563,7 +563,7 @@
 
         REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
 !/SMC        REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
-!/ARC        REAL, POINTER         :: SPCBAC(:,:), ANGARC(:)
+        REAL, POINTER         :: SPCBAC(:,:), ANGARC(:)
         REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
         REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
         REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
@@ -828,7 +828,7 @@
 
       REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
 !/SMC        REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
-!/ARC        REAL, POINTER         :: SPCBAC(:,:), ANGARC(:)
+      REAL, POINTER         :: SPCBAC(:,:), ANGARC(:)
       REAL   , POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
       REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
       REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
