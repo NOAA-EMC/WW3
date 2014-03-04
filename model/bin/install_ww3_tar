@@ -715,6 +715,32 @@
     chmod 744 comp link
     chmod 644 switch
 
+# Local install: delete ww3_env, create new variable pointing to local wwatch3.env
+  if [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
+  then
+
+    loc_dir=$(echo $main_dir | sed 's/\//\\\//g')
+    echo -e "\n This install uses a local wwatch3.env.\n"
+    echo -e " Pointing ww3_env variable in bin scripts to:\n"
+    echo -e " ${loc_dir}/wwatch3.env \n"
+
+    cd $main_dir/${ldir}
+
+    linkfiles=`ls link*`
+    locfiles="${linkfiles} ad3 ad3_test all_switches find_switch list ln3 \
+              make_makefile.sh make_MPI make_OMP sort_all_switches sort_switch \
+              w3_clean w3_make w3_new w3_setup ww3_gspl.sh"
+    for lfile in ${locfiles}
+    do
+
+      echo -e "\n Changing ww3_env in script ${lfile}"
+# Delete generic ww3_env
+      sed '/ww3_env="${HOME}\/\.wwatch3.env"/d' ${lfile} > dumfile
+# Add new local ww3_env
+      sed -e "s/# WW3ENV/  export ww3_env=$loc_dir\/wwatch3.env/g" dumfile > ${lfile}
+    done
+  fi
+
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
   echo -e ' ---------------------------- '
 

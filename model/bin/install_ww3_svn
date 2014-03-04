@@ -943,6 +943,45 @@ sleep 2
     chmod 700 comp link
     chmod 600 switch
 
+# Local install: delete ww3_env, create new variable pointing to local wwatch3.env
+  if [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
+  then
+
+    loc_dir=$(echo $main_dir | sed 's/\//\\\//g')
+    echo -e "\n This install uses a local wwatch3.env.\n"
+    echo -e " Pointing ww3_env variable in bin scripts to:\n"
+    echo -e " ${loc_dir}/wwatch3.env \n"
+
+    cd $main_dir/${ldir}
+
+    linkfiles=`ls link*`
+    locfiles="${linkfiles} ad3 ad3_test all_switches find_switch list ln3 \
+              make_makefile.sh make_MPI make_OMP sort_all_switches sort_switch \
+              w3_clean w3_make w3_new w3_setup ww3_gspl.sh"
+    for lfile in ${locfiles}
+    do
+# Remove file to avoid unwanted changed in svn area
+      rm -f ${lfile}
+# Copy files from svn area
+      cp -f ${main_dir}/svn/model/bin/${lfile} . 
+      echo -e "\n Changing ww3_env in script ${lfile}"
+# Delete generic ww3_env
+      sed '/ww3_env="${HOME}\/\.wwatch3.env"/d' ${lfile} > dumfile
+# Add new local ww3_env
+      sed -e "s/# WW3ENV/  export ww3_env=$loc_dir\/wwatch3.env/g" dumfile > ${lfile}
+    done
+# Warning about links removed!
+    echo -e "\n !!!!!!!!!!!!! WARNING !!!!!!!!!!!!!"
+    echo -e " For local install, bin scripts invoking ww3_env have been changed!"
+    echo -e " If you intend to further edit these files for updating the svn"
+    echo -e " code version, do so directly in the svn/model/bin directory."
+    echo -e "\n The following files have had links severed in the work area:"
+    ls -1 ${locfiles}
+    echo -e "\n Do not restablish links for these files, this can compromise"
+    echo -e " the svn repository!\n"
+  fi
+  sleep 5
+
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
   echo -e ' ---------------------------- '
 
