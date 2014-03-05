@@ -738,6 +738,7 @@
       sed '/ww3_env="${HOME}\/\.wwatch3.env"/d' ${lfile} > dumfile
 # Add new local ww3_env
       sed -e "s/# WW3ENV/  export ww3_env=$loc_dir\/wwatch3.env/g" dumfile > ${lfile}
+      chmod 744 ${lfile}
     done
   fi
 
