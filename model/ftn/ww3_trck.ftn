@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         05-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -16,6 +16,7 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    05-Mar-2014 : Now calls W3SETG for pointer def.   ( version 4.18 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -60,7 +61,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY : W3NMOD, FLAGLL
+      USE W3GDATMD, ONLY : W3NMOD, FLAGLL, W3SETG
       USE W3ODATMD, ONLY : W3NOUT, FNMPRE
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
@@ -96,15 +97,16 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-! 1.  IO set-up.
+!
+! 1.a Initialize data structure
 !
       CALL W3NMOD ( 1, 6, 6 )
+      CALL W3SETG ( 1, 6, 6 )
       CALL W3NOUT (    6, 6 )
 !
+! 1.b IO set-up.
+!
       NDSI   = 10
-      NDSO   =  6
-      NDSE   =  6
-      NDST   =  6
       NDSINP = 11
       NDSOUT = 51
 !
@@ -135,7 +137,7 @@
 !
       OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',FORM='UNFORMATTED', &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
-      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH
+      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR , FLAGLL, MK, MTH
 !
       IF ( FLAGLL ) THEN
           FACTOR  = 1.

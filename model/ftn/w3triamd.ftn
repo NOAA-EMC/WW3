@@ -237,11 +237,8 @@ CONTAINS
 ! eltype = 2 : triangles
 !
         CASE (2)
-          READ(LINE,*)  Ind,eltype,ntag,tags,I1, I2, I3
           J = J+ 1
-          TRIGPTMP1(J,1)=I1
-          TRIGPTMP1(J,2)=I2
-          TRIGPTMP1(J,3)=I3
+          READ(LINE,*)  Ind,eltype,ntag,tags,TRIGPTMP1(J,1:3) 
           END SELECT
 
         DEALLOCATE(TAGS)

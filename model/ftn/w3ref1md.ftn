@@ -69,13 +69,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2013 |
+!/                  | Last update :         05-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2010 : Origination.                          ( version 3.14-Ifremer )
 !/    31-May-2011 : Introduction of amplitude-dependent R ( version 4.05 )
 !/    27-Jul-2013 : Adding free infragravity waves        ( version 4.11 )
 !/    11-Nov-2013 : Expands IG energy frequency range     ( version 4.13 )
+!/    05-Mar-2014 : Fixing bug with ICALC = 1 and IG1     ( version 4.18 )
 !/
 !  1. Purpose :
 !
@@ -86,9 +87,10 @@
 !     Adds the reflected components from 2 types of sources: 
 !        shoreline reflection, subgrid obstruction and icebergs 
 !
-!     In the case of infragravity energy, the original spectrum A is kept into ATMP2
-!        and the spectrum is enhanced with IG energy in the ATMP and A arrays
-!        the original spectrum is put back at the end: A = ATMP2. 
+!     In the case of infragravity energy, there are two passes:
+!        - ICALC = 1, only the wind sea and swell are reflected (no IG added) 
+!        - ICALC = 2, IG energy is added into all frequency bands 
+!
 !
 !     When IG energy is put in the entire spectrum ( NINT(IGPARS(4)).EQ.2 )
 !        two passes are done: the first for the reflection of windsea and swell
@@ -215,18 +217,18 @@
 !
       ICALC=1
       S = 0.
-!/IG1     STMP1 = 0.
-!/IG1     STMP2 = 0.
+!/IG1      STMP1 = 0.
+!/IG1      STMP2 = 0.
       HS=4.*SQRT(EMEANA)
-!/IG1!
-!/IG1      IF (IGBCOVERWRITE) THEN 
-!/IG1        ICALC=2
-!/IG1        IGFAC1 = 1
-!/IG1        ATMP2(1:NSPECIGSTART)=0.
-!/IG1        END IF
 !/IG1      ATMP(:)=A(:)      ! the IG energy will be added to this ATMP
 !/IG1      ATMP2(:)=A(:)     ! this is really to keep in memory the original spectrum
+!/IG1      IF (IGBCOVERWRITE) THEN 
+!/IG1        IGFAC1 = 1.
+!/IG1        ATMP2(1:NSPECIGSTART)=0.
+!/IG1        END IF
+!/IG1!
 !/IG1! resets IG band energy to zero
+!/IG1!
 !/IG1      DO ICALC=1,2 
 !/IG1        IF (IGBCOVERWRITE) A(1:NSPECIGSTART)=0.
 !/IG1        IF (ICALC.EQ.1) A=ATMP2
