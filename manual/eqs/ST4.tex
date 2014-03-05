@@ -30,7 +30,7 @@ tail in eq. (\ref{eq:tauhfint}), which requires the estimation of a
 being the energy level of the tail.
 
 The swell dissipation parameterization of \cite{art:ACC09} is activated by
-setting $s_0$ to a non-zero integer value, and is given by a combination of
+setting $s_1$ to a non-zero integer value, and is given by a combination of
 the viscous boundary layer value,
 
 \begin{equation}
@@ -266,9 +266,9 @@ Par.         &  WWATCH var. & namelist & TEST451 & TEST405  & TEST500 \\
   $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5                   & 0.5 &  0.5 \\
   $f_{\mathrm{FM}}$                 &  FXFM3          & SDS4 & 9.9                   & \textbf{2.5} &  9.9  \\
                                     & SDSC1           & SDS4 & 0   & 0                              & \textbf{1.0} \\
-  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4 & $-2.4\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
+  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4 & $-2.2\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
   $C_{\mathrm{ds}}^{\mathrm{BCK}}$  & SDSBCK          & SDS4 & 0                     & 0  & \textbf{0.185} \\
-  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 0  & \textbf{1.5} \\
+  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 1.5  & 1.5 \\
   $\Delta_\theta$                   &  SDSDTH         & SDS4 & 80                    & 80 &  80 \\
   $B_r$                             &  SDSBR          & SDS4 & 0.0009                & \textbf{0.00085} & 0.0009    \\
   $C_{\mathrm{cu}}$                 & SDSCUM         & SDS4 & -0.40344               & \textbf{0.0}    & -0.40344     \\

@@ -126,7 +126,9 @@ function was adapted by Janssen (1994) from the WAM3 dissipation, and later
 reshaped by \cite{rep:Bea05}. That later modification is referred to as "BJA" for Bidlot, 
 Janssen and Abdallah. A more recent modification, strongly improved the model results for 
 Pacific swells, at the price of an underestimation of the highest sea states. This 
-corresponds to the ECMWF WAM model contained in the IFS version CY38R1 \citep{pro:Bid12}. 
+corresponds to the ECMWF WAM model contained in the IFS version CY38R1 \citep{pro:Bid12}. Note that these parameters were optimized for use of neutral winds from the 
+operational ECMWF analysis. Using these with other wind products may require a re-tuning of these coefficients. For example, with NCEP or CFSRR winds, the value of BETAMAX 
+should probably be reduced or ZWND increased. 
 
 \noindent
 The generic form of the WAM4 dissipation term is,
@@ -187,7 +189,7 @@ Par.         &  WWATCH var.           & namelist & WAM4 & BJA   & Bidlot 2012 \\
   $s_1$ &  SWELLF                     & SIN3 & 0.0     & 0.0    & 1.0   \\
 \hline
 \end{tabular} \end{center}
-\caption{Parameter values for WAM4, BJA and the 2009 update in the ECWAM model. Source term
+\caption{Parameter values for WAM4, BJA and the 2012 update in the ECWAM model. Source term
   parameterizations that can be reset via the SIN3 and SDS3 namelist. BJA is
   generally better than WAM4. The default parameters in ST3 corresponds to BJA. Please
   note that the name of the variables only apply to the namelists. In the source

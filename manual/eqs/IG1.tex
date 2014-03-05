@@ -48,7 +48,9 @@ realeased along shorelines and travel as free waves. The {\code IG1} switch
 allows the parameterization of that effect with several methods.  These are
 very crude parameterizations compared to the full hydrodynamic solution that
 would require solving the bispectral evolution across the surf zone at a very
-high spatial resolution \citep[e.g.][]{art:HB97}.  In practice this energy is
+high spatial resolution \citep[e.g.][]{art:HB97}. The default namelist settings
+correspond to the parameterization presented by \cite{art:Aea14}.
+ In practice the free infragravity wave energy is
 added via the $S_{ref}$ source term, by setting the {\code IG1} namelist
 {\code IGSOURCE} to 1 or 2.
 
@@ -91,7 +93,8 @@ namelist {\code REF1}).
 Finally, IG energy can also be added for frequencies beyond $f_{min}$, this is
 activated by setting {\code IGSWELLMAX = T}.  For that part of the IG wave
 field, the IG wave source is now reduced by a factor 4 which is now hard-coded
-in {\file w3ref1md.ftn}. This should be adjusted together with {\code
+in {\file w3ref1md.ftn}. This should be adjusted together with the maximum reflection 
+which is defined by the namelist parameter {\code
 REFRMAX}.
 
 

@@ -1405,7 +1405,7 @@
 !/ST3      WNMEANP = 0.5 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses -0.5
 !/ST3      FXFM3 = 2.5 
 !/ST3      FXPM3 = 4.
-!/ST3      WNMEANPTAIL = -0.5 
+!/ST3      WNMEANPTAIL = 0.5 
 !/ST3      SDSDELTA1 = 0.4 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !/ST3      SDSDELTA2 = 0.6 !! This is Bidlot et al. 2005,  Otherwise WAM4 uses 0.5
 !
@@ -1436,7 +1436,7 @@
 !/ST4      SDSABK    = 1.5
 !/ST4      SDSPBK    = 4.
 !/ST4      SDSBINT   = 0.3
-!/ST4      SDSHCK    = 1.
+!/ST4      SDSHCK    = 1.5
 !/ST4      WHITECAPWIDTH = 0.3
 !/ST4      SDSSTRAIN = 0.
 !/ST4      SDSHFGEN  = 0.
