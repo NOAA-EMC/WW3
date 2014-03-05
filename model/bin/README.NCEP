@@ -1,0 +1,14 @@
+At the NCEP operational center we run several wave models using the WAVEWATCH codes. The switch files and namelist values (other than default settings) for the different models are given below
+
+multi_1 : An operational global wave model driven by GFS winds
+  switch file : switch_NCEP_st4sbs and switch_NCEP_st4shrd (for pre/post processing codes)
+  Namelist values :
+    &SIN4 BETAMAX = 1.33 /
+    &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+
+multi_2 : An operational global hurricane wave model driven by a blend of hurricane / atmospheric winds
+  switch file : switch_NCEP_st2 and switch_NCEP_st2shrd
+  Namelist values : 
+    &SBT1 GAMMA = -0.019 /
+    &PRO3 WDTHCG = 4.00, WDTHTH = 4.00 /
+    &MISC FLAGTR = 4, CICE0 = 0.25, CICEN = 0.75 /
