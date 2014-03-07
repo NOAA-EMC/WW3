@@ -1,1 +1,34 @@
-F90 NCO NOGRB NOPA LRB4 DIST MPI PR3 UQ ST2 STAB2 FLX3 LN1 NL1 BT1 DB1 MLIM TR0 BS0 XX0 WNX1 WNT1 CRX1 CRT1 O0 O1 O2 O4 O5 O6 O7O 
+F90 NCO NOGRB NOPA LRB4 DIST MPI PR3 UQ ST2 STAB2 FLX3 LN1 NL1 BT1 DB1 MLIM TR0 BS0 XX0 WNX1 WNT1 CRX1 CRT1 O0 O1 O2 O4 O5 O6 O7
+# NCEP switch for older operational models using ST2 (mpi parallel codes version)
+# Switch definitions:
+# F90     - FORTRAN 90 standard
+# NCO     - NCEP proprietary code sections
+# NOGRB   - No linking to grib libraries
+# NOPA    - No PALM model coupling
+# LRB4    - Word length
+# DIST    - Distributed memory
+# MPI     - MPI message passing
+# PR3     - 3rd order propagation
+# UQ      - Ultimate-quickest numerical scheme
+# ST2     - ST2 physics package (Tolman et Chalikov, 1996)
+# STAB2   - Stability adjustment for ST2 terms
+# FLX3    - Stress computations using Cd cap
+# LN1     - Linear wind input
+# NL1     - DIA nonlinear wave-wave interactions
+# BT1     - JONSWAP type bottom friction
+# DB1     - Battjes/Janssen depth breaking
+# MLIM    - Miche style breaking limiter
+# TR0     - No triad interactions
+# BS0     - No bottom scattering
+# XX0     - Alternative source terms not used
+# WNX1    - Bi-linear wind interpoaltion in space
+# WNT1    - Linear wind interpolation in time
+# CRX1    - Linear current speed interpolation in space
+# CRT1    - Linear current speed interpolation in time
+# O0      - Print equivalent namelist setting to std out
+# O1      - Print tables with boundary points as part of output
+# O2      - Print MAPSTA as part of output
+# O4      - Output normalized 1-D energy spectrum
+# O5      - Output normalized 2-D energy spectrum
+# O6      - Output normalized wave heights
+# O7      - Diagnostic output for output points
