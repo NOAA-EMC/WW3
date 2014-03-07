@@ -220,7 +220,8 @@
 ! 3.e Allocate memory for integration map and initialize with grid status map
 !
         ALLOCATE(INT_MAP(NX,NY),MAP(NX,NY))
-!   MAP = TRANSPOSE(MAPSTA)
+        INT_MAP = 0.0
+!        MAP = TRANSPOSE(MAPSTA)
         DO IX = 1,NX
           DO IY = 1,NY
             IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
@@ -339,7 +340,7 @@
                     END IF
                   GR_INTS(ISEA)%IND_WTS(COUNTG)%AR = SAREA
                   GR_INTS(ISEA)%GDID(COUNTG) = IG
-                  INT_MAP(IX,IY) = IG
+                  INT_MAP(IX,IY) = REAL( IG )
                   ALLOCATE ( GR_INTS(ISEA)%IND_WTS(COUNTG)%IP(COUNTF),         &
                              GR_INTS(ISEA)%IND_WTS(COUNTG)%JP(COUNTF),         &
                              GR_INTS(ISEA)%IND_WTS(COUNTG)%WT(COUNTF) )
@@ -587,7 +588,7 @@
                 IF ( COUNTF .NE. 0 ) THEN
                   COUNTG = COUNTG + 1
                   GR_INTS(ISEA)%GDID(COUNTG) = IG
-                  INT_MAP(IX,IY) = IG
+                  INT_MAP(IX,IY) = REAL( IG )
                   ALLOCATE ( GR_INTS(ISEA)%IND_WTS(COUNTG)%IP(COUNTF),         &
                              GR_INTS(ISEA)%IND_WTS(COUNTG)%JP(COUNTF),         &
                              GR_INTS(ISEA)%IND_WTS(COUNTG)%WT(COUNTF) )
