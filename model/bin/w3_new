@@ -114,6 +114,7 @@
                                    touch ww3_grid.ftn ;;
      'scripnc') cd $main_dir/ftn ; touch wmgridmd.ftn
                 cd $main_dir/ftn/SCRIP ; touch scrip_interface.ftn ;;
+     'trknc' ) cd $main_dir/ftn ; touch ww3_systrk.ftn ;;
      'shared' ) ;;
      'mpp'    );;
      'mpiexp' ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
