@@ -1647,7 +1647,8 @@
       REAL                    :: ALFAMEAN, KB, MSSLONG(NK)
       REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
-      REAL                    :: NTIMES(NK), S1(NK), E1(NK)
+      REAL                    :: S1(NK), E1(NK)
+		INTEGER                 :: NTIMES(NK)
       REAL                    :: GAM, XT, M1
       REAL                    :: DK(NK), HS(NK), KBAR(NK), DCK(NK)
       REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
@@ -1929,7 +1930,7 @@
 !
         S1 = 0.
         S2 = 0.
-        NTIMES = 0.
+        NTIMES = 0
         DO IKL=1, NKL
           IF (EFDF(IKL) .GT. 0.) THEN 
             S1(IKL:IKSUP(IKL))    = S1(IKL:IKSUP(IKL)) + &
@@ -1942,14 +1943,15 @@
 !
 ! Finish the average
 ! 
-        WHERE (NTIMES .NE. 0.)
+        WHERE (NTIMES .GT. 0)
           S1 = S1 / NTIMES
           S2 = S2 / NTIMES
         ELSEWHERE
           S1 = 0.
           S2 = 0.
           END WHERE
-        S1 = S1 / SIG ! goes back to action for dissipation source term 
+! goes back to action for dissipation source term 
+        S1(1:NK) = S1(1:NK) / SIG(1:NK)
 !
 ! Makes Isotropic distribution
 !

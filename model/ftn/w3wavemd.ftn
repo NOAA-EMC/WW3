@@ -904,7 +904,7 @@
               GOTO 400
             END IF
           IF ( IT.EQ.0 ) THEN 
-            IF (IT.EQ.0) DTG = 60.
+            DTG = 1.
             GOTO 370
             END IF
           IF ( FLDRY .OR. IAPROC.GT.NAPROC ) THEN
@@ -958,7 +958,6 @@
 !
 !/SEC1      DTGTEMP=DTG
 !/SEC1      DTG=DTG/NITERSEC1
-
 !/SEC1      DO ISEC1=1,NITERSEC1
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
 !/SEC1    IF ( IAPROC .EQ. NAPOUT )    WRITE(NDSE,'(A,I4,A,I4)') '   SUBSECOND STEP:',ISEC1,' out of ',NITERSEC1
@@ -1273,8 +1272,9 @@
 !
 ! End of interations for DTMAX < 1s
 !
+!/SEC1       IF (IT.EQ.0) EXIT
 !/SEC1       END DO
-!/SEC1       DTG=DTGTEMP
+!/SEC1       IF (IT.GT.0) DTG=DTGTEMP
 !
 !
 ! PALM COUPLER Calls
