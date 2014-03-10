@@ -421,7 +421,7 @@
                ' --------------------------------------------------'/ &
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
-               '      Number of requests : ',I4)
+               '      Number of requests : ',I6)
   942 FORMAT (/'  Output type ',I2,' :'/                              &
                ' --------------------------------------------------'/ &
                '      ',A/)
