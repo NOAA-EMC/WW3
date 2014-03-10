@@ -339,7 +339,8 @@
         SLOPE=MAX(0.001,REFLC(3))
         MICHEFAC=0.0001*GRAV**2*(SLOPE**5)  &
                    /(MAX(EMEANA,1E-4)*MAX(FMEANA,0.001)**4)
-        RAMP0=0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC  ! IF REFLC(1)=1, 0.07 should be 0.007
+        RAMP0=MAX(0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC,0.005)   ! IF REFLC(1)=1, 0.07 should be 0.007
+! NB: these constants are adjusted for REFLC(1) = 0.1. If  REFLC(1)=1, 0.07 should be 0.007
       ELSE
         RAMP0=1.
         ENDIF

@@ -1395,6 +1395,8 @@
                 iret=nf90_get_var(ncid,varidf(1),XC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
                 END IF
               END IF
+! The following line forces to 0 values that are undefine
+            WHERE(XC.NE.XC) XC = 0. 
             CALL check_err(iret)
             XC  = XC * XCFAC + XCOFF
 !
@@ -1421,6 +1423,8 @@
                     ELSE
                       IF (NDIMSVAR.EQ.3) THEN
                         iret=nf90_get_var(ncid,varidf(2),YC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
+! The following line forces to 0 values that are undefine
+                        WHERE(YC.NE.YC) YC = 0. 
                       ELSE
                         iret=nf90_get_var(ncid,varidf(2),YC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
                         END IF

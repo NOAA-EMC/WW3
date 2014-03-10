@@ -1646,10 +1646,10 @@
 ! initialisation of logical related to unstructured grid
        UGOBCAUTO = .TRUE.
        UGOBCDEPTH= -10.
-       EXPFSN = .TRUE.
-       EXPFSPSI = .FALSE.
-       EXPFSFCT = .FALSE.
-       IMPFSN = .FALSE.
+       EXPFSN    = .TRUE.
+       EXPFSPSI  = .FALSE.
+       EXPFSFCT  = .FALSE.
+       IMPFSN    = .FALSE.
 ! read data from the unstructured devoted namelist
        CALL READNL ( NDSS, 'UNST', STATUS ) 
 !
@@ -1835,7 +1835,7 @@
 !/IG1       IGSWELLMAX = .TRUE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
-!/IG1       IGEMPIRICAL = 0.0008
+!/IG1       IGEMPIRICAL = 0.00125
 !
 !/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
@@ -3589,18 +3589,18 @@
 !/REF1          DO ISEA=1,NSEA
 !/REF1            IX = MAPSF(ISEA,1)
 !/REF1            IY = MAPSF(ISEA,2)
-!/REF1            REFLC(3,ISEA) = REFS(IX,IY)
+!/REF1            REFLC(3,ISEA) = REFS(IX,IY)*REFMAP
 !/REF1            END DO
 !
 !/REF1          NMAPB  = 1 + (NX-1)/NCOL
 !/REF1          WRITE (NDSO,1105) NMAPB
-!/REF1          WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS)
+!/REF1          WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
 !
 !/REF1          DO IMAPB=1, NMAPB
 !/REF1            IX0    = 1 + (IMAPB-1)*NCOL
 !/REF1            IXN    = MIN ( NX , IMAPB*NCOL )
 !/REF1            DO IY=NY,1,-1
-!/REF1              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)),IX=IX0,IXN)
+!/REF1              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
 !/REF1              END DO
 !/REF1            WRITE (NDSO,*) ' '
 !/REF1            END DO
