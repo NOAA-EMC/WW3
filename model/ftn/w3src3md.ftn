@@ -59,18 +59,12 @@
 !/
 !/ Public variables
 !/
-      INTEGER, PARAMETER      :: NHMAX =    25
       INTEGER(KIND=4)         :: NH(3)
-!notes: THO is removed. It does not appear to be used, and dimensioning is different from shel
-!       which makes it seem dangerous 
-!       INTEGER(KIND=4)         :: THO(2,3,NHMAX)
-      REAL                    :: HA(NHMAX,3), HD(NHMAX,3), HA2(NHMAX,3)
       REAL,    PARAMETER      :: kappa = 0.40       !Von Karman's constant
       !air kinematic viscosity (used in WAM)
       REAL,    PARAMETER      :: nu_air  = 1.4E-5        
       INTEGER, PARAMETER      :: ITAUMAX=200,JUMAX=200
       INTEGER, PARAMETER      :: IUSTAR=100,IALPHA=200, ILEVTAIL=50
-      INTEGER, PARAMETER      :: IAB=200  
       REAL                    :: TAUT(0:ITAUMAX,0:JUMAX), DELTAUW, DELU
       ! Table for H.F. stress as a function of 2 variables
       REAL                    :: TAUHFT(0:IUSTAR,0:IALPHA), DELUST, DELALP
