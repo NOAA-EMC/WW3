@@ -822,7 +822,7 @@
 !/ -------------------------------------------------------------------------/
 !   USE W3ADATMD, ONLY : WADAT, WADATS, NADATA, DW, CX, CY, UA, UD,       &
 !              AS, WLV, HS, WLM, T0M1, THM, THS, FP0, THP0, FP1,      &
-!              THP1, PHS, PTP, PLP, PTH, PSI, PWS, PWST,        &
+!              THP1, PHS, PTP, PLP, PDIR, PSI, PWS, PWST,        &
 !                             PNR, DTDYN, FCUT, ABA, ABD, UBA, UBD, SXX,       &
 !              SXY, SYY, USERO
         USE W3ADATMD
@@ -854,8 +854,8 @@
 ! Local group4 variables
         REAL                    :: PHSAUX(0:NOSWLL_MIN), PTPAUX(0:NOSWLL_MIN), &
                                    PLPAUX(0:NOSWLL_MIN), PSIAUX(0:NOSWLL_MIN), &
-                                   PWSAUX(0:NOSWLL_MIN), PTHAUX1(0:NOSWLL_MIN),&
-                                   PWSTAUX, PTHAUX2(0:NOSWLL_MIN),             &
+                                   PWSAUX(0:NOSWLL_MIN), PDIRAUX1(0:NOSWLL_MIN),&
+                                   PWSTAUX, PDIRAUX2(0:NOSWLL_MIN),             &
                                    SUMWT4(10,0:NOSWLL_MIN)
 ! Local group 5 variables
         REAL                    :: USTAUX1, USTAUX2, CHARNAUX, CGEAUX,         &
@@ -907,7 +907,7 @@
         PHS      = UNDEF
         PTP      = UNDEF
         PLP      = UNDEF
-        PTH      = UNDEF
+        PDIR     = UNDEF
         PSI      = UNDEF
         PWS      = UNDEF
         PWST     = UNDEF
@@ -1083,8 +1083,8 @@
                 PHSAUX      = UNDEF
                 PTPAUX      = UNDEF
                 PLPAUX      = UNDEF
-                PTHAUX1     = UNDEF
-                PTHAUX2     = UNDEF
+                PDIRAUX1    = UNDEF
+                PDIRAUX2    = UNDEF
                 PSIAUX      = UNDEF
                 PWSAUX      = UNDEF
                 PWSTAUX     = UNDEF
@@ -1378,18 +1378,18 @@
                     END IF
 !
                     IF ( FLOGRD(4,4) .AND. ACTIVE ) THEN
-                      IF ( WADATS(IGRID)%PTH(GSEA,ISWLL) .NE. UNDEF ) THEN
+                      IF ( WADATS(IGRID)%PDIR(GSEA,ISWLL) .NE. UNDEF ) THEN
                         SUMWT4(4,ISWLL) = SUMWT4(4,ISWLL) + WT
-                        IF ( PTHAUX1(ISWLL) .EQ. UNDEF ) THEN
-                          PTHAUX1(ISWLL) =                                     &
-                               COS ( WADATS(IGRID)%PTH(GSEA,ISWLL) )*WT
-                          PTHAUX2(ISWLL) =                                     &
-                               SIN ( WADATS(IGRID)%PTH(GSEA,ISWLL) )*WT
+                        IF ( PDIRAUX1(ISWLL) .EQ. UNDEF ) THEN
+                          PDIRAUX1(ISWLL) =                                     &
+                               COS ( WADATS(IGRID)%PDIR(GSEA,ISWLL) )*WT
+                          PDIRAUX2(ISWLL) =                                     &
+                               SIN ( WADATS(IGRID)%PDIR(GSEA,ISWLL) )*WT
                         ELSE
-                          PTHAUX1(ISWLL) = PTHAUX1(ISWLL) +                    &
-                               COS ( WADATS(IGRID)%PTH(GSEA,ISWLL) )*WT
-                          PTHAUX2(ISWLL) = PTHAUX2(ISWLL) +                    &
-                               SIN ( WADATS(IGRID)%PTH(GSEA,ISWLL) )*WT
+                          PDIRAUX1(ISWLL) = PDIRAUX1(ISWLL) +                    &
+                               COS ( WADATS(IGRID)%PDIR(GSEA,ISWLL) )*WT
+                          PDIRAUX2(ISWLL) = PDIRAUX2(ISWLL) +                    &
+                               SIN ( WADATS(IGRID)%PDIR(GSEA,ISWLL) )*WT
                         END IF
                       END IF
                     END IF
@@ -1882,19 +1882,19 @@
                     END IF
                   END IF
 !
-                  IF ( PTHAUX1(ISWLL) .NE. UNDEF ) THEN
-                    PTHAUX1(ISWLL) = PTHAUX1(ISWLL) / SUMWT4(4,ISWLL)
-                    PTHAUX2(ISWLL) = PTHAUX2(ISWLL) / SUMWT4(4,ISWLL)
-                    IF ( PTH(ISEA,ISWLL) .EQ. UNDEF )  THEN
-                      PTHAUX1(ISWLL) = PTHAUX1(ISWLL) / REAL( SUMGRD )
-                      PTHAUX2(ISWLL) = PTHAUX2(ISWLL) / REAL( SUMGRD )
-                      PTH(ISEA,ISWLL) = ATAN2 ( PTHAUX2(ISWLL), PTHAUX1(ISWLL) )
+                  IF ( PDIRAUX1(ISWLL) .NE. UNDEF ) THEN
+                    PDIRAUX1(ISWLL) = PDIRAUX1(ISWLL) / SUMWT4(4,ISWLL)
+                    PDIRAUX2(ISWLL) = PDIRAUX2(ISWLL) / SUMWT4(4,ISWLL)
+                    IF ( PDIR(ISEA,ISWLL) .EQ. UNDEF )  THEN
+                      PDIRAUX1(ISWLL) = PDIRAUX1(ISWLL) / REAL( SUMGRD )
+                      PDIRAUX2(ISWLL) = PDIRAUX2(ISWLL) / REAL( SUMGRD )
+                      PDIR(ISEA,ISWLL) = ATAN2 ( PDIRAUX2(ISWLL), PDIRAUX1(ISWLL) )
                     ELSE
-                      PTHAUX1(ISWLL) = PTHAUX1(ISWLL) / REAL( SUMGRD ) +       &
-                               COS ( PTH(ISEA,ISWLL) )
-                      PTHAUX2(ISWLL) = PTHAUX2(ISWLL) / REAL( SUMGRD ) +       &
-                               SIN ( PTH(ISEA,ISWLL) )
-                      PTH(ISEA,ISWLL) = ATAN2 ( PTHAUX2(ISWLL), PTHAUX1(ISWLL) )
+                      PDIRAUX1(ISWLL) = PDIRAUX1(ISWLL) / REAL( SUMGRD ) +       &
+                               COS ( PDIR(ISEA,ISWLL) )
+                      PDIRAUX2(ISWLL) = PDIRAUX2(ISWLL) / REAL( SUMGRD ) +       &
+                               SIN ( PDIR(ISEA,ISWLL) )
+                      PDIR(ISEA,ISWLL) = ATAN2 ( PDIRAUX2(ISWLL), PDIRAUX1(ISWLL) )
                     END IF
                   END IF
 !

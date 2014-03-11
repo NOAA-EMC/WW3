@@ -696,7 +696,7 @@
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
 
       USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
-                          SXX, SYY, SXY, PHS, PTP, PLP, PTH, PSI, PWS,&
+                          SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
@@ -1317,7 +1317,7 @@
           PHS    = UNDEF
           PTP    = UNDEF
           PLP    = UNDEF
-          PTH    = UNDEF
+          PDIR   = UNDEF
           PSI    = UNDEF
           PWS    = UNDEF
           PWST   = UNDEF
@@ -1343,7 +1343,7 @@
                     PHS(JSEA,0) = DTPRT(1,I)
                     PTP(JSEA,0) = DTPRT(2,I)
                     PLP(JSEA,0) = DTPRT(3,I)
-                    PTH(JSEA,0) = ( 270. - DTPRT(4,I) ) * DERA
+                    PDIR(JSEA,0) = ( 270. - DTPRT(4,I) ) * DERA
                     PSI(JSEA,0) = DTPRT(5,I)
                     PWS(JSEA,0) = DTPRT(6,I)
                     I      = I + 1
@@ -1353,7 +1353,7 @@
                   PHS(JSEA,J) = DTPRT(1,I)
                   PTP(JSEA,J) = DTPRT(2,I)
                   PLP(JSEA,J) = DTPRT(3,I)
-                  PTH(JSEA,J) = ( 270. - DTPRT(4,I) ) * DERA
+                  PDIR(JSEA,J) = ( 270. - DTPRT(4,I) ) * DERA
                   PSI(JSEA,J) = DTPRT(5,I)
                   PWS(JSEA,J) = DTPRT(6,I)
                   I      = I + 1
@@ -1492,7 +1492,7 @@
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
                           FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,    &
-                          PHS, PTP, PLP, PTH, PSI, PWS, PWST, PNR,    &
+                          PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
                           USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,  &
                           PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,       &
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY,         &
@@ -1677,7 +1677,7 @@
                 IF ( FLOGRD( 4, 1) ) PHS (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 2) ) PTP (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 3) ) PLP (ISEA,:) = UNDEF
-                IF ( FLOGRD( 4, 4) ) PTH (ISEA,:) = UNDEF
+                IF ( FLOGRD( 4, 4) ) PDIR (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 5) ) PSI (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 6) ) PWS (ISEA,:) = UNDEF
                 IF ( FLOGRD( 4, 7) ) PWST(ISEA  ) = UNDEF
@@ -1884,7 +1884,7 @@
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
                     WRITE ( NDSOG ) PLP(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
-                    WRITE ( NDSOG ) PTH(1:NSEA,0:NOSWLL)
+                    WRITE ( NDSOG ) PDIR(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                     WRITE ( NDSOG ) PSI(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
@@ -2114,7 +2114,7 @@
                                                   PLP(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                  PTH(1:NSEA,0:NOSWLL)
+                                                  PDIR(1:NSEA,0:NOSWLL)
                   ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                   PSI(1:NSEA,0:NOSWLL)

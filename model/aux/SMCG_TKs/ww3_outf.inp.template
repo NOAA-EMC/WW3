@@ -24,8 +24,8 @@ $ EF TH1M STH1M TH1M STH1M WN
   F  F  F  F  F  F
 $ (4) Spectral Partition Parameters
   T
-$ PHS PTP PLP PTH PSP PWS WSF PNR
-  F   F   F   F   F   F   F   F
+$ PHS PTP PLP PDIR PSP PWS WSF PNR
+  F   F   F   F    F   F   F   F
 $ (5) Atmosphere-waves layer
   T
 $ UST CHN CGE FAW TAW NWS WCC WCF WCH WCM

@@ -117,14 +117,14 @@
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM, &
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
-                          PHS, PTP, PLP, PTH, PSI, PWS, PWST, PNR,    &
-                          TAUOX, TAUOY, TAUWIX,BHD,                &
+                          PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
+                          TAUOX, TAUOY, TAUWIX,BHD,                   &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
                           CGE, T01, HSIG
-      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,     &
+      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       IMPLICIT NONE
@@ -1008,15 +1008,15 @@
                 UNITS  = 'degree'
                 ENAME  = '.pdir'
                 DO ISEA=1, NSEA
-                  IF ( PTH(ISEA,IPART) .NE. UNDEF ) THEN
-                      PTH(ISEA,IPART) =                               &
-                            MOD ( 630-RADE*PTH(ISEA,IPART) , 360. )
+                  IF ( PDIR(ISEA,IPART) .NE. UNDEF ) THEN
+                      PDIR(ISEA,IPART) =                               &
+                            MOD ( 630-RADE*PDIR(ISEA,IPART) , 360. )
                     END IF
                   END DO
                 IF ( ITYPE .EQ. 4 ) THEN
-                   XS1    = PTH(:,IPART)
+                   XS1    = PDIR(:,IPART)
                 ELSE
-                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTH(:,IPART)      &
+                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PDIR(:,IPART)      &
                                                       , MAPSF, X1 )
                 ENDIF 
 !

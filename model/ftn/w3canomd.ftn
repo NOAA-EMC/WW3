@@ -1074,7 +1074,7 @@
          JD = MAX(JD,1)
          JD = MIN(JD,NDEPTH)
 
- !WRITE(6,*) 'TEST JD:',DEPTH(IJ),XD,JD,AKMEAN(IJ),X_MIN/AKMEAN(IJ)
+!WRITE(6,*) 'TEST JD:',DEPTH(IJ),XD,JD,AKMEAN(IJ),X_MIN/AKMEAN(IJ)
          DO M=1,NFRE
             DO K=1,NANG
                G1(K,M) = F1(IJ,K,M)
