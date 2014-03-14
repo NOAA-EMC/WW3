@@ -119,7 +119,7 @@
 !
 !      US3D      R.A.  Public   3D Stokes drift.
 !
-!      ABA       R.A.  Public   Near-bottom rms wave ex. apmplitude.
+!      ABA       R.A.  Public   Near-bottom rms wave ex. amplitude.
 !      ABD       R.A.  Public   Corresponding direction.
 !      UBA       R.A.  Public   Near-bottom rms wave velocity.
 !      UBD       R.A.  Public   Corresponding direction.

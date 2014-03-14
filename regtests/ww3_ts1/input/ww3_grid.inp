@@ -14,6 +14,7 @@ $ &MISC  XP = 0.025 /
 $ &FLX3  CDMAX = 2.5E-3, CTYPE = 1 /
 $ &SLN1  RFPM = 1.0 RFHF = 0.33 /
   &MISC  XP = 0.075 /
+  &OUTS  E3D = 1 /
 END OF NAMELISTS
 $
   'RECT' T 'NONE'

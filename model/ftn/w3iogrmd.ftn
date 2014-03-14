@@ -702,6 +702,17 @@
 !/T             XFR, SIG(1)*TPIINV, SIG(NK)*TPIINV, FTE, FTF, FTWN, FTTR, &
 !/T             FTWL, FACTI1, FACTI2, FACHFA, FACHFE
 !
+!
+! Output flags for 3D parameters ------------------------------------- *
+!                                                 Module W3GDATMD 
+      IF ( WRITE ) THEN
+          WRITE (NDSM)                                                &
+                E3DF, P2MSF, US3DF
+        ELSE
+          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+                E3DF, P2MSF, US3DF
+        END IF
+
       IF ( INXOUT .EQ. 'GRID' ) THEN
           CLOSE (NDSM)
           RETURN
@@ -748,7 +759,7 @@
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FFACBERG, E3DF, P2MSF, US3DF, DELAB, FWTABLE
+                FFACBERG, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
 !/REF1          WRITE (NDSM)                                                &
@@ -758,7 +769,7 @@
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-                FFACBERG, E3DF, P2MSF, US3DF, DELAB, FWTABLE
+                FFACBERG, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
 !/REF1         READ   (NDSM)                                                &

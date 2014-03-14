@@ -1858,12 +1858,12 @@
       E3DF(1,3) = STH1MF
       E3DF(2,3) = MIN(MAX(1,I1STH1M),NK)
       E3DF(3,3) = MIN(MAX(1,I2STH1M),NK)
-      E3DF(1,2) = TH2MF
-      E3DF(2,2) = MIN(MAX(1,I1TH2M),NK)
-      E3DF(3,2) = MIN(MAX(1,I2TH2M),NK)
-      E3DF(1,3) = STH2MF
-      E3DF(2,3) = MIN(MAX(1,I1STH2M),NK)
-      E3DF(3,3) = MIN(MAX(1,I2STH2M),NK)
+      E3DF(1,4) = TH2MF
+      E3DF(2,4) = MIN(MAX(1,I1TH2M),NK)
+      E3DF(3,4) = MIN(MAX(1,I2TH2M),NK)
+      E3DF(1,5) = STH2MF
+      E3DF(2,5) = MIN(MAX(1,I1STH2M),NK)
+      E3DF(3,5) = MIN(MAX(1,I2STH2M),NK)
 !
 ! output of microseismic source spectra
 !

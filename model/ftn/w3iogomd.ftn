@@ -44,7 +44,7 @@
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -278,6 +278,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF
       USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR, FLOG
       USE W3SERVMD, ONLY: NEXTLN, STRSPLIT, STR_TO_UPPER
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -408,11 +409,23 @@
 ! Group 3
 !
            CASE('EF')
-             FLG2D(3,1)=.TRUE.
+             IF (E3DF(1,1).EQ.1) THEN 
+               FLG2D(3,1)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'EF','E3D'
+               END IF
            CASE('TH1M')
-             FLG2D(3,2)=.TRUE.
+             IF (E3DF(2,1).EQ.1) THEN 
+               FLG2D(3,2)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'TH1M','TH1MF'
+               END IF
            CASE('STH1M')
-             FLG2D(3,3)=.TRUE.
+             IF (E3DF(3,1).EQ.1) THEN 
+               FLG2D(3,3)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'STH1M','STH1MF'
+               END IF
            CASE('WN')
              FLG2D(3,6)=.TRUE.
 !
@@ -475,9 +488,21 @@
            CASE('P2S')
              FLG2D(6,7)=.TRUE.
            CASE('USF')
-             FLG2D(6,8)=.TRUE.
+             IF (US3DF(1).EQ.1) THEN 
+               FLG2D(6,8)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'USF','US3D'
+               END IF
            CASE('P2L')
-             FLG2D(6,9)=.TRUE.
+             IF (P2MSF(1).EQ.1) THEN 
+               FLG2D(6,9)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'P2L','P2SF'
+               END IF
+           CASE('TWI')
+             FLG2D(6,10)=.TRUE.
+           CASE('FIC')
+             FLG2D(6,11)=.TRUE.
 !
 ! Group 7
 !
@@ -593,6 +618,10 @@
  1007 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
                '     NUMBER OF REQUESTED OUTPUT FIELD FLAGS IN GROUP ',&
               I2, /,' LESS THAN AVAILABLE, CHECK DOCS FOR MORE OPTIONS')
+!
+ 1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+               '     PARAMETER ',A,' not allowed: need to set parameter ',A, &
+               '     in OUTS namelist (in ww3_grid.inp)')
 !
       END SUBROUTINE W3READFLGRD
 

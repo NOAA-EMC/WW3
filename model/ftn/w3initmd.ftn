@@ -50,7 +50,7 @@
 !/                  structure and smaller memory footprint.
 !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
 !/    10-Oct-2013 : CG and WN values at DMIN for ISEA=0 ( version 4.12 )
-!/    14-Nov-2013 : RRemove UST(DIR) initialization.    ( version 4.13 )
+!/    14-Nov-2013 : Remove UST(DIR) initialization.     ( version 4.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
