@@ -34,8 +34,8 @@
 \newcommand{\refs}{(\ldots references \ldots)}
 \newcommand{\p}{\partial}
 \newcommand{\degree}{^{\circ}}
-\newcommand{\bk}{\mbox{\boldmath $k$}}
-\newcommand{\bc}{\mbox{\boldmath $c$}}
+\newcommand{\bk}{\mbox{\bfmath $k$}}
+\newcommand{\bc}{\mbox{\bfmath $c$}}
 \newcommand{\lae}{$\lambda =$}
 \newcommand{\mue}{$\mu =$}
 \newcommand{\CCe}{$C =$}
@@ -135,7 +135,7 @@ Marine Modeling and Analysis Branch
 
 % Version 0.1, May 2010
 % Version 1.0, Feb. 2011
-Version 1.1, Feb. 2014
+Version 1.1, Mar. 2014
 % Version 1.2 (DRAFT), \today 
 %\\ Last Changed Rev: \SVNRevision\ on \SVNDate \\
 \vspace{\baselineskip}
@@ -186,7 +186,7 @@ version & svn rev.     & date    & comment    \\ \hline \hline
   1.0   &  12398       & Feb. 18, 2011 & Adding svn note p.~\pageref{svn_n}.   \\
         &              &               & Adding svn warning p.~\pageref{svn_w}.\\
         &              &               & Section~\ref{sec:testing} updated.    \\
-  1.1   &  36335       & Feb.  4, 2014 & Changed address on title page.        \\
+  1.1   &  38155       & Mar. 18, 2014 & Changed address on title page.        \\
         &              &               & Updating most sections.               \\
         &              &               & Adding Sec.~\ref{sec:dist} (code distr.). \\
         &              &               & Finalize for release of v. 4.18.      \\
@@ -839,9 +839,13 @@ version of the manual will be available on the svn server.
 \newsec
 
 Starting with model version 3.14, the \ws\ model is maintained using
-subversion \citep{bk:CSea06}. The subversion (svn) system has two
-components. One is the svn repository maintained at NCEP. The other is the svn
-client that has to be installed at your own machine.
+subversion \citep{bk:CSea06}. The subversion (svn) system has three
+components. One is the svn repository maintained at NCEP. The second is the svn
+client that has to be installed at your own machine. A third component is a wiki
+called trac, which is semlessly linked to the svn server, and provides a full
+account of code changes with diff capabilities, records all changes in the form of
+time lines, stores log messages and also allow the creation of tickets for tasks to
+be done, which can be cross-references with time line and log entries.
 
 The svn server is where codes are stored and shared between collaborators. The
 subversion client allows you interact with the server to obtain codes, and to
@@ -870,16 +874,30 @@ maintained in
 \centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3}
 \vspace{\baselineskip}
 
+\subsection{Server directory structure}
+
 \noindent
 In the \ws\ directory, the conventional {\file trunk}, {\file branches} and
 {\file tags} directories have been created, The {\file trunk} directory
 contains the main model development, {\file tags} contains model releases
 (formal, internal and beta testing), and {\file branches} contains work space
-for individual developers (as well as maintenance of released versions). For
-instance, Hendrik's work space is identified as
+for developers (as well as maintenance of released versions). All branches reflect
+the type of work being performed, and names are given accordingly. A single developer
+may have several branches, if he/she is working on different features of the code. This
+approach allows the development community to have ready features added to the main trunk
+without the risk of also loading unfinished work.
+
+For instance, extension of output fields is found in the branch:
 
 \vspace{\baselineskip}
-\centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3/branches/hendrik}
+\centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3/branches/output\_fields}
+\vspace{\baselineskip}
+
+whereas a bugfix may be found in a branch named after what the bug fix is about, and/or a
+ticket number:
+
+\vspace{\baselineskip}
+\centerline{\file https://svnemc.ncep.noaa.gov/projects/ww3/branches/BUGFIX\_gxoutp}
 \vspace{\baselineskip}
 
 \noindent
@@ -888,10 +906,11 @@ write access to their designated directory in {\file branches}. In {\file
 trunk} (and {\file tags}), we have set up directories
 
 \begin{flist}
-\fit{model }{Model files as previously distributed as {\file .tar} files.}
-\fit{manual}{\LaTeX files and graphics files for the manual.}
-\fit{guide }{\LaTeX file for this guide.}
-\fit{utilities}{Additional utilities such as the grid generation package.}
+\fit{model    }{Model files as previously distributed as {\file .tar} files.}
+\fit{manual   }{\LaTeX files and graphics files for the manual.}
+\fit{guide    }{\LaTeX file for this guide.}
+\fit{regtests }{\LaTeX Regression tests.}
+\fit{cases    }{\LaTeX Larger regression test cases.}
 \end{flist}
 
 \noindent
@@ -906,36 +925,239 @@ subversion repository, a new script
 
 \noindent
 has been created, which replaces the script {\file install\_wwatch3} used to
-install the model from {\file .tar} files. This script will first fill the
-five directories {\file svn/aux} through {\file svn/regtests} with all the files
+install the model from {\file .tar} files. This script will first create a svn
+directory which will be filled with the
+five directories {\file svn/aux} through {\file svn/cases} with all the files
 from the svn repository, and will then continue to set up the model identical
-to the model setup from the tar files. The only difference is that
-distribution files in, for instance the {\file bin} directory, now are linked
-to the actual files in the {\file svn/bin} directory. Thus,
+to the model setup from the tar files. This means that symbolic links will be 
+created for directories at the same tree level as the svn directory. These will contain
+links to the actual files in the latter. 
+
+This structure is adopted so that the user
+or developer can make changes and create temporary files without affecting or creating
+junk in the area that will be synced with the svn server. Of course, changes made to linked
+files will reflect on the actual files. On the other hand, files that are added on the
+local work copy area and that are not linked into the svn repository will be ignored.
+Of course if the intention is to have added files loaded to the svn server, the developer 
+will have to manually add the to the svn diretory area, in their proper place, then instruct 
+the svn server that a new file must be added, as the location of the new file (in teh svn directory
+area):
+
+\vspace{\baselineskip}
+\centerline{\file svn add newfile.ftn}
+\vspace{\baselineskip}
+
+Whenever changes are made to files in the local svn directory, these changes are only added
+to the actual svn server after the user commits. Thus,
 
 \vspace{\baselineskip}
 \centerline{\file svn commit}
 \vspace{\baselineskip}
 
 \noindent
-called from the {\file svn} directory will update the repository. Note that
+called from the {\file svn} directory will update the repository with changes made in
+the local copy. We stress here that 
 this implies that new files need to be added in the {\file svn} directory
-first, and then need to be added as links in the conventional directory. The
-script {\file install\_ww3\_svn} can be used for either an initial install,
-for updating the working copies from the svn repository, and for updating link
-to the local {\file svn} directory.
+first, and then need to be added as links in the conventional directory. 
 
-The script {\file install\_ww3\_svn} needs to reside in the main \ws\
-directory. Upon first install, this script can be pulled from
+After changes are made to the repository, even if these were made in a local copy, 
+the user or developer must rerun the script {\file install\_ww3\_svn}, since this
+will restablsih all links, and remove any orphaned files etc. This is the only way to ensure
+consistency, and is the best practice for updating the working copies from the svn repository, 
+and for updating links to the local {\file svn} directory.
+
+\subsection{Installing from the svn server}
+
+Any installation of the code from the svn repository must start with the
+script {\file install\_ww3\_svn}. This needs to be exported from the svn server
+into the main \ws\ work area/directory. For this to happen, the user or developer
+must export the file making first to simplify:
 
 \vspace{\baselineskip}
-\centerline{\file trunk/model/bin/install\_ww3\_svn}
+\centerline{\file SVN=https://svnemc.ncep.noaa.gov/projects/ww3}
+\vspace{\baselineskip}
+
+then,
+
+\vspace{\baselineskip}
+\centerline{\file svn export \$SVN/trunk/model/bin/install\_ww3\_svn}
+\vspace{\baselineskip}
+
+or, if the file is from a specific branch, say, output\_fields:
+
+\vspace{\baselineskip}
+\centerline{\file svn export \$SVN/branches/output\_fields/model/bin/install\_ww3\_svn}
 \vspace{\baselineskip}
 
 \noindent
 If this script is found to be identical to the local work copy in the local
 {\file svn/bin} directory, it will be replaced with a link to the latter, so
 that modifications to the script will also be version controlled with svn.
+
+The installation process will require some decisions to be made. After exporting
+the install script from the svn server, check for executable status, if the file
+is not executable, do:
+
+\vspace{\baselineskip}
+\centerline{\file chmod 744 install\_ww3\_svn}
+\vspace{\baselineskip}
+
+Then execute the install script. The following sequence needs to be followed.
+The most crucial option is if a local or generic install is to be performed.
+The type of install deals with where to save the the traditional {\file wwatch3.env} 
+file, containing the general user-dependent directory and basic FORTRAN and C compiler 
+choices. The local install will save this at the same location as the package
+is being installed, which is the main \ws\ directory. This results in a standalone version
+that allows multiple installations (or other branches or the trunk) to co-exist
+without interference. The general install means wwatch.env will be save in the user's
+home directory in the form {\file \$HOME/.wwatch3.env}, and that this will be the
+main or central installation in that work area. The existence of a general install
+does not preclude the existence of multiple local installs, but the user has to be 
+mindful of which code is being invoked when using the general install (things can
+get very confusing if not kept explicitly on track).
+
+
+\begin{myfig}{tbp}
+\begin{minipage}[c]{4.5in}
+{\scriptsize \begin{verbatim}
+PROMPT :: SVN=https://svnemc.ncep.noaa.gov/projects/ww3
+
+PROMPT :: svn export \$SVN/branches/doc_edit/model/bin/install_ww3_svn
+A    install_ww3_svn
+Export complete.
+
+PROMPT :: ls -l
+total 52
+-rwx------. 1 user group 55555 Mar  5 12:19 install_ww3_svn
+
+PROMPT :: ./install_ww3_svn
+
+
+                  ===================================
+              ------ Installing WAVEWATCH III  v.4 ------
+                  =================================== 
+
+       Script for installing package from Subversion server source. 
+       Requires user/pass access to NCEP Subversion server. 
+
+ Continue? [y|n] y
+
+
+
+                  ===================================
+              ------ Installing WAVEWATCH III  v.4 ------
+                  ===================================
+                                     from svn source 
+
+ This installation requires a configuration file (wwatch3.env).
+ The current version allows two types of env files: 
+ - A local [L] wwatch3.env (Allowing multiple independent installations).
+ - A generic [G] dot-file .wwatch3.env (Old-fashioned option).
+ [L] Installs new, uses existing or updates env file in current directory.
+ [G] Installs new, uses existing or updates env file in home directory, 
+                   (home is presumably /export/emc-lw-jhalves/wd20ha}).
+
+ 
+ Type your choice now: L
+
+ Creating new env file from scratch.
+
+
+ Installing in 
+   /export/emc-lw-jhalves/wd20ha/WW3_GUIDE
+
+   OK ? [y/n] y
+
+ Setting up environment variables. 
+
+\end{verbatim}}
+\end{minipage}
+\botline
+\end{myfig}
+
+\begin{myfig}{tpb}
+\begin{minipage}[c]{4.5in}
+{\scriptsize \begin{verbatim}
+
+   Previous setup file not found. Variables will be set to defaults. 
+
+     (User must check to see if these setting are appropriate.)      
+
+ Creating wwatch3.env locally (also in home if G option chosen). 
+      Printer (listings)       : printer 
+      FORTRAN comp. (aux only) : f77 
+      C Compiler (aux only)    : cc 
+      Scratch directory        : /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp 
+      Save source code         : yes 
+      Save listings            : yes 
+
+ Update settings ? [y/n] y
+
+ Modifying set-up 
+
+ Type n new settings, or press ENTER to keep [current ones]: 
+
+      Printer for listings [printer] : 
+      Compiler for aux. [f77] : gfortran
+      Compiler for aux. [cc] : gcc
+      Scratch space [/export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp] : 
+      Save source code files (*.f)  [yes] : 
+      Save listing files  [yes] : 
+ 
+   Modified settings:
+      Printer (listings)       : printer 
+      FORTRAN comp. (aux only) : gfortran 
+      C Compiler (aux only)    : gcc 
+      Scratch directory        : /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp 
+      Save sources             : yes 
+      Save listings            : yes 
+
+   New settings OK ? [y/n]  y
+
+ Continue with actual implementation ? [y/n] y
+
+ Starting actual implementation ... 
+   Use Ctrl-C to terminate program ... 
+
+                  ===================================
+              ------ Setup or update WAVEWATCH III ------
+                  ===================================
+                                     Using svn source 
+                  Directory /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/svn
+
+
+ This is a new installation. Create new svn directory [y/-] ? y
+
+ Install from trunk [T], branches [B] or tags [A]?
+ 
+   Enter [T] or [B] or [A] now : B
+
+   Enter branch name now : doc_edit
+
+ Installing from: : 
+  https://svnemc.ncep.noaa.gov/projects/ww3/branches/doc_edit 
+
+ Is this OK [y/-] ? y
+
+\end{verbatim}}
+\end{minipage}
+\myfcap{Example of running the install script {\file install\_ww3\_svn}.}
+\label{fig:install}
+\botline
+\end{myfig}
+
+Figure \ref{fig:install} provides a run down of how the installation process from the svn server using
+{\file install\_ww3\_svn} looks like. We reproduce only the part of the process that requires 
+feedback from the user. If proper answers have been provided at the prompts, the remaining steps of the installation
+process will be screen output of following the options selected in the sections above,
+and indicating what the installation scrtipt is performing (checking out from server,
+copying files, linking, compiling etc).
+
+\pagebreak
+
+\vspace{\baselineskip}
+\noindent
+\subsection{Permissions and responsibilities}
 
 Co-developers will have read access to the {\file trunk} and {\file tags}, and
 will have read and write permission to their workspace in the {\file
@@ -949,7 +1171,9 @@ To fully use the potential of subversion, it is critical that detailed commit
 logs are maintained. As with the CRTM, \ws\ commit logs should follow the GNU
 ChangeLog format\footnote{
 ~http://www.gnu.org/prep/standards/standards.html\#Change-Logs}. An example of
-a log entry is given in Fig.~\ref{fig:log}. The log entry should mention each
+a log entry is given in Fig.~\ref{fig:log}. The log entry should start with a 
+reference to the area and directory being changed (``Branch output:'' or ``Trunk:'') 
+and then should mention each
 file that has been changed. The first line of each block should contain the
 subdirectory name. The log entry should mention every file that has been
 changed. For every file, every procedure changed should be named in full (no
@@ -961,7 +1185,7 @@ number. If the commit logs are properly maintained, the ChangeLog will be
 provided with future releases, at which time we may discontinue the habit of
 providing simple change logs in the source files.
 
-\begin{myfig}{tbp}
+\begin{myfig}{bp}
 \begin{center}
 \begin{minipage}[c]{4.5in}
 {\scriptsize 
@@ -993,6 +1217,9 @@ ww3/branches/hendrik/workcopy/model/ftn subdirectory
 
 \vspace{\baselineskip}
 \noindent
+
+\subsection{The trac wiki}
+
 Finally, we are using Trac\footnote{~http://trac.edgewall.org/} as a web-based
 management tool for the development of \ww. The Trac pages are found at
 
@@ -1053,7 +1280,7 @@ moves, adding files) rather than use Unix/Linux commands.} \\
 \vspace{\baselineskip} \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm}
 \end{center}
 
-%\bpage
+\bpage
 \pb
 %--------------------------------------------------------------%
 % Section : Distributing experimental model versions           %

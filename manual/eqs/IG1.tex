@@ -95,7 +95,10 @@ and it is activated by setting {\code IGSWELLMAX = T}.  For that part of the IG 
 field, the IG wave source is now reduced by a factor 4 which is now hard-coded
 in {\file w3ref1md.ftn}. This should be adjusted together with the maximum reflection 
 which is defined by the namelist parameter {\code
-REFRMAX}.
+REFRMAX}. In the present version, the option {\code IGSWELLMAX = T} does 
+not work well with unstructured grids. We thus advise to use 
+{\code IGSWELLMAX = F} for these grids, this will unfortunately lead 
+to a spectral gap between the IG band and the swell-windsea band. 
 
 
 

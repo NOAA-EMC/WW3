@@ -304,6 +304,9 @@ $(TARGET).dvi: $(DEPFILES)
 	$(BIBTEX) $(TARGET)
 	-@sh bib_strip.sh $(TARGET)
 	$(LATEX) $(TARGET)
+	$(BIBTEX) $(TARGET)
+	-@sh bib_strip.sh $(TARGET)
+	$(LATEX) $(TARGET)
 
 $(TARGET).pdf: $(TARGET).dvi
 	$(DVIPDF) $(TARGET)
