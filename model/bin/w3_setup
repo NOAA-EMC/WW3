@@ -21,19 +21,20 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="c:hqst:"  #option string for getopt function
+optstr="c:hqs:et:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
 
-Usage: $myname source_dir
+Usage: $myname source_dir Options
 Required:
   source_dir : path to top-level of WW3 source
 Options:
   -c cmplr         : setup comp & link files for specified cmplr
   -h               : print usage and exit
   -q               : do not prompt for changes to existing WW3 environment
-  -s               : setup and edit switch file
+  -s swtch         : setup switch file for specfied swtch
+  -e               : edit switch file
   -t tdir          : set path for scratch directory to tdir
 
 EOF
@@ -55,7 +56,8 @@ do
   -c) shift; cmplr="$1" ;;
   -h) help=1 ;;
   -q) no_prompt=1 ;;
-  -s) swtch=1 ;;
+  -s) shift; swtch="$1" ;;
+  -e) edit=1 ;;
   -t) shift; tdir="$1" ;;
   --) break ;;
   esac
@@ -393,15 +395,25 @@ if [ $swtch ]
 then
   echo ' '
   echo '   Setup switch file'
+  if [ -f $path_b/switch.$swtch ]
+  then
+    cp -f $path_b/switch.$swtch $path_b/switch
+    echo "      $path_b/switch.$swtch => $path_b/switch"
+  else
+    errmsg "$path_b/switch.$swtch not found"
+    exit 1
+  fi
+fi
+
+# 3.e Edit switch file
+if [ $edit ] 
+  then
+  echo "      Edit $path_b/switch"
   if [ ! -f $path_b/switch ]
   then
-    if [ -f $path_b/switch.gen ]
-    then
-      cp -f $path_b/switch.gen $path_b/switch
-      echo "      $path_b/switch.gen => $path_b/switch"
-    fi
+    errmsg "$path_b/switch not found"
+    exit 1
   fi
-  echo "      Edit $path_b/switch"
   if [ $EDITOR ]
   then
     if $EDITOR $path_b/switch
