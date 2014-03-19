@@ -41,7 +41,7 @@
 
   src_dir=arc_tmp # Source directory (before links or copies are made)
 
-  dirs="model regtests"
+  dirs="model cases regtests"
   for dir in $dirs
   do
     fname=wwatch3.*.$dir.tar
@@ -396,6 +396,8 @@
   tar xf ../$model
   echo -e "Unpacking $regtests"
   tar xf ../$regtests
+  echo -e "Unpacking $cases"
+  tar xf ../$cases
 
 # Placeholder for cases
 #  echo -e "Unpacking $cases"
@@ -404,7 +406,7 @@
   cd ${main_dir}
 
 # Make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp work regtests
+  for dir in aux bin ftn obj mod exe inp work cases regtests
   do
     if [ ! -d $dir ]
     then
@@ -939,13 +941,6 @@
 # 7. Set-up / update cases directory                                           #
 # --------------------------------------------------------------------------- #
 
-# Placeholder for when cases become part of distro
-
-  icases="no"
-
-  if [ "icases" = "y" ]
-  then
-
   rm -f ${main_dir}/tmp/cases_setup.out
   tnr_old=0
   tnr_new=0
@@ -957,7 +952,7 @@
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/cases_setup.out
 
-  tmp_files=`ls -p | grep -v '/$'`
+  tmp_files=`ls`
   all_files=
   all_dirs=
   for file in $tmp_files
@@ -1097,9 +1092,6 @@
   echo -e "\n   List of existing (old) or files copied routed to :"
   echo -e "     ${main_dir}/tmp/cases_setup.out "
   sleep 2
-
-# Icases if closure
-  fi
 
 # --------------------------------------------------------------------------- #
 # 7.1 Set-up / update regtests directory                                           #

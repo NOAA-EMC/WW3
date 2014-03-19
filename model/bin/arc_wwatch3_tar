@@ -108,7 +108,7 @@
 # 2.a Requested files
 
   echo -e "\n"
-  is="1 2 3 4"
+  is="1 2 3 4 5"
   for i in $is
   do
     OK="$NULL"
@@ -120,6 +120,7 @@
         2) echo -en " Make manual file ? [y/n] : " ;;
         3) echo -en " Make model file ? [y/n] : " ;;
         4) echo -en " Make regtests file  ? [y/n] : " ;;
+        5) echo -en " Make cases file  ? [y/n] : " ;;
       esac
       read OK
     done
@@ -136,6 +137,7 @@
      2) make_man=$do_it ;;
      3) make_mod=$do_it ;;
      4) make_reg=$do_it ;;
+     5) make_cas=$do_it ;;
     esac
   done
 
@@ -164,14 +166,16 @@
   file_mod="$main_dir/arc/wwatch3.$ID.model.tar"
   file_man="$main_dir/arc/manual.$ID.pdf"
   file_reg="$main_dir/arc/wwatch3.$ID.regtests.tar"
+  file_cas="$main_dir/arc/wwatch3.$ID.cases.tar"
 
-  for i in 1 2 3 4
+  for i in 1 2 3 4 5
   do
     case $i in
      1) file=$file_gde ; make=$make_gde ;; 
      2) file=$file_man ; make=$make_man ;; 
      3) file=$file_mod ; make=$make_mod ;; 
      4) file=$file_reg ; make=$make_reg ;;
+     4) file=$file_cas ; make=$make_cas ;;
     esac
     if test -f $file && test "$make" = 'y'
     then
@@ -185,6 +189,7 @@
          2) make_man='n' ;;
          3) make_mod='n' ;;
          4) make_reg='n' ;;
+         5) make_cas='n' ;;
         esac
       fi
     fi
@@ -194,7 +199,8 @@
 
   action="$NULL"
   if [ "$make_gde" = 'n' ] && [ "$make_man" = 'n' ] && \
-     [ "$make_mod" = 'n' ] && [ "$make_reg" = 'n' ] 
+     [ "$make_mod" = 'n' ] && [ "$make_reg" = 'n' ] && \
+     [ "$make_cas" = 'n' ] 
   then
     action='n'
   else
@@ -231,6 +237,14 @@
       if [ -f arc/$file_reg ]
       then
         rm -f arc/$file_reg
+      fi
+    fi
+    if test "$make_cas" = 'y'
+    then
+      echo -e "   $file_cas"
+      if [ -f arc/$file_cas ]
+      then
+        rm -f arc/$file_cas
       fi
     fi
   fi
@@ -282,6 +296,12 @@
     echo -e "\n Creating wwatch3.$ID.regtests.tar and copying to archive location..."
     cd $main_dir/svn
     tar cf ${main_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
+  fi
+ if test "$make_cas" = 'y'
+  then
+    echo -e "\n Creating wwatch3.$ID.cases.tar and copying to archive location..."
+    cd $main_dir/svn
+    tar cf ${main_dir}/arc/wwatch3.$ID.cases.tar cases --exclude=.svn
   fi
 
 # Copy install_ww3_tar to arc
