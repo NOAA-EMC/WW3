@@ -28,17 +28,17 @@
 #     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.105, fgamma = 1.07          #
 #                                                                               #
 # - Examples:                                                                   #
-#   bin/run_test -c gnu -s PR1_REFRX     -i input_IC3_0.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR2_UQ_REFRX  -i input_IC3_0.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR2_UNO_REFRX -i input_IC3_0.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR3_UQ_REFRX  -i input_IC3_0.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR3_UNO_REFRX -i input_IC3_0.5k ../model ww3_tic1.3  #
+#   bin/run_test -c gnu -s PR1_REFRX     -i input_IC3_0.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR2_UQ_REFRX  -i input_IC3_0.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR2_UNO_REFRX -i input_IC3_0.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR3_UQ_REFRX  -i input_IC3_0.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR3_UNO_REFRX -i input_IC3_0.5k ../ ww3_tic1.3       #
 #                                                                               #
-#   bin/run_test -c gnu -s PR1_REFRX     -i input_IC3_2.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR2_UQ_REFRX  -i input_IC3_2.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR2_UNO_REFRX -i input_IC3_2.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR3_UQ_REFRX  -i input_IC3_2.5k ../model ww3_tic1.3  #
-#   bin/run_test -c gnu -s PR3_UNO_REFRX -i input_IC3_2.5k ../model ww3_tic1.3  #
+#   bin/run_test -c gnu -s PR1_REFRX     -i input_IC3_2.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR2_UQ_REFRX  -i input_IC3_2.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR2_UNO_REFRX -i input_IC3_2.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR3_UQ_REFRX  -i input_IC3_2.5k ../ ww3_tic1.3       #
+#   bin/run_test -c gnu -s PR3_UNO_REFRX -i input_IC3_2.5k ../ ww3_tic1.3       #
 #                                                                               #
 #                                               Stefan Zieger, Nov 2013         #
 #                                                                               #

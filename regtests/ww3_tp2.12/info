@@ -31,8 +31,8 @@
 #                                                                           #
 # Sample run_test commands :                                                #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                -s PR1 ../model ww3_tp2.12                 #
-#  ./bin/run_test -n 4 -p mpirun -s PR1 ../model ww3_tp2.12                 #
+#  ./bin/run_test                -s PR1 ../ ww3_tp2.12                      #
+#  ./bin/run_test -n 4 -p mpirun -s PR1 ../ ww3_tp2.12                      #
 #                                                                           #
 #                                    Andre van der Westhuysen, Jan 2014     #
 #                                                   Last Mod : Jan 2014     #

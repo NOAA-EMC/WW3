@@ -52,19 +52,19 @@
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
 #                                                                           #
-# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1 ../model ww3_tic1.1    #
-# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1 ../model ww3_tic1.1    #
-# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1 ../model ww3_tic1.1    #
-# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1 ../model ww3_tic1.1    #
-# ./bin/run_test -g 5km   -w w5km_IC1   -i input_IC1 ../model ww3_tic1.1    #
-# ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../model ww3_tic1.1    #
-# ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../model ww3_tic1.1    #
+# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 5km   -w w5km_IC1   -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../ ww3_tic1.1         #
 #                                                                           #
-# ./bin/run_test -g 1000m -w w1000m_IC2 -i input_IC2 ../model ww3_tic1.1    #
+# ./bin/run_test -g 1000m -w w1000m_IC2 -i input_IC2 ../ ww3_tic1.1         #
 #                                                                           #
-# ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../model ww3_tic1.1    #
-# ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../model ww3_tic1.1    #
-# ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../model ww3_tic1.1    #
+# ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../ ww3_tic1.1         #
+# ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../ ww3_tic1.1         #
+# ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../ ww3_tic1.1         #
 #                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #

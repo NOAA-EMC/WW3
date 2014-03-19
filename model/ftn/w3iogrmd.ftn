@@ -266,10 +266,10 @@
 !/S      CALL STRACE (IENT, 'W3IOGR')
 !
       MESSAGE =(/ '     FILE mod_def.ww3 WAS GENERATED WITH A DIFFERENT', &
-                  '     WW3 VERSION OR USING A DIFFERENT SWITCH FILE.',   &
+                  '     WW3 VERSION OR USING A DIFFERENT SWITCH FILE.  ', &
                   '     MAKE SURE WW3_GRID IS COMPILED WITH SAME SWITCH', &
                   '     AS WW3_SHEL OR WW3_MULTI, RUN WW3_GRID AGAIN   ', &
-                  '     AND THEN TRY AGAIN THE PROGRAM YOU JUST USED. '/)
+                  '     AND THEN TRY AGAIN THE PROGRAM YOU JUST USED.  '/)
 !
       TNAMEF = '------------------------------'
       TNAME0 = '------------------------------'
