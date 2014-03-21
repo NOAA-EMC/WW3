@@ -1173,7 +1173,7 @@
 !/T38      OPEN (NMYOUT, FILE=CMYOUT, STATUS="REPLACE")
 !/S      CALL STRACE (IENT, 'WMGHGH')
 !
-!/MPI    CALL MPI_BARRIER(MPI_COMM_WORLD, IERR_MPI)
+!/MPI    CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
 !/T38         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
 !/T38         BEG_TIME(1) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
 !/T38         WRITE(NMYOUT,*) "WMGHGH: START: 0 MSEC"
@@ -1430,7 +1430,7 @@
 !/MPIBDI                  IF ( IM .NE. IMPROC ) THEN
 !/MPIBDI                     NRQ = NRQ + 1
 !/MPIBDI                     TAG = NMPROC * IM + IMPROC
-!/MPIBDI                     CALL MPI_IRECV ( MAPBDI(1,NX_BEG(IM)), NX_SIZE(IM), MPI_REAL, IM - 1, TAG, MPI_COMM_WORLD, &
+!/MPIBDI                     CALL MPI_IRECV ( MAPBDI(1,NX_BEG(IM)), NX_SIZE(IM), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
 !/MPIBDI                                      IRQ(NRQ), IERR_MPI )
 !/MPIBDI                  END IF
 !/MPIBDI               END DO
@@ -1438,12 +1438,12 @@
 !/MPIBDI                  IF ( IM .NE. IMPROC ) THEN
 !/MPIBDI                     NRQ = NRQ + 1
 !/MPIBDI                     TAG = NMPROC * IMPROC + IM
-!/MPIBDI                     CALL MPI_ISEND( MAPBDI(1,NX_BEG(IMPROC)), NX_SIZE(IMPROC), MPI_REAL, IM - 1, TAG, MPI_COMM_WORLD, &
+!/MPIBDI                     CALL MPI_ISEND( MAPBDI(1,NX_BEG(IMPROC)), NX_SIZE(IMPROC), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
 !/MPIBDI                                     IRQ(NRQ), IERR_MPI )
 !/MPIBDI                  END IF
 !/MPIBDI               END DO
 !/MPIBDI               CALL MPI_WAITALL( NRQ, IRQ, MPI_STATUS_IGNORE, IERR_MPI )
-!/MPIBDI               CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR_MPI )
+!/MPIBDI               CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
                IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A/)') &
                '  Finished generating map with distances to boundary.'
 
@@ -1527,7 +1527,7 @@
 !/SCRIPNC            END IF
 !/SCRIPNC         END DO
 !/SCRIPNC      END DO
-!/MPI              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_WORLD, IERR_MPI)
+!/MPI              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
 
       LOWRANK_GRID : DO GDST=1, NRGRD
 
