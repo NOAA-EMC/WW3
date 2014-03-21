@@ -1,0 +1,88 @@
+#!/bin/sh
+run_test=./bin/run_test
+srcdir=../model
+
+comp=Portland
+mpirun=mpirun
+nproc=4
+export ESMFMKFILE=/common/esmf/pgi/openmpi/6.3.0r/lib/libO/esmf.mk
+export WWATCH3_NETCDF=NC3
+export NETCDF_LIBDIR="/common/netcdf/pgi/lib"
+export NETCDF_INCDIR="/common/netcdf/pgi/include"
+
+
+testcases=""
+testcases="$testcases mww3_test_02"
+testcases="$testcases mww3_test_03"
+testcases="$testcases mww3_test_04"
+testcases="$testcases mww3_test_05"
+testcases="$testcases mww3_test_06"
+
+
+for testcase in $testcases
+do
+
+
+case $testcase in
+mww3_test_02)
+grdsets=""
+grdsets="$grdsets grdset_a"
+grdsets="$grdsets grdset_b"
+grdsets="$grdsets grdset_c"
+grdsets="$grdsets grdset_d"
+switches=""
+switches="$switches PR3_UQ_MPI"
+;;
+mww3_test_03)
+grdsets=""
+grdsets="$grdsets grdset_a"
+grdsets="$grdsets grdset_b"
+grdsets="$grdsets grdset_c"
+grdsets="$grdsets grdset_d"
+grdsets="$grdsets grdset_d2"
+grdsets="$grdsets grdset_e"
+switches=""
+switches="$switches PR3_UQ_MPI"
+;;
+mww3_test_04)
+grdsets=""
+grdsets="$grdsets grdset_a"
+grdsets="$grdsets grdset_b"
+grdsets="$grdsets grdset_c"
+grdsets="$grdsets grdset_d"
+grdsets="$grdsets grdset_e"
+grdsets="$grdsets grdset_f"
+grdsets="$grdsets grdset_g"
+switches=""
+switches="$switches PR3_UQ_MPI"
+;;
+mww3_test_05)
+grdsets=""
+grdsets="$grdsets grdset_a"
+switches=""
+switches="$switches ST6_PR3_UQ_MPI"
+;;
+mww3_test_06)
+grdsets=""
+grdsets="$grdsets grdset_d"
+switches=""
+switches="$switches PR3_UQ_MPI_SCRIP"
+switches="$switches PR3_UQ_MPI_SCRIPNC"
+switches="$switches PR3_UQ_MPIBDI_SCRIPNC"
+;;
+esac
+
+
+for switch in $switches
+do
+  for grdset in $grdsets
+  do
+    work=work_${switch}_${grdset}_esmf
+    $run_test -c $comp -m $grdset -n $nproc -p $mpirun -s $switch -w $work    $srcdir $testcase
+    work=work_${switch}_${grdset}
+    $run_test -c $comp -m $grdset -n $nproc -p $mpirun -s $switch -w $work -t $srcdir $testcase
+  done
+done
+
+
+done

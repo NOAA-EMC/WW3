@@ -1,0 +1,16 @@
+verbose: t
+
+start_time: 1968 06 06 00 00 00
+stop_time:  1968 06 07 00 00 00
+time_step: 1 0 0
+
+WAV_active: t
+
+ATM_active: t
+ATM_time_step: 1 0 0
+
+OCN_active: t
+OCN_time_step: 1 0 0
+
+ICE_active: f
+ICE_time_step: 1 0 0

@@ -33,7 +33,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:efg:Ghi:m:n:o:Op:q:r:s:Sw:"  #option string for getopt function
+optstr="a:c:defg:Ghi:m:n:o:Op:q:r:s:Stw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -47,6 +47,7 @@ Options:
                    :   *default is <source_dir>/wwatch3.env
                    :   *file will be created if it does not already exist
   -c cmplr         : setup comp & link files for specified cmplr
+  -d               : invoke main program using gdb (non-parallel)
   -e               : prompt for changes to existing WW3 environment
   -f               : force pre- and post-processing programs to be compiled
                    : non-MPI (i.e., with SHRD switch); default is all programs
@@ -82,6 +83,8 @@ Options:
   -s switch_string : use switch_<switch_string>
   -S               : create stub file <finished>. with end data and time.
                      tests not executed if file is found.
+  -t               : invoke multi-model test via ESMF coupled application
+                   : test driver
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
 
 EOF
@@ -114,6 +117,7 @@ do
   case "$1" in
   -a) shift; ww3_env="$1" ;;
   -c) shift; cmplr="$1" ;;
+  -d) use_gdb=1 ;;
   -e) prompt=1 ;;
   -f) force_shrd=1 ;;
   -g) shift; grdstr="$1" ;;
@@ -135,6 +139,7 @@ do
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
   -S) stub=1 ;;
+  -t) esmf_test=1 ;;
   -w) shift; wrkdir="$1" ;;
   --) break ;;
   esac
@@ -245,7 +250,12 @@ then
     exit 1
   fi
 else
-  runcmd=''
+  if [ $use_gdb ]
+  then
+    runcmd='gdb'
+  else
+    runcmd=''
+  fi
 fi
 
 if [ $pomp ]
@@ -763,8 +773,15 @@ fi
 if [ $multi -ge 1 ]
 then
   prog=ww3_multi
+  if [ $esmf_test ]
+  then
+    prgb=ww3_multi_esmf
+  else
+    prgb=ww3_multi
+  fi
 else
   prog=ww3_shel
+  prgb=ww3_shel
 fi
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
@@ -792,16 +809,29 @@ then
   echo ' '
 
   \cp -f $file_c $path_b/switch
-  if $path_b/w3_make $prog
+  if $path_b/w3_make $prgb
   then :
   else
-    errmsg "Error occured during WW3 $prog build"
+    errmsg "Error occured during WW3 $prgb build"
     exit 1
   fi
-
-  if [ ! -f $path_e/$prog ]
+  if [ $esmf_test ]
   then
-    errmsg "$path_e/$prog not found"
+    if [ $cmplr ]
+    then
+      export WW3_COMP=$cmplr
+    fi
+    if make -C $path_s/esmf $prgb
+    then :
+    else
+      errmsg "Error occured during WW3 ESMF build"
+      exit 1
+    fi
+  fi
+
+  if [ ! -f $path_e/$prgb ]
+  then
+    errmsg "$path_e/$prgb not found"
     exit 1
   fi
 
@@ -809,6 +839,12 @@ then
 
   \rm -f $prog.inp
   \ln -s $ifile $prog.inp
+  if [ $esmf_test ]
+  then
+    \rm -f PET*.ESMF_LogFile
+    \rm -f ww3_esmf.rc
+    \ln -s ${path_i}/ww3_esmf.rc ww3_esmf.rc
+  fi
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
   if [ $pmpi ]
@@ -826,12 +862,13 @@ then
     fi
   fi
 
-  if $runcmd $path_e/$prog | tee $ofile
+  if $runcmd $path_e/$prgb | tee $ofile
   then
     \rm -f track_i.ww3
     \rm -f $prog.inp
+    \rm -f ww3_esmf.rc
   else
-    errmsg "Error occured during $path_e/$prog execution"
+    errmsg "Error occured during $path_e/$prgb execution"
     exit 1
   fi
 
