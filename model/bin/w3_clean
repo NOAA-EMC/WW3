@@ -246,6 +246,10 @@ EOF
   then
     if [ -d $main_dir ]
     then
+      if [ -e $main_dir/nuopc.mk ]
+      then
+        \rm -f $main_dir/nuopc.mk
+      fi
       if [ -d $main_dir/bin ]
       then
         echo "   Clean up $main_dir/bin"

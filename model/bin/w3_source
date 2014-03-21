@@ -122,7 +122,10 @@ echo ' '
     progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp ww3_trck'
     progs="$progs ww3_grib"
     progs="$progs gx_outf gx_outp"
-    progs="$progs ww3_multi ww3_sbs1 ww3_gint"
+    progs="$progs ww3_multi"
+    progs="$progs ww3_sbs1"
+    progs="$progs ww3_gint"
+    progs="$progs ww3_multi_esmf"
   else
     progs="$*"
   fi
@@ -191,6 +194,9 @@ echo ' '
     checks="$checks ww3_grib"
     checks="$checks gx_outf gx_outp"
     checks="$checks ww3_multi ww3_gint"
+    checks="$checks ww3_sbs1"
+    checks="$checks ww3_gint"
+    checks="$checks ww3_multi_esmf"
 
     for check in $checks
     do

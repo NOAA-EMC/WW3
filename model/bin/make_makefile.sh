@@ -52,6 +52,14 @@
     exit 1
   fi
 
+  os=`uname -s 2>/dev/null`
+  if [ "$os" = "AIX" ]
+  then
+    ar_cmd="ar -X32_64 rv"
+  else
+    ar_cmd="ar rv"
+  fi
+
 # 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ -d $main_dir ]
@@ -68,14 +76,16 @@
   fi
   cd $temp_dir
 
+# 1.e Create makefile with header  - - - - - - - - - - - - - - - - - - - - - -
+
+  echo '# -------------------------'              > makefile
+  echo '# WAVEWATCH III makefile   '             >> makefile
+  echo '# -------------------------'             >> makefile
+
 # --------------------------------------------------------------------------- #
 # 2. Part 1, subroutine dependencies                                          #
 # --------------------------------------------------------------------------- #
 # 2.a File ID
-
-  echo ' '                                        > makefile
-  echo '# WAVEWATCH III executables'             >> makefile
-  echo '# -------------------------'             >> makefile
 
   rm -f filelist.tmp
   nr_thr=0
@@ -649,9 +659,14 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
+  echo ' '                                       >> makefile
+  echo '# WAVEWATCH III executables'             >> makefile
+  echo '# -------------------------'             >> makefile
+
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
+  progs="$progs ww3_multi_esmf"
 
   for prog in $progs
   do
@@ -713,8 +728,16 @@
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
-    ww3_multi) IDstring='Multi-grid shell'
-               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd'
+    ww3_multi|ww3_multi_esmf)
+               if [ "$prog" = "ww3_multi" ]
+               then
+                 IDstring='Multi-grid shell'
+                 core=''
+               else
+                 IDstring='Multi-grid ESMF module'
+                 core='wmesmfmd'
+               fi
+               core="$core wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd"
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
@@ -728,7 +751,7 @@
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
                   aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
-                fi 
+                fi
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
@@ -832,10 +855,37 @@
                 aux='w3servmd w3timemd' ;;
     esac
 
-    d_string='$(aPe)/'"$prog"' : $(aPo)/'
+    # ESMF compile requires DIST and NOPA
+    if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+    then
+      if [ "$shared" != "DIST" ]
+      then
+        echo ' '
+        echo "*** DIST switch must be set when compiling with ESMF ***"
+        echo ' '
+        exit 1
+      fi
+      if [ "$mcp" != "NOPA" ]
+      then
+        echo ' '
+        echo "*** NOPA switch must be set when compiling with ESMF ***"
+        echo ' '
+        exit 1
+      fi
+    fi
 
-    files="$aux $core $data $prop $source $IO $prog"
-    filesl="$prog $data $core $prop $source $IO $aux"
+    # if esmf is included in program name, then
+    # the target is compile and create archive
+    if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+    then
+      d_string="$prog"' : $(aPo)/'
+      files="$aux $core $data $prop $source $IO"
+      filesl="$data $core $prop $source $IO $aux"
+    else
+      d_string='$(aPe)/'"$prog"' : $(aPo)/'
+      files="$aux $core $data $prop $source $IO $prog"
+      filesl="$prog $data $core $prop $source $IO $aux"
+    fi
 
     echo "# $IDstring"                           >> makefile
     echo ' '                                     >> makefile
@@ -844,12 +894,27 @@
       echo "$d_string$file.o"                    >> makefile
       if [ -z "`echo $file | grep scrip 2>/dev/null`" ]
       then
-      echo "$file"                               >> filelist.tmp
+        echo "$file"                             >> filelist.tmp
       fi
     done
 
-    echo '	@$(aPb)/link '"$filesl"          >> makefile
-    echo ' '                                     >> makefile
+    # if esmf is included in program name, then
+    # the target is compile and create archive
+    if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+    then
+      lib=lib$prog.a
+      objs=""
+      for file in $filesl
+      do
+        objs="$objs $file.o"
+      done
+      echo "	@cd \$(aPo); $ar_cmd $lib $objs" >> makefile
+      echo ' '                                   >> makefile
+    else
+      echo '	@$(aPb)/link '"$filesl"          >> makefile
+      echo ' '                                   >> makefile
+    fi
+
   done
 
   sort -u filelist.tmp                            > filelist
@@ -867,23 +932,45 @@
   echo '# -------------------------'             >> makefile
   echo ' '                                       >> makefile
 
+  # list of ftn files that have CPP macros
+  # these files will be assigned a F90 suffix
+  # must match the same list defined in ad3
+  cpp_ftn_files="wmesmfmd"
+
 # 3.b Loop over files
 
   for file in `cat filelist`
   do
-    if [ -f $main_dir/ftn/$file.ftn ]
-    then
-      fext=ftn
-    else
-      if [ -f $main_dir/ftn/$file.f90 ]
+
+    suffixes="ftn f F f90 F90"
+    fexti=none
+    for s in $suffixes
+    do
+      if [ -f $main_dir/ftn/$file.$s ]
       then
-        fext=f90
-      else
-        fext=f
+        fexti=$s
+        break
       fi
+    done
+    if [ "$fexti" = 'none' ]
+    then
+      echo '      *** make_makefile.sh error ***'
+      echo "          Fortran file $main_dir/ftn/$file.* not found"
+      echo "          Fortran file suffixes checked: $suffixes"
+      exit 2
+    fi
+    if [ "$fexti" = 'ftn' ]
+    then
+      fexto=f90
+      if [ -n "`echo $cpp_ftn_files | grep $file`" ]
+      then
+        fexto=F90
+      fi
+    else
+      fexto=$fexti
     fi
 
-    string1='$(aPo)/'$file'.o : '$file.$fext' '
+    string1='$(aPo)/'$file'.o : '$file.$fexti' '
     string2='	@$(aPb)/ad3'" $file"
     string3="$NULL"
 
@@ -896,16 +983,9 @@
     fi
     rm -f ad3.out
 
-    if [ -f $file.f90 ]
-    then
-      fext=f90
-    else
-      fext=f
-    fi
-
-    grep USE $file.$fext  > check_file
-    grep use $file.$fext >> check_file
-    rm -f $file.$fext
+    grep USE $file.$fexto  > check_file
+    grep use $file.$fexto >> check_file
+    rm -f $file.$fexto
 
     for mod in W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
@@ -930,7 +1010,7 @@
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1023,6 +1103,7 @@
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
+         'WMESMFMD'     ) modtest=wmesmfmd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
@@ -1076,7 +1157,7 @@
     scrip_dir=$main_dir/ftn/SCRIP
     if [ ! -d $scrip_dir ]
     then
-      echo "*** SCRIPT directory $scrip_dir not found ***"
+      echo "*** SCRIP directory $scrip_dir not found ***"
       exit 2
     fi
 
@@ -1088,7 +1169,7 @@
     fi
     if [ ! -e $scrip_mk ]
     then
-      echo "*** SCRIPT makefile fragment $scrip_mk not found ***"
+      echo "*** SCRIP makefile fragment $scrip_mk not found ***"
       exit 2
     fi
 

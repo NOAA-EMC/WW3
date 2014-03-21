@@ -31,7 +31,7 @@
 #    file $ww3_env, as is the scratch directory ($temp_dir). The following    #
 #    directories are used :                                                   #
 #       $main_dir/ftn : Raw FORTRAN file ($basename.ftn). If extension is     #
-#                       not .ftn, w3adc will be skipped.                      # 
+#                       not .ftn, w3adc will be skipped.                      #
 #       $main_dir/bin : File with preprocessor switches 'switch', and         #
 #                       compiler script 'comp'.                               #
 #       $main_dir/obj : Final object modules ($basename.o).                   #
@@ -87,7 +87,7 @@
     icmp='0'
   fi
 
-# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
 # The following line must not be removed: it is a switch for local install
@@ -123,7 +123,7 @@
     exit 2
   fi
 
-# 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   path_b="$main_dir/bin"
   path_w="$temp_dir"
@@ -161,7 +161,41 @@
     idstr='[no w3adc]'
   fi
 
-# 1.f Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.f Set appropriate Fortran file suffix  - - - - - - - - - - - - - - - - - -
+
+  # list of ftn files that have CPP macros
+  # these files will be assigned a F90 suffix
+  # must match the same list defined in make_makefile.sh
+  cpp_ftn_files="wmesmfmd"
+
+  if [ -f $path_i/$name.ftn ]
+  then
+    fext=f90
+    if [ -n "`echo $cpp_ftn_files | grep $name`" ]
+    then
+      fext=F90
+    fi
+  else
+    suffixes="f F f90 F90"
+    fext=none
+    for s in $suffixes
+    do
+      if [ -f $path_i/$name.$s ]
+      then
+        fext=$s
+        break
+      fi
+    done
+    if [ "$fext" = 'none' ]
+    then
+      echo '      *** adc error ***'
+      echo "          Fortran file $path_i/$name.* not found"
+      echo "          Fortran file suffixes checked: $suffixes"
+      exit 5
+    fi
+  fi
+
+# 1.g Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   echo "ad3 : processing $name $idstr"
 
@@ -179,10 +213,10 @@
     echo ' '
   fi
 
-# 1.g Final preparations - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.h Final preparations - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   cd $path_w
-  rm -f $name.f $name.f90
+  rm -f $name.$fext
   rm -f $name.l
   ln -s $main_dir/bin/w3list . 2> /dev/null
 
@@ -195,7 +229,7 @@
   then
 
     echo "0 $compress"                             > w3adc.inp
-    echo "'$path_i/$name.ftn' '$name.f90'"        >> w3adc.inp
+    echo "'$path_i/$name.ftn' '$name.$fext'"      >> w3adc.inp
     echo "'$sw_str'"                              >> w3adc.inp
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - -
@@ -219,7 +253,7 @@
       fi
     fi
 
-# 2.c Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.c Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     if [ "$itst" != '0' ]
     then
@@ -230,7 +264,7 @@
 
     $path_b/w3adc < w3adc.inp > w3adc.out 2> w3adc.err
 
-# 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.c Test the output of w3adc - - - - - - - - - - - - - - - - - - - - - - - -
 
     ad3_tst="`grep ERROR w3adc.out`"
     if [ -n "$ad3_tst" ]
@@ -239,17 +273,17 @@
       echo "     $ad3_tst" ; exit 4
     fi
 
-    if [ ! -f $name.f90 ]
+    if [ ! -f $name.$fext ]
     then
       echo '      *** w3adc error ***'
-      echo "          file $name.f90 not found (1)."
+      echo "          file $name.$fext not found (1)."
       cat w3adc.out ; cat w3adc.err  ; exit 4
     fi
 
-    if [ "`wc -l $name.f90 | awk '{ print $1}'`" -lt '2'  ]
+    if [ "`wc -l $name.$fext | awk '{ print $1}'`" -lt '2'  ]
     then
       echo '      *** w3adc error ***'
-      echo "          file $name.f90 not found (2)."
+      echo "          file $name.$fext not found (2)."
       cat w3adc.out ; cat w3adc.err  ; exit 4
     fi
 
@@ -258,52 +292,44 @@
       cat w3adc.out
     fi
 
-# 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.d Clean up - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     rm -f w3adc.*
 
 # 2.e Add switches in w3initmd - - - - - - - - - - - - - - - - - - - - - -
 
     if [ "$name" = "w3initmd" ]
-    then 
+    then
       sw_1=''
-      cp $path_w/w3initmd.f90  $path_w/w3initmd.ft1
-      for line in 1 2 3 
-        do 
+      cp $path_w/w3initmd.$fext  $path_w/w3initmd.ft1
+      for line in 1 2 3
+        do
           sw_1=`echo $sw_str  | fold -w100 | sed -n "${line}p"`
           sw_old="PUT_SW$line"
           # echo $line  $sw_1 $sw_old
           sed -e "s/$sw_old/$sw_1/"  $path_w/w3initmd.ft1 > $path_w/w3initmd.ft2
-          mv  $path_w/w3initmd.ft2 $path_w/w3initmd.ft1 
-        done 
-      mv $path_w/w3initmd.ft1 $path_w/w3initmd.f90
-      echo "'$path_w/$name.fts' '$name.f90'"        >> w3adc.inp
+          mv  $path_w/w3initmd.ft2 $path_w/w3initmd.ft1
+        done
+      mv $path_w/w3initmd.ft1 $path_w/w3initmd.$fext
+      echo "'$path_w/$name.fts' '$name.$fext'"        >> w3adc.inp
     fi
 
   else
 
-# 2.f No w3adc, just copy file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.f No w3adc, just copy file - - - - - - - - - - - - - - - - - - - - - - - -
 
-    if [ -f $path_i/$name.f90 ]
-    then
-      cp $path_i/$name.f90 .
-    else
-      if [ -f $path_i/$name.f ]
-      then
-        cp $path_i/$name.f .
-      fi
-    fi
+    cp $path_i/$name.$fext .
 
   fi
 
-  if [ ! -f $name.f ] && [ ! -f $name.f90 ]
+  if [ ! -f $name.$fext ]
   then
     echo '      *** adc error ***'
-    echo "          file $name.f[90] not found."
+    echo "          file $name.$fext not found."
     exit 5
   fi
 
-# 2.g Stop if requested  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.g Stop if requested  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ "$icmp" != '0' ]
   then
@@ -321,6 +347,7 @@
 
   error='0'
 
+  export fext    # for use by comp
   export path_m  # for use by comp
 #OLD  export ldflags # for use by link
 
@@ -329,7 +356,7 @@
     rm -f comp.err
     rm -f comp.out
 
-# 3.b Check comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 3.b Check comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     if [ -f comp.stat ]
     then
@@ -355,9 +382,9 @@
       rm -f $name.o
     fi
 
-# 3.c process object file  - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 3.c process object file  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    if [ "$nr_err" = '0' ] && [ ! -f $name.o ] && [ "$error" = '0' ]
+    if [ "$nr_err" != '0' ] && [ ! -f $name.o ] && [ "$error" = '0' ]
     then
       echo '      *** compile error ***'
       echo "          file $name.o not found"
@@ -380,10 +407,10 @@
       fi
     fi
 
-# Note: the need for moving the .mod file and therefore the printing of the 
+# Note: the need for moving the .mod file and therefore the printing of the
 #       $mod depend on the compiler behavior.
 
-# 3.d Error escape location  - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 3.d Error escape location  - - - - - - - - - - - - - - - - - - - - - - - - -
 
   else
     echo '      *** compile error ***'
@@ -396,15 +423,15 @@
     rm -f comp.*
     error='6'
   fi
- 
-# 3.e process output files - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# 3.e process output files - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   rm -f $name.o
   rm -f w3list
 
   if [ "$source" != 'yes' ]
   then
-    rm -f $name.f $name.f90
+    rm -f $name.f $name.$fext
   fi
   if [ "$list" != 'yes' ] && [ "$error" = '0' ]
   then
