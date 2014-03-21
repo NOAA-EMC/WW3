@@ -1,0 +1,156 @@
+# GNU Makefile template for user ESMF application
+
+################################################################################
+################################################################################
+## This Makefile must be able to find the "esmf.mk" Makefile fragment in the  ##
+## 'include' line below. Following the ESMF User's Guide, a complete ESMF     ##
+## installation should ensure that a single environment variable "ESMFMKFILE" ##
+## is made available on the system. This variable should point to the         ##
+## "esmf.mk" file.                                                            ##
+##                                                                            ##
+## This example Makefile uses the "ESMFMKFILE" environment variable.          ##
+##                                                                            ##
+## If you notice that this Makefile cannot find variable ESMFMKFILE then      ##
+## please contact the person responsible for the ESMF installation on your    ##
+## system.                                                                    ##
+## As a work-around you can simply hardcode the path to "esmf.mk" in the      ##
+## include line below. However, doing so will render this Makefile a lot less ##
+## flexible and non-portable.                                                 ##
+################################################################################
+
+WW3_DIR  := $(shell cd .. 1>/dev/null 2>&1 && pwd)
+WW3_BINDIR := $(WW3_DIR)/bin
+WW3_TMPDIR := $(WW3_DIR)/tmp
+WW3_EXEDIR := $(WW3_DIR)/exe
+WW3_COMP ?= gnu
+WW3_CC := gcc
+WW3_F77 := gfortran
+SWITCHES := $(shell cat switch)
+
+WWATCH3_ENV := $(CURDIR)/wwatch3.env
+export WWATCH3_ENV
+
+EXE := $(WW3_EXEDIR)/ww3_multi_esmf
+
+################################################################################
+
+ifneq ($(origin ESMFMKFILE), environment)
+$(error Environment variable ESMFMKFILE was not set.)
+endif
+
+include $(ESMFMKFILE)
+
+################################################################################
+
+ifeq ($(WW3_COMP),gnu)
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -fconvert=big-endian
+else
+ifeq ($(WW3_COMP),Portland)
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
+else
+ifeq ($(WW3_COMP),Intel)
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else
+ $(error Unsupported WW3_COMP: $(WW3_COMP))
+endif
+endif
+endif
+
+################################################################################
+
+DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_CON=CON
+DEP_CMPL_OBJS := $(DEP_CMPL_OBJS) con.o
+DEP_LINK_OBJS := $(DEP_LINK_OBJS) con.o
+DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_ATM=MDL
+DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_OCN=MDL
+DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_ICE=MDL
+DEP_CMPL_OBJS := $(DEP_CMPL_OBJS) mdl.o
+DEP_LINK_OBJS := $(DEP_LINK_OBJS) mdl.o
+
+ifeq ($(MAKECMDGOALS),ww3_multi_esmf)
+include $(WW3_DIR)/nuopc.mk
+DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_WAV=$(ESMF_DEP_FRONT)
+DEP_INCS      := $(DEP_INCS) $(addprefix -I, $(ESMF_DEP_INCPATH))
+DEP_CMPL_OBJS := $(DEP_CMPL_OBJS) $(ESMF_DEP_CMPL_OBJS)
+DEP_LINK_OBJS := $(DEP_LINK_OBJS) $(ESMF_DEP_LINK_OBJS)
+endif
+
+################################################################################
+################################################################################
+
+.SUFFIXES: .f90 .F90 .c .C
+
+%.o : %.f90
+	$(ESMF_F90COMPILER) -c $(DEP_FRONTS) $(DEP_INCS) \
+		$(ESMF_F90COMPILEOPTS) $(ESMF_F90COMPILEPATHS) \
+		$(ESMF_F90COMPILEFREENOCPP) $<
+
+%.o : %.F90
+	$(ESMF_F90COMPILER) -c $(DEP_FRONTS) $(DEP_INCS) \
+		$(ESMF_F90COMPILEOPTS) $(ESMF_F90COMPILEPATHS) \
+		$(ESMF_F90COMPILEFREECPP) $(ESMF_F90COMPILECPPFLAGS) $<
+
+
+# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+default: env setup switch
+	$(WW3_BINDIR)/w3_make ww3_multi_esmf
+	$(MAKE) ww3_multi_esmf
+
+ww3_multi_esmf: esmApp.o esm.o $(DEP_LINK_OBJS)
+	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
+		$(ESMF_F90LINKPATHS) $(ESMF_F90LINKRPATHS) $(ESMF_F90ESMFLINKLIBS)
+
+# module dependencies:
+esmApp.o: esm.o
+esm.o: con.o mdl.o $(DEP_CMPL_OBJS)
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+.PHONY: env setup switch dust clean
+dust:
+	\rm -f PET*.ESMF_LogFile
+clean: env
+	\rm -f $(EXE) *.o *.mod
+distclean: clean
+	$(WW3_BINDIR)/w3_clean -c
+	\rm -fr $(WW3_TMPDIR)
+	\rm -f $(WWATCH3_ENV)
+
+
+# ------------------------------------------------------------------------------
+# Setup wwatch3.env file for WW3 build or clean
+# ------------------------------------------------------------------------------
+env:
+	@rm -f $(WWATCH3_ENV)
+	@touch $(WWATCH3_ENV)
+	@echo '#'                                              >> $(WWATCH3_ENV)
+	@echo '# ---------------------------------------'      >> $(WWATCH3_ENV)
+	@echo '# Environment variables for wavewatch III'      >> $(WWATCH3_ENV)
+	@echo '# ---------------------------------------'      >> $(WWATCH3_ENV)
+	@echo '#'                                              >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_LPR      $(PRINTER)'                    >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_F77      $(WW3_F77)'                    >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_CC       $(WW3_CC)'                     >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_DIR      $(WW3_DIR)'                    >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_TMP      $(WW3_TMPDIR)'                 >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_SOURCE   yes'                           >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_LIST     yes'                           >> $(WWATCH3_ENV)
+	@echo ''                                               >> $(WWATCH3_ENV)
+# ------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Setup comp & link files and auxiliary programs (this is done using w3_setup)
+# ------------------------------------------------------------------------------
+setup: env
+	@$(WW3_BINDIR)/w3_setup -q -c $(WW3_COMP) $(WW3_DIR)
+# ------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
+# Setup switch file
+# ------------------------------------------------------------------------------
+switch:
+	@echo "$(SWITCHES)" > $(WW3_BINDIR)/switch
+# ------------------------------------------------------------------------------
