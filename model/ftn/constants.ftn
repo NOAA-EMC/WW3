@@ -13,6 +13,7 @@
 !/    25-Jun-2011 : Adding Kelvin functions.            ( version 4.05 )
 !/    03-Sep-2012 : Adding TSTOUT flag.                 ( version 4.10 )
 !/    28-Feb-2013 : Adding cap at 0.5 in FWTABLE        ( version 4.08 )
+!/    21-Mar-2014 : Add parameters for ESMF             ( version 5.XX )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -87,7 +88,14 @@
       REAL,    PARAMETER       :: ABMIN = -1. 
       REAL, PRIVATE, PARAMETER  :: ABMAX = 8. 
 !
-   CONTAINS
+! Parameters in support of running as ESMF component
+!
+! --- Flag indicating whether or not the model has been invoked as an
+!     ESMF Component.  This flag is set to true in the WMESMFMD ESMF
+!     module during initialization.
+      LOGICAL :: IS_ESMF_COMPONENT = .FALSE.
+!
+      CONTAINS
 ! ----------------------------------------------------------------------
       SUBROUTINE TABU_FW
 !/

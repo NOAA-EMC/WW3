@@ -1,0 +1,1746 @@
+!/
+!/ ------------------------------------------------------------------- /
+!/ ESMF macros for logging
+!/
+#define FILENAME "wmesmfmd.ftn"
+#define CONTEXT  line=__LINE__,file=FILENAME,method=METHOD
+#define PASSTHRU msg=ESMF_LOGERR_PASSTHRU,CONTEXT
+!/
+!/ ------------------------------------------------------------------- /
+!/ Define real kind for data passed through ESMF interface
+!/
+#if defined(REAL8)
+#define _ESMF_KIND_RX _ESMF_KIND_R8
+#define ESMF_KIND_RX ESMF_KIND_R8
+#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
+#else
+#define _ESMF_KIND_RX _ESMF_KIND_R4
+#define ESMF_KIND_RX ESMF_KIND_R4
+#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
+#endif
+!/
+!/ ------------------------------------------------------------------- /
+      module WMESMFMD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!/    Copyright 2009-2012 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     National Unified Prediction Capability (NUOPC) based
+!     Earth System Modeling Framework (ESMF) interface module for
+!     multi-grid wave model.
+!
+!  2. Variables and types :
+!
+!     All module variables and types are scoped private by default.
+!     The private module variables and types are not listed in this section.
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  3. Subroutines and functions :
+!
+!     All module subroutines and functions are scoped private by default.
+!
+!      Name            Type   Scope    Description
+!     ----------------------------------------------------------------
+!      SetServices     Subr.  Public   Wave model ESMF Set Services
+!     ----------------------------------------------------------------
+!      InitializeP0    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 0
+!      InitializeP1    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 1
+!      InitializeP2    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 2
+!      Finalize        Subr.  Private  Wave model NUOPC/ESMF Finalize
+!      DataInitialize  Subr.  Private  Wave model NUOPC/ESMF Data Initialize
+!      ModelAdvance    Subr.  Private  Wave model NUOPC/ESMF Model Advance
+!      GetImport       Subr.  Private  Wave model get import fields
+!      SetExport       Subr.  Private  Wave model set export fields
+!      PrintTimers     Subr.  Private  Wave model print wallclock timers
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!     See subroutine documentation.
+!
+!  5. Remarks :
+!
+!  6. Switches :
+!
+!  7. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ Use associated modules
+!/
+! --- ESMF Module
+      use ESMF
+
+! --- NUOPC modules
+      use NUOPC
+      use NUOPC_Model, only: &
+        model_routine_SS            => routine_SetServices, &
+        model_label_DataInitialize  => label_DataInitialize, &
+        model_label_Advance         => label_Advance
+
+! --- WW3 modules
+      use CONSTANTS
+      use WMINITMD, only: WMINIT
+      use WMWAVEMD, only: WMWAVE
+      use WMFINLMD, only: WMFINL
+      use WMMDATMD
+      use W3GDATMD
+      use W3IDATMD
+      use W3ODATMD
+      use W3WDATMD
+      use W3TIMEMD
+!/
+!/ Specify default data typing
+!/
+      implicit none
+!/
+!/ Specify default accessibility
+!/
+      private
+      save
+!/
+!/ Public module methods
+!/
+      public SetServices
+!/
+!/ Private module parameters
+!/
+! --- Miscellaneous
+      integer, parameter :: stdo = 6
+      integer, parameter :: localDE = 0
+      character (*), parameter :: defaultVerbosity = "low"
+      logical :: verbose
+      character(ESMF_MAXSTR) :: msg
+!
+! --- Timing
+      integer, parameter :: numwt=8
+      character(32) :: wtnam(numwt)
+      integer       :: wtcnt(numwt)
+      real(8)       :: wtime(numwt)
+
+! --- Import Fields
+      integer, parameter :: numImpFields = 5
+      character(6)       :: impFieldName(numImpFields)
+      character(128)     :: impFieldStdName(numImpFields)
+      logical            :: isActiveImpField(numImpFields)
+      logical            :: isVectorImpField(numImpFields)
+      type(ESMF_Field)   :: impField(numImpFields)
+
+! --- Background import Fields
+      real(ESMF_KIND_RX) :: missingValue
+      logical            :: includeObg
+      character(10)      :: mbgFieldName(numImpFields)
+      character(128)     :: mbgFieldStdName(numImpFields)
+      logical            :: isActiveMbgField(numImpFields)
+      type(ESMF_Field)   :: mbgField(numImpFields)
+
+! --- Export Fields
+      integer, parameter :: numExpFields = 8
+      character(6)       :: expFieldName(numExpFields)
+      character(128)     :: expFieldStdName(numExpFields)
+      integer            :: expFieldDim(numExpFields)
+      logical            :: isActiveExpField(numExpFields)
+      logical            :: isVectorExpField(numExpFields)
+      type(ESMF_Field)   :: expField(numExpFields)
+!/
+!/ ------------------------------------------------------------------- /
+      contains
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "SetServices"
+      subroutine SetServices ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Wave model ESMF set services.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp   Type   I/O Gridded component
+!       rc      Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name            Type   Module    Description
+!     ----------------------------------------------------------------
+!      InitializeP0    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 0
+!      InitializeP1    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 1
+!      InitializeP2    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 2
+!      Finalize        Subr.  WMESMFMD  Wave model NUOPC/ESMF Finalize
+!      DataInitialize  Subr.  WMESMFMD  Wave model NUOPC/ESMF Data Initialize
+!      ModelAdvance    Subr.  WMESMFMD  Wave model NUOPC/ESMF Model Advance
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      character(ESMF_MAXSTR) :: verbosity
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+! --- Set default return code
+      rc = ESMF_FAILURE
+
+! --- Initialize wallclock timers
+
+      wtnam( 1) = 'InitializeP0'
+      wtnam( 2) = 'InitializeP1'
+      wtnam( 3) = 'InitializeP2'
+      wtnam( 4) = 'DataInitialize'
+      wtnam( 5) = 'ModelAdvance'
+      wtnam( 6) = 'Finalize'
+      wtnam( 7) = 'GetImport'
+      wtnam( 8) = 'SetExport'
+      wtcnt( :) = 0
+      wtime( :) = 0d0
+
+! --- Query the Component for its name
+
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Determine verbosity
+
+      call ESMF_AttributeGet(gcomp, name="Verbosity", value=verbosity, &
+        defaultValue=defaultVerbosity, convention="NUOPC", &
+        purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (trim(verbosity)=="high") then
+        verbose = .true.
+      else
+        verbose = .false.
+      endif
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered SetServices', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! 1.  NUOPC model component will register the generic methods
+!
+      call model_routine_SS(gcomp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! 2.  Set model entry points
+!
+! --- Initialize - phase 0
+
+      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+           UserRoutine=InitializeP0, phase=0, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Initialize - phase 1
+
+      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+           UserRoutine=InitializeP1, phase=1, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Initialize - phase 2
+
+      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+           UserRoutine=InitializeP2, phase=2, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Finalize
+
+      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
+           UserRoutine=Finalize, phase=1, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! 3.  Register specializing methods
+!
+! --- Model initialize export data method
+
+      call ESMF_MethodAdd(gcomp, label=model_label_DataInitialize, &
+           UserRoutine=DataInitialize, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Model advance method
+
+      call ESMF_MethodAdd(gcomp, label=model_label_Advance, &
+           UserRoutine=ModelAdvance, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving SetServices', ESMF_LOGMSG_INFO)
+      rc = ESMF_SUCCESS
+!/
+!/ End of SetServices ------------------------------------------------ /
+!/
+      end subroutine SetServices
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "InitializeP0"
+      subroutine InitializeP0 ( gcomp, impState, expState, extClock, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Initialize wave model (phase 0)
+!     * Define the NUOPC Initialize Phase Mapping
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       impState  Type   I/O Import state
+!       expState  Type   I/O Export state
+!       extClock  Type   I   External clock
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      type(ESMF_State)    :: impState
+      type(ESMF_State)    :: expState
+      type(ESMF_Clock)    :: extClock
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      character(len=NUOPC_PhaseMapStringLength) :: initPhases(4)
+      integer, parameter :: iwt=1
+      real(8) :: wstime, wftime
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered InitializeP0', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Define initialization phases
+! * use IPDv02 to support satisfying inter-model data
+!   dependencies during initialization
+! * skip over IPDv02p2 because we want connected status
+!   set on import/export fields prior to realization
+!
+      initPhases(1) = "IPDv02p1=1"
+      initPhases(2) = "IPDv02p3=2"
+      initPhases(3) = "IPDv02p4=3"
+      initPhases(4) = "IPDv02p5=5"
+      call ESMF_AttributeSet(gcomp, &
+        name="InitializePhaseMap", valueList=initPhases, &
+        convention="NUOPC", purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving InitializeP0', ESMF_LOGMSG_INFO)
+!/
+!/ End of InitializeP0 ----------------------------------------------- /
+!/
+      end subroutine InitializeP0
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "InitializeP1"
+      subroutine InitializeP1 ( gcomp, impState, expState, extClock, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Initialize wave model (phase 1)
+!     * Advertise fields in import and export states.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       impState  Type   I/O Import state
+!       expState  Type   I/O Export state
+!       extClock  Type   I   External clock
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name            Type  Module   Description
+!     ----------------------------------------------------------------
+!      WMINIT          Subr. WMINITMD Wave model initialization
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     ----------------------------------------------------------------
+!      1.  Initialization necessary for driver
+!        a General I/O: (implicit in WMMDATMD)
+!        b MPI environment
+!        c Identifying output to "screen" unit
+!      2.  Initialization of all wave models / grids       ( WMINIT )
+!      3.  Setup internal clock
+!     ----------------------------------------------------------------
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      type(ESMF_State)    :: impState
+      type(ESMF_State)    :: expState
+      type(ESMF_Clock)    :: extClock
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=2
+      real(8) :: wstime, wftime
+      integer :: idsi, idso, idss, idst, idse
+      integer :: mpiComm = -99
+      integer :: lpet, npet
+      type(ESMF_VM) :: vm
+      type(ESMF_Config) :: config
+      character(ESMF_MAXSTR) :: wrkdir=' '
+      character(ESMF_MAXSTR) :: preamb=' '
+      character(ESMF_MAXSTR) :: attstr
+      integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
+      type(ESMF_Time) :: ttmp
+      type(ESMF_TimeInterval) :: tstep, etstep
+      integer :: i, n
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered InitializeP1', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! 1.  Initialization necessary for driver
+!
+! 1.a Set global flag indicating that model is and ESMF Component
+!
+      is_esmf_component = .true.
+!
+!
+! 1.b Get MPI environment from ESMF VM and set WW3 MPI related variables
+!
+      call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_VMGet(VM, petCount=npet, localPet=lpet, &
+           mpiCommunicator=mpiComm, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      nmproc = npet
+      improc = lpet + 1
+      nmpscr = 1
+      if ( improc .eq. nmpscr ) write (*,900)
+!
+! 1.c Get background model info
+!
+      call ESMF_AttributeGet(gcomp, name="OcnBackground", &
+        value=attstr, defaultValue="none", convention="COAMPS", &
+        purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      includeObg = trim(attstr).eq."model"
+      call ESMF_AttributeGet(gcomp, name="MissingValue", &
+        value=missingValue, defaultValue=0._ESMF_KIND_RX, &
+        convention="COAMPS", purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 1.d Config and working directory
+!
+      call ESMF_GridCompGet(gcomp, config=config, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ConfigGetAttribute(config, wrkdir, &
+           label=trim(cname)//'_dir:', default='.', rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      preamb = trim(wrkdir)//'/'
+!
+! 1.e Set internal start/stop time from external start/stop time
+!
+      call ESMF_ClockGet(extClock, startTime=ttmp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_TimeGet(ttmp, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      stime(1) = 10000*yy + 100*mm + dd
+      stime(2) = 10000*h  + 100*m  + s
+
+      call ESMF_ClockGet(extClock, stopTime=ttmp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_TimeGet(ttmp, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      etime(1) = 10000*yy + 100*mm + dd
+      etime(2) = 10000*h  + 100*m  + s
+!
+! 1.f Identify available unit numbers
+! Each ESMF_UtilIOUnitGet is followed by an OPEN statement for that
+! unit so that subsequent ESMF_UtilIOUnitGet calls do not return the
+! the same unit.  After getting all the available unit numbers, close
+! the units since they will be opened within WMINIT.
+!
+      call ESMF_UtilIOUnitGet(idsi); open(unit=idsi, status='scratch');
+      call ESMF_UtilIOUnitGet(idso); open(unit=idso, status='scratch');
+      call ESMF_UtilIOUnitGet(idss); open(unit=idss, status='scratch');
+      call ESMF_UtilIOUnitGet(idst); open(unit=idst, status='scratch');
+      call ESMF_UtilIOUnitGet(idse); open(unit=idse, status='scratch');
+      close(idsi); close(idso); close(idss); close(idst); close(idse);
+!
+! -------------------------------------------------------------------- /
+! 2.  Initialization of all wave models / grids
+!     Use only one of the three calls ....
+!
+! ... Log and screen output, no separate test output file
+!     
+!     idss = stdo;  idst = stdo;  idse = stdo;
+!     call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
+!                   mpicomm, preamb=preamb )
+!
+! ... Screen output disabled
+!
+!     idst = stdo;  idse = stdo;
+!     call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
+!                   mpicomm, preamb=preamb )
+!
+! ... Separate test output file
+!
+      idss = stdo;  idse = stdo;
+      call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
+                    mpicomm, preamb=preamb )
+!
+! -------------------------------------------------------------------- /
+! 3.  Check consistency between internal timestep and external
+!     timestep (coupling interval)
+!
+      call ESMF_ClockGet(extClock, timeStep=etstep, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! 4.  Advertise import fields
+!
+! 4.a Initialize import field list
+!
+      isActiveImpField(:) = .false.
+      isActiveMbgField(:) = .false.
+!
+! 4.b Advertise active import fields
+!
+      n = 0
+      do i = 1,numImpFields
+        if (.not.isActiveImpField(i)) cycle
+        n = n + 1
+        call NUOPC_StateAdvertiseField(impState, &
+             trim(impFieldStdName(i)), name=trim(impFieldName(i)), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (.not.isActiveMbgField(i)) cycle
+        n = n + 1
+        call NUOPC_StateAdvertiseField(impState, &
+             trim(mbgFieldStdName(i)), name=trim(mbgFieldName(i)), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+!
+! 4.c Report advertised import fields
+!
+      write(msg,'(a,i0,a)') trim(cname)// &
+        ': List of advertised import fields(',n,'):'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,a5,a,a10,a3,a)') trim(cname)// &
+        ': ','index',' ','name',' ','standardName'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      n = 0
+      do i = 1,numImpFields
+        if (.not.isActiveImpField(i)) cycle
+        n = n + 1
+        write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
+          ' ',trim(impFieldName(i)),' ',trim(impFieldStdName(i))
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+        if (.not.isActiveMbgField(i)) cycle
+        n = n + 1
+        write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
+          ' ',trim(mbgFieldName(i)),' ',trim(mbgFieldStdName(i))
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      enddo
+!
+! -------------------------------------------------------------------- /
+! 5.  Advertise export fields
+!
+! 5.a Initialize export field list
+!
+      isActiveExpField(:) = .false.
+
+      i = 1
+      expFieldStdName(i) = 'wave_induced_charnock_parameter'
+      expFieldName(i)    = 'charno'
+      i = 2
+      expFieldStdName(i) = 'eastward_stokes_drift_current'
+      expFieldName(i)    = 'uscurr'
+      i = 3
+      expFieldStdName(i) = 'northward_stokes_drift_current'
+      expFieldName(i)    = 'vscurr'
+      i = 4
+      expFieldStdName(i) = 'eastward_wave_bottom_current'
+      expFieldName(i)    = 'wbcuru'
+      i = 5
+      expFieldStdName(i) = 'northward_wave_bottom_current'
+      expFieldName(i)    = 'wbcurv'
+      i = 6
+      expFieldStdName(i) = 'wave_bottom_current_radian_frequency'
+      expFieldName(i)    = 'wbcurf'
+      i = 7
+      expFieldStdName(i) = 'eastward_wave_radiation_stress_gradient'
+      expFieldName(i)    = 'wavsgu'
+      i = 8
+      expFieldStdName(i) = 'northward_wave_radiation_stress_gradient'
+      expFieldName(i)    = 'wavsgv'
+!
+! 5.b Advertise all export fields
+!
+      do i = 1,numExpFields
+        call NUOPC_StateAdvertiseField(expState, &
+             trim(expFieldStdName(i)), name=trim(expFieldName(i)), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+!
+! 5.c Report advertised export fields
+!
+      write(msg,'(a,i0,a)') trim(cname)// &
+        ': List of advertised export fields(',numExpFields,'):'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,a5,a,a10,a3,a)') trim(cname)// &
+        ': ','index',' ','name',' ','standardName'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      do i = 1,numExpFields
+        write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',i, &
+          ' ',trim(expFieldName(i)),' ',trim(expFieldStdName(i))
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      enddo
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving InitializeP1', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Formats
+!
+  900 format (/15x,'     *** WAVEWATCH III Multi-grid shell ***    '/ &
+               15x,'================================================='/)
+!/
+!/ End of InitializeP1 ----------------------------------------------- /
+!/
+      end subroutine InitializeP1
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "InitializeP2"
+      subroutine InitializeP2 ( gcomp, impState, expState, extClock, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Initialize wave model (phase 2)
+!     * Realize fields in import and export states.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       impState  Type   I/O Import state
+!       expState  Type   I/O Export state
+!       extClock  Type   I   External clock
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name            Type  Module   Description
+!     ----------------------------------------------------------------
+!      WMINIT          Subr. WMINITMD Wave model initialization
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      type(ESMF_State)    :: impState
+      type(ESMF_State)    :: expState
+      type(ESMF_Clock)    :: extClock
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=3
+      real(8) :: wstime, wftime
+      integer :: i, n
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered InitializeP2', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! 1.  Realize active import fields
+!
+! 1.a Create import fields and realize
+!
+      n = 0
+      do i = 1,numImpFields
+        if (.not.isActiveImpField(i)) cycle
+        n = n + 1
+!TODO:  impField(i) = create_esmf_field(impFieldName(i),rc=rc)
+!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!TODO:  call ESMF_FieldGet(impField(i), localDE, impData(i)%p, rc=rc)
+!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!TODO:  impData(i)%p = 0.0
+        call NUOPC_StateRealizeField(impState, impField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (.not.isActiveMbgField(i)) cycle
+        n = n + 1
+!TODO:  mbgField(i) = create_esmf_field(mbgFieldName(i),rc=rc)
+!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!TODO:  call ESMF_FieldGet(mbgField(i), localDE, mbgData(i)%p, rc=rc)
+!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!TODO:  mbgData(i)%p = 0.0
+        call NUOPC_StateRealizeField(impState, mbgField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+!
+! 1.b Report realized import fields
+!
+      write(msg,'(a,i0,a)') trim(cname)// &
+        ': List of realized import fields(',n,'):'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,a5,a,a10,a3,a)') trim(cname)// &
+        ': ','index',' ','name',' ','standardName'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      n = 0
+      do i = 1,numImpFields
+        if (.not.isActiveImpField(i)) cycle
+        n = n + 1
+        write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
+          ' ',trim(impFieldName(i)),' ',trim(impFieldStdName(i))
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+        if (.not.isActiveMbgField(i)) cycle
+        n = n + 1
+        write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
+          ' ',trim(mbgFieldName(i)),' ',trim(mbgFieldStdName(i))
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      enddo
+!
+! -------------------------------------------------------------------- /
+! 2.  Realize active export fields
+!
+! 2.a Set connected export fields as active and remove unconnected
+!
+      do i = 1,numExpFields
+        isActiveExpField(i) = NUOPC_StateIsFieldConnected(expState, &
+                              expFieldName(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (.not.isActiveExpField(i)) then
+          call ESMF_StateRemove(expState, (/expFieldName(i)/), rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        endif
+      enddo
+!
+! 2.b Create active export fields and realize
+!
+      n = 0
+      do i = 1,numExpFields
+        if (.not.isActiveExpField(i)) cycle
+        n = n + 1
+!TODO:  expField(i) = exgrid_esmf_field(expFieldName(i),rc=rc)
+!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!TODO:  call ESMF_FieldGet(expField(i), localDE, expData(i)%p, rc=rc)
+!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!TODO:  expData(i)%p = 0.0
+        call NUOPC_StateRealizeField(expState, expField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+!
+! 2.c Report realized export fields
+!
+      write(msg,'(a,i0,a)') trim(cname)// &
+        ': List of realized export fields(',n,'):'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,a5,a,a10,a3,a)') trim(cname)// &
+        ': ','index',' ','name',' ','standardName'
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      n = 0
+      do i = 1,numExpFields
+        if (.not.isActiveExpField(i)) cycle
+        n = n + 1
+        write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
+          ' ',trim(expFieldName(i)),' ',trim(expFieldStdName(i))
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      enddo
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving InitializeP2', ESMF_LOGMSG_INFO)
+!/
+!/ End of InitializeP2 ----------------------------------------------- /
+!/
+      end subroutine InitializeP2
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "Finalize"
+      subroutine Finalize ( gcomp, impState, expState, extClock, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Finalize wave model
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       impState  Type   I/O Import state
+!       expState  Type   I/O Export state
+!       extClock  Type   I   External clock
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WMFINL    Subr. WMFINLMD Wave model finalization
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      type(ESMF_State)    :: impState
+      type(ESMF_State)    :: expState
+      type(ESMF_Clock)    :: extClock
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=6
+      real(8) :: wstime, wftime
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered Finalize', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! 1.  Finalize the wave model
+!
+      call wmfinl
+!
+! -------------------------------------------------------------------- /
+! 2.  Clean up ESMF data structures
+!
+
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      call PrintTimers(trim(cname), wtnam, wtcnt, wtime)
+      rc = ESMF_SUCCESS
+      if ( improc .eq. nmpscr ) write (*,999)
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving Finalize', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Formats
+!
+  999 format(//'  End of program '/                                   &
+               ' ========================================'/           &
+               '          WAVEWATCH III Multi-grid shell '/)
+!/
+!/ End of Finalize --------------------------------------------------- /
+!/
+      end subroutine Finalize
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "DataInitialize"
+      subroutine DataInitialize ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Initialize wave model export data
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name            Type  Module   Description
+!     ----------------------------------------------------------------
+!      GetImport       Subr. WMESMFMD Wave model get import fields
+!      SetExport       Subr. WMESMFMD Wave model set export fields
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=4
+      real(8) :: wstime, wftime
+      integer :: i
+      logical :: fldUpdated, allUpdated
+      type(ESMF_Clock) :: clock
+      type(ESMF_Time) :: currTime
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered DataInitialize', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! 1.  Check that required import fields show correct time stamp
+!
+      call ESMF_GridCompGet(gcomp, clock=clock, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      allUpdated = .true.
+      do i = 1,numImpFields
+        if (isActiveImpField(i)) then
+          fldUpdated = NUOPC_FieldIsAtTime(impField(i), currTime, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (fldUpdated) then
+            write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
+              trim(impFieldName(i)),': inter-model data dependency: ', &
+              'SATISFIED'
+          else
+            allUpdated = .false.
+            write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
+              trim(impFieldName(i)),': inter-model data dependency: ', &
+              'NOT SATISFIED'
+          endif
+          if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+          if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+        endif
+        if (isActiveMbgField(i)) then
+          fldUpdated = NUOPC_FieldIsAtTime(mbgField(i), currTime, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (fldUpdated) then
+            write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
+              trim(mbgFieldName(i)),': inter-model data dependency: ', &
+              'SATISFIED'
+          else
+            allUpdated = .false.
+            write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
+              trim(mbgFieldName(i)),': inter-model data dependency: ', &
+              'NOT SATISFIED'
+          endif
+          if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+          if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+        endif
+      enddo
+!
+! If not all import dependencies are satisfied, then return
+!
+      if (.not.allUpdated) goto 1
+!
+! -------------------------------------------------------------------- /
+! 2.  All import dependencies are satisfied, so finish initialization
+!
+! 2.a Report all import dependencies are satisfied
+!
+      write(msg,'(a)') trim(cname)// &
+        ': all inter-model data dependencies SATISFIED'
+      if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+!
+! 2.b Get import fields
+!
+      call GetImport(gcomp, rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 2.c Finish initialization
+!
+!     call wminit2(rc)
+!     if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 2.d Set export fields
+!
+      call SetExport(gcomp, rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 2.e Set Updated Field Attribute to "true", indicating to the IPDv02p5
+!     generic code to set the timestamp for these fields
+!
+      do i = 1,numExpFields
+        if (.not.isActiveExpField(i)) cycle
+        call ESMF_AttributeSet(expField(i), name="Updated", &
+          value="true", convention="NUOPC", purpose="General", rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+!
+! 2.f Set InitializeDataComplete Attribute to "true", indicating to the IPDv02p5
+!     generic code that all inter-model data dependencies are satisfied
+!
+      call ESMF_AttributeSet(gcomp, name="InitializeDataComplete", &
+        value="true", convention="NUOPC", purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+1     rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving DataInitialize', ESMF_LOGMSG_INFO)
+!/
+!/ End of DataInitialize --------------------------------------------- /
+!/
+      end subroutine DataInitialize
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "ModelAdvance"
+      subroutine ModelAdvance ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Advance wave model in time
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      GetImport Subr. WMESMFMD Wave model get import fields
+!      SetExport Subr. WMESMFMD Wave model set export fields
+!      WMWAVE    Subr. WMWAVEMD Wave model run
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=5
+      real(8) :: wstime, wftime
+      integer :: stat, i, tcur(2)
+      integer, allocatable :: tend(:,:)
+      integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
+      type(ESMF_Clock) :: clock
+      type(ESMF_Time) :: currTime, stopTime
+      real :: delt
+      logical :: lerr
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered ModelAdvance', ESMF_LOGMSG_INFO)
+
+      allocate (tend(2,nrgrd), stat=rc)
+      if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! 1.  Advance model to requested end time
+!
+! 1.a Get component clock
+!
+      call ESMF_GridCompGet(gcomp, clock=clock, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 1.b Report
+!
+      if ( improc .eq. nmpscr ) then
+        write(*,'(///)')
+        call NUOPC_ClockPrintCurrTime(clock, &
+          "-->Advancing "//TRIM(cname)//" from: ", rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call NUOPC_ClockPrintStopTime(clock, &
+          "-----------------> to: ", rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+!
+! 1.c Check internal current time with component current time
+!
+      call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_TimeGet(currTime, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      lerr=.false.
+      do i = 1,nrgrd
+        tcur(1) = 10000*yy + 100*mm + dd
+        tcur(2) = 10000*h  + 100*m  + s
+        call w3setw ( i, mdse, mdst )
+        delt = dsec21 ( time, tcur )
+        if ( abs(delt).gt.0 ) then
+          lerr=.true.
+          write(msg,'(a,i2,a,2(a,i8,a,i8,a))') &
+            'Wave model grid ',i,': ', &
+            'Internal time (',time(1),'.',time(2),') /= ', &
+            'Component time (',tcur(1),'.',tcur(2),')'
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+        endif
+      enddo
+      if (lerr) then
+        rc = ESMF_FAILURE
+        return
+      endif
+!
+! 1.d Set end time of this advance
+!
+      call ESMF_ClockGet(clock, stopTime=stopTime, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_TimeGet(stopTime, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      do i = 1,nrgrd
+        tend(1,i) = 10000*yy + 100*mm + dd
+        tend(2,i) = 10000*h  + 100*m  + s
+      enddo
+!
+! 1.e Get import fields
+!
+      call GetImport(gcomp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 1.f Advance model
+!
+      call wmwave ( tend )
+!
+! 1.g Set export fields
+!
+      call SetExport(gcomp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      deallocate (tend, stat=rc)
+      if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
+      rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving ModelAdvance', ESMF_LOGMSG_INFO)
+!/
+!/ End of ModelAdvance ----------------------------------------------- /
+!/
+      end subroutine ModelAdvance
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "GetImport"
+      subroutine GetImport ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Get import fields and put in internal data structures
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=7
+      real(8) :: wstime, wftime
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered GetImport', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Insert sections here
+!
+
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving GetImport', ESMF_LOGMSG_INFO)
+!/
+!/ End of GetImport -------------------------------------------------- /
+!/
+      end subroutine GetImport
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "SetExport"
+      subroutine SetExport ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Set export fields from internal data structures
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer, parameter :: iwt=8
+      real(8) :: wstime, wftime
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_VMWtime(wstime)
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered SetExport', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Insert sections here
+!
+
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      call ESMF_VMWtime(wftime)
+      wtime(iwt) = wtime(iwt) + wftime - wstime
+      wtcnt(iwt) = wtcnt(iwt) + 1
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving SetExport', ESMF_LOGMSG_INFO)
+!/
+!/ End of SetExport -------------------------------------------------- /
+!/
+      end subroutine SetExport
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "PrintTimers"
+      subroutine PrintTimers ( cname, wtnam, wtcnt, wtime )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Print wallclock timers to ESMF log file
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       cname     Str    I   Name of component
+!       wtnam     Str    I   Timer names
+!       wtcnt     Int    I   Timer counts
+!       wtime     R8     I   Timers
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      character(*) :: cname
+      character(*) :: wtnam(:)
+      integer      :: wtcnt(:)
+      real(8)      :: wtime(:)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(128) :: msg
+      integer :: k
+!
+! -------------------------------------------------------------------- /
+! Print timers to ESMF log file
+!
+      write(msg,1) trim(cname),"timer","count","time"
+      call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      do k=lbound(wtcnt,1),ubound(wtcnt,1)
+        write(msg,2) trim(cname),trim(wtnam(k)),wtcnt(k),wtime(k)
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+      enddo
+!
+! -------------------------------------------------------------------- /
+! Formats
+!
+1     format(a,': wtime: ',a20,a10,a14)
+2     format(a,': wtime: ',a20,i10,e14.6)
+!/
+!/ End of PrintTimers ------------------------------------------------ /
+!/
+      end subroutine PrintTimers
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "FieldIndex"
+      function FieldIndex(fnameList, fname) result (indx)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         21-Mar-2014 |
+!/                  +-----------------------------------+
+!/
+!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Return index associated with field name
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       fnameList StrA   I   Array of field names
+!       fname     Str    I   Field name
+!       indx      Int    I   Returned index of fname
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      character (6) :: fnameList(:)
+      character (6) :: fname
+      integer       :: indx
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      integer           :: i
+!
+! -------------------------------------------------------------------- /
+! Find name in fnameList that matches fname
+!
+      indx = 0
+      do i=lbound(fnameList,1),ubound(fnameList,1)
+        if (fnameList(i).eq.fname) then
+          indx = i
+          exit
+        endif
+      enddo
+!/
+!/ End of FieldIndex ------------------------------------------------- /
+!/
+      end function FieldIndex
+!/ ------------------------------------------------------------------- /
+!/
+!/ End of module WMESMFMD -------------------------------------------- /
+!/
+      end module WMESMFMD

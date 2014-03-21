@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         21-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -17,6 +17,8 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
+!/    21-Mar-2014 : Enable using input from coupler     ( version 5.XX )
 !/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -77,12 +79,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Jan-2007 |
+!/                  | Last update :         21-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
 !/    14-Oct-2006 : Adding separate input grids.        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
+!/    21-Mar-2014 : Enable using input from coupler     ( version 5.XX )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -329,17 +333,9 @@
 !
 ! 4.  Using input from coupler --------------------------------------- /
 !
-!     Version 3.10: Needs to be supplied still.
-!                   Once interface if generated, should be only a test
-!                   on availability.
           ELSE
 !
-IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) then
-write (mdse,*) ' '
-write (mdse,*) ' *** ERROR WMUPDTMD: COUPLER OPTION NOT YET IMPLEMENTED ***'
-write (mdse,*)
-end if
-call extcde (99)
+!/T            WRITE (MDST,9040)
 !
           END IF
 !
@@ -439,6 +435,7 @@ call extcde (99)
 !/T 9030 FORMAT ( ' TEST WMUPDT : USING INPUT GRID',I4)
 !/T 9031 FORMAT ( ' TEST WMUPDT : J =',I4,3XA,', DTTST = ',           &
 !/T                               E10.3,2X,I9.8,I7.6)
+!/T 9040 FORMAT ( ' TEST WMUPDT : USING COUPLER INPUT')
 !/T 9070 FORMAT ( ' TEST WMUPDT : ',A,3X,3(I10.8,I7.6)/               &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &

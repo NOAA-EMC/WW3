@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Feb-2014 |
+!/                  | Last update :         21-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -35,6 +35,8 @@
 !/    18-Dec-2013 : Adding error checking for FLAGLL    ( version 4.16 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
+!/    21-Mar-2014 : Add ESMF override for STIME & ETIME ( version 5.XX )
+!/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -88,7 +90,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2012 |
+!/                  | Last update :         21-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -123,6 +125,8 @@
 !/                  (T. J. Campbell, NRL)
 !/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
 !/                  (F. Ardhuin) 
+!/    21-Mar-2014 : Add ESMF override for STIME & ETIME ( version 5.XX )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -387,6 +391,7 @@
                                  TLST(2), NCPROC, NPOUTT, NAPLOC,     &
                                  NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
                                  IFT
+      INTEGER                 :: STMPT(2), ETMPT(2)
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
@@ -995,11 +1000,17 @@
 ! 4.  Model run time information etc. -------------------------------- /
 !
 !     Version 3.07: Same for all grids, diversify later ....
+!     If invoked as ESMF Component, then STIME and ETIME are set
+!     in WMESMFMD from the external clock.
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,940)
-!              
+!
       CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-      READ (MDSI,*,END=2001,ERR=2002) STIME, ETIME
+      IF (IS_ESMF_COMPONENT) THEN
+          READ (MDSI,*,END=2001,ERR=2002) STMPT, ETMPT
+        ELSE
+          READ (MDSI,*,END=2001,ERR=2002) STIME, ETIME
+        END IF
       CALL STME21 ( STIME , DTME21 )
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,941) DTME21
       CALL STME21 ( ETIME , DTME21 )
