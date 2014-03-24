@@ -1,0 +1,59 @@
+& ESMF/NUOPC Documentation
+
+ESMF Fortran Reference Documentation:
+http://www.earthsystemmodeling.org/esmf_releases/public/last/ESMF_refdoc/
+
+NUOPC Layer Reference:
+http://www.earthsystemmodeling.org/esmf_releases/public/ESMF_6_3_0r/NUOPC_refdoc/
+
+NUOPC Layer Documents:
+https://earthsystemcog.org/projects/nuopc/
+
+
+
+
+& Test coupled application
+
+esmApp.F90: coupled application main program
+esm.F90: coupled application driver component
+con.F90: coupled application connector component
+mdl.F90: coupled application model components (ATM, OCN, or ICE)
+Makefile: the 
+
+The WAV model component is Wavewatch (wmesmfmd.ftn).
+
+The ATM, OCN, and ICE components read in and export forcing fields required
+by the WAV model.  The connector components (ATM->WAV, OCN->WAV, ICE->WAV)
+defined in con.F90 setup and execute the required data transforms (regrid or
+redist).  The driver component (esm.F90) creates the model components and
+connector components and sets up the run sequence.
+
+Set ESMFMKFILE environment variable to point to the "esmf.mk" Makefile fragment.
+
+The default target will create a wwatch3.env environment file and switch file
+in the bin directory and then compile ww3_multi_esmf.
+
+The ww3_multi_esmf target is used by regtest/bin/run_test when invoked with the
+'-t' option.
+
+
+
+
+& Compiling WW3 ESMF component
+
+bin/w3_make ww3_multi_esmf does not create an executable, rather it compiles the
+ww3 esmf module (wmesmfmd), creates an object archive (libww3_esmf_multi.a) and
+the ESMF/NUOPC makefile fragment (nuopc.mk)
+
+ESMFMKFILE is required to get the ESMF compile options.  Specifically,
+ESMF_F90COMPILEPATHS is used in comp to set the include paths required for the
+ESMF modules.
+
+The ESMF build requires DIST and NOPA switches.
+
+
+
+
+& The WW3 ESMF component (wmesmfmd.ftn)
+
+Source code uses "Camel Case" convention.
