@@ -5,8 +5,9 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
+#                                                      January  2014          #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2014 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -16,13 +17,13 @@
 # --------------------------------------------------------------------------- #
 # 1.a Check and process input
 
-  if [ "$#" -gt '2' ] || [ "$#" -lt 1 ]
+  if [ "$#" -gt '3' ] || [ "$#" -lt 1 ]
   then
-    echo "usage: ad3_test basename [itest]" 1>&2 ; exit 1
+    echo "usage: ad3_test basename [itest [icomp]]" 1>&2 ; exit 1
   fi
 
   name=$1
-  if test "$#" = '2' 
+  if test "$#" -ge '2' 
   then
     itst=$2
   else
@@ -40,11 +41,16 @@
 
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
   switch="switch"          # file containing switches
-  doc_dir=doc90            # docblock directory
+  compress=0               # source code compression par in w3adc
+                           # if not 0, documentaion removed from .f90 file
 
 # 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
-  if [ -f $ww3_env ]
+  if [ ${WWATCH3_DIR} ] && [ ${WWATCH3_TMP} ]
+  then
+    main_dir=${WWATCH3_DIR}
+    temp_dir=${WWATCH3_TMP}
+  elif [ -f $ww3_env ]
   then
     set `grep WWATCH3_DIR $ww3_env` ; shift
     main_dir="$*"
@@ -65,9 +71,12 @@
   path_w="$temp_dir"
   path_i="$main_dir/ftn"
   path_o="$main_dir/obj"
+  path_m="$main_dir/mod"
   path_e="$main_dir/exe"
-
-  doc_dir=$main_dir/$doc_dir
+  if [ -n "`echo $name | grep scrip_ 2>/dev/null`" ]
+  then
+    path_i="$path_i/SCRIP"
+  fi
 
   sw_str=`cat $path_b/$switch`
 
@@ -103,6 +112,7 @@
     echo "  work directory   : $path_w "
     echo "  input directory  : $path_i "
     echo "  object directory : $path_o "
+    echo "  module directory : $path_m "
     echo "  executable dir.  : $path_e "
     echo "  switches file    : $switch " ; echo ' '
     echo "  switches         : $sw_str"
@@ -118,40 +128,31 @@
 # --------------------------------------------------------------------------- #
 # 2.a Make input file
 
-  echo 1 0                                       > w3adc.inp
-  echo "'$path_i/$name.ftn' '$name.f90'"        >> w3adc.inp
-  echo "'$sw_str'"                              >> w3adc.inp
+  if [ "$w3adc" = 'yes' ]
+  then
+
+    echo "1 $compress"                             > w3adc.inp
+    echo "'$path_i/$name.ftn' '$name.f90'"        >> w3adc.inp
+    echo "'$sw_str'"                              >> w3adc.inp
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ -d $doc_dir ]
-  then
-    doc_data="`sed -n '/^.docb_/p' $path_i/$name.ftn 2> /dev/null | awk '{ print $1}'`"
-    if [ -n "$doc_data" ]
-    then
-      for doc_string in $doc_data
-      do
-        doc_ID=`echo $doc_string | cut -c1-6`
-        doc_file=`echo $doc_string | sed "s/$doc_ID//g"`
-        if [ -f $doc_dir/$doc_file ]
-        then
-          echo "'$doc_string' '$doc_dir/$doc_file' "  >> w3adc.inp
-        else
-          echo "         File $doc_file in $doc_dir not found."
-        fi
-      done
-    fi
-  fi
+# Obsolete feature, removed
 
 # 2.c Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ "$itst" != '0' ]
-  then
-    echo '-- input file w3adc.inp -------------------------------------------'
-    cat w3adc.inp
-    echo '-- end of file ----------------------------------------------------'
+    if [ "$itst" != '0' ]
+    then
+      echo '-- input file w3adc.inp -------------------------------------------'
+      cat w3adc.inp
+      echo '-- end of file ----------------------------------------------------'
+    fi
+
+    $path_b/w3adc < w3adc.inp
+
   fi
 
-  $path_b/w3adc < w3adc.inp
+  rm -f w3adc.inp
+  rm -f $name.f90
  
 # End of ad3 ---------------------------------------------------------------- #

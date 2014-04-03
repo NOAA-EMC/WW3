@@ -418,6 +418,7 @@
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
+      mprf   ) mprf=$sw ;;
               *    ) ;;
     esac
   done
@@ -647,6 +648,13 @@
       echo ' ' ; exit 8
   fi
 
+  if [ "$mprf" = "MPRF" ]
+  then
+    mprfaux='w3getmem'
+  else
+    mprfaux=$NULL
+  fi
+
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
@@ -721,7 +729,7 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
-                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
+                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
                 aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -741,7 +749,7 @@
                source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
                 aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -875,11 +883,16 @@
     then
       fext=ftn
     else
-      if [ -f $main_dir/ftn/$file.f90 ]
+      if [ -f $main_dir/ftn/$file.c ]
       then
-        fext=f90
+        fext=c
       else
-        fext=f
+        if [ -f $main_dir/ftn/$file.f90 ]
+        then
+          fext=f90
+        else
+          fext=f
+        fi
       fi
     fi
 
@@ -900,7 +913,12 @@
     then
       fext=f90
     else
-      fext=f
+      if [ -f $file.c ]
+      then
+        fext=c
+      else
+        fext=f
+      fi
     fi
 
     grep USE $file.$fext  > check_file
@@ -930,7 +948,8 @@
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD \
+               w3getmem
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1023,6 +1042,7 @@
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
+         'w3getmem'     ) modtest=w3getmem.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]

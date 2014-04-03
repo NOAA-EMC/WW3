@@ -5,6 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
+!/                  | Last update :         28-Jan-2014 |
 !/                  | Last update :         04-Feb-2014 |
 !/                  +-----------------------------------+
 !/
@@ -33,10 +34,11 @@
 !/    03-Sep-2012 : Output of initilization time.       ( version 4.10 )
 !/                  Switch test file on/off (TSTOUT)
 !/    18-Dec-2013 : Adding error checking for FLAGLL    ( version 4.16 )
+!/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -88,7 +90,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jul-2012 |
+!/                  | Last update :         28-Jan-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -123,6 +125,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
 !/                  (F. Ardhuin) 
+!/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/
 !  1. Purpose :
 !
@@ -395,6 +398,7 @@
                                  NDPOUT(:)
       REAL                    :: DTTST, XX, YY
 !/MPRF      REAL                    :: PRFT0, PRFTN
+!/MPRF      REAL(KIND=8)            :: get_memory
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
                                  RP1(:), RPN(:)
 ! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
@@ -1947,6 +1951,10 @@
 !
 ! 8.  Actual initializations ----------------------------------------- /
 !
+!/MPRF      CALL PRTIME ( PRFTN )
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8'
+!/MPRF      PRFT0  = PRFTN
+!
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,980)
       ALLOCATE ( TSYNC(2,0:NRGRD), TMAX(2,NRGRD), TOUTP(2,0:NRGRD),   &
                  TDATA(2,NRGRD), GRSTAT(NRGRD), DTRES(NRGRD) )
@@ -1964,6 +1972,9 @@
 ! 8.a Loop over models for per-model initialization
 !
 !/T      WRITE (MDST,9080)
+!/MPRF      CALL PRTIME ( PRFTN )
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.a'
+!/MPRF      PRFT0  = PRFTN
 !
       DO I=1, NRGRD
         J      = LEN_TRIM(MNAMES(I))
@@ -2338,6 +2349,10 @@
 !
 ! 8.b Unified point output
 !
+!/MPRF      CALL PRTIME ( PRFTN )
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.b'
+!/MPRF      PRFT0  = PRFTN
+!
       IF ( UNIPTS ) THEN
 !
           J      = LEN_TRIM(MNAMES(0))
@@ -2351,6 +2366,10 @@
         END IF
 !
 ! 8.c Input files
+!
+!/MPRF      CALL PRTIME ( PRFTN )
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.c'
+!/MPRF      PRFT0  = PRFTN
 !
       DO I=1, NRINP
 !
@@ -2399,6 +2418,11 @@
       DEALLOCATE ( USEINP )
 !
 ! 8.d Inter model initialization
+!
+!/MPRF      CALL PRTIME ( PRFTN )
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.d'
+!/MPRF      PRFT0  = PRFTN
+
 ! 8.d.1 Spectral conversion flags and source term flags
 !
       CALL WMRSPC
@@ -2493,11 +2517,11 @@
 !
 ! 8.d.4 Relation to higher ranked grids
 !
-              IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
-      WRITE(MDSS,938)'Computing relation to higher ranked grids'
+      IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,938) &
+           'Computing relation to higher ranked grids'
       CALL WMGHGH
-              IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
-      WRITE(MDSS,938)'Finished computing relation to higher ranked grids'
+      IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,938) &
+           'Finished computing relation to higher ranked grids'
 !
 ! 8.d.5 Unified point output
 !
@@ -2661,7 +2685,7 @@
 !/F90      CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
 !
 !/MPRF      CALL PRTIME ( PRFTN )
-!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'END'
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,998)
 !/O10      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,999)
@@ -2882,7 +2906,7 @@
   987 FORMAT ( '          Initializing grids ...')
   988 FORMAT ( '       Input data grid',I3,' [',A,']')
 !
-!/MPRF  990 FORMAT (1X,2F12.3,' WMINIT')
+!/MPRF  990 FORMAT (1X,3F12.3,' WMINIT',1X,A)
 !
   998 FORMAT ( '  Running the model :'/                               &
                ' --------------------------------------------------'/)
