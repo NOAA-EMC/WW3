@@ -338,7 +338,7 @@
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC2 : '/               &
                '     ',A,' REQUIRED BUT NOT SELECTED'/)
 !
-!/T 9000 FORMAT (' TEST W3SIC2 : DEPTH,ICECOEF1  : ',2E10.3)
+!/T38 9000 FORMAT (' TEST W3SIC2 : DEPTH,ICECOEF1  : ',2E10.3)
 !/
 !/ End of W3SIC2 ----------------------------------------------------- /
 !/
@@ -397,7 +397,9 @@
 !      Name                   | Type |  Module | Description
 !     ----------------------------------------------------------------
 !      Liu_reverse_dispersion | Subr.| W3SIC2MD| As name implies. 
-!      STRACE                   Subr.| W3SERVMD| Subroutine tracing.
+!      STRACE                 | Subr.| W3SERVMD| Subroutine tracing.
+!      WAVNU1                 | Subr.| W3DISPMD| Wavenumber for waves
+!                                                in open water.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -437,6 +439,7 @@
       USE CONSTANTS, ONLY: TPI
       USE W3ODATMD,  ONLY: NDSE
       USE W3SERVMD,  ONLY: EXTCDE
+      USE W3DISPMD,  ONLY: WAVNU1
 !/S      USE W3SERVMD,  ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -463,6 +466,9 @@
       INTEGER            :: ITER       ! iteration number
       REAL               :: DK,DF,DFDK ! as name implies
       REAL               :: FDUMMY     ! as name implies
+      REAL               :: SIGMA      ! 2*pi/T
+      REAL               :: K_OPEN     ! open-water value of k
+      REAL               :: CG_OPEN    ! open-water value of Cg
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -472,12 +478,17 @@
 
       ALLOCATE ( FREQ(N_ITER) )
       ALLOCATE ( KWN(N_ITER) )
-      KWN(1)  = 0.2 ! first guess
+
       GET_CG  = .FALSE.
 
 !/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
 !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
 
+! First guess for k :
+      SIGMA=FWANTED*TPI
+      CALL WAVNU1(SIGMA,H_WDEPTH,K_OPEN,CG_OPEN)
+!     KWN(1)  = 0.2 ! (old method)
+      KWN(1)  =K_OPEN ! new method, Mar 10 2014
 !
 !/ 1) ----- Iteration loop to find k --------------------------------- /
       ITER = 0

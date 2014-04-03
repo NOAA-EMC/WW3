@@ -685,7 +685,7 @@
                 WRITE (NDSO,947) NDSLL
                 IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
                 IF (NDSLL.EQ.NDSI) THEN
-                    WRITE (NDSE,1038)
+                    WRITE (NDSE,10381)
                     CALL NEXTLN ( COMSTR , NDSI , NDSE )
                   ELSE
 !
@@ -746,7 +746,7 @@
                 IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
                 WRITE (NDSO,*) ' '
                 IF (NDSLL.EQ.NDSI) THEN
-                    WRITE (NDSE,1038)
+                    WRITE (NDSE,10382)
                     CALL NEXTLN ( COMSTR , NDSI , NDSE )
                   ELSE
 !
@@ -1504,8 +1504,10 @@
  1037 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ATTEMPT TO USE INPUT UNIT (',I2,                 &
                ') FOR NAMED FILE'/)
- 1038 FORMAT (/' *** WAVEWATCH III WARNING IN W3PREP : '/             &
-               '     DATA READ FROM INPUT FILE')
+ 10381 FORMAT (/' *** WAVEWATCH III WARNING IN W3PREP : '/             &
+               '     LAT/LON DATA READ FROM INPUT FILE')
+ 10382 FORMAT (/' *** WAVEWATCH III WARNING IN W3PREP : '/             &
+               '     MASK DATA READ FROM INPUT FILE')
  1039 FORMAT (/' *** WAVEWATCH III ERROR IN W3PREP : '/               &
                '     ARRAYS FOR INPUT FIELDS TO SMALL '/              &
                '            GRID SIZE       :',2I5/                   &
