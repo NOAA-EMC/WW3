@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Nov-2013 |
+!/                  | Last update :         30-Jan-2014 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -412,7 +412,7 @@
                                  FLOMP = .FALSE.
 !
 !!Li   Logical variable to control regular gird lines in conflict with SMC option.
-      LOGICAL                 :: RGLGRD = .TRUE.
+      LOGICAL                 :: RGLGRD = .TRUE., ARCTIC = .FALSE.
 !!Li
 !/MPI      LOGICAL                 :: FLGMPI(0:6)
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
@@ -445,6 +445,9 @@
 
 !/SMC !!Li  Switch off lat-lon grid lines in conflict with SMC option.
 !/SMC        RGLGRD = .FALSE.
+!
+!/ARC !!Li  Switch on lines related to Arctic part on SMC grid.
+!/ARC        ARCTIC = .TRUE.
 !
 ! 0.a Set pointers to data structure
 !
@@ -662,7 +665,6 @@
 !/T        WRITE (NDST,9020) IT0, NT, DTGA
 !
 ! ==================================================================== /
-!/PALM! write(*,*)'itime',itime
 !
 ! 3.  Loop over time steps
 !
@@ -670,9 +672,7 @@
 !
         DO IT=IT0, NT
 !
-!/PALM! write(*,*)'itime',itime
           ITIME  = ITIME + 1
-!/PALM! write(*,*)'itime',itime
           DTG    = REAL(NINT(DTGA+DTRES+0.0001))
           DTRES  = DTRES + DTGA - DTG
           IF ( ABS(DTRES) .LT. 0.001 ) DTRES  = 0.
@@ -870,10 +870,9 @@
           IF ( FLDDIR ) THEN
             IF (GTYPE .NE. UNGTYPE) THEN  
 !!Li          CALL W3DZXY(DW(1:NSEA),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
-              IF( RGLGRD ) CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) !DEPTH (DW) GRADIENT
+              IF( RGLGRD ) CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) 
 !/SMC !!Li  Use new sub for DDDX and DDDY assignment.  
 !/SMC         CALL SMCDHXY 
-!/SMCT        WRITE (NDST,*) " * SMCDHXY completed IT DTG =", IT, DTG
 !
             ELSE
               CALL UG_GRADIENTS(DW, DDDX, DDDY)
@@ -904,7 +903,11 @@
 !/T              WRITE (NDST,9022)
               GOTO 400
             END IF
-          IF ( FLDRY .OR. IT.EQ.0 .OR. IAPROC.GT.NAPROC ) THEN
+          IF ( IT.EQ.0 ) THEN 
+            DTG = 1.
+            GOTO 370
+            END IF
+          IF ( FLDRY .OR. IAPROC.GT.NAPROC ) THEN
 !/T              WRITE (NDST,9023)
               GOTO 380
             END IF
@@ -955,7 +958,6 @@
 !
 !/SEC1      DTGTEMP=DTG
 !/SEC1      DTG=DTG/NITERSEC1
-
 !/SEC1      DO ISEC1=1,NITERSEC1
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
 !/SEC1    IF ( IAPROC .EQ. NAPOUT )    WRITE(NDSE,'(A,I4,A,I4)') '   SUBSECOND STEP:',ISEC1,' out of ',NITERSEC1
@@ -1002,9 +1004,6 @@
 !/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
 !/SMC               DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA), VA(:,JSEA) )  
-!/SMCT              IF(ITLOC .EQ. ITLOCH .AND. ISEA .EQ. NSEAL/2)        &
-!/SMCT                 WRITE (NDST,*) " * W3KRTN completed ITLOC ISEA=", &
-!/SMCT                              ITLOC, ISEA 
 !
                     END IF
                   END DO
@@ -1040,8 +1039,6 @@
 !/PRX               CALL W3XYPX
 !/SMC   !!Li   Propagation on SMC grid uses UNO2 scheme.
 !/SMC                    CALL W3PSMC ( ISPEC, DTG, FIELD )
-!/SMCT              IF(ISPEC .EQ. NSPEC/2)  WRITE (NDST,*)   &
-!/SMCT                    " * W3PSMC completed IT ISPEC=", IT, ISPEC
 !
                   ELSE IF (GTYPE .EQ. UNGTYPE) THEN
 !/PR1               CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
@@ -1076,32 +1073,68 @@
 
 !/OMP0/!$OMP END PARALLEL
 !
-!/ARC  !Li    Update Arctic boundary cell spectra if within local range
+!/ARC  !Li    Find source boundary spectra and assign to SPCBAC
 !/ARC  !Li    Have to use mpi options so will be empty if ARC not selected.
+!/ARC        DO IK = 1, NBAC
+!/ARC           IF( IK .LE. (NBAC-NBGL) ) THEN
+!/ARC                   IY = ICLBAC(IK)
+!/ARC           ELSE
+!/ARC                   IY = NGLO + IK 
+!/ARC           ENDIF 
+!/ARC
+!/ARC  !Li    Work out root PE (ISPEC) and JSEA numbers for IY 
+!
+          IF( ARCTIC ) THEN
+!/DIST            ISPEC = MOD( IY-1, NAPROC ) 
+!/DIST             JSEA = 1 + (IY - ISPEC - 1)/NAPROC
+!/SHRD            ISPEC = 0 
+!/SHRD             JSEA = IY 
+          ENDIF
+!
+!/ARC !!Li   Assign boundary cell spectra. 
+!/ARC              IF( IAPROC .EQ. ISPEC+1 ) THEN
+!/ARC                   SPCBAC(:,IK)=VA(:,JSEA)
+!/ARC              ENDIF
+!
+!/MPI  !!Li   Broadcast local SPCBAC(:,IK) to all other PEs.
+!/MPI         IF( ARCTIC ) THEN
+!/MPI         CALL MPI_BCAST(SPCBAC(1,IK),NSPEC,MPI_REAL,ISPEC,MPI_COMM_WORLD,IERR_MPI)
+!/MPI         CALL MPI_BARRIER (MPI_COMM_WORLD,IERR_MPI)
+!/MPI         ENDIF
+!
+!/ARC  !!Li   Boundary cell loop IK ends.
+!/ARC         END DO
+!
+!/ARC  !Li    Update Arctic boundary cell spectra if within local range
 !/ARC           ALLOCATE ( BACSPEC(NSPEC) )
 !/ARC        DO IK = 1, NBAC
-!/ARC           IF( IK .LE. NBGL ) THEN
+!/ARC           IF( IK .LE. (NBAC-NBGL) ) THEN
 !/ARC                   IX = NGLO + IK 
 !/ARC                   BACANGL = ANGARC(IK)
 !/ARC           ELSE
 !/ARC                   IX = ICLBAC(IK)
 !/ARC                   BACANGL = - ANGARC(IK)
 !/ARC           ENDIF 
-!
-                DO JSEA=1, NSEAL
-!/DIST                  ISEA   = IAPROC + (JSEA-1)*NAPROC
-!/SHRD                  ISEA   = JSEA
-!
-!/ARC              IF( ISEA .EQ. IX ) THEN
-!/ARC                  BACSPEC = SPCBAC(:,IK)
-!/ARC                  
-!/ARC                  CALL w3acturn( NTH, NK, BACANGL, BACSPEC )
 !/ARC
-!/ARC                  VA(:,JSEA) = BACSPEC 
+!/ARC  !Li    Work out boundary PE (ISPEC) and JSEA numbers for IX 
+!
+          IF( ARCTIC ) THEN
+!/DIST            ISPEC = MOD( IX-1, NAPROC ) 
+!/DIST             JSEA = 1 + (IX - ISPEC - 1)/NAPROC
+!/SHRD            ISPEC = 0 
+!/SHRD             JSEA = IX 
+          ENDIF
+!
+!/ARC              IF( IAPROC .EQ. ISPEC+1 ) THEN
+!/ARC                   BACSPEC = SPCBAC(:,IK)
+!/ARC                  
+!/ARC                   CALL w3acturn( NTH, NK, BACANGL, BACSPEC )
+!/ARC
+!/ARC                   VA(:,JSEA) = BACSPEC 
+!/ARC  !Li              WRITE(NDSE,*) "IAPROC, IX, JSEAx, IK=", IAPROC, IX, JSEA, IK 
 !/ARC              ENDIF
-!
-                END DO
-!
+!/ARC
+!/ARC  !!Li   Boundary cell loop IK ends.
 !/ARC         END DO
 !/ARC         DEALLOCATE ( BACSPEC )
 !
@@ -1159,6 +1192,7 @@
 !
 ! 3.7 Calculate and integrate source terms.
 !
+  370     CONTINUE
           IF ( FLSOU ) THEN
 !
 !/REF1            SXM    = SX / FACX 
@@ -1201,7 +1235,7 @@
                      TMP2   = BEDFORMS(JSEA,1:3)
                      TMP3   = TAUBBL(JSEA,1:2)
 
-                     CALL W3SRCE ( IX, IY, IMOD, VA(:,JSEA),          &
+                     CALL W3SRCE ( IT, IX, IY, IMOD, VA(:,JSEA),      &
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                           CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
                           U10D(ISEA), AS(ISEA), UST(ISEA),            &
@@ -1238,8 +1272,9 @@
 !
 ! End of interations for DTMAX < 1s
 !
+!/SEC1       IF (IT.EQ.0) EXIT
 !/SEC1       END DO
-!/SEC1       DTG=DTGTEMP
+!/SEC1       IF (IT.GT.0) DTG=DTGTEMP
 !
 !
 ! PALM COUPLER Calls
@@ -1290,13 +1325,6 @@
 !/PALM  vectj(JSEA)=THM(ISEA)
 !/PALM  vectk(JSEA)=TAUWX(ISEA)
 !/PALM  vectl(JSEA)=TAUWY(ISEA)
-!/PALM  !if ((TAUWY(ISEA).ne.0).and.(iaproc.eq.1)) then
-!/PALM  !write(*,*)'TAUWY non nul pour ISEA',ISEA
-!/PALM  !else if ((TAUOY(ISEA).ne.0).and.(iaproc.eq.1)) then
-!/PALM  !write(*,*)'TAUOY non nul pour ISEA',ISEA
-!/PALM  !else if ((BHD(ISEA).ne.0).and.(iaproc.eq.1)) then
-!/PALM  !write(*,*)'BHD non nul pour ISEA',ISEA
-!/PALM  !end if
 !/PALM  END DO
 !/PALM  ELSE
 !/PALM  if (iaproc==1) write(*,*)'je suis dans le else de MEL03'
@@ -1322,15 +1350,6 @@
 !/PALM  end if
 !/PALM  if (iaproc==1) write(*,*)'HS: 1933-2008',HS(1933:2008)
 !/PALM !fin modif ac
-!/PALM !
-!/PALM !do JSEA=1, NSEAL
-!/PALM !   ISEA      = IAPROC + (JSEA-1)*NAPROC
-!/PALM !if (iaproc.eq.1) then
-!/PALM !if (BHD(ISEA).ne.0) write(*,*)'ISEA, BHD',ISEA,BHD(ISEA)
-!/PALM !end if
-!/PALM !end do
-!/PALM ! Rajouter: WN(IK,ISEA),  US3D  et/ou  SXX3D 
-!/PALM !
 !/PALM  if((palm_time_b.ge.min_palm_time_b).and.(palm_time_b.le.max_palm_time_b))then
 !/PALM  cl_space  = 'vect1d'
 !/PALM  cl_object = 'vectg'
@@ -1379,10 +1398,6 @@
 !/PALM  CALL PALM_PUT(cl_space, cl_object, palm_time_b, PL_NO_TAG, vectwlm, il_err)
 !/PALM  if (iaproc==1) write(*,*)'PALM:ww sent vect g...rs wlm',palm_time_b,itime,iaproc
 !/PALM  endif
-!/PALM !
-!/PALM !
-!/PALM ! END of PALM COUPLER Calls
-!/PALM !
 !
 !
 ! 3.8 Update global time step.

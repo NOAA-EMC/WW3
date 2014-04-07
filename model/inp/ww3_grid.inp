@@ -210,6 +210,37 @@ $                                     computation (0.2)
 $                           PTRIAD5 : Ursell number treshold for computing 
 $                                     interactions (0.01)
 $
+$ Shoreline reflections - - - - - - - - - - - - - - - - - - - - - - - - 
+$   ref. parameters       : Namelist REF1 
+$                           REFCOAST  : Reflection coefficient at shoreline
+$                           REFFREQ   : Activation of freq-dependent ref. 
+$                           REFMAP    : Scale factor for bottom slope map
+$                           REFRMAX   : maximum ref. coeffient (default 0.8) 
+$                           REFFREQPOW: power of frequency 
+$                           REFICEBERG: Reflection coefficient for icebergs
+$                           REFSUBGRID: Reflection coefficient for islands
+$                           REFCOSP_STRAIGHT: power of cosine used for 
+$                                       straight shoreline
+$
+$ Bound 2nd order spectrum and free IG - - - - - - - - - - - - - - - - - 
+$   IG1 parameters       : Namelist IG1
+$                           IGMETHOD  : 1: Hasselmann, 2: Krasitskii-Janssen
+$                           IGADDOUTP : activation of bound wave correction 
+$                                       in ww3_outp / ww3_ounp
+$                           IGSOURCE  : 1: uses bound waves, 2: empirical
+$                           IGSTERMS  :  > 0 : no source term in IG band
+$                           IGMAXFREQ : maximum frequency of IG band
+$                           IGEMPIRICAL: constant in empirical free IG source
+$                           IGSWELLMAX: activates free IG sources for all freq.
+$
+$ Propagation schemes ------------------------------------------------ $
+$ SMC grid propagation    : Namelist PSMC
+$                           CFLTM  : Maximum CFL number for propagation.
+$                           DTIME  : Swell age (s) for diffusion term.
+$                           LATMIN : Maximum latitude (deg) for GCT. 
+$                           RFMAXD : Maximum refraction turning (deg).
+$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0  /
+$
 $ Propagation schemes ------------------------------------------------ $
 $   First order         : Namelist PRO1
 $                           CFLTM  : Maximum CFL number for refraction.

@@ -283,13 +283,7 @@
       DO J=1, NRGRD
 !
         CALL W3SETG ( J, MDSE, MDST )
-
-        IF ( GTYPE .EQ. UNGTYPE ) THEN
-           IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
-                'UNSTRUCTURED GRID SUPPORT IN THIS ROUTINE', & 
-                'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
-                'TO WORK *** '
-          END IF
+!
         IF ( GTYPE .EQ. CLGTYPE ) THEN
            IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
                 'CURVILINEAR GRID SUPPORT IN THIS ROUTINE', & 
@@ -300,25 +294,25 @@
 ! Loop over output points
 !
 ! notes.....Here, we have pulled coding for UNGTYPE and CLGTYPE from w3iopomd.ftn
-        DO IPT=1, NOPTS
 ! ..........in w3iopomd.ftn, it is "DO IPT=1, NPT" but otherwise very similar
-
+        DO IPT=1, NOPTS
+!
 !     Check if point within grid 
 !
-           IF (GTYPE .NE. UNGTYPE) THEN 
-              INGRID(J,IPT) = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
-              IF ( .NOT.INGRID(J,IPT) ) THEN
-                 CYCLE
+          IF (GTYPE .NE. UNGTYPE) THEN 
+            INGRID(J,IPT) = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
+            IF ( .NOT.INGRID(J,IPT) ) THEN
+              CYCLE
               END IF
-           ELSE
-              CALL IS_IN_UNGRID_INTERP(IPT, XPT, YPT, itout, IX, IY, RD )
-              IF (itout.eq.0) THEN
-                INGRID(J,IPT)=.FALSE.
+          ELSE
+            CALL IS_IN_UNGRID(J, XPT(IPT), YPT(IPT), itout, IX, IY, RD )
+            IF (itout.eq.0) THEN
+              INGRID(J,IPT)=.FALSE.
               END IF
-           END IF
-
+            END IF
+!
 !     Check if point not on land
-
+!
             IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
               MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
               MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
@@ -336,7 +330,8 @@
 !
       DEALLOCATE ( XP, YP )
 !
-! 2.b Select a grid for each point.
+! 2.b Select a grid for each point
+!     start from last, which is supposedly higher resolution
 !
       MDATAS(:)%NRUPTS = 0
 !
@@ -344,9 +339,9 @@
         GRDID(IPT) = '...none...'
         DO J= NRGRD, 1, -1
           IF ( INGRID(J,IPT) ) THEN
-              GRDID(IPT) = GRIDS(J)%FILEXT
-              MDATAS(J)%NRUPTS = MDATAS(J)%NRUPTS + 1
-              EXIT
+            GRDID(IPT) = GRIDS(J)%FILEXT
+            MDATAS(J)%NRUPTS = MDATAS(J)%NRUPTS + 1
+            EXIT
             END IF
           END DO
         END DO

@@ -121,7 +121,7 @@
       USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
 !      USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
 !                          THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
-!                          PHS, PTP, PLP, PTH, PSI, PWS, PWST, PNR,    &
+!                          PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
 !                          USERO
       USE W3ADATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
@@ -1120,16 +1120,16 @@
 !/NCEP2                KPDS5B  = 7
                 DO ISEA = 1,NSEA
                   DO I = 0,NOSWLL
-                     IF ( PTH(ISEA,I) .NE. UNDEF ) THEN
-                        PTH(ISEA,I) = MOD ( 630 - RADE*PTH(ISEA,I) , 360. )
+                     IF ( PDIR(ISEA,I) .NE. UNDEF ) THEN
+                        PDIR(ISEA,I) = MOD ( 630 - RADE*PDIR(ISEA,I) , 360. )
                         END IF
                      END DO
                   END DO
                 CALL W3S2XY                                           &
-                        ( NSEA, NSEA, NX, NY, PTH(:,0), MAPSF, YY(:,0) )
+                        ( NSEA, NSEA, NX, NY, PDIR(:,0), MAPSF, YY(:,0) )
                 DO I=1, NOSWLL
                   CALL W3S2XY                                         &
-                        ( NSEA, NSEA, NX, NY, PTH(:,I), MAPSF, YY(:,I) )
+                        ( NSEA, NSEA, NX, NY, PDIR(:,I), MAPSF, YY(:,I) )
                   END DO
 !
 !     Partitioned Directional spread

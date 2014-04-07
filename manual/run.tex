@@ -29,80 +29,81 @@
 % tab:fields
 
 \begin{table} \begin{center}
-\begin{tabular}{|c|c|c|c|c|} \hline
-field & description                  &  file        & GRIB1 & GRIB2   \\
+\begin{tabular}{|c|c|c|c|c|c|} \hline
+group & field & description                  &  file        & GRIB1 & GRIB2   \\
       &                              &  extension   & data  & data    \\ \hline \hline
- 1 & depth                           & {\file .dpt} &  --  &    --    \\
- 2 & mean current components         & {\file .cur} &  --  &    --    \\
- 3 & wind speed                      & {\file .wnd} &  32  &  0,2,1   \\
-   &  wind direction                 &              &  31  &  0,2,0   \\
-   &  wind $u$                       &              &  33  &  0,2,2   \\
-   &  wind $v$                       &              &  34  &  0,2,3   \\
- 4 & air-sea temp. dif.              & {\file .dt}  &  --  &    --    \\
- 5 & water level                     & {\file .wlv} &  --  &  10,3,1  \\
- 6 & ice coverage                    & {\file .ice} &  91  &  10,2,0  \\
- 7 & wave height $H_s$               & {\file .hs}  & 100  &  10,0,3  \\
- 8 & mean wave length                & {\file .l}   &  --  &    --    \\
- 9 & mean wave period $T_{m0,2}$     & {\file .t02} &  --  &    --    \\
-10 & mean wave period $T_{m0,1}$     & {\file .t}   & 103  &  10,0,15 \\
-11 & mean wave period $T_{m0,-1}$    & {\file .tm1} &  --  &    --    \\
-12 & Energy flux $\int C_g E(f) df$  & {\file .CgE} &  --  &    --    \\
-13 & peak frequency $f_p$            & {\file .fp}  & 108  &  10,0,11 \\
-14 & mean wave direction $\theta_m$  & {\file .dir} & 101  &    --    \\
-15 & directional spread $\sigma$     & {\file .spr} &  --  &    --    \\
-16 & peak direction $\theta_p$       & {\file .dp}  & 107  &  10,0,10 \\
-17 & $H_s$ of partition              & {\file .phs} & 102,105 & 10,0,5/8 \\
-18 & $T_p$ of partition              & {\file .ptp} & 110,106 & 10,0,6/9\\
-19 & $L_p$ of partition              & {\file .plp} &  --  &    --    \\
-20 & $\theta_m$ of partition         & {\file .pth} & 109,104 & 10,0,4/7 \\
-21 & $\sigma$ of partition           & {\file .psi} &  --  &    --    \\
-22 & wind sea fraction of part.      & {\file .pws} &  --  &    --    \\
-23 & total wind sea fraction         & {\file .wsf} &  --  &    --    \\
-24 & number of partitions            & {\file .pnr} &  --  &    --    \\
-25 & average time step               & {\file .dtd} &  --  &    --    \\
-26 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
-27 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
-27 & maximum CFL for X-Y advection   & {\file .cfx} &  --  &    --    \\
-28 & maximum CFL for $\theta$ advection & {\file .cfd} &  --  &    --    \\
-%29 & maximum CFL for $k$ advection   & {\file .cfk} &  --  &    --    \\
-29 & friction velocity comp.         & {\file .ust} &  --  &    --    \\
-30 & Charnock parameter for air side & {\file .cha} &  --  &    --    \\ \hline
+ 1 & 1 & depth                           & {\file .dpt} &  --  &    --    \\
+ 1 & 2 & mean current components         & {\file .cur} &  --  &    --    \\
+ 1 & 3 & wind speed                      & {\file .wnd} &  32  &  0,2,1   \\
+   &&  wind direction                 &              &  31  &  0,2,0   \\
+   &&  wind $u$                       &              &  33  &  0,2,2   \\
+   &&  wind $v$                       &              &  34  &  0,2,3   \\
+ 1 & 4 & air-sea temp. dif.              & {\file .dt}  &  --  &    --    \\
+ 1 & 5 & water level                     & {\file .wlv} &  --  &  10,3,1  \\
+ 1 & 6 & ice coverage                    & {\file .ice} &  91  &  10,2,0  \\
+ 2 & 1 & wave height $H_s$               & {\file .hs}  & 100  &  10,0,3  \\
+ 2 & 2 & mean wave length                & {\file .l}   &  --  &    --    \\
+ 2 & 3 & mean wave period $T_{m0,2}$     & {\file .t02} &  --  &    --    \\
+ 2 & 4 & mean wave period $T_{m0,1}$     & {\file .t}   & 103  &  10,0,15 \\
+ 2 & 5 & mean wave period $T_{m0,-1}$    & {\file .tm1} &  --  &    --    \\
+ 2 & 6 & peak frequency $f_p$            & {\file .fp}  & 108  &  10,0,11 \\
+ 2 & 7 & mean wave direction $\theta_m$  & {\file .dir} & 101  &    --    \\
+ 2 & 8 & directional spread $\sigma$     & {\file .spr} &  --  &    --    \\
+ 2 & 9 & peak direction $\theta_p$       & {\file .dp}  & 107  &  10,0,10 \\
+ 4 & 1 & $H_s$ of partition              & {\file .phs} & 102,105 & 10,0,5/8 \\
+ 4 & 2 & $T_p$ of partition              & {\file .ptp} & 110,106 & 10,0,6/9\\
+ 4 & 3 & $L_p$ of partition              & {\file .plp} &  --  &    --    \\
+ 4 & 4 & $\theta_m$ of partition         & {\file .pdir} & 109,104 & 10,0,4/7 \\
+ 4 & 5 & $\sigma$ of partition           & {\file .psi} &  --  &    --    \\
+ 4 & 6 & wind sea fraction of part.      & {\file .pws} &  --  &    --    \\
+ 4 & 7 & total wind sea fraction         & {\file .wsf} &  --  &    --    \\
+ 4 & 8 & number of partitions            & {\file .pnr} &  --  &    --    \\
+ 5 & 1 & friction velocity comp.         & {\file .ust} &  --  &    --    \\
+ 5 & 2 & Charnock parameter for air side & {\file .cha} &  --  &    --    \\
+ 5 & 3 & Energy flux $\int C_g E(f) df$  & {\file .CgE} &  --  &    --    \\
+ 5 & 4 & Wind to wave energy flux        & {\file .faw} &  --  &    --    \\
+ 5 & 5 & Wave-supported stress           & {\file .taw} &  --  &    --    \\
+ 5 & 6 & Upward wave-supported stress    & {\file .twa} &  --  &    --    \\
+ 5 & 7 & Whitecap coeverage              & {\file .wcc} &  --  &    --    \\
+ 5 & 8 & Average whitecap foam thickness & {\file .wcf} &  --  &    --    \\
+ 5 & 9 & Significant breaking wave height& {\file .wch} &  --  &    --    \\
+ 5 & 10 & Whitecap moment                 & {\file .wcm} &  --  &    --    \\ \hline
 \end{tabular} \end{center}
 \caption{~Field output post processors ancillary data.} \label{tab:fields}
 \vspace{0.5in}
 \end{table}
+
 \begin{table} \begin{center}
-\begin{tabular}{|c|c|c|c|c|} \hline
-field & description                  &  file        & GRIB1 & GRIB2   \\
+\begin{tabular}{|c|c|c|c|c|c|} \hline
+group & field & description                  &  file        & GRIB1 & GRIB2   \\
       &                              &  extension   & data  & data    \\ \hline \hline
-31 & Wind to wave energy flux        & {\file .faw} &  --  &    --    \\
-32 & Wave-supported stress           & {\file .taw} &  --  &    --    \\
-33 & Upward wave-supported stress    & {\file .twa} &  --  &    --    \\
-34 & Whitecap coeverage              & {\file .wcc} &  --  &    --    \\
-35 & Average whitecap foam thickness & {\file .wcf} &  --  &    --    \\
-36 & Significant breaking wave height& {\file .wch} &  --  &    --    \\
-37 & Whitecap moment                 & {\file .wcm} &  --  &    --    \\
-38 & near-bottom amplitude           & {\file .cfd} &  --  &    --    \\
-39 & near-bottom velocity            & {\file .ubr} &  --  &    --    \\
-40 & bedform parameters              & {\file .bed} &  --  &    --    \\
-41 & Energy flux to bot. boundary layer & {\file .fbb} &  --  &    --    \\
-42 & Momentum flux to bot. boundary layer & {\file .tbb} &  --  &    --    \\
-43 & radiation stress                & {\file .Sxy} &  --  &    --    \\
-44 & Breaking wave momentum flux     & {\file .two} &  --  &    --    \\
-45 & Bernoulli head                  & {\file .J} &  --  &    --    \\
-46 & Breaking wave energy flux       & {\file .foc} &  --  &    --    \\
-47 & Stokes transport                & {\file .tus} &  --  &    --    \\
-48 & Surface Stokes drift            & {\file .uss} &  --  &    --    \\
-49 & mean square slopes              & {\file .mss} &  --  &    --    \\
-50 & Phillips constant               & {\file .msc} &  --  &    --    \\
-51 & Second order pressure at $k=0$  & {\file .p2s} &  --  &    --    \\
-52 & user defined \#1                & {\file .us1} &  --  &    --    \\
-53 & user defined \#2                & {\file .us2} &  --  &    --    \\ \hline
+ 6 & 1 & radiation stress                & {\file .Sxy} &  --  &    --    \\
+ 6 & 2 & Breaking wave momentum flux     & {\file .two} &  --  &    --    \\
+ 6 & 3 & Bernoulli head                  & {\file .J} &  --  &    --    \\
+ 6 & 4 & Breaking wave energy flux       & {\file .foc} &  --  &    --    \\
+ 6 & 5 & Stokes transport                & {\file .tus} &  --  &    --    \\
+ 6 & 6 & Surface Stokes drift            & {\file .uss} &  --  &    --    \\
+ 6 & 7 & Second order pressure at $k=0$  & {\file .p2s} &  --  &    --    \\
+ 7 & 1 & near-bottom amplitude           & {\file .cfd} &  --  &    --    \\
+ 7 & 2 & near-bottom velocity            & {\file .ubr} &  --  &    --    \\
+ 7 & 3 & bedform parameters              & {\file .bed} &  --  &    --    \\
+ 7 & 4 & Energy flux to bot. boundary layer & {\file .fbb} &  --  &    --    \\
+ 7 & 5 & Momentum flux to bot. boundary layer & {\file .tbb} &  --  &    --    \\
+ 8 & 1& mean square slopes              & {\file .mss} &  --  &    --    \\
+ 8 & 2 & Phillips constant               & {\file .msc} &  --  &    --    \\
+ 9 & 1 & average time step               & {\file .dtd} &  --  &    --    \\
+ 9 & 2 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
+ 9 & 3 & cut-off frequency $f_c$         & {\file .fc}  &  --  &    --    \\
+ 9 & 4 & maximum CFL for X-Y advection   & {\file .cfx} &  --  &    --    \\
+ 9 & 5 & maximum CFL for $\theta$ advection & {\file .cfd} &  --  &    --    \\
+ 9 & 6 & maximum CFL for $k$ advection   & {\file .cfk} &  --  &    --    \\
+ 10 & 1 & user defined \#1                & {\file .us1} &  --  &    --    \\
+ 10 & 2 & user defined \#2                & {\file .us2} &  --  &    --    \\ \hline
 %13 & wind sea period $T_w$           & {\file .fpl} & 110  &    --    \\
 %14 & wind sea direction $\theta_w$   & {\file .dpl} & 109  &    --    \\
 
 \end{tabular} \end{center}
-\caption{~Field output post processors ancillary data (Continued).} \label{tab:fields_part2}
+\caption*{Table~\ref{tab:fields}, continued.} 
 \vspace{0.5in}
 \end{table}
 

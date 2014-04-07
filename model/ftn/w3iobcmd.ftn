@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Jul-2013 |
+!/                  | Last update :         14-Jan-2014 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -96,6 +96,7 @@
 !/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    03-Jul-2013 : Corrected ABPIN indices             ( version 4.11 )
+!/    14-Jan-2014 : Corrected ABPIN indices for W3CSPC  ( version 4.18 ) 
 !/
 !  1. Purpose :
 !
@@ -530,8 +531,8 @@
               DO IP=1, NBI2
                 READ (NDSB,ERR=803,IOSTAT=IERR) TMPSPC(:,IP)
                 END DO
-                CALL W3CSPC ( TMPSPC     , NKI, NTHI, XFRI, FR1I, TH1I, &
-                              ABPIN, NK, NTH, XFR, FR1, TH(1),          &
+              CALL W3CSPC ( TMPSPC     ,    NKI, NTHI, XFRI, FR1I, TH1I, &
+                            ABPIN(:,1:NBI2),NK,  NTH,  XFR,  FR1,  TH(1),&
                             NBI2, NDST, NDSE, FACHFE )
               DEALLOCATE ( TMPSPC )
             END IF

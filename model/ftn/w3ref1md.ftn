@@ -69,13 +69,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Jul-2013 |
+!/                  | Last update :         05-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2010 : Origination.                          ( version 3.14-Ifremer )
 !/    31-May-2011 : Introduction of amplitude-dependent R ( version 4.05 )
 !/    27-Jul-2013 : Adding free infragravity waves        ( version 4.11 )
 !/    11-Nov-2013 : Expands IG energy frequency range     ( version 4.13 )
+!/    05-Mar-2014 : Fixing bug with ICALC = 1 and IG1     ( version 4.18 )
 !/
 !  1. Purpose :
 !
@@ -86,9 +87,10 @@
 !     Adds the reflected components from 2 types of sources: 
 !        shoreline reflection, subgrid obstruction and icebergs 
 !
-!     In the case of infragravity energy, the original spectrum A is kept into ATMP2
-!        and the spectrum is enhanced with IG energy in the ATMP and A arrays
-!        the original spectrum is put back at the end: A = ATMP2. 
+!     In the case of infragravity energy, there are two passes:
+!        - ICALC = 1, only the wind sea and swell are reflected (no IG added) 
+!        - ICALC = 2, IG energy is added into all frequency bands 
+!
 !
 !     When IG energy is put in the entire spectrum ( NINT(IGPARS(4)).EQ.2 )
 !        two passes are done: the first for the reflection of windsea and swell
@@ -172,14 +174,15 @@
       INTEGER         :: ICALC
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE   :: FIRST = .TRUE.
-       
+      LOGICAL         :: IGBCOVERWRITE, IGSWELLMAX 
       REAL            :: R1, R2, R3, R4, R2X, R2Y, DEPTHIG
       REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, &
                          RAMP1, RAMP2, MICHEFAC, SLOPE
      REAL             :: HS, HIG, HIG1, HIG2, EB, SB, EMEANA, FMEAN2,   &
                          FMEANA, FREQIG, EFIG, EFIG1, SQRTH, SMEANA
 !/IG1    INTEGER        :: NKIG,NSPECIG,NSPECIGSTART, I1, I2
-!/IG1    REAL           :: ATMP(NSPEC),ATMP2(NSPEC), STMP1(NSPEC), STMP2(NSPEC), WNB(NK), CGB(NK), SIX
+!/IG1    REAL           :: ATMP(NSPEC),ATMP2(NSPEC), STMP1(NSPEC),      &
+!/IG1                      STMP2(NSPEC), WNB(NK), CGB(NK), SIX, IGFAC1, IGFAC2
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -187,6 +190,10 @@
 !
 ! 0.  Initializations ------------------------------------------------ *
 !
+!/IG1 IGBCOVERWRITE =(MOD( NINT(IGPARS(4)),2).EQ.1)
+!/IG1 IGSWELLMAX =( NINT(IGPARS(4)).GE.2)
+!/IG1 IGFAC1 = 0.25
+!/IG1 IGFAC2 = 0.25
       EMEANA  = 0.
       FMEANA  = 0.
       FMEAN2  = 0.
@@ -209,19 +216,21 @@
 ! 1.  Sets reflection term to zero
 !
       ICALC=1
-!/IG1     ICALC=2
       S = 0.
-!/IG1     STMP1 = 0.
-!/IG1     STMP2 = 0.
+!/IG1      STMP1 = 0.
+!/IG1      STMP2 = 0.
       HS=4.*SQRT(EMEANA)
-!/IG1!
-!/IG1      IF (NINT(IGPARS(4)).EQ.2) ICALC=1
 !/IG1      ATMP(:)=A(:)      ! the IG energy will be added to this ATMP
 !/IG1      ATMP2(:)=A(:)     ! this is really to keep in memory the original spectrum
-!/IG1        IF (NINT(IGPARS(4)).GE.1) ATMP2(1:NSPECIGSTART)=0.
+!/IG1      IF (IGBCOVERWRITE) THEN 
+!/IG1        IGFAC1 = 1.
+!/IG1        ATMP2(1:NSPECIGSTART)=0.
+!/IG1        END IF
+!/IG1!
 !/IG1! resets IG band energy to zero
+!/IG1!
 !/IG1      DO ICALC=1,2 
-!/IG1        IF (NINT(IGPARS(4)).GE.1) A(1:NSPECIGSTART)=0.
+!/IG1        IF (IGBCOVERWRITE) A(1:NSPECIGSTART)=0.
 !/IG1        IF (ICALC.EQ.1) A=ATMP2
 !/IG1        IF (ICALC.EQ.2) THEN 
 !/IG1!
@@ -229,7 +238,7 @@
 !/IG1!
 !/IG1! determines highest IG frequency
 !/IG1!
-!/IG1          IF (NINT(IGPARS(4)).EQ.2) THEN 
+!/IG1          IF (IGSWELLMAX) THEN 
 !/IG1            NKIG=NK 
 !/IG1          ELSE 
 !/IG1            NKIG=NINT(IGPARS(5))
@@ -277,7 +286,7 @@
 !/IG1              ATMP(1+(IK-1)*NTH:IK*NTH)=ATMP(1+(IK-1)*NTH:IK*NTH)*(CGB(IK)*WN(IK))/(CG(IK)*WNB(IK))
 !/IG1              END DO
 !/IG1            A(1:NSPECIG)=ATMP(1:NSPECIG)
-!/IG1            IF (NINT(IGPARS(4)).EQ.2) THEN 
+!/IG1            IF (IGSWELLMAX) THEN 
 !/IG1              DO ISPEC=1,NSPECIG
 !/IG1                A(ISPEC)=MAX(ATMP(ISPEC)-A(ISPEC),0.)   
 !/IG1                END DO
@@ -306,9 +315,9 @@
 !/IG1! Correction: gives a frequency shape ... 
 !/IG1!
 !/IG1              IF (IK.LT.IK1) THEN 
-!/IG1                EFIG1=EFIG1*1.2*MIN(1.,0.015/(SIG(IK)*TPIINV))**1.5
+!/IG1                EFIG1=EFIG1*IGFAC1*1.2*MIN(1.,0.015/(SIG(IK)*TPIINV))**1.5
 !/IG1              ELSE 
-!/IG1                EFIG1=EFIG1*0.3*MIN(1.,0.015/(SIG(IK)*TPIINV))**1.5
+!/IG1                EFIG1=EFIG1*IGFAC2*1.2*MIN(1.,0.015/(SIG(IK)*TPIINV))**1.5
 !/IG1                END IF
 !/IG1!
 !/IG1! Conversion to action spectral density A(k,theta), assuming isotropic dir. 
@@ -330,7 +339,8 @@
         SLOPE=MAX(0.001,REFLC(3))
         MICHEFAC=0.0001*GRAV**2*(SLOPE**5)  &
                    /(MAX(EMEANA,1E-4)*MAX(FMEANA,0.001)**4)
-        RAMP0=0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC  ! IF REFLC(1)=1, 0.07 should be 0.007
+        RAMP0=MAX(0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC,0.005)   ! IF REFLC(1)=1, 0.07 should be 0.007
+! NB: these constants are adjusted for REFLC(1) = 0.1. If  REFLC(1)=1, 0.07 should be 0.007
       ELSE
         RAMP0=1.
         ENDIF

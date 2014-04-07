@@ -41,7 +41,7 @@
 
   src_dir=arc_tmp # Source directory (before links or copies are made)
 
-  dirs="model regtests"
+  dirs="model cases regtests"
   for dir in $dirs
   do
     fname=wwatch3.*.$dir.tar
@@ -396,6 +396,8 @@
   tar xf ../$model
   echo -e "Unpacking $regtests"
   tar xf ../$regtests
+  echo -e "Unpacking $cases"
+  tar xf ../$cases
 
 # Placeholder for cases
 #  echo -e "Unpacking $cases"
@@ -404,7 +406,7 @@
   cd ${main_dir}
 
 # Make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp work regtests
+  for dir in aux bin ftn obj mod exe inp work cases regtests
   do
     if [ ! -d $dir ]
     then
@@ -715,6 +717,33 @@
     chmod 744 comp link
     chmod 644 switch
 
+# Local install: delete ww3_env, create new variable pointing to local wwatch3.env
+  if [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
+  then
+
+    loc_dir=$(echo $main_dir | sed 's/\//\\\//g')
+    echo -e "\n This install uses a local wwatch3.env.\n"
+    echo -e " Pointing ww3_env variable in bin scripts to:\n"
+    echo -e " ${loc_dir}/wwatch3.env \n"
+
+    cd $main_dir/${ldir}
+
+    linkfiles=`ls link*`
+    locfiles="${linkfiles} ad3 ad3_test all_switches find_switch list ln3 \
+              make_makefile.sh make_MPI make_OMP sort_all_switches sort_switch \
+              w3_clean w3_make w3_new w3_setup ww3_gspl.sh"
+    for lfile in ${locfiles}
+    do
+
+      echo -e "\n Changing ww3_env in script ${lfile}"
+# Delete generic ww3_env
+      sed '/ww3_env="${HOME}\/\.wwatch3.env"/d' ${lfile} > dumfile
+# Add new local ww3_env
+      sed -e "s/# WW3ENV/  export ww3_env=$loc_dir\/wwatch3.env/g" dumfile > ${lfile}
+      chmod 744 ${lfile}
+    done
+  fi
+
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
   echo -e ' ---------------------------- '
 
@@ -912,13 +941,6 @@
 # 7. Set-up / update cases directory                                           #
 # --------------------------------------------------------------------------- #
 
-# Placeholder for when cases become part of distro
-
-  icases="no"
-
-  if [ "icases" = "y" ]
-  then
-
   rm -f ${main_dir}/tmp/cases_setup.out
   tnr_old=0
   tnr_new=0
@@ -930,7 +952,7 @@
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/cases_setup.out
 
-  tmp_files=`ls -p | grep -v '/$'`
+  tmp_files=`ls`
   all_files=
   all_dirs=
   for file in $tmp_files
@@ -1070,9 +1092,6 @@
   echo -e "\n   List of existing (old) or files copied routed to :"
   echo -e "     ${main_dir}/tmp/cases_setup.out "
   sleep 2
-
-# Icases if closure
-  fi
 
 # --------------------------------------------------------------------------- #
 # 7.1 Set-up / update regtests directory                                           #

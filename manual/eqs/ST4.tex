@@ -5,7 +5,7 @@
 \opthead{ST4}{\ws}{F. Ardhuin}
 
 \noindent 
-This parameterization uses a positive part of the wind input that is takem
+This parameterization uses a positive part of the wind input that is taken
 from WAM cycle 4, with an ad hoc reduction of $u_\star$ is implemented in
 order to allow a balance with a saturation-based dissipation.  This correction
 also reduces the drag coefficient at high winds. This is done by reducing the
@@ -30,7 +30,7 @@ tail in eq. (\ref{eq:tauhfint}), which requires the estimation of a
 being the energy level of the tail.
 
 The swell dissipation parameterization of \cite{art:ACC09} is activated by
-setting $s_0$ to a non-zero integer value, and is given by a combination of
+setting $s_1$ to a non-zero integer value, and is given by a combination of
 the viscous boundary layer value,
 
 \begin{equation}
@@ -95,7 +95,7 @@ Par.         &  WWATCH var.       & namelist & TEST451 & TEST451f & TEST405  & T
   $\mathrm{Re}_c$ &  SWELLF4                    & SIN4 & $10^5$  & $10^5$  & $10^5$    & $10^5$  \\
   $s_5$ &  SWELLF5                    & SIN4 & 1.2     & 1.2     & 1.2       &  1.2 \\
   $s_6$ &  SWELLF6                    & SIN4 & 0.      & 0.      & 0.        & 0.   \\
-  $s_7$ &  SWELLF7                    & SIN4 & 2.3$\times 10^5$ & 2.3$\times 10^5$  & 0.0       &  0.0 \\
+  $s_7$ &  SWELLF7                    & SIN4 & 2.3$\times 10^5$ & 2.3$\times 10^5$  &\textbf{0.0}       &\textbf{0.0} \\
   $z_r$ &  Z0RAT                      & SIN4 & 0.04    & 0.04    & 0.04      &  0.04 \\
   $z_{0,\max}$ &  Z0MAX               & SIN4 & 1.002   & 1.002   &\textbf{0.002}&  1.002 \\
 \hline
@@ -107,7 +107,7 @@ generally provides the best results at global scale when using ECMWF winds,
 with the only serious problem being a low bias for $H_s > 8$~m.  TEST451f
 corresponds to a retuning for CSFR wind reanalysis from NCEP/NCAR
 \citep{art:CFSRR10}, and has almost no bias all the way to $H_s =
-15$~m. Simumations and papers prepared before March 2012, used a slightly
+15$~m. Simulations and papers prepared before March 2012, used a slightly
 different TEST441 and TEST441f which can be recovered by setting SWELLF7 to 0.
 TEST405 is slightly superior for short fetches, and TEST500 is intermediate in
 terms of quality but it also includes depth-induced breaking in the same
@@ -145,9 +145,9 @@ $s_3 > 0$, $\cS_{out}$ is applied to the entire spectrum and not just the
 swell.
 
 The dissipation term is parameterized from the wave spectrum
-saturation. Because the directional wave spectrum were too narrow when using a
-saturation spectrum integrated over the full circle \citep{art:AL06}, we
-restricted the integration over a sector of half-width $\Delta_\theta$,
+saturation. Because the directional wave spectra were too narrow when using a
+saturation spectrum integrated over the full circle \citep{art:AL06},
+the integration is restricted over a sector of half-width $\Delta_\theta$,
 \begin{equation}
 B'\left(k,\theta\right)=
 \int_{\theta-\Delta_\theta}^{\theta+\Delta_\theta} \sigma k^3 cos^{\mathrm{sB}}\left(\theta-
@@ -194,7 +194,7 @@ $\Lambda$ is inferred from breaking probabilities. Based on Banner et
 al. (2000, figure 6, $b_T=22
 \left(\varepsilon-0.055\right)^2$)\nocite{art:BBY00}, and taking their
 saturation parameter $\varepsilon$ to be of the order of $1.6
-\sqrt{B'(k,\theta)}$, the breaking probability of dominant waves waves is
+\sqrt{B'(k,\theta)}$, the breaking probability of dominant waves is
 approximately
 \begin{equation}
 P=56.8\left(\max\{\sqrt{B'(k,\theta)}-\sqrt{B'_r},0\}\right)^2.\label{PBanner}
@@ -203,9 +203,9 @@ However, because they used a zero-crossing analysis, for a given wave scale,
 there are many times when waves are not counted because the record is
 dominated by another scale: in their analysis there is only one wave at any
 given time.  This tends to overestimate the breaking probability by a factor
-of 2 \citep{art:FAB10}, compared to the present approach in which we consider
-that several waves (of different scales) may be present at the same place and
-time. We correct for this effect simply, dividing $P$ by 2.
+of 2 \citep{art:FAB10}, compared to the present approach in which it is 
+considered that several waves (of different scales) may be present at the same place and
+time. This effect is corrected simply dividing $P$ by 2.
 
 With this approach the spectral density of crest length (breaking or not) per
 unit surface $l(\mathbf{k})$ such that $\int l(\mathbf{k}) \mathrm{d}k_x
@@ -238,7 +238,7 @@ coefficient expected to be of order 1, which also corrects for errors in the
 estimation of $l$.
 
 
-Finally, the wave-turbulence interaction term of \cite{art:TB02} and \cite{art:AJ06}),
+Finally, the wave-turbulence interaction term of \cite{art:TB02} and \cite{art:AJ06},
 is given by
 
 \begin{equation}
@@ -266,9 +266,9 @@ Par.         &  WWATCH var. & namelist & TEST451 & TEST405  & TEST500 \\
   $p_{\mathrm{tail}}$               &  WNMEANPTAIL    & SDS4 & 0.5                   & 0.5 &  0.5 \\
   $f_{\mathrm{FM}}$                 &  FXFM3          & SDS4 & 9.9                   & \textbf{2.5} &  9.9  \\
                                     & SDSC1           & SDS4 & 0   & 0                              & \textbf{1.0} \\
-  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4 & $-2.4\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
+  $C_{\mathrm{ds}}^{\mathrm{sat}}$  & SDSC2           & SDS4 & $-2.2\times 10^{-5}$  & $-2.2\times 10^{-5}$  & \textbf{0.0} \\
   $C_{\mathrm{ds}}^{\mathrm{BCK}}$  & SDSBCK          & SDS4 & 0                     & 0  & \textbf{0.185} \\
-  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 0  & \textbf{1.5} \\
+  $C_{\mathrm{ds}}^{\mathrm{HCK}}$  & SDSHCK           & SDS4 & 0                    & 1.5  & 1.5 \\
   $\Delta_\theta$                   &  SDSDTH         & SDS4 & 80                    & 80 &  80 \\
   $B_r$                             &  SDSBR          & SDS4 & 0.0009                & \textbf{0.00085} & 0.0009    \\
   $C_{\mathrm{cu}}$                 & SDSCUM         & SDS4 & -0.40344               & \textbf{0.0}    & -0.40344     \\

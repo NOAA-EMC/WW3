@@ -1,7 +1,7 @@
 #!/bin/sh
 # --------------------------------------------------------------------------- #
 # make_MPI    : Script to manage consecutinve compiling of MPI and non-MPI    #
-#               elemensts of WAVEWATCH III, using standard compile scripts.   #
+#               elements of WAVEWATCH III, using standard compile scripts.   #
 #               Only ww3_shel and ww3_multi compiled for MPI.                 #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
@@ -19,8 +19,15 @@
 # 1.a Internal variables
 
   tmp='ww3_temp'           # temporary working directory
+
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+# The following line must not be removed: it is a switch for local install
+# so that all bin scripts point to the local wwatch3.env
+# WW3ENV
+# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
+# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
+
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate file
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -52,11 +59,11 @@
     exit
   fi
 
-  if test -d work
+  if test -d bin
   then
-    cd work
+    cd bin
   else
-    echo "*** Directory $main_dir/work not found ***"
+    echo "*** Directory $main_dir/bin not found ***"
     exit
   fi
 
@@ -77,20 +84,20 @@
 
   cp switch.shrd switch
   w3_make ww3_grid ww3_strt ww3_prep ww3_outf ww3_outp ww3_trck ww3_grib \
-          ww3_gspl ww3_gint gx_outf gx_outp
+          ww3_gspl ww3_gint gx_outf gx_outp ww3_sbs1 ww3_systrk ww3_bound \
+          ww3_prnc ww3_ounf ww3_ounp ww3_bounc
 
 # --------------------------------------------------------------------------- #
 # 3. Compile MPI codes                                                        #
 # --------------------------------------------------------------------------- #
 
   cp switch.MPI switch
-  w3_make ww3_shel ww3_multi # ww3_prnc # ww3_sbs1
+  w3_make ww3_shel ww3_multi
 
 # --------------------------------------------------------------------------- #
 # 4. Reset switch file                                                        #
 # --------------------------------------------------------------------------- #
 
-# cp switch.shrd switch
   cp switch.hold switch
 
 # --------------------------------------------------------------------------- #

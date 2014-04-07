@@ -30,6 +30,9 @@
 !      IYMD21    I.F.  TICK21   Date increment function.
 !      DSEC21    R.F.  Public   Calculate the difference in seconds
 !                               between two data/time arrays.
+!      TDIFF     R.F.  Public   Calculate the difference in seconds
+!                               between two date/time arrays that 
+!                               were generated from DATE_AND_TIME
 !      MYMD21    I.F.  DSEC21   Julian date function.
 !      STME21    Subr. Public   Converts integer time to string.
 !      JULDAY    I.F.  Public   Julian date function
@@ -495,6 +498,108 @@
 !/ End of DSEC21 ----------------------------------------------------- /
 !/
       END FUNCTION DSEC21
+!/ ------------------------------------------------------------------- /
+      REAL FUNCTION TDIFF ( T1, T2 )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           Arun Chawla             |
+!/                  |           Mark Szyszka            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         02-Feb-2014 |
+!/                  +-----------------------------------+
+!/
+!/    02-Feb-2014 : Original code         ( version 4.18 )
+!/
+!/
+!  1. Purpose :
+!
+!     Calculate the time difference in seconds between two time arrays
+!     that have been generated from the F90 internal function 
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       Tn      I.A.   I   This is an integer array returned from the 
+!                          internal subroutine DATE_AND_TIME. The type
+!                          is integer(8). Individual values are
+!                          Tn(1)    the year 
+!                          Tn(2)    the month 
+!                          Tn(3)    day of the month 
+!                          Tn(4)    time difference with UTC in minutes
+!                          Tn(5)    hour of the day
+!                          Tn(6)    minutes of the hour
+!                          Tn(7)    seconds of the minute
+!                          Tn(8)    milli seconds of the second
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     Any routine.
+!
+!  7. Remarks :
+!     
+!     This code has been provided by Mark Szyszka of RPSGROUP
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing using STRACE.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: T1(8), T2(8)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: A1, B1, C1, D1, A2, B2, C2, D2
+      REAL                    :: E1, E2
+!/S      INTEGER, SAVE           :: IENT = 0
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'TDIFF')
+!
+! Convert dates and times :
+!
+      A1 = (14-T1(2))/12
+      B1 = T1(1) + 4800 - A1
+      C1 = T1(2) + 12*A1 - 3
+      D1 = T1(3) + (153*C1 + 2)/5 + 365*B1 + B1/4 -B1/100 + B1/400
+      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
+!
+      A2 = (14-T2(2))/12
+      B2 = T2(1) + 4800 - A2
+      C2 = T2(2) + 12*A2 - 3
+      D2 = T2(3) + (153*C2 + 2)/5 + 365*B2 + B2/4 -B2/100 + B2/400
+      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
+!
+      TDIFF = 86400.0*(D2-D1) + E2-E1
+!
+      RETURN
+!/
+!/ End of TDIFF ------------------------------------------------------ /
+!/
+      END FUNCTION TDIFF
 !/ ------------------------------------------------------------------- /
       SUBROUTINE STME21 ( TIME , DTME21 )
 !/

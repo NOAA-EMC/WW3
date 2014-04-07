@@ -7,6 +7,8 @@
 #                                                                             #
 # use   : ad3 basename [itest [icomp]]                                        #
 #            basename: name of source code file without the '.ftn' extension. #
+#                      file with .f or .f90 extension is not preprocessed.    #
+#                      file with .c extension uses standard cc compiler.      #
 #            itest   : test output switch.                                    #
 #                       not defind or 0 : no test output                      #
 #                       all other       : verbose mode                        #
@@ -31,7 +33,9 @@
 #    file $ww3_env, as is the scratch directory ($temp_dir). The following    #
 #    directories are used :                                                   #
 #       $main_dir/ftn : Raw FORTRAN file ($basename.ftn). If extension is     #
-#                       not .ftn, w3adc will be skipped.                      # 
+#                       not .ftn, w3adc will be skipped. if the extension is  # 
+#                       .c, then the simple cc compiler is used. The latter   #
+#                       is now used for profiling code only.                  #
 #       $main_dir/bin : File with preprocessor switches 'switch', and         #
 #                       compiler script 'comp'.                               #
 #       $main_dir/obj : Final object modules ($basename.o).                   #
@@ -50,15 +54,11 @@
 #  - Check the compress variable in section 1.b to print or suppress the_     #
 #    documentation in the clean FORTRAN files.                                #
 #                                                                             #
-#  - To comply with NCEP NCO documentation rules the inlude string !docb_     #
-#    is replaced with the 'docblock' file from the directory 'doc_dir' if     #
-#    such a file and directory are found. If the directory or file are not    #
-#    found, the comment string will be left in place.                         #
-#                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
+#                                                      January 2014           #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2014 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -90,9 +90,14 @@
 # 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
+# The following line must not be removed: it is a switch for local install
+# so that all bin scripts point to the local wwatch3.env
+# WW3ENV
+# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
+# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
+
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
   switch="switch"          # file containing switches
-  doc_dir=doc90            # docblock directory
   compress=0               # source code compression par in w3adc
                            # if not 0, documentaion removed from .f90 file
 
@@ -129,8 +134,6 @@
   then
     path_i="$path_i/SCRIP"
   fi
-
-  doc_dir=$main_dir/$doc_dir
 
   sw_str=`cat $path_b/$switch`
 
@@ -194,24 +197,7 @@
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - -
 
-    if [ -d $doc_dir ]
-    then
-      doc_data="`sed -n '/^.docb_/p' $path_i/$name.ftn 2> /dev/null | awk '{ print $1}'`"
-      if [ -n "$doc_data" ]
-      then
-        for doc_string in $doc_data
-        do
-          doc_ID=`echo $doc_string | cut -c1-6`
-          doc_file=`echo $doc_string | sed "s/$doc_ID//g"`
-          if [ -f $doc_dir/$doc_file ]
-          then
-            echo "'$doc_string' '$doc_dir/$doc_file' "  >> w3adc.inp
-          else
-            echo "         File $doc_file in $doc_dir not found."
-          fi
-        done
-      fi
-    fi
+# Obsolete feature, removed
 
 # 2.c Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -288,12 +274,17 @@
       fi
     fi
 
+    if [ -f $path_i/$name.c ]
+    then
+      cp $path_i/$name.c .
+    fi
+
   fi
 
-  if [ ! -f $name.f ] && [ ! -f $name.f90 ]
+  if [ ! -f $name.f ]  && [ ! -f $name.f90 ]&& [ ! -f $name.c ]
   then
     echo '      *** adc error ***'
-    echo "          file $name.f[90] not found."
+    echo "          file $name.f|f90|c not found."
     exit 5
   fi
 
@@ -309,14 +300,17 @@
   rm -f *.mod
 
 # --------------------------------------------------------------------------- #
-# 3. Compile source code.                                                     #
+# 3. Compile source code f / f90                                              #
 # --------------------------------------------------------------------------- #
+
+if [ ! -f $name.c ]
+then
+
 # 3.a Run compile program
 
   error='0'
 
-  export path_m  # for use by comp
-#OLD  export ldflags # for use by link
+  export path_m 
 
   if $path_b/comp $name > comp.out 2> comp.err
   then
@@ -406,5 +400,29 @@
   fi
 
   exit $error
+
+# --------------------------------------------------------------------------- #
+# 4. Compile source code c                                                    #
+# --------------------------------------------------------------------------- #
+# For now only diagnostics / profiling codes compiled with simple cc compiler
+
+else
+
+# 4.a Compile
+
+  cc -c $name.c
+
+# 4.b Save object file
+
+  if [ -f $name.o ]
+  then
+    mv $name.o $path_o/.
+  else
+    echo '      *** compile error ***'
+    echo "          file $name.o not found"
+    error='6'
+  fi
+
+fi
 
 # End of ad3 ---------------------------------------------------------------- #

@@ -15,6 +15,8 @@
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
 !/    29-Nov-2013 : Remove DOC control characters,
 !/                  update MPI! to MPI/! (H.L. Tolman). ( version 4.15 )
+!/    11-Feb-2014 : Add NetCDF output option. Both NetCDF-3 and
+!/                  NetCDF-4 are available. (B. Li).    ( version 4.18 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -22,7 +24,6 @@
 !/       No unauthorized use without permission.
 !/
       USE W3STRKMD
-!
       IMPLICIT NONE
 !/MPI
 !/MPI      INCLUDE "mpif.h"
@@ -67,7 +68,15 @@
       INTEGER           :: dumdate1, dumdate2, dumdate3, dumdate4
       INTEGER           :: dumdate5, dumdate6
       REAL, ALLOCATABLE :: dum(:,:)
-      REAL*8            :: date1, date2, tstart, tend
+!/TRKNC      REAL, ALLOCATABLE :: dum2nc(:,:,:,:)
+!/TRKNC      REAL, ALLOCATABLE ::  hsprt_nc(:,:,:)
+!/TRKNC      REAL, ALLOCATABLE ::  tpprt_nc(:,:,:)
+!/TRKNC      REAL, ALLOCATABLE ::  dirprt_nc(:,:,:)
+!/TRKNC      REAL, ALLOCATABLE ::  longitude_nc(:),latitude_nc(:)
+!/TRKNC      REAL, ALLOCATABLE ::  lonprt_nc(:),latprt_nc(:)
+      INTEGER NTIME_NC
+      INTEGER           :: outputType
+      DOUBLE PRECISION  :: date1, date2, tstart, tend
       REAL              :: dlon, dlat, lonprt, latprt
       REAL              :: dt
       REAL              :: minlon, maxlon, minlat, maxlat
@@ -165,6 +174,13 @@
       BACKSPACE(10)
       READ(10,'(2X,F8.0,X,F6.0,F6.0,I5)') date1, date2, dt, ntint
       tstart = date1 + date2/1000000
+
+      READ(10,'(A72)') inpstr
+      DO WHILE (inpstr(1:1).EQ.'$')
+         READ(10,'(A72)') inpstr
+      END DO
+      BACKSPACE(10)
+      READ(10,*) outputType
 
       READ(10,'(A72)') inpstr
       DO WHILE (inpstr(1:1).EQ.'$')
@@ -285,11 +301,14 @@
 
       WRITE(21,'(I6,69X,A)') maxJ,'Number of rows'
       WRITE(21,'(I6,69X,A)') maxI,'Number of cols'
+!/TRKNC      ALLOCATE( longitude_nc(maxI) )
+!/TRKNC      ALLOCATE( latitude_nc(maxJ) )
 
       WRITE(21,*) 'Longitude ='
       DO j = maxJ,1,-1
          DO i = 1,maxI
             WRITE(21,'(F7.2)',ADVANCE='NO') wsdat(1)%lon(i,j)
+!/TRKNC        longitude_nc(i)=wsdat(1)%lon(i,1)
          END DO
          WRITE(21,'(A)',ADVANCE='YES') ''
       END DO
@@ -298,6 +317,7 @@
       DO j = maxJ,1,-1
          DO i = 1,maxI
             WRITE(21,'(F7.2)',ADVANCE='NO') wsdat(1)%lat(i,j)
+!/TRKNC        latitude_nc(j)=wsdat(1)%lat(1,j)
          END DO
          WRITE(21,'(A)',ADVANCE='YES') ''
       END DO
@@ -305,17 +325,25 @@
       CLOSE(21)
 
 !-----Final SYSTEM output: hs
+      IF(outputType == 1) THEN
       OPEN(unit=22,recl=2147483646,file='sys_hs.ww3', &
            status='unknown')
 
       WRITE(22,'(I6,69X,A)') maxJ,'Number of rows'
       WRITE(22,'(I6,69X,A)') maxI,'Number of cols'
+      ENDIF
 
+      NTIME_NC=SIZE(sysA)
       ALLOCATE( dum(maxI,maxJ) )
+!/TRKNC      IF(outputType == 3 .OR. outputType == 4) THEN
+!/TRKNC      ALLOCATE( dum2nc(maxI,maxJ,maxGroup,NTIME_NC) )
+!/TRKNC      ENDIF
 
       DO it = 1,SIZE(sysA)
+      IF(outputType == 1) THEN
          WRITE(22,'(F15.6,60x,A)') wsdat(it)%date,'Time'
          WRITE(22,'(I6,69x,A)') maxGroup,'Tot number of systems'      
+      ENDIF
          DO igrp = 1,maxGroup
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -336,28 +364,47 @@
                leng = 0
             END IF
             
+      IF(outputType == 1) THEN
             WRITE(22,'(I6,69x,A)') igrp,'System number'  
             WRITE(22,'(I6,69x,A)') leng,'Number of points in system'
+
             DO J = maxJ,1,-1
                DO i = 1,maxI
                   WRITE(22,'(F8.2)',ADVANCE='NO') dum(i,j)
                END DO
                WRITE(22,'(A)',ADVANCE='YES') ''
             END DO
+      ELSE
+!/TRKNC            DO J = maxJ,1,-1
+!/TRKNC               DO i = 1,maxI
+!/TRKNC               dum2nc(i,j,igrp,it)=dum(i,j)
+!/TRKNC               END DO
+!/TRKNC            END DO
+      ENDIF
+
          END DO
       END DO
+        
+!/TRKNC      IF(outputType == 3 .OR. outputType == 4 ) THEN
+!/TRKNC      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+!/TRKNC         maxGroup,date1,date2,dt,NTIME_NC,1,outputType)
+!/TRKNC      ENDIF
 
-      CLOSE(22)
+      IF(outputType.EQ.1) CLOSE(22)
 
 !-----Final SYSTEM output: tp
+      IF(outputType == 1) THEN
       OPEN(unit=23,recl=2147483646,file='sys_tp.ww3',status='unknown')
 
       WRITE(23,'(I6,69X,A)') maxJ,'Number of rows'
       WRITE(23,'(I6,69X,A)') maxI,'Number of cols'
+      ENDIF
 
       DO it = 1,SIZE(sysA)
+      IF(outputType == 1) THEN
          WRITE(23,'(F15.6,60x,A)') wsdat(it)%date,'Time'
          WRITE(23,'(I6,69X,A)') maxGroup,'Tot number of systems'  
+      ENDIF
          DO igrp = 1,maxGroup
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -378,6 +425,7 @@
                leng = 0
             END IF
             
+      IF(outputType == 1) THEN
             WRITE(23,'(I6,69X,A)') igrp,'System number'  
             WRITE(23,'(I6,69X,A)') leng,'Number of points in system'
             DO J = maxJ,1,-1
@@ -386,20 +434,38 @@
                END DO
                WRITE(23,'(A)',ADVANCE='YES') ''
             END DO
+      ELSE
+
+!/TRKNC            DO J = maxJ,1,-1
+!/TRKNC               DO i = 1,maxI
+!/TRKNC               dum2nc(i,j,igrp,it)=dum(i,j)
+!/TRKNC            END DO
+!/TRKNC            END DO
+      ENDIF
+
          END DO
       END DO
 
-      CLOSE(23)
+!/TRKNC      IF(outputType.EQ.3 .OR. outputType.EQ. 4 ) THEN
+!/TRKNC      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+!/TRKNC         maxGroup,date1,date2,dt,NTIME_NC,2,outputType)
+!/TRKNC      ENDIF
+
+      IF(outputType.EQ.1) CLOSE(23)
 
 !-----Final SYSTEM output: dir
+      IF(outputType == 1) THEN
       OPEN(unit=24,recl=2147483646,file='sys_dir.ww3',status='unknown')
 
       WRITE(24,'(I6,69X,A)') maxJ,'Number of rows'
       WRITE(24,'(I6,69X,A)') maxI,'Number of cols'
+      ENDIF
 
       DO it = 1,SIZE(sysA)
+      IF(outputType == 1) THEN
          WRITE(24,'(F15.6,60x,A)') wsdat(it)%date,'Time'
          WRITE(24,'(I6,69X,A)') maxGroup,'Tot number of systems'
+      ENDIF
          DO igrp = 1,maxGroup
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -420,6 +486,7 @@
                leng = 0
             END IF
             
+      IF(outputType == 1) THEN
             WRITE(24,'(I6,69X,A)') igrp,'System number'  
             WRITE(24,'(I6,69X,A)') leng,'Number of points in system'
             DO J = maxJ,1,-1
@@ -428,20 +495,36 @@
                END DO
                WRITE(24,'(A)',ADVANCE='YES') ''
             END DO
+      ELSE
+!/TRKNC            DO J = maxJ,1,-1
+!/TRKNC               DO i = 1,maxI
+!/TRKNC               dum2nc(i,j,igrp,it)=dum(i,j)
+!/TRKNC               END DO
+!/TRKNC            END DO
+      END IF
+
          END DO
       END DO
 
-      CLOSE(24)
+!/TRKNC      IF(outputType.EQ.3 .OR. outputType.EQ.4 ) THEN
+!/TRKNC      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+!/TRKNC         maxGroup,date1,date2,dt,NTIME_NC,3,outputType)
+!/TRKNC      ENDIF
+      IF(outputType.EQ.1) CLOSE(24)
 
 !-----Final SYSTEM output: dspr
+      IF(outputType == 1) THEN
       OPEN(unit=25,recl=2147483646,file='sys_dspr.ww3',status='unknown')
 
       WRITE(25,'(I6,69X,A)') maxJ,'Number of rows'
       WRITE(25,'(I6,69X,A)') maxI,'Number of cols'
+      ENDIF
 
       DO it = 1,SIZE(sysA)
+      IF(outputType == 1) THEN
          WRITE(25,'(F15.6,60x,A)') wsdat(it)%date,'Time'
          WRITE(25,'(I6,69X,A)') maxGroup,'Tot number of systems'
+      ENDIF
          DO igrp = 1,maxGroup
             dum(1:maxI,1:maxJ) = 9999.00
 !           Find system with this group tag
@@ -462,6 +545,7 @@
                leng = 0
             END IF
             
+      IF(outputType == 1) THEN
             WRITE(25,'(I6,69X,A)') igrp,'System number'  
             WRITE(25,'(I6,69X,A)') leng,'Number of points in system'
             DO J = maxJ,1,-1
@@ -470,14 +554,36 @@
                END DO
                WRITE(25,'(A)',ADVANCE='YES') ''
             END DO
+       ELSE
+!/TRKNC            DO J = maxJ,1,-1
+!/TRKNC               DO i = 1,maxI
+!/TRKNC               dum2nc(i,j,igrp,it)=dum(i,j)
+!/TRKNC               END DO
+!/TRKNC            END DO
+       ENDIF
+
          END DO
       END DO
 
-      CLOSE(25)
+!/TRKNC      IF(outputType.EQ.3 .OR. outputType.EQ.4 ) THEN
+!/TRKNC      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+!/TRKNC         maxGroup,date1,date2,dt,NTIME_NC,4,outputType)
+!/TRKNC      ENDIF
+      IF(outputType.EQ.1) CLOSE(25)
 
       IF (ALLOCATED(DUM)) DEALLOCATE(dum)
+!/TRKNC      IF (ALLOCATED(dum2nc)) DEALLOCATE(dum2nc)
+
+!/TRKNC      IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
+!/TRKNC      ALLOCATE( hsprt_nc(10,noutp,NTIME_NC) )
+!/TRKNC      ALLOCATE( tpprt_nc(10,noutp,NTIME_NC) )
+!/TRKNC      ALLOCATE( dirprt_nc(10,noutp,NTIME_NC) )
+!/TRKNC      ALLOCATE( lonprt_nc(noutp) )
+!/TRKNC      ALLOCATE( latprt_nc(noutp) )
+!/TRKNC      ENDIF
 
 !-----Final SYSTEM output: point output
+      IF(outputType == 1) THEN
       OPEN(unit=26,recl=2147483646,file='sys_pnt.ww3',status='unknown')
       WRITE(26,'(A)') '%'
       WRITE(26,'(A)') '%'
@@ -504,9 +610,12 @@
            '[degr]        [degr]        [degr]        [degr]        ', &
            '[degr]        [degr]'
       WRITE(26,'(A)') '%'
+       ENDIF
 
       DO it = 1,SIZE(sysA)
+      IF(outputType == 1) THEN
          WRITE(26,'(A,F15.6)') 'Time : ',wsdat(it)%date
+       ENDIF
 
          DO ip = 1,noutp
             hsprt(1:10) = 999.9999
@@ -661,12 +770,28 @@
                    END IF
                END IF  
             END DO
+      IF(outputType == 1) THEN
             WRITE(26,'(32F14.4)') lonprt,latprt, &
                        hsprt(1:10),tpprt(1:10),dirprt(1:10)  
+        ENDIF
+!/TRKNC      IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
+!/TRKNC        lonprt_nc(ip)=lonprt
+!/TRKNC        latprt_nc(ip)=latprt
+!/TRKNC        do igrp=1,10
+!/TRKNC        hsprt_nc(igrp,ip,it)=hsprt(igrp)
+!/TRKNC        tpprt_nc(igrp,ip,it)=tpprt(igrp)
+!/TRKNC        dirprt_nc(igrp,ip,it)=dirprt(igrp)
+!/TRKNC        enddo
+!/TRKNC      ENDIF
+
          END DO
       END DO
+!/TRKNC      IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
+!/TRKNC      call pt2netcdf(lonprt_nc,latprt_nc,hsprt_nc,tpprt_nc, &
+!/TRKNC       dirprt_nc,noutp,date1,date2,dt,NTIME_NC,outputType)
+!/TRKNC      ENDIF
 
-      CLOSE(26)
+      IF(outputType.EQ.1) CLOSE(26)
 
 !-----Final SYSTEM output: point output (Nearest neighbor, as a double check)
       IF (testout) THEN
@@ -777,3 +902,339 @@
 !/MPI/!     End of parallel region
 
       END PROGRAM WW3_SYSTRK
+!
+!/TRKNC      subroutine t2netcdf(lons,lats,data_in,nlons,nlats,nsys,date1,date2,&
+!/TRKNC         dt,ntime,ivar, outputType)
+!/TRKNC      USE W3TIMEMD
+!/TRKNC      use netcdf
+!/TRKNC      implicit none
+!/TRKNC      character (len = 15) :: file_name
+!/TRKNC      integer, parameter :: ndims = 4
+!/TRKNC      integer, parameter :: deflate = 1
+!/TRKNC      integer :: outputType, ncid, oldMode
+!/TRKNC      integer :: nlons,nlats,nsys,rec,ntime,ivar
+!/TRKNC      double precision :: date1,date2,timenc
+!/TRKNC      real :: data_in(nlons, nlats, nsys,ntime)
+!/TRKNC      real :: lats(nlats), lons(nlons),dt
+!/TRKNC      double precision :: times(ntime)
+!/TRKNC      integer :: iyc,imc,idc,ihc,iminc,isc,Jday,Jday0
+!/TRKNC      integer :: iret
+!
+!/TRKNC      integer :: lon_varid, lat_varid, rec_varid
+!/TRKNC      character (len = *), parameter :: lsys_name = "system_index"
+!/TRKNC      character (len = *), parameter :: lat_name = "latitude"
+!/TRKNC      character (len = *), parameter :: lon_name = "longitude"
+!/TRKNC      character (len = *), parameter :: time_name = "time"
+!/TRKNC      integer :: sys_dimid, lon_dimid, lat_dimid, rec_dimid
+!/TRKNC      integer :: start(ndims), count(ndims)
+!
+!/TRKNC      character (len = *), parameter :: var1_name="hs"
+!/TRKNC      character (len = *), parameter :: var2_name="tp"
+!/TRKNC      character (len = *), parameter :: var3_name="dir"
+!/TRKNC      character (len = *), parameter :: var4_name="dspr"
+!/TRKNC      integer :: var1_varid, var2_varid, var3_varid,var4_varid
+!/TRKNC      integer :: dimids(ndims)
+!
+!/TRKNC      character (len = *), parameter :: units = "units"
+!/TRKNC      character (len = *), parameter :: var1_units = "m"
+!/TRKNC      character (len = *), parameter :: var2_units = "s"
+!/TRKNC      character (len = *), parameter :: var3_units = "degrees"
+!/TRKNC      character (len = *), parameter :: var4_units = "degrees"
+!/TRKNC      character (len = *), parameter :: lat_units = "degrees_north"
+!/TRKNC      character (len = *), parameter :: lon_units = "degrees_east"
+!/TRKNC      iyc=date1/10000
+!/TRKNC      imc=(date1-iyc*10000)/100
+!/TRKNC      idc=int(date1-DBLE(iyc*10000)-DBLE(imc*100))
+!/TRKNC      ihc=date2/10000
+!/TRKNC      iminc=(date2-ihc*10000)/100
+!/TRKNC      isc=date2-ihc*10000-100*iminc
+!/TRKNC      timenc=DBLE(julday(idc,imc,iyc))+(DBLE(ihc)+(DBLE(iminc)+ &
+!/TRKNC         (DBLE(isc)/60.0D0))/60.0D0)/24.0D0
+!/TRKNC      Jday0=julday(1,1,1990)
+!/TRKNC      timenc=timenc-Jday0
+!/TRKNC      do rec=1,ntime
+!/TRKNC       times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0 
+!/TRKNC      enddo
+!/TRKNC      if( ivar == 1) then
+!/TRKNC       file_name = "sys_hs.ww3.nc"
+!/TRKNC      else if( ivar == 2) then
+!/TRKNC       file_name = "sys_tp.ww3.nc"
+!/TRKNC      else if( ivar == 3) then
+!/TRKNC       file_name = "sys_dir.ww3.nc"
+!/TRKNC      else
+!/TRKNC      file_name = "sys_dspr.ww3.nc"
+!/TRKNC      endif
+!
+!/TRKNC! create the netcdf file. 
+!/TRKNC      if (outputType.EQ.3) then
+!/TRKNC      call check( nf90_create(file_name, NF90_CLOBBER, ncid) )
+!/TRKNC      endif
+!/NC4        if(outputType.EQ.4) call check( nf90_create(file_name,NF90_NETCDF4,ncid))
+!/TRKNC      call check ( nf90_set_fill(ncid,nf90_nofill,oldMode) )
+!/TRKNC      call check( nf90_def_dim(ncid, lsys_name, nsys, sys_dimid) )
+!/TRKNC      call check( nf90_def_dim(ncid, lat_name, nlats, lat_dimid) )
+!/TRKNC      call check( nf90_def_dim(ncid, lon_name, nlons, lon_dimid) )
+!/TRKNC      call check( nf90_def_dim(ncid, time_name, ntime, rec_dimid) )
+!/TRKNC      call check( nf90_def_var(ncid, lat_name, NF90_REAL, lat_dimid,lat_varid))
+!/NC4        call check( nf90_def_var_deflate(ncid,lat_varid,1,1,deflate) )
+!/TRKNC      call check( nf90_def_var(ncid, lon_name, NF90_REAL, lon_dimid,lon_varid))
+!/NC4        call check( nf90_def_var_deflate(ncid,lon_varid,1,1,deflate) )
+!/TRKNC      call check( nf90_def_var(ncid,time_name,NF90_DOUBLE,rec_dimid,rec_varid))
+!/NC4        call check( nf90_def_var_deflate(ncid,rec_varid,1,1,deflate) )
+!
+!/TRKNC      call check( nf90_put_att(ncid, lat_varid, units, lat_units) )
+!/TRKNC      call check( nf90_put_att(ncid, lat_varid, 'long_name', 'latitude') )
+!/TRKNC      call check( nf90_put_att(ncid, lat_varid, 'standard_name', 'latitude') )
+!/TRKNC      call check( nf90_put_att(ncid, lat_varid, 'axis','Y'))
+!/TRKNC      call check( nf90_put_att(ncid, lon_varid, units, lon_units) )
+!/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'long_name', 'longitude') )
+!/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'standard_name', 'longitude') )
+!/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'axis','X'))
+!/TRKNC      call check(nf90_put_att(ncid,rec_varid,units,& 
+!/TRKNC                  'days since 1990-01-01T00:00:00Z'))
+!/TRKNC      call check(nf90_put_att(ncid,rec_varid,'long_name','julian day (UT)'))
+!/TRKNC      call check( nf90_put_att(ncid, rec_varid,'standard_name', 'time') )
+!/TRKNC      call check( nf90_put_att(ncid, rec_varid, 'conventions',&
+!/TRKNC      'relative julian day with decimal part (as part of the day)' ) )
+!/TRKNC      call check( nf90_put_att(ncid, rec_varid, 'axis','T'))
+!
+!/TRKNC      dimids = (/ lon_dimid, lat_dimid, sys_dimid, rec_dimid /)
+!/TRKNC      if( ivar == 1) then
+!/TRKNC      call check( nf90_def_var(ncid, var1_name, NF90_REAL, dimids,var1_varid) )
+!/NC4        call check( nf90_def_var_deflate(ncid,var1_varid,1,1,deflate) )
+!/TRKNC      call check( nf90_put_att(ncid, var1_varid, units, var1_units) )
+!/TRKNC      call check( nf90_put_att(ncid, var1_varid,'long_name','significant_wave_height') )
+!/TRKNC      call check( nf90_put_att(ncid, var1_varid,'missing_value','9999.00'))
+!/TRKNC       else if( ivar == 2) then
+!/TRKNC      call check( nf90_def_var(ncid, var2_name, NF90_REAL, dimids, var2_varid) )
+!/NC4        call check( nf90_def_var_deflate(ncid,var2_varid,1,1,deflate) )
+!/TRKNC      call check( nf90_put_att(ncid, var2_varid, units, var2_units) )
+!/TRKNC      call check( nf90_put_att(ncid, var2_varid,'long_name','peak_period') )
+!/TRKNC      call check( nf90_put_att(ncid, var2_varid,'missing_value','9999.00') )
+!/TRKNC       else if ( ivar ==3 ) then
+!/TRKNC      call check( nf90_def_var(ncid, var3_name, NF90_REAL, dimids, var3_varid) )
+!/NC4        call check( nf90_def_var_deflate(ncid,var3_varid,1,1,deflate) )
+!/TRKNC      call check( nf90_put_att(ncid, var3_varid, units, var3_units) )
+!/TRKNC      call check( nf90_put_att(ncid, var3_varid,'long_name','peak_direction') )
+!/TRKNC      call check( nf90_put_att(ncid, var3_varid,'missing_value','9999.00') )
+!/TRKNC       else
+!/TRKNC      call check( nf90_def_var(ncid, var4_name, NF90_REAL, dimids, var4_varid) )
+!/NC4        call check( nf90_def_var_deflate(ncid,var4_varid,1,1,deflate) )
+!/TRKNC      call check( nf90_put_att(ncid, var4_varid, units, var4_units) )
+!/TRKNC      call check( nf90_put_att(ncid,var4_varid,'long_name','directional_spread') )
+!/TRKNC      call check( nf90_put_att(ncid, var4_varid,'missing_value','9999.00') )
+!/TRKNC      endif
+!/TRKNC      call check( nf90_enddef(ncid) )
+!  
+!/TRKNC      call check( nf90_put_var(ncid, lat_varid, lats) )
+!/TRKNC      call check( nf90_put_var(ncid, lon_varid, lons) )
+!/TRKNC      call check( nf90_put_var(ncid, rec_varid, times) )
+!  
+!/TRKNC      count = (/ nlons, nlats, nsys, ntime /)
+!/TRKNC      start = (/ 1, 1, 1, 1 /)
+!/TRKNC      if( ivar == 1) then
+!/TRKNC      call check( nf90_put_var(ncid, var1_varid, data_in, start = start, &
+!/TRKNC                              count = count) )
+!/TRKNC       else if( ivar == 2) then
+!/TRKNC      call check( nf90_put_var(ncid, var2_varid, data_in, start = start, &
+!/TRKNC                              count = count) )
+!/TRKNC       else if( ivar == 3) then
+!/TRKNC      call check( nf90_put_var(ncid, var3_varid, data_in, start = start, &
+!/TRKNC                              count = count) )
+!/TRKNC       else
+!/TRKNC      call check( nf90_put_var(ncid, var4_varid, data_in, start = start, &
+!/TRKNC                              count = count) )
+!/TRKNC      endif
+!/TRKNC      call check( nf90_close(ncid) )
+!/TRKNC      end subroutine t2netcdf
+!
+!/TRKNC      subroutine check(status)
+!/TRKNC      use netcdf
+!/TRKNC      integer, intent ( in) :: status
+!/TRKNC      if(status /= nf90_noerr) then 
+!/TRKNC      print *, trim(nf90_strerror(status))
+!/TRKNC      stop "Stopped in netcdf output part"
+!/TRKNC      endif
+!/TRKNC      end subroutine check  
+!
+!/TRKNC      subroutine pt2netcdf(longitude,latitude,hs,tp,&
+!/TRKNC       dir,npoints,date1,date2,dt,ntime,outputType)
+!/TRKNC      USE W3TIMEMD
+!/TRKNC      use netcdf
+!/TRKNC      implicit none
+!/TRKNC      integer :: ntime,npoints,outputType
+!/TRKNC      integer, parameter :: deflate = 1
+!/TRKNC      integer :: iret, oldMode
+!/TRKNC      integer :: ncid
+!/TRKNC      integer :: system_index_dim
+!/TRKNC      integer :: point_dim,rec_dim
+!/TRKNC      integer :: nsys
+!/TRKNC      integer :: start(3), count(3)
+!/TRKNC      parameter (nsys = 10)
+!/TRKNC      integer :: latitude_id
+!/TRKNC      integer :: longitude_id
+!/TRKNC      integer :: time_id
+!/TRKNC      integer :: hs_id
+!/TRKNC      integer :: tp_id
+!/TRKNC      integer :: dir_id
+!/TRKNC      integer :: time_rank
+!/TRKNC      integer :: hs_rank
+!/TRKNC      integer :: tp_rank
+!/TRKNC      integer :: dir_rank
+!/TRKNC      parameter (time_rank = 1)
+!/TRKNC      parameter (hs_rank = 3)
+!/TRKNC      parameter (tp_rank = 3)
+!/TRKNC      parameter (dir_rank = 3)
+!
+!/TRKNC      integer :: hs_dims(hs_rank)
+!/TRKNC      integer :: tp_dims(tp_rank)
+!/TRKNC      integer :: dir_dims(dir_rank)
+!/TRKNC      real :: latitude(npoints),dt
+!/TRKNC      real :: longitude(npoints)
+!/TRKNC      real :: hs(nsys, npoints, ntime)
+!/TRKNC      real :: tp(nsys, npoints, ntime)
+!/TRKNC      real :: dir(nsys, npoints, ntime)
+!/TRKNC      integer :: iyc,imc,idc,ihc,iminc,isc,Jday,Jday0,rec
+!/TRKNC      double precision date1,date2,timenc
+!/TRKNC      double precision times(ntime)
+!
+!/TRKNC      iyc=date1/10000
+!/TRKNC      imc=(date1-iyc*10000)/100
+!/TRKNC      idc=int(date1-DBLE(iyc*10000)-DBLE(imc*100))
+!/TRKNC      ihc=date2/10000
+!/TRKNC      iminc=(date2-ihc*10000)/100
+!/TRKNC      isc=date2-ihc*10000-100*iminc
+!/TRKNC      timenc=DBLE(julday(idc,imc,iyc))+(DBLE(ihc)+(DBLE(iminc)+ &
+!/TRKNC       (DBLE(isc)/60.0D0))/60.0D0)/24.0D0
+!/TRKNC      Jday0=julday(1,1,1990)
+!/TRKNC      timenc=timenc-Jday0
+!/TRKNC      do rec=1,ntime
+!/TRKNC       times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0 
+!/TRKNC      enddo
+!
+!/TRKNC      if(outputType.EQ.3) then
+!/TRKNC      iret = nf90_create('sys_pnt.ww3.nc', NF90_CLOBBER, ncid)
+!/TRKNC      endif
+!/NC4        if (outputType.EQ.4) iret = nf90_create('sys_pnt.ww3.nc',NF90_NETCDF4, ncid)
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_set_fill(ncid,nf90_nofill,oldMode) 
+!/TRKNC      call check(iret)
+!/TRKNC! define dimensions
+!/TRKNC      iret = nf90_def_dim(ncid, 'system_index', nsys, system_index_dim)
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_def_dim(ncid, 'point', npoints, point_dim)
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_def_dim(ncid, 'time', ntime, rec_dim)
+!/TRKNC      call check(iret)
+!/TRKNC! define variables
+!/TRKNC      iret = nf90_def_var(ncid, 'latitude', NF90_REAL, point_dim, &
+!/TRKNC          latitude_id)
+!/TRKNC      call check(iret)
+!/NC4        call check( nf90_def_var_deflate(ncid,latitude_id,1,1,deflate))
+!/TRKNC      iret = nf90_def_var(ncid, 'longitude', NF90_REAL, point_dim, &
+!/TRKNC        longitude_id)
+!/TRKNC      call check(iret)
+!/NC4        call check( nf90_def_var_deflate(ncid,longitude_id,1,1,deflate))
+!/TRKNC      iret = nf90_def_var(ncid, 'time', NF90_DOUBLE, rec_dim, &
+!/TRKNC         time_id)
+!/TRKNC      call check(iret)
+!/NC4        call check( nf90_def_var_deflate(ncid,time_id,1,1,deflate) )
+!/TRKNC      hs_dims(3) = rec_dim
+!/TRKNC      hs_dims(2) = point_dim
+!/TRKNC      hs_dims(1) = system_index_dim
+!/TRKNC      iret = nf90_def_var(ncid, 'hs', NF90_REAL,  &
+!/TRKNC        hs_dims, hs_id)
+!/TRKNC      call check(iret)
+!/NC4        call check( nf90_def_var_deflate(ncid,hs_id,1,1,deflate))
+!/TRKNC      tp_dims(3) = rec_dim
+!/TRKNC      tp_dims(2) = point_dim
+!/TRKNC      tp_dims(1) = system_index_dim
+!/TRKNC      iret = nf90_def_var(ncid, 'tp', NF90_REAL, &
+!/TRKNC        tp_dims, tp_id)
+!/TRKNC      call check(iret)
+!/NC4        call check( nf90_def_var_deflate(ncid,tp_id,1,1,deflate))
+!/TRKNC      dir_dims(3) = rec_dim
+!/TRKNC      dir_dims(2) = point_dim
+!/TRKNC      dir_dims(1) = system_index_dim
+!/TRKNC      iret = nf90_def_var(ncid, 'dir', NF90_REAL, & 
+!/TRKNC        dir_dims, dir_id)
+!/TRKNC      call check(iret)
+!/NC4        call check( nf90_def_var_deflate(ncid,dir_id,1,1,deflate))
+!/TRKNC! assign attributes
+!/TRKNC      iret = nf90_put_att(ncid, latitude_id, 'units', 'degrees_north')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, latitude_id, 'long_name', 'latitude')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, latitude_id, 'standard_name', 'latitude')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, latitude_id, 'axis', 'Y')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, longitude_id, 'units', 'degrees_east')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, longitude_id,'long_name','longitude')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, longitude_id,'standard_name','longitude')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, longitude_id, 'axis', 'X')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, time_id, 'units', &
+!/TRKNC        'days since 1990-01-01T00:00:00Z')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, time_id, 'long_name','julian day(UT)')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, time_id, 'standard_name','time')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, time_id, 'conventions', &
+!/TRKNC       'relative julian day with decimal part (as part of the day)')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, time_id, 'axis', 'T')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, hs_id, 'units', 'm')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, hs_id,'long_name','significant_wave_height')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, hs_id, 'missing_value', & 
+!/TRKNC        '999.9999')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, tp_id, 'units', 's')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, tp_id,'long_name','peak_period')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, tp_id, 'missing_value', &
+!/TRKNC       '999.9999')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, dir_id, 'units', 'degrees')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, dir_id,'long_name','peak_direction')
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_att(ncid, dir_id, 'missing_value',& 
+!/TRKNC         '999.9999')
+!/TRKNC      call check(iret)
+!/TRKNC! leave define mode
+!/TRKNC      iret = nf90_enddef(ncid)
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_var(ncid, latitude_id, latitude)
+!/TRKNC      call check(iret)
+!
+!/TRKNC      iret = nf90_put_var(ncid, longitude_id, longitude)
+!/TRKNC      call check(iret)
+! 
+!/TRKNC      iret = nf90_put_var(ncid, time_id, times)
+!/TRKNC      call check(iret)
+! 
+!/TRKNC      start = (/ 1, 1, 1 /)
+!/TRKNC      count = (/ nsys,npoints,ntime /)
+!
+!/TRKNC      iret = nf90_put_var(ncid, hs_id, hs,&
+!/TRKNC       start = start, count = count )
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_var(ncid, tp_id, tp, &
+!/TRKNC       start = start, count = count )
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_put_var(ncid, dir_id, dir,&
+!/TRKNC       start = start, count = count )
+!/TRKNC      call check(iret)
+!/TRKNC      iret = nf90_close(ncid)
+!/TRKNC      call check(iret)
+!/TRKNC      return
+!/TRKNC      end

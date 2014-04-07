@@ -156,7 +156,7 @@
 !     U10 greater than 50.33 m/s.
 !
       IF (U10 .GE. 50.33) THEN
-         UST = 2.026
+         UST = 202.6 * SQRT(FLX4A0)
          CD  = (UST/U10)**2
       ELSE
          CD  = FLX4A0 * ( 8.058 + 0.967*U10 - 0.016*U10**2 )

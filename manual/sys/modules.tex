@@ -145,19 +145,20 @@ Lookup table for $\beta$ in Tolman and Chalikov 1996 : \hfill {\file w3src2md.ft
 \noindent
 Lookup table for \ldots in WAM-4 / ECWAM : \hfill {\file w3src3md.ftn}
 \begin{vlist}
-\vit{nhmax  }{ip}{\ldots}
-\vit{kappa  }{rp}{\ldots}
-\vit{nu\_air}{rp}{\ldots}
-\vit{itoumax}{ip}{\ldots}
-\vit{iustar }{ip}{\ldots}
-\vit{iab    }{ip}{\ldots}
-\vit{umax   }{rp}{\ldots}
-\vit{tauwmax}{rp}{\ldots}
-\vit{eps1   }{rp}{\ldots}
-\vit{eps2   }{rp}{\ldots}
-\vit{niter  }{ip}{\ldots}
-\vit{xm     }{ip}{\ldots}
-\vit{jtot   }{ip}{\ldots}
+\vit{kappa  }{rp}{von K{\'a}rm{\'a}n's constant}
+\vit{nu\_air}{rp}{air viscosity}
+\vit{itaumax}{ip}{size of stress dimension}
+\vit{jumax  }{ip}{size of wind dimension}
+\vit{iustar }{ip}{size of ustar dimension}
+\vit{ialpha }{ip}{size of Charnock dimension}
+\vit{ilevtail}{ip}{size of tail level dimension}
+\vit{umax   }{rp}{Maximum wind speed in table}
+\vit{tauwmax}{rp}{Maximum ustar in table}
+\vit{eps1   }{rp}{Small number for stress convergence}
+\vit{eps2   }{rp}{Small number for stress convergence}
+\vit{niter  }{ip}{Number of iterations in stress table}
+\vit{xm     }{ip}{power of TAUW/TAU in roughness parameterization}
+\vit{jtot   }{ip}{Number of points in discretization of tail}
 \end{vlist}
 
 \noindent
@@ -168,10 +169,10 @@ Combination of previous two sets of parameters. \\
 \noindent
 Table of error functions in bottom friction : \hfill {\file w3sbt4md.ftn}
 \begin{vlist}
-\vit{sizeerftable}{ip}{\ldots}
-\vit{xerfmax}{rp }{\ldots}
-\vit{wsub   }{rpa}{\ldots}
-\vit{xsun   }{rpa}{\ldots}
+\vit{sizeerftable}{ip}{Size of table for erf function}
+\vit{xerfmax}{rp }{maximum value of x in table of erf(x)}
+\vit{wsub   }{rpa}{weights for 3-point Gauss-Hermitte quadrature}
+\vit{xsub   }{rpa}{x values for 3-point Gauss-Hermitte quadrature}
 \end{vlist}
 
 \noindent

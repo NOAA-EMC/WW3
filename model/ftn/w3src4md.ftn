@@ -385,7 +385,7 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           TTAUWSHELTER, SSWELLF, DDEN2, DTH, SSINTHP,  &
-                          ZZ0RAT, FLICES, SSINBR
+                          ZZ0RAT, SSINBR
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
 !/T0      USE W3ODATMD, ONLY: NDST
@@ -580,8 +580,9 @@
               ! The source term Sp is beta * omega * X**2
               ! as given by Janssen 1991 eq. 19
               ! for a faster performance EXP(X)*X**4 should be tabulated   
-              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
-                                *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
+              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN*UCN*COSWIND**SSINTHP 
+              !DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4  &
+              !                  *UCN*UCN*COSWIND**SSINTHP *(1+BRLAMBDA(IS)*20*SSINBR) 
               LLWS(IS)=.TRUE.
             ELSE
               DSTAB(ISTAB,IS) = 0.
@@ -813,10 +814,10 @@
 !
       IF (FLTABS) THEN   
         CALL TABU_STRESS
-        CALL TABU_TAUHF(SIG(NK) * TPIINV)   !tabulate high-frequency stress
+        CALL TABU_TAUHF(SIG(NK) * TPIINV)      !tabulate high-frequency stress: 2D table
         IF (TTAUWSHELTER.GT.0) THEN
-          WRITE(NDSE,*) 'Computing 3D lookup table... please wait ...'
-          CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress
+          WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
+          CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress: 3D table
           END IF
         END IF
 !
@@ -1083,8 +1084,8 @@
             TAUT(I,J)  = SQRT(TAUOLD)
             END DO   
          END DO
-	 I=ITAUMAX
-	 J=JUMAX
+       I=ITAUMAX
+       J=JUMAX
 !         
 !  Force zero wind to have zero stress (Bidlot 1996)
 !
@@ -1345,7 +1346,8 @@
       IF (IERR.EQ.0) THEN 
         READ(993,IOSTAT=IERR) IDTST, VERTST, INFRMAX, INAALPHA, INBBETA, INIUSTAR,  &
                               INIALPHA, INILEVTAIL, INZZALP, INKAPPA, INGRAV
-        IF (IERR.EQ.0.AND.INFRMAX.EQ.FRMAX.AND.INAALPHA.EQ.AALPHA.AND.INBBETA.EQ.BBETA) THEN 
+        IF (VERTST.EQ.VERGRD.AND.IDTST.EQ.IDSTR.AND.IERR.EQ.0             &
+            .AND.INFRMAX.EQ.FRMAX.AND.INAALPHA.EQ.AALPHA.AND.INBBETA.EQ.BBETA) THEN 
           IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
               INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
             NOFILE=.FALSE.
@@ -1361,6 +1363,7 @@
       DELTAIL = ALPHAM/REAL(ILEVTAIL)
       CONST1  = BBETA/KAPPA**2
       OMEGAC  = TPI*FRMAX
+800   CONTINUE
       IF ( NOFILE ) THEN      
 !   
         TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
@@ -1418,7 +1421,7 @@
         DEALLOCATE(W)
         OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR)
         WRITE(993) IDSTR, VERGRD, FRMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
-        WRITE(993) TAUHFT
+        WRITE(993) TAUHFT(0:IUSTAR,0:IALPHA)
         WRITE(993) TAUHFT2
         CLOSE(993)
         !DO K=0,IUSTAR
@@ -1430,10 +1433,15 @@
         !  END DO 
 !
       ELSE 
-        READ(993) TAUHFT
-        READ(993) TAUHFT2
+        READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT(0:IUSTAR,0:IALPHA)
+        READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT2
         CLOSE(993)
         END IF
+!
+      GOTO 2001
+2000  NOFILE=.TRUE.
+      GOTO 800
+2001  CONTINUE 
       RETURN
 !/T 9000 FORMAT (' TEST TABU_HFT2, K, L, I, UST, ALPHA, LEVTAIL, TAUHFT2(K,L,I) :',(3I4,4F10.5))    
       END SUBROUTINE TABU_TAUHF2
@@ -1614,6 +1622,7 @@
                           SSDSBRFDF, SSDSBCK, SSDSBINT, IKTAB, DCKI, &
                           SATINDICES, SATWEIGHTS, CUMULW, NKHS, NKD, &
                           NDTAB, QBI
+!/IG1      USE W3GDATMD, ONLY: IGPARS
       USE W3ODATMD, ONLY: UNDEF, FLOGRD
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ODATMD, ONLY: NDST
@@ -1645,7 +1654,8 @@
       REAL                    :: ALFAMEAN, KB, MSSLONG(NK)
       REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
-      REAL                    :: NTIMES(NK), S1(NK), E1(NK)
+      REAL                    :: S1(NK), E1(NK)
+      INTEGER                 :: NTIMES(NK)
       REAL                    :: GAM, XT, M1
       REAL                    :: DK(NK), HS(NK), KBAR(NK), DCK(NK)
       REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
@@ -1697,9 +1707,10 @@
 !       SSDSDIK is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
 !
+        BTH(:)=0.
         DO  IK=IK1, NK
           FACSTRAIN=1+SSDSC(8)*MSSLONG(MAX(1,IK-DIKCUMUL))
-          FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
+          FACSAT=SIG(IK)*K(IK)**3*DTH !*FACSTRAIN
           IS0=(IK-1)*NTH
           BTH(IS0+1)=0.
 !          BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
@@ -1722,6 +1733,7 @@
 !              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
 !                     A(IS0+SATINDICES(:,ITH)) )*FACSAT
               END DO
+
             IF (SSDSISO.EQ.1) THEN
               BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
             ELSE
@@ -1925,7 +1937,7 @@
 !
         S1 = 0.
         S2 = 0.
-        NTIMES = 0.
+        NTIMES = 0
         DO IKL=1, NKL
           IF (EFDF(IKL) .GT. 0.) THEN 
             S1(IKL:IKSUP(IKL))    = S1(IKL:IKSUP(IKL)) + &
@@ -1938,14 +1950,15 @@
 !
 ! Finish the average
 ! 
-        WHERE (NTIMES .NE. 0.)
+        WHERE (NTIMES .GT. 0)
           S1 = S1 / NTIMES
           S2 = S2 / NTIMES
         ELSEWHERE
           S1 = 0.
           S2 = 0.
           END WHERE
-        S1 = S1 / SIG ! goes back to action for dissipation source term 
+! goes back to action for dissipation source term 
+        S1(1:NK) = S1(1:NK) / SIG(1:NK)
 !
 ! Makes Isotropic distribution
 !

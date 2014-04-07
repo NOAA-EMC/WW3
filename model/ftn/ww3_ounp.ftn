@@ -454,7 +454,7 @@
 !
 ! ... Redefines netCDF type 
 !
-!/NC4      IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NREQ.GT.300))  THEN
+!/NC4      IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NFL.GT.300))  THEN
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : Files will be generated in netCDF3 with nf90_share mode'
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : this is due to nf90_sync memory problem with netCDF4 library'
 !/NC4        WRITE(NDSO,'(A)') ' WARNING : to convert in netCDF4, use ncks -h -a -4 -L 9 file.nc3 file.nc4'
@@ -816,7 +816,7 @@
       WRITE(stopdate,'(I4.4,A,5(I2.2,A))') iyc,'-',imc,'-',idc,'T',     &
                                            ihc,':',iminc,':',isc,'Z' 
 !
-      DO I=1+(IFL-1)*MFL,NBFILEOUT
+      DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
 
         IF ( FLREQ(I) .OR. TOGETHER ) THEN
           iret=nf90_redef(ncid(I))
@@ -1709,6 +1709,8 @@
 !/ST4                    CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,    &
 !/ST4                           ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
 !/ST4                           TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
+!/ST6                    CALL W3SIN6 (A, CG, WN2, USTAR, UDIRR, CD,   &
+!/ST6                           TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 !/STX                    CALL W3SINX
           END IF
           IF ( FLSRCE(3) ) THEN

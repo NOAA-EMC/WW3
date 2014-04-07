@@ -119,7 +119,7 @@
 !
 !      US3D      R.A.  Public   3D Stokes drift.
 !
-!      ABA       R.A.  Public   Near-bottom rms wave ex. apmplitude.
+!      ABA       R.A.  Public   Near-bottom rms wave ex. amplitude.
 !      ABD       R.A.  Public   Corresponding direction.
 !      UBA       R.A.  Public   Near-bottom rms wave velocity.
 !      UBD       R.A.  Public   Corresponding direction.
@@ -159,7 +159,7 @@
 !      PHS       R.A.  Public   Wave height of partition.
 !      PTP       R.A.  Public   Peak period of partition.
 !      PLP       R.A.  Public   Peak wave leingth of partition.
-!      PTH       R.A.  Public   Mean direciotn of partition.
+!      PDIR      R.A.  Public   Mean direciotn of partition.
 !      PSI       R.A.  Public   Mean spread of partition.
 !      PWS       R.A.  Public   Wind sea fraction of partition.
 !
@@ -339,10 +339,10 @@
 ! Output fields group 4)
 !
         REAL, POINTER         ::  PHS(:,:),  PTP(:,:),  PLP(:,:),     &
-                                  PTH(:,:),  PSI(:,:),  PWS(:,:),     &
+                                  PDIR(:,:),  PSI(:,:),  PWS(:,:),    &
                                   PWST(:),  PNR(:)
         REAL, POINTER         :: XPHS(:,:), XPTP(:,:), XPLP(:,:),     &
-                                 XPTH(:,:), XPSI(:,:), XPWS(:,:),     &
+                                 XPDIR(:,:), XPSI(:,:), XPWS(:,:),    &
                                  XPWST(:), XPNR(:)
 !
 ! Output fields group 5)
@@ -441,7 +441,7 @@
         INTEGER, POINTER      :: IAPPRO(:)
 !/MPI        INTEGER               :: MPI_COMM_WAVE, MPI_COMM_WCMP,        &
 !/MPI                                 WW3_FIELD_VEC, WW3_SPEC_VEC,         &
-!/MPI                                 NRQSG1, NRQSG2, IBFLOC, ISPLOC,      &
+!/MPI                                 NRQSG1 = 0, NRQSG2, IBFLOC, ISPLOC,  &
 !/MPI                                 NSPLOC
 !/MPI        INTEGER               :: BSTAT(MPIBUF), BISPL(MPIBUF)
 !/MPI        INTEGER, POINTER      :: IRQSG1(:,:), IRQSG2(:,:)
@@ -477,7 +477,7 @@
                                  TH2M(:,:), STH2M(:,:)
 !
       REAL, POINTER           :: PHS(:,:), PTP(:,:), PLP(:,:),        &
-                                 PTH(:,:), PSI(:,:), PWS(:,:),        &
+                                 PDIR(:,:), PSI(:,:), PWS(:,:),       &
                                  PWST(:), PNR(:)
 !
       REAL, POINTER           :: CHARN(:), CGE(:), PHIAW(:),          &
@@ -877,7 +877,7 @@
       ALLOCATE ( WADATS(IMOD)%PHS(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PTP(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PLP(NSEALM,0:NOSWLL),                   &
-                 WADATS(IMOD)%PTH(NSEALM,0:NOSWLL),                   &
+                 WADATS(IMOD)%PDIR(NSEALM,0:NOSWLL),                  &
                  WADATS(IMOD)%PSI(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PWS(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PWST(NSEALM), WADATS(IMOD)%PNR(NSEALM) )
@@ -885,7 +885,7 @@
       WADATS(IMOD)%PHS    = UNDEF
       WADATS(IMOD)%PTP    = UNDEF
       WADATS(IMOD)%PLP    = UNDEF
-      WADATS(IMOD)%PTH    = UNDEF
+      WADATS(IMOD)%PDIR   = UNDEF
       WADATS(IMOD)%PSI    = UNDEF
       WADATS(IMOD)%PWS    = UNDEF
       WADATS(IMOD)%PWST   = UNDEF
@@ -1333,9 +1333,9 @@
         END IF
 !
       IF ( FLAGS( 4, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPTH(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPDIR(NXXX,0:NOSWLL) )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPTH(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPDIR(1,1) )
         END IF
 !
       IF ( FLAGS( 4, 5) ) THEN
@@ -1365,7 +1365,7 @@
       WADATS(IMOD)%XPHS   = UNDEF
       WADATS(IMOD)%XPTP   = UNDEF
       WADATS(IMOD)%XPLP   = UNDEF
-      WADATS(IMOD)%XPTH   = UNDEF
+      WADATS(IMOD)%XPDIR  = UNDEF
       WADATS(IMOD)%XPSI   = UNDEF
       WADATS(IMOD)%XPWS   = UNDEF
       WADATS(IMOD)%XPWST  = UNDEF
@@ -2038,7 +2038,7 @@
           PHS    => WADATS(IMOD)%PHS
           PTP    => WADATS(IMOD)%PTP
           PLP    => WADATS(IMOD)%PLP
-          PTH    => WADATS(IMOD)%PTH
+          PDIR   => WADATS(IMOD)%PDIR
           PSI    => WADATS(IMOD)%PSI
           PWS    => WADATS(IMOD)%PWS
           PWST   => WADATS(IMOD)%PWST
@@ -2307,7 +2307,7 @@
           PHS    => WADATS(IMOD)%XPHS
           PTP    => WADATS(IMOD)%XPTP
           PLP    => WADATS(IMOD)%XPLP
-          PTH    => WADATS(IMOD)%XPTH
+          PDIR   => WADATS(IMOD)%XPDIR
           PSI    => WADATS(IMOD)%XPSI
           PWS    => WADATS(IMOD)%XPWS
           PWST   => WADATS(IMOD)%XPWST

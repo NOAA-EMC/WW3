@@ -3,8 +3,11 @@
 #                                                                             #
 # Script for running WW-III tests.                                            #
 #                                                                             #
+#                    Last update :         27-Jan-2014                        #
 # --------------------------------------------------------------------------- #
-
+#    Modification history
+#    27-Jan-2014 : Adapts ww3_ounf section for multigrid  ( version 4.18 )
+#
 # Limitations:
 #  - For each ww3_grid_*.inp, run_test process *all* ww3_prep_*.inp files.
 #    For example, when processing ww3_grid_1.inp, it does not know that
@@ -132,7 +135,6 @@ do
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
   -S) stub=1 ;;
-  -t) shift; trkstr="$1" ;;
   -w) shift; wrkdir="$1" ;;
   --) break ;;
   esac
@@ -1014,8 +1016,16 @@ then
           then
             mkdir ${otype}_$g
             mv -f $ofiles ${otype}_$g/.
-            echo "   Output files moved to ${otype}_$g"
+            echo "   ASCII output files moved to ${otype}_$g"
           fi
+          ofiles="`ls ww3.????*.nc 2>/dev/null`"
+          if [ $? = 0 ]
+          then
+            mkdir ${otype}_$g
+            mv -f $ofiles ${otype}_$g/.
+            echo "   NetCDF output files moved to ${otype}_$g"
+          fi
+#
           if [ "$prog" = 'gx_outf' ]
           then
             case $g in
@@ -1235,7 +1245,81 @@ then
   exit
 fi
 
-# 3.j End ------------------------------------------------------------------- #
+# 3.j Wave system tracking -------------------------------------------------- #
+
+prog=ww3_systrk
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+-------------------------+'
+  echo '|  Wave system tracking   |'
+  echo '+-------------------------+'
+  echo ' '
+
+    \cp -f $file_c $path_b/switch
+#  if [ $force_shrd ]
+#  then # build pre- & post-processing programs with SHRD only
+#    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+#                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+#  else
+#    \cp -f $file_c $path_b/switch
+#  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  ofile="$path_w/`basename $ifile .inp`.out"
+  \rm -f $prog.inp
+  \ln -f $ifile $prog.inp
+  echo "   Processing $ifile"
+  echo "   Screen output copied to $ofile"
+  if [ $pmpi ]
+  then
+    if [ $nproc ]
+    then
+      runcmd="$runcmd -np $nproc"
+    fi
+  fi
+  if $runcmd $path_e/$prog | tee $ofile
+  then
+    \rm -f $prog.inp
+  else
+    errmsg "Error occured during $path_e/$prog execution"
+    exit 1
+  fi
+#  if $path_e/$prog > $ofile
+#  then
+#    \rm -f $prog.inp
+#    for g in $intgl_grids
+#    do
+#      if [ -f "out_grd.$g" ]
+#      then
+#        model_grids="$model_grids $g"
+#      fi
+#    done
+#  else
+#    errmsg "Error occured during $path_e/$prog execution"
+#    exit 1
+#  fi
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
+# 3.k End ------------------------------------------------------------------- #
 
 if [ "$stub" ]
 then

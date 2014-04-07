@@ -168,6 +168,7 @@ Selection depth-induced breaking of :
 Selection of triad interactions:
 \begin{slist}
 \sit{tr0} {No triad interactions used.}
+\sit{tr1} {Lumped Triad Interaction (LTA) method.}
 \sit{trx} {Experimental (user supplied).}
 \end{slist}
 
@@ -311,6 +312,10 @@ Furthermore the following miscellaneous switches are available:
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
 \sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing
            programs.}
+\sit{trknc} {Activates the NetCDF API in the wave system tracking
+           post-processing program. Selecting TRKNC alone will generate 
+           NetCDF-3 files. Selecting both TRKNC and NC4 will generate 
+           NetCDF-4 files.}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
@@ -335,9 +340,10 @@ Furthermore the following miscellaneous switches are available:
 \sitn{t}  {Id.}
 \sit{tdyn}{Dynamic increment of swell age in diffusive
            dispersion correction (test cases only).}
-\sit{tide }{Enables tidal analysis: used for preprocessing of input files, run-time tidal 
-prediction in ww3\_shel or tidal prediction with ww3\_prtide \ldots}
-\sit{tidet}{test output for tidal analysis \ldots}
+\sit{tide }{Enables tidal analysis: used for pre-processing of input
+           files, run-time tidal prediction in ww3\_shel or tidal prediction
+           with ww3\_prtide.}
+\sit{tidet}{test output for tidal analysis.}
 \sit{xw0 }{Swell diffusion only in \uq\ scheme.}
 \sit{xw1 }{Id. wave growth diffusion only.}
 \end{slist}
@@ -346,16 +352,28 @@ prediction in ww3\_shel or tidal prediction with ww3\_prtide \ldots}
 \subsubsection{~Default model settings} \label{sub:opt_default}
 \vsssub
 
-With the plethora of numerical and physical options in \ws, and with the
-different and ever evolving way \ws\ is implemented at various organizations,
-we no longer provide a `default' model set up for the model with respect to
-most numerical and physical approaches. The only setup options that are still
-considered default is the treatment of input fields.
+Up to model version 3.14, the NCEP operational model setup was considered as
+the default model setup. However, with subsequent versions of \ws, the model
+has evolved into a modeling framework rather than a single model. With this,
+\ws\ is run differently at various centers, and a clear ``default'' model
+version can no longer be identified.  Nevertheless, in order to be able to
+concisely identify in publications exactly which model setup is used,
+``default'' configurations of various centers are now provided in the {\file
+bin} directory. These configurations are provided in example switch files and
+README files, such as {\file switch\_NCEP\_st2} and {\file README.NCEP}. Note
+that these files are provided to simplify referring to model version, but do
+not imply an endorsement of the specific model configuration.; in this
+context, it should be noted that by nature, model versions at operational
+centers are in a continuous state of development.
 
-\begin{slist}
-\sit{wnt1} {Wind interpolation (linear).}
-\sit{wnx1} {Wind interpolation (linear).}
-\sit{rwnd} {Define wind as relative to current.}
-\sit{crt1} {Current interpolation (linear).}
-\sit{crx1} {Current interpolation (linear).}
-\end{slist}
+
+
+% With the plethora of numerical and physical options in \ws, and with the different and ever evolving way \ws\ is implemented at various organizations, we no longer provide a `default' model set up for the model with respect to most numerical and physical approaches. The only setup options that are still considered default is the treatment of input fields.
+
+% \begin{slist}
+% \sit{wnt1} {Wind interpolation (linear).}
+% \sit{wnx1} {Wind interpolation (linear).}
+% \sit{rwnd} {Define wind as relative to current.}
+% \sit{crt1} {Current interpolation (linear).}
+% \sit{crx1} {Current interpolation (linear).}
+% \end{slist}

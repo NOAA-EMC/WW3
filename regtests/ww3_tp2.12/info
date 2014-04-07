@@ -1,0 +1,45 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.12 Test script for WW-III, two-dimensional, post-processing.      #
+#            Wave system tracking, using partitioned WW3 output.            # 
+#            N. Pacific field case (Nov 2009), taken from 30-yr CFSR        # 
+#            hindcast (Chawla et al. 2013).                                 #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 IC0 REF0 !/XX0                #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: No real impact of smoothing.                   #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#   !/SHRD               Serial operation                                   #
+#   !/MPI !/DIST         MPI parallel operation                             #
+#                                                                           #
+# Remarks :                                                                 #
+# - Propagation scheme has no influence on regtest. Use PR1 as dummy        #
+# - Post-processor ww3_systrk only needs the switches !/SHRD and            # 
+#   !/MPI !/DIST and receives its grid definition from partition.ww3.       #
+#   However, to conform to run_test, ww3_grid is also built, for which the  #
+#   remaining switches and a dummy ww3_grid.inp are provided.               #
+# - Test case input:                                                        #
+#   * ww3_grid.inp (dummy grid input file, with assoc .bot, .mask, .obst)   #
+#   * partition.ww3 (raw fields of partition data)                          #
+#   * ww3_systrk.inp (instruction file)                                     #
+#                                                                           #
+# Sample run_test commands :                                                #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                -s PR1 ../ ww3_tp2.12                      #
+#  ./bin/run_test -n 4 -p mpirun -s PR1 ../ ww3_tp2.12                      #
+#                                                                           #
+#                                    Andre van der Westhuysen, Jan 2014     #
+#                                                   Last Mod : Jan 2014     #
+#                                                                           #
+#    Copyright 2014 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

@@ -8,12 +8,56 @@
 ;;  SMC6125 grid swh plot from Vn4 SMC6125Tx.  JGLi10Jan2013
 ;;  Input yymm from file.                      JGLi23Oct2013
 ;;  Adapted for G50SMC grid swh.               JGLi19Nov2013
+;;  Extended to include Arctic.                JGLi11Feb2014
 ;;
 
 ;;  Path of the cell projection files
  DatGMC='/data/cr2/frjl/MFTModel/G50SMC/DatGMC/'
  Wrkdir='/data/cr2/frjl/MFTModel/G50SMC/' 
-;;  Read in GMC cell equatorial lat lon array
+
+; Read in SMC cell arrays 
+ ng=0L
+ n1=0L
+ n2=0L
+ n4=0L
+ openr, 9, DatGMC+'G50SMCels.dat'
+ readf, 9, ng, n1, n2, n4 
+ cel=intarr(5,ng)
+ readf, 9, cel
+ close, 9
+
+ Print, ' G50SMCels read done'
+ Print, ng, n1, n2, n4 
+ Print, cel(*,0)
+ Print, cel(*,ng-1)
+
+;; Maximum j row number in Global part
+ jmxglb = max( cel(1,*) )
+ Print, ' Maximum j row =', jmxglb
+
+;;  Arctic part from SMC625Arcl.dat
+ na=0L
+ nlb=0L
+ nrc=0L
+ openr, 8, DatGMC+'G50SMCBAr.dat'
+ readf, 8, na, nlb, nrc
+ ael=intarr(5,na)
+ readf, 8, ael
+ close, 8
+
+ Print, ' SMC625BArc read done'
+ Print, na, nlb, nrc
+ Print, cel(*,0)
+ Print, cel(*,na-1)
+
+;;  Merge them together
+ nga=ng + na
+ Print, nga 
+
+ cel=transpose([transpose(cel), transpose(ael)])
+
+
+; Read in SMC cell equatorial lat lon array
  nc=0L
  n2=0
  openr, 9, DatGMC+'G50STLaL.dat'
@@ -210,8 +254,10 @@ status=dc_read_free(Wrkdir+'fdate',fdate)
 
  for i=0L,np-1L do BEGIN
    if(elalon(0,i) ge 0.0) then Begin
-      if( icnf(i) gt 0) then  polyfill, sxc(*,i), syc(*,i), color=colorlevls(icnf(i))
-      if( icnf(i) eq 0) then     oplot, sxc(*,i), syc(*,i), color=0 
+      if( (i lt nc-na-nrc) or (i ge nc-na+nlb) )  then BEGIN
+          if( icnf(i) gt 0) then  polyfill, sxc(*,i), syc(*,i), color=colorlevls(icnf(i))
+          if( icnf(i) eq 0) then     oplot, sxc(*,i), syc(*,i), color=0 
+      endif
    endif
  endfor
 
@@ -226,7 +272,7 @@ status=dc_read_free(Wrkdir+'fdate',fdate)
 
 ;; Polar cell ploted as a octogon shape with two lines of sxc syc.
    if( nsea eq nc  AND  elalon(0,i) ge 0.0 ) then Begin
-      i=nc-1
+      i=nc-1L
       if( icnf(i) gt 0) then  $ 
           polyfill, [sxc(*,i),sxc(*,i+1)], [syc(*,i),syc(*,i+1)], color=colorlevls(icnf(i))
       if( icnf(i) eq 0) then  $ 

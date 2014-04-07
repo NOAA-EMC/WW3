@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         04-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                       ( version 3.07 )
@@ -23,6 +23,7 @@
 !/    22-Jan-2007 : Add NAVMAX.                        ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.    ( version 3.14 )
 !/    03-Sep-2012 : Add clock parameters (init.).      ( version 4.10 )
+!/    04-Feb-2014 : Switched to DATE_AND_TIME param.   ( version 4.18 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -93,7 +94,7 @@
 !      INPMAP    I.A.  Public   Map for expternal input grids.
 !      IDINP     C.A.  Public   Input field identifiers.
 !
-!      CLKT0, CLKTN, CLKINC, CLKMAX, CLKFIN
+!      CLKDT1, CLKDT2, CLKDT3, CLKFIN
 !                Int.  Public   Global wall clock parameters,
 !
 !      MPI_COMM_MWAVE
@@ -281,7 +282,7 @@
                                  NMPTST = 1, NMPERR = 1, NMPUPT = 1,  &
                                  STIME(2), ETIME(2), NRGRD, NRINP,    &
                                  NRGRP, NMVMAX
-!/F90      INTEGER                 :: CLKT0, CLKTN, CLKINC, CLKMAX
+!/F90      INTEGER                 :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 !/MPRF      INTEGER                 :: MDSP
 !/MPI      INTEGER                 :: MPI_COMM_MWAVE
 !/MPI      INTEGER, PARAMETER      :: MTAGB =  900000

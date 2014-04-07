@@ -126,8 +126,16 @@ used, remapping operations will be distributed among processes: {\file
   rmp\_src\_to\_dst\_conserv\_002\_001.nc} is created by process 1, {\file
   rmp\_src\_to\_dst\_conserv\_003\_001.nc} is created by process 2, etc.,
 which will dramatically improve performance in cases where a significant
-number of grids are used. Note: this feature is experimental and fails on some
-compilers/platforms.
+number of grids are used. To clarify, there are two modes of operation that are
+ targetted with this feature: Mode 1) Precalculate weights, where 
+{\file SCRIP\_STOP} exists and  {\file .nc} files do not exist. Mode 2) Use 
+precalculated weights, where {\file SCRIP\_STOP} does not exist and {\file .nc}
+ files do exist. If both files types exist (through accident) in the work 
+directory, {\file ww3\_multi} will fail with an error. In a hypothetical 
+operational context, Mode 1 is used for the first run and Mode 2 is used for 
+all subsequent runs with the same grid set.  Note: the {\file SCRIP\_STOP} 
+feature is experimental and has been observed to fail on some 
+compilers/platforms. 
 
 In some cases, SCRIP-WW3 will return suspicious values for some points, which
 will result in warning message(s) in the screen output. When this occurs for a

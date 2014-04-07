@@ -13,9 +13,9 @@
 #       ww3_gspl : Grdi splitter.                                             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      November 2013          #
+#                                                      January 2014           #
 #                                                                             #
-#    Copyright 2013 National Weather Service (NWS),                           #
+#    Copyright 2013-2014 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -30,6 +30,12 @@
 # 1.a.1 Setup file
 
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
+# The following line must not be removed: it is a switch for local install
+# so that all bin scripts point to the local wwatch3.env
+# WW3ENV
+# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
+# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
+
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
   home_dir=`pwd`
@@ -229,6 +235,7 @@ EOF
   rm -f mod_def.$modID
   rm -f mod_def.$modID.*
   rm -f ww3_multi.$modID.*
+  rm -f part_*
 
   cd $data_dir
   filelist=`ls`
@@ -392,7 +399,7 @@ EOF
   echo ' '
   echo " Process individual grids ..."
 
-  for file in ${modID}*.tmpl
+  for file in `ls *.tmpl`
   do
     grdID=`echo $file | sed 's/\./ /g' | awk '{ print $1 }'`
     echo "   Grid $grdID (ww3_grid.$grdID.out) ..."
@@ -410,7 +417,7 @@ EOF
   rm -f namelist.data
 
 # --------------------------------------------------------------------------- #
-# 4. Process ww3_multi.inp file                                               #
+# 4. Process ww3_ginf.inp_tmpl                                                #
 # --------------------------------------------------------------------------- #
 
   if [ "$gint" = '1' ]

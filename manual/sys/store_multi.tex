@@ -9,8 +9,6 @@ arrays for all models are retained simultaneously, with a simple mechanism to
 choose the actual wave model grid to work on. In order to achieve this, some
 FORTRAN 90 features \citep[e.g.,][]{bk:MR99} are used in the following way:
 
-\input{sys/fig_struc1}
-
 \begin{list}{}{\rightmargin 8mm \leftmargin 10mm \labelsep 2mm}
 
 \item [1)] Define one or more data structures in the model code that contain
@@ -33,6 +31,7 @@ keeping the layout of all original variables describing the model unchanged
 inside the model subroutines.  Such a structure and its usage are illustrated
 in Figs.~\ref{fig:struc_1} and \ref{fig:struc_2} with an example from the
 actual source code. Note that the pointer arrays like {\F zb} inside the
+\input{sys/fig_struc1}
 structures are assigned memory as \command{\F allocate grids(imod)\%zb(nsea)}
 After this statement, the alias pointer {\F zb} again needs to be pointed to
 the proper element of the structure for this alias to properly point to the

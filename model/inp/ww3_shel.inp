@@ -131,7 +131,7 @@ $   -------------------------------------------------
 $  T  T  4     1   PHS        PHS   Partitioned wave heights.
 $  T  T  4     2   PTP        PTP   Partitioned peak period.
 $  T  T  4     3   PLP        PLP   Partitioned peak wave length.
-$  T  T  4     4   PTH        PDIR  Partitioned mean direction.
+$  T  T  4     4   PDIR       PDIR  Partitioned mean direction.
 $  T  T  4     5   PSI        PSPR  Partitioned mean directional spread.
 $  T  T  4     6   PWS        PWS   Partitionned wind sea fraction.
 $  T  T  4     7   PWST       TWS   Total wind sea fraction.

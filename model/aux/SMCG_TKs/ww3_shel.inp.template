@@ -7,7 +7,7 @@ $
    F F     Water levels
    F F     Currents
    T F     Winds
-   T       Ice concentrations
+   F       Ice concentrations
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra.
@@ -75,8 +75,8 @@ $ EF TH1M STH1M TH1M STH1M WN
   F  F  F  F  F  F
 $ (4) Spectral Partition Parameters
   T
-$ PHS PTP PLP PTH PSP PWS WSF PNR
-  F   F   F   F   F   F   F   F
+$ PHS PTP PLP PDIR PSP PWS WSF PNR
+  F   F   F   F    F   F   F   F
 $ (5) Atmosphere-waves layer
   T
 $ UST CHN CGE FAW TAW NWS WCC WCF WCH WCM
@@ -131,6 +131,7 @@ $
    <START_TIME> 3600 <END_TIME>
    -80.533    30.041    'B41012'
    -77.743    33.436    'B41013'
+   -76.953    34.211    'B41036'
    -71.491    27.469    'B41047'
    -69.649    31.978    'B41048'
    -89.667    25.900    'B42001'
@@ -143,9 +144,10 @@ $
    -84.517    28.500    'B42036'
    -94.046    22.017    'B42055'
    -85.059    19.874    'B42056'
-   -69.247    40.502    'B44008'
-   -74.836    36.611    'B44014'
-   -69.305    41.255    'B44018'
+   -81.501    17.002    'B42057'
+   -74.918    14.923    'B42058'
+   -67.462    15.054    'B42059'
+   -72.048    40.694    'B44017'
    -70.186    41.443    'B44020'
    -73.166    40.250    'B44025'
    -73.703    40.369    'B44065'
@@ -159,17 +161,18 @@ $
   -124.510    46.144    'B46029'
   -124.731    47.353    'B46041'
   -122.404    36.789    'B46042'
-  -119.533    32.433    'B46047'
   -124.500    44.641    'B46050'
   -119.841    34.248    'B46053'
   -118.034    32.491    'B46086'
   -123.167    48.333    'B46088'
-  -147.992    59.925    'B46107'
   -154.056    23.546    'B51000'
   -153.900    23.558    'B51100'
   -162.058    24.321    'B51101'
-   -11.401    59.100    'B64045'
+   -76.289    22.734    'B66699'
      0.0       0.0  'STOPSTRING'
+$
+$  -79.805    24.609    'B66677'
+$  -79.102    25.078    'B66688'
 $
 $ Type 3 : Output along  track.
 $          Flag for formatted input file.

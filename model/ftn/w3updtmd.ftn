@@ -465,7 +465,7 @@
                                  UXR, UYR
 !/WNT2      REAL                    :: RD2
 !/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1, COR2
-!/ARC       REAL                    :: UDARC
+      REAL                    :: UDARC
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -521,7 +521,7 @@
 !
 ! 3.  Actual wind for all grid points
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR)
+!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
       DO ISEA=1, NSEA
 !
         UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
@@ -1007,7 +1007,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         28-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -1021,6 +1021,7 @@
 !/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
 !/                  activation of grid point.
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
+!/    28-Mar-2014 : Adapting to ICx source terms        ( version 4.18 )
 !/
 !  1. Purpose :
 !
@@ -1098,6 +1099,8 @@
 !/S      INTEGER, SAVE            :: IENT = 0
       INTEGER                 :: MAPICE(NY,NX)
       LOGICAL                 :: LOCAL
+      LOGICAL                 :: NOICEPHYSICS
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1114,11 +1117,18 @@
 !/T      WRITE (NDST,9010) TIME, TICE, TIN
       TICE(1) = TIN(1)
       TICE(2) = TIN(2)
+
+! 1.b If Ice physics used, return without deactivating any points
 !
-! 1.b Process maps
+
+     NOICEPHYSICS=.FALSE.
+!/IC0     NOICEPHYSICS=.TRUE.
+
 !
-      MAPICE = MOD(MAPST2,2)
-      MAPST2 = MAPST2 - MAPICE
+! 1.c Process maps
+!
+!/IC0      MAPICE = MOD(MAPST2,2)
+!/IC0      MAPST2 = MAPST2 - MAPICE
 !
 ! 2.  Main loop over sea points -------------------------------------- *
 !
@@ -1128,66 +1138,69 @@
 !
         IX        = MAPSF(ISEA,1)
         IY        = MAPSF(ISEA,2)
+
+! ice and berg are in the module
+
         ICE(ISEA) = ICEI(IX,IY)
         BERG(ISEA)= BERGI(IX,IY)
 !
 ! 2.b Sea point to be de-activated..
 !
-        IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
-            MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
-            MAPICE(IY,IX) = 1
-            IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
+!/IC0        IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
+!/IC0            MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
+!/IC0            MAPICE(IY,IX) = 1
+!/IC0            IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'ICE (NEW)'
-                JSEA   = 1 + (ISEA-1)/NAPROC
-                VA(:,JSEA) = 0.
+!/IC0                JSEA   = 1 + (ISEA-1)/NAPROC
+!/IC0                VA(:,JSEA) = 0.
 !/T              ELSE
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'ICE (NEW X)'
-              END IF
+!/IC0              END IF
 !
 !/T          ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
 !/T            WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
 !/T                              ICEI(IX,IY), 'ICE'
-          END IF
+!/IC0          END IF
 !
 ! 2.b Ice point to be re-activated.
 !
-        IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
+!/IC0        IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
 !
-            MAPICE(IY,IX) = 0
-            UST(ISEA)     = 0.05
+!/IC0            MAPICE(IY,IX) = 0
+!/IC0            UST(ISEA)     = 0.05
 !
-            IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-                MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
+!/IC0            IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+!/IC0                MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
 !
-                IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
+!/IC0                IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
 !/T                    WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
 !/T                                      ICEI(IX,IY), 'SEA (NEW)'
-                    JSEA   = 1 + (ISEA-1)/NAPROC
-                    VA(:,JSEA) = 0.
+!/IC0                    JSEA   = 1 + (ISEA-1)/NAPROC
+!/IC0                    VA(:,JSEA) = 0.
 !
 !/T                  ELSE
 !/T                    WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
 !/T                                      ICEI(IX,IY), 'SEA (NEW X)'
-                  END IF
+!/IC0                  END IF
 !
 !/T              ELSE
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'DIS'
-              END IF
+!/IC0              END IF
 !
 !/T             ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'SEA'
 !
-          END IF
+!/IC0          END IF
 !
         END DO
 !
 ! 3.  Update MAPST2 -------------------------------------------------- *
 !
-      MAPST2 = MAPST2 + MAPICE
+!/IC0      MAPST2 = MAPST2 + MAPICE
 !
       RETURN
 !

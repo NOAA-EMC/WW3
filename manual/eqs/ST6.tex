@@ -20,7 +20,7 @@ of the wind input under strong wind forcing,  the Lake George experiment
 revealed a number of new physical features for wind-wave exchange,
 previously not accounted for:
 (i) full air-flow separation that leads to a relative reduction of
-wind input for conditions of string winds/steep waves;
+wind input for conditions of strong winds/steep waves;
 (ii) dependence of the wave growth rate on wave steepness,
 which signifies nonlinear behaviour of the wind-input source function;
 (iii) enhancement of input in the presence of wave breaking
@@ -34,14 +34,14 @@ G                &=& 2.8-\Bigl (1+\tanh (10\sqrt{B_n}W-11) \Bigr) \:\:\: ,
 \label{eq:ST603} \\
 B_n              &=& A(k)\,N(k)\sigma\,k^3 \:\:\: ,
 \label{eq:ST604} \\
-W                &=& \left (\frac{U_{10}}{c}\,-\,1 \right )^2 \:\:\: .
+W                &=& \left (\frac{U}{c}\,-\,1 \right )^2 \:\:\: .
 \label{eq:ST605}
 \end{eqnarray}
 
 \noindent
 In (\ref{eq:ST601})$-$(\ref{eq:ST605}) $\rho_a$ and $\rho_w$ are densities
-of air and water, respectively, $U_{10}$ is wind speed at 10\,m height,
-$c$ refers to wave phase speed, $\sigma$ is radian frequency and $k$
+of air and water, respectively, $U$ is wind speed, $c$ refers to 
+wave phase speed, $\sigma$ is radian frequency and $k$
 is wavenumber. The spectral saturation (\ref{eq:ST604}), introduced
 by \citet{art:Phi84}, is a spectral measure of steepness $ak$.  The
 omni-directional action density is obtained by integration over all directions:
@@ -53,15 +53,12 @@ directions $\theta\in[0,2\pi]$ \citep{art:BS87}.
 
 \citet{art:Dea06} parameterized the growth rate (\ref{eq:ST602}) in terms
 of winds 10\,m above the mean surface. Wave models typically employ friction
-velocity $u_\star=\tau/\rho_a$, following scaling in the form of
-$C_d=u^2_\star/U^2_{10}$, where $\tau$ is the wind stress and $C_d$ drag
-coefficient. Therefore a flag ({\code SINU10}) was implemented to
-allow selection of wind speed scaling $U_{10} = 28\,u_{\star}$ adopted in
-equation (\ref{eq:Snyder}) based on \citet{art:Sea81} and \citet{art:KHH84}.
+velocity $u_\star=\tau/\rho_a$. Wind speed scaling $U=28 u_\star$ is adopted 
+from \citet{art:Sea81} and \citet{art:KHH84} following equation (\ref{eq:Snyder}).
 \begin{eqnarray}
-W_1 & = & \mathrm{max}^2 \left \{ 0,\frac{U_{10}}{c}\ \cos(\theta-\theta_w)-1
+W_1 & = & \mathrm{max}^2 \left \{ 0,\frac{U}{c}\ \cos(\theta-\theta_w)-1
 \right \} \:\:\: , \label{eq:ST606-1} \\
-W_2 & = & \mathrm{min}^2 \left \{ 0,\frac{U_{10}}{c}\ \cos(\theta-\theta_w)-1
+W_2 & = & \mathrm{min}^2 \left \{ 0,\frac{U}{c}\ \cos(\theta-\theta_w)-1
 \right \} \:\:\: .\label{eq:ST606-2} 
 \end{eqnarray}
 
@@ -103,7 +100,7 @@ applied to reduce energy from the high frequency part of the spectrum:
 $S_{in}(k^\prime)=L(k^\prime)\,S_{in}(k^\prime)$ with
 
 \begin{equation}\label{eq:ST610}
-L(k^\prime) = \min \Bigl \{ 1, \exp \bigl ( \mu\,[1- U_{10}/c] \bigr ) \Bigr
+L(k^\prime) = \min \Bigl \{ 1, \exp \bigl ( \mu\,[1- U/c] \bigr ) \Bigr
 \}  \:\:\: .
 \end{equation}
 
@@ -231,19 +228,18 @@ narrowness parameter is set to unity $A(k)\approx 1$ in equations
 
 % -------------------------------------------------------------------
 \begin{table} \begin{center}
-\begin{tabular}{|l|c|c|c|c|} \hline \hline
-Par.         &  WWATCH var. & namelist & $U_{10}=28u_\star$ & $U_{10}=u_\star C^{-1/2}_{d}$  \\
+\begin{tabular}{|l|c|c|c|} \hline \hline
+Par.         &  WWATCH var. & namelist &                  \\
 \hline
-  $-$              &  SINU10      & SIN6     &  F      &   T           \\
-  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T      &   T            \\
-  $a_1$            &  SDSA1       & SDS6     & 6.24E-8 &   6.50E-8      \\
-  $p_1$            &  SDSP1       & SDS6     &  4      &   4            \\
-  $a_2$            &  SDSA2       & SDS6     & 8.74E-6 &   8.40E-7      \\
-  $p_2$            &  SDSP2       & SDS6     &  4      &   4            \\
+  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T         \\
+  $a_1$            &  SDSA1       & SDS6     & 6.24E-7    \\
+  $p_1$            &  SDSP1       & SDS6     &  4         \\
+  $a_2$            &  SDSA2       & SDS6     & 8.74E-6    \\
+  $p_2$            &  SDSP2       & SDS6     &  4         \\
 \hline
-  $a_0$            &  SINA0       & SIN6     & 0.04    &   0.04         \\
-  $b_1$            &  SWLB1       & SWL6     & 0.25E-3 &   0.25E-3      \\
-  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4 &   1.00E-4      \\
+  $a_0$            &  SINA0       & SIN6     & 0.04       \\
+  $b_1$            &  SWLB1       & SWL6     & 0.25E-3    \\
+  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4    \\
  \hline \hline
 \end{tabular} \end{center}
 \caption{Summary of calibration parameters for BYDRZ source terms.

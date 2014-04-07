@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Mar-2012 |
+!/                  | Last update :         28-Jan-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -22,8 +22,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug.            ( version 3.14.6 )
 !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
+!/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/
-!/    Copyright 2009-2010 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -72,7 +73,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Mar-2012 |
+!/                  | Last update :         28-Jan-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -88,6 +89,7 @@
 !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
 !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug sec. 9.a.   ( version 3.14.6 )
 !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
+!/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/
 !  1. Purpose :
 !
@@ -238,6 +240,7 @@
 !/MPI      INTEGER, ALLOCATABLE    :: STATUS(:,:)
       REAL                    :: DTTST, DTMAXI
 !/MPRF      REAL                    :: PRFT0, PRFTN, PRFTS
+!/MPRF      REAL(KIND=8)            :: get_memory
       CHARACTER(LEN=8)        :: WTIME
       CHARACTER(LEN=23)       :: MTIME
       LOGICAL                 :: DONE, TSTAMP, FLAGOK, DO_UPT,        &
@@ -336,7 +339,7 @@
 !/MPI      CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
 !
 !/MPRF      CALL PRTIME ( PRFTN )
-!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory()
 !
 ! 1.  Setting up loop structure -------------------------------------- /
 !
@@ -440,7 +443,8 @@
 !/MPI                  END IF
 !
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST00', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
+!/MPRF                                 'ST00', I
 !
               END IF
 !
@@ -457,7 +461,7 @@
 !/MPI                                    ( TDATA(1,I), 2, I, NRGRD, 1 )
 !/MPRF                    IF (FLSYNC(I)) CALL PRTIME ( PRFTN )
 !/MPRF                    IF (FLSYNC(I)) WRITE (MDSP,991)             &
-!/MPRF                                          PRFT0, PRFTN,'BCST',I
+!/MPRF                        PRFT0, PRFTN, get_memory(), 'BCST',I
 !/MPIT                    WRITE (MDST,9902) I, GRSTAT(I), 'SYNCING DONE'
 !/MPI                    GRSTAT(I) = 1
 !/MPI                    FLSYNC(I) = .FALSE.
@@ -525,7 +529,8 @@
                   END IF
 !
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST01', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
+!/MPRF                                 'ST01', I
               END IF
 !
 ! 4.  Update model time step ----------------------------------------- /
@@ -629,8 +634,8 @@
                           END DO
                         DONE   = .TRUE.
 !/MPRF                        CALL PRTIME ( PRFTS )
-!/MPRF                        WRITE (MDSP,992) PRFTS, PRFTS, 'TIME',  &
-!/MPRF                                         TSYNC(:,0)
+!/MPRF                        WRITE (MDSP,992) PRFTS, PRFTS,          &
+!/MPRF                               get_memory(), 'TIME', TSYNC(:,0)
 !
 ! 4.b.4 Output
 !
@@ -642,7 +647,8 @@
 !       simultaneously.
 !
 !/MPRF                        CALL PRTIME ( PRFTN )
-!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN, 'ST02', I
+!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN,          &
+!/MPRF                               get_memory(), 'ST02', I
 !/T                        IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
                         IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
 !
@@ -712,7 +718,8 @@
 !       simultaneously.
 
 !/MPRF                        CALL PRTIME ( PRFTN )
-!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN, 'ST02', I
+!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN,          &
+!/MPRF                               get_memory(),  'ST02', I
 !/T                        IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
                         IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
 !
@@ -757,7 +764,8 @@
                 DONE      = .TRUE.
 !
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST03', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
+!/MPRF                                 'ST03', I
 !
               END IF
 !
@@ -802,7 +810,8 @@
                           END DO
                         DONE      = .TRUE.
 !/MPRF                        CALL PRTIME ( PRFTN )
-!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN, 'ST04', I
+!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN,      &
+!/MPRF                               get_memory(), 'ST04', I
 !
 !/T                        IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
                         IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
@@ -842,13 +851,15 @@
 !/MPI                      END IF
 !
 !/MPRF                    CALL PRTIME ( PRFTN )
-!/MPRF                    WRITE (MDSP,991) PRFT0, PRFTN, 'ST04', I
+!/MPRF                    WRITE (MDSP,991) PRFT0, PRFTN,          &
+!/MPRF                           get_memory(), 'ST04', I
                     CYCLE
 !
                   END IF
 !
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST04', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN,              &
+!/MPRF                       get_memory(),  'ST04', I
 !
               END IF
 !
@@ -916,7 +927,8 @@
 !
 !/T                IF (GRSTAT(I).EQ.6) WRITE(MDST,9003) I, GRSTAT(I)
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST05', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),     &
+!/MPRF                                 'ST05', I
               END IF
 !
 ! 8.  Perform data assimmilation ------------------------------------- /
@@ -927,7 +939,8 @@
 !/T                WRITE (MDST,9002) I, GRSTAT(I), ' '
                 GRSTAT(I) = 7
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST06', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),     &
+!/MPRF                                 'ST06', I
                 DONE      = .TRUE.
               END IF
 !
@@ -975,7 +988,8 @@
 !!/MPRF                CALL PRTIME ( PRFT0 )
 !!/MPRF                CALL WMWOUT ( I, NRGRD, 3 )
 !!/MPRF                CALL PRTIME ( PRFTN )
-!!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN,'BCST',I
+!!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),  &
+!!/MPRF                                'BCST',I
 !
 !/MPRF                CALL PRTIME ( PRFT0 )
 !
@@ -1062,7 +1076,8 @@
                   END IF
 !
 !/MPRF                CALL PRTIME ( PRFTN )
-!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, 'ST07', I
+!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN,get_memory(),      &
+!/MPRF                                 'ST07', I
 !
 ! 9.e Update TOUPT outside communicator
 !
@@ -1172,7 +1187,8 @@
 !
                         DONE      = .TRUE.
 !/MPRF                        CALL PRTIME ( PRFTN )
-!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN,'UPTS',I
+!/MPRF                        WRITE (MDSP,991) PRFT0, PRFTN,          &
+!/MPRF                               get_memory(), 'UPTS',I
                       END IF
 !
                   ELSE
@@ -1269,9 +1285,9 @@
                '============================'/)
   901 FORMAT ('  MWW3 calculating for ',A,' at ',A,'  status [',      &
                  I2,'-',I2,']')
-!/MPRF  990 FORMAT (1X,2F12.3,' WMWAVE INIT')
-!/MPRF  991 FORMAT (1X,2F12.3,' WMWAVE ',A4,I6)
-!/MPRF  992 FORMAT (1X,2F12.3,' WMWAVE ',A4,I9.8,I7.6)
+!/MPRF  990 FORMAT (1X,3F12.3,' WMWAVE INIT')
+!/MPRF  991 FORMAT (1X,3F12.3,' WMWAVE ',A4,I6)
+!/MPRF  992 FORMAT (1X,3F12.3,' WMWAVE ',A4,I9.8,I7.6)
   999 FORMAT (/' ========== END OF WAVE MODEL (WMWAVE) ============', &
                '============================'/)
 !

@@ -3,10 +3,11 @@ $ WAVEWATCH III Grid preprocessor input file                           $
 $ -------------------------------------------------------------------- $
 $ Adapted for SMC grid test.  JGLi18Dec2012
 $ Modified for WAM4 source term.  JGLi01Feb2013
+$ Full global including Arctic.  JGLi10Feb2014
 $
 $ Grid name (C*30, in quotes)
 $
-  '***** WW3 SMC6125 Grid *****  '
+  '***** WW3 SMC50km Grid *****  '
 $
 $ Frequency increment factor and first frequency (Hz) ---------------- $
 $ number of frequencies (wavenumbers) and directions, relative offset
@@ -340,7 +341,8 @@ $ SMC grid use the same spherical lat-lon grid option with its own
 $ propagation setting files.   JGLi18Dec2012
 $
      'RECT'  T  'SMPL'
-    512    350
+    512    359
+$   512    350
 $  1024    704
 $   768    512
 $
@@ -362,7 +364,10 @@ $     1.     1.     4.
 $    -1.    -1.     4.
 $
 $  -0.1  2.50  10  -10. 3 1 '(....)' 'NAME' 'bottom.inp'
+$  Used minimum water depth of 10 m.
    -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'G50SMCDepth.dat'
+$  Increase minimum water depth to 30 m.   JGLi11Feb2014
+$  -0.1  30.0  30   -1. 1 1 '(....)' 'NAME' 'G50SMCDepth.dat'
 $
 $ 6 6 6 6 6 6 6 6 6 6 6 6
 $ 6 6 6 5 4 2 0 2 4 5 6 6
@@ -494,6 +499,11 @@ $    Boundary cell spectral input data should be produced from a regular
 $    lat-lon grid model for the listed boundary cells.  JGLi18Dec2012
 $ 35  1  1  '(....)'  'S6125Bundy.dat'
 $
+$    Extra cell and face arrays for Arctic part.  JGLi10Feb2014
+  36  1  1  '(....)'  'G50SMCBAr.dat'
+  37  1  1  '(....)'  'G50AISide.dat'
+  38  1  1  '(....)'  'G50AJSide.dat'
+$
 $ Input boundary points and excluded points -------------------------- $
 $    The first line identifies where to get the map data, by unit number
 $    IDLA and IDFM, format for formatted read, FROM and filename
@@ -501,7 +511,7 @@ $    if FROM = 'PART', then segmented data is read from below, else
 $    the data is read from file as with the other inputs (as INTEGER)
 $
 $  10 3 1 '(....)' 'PART' 'mapsta.inp'
-  36  1  1  '(....)'  'NAME'  'G50SMCMasks.dat'
+  39  1  1  '(....)'  'NAME'  'G50SMCMasks.dat'
 $
 $ Read the status map from file ( FROM != PART ) --------------------- $
 $

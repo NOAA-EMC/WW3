@@ -125,7 +125,7 @@
      USE W3ADATMD, ONLY:  CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN, &
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,&
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
-                          SXX, SYY, SXY, PHS, PTP, PLP, PTH, PSI, PWS,&
+                          SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
@@ -1041,7 +1041,7 @@
               ELSE IF ( J.EQ.4 .AND. K.EQ.4 ) THEN
                 FLPRT = .TRUE.
                 DO I=0, NOSWLL
-                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PTH(:,I),         &
+                  CALL W3S2XY ( NSEA, NSEA, NX, NY, PDIR(:,I),         &
                                                    MAPSF, XA(:,:,I) )
                   END DO
 !

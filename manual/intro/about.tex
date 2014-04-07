@@ -15,7 +15,7 @@ This manual describes the governing equations, numerical approaches,
 compilation, and running of \ws. The format of a combined user manual and
 system documentation has been chosen, to give users the necessary background
 to include new physical and numerical approaches in the framework according to
-their own specifications.  This approach became more important, as \ws\
+their own specifications.  This approach became more important as \ws\
 developed into a wave modeling framework. By design, a user can apply his or
 her numerical or physical approaches, and thus develop a new wave model based
 on the \ws\ framework. In such an approach, optimization, parallelization,
@@ -24,7 +24,7 @@ shared between actual models.  Whereas this document is intended to be
 complete and self-contained, this is not the case for all elements in the
 system documentation. For additional system details, reference is made to the
 source code, which is fully documented. Note that a best practices guide for
-code development for \ws\ is now available \citep{tol:MMAB10a}.
+code development for \ws\ is now available \citep{tol:MMAB10a, tol:MMAB14b}.
 
 The governing equations and numerical approaches used in this model are
 described in chapters~\ref{chapt:eq} and \ref{chapt:num}. Running the model is
@@ -38,75 +38,13 @@ modify input files in example runs (chapter~\ref{chapt:run}).
 \vspace{\baselineskip} 
 \noindent 
 The present model version (\WWver) is a developmental version based on the
-last official model release (version 3.14). Since the latter release the
+last official model release (version 4.18). Since the latter release the
 following modifications have been made:
 
 \begin{list}{$\bullet$}{\rightmargin 5mm \parsep 0mm \itemsep 0mm}
 
-\item At NCEP the \ws\ source code, scripts and auxiliary tools are now
-  maintained using subversion \citep{bk:CSea06}. For co-developers, a script
-  is available to install \ws\ directly from the repository at NCEP, as well
-  as a best best practices guide \citep[initially published
-  as][]{tol:MMAB10a}.  The latter is a living document, with the most recent
-  version being version~\guidever\ \citep{\guideref}.
-
-\item Model version 4.00 was used as a set-up for the new version. The only
-  main modification of this version of the code is removing the {\code XYG}
-  and {\code XYG}, and replacing the choice of grid with a keyword in the code
-  and in {\file mod\_def.ww3}.
-
-\item Adding curvilinear grids from \cite{rep:RC09} (model version 4.01).
-
-\item Adding unstructured grids from \cite{rep:Roland2008} (model version 4.02).
-
-\item Adding new output fields (see \para\ref{sub:outpars}, model versions
-  4.03 and 4.11).
-
-\item Adding \cite{art:Aea10} source term package (see \para\ref{sec:ST4}),
-  and SHOWEX bottom friction source term (see \para\ref{sec:BT4}, model
-  version 4.04)
-
-\item Adding iceberg blocking (model version 4.05).
-
-\item Adding NetCDF output post-processing (model version 4.06).
-
-\item Adding formal regression testing for model developers, adopted from
-  previously undistributed NRL `{\file nrltest}' directory (model version
-  4.07).
-
-\item Adding GMD and nonlinear filter (see sections \ref{sec:NL3} and
-  \ref{sec:NLS}, model version 4.08).
-
-\item Adding wave system tracking (see \para\ref{sub:num_track}, model version
-  4.09).
-
-\item Adding regular grid splitting tools (see \para\ldots, model version
-  4.10).
-
-\item Adding second order UNO schemes (sections \ref{sub:num_space_trad} and
-  \ref{sub:spec}, model version 4.12).
-
-\item Adding SMC grid and rotated grid options (sections
-  \ref{sub:num_space_SMC} and \ref{sub:num_space_rotagrid}, model version
-  4.13).
-
-\item BYDRZ source term package (\para\ref{sec:ST6}, model version 4.14).
-
-\item Mud-ice interactions (\para\ref{sec:BT8}, \ref{sec:BT9},
- \ref{sec:ICE1}, \ref{sec:ICE2}, and \ref{sec:ICE3}, model version 4.15).
-
-\item Infra-gravity wave module (\para\ref{sec:IG1}, model version 4.16).
-
-\item Triad interactions (\para\ref{sec:TR1}, model version 4.17).
-
-% \vspace{\baselineskip}
-% \centerline{*** IN THE PIPELINE ***}
-% \vspace{\baselineskip}
-
-% \item Implicit schemes and domain decomposition for unstructured grids (model
-%  version 4.18).
-
-\item Final preparations for distribution (model version 4.18).
+\item Preparing for next model version, adding optional instrumentation to code
+      for profiling of memory use (model version 5.00). 
 
 \end{list}
 
@@ -116,7 +54,7 @@ fixes) on the \ws\ web page, and comments, questions and suggestions should be
 directed to the NCEP E-mail address
 
 \begin{center}
-http://polar.ncep.noaa.gov/waves/wavewatch
+http://polar.ncep.noaa.gov/waves/wavewatch/wavewatch.shtml
 \end{center}
 
 \noindent

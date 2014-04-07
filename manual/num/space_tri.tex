@@ -2,19 +2,23 @@
 \subsubsection{~Triangular unstructured grids} \label{sub:num_space_tri}
 \conthead{WWM-II}{A. Roland, F. Ardhuin, M. Dutour-Sikiri\'c}
 
-\noindent Triangle-based grids can be used in \ws\ by using numerical schemes
-based on contour residual distribution (RD) \citep[see][for a
-review]{rep:Roland2008}.  These schemes have been 1st time implemented in the 
-WWM-II and have been used efficiently in WWM-II as well as in WWIII \citep[e.g.][]{art:Aea09,Magne2010}.
-This option is activated by setting the grid string
-to `{\code UNST}' in {\file ww3\_grid.inp}.  Four schemes have been
-implemented, and the choice of one or the other is done with the {\code UG}
-namelist.  These are the CRD-N-scheme (1st order), the CRD-PSI-scheme 
-(better than 1st order, 2nd order on triangular strucutured grids), 
-the CRD-FCT-scheme (2nd order space-time, and
-the implicit N-scheme. The default is the most efficient but 1st order 
-diffusive explicit N-scheme. An implicit variant of the RD-Schemes using the method of lines
-and the N-Scheme for the space discretization was implemented in the SWAN model by \citet{Zijlema2010267}.
+\noindent 
+Triangle-based grids can be used in \ws\ by using numerical schemes based on
+contour residual distribution (RD) \citep[see][for a review]{rep:Roland2008}.
+These schemes have been 1st time implemented in the WWM-II and have been used
+efficiently in WWM-II as well as in WWIII \citep[e.g.][]{art:Aea09,
+art:Mea10}.  This option is activated by setting the grid string to `{\code
+UNST}' in {\file ww3\_grid.inp}.  Four schemes have been implemented, and the
+choice of one or the other is done with the {\code UNST} namelist.  These are
+the CRD-N-scheme (1st order), the CRD-PSI-scheme (better than 1st order, 2nd
+order on triangular structured grids), the CRD-FCT-scheme (2nd order
+space-time), and the implicit N-scheme. The default is the most efficient but
+diffusive explicit N-scheme. An implicit variant of the RD-Schemes
+using the method of lines and the N-Scheme for the space discretization was
+implemented in the SWAN model by \cite{art:Zij10}. We note that these advection 
+schemes do not include corrections for the garden sprinkler effect (GSE). These 
+can be particularly visible for waves going around islands surrounded by deep 
+water. In that case, the diffusion of the N scheme can compensate the GSE.
 
 In practice the grid can be easily generated, using the PolyMesh interface
 (software developed by Aron Roland), from a shoreline polygons database
@@ -28,9 +32,10 @@ convergence into the median dual cells associated with the nodes (see figure
 into a cell gives the rate of change of the wave action at the corresponding
 node. The various schemes implemented have different discretizations for the
 estimation of this flux. The schemes have been presented in \citep[see][for a
-review]{rep:Roland2008} and \citet{RolandECMWF}.
+review]{rep:Roland2008} and \citet{pro:Rol12}.
 
-The equivalent of the CFL condition in the stable schemes is the ratio of the
+The equivalent of the CFL condition for explicit finite difference schemes 
+on regular grids is the ratio of the
 dual cell area divided by the product of the time step and all positive flux
 into the dual cell. Because the spectral levels are imposed on the boundary
 for the positive fluxes, the boundary nodes are excluded from this CFL

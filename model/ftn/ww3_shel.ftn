@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         03-Sep-2012 |
+!/                  | Last update :         04-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -40,6 +40,8 @@
 !/    06-Mar-2012 : Repairing test output.              ( version 4.07 )
 !/    03-Sep-2012 : Output initialization time.         ( version 4.10 )
 !/    27-Sep-2012 : Implement use of tidal constituents ( version 4.08 )
+!/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
+!/                  (A. Chawla and Mark Szyszka)      
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -248,15 +250,15 @@
                              IERR, J, I, ODAT(35), ILOOP, NPTS,       &
                              NH(-7:4), THO(2,-7:4,NHMAX), RCLD(5:7),  &
                              NDT(5:7), NDTNEW, MPI_COMM = -99, JJ,    &
-                             IPRT(6), IFI, IFJ
-!/F90      INTEGER             :: CLKT0, CLKTN, CLKDT, CLKINC, CLKMAX
+                             IPRT(6) = 0, IFI, IFJ
+!/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
       INTEGER             :: NODATA(5:7), FLAGTIDE
       REAL                :: FACTOR, DTTST, XX, YY,                   &
                              HA(NHMAX,-7:4), HD(NHMAX,-7:4),          &
                              HS(NHMAX,-7:4)
 
-!/F90      REAL                :: CLKFIN
+!/F90      REAL                :: CLKFIN, CLKFEL
       REAL, ALLOCATABLE   :: X(:), Y(:), XXX(:,:), DATA0(:,:),        &
                              DATA1(:,:), DATA2(:,:)
       LOGICAL             :: FLLSTL, FLLSTI, FLH(-7:8), FLFLG, FLHOM, &
@@ -312,7 +314,7 @@
 !
 !/T      PRTFRM = .TRUE.
 !
-!/F90      CALL SYSTEM_CLOCK ( CLKT0, CLKINC, CLKMAX )
+!/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 0.  Set up data structures
@@ -943,15 +945,7 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
-!/F90          CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
-!/F90          IF ( CLKMAX .NE. 0 ) THEN
-!/F90              IF ( CLKTN-CLKT0 .GE. 0 ) THEN
-!/F90                  CLKDT  = CLKTN-CLKT0
-!/F90                ELSE
-!/F90                  CLKDT  = CLKTN-CLKT0 + CLKMAX
-!/F90                END IF
-!/F90              CLKFIN = REAL(CLKDT)/REAL(CLKINC)
-!/F90            END IF
+!/F90          CALL DATE_AND_TIME ( VALUES=CLKDT2 )
         END IF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1361,20 +1355,14 @@
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 !
       IF ( IAPROC .EQ. NAPOUT ) THEN
-!/F90          IF ( CLKMAX .NE. 0 ) THEN
-!/F90              WRITE (NDSO,997) CLKFIN
-!/F90              IF ( NDSO .NE. NDS(1) ) WRITE (NDS(1),997) CLKFIN
-!/F90            END IF
-!/F90          CALL SYSTEM_CLOCK ( CLKTN, CLKINC )
-!/F90          IF ( CLKMAX .NE. 0 ) THEN
-!/F90              IF ( CLKTN-CLKT0 .GE. 0 ) THEN
-!/F90                  CLKDT  = CLKTN-CLKT0
-!/F90                ELSE
-!/F90                  CLKDT  = CLKTN-CLKT0 + CLKMAX
-!/F90                END IF
-!/F90              CLKFIN = REAL(CLKDT)/REAL(CLKINC)
-!/F90              WRITE (NDSO,998) CLKFIN
-!/F90              IF ( NDSO .NE. NDS(1) ) WRITE (NDS(1),998) CLKFIN
+!/F90          CALL DATE_AND_TIME ( VALUES=CLKDT3 )
+!/F90          CLKFIN = TDIFF ( CLKDT1,CLKDT2 )
+!/F90          CLKFEL = TDIFF ( CLKDT1,CLKDT3 )
+!/F90          WRITE (NDSO,997) CLKFIN
+!/F90          WRITE (NDSO,998) CLKFEL
+!/F90          IF ( NDSO .NE. NDS(1) ) THEN
+!/F90              WRITE (NDS(1),997) CLKFIN
+!/F90              WRITE (NDS(1),998) CLKFEL
 !/F90            END IF
           WRITE (NDSO,999)
         END IF
@@ -1427,7 +1415,7 @@
                ' --------------------------------------------------')
   951 FORMAT ( '       ',A)
 !/O7  952 FORMAT ( '       ',I6,2X,A)
-!/O7  953 FORMAT ( '          ',I6,I11.8,I7.6,3F8.2)
+!/O7  953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
   954 FORMAT ( '            ',A,': file not needed')
   955 FORMAT ( '            ',A,': file OK')
   956 FORMAT ( '            ',A,': file OK, recl =',I3,               &

@@ -25,6 +25,12 @@
 # 1.a Internal variables
 
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
+# The following line must not be removed: it is a switch for local install
+# so that all bin scripts point to the local wwatch3.env
+# WW3ENV
+# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
+# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
+
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -417,6 +423,7 @@
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
+(??)
               *    ) ;;
     esac
   done
@@ -651,6 +658,13 @@
       echo ' ' ; exit 8
   fi
 
+  if [ "$mprf" = "MPRF" ]
+  then
+    mprfaux='w3getmem'
+  else
+    mprfaux=$NULL
+  fi
+
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
@@ -673,7 +687,7 @@
                prop=
              source="$stx $nlx $btx"
                  IO='w3iogrmd w3iorsmd'
-                aux='constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
+                aux='constants w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_bound) IDstring='boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
@@ -725,7 +739,7 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
-                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
+                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
                 aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -745,7 +759,7 @@
                source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
                 aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -812,7 +826,7 @@
                  IO='w3iogrmd w3iogomd'
                prop=
              source="$st $nl"
-               aux='constants w3servmd  w3arrymd w3dispmd w3timemd w3gsrumd' ;;
+               aux='constants w3triamd w3servmd  w3arrymd w3dispmd w3timemd w3gsrumd' ;;
       gx_outf) IDstring='GrADS input file generation (gridded fields)'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -833,7 +847,7 @@
                prop=
              source=
                  IO=
-                aux= ;;
+                aux='w3servmd w3timemd' ;;
     esac
 
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
@@ -879,11 +893,16 @@
     then
       fext=ftn
     else
-      if [ -f $main_dir/ftn/$file.f90 ]
+      if [ -f $main_dir/ftn/$file.c ]
       then
-        fext=f90
+        fext=c
       else
-        fext=f
+        if [ -f $main_dir/ftn/$file.f90 ]
+        then
+          fext=f90
+        else
+          fext=f
+        fi
       fi
     fi
 
@@ -904,7 +923,12 @@
     then
       fext=f90
     else
-      fext=f
+      if [ -f $file.c ]
+      then
+        fext=c
+      else
+        fext=f
+      fi
     fi
 
     grep USE $file.$fext  > check_file
@@ -934,7 +958,8 @@
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD \
+               w3getmem
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1028,6 +1053,7 @@
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
+         'w3getmem'     ) modtest=w3getmem.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]

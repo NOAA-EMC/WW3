@@ -48,7 +48,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SRCE ( IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
+      SUBROUTINE W3SRCE ( IT, IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
                           U10ABS, U10DIR, AS, USTAR, USTDIR, ICE,     &
                           CX, CY, REFLEC, REFLED,DELX, DELY, DELA,    &
                           TRNX, TRNY, BERG, FPI, DTDYN, FCUT, DTG,    &
@@ -332,8 +332,9 @@
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
                           FTE, FTF, FHMAX, ECOS, ESIN
+!/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
-      USE W3ODATMD, ONLY: NDSE, NDST
+      USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
       USE W3IDATMD, ONLY: FLAGS
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLX1      USE W3FLX1MD
@@ -385,7 +386,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: IX, IY, IMOD
+      INTEGER, INTENT(IN)     :: IT, IX, IY, IMOD
       REAL, INTENT(IN)        :: WN1(NK), CG1(NK), D_INP, U10ABS,     &
                                  U10DIR, AS, ICE, CX, CY, DTG, D50,PSIC
       INTEGER, INTENT(IN)     :: REFLED(6)
@@ -418,10 +419,11 @@
 !/MLIM      REAL                    :: HM, EM
 !/NNT      REAL                    :: FACNN
 !/T      REAL                    :: DTRAW
-      REAL                    :: EBAND, EINIT, EFINISH, HSTOT, PHINL, &
+      REAL                    :: EBAND, DIFF, EFINISH, HSTOT, PHINL, &
                                  FMEAN1, FMEANWS, MWXINIT, MWYINIT,   &
                                  FACTOR, DRAT, TAUWAX, TAUWAY,        &
                                  MWXFINISH, MWYFINISH, A1BAND, B1BAND
+      REAL                    :: SPECINIT(NSPEC)
       REAL                    :: DAM (NSPEC), WN2 (NSPEC),            &
                                  VSLN(NSPEC),                         &
                                  VSIN(NSPEC), VDIN(NSPEC),            &
@@ -429,7 +431,9 @@
                                  VSDS(NSPEC), VDDS(NSPEC),            &
 !/ST6                                 VSWL(NSPEC), VDWL(NSPEC),            &
                                  VSBT(NSPEC), VDBT(NSPEC),            &
-                                 VSIC(NSPEC), VDIC(NSPEC),            &
+!/IC1                                 VSIC(NSPEC), VDIC(NSPEC),            &
+!/IC2                                 VSIC(NSPEC), VDIC(NSPEC),            &
+!/IC3                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
@@ -475,8 +479,12 @@
 !/ST0      VDDS = 0.
       VSBT = 0.
       VDBT = 0.
-      VSIC = 0.
-      VDIC = 0.
+!/IC1      VSIC = 0.
+!/IC1      VDIC = 0.
+!/IC2      VSIC = 0.
+!/IC2      VDIC = 0.
+!/IC3      VSIC = 0.
+!/IC3      VDIC = 0.
 !/IS1      VSIR = 0.
 !/ST6      VSWL = 0.
 !/ST6      VDWL = 0.
@@ -527,6 +535,7 @@
       TAUSCX = 0.
       TAUSCY = 0.
       TAUBBL(:)= 0.
+!/ST4      BRLAMBDA(:)=0.
 !
 ! 1.c Set mean parameters
 !
@@ -566,8 +575,6 @@
 !/ST4        CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,            &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
-!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
@@ -577,27 +584,10 @@
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 !/ST6      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)  
 !
-! 1.c2 computes the initial spectral energy and momentum
+! 1.c2 Stores the initial data
 !
-      EINIT  = 0.
-! GRAV*MWINIT is the depth-integrated velocity in m^2/s
-      MWXINIT= 0.
-      MWYINIT= 0.
-      DO IK=1, NK
-        EBAND = 0.
-        A1BAND = 0.
-        B1BAND = 0.
-        DO ITH=1, NTH
-          EBAND = EBAND + SPEC(ITH+(IK-1)*NTH)
-          A1BAND = A1BAND + SPEC(ITH+(IK-1)*NTH)*ECOS(ITH)
-          B1BAND = B1BAND + SPEC(ITH+(IK-1)*NTH)*ESIN(ITH)
-          END DO
-        EINIT  = EINIT  + EBAND * DDEN(IK) / CG1(IK)
-          MWXINIT  = MWXINIT  + A1BAND * DDEN(IK) / CG1(IK)        &
-                  * WN1(IK)/SIG(IK)
-          MWYINIT  = MWYINIT  + B1BAND * DDEN(IK) / CG1(IK)        &
-                  * WN1(IK)/SIG(IK)
-          END DO
+      SPECINIT = SPEC
+!
 ! 1.d Stresses
 !
 !/FLX1      CALL W3FLX1 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
@@ -653,8 +643,6 @@
 !/ST3        CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST3                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST3                 ICE, VSIN, VDIN, LLWS, IX, IY )
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
-!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST4        CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
 !/ST4                 U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
 !/ST4                 VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
@@ -679,6 +667,8 @@
 !/ST2        CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
+!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !
@@ -710,12 +700,11 @@
 ! 2.e Additional sources.
 !
 !/XXX        CALL W3SXXX
-
-!/IC1                CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
-!/IC2                CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
-!/IC3                CALL W3SIC3 ( SPEC,DEPTH,       WN1, IX, IY, VSIC, VDIC )
-!
+!/IC1             IF (ICE.GT.0) CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
+!/IC2             IF (ICE.GT.0) CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+!/IC3             IF (ICE.GT.0) CALL W3SIC3 ( SPEC,DEPTH,       WN1, IX, IY, VSIC, VDIC )
 !/IS1                CALL W3SIS1 ( SPEC, ICE, VSIR )
+!/IS2                CALL W3SIS2 ( SPEC, ICE, TAUIS, TAUIS, VSIR )
 !
 ! 2.f Dump training data if necessary
 !
@@ -764,14 +753,22 @@
           VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDIN(1:NSPECH)
           VSDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSDS(1:NSPECH)
           VDDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDDS(1:NSPECH)
-          VSIC(1:NSPECH) =                  ICE   * VSIC(1:NSPECH)
-          VDIC(1:NSPECH) =                  ICE   * VDIC(1:NSPECH)
+!/IC1          VSIC(1:NSPECH) =                  ICE   * VSIC(1:NSPECH)
+!/IC1          VDIC(1:NSPECH) =                  ICE   * VDIC(1:NSPECH)
+!/IC2          VSIC(1:NSPECH) =                  ICE   * VSIC(1:NSPECH)
+!/IC2          VDIC(1:NSPECH) =                  ICE   * VDIC(1:NSPECH)
+!/IC3          VSIC(1:NSPECH) =                  ICE   * VSIC(1:NSPECH)
+!/IC3          VDIC(1:NSPECH) =                  ICE   * VDIC(1:NSPECH)
         END IF
 !
         DO IS=IS1, NSPECH
           VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
-                 + VSDS(IS) + VSBT(IS) + VSIC(IS)
+                 + VSDS(IS) + VSBT(IS) 
+!/IC1          VS(IS) = VS(IS) + VSIC(IS)
+!/IC2          VS(IS) = VS(IS) + VSIC(IS)
+!/IC3          VS(IS) = VS(IS) + VSIC(IS)
 !/IS1          VS(IS) = VS(IS) + VSIR(IS)
+!/IS2          VS(IS) = VS(IS) + VSIR(IS)
 !/ST6          VS(IS) = VS(IS) + VSWL(IS)
 !/DB1          VS(IS) = VS(IS) + VSDB(IS)
 !/DBX          VS(IS) = VS(IS) + VSDB(IS)
@@ -1014,9 +1011,10 @@
         A1BAND = 0.
         B1BAND = 0.
         DO ITH=1, NTH
-          EBAND = EBAND + SPEC(ITH+(IK-1)*NTH)
-          A1BAND = A1BAND + SPEC(ITH+(IK-1)*NTH)*ECOS(ITH)
-          B1BAND = B1BAND + SPEC(ITH+(IK-1)*NTH)*ESIN(ITH)
+          DIFF = SPECINIT(ITH+(IK-1)*NTH)-SPEC(ITH+(IK-1)*NTH)
+          EBAND = EBAND + DIFF
+          A1BAND = A1BAND + DIFF*ECOS(ITH)
+          B1BAND = B1BAND + DIFF*ESIN(ITH)
           END DO
         EFINISH  = EFINISH  + EBAND * DDEN(IK) / CG1(IK)
         MWXFINISH  = MWXFINISH  + A1BAND * DDEN(IK) / CG1(IK)        &
@@ -1027,19 +1025,18 @@
 !
 ! Transformation in momentum flux in m^2 / s^2 
 !
-      TAUOX=(GRAV*(MWXINIT-MWXFINISH)+TAUWIX-TAUBBL(1)/DRAT)/DTG
-      TAUOY=(GRAV*(MWYINIT-MWYFINISH)+TAUWIY-TAUBBL(2)/DRAT)/DTG
+      TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1)/DRAT)/DTG
+      TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2)/DRAT)/DTG
       TAUWIX=TAUWIX/DTG
       TAUWIY=TAUWIY/DTG
       TAUWNX=TAUWNX/DTG
       TAUWNY=TAUWNY/DTG
       TAUBBL(:)=TAUBBL(:)/DTG
       ! Transformation in wave energy flux in W/m^2=kg / s^3 
-      PHIOC =DWAT*GRAV*(EINIT-EFINISH+PHIAW-PHIBBL)/DTG 
+      PHIOC =DWAT*GRAV*(EFINISH+PHIAW-PHIBBL)/DTG 
       PHIAW =DWAT*GRAV*PHIAW /DTG        
       PHINL =DWAT*GRAV*PHINL /DTG  
       PHIBBL=DWAT*GRAV*PHIBBL/DTG        
-      
 !
 ! 10 includes reflection --------------------------------------------- *
 !
@@ -1048,9 +1045,22 @@
 !/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
 !/REF1                        BERG, DTG, IX, IY,  VREF )
 !/REF1          SPEC(:) = SPEC(:)+DTG*VREF(:) 
+!/REF1        ELSE
+!/REF1! Treatment specific to unstructured grids: Dirichlet boundary condition
+!/REF1! the energies in directions from shore are set to zero. 
+!/REF1          IF (GTYPE.EQ.UNGTYPE) THEN 
+!/REF1          IF (IOBP(IX).EQ.0) THEN 
+!/REF1            DO IK=1, NK 
+!/REF1              DO ITH=1, NTH
+!/REF1                IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH)=0.
+!/REF1                END DO
+!/REF1              END DO 
+!/REF1            END IF
+!/REF1            END IF
 !/REF1          END IF
 !
       FIRST  = .FALSE.
+      IF (IT.EQ.0) SPEC = SPECINIT
 !
       RETURN
 !

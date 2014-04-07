@@ -50,7 +50,7 @@
 !/                  structure and smaller memory footprint.
 !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
 !/    10-Oct-2013 : CG and WN values at DMIN for ISEA=0 ( version 4.12 )
-!/    14-Nov-2013 : RRemove UST(DIR) initialization.    ( version 4.13 )
+!/    14-Nov-2013 : Remove UST(DIR) initialization.     ( version 4.13 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -103,7 +103,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '4.16a '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '5.00  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
                     'PUT_SW1' // &
                     'PUT_SW2' // &
@@ -1552,7 +1552,7 @@
 !/MPI      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1,   &
 !/MPI                          DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
 !/MPI                          SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
-!/MPI                          PTH, PSI, PWS, PWST, PNR, PHIAW, PHIOC,&
+!/MPI                          PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC,&
 !/MPI                          TUSX, TUSY, TAUWIX, TAUWIY, TAUOX,     &
 !/MPI                          TAUOY, USSX, USSY, MSSX, MSSY,         &
 !/MPI                          MSCX, MSCY, PRMS, TPMS, CHARN,         &
@@ -1811,7 +1811,7 @@
 !/MPI                DO K=0, NOSWLL
 !/MPI                  IH     = IH + 1
 !/MPI                  IT     = IT + 1
-!/MPI      CALL MPI_SEND_INIT (PTH(1,K),NSEALM , MPI_REAL, IROOT,    &
+!/MPI      CALL MPI_SEND_INIT (PDIR(1,K),NSEALM , MPI_REAL, IROOT,    &
 !/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 !/MPIT      WRITE (NDST,9011) IH, ' 4/04', IROOT, IT, IRQGO(IH), IERR
 !/MPI                  END DO
@@ -1911,12 +1911,12 @@
 !/MPI              IF ( FLGRDALL( 5, 6) ) THEN
 !/MPI                  IH     = IH + 1
 !/MPI                  IT     = IT + 1
-!/MPI      CALL MPI_SEND_INIT (TAUWIX(1),NSEALM , MPI_REAL, IROOT,   &
+!/MPI      CALL MPI_SEND_INIT (TAUWNX(1),NSEALM , MPI_REAL, IROOT,   &
 !/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 !/MPIT      WRITE (NDST,9011) IH, ' 5/06', IROOT, IT, IRQGO(IH), IERR
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
-!/MPI      CALL MPI_SEND_INIT (TAUWIY(1),NSEALM , MPI_REAL, IROOT,   &
+!/MPI      CALL MPI_SEND_INIT (TAUWNY(1),NSEALM , MPI_REAL, IROOT,   &
 !/MPI                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 !/MPIT      WRITE (NDST,9011) IH, ' 5/06', IROOT, IT, IRQGO(IH), IERR
 !/MPI                END IF
@@ -2393,7 +2393,7 @@
 !/MPI                  DO K=0, NOSWLL
 !/MPI                    IH     = IH + 1
 !/MPI                    IT     = IT + 1
-!/MPI      CALL MPI_RECV_INIT (PTH(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+!/MPI      CALL MPI_RECV_INIT (PDIR(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
 !/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
 !/MPIT      WRITE (NDST,9011) IH, ' 4/04', IFROM, IT, IRQGO2(IH), IERR
 !/MPI                    END DO

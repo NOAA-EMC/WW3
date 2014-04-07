@@ -10,7 +10,7 @@ $ Points requested --------------------------------------------------- $
 $
 $ Define points index for which output is to be generated. 
 $ If no one defined, all points are selected
-$ One index number per line, negetive number identifies end of list.
+$ One index number per line, negative number identifies end of list.
 $ 1
 $ 2
  -1

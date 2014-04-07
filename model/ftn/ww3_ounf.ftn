@@ -101,7 +101,7 @@
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,      &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
-                          PHS, PTP, PLP, PTH, PSI, PWS, PWST, PNR,     &
+                          PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
@@ -1164,11 +1164,11 @@
               UNITS  = 'degree'
               WRITE(ENAME,'(A5,I1)') '.pdir',IPART
               DO ISEA=1, NSEA
-                IF ( PTH(ISEA,IPART) .NE. UNDEF ) THEN
-                  PTH(ISEA,IPART) = MOD ( 630-RADE*PTH(ISEA,IPART) , 360. )
+                IF ( PDIR(ISEA,IPART) .NE. UNDEF ) THEN
+                  PDIR(ISEA,IPART) = MOD ( 630-RADE*PDIR(ISEA,IPART) , 360. )
                   END IF
                 END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTH(:,IPART), MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PDIR(:,IPART), MAPSF, X1 )
               NFIELD=1
               WRITE(varnm(1),'(A4,I1)') 'pdir',IPART 
               WRITE(varnl(1),'(A,I1)') 'wave mean direction partition ',IPART 
