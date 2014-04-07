@@ -65,7 +65,7 @@
 # ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../ ww3_tic1.1         #
 # ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../ ww3_tic1.1         #
 # ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../ ww3_tic1.1         #
-#                                                                           #
+# ./bin/run_test ../model ww3_tic1.1 -i input_IC2 -c gnu_debug ww3_tic1.1 -g 1000m_v2 -o netcdf      ##                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
 #                                last updated: Erick Rogers, Nov 2013       #

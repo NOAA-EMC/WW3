@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Nov-2013 |
+!/                  | Last update :         01-Avr-2014 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -49,8 +49,8 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SRCE ( IT, IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
-                          U10ABS, U10DIR, AS, USTAR, USTDIR, ICE,     &
-                          CX, CY, REFLEC, REFLED,DELX, DELY, DELA,    &
+                          U10ABS, U10DIR, AS, USTAR, USTDIR, CX, CY,  &
+                          ICE, ICEH, ICEDAVE, REFLEC, REFLED,DELX, DELY, DELA,    &
                           TRNX, TRNY, BERG, FPI, DTDYN, FCUT, DTG,    &
                           TAUWX, TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, &
                           TAUWNX, TAUWNY, PHIAW, CHARN, PHIOC,        &
@@ -62,7 +62,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Nov-2013 |
+!/                  | Last update :         01-Avr-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -104,6 +104,7 @@
 !/    14-Nov-2013 : Make orphaned pars in par lst local ( version 4.13 )
 !/    17-Nov-2013 : Coupling fraction of ice-free       ( version 4.13 )
 !/                  surface to SIN and SDS. (S. Zieger)
+!/    01-Avr-2014 : Adding ice thickness and floe size  ( version 4.18 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -172,12 +173,14 @@
 !       AS      Real.  I   Air-sea temp. difference.      ( !/ST3 )
 !       USTAR   Real. !/O  Friction velocity.
 !       USTDIR  Real  !/O  Idem, direction.
+!       CX-Y    Real.  I   Current velocity components.   ( !/BS1 )
 !       ICE     Real   I   Sea ice concentration          
+!       ICEH    Real   I   Sea ice thickness 
+!       ICEDAVE Real  I/O  Sea ice average floe diameter          
 !       BERG    RealR  I   Iceberg damping coefficient    ( !/BS1 )
 !       REFLEC  R.A.   I   reflection coefficients        ( !/BS1 )
 !       REFLED  I.A.   I   reflection direction           ( !/BS1 )
 !       TRNX-Y  Real   I   Grid transparency in X and Y   ( !/BS1 )
-!       CX-Y    Real.  I   Current velocity components.   ( !/BS1 )
 !       DELX    Real.  I   grid cell size in X direction  ( !/BS1 )
 !       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )
 !       DELA    Real.  I   grid cell area                 ( !/BS1 )
@@ -369,6 +372,7 @@
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
 !/IS1      USE W3SIS1MD
+!/IS2      USE W3SIS2MD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
 !/TR1      USE W3STR1MD
@@ -388,7 +392,8 @@
 !/
       INTEGER, INTENT(IN)     :: IT, IX, IY, IMOD
       REAL, INTENT(IN)        :: WN1(NK), CG1(NK), D_INP, U10ABS,     &
-                                 U10DIR, AS, ICE, CX, CY, DTG, D50,PSIC
+                                 U10DIR, AS, CX, CY, DTG, D50,PSIC,   &
+                                 ICE, ICEH
       INTEGER, INTENT(IN)     :: REFLED(6)
       REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
                                  TRNX, TRNY, BERG
@@ -397,8 +402,13 @@
                                  TAUWX, TAUWY, PHIAW, PHIOC,          &
                                  CHARN, BEDFORM(3), PHIBBL,           &
                                  TAUBBL(2), WHITECAP(4),              &
-                                 TAUWIX, TAUWIY, TAUWNX, TAUWNY
+                                 TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
+                                 ICEDAVE
       REAL, INTENT(OUT)       :: DTDYN, FCUT
+!/IC1      REAL               :: TAUICX, TAUICY, PHIWI
+!/IC2      REAL               :: TAUICX, TAUICY, PHIWI
+!/IC3      REAL               :: TAUICX, TAUICY, PHIWI
+!/IS2      REAL               :: TAUISX, TAUISY
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -441,7 +451,8 @@
 !/BS1                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/BSX                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/REF1                                VREF(NSPEC),                         &
-!/IS1                                 VSIR(NSPEC),                         &
+!/IS1                                 VSIR(NSPEC), VDIR(NSPEC),            &
+!/IS2                                 VSIR(NSPEC), VDIR(NSPEC),            &
 !/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
 !/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
@@ -485,7 +496,12 @@
 !/IC2      VDIC = 0.
 !/IC3      VSIC = 0.
 !/IC3      VDIC = 0.
+!
 !/IS1      VSIR = 0.
+!/IS1      VDIR = 0.
+!/IS2      VSIR = 0.
+!/IS2      VDIR = 0.
+!
 !/ST6      VSWL = 0.
 !/ST6      VDWL = 0.
 !/ST6      SWL  = 0.
@@ -704,7 +720,7 @@
 !/IC2             IF (ICE.GT.0) CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC3             IF (ICE.GT.0) CALL W3SIC3 ( SPEC,DEPTH,       WN1, IX, IY, VSIC, VDIC )
 !/IS1                CALL W3SIS1 ( SPEC, ICE, VSIR )
-!/IS2                CALL W3SIS2 ( SPEC, ICE, TAUIS, TAUIS, VSIR )
+!/IS2                CALL W3SIS2 ( SPEC, ICE, ICEH, ICEDAVE, TAUISX, TAUISY, VSIR, VDIR )
 !
 ! 2.f Dump training data if necessary
 !
@@ -778,7 +794,12 @@
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/XXX          VS(IS) = VS(IS) + VSXX(IS)
           VD(IS) =            VDIN(IS) + VDNL(IS)  &
-                 + VDDS(IS) + VDBT(IS) + VDIC(IS)
+                 + VDDS(IS) + VDBT(IS) 
+!/IC1          VD(IS) = VD(IS) + VDIC(IS)
+!/IC2          VD(IS) = VD(IS) + VDIC(IS)
+!/IC3          VD(IS) = VD(IS) + VDIC(IS)
+!/IS1          VD(IS) = VD(IS) + VDIR(IS)
+!/IS2          VD(IS) = VD(IS) + VDIR(IS)
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/DB1          VD(IS) = VD(IS) + VDDB(IS)
 !/DBX          VD(IS) = VD(IS) + VDDB(IS)

@@ -1099,8 +1099,6 @@
 !/S      INTEGER, SAVE            :: IENT = 0
       INTEGER                 :: MAPICE(NY,NX)
       LOGICAL                 :: LOCAL
-      LOGICAL                 :: NOICEPHYSICS
-
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1117,15 +1115,8 @@
 !/T      WRITE (NDST,9010) TIME, TICE, TIN
       TICE(1) = TIN(1)
       TICE(2) = TIN(2)
-
-! 1.b If Ice physics used, return without deactivating any points
 !
-
-     NOICEPHYSICS=.FALSE.
-!/IC0     NOICEPHYSICS=.TRUE.
-
-!
-! 1.c Process maps
+! 1.b Process maps
 !
 !/IC0      MAPICE = MOD(MAPST2,2)
 !/IC0      MAPST2 = MAPST2 - MAPICE
@@ -1138,9 +1129,6 @@
 !
         IX        = MAPSF(ISEA,1)
         IY        = MAPSF(ISEA,2)
-
-! ice and berg are in the module
-
         ICE(ISEA) = ICEI(IX,IY)
         BERG(ISEA)= BERGI(IX,IY)
 !

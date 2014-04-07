@@ -454,8 +454,8 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!     IS1C1      Real  Public   Scale factor for icecon.     (!/IS1)
-!     IS1C2      Real  Public   Offset for ice concentration (!/IS1)
+!     IS1C1      Real  Public   Scale factor for icecon.     (!/ISx)
+!     IS1C2      Real  Public   Offset for ice concentration (!/ISx)
 !     ----------------------------------------------------------------
 !
 !     The structure SXXP contains parameters for arbitrary source 
@@ -600,6 +600,7 @@
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !/IG1        REAL,    POINTER      :: IGPARS(:)
 !/IC2        REAL,    POINTER      :: IC2PARS(:)
+!/IS2        REAL,    POINTER      :: IS2PARS(:)
 !
 ! unstructured data	
 !
@@ -822,6 +823,7 @@
       REAL,    POINTER        :: REFPARS(:)
 !/IG1      REAL,    POINTER        :: IGPARS(:)
 !/IC2      REAL,    POINTER        :: IC2PARS(:)
+!/IS2      REAL,    POINTER        :: IS2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !
@@ -1300,7 +1302,8 @@
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12) )
-!/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(6) )
+!/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7) )
+!/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(6) )
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
@@ -1686,6 +1689,7 @@
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
 !/IG1       IGPARS => GRIDS(IMOD)%IGPARS
 !/IC2       IC2PARS => GRIDS(IMOD)%IC2PARS
+!/IS2       IS2PARS => GRIDS(IMOD)%IS2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0

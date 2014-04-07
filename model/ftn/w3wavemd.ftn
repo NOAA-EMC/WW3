@@ -384,7 +384,8 @@
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
-                                 REFLED(6), IK, ITH, IS, NKCFL 
+                                 REFLED(6), IK, ITH, IS, NKCFL       
+      REAL                    :: ICEH, ICEDAVE
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -1202,6 +1203,8 @@
             REFLEC(:)=0.
             REFLED(:)=0.
             PSIC=0.
+            ICEH    = 0.
+            ICEDAVE = 0.
 !
 !/OMP0/!$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
 !
@@ -1230,6 +1233,10 @@
 !/REF1          REFLED=REFLD(:,ISEA)
 !/BT4           D50=SED_D50(ISEA)
 !/BT4           PSIC=SED_PSIC(ISEA)
+
+                IF ( FLIC1  ) ICEH   =ICEP1(IX,IY) 
+                IF ( FLIC5  ) ICEDAVE=ICEP5(IX,IY) 
+
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      TMP1   = WHITECAP(JSEA,1:4)
                      TMP2   = BEDFORMS(JSEA,1:3)
@@ -1239,7 +1246,8 @@
                           ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                           CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
                           U10D(ISEA), AS(ISEA), UST(ISEA),            &
-                          USTDIR(ISEA), ICE(ISEA), CX(ISEA), CY(ISEA),&
+                          USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
+                          ICE(ISEA), ICEH, ICEDAVE,                   &
                           REFLEC, REFLED, DELX, DELY, DELA,           &
                           TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),       &
                           FPIS(ISEA), DTDYN(JSEA),                    &

@@ -232,9 +232,9 @@
                ID='ice sink term'
                OK='IC0 IC1 IC2 IC3' ;;
 #sort:s_is:
-      s_is   ) TY='one'
-               ID='ice scattering'
-               OK='IS0 IS1' ;;
+      s_is  ) TY='one'
+               ID='ice scattering term'
+               OK='IS0 IS1 IS2' ;;
 #sort:reflection:
   reflection ) TY='one'
                ID='wave reflections'
@@ -423,7 +423,6 @@
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
-(??)
               *    ) ;;
     esac
   done
@@ -623,6 +622,7 @@
   is=$NULL
   case $s_is in
    IS1) is='w3sis1md' ;;
+   IS2) is='w3sis2md' ;;
   esac
 
   refcode=$NULL
@@ -678,49 +678,49 @@
                core=
                data='w3wdatmd w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx $is"
                  IO='w3iogrmd'
                 aux='constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_strt) IDstring='Initial conditions program'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
+             source="$stx $nlx $btx $is"
                  IO='w3iogrmd w3iorsmd'
                 aux='constants w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_bound) IDstring='boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx w3triamd"
+             source="$stx $nlx $btx  $is w3triamd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux='constants w3servmd w3timemd w3cspcmd' ;;
      ww3_bounc) IDstring='NetCDF boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx w3triamd"
+             source="$stx $nlx $btx  $is w3triamd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux='constants w3servmd w3timemd w3cspcmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_prtide) IDstring='Tide prediction'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_shel) IDstring='Generic shell'
@@ -775,14 +775,14 @@
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
+             source="$stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounf) IDstring='Gridded NetCDF output'
                core='w3initmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_outp) IDstring='Point output'
@@ -810,14 +810,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
+             source="$stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_gspl) IDstring='Grid splitting'
                core='w3fldsmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_gint) IDstring='Grid Interpolation'
@@ -953,7 +953,7 @@
                W3SDB1MD W3SDBXMD \
                W3STR1MD W3STRXMD \
                W3SBS1MD W3SBSXMD \
-               W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD \
+               W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD  W3SIS2MD \
                W3REF1MD \
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
@@ -1034,6 +1034,7 @@
          'W3SIC2MD'     ) modtest=w3sic2md.o ;;
          'W3SIC3MD'     ) modtest=w3sic3md.o ;;
          'W3SIS1MD'     ) modtest=w3sis1md.o ;;
+         'W3SIS2MD'     ) modtest=w3sis2md.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;
          'W3SXXXMD'     ) modtest=w3sxxxmd.o ;;
          'CONSTANTS'    ) modtest=constants.o ;;

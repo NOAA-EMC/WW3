@@ -580,6 +580,7 @@
 !!Li
       REAL                    :: FACBERG, REFSLOPE
 !/IS1      REAL                    :: ISC1, ISC2
+!/IS2      REAL                    :: ISC1, ISC2
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
@@ -593,7 +594,7 @@
 !
 !/IC2  LOGICAL                 :: IC2DISPER
 !/IC2  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC2                      IC2SMOOTH, IC2VISC
+!/IC2                             IC2SMOOTH, IC2VISC
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -720,6 +721,7 @@
                              TH2MF, I1TH2M, I2TH2M,                   &
                              STH2MF, I1STH2M, I2STH2M
 !/IS1           NAMELIST /SIS1/ ISC1,ISC2
+!/IS2           NAMELIST /SIS2/ ISC1,ISC2
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -974,6 +976,11 @@
 !/IC2      FLIC   = .TRUE.
 !/IC3      NRIC   = NRIC + 1
 !/IC3      FLIC   = .TRUE.
+!
+!/IS1      NRIC   = NRIC + 1
+!/IS1      FLIC   = .TRUE.
+!/IS2      NRIC   = NRIC + 1
+!/IS2      FLIC   = .TRUE.
 !
 !/DB0      NRDB   = NRDB + 1
 !/DB0      FLDB   = .FALSE.
@@ -1827,7 +1834,11 @@
 !/IS1      WRITE (NDSO,946) ISC1, ISC2
 !/IS1      IS1C1 = ISC1
 !/IS1      IS1C2 = ISC2
-
+!/IS2      ISC1 = 1.
+!/IS2      ISC2 = 0.
+!/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
+!/IS2      WRITE (NDSO,947) STATUS
+!/IS2      WRITE (NDSO,948) ISC1, ISC2
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -1864,7 +1875,6 @@
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 7E4
 !/IC2       IC2VISC = 2.
-
 !
 !/IC2      CALL READNL ( NDSS, 'IC2 ', STATUS )
 !/IC2      WRITE (NDSO,971) STATUS
@@ -2055,6 +2065,7 @@
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
 !/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
+!/IS2          WRITE (NDSO,2948) ISC1, ISC2
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -3547,6 +3558,9 @@
 !/IC2       IC2PARS(5)=IC2SMOOTH
 !/IC2       IC2PARS(6)=IC2VISC
 !
+!/IS2      IS2PARS(1) = ISC1
+!/IS2      IS2PARS(2) = ISC2
+!
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
 ! NB: this is updated with moving water levels in W3ULEV
@@ -4348,6 +4362,12 @@
 !/IS1              '        slope                      : ',E10.3/ &
 !/IS1              '        offset                     : ',E10.3)
 !/IS1 2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+!/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
+!/IS2              ' --------------------------------------------------')
+!/IS2 948 FORMAT  ('  WIFAR stuff ... '/&
+!/IS2              '        param 1                 : ',E10.3/ &
+!/IS2              '         param 2                     : ',E10.3)
+!/IS2 2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', ISC2 =',E9.3)
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
@@ -4900,6 +4920,8 @@
 !/BT4                          READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
 !/IS1                        CASE('SIS1')
 !/IS1                          READ (NDS,NML=SIS1,END=801,ERR=802,IOSTAT=J)
+!/IS2                        CASE('SIS2')
+!/IS2                          READ (NDS,NML=SIS2,END=801,ERR=802,IOSTAT=J)
 !/DB1                        CASE('SDB1')
 !/DB1                          READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
 !/PR1                        CASE('PRO1')

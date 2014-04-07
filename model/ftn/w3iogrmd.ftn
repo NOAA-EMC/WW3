@@ -223,6 +223,7 @@
 !/NL3      USE W3SNL3MD, ONLY: INSNL3
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
+!/IS2      USE W3SIS2MD, ONLY: INSIS2
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
@@ -250,7 +251,8 @@
 !/T      INTEGER                 :: K
       LOGICAL                 :: WRITE, FLTEST = .FALSE., TESTLL,     &
                                  FLSNL2 = .FALSE.
-      LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.
+      LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.,  &
+                                 FLIS  = .FALSE. 
       CHARACTER(LEN=10)       :: VERTST, TEMPXT
       CHARACTER(LEN=30)       :: TNAME0, TNAME1, TNAME2, TNAME3,      &
                                  TNAME4, TNAME5, TNAME6, TNAME7,      &
@@ -768,7 +770,7 @@
 !/IG1          WRITE   (NDSM)                                              &
 !/IG1                IGPARS(1:12)
 !/IC2          WRITE   (NDSM)                                              &
-!/IC2                IC2PARS(1:6)
+!/IC2                IC2PARS(1:7)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
@@ -780,7 +782,7 @@
 !/IG1         READ   (NDSM)                                                &
 !/IG1                IGPARS(1:12)
 !/IC2         READ   (NDSM)                                                &
-!/IC2                IC2PARS(1:6)
+!/IC2                IC2PARS(1:7)
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
@@ -1041,6 +1043,16 @@
 !/IS1        ELSE
 !/IS1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
 !/IS1        END IF
+!
+!/IS2      IF ( WRITE ) THEN
+!/IS2          WRITE (NDSM)                            IS2PARS(1:6)
+!/IS2        ELSE
+!/IS2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS(1:6)
+!/IS2          IF ( .NOT. FLIS ) THEN
+!/IS2            CALL INSIS2
+!/IS2            FLIS  = .TRUE.
+!/IS2          END IF
+!/IS2        END IF
 !
 ! Propagation scheme ------------------------------------------------- *
 !                                                 Module W3GDATMD PROP
