@@ -1415,7 +1415,7 @@
                ' --------------------------------------------------')
   951 FORMAT ( '       ',A)
 !/O7  952 FORMAT ( '       ',I6,2X,A)
-!/O7  953 FORMAT ( '          ',I6,I11.8,I7.6,3F8.2)
+!/O7  953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
   954 FORMAT ( '            ',A,': file not needed')
   955 FORMAT ( '            ',A,': file OK')
   956 FORMAT ( '            ',A,': file OK, recl =',I3,               &
