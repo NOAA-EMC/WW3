@@ -594,7 +594,7 @@
 !
 !/IC2  LOGICAL                 :: IC2DISPER
 !/IC2  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC2                             IC2SMOOTH, IC2VISC
+!/IC2                             IC2SMOOTH, IC2VISC, IC2TURBS
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -663,7 +663,7 @@
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
 !/IC2      NAMELIST /IC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC2                      IC2SMOOTH, IC2VISC
+!/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -1871,10 +1871,12 @@
 !
 !/IC2       IC2DISPER = .TRUE. 
 !/IC2       IC2TURB = 0.
+!/IC2       IC2TURBS = 0.
 !/IC2       IC2ROUGH = 0.1  ! value from current BL (Shaw et al. JGR 2008) 
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 7E4
 !/IC2       IC2VISC = 2.
+
 !
 !/IC2      CALL READNL ( NDSS, 'IC2 ', STATUS )
 !/IC2      WRITE (NDSO,971) STATUS
@@ -1934,33 +1936,13 @@
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
-      IF (CICE0.EQ.CICEN .AND. FLAGTR.GE.3) THEN
-         WRITE(NDSO,2962)
-         WRITE(NDSO,'(7x,A,I3)')' Old FLAGTR = ',FLAGTR
-         IF(FLAGTR.GT.4)THEN ! Fabrice's option for 5 or 6
-            FLAGTR=FLAGTR-4 ! becomes 1 or 2
-         ELSE ! 3 or 4
-            FLAGTR=FLAGTR-2 ! becomes 1 or 2
-         ENDIF
-         WRITE(NDSO,'(7x,A,I3)')' New FLAGTR = ',FLAGTR
-      END IF
-
-      IF (FLIC .AND. FLAGTR.GE.3) THEN
-         WRITE(NDSO,2963)
-         WRITE(NDSO,'(7x,A,I3)')' Old FLAGTR = ',FLAGTR
-         IF(FLAGTR.GT.4)THEN ! Fabrice's option for 5 or 6
-            FLAGTR=FLAGTR-4 ! becomes 1 or 2
-         ELSE ! 3 or 4
-            FLAGTR=FLAGTR-2 ! becomes 1 or 2
-         ENDIF
-         WRITE(NDSO,'(7x,A,I3)')' New FLAGTR = ',FLAGTR
-      END IF
-
-      IF ( FLAGTR.LT.3 .AND. CICE0.NE.CICEN ) THEN
+! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
+!     grid, that is initialized with zeros as default.
+      IF ( FLAGTR .LT. 3 ) THEN
          CICE0 = CICEN
          IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
       END IF
-
+!/IC0      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
       FICE0  = CICE0
 
@@ -2096,7 +2078,7 @@
 !/IG1                    IGFIXEDDEPTH, IGEMPIRICAL 
 !
 !/IC2         WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
-!/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC
+!/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -3557,6 +3539,7 @@
 !/IC2       IC2PARS(4)=IC2REYNOLDS
 !/IC2       IC2PARS(5)=IC2SMOOTH
 !/IC2       IC2PARS(6)=IC2VISC
+!/IC2       IC2PARS(7)=IC2TURBS
 !
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = ISC2
@@ -4468,7 +4451,7 @@
  2978 FORMAT ( '  &IC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
                ', IC2ROUGH  =',F10.3,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
-               ', IC2VISC =',F10.3,' /')
+               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1, ', PMOVE =',F6.3,','/          &

@@ -212,6 +212,7 @@
         END DO
       FMEANA  = TPIINV * (EMEANA / MAX ( 1.E-7 , FMEANA ))
       FMEAN2  = TPIINV * SQRT(EMEANA / MAX ( 1.E-7 , FMEAN2 ))
+      FMEANA  = MAX(FMEANA,SIG(1))
 !
 ! 1.  Sets reflection term to zero
 !

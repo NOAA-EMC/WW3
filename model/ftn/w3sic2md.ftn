@@ -213,7 +213,8 @@
       USE CONSTANTS
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
+                          FLAGLL, YGRD, GTYPE, RLGTYPE
       USE W3IDATMD, ONLY: FLAGS,ICEP1,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -244,7 +245,8 @@
       REAL                    :: ALPHA ! exponential decay rate for energy
       REAL                    :: VISCM=1.83E-6 ! molecular viscosity of water at freezing
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
-                                 SMOOTH, RE, UORB, AORB, EB, DELI1, DELI2, FW, XI
+                                 SMOOTH, RE, UORB, AORB, EB,   &
+                                 DELI1, DELI2, FW, XI, FTURB
       INTEGER                 :: IND, ITH, IS
       LOGICAL                 :: NOICE=.FALSE.
                                        ! ALPHA = 2 * WN_I
@@ -325,7 +327,10 @@
            IF (IC2PARS(2).GT.0.) THEN 
              UORB=0.
              AORB=0.
-
+             FTURB = IC2PARS(2)
+             IF (IC2PARS(7).GT.0) THEN 
+               IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) FTURB = IC2PARS(7)
+               END IF
              DO IK=1, NK
                EB  = 0.
                DO ITH=1, NTH
@@ -351,10 +356,8 @@
              IND  = MIN (SIZEFWTABLE-1, INT(XI))
              DELI1= MIN (1. ,XI-FLOAT(IND))
              DELI2= 1. - DELI1
-!IF (IY.EQ.2) WRITE(992,*) 'TEST:',IX,IND,XI,AORB,UORB,AORB/IC2PARS(3),ABMIN
              FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
-             DTURB=-1.* IC2PARS(2)*FW*UORB/GRAV
-             DTURB = -1. *FW*UORB  
+             DTURB=-1.* FTURB*FW*UORB/GRAV
            ELSE 
              DTURB = 0.
              END IF
@@ -362,8 +365,6 @@
            DO IK=1, NK
              DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
              D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
-!IF (IY.EQ.2) WRITE(991,*) IX,SIG(IK)*TPIINV,   &
-!         UORB, AORB, RE, FW, PTURB, DTURB*SIG(IK)**2, DVISC, D1D(IK)
              END DO
            END IF
 

@@ -1796,7 +1796,7 @@
 !
             END DO
 !
-! 2.c TRFLAG = 2,4,6: TRNX/Y defined at cell centers
+! 2.c TRFLAG = 2,4: TRNX/Y defined at cell centers
 !
         ELSE
 !/T          WRITE (NDST,9001) 'DATA APPLIED AT CELL CENTERS'
@@ -1880,7 +1880,7 @@
 !/T          WRITE (NDST,9001) 'NO ICE ACTION REQUIRED'
           RETURN
 !
-! 3.b TRFLAG = 3,4,5,6: Calculate ice transparencies
+! 3.b TRFLAG = 3,4: Calculate ice transparencies
 !
         ELSE
 !/T          WRITE (NDST,9001) 'CALCULATE ICE TRANSPARENCIES'
@@ -1902,39 +1902,15 @@
               END IF
 
 !
-            IF (TRFLAG.GT.4) THEN
-!
-! Added by F. Ardhuin for iceberg tests ... 
-! Case in which the ice file contains the transparencies / 10*(dx or dy) with dx in km
-!
-              IF (BERG(ISEA).GT.0) THEN 
-                 TRIX(IXY) = EXP(-BERG(ISEA)*DX*0.0001)
-                 TRIY(IXY) = EXP(-BERG(ISEA)*DY*0.0001)
-              ELSE
-                TRIX(IXY)=1.
-                TRIY(IXY)=1.
-              END IF
-            ELSE
-
-! begin temporary notes to document method of 3.14 public release: 
-!            LICE0  = FICE0*MIN(DX,DY) ...................................... changed
-!            LICEN  = FICEN*MIN(DX,DY) ...................................... changed
-!            TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 ) ..... unchanged
-!            TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) ) .............. unchanged
-!            TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 ) ..... unchanged
-!            TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) .............. unchanged
-! end temporary notes to document method of 3.14 public release: 
-
-!              LICE0  = FICE0*MIN(DX,DY)
-!              LICEN  = FICEN*MIN(DX,DY)
-              IF (FICEL.GT.0.) THEN
-                TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
-                TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
-              ELSE 
+!/IC0            IF (ICE(ISEA).GT.0) THEN
+!/IC0              IF (FICEL.GT.0.) THEN
+!/IC0                TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
+!/IC0                TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
+!/IC0              ELSE 
 ! Otherwise: original Tolman expression (Tolman 2003)
-                LICE0  = FICE0*DX
-                LICEN  = FICEN*DX
-                TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+!/IC0                LICE0  = FICE0*DX
+!/IC0                LICEN  = FICEN*DX
+!/IC0                TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
 
 ! begin temporary notes
 !                TRIX = (   LICEN    - ICE(ISEA)*DX ) / (   LICEN -      LICE0 )
@@ -1944,20 +1920,21 @@
 !                    and the variables LICE0 LICEN are not necessary.
 ! end temporary notes
 
-                LICE0  = FICE0*DY
-                LICEN  = FICEN*DY
-                TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
-                END IF
-              TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
-              TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
+!/IC0                LICE0  = FICE0*DY
+!/IC0                LICEN  = FICEN*DY
+!/IC0                TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
+!/IC0                END IF
+!
+!/IC0              TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
+!/IC0              TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
+!/IC0              END IF          
 !
 !  Adding iceberg attenuation
 !
-              IF (BERG(ISEA).GT.0) THEN
-                TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DX*0.0001)
-                TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DY*0.0001)
-                END IF
-              END IF          
+            IF (BERG(ISEA).GT.0) THEN
+              TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DX*0.0001)
+              TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DY*0.0001)
+              END IF
 !
 !/T            ILEV          = NINT(10.*MIN(TRIX(IXY),TRIY(IXY)))
 !/T            LEVS(ILEV)    = LEVS(ILEV) + 1.
