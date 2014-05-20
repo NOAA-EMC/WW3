@@ -441,6 +441,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+!/WCOR      USE W3GDATMD, ONLY:   WWCOR
 !/RWND      USE W3GDATMD, ONLY:   RWINDC
 !/ST2      USE W3GDATMD, ONLY: ZWIND, OFSTAB, FFNG, FFPS, CCNG, CCPS, SHSTAB
 !/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
@@ -544,6 +545,10 @@
 !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
 !
         END DO
+!
+! 3.b  Bias correction ( !/WCOR )
+!/WCOR      WHERE ( UA .GE. WWCOR(1) ) UA = UA+(UA-WWCOR(1))*WWCOR(2)
+
 !
 ! 4.  Correct for currents and grid motion
 !
@@ -1007,7 +1012,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         28-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -1021,6 +1026,7 @@
 !/    13-Mar-2012 : Add initialization of UST on re-    ( version 4.07 )
 !/                  activation of grid point.
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
+!/    28-Mar-2014 : Adapting to ICx source terms        ( version 4.18 )
 !/
 !  1. Purpose :
 !
@@ -1098,8 +1104,6 @@
 !/S      INTEGER, SAVE            :: IENT = 0
       INTEGER                 :: MAPICE(NY,NX)
       LOGICAL                 :: LOCAL
-      LOGICAL                 :: NOICEPHYSICS
-
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1116,18 +1120,11 @@
 !/T      WRITE (NDST,9010) TIME, TICE, TIN
       TICE(1) = TIN(1)
       TICE(2) = TIN(2)
-
-! 1.b If Ice physics used, return without deactivating any points
 !
-
-     NOICEPHYSICS=.FALSE.
-!/IC0     NOICEPHYSICS=.TRUE.
-
+! 1.b Process maps
 !
-! 1.c Process maps
-!
-      MAPICE = MOD(MAPST2,2)
-      MAPST2 = MAPST2 - MAPICE
+!/IC0      MAPICE = MOD(MAPST2,2)
+!/IC0      MAPST2 = MAPST2 - MAPICE
 !
 ! 2.  Main loop over sea points -------------------------------------- *
 !
@@ -1137,69 +1134,66 @@
 !
         IX        = MAPSF(ISEA,1)
         IY        = MAPSF(ISEA,2)
-
-! ice and berg are in the module
-
         ICE(ISEA) = ICEI(IX,IY)
         BERG(ISEA)= BERGI(IX,IY)
 !
 ! 2.b Sea point to be de-activated..
 !
-        IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 .AND. NOICEPHYSICS) THEN
-            MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
-            MAPICE(IY,IX) = 1
-            IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
+!/IC0        IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
+!/IC0            MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
+!/IC0            MAPICE(IY,IX) = 1
+!/IC0            IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'ICE (NEW)'
-                JSEA   = 1 + (ISEA-1)/NAPROC
-                VA(:,JSEA) = 0.
+!/IC0                JSEA   = 1 + (ISEA-1)/NAPROC
+!/IC0                VA(:,JSEA) = 0.
 !/T              ELSE
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'ICE (NEW X)'
-              END IF
+!/IC0              END IF
 !
 !/T          ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
 !/T            WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
 !/T                              ICEI(IX,IY), 'ICE'
-          END IF
+!/IC0          END IF
 !
 ! 2.b Ice point to be re-activated.
 !
-        IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 .AND. NOICEPHYSICS) THEN
+!/IC0        IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
 !
-            MAPICE(IY,IX) = 0
-            UST(ISEA)     = 0.05
+!/IC0            MAPICE(IY,IX) = 0
+!/IC0            UST(ISEA)     = 0.05
 !
-            IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-                MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
+!/IC0            IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+!/IC0                MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
 !
-                IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
+!/IC0                IF ( LOCAL .AND. MOD(ISEA-IAPROC,NAPROC) .EQ. 0 ) THEN
 !/T                    WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
 !/T                                      ICEI(IX,IY), 'SEA (NEW)'
-                    JSEA   = 1 + (ISEA-1)/NAPROC
-                    VA(:,JSEA) = 0.
+!/IC0                    JSEA   = 1 + (ISEA-1)/NAPROC
+!/IC0                    VA(:,JSEA) = 0.
 !
 !/T                  ELSE
 !/T                    WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
 !/T                                      ICEI(IX,IY), 'SEA (NEW X)'
-                  END IF
+!/IC0                  END IF
 !
 !/T              ELSE
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'DIS'
-              END IF
+!/IC0              END IF
 !
 !/T             ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'SEA'
 !
-          END IF
+!/IC0          END IF
 !
         END DO
 !
 ! 3.  Update MAPST2 -------------------------------------------------- *
 !
-      MAPST2 = MAPST2 + MAPICE
+!/IC0      MAPST2 = MAPST2 + MAPICE
 !
       RETURN
 !
@@ -1807,7 +1801,7 @@
 !
             END DO
 !
-! 2.c TRFLAG = 2,4,6: TRNX/Y defined at cell centers
+! 2.c TRFLAG = 2,4: TRNX/Y defined at cell centers
 !
         ELSE
 !/T          WRITE (NDST,9001) 'DATA APPLIED AT CELL CENTERS'
@@ -1891,7 +1885,7 @@
 !/T          WRITE (NDST,9001) 'NO ICE ACTION REQUIRED'
           RETURN
 !
-! 3.b TRFLAG = 3,4,5,6: Calculate ice transparencies
+! 3.b TRFLAG = 3,4: Calculate ice transparencies
 !
         ELSE
 !/T          WRITE (NDST,9001) 'CALCULATE ICE TRANSPARENCIES'
@@ -1913,39 +1907,15 @@
               END IF
 
 !
-            IF (TRFLAG.GT.4) THEN
-!
-! Added by F. Ardhuin for iceberg tests ... 
-! Case in which the ice file contains the transparencies / 10*(dx or dy) with dx in km
-!
-              IF (BERG(ISEA).GT.0) THEN 
-                 TRIX(IXY) = EXP(-BERG(ISEA)*DX*0.0001)
-                 TRIY(IXY) = EXP(-BERG(ISEA)*DY*0.0001)
-              ELSE
-                TRIX(IXY)=1.
-                TRIY(IXY)=1.
-              END IF
-            ELSE
-
-! begin temporary notes to document method of 3.14 public release: 
-!            LICE0  = FICE0*MIN(DX,DY) ...................................... changed
-!            LICEN  = FICEN*MIN(DX,DY) ...................................... changed
-!            TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 ) ..... unchanged
-!            TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) ) .............. unchanged
-!            TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 ) ..... unchanged
-!            TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) .............. unchanged
-! end temporary notes to document method of 3.14 public release: 
-
-!              LICE0  = FICE0*MIN(DX,DY)
-!              LICEN  = FICEN*MIN(DX,DY)
-              IF (FICEL.GT.0.) THEN
-                TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
-                TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
-              ELSE 
+!/IC0            IF (ICE(ISEA).GT.0) THEN
+!/IC0              IF (FICEL.GT.0.) THEN
+!/IC0                TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
+!/IC0                TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
+!/IC0              ELSE 
 ! Otherwise: original Tolman expression (Tolman 2003)
-                LICE0  = FICE0*DX
-                LICEN  = FICEN*DX
-                TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+!/IC0                LICE0  = FICE0*DX
+!/IC0                LICEN  = FICEN*DX
+!/IC0                TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
 
 ! begin temporary notes
 !                TRIX = (   LICEN    - ICE(ISEA)*DX ) / (   LICEN -      LICE0 )
@@ -1955,20 +1925,21 @@
 !                    and the variables LICE0 LICEN are not necessary.
 ! end temporary notes
 
-                LICE0  = FICE0*DY
-                LICEN  = FICEN*DY
-                TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
-                END IF
-              TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
-              TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
+!/IC0                LICE0  = FICE0*DY
+!/IC0                LICEN  = FICEN*DY
+!/IC0                TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
+!/IC0                END IF
+!
+!/IC0              TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
+!/IC0              TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) ) 
+!/IC0              END IF          
 !
 !  Adding iceberg attenuation
 !
-              IF (BERG(ISEA).GT.0) THEN
-                TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DX*0.0001)
-                TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DY*0.0001)
-                END IF
-              END IF          
+            IF (BERG(ISEA).GT.0) THEN
+              TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DX*0.0001)
+              TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DY*0.0001)
+              END IF
 !
 !/T            ILEV          = NINT(10.*MIN(TRIX(IXY),TRIY(IXY)))
 !/T            LEVS(ILEV)    = LEVS(ILEV) + 1.

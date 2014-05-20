@@ -7,7 +7,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Dec-2013 |
+!/                  | Last update :         10-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -88,6 +88,8 @@
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
 !/    02-Dec-2013 : Update of ST4                       ( version 4.16 )
+!/    16-Feb-2014 : Adds wind bias correction: WCOR     ( version 5.xx )
+!/    10-Mar-2013 : Adding namelist for IC2             ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -418,7 +420,7 @@
 !     !/BTX   Open slot.
 !
 !     !/IC1   Sink term for interaction with ice (uniform k_i)
-!     !/IC2   Sink term for interaction with ice (Liu et al. method)
+!     !/IC2   Sink term for under-ice boundary layer friction 
 !                  (Liu et al.    1991: JGR 96 (C3), 4605-4621)
 !                  (Liu and Mollo 1988: JPO 18       1720-1712)
 !     !/IC3   Sink term for interaction with ice (Wang and Shen method)
@@ -525,7 +527,8 @@
                                  VSC, VOF,                            &
                                  ZLIM, X, Y, XP,  XO0, YO0, DXO, DYO, &
                                  XO, YO, RD(4), RDTOT,                &
-                                 FACTOR, RTH0, FMICHE, RWNDC
+                                 FACTOR, RTH0, FMICHE, RWNDC,         &
+                                 WCOR1, WCOR2
       CHARACTER(LEN=4)        :: GSTRG, CSTRG
 !
 ! Variables used to allow spectral output on full grid
@@ -588,6 +591,10 @@
 !/IG1                             IGSOURCEATBP, IGBCOVERWRITE, IGSTERMS
 !/IG1  REAL                    :: IGMAXFREQ, IGMINDEP, IGMAXDEP,      &
 !/IG1                             IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL
+!
+!/IC2  LOGICAL                 :: IC2DISPER
+!/IC2  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
+!/IC2                             IC2SMOOTH, IC2VISC, IC2TURBS
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -655,6 +662,8 @@
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
+!/IC2      NAMELIST /IC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
+!/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -703,7 +712,7 @@
                            IMPFSN
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
-                      RWNDC, FACBERG, NOSW, GSHIFT
+                      RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              E3D, I1E3D, I2E3D,                       &
@@ -1633,7 +1642,7 @@
 !
 !/IC2      WRITE (NDSO,935)
 !/IC2         WRITE(NDSO,'(A/A)')'    Sice will be calculated using ' &
-!/IC2            //'Liu et al. method.','        Required '  &
+!/IC2            //'under-ice boundary layer method.','        Required '  &
 !/IC2            //'field input: ice parameters 1 and 2.'
 !
 !/IC3      WRITE (NDSO,935)
@@ -1786,6 +1795,8 @@
       NOSW   = 5
       FMICHE = 1.6
       RWNDC  = 1.
+      WCOR1  = 99. 
+      WCOR2  = 0.
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
@@ -1839,6 +1850,19 @@
 !
 !/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
+!
+!/IC2       IC2DISPER = .TRUE. 
+!/IC2       IC2TURB = 0.
+!/IC2       IC2TURBS = 0.
+!/IC2       IC2ROUGH = 0.1  ! value from current BL (Shaw et al. JGR 2008) 
+!/IC2       IC2REYNOLDS = 1.5E5
+!/IC2       IC2SMOOTH = 7E4
+!/IC2       IC2VISC = 2.
+
+!
+!/IC2      CALL READNL ( NDSS, 'IC2 ', STATUS )
+!/IC2      WRITE (NDSO,971) STATUS
+
 !
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
@@ -1894,33 +1918,13 @@
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
-      IF (CICE0.EQ.CICEN .AND. FLAGTR.GE.3) THEN
-         WRITE(NDSO,2962)
-         WRITE(NDSO,'(7x,A,I3)')' Old FLAGTR = ',FLAGTR
-         IF(FLAGTR.GT.4)THEN ! Fabrice's option for 5 or 6
-            FLAGTR=FLAGTR-4 ! becomes 1 or 2
-         ELSE ! 3 or 4
-            FLAGTR=FLAGTR-2 ! becomes 1 or 2
-         ENDIF
-         WRITE(NDSO,'(7x,A,I3)')' New FLAGTR = ',FLAGTR
-      END IF
-
-      IF (FLIC .AND. FLAGTR.GE.3) THEN
-         WRITE(NDSO,2963)
-         WRITE(NDSO,'(7x,A,I3)')' Old FLAGTR = ',FLAGTR
-         IF(FLAGTR.GT.4)THEN ! Fabrice's option for 5 or 6
-            FLAGTR=FLAGTR-4 ! becomes 1 or 2
-         ELSE ! 3 or 4
-            FLAGTR=FLAGTR-2 ! becomes 1 or 2
-         ENDIF
-         WRITE(NDSO,'(7x,A,I3)')' New FLAGTR = ',FLAGTR
-      END IF
-
-      IF ( FLAGTR.LT.3 .AND. CICE0.NE.CICEN ) THEN
+! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
+!     grid, that is initialized with zeros as default.
+      IF ( FLAGTR .LT. 3 ) THEN
          CICE0 = CICEN
          IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
       END IF
-
+!/IC0      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
       FICE0  = CICE0
 
@@ -1931,6 +1935,8 @@
 !/SCRIP     WRITE (NDSO,963) GSHIFT
       FACSD  = XSEED
 !/RWND RWINDC = RWNDC 
+!/WCOR WWCOR(1) = WCOR1 
+!/WCOR WWCOR(2) = WCOR2 
 !
       XP     = MAX ( 1.E-6 , XP )
       XR     = MAX ( 1.E-6 , XR )
@@ -2047,21 +2053,25 @@
 !/REF1         WRITE(NDSO,2986) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
 !/REF1                    REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
 !/REF1                    REFICEBERG, REFCOSP_STRAIGHT
+!
 !/IG1         WRITE(NDSO,2977) IGMETHOD, IGADDOUTP, IGSOURCE,         &
 !/IG1                    IGSTERMS, IGBCOVERWRITE, IGSWELLMAX,         &
 !/IG1                    IGMAXFREQ, IGSOURCEATBP, IGKDMIN,            &
 !/IG1                    IGFIXEDDEPTH, IGEMPIRICAL 
 !
+!/IC2         WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
+!/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
+!
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
-                                RWNDC, FACBERG,GSHIFT
+                                RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
-                                RWNDC, FACBERG, GSHIFT
+                                RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT
 
           END IF
 !
@@ -3504,6 +3514,14 @@
 !/IG1       IGPARS(11)=IGEMPIRICAL**2
 !/IG1       IGPARS(12)=IGSTERMS
 !
+!/IC2       IC2PARS(:)=0.
+!/IC2       IF (IC2DISPER) IC2PARS(1)=1.
+!/IC2       IC2PARS(2)=IC2TURB
+!/IC2       IC2PARS(3)=IC2ROUGH
+!/IC2       IC2PARS(4)=IC2REYNOLDS
+!/IC2       IC2PARS(5)=IC2SMOOTH
+!/IC2       IC2PARS(6)=IC2VISC
+!/IC2       IC2PARS(7)=IC2TURBS
 !
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
@@ -4375,6 +4393,9 @@
 !/IG1  970 FORMAT (/'  Second order and infragravity waves  ',A/      &
 !/IG1               ' --------------------------------------------------')
 !
+!/IC2  971 FORMAT (/'  Boundary layer below ice  ',A/      &
+!/IC2               ' --------------------------------------------------')
+!
 !
  4970 FORMAT (/'  Spectral output on full grid ',A/                   &
                ' --------------------------------------------------')
@@ -4392,6 +4413,11 @@
                ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
+ 2978 FORMAT ( '  &IC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
+               ', IC2ROUGH  =',F10.3,','/                             &
+               '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
+               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
+!
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1, ', PMOVE =',F6.3,','/          &
                '        XSEED =',F6.3,', FLAGTR = ', I1,              &
@@ -4399,7 +4425,7 @@
                '        IHM =',I5,', HSPM =',F6.3,', WSM =',F6.3,     &
                      ', WSC =',F6.3,', FLC = ',A/                     &
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
-                        F6.3,','/                                     &
+                        F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/                                     &
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
@@ -4854,6 +4880,8 @@
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
 !/IG1                        CASE('IG1 ') 
 !/IG1                         READ (NDS,NML=IG1,END=801,ERR=802,IOSTAT=J)
+!/IC2                        CASE('IC2 ') 
+!/IC2                         READ (NDS,NML=IC2,END=801,ERR=802,IOSTAT=J)
                         CASE('UNST')
                           READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')

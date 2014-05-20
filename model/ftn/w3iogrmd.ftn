@@ -135,6 +135,7 @@
 !/    01-Jul-2013 : Document UQ / UNO switches in file  ( version 4.12 )
 !/    10-Sep-2013 : Add IG1 parameters                  ( version 4.12 )
 !/    06-Mar-2014 : Writes out a help message on error  ( version 4.18 )
+!/    10-Mar-2014 : Add IC2 parameters                  ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -762,20 +763,28 @@
                 FFACBERG, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
+!/WCOR          WRITE (NDSM)                                                &
+!/WCOR                WWCOR
 !/REF1          WRITE (NDSM)                                                &
 !/REF1                RREF, REFPARS, REFLC, REFLD
 !/IG1          WRITE   (NDSM)                                              &
 !/IG1                IGPARS(1:12)
+!/IC2          WRITE   (NDSM)                                              &
+!/IC2                IC2PARS(1:7)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
                 FFACBERG, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
-!/REF1         READ   (NDSM)                                                &
+!/WCOR          READ  (NDSM)                                                &
+!/WCOR                WWCOR
+!/REF1          READ  (NDSM)                                                &
 !/REF1                RREF, REFPARS, REFLC, REFLD
 !/IG1         READ   (NDSM)                                                &
 !/IG1                IGPARS(1:12)
+!/IC2         READ   (NDSM)                                                &
+!/IC2                IC2PARS(1:7)
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &

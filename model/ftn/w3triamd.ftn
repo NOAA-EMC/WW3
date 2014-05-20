@@ -1372,10 +1372,7 @@ END SUBROUTINE
          IS(2)=I2
          IS(3)=I3
          IS(4)=1
-         JS(1)=1
-         JS(2)=1
-         JS(3)=1
-         JS(4)=1
+         JS(:)=1
          RW(1)=s1/sg1
          RW(2)=s2/sg2
          RW(3)=1.-RW(1)-RW(2)  !s3/sg3
