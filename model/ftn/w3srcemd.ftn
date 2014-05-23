@@ -1084,7 +1084,7 @@
       PHIAW =DWAT*GRAV*PHIAW /DTG        
       PHINL =DWAT*GRAV*PHINL /DTG  
       PHIBBL=DWAT*GRAV*PHIBBL/DTG        
-      PHICE =DWAT*GRAV*PHICE /DTG        
+      PHICE =-1.*DWAT*GRAV*PHICE /DTG        
 !
 ! 10 includes reflection --------------------------------------------- *
 !

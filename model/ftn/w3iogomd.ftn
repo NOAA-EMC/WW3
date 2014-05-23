@@ -1528,7 +1528,7 @@
                           TAUWNX, TAUWNY, CHARN, BHD,              &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE,    &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D, EF, &
-                          TH1M, STH1M, TH2M, STH2M, HSIG
+                          TH1M, STH1M, TH2M, STH2M, HSIG, TAUICE, PHICE
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
                           FNMPRE, NOSWLL, NOEXTR
@@ -1751,21 +1751,13 @@
                                      PRMS  (ISEA) = UNDEF
                                      TPMS  (ISEA) = UNDEF
                   END IF
-                IF ( FLOGRD( 6, 8) ) THEN
-                                     US3D(ISEA,:) = UNDEF
-                  END IF
-                IF ( FLOGRD( 6, 9) ) THEN
-                                    P2SMS(ISEA,:) = UNDEF
-                  END IF
+                IF ( FLOGRD( 6, 8) ) US3D(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
 !
-                IF ( FLOGRD( 7, 1) ) THEN
-                                     ABA   (ISEA) = UNDEF
-                                     ABD   (ISEA) = UNDEF
-                  END IF
-                IF ( FLOGRD( 7, 2) ) THEN
-                                     UBA   (ISEA) = UNDEF
-                                     UBD   (ISEA) = UNDEF
-                  END IF
                 IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
                 IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
@@ -1989,6 +1981,11 @@
                     WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
                     WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
+                    WRITE ( NDSOG ) TAUICE(1:NSEA,1)
+                    WRITE ( NDSOG ) TAUICE(1:NSEA,2)
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
+                    WRITE ( NDSOG ) PHICE(1:NSEA)
 !
 !     Section 7)
 !
@@ -2234,6 +2231,14 @@
                   ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN 
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)     &
                                      P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUICE(1:NSEA,1)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUICE(1:NSEA,2)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       PHICE(1:NSEA)
 !
 !     Section 7)
 !

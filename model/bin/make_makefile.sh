@@ -775,7 +775,7 @@
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx  $is"
+             source="$stx $nlx $btx $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounf) IDstring='Gridded NetCDF output'
