@@ -48,7 +48,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SRCE ( IT, IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
+      SUBROUTINE W3SRCE ( IT, IX, IY, IMOD, SPEC, ALPHA, WN1, CG1,    &
                           D_INP, U10ABS, U10DIR, AS, USTAR, USTDIR,   &
                           CX, CY,  ICE, ICEH, ICEDAVE, REFLEC, REFLED,&
                           DELX, DELY, DELA, TRNX, TRNY, BERG, FPI,    &
@@ -402,13 +402,12 @@
                                  TRNX, TRNY, BERG
       REAL, INTENT(INOUT)     :: SPEC(NSPEC), ALPHA(NK), USTAR,       &
                                  USTDIR, FPI, TAUOX, TAUOY,           &
-                                 TAUWX, TAUWY, PHIAW, PHIOC,          &
+                                 TAUWX, TAUWY, PHIAW, PHIOC, PHICE,   &
                                  CHARN, BEDFORM(3), PHIBBL,           &
-                                 TAUBBL(2), WHITECAP(4),              &
+                                 TAUBBL(2), TAUICE(2), WHITECAP(4),   &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
                                  ICEDAVE
       REAL, INTENT(OUT)       :: DTDYN, FCUT
-!/IS2      REAL               :: TAUISX, TAUISY
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
