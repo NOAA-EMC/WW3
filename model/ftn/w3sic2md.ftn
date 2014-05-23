@@ -167,6 +167,9 @@
 !       IX,IY   I.S.   I   Grid indices.
 !       S       R.A.   O   Source term (1-D version).
 !       D       R.A.   O   Diagonal term of derivative (1-D version).
+!       imported via module: 
+!       ICEP1   R.A.   I   Ice thickness
+!       ICEP2   R.A.   I   Eddy viscosity
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
