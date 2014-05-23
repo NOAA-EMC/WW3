@@ -6,7 +6,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Avr-2014 |
+!/                  | Last update :         23-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -49,20 +49,20 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SRCE ( IT, IX, IY, IMOD, SPEC, ALPHA, WN1, CG1, D_INP, &
-                          U10ABS, U10DIR, AS, USTAR, USTDIR, CX, CY,  &
-                          ICE, ICEH, ICEDAVE, REFLEC, REFLED,DELX, DELY, DELA,    &
-                          TRNX, TRNY, BERG, FPI, DTDYN, FCUT, DTG,    &
-                          TAUWX, TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, &
-                          TAUWNX, TAUWNY, PHIAW, CHARN, PHIOC,        &
-                          WHITECAP,  D50, PSIC, BEDFORM , PHIBBL,     &
-                          TAUBBL ) 
+                          D_INP, U10ABS, U10DIR, AS, USTAR, USTDIR,   &
+                          CX, CY,  ICE, ICEH, ICEDAVE, REFLEC, REFLED,&
+                          DELX, DELY, DELA, TRNX, TRNY, BERG, FPI,    &
+                          DTDYN, FCUT, DTG, TAUWX, TAUWY, TAUOX,      &
+                          TAUOY, TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
+                          PHIAW, CHARN, PHIOC, WHITECAP,  D50, PSIC,  &
+                          BEDFORM , PHIBBL, TAUBBL, TAUICE, PHICE ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Avr-2014 |
+!/                  | Last update :         23-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -105,6 +105,7 @@
 !/    17-Nov-2013 : Coupling fraction of ice-free       ( version 4.13 )
 !/                  surface to SIN and SDS. (S. Zieger)
 !/    01-Avr-2014 : Adding ice thickness and floe size  ( version 4.18 )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -194,6 +195,8 @@
 !       PSIC    Real   I   Critical Shields               ( !/BT4 )
 !       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
 !       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx ) 
+!       TAUICE  R.A.   O   Momentum flux to sea ice       ( !/ICx )
+!       PHICE   Real   O   Energy flux to sea ice         ( !/ICx ) 
 !     ----------------------------------------------------------------
 !       Note: several pars are set to I/O to avoid compiler warnings.
 !
@@ -405,9 +408,6 @@
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
                                  ICEDAVE
       REAL, INTENT(OUT)       :: DTDYN, FCUT
-!/IC1      REAL               :: TAUICX, TAUICY, PHIWI
-!/IC2      REAL               :: TAUICX, TAUICY, PHIWI
-!/IC3      REAL               :: TAUICX, TAUICY, PHIWI
 !/IS2      REAL               :: TAUISX, TAUISY
 !/
 !/ ------------------------------------------------------------------- /
@@ -429,10 +429,11 @@
 !/MLIM      REAL                    :: HM, EM
 !/NNT      REAL                    :: FACNN
 !/T      REAL                    :: DTRAW
-      REAL                    :: EBAND, DIFF, EFINISH, HSTOT, PHINL, &
-                                 FMEAN1, FMEANWS, MWXINIT, MWYINIT,   &
-                                 FACTOR, DRAT, TAUWAX, TAUWAY,        &
-                                 MWXFINISH, MWYFINISH, A1BAND, B1BAND
+      REAL                    :: EBAND, DIFF, EFINISH, HSTOT, PHINL,       &
+                                 FMEAN1, FMEANWS, MWXINIT, MWYINIT,        &
+                                 FACTOR, FACTOR2, DRAT, TAUWAX, TAUWAY,    &
+                                 MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
+                                 COSI(2)
       REAL                    :: SPECINIT(NSPEC)
       REAL                    :: DAM (NSPEC), WN2 (NSPEC),            &
                                  VSLN(NSPEC),                         &
@@ -551,6 +552,8 @@
       TAUSCX = 0.
       TAUSCY = 0.
       TAUBBL(:)= 0.
+      TAUICE(:)= 0.
+      PHICE  = 0.
 !/ST4      BRLAMBDA(:)=0.
 !
 ! 1.c Set mean parameters
@@ -703,8 +706,8 @@
 ! 2.d Bottom interactions.
 !
 !/BT1        CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
-!/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL, BEDFORM,    &
-!/BT4                                      VSBT, VDBT, IX, IY         )
+!/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL,    &
+!/BT4                      BEDFORM, PHIBBL,  VSBT, VDBT, IX, IY )
 !/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BTX        CALL W3SBTX
@@ -716,11 +719,14 @@
 ! 2.e Additional sources.
 !
 !/XXX        CALL W3SXXX
-!/IC1             IF (ICE.GT.0) CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
-!/IC2             IF (ICE.GT.0) CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
-!/IC3             IF (ICE.GT.0) CALL W3SIC3 ( SPEC,DEPTH,       WN1, IX, IY, VSIC, VDIC )
+!/IC1             IF (ICE.GT.0) CALL W3SIC1 ( SPEC,DEPTH, CG1,           &
+!/IC1                                              IX, IY, VSIC, VDIC )
+!/IC2             IF (ICE.GT.0) CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1,     &
+!/IC2                                              IX, IY, VSIC, VDIC )
+!/IC3             IF (ICE.GT.0) CALL W3SIC3 ( SPEC,DEPTH,       WN1,     &
+!/IC3                                              IX, IY, VSIC, VDIC )
 !/IS1                CALL W3SIS1 ( SPEC, ICE, VSIR )
-!/IS2                CALL W3SIS2 ( SPEC, ICE, ICEH, ICEDAVE, TAUISX, TAUISY, VSIR, VDIR )
+!/IS2                CALL W3SIS2 ( SPEC, ICE, ICEH, ICEDAVE, VSIR, VDIR )
 !
 ! 2.f Dump training data if necessary
 !
@@ -850,16 +856,20 @@
 ! 5.b  Computes 
 !              atmos->wave flux PHIAW-------------------------------- *
 !              wave ->BBL  flux PHIBBL------------------------------- *
+!              wave ->ice  flux PHICE ------------------------------- *
 ! 
        WHITECAP(3)=0.
        HSTOT=0.
        DO IK=IKS1, NK
-         FACTOR=DDEN(IK)/CG1(IK) !&       !Jacobian to get energy in band
-            !*GRAV/(SIG(IK)/WN1(IK)*DRAT)  ! coefficient to get momentum
+         FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
+         FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
+
          ! Wave direction is "direction to"
          ! therefore there is a PLUS sign for the stress
          DO ITH=1, NTH
            IS   = (IK-1)*NTH + ITH
+           COSI(1)=ECOS(IS)
+           COSI(2)=ESIN(IS)
            PHIAW = PHIAW + (VSIN(IS))* DT * FACTOR                    &
              / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
            
@@ -867,6 +877,20 @@
              / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
            PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
              / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
+!/IC1           PHICE = PHICE + VSIC(IS)* DT * FACTOR                      &
+!/IC1             / MAX ( 1. , (1.-HDT*VDIC(IS))) ! semi-implict integration scheme
+!/IC1           TAUICE(:) = TAUICE(:) - FACTOR2*COSI(:)*VSIC(IS)* DT          &
+!/IC1             / MAX ( 1. , (1.-HDT*VDIC(IS)))
+!/IC2           PHICE = PHICE + VSIC(IS)* DT * FACTOR                      &
+!/IC2             / MAX ( 1. , (1.-HDT*VDIC(IS))) ! semi-implict integration scheme
+!/IC2           TAUICE(:) = TAUICE(:) - FACTOR2*COSI(:)*VSIC(IS)* DT            &
+!/IC2             / MAX ( 1. , (1.-HDT*VDIC(IS)))
+!/IC3           PHICE = PHICE + VSIC(IS)* DT * FACTOR                      &
+!/IC3             / MAX ( 1. , (1.-HDT*VDIC(IS))) ! semi-implict integration scheme
+!/IC3           TAUICE(:) = TAUICE(:) - FACTOR2*COSI(:)*VSIC(IS)* DT            &
+!/IC3             / MAX ( 1. , (1.-HDT*VDIC(IS)))
+!/IS2           TAUICE(:) = TAUICE(:) - FACTOR2*COSI(:)*VSIR(IS)* DT            &
+!/IS2             / MAX ( 1. , (1.-HDT*VDIR(IS)))
            IF (VSIN(IS).GT.0.) THEN 
              WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
            ELSE
@@ -1046,18 +1070,22 @@
 !
 ! Transformation in momentum flux in m^2 / s^2 
 !
-      TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1)/DRAT)/DTG
-      TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2)/DRAT)/DTG
+      TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUICE(1)-TAUBBL(1))/DTG
+      TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUICE(2)-TAUBBL(2))/DTG
       TAUWIX=TAUWIX/DTG
       TAUWIY=TAUWIY/DTG
       TAUWNX=TAUWNX/DTG
       TAUWNY=TAUWNY/DTG
       TAUBBL(:)=TAUBBL(:)/DTG
-      ! Transformation in wave energy flux in W/m^2=kg / s^3 
+      TAUICE(:)=TAUICE(:)/DTG
+!
+! Transformation in wave energy flux in W/m^2=kg / s^3 
+!
       PHIOC =DWAT*GRAV*(EFINISH+PHIAW-PHIBBL)/DTG 
       PHIAW =DWAT*GRAV*PHIAW /DTG        
       PHINL =DWAT*GRAV*PHINL /DTG  
       PHIBBL=DWAT*GRAV*PHIBBL/DTG        
+      PHICE =DWAT*GRAV*PHICE /DTG        
 !
 ! 10 includes reflection --------------------------------------------- *
 !

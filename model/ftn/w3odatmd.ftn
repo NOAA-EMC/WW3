@@ -708,6 +708,8 @@
       IDOUT( 6, 7)  = '2nd order pressure  '
       IDOUT( 6, 8)  = 'Stokes drft spectrum'
       IDOUT( 6, 9)  = '2nd ord press spectr'
+      IDOUT( 6,10)  = 'Wave-ice mom. flux  '
+      IDOUT( 6,11)  = 'Wave-ice energy flux'
 !
 ! 7) Wave-bottom layer
 !

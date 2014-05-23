@@ -729,7 +729,7 @@
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, BHD,                    &
+                          TAUWNX,  TAUWNY, BHD, PHICE, TAUICE,        &
                           CGE, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,    &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS,         &
                           US3D, EF, TH1M, STH1M, TH2M, STH2M, HSIG
