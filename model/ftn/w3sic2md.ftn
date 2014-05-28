@@ -319,14 +319,13 @@
              END DO
 !
            DO IK=1, NK
-!   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
 !             recall that D=S/E=-2*Cg*k_i
-             D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
+             D1D(IK)= -2.0 * CG_ICE(IK) * WN_I(IK)
              END DO
 !
 ! Alternative by F.A. 
 !
-         ELSE 
+         ELSE ! so case of IC2PARS(1).LE.0.5
            IF (IC2PARS(2).GT.0.) THEN 
              UORB=0.
              AORB=0.
@@ -361,15 +360,15 @@
              DELI2= 1. - DELI1
              FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
              DTURB=-1.* FTURB*FW*UORB/GRAV
-           ELSE 
+           ELSE ! so case of IC2PARS(2).LE.0.
              DTURB = 0.
-             END IF
+           END IF ! IF (IC2PARS(2).GT.0.)  
 
            DO IK=1, NK
              DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
              D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
              END DO
-           END IF
+           END IF !  IF (IC2PARS(1).GT.0.5)
 
 !
 ! 2.c Fill diagional matrix
@@ -378,7 +377,7 @@
             D(IKTH) = D1D(MAPWN(IKTH))
             END DO
 !
-        END IF
+        END IF !    IF ( NOICE ) THEN
 !
       S = D * A
 !
