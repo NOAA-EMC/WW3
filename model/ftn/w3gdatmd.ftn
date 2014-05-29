@@ -600,6 +600,7 @@
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !/IG1        REAL,    POINTER      :: IGPARS(:)
 !/IC2        REAL,    POINTER      :: IC2PARS(:)
+!/IC3        REAL,    POINTER      :: IC2PARS(:)
 !/IS2        REAL,    POINTER      :: IS2PARS(:)
 !
 ! unstructured data	
@@ -823,6 +824,7 @@
       REAL,    POINTER        :: REFPARS(:)
 !/IG1      REAL,    POINTER        :: IGPARS(:)
 !/IC2      REAL,    POINTER        :: IC2PARS(:)
+!/IC3      REAL,    POINTER        :: IC2PARS(:)
 !/IS2      REAL,    POINTER        :: IS2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
@@ -1303,6 +1305,7 @@
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12) )
 !/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7) )
+!/IC3       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7) )
 !/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(6) )
 !/T      WRITE (NDST,9001)
 !
@@ -1689,6 +1692,7 @@
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
 !/IG1       IGPARS => GRIDS(IMOD)%IGPARS
 !/IC2       IC2PARS => GRIDS(IMOD)%IC2PARS
+!/IC3       IC2PARS => GRIDS(IMOD)%IC2PARS
 !/IS2       IS2PARS => GRIDS(IMOD)%IS2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY

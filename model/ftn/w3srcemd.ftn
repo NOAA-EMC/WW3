@@ -722,7 +722,7 @@
 !/IC1                                              IX, IY, VSIC, VDIC )
 !/IC2             IF (ICE.GT.0) CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1,     &
 !/IC2                                              IX, IY, VSIC, VDIC )
-!/IC3             IF (ICE.GT.0) CALL W3SIC3 ( SPEC,DEPTH,       WN1,     &
+!/IC3             IF (ICE.GT.0) CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1,     &
 !/IC3                                              IX, IY, VSIC, VDIC )
 !/IS1                CALL W3SIS1 ( SPEC, ICE, VSIR )
 !/IS2                CALL W3SIS2 ( SPEC, ICE, ICEH, ICEDAVE, VSIR, VDIR )

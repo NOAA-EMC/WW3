@@ -136,6 +136,7 @@
 !/    10-Sep-2013 : Add IG1 parameters                  ( version 4.12 )
 !/    06-Mar-2014 : Writes out a help message on error  ( version 4.18 )
 !/    10-Mar-2014 : Add IC2 parameters                  ( version 5.xx )
+!/    29-May-2014 : Add IC3 parameters                  ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -771,6 +772,8 @@
 !/IG1                IGPARS(1:12)
 !/IC2          WRITE   (NDSM)                                              &
 !/IC2                IC2PARS(1:7)
+!/IC3          WRITE   (NDSM)                                              &
+!/IC3                IC2PARS(1:7)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
@@ -783,6 +786,8 @@
 !/IG1                IGPARS(1:12)
 !/IC2         READ   (NDSM)                                                &
 !/IC2                IC2PARS(1:7)
+!/IC3         READ   (NDSM)                                                &
+!/IC3                IC2PARS(1:7)
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
