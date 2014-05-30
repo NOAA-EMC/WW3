@@ -6,10 +6,12 @@
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         29-May-2014 |
 !/                  +-----------------------------------+
 !/
-!/    For updates see W3SIC3 documentation.
+!/    Updates:
+!/    29-May-2014 : Generalization with turbulent BL
+!/           (F.A. method imported from IC2 by E.R.)     ( version 5.xx )
 !/
 !  1. Purpose :
 !
@@ -184,6 +186,27 @@
 !
 !     If ice parameter 1 is zero, no calculations are made.
 !
+!     We use IC3MAXTHK to limit ice thickness: 
+!     IC3 is not valid for thick ice, e.g. 
+!     large, thick floes or thick continuous ice.
+!     It is intended primarily for situations where ice cover is of 
+!     grease/frazil/pancake type, and can be approximated as a 
+!     viscoelastic fluid layer.
+!
+!     When ice thickness exceeds IC3MAXTHK, we use something else,
+!     in place of Shen and Wang formulation :
+!
+!     S_ice by F.A., an estimation of dissipation by turbulence 
+!     at the ice-water interface. It uses only namelists for input, and
+!     no space/time varying input (though of course ice concentration is 
+!     space/time varying). Unlike Liu et al. (IC2), it does not use 
+!     ice thickness and does not yield a new C|Cg|k (i.e. it is non-
+!     dispersive), but it has the very nice feature of not requiring  
+!     an eddy viscosity, which is a major drawback of the Liu et al.  
+!     model. That is why we use it here, vs. Liu et al.
+!     (S_ice by Liu et al. and S_ice by F.A. are the two options 
+!     available in IC2, i.e. w3sic2md.ftn)
+!
 !  8. Structure :
 !
 !     See source code.
@@ -201,7 +224,8 @@
       USE CONSTANTS, ONLY: TPI, DWAT
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
+                          FLAGLL, YGRD, GTYPE, RLGTYPE
       USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -228,6 +252,12 @@
                                     ICECOEF4, ICECOEF5, ICECONC
       REAL, DIMENSION(NK)        :: D1D, WN_I, WN_R, CG_IC3
       LOGICAL                    :: NOICE
+      REAL                       :: VISCM=1.83E-6
+!  ............VISCM=1.83E-6 :  molecular viscosity of water at freezing
+      REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
+                                 SMOOTH, RE, UORB, AORB, EB,   &
+                                 DELI1, DELI2, FW, XI, FTURB
+      INTEGER                 :: IND, IS
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -278,13 +308,6 @@
 !     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
       IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
 
-!     Limit ice thickness: IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
-      ICECOEF1=min(0.10,ICECOEF1)
-
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
@@ -293,10 +316,13 @@
       IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
       IF ( NOICE ) THEN
-         D = 0.0
+
+         D1D=0.0
 !
 ! 2.  Ice ------------------------------------------------------------ /
-      ELSE
+!old:     ICECOEF1=min(0.10,ICECOEF1)
+      ELSEIF ( ICECOEF1. LE. IC2PARS(1)) THEN
+!.......... e.g. if ice thickness is .le. 10 cm
 !
 ! 2.a Set constant(s) and write test output -------------------------- /
 !
@@ -308,27 +334,74 @@
 !     --- Input to routine (part 1): 6 ice parameters from single
 !         precision variables. ---------------------------------------
          CALL W3IC3WNCG(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
-                                  ICECOEF3, ICECOEF4, DEPTH     )
+              ICECOEF3, ICECOEF4, DEPTH     )
 !
 !    --- calculate source term --------------------------------------- /
          DO IK=1, NK
-! sbt1 has:  d1d(ik) = factor *  max(0., (cg(ik)*wn(ik)/sig(ik)-0.5) )
-!            recall that D=S/E=-2*Cg*k_i
+            !            recall that D=S/E=-2*Cg*k_i
             D1D(IK)= -2.0 * CG_IC3(IK) * WN_I(IK)
          END DO
-!
+         !
+      ELSE ! .. e.g. if ice thickness is .gt. 10 cm
+         ! Alternative by F.A., see Remarks section.
+         IF (IC2PARS(2).GT.0.) THEN 
+            UORB=0.
+            AORB=0.
+            FTURB = IC2PARS(2)
+            IF (IC2PARS(7).GT.0) THEN 
+               IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) &
+                    FTURB = IC2PARS(7)
+            END IF
+            DO IK=1, NK
+               EB  = 0.
+               DO ITH=1, NTH
+                  IS=ITH+(IK-1)*NTH
+                  EB  = EB  + A(IS)
+               END DO
+               !
+               !  UORB and AORB are the variances of the orbital velocity
+               !  and surface elevation
+               !
+               UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
+               AORB = AORB + EB             * DDEN(IK) / CG(IK)
+               !deep water only
+            END DO
+            !
+            AORB = 2*SQRT(AORB)  ! significant amplitude
+            UORB = 2*SQRT(UORB)  ! significant amplitude
+
+            RE = UORB*AORB / VISCM
+            SMOOTH = 0.5*TANH((RE-IC2PARS(4))/IC2PARS(5))
+            PTURB=(0.5+SMOOTH)
+            PVISC=(0.5-SMOOTH)
+
+            XI=(ALOG10(MAX(AORB/IC2PARS(3),3.))-ABMIN)/DELAB
+            IND  = MIN (SIZEFWTABLE-1, INT(XI))
+            DELI1= MIN (1. ,XI-FLOAT(IND))
+            DELI2= 1. - DELI1
+            FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
+            DTURB=-1.* FTURB*FW*UORB/GRAV
+         ELSE ! so case of IC2PARS(2).LE.0.
+            DTURB = 0.
+         END IF ! IF (IC2PARS(2).GT.0.)  
+
+         DO IK=1, NK
+            DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
+            D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
+         END DO
+
+      END IF !   IF ( NOICE ) THEN
+
 ! 2.c Fill diagional matrix ------------------------------------------ /
 !
-         DO IKTH=1, NSPEC
-            D(IKTH) = D1D(MAPWN(IKTH))
-         END DO
+      DO IKTH=1, NSPEC
+         D(IKTH) = D1D(MAPWN(IKTH))
+      END DO
 !
 ! sign convention (example): 
 !        S is from -10e-3 to 0
 !        A is from 0 to 10
 
-      END IF
-!
       S = D * A
 !
 ! ... Test output of arrays
