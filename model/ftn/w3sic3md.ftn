@@ -59,7 +59,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3SIC3 (A, DEPTH, WN, IX, IY, S, D)
+      SUBROUTINE W3SIC3 (A, DEPTH, CG, WN, IX, IY, S, D)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -153,6 +153,7 @@
 !     ----------------------------------------------------------------
 !       A       R.A.  I   Action density spectrum (1-D).
 !       DEPTH   Real  I   Local water depth.
+!       CG      R.A.  I   Group velocities.
 !       WN      R.A.  I   Wavenumbers.
 !       IX,IY   I.S.  I   Grid indices.
 !       S       R.A.  O   Source term (1-D version).
@@ -221,7 +222,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: TPI, DWAT
+      USE CONSTANTS, ONLY: TPI, DWAT, ABMIN, DELAB, SIZEFWTABLE,      &
+                           FWTABLE, GRAV
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
@@ -237,7 +239,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: WN(NK), A(NSPEC), DEPTH
+      REAL, INTENT(IN)        :: CG(NK),  WN(NK), A(NSPEC), DEPTH
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
       INTEGER, INTENT(IN)     :: IX, IY
 !/
@@ -245,7 +247,7 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-!/T0      INTEGER                 :: ITH
+      INTEGER                    :: ITH
 !/T0      REAL                   :: DOUT(NK,NTH)
       INTEGER                    :: IKTH, IK
       REAL                       :: ICECOEF1, ICECOEF2, ICECOEF3, &
@@ -321,7 +323,7 @@
 !
 ! 2.  Ice ------------------------------------------------------------ /
 !old:     ICECOEF1=min(0.10,ICECOEF1)
-      ELSEIF ( ICECOEF1. LE. IC2PARS(1)) THEN
+      ELSEIF ( ICECOEF1 .LE. IC2PARS(1)) THEN
 !.......... e.g. if ice thickness is .le. 10 cm
 !
 ! 2.a Set constant(s) and write test output -------------------------- /
