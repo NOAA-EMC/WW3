@@ -530,6 +530,7 @@
       CG_IC3  = 0.
       SIGMA   = 0.
       STENSEC=TPI/10.0 ! sigma for T=10 sec
+
 !
 !     --- Input to routine (part 1): set 6 double precision variables 
 !        using single precision variables. -------------------------- /
@@ -538,6 +539,13 @@
       NU      = DBLE(ICE2)    ! "effective viscosity" parameter
       DICE    = DBLE(ICE3)    ! density of ice
       ES_MOD  = DBLE(ICE4)    ! effective shear modulus of ice
+
+!     Limit ice thickness: IC3 is not valid for thick ice, e.g. 
+!     large, thick floes or thick continuous ice.
+!     It is intended primarily for situations where ice cover is of 
+!     grease/frazil/pancake type, and can be approximated as a 
+!     viscoelastic fluid layer.
+      HICE=MIN(0.1D0,HICE)
 
       IF (SIZE(WN_R,1).EQ.NK) THEN
          KL    = 1

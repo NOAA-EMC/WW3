@@ -627,19 +627,19 @@
 ! 2.a Update group velocity and wavenumber from ice parameters ------ /
 !     from W3SIC3MD module. ----------------------------------------- /
 !
-!/IC3        IF (FLFRST.AND.FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
-!/IC3           IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)
-!/IC3           ALLOCATE(WN_I(SIZE(WN(:,JSEA))))
-!/IC3           WN_I(:) = 0.
-!/IC3           DO JSEA=1,NSEAL
-!/IC3             DEPTH  = MAX( DMIN , DW(JSEA) )
-!/IC3             IX     = MAPSF(JSEA,1)
-!/IC3             IY     = MAPSF(JSEA,2)
-!/IC3             CALL W3IC3WNCG(WN(:,JSEA),WN_I(:),CG(:,JSEA),ICEP1(IX,IY), &
-!/IC3                            ICEP2(IX,IY),ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
-!/IC3           END DO
-!/IC3           DEALLOCATE(WN_I)
-!/IC3        END IF
+!........!/IC3        IF (FLFRST.AND.FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
+!........!/IC3           IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)
+!........!/IC3           ALLOCATE(WN_I(SIZE(WN(:,JSEA))))
+!........!/IC3           WN_I(:) = 0.
+!........!/IC3           DO JSEA=1,NSEAL
+!........!/IC3             DEPTH  = MAX( DMIN , DW(JSEA) )
+!........!/IC3             IX     = MAPSF(JSEA,1)
+!........!/IC3             IY     = MAPSF(JSEA,2)
+!........!/IC3             CALL W3IC3WNCG(WN(:,JSEA),WN_I(:),CG(:,JSEA),ICEP1(IX,IY), &
+!........!/IC3                            ICEP2(IX,IY),ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
+!........!/IC3           END DO
+!........!/IC3           DEALLOCATE(WN_I)
+!........!/IC3        END IF
 !
         IF ( TOFRST(1) .GT. 0 ) THEN
             DTTST  = DSEC21 ( TEND , TOFRST )
