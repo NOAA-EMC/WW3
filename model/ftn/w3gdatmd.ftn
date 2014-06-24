@@ -253,6 +253,7 @@
 !      FHMAX     Real  Public   Hs/depth ratio in limiter     (!/MLIM)
 !      RWINDC    Real  Public   Coefficient for current in relative 
 !                               wind                          (!/RWND)
+!      WWCOR     R.A.  Public   Wind correction factors       (!/WCOR)
 !     ----------------------------------------------------------------
 !
 !     The structure PROP contains parameters for the propagation
@@ -590,6 +591,7 @@
 !/REF1        LOGICAL, POINTER      :: RREF(:)
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !/IG1        REAL,    POINTER      :: IGPARS(:)
+!/IC2        REAL,    POINTER      :: IC2PARS(:)
 !
 ! unstructured data	
 !
@@ -623,6 +625,7 @@
         REAL                  :: FACP, XREL, XFLT, FXFM, FXPM,        &
                                  XFT, XFC, FACSD, FHMAX
 !/RWND        REAL            :: RWINDC
+!/WCOR        REAL            :: WWCOR(2)
       END TYPE NPAR
 !
       TYPE PROP
@@ -805,6 +808,7 @@
 !/REF1      LOGICAL, POINTER        ::  RREF(:)
       REAL,    POINTER        :: REFPARS(:)
 !/IG1      REAL,    POINTER        :: IGPARS(:)
+!/IC2      REAL,    POINTER        :: IC2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !
@@ -868,6 +872,7 @@
       REAL, POINTER           :: FACP, XREL, XFLT, FXFM, FXPM,        &
                                  XFT, XFC, FACSD, FHMAX
 !/RWND REAL, POINTER           :: RWINDC
+!/WCOR REAL, POINTER           :: WWCOR(:)
 !/
 !/ Data aliasses for structure PROP(S)
 !/
@@ -1222,7 +1227,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-! NB: Some array start at 0 becase MAPFS(IY,IX)=0 for missing points 
+! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points 
 !
       ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
                    GRIDS(IMOD)%MAPST2(MY,MX),  &
@@ -1280,6 +1285,7 @@
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12) )
+!/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7) )
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
@@ -1664,6 +1670,7 @@
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
 !/IG1       IGPARS => GRIDS(IMOD)%IGPARS
+!/IC2       IC2PARS => GRIDS(IMOD)%IC2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0
@@ -1835,6 +1842,7 @@
       FACSD  => MPARS(IMOD)%NPARS%FACSD
       FHMAX  => MPARS(IMOD)%NPARS%FHMAX
 !/RWND    RWINDC => MPARS(IMOD)%NPARS%RWINDC
+!/WCOR    WWCOR  => MPARS(IMOD)%NPARS%WWCOR
 !
 !     Structure PROPS
 !

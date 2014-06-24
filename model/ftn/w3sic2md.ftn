@@ -5,20 +5,27 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
+!/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         10-Mar-2014 |
 !/                  +-----------------------------------+
+!/
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
 !/
 !/    For updates see W3SIC1 documentation.
 !/
 !  1. Purpose :
 !
-!     Calculate ice source term S_{ice} according to simple methods.
+!     Calculate ice dissipation source term S_{ice}.
 !          Exponential decay rate according to Liu et al., which 
 !          uses as input: 1) ice thickness, and 2) an eddy
 !          viscosity parameter. This method is non-uniform in
 !          frequency. This is discussed further below, in 
 !          subroutine "LIU_REVERSE_DISPERSION".
+!
+!          Includes generalization by F. Ardhuin with viscous and tubulent 
+!          boundary layers 
+!
 !        References for Subtype 2:
 !              Liu et al.    1991: JGR 96 (C3), 4605-4621
 !              Liu and Mollo 1988: JPO 18       1720-1712 
@@ -66,6 +73,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
+!/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         11-Oct-2013 |
 !/                  +-----------------------------------+
@@ -73,6 +81,7 @@
 !/    16-Oct-2012 : Origination.                        ( version 4.04 )
 !/                                                        (E. Rogers)
 !/    09-Oct-2013 : W3SIC1 SUBTYPE=2 outsourced to W3SIC2 (S. Zieger)
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
 !/
 !/        FIXME   : Move field input to W3SRCE and provide
 !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
@@ -130,13 +139,7 @@
 !       a        = a0 * exp( -k_i * x )
 !       S / E    = -2 * Cg * k_i (see also Komen et al. (1994, pg. 170)
 !
-!     Following W3SBT1 as a guide, equation 1 of W3SBT1 says:
-!         S = D * E
-!     However, the code of W3SBT1 has
-!         S = D * A
-!     This leads me to believe that the calling routine is 
-!         expecting "S/sigma" not "S"
-!     Thus we will use D = S/E = -2 * Cg * k_i
+!     Please note that S is source term for action. 
 !
 !     Notes regarding numerics:
 !     Experiments with constant k_i values suggest that :
@@ -207,10 +210,11 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: TPI
+      USE CONSTANTS
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
+                          FLAGLL, YGRD, GTYPE, RLGTYPE
       USE W3IDATMD, ONLY: FLAGS,ICEP1,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -239,6 +243,11 @@
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential decay rate for amplitude
       REAL                    :: WN_R, CG_ICE(NK)
       REAL                    :: ALPHA ! exponential decay rate for energy
+      REAL                    :: VISCM=1.83E-6 ! molecular viscosity of water at freezing
+      REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
+                                 SMOOTH, RE, UORB, AORB, EB,   &
+                                 DELI1, DELI2, FW, XI, FTURB
+      INTEGER                 :: IND, ITH, IS
       LOGICAL                 :: NOICE=.FALSE.
                                        ! ALPHA = 2 * WN_I
 !/
@@ -298,25 +307,76 @@
 
          !  ICECOEF1 = H_ICE
          !  ICECOEF2 = VISC
-         DO IK=1, NK
-            CALL LIU_FORWARD_DISPERSION (ICECOEF1,ICECOEF2,DEPTH, &
+
+         IF (IC2PARS(1).GT.0.5) THEN 
+           DO IK=1, NK
+             CALL LIU_FORWARD_DISPERSION (ICECOEF1,ICECOEF2,DEPTH, &
                   SIG(IK)/TPI,WN_R,CG_ICE(IK),ALPHA)
-            WN_I(IK) = 0.5 * ALPHA !  ALPHA=2*WN_I
-         END DO
+             WN_I(IK) = 0.5 * ALPHA !  ALPHA=2*WN_I
+             END DO
 !
-         DO IK=1, NK
+           DO IK=1, NK
 !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
 !             recall that D=S/E=-2*Cg*k_i
-            D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
-         END DO
+             D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
+             END DO
+!
+! Alternative by F.A. 
+!
+         ELSE 
+           IF (IC2PARS(2).GT.0.) THEN 
+             UORB=0.
+             AORB=0.
+             FTURB = IC2PARS(2)
+             IF (IC2PARS(7).GT.0) THEN 
+               IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) FTURB = IC2PARS(7)
+               END IF
+             DO IK=1, NK
+               EB  = 0.
+               DO ITH=1, NTH
+                 IS=ITH+(IK-1)*NTH
+                 EB  = EB  + A(IS)
+                 END DO   
+!
+!  UORB and AORB are the variances of the orbital velocity and surface elevation
+!
+               UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
+               AORB = AORB + EB             * DDEN(IK) / CG(IK)  !deep water only
+               END DO
+!
+             AORB = 2*SQRT(AORB)  ! significant amplitude 
+             UORB = 2*SQRT(UORB)  ! significant amplitude
+
+             RE = UORB*AORB / VISCM
+             SMOOTH = 0.5*TANH((RE-IC2PARS(4))/IC2PARS(5))
+             PTURB=(0.5+SMOOTH)
+             PVISC=(0.5-SMOOTH)
+
+             XI=(ALOG10(MAX(AORB/IC2PARS(3),3.))-ABMIN)/DELAB
+             IND  = MIN (SIZEFWTABLE-1, INT(XI))
+             DELI1= MIN (1. ,XI-FLOAT(IND))
+             DELI2= 1. - DELI1
+!IF (IX.EQ.2) WRITE(992,*) 'TEST:',IX,IND,XI,AORB,UORB,AORB/IC2PARS(3),ABMIN
+             FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
+             DTURB=-1.* FTURB*FW*UORB/GRAV
+           ELSE 
+             DTURB = 0.
+             END IF
+
+           DO IK=1, NK
+             DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
+             D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
+             END DO
+           END IF
+
 !
 ! 2.c Fill diagional matrix
 !
           DO IKTH=1, NSPEC
             D(IKTH) = D1D(MAPWN(IKTH))
-          END DO
+            END DO
 !
-      END IF
+        END IF
 !
       S = D * A
 !

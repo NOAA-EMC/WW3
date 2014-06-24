@@ -12,8 +12,8 @@ $ Output request flags identifying fields as in ww3_shel.inp. See that
 $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
-  N
-  DPT HS FP T01
+ N
+ DPT HS FP T01
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
@@ -21,9 +21,9 @@ $        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
 $ swell partitions [0 1 2 3 4 5]
 $ variables in same file [T] or not [F] 
 $
-  3 4
-  0 1 2
-  T
+ 3 4
+ 0 1 2
+ T
 $
 $ -------------------------------------------------------------------- $
 $ File prefix

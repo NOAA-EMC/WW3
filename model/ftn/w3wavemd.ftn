@@ -873,6 +873,7 @@
               IF( RGLGRD ) CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY) 
 !/SMC !!Li  Use new sub for DDDX and DDDY assignment.  
 !/SMC         CALL SMCDHXY 
+!/SMCT        WRITE (NDST,*) " * SMCDHXY completed IT DTG =", IT, DTG
 !
             ELSE
               CALL UG_GRADIENTS(DW, DDDX, DDDY)
