@@ -1,10 +1,12 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
-$ Time, time increment and number of outputs
+$ First output time (yyyymmdd hhmmss), increment of output (s), 
+$ and number of output times.
 $
- 20020101 120000  100  10000
+  19850101 000000  3600.  1000
 $
+$ Fields requested --------------------------------------------------- $
 $
 $ Output request flags identifying fields as in ww3_shel.inp. See that
 $ file for a full documentation of field output options. Namelist type
@@ -14,10 +16,10 @@ $
  DPT HS FP T01
 $
 $--------------------------------------------------------------------- $
-$ Output type 4 [3,4] (version netCDF)   
-$        and   variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
-$ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)
-$ variables T [T] or not [F] in the same file
+$ netCDF version [3,4]
+$        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
+$ swell partitions [0 1 2 3 4 5]
+$ variables in same file [T] or not [F] 
 $
  3 4
  0 1 2
