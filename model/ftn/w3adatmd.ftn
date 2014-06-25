@@ -29,6 +29,7 @@
 !/    14-Nov-2013 : Move orphaned arrays as scalar to W3SRCE.
 !/                  Here update of documentation only.
 !/                  (Z0S, CDS, EMN, FMN, WNM, AMX)      ( version 4.13 )
+!/    30-Apr-2014 : Memory reduction for group3.        ( version 5.02 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -692,11 +693,12 @@
 !/    20-Jul-2005 : Adding output fields.               ( version 3.07 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    28-Mar-2007 : Add partitioned data arrays.        ( version 3.11 )
-!/                  Add aditional undefined arrays.
+!/                  Add additional undefined arrays.
 !/    22-Feb-2008 ; Modify MAPTH2 declaration.          ( version 3.14 )
 !/    31-Oct-2010 : Added initialization of CX,CY,DW    ( version 3.14 )
 !/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
+!/    30-Apr-2014 : Memory reduction for group3.        ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -866,16 +868,26 @@
 !
 ! 3) Frequency-dependent standard parameters
 !
-      ALLOCATE ( WADATS(IMOD)%EF  (NSEALM,E3DF(2,1):E3DF(3,1)), &
-                 WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)), &
-                 WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)), &
-                 WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,4)), &
-                 WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,5))) 
-      WADATS(IMOD)%EF      = UNDEF
-      WADATS(IMOD)%TH1M    = UNDEF
-      WADATS(IMOD)%STH1M   = UNDEF
-      WADATS(IMOD)%TH2M    = UNDEF
-      WADATS(IMOD)%STH2M   = UNDEF
+! For the 3D arrays: the allocation is performed only if these arrays are allowed
+!                    by specific variables defined through the mod_def file 
+!                    and read by w3iogr, which is called before W3DIMA. 
+      IF (  E3DF(1,1).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)))
+      IF (  E3DF(1,2).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)))
+      IF (  E3DF(1,3).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)))
+      IF (  E3DF(1,4).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,4)))
+      IF (  E3DF(1,5).GT.0 ) &
+         ALLOCATE(WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,5)))
+!
+      IF (  E3DF(1,1).GT.0 ) WADATS(IMOD)%EF      = UNDEF
+      IF (  E3DF(1,2).GT.0 ) WADATS(IMOD)%TH1M    = UNDEF
+      IF (  E3DF(1,3).GT.0 ) WADATS(IMOD)%STH1M   = UNDEF
+      IF (  E3DF(1,4).GT.0 ) WADATS(IMOD)%TH2M    = UNDEF
+      IF (  E3DF(1,5).GT.0 ) WADATS(IMOD)%STH2M   = UNDEF
+
 !
 ! 4) Spectral Partitions parameters
 !
@@ -939,16 +951,6 @@
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
 !                    by specific variables defined through the mod_def file 
 !                    and read by w3iogr, which is called before W3DIMA. 
-      IF (  E3DF(1,1).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)))
-      IF (  E3DF(1,2).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)))
-      IF (  E3DF(1,3).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)))
-      IF (  E3DF(1,4).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,5)))
-      IF (  E3DF(1,5).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,4)))
       IF (  P2MSF(1).GT.0 ) ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)))
       IF (  US3DF(1).GT.0 ) ALLOCATE(WADATS(IMOD)%US3D(NSEALM,NK*2)) ! maybe use US3DF(2:3)
 !
@@ -1016,6 +1018,8 @@
       ALLOCATE ( WADATS(IMOD)%USERO(NSEALM,NOEXTR) )
 !
       WADATS(IMOD)%USERO  = UNDEF
+!
+      ALLOCATE (WADATS(IMOD)%WN(0:NK+1,0:NSEA))
 !
       IF ( FL_ALL ) THEN
 !
@@ -1321,7 +1325,11 @@
           ALLOCATE ( WADATS(IMOD)%XSTH2M(1,1) )
         END IF
 !
-      WADATS(IMOD)%XEF   = UNDEF
+      WADATS(IMOD)%XEF     = UNDEF
+      WADATS(IMOD)%XTH1M   = UNDEF
+      WADATS(IMOD)%XSTH1M  = UNDEF
+      WADATS(IMOD)%XTH2M   = UNDEF
+      WADATS(IMOD)%XSTH2M  = UNDEF
 !
       IF ( FLAGS( 4, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPHS(NXXX,0:NOSWLL) )
@@ -2115,6 +2123,8 @@
 !
           USERO  => WADATS(IMOD)%USERO
 !
+          WN     => WADATS(IMOD)%WN
+!
           IF ( FL_ALL ) THEN
 !
               CG     => WADATS(IMOD)%CG
@@ -2260,6 +2270,7 @@
 !/                  +-----------------------------------+
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
+!/    30-Apr-2014 : Add s/th1-2m                        ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -2328,6 +2339,10 @@
 !         THP1   => WADATS(IMOD)%XTHP1
 !
           EF     => WADATS(IMOD)%XEF
+          TH1M   => WADATS(IMOD)%XTH1M
+          STH1M  => WADATS(IMOD)%XSTH1M
+          TH2M   => WADATS(IMOD)%XTH2M
+          STH2M  => WADATS(IMOD)%XSTH2M
 !
           PHS    => WADATS(IMOD)%XPHS
           PTP    => WADATS(IMOD)%XPTP

@@ -88,8 +88,8 @@
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
 !/    02-Dec-2013 : Update of ST4                       ( version 4.16 )
-!/    10-Mar-2014 : Adding namelist for IC2             ( version 5.xx )
-!/    29-May-2014 : Adding namelist for IC3             ( version 5.xx )
+!/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
+!/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -164,7 +164,7 @@
 !     The physical grid is defined by a grid counter IX defining the
 !     discrete longitude and IY defining the discrete latitude as shown
 !     below. For mathemathical convenience, these grid axes will
-!     generally be denoted as the X and Y axes. Two-diemsnional arrays
+!     generally be denoted as the X and Y axes. Two-dimensional arrays
 !     describing parameters on this grid are given as A(IY,IX).
 !
 !           IY=NY
@@ -192,7 +192,7 @@
 !
 !             MAPFS(IY,IX) = ISEA
 !
-!     ISEA = 0 corresponds to land points. The map MAPFS gives the grid
+!     ISEA = 0 corresponds to land points. The map MAPSF gives the grid
 !     counters (IY,IX) for a given storage point ISEA.
 !
 !             MAPSF(ISEA,1) = IX
@@ -1863,6 +1863,22 @@
 !
 !/IG1       IGMETHOD = 2
 !/IG1       IGADDOUTP= 0 
+!/IG1       IGSOURCE = 1
+!/IG1       IGSTERMS = 0
+!/IG1       IGMAXFREQ=0.035
+!/IG1       IGSOURCEATBP = 0
+!/IG1       IGBCOVERWRITE = 1
+!/IG1       IGSWELLMAX = .FALSE.
+!/IG1       IGKDMIN = 1.1
+!/IG1       IGFIXEDDEPTH = 0.
+!/IG1       IGEMPIRICAL = 0.0008
+!
+!/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
+!/IG1      WRITE (NDSO,970) STATUS
+!
+!
+!/IG1       IGMETHOD = 2
+!/IG1       IGADDOUTP= 0 
 !/IG1       IGSOURCE = 2
 !/IG1       IGSTERMS = 0
 !/IG1       IGMAXFREQ=0.03
@@ -1899,9 +1915,6 @@
 !/IC3      CALL READNL ( NDSS, 'IC3 ', STATUS )
 !/IC3      WRITE (NDSO,971) STATUS
 
-!
-      CALL READNL ( NDSS, 'MISC', STATUS )
-      WRITE (NDSO,960) STATUS
 !
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
@@ -3582,7 +3595,6 @@
 !/REF1      ELSE
 !/REF1        CALL W3SETREF
         END IF
-     
 !/REF1! 
 !/REF1!  9.a Reads shoreline slope  (whith REF1 switch only)
 !/REF1!

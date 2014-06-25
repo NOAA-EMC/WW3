@@ -105,7 +105,7 @@
 !/    17-Nov-2013 : Coupling fraction of ice-free       ( version 4.13 )
 !/                  surface to SIN and SDS. (S. Zieger)
 !/    01-Avr-2014 : Adding ice thickness and floe size  ( version 4.18 )
-!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.xx )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.02 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -478,7 +478,7 @@
 !/IG1! Does not integrate source terms for IG band if IGPARS(12) = 0. 
 !/IG1! 
 !/IG1      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5)) 
-      IS1=IKS1*NTH+1
+      IS1=(IKS1-1)*NTH+1
 !
 !/LN0      VSLN = 0.
 !/SEED      VSLN = 0.
@@ -685,8 +685,8 @@
 !/ST2        CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
 !/ST3        CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
 !/ST3                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
-!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, VSDS,    &
-!/ST4                      VDDS, IX, IY, BRLAMBDA, WHITECAP )
+!/ST4        CALL W3SDS4 ( SPEC, WN1, CG1,              &
+!/ST4                                  USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY, WHITECAP )
 !/ST6        CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 !/STX        CALL W3SDSX
 !

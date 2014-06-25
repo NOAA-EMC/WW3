@@ -1,8 +1,9 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Field preprocessor input file                          $
 $ -------------------------------------------------------------------- $
-$ Mayor types of field and time flag
+$ Major types of field and time flag
 $   Field types  :  ICE   Ice concentrations.
+$                   ISI   Icebergs and sea ice.
 $                   LEV   Water levels.
 $                   WND   Winds.
 $                   WNS   Winds (including air-sea temp. dif.)
@@ -27,7 +28,8 @@ $                   incremental generation of a data file.)
 $
   'WND' 'LL' T T
 $
-$ Name of dimensions ------------------------------------------------- $
+$ Name of spatial dimensions------------------------------------------ $
+$ NB: time dimension is expected to be called 'time'
 $
  longitude latitude
 $

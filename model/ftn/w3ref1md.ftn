@@ -15,6 +15,7 @@
 !/    24-Fev-2012 : Correction of angle in fluxes       ( version 4.05 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.11 )
 !/    11-Nov-2013 : Extends IG energy into main band    ( version 4.13 )
+!/    11-Jun-2014 : Put reflection by subgrids back     ( version 5.01 )
 !/ 
 !  1. Purpose :
 !
@@ -363,10 +364,8 @@
           IF (REFPARS(6).GT.0) THEN
             RAMP=(MAX((0.75*TPI*FMEANA/SIG(IK)),1.)**REFPARS(10))*RAMP0
             RAMP1=MIN(REFPARS(9),REFLC(1)*RAMP)
-            RAMP2=MIN(REFPARS(9),REFLC(2)*RAMP)
           ELSE
             RAMP1=RAMP0*REFLC(1)
-            RAMP2=RAMP0*REFLC(2)
             END IF
 !
 ! Special treatment for unstructured grids
@@ -477,13 +476,24 @@
             END IF  ! UNGTYPE
 
           END DO ! loop on IK
-        END IF
+        END IF   ! end of test on REFLC(1)
 !
 !  Add diffuse reflection due to subgrid islands and icebergs
 !  At present this feature is not supported for unstructured grids. 
 !
       IF (    ((REFPARS(2).GT.0.).AND.((TRNX+TRNY).LT.2))     &
         .OR.((REFPARS(4).GT.0.).AND.(BERG.GT.0)       )   ) THEN 
+!
+! Includes frequency dependence (see Elgar et al. JPO 1994)
+!       
+          IF (REFPARS(6).GT.0) THEN
+            RAMP=(MAX((0.75*TPI*FMEANA/SIG(IK)),1.)**REFPARS(10))*RAMP0
+            RAMP2=MIN(REFPARS(9),REFLC(2)*RAMP)
+          ELSE
+            RAMP2=RAMP0*REFLC(2)
+            END IF
+
+
         R2X=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
             + RAMP2*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
         R2Y=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
@@ -517,7 +527,6 @@
 !/IG1        END IF
 !/IG1     ENDDO ! ICALC = 1,2
 !/IG1     A(1:NSPECIG)=ATMP2(1:NSPECIG)   ! removes bound IG components ... 
-
 !/
 !/ End of W3SREF ----------------------------------------------------- /
 !/

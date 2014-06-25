@@ -10,7 +10,7 @@
 !/                  | Last update :         10-Mar-2014 |
 !/                  +-----------------------------------+
 !/
-!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01 )
 !/
 !/    For updates see W3SIC1 documentation.
 !/
@@ -24,7 +24,9 @@
 !          subroutine "LIU_REVERSE_DISPERSION".
 !
 !          Includes generalization by F. Ardhuin with viscous and tubulent 
-!          boundary layers 
+!          boundary layers. That part is activating by setting namelist 
+!          parameters that define the under-ice roughness and a friction 
+!          coefficient. For example: &IC2 IC2TURB = 1. , IC2ROUGH =0.02
 !
 !        References for Subtype 2:
 !              Liu et al.    1991: JGR 96 (C3), 4605-4621
@@ -81,7 +83,8 @@
 !/    16-Oct-2012 : Origination.                        ( version 4.04 )
 !/                                                        (E. Rogers)
 !/    09-Oct-2013 : W3SIC1 SUBTYPE=2 outsourced to W3SIC2 (S. Zieger)
-!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.02
+ )
 !/
 !/        FIXME   : Move field input to W3SRCE and provide
 !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
