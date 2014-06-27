@@ -93,6 +93,7 @@
   then
     opt="$opt -I$PALM_LIBDIR -I$PALM_DIR"
   fi
+
   if [ "$omp_mod" = 'yes' ]
   then
     opt="$opt -openmp"

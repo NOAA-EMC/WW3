@@ -124,7 +124,7 @@
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
                           CGE, T01, HSIG
-      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,     &
+      USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
       IMPLICIT NONE

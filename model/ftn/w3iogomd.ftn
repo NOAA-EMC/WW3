@@ -520,8 +520,6 @@
 !
 ! Group 7
 !
-! Group 7
-!
            CASE('ABR')
              FLG2D(7,1)=.TRUE.
            CASE('UBR')
@@ -2036,7 +2034,7 @@
                     !WRITE ( NDSOG ) ABD(1:NSEA)
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
                     DO ISEA=1, NSEA
-                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
+                      IF ( UBA(ISEA) .NE. UNDEF ) THEN
                           AUX1(ISEA) = UBA(ISEA)*COS(UBD(ISEA))
                           AUX2(ISEA) = UBA(ISEA)*SIN(UBD(ISEA))
                         ELSE
