@@ -7,6 +7,8 @@
 #                                                                             #
 # use   : ad3 basename [itest [icomp]]                                        #
 #            basename: name of source code file without the '.ftn' extension. #
+#                      file with .f or .f90 extension is not preprocessed.    #
+#                      file with .c extension uses standard cc compiler.      #
 #            itest   : test output switch.                                    #
 #                       not defind or 0 : no test output                      #
 #                       all other       : verbose mode                        #
@@ -31,7 +33,9 @@
 #    file $ww3_env, as is the scratch directory ($temp_dir). The following    #
 #    directories are used :                                                   #
 #       $main_dir/ftn : Raw FORTRAN file ($basename.ftn). If extension is     #
-#                       not .ftn, w3adc will be skipped.                      #
+#                       not .ftn, w3adc will be skipped. if the extension is  # 
+#                       .c, then the simple cc compiler is used. The latter   #
+#                       is now used for profiling code only.                  #
 #       $main_dir/bin : File with preprocessor switches 'switch', and         #
 #                       compiler script 'comp'.                               #
 #       $main_dir/obj : Final object modules ($basename.o).                   #
@@ -50,15 +54,11 @@
 #  - Check the compress variable in section 1.b to print or suppress the_     #
 #    documentation in the clean FORTRAN files.                                #
 #                                                                             #
-#  - To comply with NCEP NCO documentation rules the inlude string !docb_     #
-#    is replaced with the 'docblock' file from the directory 'doc_dir' if     #
-#    such a file and directory are found. If the directory or file are not    #
-#    found, the comment string will be left in place.                         #
-#                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
+#                                                      January 2014           #
 #                                                                             #
-#    Copyright 2009 National Weather Service (NWS),                           #
+#    Copyright 2009-2014 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -98,7 +98,6 @@
 
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
   switch="switch"          # file containing switches
-  doc_dir=doc90            # docblock directory
   compress=0               # source code compression par in w3adc
                            # if not 0, documentaion removed from .f90 file
 
@@ -136,8 +135,6 @@
     path_i="$path_i/SCRIP"
   fi
 
-  doc_dir=$main_dir/$doc_dir
-
   sw_str=`cat $path_b/$switch`
 
   if [ ! -d $path_w ]
@@ -168,32 +165,34 @@
   # must match the same list defined in make_makefile.sh
   cpp_ftn_files="wmesmfmd"
 
-  if [ -f $path_i/$name.ftn ]
+  suffixes="ftn f F f90 F90 c"
+  fexti=none
+  for s in $suffixes
+  do
+    if [ -f $path_i/$name.$s ]
+    then
+      fexti=$s
+      break
+    fi
+  done
+  if [ "$fexti" = 'none' ]
   then
-    fext=f90
+    echo '      *** ad3 error ***'
+    echo "          Source file $path_i/$name.* not found"
+    echo "          Source file suffixes checked: $suffixes"
+    exit 2
+  fi
+  if [ "$fexti" = 'ftn' ]
+  then
+    fexto=f90
     if [ -n "`echo $cpp_ftn_files | grep $name`" ]
     then
-      fext=F90
+      fexto=F90
     fi
   else
-    suffixes="f F f90 F90"
-    fext=none
-    for s in $suffixes
-    do
-      if [ -f $path_i/$name.$s ]
-      then
-        fext=$s
-        break
-      fi
-    done
-    if [ "$fext" = 'none' ]
-    then
-      echo '      *** adc error ***'
-      echo "          Fortran file $path_i/$name.* not found"
-      echo "          Fortran file suffixes checked: $suffixes"
-      exit 5
-    fi
+    fexto=$fexti
   fi
+  fext=$fexto
 
 # 1.g Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -234,24 +233,7 @@
 
 # 2.b Add NCEP/NCO docmentation  - - - - - - - - - - - - - - - - - - - - - - -
 
-    if [ -d $doc_dir ]
-    then
-      doc_data="`sed -n '/^.docb_/p' $path_i/$name.ftn 2> /dev/null | awk '{ print $1}'`"
-      if [ -n "$doc_data" ]
-      then
-        for doc_string in $doc_data
-        do
-          doc_ID=`echo $doc_string | cut -c1-6`
-          doc_file=`echo $doc_string | sed "s/$doc_ID//g"`
-          if [ -f $doc_dir/$doc_file ]
-          then
-            echo "'$doc_string' '$doc_dir/$doc_file' "  >> w3adc.inp
-          else
-            echo "         File $doc_file in $doc_dir not found."
-          fi
-        done
-      fi
-    fi
+# Obsolete feature, removed
 
 # 2.c Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -341,15 +323,18 @@
   rm -f *.mod
 
 # --------------------------------------------------------------------------- #
-# 3. Compile source code.                                                     #
+# 3. Compile source code f / f90                                              #
 # --------------------------------------------------------------------------- #
+
+if [ ! -f $name.c ]
+then
+
 # 3.a Run compile program
 
   error='0'
 
   export fext    # for use by comp
   export path_m  # for use by comp
-#OLD  export ldflags # for use by link
 
   if $path_b/comp $name > comp.out 2> comp.err
   then
@@ -439,5 +424,29 @@
   fi
 
   exit $error
+
+# --------------------------------------------------------------------------- #
+# 4. Compile source code c                                                    #
+# --------------------------------------------------------------------------- #
+# For now only diagnostics / profiling codes compiled with simple cc compiler
+
+else
+
+# 4.a Compile
+
+  cc -c $name.c
+
+# 4.b Save object file
+
+  if [ -f $name.o ]
+  then
+    mv $name.o $path_o/.
+  else
+    echo '      *** compile error ***'
+    echo "          file $name.o not found"
+    error='6'
+  fi
+
+fi
 
 # End of ad3 ---------------------------------------------------------------- #

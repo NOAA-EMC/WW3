@@ -428,6 +428,7 @@
       netcdf ) netcdf=$sw;;
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
+      mprf   ) mprf=$sw ;;
               *    ) ;;
     esac
   done
@@ -657,6 +658,13 @@
       echo ' ' ; exit 8
   fi
 
+  if [ "$mprf" = "MPRF" ]
+  then
+    mprfaux='w3getmem'
+  else
+    mprfaux=$NULL
+  fi
+
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
   echo ' '                                       >> makefile
@@ -744,7 +752,7 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
-                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd"
+                aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
                 aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -764,7 +772,7 @@
                source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $tidecode" 
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
                 aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
@@ -942,7 +950,7 @@
   for file in `cat filelist`
   do
 
-    suffixes="ftn f F f90 F90"
+    suffixes="ftn f F f90 F90 c"
     fexti=none
     for s in $suffixes
     do
@@ -955,8 +963,8 @@
     if [ "$fexti" = 'none' ]
     then
       echo '      *** make_makefile.sh error ***'
-      echo "          Fortran file $main_dir/ftn/$file.* not found"
-      echo "          Fortran file suffixes checked: $suffixes"
+      echo "          Source file $main_dir/ftn/$file.* not found"
+      echo "          Source file suffixes checked: $suffixes"
       exit 2
     fi
     if [ "$fexti" = 'ftn' ]
@@ -983,8 +991,13 @@
     fi
     rm -f ad3.out
 
-    grep USE $file.$fexto  > check_file
-    grep use $file.$fexto >> check_file
+    if [ "$fexto" = 'c' ]
+    then
+      touch check_file
+    else
+      grep USE $file.$fexto  > check_file
+      grep use $file.$fexto >> check_file
+    fi
     rm -f $file.$fexto
 
     for mod in W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
@@ -1010,7 +1023,8 @@
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD \
+               w3getmem
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1104,6 +1118,7 @@
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
          'WMESMFMD'     ) modtest=wmesmfmd.o ;;
+         'w3getmem'     ) modtest=w3getmem.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
