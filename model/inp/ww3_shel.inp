@@ -263,7 +263,7 @@ $
 $
      0.0   0.0  'STOPSTRING'
 $
-$ Type 3 : Output along  track.
+$ Type 3 : Output along track.
 $          Flag for formatted input file.
 $                         The data files are track_i.ww3 and
 $                         track_o.ww3, see w3iotr.ftn for ad. doc.
