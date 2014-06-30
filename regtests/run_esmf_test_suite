@@ -13,10 +13,10 @@ export NETCDF_INCDIR="/common/netcdf/pgi/include"
 
 testcases=""
 testcases="$testcases mww3_test_02"
-#testcases="$testcases mww3_test_03"
-#testcases="$testcases mww3_test_04"
-#testcases="$testcases mww3_test_05"
-#testcases="$testcases mww3_test_06"
+testcases="$testcases mww3_test_03"
+testcases="$testcases mww3_test_04"
+testcases="$testcases mww3_test_05"
+testcases="$testcases mww3_test_06"
 
 
 for testcase in $testcases
