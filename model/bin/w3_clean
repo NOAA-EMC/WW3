@@ -325,4 +325,25 @@ EOF
     fi
   fi
 
+# --------------------------------------------------------------------------- #
+# 5. Regtests directories                                                      #
+# --------------------------------------------------------------------------- #
+
+  if [ $clobber ]
+  then
+    if [ -d $main_dir ]
+    then
+      if [ -d $main_dir/../regtests ]
+      then
+        echo "   Clean up $main_dir/../regtests"
+        cd $main_dir/../regtests
+        for work in $(find . -type d -name "work*")
+        do
+          echo "   Remove $work"
+          rm -fr $work
+        done
+      fi
+    fi
+  fi
+
 # End of w3_clean ----------------------------------------------------------- #

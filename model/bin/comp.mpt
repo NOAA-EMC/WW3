@@ -64,25 +64,42 @@
 
 # 2.a Determine file extension - - - - - - - - - - - - - - - - - - - - - - - - 
 #     .f90 assumes free format, .f assumes fixed format, change if necessary
-# *** file extension (fext) is set and exported by calling program (ad3) ***
+
+  if [ -f $name.f90 ]
+  then
+    fext='f90'
+  else
+    fext='f'
+  fi
 
 # 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #     Save compiler exit code in $OK
 #
 # Intel compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
+#       Note that all but GrADS output is forced to big endian data
 
 # opt="-c -list -O3 -unroll -tpp7 -Zp8 -module $path_m"
- opt="-c  -O3 -assume byterecl -convert big_endian -module  $path_m"
+ opt="-c  -O3 -assume byterecl -module  $path_m"
+
+  if [ "$name" != 'gx_outp' ] && [ "$name" != 'gx_outf' ]
+  then
+    opt="$opt -convert big_endian"
+  fi
 
   if [ "$mpi_mod" = 'yes' ]
   then
     opt="-c -fast -assume byterecl  -convert big_endian -module   $path_m"
-    comp=mpiifort
+    comp=ifort
   else
     comp=ifort
   fi
-  echo $palm_mod
+
+  if [ "$oasis_mod" = 'yes' ]
+  then
+    opt="$opt -I$OASISDIR/build/lib/psmile.MPI1"
+  fi
+
   if [ "$palm_mod" = 'yes' ]
   then
     opt="$opt -I$PALM_LIBDIR -I$PALM_DIR"
@@ -101,8 +118,6 @@
            opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
     esac
   fi
-
-  opt="$opt $ESMF_F90COMPILEPATHS"
 
 # 2.b.2 Compile
 

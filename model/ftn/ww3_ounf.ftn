@@ -15,6 +15,7 @@
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.10 )
 !/    02-Jul-2013 : Bug correction for lat in unst grid ( version 4.11 )
 !/    02-Nov-2013 : Removes unnecessary IDFM            ( version 4.12 )
+!/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -451,6 +452,7 @@
 !/    28-Feb-2013 : New option for float output         ( version 4.08 )
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.09 )
 !/    12-Apr-2013 : Allows curvilinear grids            ( version 4.10 ) 
+!/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/
 !  1. Purpose :
 !
@@ -519,7 +521,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: NX, NY, NSEA, E3DF(3), P2MSF(3), US3DF(3), NCTYPE,  &
+      INTEGER, INTENT(IN)     :: NX, NY, NSEA, E3DF(3,5), P2MSF(3), US3DF(3), NCTYPE,  &
                                  NCVARTYPEI
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
@@ -602,8 +604,8 @@
 !
 !     Set-up transfer files
 !
-      MFILL  = NF90_FILL_SHORT !-9999
-      MFILLR  = NF90_FILL_FLOAT !-9999
+      MFILL  = NF90_FILL_SHORT
+      MFILLR  = NF90_FILL_FLOAT
       IF (GTYPE.NE.UNGTYPE) THEN
         COORDTYPE=1
       ELSE
@@ -1008,8 +1010,8 @@
               ENAME  = '.ef'
               varng(1)=varns(1)
               varng(1)=varns(1)
-              I1F=E3DF(2)
-              I2F=E3DF(3)
+              I1F=E3DF(2,1)
+              I2F=E3DF(3,1)
               DO IK=I1F,I2F
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,EF(:,IK),MAPSF, XX )
                 IF (NCVARTYPE.EQ.2) WHERE ( XX.GE.0.) XX = ALOG10(XX+1E-12)
@@ -1029,14 +1031,14 @@
               varnc(1)=''
               UNITS  = 'degree'
               ENAME  = '.th1m'
-              I1F=1
-              I2F=NK
-              DO IK=1,NK
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,EF(:,IK),MAPSF, XX )
+              I1F=E3DF(2,2)
+              I2F=E3DF(3,2)
+              DO IK=I1F,I2F
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TH1M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
               vmin = 0 
-              vmax = 900
+              vmax = 3600
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
               NFIELD = 1
@@ -1049,14 +1051,14 @@
               varnc(1)=''
               UNITS  = 'degree'
               ENAME  = '.sth1m'
-              I1F=1
-              I2F=NK
-              DO IK=1,NK
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,EF(:,IK),MAPSF, XX )
+              I1F=E3DF(2,3)
+              I2F=E3DF(3,3)
+              DO IK=I1F,I2F
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,STH1M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
               vmin = 0 
-              vmax = 90
+              vmax = 9000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
               NFIELD = 1
@@ -1069,14 +1071,14 @@
               varnc(1)=''
               UNITS  = 'degree'
               ENAME  = '.th2m'
-              I1F=1
-              I2F=NK
-              DO IK=1,NK
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,EF(:,IK),MAPSF, XX )
+              I1F=E3DF(2,4)
+              I2F=E3DF(3,4)
+              DO IK=I1F,I2F
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TH2M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
               vmin = 0 
-              vmax = 900
+              vmax = 3600
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
               NFIELD = 1
@@ -1089,14 +1091,14 @@
               varnc(1)=''
               UNITS  = 'degree'
               ENAME  = '.sth2m'
-              I1F=1
-              I2F=NK
-              DO IK=1,NK
-                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,EF(:,IK),MAPSF, XX )
+              I1F=E3DF(2,5)
+              I2F=E3DF(3,5)
+              DO IK=I1F,I2F
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,STH2M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
               vmin = 0 
-              vmax = 90
+              vmax = 9000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
               FSC    = 0.001
@@ -1109,10 +1111,11 @@
                 XK(:,:,IK)=XX
                 END DO
               NFIELD=1
+              FLFRQ  = .TRUE.
               varnm(1)='wn'
               varnl(1)='wave numbers'
               varns(1)='wave_numbers'
-             varng(1)='wave_numbers'
+              varng(1)='wave_numbers'
               varnc(1)=''
               vmin = 0 
               vmax = 32000
@@ -1955,7 +1958,7 @@
 !
             S2=LEN_TRIM(ENAME)
             S1=LEN_TRIM(FILEPREFIX)+S4
-            FNAMENC(S1+1:S1+7)='       '
+            FNAMENC(S1+1:50)='       '
             FNAMENC(S1+1:S1+1) = '_'
    
             IF (GTYPE.NE.UNGTYPE) THEN      
