@@ -1,0 +1,43 @@
+\newcommand{\la }{  10}
+\newcommand{\lab}{ 110}
+\newcommand{\lb }{ 160}
+\newcommand{\ca }{ 510}
+\newcommand{\cab}{ 610}
+\newcommand{\cb }{ 660}
+\newcommand{\ra }{1010}
+\newcommand{\rab}{1110}
+\newcommand{\rb }{1160}
+\setlength{\unitlength}{0.1mm}
+
+\begin{figure}
+\begin{picture}(1370,500)(0,-400)
+
+\subr{\la}{   0}{w3grid}
+\subr{\lb}{-100}{readnl}
+\subr{\lb}{-200}{distab}
+\subr{\lb}{-300}{inptab}
+\subr{\lb}{-400}{w3iogr}
+\put(\lab,-370){\line(0,1){370}}
+\multiput(\lab,-370)(0,100){4}{\line(1,0){50}}
+
+\subr{\ca}{   0}{w3strt}
+\subr{\cb}{-100}{w3iogr}
+\subr{\cb}{-200}{w3iors}
+\put(\cab,-170){\line(0,1){170}}
+\multiput(\cab,-170)(0,100){2}{\line(1,0){50}}
+
+\subr{\ra}{   0}{w3prep}
+\subr{\rb}{-100}{w3iogr}
+\subr{\rb}{-200}{w3fldp}
+\subr{\rb}{-300}{w3fldo}
+\subr{\rb}{-400}{w3fldg}
+\put(\rab,-370){\line(0,1){370}}
+\multiput(\rab,-370)(0,100){4}{\line(1,0){50}}
+
+\end{picture}
+
+\caption{Subroutine structure of pre-processors}
+\label{fig:prepro}
+
+\botline
+\end{figure}

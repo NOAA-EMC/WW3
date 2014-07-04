@@ -1,0 +1,36 @@
+\begin{figure}
+\begin{center} \begin{tabular}{|c|} \hline 
+\begin{minipage}[t]{4.5in}
+\begin{verbatim}
+
+!/     
+!/ Data structures
+!/                              
+      TYPE GRID
+        INTEGER               :: NX, NY, NSEA
+        REAL, POINTER         :: ZB(:)
+      END TYPE GRID
+!/     
+!/ Data storage
+!/     
+      TYPE(GRID), TARGET, ALLOCATABLE :: GRIDS(:)
+!/    
+!/ Data aliasses
+!/ 
+      INTEGER, POINTER        :: NX, NY, NSEA
+      REAL, POINTER           :: ZB(:):
+!/
+
+\end{verbatim}
+\end{minipage} \\ \hline
+\end{tabular} \end{center}
+
+\caption{Example of the data structure declarations used in {\file
+         w3gdatmd.ftn} to define multiple spatial grids in the wave
+         model. For simplicity, the example considers only the grid
+         dimensions {\F nx}, {\F ny} and {\F nsea}, and the bottom
+         depth array {\F zb}.}
+\label{fig:struc_1}
+
+\botline
+\end{figure}
