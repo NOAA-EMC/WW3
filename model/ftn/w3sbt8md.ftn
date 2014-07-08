@@ -42,6 +42,7 @@
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      CSINH     Subr.   ??     Complex sinh function
 !      CCOSH     Subr.   ??     Complex cosh function
+!      Z_WNUMB   Subr.   ??     Compute wave number from freq & depth
 !     ----------------------------------------------------------------
 !
 !  5. Remarks :
@@ -138,7 +139,6 @@
       USE CONSTANTS, ONLY: PI,GRAV,DWAT,NU_WATER
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3DISPMD, ONLY: WAVNU1
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -218,7 +218,6 @@
       REAL    :: RHOM      
       REAL    :: KINVISM      
       REAL    :: THICKM
-      REAL    :: CG_UNMUD
 
       INTEGER :: ICOUNT      
       INTEGER :: IK      
@@ -279,7 +278,7 @@
         SIGMA = SIG(IK)
 
         !     un-muddy wave number, to start things off 
-        CALL WAVNU1(SIGMA,H_WDEPTH,K_UNMUD,CG_UNMUD)
+        CALL Z_WNUMB(SIGMA,H_WDEPTH,GRAV,K_UNMUD)
         K=K_UNMUD
 
         !     start iterative loop
@@ -442,6 +441,72 @@
 !/ End of W3SBT8 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SBT8
+
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE Z_WNUMB(OM,DEPTH,GRAV,ZWN)
+    !------------------------------------------------------------------/
+    !
+    !   +-------+    ALKYON HYDRAULIC CONSULTANCY & RESEARCH
+    !   |       |    GERBRANT VAN VLEDDER
+    !   |   +---+
+    !   |   | +---+
+    !   +---+ |   |
+    !         +---+
+    !
+        IMPLICIT NONE
+    !
+    !  0. UPDATE HISTORY
+    !
+    !     01/04/1999  INITIAL VERSION
+    !     12/01/2001  GRAV ADDED AS INPUT PARAMETER
+    !     11/04/2001  CHECK INCLUDED FOR THE CASE OM < 0 OR DEPTH < 0
+    !
+    !  1. PURPOSE:
+    !
+    !     COMPUTE WAVE NUMBER K FOR A GIVEN RADIAN FREQUENCY AND WATER DEPTH
+    !
+    !  2. METHOD
+    !
+    !     FINITE DEPTH LINEAR DISPERSION RELATION, USING A PADE APPROXIMATION
+    !
+    !  3. PARAMETER LIST:
+    !
+    !TYPE   I/O           NAME     DESCRIPTION
+    !------------------------------------------------------------------/
+        REAL, INTENT(IN)  ::  OM    ! radian frequency (rad)
+        REAL, INTENT(IN)  ::  DEPTH ! water depth (m)
+        REAL, INTENT(IN)  ::  GRAV  ! gravitational acceleration (m/s^2)
+        REAL, INTENT(OUT) ::  ZWN   ! wave number
+    !
+    !  4. SUBROUTINES USED
+    !
+    !  5. ERROR MESSAGES
+    !
+    !  6. REMARKS
+    !
+    !   1) The PADE approximation has been described in Hunt, 198?.
+    !   2) In WW3, this might be better done as a call to WAVNU1, 
+    !      For example:
+    !      USE W3DISPMD, ONLY: WAVNU1
+    !      CALL WAVNU1(SIGMA(IK),DPT,K_OCEAN,CG_OCEAN)
+
+        REAL X,XX,Y,OMGG
+
+        IF(DEPTH<=0 .OR. OM<= 0.) THEN
+           ZWN = -10.
+        ELSE
+           OMGG   = OM**2/GRAV
+           Y       = OMGG*DEPTH
+           XX      = Y*(Y+1./(1.+Y*(0.66667+Y*(0.35550+Y*(0.16084+ &
+              Y*(0.06320+Y*(0.02174+Y*(0.00654+Y*(0.00171+  &
+              Y*(0.00039+Y*0.00011))))))))))
+           X       = SQRT(XX)
+           ZWN = X/DEPTH
+        END IF
+
+        RETURN
+      END SUBROUTINE Z_WNUMB
 
 !/ ------------------------------------------------------------------- /
 

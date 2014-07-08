@@ -50,7 +50,7 @@
 !
 !      - The flag for generating test output files is included here as
 !        it is needed in both ww3_shel and ww3_multi at the same time.
-!        Make sure that this flag is true if you want to weite to the 
+!        Make sure that this flag is true if you want to write to the 
 !        test output file !
 !
 !/ ------------------------------------------------------------------- /

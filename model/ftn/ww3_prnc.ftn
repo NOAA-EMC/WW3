@@ -506,6 +506,7 @@
 ! instanciates time
 !
       iret=nf90_inq_varid(ncid,"time",varidtmp)
+      IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
       CALL check_err(iret)
       iret=nf90_get_att(ncid,varidtmp,"units",timeunits)
       IF (INDEX(timeunits, "seconds").NE.0) THEN
@@ -529,7 +530,7 @@
       NYI=0 
       NDIMSGRID=2
       DO i=1,NDIMSVAR
-        IF (dimname(i) .EQ. "time") NTI = dimln(i)
+        IF (dimname(i) .EQ. "time".OR.dimname(i) .EQ."MT") NTI = dimln(i)
         IF (dimname(i) .EQ. DIMSNAME(1)) NXI = dimln(i)
         IF (dimname(i) .EQ. DIMSNAME(1).AND.NIDIMS.EQ.1) THEN
           NDIMSGRID=1
@@ -547,6 +548,7 @@
         ALLOCATE (ALO(NXI,NYI))
         iret=nf90_inq_varid(ncid,"longitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lon",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"Longitude",varidtmp)
         IRET = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         call check_err(iret)
         IF (numDimsLon.EQ.1) THEN
@@ -570,6 +572,7 @@
 !
         iret=nf90_inq_varid(ncid,"latitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lat",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"Latitude",varidtmp)
         iret = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         CALL check_err(iret)
         iret=nf90_get_var(ncid,varidtmp,Y0I, start=(/1/))
@@ -1089,6 +1092,7 @@
           END IF
 !/MPI     END IF
         iret=nf90_inq_varid(ncid,"time",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
         CALL check_err(iret)
         ALLOCATE(ALLTIMES(NTI))
         iret=nf90_get_var(ncid,varidtmp,ALLTIMES,start=(/1/))
@@ -1360,6 +1364,7 @@
           IF ( FLTIME ) THEN
 !
             iret=nf90_inq_varid(ncid,"time",varidtmp)
+            IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
             CALL check_err(iret)
             iret=nf90_get_var(ncid,varidtmp,datecur,start=(/ITIME/))
             call check_err(iret)

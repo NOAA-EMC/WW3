@@ -117,6 +117,8 @@
 !      PHIOC     R.A.  Public   Waves to ocean energy flux.
 !      TUSX/Y    R.A.  Public   Volume transport associated to Stokes drift.
 !      USSX/Y    R.A.  Public   Surface Stokes drift.
+!      TAUICE    R.A.  Public   Wave-ice momentum flux.
+!      PHICE     R.A.  Public   Waves to ice energy flux.
 !
 !      US3D      R.A.  Public   3D Stokes drift.
 !
@@ -160,7 +162,7 @@
 !      PHS       R.A.  Public   Wave height of partition.
 !      PTP       R.A.  Public   Peak period of partition.
 !      PLP       R.A.  Public   Peak wave leingth of partition.
-!      PDIR      R.A.  Public   Mean direciotn of partition.
+!      PDIR      R.A.  Public   Mean direction of partition.
 !      PSI       R.A.  Public   Mean spread of partition.
 !      PWS       R.A.  Public   Wind sea fraction of partition.
 !
@@ -360,12 +362,14 @@
         REAL, POINTER         ::  SXX(:),  SYY(:),  SXY(:),  TAUOX(:),&
                                   TAUOY(:),  BHD(:),  PHIOC(:),       &
                                   TUSX(:),  TUSY(:),  USSX(:),        &
-                                  USSY(:),  PRMS(:),  TPMS(:)
+                                  USSY(:),  PRMS(:),  TPMS(:),        &
+                                  PHICE(:), TAUICE(:,:)
         REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:)
         REAL, POINTER         :: XSXX(:), XSYY(:), XSXY(:), XTAUOX(:),&
                                  XTAUOY(:), XBHD(:), XPHIOC(:),       &
                                  XTUSX(:), XTUSY(:), XUSSX(:),        &
-                                 XUSSY(:), XPRMS(:), XTPMS(:)
+                                 XUSSY(:), XPRMS(:), XTPMS(:),        &
+                                 XPHICE(:), XTAUICE(:,:)
         REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:)
 !
 ! Output fields group 7)
@@ -488,7 +492,8 @@
       REAL, POINTER           :: SXX(:), SYY(:), SXY(:), TAUOX(:),    &
                                  TAUOY(:), BHD(:), PHIOC(:),          &
                                  TUSX(:), TUSY(:), USSX(:), USSY(:),  &
-                                 PRMS(:), TPMS(:)
+                                 PRMS(:), TPMS(:), PHICE(:),          &
+                                 TAUICE(:,:)
       REAL, POINTER           :: P2SMS(:,:), US3D(:,:)
 !
       REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
@@ -939,7 +944,9 @@
                  WADATS(IMOD)%USSX  (NSEALM) ,                        &
                  WADATS(IMOD)%USSY  (NSEALM) ,                        &
                  WADATS(IMOD)%PRMS  (NSEALM) ,                        &
-                 WADATS(IMOD)%TPMS  (NSEALM) )
+                 WADATS(IMOD)%TPMS  (NSEALM) ,                        &
+                 WADATS(IMOD)%PHICE (NSEALM) ,                        &
+                 WADATS(IMOD)%TAUICE(NSEALM,2))
 !
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
 !                    by specific variables defined through the mod_def file 
@@ -960,6 +967,8 @@
       WADATS(IMOD)%USSY   = UNDEF
       WADATS(IMOD)%PRMS   = UNDEF
       WADATS(IMOD)%TPMS   = UNDEF
+      WADATS(IMOD)%PHICE  = UNDEF
+      WADATS(IMOD)%TAUICE = UNDEF
       IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
       IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
 !
@@ -1014,7 +1023,8 @@
 !
       IF ( FL_ALL ) THEN
 !
-          ALLOCATE ( WADATS(IMOD)%CG(0:NK+1,0:NSEA) )
+          ALLOCATE ( WADATS(IMOD)%CG(0:NK+1,0:NSEA) ,                 &
+                     WADATS(IMOD)%WN(0:NK+1,0:NSEA) )
 !
           IF ( FLCUR  ) ALLOCATE ( WADATS(IMOD)%CA0(NSEA) ,           &
                                    WADATS(IMOD)%CAI(NSEA) ,           &
@@ -1494,6 +1504,18 @@
           ALLOCATE ( WADATS(IMOD)%XP2SMS(1,1))
         END IF 
 !
+      IF ( FLAGS( 6,10) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XTAUICE(NXXX,2) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XTAUICE(1,2) )
+        END IF
+!
+      IF ( FLAGS( 6,11) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XPHICE(NXXX) )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XPHICE(1) )
+        END IF
+!
       WADATS(IMOD)%XSXX    = UNDEF
       WADATS(IMOD)%XSYY    = UNDEF
       WADATS(IMOD)%XSXY    = UNDEF
@@ -1509,6 +1531,8 @@
       WADATS(IMOD)%XTPMS   = UNDEF
       WADATS(IMOD)%XUS3D   = UNDEF
       WADATS(IMOD)%XP2SMS  = UNDEF
+      WADATS(IMOD)%XPHICE  = UNDEF
+      WADATS(IMOD)%XTAUICE = UNDEF
 !
       IF ( FLAGS( 7, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XABA(NXXX) )
@@ -2075,6 +2099,8 @@
           TPMS   => WADATS(IMOD)%TPMS
           P2SMS  => WADATS(IMOD)%P2SMS
           US3D   => WADATS(IMOD)%US3D
+          PHICE  => WADATS(IMOD)%PHICE
+          TAUICE  => WADATS(IMOD)%TAUICE
 !
           ABA    => WADATS(IMOD)%ABA
           ABD    => WADATS(IMOD)%ABD
@@ -2102,6 +2128,7 @@
           IF ( FL_ALL ) THEN
 !
               CG     => WADATS(IMOD)%CG
+              WN     => WADATS(IMOD)%WN
 !
               ATRNX  => WADATS(IMOD)%ATRNX
               ATRNY  => WADATS(IMOD)%ATRNY
@@ -2243,7 +2270,7 @@
 !/                  +-----------------------------------+
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
-!/    30-Apr-2014 : Add s/th1-2m instantiation          ( version 5.00 )
+!/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
 !/
 !  1. Purpose :
 !
@@ -2350,6 +2377,8 @@
           TPMS   => WADATS(IMOD)%XTPMS
           P2SMS  => WADATS(IMOD)%XP2SMS
           US3D   => WADATS(IMOD)%XUS3D
+          PHICE  => WADATS(IMOD)%XPHICE
+          TAUICE => WADATS(IMOD)%XTAUICE
 !	  
           ABA    => WADATS(IMOD)%XABA
           ABD    => WADATS(IMOD)%XABD

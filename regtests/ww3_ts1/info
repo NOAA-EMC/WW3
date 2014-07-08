@@ -31,6 +31,9 @@
 #  ./bin/run_test -s ST2  -w work_ST2 ../ ww3_ts1                           #
 #  ./bin/run_test -c gnu -o netcdf ../ ww3_ts1                              #
 #                                                                           #
+#  ./bin/run_test -i input_icesct -o both ../model ww3_ts1                  #
+#                                                                           #
+#                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Dec 2013     #
 #                                                                           #

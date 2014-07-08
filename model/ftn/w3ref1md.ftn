@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III                     |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Nov-2013 |
+!/                  | Last update :         27-Jun-2014 |
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2010 : Origination.                        ( version 3.14.IFREMER )
@@ -15,6 +15,8 @@
 !/    24-Fev-2012 : Correction of angle in fluxes       ( version 4.05 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.11 )
 !/    11-Nov-2013 : Extends IG energy into main band    ( version 4.13 )
+!/    11-Jun-2014 : Put reflection by subgrids back     ( version 5.01 )
+!/    27-Jun-2014 : Modifies subgrid reflection of IG   ( version 5.01 )
 !/ 
 !  1. Purpose :
 !
@@ -69,7 +71,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2014 |
+!/                  | Last update :         11-Jun-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2010 : Origination.                          ( version 3.14-Ifremer )
@@ -77,6 +79,7 @@
 !/    27-Jul-2013 : Adding free infragravity waves        ( version 4.11 )
 !/    11-Nov-2013 : Expands IG energy frequency range     ( version 4.13 )
 !/    05-Mar-2014 : Fixing bug with ICALC = 1 and IG1     ( version 4.18 )
+!/    11-Jun-2014 : Put reflection by subgrids back       ( version 5.01 )
 !/
 !  1. Purpose :
 !
@@ -177,7 +180,7 @@
       LOGICAL         :: IGBCOVERWRITE, IGSWELLMAX 
       REAL            :: R1, R2, R3, R4, R2X, R2Y, DEPTHIG
       REAL            :: FAC1, FAC2, FAC3, FAC4, RAMP0, RAMP, &
-                         RAMP1, RAMP2, MICHEFAC, SLOPE
+                         RAMP1, RAMP2, RAMP4, MICHEFAC, SLOPE
      REAL             :: HS, HIG, HIG1, HIG2, EB, SB, EMEANA, FMEAN2,   &
                          FMEANA, FREQIG, EFIG, EFIG1, SQRTH, SMEANA
 !/IG1    INTEGER        :: NKIG,NSPECIG,NSPECIGSTART, I1, I2
@@ -212,6 +215,7 @@
         END DO
       FMEANA  = TPIINV * (EMEANA / MAX ( 1.E-7 , FMEANA ))
       FMEAN2  = TPIINV * SQRT(EMEANA / MAX ( 1.E-7 , FMEAN2 ))
+      FMEANA  = MAX(FMEANA,SIG(1))
 !
 ! 1.  Sets reflection term to zero
 !
@@ -222,7 +226,7 @@
       HS=4.*SQRT(EMEANA)
 !/IG1      ATMP(:)=A(:)      ! the IG energy will be added to this ATMP
 !/IG1      ATMP2(:)=A(:)     ! this is really to keep in memory the original spectrum
-!/IG1      IF (IGBCOVERWRITE) THEN 
+!/IG1      IF (IGBCOVERWRITE.AND.REFLC(1).GT.0) THEN 
 !/IG1        IGFAC1 = 1.
 !/IG1        ATMP2(1:NSPECIGSTART)=0.
 !/IG1        END IF
@@ -362,10 +366,8 @@
           IF (REFPARS(6).GT.0) THEN
             RAMP=(MAX((0.75*TPI*FMEANA/SIG(IK)),1.)**REFPARS(10))*RAMP0
             RAMP1=MIN(REFPARS(9),REFLC(1)*RAMP)
-            RAMP2=MIN(REFPARS(9),REFLC(2)*RAMP)
           ELSE
             RAMP1=RAMP0*REFLC(1)
-            RAMP2=RAMP0*REFLC(2)
             END IF
 !
 ! Special treatment for unstructured grids
@@ -476,17 +478,30 @@
             END IF  ! UNGTYPE
 
           END DO ! loop on IK
-        END IF
+        END IF   ! end of test on REFLC(1)
 !
 !  Add diffuse reflection due to subgrid islands and icebergs
 !  At present this feature is not supported for unstructured grids. 
 !
       IF (    ((REFPARS(2).GT.0.).AND.((TRNX+TRNY).LT.2))     &
         .OR.((REFPARS(4).GT.0.).AND.(BERG.GT.0)       )   ) THEN 
+!
+! Includes frequency dependence (see Elgar et al. JPO 1994)
+!       
+          IF (REFPARS(6).GT.0) THEN
+            RAMP=(MAX((0.75*TPI*FMEANA/SIG(IK)),1.)**REFPARS(10))*RAMP0
+            RAMP2=MIN(REFPARS(9),REFLC(2)*RAMP)
+            RAMP4=MIN(REFPARS(9),REFLC(4)*RAMP)
+          ELSE
+            RAMP2=RAMP0*REFLC(2)
+            RAMP4=RAMP0*REFLC(4)
+            END IF
+
+
         R2X=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
-            + RAMP2*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
+            + RAMP4*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
         R2Y=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
-            + RAMP2*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
+            + RAMP4*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELY*0.0001))))
         FAC1=1/(0.5*REAL(NTH))
         DO IK=1, NK
           DO ITH=1, NTH
@@ -516,7 +531,6 @@
 !/IG1        END IF
 !/IG1     ENDDO ! ICALC = 1,2
 !/IG1     A(1:NSPECIG)=ATMP2(1:NSPECIG)   ! removes bound IG components ... 
-
 !/
 !/ End of W3SREF ----------------------------------------------------- /
 !/

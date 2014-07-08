@@ -15,7 +15,7 @@
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.10 )
 !/    02-Jul-2013 : Bug correction for lat in unst grid ( version 4.11 )
 !/    02-Nov-2013 : Removes unnecessary IDFM            ( version 4.12 )
-!/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.02 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -108,7 +108,7 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
                           TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
-                          CFLTHMAX, CFLXYMAX, CFLKMAX ,                &
+                          CFLTHMAX, CFLXYMAX, CFLKMAX , TAUICE, PHICE, &
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M, WN
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE
@@ -452,7 +452,7 @@
 !/    28-Feb-2013 : New option for float output         ( version 4.08 )
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.09 )
 !/    12-Apr-2013 : Allows curvilinear grids            ( version 4.10 ) 
-!/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -1678,6 +1678,47 @@
                   END DO
               vmin = -30000 
               vmax = 30000
+!
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
+              FSC    = 0.000001
+              UNITS  = 'm2 s-2'
+              ENAME  = '.tic'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUICE(1:NSEA,1)        &
+                                                        , MAPSF, XX )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUICE(1:NSEA,2)        &
+                                                        , MAPSF, XY )
+              NFIELD=2
+              varnm(1)='utic'
+              varnm(2)='vtic'
+              varnl(1)='eastward wave to sea ice stress'
+              varnl(2)='northward wave to sea ice stress'
+              varns(1)='eastward_wave_to_sea_ice_stress'
+              varns(2)='northward_wave_to_sea_ice_stress'
+              varng(1)='eastward_wave_to_sea_ice_stress'
+              varng(2)='northward_wave_to_sea_ice_stress'
+              varnc(1)='two=sqrt(utwo**2+vtwo**2)'
+              varnc(2)='two=sqrt(utwo**2+vtwo**2)'
+              vmin = -32000 
+              vmax =  32000
+!
+            ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
+              IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
+              FSC    = 0.1
+              UNITS  = 'W m-2'
+              ENAME  = '.fic'
+              DO ISEA=1, NSEA
+                 PHIOC(ISEA)=MIN(3000.,PHIOC(ISEA))
+                 END DO
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PHICE(1:NSEA)    &
+                                                        , MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='fic'
+              varnl(1)='wave to sea ice energy flux'
+              varns(1)='wave_to_sea_ice_energy_flux'
+              varng(1)='wave_to_sea_ice_energy_flux'
+              varnc(1)=''
+              vmin = 0 
+              vmax = 9990
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.01
