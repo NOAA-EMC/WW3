@@ -13,7 +13,7 @@ $ The settings below correspond to the turbulent -> laminar transition ...
 END OF NAMELISTS
 $
   'RECT' F 'NONE'
-   156  3
+   153  3
     1.0E3   1.0E3  1.
    -1.0E3  -1.0E3  1.
 $ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
