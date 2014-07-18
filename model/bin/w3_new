@@ -266,10 +266,6 @@
                                    touch w3gdatmd.ftn
                                    touch w3iogrmd.ftn
                                    touch ww3_grid.ftn ;;
-     'wcor'  ) cd $main_dir/ftn  ; touch w3updtmd.ftn
-                                   touch w3gdatmd.ftn
-                                   touch w3iogrmd.ftn
-                                   touch ww3_grid.ftn ;;
      'curr'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
                                    touch ww3_prnc.ftn
                                    touch ww3_prep.ftn ;; 

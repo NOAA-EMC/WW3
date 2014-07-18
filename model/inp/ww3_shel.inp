@@ -263,7 +263,7 @@ $
 $
      0.0   0.0  'STOPSTRING'
 $
-$ Type 3 : Output along track.
+$ Type 3 : Output along  track.
 $          Flag for formatted input file.
 $                         The data files are track_i.ww3 and
 $                         track_o.ww3, see w3iotr.ftn for ad. doc.
@@ -288,18 +288,6 @@ $          First, last step IX and IY, flag for formatted file
 $
    19680606 000000   3600  20010102 000000
       0 999 1 0 999 1 T
-$
-$ Type 7 : Coupling (same format as field output) 
-$
-$  19680606 000000   3600  20010102 000000
-$----------------------------------------------------------------
-$ Output request flags identifying fields as in ww3_shel input and
-$ section 2.4 of the manual. If the first flag is 'N' then a namelist
-$ is read. 
-$
-$N
-$
-$T0M1 HS DIR BHD TWO UBR FOC TAW LM
 $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID

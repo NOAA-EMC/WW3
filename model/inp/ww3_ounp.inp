@@ -13,27 +13,26 @@ $ If no one defined, all points are selected
 $ One index number per line, negative number identifies end of list.
 $ 1
 $ 2
-$ mandatory end of list
  -1
 $
-$--------------------------------------------------------------------- $
 $ file prefix
-$ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
-$ netCDF version [3,4]
-$ points in same file [T] or not [F] 
-$                    and max number of points to be processed in one pass
-$ output type ITYPE [0,1,2,3]
-$ flag for global attributes WW3 [0] or variable version [1-2-3-4]
-$ flag for dimensions order time,station [T] or station,time [F]
-$
  ww3.
- 6
- 4
- T 150 
- 1
- 0
- T
 $
+$ number of characters in date
+ 6
+$
+$ version netCDF [3,4]
+ 4
+$
+$ Points in same file [T] or not [F] and max number of points to be 
+$ processed in one pass
+ T 100 
+$
+$ Output type ITYPE [0,1,2,3]
+ 1
+$
+$ Flag for global attributes WW3 [0] or variable version [1-2-3-4]
+ 0
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
 $            No additional input, the above time range is ignored.

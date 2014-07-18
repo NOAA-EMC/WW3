@@ -729,7 +729,7 @@
                '                       MODEL : ',I10.8,I8.6/)
 !
   990 FORMAT (/' *** WAVEWATCH III WARNING IN W3IORS : '/             &
-               '     NO READABLE RESTART FILE, ',                     &
+               '     ERROR IN OPENING FILE, ',                        &
                     'INITIALIZE WITH ''',A,''' INSTEAD'/              &
                '     IOSTAT =',I5/)
   991 FORMAT (/' *** WAVEWATCH III ERROR IN W3IORS : '/               &

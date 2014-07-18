@@ -59,7 +59,7 @@ $    T T T T T  T T T T T  T T T T T  T
 $
 $ Homogeneous field data --------------------------------------------- $
 $ constant case:
-   'IC1' 19680606 000000   2.0e-5
+   'IC1' 19680606 000000 64.00e-5
    'LEV' 19680606 000000   1.1
   'STP'
 $

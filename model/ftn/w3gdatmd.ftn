@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Jun-2014 |
+!/                  | Last update :         18-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -58,7 +58,6 @@
 !/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
 !/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
 !/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
-!/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -1247,7 +1246,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points 
+! NB: Some array start at 0 becase MAPFS(IY,IX)=0 for missing points 
 !
       ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
                    GRIDS(IMOD)%MAPST2(MY,MX),  &
@@ -2677,7 +2676,7 @@
 !/REF1! Prepares for reflection from subgrid islands
 !/REF1!
 !/REF1            IF (RREF(2)) &
-!/REF1              REFLC(2,MAPFS(IY,IX))= MAX((1. - TRNX(IY,IX)),(1.-TRNY(IY,IX)))
+!/REF1              REFLC(2,MAPFS(IY,IX))= (1. - TRNX(IY,IX))*(1.-TRNY(IY,IX))
 !/REF1!
 !/REF1! Prepares for iceberg reflections
 !/REF1!

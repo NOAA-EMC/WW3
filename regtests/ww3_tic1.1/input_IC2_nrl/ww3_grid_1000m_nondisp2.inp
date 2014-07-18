@@ -8,8 +8,7 @@ $
   60. 60. 60. 6.
 $
 &OUTS E3D = 1 /
-$ The settings below correspond to the turbulent -> laminar transition ... 
- &IC2 IC2DISPER = F, IC2TURB = 2. , IC2ROUGH =0.02 /
+&IC2 IC2DISPER = F  /
 END OF NAMELISTS
 $
   'RECT' F 'NONE'

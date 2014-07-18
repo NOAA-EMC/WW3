@@ -60,27 +60,16 @@
 # ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../ ww3_tic1.1         #
 # ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../ ww3_tic1.1         #
 #                                                                           #
-# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr \           #
-#      -i input_IC2_ifr ../ ww3_tic1.1                                      #
-# ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../ ww3_tic1.1         #
-# ./bin/run_test -w work_IC2_nondisp_SMPL -i input_IC2_nondisp ../ \        #
-#       ww3_tic1.1                                                          #
-# ./bin/run_test -g 1000m -w work_IC2_nrl_1000m -i input_IC2_nrl ../ \      #
-#       ww3_tic1.1                                                          #
-# ./bin/run_test -g 1000m_nondisp -w work_IC2_nrl_1000m_nondisp  \          #
-#       -i input_IC2_nrl ../ ww3_tic1.1                                     #
+# ./bin/run_test -g 1000m -w w1000m_IC2 -i input_IC2 ../ ww3_tic1.1         #
 #                                                                           #
 # ./bin/run_test -g 350m  -w w350m_IC3  -i input_IC3 ../ ww3_tic1.1         #
 # ./bin/run_test -g 1000m -w w1000m_IC3 -i input_IC3 ../ ww3_tic1.1         #
 # ./bin/run_test -g 2500m -w w2500m_IC3 -i input_IC3 ../ ww3_tic1.1         #
-#                                                                           #
-# ./bin/run_test -w work_IC3_nondisp -i input_IC3_nondisp ../ ww3_tic1.1    #
-#                                                                           #
+# ./bin/run_test ../model ww3_tic1.1 -i input_IC2 -c gnu_debug ww3_tic1.1 -g 1000m_v2 -o netcdf      ##                                                                          #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
 #                                     updated: Erick Rogers, Nov 2013       #
-#                                     updated: Fabrice Ardhuin, Jun 2014    #
-#                                last updated: Erick Rogers, July 2014      #
+#                                last updated: Fabrice Ardhuin, May 2014    #
 #                                                                           #
 #    Copyright 2009-2014 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

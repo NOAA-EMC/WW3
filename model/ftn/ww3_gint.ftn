@@ -14,7 +14,6 @@
 !/    20-Feb-2013 : Modified for new output fields      ( version 4.11 )
 !/    11-Nov-2013 : Update for curvilinear grids        ( version 4.13 )
 !/    22-Jan-2014 : Update for UNST grids (F. Ardhuin)  ( version 4.18 )
-!/    30-Apr-2014 : Add group 3 (M. Accensi)            ( version 5.00 )
 !/
 !   1. Purpose : 
 !
@@ -30,7 +29,8 @@
 !   Total number of base grids to be used for interpolation together with
 !   their (and target grid) file extns are read from 'ww3_gint.inp'. 
 !   Base grids can be arranged in any order but the target grid should 
-!       always be the last grid. 
+!       always be the last grid. At this moment the code works only with 
+!       rectilinear and curvilinear grids. 
 !
 !   3. Parameters : 
 !
@@ -612,7 +612,7 @@
           GR_INTS(ISEA)%NGRDS = COUNTG
 ! 
 ! 4.b.vii Check to see if interpolation weights found.  
-!        Status of output points with / without weights set in MAPST2
+!        Status of output points with / without weifhts set in MAPST2
 !        using the next available bit
 !
           IF ( GR_INTS(ISEA)%NGRDS .EQ. 0 ) THEN
@@ -740,6 +740,8 @@
                  '      Dimensions =  ',2(I5,2X)/                              &
                  '       Grid Type = ',I3,'  ==> 1 Rect, 2 Curv, 3 Unstr'/     &
                  '    Grid Closure = ',I3,'  ==> 0 None, 1 Simple, 2 Tripolar')
+ 906    FORMAT ( '/ *** ERROR IN WW3_GINT : '/                                 &
+                 '      UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED'/ ) 
  907    FORMAT ( /' NOTE :  The no. of swell partitions from input and',       &
                     ' target grids do not match',/                             &
                   '  The Min. no. of partitions from input grids =',I5/        &
@@ -783,8 +785,8 @@
 !/                  +-----------------------------------+
 !/
 !/   09-Jul-2009 : Original code      ( version 3.14 )
-!/      21-Feb-2013 : Modified to new output structure ( version 4.11 )
-!/      30-Apr-2014 : Add group 3                      ( version 5.00 )
+!/      21-Feb-2013 : Modified to new output structure
+!/                                              ( version 4.11 )
 !/
 !   1. Purpose :
 !
@@ -818,10 +820,14 @@
 !      10. Source code : 
 !
 !/ -------------------------------------------------------------------------/
+!   USE W3ADATMD, ONLY : WADAT, WADATS, NADATA, DW, CX, CY, UA, UD,       &
+!              AS, WLV, HS, WLM, T0M1, THM, THS, FP0, THP0, FP1,      &
+!              THP1, PHS, PTP, PLP, PDIR, PSI, PWS, PWST,        &
+!                             PNR, DTDYN, FCUT, ABA, ABD, UBA, UBD, SXX,       &
+!              SXY, SYY, USERO
         USE W3ADATMD
         USE W3WDATMD
         USE W3IOGOMD, ONLY: W3IOGO
-        USE W3GDATMD, ONLY: E3DF, NK
 !/ -------------------------------------------------------------------------/
 !/ Parameter List
 !/
@@ -830,7 +836,7 @@
 !/ Local Parameters
 !/
         INTEGER                 :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,  &
-                                   IY, ISWLL, ICAP, IBED, IFREQ, IK
+                                   IY, ISWLL, ICAP, IBED
         INTEGER                 :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,     &
                                    NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,         &
                                    LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,         &
@@ -845,18 +851,6 @@
         REAL                    :: HSAUX, WLMAUX, T02AUX, T0M1AUX, T01AUX,     &
                                    FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1, &
                                    THP0AUX2, SUMWT2(10)
-! Local group3 variables
-        REAL                    :: EFAUX(E3DF(2,1):E3DF(3,1)),                 &
-                                   TH1MAUX(E3DF(2,2):E3DF(3,2)),               &
-                                   STH1MAUX(E3DF(2,3):E3DF(3,3)),              &
-                                   TH2MAUX(E3DF(2,4):E3DF(3,4)),               &
-                                   STH2MAUX(E3DF(2,5):E3DF(3,4)), WNAUX(1:NK), &
-                                   SUMWT3A(E3DF(2,1):E3DF(3,1)),               &
-                                   SUMWT3B(E3DF(2,2):E3DF(3,2)),               &
-                                   SUMWT3C(E3DF(2,3):E3DF(3,3)),               &
-                                   SUMWT3D(E3DF(2,4):E3DF(3,4)),               &
-                                   SUMWT3E(E3DF(2,5):E3DF(3,5)),               &
-                                   SUMWT3F(1:NK)
 ! Local group4 variables
         REAL                    :: PHSAUX(0:NOSWLL_MIN), PTPAUX(0:NOSWLL_MIN), &
                                    PLPAUX(0:NOSWLL_MIN), PSIAUX(0:NOSWLL_MIN), &
@@ -907,15 +901,6 @@
         THM      = UNDEF 
         THS      = UNDEF
         THP0     = UNDEF
-!
-! Group 3 variables
-!
-        EF      = UNDEF
-        TH1M    = UNDEF
-        STH1M   = UNDEF
-        TH2M    = UNDEF
-        STH2M   = UNDEF
-        WN      = UNDEF
 !
 ! Group 4 variables
 !
@@ -1064,8 +1049,7 @@
 ! Initialize temporary variables used
 !
                 SUMWT = 0.0
-!
-! Group 1 variables
+! Group1 variables
 !
                 DWAUX       = UNDEF
                 CXAUX       = UNDEF
@@ -1093,21 +1077,6 @@
                 THP0AUX1    = UNDEF
                 THP0AUX2    = UNDEF
                 SUMWT2      = 0
-!
-! Group 3 variables
-!
-                EFAUX      = UNDEF
-                TH1MAUX    = UNDEF
-                STH1MAUX   = UNDEF
-                TH2MAUX    = UNDEF
-                STH2MAUX   = UNDEF
-                WNAUX      = UNDEF
-                SUMWT3A    = 0
-                SUMWT3B    = 0
-                SUMWT3C    = 0
-                SUMWT3D    = 0
-                SUMWT3E    = 0
-                SUMWT3F    = 0
 !
 ! Group 4 variables
 !
@@ -1172,8 +1141,6 @@
                   IGY = GR_INTS(ISEA)%IND_WTS(IG)%JP(IPTS)
                   WT = GR_INTS(ISEA)%IND_WTS(IG)%WT(IPTS)
                   GSEA = GRIDS(IGRID)%MAPFS(IGY,IGX)
-!
-! Group 1 variables
 !
                   IF ( FLOGRD(1,1) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%DW(GSEA) .NE. UNDEF ) THEN
@@ -1266,8 +1233,6 @@
 !/BT4                      END IF
 !/BT4                    END IF
 !/BT4                  END IF
-!   
-! Group 2 variables
 !
                   IF ( FLOGRD(2,1) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%HS(GSEA) .NE. UNDEF ) THEN
@@ -1373,89 +1338,6 @@
                       END IF
                     END IF
                   END IF
-!   
-! Group 3 variables
-!
-                  IF ( FLOGRD(3,1) .AND. ACTIVE ) THEN
-                    DO IFREQ = E3DF(2,1),E3DF(3,1)
-                      IF ( WADATS(IGRID)%EF(GSEA,IFREQ) .NE. UNDEF ) THEN
-                        SUMWT3A(IFREQ) = SUMWT3A(IFREQ) + WT
-                        IF ( EFAUX(IFREQ) .EQ. UNDEF ) THEN
-                          EFAUX(IFREQ) = WADATS(IGRID)%EF(GSEA,IFREQ)*WT
-                        ELSE
-                          EFAUX(IFREQ) = EFAUX(IFREQ) + WADATS(IGRID)%EF(GSEA,IFREQ)*WT
-                        END IF
-                      END IF
-                    END DO
-                  END IF
-!
-                  IF ( FLOGRD(3,2) .AND. ACTIVE ) THEN
-                    DO IFREQ = E3DF(2,2),E3DF(3,2)
-                      IF ( WADATS(IGRID)%TH1M(GSEA,IFREQ) .NE. UNDEF ) THEN
-                        SUMWT3B(IFREQ) = SUMWT3B(IFREQ) + WT
-                        IF ( TH1MAUX(IFREQ) .EQ. UNDEF ) THEN
-                          TH1MAUX(IFREQ) = WADATS(IGRID)%TH1M(GSEA,IFREQ)*WT
-                        ELSE
-                          TH1MAUX(IFREQ) = TH1MAUX(IFREQ) + WADATS(IGRID)%TH1M(GSEA,IFREQ)*WT
-                        END IF
-                      END IF
-                    END DO
-                  END IF
-!
-                  IF ( FLOGRD(3,3) .AND. ACTIVE ) THEN
-                    DO IFREQ = E3DF(2,3),E3DF(3,3)
-                      IF ( WADATS(IGRID)%STH1M(GSEA,IFREQ) .NE. UNDEF ) THEN
-                        SUMWT3C(IFREQ) = SUMWT3C(IFREQ) + WT
-                        IF ( STH1MAUX(IFREQ) .EQ. UNDEF ) THEN
-                          STH1MAUX(IFREQ) = WADATS(IGRID)%STH1M(GSEA,IFREQ)*WT
-                        ELSE
-                          STH1MAUX(IFREQ) = STH1MAUX(IFREQ) + WADATS(IGRID)%STH1M(GSEA,IFREQ)*WT
-                        END IF
-                      END IF
-                    END DO
-                  END IF
-!
-                  IF ( FLOGRD(3,4) .AND. ACTIVE ) THEN
-                    DO IFREQ = E3DF(2,4),E3DF(3,4)
-                      IF ( WADATS(IGRID)%TH2M(GSEA,IFREQ) .NE. UNDEF ) THEN
-                        SUMWT3D(IFREQ) = SUMWT3D(IFREQ) + WT
-                        IF ( TH2MAUX(IFREQ) .EQ. UNDEF ) THEN
-                          TH2MAUX(IFREQ) = WADATS(IGRID)%TH2M(GSEA,IFREQ)*WT
-                        ELSE
-                          TH2MAUX(IFREQ) = TH2MAUX(IFREQ) + WADATS(IGRID)%TH2M(GSEA,IFREQ)*WT
-                        END IF
-                      END IF
-                    END DO
-                  END IF
-!
-                  IF ( FLOGRD(3,5) .AND. ACTIVE ) THEN
-                    DO IFREQ = E3DF(2,5),E3DF(3,5)
-                      IF ( WADATS(IGRID)%STH2M(GSEA,IFREQ) .NE. UNDEF ) THEN
-                        SUMWT3E(IFREQ) = SUMWT3E(IFREQ) + WT
-                        IF ( STH2MAUX(IFREQ) .EQ. UNDEF ) THEN
-                          STH2MAUX(IFREQ) = WADATS(IGRID)%STH2M(GSEA,IFREQ)*WT
-                        ELSE
-                          STH2MAUX(IFREQ) = STH2MAUX(IFREQ) + WADATS(IGRID)%STH2M(GSEA,IFREQ)*WT
-                        END IF
-                      END IF
-                    END DO
-                  END IF
-
-!
-                  IF ( FLOGRD(3,6) .AND. ACTIVE ) THEN
-                    DO IK = 1,NK
-                      IF ( WADATS(IGRID)%WN(IK,GSEA) .NE. UNDEF ) THEN
-                        SUMWT3F(IK) = SUMWT3F(IK) + WT
-                        IF ( WNAUX(IK) .EQ. UNDEF ) THEN
-                          WNAUX(IK) = WADATS(IGRID)%WN(IK,GSEA)*WT
-                        ELSE
-                          WNAUX(IK) = WNAUX(IK) + WADATS(IGRID)%WN(IK,GSEA)*WT
-                        END IF
-                      END IF
-                    END DO
-                  END IF
-!   
-! Group 4 variables
 !
                   DO ISWLL = 0, NOSWLL_MIN
 !
@@ -1548,8 +1430,6 @@
                       END IF
                     END IF
                   END IF
-!   
-! Group 5 variables
 !
                   IF ( FLOGRD(5,1) ) THEN
                     IF ( WDATAS(IGRID)%UST(GSEA) .NE. UNDEF ) THEN
@@ -1639,8 +1519,6 @@
                     END IF
 !
                   END DO
-!   
-! Group 6 variables
 !
                   IF ( FLOGRD(6,1) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%SXX(GSEA) .NE. UNDEF ) THEN
@@ -1730,8 +1608,6 @@
                       END IF
                     END IF
                   END IF
-!   
-! Group 7 variables
 !
                   IF ( FLOGRD(7,1) .AND. ACTIVE ) THEN
                     IF ( WADATS(IGRID)%ABA(GSEA) .NE. UNDEF ) THEN
@@ -1804,9 +1680,6 @@
 !
 ! Save temp. interpolated variables in proper variables
 ! (weighted by the number of grids)
-!
-!   
-! Group 1 variables
 !
                 IF ( DWAUX .NE. UNDEF ) THEN
                   DWAUX = DWAUX / SUMWT1(1)
@@ -1885,8 +1758,6 @@
 !/BT4                    SED_D50(ISEA) = SED_D50(ISEA) + SED_D50AUX / REAL( SUMGRD )
 !/BT4                  END IF
 !/BT4                END IF
-!   
-! Group 2 variables
 !
                 IF ( HSAUX .NE. UNDEF ) THEN
                   HSAUX = HSAUX / SUMWT2(1)
@@ -1978,82 +1849,6 @@
                     THP0(ISEA) = ATAN2 ( THP0AUX2, THP0AUX1 )
                   END IF
                 END IF
-!   
-! Group 3 variables
-!
-                DO IFREQ = E3DF(2,1),E3DF(3,1)
-                  IF ( EFAUX(IFREQ) .NE. UNDEF ) THEN
-                    EFAUX(IFREQ) = EFAUX(IFREQ) / SUMWT3A(IFREQ)
-                    IF ( EF(ISEA,IFREQ) .EQ. UNDEF )  THEN
-                      EF(ISEA,IFREQ) = EFAUX(IFREQ) / REAL( SUMGRD )
-                    ELSE
-                      EF(ISEA,IFREQ) = EF(ISEA,IFREQ) +                      &
-                          EFAUX(IFREQ) / REAL( SUMGRD )
-                    END IF
-                  END IF
-                END DO
-!
-                DO IFREQ = E3DF(2,2),E3DF(3,2)
-                  IF ( TH1MAUX(IFREQ) .NE. UNDEF ) THEN
-                    TH1MAUX(IFREQ) = TH1MAUX(IFREQ) / SUMWT3B(IFREQ)
-                    IF ( TH1M(ISEA,IFREQ) .EQ. UNDEF )  THEN
-                      TH1M(ISEA,IFREQ) = TH1MAUX(IFREQ) / REAL( SUMGRD )
-                    ELSE
-                      TH1M(ISEA,IFREQ) = TH1M(ISEA,IFREQ) +                      &
-                          TH1MAUX(IFREQ) / REAL( SUMGRD )
-                    END IF
-                  END IF
-                END DO
-!
-                DO IFREQ = E3DF(2,3),E3DF(3,3)
-                  IF ( STH1MAUX(IFREQ) .NE. UNDEF ) THEN
-                    STH1MAUX(IFREQ) = STH1MAUX(IFREQ) / SUMWT3C(IFREQ)
-                    IF ( STH1M(ISEA,IFREQ) .EQ. UNDEF )  THEN
-                      STH1M(ISEA,IFREQ) = STH1MAUX(IFREQ) / REAL( SUMGRD )
-                    ELSE
-                      STH1M(ISEA,IFREQ) = STH1M(ISEA,IFREQ) +                      &
-                          STH1MAUX(IFREQ) / REAL( SUMGRD )
-                    END IF
-                  END IF
-                END DO
-!
-                DO IFREQ = E3DF(2,4),E3DF(3,4)
-                  IF ( TH2MAUX(IFREQ) .NE. UNDEF ) THEN
-                    TH2MAUX(IFREQ) = TH2MAUX(IFREQ) / SUMWT3D(IFREQ)
-                    IF ( TH2M(ISEA,IFREQ) .EQ. UNDEF )  THEN
-                      TH2M(ISEA,IFREQ) = TH2MAUX(IFREQ) / REAL( SUMGRD )
-                    ELSE
-                      TH2M(ISEA,IFREQ) = TH2M(ISEA,IFREQ) +                      &
-                          TH2MAUX(IFREQ) / REAL( SUMGRD )
-                    END IF
-                  END IF
-                END DO
-!
-                DO IFREQ = E3DF(2,5),E3DF(3,5)
-                  IF ( STH2MAUX(IFREQ) .NE. UNDEF ) THEN
-                    STH2MAUX(IFREQ) = STH2MAUX(IFREQ) / SUMWT3E(IFREQ)
-                    IF ( STH2M(ISEA,IFREQ) .EQ. UNDEF )  THEN
-                      STH2M(ISEA,IFREQ) = STH2MAUX(IFREQ) / REAL( SUMGRD )
-                    ELSE
-                      STH2M(ISEA,IFREQ) = STH2M(ISEA,IFREQ) +                      &
-                          STH2MAUX(IFREQ) / REAL( SUMGRD )
-                    END IF
-                  END IF
-                END DO
-!
-                DO IK = 1,NK
-                  IF ( WNAUX(IK) .NE. UNDEF ) THEN
-                    WNAUX(IK) = WNAUX(IK) / SUMWT3F(IK)
-                    IF ( WN(IK,ISEA) .EQ. UNDEF )  THEN
-                      WN(IK,ISEA) = WNAUX(IK) / REAL( SUMGRD )
-                    ELSE
-                      WN(IK,ISEA) = WN(IK,ISEA) +                      &
-                          WNAUX(IK) / REAL( SUMGRD )
-                    END IF
-                  END IF
-                END DO
-!   
-! Group 4 variables
 !
                 DO ISWLL = 0, NOSWLL_MIN
 !
@@ -2133,8 +1928,6 @@
                     PWST(ISEA) = PWST(ISEA) + PWSTAUX / REAL( SUMGRD )
                   END IF
                 END IF
-!   
-! Group 5 variables
 !
                 IF ( USTAUX1 .NE. UNDEF ) THEN
                   USTAUX1 = USTAUX1 / SUMWT5(1)
@@ -2210,8 +2003,6 @@
                     END IF
                   END IF
                 END DO
-!   
-! Group 6 variables
 !
                 IF ( SXXAUX .NE. UNDEF ) THEN
                   SXXAUX = SXXAUX / SUMWT6(1)
@@ -2293,8 +2084,6 @@
                     TPMS(ISEA) = TPMS(ISEA) + TPMSAUX / REAL( SUMGRD )
                   END IF
                 END IF
-!   
-! Group 7 variables
 !
                 IF ( ABAAUX .NE. UNDEF ) THEN
                   ABAAUX = ABAAUX / SUMWT7(1)

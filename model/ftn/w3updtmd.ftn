@@ -441,7 +441,6 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
-!/WCOR      USE W3GDATMD, ONLY:   WWCOR
 !/RWND      USE W3GDATMD, ONLY:   RWINDC
 !/ST2      USE W3GDATMD, ONLY: ZWIND, OFSTAB, FFNG, FFPS, CCNG, CCPS, SHSTAB
 !/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
@@ -545,10 +544,6 @@
 !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
 !
         END DO
-!
-! 3.b  Bias correction ( !/WCOR )
-!/WCOR      WHERE ( UA .GE. WWCOR(1) ) UA = UA+(UA-WWCOR(1))*WWCOR(2)
-
 !
 ! 4.  Correct for currents and grid motion
 !

@@ -51,7 +51,7 @@
 !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
 !/    10-Oct-2013 : CG and WN values at DMIN for ISEA=0 ( version 4.12 )
 !/    14-Nov-2013 : Remove UST(DIR) initialization.     ( version 4.13 )
-!/    15-Dec-2013 : Adds fluxes to ice                  ( version 5.02 )
+!/    15-Dec-2013 : Adds fluxes to ice                  ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -104,7 +104,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '5.01  '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '5.00  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
                     'PUT_SW1' // &
                     'PUT_SW2' // &

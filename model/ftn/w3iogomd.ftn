@@ -43,7 +43,6 @@
 !/                  trunk                               ( version 4.13 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -229,7 +228,6 @@
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.02 ) 
 !/
 !  1. Purpose :
 !
@@ -259,8 +257,8 @@
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      WW3_SHEL  Prog.   N/A    Actual wave model program
-!      WW3_OUTF  Prog.   N/A    Output postprocessor.
-!      WW3_OUNF  Prog.   N/A    NetCDF output postprocessor.
+!      WW3_OUTF  Prog.   N/A    Ouput postprocessor.
+!      WW3_OUNF  Prog.   N/A    NetCDF ouput postprocessor.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -417,28 +415,16 @@
                WRITE(NDSEN,1008) 'EF','E3D'
                END IF
            CASE('TH1M')
-             IF (E3DF(1,2).EQ.1) THEN 
+             IF (E3DF(2,1).EQ.1) THEN 
                FLG2D(3,2)=.TRUE.
              ELSE
                WRITE(NDSEN,1008) 'TH1M','TH1MF'
                END IF
            CASE('STH1M')
-             IF (E3DF(1,3).EQ.1) THEN 
+             IF (E3DF(3,1).EQ.1) THEN 
                FLG2D(3,3)=.TRUE.
              ELSE
                WRITE(NDSEN,1008) 'STH1M','STH1MF'
-               END IF
-           CASE('TH2M')
-             IF (E3DF(1,4).EQ.1) THEN 
-               FLG2D(3,4)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'TH2M','TH2MF'
-               END IF
-           CASE('STH2M')
-             IF (E3DF(1,5).EQ.1) THEN 
-               FLG2D(3,5)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'STH2M','STH2MF'
                END IF
            CASE('WN')
              FLG2D(3,6)=.TRUE.
@@ -664,8 +650,7 @@
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
-!/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.02 ) 
+!/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
 !/
 !  1. Purpose :
 !
@@ -771,7 +756,7 @@
       REAL                    :: FXPMC, FACTOR, FACTOR2, EBAND, FKD,  &
                                  FP1STR, FP1TST, FPISTR, AABS, UABS,  &
                                  XL, XH, XL2, XH2, EL, EH, DENOM, KD, &
-                                 M1, M2
+                                 M1
       REAL                    :: ET(NSEAL), EWN(NSEAL), ETR(NSEAL),   &
                                  ETX(NSEAL), ETY(NSEAL), AB(NSEAL),   &
                                  ABX(NSEAL), ABY(NSEAL),ET02(NSEAL),  &
@@ -932,27 +917,27 @@
               END IF
             END IF  
 !
-          UBS(JSEA) = UBS(JSEA) + AB(JSEA) * SIG(IK)**2     
+            UBS(JSEA) = UBS(JSEA) + AB(JSEA) * SIG(IK)**2     
 !
 !   2nd order equivalent surface pressure spectral density at K=0
 !   this is used for microseismic or microbarom sources 
 !   Finite water depth corrections (Ardhuin & Herbers 2013) are not 
 !   included here. 
 !                                                               
-          FACTOR2 = DTH*2/(TPI**2)                        &
-                    * SIG(IK)                             &
-                    * (TPI*SIG(IK)/CG(IK,ISEA))**2        &  ! Jacobian^2 to get E(f,th) from A(k,th)
-                    * ABST(JSEA) 
+            FACTOR2 = DTH*2/(TPI**2)                        &
+                      * SIG(IK)                             &
+                      * (TPI*SIG(IK)/CG(IK,ISEA))**2        &  ! Jacobian^2 to get E(f,th) from A(k,th)
+                              * ABST(JSEA) 
 !
 !   Integration over seismic radian frequency : *2*dsigma
 !
-          PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
-          IF ( FLOLOC (6, 9).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
-            P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI  
-          IF (FACTOR2 .GT. ETTPMM(JSEA)) THEN
-            ETTPMM(JSEA) = FACTOR2 
-            TPMS(JSEA) = TPI/SIG(IK)
-            END IF 
+              PRMS(JSEA)  = PRMS(JSEA) + FACTOR2 * 2 * DSII(IK) 
+              IF ( FLOLOC (6, 9).AND.(IK.GE.P2MSF(2).AND.IK.LE.P2MSF(3)))   &
+                P2SMS(JSEA,IK) = FACTOR2 * 2 * TPI  
+              IF (FACTOR2 .GT. ETTPMM(JSEA)) THEN
+                ETTPMM(JSEA) = FACTOR2 
+                TPMS(JSEA) = TPI/SIG(IK)
+                END IF 
 
 !
 ! Directional moments in the last freq. band
@@ -1003,17 +988,13 @@
             US3D(JSEA,IK)    =  ABX(JSEA)*USSCO/(DSII(IK)*TPIINV) 
             US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO/(DSII(IK)*TPIINV)   
             END IF  
-          IF ( FLOLOC( 3, 2).AND.(IK.GE.E3DF(2,2).AND.IK.LE.E3DF(3,2)))  &
+          IF ( FLOLOC( 3, 2).AND.(IK.GE.E3DF(2,1).AND.IK.LE.E3DF(3,2)))  &
             TH1M(JSEA,IK)= MOD ( 630. - RADE*ATAN2(ABY(JSEA),ABX(JSEA)) , 360. )
           M1 = SQRT(ABX(JSEA)**2+ABY(JSEA)**2)/MAX(1E-20,AB(JSEA))
           IF ( FLOLOC( 3, 3).AND.(IK.GE.E3DF(2,3).AND.IK.LE.E3DF(3,3)))  &
              STH1M(JSEA,IK)= SQRT(ABS(2.*(1-M1)))*RADE
-          IF ( FLOLOC( 3, 4).AND.(IK.GE.E3DF(2,4).AND.IK.LE.E3DF(3,4)))  &
-            TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),ABX2(JSEA)) , 180. )
-          M2 = SQRT(ABX2(JSEA)**2+ABY2(JSEA)**2)/MAX(1E-20,AB(JSEA))
-          IF ( FLOLOC( 3, 5).AND.(IK.GE.E3DF(2,5).AND.IK.LE.E3DF(3,5)))  &
-             STH2M(JSEA,IK)= SQRT(ABS(0.5*(1-M2)))*RADE
           END DO
+!FA  TH2M AND STH2M CAN BE ADDED HERE 
 !
         END DO
 !
@@ -1770,23 +1751,13 @@
                                      PRMS  (ISEA) = UNDEF
                                      TPMS  (ISEA) = UNDEF
                   END IF
-                IF ( FLOGRD( 6, 8) ) THEN
-                                     US3D(ISEA,:) = UNDEF
-                  END IF
-                IF ( FLOGRD( 6, 9) ) THEN
-                                    P2SMS(ISEA,:) = UNDEF
-                  END IF
+                IF ( FLOGRD( 6, 8) ) US3D(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
 !
-                IF ( FLOGRD( 7, 1) ) THEN
-                                     ABA   (ISEA) = UNDEF
-                                     ABD   (ISEA) = UNDEF
-                  END IF
-                IF ( FLOGRD( 7, 2) ) THEN
-                                     UBA   (ISEA) = UNDEF
-                                     UBD   (ISEA) = UNDEF
-                  END IF
                 IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
                 IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
@@ -2034,7 +2005,7 @@
                     !WRITE ( NDSOG ) ABD(1:NSEA)
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
                     DO ISEA=1, NSEA
-                      IF ( UBA(ISEA) .NE. UNDEF ) THEN
+                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
                           AUX1(ISEA) = UBA(ISEA)*COS(UBD(ISEA))
                           AUX2(ISEA) = UBA(ISEA)*SIN(UBD(ISEA))
                         ELSE
@@ -2139,22 +2110,22 @@
 !
                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                          EF   (1:NSEA,E3DF(2,1):E3DF(3,1))
+                         EF   (1:NSEA,E3DF(2,1):E3DF(3,1))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                    TH1M(1:NSEA,E3DF(2,2):E3DF(3,2))
+                          TH1M (1:NSEA,E3DF(2,2):E3DF(3,2))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                    STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
+                          STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                    TH2M(1:NSEA,E3DF(2,4):E3DF(3,4))
+                          TH2M (1:NSEA,E3DF(2,4):E3DF(3,4))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                    STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
-                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6) THEN
+                          STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
-                                    WN(1:NK,1:NSEA)
+                                   WN(1:NK,1:NSEA)
 !
 !     Section 4)
 !

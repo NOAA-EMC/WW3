@@ -736,7 +736,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-               source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
@@ -810,14 +810,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx $is"
+             source="$stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_gspl) IDstring='Grid splitting'
                core='w3fldsmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx $is"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_gint) IDstring='Grid Interpolation'

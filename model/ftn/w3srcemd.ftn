@@ -105,7 +105,7 @@
 !/    17-Nov-2013 : Coupling fraction of ice-free       ( version 4.13 )
 !/                  surface to SIN and SDS. (S. Zieger)
 !/    01-Avr-2014 : Adding ice thickness and floe size  ( version 4.18 )
-!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.02 )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -478,7 +478,7 @@
 !/IG1! Does not integrate source terms for IG band if IGPARS(12) = 0. 
 !/IG1! 
 !/IG1      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5)) 
-      IS1=(IKS1-1)*NTH+1
+      IS1=IKS1*NTH+1
 !
 !/LN0      VSLN = 0.
 !/SEED      VSLN = 0.
@@ -706,7 +706,7 @@
 !
 !/BT1        CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
 !/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL,    &
-!/BT4                      BEDFORM, VSBT, VDBT, IX, IY )
+!/BT4                      BEDFORM, PHIBBL,  VSBT, VDBT, IX, IY )
 !/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BTX        CALL W3SBTX
@@ -1096,7 +1096,7 @@
 !
 ! 10 includes reflection --------------------------------------------- *
 !
-!/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN 
+!/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.REFLEC(4).GT.0) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
 !/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
 !/REF1                        BERG, DTG, IX, IY,  VREF )

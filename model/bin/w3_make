@@ -154,7 +154,6 @@
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
-
   if [ -n "`grep TIDE $switch_file`" ]
   then
     reg_programs="$reg_programs ww3_prtide"
@@ -165,7 +164,6 @@
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
-
   if [ -n "`grep TRKNC $switch_file`" ]
   then
   cdf_programs="$cdf_programs ww3_systrk"
@@ -182,6 +180,12 @@
     reg_programs="$reg_programs ww3_sbs1"
   fi
 
+  if [ -n "`grep TRKNC $switch_file`" ]
+  then
+  cdf_programs="$cdf_programs ww3_systrk"
+  else
+  reg_programs="$reg_programs ww3_systrk"
+  fi
 
 # all_programs = all possible programs
   all_programs="$reg_programs $cdf_programs"
