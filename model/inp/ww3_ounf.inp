@@ -28,12 +28,11 @@ $
 $ -------------------------------------------------------------------- $
 $ File prefix
 $ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
-$ IX and IY ranges. Note that for UNST grids, the IX range 
-$ is the node range and the IY range is [1 1]
+$ IX and IY ranges [regular:IX NX IY NY DX DY, unstructured:IP NP DP DP]
 $
  ww3.         
  6
- 1 1000000 1 1000000 
+ 1 12518 1 1 
 $
 $ For each field and time a new file is generated with the file name
 $ ww3.date_xxx.nc , where date is a conventional time indicator with S3

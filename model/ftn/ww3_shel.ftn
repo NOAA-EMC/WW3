@@ -473,7 +473,6 @@
 !  its initialization setting "JFIRST=1" to some lower value.
 !/IC1      JFIRST=-7
 !/IC2      JFIRST=-7
-!/IS2      JFIRST=-7
 !/IC3      JFIRST=-7
 !/BT8      JFIRST=-7
 !/BT9      JFIRST=-7

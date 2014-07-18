@@ -30,7 +30,7 @@ $ Define data files -------------------------------------------------- $
 $ The first input line identifies the file format with FROM, IDLA and
 $ IDFM, the second (third) lines give the file unit number and name.
 $
-   'NAME' 1 2 '(I10,1x,I10)' '(1000(F6.2))' 
+   'NAME' 1 2 '(I10,1x,I10)' '(1000(F5.2))' 
   2345 '../input_IC2/icecon.txt'
 $
 $ -------------------------------------------------------------------- $

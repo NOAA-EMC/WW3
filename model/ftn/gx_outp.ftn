@@ -986,7 +986,7 @@
 !/BTX                CALL W3SBTX
 
 !/IC1                CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
-!/IC2                CALL W3SIC2 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
+!/IC2                CALL W3SIC2 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 !/IC3                CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 
 !/BT4                    IX=1    ! to be fixed later 

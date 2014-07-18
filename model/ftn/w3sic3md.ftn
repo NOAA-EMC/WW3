@@ -6,12 +6,10 @@
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2014 |
+!/                  | Last update :         11-Oct-2013 |
 !/                  +-----------------------------------+
 !/
-!/    Updates:
-!/    29-May-2014 : Generalization with turbulent BL
-!/           (F.A. method imported from IC2 by E.R.)     ( version 5.xx )
+!/    For updates see W3SIC3 documentation.
 !/
 !  1. Purpose :
 !
@@ -32,7 +30,6 @@
 !      BSDET             Func. Private  Calculate the determinant for
 !                                       the dispersion relation.
 !      WN_CMPLX          Func. Private  Calculate complex wavenumber in ice
-!      WN_CMPLX_HF       Func. Private  Like above, but for h-f waves
 !      CMPLX_ROOT_MULLER Func. Private  Find root for complex numbers
 !      FUN_ZHAO          Func. Private  Wrapper function for FUNC0/FUNC1
 !      FUNC0_ZHAO        Func. Private
@@ -54,12 +51,12 @@
 !/ ------------------------------------------------------------------- /
 !/
       PUBLIC  ::  W3SIC3, W3IC3WNCG
-      PRIVATE ::  WN_CMPLX, WN_CMPLX_HF, CMPLX_ROOT_MULLER
+      PRIVATE ::  WN_CMPLX, CMPLX_ROOT_MULLER
       PRIVATE ::  F_ZHAO, FUNC1_ZHAO, FUNC0_ZHAO, BSDET
       CONTAINS
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3SIC3 (A, DEPTH, CG, WN, IX, IY, S, D)
+      SUBROUTINE W3SIC3 (A, DEPTH, WN, IX, IY, S, D)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -153,7 +150,6 @@
 !     ----------------------------------------------------------------
 !       A       R.A.  I   Action density spectrum (1-D).
 !       DEPTH   Real  I   Local water depth.
-!       CG      R.A.  I   Group velocities.
 !       WN      R.A.  I   Wavenumbers.
 !       IX,IY   I.S.  I   Grid indices.
 !       S       R.A.  O   Source term (1-D version).
@@ -187,27 +183,6 @@
 !
 !     If ice parameter 1 is zero, no calculations are made.
 !
-!     We use IC3MAXTHK to limit ice thickness: 
-!     IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
-!
-!     When ice thickness exceeds IC3MAXTHK, we use something else,
-!     in place of Shen and Wang formulation :
-!
-!     S_ice by F.A., an estimation of dissipation by turbulence 
-!     at the ice-water interface. It uses only namelists for input, and
-!     no space/time varying input (though of course ice concentration is 
-!     space/time varying). Unlike Liu et al. (IC2), it does not use 
-!     ice thickness and does not yield a new C|Cg|k (i.e. it is non-
-!     dispersive), but it has the very nice feature of not requiring  
-!     an eddy viscosity, which is a major drawback of the Liu et al.  
-!     model. That is why we use it here, vs. Liu et al.
-!     (S_ice by Liu et al. and S_ice by F.A. are the two options 
-!     available in IC2, i.e. w3sic2md.ftn)
-!
 !  8. Structure :
 !
 !     See source code.
@@ -222,12 +197,10 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: TPI, DWAT, ABMIN, DELAB, SIZEFWTABLE,      &
-                           FWTABLE, GRAV
+      USE CONSTANTS, ONLY: TPI, DWAT
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
-                          FLAGLL, YGRD, GTYPE, RLGTYPE
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
       USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -239,7 +212,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: CG(NK),  WN(NK), A(NSPEC), DEPTH
+      REAL, INTENT(IN)        :: WN(NK), A(NSPEC), DEPTH
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
       INTEGER, INTENT(IN)     :: IX, IY
 !/
@@ -247,19 +220,13 @@
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER                    :: ITH
+!/T0      INTEGER                 :: ITH
 !/T0      REAL                   :: DOUT(NK,NTH)
       INTEGER                    :: IKTH, IK
       REAL                       :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                     ICECOEF4, ICECOEF5, ICECONC
       REAL, DIMENSION(NK)        :: D1D, WN_I, WN_R, CG_IC3
       LOGICAL                    :: NOICE
-      REAL                       :: VISCM=1.83E-6
-!  ............VISCM=1.83E-6 :  molecular viscosity of water at freezing
-      REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
-                                 SMOOTH, RE, UORB, AORB, EB,   &
-                                 DELI1, DELI2, FW, XI, FTURB
-      INTEGER                 :: IND, IS
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -309,7 +276,6 @@
       ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
 !     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
       IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
-
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
@@ -318,13 +284,10 @@
       IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
       IF ( NOICE ) THEN
-
-         D1D=0.0
+         D = 0.0
 !
 ! 2.  Ice ------------------------------------------------------------ /
-!old:     ICECOEF1=min(0.10,ICECOEF1)
-      ELSEIF ( ICECOEF1 .LE. IC2PARS(1)) THEN
-!.......... e.g. if ice thickness is .le. 10 cm
+      ELSE
 !
 ! 2.a Set constant(s) and write test output -------------------------- /
 !
@@ -336,74 +299,27 @@
 !     --- Input to routine (part 1): 6 ice parameters from single
 !         precision variables. ---------------------------------------
          CALL W3IC3WNCG(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
-              ICECOEF3, ICECOEF4, DEPTH     )
+                                  ICECOEF3, ICECOEF4, DEPTH     )
 !
 !    --- calculate source term --------------------------------------- /
          DO IK=1, NK
-            !            recall that D=S/E=-2*Cg*k_i
+! sbt1 has:  d1d(ik) = factor *  max(0., (cg(ik)*wn(ik)/sig(ik)-0.5) )
+!            recall that D=S/E=-2*Cg*k_i
             D1D(IK)= -2.0 * CG_IC3(IK) * WN_I(IK)
          END DO
-         !
-      ELSE ! .. e.g. if ice thickness is .gt. 10 cm
-         ! Alternative by F.A., see Remarks section.
-         IF (IC2PARS(2).GT.0.) THEN 
-            UORB=0.
-            AORB=0.
-            FTURB = IC2PARS(2)
-            IF (IC2PARS(7).GT.0) THEN 
-               IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) &
-                    FTURB = IC2PARS(7)
-            END IF
-            DO IK=1, NK
-               EB  = 0.
-               DO ITH=1, NTH
-                  IS=ITH+(IK-1)*NTH
-                  EB  = EB  + A(IS)
-               END DO
-               !
-               !  UORB and AORB are the variances of the orbital velocity
-               !  and surface elevation
-               !
-               UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
-               AORB = AORB + EB             * DDEN(IK) / CG(IK)
-               !deep water only
-            END DO
-            !
-            AORB = 2*SQRT(AORB)  ! significant amplitude
-            UORB = 2*SQRT(UORB)  ! significant amplitude
-
-            RE = UORB*AORB / VISCM
-            SMOOTH = 0.5*TANH((RE-IC2PARS(4))/IC2PARS(5))
-            PTURB=(0.5+SMOOTH)
-            PVISC=(0.5-SMOOTH)
-
-            XI=(ALOG10(MAX(AORB/IC2PARS(3),3.))-ABMIN)/DELAB
-            IND  = MIN (SIZEFWTABLE-1, INT(XI))
-            DELI1= MIN (1. ,XI-FLOAT(IND))
-            DELI2= 1. - DELI1
-            FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
-            DTURB=-1.* FTURB*FW*UORB/GRAV
-         ELSE ! so case of IC2PARS(2).LE.0.
-            DTURB = 0.
-         END IF ! IF (IC2PARS(2).GT.0.)  
-
-         DO IK=1, NK
-            DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
-            D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
-         END DO
-
-      END IF !   IF ( NOICE ) THEN
-
+!
 ! 2.c Fill diagional matrix ------------------------------------------ /
 !
-      DO IKTH=1, NSPEC
-         D(IKTH) = D1D(MAPWN(IKTH))
-      END DO
+         DO IKTH=1, NSPEC
+            D(IKTH) = D1D(MAPWN(IKTH))
+         END DO
 !
 ! sign convention (example): 
 !        S is from -10e-3 to 0
 !        A is from 0 to 10
 
+      END IF
+!
       S = D * A
 !
 ! ... Test output of arrays
@@ -475,7 +391,6 @@
 !     ----------------------------------------------------------------
 !     WAVNU1   Subr. W3DISPMD   Wavenumber for waves in open water.
 !     WN_CMPLX Func. W3SIC3MD   Complex wavenumber for waves in ice.
-!     WN_CMPLX_HF Func. W3SIC3MD   Like WN_CMPLX, but for h-f
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -510,7 +425,6 @@
       USE W3DISPMD, ONLY: WAVNU1
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE CONSTANTS, ONLY: TPI
 !/
       IMPLICIT NONE
 !/
@@ -522,15 +436,12 @@
       REAL               :: K_OCEAN, CG_OCEAN
       DOUBLE PRECISION   :: KH, K_NOICE, HWAT, HICE, NU, DICE, ES_MOD
       DOUBLE PRECISION,PARAMETER :: KHMAX = 18.0D0 ! 18=OK, 19=fails
-      DOUBLE COMPLEX     :: WNCOMPLEX,WNCOMPLEX_OLD
-      REAL               :: STENSEC
+      DOUBLE COMPLEX     :: WNCOMPLEX
 !
       ALLOCATE( CG_IC3( SIZE(CG) ) )
       ALLOCATE(  SIGMA( SIZE(CG) ) )
       CG_IC3  = 0.
       SIGMA   = 0.
-      STENSEC=TPI/10.0 ! sigma for T=10 sec
-
 !
 !     --- Input to routine (part 1): set 6 double precision variables 
 !        using single precision variables. -------------------------- /
@@ -539,13 +450,6 @@
       NU      = DBLE(ICE2)    ! "effective viscosity" parameter
       DICE    = DBLE(ICE3)    ! density of ice
       ES_MOD  = DBLE(ICE4)    ! effective shear modulus of ice
-
-!     Limit ice thickness: IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
-      HICE=MIN(0.1D0,HICE)
 
       IF (SIZE(WN_R,1).EQ.NK) THEN
          KL    = 1
@@ -560,8 +464,6 @@
          CALL EXTCDE(3)
       END IF
 !
-      WNCOMPLEX_OLD=CMPLX(0.0D0,0.0D0)
-
       DO IK = KL,KU
 !     --- Input to routine (part 2): set 2 double precision variables 
 !         using single precision variable. --------------------------- /
@@ -574,21 +476,7 @@
             HWAT   = KHMAX / K_NOICE
          ENDIF
 !     --- Calculate complex wavenumber ------------------------------- /
-
-         IF((IK.GT.KL).AND.(SIGMA(IK).GT.STENSEC))THEN
-
-            WNCOMPLEX = WN_CMPLX_HF(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU, &
-            DICE,HICE,HWAT,DBLE(SIGMA(IK-1)),WNCOMPLEX_OLD)
-            WNCOMPLEX_OLD=WNCOMPLEX
-
-         ELSE
-
-            WNCOMPLEX = WN_CMPLX(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU, &
-            DICE,HICE,HWAT)
-            WNCOMPLEX_OLD=WNCOMPLEX
-
-         ENDIF
-
+         WNCOMPLEX = WN_CMPLX(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU,DICE,HICE,HWAT)
 !     --- Output from function is type of DOUBLE COMPLEX. Set 
 !         precision of imaginary to single precision array element --- /
          WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))
@@ -754,128 +642,6 @@
     END FUNCTION WN_CMPLX
 !/ ------------------------------------------------------------------- /
 !/
-    FUNCTION WN_CMPLX_HF(SIGMA,WN_O,ES,NU,DICE,HICE,DEPTH,SIGMA_LAST, &
-             WN_LAST)     RESULT(WN)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. Shen                 |
-!/                  |           E. Rogers               |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
-!/                  +-----------------------------------+
-!/
-!/    15-Jan-2014 : Origination (from WN_CMPLXA.f90)      (H. Shen)
-!/    17-Apr-2014 : Import to WW3                         (E. Rogers)
-!/
-!  1. Purpose :
-!
-!     Calculate complex wavenumber for waves in ice.
-!
-!  2. Method :
-!
-!     Wang and Shen (JGR 2010)
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       WN     CMPLX DBL O  Wave number (imag. part=wave attenuation)
-!       SIGMA  REAL DBL  I  Wave angular frequency           [in rad]
-!       WN_O   REAL DBL  I  Wave number (open water)
-!       ES     REAL DBL  I  Effective shear modulus of ice   [in Pa]
-!       NU     REAL DBL  I  Effective viscosity of ice       [in m2/s]
-!       DICE   REAL DBL  I  Density of ice                  [in kg/m3]
-!       HICE   REAL DBL  I  Thickness of ice                 [in m]
-!       DEPTH  REAL DBL  I  Water depth                      [in m]
-!       SIGMA_LAST REAL DBL I : Like SIGMA, but of last IK
-!       WN_LAST    REAL DBL I : WN_O of last IK
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name               Type  Module   Description
-!     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3SIC3    Subr. W3SIC3MD Ice source term.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!  7. Remarks :
-!
-!   Original authors: Zhao and Shen.
-!     See notes in FUNCTION WN_CMPLX, not repeated here.
-!     New in this function, Hayley Shen says (Jan 15 2014) : 
-!     "To speed up the computation, we need to add a new function 
-!     WN_CMPLXA (attached) into the earlier version of the MODULE 
-!     W3SIC3MD. When wave period T>=10s, we call old function WN_CMPLX 
-!     directly. When T<10s, call the new function WN_CMPLXA with last 
-!     calculation step's information: last complex wave number, last 
-!     angular wave frequency. The calculation should be from large T 
-!     to small T."
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-      USE CONSTANTS, ONLY: TPI
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-      DOUBLE PRECISION, INTENT(IN) :: SIGMA,WN_O,ES,NU,DICE,HICE,DEPTH
-      DOUBLE PRECISION, INTENT(IN) :: SIGMA_LAST
-      DOUBLE COMPLEX,   INTENT(IN) :: WN_LAST
-      DOUBLE COMPLEX               :: WN                      ! RESULT
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-      INTEGER            :: I, NSUB
-      DOUBLE PRECISION   :: TT, TS, T
-      DOUBLE COMPLEX     :: X0, X1, X2, WN0
-!/
-!/ ------------------------------------------------------------------- /
-      T    = DBLE(TPI) / SIGMA
-      TS   = DBLE(TPI) / SIGMA_LAST
-      NSUB = INT((TS-T) * 10.)
-!/
-      IF (HICE<0.001) THEN
-         WN  = CMPLX(WN_O,0.)
-      ELSE 
-         X0  = 0.90 * WN_LAST
-         X1  = WN_LAST
-         X2  = 1.1 * WN_LAST
-         WN  = CMPLX_ROOT_MULLER(X0,X1,X2,1,DBLE(TPI)/TS, &
-                                 ES,NU,DICE,HICE,DEPTH    )
-         DO I=1,NSUB
-            X0 = 0.90 * WN
-            X1 = WN
-            X2 = 1.1 * WN
-            TT = TS - (TS-T) / REAL(NSUB) * REAL(I)
-            WN = CMPLX_ROOT_MULLER(X0,X1,X2,1,DBLE(TPI)/TT, &
-                                   ES,NU,DICE,HICE,DEPTH    )
-         ENDDO
-      ENDIF
-!/
-    END FUNCTION WN_CMPLX_HF
-!/ ------------------------------------------------------------------- /
-!/ ------------------------------------------------------------------- /
-!/
     FUNCTION CMPLX_ROOT_MULLER(X0, X1, X2, JUDGE, SIGMA, ES, NU, &
                                DICE, HICE, DEPTH)           RESULT(P3)
 !/
@@ -910,7 +676,6 @@
 !       X0    CMPLX DBL I  Initial guess variable
 !       X1    CMPLX DBL I  Initial guess variable
 !       X2    CMPLX DBL I  Initial guess variable
-!       JUDGE INTEGER   I  "switch variable" for F_ZHAO
 !       SIGMA DOUBLE    I  Wave angular frequency
 !       ES    DOUBLE    I  Effective shear modulus of ice
 !       NU    DOUBLE    I  Effective viscosity of ice       [in m2/s]
@@ -1012,9 +777,6 @@
                P3 = P2 - (P2 - P1) * (C / B)
             ELSE
                WRITE(NDSE,800)
-               WRITE(NDSE,801)X0,X1,X2
-               WRITE(NDSE,802)SIGMA,ES,NU,DICE,HICE,DEPTH
-               WRITE(NDSE,803)JUDGE
                CALL EXTCDE(2)
             ENDIF
          ENDIF
@@ -1036,16 +798,10 @@
       ENDDO
 !
       WRITE(NDSE,800)
-      WRITE(NDSE,801)X0,X1,X2
-      WRITE(NDSE,802)SIGMA,ES,NU,DICE,HICE,DEPTH
-      WRITE(NDSE,803)JUDGE
       CALL EXTCDE(2)
 !
   800 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC3_CMPLX_ROOT_MULLER : '/&
                '     MULLER METHOD FAILED TO FIND ROOT.'                )
-  801 FORMAT (/'X0,X1,X2 = ',3(1X,'(',F10.5,',',F10.5,')'))
-  802 FORMAT (/'SIGMA,ES,NU,DICE,HICE,DEPTH = ',6(1X,F10.5))
-  803 FORMAT (/'JUDGE = ',I5)
 !/
     END FUNCTION CMPLX_ROOT_MULLER
 !/ ------------------------------------------------------------------- /

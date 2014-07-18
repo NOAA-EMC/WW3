@@ -43,7 +43,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -209,8 +209,8 @@
 !/S      CALL STRACE (IENT, 'W3FLGRDUPDT')
 !
       DO I=1,5
-        IF (E3DF(1,I).LE. 0.OR.E3DF(3,I) .LT.E3DF(2,I))  FLGRD(3,I)=.FALSE.
-        END DO
+        IF (E3DF(1,I).LE.0.OR.E3DF(3,I).LT.E3DF(2,I)) FLGRD(3,I)=.FALSE.
+      END DO
       IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) FLGRD(6,8)=.FALSE.
       IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) FLGRD(6,9)=.FALSE.
       RETURN
@@ -229,7 +229,7 @@
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.02 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
 !/
 !  1. Purpose :
 !
@@ -665,7 +665,7 @@
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.02 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
 !/
 !  1. Purpose :
 !
@@ -744,7 +744,7 @@
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, BHD, PHICE, TAUICE,        &
+                          TAUWNX,  TAUWNY, BHD,                    &
                           CGE, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,    &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS,         &
                           US3D, EF, TH1M, STH1M, TH2M, STH2M, HSIG
@@ -1012,7 +1012,7 @@
             TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),ABX2(JSEA)) , 180. )
           M2 = SQRT(ABX2(JSEA)**2+ABY2(JSEA)**2)/MAX(1E-20,AB(JSEA))
           IF ( FLOLOC( 3, 5).AND.(IK.GE.E3DF(2,5).AND.IK.LE.E3DF(3,5)))  &
-             STH2M(JSEA,IK)= SQRT(ABS(0.5*(1-M2)))*RADE
+             STH2M(JSEA,IK)= SQRT(ABS(2.*(1-M2)))*RADE
           END DO
 !
         END DO
@@ -1547,7 +1547,7 @@
                           TAUWNX, TAUWNY, CHARN, BHD,              &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE,    &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D, EF, &
-                          TH1M, STH1M, TH2M, STH2M, HSIG, TAUICE, PHICE
+                          TH1M, STH1M, TH2M, STH2M, HSIG
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
                           FNMPRE, NOSWLL, NOEXTR
@@ -1776,8 +1776,6 @@
                 IF ( FLOGRD( 6, 9) ) THEN
                                     P2SMS(ISEA,:) = UNDEF
                   END IF
-                IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
-                IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
 !
                 IF ( FLOGRD( 7, 1) ) THEN
                                      ABA   (ISEA) = UNDEF
@@ -1913,16 +1911,16 @@
 !     Section 3)
 !
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
-                    WRITE ( NDSOG ) EF   (1:NSEA,E3DF(2,1):E3DF(3,1))
+                    WRITE ( NDSOG ) EF(1:NSEA,E3DF(2,1):E3DF(3,1))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
-                    WRITE ( NDSOG ) TH1M (1:NSEA,E3DF(2,2):E3DF(3,2))
+                    WRITE ( NDSOG ) TH1M(1:NSEA,E3DF(2,2):E3DF(3,2))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
                     WRITE ( NDSOG ) STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
-                    WRITE ( NDSOG ) TH2M (1:NSEA,E3DF(2,4):E3DF(3,4))
+                    WRITE ( NDSOG ) TH2M(1:NSEA,E3DF(2,4):E3DF(3,4))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
                     WRITE ( NDSOG ) STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
-                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
+                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6) THEN
                     WRITE ( NDSOG ) WN(1:NK,1:NSEA)
 !
 !     Section 4)
@@ -2010,11 +2008,6 @@
                     WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
                     WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
-                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
-                    WRITE ( NDSOG ) TAUICE(1:NSEA,1)
-                    WRITE ( NDSOG ) TAUICE(1:NSEA,2)
-                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
-                    WRITE ( NDSOG ) PHICE(1:NSEA)
 !
 !     Section 7)
 !
@@ -2034,7 +2027,7 @@
                     !WRITE ( NDSOG ) ABD(1:NSEA)
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
                     DO ISEA=1, NSEA
-                      IF ( UBA(ISEA) .NE. UNDEF ) THEN
+                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
                           AUX1(ISEA) = UBA(ISEA)*COS(UBD(ISEA))
                           AUX2(ISEA) = UBA(ISEA)*SIN(UBD(ISEA))
                         ELSE
@@ -2139,7 +2132,7 @@
 !
                  ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                          EF   (1:NSEA,E3DF(2,1):E3DF(3,1))
+                                      EF(1:NSEA,E3DF(2,1):E3DF(3,1))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                     TH1M(1:NSEA,E3DF(2,2):E3DF(3,2))
@@ -2154,7 +2147,7 @@
                                     STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
                   ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6) THEN
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
-                                    WN(1:NK,1:NSEA)
+                                                      WN(1:NK,1:NSEA)
 !
 !     Section 4)
 !
@@ -2260,14 +2253,6 @@
                   ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN 
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)     &
                                      P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
-                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TAUICE(1:NSEA,1)
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       TAUICE(1:NSEA,2)
-                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
-                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                                                       PHICE(1:NSEA)
 !
 !     Section 7)
 !
