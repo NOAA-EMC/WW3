@@ -29,6 +29,7 @@
 !/    14-Nov-2013 : Move orphaned arrays as scalar to W3SRCE.
 !/                  Here update of documentation only.
 !/                  (Z0S, CDS, EMN, FMN, WNM, AMX)      ( version 4.13 )
+!/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -697,6 +698,7 @@
 !/    31-Oct-2010 : Added initialization of CX,CY,DW    ( version 3.14 )
 !/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
+!/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
 !/
 !  1. Purpose :
 !
@@ -898,7 +900,7 @@
 !
 ! 5) Atmosphere-waves layer
 !
-!    Frcition velocity UST and USTDIR in W3WDATMD
+!    Friction velocity UST and USTDIR in W3WDATMD
 !
       ALLOCATE ( WADATS(IMOD)%CHARN   (NSEALM),                       &
                  WADATS(IMOD)%CGE     (NSEALM),                       &
@@ -2260,6 +2262,7 @@
 !/                  +-----------------------------------+
 !/
 !/    25-Dec-2012 : Origination.                        ( version 4.11 )
+!/    30-Apr-2014 : Add s/th1-2m                        ( version 5.01 )
 !/
 !  1. Purpose :
 !

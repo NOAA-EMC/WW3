@@ -88,8 +88,9 @@
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
 !/    02-Dec-2013 : Update of ST4                       ( version 4.16 )
-!/    10-Mar-2014 : Adding namelist for IC2             ( version 5.xx )
-!/    29-May-2014 : Adding namelist for IC3             ( version 5.xx )
+!/    16-Feb-2014 : Adds wind bias correction: WCOR     ( version 5.00 )
+!/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
+!/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -527,7 +528,8 @@
                                  VSC, VOF,                            &
                                  ZLIM, X, Y, XP,  XO0, YO0, DXO, DYO, &
                                  XO, YO, RD(4), RDTOT,                &
-                                 FACTOR, RTH0, FMICHE, RWNDC
+                                 FACTOR, RTH0, FMICHE, RWNDC,         &
+                                 WCOR1, WCOR2
       CHARACTER(LEN=4)        :: GSTRG, CSTRG
 !
 ! Variables used to allow spectral output on full grid
@@ -695,7 +697,7 @@
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, FXPM3, FXFM3,    &
-!/ST4                      SDSC2, SDSCUM, SDSC4,  &
+!/ST4                      SDSC2, SDSCUM, SDSSTRAIN, SDSC4,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
@@ -719,7 +721,7 @@
                            IMPFSN
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
-                      RWNDC, FACBERG, NOSW, GSHIFT
+                      RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              E3D, I1E3D, I2E3D,                       &
@@ -1809,6 +1811,8 @@
       NOSW   = 5
       FMICHE = 1.6
       RWNDC  = 1.
+      WCOR1  = 99. 
+      WCOR2  = 0.
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
@@ -1863,15 +1867,15 @@
 !
 !/IG1       IGMETHOD = 2
 !/IG1       IGADDOUTP= 0 
-!/IG1       IGSOURCE = 2
+!/IG1       IGSOURCE = 1
 !/IG1       IGSTERMS = 0
-!/IG1       IGMAXFREQ=0.03
+!/IG1       IGMAXFREQ=0.035
 !/IG1       IGSOURCEATBP = 0
 !/IG1       IGBCOVERWRITE = 1
-!/IG1       IGSWELLMAX = .TRUE.
+!/IG1       IGSWELLMAX = .FALSE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
-!/IG1       IGEMPIRICAL = 0.00125
+!/IG1       IGEMPIRICAL = 0.0008
 !
 !/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
@@ -1971,6 +1975,8 @@
 !/SCRIP     WRITE (NDSO,963) GSHIFT
       FACSD  = XSEED
 !/RWND RWINDC = RWNDC 
+!/WCOR WWCOR(1) = WCOR1 
+!/WCOR WWCOR(2) = WCOR2 
 !
       XP     = MAX ( 1.E-6 , XP )
       XR     = MAX ( 1.E-6 , XR )
@@ -2051,7 +2057,7 @@
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
-!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
+!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSSTRAIN, SDSC4, SDSC5, SDSC6, &
 !/ST4                    WNMEANP, FXPM3, FXFM3,                            &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
 !/ST4                    SDSBR, SDSSTRAIN, SDSBR2, SDSP, SDSISO, SDSCOS,   &
@@ -2104,12 +2110,12 @@
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
-                                RWNDC, FACBERG,GSHIFT
+                                RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
-                                RWNDC, FACBERG, GSHIFT
+                                RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT
 
           END IF
 !
@@ -4279,8 +4285,8 @@
 !/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
 !/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSCUM =',E12.4,','/                           &
-!/ST4               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
+!/ST4               ', SDSCUM =',F6.2,', SDSSTRAIN =',F4.1','/        &
+!/ST4               '        SDSC4 =',F6.2,', SDSC5 =',E12.4,         &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
 !/ST4               ',FXFM3 =',F4.2,','/                              &
@@ -4496,7 +4502,7 @@
                '        IHM =',I5,', HSPM =',F6.3,', WSM =',F6.3,     &
                      ', WSC =',F6.3,', FLC = ',A/                     &
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
-                        F6.3,','/                                     &
+                        F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/                                     &
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    

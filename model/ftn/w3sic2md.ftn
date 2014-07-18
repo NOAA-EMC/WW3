@@ -81,7 +81,7 @@
 !/    16-Oct-2012 : Origination.                        ( version 4.04 )
 !/                                                        (E. Rogers)
 !/    09-Oct-2013 : W3SIC1 SUBTYPE=2 outsourced to W3SIC2 (S. Zieger)
-!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01)
 !/
 !/        FIXME   : Move field input to W3SRCE and provide
 !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine

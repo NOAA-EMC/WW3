@@ -706,7 +706,7 @@
 !
 !/BT1        CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
 !/BT4        CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL,    &
-!/BT4                      BEDFORM, PHIBBL,  VSBT, VDBT, IX, IY )
+!/BT4                      BEDFORM, VSBT, VDBT, IX, IY )
 !/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 !/BTX        CALL W3SBTX
@@ -1096,7 +1096,7 @@
 !
 ! 10 includes reflection --------------------------------------------- *
 !
-!/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.REFLEC(4).GT.0) THEN 
+!/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
 !/REF1                        REFLEC, REFLED, DELX, DELY, DELA, TRNX, TRNY,  &
 !/REF1                        BERG, DTG, IX, IY,  VREF )
