@@ -253,6 +253,7 @@
 !      FHMAX     Real  Public   Hs/depth ratio in limiter     (!/MLIM)
 !      RWINDC    Real  Public   Coefficient for current in relative 
 !                               wind                          (!/RWND)
+!      WWCOR     R.A.  Public   Wind correction factors       (!/WCOR)
 !     ----------------------------------------------------------------
 !
 !     The structure PROP contains parameters for the propagation
@@ -635,6 +636,7 @@
         REAL                  :: FACP, XREL, XFLT, FXFM, FXPM,        &
                                  XFT, XFC, FACSD, FHMAX
 !/RWND        REAL            :: RWINDC
+!/WCOR        REAL            :: WWCOR(2)
       END TYPE NPAR
 !
       TYPE PROP
@@ -889,6 +891,7 @@
       REAL, POINTER           :: FACP, XREL, XFLT, FXFM, FXPM,        &
                                  XFT, XFC, FACSD, FHMAX
 !/RWND REAL, POINTER           :: RWINDC
+!/WCOR REAL, POINTER           :: WWCOR(:)
 !/
 !/ Data aliasses for structure PROP(S)
 !/
@@ -1246,7 +1249,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-! NB: Some array start at 0 becase MAPFS(IY,IX)=0 for missing points 
+! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points 
 !
       ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
                    GRIDS(IMOD)%MAPST2(MY,MX),  &
@@ -1865,6 +1868,7 @@
       FACSD  => MPARS(IMOD)%NPARS%FACSD
       FHMAX  => MPARS(IMOD)%NPARS%FHMAX
 !/RWND    RWINDC => MPARS(IMOD)%NPARS%RWINDC
+!/WCOR    WWCOR  => MPARS(IMOD)%NPARS%WWCOR
 !
 !     Structure PROPS
 !

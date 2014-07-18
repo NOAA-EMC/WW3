@@ -766,6 +766,8 @@
                 FFACBERG, DELAB, FWTABLE
 !/RWND          WRITE (NDSM)                                                &
 !/RWND                RWINDC
+!/WCOR          WRITE (NDSM)                                                &
+!/WCOR                WWCOR
 !/REF1          WRITE (NDSM)                                                &
 !/REF1                RREF, REFPARS, REFLC, REFLD
 !/IG1          WRITE   (NDSM)                                              &
@@ -780,7 +782,9 @@
                 FFACBERG, DELAB, FWTABLE
 !/RWND          READ  (NDSM)                                                &
 !/RWND                RWINDC
-!/REF1         READ   (NDSM)                                                &
+!/WCOR          READ  (NDSM)                                                &
+!/WCOR                WWCOR
+!/REF1          READ  (NDSM)                                                &
 !/REF1                RREF, REFPARS, REFLC, REFLD
 !/IG1         READ   (NDSM)                                                &
 !/IG1                IGPARS(1:12)

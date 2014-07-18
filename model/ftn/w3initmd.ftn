@@ -1626,8 +1626,8 @@
 !/MPI          NRQMAX = 0 + 12 + 0 + 2+6*(NOSWLL+1) + 10+4 + 7+6 +     &
 !/MPI                   5+5 + 2+2 + 5+0 + NOEXTR
 !/MPI          DO IFJ=1,5
-!/MPI            IF ( FLGRDALL( 3,J)) NRQMAX = NRQMAX +               &
-!/MPI                                        E3DF(3,J) - E3DF(2,J) + 1
+!/MPI            IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX +               &
+!/MPI                                    E3DF(3,IFJ) - E3DF(2,IFJ) + 1
 !/MPI            END DO
 !/MPI          IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX +               &
 !/MPI                                          P2MSF(3) - P2MSF(2) + 1

@@ -478,7 +478,7 @@
 !/IG1! Does not integrate source terms for IG band if IGPARS(12) = 0. 
 !/IG1! 
 !/IG1      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5)) 
-      IS1=IKS1*NTH+1
+      IS1=(IKS1-1)*NTH+1
 !
 !/LN0      VSLN = 0.
 !/SEED      VSLN = 0.
