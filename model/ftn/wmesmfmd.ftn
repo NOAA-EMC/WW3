@@ -544,7 +544,7 @@
 !
       call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      call ESMF_VMGet(VM, petCount=npet, localPet=lpet, &
+      call ESMF_VMGet(vm, petCount=npet, localPet=lpet, &
            mpiCommunicator=mpiComm, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       nmproc = npet
