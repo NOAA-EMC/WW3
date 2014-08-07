@@ -999,7 +999,7 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  3 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
-!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(2) = 28
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T02   , MAPSF, X1 )
 !
 !     Mean wave period (based on first moment)
@@ -1015,7 +1015,7 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  5 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1 
-!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(2) = 25
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, T01   , MAPSF, X1 )
 !
 !     Peak frequency
@@ -1037,7 +1037,7 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ.  7 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = 101
-!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(2) = 14
                 DO ISEA=1, NSEA
                   IF ( THM(ISEA) .NE. UNDEF )                         &
                        THM(ISEA) = MOD ( 630. - RADE*THM(ISEA) , 360. )
@@ -1049,7 +1049,7 @@
               ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
                 FLONE = .TRUE.
 !/NCEP1                KPDS(5) = -1
-!/NCEP2                KPDS(2) = 255
+!/NCEP2                KPDS(2) = 31
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, THS   , MAPSF, X1 )
 !
 !     Peak direction
