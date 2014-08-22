@@ -10,32 +10,29 @@ $ Points requested --------------------------------------------------- $
 $
 $ Define points index for which output is to be generated. 
 $ If no one defined, all points are selected
-$ One index number per line
+$ One index number per line, negative number identifies end of list.
 $ 1
 $ 2
-$ 3
 $ mandatory end of list
  -1
 $
+$--------------------------------------------------------------------- $
 $ file prefix
+$ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
+$ netCDF version [3,4]
+$ points in same file [T] or not [F] 
+$                    and max number of points to be processed in one pass
+$ output type ITYPE [0,1,2,3]
+$ flag for global attributes WW3 [0] or variable version [1-2-3-4]
+$ flag for dimensions order time,station [T] or station,time [F]
+$
  ww3.
-$
-$ number of characters in date
  4
-$
-$ version netCDF [3,4]
  3
-$
-$ Points in same file [T] or not [F] and max number of points to be 
-$ processed in one pass
  T 100 
-$
-$ Output type ITYPE [0,1,2,3]
  3
-$
-$ Flag for global attributes WW3 [0] or variable version [1-2-3-4]
  0
-$
+ T
 $
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
@@ -66,10 +63,6 @@ $   direction, current speed and direction     |   over    |
 $ - E(f,theta)                                 |  points   | times
 $                                             -+          -+
 $
-$ The formatted file is readable usign free format throughout.
-$ This datat set can be used as input for the bulletin generator
-$ w3split.
-$
 $ -------------------------------------------------------------------- $
 $ ITYPE = 2, netCDF Tables of (mean) parameter
 $          - Sub-type OTYPE :  1 : Depth, current, wind
@@ -78,9 +71,7 @@ $                              3 : Nondimensional pars. (U*)
 $                              4 : Nondimensional pars. (U10)
 $                              5 : 'Validation table'
 $                              6 : WMO standard output 
-$
 $  4
-$
 $
 $ -------------------------------------------------------------------- $
 $ ITYPE = 3, netCDF Source terms
@@ -120,7 +111,6 @@ $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
-$
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
