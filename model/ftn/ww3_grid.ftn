@@ -165,7 +165,7 @@
 !     The physical grid is defined by a grid counter IX defining the
 !     discrete longitude and IY defining the discrete latitude as shown
 !     below. For mathemathical convenience, these grid axes will
-!     generally be denoted as the X and Y axes. Two-diemsnional arrays
+!     generally be denoted as the X and Y axes. Two-dimensional arrays
 !     describing parameters on this grid are given as A(IY,IX).
 !
 !           IY=NY
@@ -193,7 +193,7 @@
 !
 !             MAPFS(IY,IX) = ISEA
 !
-!     ISEA = 0 corresponds to land points. The map MAPFS gives the grid
+!     ISEA = 0 corresponds to land points. The map MAPSF gives the grid
 !     counters (IY,IX) for a given storage point ISEA.
 !
 !             MAPSF(ISEA,1) = IX
@@ -1904,9 +1904,6 @@
 !/IC3      WRITE (NDSO,971) STATUS
 
 !
-      CALL READNL ( NDSS, 'MISC', STATUS )
-      WRITE (NDSO,960) STATUS
-!
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
 !
@@ -3588,7 +3585,6 @@
 !/REF1      ELSE
 !/REF1        CALL W3SETREF
         END IF
-     
 !/REF1! 
 !/REF1!  9.a Reads shoreline slope  (whith REF1 switch only)
 !/REF1!

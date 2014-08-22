@@ -229,7 +229,8 @@
 !/                  structure and smaller memory footprint.
 !/    16-Nov-2013 : Allows reflection on curvi. grids   ( version 4.13 )
 !/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
-!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.xx )!/
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
+!/
 !  1. Purpose :
 !
 !     Run WAVEWATCH III for a given time interval.
@@ -385,7 +386,7 @@
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
-                                 REFLED(6), IK, ITH, IS, NKCFL       
+                                 REFLED(6), IK, ITH, IS, NKCFL
       REAL                    :: ICEH, ICEDAVE
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG

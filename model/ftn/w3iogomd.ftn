@@ -43,7 +43,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -229,7 +229,7 @@
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/
 !  1. Purpose :
 !
@@ -665,7 +665,7 @@
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/
 !  1. Purpose :
 !
@@ -1012,7 +1012,7 @@
             TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),ABX2(JSEA)) , 180. )
           M2 = SQRT(ABX2(JSEA)**2+ABY2(JSEA)**2)/MAX(1E-20,AB(JSEA))
           IF ( FLOLOC( 3, 5).AND.(IK.GE.E3DF(2,5).AND.IK.LE.E3DF(3,5)))  &
-             STH2M(JSEA,IK)= SQRT(ABS(2.*(1-M2)))*RADE
+             STH2M(JSEA,IK)= SQRT(ABS(0.5*(1-M2)))*RADE
           END DO
 !
         END DO
@@ -1771,8 +1771,6 @@
                                      TPMS  (ISEA) = UNDEF
                   END IF
                 IF ( FLOGRD( 6, 8) ) US3D(ISEA,:) = UNDEF
-                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
-                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF

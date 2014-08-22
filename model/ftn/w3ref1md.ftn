@@ -15,6 +15,7 @@
 !/    24-Fev-2012 : Correction of angle in fluxes       ( version 4.05 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.11 )
 !/    11-Nov-2013 : Extends IG energy into main band    ( version 4.13 )
+!/    11-Jun-2014 : Put reflection by subgrids back     ( version 5.01 )
 !/    27-Jun-2014 : Modifies subgrid reflection of IG   ( version 5.01 )
 !/ 
 !  1. Purpose :
@@ -479,7 +480,7 @@
             END IF  ! UNGTYPE
 
           END DO ! loop on IK
-        END IF
+        END IF   ! end of test on REFLC(1)
 !
 !  Add diffuse reflection due to subgrid islands and icebergs
 !  At present this feature is not supported for unstructured grids. 
@@ -532,7 +533,6 @@
 !/IG1        END IF
 !/IG1     ENDDO ! ICALC = 1,2
 !/IG1     A(1:NSPECIG)=ATMP2(1:NSPECIG)   ! removes bound IG components ... 
-
 !/
 !/ End of W3SREF ----------------------------------------------------- /
 !/

@@ -16,6 +16,7 @@
 !/    02-Jul-2013 : Bug correction for lat in unst grid ( version 4.11 )
 !/    02-Nov-2013 : Removes unnecessary IDFM            ( version 4.12 )
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -453,6 +454,7 @@
 !/    02-Apr-2013 : New structure of output fields.     ( version 4.09 )
 !/    12-Apr-2013 : Allows curvilinear grids            ( version 4.10 ) 
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/
 !  1. Purpose :
 !
