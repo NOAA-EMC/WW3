@@ -73,7 +73,7 @@
 !/                  trunk                               ( version 4.13 )
 !/    14-Nov-2013 : Remove orphaned work arrays.        ( version 4.13 )
 !/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
-!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.xx )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

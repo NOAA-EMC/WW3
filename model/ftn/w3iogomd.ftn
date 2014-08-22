@@ -1777,6 +1777,14 @@
                 IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
 !
+                IF ( FLOGRD( 7, 1) ) THEN
+                                     ABA   (ISEA) = UNDEF
+                                     ABD   (ISEA) = UNDEF
+                  END IF
+                IF ( FLOGRD( 7, 2) ) THEN
+                                     UBA   (ISEA) = UNDEF
+                                     UBD   (ISEA) = UNDEF
+                  END IF
                 IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
                 IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF

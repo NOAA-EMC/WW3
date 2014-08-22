@@ -105,7 +105,7 @@
 !/    17-Nov-2013 : Coupling fraction of ice-free       ( version 4.13 )
 !/                  surface to SIN and SDS. (S. Zieger)
 !/    01-Avr-2014 : Adding ice thickness and floe size  ( version 4.18 )
-!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.xx )
+!/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
