@@ -1744,8 +1744,8 @@
 !!HT: JJ loop goes over grids that reviously have been identified as 
 !!HT: getting data from the grid presently cousidered.
 !
-! notes: The purpose of this loop is unclear. Perhaps it is to identify points
-!        that should not be used in the averaging procedure. It could be 
+! notes: The purpose of this is to identify points
+!        that should not be used in the averaging procedure. It is 
 !        related to statement in Tolman (OM, 2008):  "Second, Eq (7) is not 
 !        applied to grid points in the low resolution grid that contribute 
 !        to boundary data for the high resolution grid. This avoids cyclic
@@ -1754,6 +1754,11 @@
 ! notes:   GRDHGH(GDST,0) is number of grids of higher rank than the present
 !                         grid (GDST)
 !          GRDHGH(GDST,1...etc.) is the grid number
+
+! notes: Setting MAPTST=negative here is probably overkill, since it means
+!        we will not have weights for this point. However, to change this,
+!        we would need a new variable to use in its place, since we need
+!        to mark the point for use in STMASK determination.
 
             DO JJ=1, GRDHGH(GDST,0) 
                GSRC   = GRDHGH(GDST,JJ)
@@ -2356,7 +2361,26 @@
 !!HT: the boundary distance in the high-res grid, stored in BDIST is
 !!HT: used to make the choice.
 
-                  DO JJ=1, GRDHGH(GDST,0)
+!!ER: Old logic was to select a grid that is of the "next rank up, 
+!!ER: for which data is available". This was done by searching 
+!!ER: from 1 to GRDHGH (remember that the available source grids
+!!ER: are in order of rank), and exiting when the rank increased.
+!!ER: The problem with selecting the "lowest rank grid with rank
+!!ER: greater than that of GDST" is that at this point, we have 
+!!ER: no knowledge of what will be masked in that SRC grid, since
+!!ER: we haven't updated MAPSTA for that GSRC yet, based on what
+!!ER: points are covered by higher rank grids (in case of masking
+!!ER: computations). We can avoid this problem by reversing the 
+!!ER: order of GSRC search (from highest rank to lowest rank of
+!!ER: higher rank). For example, grid 1 wants data from grid 2, 
+!!ER: but just gets zeros because grid 2 is masked there, because
+!!ER: grid 2 is masked by grid 3 in Section 2.3.2 below. Going
+!!ER: directly to GSRC=3 for GDST=1 (skipping GSRC=2) avoids 
+!!ER: this: the highest rank at that location will never be 
+!!ER: masked by a higher rank grid.
+
+                  DO JJ=GRDHGH(GDST,0),1,-1
+!old              DO JJ=1, GRDHGH(GDST,0) ! used before Aug 2014
 
                      GSRC   = GRDHGH(GDST,JJ)
 
