@@ -908,7 +908,7 @@
             CALL STME21 ( TOUT , IDTIME )
             WRITE(DATE,'(I8.8,I6.6)') TOUT(1), TOUT(2) 
 !
-! Creates a new file if it's a new date defined by the date division S3
+! Creates a new file if it is a new date defined by the date division S3
 !
             IF ( (IOUT.GT.1) .AND. (INDEX(PASTDATE(1:S3),DATE(1:S3)).EQ.0) ) THEN
               WRITE(NDSO,954) trim(DATE(1:S3))
@@ -1705,7 +1705,6 @@
           IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
             CALL W3PART( E, UABS, UDIRCA, depth, WN, NPART, XPART, DIMXP )
           END IF
-          DEALLOCATE(XPART)
 !
 ! 3.d nondimensional parameters
 !
@@ -2464,7 +2463,6 @@
           IF (TOGETHER) J1=J1+1
 
         END IF ! FLREQ(J)
-        DEALLOCATE(FLREQ)
 !
 ! Selects next station index or end up if not together
 !
@@ -4267,7 +4265,7 @@
             iret=nf90_put_att(ncid,varid(16),'scale_factor',1.)
             iret=nf90_put_att(ncid,varid(16),'add_offset',0.)
             iret=nf90_put_att(ncid,varid(16),'valid_min',0.)
-            iret=nf90_put_att(ncid,varid(16),'valid_max',10.)
+            iret=nf90_put_att(ncid,varid(16),'valid_max',1.E3)
             iret=nf90_put_att(ncid,varid(16),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(16),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(16),'associates','time station frequency direction')

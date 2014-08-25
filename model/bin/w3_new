@@ -237,6 +237,12 @@
                                    touch ww3_ounp.ftn
                                    touch ww3_shel.ftn
                                    touch gx_outp.ftn ;;
+     's_is'   ) cd $main_dir/ftn ; touch w3srcemd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3gdatmd.ftn
+                                   touch ww3_outp.ftn
+                                   touch ww3_ounp.ftn
+                                   touch gx_outp.ftn ;;
 'reflection'  )cd $main_dir/ftn ;  touch w3gdatmd.ftn
                                    touch w3iogrmd.ftn
                                    touch w3profsmd.ftn

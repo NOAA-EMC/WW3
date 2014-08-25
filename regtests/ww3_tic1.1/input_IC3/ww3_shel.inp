@@ -60,11 +60,15 @@ $    T T T T T  T T T T T  T T T T T  T
 $
 $ Homogeneous field data --------------------------------------------- $
 $      ICE1  ice thickness, e.g. 1 m
+$............use 0.099 to be just under threshold in IC3: 
+$.................uses Wang and Shen
+$............use 0.101 to be just over threshold in IC3: 
+$.................uses F.A. boundary layer model
 $      ICE2  effective viscosity of ice cover, e.g. 0.05 m2/sec
 $      ICE3  density of ice, e.g. 917.0 kg/m3
 $      ICE4  effective shear modulus of ice, e.g. 0.0 Pa or 1.0e+6 Pa
 $ constant case:
-   'IC1' 19680606 000000   0.1
+   'IC1' 19680606 000000   0.099
    'IC2' 19680606 000000   3.00
    'IC3' 19680606 000000 917.0
    'IC4' 19680606 000000   0.0

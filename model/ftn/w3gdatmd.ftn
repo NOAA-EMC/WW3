@@ -7,7 +7,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Dec-2013 |
+!/                  | Last update :         11-Jun-2014 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -58,6 +58,7 @@
 !/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
 !/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
 !/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
+!/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -450,6 +451,15 @@
 !     ----------------------------------------------------------------
 !     ----------------------------------------------------------------
 !
+!     The structure SICP contains parameters for arbitrary source 
+!     term and is aliased as above:
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!     IS1C1      Real  Public   Scale factor for icecon.     (!/ISx)
+!     IS1C2      Real  Public   Offset for ice concentration (!/ISx)
+!     ----------------------------------------------------------------
+!
 !     The structure SXXP contains parameters for arbitrary source 
 !     term and is aliased as above:
 !
@@ -592,6 +602,8 @@
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !/IG1        REAL,    POINTER      :: IGPARS(:)
 !/IC2        REAL,    POINTER      :: IC2PARS(:)
+!/IC3        REAL,    POINTER      :: IC2PARS(:)
+!/IS2        REAL,    POINTER      :: IS2PARS(:)
 !
 ! unstructured data	
 !
@@ -744,6 +756,11 @@
 !/BSX        REAL                  :: DUMMY
       END TYPE SBSP
 !
+      TYPE SICP
+!/IS0        REAL                  :: DUMMY
+!/IS1        REAL                  :: IS1C1, IS1C2
+      END TYPE SICP
+!
       TYPE SXXP
 !/XX0        REAL                  :: DUMMY
 !/XXX        REAL                  :: DUMMY
@@ -767,6 +784,7 @@
         TYPE(SDBP)            :: SDBPS
         TYPE(STRP)            :: STRPS
         TYPE(SBSP)            :: SBSPS
+        TYPE(SICP)            :: SICPS
         TYPE(SXXP)            :: SXXPS
         TYPE(SCHM)            :: SCHMS
       END TYPE MPAR
@@ -809,6 +827,8 @@
       REAL,    POINTER        :: REFPARS(:)
 !/IG1      REAL,    POINTER        :: IGPARS(:)
 !/IC2      REAL,    POINTER        :: IC2PARS(:)
+!/IC3      REAL,    POINTER        :: IC2PARS(:)
+!/IS2      REAL,    POINTER        :: IS2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
 !
@@ -956,6 +976,9 @@
 !/
 !/ Data aliasing for structure SCHM(S)
       LOGICAL, POINTER        :: FSN,FSPSI,FSFCT,FSNIMP
+!/
+!/ Data aliasing for structure SICP(S)
+!/IS1      REAL, POINTER           :: IS1C1, IS1C2
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -1286,6 +1309,8 @@
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12) )
 !/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7) )
+!/IC3       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7) )
+!/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(6) )
 !/T      WRITE (NDST,9001)
 !
 ! -------------------------------------------------------------------- /
@@ -1671,6 +1696,8 @@
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
 !/IG1       IGPARS => GRIDS(IMOD)%IGPARS
 !/IC2       IC2PARS => GRIDS(IMOD)%IC2PARS
+!/IC3       IC2PARS => GRIDS(IMOD)%IC2PARS
+!/IS2       IS2PARS => GRIDS(IMOD)%IS2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0
@@ -2025,6 +2052,12 @@
 !/DB1      SDBC1  => MPARS(IMOD)%SDBPS%SDBC1
 !/DB1      SDBC2  => MPARS(IMOD)%SDBPS%SDBC2
 !/DB1      FDONLY => MPARS(IMOD)%SDBPS%FDONLY
+!
+!     Structure SICPS
+!
+!/IS1      IS1C1  => MPARS(IMOD)%SICPS%IS1C1
+!/IS1      IS1C2  => MPARS(IMOD)%SICPS%IS1C2
+!
 !    Structure SCHM
        FSN => MPARS(IMOD)%SCHMS%FSN
        FSPSI => MPARS(IMOD)%SCHMS%FSPSI
@@ -2648,7 +2681,7 @@
 !/REF1! Prepares for reflection from subgrid islands
 !/REF1!
 !/REF1            IF (RREF(2)) &
-!/REF1              REFLC(2,MAPFS(IY,IX))= (1. - TRNX(IY,IX))*(1.-TRNY(IY,IX))
+!/REF1              REFLC(2,MAPFS(IY,IX))= MAX((1. - TRNX(IY,IX)),(1.-TRNY(IY,IX)))
 !/REF1!
 !/REF1! Prepares for iceberg reflections
 !/REF1!
