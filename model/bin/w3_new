@@ -230,6 +230,7 @@
                                    touch ww3_ounp.ftn
                                    touch gx_outp.ftn ;;
      's_ice'  ) cd $main_dir/ftn ; touch w3iogrmd.ftn
+                                   touch w3gdatmd.ftn
                                    touch w3wavemd.ftn
                                    touch w3srcemd.ftn
                                    touch ww3_grid.ftn
