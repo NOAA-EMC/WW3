@@ -293,7 +293,7 @@ EOF
     if [ "$lines" = '0' ] ; then
       echo "keyword $key not found, abort" ; exit 6 ; fi
 
-    . tempfile.$$
+    . ./tempfile.$$
 
     rm -f tempfile.$$
 
