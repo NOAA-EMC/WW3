@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Feb-2014 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -36,6 +36,7 @@
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
+!/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -89,7 +90,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jan-2014 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -125,6 +126,7 @@
 !/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
 !/                  (F. Ardhuin) 
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
+!/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -544,7 +546,6 @@
 !/SHRD       TFILE  = 'test.mww3'
 !/DIST       WRITE (TFILE,FORMAT) 'test', IMPROC, '.mww3'
 !/MPRF       WRITE (PFILE,FORMAT) 'prf.', IMPROC, '.mww3'
-      IFT    = LEN_TRIM(TFILE)
 !
       IF ( IMPROC .EQ. NMPLOG ) THEN
           OPEN (MDSO,FILE=FNMPRE(:JJ)//LFILE,ERR=2010,IOSTAT=IERR)
@@ -559,11 +560,13 @@
         END IF
 !
       IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
+          IFT    = LEN_TRIM(TFILE)
           OPEN (MDST,FILE=FNMPRE(:JJ)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
           CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
                         FNMPRE(:JJ)//TFILE(:IFT), 'Test output file')
         END IF
 !
+!/MPRF      IFT    = LEN_TRIM(PFILE)
 !/MPRF      CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
 !/MPRF      CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
 !/MPRF                    FNMPRE(:JJ)//PFILE(:IFT), 'Profiling file')

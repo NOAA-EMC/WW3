@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         29-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination                         ( version 2.00 )
@@ -24,8 +24,9 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    29-May-2014 : Adding OMPH switch.                 ( version 5.02 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -222,7 +223,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         29-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -239,6 +240,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    29-May-2014 : Adding OMPH switch.                 ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -318,6 +320,8 @@
 !     !/NEC Enable NEC SXF90 compiler directives.
 !
 !     !/S   Enable subroutine tracing.
+!
+!     !/OMPH  Hybrid OpenMP directives.
 !
 !     !/T   Enable general test output.
 !     !/T1  Test output local fluxes (V)FX-YL.
@@ -427,6 +431,9 @@
 !     VCY   = SIN*CG
 !
 !/T1      WRITE (NDST,9020)
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY)
+!
         DO ISEA=1, NSEA
           IXY       = MAPSF(ISEA,3)
           FIELD(IXY) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
@@ -439,6 +446,8 @@
 
 !/T1          WRITE (NDST,9021) ISEA, IXY, FIELD(IXY), CXTOT(IXY), CYTOT(IXY)
           END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
         IF ( FLCUR ) THEN
             DO ISEA=1, NSEA
@@ -489,19 +498,26 @@
 !
 ! 3.  Calculate propagation fluxes ----------------------------------- *
 !
-! Transform FIELD to index space
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
+!
         DO ISEA=1, NSEA
            IX     = MAPSF(ISEA,1)
            IY     = MAPSF(ISEA,2)
            IXY    = MAPSF(ISEA,3)
            FIELD(IXY)= FIELD(IXY) * GSQRT(IY,IX)
         END DO
-
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY, VCB)
+!
         DO IXY=1,NY*NX
           VCB       = FACVX(IXY) * ( VCX(IXY) + VCX(IXY+NY) )
           VFLX(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
                     + MIN ( VCB , 0. ) * FIELD(IXY+NY)
           END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/T2            WRITE (NDST,9032)
@@ -512,17 +528,24 @@
               END DO
           END IF
 !
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY, VCB)
+!
         DO IXY=1,NY*NX-1
           VCB       = FACVY(IXY) * ( VCY(IXY) + VCY(IXY+1) )
           VFLY(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
                     + MIN ( VCB , 0. ) * FIELD(IXY+1)
           END DO
 !
+!/OMPH/!$OMP END PARALLEL DO
+!
 ! 4.  Propagate ------------------------------------------------------ *
 !
 !/T3        WRITE (NDST,9040)
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY, JXN, JXP, JYN, JYP)
+!
         DO ISEA=1, NSEA
 !
           IXY   = MAPSF(ISEA,3)
@@ -568,14 +591,19 @@
             END IF
 !
           END DO
-
-! Transform FIELD back to physical space
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
+!
         DO ISEA=1, NSEA
           IX     = MAPSF(ISEA,1)
           IY     = MAPSF(ISEA,2)
           IXY    = MAPSF(ISEA,3)
           FIELD(IXY)= FIELD(IXY) / GSQRT(IY,IX)
         END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
 ! 5.  Update boundary conditions ------------------------------------- *
 !

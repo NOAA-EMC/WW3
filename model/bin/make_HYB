@@ -1,14 +1,13 @@
 #!/bin/sh
 # --------------------------------------------------------------------------- #
-# make_MPI    : Script to manage consecutive compiling of MPI and non-MPI     #
-#               elements of WAVEWATCH III, using standard compile scripts.    #
-#               Only ww3_shel, ww3_multi, and ww3_sbs1 are compiled for MPI.  #
+# make_HYB    : Script to manage consecutive compiling of parallel and non-   #
+#               parallel elements of WAVEWATCH III, using standard compile    #
+#               scripts. Hybrid MPI - OpenMP version.                         #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      April 2010             #
-#                                                      March 2014             #
+#                                                      April 2014             #
 #                                                                             #
-#    Copyright 2010-2014 National Weather Service (NWS),                      #
+#    Copyright 2014 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -33,9 +32,9 @@
 
   clear
   echo ' '
-  echo '                ************************************'
-  echo '              ***   WAVEWATCH III compile for MPI  ***'
-  echo '                ************************************'
+  echo '                ***************************************'
+  echo '              ***   WAVEWATCH III compile for Hybrid  ***'
+  echo '                ***************************************'
   echo ' '
 
 # 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
@@ -81,16 +80,16 @@
 # --------------------------------------------------------------------------- #
 
   sort_switch -s -r switch
-  cp switch                             switch.hold
+  cp switch                                       switch.hold
   sed -e 's/DIST/SHRD/g' \
       -e 's/OMPG //g'\
-      -e 's/OMPH //g'\
       -e 's/OMPX //g'\
-      -e 's/MPI //g'      switch.hold > switch.shrd
-  sed 's/SHRD/DIST MPI/g' switch.shrd > switch.MPI
+      -e 's/OMPH //g'\
+      -e 's/MPI //g'                switch.hold > switch.shrd
+  sed 's/SHRD/DIST MPI OMPG OMPH/g' switch.shrd > switch.HYB
 
 # --------------------------------------------------------------------------- #
-# 3. Compile non-MPI codes                                                    #
+# 3. Compile non-OpenMP codes                                                 #
 # --------------------------------------------------------------------------- #
 
   cp switch.shrd switch
@@ -99,10 +98,10 @@
           $ww3_NetCDF
 
 # --------------------------------------------------------------------------- #
-# 3. Compile MPI codes                                                        #
+# 3. Compile OpenMP codes                                                     #
 # --------------------------------------------------------------------------- #
 
-  cp switch.MPI switch
+  cp switch.HYB switch
   w3_make ww3_shel ww3_multi ww3_sbs1
 
 # --------------------------------------------------------------------------- #
@@ -116,7 +115,7 @@
 # 5. Clean up                                                                 #
 # --------------------------------------------------------------------------- #
 
-  rm -f switch.hold switch.shrd switch.MPI
+  rm -f switch.hold switch.shrd switch.HYB
   w3_clean
 
   echo ' '

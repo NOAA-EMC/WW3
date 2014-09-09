@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Nov-2013 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -44,8 +44,9 @@
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
 !/    13-Nov-2013 : Moved reflection from ww3_grid.ftn  ( version 4.13 )
+!/    27-May-2014 : Ading OMPG parallelizations dir,    ( version 5.02 )
 !/
-!/    Copyright 2009-2013 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -88,7 +89,7 @@
 !       !/SHRD   Switch for shared / distributed memory architecture.
 !       !/DIST   Id.
 !
-!       !/OMP1   OpenMP compiler directives.
+!       !/OMPG   OpenMP compiler directives.
 !
 !       !/CRT1   Linear current interpolation.
 !       !/CRT2   Quasi-quadratic current interpolation.
@@ -361,7 +362,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jul-2006 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    03-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -371,6 +372,7 @@
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
 !/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
+!/    27-May-2014 : Ading OMPG parallelizations dir,    ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -422,7 +424,7 @@
 !
 !  9. Switches :
 !
-!     !/OMP1   OpenMP compiler directives.
+!     !/OMPG   OpenMP compiler directives.
 !
 !     !/WNT0   No wind interpolation.
 !     !/WNT1   Linear wind interpolation.
@@ -522,7 +524,8 @@
 !
 ! 3.  Actual wind for all grid points
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
+!/OMPG/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
+!
       DO ISEA=1, NSEA
 !
         UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
@@ -546,6 +549,8 @@
 !
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
 ! 3.b  Bias correction ( !/WCOR )
 !/WCOR      WHERE ( UA .GE. WWCOR(1) ) UA = UA+(UA-WWCOR(1))*WWCOR(2)
 
@@ -563,11 +568,14 @@
 !
 !/RWND        ELSE
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE (ISEA)
+!
           DO ISEA=1, NSEA
             U10 (ISEA) = MAX ( UA(ISEA) , 0.001 )
             U10D(ISEA) = UD(ISEA)
             END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
 !
 !/RWND        END IF
 !

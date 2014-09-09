@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Sep-2013 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -31,8 +31,9 @@
 !/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
 !/                  and second order schemes.           ( version 4.12 )
 !/    12-Sep-2013 : Add documentation for global clos.  ( version 4.12 )
+!/    27-May-2014 : Adding OMPH switch.                 ( version 5.02 )
 !/
-!/    Copyright 2009-2013 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -91,6 +92,8 @@
 !
 !       !/MGP   Moving grid corrections.
 !       !/MGG   Moving grid corrections.
+!
+!       !/OMPH  Hybrid OpenMP directives.
 !
 !       !/S     Enable subroutine tracing.
 !       !/Tn    Enable test output.
@@ -545,7 +548,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Sep-2013 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    27-Feb-2000 : Origination.                        ( version 2.08 )
@@ -569,6 +572,7 @@
 !/    01-Jul-2013 : Adding UQ and UNO switches to chose between third
 !/                  and second order schemes.           ( version 4.12 )
 !/    12-Sep-2013 : Add documentation for global clos.  ( version 4.12 )
+!/    27-May-2014 : Adding OMPH switch.                 ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -673,6 +677,8 @@
 !       !/NEC   Enable NEC SXF90 compiler directives.
 !
 !       !/S     Enable subroutine tracing.
+!
+!       !/OMPH  Hybrid OpenMP directives.
 !
 !       !/MGP   Moving grid corrections.
 !       !/MGG   Moving grid corrections.
@@ -835,6 +841,10 @@
 !
 !/T0      WRITE (NDST,9011)
 !
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, TMPX, TMPY, &
+!/OMPH/!$OMP&                     DXCGN, DYCGN, DXCGS, DYCGS, DXCGC, DYCGC, &
+!/OMPH/!$OMP&                     IXC, IYC)
+!
       DO ISEA=1, NSEA
 !
         IX  = MAPSF(ISEA,1)
@@ -909,6 +919,8 @@
 !
         END DO
 !
+!/OMPH/!$OMP END PARALLEL DO
+!
 ! 2.  Calculate velocities and diffusion coefficients ---------------- *
 ! 2.a Velocities
 !
@@ -918,7 +930,8 @@
 !
 !/T      WRITE (NDST,9020) NSEA
 !
-
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY)
+!
       DO ISEA=1, NSEA
         IXY         = MAPSF(ISEA,3)
         VQ    (IXY) = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
@@ -930,10 +943,14 @@
 !/T1            WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
 !/T1                              VQ(IXY), CXTOT(IXY), CYTOT(IXY)
         END DO
-
-
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
       IF ( FLCUR ) THEN
 !/T          WRITE (NDST,9022)
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IXY)
+!
           DO ISEA=1, NSEA
             IXY         = MAPSF(ISEA,3)
             CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
@@ -941,8 +958,13 @@
 !/T1            WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
 !/T1                              VQ(IXY), CXTOT(IXY), CYTOT(IXY)
            END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
         END IF
-
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY, CP, CQ)
+!
       DO ISEA=1, NSEA
          IX     = MAPSF(ISEA,1)
          IY     = MAPSF(ISEA,2)
@@ -952,7 +974,8 @@
          VLCFLX(IXY) = CP*DTRAD
          VLCFLY(IXY) = CQ*DTRAD
       END DO
-
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
 ! 3.  Loop over sub-steps -------------------------------------------- *
 !
@@ -1086,6 +1109,7 @@
                 END IF
 !
             END IF
+!
           END DO
 !
 ! 3.a.3 Restore boundary data
@@ -1105,15 +1129,19 @@
 !
 ! 3.b Propagate fields
 !
-
-! Transform VQ to straightened space
-      DO ISEA=1, NSEA
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        IXY    = MAPSF(ISEA,3)
-        VQ(IXY)= VQ(IXY) * GSQRT(IY,IX)
-      END DO
-
+!     Transform VQ to straightened space
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
+!
+        DO ISEA=1, NSEA
+          IX     = MAPSF(ISEA,1)
+          IY     = MAPSF(ISEA,2)
+          IXY    = MAPSF(ISEA,3)
+          VQ(IXY)= VQ(IXY) * GSQRT(IY,IX)
+          END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
         IF ( YFIRST ) THEN
 !
 !/UQ            IF ( FLCY ) CALL W3QCK3                               &
@@ -1155,15 +1183,19 @@
 !/UNO                         NMY1, NMY2, NDSE, NDST )
 !
           END IF
-
-! Transform VQ back to normal space
-      DO ISEA=1, NSEA
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        IXY    = MAPSF(ISEA,3)
-        VQ(IXY)= VQ(IXY) / GSQRT(IY,IX)
-      END DO
-
+!
+!     Transform VQ back to normal space
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
+!
+        DO ISEA=1, NSEA
+          IX     = MAPSF(ISEA,1)
+          IY     = MAPSF(ISEA,2)
+          IXY    = MAPSF(ISEA,3)
+          VQ(IXY)= VQ(IXY) / GSQRT(IY,IX)
+          END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
 ! 3.c Update boundaries
 !
@@ -1204,6 +1236,8 @@
 !
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY)
+!
       DO ISEA=1, NSEA
         IXY    = MAPSF(ISEA,3)
         IF ( MAPSTA(IXY) .GT. 0 ) THEN
@@ -1211,6 +1245,8 @@
             VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
           END IF
         END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
       RETURN
 !

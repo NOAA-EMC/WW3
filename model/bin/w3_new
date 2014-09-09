@@ -118,8 +118,9 @@
      'shared' ) ;;
      'mpp'    );;
      'mpiexp' ) cd $main_dir/ftn ; touch wmgridmd.ftn ;;
-     'thr0'   ) cd $main_dir/ftn ; touch w3wavemd.ftn ;;
-     'thr1'   ) cd $main_dir/ftn ; touch w3updtmd.ftn
+     'thread' ) cd $main_dir/ftn ; touch w3wavemd.ftn
+                                   touch w3pro3md.ftn
+                                   touch w3updtmd.ftn
                                    touch w3iogomd.ftn ;;
      'GSE'    ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3adatmd.ftn
