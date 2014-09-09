@@ -1,0 +1,20 @@
+#############################################################################
+#                                                                           #
+# ww3_tig1.1:Test script for WW III, post-processing of with second order   #
+#            spectrum based on Janssen (JFM 2009)                           #
+#                                                                           #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+#                                                                           #
+#                                 origination: Peter Janssen (before 2010)  #
+#                              adapted to WW3: Fabrice Ardhuin, Aug. 2014   #
+#                                                                           #
+#   bin/run_test -c gnu_debug    -o netcdf  ../model ww3_tig1.1             #
+#                                                                           #
+#    Copyright 2014 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
