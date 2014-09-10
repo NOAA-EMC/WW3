@@ -305,6 +305,10 @@ EOF
           return 1
         fi
         netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
+        if [ -z "`echo $netcdf_version | cut -d. -f3`" ]
+        then
+          netcdf_version="$netcdf_version.0"
+        fi
         if [ `echo $netcdf_version | tr -d .` -lt 411 ]
         then
           netcdf_compile_message
