@@ -120,6 +120,8 @@
       echo "$rtst -s PR1 -w work_PR1_a    -g a     $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR1 -w work_PR1_b    -g b     $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR1 -w work_PR1               $ww3 ww3_tp2.12" >> matrix.body
+      echo "$rtst -s PR1 -w work_PR1               $ww3 ww3_tp2.13" >> matrix.body
+      echo "$rtst -s PR1 -w work_PR1_TRPL      -g TRPL  $ww3 ww3_tp2.13" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
@@ -170,6 +172,8 @@
       echo "$rtst -s PR1_MPI -w work_PR1_a_MPI    -g a    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR1_MPI -w work_PR1_b_MPI    -g b    -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR1_MPI -w work_PR1_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.12" >> matrix.body
+      echo "$rtst -s PR1_MPI -w work_PR1_MPI              -f -p $mpi -n $np $ww3 ww3_tp2.13" >> matrix.body
+      echo "$rtst -s PR1_MPI -w work_PR1_TRPL_MPI -g TRPL -f -p $mpi -n $np $ww3 ww3_tp2.13" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
@@ -690,6 +694,7 @@
       echo "$rtst -s PR3_UQ -w work_PR3_UQ              $ww3 ww3_tp2.5" >> matrix.body
       echo "$rtst -s PR3_UQ -w work_PR3_UQ_a    -g a    $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR3_UQ -w work_PR3_UQ_b    -g b    $ww3 ww3_tp2.9" >> matrix.body
+      echo "$rtst -s PR3_UQ -w work_PR3_UQ              $ww3 ww3_tp2.13" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
@@ -776,6 +781,7 @@
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_a_MPI    -g a     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_b_MPI    -g b     -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI   -w work_PR3_UQ_MPI               -f -p $mpi -n $np $ww3 ww3_tp2.13" >> matrix.body
     fi
 
     if [ "$multi01" = 'y' ]
