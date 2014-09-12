@@ -14,6 +14,13 @@
 #    it needs to process ww3_prep_a.inp and *not* process ww3_prep_b.inp.
 #    This can be addressed in the future by adding instructions for prep
 #    to the grdset file.
+#  - When running through ww3_prep, run_test is not smart enough to process
+#    multiple input files of the same type. For example, for wind it wants
+#    a file ww3_prep_wind.inp and does not know what to do if you have two 
+#    files, ww3_prep_wind_hwna_15m.inp and ww3_prep_wind_gfs_30m.inp. 
+#    It needs to rename wind.ww3 as wind.wind_gfs_30m, for example, but
+#    looks for wind_gfs_30m.ww3 where it should look for wind.ww3. Another
+#    loop is needed to make this work.
 
 # --------------------------------------------------------------------------- #
 # 1. Function definitions                                                     #
@@ -645,7 +652,7 @@ then
 
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`.out"
-      echo "   Processing $ifile"
+      echo "   Processing $ifile for $otype"
       echo "   Screen output routed to $ofile"
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp

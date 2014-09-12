@@ -146,6 +146,7 @@
 !
         NDSTRC = 6
         NTRACE = 10
+
 !
 !---------------------------------------------------------------------------
 ! 2.  I/O Setup
@@ -206,6 +207,13 @@
           CALL W3SETG( IG, 6, 6)
           CALL W3IOGR ('READ', NDSM, IG, GRIDS(IG)%FILEXT)
           WRITE (NDSO,905) NX, NY, GTYPE, ICLOSE 
+
+          IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+             WRITE(NDSE,*)'PROGRAM W3GRID_INTERP HAS NOT BEEN '//  &
+                  'TESTED WITH TRIPOLE GRIDS. STOPPING NOW.'
+             CALL EXTCDE ( 1 )
+          END IF
+
           IF ( IG .NE. NG .AND. NOSWLL_MIN .GE. OUTPTS(IG)%NOSWLL ) THEN
              NOSWLL_MIN = OUTPTS(IG)%NOSWLL
           END IF

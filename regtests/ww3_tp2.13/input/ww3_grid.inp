@@ -1,0 +1,42 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '2-D PROPAGATION TEST 2.13     '
+$
+   1.1 0.03679 3 72 0.
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+$
+  F T T T F F
+$ F T T F F F
+$ geogr. CFL time step is the 2nd one....
+$ note that PR1 shows instability before PR3
+$ min spacing for active portion of grid is 10 km
+$ from  T=1/0.0368, Cg=25.447, I get dt=393 s
+  600.  300.0  600.  600.
+$
+ &PRO2 DTIME = 0. /
+$ &PRO2 DTIME = 2777. /
+ &PRO3 WDTHCG = 0., WDTHTH = 0. /
+$ &PRO4 RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$
+$ case with no grid closure :
+  'CURV' T 'NONE'
+  1500 200
+  20 1.0 0.0 1 1 '(....)' 'NAME' './../input/lon.1500x200'
+  21 1.0 0.0 1 1 '(....)' 'NAME' './../input/lat.1500x200'
+  -0.1 7.50  9  -1. 1 1 '(....)' 'NAME' './../input/depth.1500x200' 
+$
+$ Input boundary points and excluded points -------------------------- $
+$    The first line identifies where to get the map data, by unit number
+$    IDLA and IDFM, format for formatted read, FROM and filename
+$    if FROM = 'PART', then segmented data is read from below, else
+$    the data is read from file as with the other inputs (as INTEGER)
+$
+  22  1 1 '(....)' 'NAME' '../input/mask1.1500x200'
+$
+   0. 0. 0. 0.  0

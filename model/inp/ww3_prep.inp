@@ -39,7 +39,8 @@ $
 $ Additional input format type 'F1' or 'F2' -------------------------- $
 $ Three or four additional input lines, to define the file(s) with
 $ the grid information :
-$ 1) Discrete size of input grid (NXI,NYI).
+$ 1) Discrete size of input grid (NXI,NYI) and flag identifying closure
+$    in longitudes ("CLO").
 $ 2) Define type of file using the parameters FROM, IDLA, IDFM (see
 $    input for grid preprocessor), and a format
 $ 3) Unit number and (dummy) name of first file.

@@ -414,8 +414,8 @@
       CHARACTER(LEN=6)        :: ACTION(9), YESXX, XXXNO
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
-      CHARACTER(LEN=10)       :: STDATE, PN, MN, TNAMES(7)
-      CHARACTER(LEN=11),                                              &
+      CHARACTER(LEN=13)       :: STDATE, PN, MN, TNAMES(7)
+      CHARACTER(LEN=13),                                              &
                   ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
       CHARACTER(LEN=12)       :: FORMAT
 !/DIST      CHARACTER(LEN=18)       :: TFILE

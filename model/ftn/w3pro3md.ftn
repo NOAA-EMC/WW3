@@ -40,7 +40,7 @@
 !/
 !  1. Purpose :
 !
-!     Bundles routines for third order porpagation scheme in single
+!     Bundles routines for third order propagation scheme in single
 !     module.
 !
 !  2. Variables and types :
@@ -707,7 +707,8 @@
                           MAPTRN, CG, CX, CY, ATRNX, ATRNY, ITIME
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
-                          ISBPI, BBPI0, BBPIN
+                          ISBPI, BBPI0, BBPIN, IAPROC, NAPERR
+      USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/UQ      USE W3UQCKMD
 !/UNO      USE W3UNO2MD
@@ -755,6 +756,15 @@
 !/S      CALL STRACE (IENT, 'W3XYP3')
 !
 ! 1.  Preparations --------------------------------------------------- *
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+!/ ------------------------------------------------------------------- /
+         IF (IAPROC .EQ. NAPERR) &
+         WRITE(NDSE,*)'SUBROUTINE W3XYP3 IS NOT YET ADAPTED FOR '//    &
+         'TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
+
 ! 1.a Set constants
 !
       GLOBAL = ICLOSE.NE.ICLOSE_NONE

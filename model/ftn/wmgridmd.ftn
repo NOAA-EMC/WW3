@@ -122,9 +122,6 @@
 !/    26-Mar-2009 : Adding test output !/T9.            ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
-!/                  specify index closure for a grid.   ( version 3.14 )
-!/                  (T. J. Campbell, NRL)
 !/    22-Dec-2010 : Adapt for use with irregular grids  ( version 3.14 )
 !/                  (W. E. Rogers, NRL)
 !/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 4.07 )
@@ -942,6 +939,9 @@
 !/    26-May-2009 : Fix erroneous cyclic updating.      ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/                  specify index closure for a grid.   ( version 3.14 )
+!/                  (T. J. Campbell, NRL)
 !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
@@ -1185,6 +1185,11 @@
       IF ( .NOT. ALLOCATED(GRDHGH) ) THEN
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,1000)
          CALL EXTCDE (1000)
+      END IF
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGHGH IS'// &
+         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
       END IF
 !/MPIBDI     LMPIBDI=.TRUE.
 !/SCRIP      IF (IMPROC .EQ. 1) THEN
@@ -3210,6 +3215,12 @@
           FACTOR = 1.
         END IF
       ITAG   = 0
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGEQL IS'// &
+         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Grid point relations and temp data storage
@@ -3245,13 +3256,15 @@
 !..notes: we will not reach this point if are no equal rank grids. that makes it a good place to check against grid type
 
         IF ( GTYPE .EQ. UNGTYPE ) THEN
-           IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/2A)') ' *** ERROR WMGEQL: ', &
-                'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
+           IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/3A)') ' *** ERROR ',  &
+                'WMGEQL: UNSTRUCTURED GRID SUPPORT NOT YET ',          &
+                'IMPLEMENTED ***'
            CALL EXTCDE ( 999 )
         END IF
         IF ( GTYPE .EQ. CLGTYPE ) THEN
-           IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/2A)') ' *** ERROR WMGEQL: ', &
-                'CURVILINEAR GRID SUPPORT NOT IMPLEMENTED FOR NRGRD > 1 ***'
+           IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/3A)') ' *** ERROR ',  &
+                'WMGEQL: CURVILINEAR GRID SUPPORT NOT IMPLEMENTED ',   &
+                'FOR NRGRD > 1 ***'
            CALL EXTCDE ( 999 )
         END IF
 

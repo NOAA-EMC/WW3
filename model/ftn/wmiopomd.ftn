@@ -285,10 +285,11 @@
         CALL W3SETG ( J, MDSE, MDST )
 !
         IF ( GTYPE .EQ. CLGTYPE ) THEN
-           IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/2A)') ' *** WARNING WMIOPP: ', &
-                'CURVILINEAR GRID SUPPORT IN THIS ROUTINE', & 
-                'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED', &
-                'TO WORK *** '
+          IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/4A)')               &
+                ' *** WARNING WMIOPP: ',                               &
+                'CURVILINEAR GRID SUPPORT IN THIS ROUTINE ',           & 
+                'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED ',          & 
+                '(curvilinear + unified point output) ***'
           END IF
 !
 ! Loop over output points

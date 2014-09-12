@@ -21,7 +21,7 @@
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    04-Apr-2010 : Adding icebergs with ISI.           ( version 3.14 )
-!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLO (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    30-Oct-2012 : Implement tidal analysis (F. Ardhuin)(version 4.08 ) 
@@ -1676,6 +1676,11 @@
 !       interpolation box in the input grid, the closest 2 sea point
 !       for an extended 4x4 grid are used for interpolation, weighted
 !       by the inverse distance.
+!     - The "CLOSED" variable comes from ww3_prep.inp and is associated
+!       with the input grid (e.g. grid that winds are provided on).
+!       It is a logical, not an integer, so it only allows two cases:
+!       no closure, or simple closure. "ww3_prep" only supports these 
+!       two (not tripole).
 !
 !  8. Structure :
 !

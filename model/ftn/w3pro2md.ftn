@@ -606,7 +606,7 @@
                           NMXY, MAPX2, MAPY2, MAPAXY, MAPXY
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
-                          ISBPI, BBPI0, BBPIN
+                          ISBPI, BBPI0, BBPIN, IAPROC, NAPERR
 !/S      USE W3SERVMD, ONLY: STRACE
 !/UQ      USE W3UQCKMD
 !/UNO      USE W3UNO2MD
@@ -666,6 +666,14 @@
 !       END IF
 !
 ! 1.  Preparations --------------------------------------------------- *
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF (IAPROC .EQ. NAPERR) &
+         WRITE(NDSE,*)'SUBROUTINE W3XYP2 IS NOT YET ADAPTED FOR '//    &
+         'TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
+
 ! 1.a Set constants
 !
       GLOBAL = ICLOSE.NE.ICLOSE_NONE

@@ -174,7 +174,7 @@
 !       
 !
 !      GNAME     C*30  Public   Grid name.
-!      FILEXT    C*10  Public   Extension of WAVEWATCH III file names
+!      FILEXT    C*13  Public   Extension of WAVEWATCH III file names
 !                               default in 'ww3'.
 !     ----------------------------------------------------------------
 !
@@ -588,7 +588,7 @@
         LOGICAL          :: FLAGLL
         LOGICAL, POINTER :: FLAGST(:)
         CHARACTER(LEN=30):: GNAME
-        CHARACTER(LEN=10):: FILEXT
+        CHARACTER(LEN=13):: FILEXT
         LOGICAL          :: GUGINIT
         REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
         INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
@@ -868,7 +868,7 @@
       LOGICAL, POINTER :: FLAGST(:)
 
       CHARACTER(LEN=30), POINTER :: GNAME
-      CHARACTER(LEN=10), POINTER :: FILEXT
+      CHARACTER(LEN=13), POINTER :: FILEXT
 
       TYPE(T_GSU), POINTER :: GSU ! Grid search utility object
 !/
@@ -2222,9 +2222,14 @@
 !
 !  Derivatives are computed with central differences for all non-boundary
 !  cells.  One-sided differences are used at boundary cells.  If the grid
-!  is a global grid, then the i-differences at the i=1 and i=nx boundary
+!  is a lat/lon grid, then the i-differences at the i=1 and i=nx boundary
 !  cells are computed with central differences using the wrapped cell
 !  x-coordinates.
+!
+!  Admittedly, in case of branch cut, we could use centered difference
+!  to get a more accurate derivative at the boundaries (IX=1 or NX), but
+!  we don't do this. Note that it would get more complicated for a 
+!  tripole grid (IY=NY) ....
 
 !
 !  Compute dx/dp & dy/dp & dm/dp
