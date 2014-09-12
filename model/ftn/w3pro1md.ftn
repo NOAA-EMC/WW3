@@ -25,6 +25,9 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    29-May-2014 : Adding OMPH switch.                 ( version 5.02 )
+!/    08-May-2014 : Implement tripolar grid for first order propagation
+!/                  scheme                              ( version 5.03 )
+!/                  (W. E. Rogers, NRL)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

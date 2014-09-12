@@ -46,11 +46,13 @@ following modifications have been made:
 \item Preparing for next model version, adding optional instrumentation to code
       for profiling of memory use (model version 5.00). 
 
-\item (model version 5.02).
+\item Optimization of IC3 (ice source function). Added non-dispersive variant of "turbulence under ice" ice source function to IC2. This is simpler than the existing version and requires fewer free parameters. Method is selected by the user. Added fluxes for momentum and energy associated with ice source functions. Preliminary scheme for scattering of waves by ice (model version 5.01).
 
 \item Revisiting OpenMP parallelisms in the model. Revising previous
       OpenMP-only approach and introducing Hybrid MPI-OpenMP approach
-      initiated by Farid Parpia of IBM (model version 5.01).
+      initiated by Farid Parpia of IBM (model version 5.02).
+
+\item Implementing tripole grid functionality for first order scheme, and for gradient calculations (e.g. for refraction by depth/current gradients). Adding test case for tripole grid to regtests (model version 5.03).
 
 \end{list}
 
