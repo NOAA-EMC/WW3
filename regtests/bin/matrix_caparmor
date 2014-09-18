@@ -36,7 +36,6 @@
   echo '#PBS -l procs=12'                                   >> matrix.head
   echo '#PBS -q previww3-32'                                >> matrix.head
   echo '#PBS -l walltime=08:00:00'                          >> matrix.head
-#  echo '#PBS -A omd'                                        >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
@@ -54,6 +53,8 @@
 
   export  mpi='mpirun'
   export   np='12'
+  export   nr='6'
+  export  nth='2'
 
   if [ "$cmplOption" = 'y' ]
   then
@@ -70,6 +71,7 @@
   export     shrd='y' # Do shared architecture tests
   export     dist='y' # Do distributed architecture (MPI) tests
   export      omp='y' # Threaded (OpenMP) tests
+  export     hybd='y' # Hybrid options
 
   export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
   export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)
