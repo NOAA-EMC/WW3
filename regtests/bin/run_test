@@ -14,6 +14,13 @@
 #    it needs to process ww3_prep_a.inp and *not* process ww3_prep_b.inp.
 #    This can be addressed in the future by adding instructions for prep
 #    to the grdset file.
+#  - When running through ww3_prep, run_test is not smart enough to process
+#    multiple input files of the same type. For example, for wind it wants
+#    a file ww3_prep_wind.inp and does not know what to do if you have two 
+#    files, ww3_prep_wind_hwna_15m.inp and ww3_prep_wind_gfs_30m.inp. 
+#    It needs to rename wind.ww3 as wind.wind_gfs_30m, for example, but
+#    looks for wind_gfs_30m.ww3 where it should look for wind.ww3. Another
+#    loop is needed to make this work.
 
 # --------------------------------------------------------------------------- #
 # 1. Function definitions                                                     #
@@ -33,7 +40,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:efg:Ghi:m:n:o:Op:q:r:s:Sw:"  #option string for getopt function
+optstr="a:c:efg:Ghi:m:n:o:Op:q:r:s:t:Sw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -82,6 +89,7 @@ Options:
   -s switch_string : use switch_<switch_string>
   -S               : create stub file <finished>. with end data and time.
                      tests not executed if file is found.
+  -t nthrd         : Threading option. (this is system dependant and can be used only for the hybrid option)
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
 
 EOF
@@ -135,6 +143,7 @@ do
   -r) shift; exec_p="$1" ;;
   -s) shift; swtstr="$1" ;;
   -S) stub=1 ;;
+  -t) shift; nthrd="$1" ;;
   -w) shift; wrkdir="$1" ;;
   --) break ;;
   esac
@@ -370,7 +379,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -451,7 +461,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
 
   else
     \cp -f $file_c $path_b/switch
@@ -531,7 +542,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -609,7 +621,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -639,7 +652,7 @@ then
 
       otype="`basename $ifile .inp | sed s/^${prog}_//`"
       ofile="$path_w/`basename $ifile .inp`.out"
-      echo "   Processing $ifile"
+      echo "   Processing $ifile for $otype"
       echo "   Screen output routed to $ofile"
       \rm -f $prog.inp
       \ln -s $ifile $prog.inp
@@ -693,7 +706,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -817,6 +831,10 @@ then
     then
       runcmd="$runcmd -np $nproc"
     fi
+    if [ $nthrd ]
+    then
+      runcmd="$runcmd omplace -nt $nthrd"
+    fi
   fi
   if [ $pomp ]
   then
@@ -868,7 +886,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -957,7 +976,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -1113,7 +1133,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -1205,7 +1226,8 @@ then
   if [ $force_shrd ]
   then # build pre- & post-processing programs with SHRD only
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
   else
     \cp -f $file_c $path_b/switch
   fi
@@ -1265,7 +1287,8 @@ then
 #  if [ $force_shrd ]
 #  then # build pre- & post-processing programs with SHRD only
 #    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
-#                  sed 's/OMP0 //'    | sed 's/OMP1 //' > $path_b/switch
+#                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+#                  sed 's/OMPH //'                          > $path_b/switch
 #  else
 #    \cp -f $file_c $path_b/switch
 #  fi

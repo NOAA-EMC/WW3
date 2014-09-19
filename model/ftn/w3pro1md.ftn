@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         29-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination                         ( version 2.00 )
@@ -24,8 +24,12 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    29-May-2014 : Adding OMPH switch.                 ( version 5.02 )
+!/    08-May-2014 : Implement tripolar grid for first order propagation
+!/                  scheme                              ( version 5.03 )
+!/                  (W. E. Rogers, NRL)
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -138,6 +142,8 @@
       USE W3GDATMD, ONLY: NTH, NSPEC, NX, NY, ICLOSE,                 &
                           ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
       USE W3ADATMD, ONLY: IS0, IS2, FACVX, FACVY
+      USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
+      USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -150,13 +156,14 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IX, IY, IXY, ISP
+      INTEGER                 :: IX, IY, IXY, ISP, IXNEXT
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3MAP1')
 !
+
 ! 1.  Initialize x-y arrays ------------------------------------------ *
 !
       FACVX = 0.
@@ -164,26 +171,46 @@
 !
 ! 2.  Fill x-y arrays ------------------------------------------------ *
 !
+!.....FACVY
       DO IX=1, NX
         DO IY=1, NY-1
           IXY    = IY +(IX-1)*NY
           IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+!.........next point : j+1 : increment IXY by 1
           IF ( MAPSTA(IXY+1) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
           END DO
         END DO
 !
+!.....FACVY for IY=NY
+      IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
+         IY=NY
+         DO IX=1, NX
+            IXY    = IY +(IX-1)*NY
+            IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+!...........next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
+            IXNEXT=NX-IX+1
+            IXY    = IY +(IXNEXT-1)*NY
+            IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+         END DO
+      END IF
+!
+!.....FACVX
       DO IX=1, NX-1
         DO IY=2, NY-1
           IXY    = IY +(IX-1)*NY
           IF ( MAPSTA( IXY  ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+!.........next point : i+1 : increment IXY by NY
           IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
           END DO
         END DO
 !
+!.....FACVX for IX=NX
       IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
           DO IY=2, NY-1
             IXY    = IY +(NX-1)*NY
             IF ( MAPSTA(IXY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+!...........next point : i+1 : increment IXY by NY
+!...........IXY+NY=IY+(IX-1)*NY+NY = IY+IX*NY = IY+NX*NY ==> wrap to IY
             IF ( MAPSTA(IY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
             END DO
         END IF
@@ -222,7 +249,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         29-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    07-Jul-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -239,6 +266,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    29-May-2014 : Adding OMPH switch.                 ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -300,6 +328,19 @@
 !       .NOT.FLCX in this subroutine.  In CFL calcs dx and dy are omitted,
 !       since dx=dy=1 in index space.  Curvilinear grid derivatives
 !       (DPDY, DQDX, etc.) and metric (GSQRT) are brought in via W3GDATMD.
+!     - Standard VCB calculation for Y is:
+!               VCB       = FACVY(IXY) * ( VCY2D(IY,IX) + VCY2D(IY+1,IX) )
+!       This is to calculate the flux VCY(IY+0.5). For the tripole grid,
+!       we cannot do it this way, since the sign of VCY flips as we jump
+!       over the seam. If we were to do it this way, VCY(IY) and VCY(IY+1)
+!       are two numbers of similar magnitude and opposite sign, so the 
+!       average of the two gives something close to zero, so energy does 
+!       not leave via VCY(IY+0.5). One alternative is:
+!               VCB       = VCY2D(IY,IX) 
+!       Another alternative is :
+!               VCB       = FACVY(IXY) * ( VCY2D(IY,IX) - VCY2D(IY+1,IX) )
+!       Both appear to give correct results for ww3_tp2.13. We use the 
+!       second alternative.
 !
 !  8. Structure :
 !
@@ -318,6 +359,8 @@
 !     !/NEC Enable NEC SXF90 compiler directives.
 !
 !     !/S   Enable subroutine tracing.
+!
+!     !/OMPH  Hybrid OpenMP directives.
 !
 !     !/T   Enable general test output.
 !     !/T1  Test output local fluxes (V)FX-YL.
@@ -339,7 +382,8 @@
       USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, FACVX, FACVY
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI,      &
-                          BBPI0, BBPIN
+                          BBPI0, BBPIN, NDSE, IAPROC, NAPERR
+      USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -354,8 +398,9 @@
 !/ ------------------------------------------------------------------ /
 !/ Local parameters
 !/
-      INTEGER                 :: IK, ITH, NTLOC, ITLOC, ISEA, IXY,   &
-                                 IY0, IX, IY, JXN, JXP, JYN, JYP, IBI
+      INTEGER                 :: IK, ITH, NTLOC, ITLOC, ISEA, IXY,    &
+                                 IY0, IX, IY, JXN, JXP, JYN, JYP,     &
+                                 IBI, NYMAX
 !/T3      INTEGER                 ::  IXF, IYF
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CG0, CGL, CGA, CC, CGN
@@ -366,15 +411,21 @@
 !/
 !/ Automatic work arrays
 !/
-      REAL                    :: VCX(NY*(NX+1)), VCY(NY*(NX+1)),     &
-                                 VFLX(1-NY:NY*NX), VFLY(NY*NX)
-      REAL                    :: CXTOT((NX+1)*NY), CYTOT(NX*NY)
+      REAL                    :: CXTOT2D(NY,NX)
+      REAL                    :: CYTOT2D(NY,NX)
+      REAL                    :: FLD2D(NY+1,NX+1)
+      REAL                    :: VCX2D(NY,NX+1)
+      REAL                    :: VCY2D(NY+1,NX)
+      REAL                    :: VFLX2D(1:NY,0:NX)
+      REAL                    :: VFLY2D(NY,NX)
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3XYP1')
 !
 ! 1.  Preparations --------------------------------------------------- *
+
 ! 1.a Set constants
 !
       ITH    = 1 + MOD(ISP-1,NTH)
@@ -415,10 +466,13 @@
 !
 !/T1      WRITE (NDST,9010) ITLOC
 !
-        VCX   = 0.
-        VCY   = 0.
-        CXTOT  = 0.
-        CYTOT  = 0.
+        VCX2D = 0.
+        VCY2D = 0.
+        CXTOT2D  = 0.
+        CYTOT2D  = 0.
+        FLD2D  = 0.
+        VFLX2D  = 0.
+        VFLY2D  = 0.
 !
 ! 2.  Calculate field and velocities --------------------------------- *
 !
@@ -427,178 +481,250 @@
 !     VCY   = SIN*CG
 !
 !/T1      WRITE (NDST,9020)
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY, IX, IY)
+!
         DO ISEA=1, NSEA
-          IXY       = MAPSF(ISEA,3)
-          FIELD(IXY) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
+          IX     = MAPSF(ISEA,1)
+          IY     = MAPSF(ISEA,2)
+          IXY    = MAPSF(ISEA,3)
 
-          CXTOT(IXY) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
-          CYTOT(IXY) = ESIN(ITH) * CG(IK,ISEA)
-!/MGP          CXTOT(IXY) = CXTOT(IXY) - VGX/CLATS(ISEA)
-!/MGP          CYTOT(IXY) = CYTOT(IXY) - VGY
+          FLD2D(IY,IX) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
 
+          CXTOT2D(IY,IX) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+          CYTOT2D(IY,IX) = ESIN(ITH) * CG(IK,ISEA)
+!/MGP          CXTOT2D(IY,IX) = CXTOT2D(IY,IX) - VGX/CLATS(ISEA)
+!/MGP          CYTOT2D(IY,IX) = CYTOT2D(IY,IX) - VGY
 
-!/T1          WRITE (NDST,9021) ISEA, IXY, FIELD(IXY), CXTOT(IXY), CYTOT(IXY)
-          END DO
+!/T1          WRITE (NDST,9021) ISEA, IXY, FLD2D(IY,IX), &
+!/T1                            CXTOT2D(IY,IX), CYTOT2D(IY,IX)
+        END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
         IF ( FLCUR ) THEN
             DO ISEA=1, NSEA
-              IXY      = MAPSF(ISEA,3)
+              IX     = MAPSF(ISEA,1)
+              IY     = MAPSF(ISEA,2)
 
-              CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
-              CYTOT(IXY) = CYTOT(IXY) + CY(ISEA)
+              CXTOT2D(IY,IX) = CXTOT2D(IY,IX) + CX(ISEA)/CLATS(ISEA)
+              CYTOT2D(IY,IX) = CYTOT2D(IY,IX) + CY(ISEA)
 
-              END DO
-          END IF
+            END DO
+        END IF
           
-          IF ( FLCX ) THEN
-             DO ISEA=1, NSEA
-                IX     = MAPSF(ISEA,1)
-                IY     = MAPSF(ISEA,2)
-                IXY    = MAPSF(ISEA,3)
-                CP=CXTOT(IXY)*DPDX(IY,IX)+CYTOT(IXY)*DPDY(IY,IX)
-                VCX(IXY) = CP*DTRAD
-             END DO
-          ELSE
-             VCX=0.0
-          ENDIF
+        IF ( FLCX ) THEN
+           DO ISEA=1, NSEA
+              IX     = MAPSF(ISEA,1)
+              IY     = MAPSF(ISEA,2)
+              CP=CXTOT2D(IY,IX)*DPDX(IY,IX)+CYTOT2D(IY,IX)*DPDY(IY,IX)
+              VCX2D(IY,IX) = CP*DTRAD
+           END DO
+        ELSE
+           VCX2D=0.0
+        ENDIF
 
-          IF ( FLCY ) THEN
-             DO ISEA=1, NSEA
-                IX     = MAPSF(ISEA,1)
-                IY     = MAPSF(ISEA,2)
-                IXY    = MAPSF(ISEA,3)
-                CQ=CXTOT(IXY)*DQDX(IY,IX)+CYTOT(IXY)*DQDY(IY,IX)
-                VCY(IXY) = CQ*DTRAD
-             END DO
-          ELSE
-             VCY=0.0
-          ENDIF
+        IF ( FLCY ) THEN
+           DO ISEA=1, NSEA
+              IX     = MAPSF(ISEA,1)
+              IY     = MAPSF(ISEA,2)
+              CQ=CXTOT2D(IY,IX)*DQDX(IY,IX)+CYTOT2D(IY,IX)*DQDY(IY,IX)
+              VCY2D(IY,IX) = CQ*DTRAD
+           END DO
+        ELSE
+           VCY2D=0.0
+        ENDIF
+
+! Transform FIELD to index space, i.e. straightened space
+! Bugfix: This is now done *before* adding the ghost row, so that ghost
+!   row will be in index space (bug applied only to global, irregular
+!   grids, so it did not apply to any test case that existed w/v4.18)
+        FLD2D(1:NY,1:NX)=FLD2D(1:NY,1:NX)*GSQRT(1:NY,1:NX)
 
 !
+! Deal with longitude closure by duplicating one row *to the right*
+!   in FIELD/FLD2D, VCX
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/T1            WRITE (NDST,9024)
-            IY0    = NY*NX
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
             DO IY=1, NY
-              FIELD(IY0+IY) = FIELD(IY)
-              VCX  (IY0+IY) = VCX  (IY)
-!/T1              WRITE (NDST,9025) IY, FIELD(IY0+IY), VCX(IY0+IY)
-              END DO
-          END IF
+              FLD2D(IY,NX+1)=FLD2D(IY,1)
+              VCX2D(IY,NX+1)=VCX2D(IY,1)
+!/T1              WRITE (NDST,9025) IY, FLD2D(IY,NX+1), VCX2D(IY,NX+1)
+            END DO
+        END IF
+
+! Deal with tripole closure by duplicating one row *at the top*
+!   in FIELD/FLD2D, VCY
+        IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
+            DO IX=1,NX
+!...........next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
+              FLD2D(NY+1,IX)=FLD2D(NY,NX-IX+1)
+              VCY2D(NY+1,IX)=VCY2D(NY,NX-IX+1)
+            END DO
+        END IF
+
 !
 ! 3.  Calculate propagation fluxes ----------------------------------- *
 !
-! Transform FIELD to index space
-        DO ISEA=1, NSEA
-           IX     = MAPSF(ISEA,1)
-           IY     = MAPSF(ISEA,2)
-           IXY    = MAPSF(ISEA,3)
-           FIELD(IXY)= FIELD(IXY) * GSQRT(IY,IX)
-        END DO
-
-        DO IXY=1,NY*NX
-          VCB       = FACVX(IXY) * ( VCX(IXY) + VCX(IXY+NY) )
-          VFLX(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
-                    + MIN ( VCB , 0. ) * FIELD(IXY+NY)
-          END DO
+        NYMAX=NY-1
+        IF ( ICLOSE.EQ.ICLOSE_TRPL ) NYMAX=NY
 !
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY)
+!
+        DO IX=1, NX
+           DO IY=1, NYMAX
+              IXY    = IY +(IX-1)*NY
+              VCB       = FACVX(IXY) * ( VCX2D(IY,IX) + VCX2D(IY,IX+1) )
+              VFLX2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
+                   + MIN ( VCB , 0. ) * FLD2D(IY,IX+1)
+           END DO
+        END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
+! Deal with longitude closure by duplicating one row *to the left*
+!    in VFLX. Note that a similar action is not take for tripole grid,
+!    since tripole seam is only: IY=NY communicating with other points
+!    at IY=NY, not a case of IY=NY communicating with IY=1
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
 !/T2            WRITE (NDST,9032)
-            IY0    = (NX-1)*NY
             DO IY=1, NY
-              VFLX(IY-NY) = VFLX(IY+IY0)
-!/T2              WRITE (NDST,9033) IY, VFLX(IY+IY0)
-              END DO
-          END IF
+              VFLX2D(IY,0) = VFLX2D(IY,NX)
+!/T2              WRITE (NDST,9033) IY, VFLX2D(IY,0)
+            END DO
+        END IF
 !
-        DO IXY=1,NY*NX-1
-          VCB       = FACVY(IXY) * ( VCY(IXY) + VCY(IXY+1) )
-          VFLY(IXY) = MAX ( VCB , 0. ) * FIELD(IXY)                   &
-                    + MIN ( VCB , 0. ) * FIELD(IXY+1)
-          END DO
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IX, IY, IXY, VCB)
 !
+        DO IX=1, NX
+           DO IY=1, NY-1
+              IXY    = IY +(IX-1)*NY
+              VCB       = FACVY(IXY) * ( VCY2D(IY,IX) + VCY2D(IY+1,IX) )
+              VFLY2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
+                            + MIN ( VCB , 0. ) * FLD2D(IY+1,IX)
+           END DO
+        END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
+
+! For tripole grid, include IY=NY in calculation. VCB is handled
+!    differently. See notes in Section "7. Remarks" above.
+        IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
+           IY=NY
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IXY, VCB, IX, IY)
+!
+           DO IX=1, NX
+              IXY    = IY +(IX-1)*NY
+              VCB       = FACVY(IXY) * ( VCY2D(IY,IX) - VCY2D(IY+1,IX) )
+              VFLY2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
+                            + MIN ( VCB , 0. ) * FLD2D(IY+1,IX)
+           END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
+        END IF
+
 ! 4.  Propagate ------------------------------------------------------ *
 !
 !/T3        WRITE (NDST,9040)
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (ISEA, IXY, JXN, JXP, JYN, JYP, IX, IY)
+!
         DO ISEA=1, NSEA
 !
+          IX    = MAPSF(ISEA,1)
+          IY    = MAPSF(ISEA,2)
           IXY   = MAPSF(ISEA,3)
-!/T3          AOLD   = FIELD(IXY) * CG(IK,ISEA) / CLATS(ISEA)
+
+!/T3          AOLD   = FLD2D(IY,IX) * CG(IK,ISEA) / CLATS(ISEA)
 !
           IF (MAPSTA(IXY).EQ.1) THEN
 !
-              IF ( VFLX(IXY-NY) .GT. 0. ) THEN
-                  JXN   = -1
-                ELSE
-                  JXN   =  0
-                END IF
-              IF ( VFLX(IXY   ) .LT. 0. ) THEN
-                  JXP   =  1
-                ELSE
-                  JXP   =  0
-                END IF
-              IF ( VFLY(IXY- 1) .GT. 0. ) THEN
-                  JYN   = -1
-                ELSE
-                  JYN   =  0
-                END IF
-              IF ( VFLY(IXY   ) .LT. 0. ) THEN
-                  JYP   =  1
-                ELSE
-                  JYP   =  0
-                END IF
+             IF ( VFLX2D(IY,IX-1) .GT. 0. ) THEN
+                JXN   = -1
+             ELSE
+                JXN   =  0
+             END IF
+             IF ( VFLX2D(IY,IX) .LT. 0. ) THEN
+                JXP   =  1
+             ELSE
+                JXP   =  0
+             END IF
+             IF ( VFLY2D(IY-1,IX) .GT. 0. ) THEN
+                JYN   = -1
+             ELSE
+                JYN   =  0
+             END IF
+             IF ( VFLY2D(IY,IX) .LT. 0. ) THEN
+                JYP   =  1
+             ELSE
+                JYP   =  0
+             END IF
 !
-              FIELD(IXY) = CG(IK,ISEA) / CLATS(ISEA) *                &
-                         ( FIELD(IXY) + ATRNX(IXY,JXN) * VFLX(IXY-NY) &
-                                      - ATRNX(IXY,JXP) * VFLX(IXY)    &
-                                      + ATRNY(IXY,JYN) * VFLY(IXY- 1) &
-                                      - ATRNY(IXY,JYP) * VFLY(IXY) )
-!/T3              WRITE (NDST,9041) ISEA, IXY, IXY-NY, IXY-1,         &
-!/T3                 VFLX(IXY-NY), VFLX(IXY), VFLY(IXY-1), VFLY(IXY), &
-!/T3                 CG(IK,ISEA)/CLATS(ISEA), AOLD, FIELD(IXY)
-!
-            ELSE
-!
-              FIELD(IXY) = CG(IK,ISEA) / CLATS(ISEA) * FIELD(IXY)
-!/T3              WRITE (NDST,9042) ISEA, MAPSTA(IXY), AOLD, FIELD(IXY)
-!
-            END IF
-!
-          END DO
+             FLD2D(IY,IX) =   FLD2D(IY,IX)                            &
+                                 + ATRNX(IXY,JXN) * VFLX2D(IY,IX-1)   &
+                                 - ATRNX(IXY,JXP) * VFLX2D(IY,IX)     &
+                                 + ATRNY(IXY,JYN) * VFLY2D(IY-1,IX)   &
+                                 - ATRNY(IXY,JYP) * VFLY2D(IY,IX)   
 
-! Transform FIELD back to physical space
-        DO ISEA=1, NSEA
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          IXY    = MAPSF(ISEA,3)
-          FIELD(IXY)= FIELD(IXY) / GSQRT(IY,IX)
-        END DO
+!/T3              WRITE (NDST,9041) ISEA, IXY, IXY-NY, IXY-1,         &
+!/T3                 VFLX2D(IY,IX-1), VFLX2D(IY,IX), VFLY2D(IY-1,IX), &
+!/T3                 VFLY2D(IY,IX) , CG(IK,ISEA)/CLATS(ISEA),AOLD,    &
+!/T3                 FLD2D(IY,IX)
+!
+!
+!/T3              WRITE (NDST,9042) ISEA, MAPSTA(IXY), AOLD,FLD2D(IY,IX)
+!
+          END IF !  IF (MAPSTA(IXY).EQ.1) THEN
+
+          FLD2D(IY,IX) = CG(IK,ISEA) / CLATS(ISEA) * FLD2D(IY,IX)
+
+        END DO !  DO ISEA=1, NSEA
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
+
+! Transform FIELD back to physical space, i.e. may be curvilinear
+        FLD2D(1:NY,1:NX)=FLD2D(1:NY,1:NX)/GSQRT(1:NY,1:NX)
 !
 ! 5.  Update boundary conditions ------------------------------------- *
 !
         IF ( FLBPI ) THEN
-            RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
-                                      REAL(NTLOC-ITLOC)/REAL(NTLOC)
-            RD2    = DSEC21 ( TBPI0, TBPIN )
-            IF ( RD2 .GT. 0.001 ) THEN
-                 RD2    = MIN(1.,MAX(0.,RD1/RD2))
-                 RD1    = 1. - RD2
-              ELSE
-                 RD1    = 0.
-                 RD2    = 1.
-              END IF
-            DO IBI=1, NBI
-              IXY   = MAPSF(ISBPI(IBI),3)
-              FIELD(IXY) = RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI)
-              END DO
-          END IF
+           RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
+                REAL(NTLOC-ITLOC)/REAL(NTLOC)
+           RD2    = DSEC21 ( TBPI0, TBPIN )
+           IF ( RD2 .GT. 0.001 ) THEN
+              RD2    = MIN(1.,MAX(0.,RD1/RD2))
+              RD1    = 1. - RD2
+           ELSE
+              RD1    = 0.
+              RD2    = 1.
+           END IF
+           DO IBI=1, NBI
+              IX    = MAPSF(ISBPI(IBI),1)
+              IY    = MAPSF(ISBPI(IBI),2)
+              FLD2D(IY,IX) = RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI)
+           END DO
+        END IF
+!
+! 6.  Put back in 1d shape ------------------------------------------- *
+!
+        DO ISEA=1, NSEA
+           IX     = MAPSF(ISEA,1)
+           IY     = MAPSF(ISEA,2)
+           IXY    = MAPSF(ISEA,3)
+           FIELD(IXY) = FLD2D(IY,IX)
+        END DO
 !
 ! ... End of partial time step loop
 !
-        END DO
+      END DO !   DO ITLOC=1, NTLOC
 !
       RETURN
 !

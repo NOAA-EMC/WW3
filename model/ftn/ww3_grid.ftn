@@ -900,7 +900,7 @@
 !
       WRITE (NDSO,911) (YESXNO(IYN(IFL)),IFL=1,NFL)
 !
-      IF ( .NOT. (FLCX.OR.FLCY.OR.FLCK.OR.FLCTH.OR.FLSOU) ) THEN
+      IF ( .NOT. (FLDRY.OR.FLCX.OR.FLCY.OR.FLCK.OR.FLCTH.OR.FLSOU) ) THEN
           WRITE (NDSE,1010)
           CALL EXTCDE ( 2 )
         END IF
@@ -2211,9 +2211,8 @@
               ICLOSE = ICLOSE_SMPL
               WRITE (NDSO,3002) 'simple'
             CASE ('TRPL')
-              WRITE (NDSE,'(/2A)') ' *** ERROR WW3_GRID: ', &
-              'TRIPOLE GRID CLOSURE NOT IMPLEMENTED YET ***'
-              CALL EXTCDE ( 999 )
+              WRITE (NDSE,'(/2A)') ' *** WARNING WW3_GRID: TRIPOLE ',  &
+              'GRID CLOSURE IMPLEMENTATION IS INCOMPLETE ***'
               ICLOSE = ICLOSE_TRPL
               WRITE (NDSO,3002) 'tripole'
               IF ( GTYPE.EQ.RLGTYPE ) THEN
@@ -2857,6 +2856,13 @@
 ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
 !                        and excluded points (ILOOP=2)
 !
+        IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+          WRITE(NDSE,*)'PROGRAM W3GRID STATUS MAP CALCULATION IS '//   &
+          'NOT TESTED FOR TRIPOLE GRIDS FOR CASE WHERE USER OPTS '//   &
+          'TO READ DATA IN PARTS. STOPPING NOW (107).'
+          CALL EXTCDE ( 107 )
+        END IF
+
         DO ILOOP=1, 2
 !
           IF ( ILOOP .EQ. 1 ) THEN
@@ -3025,7 +3031,7 @@
                         IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
                       END DO
                   END IF
-!
+
               END IF ! GTYPE
 !
             END IF ! ILOOP .EQ. 2
@@ -3089,7 +3095,8 @@
 !
           DO IX=1, NX
             IF ( READMP(IX, 1) .EQ. 1 ) READMP(IX, 1) = 3
-            IF ( READMP(IX,NY) .EQ. 1 ) READMP(IX,NY) = 3
+            IF ( READMP(IX,NY) .EQ. 1 .AND. ICLOSE .NE. ICLOSE_TRPL)   &
+               READMP(IX,NY) = 3
             END DO
 !
           DO IY=1, NY

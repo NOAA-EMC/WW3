@@ -1,0 +1,115 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III shell input file                                       $
+$ -------------------------------------------------------------------- $
+$ Define input to be used with flag for use and flag for definition
+$ as a homogeneous field; four input lines.
+$ 1) Water levels
+$ 2) Currents
+$ 3) Winds
+$ 4) Ice concentrations (cannot be homogeneous).
+$
+   F F
+   F F
+   F F
+   F
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
+$
+$ Time frame of calculations ----------------------------------------- $
+$ - Starting time in yyyymmdd hhmmss format.
+$ - Ending time in yyyymmdd hhmmss format.
+$
+   20080522 000000
+   20080522 090000
+$  20080523 000000
+$
+$---------------------------------------------------------
+    1
+$--------------------------------------------------------
+$
+$ Define output data ------------------------------------------------- $
+$ Five output types are available (see below). All output types share
+$ a similar format for the first input line:
+$ - first time in yyyymmdd hhmmss format, output interval (s), and 
+$   last time in yyyymmdd hhmmss format (all integers).
+$ Output is disabled by setting the output interval to 0.
+$
+$ Type 1 : Fields of mean wave parameters
+$          Standard line and line with flags to activate output fields
+$          as defined in section 2.4 of the manual. The second line is
+$          not supplied if no output is requested.
+$                               The raw data file is out_grd.ww3, 
+$                               see w3iogo.ftn for additional doc.
+$          
+$
+   20080522 000000  3600     20080525 000000
+$  20080522 000000  10800    20080525 000000
+$----------------------------------------------------------------
+$ Output request flags identifying fields as in ww3_shel input and
+$ section 2.4 of the manual.
+$
+  N
+  DPT HS FP DIR SPR 
+$
+$----------------------------------------------------------------
+$
+$ Type 2 : Point output
+$          Standard line and a number of lines identifying the 
+$          longitude, latitude and name (C*10) of output points.
+$          The list is closed by defining a point with the name
+$          'STOPSTRING'. No point info read if no point output is
+$          requested (i.e., no 'STOPSTRING' needed).
+$                               The raw data file is out_pnt.ww3, 
+$                               see w3iogo.ftn for additional doc.
+$
+$   20080522 000000  3600   20080525 000000
+    20090522 000000  3600   20090525 000000
+    119.10    83.44  'A point'
+    0.0   0.0  'STOPSTRING'
+$
+$
+$ Type 3 : Output along  track.
+$          Flags for formatted input files.
+$                         The data files are track_i.ww3 and
+$                         track_o.ww3, see w3iotr.ftn for ad. doc.
+$
+   20080522 000000   0  20080525 000000
+$     T
+$
+$ Type 4 : Restart files (no additional data required).
+$                               The data file is restartN.ww3, see
+$                               w3iors.ftn for additional doc.
+$
+   20080522 000000   0  20080525 000000
+$
+$ Type 5 : Boundary data (no additional data required).
+$                               The data file is nestN.ww3, see
+$                               w3iobp.ftn for additional doc.
+$
+   20080522 000000   0  20080525 000000
+$ Type 6 : Whatever
+   20080522 000000   0  20080525 000000
+$
+$ Testing of output through parameter list (C/TPAR) ------------------ $
+$    Time for output and field flags as in above output type 1.
+$
+$  19680606 014500
+$    T T T T T  T T T T T  T T T T T  T
+$
+$ Homogeneous field data --------------------------------------------- $
+$ Homogeneous fields can be defined by a list of lines containing an ID
+$ string 'LEV' 'CUR' 'WND', date and time information (yyyymmdd
+$ hhmmss), value (S.I. units), direction (current and wind, oceanographic
+$ convention degrees)) and air-sea temparature difference (degrees C).
+$ 'STP' is mandatory stop string.
+$
+$  'LEV' 19680606 010000    0.0
+$  'CUR' 19680606 073125    2.0    25.
+$  'WND' 20010701 000000   20.    145.    2.0
+$  'WND' 19680606 030000   20.    270.  -10.0
+   'STP'
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    08-Feb-2001 : Origination of module. Routines     ( version 2.08 )
@@ -17,8 +17,9 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    30-Oct-2009 : Fixed a couple of doc lines.        ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    27-May-2014 : Added OMPH switches in W3QCK3.      ( version 5.02 )
 !/
-!/    Copyright 2009 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -56,6 +57,8 @@
 !
 !       !/C90   Cray FORTRAN 90 compiler directives.
 !       !/NEC   NEC SXF90 compiler directives.
+!
+!       !/OMPH  Ading OMP directves for hybrid paralellization.
 !
 !       !/S     Enable subroutine tracing.
 !       !/Tn    Enable test output.
@@ -710,13 +713,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2008 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13_nov-2001 : Origination.                        ( version 2.14 )
 !/    16-Oct-2002 : Fix INTENT for TRANS.               ( version 3.00 )
 !/    05-Mar-2008 : Added NEC sxf90 compiler directives.
 !/                  (Chris Bunney, UK Met Office)       ( version 3.13 )
+!/    27-May-2014 : Added OMPH switches in W3QCK3.      ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -775,6 +779,8 @@
 !     ------------------------------------------------------
 !
 !  9. Switches :
+!
+!     !/OMPH  Ading OMP directves for hybrid paralellization.
 !
 !     !/S   Enable subroutine tracing.
 !     !/T   Enable test output.
@@ -849,12 +855,18 @@
           IADN2  = IAD02 + MY*NX
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IY)
+!
           DO IY=1, NY
             Q   (IY+IAD00) = Q   (IY+IADN0)
             Q   (IY+IADN1) = Q   (   IY   )
             Q   (IY+IADN2) = Q   (IY+IAD02)
             CFLL(IY+IADN1) = CFLL(   IY   )
             END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
+!
         END IF
 !
 ! 2.  Fluxes for central points ------------------------------------- *
@@ -862,6 +874,9 @@
 !
 !/T1      WRITE (NDST,9010)
 !/T1      WRITE (NDST,9011) NB0, 'CENTRAL'
+!
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, QB, IXYU, IXYD, &
+!/OMPH/!$OMP&                     DQ, DQNZ, QCN, QBN, QBR, CFAC )
 !
       DO IP=1, NB0
 !
@@ -903,11 +918,15 @@
 !
         END DO
 !
+!/OMPH/!$OMP END PARALLEL DO
+!
 ! 3.  Fluxes for points with boundary above ------------------------- *
 !     ( 1st order without limiter )
 !
 !/T1      WRITE (NDST,9011) NB1-NB0, 'BOUNDARY ABOVE'
 !
+!!!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC)
+!!!
       DO IP=NB0+1, NB1
         IXY    = MAPBOU(IP)
         CFL    = CFLL(IXY)
@@ -924,12 +943,16 @@
 !/T1                   CFLL(IXY), Q(IXYC)*QN, Q(IXY)*QN, Q(IXY+INC)*QN
 !/T1          END IF
         END DO
+!!!
+!!!/OMPH/!$OMP END PARALLEL DO
 !
 ! 4.  Fluxes for points with boundary below ------------------------- *
 !     ( 1st order without limiter )
 !
 !/T1      WRITE (NDST,9011) NB2-NB1, 'BOUNDARY BELOW'
 !
+!!!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC)
+!!!
       DO IP=NB1+1, NB2
         IXY    = MAPBOU(IP)
         CFL    = CFLL(IXY+INC)
@@ -947,6 +970,8 @@
 !/T1          END IF
         END DO
 !
+!!!/OMPH/!$OMP END PARALLEL DO
+!
 ! 5.  Global closure ----------------------------------------------- *
 !
       IF ( CLOSE ) THEN
@@ -963,6 +988,8 @@
 !/T2      WRITE (NDST,9020)
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
+!/OMPH/!$OMP PARALLEL DO PRIVATE (IP, IXY, JN, JP )
+!
       DO IP=1, NACT
 !
         IXY    = MAPACT(IP)
@@ -985,6 +1012,8 @@
 !/T2             WRITE (NDST,9021) IP, IXY, QOLD, Q(IXY),             &
 !/T2                               FLA(IXY-INC), FLA(IXY)
         END DO
+!
+!/OMPH/!$OMP END PARALLEL DO
 !
 !/T0      WRITE (NDST,9001) 'Q'
 !/T0      DO IY=NY,1,-1

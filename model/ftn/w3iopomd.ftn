@@ -177,8 +177,9 @@
 !       coverage, the actual interpolation factors can only be
 !       determined at the actual output time. Hence only the basic
 !       bilinear interpolation factors are stored.
-!     - Implementation of the /O7a diagnostic output section for curvilinear
-!       grids is currently incomplete and non-functional.
+!     - Implementation of the /O7a diagnostic output section is 
+!       currently incomplete and non-functional for curvilinear grids 
+!       and/or tripole grids
 !
 !  8. Structure :
 !

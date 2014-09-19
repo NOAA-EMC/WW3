@@ -334,12 +334,13 @@
 !                   on availability.
           ELSE
 !
-IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) then
-write (mdse,*) ' '
-write (mdse,*) ' *** ERROR WMUPDTMD: COUPLER OPTION NOT YET IMPLEMENTED ***'
-write (mdse,*)
-end if
-call extcde (99)
+             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                WRITE (MDSE,*) ' '
+                WRITE (MDSE,*) ' *** ERROR WMUPDTMD: COUPLER OPTION '
+                WRITE (MDSE,*) 'NOT YET IMPLEMENTED ***'
+                WRITE (MDSE,*)
+             END IF
+            CALL EXTCDE (99)
 !
           END IF
 !
@@ -1210,6 +1211,13 @@ call extcde (99)
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
+         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
+
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF
@@ -1750,6 +1758,13 @@ call extcde (99)
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDS IS'// &
+         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
+
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF

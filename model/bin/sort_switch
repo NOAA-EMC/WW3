@@ -293,7 +293,7 @@ EOF
     if [ "$lines" = '0' ] ; then
       echo "keyword $key not found, abort" ; exit 6 ; fi
 
-    . tempfile.$$
+    . ./tempfile.$$
 
     rm -f tempfile.$$
 
@@ -326,9 +326,14 @@ EOF
 #     echo "    $key $i_fnd $found [$OK]"
 #   fi
 
-# 3.d More than 1 switches found (error)
+# 3.d Too many switches found (error)
 
-    if [ "$i_fnd" -gt '1' ] ; then
+    case $TY in
+     'upto2' ) i_tst='2' ;;
+         *   ) i_tst='1' ;;
+    esac
+
+    if [ "$i_fnd" -gt "$i_tst" ] ; then
       echo "keyword $key $i_fnd hits (>1) [$found], abort" ; exit 7 ; fi
 
 # 3.e process types
@@ -367,7 +372,12 @@ EOF
       'upto1'   )
       ;;
 
-# 3.e.3 unknown default
+# 3.e.3 process type 'upto2'
+
+      'upto2'   )
+      ;;
+
+# 3.e.4 unknown default
 
      *  ) echo 'ooops' ; exit 99 ;;
     esac
@@ -380,19 +390,22 @@ EOF
 
 # 3.f Add to new_switches
 
-    if [ "$i_fnd" = '1' ]
+    if [ "$i_fnd" != '0' ]
     then
       if [ -z "$new_switches" ]
       then
         new_switches="$found"
-        i_tot='1'
+        i_tot="$i_fnd"
       else
-        lines=`echo $new_switches |grep $found | wc -l | awk '{ print $1}'`
-        if [ "$lines" = '0' ]
-        then
-          new_switches="$new_switches $found"
-          i_tot=`expr $i_tot + 1`
-        fi
+        for pfnd in $found
+        do
+          lines=`echo $new_switches |grep $pfnd | wc -l | awk '{ print $1}'`
+          if [ "$lines" = '0' ]
+          then
+            new_switches="$new_switches $pfnd"
+            i_tot=`expr $i_tot + 1`
+          fi
+        done
       fi
     fi
 
@@ -403,10 +416,13 @@ EOF
 
 # 3.g Remove from old_switches
 
-    if [ "$i_fnd" = '1' ]
+    if [ "$i_fnd" != '0' ]
     then
-      temp_sw=`echo "$work_sw" | sed -e "s/ $found / /g"`
-      work_sw=$temp_sw
+      for pfnd in $found
+      do
+        temp_sw=`echo "$work_sw" | sed -e "s/ $pfnd / /g"`
+        work_sw=$temp_sw
+      done
       i_lft=`echo $work_sw | wc -w | awk '{ print $1 }' `
     fi
 

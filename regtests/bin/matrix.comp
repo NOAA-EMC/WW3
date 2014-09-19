@@ -18,7 +18,7 @@
 
   home_dir=`pwd`
   base_dir='.'
-  comp_dir='../../wwatch3.trunk/regtests'
+  comp_dir='../../../trunk/regtests'
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 

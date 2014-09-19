@@ -254,7 +254,8 @@
                                  FLSNL2 = .FALSE.
       LOGICAL, SAVE           :: FLINP = .FALSE. , FLDISP = .FALSE.,  &
                                  FLIS  = .FALSE. 
-      CHARACTER(LEN=10)       :: VERTST, TEMPXT
+      CHARACTER(LEN=10)       :: VERTST
+      CHARACTER(LEN=13)       :: TEMPXT
       CHARACTER(LEN=30)       :: TNAME0, TNAME1, TNAME2, TNAME3,      &
                                  TNAME4, TNAME5, TNAME6, TNAME7,      &
                                  TNAMEP, TNAMEG, TNAMEF, TNAMEI

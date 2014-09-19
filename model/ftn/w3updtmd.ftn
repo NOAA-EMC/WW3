@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Nov-2013 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -44,8 +44,12 @@
 !/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
 !/    13-Nov-2013 : Moved reflection from ww3_grid.ftn  ( version 4.13 )
+!/    27-May-2014 : Ading OMPG parallelizations dir,    ( version 5.02 )
+!/    08-May-2014 : Implement tripolar grid for first order propagation
+!/                  scheme                              ( version 5.03 )
+!/                  (W. E. Rogers, NRL)
 !/
-!/    Copyright 2009-2013 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -88,7 +92,7 @@
 !       !/SHRD   Switch for shared / distributed memory architecture.
 !       !/DIST   Id.
 !
-!       !/OMP1   OpenMP compiler directives.
+!       !/OMPG   OpenMP compiler directives.
 !
 !       !/CRT1   Linear current interpolation.
 !       !/CRT2   Quasi-quadratic current interpolation.
@@ -361,7 +365,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Jul-2006 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    03-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -371,6 +375,7 @@
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
 !/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
+!/    27-May-2014 : Ading OMPG parallelizations dir,    ( version 5.02 )
 !/
 !  1. Purpose :
 !
@@ -422,7 +427,7 @@
 !
 !  9. Switches :
 !
-!     !/OMP1   OpenMP compiler directives.
+!     !/OMPG   OpenMP compiler directives.
 !
 !     !/WNT0   No wind interpolation.
 !     !/WNT1   Linear wind interpolation.
@@ -522,7 +527,8 @@
 !
 ! 3.  Actual wind for all grid points
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
+!/OMPG/!$OMP PARALLEL DO PRIVATE (ISEA,UI2,UXR,UYR,UDARC)
+!
       DO ISEA=1, NSEA
 !
         UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
@@ -546,6 +552,8 @@
 !
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
 ! 3.b  Bias correction ( !/WCOR )
 !/WCOR      WHERE ( UA .GE. WWCOR(1) ) UA = UA+(UA-WWCOR(1))*WWCOR(2)
 
@@ -563,11 +571,14 @@
 !
 !/RWND        ELSE
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE (ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE (ISEA)
+!
           DO ISEA=1, NSEA
             U10 (ISEA) = MAX ( UA(ISEA) , 0.001 )
             U10D(ISEA) = UD(ISEA)
             END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
 !
 !/RWND        END IF
 !
@@ -2041,6 +2052,15 @@
 !       ZUNIT   R.A.  I   Units of ZZ (used for test output).
 !       DZZDX   R.A.  O   Derivative in X-direction (W-E).
 !       DZZDY   R.A.  O   Derivative in Y-direction (S-N).
+!       IXP: IX plus 1 (with branch cut incorporated)
+!       IYP, IXM, IYM: ditto
+!       IXPS: value to use for IXP if IXPS is not masked. 
+!             (use IX if masked)
+!       IYPS, IXMS, IYMS : ditto
+!       IXTRPL : in case of needing IY+1 for IY=NY, IX needs to be
+!                modified (tripole grid only)
+!       IXTRPLS : value to use for IXTRPL if IXTRPLS is not masked
+!             (use IX if masked)
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -2085,6 +2105,8 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MAPFS, &
              DPDX, DPDY, DQDX, DQDY, FLAGLL, ICLOSE,          &
              ICLOSE_NONE, ICLOSE_SMPL, ICLOSE_TRPL
+      USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR, NAPROC
+      USE W3SERVMD, ONLY: EXTCDE
 !/T      USE W3ARRYMD, ONLY : PRTBLK
 !/
       IMPLICIT NONE
@@ -2103,6 +2125,8 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T      INTEGER, SAVE           :: NXS = 49
       REAL                    :: DFAC , STX, STY
+      INTEGER                 :: IXPS,IYPS,IXMS,IYMS,IXTRPL,IXTRPLS
+      INTEGER                 :: IXSTART,IXEND
 !/T      REAL                    :: XOUT(NX,NY)
 !/
 !/ ------------------------------------------------------------------- /
@@ -2110,6 +2134,7 @@
 !/S      CALL STRACE (IENT, 'W3DZXY')
 !
 ! 1.  Preparations --------------------------------------------------- *
+
 ! 1.a Initialize arrays
 !
       DZZDX = 0.
@@ -2128,147 +2153,137 @@
 ! 2.  Derivatives in X-direction (W-E) and Y-direction (S-N) ----- *
 !
 
-! 2a. Interior points
+! 2a. All points previously done in 2a,2b,2c of v4.18 done in 2a now:
+      IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
+         IXSTART=2
+         IXEND=NX-1
+      ELSE
+         IXSTART=1
+         IXEND=NX
+      ENDIF
+
       DO IY=2, NY-1
-        DO IX=2, NX-1
-          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
-            STX    = 0.5
-            IF (MAPSTA(IY,IX+1).EQ.0) THEN
-                IXP    = IX
-                STX    = 1.0
-              ELSE
-                IXP    = IX + 1
-              END IF
-            IF (MAPSTA(IY,IX-1).EQ.0) THEN
-                IXM    = IX
-                STX    = 1.0
-              ELSE
-                IXM    = IX - 1
-              END IF
+         DO IX=IXSTART,IXEND
+            IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+               STX    = 0.5
+               IF (IX.EQ.NX)THEN
+                  IXPS=1
+               ELSE
+                  IXPS=IX+1
+               ENDIF
 
-            STY    = 0.5
-            IF (MAPSTA(IY+1,IX).EQ.0) THEN
-                IYP    = IY
-                STY    = 1.0
-              ELSE
-                IYP    = IY + 1
-              END IF
-            IF (MAPSTA(IY-1,IX).EQ.0) THEN
-                IYM    = IY
-                STY    = 1.0
-              ELSE
-                IYM    = IY - 1
-              END IF
+               IF (MAPSTA(IY,IXPS).EQ.0) THEN
+                  IXP    = IX
+                  STX    = 1.0
+               ELSE
+                  IXP    = IXPS
+               END IF
 
+               IF(IX.EQ.1)THEN
+                  IXMS=NX
+               ELSE
+                  IXMS=IX-1
+               ENDIF
+
+               IF (MAPSTA(IY,IXMS).EQ.0) THEN
+                  IXM    = IX
+                  STX    = 1.0
+               ELSE
+                  IXM    = IXMS
+               END IF
+               STY    = 0.5
+               IYPS=IY+1
+               IF (MAPSTA(IYPS,IX).EQ.0) THEN
+                  IYP    = IY
+                  STY    = 1.0
+               ELSE
+                  IYP    = IYPS
+               END IF
+               IYMS=IY-1
+               IF (MAPSTA(IYMS,IX).EQ.0) THEN
+                  IYM    = IY
+                  STY    = 1.0
+               ELSE
+                  IYM    = IYMS
+               END IF
                DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
-                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
-
+                    + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
                DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
-                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
-
+                    + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
                DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
                DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
-
             END IF
-
          END DO
       END DO
 
-      IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
+! 2b. column IY=NY for tripole case
+! This is more complex, since for these two points: (IYP,IX) (IYM,IX),
+!     not only is the first index different (IYP.NE.IYM), but also the
+!     second index is different (IX.NE.IX)!
+      IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
 
-! 2b. column IX=1 for global case
-         IX=1
-         DO IY=2, NY-1
-
-           IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
-              STX    = 0.5
-              IF (MAPSTA(IY,IX+1).EQ.0) THEN
-                  IXP    = IX
-                  STX    = 1.0
-                ELSE
-                  IXP    = IX+1
-                END IF
-              IF (MAPSTA(IY,NX).EQ.0) THEN
-                  IXM    = IX
-                  STX    = 1.0
-                ELSE
-                  IXM    = NX
-                END IF
-
-              STY    = 0.5
-              IF (MAPSTA(IY+1,IX).EQ.0) THEN
-                  IYP    = IY
-                  STY    = 1.0
-                ELSE
-                  IYP    = IY + 1
-                END IF
-              IF (MAPSTA(IY-1,IX).EQ.0) THEN
-                  IYM    = IY
-                  STY    = 1.0
-                ELSE
-                  IYM    = IY - 1
-                END IF
-
-               DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
-                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
-
-               DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
-                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
-
-               DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
-               DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
-
-            END IF
-
-         END DO
-
-
-! 2c. column IX=NX for global case
-         IX=NX
-         DO IY=2, NY-1
-
+         IY=NY
+         DO IX=1, NX
             IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+
                STX    = 0.5
-               IF (MAPSTA(IY,1).EQ.0) THEN
+               
+               IF (IX.EQ.NX)THEN
+                  IXPS=1
+               ELSE
+                  IXPS=IX+1
+               ENDIF
+               IF (MAPSTA(IY,IXPS).EQ.0) THEN
                   IXP    = IX
                   STX    = 1.0
                ELSE
-                  IXP    = 1
+                  IXP    = IXPS
                END IF
-               IF (MAPSTA(IY,IX-1).EQ.0) THEN
+               
+               IF(IX.EQ.1)THEN
+                  IXMS=NX
+               ELSE
+                  IXMS=IX-1
+               ENDIF
+               IF (MAPSTA(IY,IXMS).EQ.0) THEN
                   IXM    = IX
                   STX    = 1.0
                ELSE
-                  IXM    = IX-1
+                  IXM    = IXMS
                END IF
 
                STY    = 0.5
-               IF (MAPSTA(IY+1,IX).EQ.0) THEN
-                  IYP    = IY
+
+!..............next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
+!..............i.e. target point is MAPFS(IY,(NX-IX+1))
+               IXTRPLS=NX-IX+1
+               IF (MAPSTA(IY,IXTRPLS).EQ.0) THEN
+                  IXTRPL = IX
                   STY    = 1.0
                ELSE
-                  IYP    = IY + 1
+                  IXTRPL=IXTRPLS
                END IF
-               IF (MAPSTA(IY-1,IX).EQ.0) THEN
+
+               IYMS=IY-1
+               IF (MAPSTA(IYMS,IX).EQ.0) THEN
                   IYM    = IY
                   STY    = 1.0
                ELSE
-                  IYM    = IY - 1
+                  IYM    = IYMS
                END IF
 
+! tripole grid: (IYP,IX) is replaced with (IY,IXTRPL)
                DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
-                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
-
+                          + (ZZ(MAPFS(IY,IXTRPL))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
                DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
-                            + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
-
+                          + (ZZ(MAPFS(IY,IXTRPL))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
                DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
                DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
-
             END IF
-          END DO
+         END DO
 
-      END IF
+      END IF ! IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
+
 !
 ! 3.  Test output of fields ------------------------------------------ *
 !

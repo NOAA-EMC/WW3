@@ -17,7 +17,7 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
-#                                                      November 2013          #
+#                                                      March 2014             #
 #                                                                             #
 #    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -86,7 +86,8 @@
   fi
 
   flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
-  flag_OMP=`grep OMP $switch_file | wc -l | awk '{ print $1}'`
+  flag_OMPX=`grep OMPX $switch_file | wc -l | awk '{ print $1}'`
+  flag_OMPH=`grep OMPH $switch_file | wc -l | awk '{ print $1}'`
 
   switch_file_old=$main_dir/bin/switch.old
   exec_type_file=$main_dir/exe/exec_type
@@ -99,6 +100,8 @@
      mkdir  $main_dir/obj_DIST ; fi
   if [ ! -d $main_dir/obj_OMP ] ; then
      mkdir  $main_dir/obj_OMP ; fi
+  if [ ! -d $main_dir/obj_HYB ] ; then
+     mkdir  $main_dir/obj_HYB ; fi
   rm -rf $main_dir/obj
   if [ ! -d $main_dir/mod_SHRD ] ; then
      mkdir  $main_dir/mod_SHRD ; fi
@@ -106,11 +109,13 @@
      mkdir  $main_dir/mod_DIST ; fi
   if [ ! -d $main_dir/mod_OMP ] ; then
      mkdir  $main_dir/mod_OMP ; fi
+  if [ ! -d $main_dir/mod_HYB ] ; then
+     mkdir  $main_dir/mod_HYB ; fi
   rm -rf $main_dir/mod
 
   if [ "$flag_SHRD" -gt '0' ]
   then
-    if [ "$flag_OMP" -gt '0' ]
+    if [ "$flag_OMPX" -gt '0' ]
     then
       pres_type='OMP'
       if [ -f ${switch_file_old}_OMP ] ; then
@@ -129,13 +134,24 @@
                      ln -sf mod_SHRD mod ; cd $here
     fi
   else
-    pres_type='DIST'
-    if [ -f ${switch_file_old}_DIST ] ; then
-         cp ${switch_file_old}_DIST $switch_file_old ; fi
-    if [ -f ${makefile}_DIST ] ; then
-         cp ${makefile}_DIST $makefile ; fi
-    cd $main_dir ; ln -sf obj_DIST obj
-                   ln -sf mod_DIST mod ; cd $here
+    if [ "$flag_OMPH" -gt '0' ]
+    then
+      pres_type='HYB'
+      if [ -f ${switch_file_old}_HYB ] ; then
+           cp ${switch_file_old}_HYB $switch_file_old ; fi
+      if [ -f ${makefile}_HYB ] ; then
+           cp ${makefile}_HYB $makefile ; fi
+      cd $main_dir ; ln -sf obj_HYB obj
+                     ln -sf mod_HYB mod ; cd $here
+    else
+      pres_type='DIST'
+      if [ -f ${switch_file_old}_DIST ] ; then
+           cp ${switch_file_old}_DIST $switch_file_old ; fi
+      if [ -f ${makefile}_DIST ] ; then
+           cp ${makefile}_DIST $makefile ; fi
+      cd $main_dir ; ln -sf obj_DIST obj
+                     ln -sf mod_DIST mod ; cd $here
+    fi
   fi
 
 # 1.a.4 Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -289,6 +305,10 @@ EOF
           return 1
         fi
         netcdf_version=`$NETCDF_CONFIG --version | awk '{print $2}'`
+        if [ -z "`echo $netcdf_version | cut -d. -f3`" ]
+        then
+          netcdf_version="$netcdf_version.0"
+        fi
         if [ `echo $netcdf_version | tr -d .` -lt 411 ]
         then
           netcdf_compile_message
@@ -402,7 +422,7 @@ EOF
     then
       if [ "$flag_SHRD" -gt '0' ]
       then
-        if [ "$flag_OMP" -gt '0' ]
+        if [ "$flag_OMPX" -gt '0' ]
         then
           cp $switch_file ${switch_file_old}_OMP
           cp $makefile ${makefile}_OMP
@@ -411,8 +431,14 @@ EOF
           cp $makefile ${makefile}_SHRD
         fi
       else
-        cp $switch_file ${switch_file_old}_DIST
-        cp $makefile ${makefile}_DIST
+        if [ "$flag_OMPH" -gt '0' ]
+        then
+          cp $switch_file ${switch_file_old}_HYB
+          cp $makefile ${makefile}_HYB
+        else
+          cp $switch_file ${switch_file_old}_DIST
+          cp $makefile ${makefile}_DIST
+        fi
       fi
     else
       exit 1

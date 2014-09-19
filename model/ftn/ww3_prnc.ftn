@@ -111,6 +111,9 @@
 !  7. Remarks :
 !
 !     - Input fields need to be continuous in longitude and latitude.
+!     - Program attempts to detect closure type using longitudes of the
+!       grid. Thus, it does not allow the user to specify the closure 
+!       type, and so tripole closure is not supported.
 !
 !  8. Structure :
 !
