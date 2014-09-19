@@ -6,14 +6,15 @@
 !/                  |           P. Nicot                |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Mar-2014 |
+!/                  | Last update :         19-Sep-2014 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3SID1 documentation.
 !/
 !  1. Purpose :
 !
-!     Scattering of waves in the marginal ice zone
+!     Scattering of waves in the marginal ice zone based on tabulated 
+!     scattering coeffi
 !
 !  2. Variables and types :
 !
@@ -382,16 +383,18 @@ CLOSE(996)
       END SUBROUTINE INSIS2
 !/ ------------------------------------------------------------------- /
 !      SUBROUTINE W3SIS2 (A, ICE, DMAX, TAUISX, TAUISY, S)
-      SUBROUTINE W3SIS2 (A, CICE, ICEH, ICEDAVE, S, D)
+      SUBROUTINE W3SIS2 (A, CG, CICE, ICEH, ICEDAVE, S, D)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |   P. Nicot & F. Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Mar-2014 |
+!/                  | Last update :         20-Sep-2014 |
 !/                  +-----------------------------------+
 !/
 !/    16-Mar-2014 : Origination.                        ( version 4.18 )
+!/    19-Sep-2014 : Correcting group speed factor       ( version 5.03 )
+!/    20-Sep-2014 : Adding back-scattered energy        ( version 5.03 )
 !
 !  1. Purpose :
 !     Wave scattering in the MIZ, adapted from Dumont et al.  
@@ -405,6 +408,7 @@ CLOSE(996)
 !     Parameter list
 !     ----------------------------------------------------------------
 !       A       R.A.  I   Action density spectrum (1-D)
+!       CG      R.A.  I   Group speed                              *)
 !       CICE    Real  I   Sea ice concentration.
 !       ICEDAVE Real  I   Average floe size (see Williams et al. 2013) 
 !       S       R.A.  O   Source term (1-D version).
@@ -460,7 +464,7 @@ CLOSE(996)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-      REAL, INTENT(IN)        :: A(NSPEC), CICE, ICEH
+      REAL, INTENT(IN)        :: A(NSPEC), CG(NK), CICE, ICEH
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
       REAL, INTENT(INOUT)     :: ICEDAVE
 !/
@@ -469,7 +473,7 @@ CLOSE(996)
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: IK, ITH, ITH2, IS, IS2, IND1, IND2, W
-      REAL                    :: ALPHA
+      REAL                    :: ALPHA, BETA, SUMALLDIR
 !/T      REAL                    :: SOUT(NK,NTH)
 !/
 !/ ------------------------------------------------------------------- /
@@ -495,17 +499,35 @@ CLOSE(996)
         END IF
 
       DO IK = 1,NK
-        ALPHA = -1.*(    (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W)/ICEDAVE &
-                    + 2* (SIS2ALPHA2(IND1,IK)*(1-W)+SIS2ALPHA2(IND2,IK)*W) )*CICE
+!
+! Spatial attenuation scale taken from table. This corresponds the the values shown 
+! in Dumont et al. (JGR 2011, fig 3). 
+!
+        ALPHA = -1.*(    (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W)/ICEDAVE  &
+                    )*CICE
+!        ALPHA = -1.*(    (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W)/ICEDAVE &
+!                    + 2* (SIS2ALPHA2(IND1,IK)*(1-W)+SIS2ALPHA2(IND2,IK)*W) )*CICE
+!
+! time attenuation
+!
+        BETA = ALPHA * CG(IK) 
 ! WRITE(994,*) IK,W,IND1,IND2,SIG(IK)*TPIINV,SIS2ALPHAS(IND1,IK), SIS2ALPHAS(IND2,IK), &
 ! (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W), &
 ! SIS2ALPHA2(IND1,IK)*(1-W)+SIS2ALPHA2(IND2,IK)*W, ALPHA
-
+        SUMALLDIR= 0.
         DO ITH = 1,NTH
           IS  = ITH+(IK-1)*NTH
-          D (IS) = ALPHA
-          S(IS)  = ALPHA * A(IS)
+          D (IS) = ALPHA*CG(IK)
+          S(IS)  = ALPHA * A(IS) 
+          SUMALLDIR = SUMALLDIR + S(IS) 
           END DO
+        SUMALLDIR = SUMALLDIR / REAL(NTH)
+!
+! Adds the scattered energy isotropically to conserve the energy 
+! This may not be a very good scheme numerically. Another possible 
+! approach is the matrix inversion used for bottom scattering (w3sbs1md.ftn) 
+!
+        S(1+(IK-1)*NTH:IK*NTH)=S(1+(IK-1)*NTH:IK*NTH)+SUMALLDIR
         END DO
 !
 !/T         DO IK = 1, NK

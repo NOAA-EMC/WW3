@@ -733,7 +733,7 @@
 !/IC3                CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 
 !/IS1                CALL W3SIS1 ( SPEC, ICE, VSIR )
-!/IS2                CALL W3SIS2 ( SPEC, ICE, ICEH, ICEDAVE, VSIR, VDIR )
+!/IS2                CALL W3SIS2 ( SPEC, CG1, ICE, ICEH, ICEDAVE, VSIR, VDIR )
 !
 ! 2.f Dump training data if necessary
 !

@@ -503,7 +503,7 @@
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
-                                 IST, NKI, NTHI,NRIC,                 &
+                                 IST, NKI, NTHI,NRIC, NRIS,           &
                                  IDFT, NSTAT, NBT, NLAND, NOSW
 !/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
@@ -930,6 +930,7 @@
       NRNL   = 0
       NRBT   = 0
       NRIC   = 0
+      NRIS   = 0
       NRDB   = 0
       NRTR   = 0
       NRBS   = 0
@@ -986,9 +987,9 @@
 !/IC3      NRIC   = NRIC + 1
 !/IC3      FLIC   = .TRUE.
 !
-!/IS1      NRIC   = NRIC + 1
+!/IS1      NRIS   = NRIS + 1
 !/IS1      FLIC   = .TRUE.
-!/IS2      NRIC   = NRIC + 1
+!/IS2      NRIS   = NRIS + 1
 !/IS2      FLIC   = .TRUE.
 !
 !/DB0      NRDB   = NRDB + 1
@@ -1068,6 +1069,11 @@
 !
       IF ( NRIC .GT. 1 ) THEN
           WRITE (NDSE,1034) NRIC
+          CALL EXTCDE ( 19 )
+        END IF
+!
+      IF ( NRIS .GT. 1 ) THEN
+          WRITE (NDSE,1036) NRIS
           CALL EXTCDE ( 19 )
         END IF
 !
@@ -4761,6 +4767,8 @@
                '     ILLEGAL NUMBER OF !/ICn SWITCHES :',I3)
  1035 FORMAT (/' *** WAVEWATCH III WARNING IN W3GRID :'/              &
                '     ONLY FIRST PROPAGATION SCHEME WILL BE USED: ')
+ 1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+               '     ILLEGAL NUMBER OF !/ISn SWITCHES :',I3)
 !
  1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
                ' -----------------------------------'/)
