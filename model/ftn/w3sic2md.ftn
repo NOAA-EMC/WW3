@@ -361,14 +361,15 @@
              DELI1= MIN (1. ,XI-FLOAT(IND))
              DELI2= 1. - DELI1
              FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
-             DTURB=-1.* FTURB*FW*UORB/GRAV
+             DTURB=-1.*PTURB* FTURB*FW*UORB/GRAV
            ELSE ! so case of IC2PARS(2).LE.0.
              DTURB = 0.
+             PVISC = 1.
            END IF ! IF (IC2PARS(2).GT.0.)  
-
+!
            DO IK=1, NK
              DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
-             D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
+             D1D(IK) = DTURB*SIG(IK)**2 +  PVISC*DVISC
              END DO
            END IF !  IF (IC2PARS(1).GT.0.5)
 

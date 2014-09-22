@@ -14,7 +14,8 @@
 !  1. Purpose :
 !
 !     Scattering of waves in the marginal ice zone based on tabulated 
-!     scattering coeffi
+!     scattering coefficients for a semi-infinite ice sheet. See papers
+!     by Dumont et al. (JGR 2011) and Williams et al. (OM 2013) 
 !
 !  2. Variables and types :
 !
@@ -383,7 +384,7 @@ CLOSE(996)
       END SUBROUTINE INSIS2
 !/ ------------------------------------------------------------------- /
 !      SUBROUTINE W3SIS2 (A, ICE, DMAX, TAUISX, TAUISY, S)
-      SUBROUTINE W3SIS2 (A, CG, CICE, ICEH, ICEDAVE, S, D)
+      SUBROUTINE W3SIS2 (A, CG, CICE, ICEH, ICEDAVE, S, D, IX, IY )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -465,6 +466,7 @@ CLOSE(996)
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
       REAL, INTENT(IN)        :: A(NSPEC), CG(NK), CICE, ICEH
+      INTEGER, INTENT(IN)     :: IX, IY 
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
       REAL, INTENT(INOUT)     :: ICEDAVE
 !/
@@ -517,8 +519,8 @@ CLOSE(996)
         SUMALLDIR= 0.
         DO ITH = 1,NTH
           IS  = ITH+(IK-1)*NTH
-          D (IS) = ALPHA*CG(IK)
-          S(IS)  = ALPHA * A(IS) 
+          D (IS) = BETA
+          S(IS)  = BETA * A(IS) 
           SUMALLDIR = SUMALLDIR + S(IS) 
           END DO
         SUMALLDIR = SUMALLDIR / REAL(NTH)
@@ -527,7 +529,7 @@ CLOSE(996)
 ! This may not be a very good scheme numerically. Another possible 
 ! approach is the matrix inversion used for bottom scattering (w3sbs1md.ftn) 
 !
-        S(1+(IK-1)*NTH:IK*NTH)=S(1+(IK-1)*NTH:IK*NTH)+SUMALLDIR
+        S(1+(IK-1)*NTH:IK*NTH)=S(1+(IK-1)*NTH:IK*NTH)-SUMALLDIR
         END DO
 !
 !/T         DO IK = 1, NK
