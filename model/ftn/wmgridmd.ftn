@@ -1155,6 +1155,9 @@
                                                      ! that this solution is
                                                      ! utilized)
       LOGICAL                 :: LMPIBDI=.FALSE.     ! true if MPIBDI switch is set
+      LOGICAL                 :: CALLED_SCRIP=.FALSE.! true if SCRIP has been 
+                                                     ! called for this processor
+
 
       INTEGER  :: ITRI, IM1, IM2, IT, JT, IsFirst
       REAL :: DIST_MIN, DIST_MAX, eDist
@@ -1612,7 +1615,16 @@
 !/SCRIP               NISRC=GRIDS(GSRC)%NX
 !/SCRIP               NJSRC=GRIDS(GSRC)%NY ! only needed for diagnostics
 
-! Next, we call SCRIP for this src grid
+! Next, we call SCRIP for this src grid.
+! Conditions for calling SCRIP are:
+! 1) Not using L_STOP: in this case, all processes need all the weight
+!    information, so all processes need to call SCRIP for all grid pairs
+! OR
+! 2) Using L_STOP, writing .nc files and not reading .nc files. With 
+!    L_STOP, different processors are doing different things, and so
+!    have different settings for L_WRITE. L_READ is the same for all 
+!    processors, since it is simply based on whether the file already
+!    exists.
 
 !/SCRIPNC               INTERP_FILE1 = "rmp_src_to_dst_conserv_xxx_xxx.nc"
 !/SCRIPNC               WRITE(CDST, "(I3.3)") GDST
@@ -1625,6 +1637,16 @@
 !/T38                      ELAPSED_TIME = BEG_TIME(3) - BEG_TIME(1)
 !/T38                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER START: ", ELAPSED_TIME, " MSEC"
 !/SCRIPNC               IF (L_STOP) L_WRITE = (IMPROC .EQ. IMPROC_ASSIGN)
+
+!/SCRIPNC    IF(L_STOP.AND.L_READ)THEN
+!/SCRIPNC    IF ( IMPROC.EQ.NMPERR ) &
+!/SCRIPNC    WRITE(MDSE,'(A)')'ERROR: You should either have SCRIP_STOP '// &
+!/SCRIPNC                    'or remapping (.nc) files. Not both. We will exit now.'
+!/SCRIPNC    CALL EXTCDE (505)
+!/SCRIPNC    ENDIF
+
+!/SCRIP      CALLED_SCRIP=.FALSE. ! initialize
+
 !/SCRIPNC               IF ((.NOT. L_STOP) .OR. ((.NOT. L_READ) .AND. L_WRITE)) THEN 
 !/SCRIP                   IF (L_STOP) THEN ! we are sending different grids to different processors
 !/SCRIP                     WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GSRC,GDST = ', &
@@ -1636,19 +1658,36 @@
 !/SCRIP                   CALL scrip_wrapper (GSRC, GDST,         &
 !/SCRIP                     GRIDS(GSRC)%MAPSTA,GRIDS(GSRC)%MAPST2,FLAGLL,      &
 !/SCRIP                     GRIDS(GSRC)%GRIDSHIFT,L_WRITE,L_READ,T38)
+!/SCRIP                   CALLED_SCRIP=.TRUE.
 !/SCRIPNC               END IF
 !/SCRIP                 CALL FLUSH(MDSE)
 !/SCRIPNC               IF (L_STOP) THEN
 !/SCRIPNC                  IF (.NOT. L_READ) THEN
 !/SCRIPNC                     IMPROC_ASSIGN = IMPROC_ASSIGN + 1
 !/SCRIPNC                     IF (IMPROC_ASSIGN .GT. NMPROC) IMPROC_ASSIGN = 1
-!/SCRIPNC                  CYCLE
+!/SCRIPNC                     IF(CALLED_SCRIP)THEN ! we called scrip_wrapper, so we need  
+!/SCRIPNC                                          ! to deallocate before leaving               
+!/SCRIPNC                       DST_GRID_SIZE=NIDST*NJDST
+!/SCRIPNC                       DO KDST=1,DST_GRID_SIZE
+!/SCRIPNC                         DEALLOCATE(WGTDATA(KDST)%W)
+!/SCRIPNC                         DEALLOCATE(WGTDATA(KDST)%K)
+!/SCRIPNC                       END DO
+!/SCRIPNC                       DEALLOCATE(WGTDATA)
+!/SCRIPNC                     END IF
+!/SCRIPNC                     CYCLE ! cycle out of this loop :  DO JJ=1, GRDHGH(GDST,0) 
 !/SCRIPNC                  END IF
 !/SCRIPNC               END IF
 !/T38                      CALL DATE_AND_TIME (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
 !/T38                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
 !/T38                      ELAPSED_TIME = END_TIME - BEG_TIME(4)
 !/T38                      WRITE(NMYOUT,*) "WMGHGH, SCRIP WRAPPER, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
+
+!/SCRIP    IF(.NOT.CALLED_SCRIP)THEN ! we should not be here, since we need
+!/SCRIP                              ! WGTDATA(KDST)%N which is created by SCRIP
+!/SCRIP    IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,'(A)')'ERROR: we '// &
+!/SCRIP                    'should have cycled out by now. We will exit now.'
+!/SCRIP    CALL EXTCDE (506)
+!/SCRIP    ENDIF
 
 ! SCRIP has now created the data strucure "WGTDATA" and stored the weights 
 ! in it. However, this is only for the present src grid. We want to store the
@@ -1730,7 +1769,8 @@
 !/T38                      ELAPSED_TIME = END_TIME - BEG_TIME(3)
 !/T38                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
 !/SCRIP            END DO   !            DO JJ=1, GRDHGH(GDST,0) 
-!/SCRIPNC            IF (L_STOP) CYCLE
+!/SCRIPNC            IF (L_STOP) DEALLOCATE ( MAPTST, INFLND )
+!/SCRIPNC            IF (L_STOP) CYCLE ! cycle out of LOWRANK_GRID loop
 !/SCRIP            GSRC   = -999 ! unset grid
 
 !################################################################
