@@ -126,6 +126,7 @@
       integer, parameter :: localDE = 0
       character (*), parameter :: defaultVerbosity = "low"
       logical :: verbose
+      logical :: realizeAllExport
       character(ESMF_MAXSTR) :: msg
 !
 ! --- Timing
@@ -277,25 +278,25 @@
 ! --- Initialize - phase 0
 
       call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-           UserRoutine=InitializeP0, phase=0, rc=rc)
+        UserRoutine=InitializeP0, phase=0, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
 ! --- Initialize - phase 1
 
       call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-           UserRoutine=InitializeP1, phase=1, rc=rc)
+        UserRoutine=InitializeP1, phase=1, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
 ! --- Initialize - phase 2
 
       call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-           UserRoutine=InitializeP2, phase=2, rc=rc)
+        UserRoutine=InitializeP2, phase=2, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
 ! --- Finalize
 
       call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
-           UserRoutine=Finalize, phase=1, rc=rc)
+        UserRoutine=Finalize, phase=1, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -304,13 +305,13 @@
 ! --- Model initialize export data method
 
       call ESMF_MethodAdd(gcomp, label=model_label_DataInitialize, &
-           UserRoutine=DataInitialize, rc=rc)
+        UserRoutine=DataInitialize, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
 ! --- Model advance method
 
       call ESMF_MethodAdd(gcomp, label=model_label_Advance, &
-           UserRoutine=ModelAdvance, rc=rc)
+        UserRoutine=ModelAdvance, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -520,7 +521,7 @@
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
       type(ESMF_TimeInterval) :: tstep, etstep
-      integer :: i, n
+      integer :: i, j, n, imod
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -545,7 +546,7 @@
       call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_VMGet(vm, petCount=npet, localPet=lpet, &
-           mpiCommunicator=mpiComm, rc=rc)
+        mpiCommunicator=mpiComm, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       nmproc = npet
       improc = lpet + 1
@@ -564,14 +565,19 @@
         convention="COAMPS", purpose="General", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
-! 1.d Config and working directory
+! 1.d Config input
 !
       call ESMF_GridCompGet(gcomp, config=config, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      ! working directory
       call ESMF_ConfigGetAttribute(config, wrkdir, &
-           label=trim(cname)//'_work_dir:', default='.', rc=rc)
+        label=trim(cname)//'_work_dir:', default='.', rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       preamb = trim(wrkdir)//'/'
+      ! realize all export flag
+      call ESMF_ConfigGetAttribute(config, realizeAllExport, &
+        label=trim(cname)//'_realize_all_export:', default=.false., rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 1.e Set internal start/stop time from external start/stop time
 !
@@ -636,8 +642,33 @@
 !
 ! 4.a Initialize import field list
 !
-      isActiveImpField(:) = .false.
-      isActiveMbgField(:) = .false.
+      imod = 1 !todo: only work with grid 1 (for now)
+      call w3setg ( imod, mdse, mdst )
+      call w3setw ( imod, mdse, mdst )
+      call w3seti ( imod, mdse, mdst )
+      call wmsetm ( imod, mdse, mdst )
+
+      isActiveImpField(1) = inpmap(imod,1)
+      impFieldName(1)    = 'seahgt'
+      impFieldStdName(1) = 'sea_surface_height_above_sea_level'
+
+      isActiveImpField(2:3) = inpmap(imod,2)
+      impFieldName(2)    = 'uucurr'
+      impFieldStdName(2) = 'surface_eastward_sea_water_velocity'
+      impFieldName(3)    = 'vvcurr'
+      impFieldStdName(3) = 'surface_northward_sea_water_velocity'
+
+      isActiveImpField(4:5) = inpmap(imod,3)
+      impFieldName(4)    = 'uutrue'
+      impFieldStdName(4) = 'eastward_wind_at_10m_height'
+      impFieldName(5)    = 'vvtrue'
+      impFieldStdName(5) = 'northward_wind_at_10m_height'
+
+      isActiveMbgField = isActiveImpField
+      do i = 1,numImpFields
+        mbgFieldName(i) = 'mbg_'//trim(impFieldName(i))
+        mbgFieldStdName(i) = 'mbg_'//trim(impFieldStdName(i))
+      enddo
 !
 ! 4.b Advertise active import fields
 !
@@ -646,12 +677,12 @@
         if (.not.isActiveImpField(i)) cycle
         n = n + 1
         call NUOPC_StateAdvertiseField(impState, &
-             trim(impFieldStdName(i)), name=trim(impFieldName(i)), rc=rc)
+          trim(impFieldStdName(i)), name=trim(impFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (.not.isActiveMbgField(i)) cycle
         n = n + 1
         call NUOPC_StateAdvertiseField(impState, &
-             trim(mbgFieldStdName(i)), name=trim(mbgFieldName(i)), rc=rc)
+          trim(mbgFieldStdName(i)), name=trim(mbgFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
@@ -682,38 +713,30 @@
 !
 ! 5.a Initialize export field list
 !
-      isActiveExpField(:) = .false.
+      expFieldName(1)    = 'uscurr'
+      expFieldStdName(1) = 'eastward_stokes_drift_current'
+      expFieldName(2)    = 'vscurr'
+      expFieldStdName(2) = 'northward_stokes_drift_current'
+      expFieldName(3)    = 'wbcuru'
+      expFieldStdName(3) = 'eastward_wave_bottom_current'
+      expFieldName(4)    = 'wbcurv'
+      expFieldStdName(4) = 'northward_wave_bottom_current'
+      expFieldName(5)    = 'wbcurf'
+      expFieldStdName(5) = 'wave_bottom_current_radian_frequency'
+      expFieldName(6)    = 'wavsgu'
+      expFieldStdName(6) = 'eastward_wave_radiation_stress_gradient'
+      expFieldName(7)    = 'wavsgv'
+      expFieldStdName(7) = 'northward_wave_radiation_stress_gradient'
+      expFieldName(8)    = 'charno'
+      expFieldStdName(8) = 'wave_induced_charnock_parameter'
 
-      i = 1
-      expFieldStdName(i) = 'wave_induced_charnock_parameter'
-      expFieldName(i)    = 'charno'
-      i = 2
-      expFieldStdName(i) = 'eastward_stokes_drift_current'
-      expFieldName(i)    = 'uscurr'
-      i = 3
-      expFieldStdName(i) = 'northward_stokes_drift_current'
-      expFieldName(i)    = 'vscurr'
-      i = 4
-      expFieldStdName(i) = 'eastward_wave_bottom_current'
-      expFieldName(i)    = 'wbcuru'
-      i = 5
-      expFieldStdName(i) = 'northward_wave_bottom_current'
-      expFieldName(i)    = 'wbcurv'
-      i = 6
-      expFieldStdName(i) = 'wave_bottom_current_radian_frequency'
-      expFieldName(i)    = 'wbcurf'
-      i = 7
-      expFieldStdName(i) = 'eastward_wave_radiation_stress_gradient'
-      expFieldName(i)    = 'wavsgu'
-      i = 8
-      expFieldStdName(i) = 'northward_wave_radiation_stress_gradient'
-      expFieldName(i)    = 'wavsgv'
+      isActiveExpField(:) = .false.
 !
 ! 5.b Advertise all export fields
 !
       do i = 1,numExpFields
         call NUOPC_StateAdvertiseField(expState, &
-             trim(expFieldStdName(i)), name=trim(expFieldName(i)), rc=rc)
+          trim(expFieldStdName(i)), name=trim(expFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
@@ -819,6 +842,7 @@
       integer, parameter :: iwt=3
       real(8) :: wstime, wftime
       integer :: i, n
+      logical :: isConnected
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -839,7 +863,7 @@
       do i = 1,numImpFields
         if (.not.isActiveImpField(i)) cycle
         n = n + 1
-!TODO:  impField(i) = create_esmf_field(impFieldName(i),rc=rc)
+!TODO:  impField(i) = CreateField(impFieldName(i),rc=rc)
 !TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !TODO:  call ESMF_FieldGet(impField(i), localDE, impData(i)%p, rc=rc)
 !TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -848,7 +872,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (.not.isActiveMbgField(i)) cycle
         n = n + 1
-!TODO:  mbgField(i) = create_esmf_field(mbgFieldName(i),rc=rc)
+!TODO:  mbgField(i) = CreateField(mbgFieldName(i),rc=rc)
 !TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !TODO:  call ESMF_FieldGet(mbgField(i), localDE, mbgData(i)%p, rc=rc)
 !TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -883,11 +907,13 @@
 ! 2.  Realize active export fields
 !
 ! 2.a Set connected export fields as active and remove unconnected
+!     If realizeAllExport, then set all fields as active and realize.
 !
       do i = 1,numExpFields
-        isActiveExpField(i) = NUOPC_StateIsFieldConnected(expState, &
-                              expFieldName(i), rc=rc)
+        isConnected = NUOPC_StateIsFieldConnected(expState, &
+                      expFieldName(i), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        isActiveExpField(i) = isConnected .or. realizeAllExport
         if (.not.isActiveExpField(i)) then
           call ESMF_StateRemove(expState, (/expFieldName(i)/), rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -900,7 +926,7 @@
       do i = 1,numExpFields
         if (.not.isActiveExpField(i)) cycle
         n = n + 1
-!TODO:  expField(i) = exgrid_esmf_field(expFieldName(i),rc=rc)
+!TODO:  expField(i) = CreateField(expFieldName(i),rc=rc)
 !TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !TODO:  call ESMF_FieldGet(expField(i), localDE, expData(i)%p, rc=rc)
 !TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1723,7 +1749,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      integer           :: i
+      integer       :: i
 !
 ! -------------------------------------------------------------------- /
 ! Find name in fnameList that matches fname
