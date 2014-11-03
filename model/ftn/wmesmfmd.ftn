@@ -569,7 +569,7 @@
       call ESMF_GridCompGet(gcomp, config=config, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_ConfigGetAttribute(config, wrkdir, &
-           label=trim(cname)//'_dir:', default='.', rc=rc)
+           label=trim(cname)//'_work_dir:', default='.', rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       preamb = trim(wrkdir)//'/'
 !

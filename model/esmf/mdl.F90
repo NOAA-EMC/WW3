@@ -293,7 +293,7 @@ module MDL
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! get data directory
-    label=trim(cname)//'_dir:'
+    label=trim(cname)//'_work_dir:'
     call ESMF_ConfigGetAttribute(config, is%wrap%dataDir, label=trim(label), &
       default='.', rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
