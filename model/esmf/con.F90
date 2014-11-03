@@ -126,11 +126,6 @@ module CON
     call con_routine_SS(ccomp, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
-    ! set entry points for initialize methods
-    call ESMF_CplCompSetEntryPoint(ccomp, ESMF_METHOD_INITIALIZE, &
-      userRoutine=InitializeP0, phase=0, rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-
     ! attach specializing method(s)
     call ESMF_MethodAdd(ccomp, label=con_label_ComputeRH, &
       userRoutine=ComputeRH, rc=rc)
@@ -147,55 +142,6 @@ module CON
 
   end subroutine
 
-  !-----------------------------------------------------------------------------
-
-  subroutine InitializeP0(ccomp, importState, exportState, clock, rc)
-    type(ESMF_CplComp)  :: ccomp
-    type(ESMF_State)     :: importState, exportState
-    type(ESMF_Clock)     :: clock
-    integer, intent(out) :: rc
-
-    ! local variables    
-    character(ESMF_MAXSTR)        :: cname
-    character(ESMF_MAXSTR)        :: msgString
-    logical                       :: verbose
-    type(type_InternalState)      :: is
-    integer                       :: localrc, stat
-    character(len=NUOPC_PhaseMapStringLength) :: initPhases(3)
-
-    rc = ESMF_SUCCESS
-
-    ! query the Component for its name
-    call ESMF_CplCompGet(ccomp, name=cname, rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-
-    ! query Component for its internal State
-    nullify(is%wrap)
-    call ESMF_UserCompGetInternalState(ccomp, label_InternalState, is, rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    verbose = is%wrap%verbose
-
-    if (verbose) &
-    call ESMF_LogWrite(trim(cname)//': entered InitializeP0', ESMF_LOGMSG_INFO)
-
-    ! define initialization phases
-    ! * use IPDv02 to support satisfying inter-model data
-    !   dependencies during initialization
-    ! *** actually IPDv00 or IPDv01 will work just fine ***
-    ! *** currently the IPD mapping is same as default ***
-    initPhases(1) = 'IPDv02p1=1'
-    initPhases(2) = 'IPDv02p2=2'
-    initPhases(3) = 'IPDv02p3=3'
-    call ESMF_AttributeSet(ccomp, &
-      name='InitializePhaseMap', valueList=initPhases, &
-      convention='NUOPC', purpose='General', rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-
-    if (verbose) &
-    call ESMF_LogWrite(trim(cname)//': leaving InitializeP0', ESMF_LOGMSG_INFO)
-
-  end subroutine
-  
   !-----------------------------------------------------------------------------
 
   subroutine ComputeRH(ccomp, rc)

@@ -549,6 +549,7 @@ module ESM
     type(ESMF_GridComp), pointer       :: modComp(:)
     type(ESMF_CplComp), pointer        :: conComp(:,:)
     type(NUOPC_RunSequence), pointer   :: runSeq(:)
+    integer                            :: iseq, phase
     character(ESMF_MAXSTR)             :: verbosity
 
     rc = ESMF_SUCCESS
@@ -569,7 +570,6 @@ module ESM
     ! set local pointers for super internal state members
     modComp => superIS%wrap%modelComp
     conComp => superIS%wrap%connectorComp
-    runSeq => superIS%wrap%runSeq
 
     ! query component for internal State
     nullify(is%wrap)
@@ -687,27 +687,32 @@ module ESM
     enddo
 
     ! override the default run sequence defined by the generic Driver
-    ! notes: j = 0 indicates connector to driver; j < 0 indicates model run
-    call NUOPC_RunSequenceDeallocate(runSeq, rc=rc)
+    ! * the deallocate/add must be applied directly to the internal state
+    !   runSeq member prior to setting local pointer
+    ! * j = 0 indicates connector to driver; j < 0 indicates model run
+    call NUOPC_RunSequenceDeallocate(superIS%wrap%runSeq, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call NUOPC_RunSequenceAdd(runSeq, 1, rc=rc)
+    call NUOPC_RunSequenceAdd(superIS%wrap%runSeq, 1, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    runSeq => superIS%wrap%runSeq
+    iseq = 1
+    phase = 1
     ! 1: connect active models to active models
     do j = 1,modCount
     do i = 1,modCount
       if (i.eq.j) cycle
       if (.not.conActive(i,j)) cycle
-      call NUOPC_RunElementAdd(runSeq(1), i=i, j=j, phase=1, rc=rc)
+      call NUOPC_RunElementAdd(runSeq(iseq), i=i, j=j, phase=phase, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
     enddo
     ! 2: advance active models
     do i = 1,modCount
       if (.not.modActive(i)) cycle
-      call NUOPC_RunElementAdd(runSeq(1), i=i, j=-1, phase=1, rc=rc)
+      call NUOPC_RunElementAdd(runSeq(iseq), i=i, j=-1, phase=phase, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
-    call NUOPC_RunSequencePrint(runSeq(1))
+    call NUOPC_RunSequencePrint(runSeq(iseq), logFlag=.true.)
 
   end subroutine
 

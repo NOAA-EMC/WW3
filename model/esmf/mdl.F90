@@ -49,7 +49,7 @@ module MDL
   character (*), parameter :: defaultVerbosity = 'low'
   character (*), parameter :: label_InternalState = 'InternalState'
   character (*), parameter :: inputAlarmName = 'InputAlarm'
-  integer      , parameter :: maxFields = 5
+  integer      , parameter :: maxFields = 15
 
   integer, parameter :: modTypeConstant = 0
   integer, parameter :: modTypeTendency = 1
@@ -202,7 +202,6 @@ module MDL
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
     real(ESMF_KIND_R8)            :: ws3Time, wf3Time
     integer                       :: i
-    character(len=NUOPC_PhaseMapStringLength) :: initPhases(4)
 
     rc = ESMF_SUCCESS
 
@@ -222,18 +221,16 @@ module MDL
     if (verbose) &
     call ESMF_LogWrite(trim(cname)//': entered InitializeP0', ESMF_LOGMSG_INFO)
 
-    ! define initialization phases
-    ! * use IPDv02 to support satisfying inter-model data
-    !   dependencies during initialization
-    ! * skip over IPDv02p2 because we want connected status
-    !   set on import/export fields prior to realization
-    initPhases(1) = 'IPDv02p1=1'
-    initPhases(2) = 'IPDv02p3=2'
-    initPhases(3) = 'IPDv02p4=3'
-    initPhases(4) = 'IPDv02p5=5'
-    call ESMF_AttributeSet(gcomp, &
-      name='InitializePhaseMap', valueList=initPhases, &
-      convention='NUOPC', purpose='General', rc=rc)
+    ! define required initialization phases
+    ! * >= IPDv02 supports satisfying inter-model data dependencies
+    !   during initialization
+    ! * >= IPDv03 supports the transfer of ESMF Grid & Mesh objects
+    !   between Model and/or Mediator components during initialization
+    ! IPDv03p2: unspecified by NUOPC -- not required
+    ! IPDv03p4: relevant for TransferActionGeomObject=="accept"
+    ! IPDv03p5: relevant for TransferActionGeomObject=="accept"
+    call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
+      acceptStringList=(/"IPDv03p1","IPDv03p3","IPDv03p6","IPDv03p7"/), rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
 1   if (verbose) &
@@ -321,6 +318,12 @@ module MDL
       i = i+1
       is%wrap%sname(i) = 'sea_surface_height_above_sea_level'
       is%wrap%fname(i) = 'seahgt'
+      i = i+1
+      is%wrap%sname(i) = 'sea_surface_temperature'
+      is%wrap%fname(i) = 'seatmp'
+      i = i+1
+      is%wrap%sname(i) = 'sea_surface_salinity'
+      is%wrap%fname(i) = 'salint'
       i = i+1
       is%wrap%sname(i) = 'surface_eastward_sea_water_velocity'
       is%wrap%fname(i) = 'uucurr'
@@ -542,7 +545,7 @@ module MDL
     if (verbose) call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     if (localPet.eq.0) write(*,'(a)') trim(msgString)
 
-    ! set Updated Field Attribute to "true", indicating to the IPDv02p5
+    ! set Updated Field Attribute to "true", indicating to the IPDv03p7
     ! generic code to set the timestamp for these fields
     do i=1,is%wrap%numf
       if (.not.is%wrap%isActive(i)) cycle
@@ -551,8 +554,9 @@ module MDL
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
 
-    ! set InitializeDataComplete Attribute to "true", indicating to the IPDv02p5
+    ! set InitializeDataComplete Attribute to "true", indicating to the IPDv03p7
     ! generic code that all inter-model data dependencies are satisfied
+    ! *** this is required since not all import fields are required for init ***
     call ESMF_AttributeSet(gcomp, name="InitializeDataComplete", value="true", &
       convention="NUOPC", purpose="General", rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
