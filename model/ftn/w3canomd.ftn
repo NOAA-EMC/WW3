@@ -5,17 +5,18 @@
 !/                  |                                   |
 !/                  |   P.A.E.M. Janssen                |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Oct-2012 |
+!/                  | Last update :         21-Aug-2014 |
 !/                  +-----------------------------------+
 !/
 !/    XX-Jul-2010 : Origination by  PAEM JANSSEN     
 !/    18-Oct-2012 : Adapted to WAVEWATCH III: F. Ardhuin( version 4.07 )
+!/    21-Aug-2014 : Bug corrected: only first call wasOK( version 5.01 )
 !/ 
 !  0. Note by F. Ardhuin: 
 !     In adapting the orginal program to be a WAVEWATCH module, I 
 !     have so far strived to keep the original code. As a result 
 !     some routines are unnecessarily duplicated (e.g. the calculation of 
-!     the group velocity ...). But this can improve the tracability of 
+!     the group velocity ...). But this can improve the traceability of 
 !     the code. 
 !     The first spectrum (JONSWAP) has been removed from the code
 !
@@ -28,16 +29,10 @@
 !     DOCUMENTATION.
 !     -------------
 !
-!     THE SOFTWARE FOLLOWS THE STANDARD CODING PRACTICE INTRODUCED WITH
-!     THE WAM MODEL
-!
 !     PRESENTLY, THE SOFTWARE IS SET UP TO DO FOR A GIVING FIRST-ORDER 
 !     SPECTRUM AT A GIVEN DEPTH THE DETERMINATION OF THE SECOND ORDER 
 !     CORRECTION (INCLUDING SECOND-HARMONICS, WAVE SET DOWN AND DOPPLER SHIFT
 !     OWING TO THE STOKES FREQUENCY CORRECTION.
-!     HOWEVER, THE SOFTWARE CAN ALSO CALCULATE FOR AN ARRAY OF SPECTRA AND 
-!     GIVEN BUT ARBITRARY DEPTH THE SECOND-ORDER SPECTRUM. hERE THE 
-!     LENGTH OF THE ARRAY IS GIVEN BY ILEN (PRESENTLY = 1). 
 !
 !     EVALUATION OF THE INTERACTION COEFFICIENTS FOR ARBRITRARY DEPTH WOULD
 !     BE VERY TIME CONSUMING. THEREFORE, THE APPROACH IN THE WAM MODEL IS 
@@ -94,10 +89,17 @@
 !/
 
       REAL                     :: G, PI, ZPI, RAD, DEG
-      INTEGER, PARAMETER       :: ILEN = 1
       INTEGER                  :: NDEPTH
       REAL                     :: DEPTHA         ! first depth in table
-      REAL, ALLOCATABLE        :: OMEGA(:)
+      REAL, SAVE , PRIVATE, ALLOCATABLE   :: OMEGA(:)
+      INTEGER, SAVE , PRIVATE             :: COUNTER = 0
+! Tables for non-linear coefficients ...   
+      REAL, SAVE , PRIVATE, ALLOCATABLE   :: TA(:,:,:,:),TB(:,:,:,:),TC_QL(:,:,:,:),&
+                                             TT_4M(:,:,:,:),TT_4P(:,:,:,:),TFAKH(:,:),    &
+                                             TFAK(:,:)
+      INTEGER, SAVE, PRIVATE, ALLOCATABLE :: IM_P(:,:),IM_M(:,:)
+
+
 !
 !/
       CONTAINS
@@ -198,11 +200,11 @@
 !/ Local parameters
 !/ 
       INTEGER           :: ISPEC, IK, ITH, M
-      REAL              :: CO1, ATOE
+      REAL              :: CO1, ATOE, DPTH
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL, SAVE     :: FIRST = .TRUE.
       REAL, ALLOCATABLE, SAVE  :: FR(:), DFIM(:)
-      REAL, ALLOCATABLE, SAVE  :: F1(:,:,:), F3(:,:,:), DPTH(:)
+      REAL, ALLOCATABLE, SAVE  :: F1(:,:), F3(:,:)
       INTEGER, SAVE     ::  NFRE, NANG
       INTEGER, SAVE     ::  NFREH, NANGH
 !/
@@ -233,12 +235,12 @@
          ENDDO
          DFIM(NFRE)=CO1*(FR(NFRE)-FR(NFRE-1))
 !
-         ALLOCATE(F1(ILEN,NANG,NFRE), F3(ILEN,NANG,NFRE))
-         ALLOCATE(DPTH(ILEN))
+         ALLOCATE(F1(NANG,NFRE), F3(NANG,NFRE))
          NDEPTH=IGPARS(6)
          DEPTHA=IGPARS(7)
       END IF
       DPTH = DEPTH
+
       DO IK=1,NK
         IF (IACTION.EQ.0) THEN 
           ATOE=1
@@ -247,15 +249,16 @@
           END IF
         DO ITH=1,NTH
           ISPEC=ITH+(IK-1)*NTH
-          F1(:,ITH,IK)=E(ISPEC)*ATOE
+          F1(ITH,IK)=E(ISPEC)*ATOE
           END DO
+         !WRITE(100,'(100G16.8)') SIG(IK)*ZPI,(F1(ITH,IK),ITH=1,NTH)
+
         END DO
 !
 ! 1. DETERMINE SECOND-ORDER SPECTRUM.
 !
-!/T      PRINT*,' START CAL_SEC_ORDER_SPEC'
 
-      CALL CAL_SEC_ORDER_SPEC(F1,F3,1,ILEN,NFRE,NANG,FR,DFIM,TH,   &
+      CALL CAL_SEC_ORDER_SPEC(F1,F3,NFRE,NANG,FR,DFIM,TH,   &
                               DTH,DPTH,+1., NFREH, NANGH)
 
 !
@@ -269,8 +272,9 @@
           END IF
         DO ITH=1,NTH
           ISPEC=ITH+(IK-1)*NTH
-          E(ISPEC)=F3(1,ITH,IK)/ATOE
+          E(ISPEC)=F3(ITH,IK)/ATOE
           END DO
+         !WRITE(101,'(I3,100G16.8)') SIG(IK)*ZPI,(F3(ITH,IK),ITH=1,NTH)
         END DO
       
 !/T      PRINT*,' END CAL_SEC_ORDER_SPEC'
@@ -281,8 +285,8 @@
 
 !-----------------------------------------------------------------------
 !
-      SUBROUTINE CAL_SEC_ORDER_SPEC(F1,F3,IJS,IJL,NFRE,NANG,FR,DFIM,TH,DELTH, &
-                                    DPTH,SIG, NFREH, NANGH)
+      SUBROUTINE CAL_SEC_ORDER_SPEC(F1,F3,NFRE,NANG,FR,DFIM,TH,DELTH, &
+                                    DPTH,SIGM, NFREH, NANGH)
 !
 !***  *CAL_SEC_ORDER_SPEC*   DETERMINES SECOND_ORDER SPECTRUM
 !
@@ -295,13 +299,11 @@
 !
 !     INTERFACE.
 !     ----------
-!              *CALL*  *CAL_SEC_ORDER_SPEC(F1,F3,IJS,IJL,NFRE,NANG,FR,
-!                                DFIM,TH,DELTH,DPTH,SIG)*
+!              *CALL*  *CAL_SEC_ORDER_SPEC(F1,F3,NFRE,NANG,FR,
+!                                DFIM,TH,DELTH,DPTH,SIGM)*
 !
 !                       INPUT:
 !                            *F1*    - 2-D FREE WAVE SPECTRUM
-!                            *IJS*   - FIRST GRIDPOINT              
-!                            *IJL*   - LAST GRIDPOINT              
 !                            *NFRE*  - NUMBER OF FREQUENCIES
 !                            *NANG*  - NUMBER OF DIRECTIONS
 !                            *FR*    - FREQUENCIES
@@ -309,8 +311,8 @@
 !                            *TH*    - DIRECTIONAL ARRAY
 !                            *DELTH* - DIRECTIONAL INCREMENT
 !                            *DPTH*  - DEPTH ARRAY
-!                            *SIG*   - FOR SIG = 1 FORWARD MAPPING 
-!                                      WHILE FOR SIG = -1 INVERSE
+!                            *SIGM*   - FOR SIGM = 1 FORWARD MAPPING 
+!                                      WHILE FOR SIGM = -1 INVERSE
 !                                      MAPPING.
 !
 !                       OUTPUT: 
@@ -329,43 +331,42 @@
 !
       IMPLICIT NONE
 
-      
-      LOGICAL FRSTIME,FRSTSPEC,FRSTTABLE,DOUBLEP
+      REAL, INTENT(IN)        :: F1(NANG,NFRE)
+      REAL, INTENT(OUT)       :: F3(NANG,NFRE)
 
-      INTEGER MDW,IJ,IJS,IJL,NFRE,NANG,NFREH,NANGH,NCOUNT,M,K,&
-        K0,M0,MP,KP,MM,KM,KL,KLL,ML,MT,JD
-      INTEGER, SAVE :: MR, MA,NMAX, COUNTER
+      INTEGER, INTENT(IN)     :: NFRE,NANG,NFREH, NANGH
+      
+      REAL, INTENT(IN)        :: DFIM(NFRE),FR(NFRE), TH(NANG), DELTH
+      REAL, INTENT(IN)        :: DPTH, SIGM
+ 
+      LOGICAL FRSTIME,DOUBLEP
+
+      INTEGER MDW,M,K, K0,M0,MP,KP,MM,KM,KL,KLL,ML,MT,JD
+      INTEGER, SAVE :: MR, MA,NMAX
 
 
 !      PARAMETER (NFREH=32,NANGH=36)
 
-      INTEGER,ALLOCATABLE,SAVE :: IM_P(:,:),IM_M(:,:) 
-      INTEGER,ALLOCATABLE,SAVE :: INDEP(:) 
-      REAL,ALLOCATABLE ::  PF1(:,:,:),PF3(:,:,:),F4(:,:,:)
+      INTEGER, SAVE            :: INDEP
+      REAL,ALLOCATABLE         :: PF1(:,:),PF3(:,:),F4(:,:,:)
 
 
       REAL DEPTH,ALPHA,GAM_J,DEPTHD,DEPTHMAX
       REAL OM0,OM1,XK0,XK1,XK2,AA,OMP,THW,SW,OM,TH0,SPEC_OM,AA1,BB1,&
      F,EPSMIN,DELFF,SPEC1,XX,SQRTK  
-      REAL SIG,FRAC,DELTH,DEL,DELF,D1,D2,D3,D4,C1,&
+      REAL FRAC,DEL,DELF,D1,D2,D3,D4,C1,&
      C2,XM,XK
       REAL, SAVE :: OMSTART
       REAL, SAVE :: XMR,XMA, DELTHH, CO1
-      REAL,ALLOCATABLE,SAVE :: TA(:,:,:,:),TB(:,:,:,:),TC_QL(:,:,:,:),&
-                         TT_4M(:,:,:,:),TT_4P(:,:,:,:),TFAKH(:,:),    &
-                         TFAK(:,:)
-      REAL F1(IJS:IJL,NANG,NFRE),DFIM(NFRE),FR(NFRE),                 &
-           FAC4(NFRE),F3(IJS:IJL,NANG,NFRE),F12(NFRE,NANG),           &
+
+      REAL FAC4(NFRE),F12(NFRE,NANG),           &
            F13(NFREH,NANGH)
-      REAL, DIMENSION(IJS:IJL):: SUM0,SUM1,SUM2,SUM4,AKMEAN,TEMP2,DPTH
-      REAL :: TH(NANG),DELH(NFRE),DELOM(NFREH),THH(NANGH),DFDTH(NFREH)
+      REAL :: SUM0,SUM1,SUM2,SUM4,AKMEAN,TEMP2
+      REAL :: DELH(NFRE),DELOM(NFREH),THH(NANGH),DFDTH(NFREH)
      
       LOGICAL :: TESTOUT
  
       DATA FRSTIME/.TRUE./
-      DATA FRSTSPEC/.TRUE./
-      DATA FRSTTABLE/.TRUE./
-      DATA NCOUNT/1/
 
       COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J,DEPTHD
       COMMON/PRECIS/DOUBLEP
@@ -382,8 +383,6 @@
 !***  2.1 SET UP OF LOW-RESOLUTION CALCULATION GRID.
 !     ---------------------------------------------
 !
-      IF (FRSTIME) THEN 
-        COUNTER=0
         FRAC = 0.1
         OMSTART = ZPI*FR(1)
         MR = MAX(1,NFRE/NFREH)
@@ -392,9 +391,21 @@
         XMA = 1./FLOAT(MA)
         DELTHH = FLOAT(MA)*DELTH
 
-!/T      PRINT*,' MR = ',MR
-!/T      PRINT*,' MA = ',MA
+       IF (FRSTIME) THEN 
+       ! IF (COUNTER.GT.0) THEN 
+       !  DEALLOCATE(OMEGA,TFAK,TA,TB,TC_QL,TT_4M,TT_4P,IM_P,IM_M,TFAKH)
+       ! ENDIF 
         ALLOCATE(OMEGA(NFREH))
+        ALLOCATE(TFAK(NFRE,NDEPTH))
+        ALLOCATE(TA(NANGH,NFREH,NFREH,NDEPTH))
+        ALLOCATE(TB(NANGH,NFREH,NFREH,NDEPTH))
+        ALLOCATE(TC_QL(NANGH,NFREH,NFREH,NDEPTH))
+        ALLOCATE(TT_4M(NANGH,NFREH,NFREH,NDEPTH))
+        ALLOCATE(TT_4P(NANGH,NFREH,NFREH,NDEPTH))
+        ALLOCATE(IM_P(NFREH,NFREH))
+        ALLOCATE(IM_M(NFREH,NFREH))
+        ALLOCATE(TFAKH(NFREH,NDEPTH))
+
         DO M=1,NFREH
           OMEGA(M) = ZPI*FR(MR*M)
         ENDDO
@@ -423,7 +434,6 @@
 
         DEPTHD = 1.1
  
-        ALLOCATE(TFAK(NFRE,NDEPTH))
         DO JD=1,NDEPTH
           DEPTH = DEPTHA*DEPTHD**(JD-1)
           DO M=1,NFRE
@@ -432,32 +442,17 @@
           ENDDO
         ENDDO
 
-        ALLOCATE(INDEP(IJS:IJL))
-        DO IJ=IJS,IJL
-          INDEP(IJ) = 1+NINT(LOG(DPTH(IJ)/DEPTHA)/LOG(DEPTHD))
-          INDEP(IJ) = MIN(NDEPTH,INDEP(IJ))
-          INDEP(IJ) = MAX(1,INDEP(IJ))
-        ENDDO
+        INDEP = 1+NINT(LOG(DPTH/DEPTHA)/LOG(DEPTHD))
+        INDEP = MIN(NDEPTH,INDEP)
+        INDEP = MAX(1,INDEP)
 
-        IF (FRSTTABLE) THEN    
-          ALLOCATE(TA(NANGH,NFREH,NFREH,NDEPTH))
-          ALLOCATE(TB(NANGH,NFREH,NFREH,NDEPTH))
-          ALLOCATE(TC_QL(NANGH,NFREH,NFREH,NDEPTH))
-          ALLOCATE(TT_4M(NANGH,NFREH,NFREH,NDEPTH))
-          ALLOCATE(TT_4P(NANGH,NFREH,NFREH,NDEPTH))
-          ALLOCATE(IM_P(NFREH,NFREH))
-          ALLOCATE(IM_M(NFREH,NFREH))
-          ALLOCATE(TFAKH(NFREH,NDEPTH))
+        CALL TABLES_2ND(NFREH,NANGH,NDEPTH,DEPTHA,OMSTART,FRAC,XMR,&
+                   DFDTH,OMEGA,THH)
+        PRINT*, '2ND ORDER TABLES GENERATED:',NDEPTH,DEPTHA, DELTHH
 
-         CALL TABLES_2ND(NFREH,NANGH,NDEPTH,DEPTHA,OMSTART,FRAC,XMR,&
-                   DFDTH,OMEGA,THH,TA,TB,TC_QL,TT_4M,TT_4P,&
-                   IM_P,IM_M,TFAKH)
-          FRSTTABLE = .FALSE.
-          PRINT*, '2ND ORDER TABLES GENERATED:',NDEPTH,DEPTHA, DELTHH
-
-        ENDIF
         FRSTIME = .FALSE.
         ENDIF ! end of test on FRSTIME
+!
       COUNTER=COUNTER+1
 !
 !***  DETERMINE SOME MOMENTS.
@@ -467,21 +462,16 @@
       AKMEAN = 0.
       DO M=1,NFRE
         DO K=1,NANG
-           DO IJ = IJS,IJL
-               SQRTK=SQRT(TFAK(M,INDEP(IJ)))
-               SUM0(IJ) = SUM0(IJ)+F1(IJ,K,M)*DFIM(M)
-               AKMEAN(IJ) = AKMEAN(IJ)+F1(IJ,K,M)*DFIM(M)/SQRTK
-            ENDDO
-         ENDDO
+          SQRTK=SQRT(TFAK(M,INDEP))
+          SUM0 = SUM0+F1(K,M)*DFIM(M)
+          AKMEAN = AKMEAN+F1(K,M)*DFIM(M)/SQRTK
+        ENDDO
       ENDDO
 !
 ! NB: AKMEAN is the mean wavenumber corresponding to Tm0,-1 in deep water
 !     
-      DO IJ=IJS,IJL
-         AKMEAN(IJ) = (SUM0(IJ)/AKMEAN(IJ))**2
-      ENDDO
-!/T !OMP not defined      PRINT*,' K_P = ',OMP**2/G
-!/T !OMP not defined      PRINT*,' AKMEAN/K_P = ',AKMEAN(1)*G/OMP**2
+      AKMEAN = (SUM0/AKMEAN)**2
+
 !
 !***  2.2 INTERPOLATION OR NOT.
 !     ------------------------
@@ -494,18 +484,15 @@
 !/T         PRINT*,' NO THINNING AND INTERPOLATION'
 !/T         PRINT*,'nanG:',NANG,NMAX,NFRE,NDEPTH,DEPTHA,DEPTHD,DPTH,'##',DELTH,DELTHH
 
-         CALL SECSPOM(F1,F3,IJS,IJL,NFRE,NANG,NMAX,NDEPTH,&
+         CALL SECSPOM(F1,F3,NFRE,NANG,NMAX,NDEPTH,&
                 DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
                 DPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
                 IM_P,IM_M,COUNTER)
          DO M=1,NFRE
-            DO K=1,NANG
-               DO IJ=IJS,IJL
-                  DELF = F3(IJ,K,M)
-                  !WRITE(994,*) COUNTER,M,K,F1(IJ,K,M),F3(IJ,K,M),SIG,DELF
-                  F3(IJ,K,M)=MAX(0.00000001,F1(IJ,K,M)+SIG*DELF)
-               ENDDO
-            ENDDO
+           DO K=1,NANG
+             DELF = F3(K,M)
+             F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
+           ENDDO
          ENDDO
 
       ELSE
@@ -515,42 +502,40 @@
 !        -------------------------------------------
 !
          PRINT*,' !THINNING AND INTERPOLATION!'
-         ALLOCATE(PF1(IJS:IJL,NANGH,NFREH))
-         ALLOCATE(PF3(IJS:IJL,NANGH,NFREH))
+         ALLOCATE(PF1(NANGH,NFREH))
+         ALLOCATE(PF3(NANGH,NFREH))
 
          PF1 = 0.
          DO M=1,NFREH
-            DO K=1,NANGH
-               DO IJ=IJS,IJL
-                  M0 = MR*M
-                  MP = M0+1
-                  MP = MIN(NFRE,MP)
-                  MM = M0-1
+           DO K=1,NANGH
+             M0 = MR*M
+             MP = M0+1
+             MP = MIN(NFRE,MP)
+             MM = M0-1
 
-                  K0 = MA*K+1
-                  KP = K0+1
-                  KM = K0-1
-                  DELFF = 0.
-                  DO KL = KM,KP
-                     KLL = KL
-                     IF (KLL.GT.NANG) KLL = KLL-NANG
-                     IF (KLL.LT.1) KLL = KLL+NANG
-                     DO ML = MM,MP
-                        DEL = DFIM(ML)
-                        DELFF = DELFF+DEL
-                        SPEC1 = F1(IJ,KLL,ML)
-                        PF1(IJ,K,M)=PF1(IJ,K,M)+SPEC1*DEL
-                     ENDDO
-                  ENDDO
-                  PF1(IJ,K,M) =PF1(IJ,K,M)/DELFF 
+             K0 = MA*K+1
+             KP = K0+1
+             KM = K0-1
+             DELFF = 0.
+             DO KL = KM,KP
+               KLL = KL
+               IF (KLL.GT.NANG) KLL = KLL-NANG
+               IF (KLL.LT.1) KLL = KLL+NANG
+               DO ML = MM,MP
+                 DEL = DFIM(ML)
+                 DELFF = DELFF+DEL
+                 SPEC1 = F1(KLL,ML)
+                 PF1(K,M)=PF1(K,M)+SPEC1*DEL
                ENDDO
-            ENDDO
+             ENDDO
+             PF1(K,M) =PF1(K,M)/DELFF 
+           ENDDO
          ENDDO
 !
 !***     2.23 DETERMINE SECOND-ORDER SPEC
 !        --------------------------------
 !
-         CALL SECSPOM(PF1,PF3,IJS,IJL,NFREH,NANGH,NMAX,NDEPTH,&
+         CALL SECSPOM(PF1,PF3,NFREH,NANGH,NMAX,NDEPTH,&
                 DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
                 DPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
                 IM_P,IM_M,COUNTER)
@@ -559,73 +544,45 @@
 !        --------------------------------------
 !
          DO M=1,NFRE
-            DO K=1,NANG
-               DO IJ=IJS,IJL
-               
-                  XM = REAL(M/MR)
-                  XK = REAL((K-1)/MA)
+           DO K=1,NANG
+             XM = REAL(M/MR)
+             XK = REAL((K-1)/MA)
 
-                  M0 = MAX(1,INT(XM))
-                  K0 = INT(XK)
+             M0 = MAX(1,INT(XM))
+             K0 = INT(XK)
 
-                  D1 = REAL(M)/REAL(MR)-XM
-                  D2 = 1.-D1
-                  D3 = REAL(K-1)/REAL(MA)-XK
-                  D4 = 1.-D3
+             D1 = REAL(M)/REAL(MR)-XM
+             D2 = 1.-D1
+             D3 = REAL(K-1)/REAL(MA)-XK
+             D4 = 1.-D3
 
-                  IF (K0.LT.1) K0 = K0+NANGH
-                  MP = MIN(NFREH,M0+1)
-                  KP = K0+1
-                  IF (KP.GT.NANGH) KP = KP-NANGH
+             IF (K0.LT.1) K0 = K0+NANGH
+             MP = MIN(NFREH,M0+1)
+             KP = K0+1
+             IF (KP.GT.NANGH) KP = KP-NANGH
  
-                  C1 = PF3(IJ,K0,M0)*D4+PF3(IJ,KP,M0)*D3
-                  C2 = PF3(IJ,KP,MP)*D3+PF3(IJ,K0,MP)*D4
+             C1 = PF3(K0,M0)*D4+PF3(KP,M0)*D3
+             C2 = PF3(KP,MP)*D3+PF3(K0,MP)*D4
 
-                  DELF = C1*D2+C2*D1
-                  F3(IJ,K,M)=MAX(0.00000001,F1(IJ,K,M)+SIG*DELF)
-               ENDDO
-            ENDDO
+             DELF = C1*D2+C2*D1
+             F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
+           ENDDO
          ENDDO
-
-      ENDIF
-
-      TESTOUT=.FALSE.
-!/T      TESTOUT=.TRUE. 
-      IF (TESTOUT) THEN
-!
-!***  3. WRITE AND PLOT RESULTS
-!     -------------------------
-!
-      DO M=1,NFRE
-         AA1 = 0.
-         DO K=1,NANG
-            AA1 = AA1+F1(1,K,M)*DELTH
-         ENDDO
-         AA1 = MAX(AA1,EPSMIN)
-
-         BB1 = 0.
-         DO K=1,NANG
-            BB1 = BB1+F3(1,K,M)*DELTH
-         ENDDO
-         BB1 = MAX(BB1,EPSMIN)
-         F   = FR(M)
    
-!/T         WRITE(6,62) M,F,AA1,BB1,DELTHH         
-!/T         WRITE(79,62) M,F,AA1,BB1,DELTHH    
-      ENDDO
+      ENDIF
 
 
       IF (MR.GT.1 .OR. MA.GT.1 ) THEN
          DO M=1,NFREH
             AA1 = 0.
             DO K=1,NANGH
-               AA1 = AA1+PF1(1,K,M)*DELTHH
+               AA1 = AA1+PF1(K,M)*DELTHH
             ENDDO
             AA1 = MAX(AA1,EPSMIN)
 
             BB1 = 0.
             DO K=1,NANGH
-               BB1 = BB1+(PF1(1,K,M)+PF3(1,K,M))*DELTHH
+               BB1 = BB1+(PF1(K,M)+PF3(K,M))*DELTHH
             ENDDO
             BB1 = MAX(BB1,EPSMIN)
             F   = OMEGA(M)/ZPI
@@ -636,93 +593,22 @@
 
          DO M=1,NFREH
             DO K=1,NANGH
-               F13(M,K)=PF1(1,K,M)+PF3(1,K,M)
+               F13(M,K)=PF1(K,M)+PF3(K,M)
             ENDDO
          ENDDO
-!         CALL PLOSPEC(F13,NFREH,NANGH,MDW,3)
       ENDIF
 
-      ENDIF
 !
    62 FORMAT(I4,9F16.9)
    61 FORMAT(5E11.3)
 !      
       RETURN
       END SUBROUTINE CAL_SEC_ORDER_SPEC
-!   
-!-----------------------------------------------------------------------
-!
-      SUBROUTINE PLOSPEC(FSPEC,ML,KL,MDW,INUM)
-!
-!
-!***  PLOT SPECTRA.
-!     -------------
-!     
-!-----------------------------------------------------------------------
-!
-!      REAL, ALLOCATABLE :: PF_TAB(:,:),PF_TAB_2(:,:)
-      DIMENSION FSPEC(ML,KL),PF_TAB(0:ML-1,0:KL)
-      CHARACTER*50 TITLE 
-
-      NX = ML-1
-      NY = KL
-
-      DO M=0,NX
-         DO K=0,NY-1
-            PF_TAB(M,K) = LOG10(FSPEC(M+1,K+1))
-         ENDDO
-      ENDDO
-      DO M=0,NX
-         PF_TAB(M,NY) = PF_TAB(M,0)
-      ENDDO
-
-
-      SUMMAX = -999.
-      DO M=0,NX
-         DO K=0,NY
-            IF(PF_TAB(M,K).GT.SUMMAX)THEN
-              SUMMAX=PF_TAB(M,K)
-            END IF
-         ENDDO
-      ENDDO
-
-       
-      DELX = 1./FLOAT(NX+1)
-      DELY = 1./FLOAT(NY)
-      AMAX = SUMMAX
-      PRINT*,' SUMMAX = ',SUMMAX
-      DF = AMAX/10.
-      WIDTH = 1./SQRT(2.*FLOAT(MDW))*57.296
-      IF (INUM.EQ.1) THEN
-         WRITE(TITLE,900)'2D-SPEC FREE WAVES: WIDTH = ',WIDTH,' DEG'
-      ELSE
-         WRITE(TITLE,900)'2D-SPEC FREE+BOUND: WIDTH = ',WIDTH,' DEG'
-      ENDIF
-         
- 900  FORMAT(A29,f5.2,A5)
-
-      !CALL PLFIE_S(PF_TAB,DF,NX,NY,DELX,DELY,INUM,TITLE)
-
-
-!
-!-----------------------------------------------------------------------
-!
-      RETURN
-      END SUBROUTINE PLOSPEC
-
-!
-!-----------------------------------------------------------------------
-!
-
-!-----------------------------------------------------------------------
-!
-!***  *REAL FUNCTION* *SPEC_OM(OMP,OM,TH,THW,SW)
 !
 !--------------------------------------------------------------------
 !
       SUBROUTINE TABLES_2ND(NFRE,NANG,NDEPTH,DEPTHA,OMSTART,FRAC,XMR,&
-                      DFDTH,OMEGA,TH,TA,TB,TC_QL,&
-                      TT_4M,TT_4P,IM_P,IM_M,TFAK)
+                      DFDTH,OMEGA,TH)
 !
 !--------------------------------------------------------------------
 !
@@ -789,15 +675,11 @@
       IMPLICIT NONE
    
       INTEGER NFRE,NANG,NDEPTH,MDW,JD,M,K,M1,K1,MP,MM,L
-      INTEGER IM_P(NFRE,NFRE),IM_M(NFRE,NFRE)
-
+      
       REAL DEPTH,ALPHA,GAM_J,DEPTHA,DEPTHD
       REAL OM0,TH0,XK0,OM1,TH1,XK1,OM2,XK2,OM0P,XK0P,OM0M,XK0M,OMSTART,&
      FRAC,XMR,XM2,AA,BB,C,FAC
       REAL OMEGA(NFRE),TH(NANG),DFDTH(NFRE)
-      REAL TA(NANG,NFRE,NFRE,NDEPTH),TB(NANG,NFRE,NFRE,NDEPTH),&
-     TC_QL(NANG,NFRE,NFRE,NDEPTH),TT_4M(NANG,NFRE,NFRE,NDEPTH),&
-     TT_4P(NANG,NFRE,NFRE,NDEPTH),TFAK(NFRE,NDEPTH)
       LOGICAL :: TEST
 
       COMMON/CONST/DEPTH,ALPHA,MDW,GAM_J,DEPTHD
@@ -882,60 +764,13 @@
                   TT_4P(L,M1,M,JD) = &
                   FAC*(W2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0)+&
                        V2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0))
-
+! Table identical to Janssen: verified. 
+!              IF (JD.EQ.1) WRITE(998,'(F4.1,3I3,5G11.3)') DEPTH,M,M1,L, TB(L,M1,M,JD),  &
+!                           TC_QL(L,M1,M,JD) , FAC, TT_4M(L,M1,M,JD), TT_4P(L,M1,M,JD)
                ENDDO
             ENDDO
          ENDDO
        ENDDO
-
-      TEST = .TRUE.
-      IF (TEST) THEN
-
-         WRITE (6,'('' '')')
-         WRITE (6,'(''OUT INPUT INTEGERS'')')
-         WRITE (6,'(''  NFREH = '',I3)') NFRE
-         WRITE (6,'(''  NANGH = '',I3)') NANG 
-         WRITE (6,'(''  NDEPTH = '',I3)') NDEPTH
-
-         WRITE(6,'('' '')')
-         WRITE(6,'('' DEEP WATER TABLES FOR SECOND-ORDER '')')
-         WRITE(6,'('' ================================== '')')
-         WRITE(6,'('' '')')
-         WRITE(6,'(''    M        A NUM           A THEO '')')
-
-         DO M=1,NFRE
-            OM0 = OMEGA(M)
-            OM1 = OMEGA(2)
-            IF (OM1.LT.OM0/2.) THEN
-               XK1 = OM1**2/G
-               XK2 = (OM0-OM1)**2/G
-               AA = (ABS(XK1+XK2)/2.)**2
-               WRITE(6,'(I5,2F16.9)')&
-                    M,TA(NANG,2,M,NDEPTH)/DFDTH(2),AA 
-            ENDIF
-         ENDDO 
-
-         WRITE(6,'(''    M        B NUM           B THEO '')')
-         DO M=1,NFRE
-            OM0 = OMEGA(M)
-            OM1 = OMEGA(M)
-            XK1 = OM1**2/G
-            XK2 = (OM0+OM1)**2/G
-            BB = (ABS(XK1-XK2)/2.)**2
-            WRITE(6,'(I5,2F16.9)')&
-                 M,TB(NANG,M,M,NDEPTH)/DFDTH(M),BB 
-         ENDDO 
-
-         WRITE(6,'(''    M        C NUM           C THEO '')')
-         DO M=1,NFRE
-            OM0 = OMEGA(M)
-            XK0 = OM0**2/G
-            C = -XK0**2
-            WRITE(6,'(I5,2F16.9)')&
-                 M,TC_QL(NANG,M,M,NDEPTH)/DFDTH(M),C  
-         ENDDO
-
-      ENDIF
 ! 
 !
 !--------------------------------------------------------------------
@@ -945,7 +780,7 @@
 !
 !--------------------------------------------------------------------
 !
-      SUBROUTINE SECSPOM(F1,F3,IJS,IJL,NFRE,NANG,NMAX,NDEPTH,&
+      SUBROUTINE SECSPOM(F1,F3,NFRE,NANG,NMAX,NDEPTH,&
                    DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
                    DEPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
                    IM_P,IM_M,COUNTER)
@@ -967,7 +802,7 @@
 !
 !     INTERFACE
 !     ---------
-!             *CALL* *SECSPOM(F1,F3,IJS,IJL,NFRE,NANG,NMAX,NDEPTH,
+!             *CALL* *SECSPOM(F1,F3,NFRE,NANG,NMAX,NDEPTH,
 !                             DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,
 !                             DEPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,
 !                             IM_P,IM_M)*
@@ -978,8 +813,6 @@
 !
 !       F1        REAL      2D FREE WAVE SPECTRUM (INPUT)
 !       F3        REAL      BOUND WAVES SPECTRUM (OUTPUT)
-!       IJS       INTEGER   FIRST GRID POINT
-!       IJL       INTEGER   LAST GRID POINT
 !       NFRE      INTEGER   NUMBER OF FREQUENCIES
 !       NANG      INTEGER   NUMBER OF DIRECTIONS 
 !       NMAX      INTEGER   MAXIMUM INDEX CORRESPONDS TO TWICE THE CUT-OFF
@@ -1026,7 +859,7 @@
       USE W3GDATMD, ONLY: IGPARS
       IMPLICIT NONE
    
-      INTEGER IJ,IJS,IJL,NFRE,NANG,NDEPTH,M,K,M1,K1,M2_M,M2_P,K2,MP,&
+      INTEGER NFRE,NANG,NDEPTH,M,K,M1,K1,M2_M,M2_P,K2,MP,&
         MM,L,MR,NMAX,JD,COUNTER
       INTEGER IM_P(NFRE,NFRE),IM_M(NFRE,NFRE),IL(NANG,NANG)
 
@@ -1038,8 +871,8 @@
       REAL TA(NANG,NFRE,NFRE,NDEPTH),TB(NANG,NFRE,NFRE,NDEPTH),&
            TC_QL(NANG,NFRE,NFRE,NDEPTH),TT_4M(NANG,NFRE,NFRE,NDEPTH),&
            TT_4P(NANG,NFRE,NFRE,NDEPTH),TFAK(NFRE,NDEPTH)
-      REAL F1(IJS:IJL,NANG,NFRE),F3(IJS:IJL,NANG,NFRE),DEPTH(IJS:IJL)
-      REAL AKMEAN(IJS:IJL)
+      REAL F1(NANG,NFRE),F3(NANG,NFRE),DEPTH
+      REAL AKMEAN
       REAL G1(NANG,NMAX),G3(NANG,NFRE),PSUM
 
       LOGICAL :: LL2H
@@ -1064,29 +897,27 @@
          ENDDO
       ENDDO
 
-      DO IJ=IJS,IJL
 
 !   This was Janssen's version ... limited to kD > X_MIN ... (here set to 1.1)
-         XD = MAX(X_MIN/AKMEAN(IJ),DEPTH(IJ))    ! note by FA: why do we have X_MIN/AKMEAN??!
-         XD = DEPTH(IJ)
-         XD = LOG(XD/DEPTHA)/LOG(DEPTHD)+1.
-         JD = NINT(XD)
-         JD = MAX(JD,1)
-         JD = MIN(JD,NDEPTH)
+      XD = MAX(X_MIN/AKMEAN,DEPTH)    ! note by FA: why do we have X_MIN/AKMEAN??!
+      XD = DEPTH
+      XD = LOG(XD/DEPTHA)/LOG(DEPTHD)+1.
+      JD = NINT(XD)
+      JD = MAX(JD,1)
+      JD = MIN(JD,NDEPTH)
 
-!WRITE(6,*) 'TEST JD:',DEPTH(IJ),XD,JD,AKMEAN(IJ),X_MIN/AKMEAN(IJ)
-         DO M=1,NFRE
-            DO K=1,NANG
-               G1(K,M) = F1(IJ,K,M)
-               G3(K,M) = 0.
-            ENDDO
-         ENDDO
+      DO M=1,NFRE
+        DO K=1,NANG
+          G1(K,M) = F1(K,M)
+          G3(K,M) = 0.
+        ENDDO
+      ENDDO
 
-         DO M=NFRE+1,NMAX
-            DO K=1,NANG
-               G1(K,M) = OMEGA(NFRE)**5*G1(K,NFRE)/OMEGAHF(M)**5
-            ENDDO
-         ENDDO
+      DO M=NFRE+1,NMAX
+        DO K=1,NANG
+          G1(K,M) = OMEGA(NFRE)**5*G1(K,NFRE)/OMEGAHF(M)**5
+        ENDDO
+      ENDDO
 !     
 !
 !
@@ -1095,83 +926,69 @@
 !     ---------------------------------------------------
 !
 !
-         DO M=1,NFRE
-            OM0 = OMEGA(M)
-            OM0H = OM0/2.                  
-            MP   = MIN(M+1,NFRE)
-            OM0P = OMEGA(MP) 
-            MM   = MAX(M-1,1) 
-            OM0M = OMEGA(MM)
-            DELM1 = 1./(OM0P-OM0M)
-            DO K=1,NANG
-               K2 = K
-               F2K = G1(K,M)
-               F2KP = G1(K,MP)
-               F2KM = G1(K,MM)
-               DO M1=1,NFRE
-                  OM1 = OMEGA(M1)
-                  LL2H = (ABS(OM1).LT.OM0H)
-                  M2_M = IM_M(M1,M)
-                  M2_P = IM_P(M1,M)
-                  DO K1=1,NANG
-
-                     F2K1 = G1(K1,M1)
-                     L = IL(K,K1)
+      DO M=1,NFRE
+        OM0 = OMEGA(M)
+        OM0H = OM0/2.                  
+        MP   = MIN(M+1,NFRE)
+        OM0P = OMEGA(MP) 
+        MM   = MAX(M-1,1) 
+        OM0M = OMEGA(MM)
+        DELM1 = 1./(OM0P-OM0M)
+        DO K=1,NANG
+          K2 = K
+          F2K = G1(K,M)
+          F2KP = G1(K,MP)
+          F2KM = G1(K,MM)
+          DO M1=1,NFRE
+            OM1 = OMEGA(M1)
+            LL2H = (ABS(OM1).LT.OM0H)
+            M2_M = IM_M(M1,M)
+            M2_P = IM_P(M1,M)
+            DO K1=1,NANG
+              F2K1 = G1(K1,M1)
+              L = IL(K,K1)
 !
-!*                   2.1 OM0-OM1 CASE: SECOND HARMONICS
-!                    ---------------------------------- 
-!           
-!                    OM2 = OM0-OM1
-             
-                     IF (LL2H) THEN
+!                   2.1 OM0-OM1 CASE: SECOND HARMONICS
+!                   OM2 = OM0-OM1
+!             
+              IF (LL2H) THEN
+                F2K2 = G1(K2,M2_M)
+                FAC1 = TA(L,M1,M,JD)
+                FAC2 = F2K1*F2K2+G1(K2,M1)*G1(K1,M2_M)
 
-                        F2K2 = G1(K2,M2_M)
-                        FAC1 = TA(L,M1,M,JD)
-                        FAC2 = F2K1*F2K2+G1(K2,M1)*G1(K1,M2_M)
-
-                        XINCR1 = FAC1*FAC2
-                        G3(K,M) = G3(K,M)+XINCR1
-
-
-                     ENDIF 
- 
+                XINCR1 = FAC1*FAC2
+                G3(K,M) = G3(K,M)+XINCR1
+              ENDIF 
 !
-!*                   2.2 OM1+OM0 CASE: INFRA-GRAVITY WAVES
-!                    ------------------------------------- 
-!           
+!                   2.2 OM1+OM0 CASE: INFRA-GRAVITY WAVES
 !                    OM2 = OM1+OM0 
-
-                     F2K2 = G1(K2,M2_P)
-                     FAC3 = 2.*TB(L,M1,M,JD)
-                     XINCR2 = FAC3*F2K2
 !
-!*                   2.3 QUASI-LINEAR EFFECT
-!                    -----------------------
+              F2K2 = G1(K2,M2_P)
+              FAC3 = 2.*TB(L,M1,M,JD)
+              XINCR2 = FAC3*F2K2
+!
+!                   2.3 QUASI-LINEAR EFFECT
 !           
+              XINCR3 = TC_QL(L,M1,M,JD)*F2K
 !  
-                     XINCR3 = TC_QL(L,M1,M,JD)*F2K
-!  
-!*                   2.4 STOKES-FREQUENCY CORRECTION
-!                    ------------------------------- 
+!                   2.4 STOKES-FREQUENCY CORRECTION
 !
-!      
-                     T_4M = TT_4M(L,M1,M,JD)
-                     T_4P = TT_4P(L,M1,M,JD)
-                     XINCR4 = -(F2KP*T_4P-F2KM*T_4M)*DELM1
+              T_4M = TT_4M(L,M1,M,JD)
+              T_4P = TT_4P(L,M1,M,JD)
+              XINCR4 = -(F2KP*T_4P-F2KM*T_4M)*DELM1
 
-                     G3(K,M) = G3(K,M)+F2K1*(XINCR2+XINCR3+XINCR4)
+              G3(K,M) = G3(K,M)+F2K1*(XINCR2+XINCR3+XINCR4)
 
-                  ENDDO
-               ENDDO
             ENDDO
-         ENDDO
-         DO M=1,NFRE
-            DO K=1,NANG
-               F3(IJ,K,M) = G3(K,M)
-            ENDDO
-         ENDDO
-      ENDDO 
-! 
+          ENDDO
+        ENDDO
+      ENDDO
+!
+      DO M=1,NFRE
+        DO K=1,NANG
+          F3(K,M) = G3(K,M)
+        ENDDO
+      ENDDO
 !
 !--------------------------------------------------------------------
 !      

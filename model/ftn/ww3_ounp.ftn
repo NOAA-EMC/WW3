@@ -908,7 +908,7 @@
             CALL STME21 ( TOUT , IDTIME )
             WRITE(DATE,'(I8.8,I6.6)') TOUT(1), TOUT(2) 
 !
-! Creates a new file if it's a new date defined by the date division S3
+! Creates a new file if it is a new date defined by the date division S3
 !
             IF ( (IOUT.GT.1) .AND. (INDEX(PASTDATE(1:S3),DATE(1:S3)).EQ.0) ) THEN
               WRITE(NDSO,954) trim(DATE(1:S3))
@@ -1460,6 +1460,38 @@
 !                                    and OTYPE = 3
 !
       IF (SHORT.AND.ITYPE.EQ.1.AND.OTYPE.EQ.3) THEN 
+
+          DEPTH  = MAX ( DMIN, DPO(J) )
+          DO IK=1, NK
+            SIX    = SIG(IK) * SQRTH
+            I1     = INT(SIX/DSIE)
+            IF (I1.LE.N1MAX) THEN
+              I2 = I1 + 1
+              R1 = SIX/DSIE - REAL(I1)
+              R2 = 1. - R1
+              WN(IK) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / depth
+              CG(IK) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
+            ELSE
+              WN(IK) = SIG(IK)*SIG(IK)/GRAV
+              CG(IK) = 0.5 * GRAV / SIG(IK)
+              END IF
+!/T              WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
+!
+            END DO
+
+
+!
+! Computes 2nd order spectrum 
+!
+!/IG1      IF (IGPARS(2).EQ.1) THEN 
+!/IG1        IF(IGPARS(1).EQ.1) THEN 
+!/IG1          CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1        ELSE
+!/IG1          CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
+!/IG1          END IF
+!/IG1        END IF
+!
+
         DO J1=1, NREQ
           DO IK=1, NK
             DO ITH=1, NTH
@@ -1591,10 +1623,10 @@
             ELSE
               WN(IK) = SIG(IK)*SIG(IK)/GRAV
               CG(IK) = 0.5 * GRAV / SIG(IK)
-            END IF
+              END IF
 !/T              WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 !
-          END DO
+            END DO
 !
 ! Computes 2nd order spectrum 
 !
@@ -1705,7 +1737,6 @@
           IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
             CALL W3PART( E, UABS, UDIRCA, depth, WN, NPART, XPART, DIMXP )
           END IF
-          DEALLOCATE(XPART)
 !
 ! 3.d nondimensional parameters
 !
@@ -2464,7 +2495,6 @@
           IF (TOGETHER) J1=J1+1
 
         END IF ! FLREQ(J)
-        DEALLOCATE(FLREQ)
 !
 ! Selects next station index or end up if not together
 !
@@ -4267,7 +4297,7 @@
             iret=nf90_put_att(ncid,varid(16),'scale_factor',1.)
             iret=nf90_put_att(ncid,varid(16),'add_offset',0.)
             iret=nf90_put_att(ncid,varid(16),'valid_min',0.)
-            iret=nf90_put_att(ncid,varid(16),'valid_max',10.)
+            iret=nf90_put_att(ncid,varid(16),'valid_max',1.E3)
             iret=nf90_put_att(ncid,varid(16),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(16),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(16),'associates','time station frequency direction')

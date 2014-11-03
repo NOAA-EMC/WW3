@@ -814,10 +814,9 @@
 !
       IF (FLTABS) THEN   
         CALL TABU_STRESS
-        CALL TABU_TAUHF(SIG(NK) * TPIINV)      !tabulate high-frequency stress: 2D table
+        CALL TABU_TAUHF(SIG(NK) )      !tabulate high-frequency stress: 2D table
         IF (TTAUWSHELTER.GT.0) THEN
-          WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
-          CALL TABU_TAUHF2(SIG(NK) * TPIINV)   !tabulate high-frequency stress: 3D table
+          CALL TABU_TAUHF2(SIG(NK) )   !tabulate high-frequency stress: 3D table
           END IF
         END IF
 !
@@ -942,6 +941,7 @@
 !
 ! Precomputes the weights for the cumulative effect (TEST 441 and 500)
 !
+      DIKCUMUL = 0
       IF (SSDSC(3).NE.0) THEN
 !       DIKCUMUL is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
@@ -1095,7 +1095,7 @@
       RETURN
       END SUBROUTINE TABU_STRESS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE TABU_TAUHF(FRMAX)
+      SUBROUTINE TABU_TAUHF(SIGMAX)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1123,7 +1123,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       FRMAX   Real  I   maximum frequency.
+!       SIGMAX   Real  I   maximum frequency * TPI
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1160,7 +1160,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, intent(in) :: FRMAX  !  maximum frequency
+      REAL, intent(in) :: SIGMAX  !  maximum frequency
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1193,7 +1193,7 @@
       DELUST = USTARM/REAL(IUSTAR)
       DELALP = ALPHAM/REAL(IALPHA)
       CONST1 = BBETA/KAPPA**2
-      OMEGAC = TPI*FRMAX
+      OMEGAC = SIGMAX
 !   
       TAUHFT(0:IUSTAR,0:IALPHA)=0. !table initialization
 !
@@ -1238,7 +1238,7 @@
       END SUBROUTINE TABU_TAUHF
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE TABU_TAUHF2(FRMAX)
+      SUBROUTINE TABU_TAUHF2(SIGMAX)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1266,7 +1266,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       FRMAX   Real  I   maximum frequency.
+!       SIGMAX   Real  I   maximum frequency*TPI
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -1297,6 +1297,7 @@
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE,  &
                           TTAUWSHELTER, ZZ0MAX
+      USE W3ODATMD, ONLY: NDSE
 !/T      USE W3ODATMD, ONLY: NDST
 !
       IMPLICIT NONE
@@ -1304,7 +1305,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, intent(in) :: FRMAX  !  maximum frequency
+      REAL, intent(in) :: SIGMAX  !  maximum frequency * TPI
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1329,7 +1330,7 @@
       REAL                    :: ZX,ZARG,ZMU,ZLOG,ZBETA
       REAL                    :: Y,YC,DELY
       INTEGER                 :: I, J, K, L
-      REAL                    :: X0, INFRMAX, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
+      REAL                    :: X0, INSIGMAX, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
       INTEGER                 :: INIUSTAR, INIALPHA, INILEVTAIL, IERR
       CHARACTER(160)          :: FNAMETAB
       LOGICAL                 :: NOFILE
@@ -1344,10 +1345,10 @@
       NOFILE=.TRUE.
       OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
       IF (IERR.EQ.0) THEN 
-        READ(993,IOSTAT=IERR) IDTST, VERTST, INFRMAX, INAALPHA, INBBETA, INIUSTAR,  &
+        READ(993,IOSTAT=IERR) IDTST, VERTST, INSIGMAX, INAALPHA, INBBETA, INIUSTAR,  &
                               INIALPHA, INILEVTAIL, INZZALP, INKAPPA, INGRAV
         IF (VERTST.EQ.VERGRD.AND.IDTST.EQ.IDSTR.AND.IERR.EQ.0             &
-            .AND.INFRMAX.EQ.FRMAX.AND.INAALPHA.EQ.AALPHA.AND.INBBETA.EQ.BBETA) THEN 
+            .AND.INSIGMAX.EQ.SIGMAX.AND.INAALPHA.EQ.AALPHA.AND.INBBETA.EQ.BBETA) THEN 
           IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
               INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
             NOFILE=.FALSE.
@@ -1362,9 +1363,14 @@
       DELALP  = ALPHAM/REAL(IALPHA)
       DELTAIL = ALPHAM/REAL(ILEVTAIL)
       CONST1  = BBETA/KAPPA**2
-      OMEGAC  = TPI*FRMAX
+      OMEGAC  = SIGMAX
 800   CONTINUE
       IF ( NOFILE ) THEN      
+        WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
+        WRITE(NDSE,*)  IDTST, VERTST, INSIGMAX, INAALPHA, INBBETA, INIUSTAR,  &
+                              INIALPHA, INILEVTAIL, INZZALP, INKAPPA, INGRAV
+        WRITE(NDSE,*)  IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA,  &
+                       ILEVTAIL, ZZALP, KAPPA, GRAV
 !   
         TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
 !
@@ -1420,7 +1426,7 @@
           END DO
         DEALLOCATE(W)
         OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR)
-        WRITE(993) IDSTR, VERGRD, FRMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
+        WRITE(993) IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
         WRITE(993) TAUHFT(0:IUSTAR,0:IALPHA)
         WRITE(993) TAUHFT2
         CLOSE(993)
@@ -1433,6 +1439,7 @@
         !  END DO 
 !
       ELSE 
+        WRITE(NDSE,*) 'Reading 3D look-up table for SIN4 from file.'
         READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT(0:IUSTAR,0:IALPHA)
         READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT2
         CLOSE(993)
@@ -1616,7 +1623,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, DDEN,              &
-                          SSDSC,                                     &
+                          SSDSC, EC2,                                &
                           SIG, SSDSP, ECOS, ESIN, DTH, DSIP,         &
                           SSDSISO, SSDSDTH, SSDSBR2, SSDSBM,         &
                           SSDSBRFDF, SSDSBCK, SSDSBINT, IKTAB, DCKI, &
@@ -1651,7 +1658,7 @@
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO
       REAL                    :: COEF1, COEF2, COEF3, COEF4(NK)
-      REAL                    :: ALFAMEAN, KB, MSSLONG(NK)
+      REAL                    :: ALFAMEAN, KB, MSSLONG(NK,NTH)
       REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
       REAL                    :: S1(NK), E1(NK)
@@ -1703,32 +1710,42 @@
 ! 2.a.1 Computes saturation
 !
         SDSNTH  = MIN(NINT(SSDSDTH/(DTH*RADE)),NTH/2-1)
-        MSSLONG(:) = 0.
+        MSSLONG(:,:) = 0.
 !       SSDSDIK is the integer difference in frequency bands
 !       between the "large breakers" and short "wiped-out waves"
 !
         BTH(:)=0.
         DO  IK=IK1, NK
-          FACSTRAIN=1+SSDSC(8)*MSSLONG(MAX(1,IK-DIKCUMUL))
-          FACSAT=SIG(IK)*K(IK)**3*DTH !*FACSTRAIN
+          FACSAT=SIG(IK)*K(IK)**3*DTH
           IS0=(IK-1)*NTH
           BTH(IS0+1)=0.
-!          BTH0(IK)=SUM(A(IS0+1:IS0+NTH))*FACSAT
-! Testing straining effect of long waves on short waves
-! From Longuet-Higgins and Stewart (1963) the amplitude modulation 
-! in deep water is equal to the long wave slope k*a 
-! Here we assume that the saturation is likewise modulated by a factor (ka)^2
           ASUM = SUM(A(IS0+1:IS0+NTH))
-          MSSLONG(IK:NK) = MSSLONG(IK:NK) + K(IK)**2 *  &
-                                    ASUM * DDEN(IK) / CG(IK)
           BTH0(IK)=ASUM*FACSAT
-!WRITE(6,*) 'SDS IK:',IK,ASUM,MSSLONG(IK),BTH0(IK),FACSTRAIN
           IF (SSDSDTH.GE.180) THEN  ! integrates around full circle
             BTH(IS0+1:IS0+NTH)=BTH0(IK)
           ELSE
             DO ITH=1,NTH            ! partial integration
               IS=ITH+(IK-1)*NTH
-             BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
+!
+! Testing straining effect of long waves on short waves
+! From Longuet-Higgins and Stewart (1963) the amplitude modulation 
+! in deep water is equal to the long wave slope k*a 
+! Here we assume that the saturation modulated as (1 + 5.5 * ka * cos(th1-th2))
+! For a random modulating wave train this gives (1 + 5.5 sqrt ( mss_th1)) 
+!
+              IF (SSDSC(8).GT.0) THEN 
+                MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
+                       DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
+                       CSHIFT(EC2,ITH-1,1))  * DDEN(IK) / CG(IK)
+
+                FACSTRAIN=1+SSDSC(8)*SQRT(MSSLONG(MAX(1,IK-DIKCUMUL),ITH))
+
+!                FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
+WRITE(998,*) IK, ITH, DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
+                       CSHIFT(EC2,ITH-1,1)), MSSLONG(IK,ITH), SSDSC(8), FACSTRAIN
+                END IF
+
+              BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
                      A(IS0+SATINDICES(:,ITH)) )*FACSAT
 !              BTH(IS)=SUM(  SATWEIGHTS(:,ITH)*         &
 !                     A(IS0+SATINDICES(:,ITH)) )*FACSAT

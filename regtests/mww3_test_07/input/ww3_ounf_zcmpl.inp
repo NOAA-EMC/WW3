@@ -12,7 +12,7 @@ $  20080522 000000 10800 1
 $
 $ Request flags identifying fields as in ww3_shel input and section 2.4 of the manual.
   N 
-  DPT CUR WND WLV ICE HS LM T02 T0M1 TM FP DIR SPR EF TH1M STH1M 
+  DPT CUR WND WLV ICE HS LM T02 T0M1 T01 FP DIR SPR EF TH1M STH1M 
 $
 $ -------------------------------------------------------------------- $
 $ version of netCDF [3,4] and integer / float [ 2, 3, 4]

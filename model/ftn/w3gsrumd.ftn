@@ -588,7 +588,7 @@
                   IF ( ICLO.EQ.ICLO_TRPL ) THEN
                       IF ( JC(L) .GT. NY ) THEN
                           JC(L) = NY
-                          IC(L) = MOD(NX-IC(L)+1,NX) + 1
+                          IC(L) = MOD(NX-IC(L),NX) + 1
                         END IF
                     END IF
 !-----------------copy cell vertex coordinates into local variables
@@ -731,7 +731,7 @@
                   IF ( ICLO.EQ.ICLO_TRPL ) THEN
                       IF ( JC(L) .GT. NY ) THEN
                           JC(L) = NY
-                          IC(L) = MOD(NX-IC(L)+1,NX) + 1
+                          IC(L) = MOD(NX-IC(L),NX) + 1
                         END IF
                     END IF
 !-----------------copy cell vertex coordinates into local variables
@@ -1119,7 +1119,7 @@
                   IF ( ICLO.EQ.ICLO_TRPL ) THEN
                       IF ( JC(L) .GT. NY ) THEN
                           JC(L) = NY
-                          IC(L) = MOD(NX-IC(L)+1,NX) + 1
+                          IC(L) = MOD(NX-IC(L),NX) + 1
                         END IF
                     END IF
 !-----------------copy cell vertex coordinates into local variables
@@ -1262,7 +1262,7 @@
                   IF ( ICLO.EQ.ICLO_TRPL ) THEN
                       IF ( JC(L) .GT. NY ) THEN
                           JC(L) = NY
-                          IC(L) = MOD(NX-IC(L)+1,NX) + 1
+                          IC(L) = MOD(NX-IC(L),NX) + 1
                         END IF
                     END IF
 !-----------------copy cell vertex coordinates into local variables
@@ -1856,7 +1856,7 @@
               IF ( ICLO.EQ.ICLO_TRPL ) THEN
                   IF ( JS(L) .GT. NY ) THEN
                       JS(L) = NY
-                      IS(L) = MOD(NX-IS(L)+1,NX) + 1
+                      IS(L) = MOD(NX-IS(L),NX) + 1
                     END IF
                 END IF
               IF ( IJG ) THEN
@@ -2101,7 +2101,7 @@
               IF ( ICLO.EQ.ICLO_TRPL ) THEN
                   IF ( JS(L) .GT. NY ) THEN
                       JS(L) = NY
-                      IS(L) = MOD(NX-IS(L)+1,NX) + 1
+                      IS(L) = MOD(NX-IS(L),NX) + 1
                     END IF
                 END IF
               IF ( IJG ) THEN
@@ -2331,7 +2331,7 @@
                   IF ( ICLO.EQ.ICLO_TRPL ) THEN
                       IF ( JS(L) .GT. NY ) THEN
                           JS(L) = NY
-                          IS(L) = MOD(NX-IS(L)+1,NX) + 1
+                          IS(L) = MOD(NX-IS(L),NX) + 1
                         END IF
                     END IF
                   IF ( IJG ) THEN
@@ -2562,7 +2562,7 @@
                   IF ( ICLO.EQ.ICLO_TRPL ) THEN
                       IF ( JS(L) .GT. NY ) THEN
                           JS(L) = NY
-                          IS(L) = MOD(NX-IS(L)+1,NX) + 1
+                          IS(L) = MOD(NX-IS(L),NX) + 1
                         END IF
                     END IF
                   IF ( IJG ) THEN
@@ -3470,7 +3470,7 @@
               IF ( ICLO.EQ.ICLO_TRPL ) THEN
                   IF ( J .GT. NY ) THEN
                       J = NY
-                      I = MOD(NX-I+1,NX) + 1
+                      I = MOD(NX-I,NX) + 1
                     END IF
                 END IF
               IF ( IJG ) THEN
@@ -3844,7 +3844,7 @@
               IF ( ICLO.EQ.ICLO_TRPL ) THEN
                   IF ( J .GT. NY ) THEN
                       J = NY
-                      I = MOD(NX-I+1,NX) + 1
+                      I = MOD(NX-I,NX) + 1
                     END IF
                 END IF
               IF ( IJG ) THEN

@@ -207,6 +207,12 @@
          'NOW STOPPING.'
          CALL EXTCDE ( 1 )
       END IF
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         WRITE(NDSE,*)'PROGRAM GXOUTF: '// &
+         'GRADS OUTPUT NOT IMPLEMENTED FOR TRIPOLE GRIDS. '// &
+         'NOW STOPPING.'
+         CALL EXTCDE ( 1 )
+      END IF
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file

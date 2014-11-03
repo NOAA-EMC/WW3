@@ -1,4 +1,4 @@
-function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,units,plot_bathy,iprint)
+function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,units,plot_bathy,iprint,ifig)
 
 % Purpose: scan depth (if ploty_bath==1) and Hs files 
 %     and make simple x,y plots and save fields
@@ -6,7 +6,7 @@ function read_outf_hs_generic(time_filename,hmax,dt,axisin,ext,variablename,unit
 %     assumed that the .mat file will subsequently be used to make better 
 %     plots (especially in case of curvilinear grid, since plot will be 
 %     distorted here).
-% Example input: time_filename=datenum(1968,06,06,0,0,0);hmax=5; dt=1/24;axisin=[];ext='hs';variablename='SWH';units='m';plot_bathy=0;
+% Example input: time_filename=datenum(1968,06,06,0,0,0);hmax=5; dt=1/24;axisin=[];ext='hs';variablename='SWH';units{1}='deg';units{2}='m';plot_bathy=0;
 
 
 % Name: read_outf_hs_generic.m
@@ -24,7 +24,6 @@ wermap=jet;
 wermap(1,:)=[0 0.6 0];
 
 v2=[-10 0 10];
-icount=0;
 
 for itime=1:1000
 
@@ -57,8 +56,8 @@ for itime=1:1000
         axis1=axisin;
       end
       axis(axis1)
-      xlabel('x (degrees)','fontsize',(fz+2))
-      ylabel('y (degrees)','fontsize',(fz+2))
+      xlabel(['x (' units{1} ')'],'fontsize',(fz+2))
+      ylabel(['y (' units{1} ')'],'fontsize',(fz+2))
       set(gca,'fontsize',fz)
       caxis([-300 300])
       colorbar
@@ -82,7 +81,7 @@ for itime=1:1000
     time_filenames(itime)=time_filename; % for error checking
     time(itime)=datenum(year,month,day,hour,minute,0);
     icheck=0;
-
+    
 %   This operation is disabled since depth at first time step may not apply for this field
 %   (depth field is affected by nonstationary ice, for example)
 %   if plot_bathy==1
@@ -90,7 +89,7 @@ for itime=1:1000
 %     str=['    ' variablename '(i)=-99;'];eval(str)
 %   end
     
-    figure(2),clf,hold off
+    figure(ifig),clf,hold off
     str=['    imagesc(xgrd,ygrd,' variablename ''')'];eval(str)
     colormap(wermap)
     axis xy
@@ -101,8 +100,8 @@ for itime=1:1000
       axis1=axisin;
     end
     axis(axis1) 
-    xlabel('x (degrees)','fontsize',(fz+2))
-    ylabel('y (degrees)','fontsize',(fz+2))
+    xlabel(['x (' units{1} ')'],'fontsize',(fz+2))
+    ylabel(['y (' units{1} ')'],'fontsize',(fz+2))
     set(gca,'fontsize',fz)
     caxis([-hmax/63 hmax])
     colorbar
@@ -110,10 +109,10 @@ for itime=1:1000
       hold on
       contour(xgrd,ygrd,depth',v2,'w-')
     end
-    title([variablename ' (' units ') ; ' datestr(time(itime),0)])
+    title([variablename ' (' units{2} ') ; ' datestr(time(itime),0)])
     pause(0.1)
-    icount=icount+1;
     if iprint==1
+      icount=icount+1;
       if icount==1
         print -dpsc2 outf.ps
       else

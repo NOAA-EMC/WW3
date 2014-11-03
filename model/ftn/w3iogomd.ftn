@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Feb-2014 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -43,7 +43,8 @@
 !/                  trunk                               ( version 4.13 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -96,7 +97,7 @@
 !       !/SHRD  Switch for shared / distributed memory architecture.
 !       !/DIST  Id.
 !
-!       !/OMP1  OpenMP compiler directive for loop splitting.
+!       !/OMPG  OpenMP compiler directive for loop splitting.
 !       !/C90   Cray FORTRAN 90 compiler directive.
 !       !/NEC   NEC SXF90 compiler directives.
 !
@@ -196,7 +197,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: NDSO, NDSEN
-      LOGICAL, INTENT(INOUT)    :: FLGRD(NOGRP,NGRPP), FLG(NOGRP), FLGR2(NOGRP,NGRPP)
+      LOGICAL, INTENT(INOUT)  :: FLGRD(NOGRP,NGRPP), FLG(NOGRP),     &
+                                 FLGR2(NOGRP,NGRPP)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -229,7 +231,7 @@
 !/
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/
 !  1. Purpose :
 !
@@ -634,8 +636,8 @@
               I2, /,' LESS THAN AVAILABLE, CHECK DOCS FOR MORE OPTIONS')
 !
  1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
-               '     PARAMETER ',A,' not allowed: need to set parameter ',A, &
-               '     in OUTS namelist (in ww3_grid.inp)')
+               '     PARAMETER ',A,' not allowed: need to set',        &
+               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)')
 !
       END SUBROUTINE W3READFLGRD
 
@@ -665,7 +667,8 @@
 !/    25-Dec-2012 : New output structure and smaller    ( version 4.11 )
 !/                  memory footprint.
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
-!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.00 ) 
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    27-May-2014 : Switch to OMPG switch.              ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -714,7 +717,7 @@
 !
 !     !/C90   Cray FORTRAN 90 compiler directives.
 !     !/NEC   NEC SXF90 compiler directives.
-!     !/OMP1  OpenMP compiler directive for loop splitting.
+!     !/OMPG  OpenMP compiler directive for loop splitting.
 !
 !     !/O8    Filter for low wave heights ( HSMIN )
 !     !/O9    Negative wave height alowed, other mean parameters will
@@ -744,7 +747,7 @@
                           PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, BHD,                    &
+                          TAUWNX,  TAUWNY, BHD, PHICE, TAUICE,        &
                           CGE, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,    &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS,         &
                           US3D, EF, TH1M, STH1M, TH2M, STH2M, HSIG
@@ -793,7 +796,8 @@
 !
       DO I=1,NOGRP 
         DO J=1,NGRPP
-          FLOLOC(I,J)=((FLOUTG.AND.FLOGRD(I,J)).OR.(FLOUTG2.AND.FLOGR2(I,J)))
+          FLOLOC(I,J) =   &
+             ((FLOUTG.AND.FLOGRD(I,J)).OR.(FLOUTG2.AND.FLOGR2(I,J)))
           END DO
         END DO
 ! 
@@ -873,9 +877,11 @@
 ! 2.b Integrate energy in band
 !
         DO ITH=1, NTH
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR)
+!
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR)
+!
           DO JSEA=1, NSEAL
-            NKH(JSEA)    =MIN ( NK ,   &
+            NKH(JSEA)  = MIN ( NK ,   &
                     INT(FACTI2+FACTI1*LOG(MAX(1.E-7,FCUT(JSEA)))) )
             AB (JSEA)  = AB (JSEA) + A(ITH,IK,JSEA)
             ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
@@ -883,7 +889,8 @@
             ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)
             ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
             IF (ITH.LE.NTH/2) THEN 
-              ABST(JSEA) = ABST(JSEA) + A(ITH,IK,JSEA)*A(ITH+NTH/2,IK,JSEA)
+              ABST(JSEA) = ABST(JSEA) +                               &
+                              A(ITH,IK,JSEA)*A(ITH+NTH/2,IK,JSEA)
               END IF
 !/DIST          ISEA         = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA         = JSEA
@@ -894,11 +901,16 @@
                                      A(ITH,IK,JSEA)
             ABXY(JSEA) = ABXY(JSEA) + ESC(ITH)*FACTOR * A(ITH,IK,JSEA)
             END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
+!
           END DO
 !
 ! 2.c Finalize integration over band and update mean arrays
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
+!
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
+!
         DO JSEA=1, NSEAL
 !/DIST          ISEA         = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA         = JSEA
@@ -1012,8 +1024,10 @@
             TH2M(JSEA,IK)= MOD ( 270. - RADE*0.5*ATAN2(ABY2(JSEA),ABX2(JSEA)) , 180. )
           M2 = SQRT(ABX2(JSEA)**2+ABY2(JSEA)**2)/MAX(1E-20,AB(JSEA))
           IF ( FLOLOC( 3, 5).AND.(IK.GE.E3DF(2,5).AND.IK.LE.E3DF(3,5)))  &
-             STH2M(JSEA,IK)= SQRT(ABS(2.*(1-M2)))*RADE
+             STH2M(JSEA,IK)= SQRT(ABS(0.5*(1-M2)))*RADE
           END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
 !
         END DO
 !
@@ -1021,7 +1035,8 @@
 ! 3.a Add tail
 !     ( DTH * SIG absorbed in FTxx )
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,EBAND)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,EBAND)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA      = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA      = JSEA
@@ -1045,11 +1060,14 @@
         UBS(JSEA) = UBS(JSEA) + FTWL * EBAND/GRAV
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
       SXX    = SXX * DWAT * GRAV
       SYY    = SYY * DWAT * GRAV
       SXY    = SXY * DWAT * GRAV
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
@@ -1108,6 +1126,8 @@
           END IF
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
 ! 3.b Clean-up small values if !/O8 switch selected
 !
 !/O8      DO JSEA=1, NSEAL
@@ -1123,7 +1143,8 @@
 ! 4.  Peak frequencies and directions -------------------------------- *
 ! 4.a Initialize
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FPISTR,FP1STR,FP1TST)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FPISTR,FP1STR,FP1TST)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA       = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA       = JSEA
@@ -1169,10 +1190,14 @@
         THP1(JSEA) = UNDEF
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
 ! 4.b Discrete peak frequencies
 !
       DO IK=NK-1, 2, -1
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!
         DO JSEA=1, NSEAL
 !/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA   = JSEA
@@ -1199,9 +1224,13 @@
 !/ST4                 .AND. SIG(IK).LT.0.75*SIG(NK) )           &
 !/ST4              IKP1(JSEA) = IK
           END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
+!
         END DO
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
@@ -1211,6 +1240,8 @@
 !/ST4        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
 ! 4.c Continuous peak frequencies
 !
       XL     = 1./XFR - 1.
@@ -1218,7 +1249,8 @@
       XL2    = XL**2
       XH2    = XH**2
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,ILOW,ICEN,IHGH,EL,EH,DENOM)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,ILOW,ICEN,IHGH,EL,EH,DENOM)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
@@ -1256,18 +1288,25 @@
 !/ST4                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
 ! 4.d Peak directions
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA)
+!
       DO JSEA=1, NSEAL
         ETX(JSEA) = 0.
         ETY(JSEA) = 0.
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
       DO ITH=1, NTH
+!
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!
         DO JSEA=1, NSEAL
 !/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA   = JSEA
@@ -1276,9 +1315,13 @@
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
             END IF
           END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
+!
         END DO
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
@@ -1293,10 +1336,14 @@
         IKP1(JSEA) = MAX ( 1 , IKP1(JSEA) )
         END DO
 !
+!/OMPG/!$OMP END PARALLEL DO
+!
       DO ITH=1, NTH
+!
 !/C90/!DIR$ IVDEP
 !/NEC/!CDIR NODEP
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!
         DO JSEA=1, NSEAL
 !/DIST          ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD          ISEA   = JSEA
@@ -1305,9 +1352,13 @@
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ESIN(ITH)
             END IF
           END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
+!
         END DO
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
+!
       DO JSEA =1, NSEAL
         ISEA   = IAPROC + (JSEA-1)*NAPROC
         IX          = MAPSF(ISEA,1)
@@ -1319,7 +1370,10 @@
           END IF
         END DO
 !
-!/OMP1/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA)
+!/OMPG/!$OMP END PARALLEL DO
+!
+!/OMPG/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA)
+!
       DO JSEA=1, NSEAL
 !/DIST        ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA   = JSEA
@@ -1330,6 +1384,8 @@
 !/RTD            THP1(JSEA) = THP1(JSEA) - AnglD(ISEA)*DERA
 !/RTD            IF( THP1(JSEA) .LT. 0.0 )  THP1(JSEA) = THP1(JSEA) + TPi
         END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
 !
 ! 5.  Test output (local to MPP only)
 !
@@ -1373,6 +1429,8 @@
 !
 ! 6.b Loop over local sea points
 !
+!/OMPG/!$OMP PARALLEL DO PRIVATE(ISEA,JSEA,IX,IY,I)
+!
           DO JSEA=1, NSEAL
 !/DIST            ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD            ISEA   = JSEA
@@ -1409,6 +1467,8 @@
               END IF
 !
             END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
 !
         END IF
 !
@@ -1547,7 +1607,7 @@
                           TAUWNX, TAUWNY, CHARN, BHD,              &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE,    &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D, EF, &
-                          TH1M, STH1M, TH2M, STH2M, HSIG
+                          TH1M, STH1M, TH2M, STH2M, HSIG, TAUICE, PHICE
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
                           FNMPRE, NOSWLL, NOEXTR
@@ -1770,12 +1830,10 @@
                                      PRMS  (ISEA) = UNDEF
                                      TPMS  (ISEA) = UNDEF
                   END IF
-                IF ( FLOGRD( 6, 8) ) THEN
-                                     US3D(ISEA,:) = UNDEF
-                  END IF
-                IF ( FLOGRD( 6, 9) ) THEN
-                                    P2SMS(ISEA,:) = UNDEF
-                  END IF
+                IF ( FLOGRD( 6, 8) ) US3D(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
+                IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
 !
                 IF ( FLOGRD( 7, 1) ) THEN
                                      ABA   (ISEA) = UNDEF
@@ -2008,6 +2066,11 @@
                     WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
                     WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
+                    WRITE ( NDSOG ) TAUICE(1:NSEA,1)
+                    WRITE ( NDSOG ) TAUICE(1:NSEA,2)
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
+                    WRITE ( NDSOG ) PHICE(1:NSEA)
 !
 !     Section 7)
 !
@@ -2027,7 +2090,7 @@
                     !WRITE ( NDSOG ) ABD(1:NSEA)
                   ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
                     DO ISEA=1, NSEA
-                      IF ( ABA(ISEA) .NE. UNDEF ) THEN
+                      IF ( UBA(ISEA) .NE. UNDEF ) THEN
                           AUX1(ISEA) = UBA(ISEA)*COS(UBD(ISEA))
                           AUX2(ISEA) = UBA(ISEA)*SIN(UBD(ISEA))
                         ELSE
@@ -2253,6 +2316,14 @@
                   ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN 
                      READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)     &
                                      P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUICE(1:NSEA,1)
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       TAUICE(1:NSEA,2)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       PHICE(1:NSEA)
 !
 !     Section 7)
 !

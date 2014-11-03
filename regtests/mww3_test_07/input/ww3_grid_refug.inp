@@ -50,6 +50,7 @@ SDSC2 = -2.2E-5, SDSC3 = 0.000, SDSC4 = 1. , SDSC5 = 0., SDSC6 = 0.30,
 SDSDTH = 80., FXFM3= 2.5,
 SDSCOS = 2., SDSISO = 2  /
 $
+  &OUTS E3D = 1, TH1MF = 1, STH1MF = 1 /
   &UNST UGOBCAUTO = F,  EXPFSN = T   /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -

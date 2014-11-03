@@ -11,9 +11,10 @@
 # error codes : all error output goes directly to screen in w3_make.          #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      November 2013          #
+#                                                      May 2009               #
+#                                                      March 2014             #
 #                                                                             #
-#    Copyright 2009-2013 National Weather Service (NWS),                      #
+#    Copyright 2009-2014 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
@@ -88,7 +89,6 @@
 # 2.a File ID
 
   rm -f filelist.tmp
-  nr_thr=0
 
 # 2.b Get info from switch file  - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -105,9 +105,9 @@
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
   for type in mach nco grib mcp c90 nec lrecl netcdf scrip scripnc \
-              shared mpp mpiexp thr0 thr1 GSE prop \
+              shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
-                     s_ice reflection s_xx \
+                     s_ice s_is reflection s_xx \
               wind windx rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf
   do
@@ -172,16 +172,11 @@
                ID='experimental MPI option'
                TS='MPIBDI'
                OK='MPIBDI' ;;
-#sort:thr0:
-      thr0   ) TY='upto1'
-               ID='directive controlled threading (subs)'
-               TS='OMP0'
-               OK='OMP0' ;;
-#sort:thr1:
-      thr1   ) TY='upto1'
-               ID='directive controlled threading (loop)'
-               TS='OMP1'
-               OK='OMP1' ;;
+#sort:thread:
+      thread ) TY='upto2'
+               ID='directive controlled threading'
+               TS='OMP'
+               OK='OMPG OMPX OMPH' ;;
 #sort:GSE:
       GSE    ) TY='one'
                ID='GSE aleviation'
@@ -241,6 +236,10 @@
       s_ice  ) TY='one'
                ID='ice sink term'
                OK='IC0 IC1 IC2 IC3' ;;
+#sort:s_is:
+      s_is  ) TY='one'
+               ID='ice scattering term'
+               OK='IS0 IS1 IS2' ;;
 #sort:reflection:
   reflection ) TY='one'
                ID='wave reflections'
@@ -349,7 +348,7 @@
       if [ "`grep $check $switch | wc -w | awk '{print $1}'`" -gt '1' ]
       then
         n_found=`expr $n_found + 1`
-        s_found="$check $s_found"
+        s_found="$s_found $check"
       fi
     done
 
@@ -358,7 +357,7 @@
       echo ' '
       echo "   *** No valid $ID switch found  ***"
       echo "       valid : $OK"
-      echo "       found : $s_found"
+      echo "       found :$s_found"
       echo ' ' ; exit 3
     fi
 
@@ -367,8 +366,17 @@
       echo ' '
       echo "   *** Too many $ID switches found (max 1) ***"
       echo "       valid : $OK"
-      echo "       found : $s_found"
+      echo "       found :$s_found"
       echo ' ' ; exit 4
+    fi
+
+    if [ "$n_found" -gt '2' ] && [ "$TY" = 'upto2' ]
+    then
+      echo ' '
+      echo "   *** Too many $ID switches found (max 2) ***"
+      echo "       valid : $OK"
+      echo "       found :$s_found"
+      echo ' ' ; exit 5
     fi
 
     if [ "$TY" = 'man' ]
@@ -399,12 +407,17 @@
       sw=
     fi
 
+    if [ "$type" = 'thread' ]
+    then
+      sw1="`echo $s_found | awk '{ print $1 }'`"
+      sw2="`echo $s_found | awk '{ print $2 }'`"
+    fi
+
     case $type in
       shared ) shared=$sw ;;
       mpp    ) mpp=$sw ;;
       mpiexp ) mpiexp=$sw ;;
-      thr0   ) nr_thr=`expr $nr_thr + $n_found` ;;
-      thr1   ) nr_thr=`expr $nr_thr + $n_found` ;;
+      thread ) thread1=$sw1 ; thread2=$sw2 ;;
       GSE    ) g_switch=$sw ;;
       prop   ) p_switch=$sw ;;
       s_ln   ) s_ln=$sw ;;
@@ -417,6 +430,7 @@
       snls   ) snls=$sw ;;
       s_bot  ) s_bt=$sw ;;
       s_ice  ) s_ic=$sw ;;
+      s_is   ) s_is=$sw ;;
       s_db   ) s_db=$sw ;;
       s_tr   ) s_tr=$sw ;;
       s_bs   ) s_bs=$sw ;;
@@ -433,18 +447,39 @@
     esac
   done
 
-  if [ "$nr_thr" != '0' ] && [ "$shared" != 'SHRD' ]
+  if [ -n "$thread1" ] && [ -z "$thread2" ]
   then
       echo ' '
-      echo "   *** !/OMPn has to be used in combination with !/SHRD"
-      echo ' ' ; exit 5
+      echo "   *** !/OMPX or !/OMPH has to be used in combination with !/OMPG"
+      echo ' ' ; exit 6
+  fi
+
+  if [ -n "$thread2" ] && [ "$thread1" != 'OMPG' ]
+  then
+      echo ' '
+      echo "   *** !/OMPX or !/OMPH has to be used in combination with !/OMPG"
+      echo ' ' ; exit 6
+  fi
+
+  if [ "$thread2" = 'OMPX' ] && [ "$shared" != 'SHRD' ]
+  then
+      echo ' '
+      echo "   *** !/OMPX has to be used in combination with !/SHRD"
+      echo ' ' ; exit 7
+  fi
+
+  if [ "$thread2" = 'OMPH' ] && [ "$mpp" != 'MPI' ]
+  then
+      echo ' '
+      echo "   *** !/OMPH has to be used in combination with !/MPI"
+      echo ' ' ; exit 8
   fi
 
   if [ "$arctic" = 'ARC' ] && [ "$p_switch" != 'SMC' ]
   then
       echo ' '
       echo "   *** !/ARC has to be used in combination with !/SMC"
-      echo ' ' ; exit 6
+      echo ' ' ; exit 9
   fi
 
   case $g_switch in
@@ -512,7 +547,7 @@
   then
       echo ' '
       echo "   *** !/STAB2 has to be used in combination with !/ST2"
-      echo ' ' ; exit 6
+      echo ' ' ; exit 10
   fi
 
   if [ "$stab" = 'STAB3' ] && [ "$s_inds" != 'ST3' ]
@@ -521,7 +556,7 @@
       then
         echo ' '
         echo "   *** !/STAB3 has to be used in combination with !/ST3 or !/ST4"
-        echo ' ' ; exit 6
+        echo ' ' ; exit 10
       fi
   fi
 
@@ -530,7 +565,7 @@
       echo ' '
       echo "   *** !/ST1 cannot be used in combination with !/$stress"
       echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
-      echo ' ' ; exit 7
+      echo ' ' ; exit 11
   fi
 
   if [ "$s_inds" = 'ST2' ] && [ "$str_st2" = 'no' ]
@@ -538,7 +573,7 @@
       echo ' '
       echo "   *** !/ST2 cannot be used in combination with !/$stress"
       echo "       Choose from FLX2 or FLX3."
-      echo ' ' ; exit 7
+      echo ' ' ; exit 11
   fi
 
   if [ "$s_inds" = 'ST3' ] && [ "$str_st3" = 'no' ]
@@ -546,21 +581,21 @@
       echo ' '
       echo "   *** !/ST3 cannot be used in combination with !/$stress"
       echo "       Stresses embedded in source terms, use FLX0."
-      echo ' ' ; exit 7
+      echo ' ' ; exit 11
   fi
   if [ "$s_inds" = 'ST4' ] && [ "$str_st3" = 'no' ]
   then
       echo ' '
       echo "   *** !/ST4 cannot be used in combination with !/$stress"
       echo "       Stresses embedded in source terms, use FLX0."
-      echo ' ' ; exit 7
+      echo ' ' ; exit 11
   fi
   if [ "$s_inds" = 'ST6' ] && [ "$str_st6" = 'no' ]
   then
       echo ' '
       echo "   *** !/ST6 cannot be used in combination with !/$stress"
       echo "       Choose from FLX1, FLX2, FLX3, or FLX4."
-      echo ' ' ; exit 7
+      echo ' ' ; exit 11
   fi
 
   case $s_nl in
@@ -625,6 +660,12 @@
    IC3) ic='w3sic3md' ;;
   esac
 
+  is=$NULL
+  case $s_is in
+   IS1) is='w3sis1md' ;;
+   IS2) is='w3sis2md' ;;
+  esac
+
   refcode=$NULL
   case $reflection in
    REF1) refcode='w3ref1md'
@@ -649,13 +690,13 @@
    esac
 
 
-  if [ "$nr_thr" != '0' ] && [ "$s_nl" = 'NL2' ]
+  if [ -n "$thread1" ] && [ "$s_nl" = 'NL2' ]
   then
       echo ' '
       echo "   *** The present version of the WRT interactions"
-      echo "       cannot be run under OpenMP (OMP0, OMP1). Use"
+      echo "       cannot be run under OpenMP (OMPG OMPX, OMPH). Use"
       echo "       SHRD or MPI options instead.                    ***"
-      echo ' ' ; exit 8
+      echo ' ' ; exit 12
   fi
 
   if [ "$mprf" = "MPRF" ]
@@ -683,56 +724,56 @@
                core=
                data='w3wdatmd w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx $is"
                  IO='w3iogrmd'
                 aux='constants w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_strt) IDstring='Initial conditions program'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
+             source="$stx $nlx $btx $is"
                  IO='w3iogrmd w3iorsmd'
                 aux='constants w3triamd w3servmd w3arrymd w3dispmd w3gsrumd w3timemd' ;;
      ww3_bound) IDstring='boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx w3triamd"
+             source="$stx $nlx $btx  $is w3triamd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux='constants w3servmd w3timemd w3cspcmd' ;;
      ww3_bounc) IDstring='NetCDF boundary conditions program'
                core=
                data='w3adatmd w3gdatmd w3wdatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx w3triamd"
+             source="$stx $nlx $btx  $is w3triamd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux='constants w3servmd w3timemd w3cspcmd' ;;
      ww3_prep) IDstring='Field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_prtide) IDstring='Tide prediction'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_shel) IDstring='Generic shell'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode $igcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
@@ -749,7 +790,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $db $tr $bs $xx $refcode $igcode"
+             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
@@ -769,7 +810,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-               source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode" 
+               source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
@@ -788,28 +829,28 @@
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
+             source="$stx $nlx $btx $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounf) IDstring='Gridded NetCDF output'
                core='w3initmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_outp) IDstring='Point output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx $igcode"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_ounp) IDstring='Point NetCDF output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx $igcode"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
@@ -823,14 +864,14 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx"
+             source="$stx $nlx $btx  $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_gspl) IDstring='Grid splitting'
                core='w3fldsmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx"
+             source="w3triamd $stx $nlx $btx  $is"
                  IO='w3iogrmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_gint) IDstring='Grid Interpolation'
@@ -838,20 +879,20 @@
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                  IO='w3iogrmd w3iogomd'
                prop=
-             source="$st $nl"
+             source="$st $nl $is"
                aux='constants w3triamd w3servmd  w3arrymd w3dispmd w3timemd w3gsrumd' ;;
       gx_outf) IDstring='GrADS input file generation (gridded fields)'
                core=
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx $db $tr $bs $xx"
+             source="w3triamd $stx $nlx $btx $db $tr $bs $xx $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       gx_outp) IDstring='GrADS input file generation for point output'
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$flx $ln $st $nl $bt $ic $db $tr $bs $xx"
+             source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx"
                  IO='w3iogrmd w3iopomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       ww3_systrk) IDstring='Wave system tracking postprocessor'
@@ -987,7 +1028,7 @@
     if [ -n "`grep error ad3.out`" ]
     then
       cat ad3.out
-      exit 8
+      exit 20
     fi
     rm -f ad3.out
 
@@ -1018,7 +1059,7 @@
                W3SDB1MD W3SDBXMD \
                W3STR1MD W3STRXMD \
                W3SBS1MD W3SBSXMD \
-               W3SIC1MD W3SIC2MD W3SIC3MD \
+               W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD  W3SIS2MD \
                W3REF1MD \
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
@@ -1098,6 +1139,8 @@
          'W3SIC1MD'     ) modtest=w3sic1md.o ;;
          'W3SIC2MD'     ) modtest=w3sic2md.o ;;
          'W3SIC3MD'     ) modtest=w3sic3md.o ;;
+         'W3SIS1MD'     ) modtest=w3sis1md.o ;;
+         'W3SIS2MD'     ) modtest=w3sis2md.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;
          'W3SXXXMD'     ) modtest=w3sxxxmd.o ;;
          'CONSTANTS'    ) modtest=constants.o ;;
@@ -1173,7 +1216,7 @@
     if [ ! -d $scrip_dir ]
     then
       echo "*** SCRIP directory $scrip_dir not found ***"
-      exit 2
+      exit 21
     fi
 
     if  [ "$scripnc" = 'SCRIPNC' ]
@@ -1185,7 +1228,7 @@
     if [ ! -e $scrip_mk ]
     then
       echo "*** SCRIP makefile fragment $scrip_mk not found ***"
-      exit 2
+      exit 22
     fi
 
     cat $scrip_mk >> makefile

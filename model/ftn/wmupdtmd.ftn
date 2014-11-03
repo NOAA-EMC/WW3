@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         06-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -18,7 +18,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    21-Mar-2014 : Enable using input from coupler     ( version 5.XX )
+!/    DD-MMM-YYYY : Enable using input from coupler     ( version 5.XX )
 !/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -79,13 +79,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         12-Jan-2007 |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
 !/    14-Oct-2006 : Adding separate input grids.        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
-!/    21-Mar-2014 : Enable using input from coupler     ( version 5.XX )
+!/    DD-MMM-YYYY : Enable using input from coupler     ( version 5.XX )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
@@ -1207,6 +1207,13 @@
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
+         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
+
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF
@@ -1747,6 +1754,13 @@
       MAP    => GRIDS(IMOD)%MAPSTA
       MAPI   => GRIDS(JMOD)%MAPSTA
       ICLOSE => GRIDS(JMOD)%ICLOSE
+
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDS IS'// &
+         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+         CALL EXTCDE ( 1 )
+      END IF
+
 !
 !/T      WRITE (MDST,9000) IMOD, NX, NY, X0, Y0, SX, SY,              &
 !/T                        JMOD, NXI, NYI, X0I, Y0I, SXI, SYI, UNDEF

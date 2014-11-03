@@ -306,7 +306,7 @@
 !       TAUBBL  Real  O   Components of stress leaking to the bottom.
 !       S       R.A.  O   Source term (1-D version).
 !       D       R.A.  O   Diagonal term of derivative.             *)
-!        IX,IY   Int. I   Spatial grid indices
+!       IX,IY   Int. I   Spatial grid indices
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :

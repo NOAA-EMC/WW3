@@ -235,7 +235,7 @@
 
 # Obsolete feature, removed
 
-# 2.c Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 2.b Run w3adc  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
     if [ "$itst" != '0' ]
     then

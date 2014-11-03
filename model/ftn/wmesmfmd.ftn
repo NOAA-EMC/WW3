@@ -26,10 +26,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -171,10 +171,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -333,10 +333,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -439,10 +439,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -779,10 +779,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -971,10 +971,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1081,10 +1081,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1261,10 +1261,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1431,10 +1431,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1521,10 +1521,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1611,10 +1611,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1695,10 +1695,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    21-Mar-2014 : Origination.                        ( version 5.XX )
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
 !  1. Purpose :
 !

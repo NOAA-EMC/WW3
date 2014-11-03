@@ -88,8 +88,9 @@
 !/    13-Nov-2013 : Moved out reflection to W3UPDTMD    ( version 4.12 )
 !/    27-Jul-2013 : Adding free infragravity waves      ( version 4.15 )
 !/    02-Dec-2013 : Update of ST4                       ( version 4.16 )
-!/    16-Feb-2014 : Adds wind bias correction: WCOR     ( version 5.xx )
-!/    10-Mar-2013 : Adding namelist for IC2             ( version 5.xx )
+!/    16-Feb-2014 : Adds wind bias correction: WCOR     ( version 5.00 )
+!/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
+!/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -164,7 +165,7 @@
 !     The physical grid is defined by a grid counter IX defining the
 !     discrete longitude and IY defining the discrete latitude as shown
 !     below. For mathemathical convenience, these grid axes will
-!     generally be denoted as the X and Y axes. Two-diemsnional arrays
+!     generally be denoted as the X and Y axes. Two-dimensional arrays
 !     describing parameters on this grid are given as A(IY,IX).
 !
 !           IY=NY
@@ -192,7 +193,7 @@
 !
 !             MAPFS(IY,IX) = ISEA
 !
-!     ISEA = 0 corresponds to land points. The map MAPFS gives the grid
+!     ISEA = 0 corresponds to land points. The map MAPSF gives the grid
 !     counters (IY,IX) for a given storage point ISEA.
 !
 !             MAPSF(ISEA,1) = IX
@@ -581,6 +582,8 @@
       LOGICAL                 :: RGLGRD = .TRUE.
 !!Li
       REAL                    :: FACBERG, REFSLOPE
+!/IS1      REAL                    :: ISC1, ISC2
+!/IS2      REAL                    :: ISC1, ISC2
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
@@ -595,6 +598,10 @@
 !/IC2  LOGICAL                 :: IC2DISPER
 !/IC2  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                             IC2SMOOTH, IC2VISC, IC2TURBS
+
+!/IC3  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
+!/IC3                             IC2SMOOTH, IC2VISC, IC2TURBS,        &
+!/IC3                             IC3MAXTHK
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -664,6 +671,8 @@
 !/FLX4      NAMELIST /FLX4/ CDFAC
 !/IC2      NAMELIST /IC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC3      NAMELIST /IC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
+!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -688,7 +697,7 @@
 !/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
 !/ST3                      SDSDELTA2
 !/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, FXPM3, FXFM3,    &
-!/ST4                      SDSC2, SDSCUM, SDSC4,  &
+!/ST4                      SDSC2, SDSCUM, SDSSTRAIN, SDSC4,  &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
@@ -720,6 +729,8 @@
                              STH1MF, I1STH1M, I2STH1M,                &
                              TH2MF, I1TH2M, I2TH2M,                   &
                              STH2MF, I1STH2M, I2STH2M
+!/IS1           NAMELIST /SIS1/ ISC1,ISC2
+!/IS2           NAMELIST /SIS2/ ISC1,ISC2
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -889,7 +900,7 @@
 !
       WRITE (NDSO,911) (YESXNO(IYN(IFL)),IFL=1,NFL)
 !
-      IF ( .NOT. (FLCX.OR.FLCY.OR.FLCK.OR.FLCTH.OR.FLSOU) ) THEN
+      IF ( .NOT. (FLDRY.OR.FLCX.OR.FLCY.OR.FLCK.OR.FLCTH.OR.FLSOU) ) THEN
           WRITE (NDSE,1010)
           CALL EXTCDE ( 2 )
         END IF
@@ -974,6 +985,11 @@
 !/IC2      FLIC   = .TRUE.
 !/IC3      NRIC   = NRIC + 1
 !/IC3      FLIC   = .TRUE.
+!
+!/IS1      NRIC   = NRIC + 1
+!/IS1      FLIC   = .TRUE.
+!/IS2      NRIC   = NRIC + 1
+!/IS2      FLIC   = .TRUE.
 !
 !/DB0      NRDB   = NRDB + 1
 !/DB0      FLDB   = .FALSE.
@@ -1821,6 +1837,19 @@
       I2STH2M=NK
 !
       FACBERG=1.
+!/IS0      WRITE (NDSO,944)
+!/IS1      ISC1 = 1.
+!/IS1      ISC2 = 0.
+!/IS1      CALL READNL ( NDSS, 'SIS1', STATUS )
+!/IS1      WRITE (NDSO,945) STATUS
+!/IS1      WRITE (NDSO,946) ISC1, ISC2
+!/IS1      IS1C1 = ISC1
+!/IS1      IS1C2 = ISC2
+!/IS2      ISC1 = 1.
+!/IS2      ISC2 = 0.
+!/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
+!/IS2      WRITE (NDSO,947) STATUS
+!/IS2      WRITE (NDSO,948) ISC1, ISC2
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -1838,15 +1867,15 @@
 !
 !/IG1       IGMETHOD = 2
 !/IG1       IGADDOUTP= 0 
-!/IG1       IGSOURCE = 2
+!/IG1       IGSOURCE = 1
 !/IG1       IGSTERMS = 0
-!/IG1       IGMAXFREQ=0.03
+!/IG1       IGMAXFREQ=0.035
 !/IG1       IGSOURCEATBP = 0
 !/IG1       IGBCOVERWRITE = 1
-!/IG1       IGSWELLMAX = .TRUE.
+!/IG1       IGSWELLMAX = .FALSE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
-!/IG1       IGEMPIRICAL = 0.00125
+!/IG1       IGEMPIRICAL = 0.0008
 !
 !/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
@@ -1859,13 +1888,21 @@
 !/IC2       IC2SMOOTH = 7E4
 !/IC2       IC2VISC = 2.
 
+!/IC3       IC3MAXTHK = 0.1 
+!/IC3       IC2TURB = 2.0 ! from run_test example by F.A.
+!/IC3       IC2TURBS = 0.
+!/IC3       IC2ROUGH = 0.02  !  from run_test example by F.A. (alt:0.1)
+!/IC3       IC2REYNOLDS = 1.5E5
+!/IC3       IC2SMOOTH = 7E4
+!/IC3       IC2VISC = 2.
+
 !
 !/IC2      CALL READNL ( NDSS, 'IC2 ', STATUS )
 !/IC2      WRITE (NDSO,971) STATUS
-
 !
-      CALL READNL ( NDSS, 'MISC', STATUS )
-      WRITE (NDSO,960) STATUS
+!/IC3      CALL READNL ( NDSS, 'IC3 ', STATUS )
+!/IC3      WRITE (NDSO,971) STATUS
+
 !
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
@@ -2017,7 +2054,7 @@
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
-!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSC4, SDSC5, SDSC6, &
+!/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSSTRAIN, SDSC4, SDSC5, SDSC6, &
 !/ST4                    WNMEANP, FXPM3, FXFM3,                            &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
 !/ST4                    SDSBR, SDSSTRAIN, SDSBR2, SDSP, SDSISO, SDSCOS,   &
@@ -2030,6 +2067,8 @@
 !/BT4          WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
+!/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
+!/IS2          WRITE (NDSO,2948) ISC1, ISC2
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -2061,6 +2100,8 @@
 !
 !/IC2         WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
 !/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC2TURB, IC2ROUGH,          &
+!/IC3                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -2170,9 +2211,8 @@
               ICLOSE = ICLOSE_SMPL
               WRITE (NDSO,3002) 'simple'
             CASE ('TRPL')
-              WRITE (NDSE,'(/2A)') ' *** ERROR WW3_GRID: ', &
-              'TRIPOLE GRID CLOSURE NOT IMPLEMENTED YET ***'
-              CALL EXTCDE ( 999 )
+              WRITE (NDSE,'(/2A)') ' *** WARNING WW3_GRID: TRIPOLE ',  &
+              'GRID CLOSURE IMPLEMENTATION IS INCOMPLETE ***'
               ICLOSE = ICLOSE_TRPL
               WRITE (NDSO,3002) 'tripole'
               IF ( GTYPE.EQ.RLGTYPE ) THEN
@@ -2816,6 +2856,13 @@
 ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
 !                        and excluded points (ILOOP=2)
 !
+        IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+          WRITE(NDSE,*)'PROGRAM W3GRID STATUS MAP CALCULATION IS '//   &
+          'NOT TESTED FOR TRIPOLE GRIDS FOR CASE WHERE USER OPTS '//   &
+          'TO READ DATA IN PARTS. STOPPING NOW (107).'
+          CALL EXTCDE ( 107 )
+        END IF
+
         DO ILOOP=1, 2
 !
           IF ( ILOOP .EQ. 1 ) THEN
@@ -2984,7 +3031,7 @@
                         IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
                       END DO
                   END IF
-!
+
               END IF ! GTYPE
 !
             END IF ! ILOOP .EQ. 2
@@ -3048,7 +3095,8 @@
 !
           DO IX=1, NX
             IF ( READMP(IX, 1) .EQ. 1 ) READMP(IX, 1) = 3
-            IF ( READMP(IX,NY) .EQ. 1 ) READMP(IX,NY) = 3
+            IF ( READMP(IX,NY) .EQ. 1 .AND. ICLOSE .NE. ICLOSE_TRPL)   &
+               READMP(IX,NY) = 3
             END DO
 !
           DO IY=1, NY
@@ -3523,6 +3571,18 @@
 !/IC2       IC2PARS(6)=IC2VISC
 !/IC2       IC2PARS(7)=IC2TURBS
 !
+!/IC3       IC2PARS(:)=0.
+!/IC3       IC2PARS(1)=IC3MAXTHK
+!/IC3       IC2PARS(2)=IC2TURB
+!/IC3       IC2PARS(3)=IC2ROUGH
+!/IC3       IC2PARS(4)=IC2REYNOLDS
+!/IC3       IC2PARS(5)=IC2SMOOTH
+!/IC3       IC2PARS(6)=IC2VISC
+!/IC3       IC2PARS(7)=IC2TURBS
+!
+!/IS2      IS2PARS(1) = ISC1
+!/IS2      IS2PARS(2) = ISC2
+!
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
 ! NB: this is updated with moving water levels in W3ULEV
@@ -3532,7 +3592,6 @@
 !/REF1      ELSE
 !/REF1        CALL W3SETREF
         END IF
-     
 !/REF1! 
 !/REF1!  9.a Reads shoreline slope  (whith REF1 switch only)
 !/REF1!
@@ -4229,8 +4288,8 @@
 !/ST4  925 FORMAT ( '       SDSC2, SDSBCK, SDSCUM       :',3E11.3/    &
 !/ST4               '       Power of k in mean k        :',F8.2/)      
 !/ST4 2924 FORMAT ( '  &SDS4 SDSC1 =',E12.4,', SDSC2 =',E12.4,        &
-!/ST4               ', SDSCUM =',E12.4,','/                           &
-!/ST4               '        SDSC4 =',E12.4,', SDSC5 =',E12.4,        &
+!/ST4               ', SDSCUM =',F6.2,', SDSSTRAIN =',F4.1','/        &
+!/ST4               '        SDSC4 =',F6.2,', SDSC5 =',E12.4,         &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
 !/ST4               ',FXFM3 =',F4.2,','/                              &
@@ -4317,6 +4376,20 @@
 !/IC3  935 FORMAT (/'  Dissipation via ice parameters (IC3).'&
 !/IC3           ,/' --------------------------------------------------')
 !
+!/IS0 944 FORMAT  (/'  Ice scattering not defined.'/)
+!/IS1 945 FORMAT  (/'  Ice scattering ',A,/ &
+!/IS1              ' --------------------------------------------------')
+!/IS1 946 FORMAT  ('  Isotropic (linear function of ice concentration)'/&
+!/IS1              '        slope                      : ',E10.3/ &
+!/IS1              '        offset                     : ',E10.3)
+!/IS1 2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+!/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
+!/IS2              ' --------------------------------------------------')
+!/IS2 948 FORMAT  ('  WIFAR stuff ... '/&
+!/IS2              '        param 1                 : ',E10.3/ &
+!/IS2              '         param 2                     : ',E10.3)
+!/IS2 2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', ISC2 =',E9.3)
+!
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
   951 FORMAT ( '       Type of scheme (structured) :',1X,A)
@@ -4395,6 +4468,8 @@
 !
 !/IC2  971 FORMAT (/'  Boundary layer below ice  ',A/      &
 !/IC2               ' --------------------------------------------------')
+!/IC3  971 FORMAT (/'  Visco-elastic ice layer   ',A/      &
+!/IC3               ' --------------------------------------------------')
 !
 !
  4970 FORMAT (/'  Spectral output on full grid ',A/                   &
@@ -4414,6 +4489,11 @@
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
  2978 FORMAT ( '  &IC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
+               ', IC2ROUGH  =',F10.3,','/                             &
+               '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
+               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
+!
+ 2979 FORMAT ( '  &IC3  IC3MAKTHK =',F8.2,', IC2TURB =',F8.2,         &
                ', IC2ROUGH  =',F10.3,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
@@ -4866,6 +4946,10 @@
 !/BT1                          READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
 !/BT4                        CASE('SBT4')
 !/BT4                          READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
+!/IS1                        CASE('SIS1')
+!/IS1                          READ (NDS,NML=SIS1,END=801,ERR=802,IOSTAT=J)
+!/IS2                        CASE('SIS2')
+!/IS2                          READ (NDS,NML=SIS2,END=801,ERR=802,IOSTAT=J)
 !/DB1                        CASE('SDB1')
 !/DB1                          READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
 !/PR1                        CASE('PRO1')
@@ -4882,6 +4966,8 @@
 !/IG1                         READ (NDS,NML=IG1,END=801,ERR=802,IOSTAT=J)
 !/IC2                        CASE('IC2 ') 
 !/IC2                         READ (NDS,NML=IC2,END=801,ERR=802,IOSTAT=J)
+!/IC3                        CASE('IC3 ') 
+!/IC3                         READ (NDS,NML=IC3,END=801,ERR=802,IOSTAT=J)
                         CASE('UNST')
                           READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')

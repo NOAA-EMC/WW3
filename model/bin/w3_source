@@ -27,40 +27,62 @@
 # 0. Set up                                                                   #
 # --------------------------------------------------------------------------- #
 
+  progs="$*"
+
   if ! [ ${fext} ]
   then
-    fext='f90'                        # FORTRAN file extension to be used
+    fext='f90'                      # FORTRAN file extension to be used
   fi
 
   lext='lst'                        # FORTRAN listing extension
  
   if ! [ ${comp} ]
   then
-    comp='xlf90'                      # compiler command
+    comp='ifort'                    # compiler command
   fi
 
-  fflags='-O3 -qsource -qnosave'    # compiler flags, '-c' automatically 
-                                    # invoked. 
-  ldflags=                          # loader (linker) flags
+  fflags='-O0 -g -traceback -check all -fpe0 -ftrapuv -openmp -convert big_endian'
+                                    # compiler flags, '-c' aut. invoked. 
+  ldflags='-O0 -g -traceback -check all -fpe0 -ftrapuv -openmp -convert big_endian'
+                                    # loader (linker) flags
   libs=                             # libraries
 
-  if ! [ ${WWATCH3_DIR} ]
-  then
-    WWATCH3_DIR=`pwd`               # Location of ftn files depend on this
-                                    # User has to define this here or in  
-                                    # external call
-  fi
+  cc='cc'
+  cflags=
 
-  if ! [ ${WWATCH3_TMP} ]
+# 0.a.1 Setup file
+
+  ww3_env="${HOME}/.wwatch3.env"                           # setup file
+# The following line must not be removed: it is a switch for local install 
+# so that all bin scripts point to the local wwatch3.env 
+# WW3ENV 
+# For manual install (without install_ww3_tar or install_ww3_svn) make sure to 
+# either use the generic ww3_env or to add your own ww3_env="${my_directory}" 
+
+  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+
+# 0.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  if test -f $ww3_env
   then
-    WWATCH3_TMP=/stmp/wavepa/make_multi  # Temp directory, must set for individual 
-                                    # machine and purposes, has to be set here
-                                    # or via external call
+    set `grep WWATCH3_DIR $ww3_env` ; shift
+    WWATCH3_DIR="$*"
+    set `grep WWATCH3_TMP $ww3_env` ; shift
+    WWATCH3_TMP="$*"
+  else
+    echo "*** Set-up file $ww3_env not found ***"; echo ' '
+    exit 1
   fi
 
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
+
+  echo ' '
+  echo '               **************************************'
+  echo '             ***  making WAVEWATCH III source codes ***'
+  echo '               **************************************'
+  echo ' '
 
 # 1.a Echo to screen choices for internal variables, directory paths etc
 #     screen output of errors
@@ -104,20 +126,16 @@ echo ' '
  if [ $iexit -gt 1 ]; then exit; fi
 
 # Set main_dir to WWATCH3_DIR
+
   main_dir=${WWATCH3_DIR}
   temp_dir=${WWATCH3_TMP}
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  echo ' '
-  echo '               **************************************'
-  echo '             ***  making WAVEWATCH III source codes ***'
-  echo '               **************************************'
-  echo ' '
+#                moved up
 
 # 1.c Process/save input - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ "$#" = '0' ]
+  if [ -z "$progs" ]
   then
     progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp ww3_trck'
     progs="$progs ww3_grib"
@@ -126,8 +144,6 @@ echo ' '
     progs="$progs ww3_sbs1"
     progs="$progs ww3_gint"
     progs="$progs ww3_multi_esmf"
-  else
-    progs="$*"
   fi
 
 # 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
@@ -153,27 +169,15 @@ echo ' '
     exit
   fi
 
-  make_prog='y'
-#  if [ -f $main_dir/bin/switch.old ]
-#  then
-#    if [ -f $main_dir/ftn/makefile ] && \
-#       [ -z "`diff $main_dir/bin/switch $main_dir/bin/switch.old`" ]
-#    then
-#      make_prog='n'
-#    fi
-#  fi
-
-  if [ "$make_prog" = 'y' ]
+  echo 'Making makefile ...'
+  export WWATCH3_DIR WWATCH3_TMP
+  if $main_dir/bin/make_makefile.sh
   then
-    echo 'Making makefile ...'
-    export WWATCH3_DIR WWATCH3_TMP
-    if $main_dir/bin/make_makefile.sh
-    then
-      cp $main_dir/bin/switch $main_dir/bin/switch.old
-    else
-      exit 1
-    fi
+    cp $main_dir/bin/switch $main_dir/bin/switch.old
+  else
+    exit 1
   fi
+
   echo ' '
 
 # --------------------------------------------------------------------------- #
@@ -193,7 +197,7 @@ echo ' '
     checks='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp ww3_trck'
     checks="$checks ww3_grib"
     checks="$checks gx_outf gx_outp"
-    checks="$checks ww3_multi ww3_gint"
+    checks="$checks ww3_multi ww3_gint ww3_gspl"
     checks="$checks ww3_sbs1"
     checks="$checks ww3_gint"
     checks="$checks ww3_multi_esmf"
@@ -221,6 +225,7 @@ echo ' '
       done
       files=$*
       fors=
+        cs=
       objs=
 
 # 2.c Run ad3 to get sources - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -230,7 +235,10 @@ echo ' '
         ${main_dir}/bin/ad3 $file 0 1
         if [ "$fext" != 'f90' ] ; then
           mv $temp_dir/$file.f90 $temp_dir/$file.$fext ; fi
-        fors="$fors $file.$fext"
+        if [ -f $temp_dir/$file.$fext ] ; then
+          fors="$fors $file.$fext" ; fi
+        if [ -f $temp_dir/$file.c ] ; then
+          cs="$cs $file.c" ; fi
         objs="$objs $file.o"
         mods="$mods $file.mod"
         lsts="$lsts $file.$lext"
@@ -247,6 +255,9 @@ echo ' '
       echo "MODS=	$mods"                                   >> makefile
       echo "LSTS=	$lsts"                                   >> makefile
       echo '#'                                                   >> makefile
+      echo "CC =	$cc"                                     >> makefile
+      echo "CFLAGS =	$cflags"                                 >> makefile
+      echo '#'                                                   >> makefile
       echo "FC =	$comp"                                   >> makefile
       echo "FFLAGS =	$fflags"                                 >> makefile
       echo "LDFLAGS =	$ldflags"                                >> makefile
@@ -260,7 +271,14 @@ echo ' '
         sed -n "/^\$(aPo)\/$file.o :/p" $main_dir/ftn/makefile | \
            sed -e 's/\$(aPo)\///g' -e "s/ftn/$fext/g" \
                -e 's/ : /:	/g'                              >> makefile
-        echo '	$(FC) -c $(FFLAGS)'" $file.$fext"                >> makefile
+        if [ -f ./$file.$fext ]
+        then
+          echo '	$(FC) -c $(FFLAGS)'" $file.$fext"        >> makefile
+        fi
+        if [ -f ./$file.c ]
+        then
+          echo '	$(CC) -c $(CFLAGS)'" $file.c"            >> makefile
+        fi
       done
       echo ' '                                                   >> makefile
       echo '$(CMD):	$(OBJS)'                                 >> makefile
@@ -270,7 +288,7 @@ echo ' '
       echo '	rm -f $(OBJS) $(MODS) $(LSTS)'                   >> makefile
       echo ' '                                                   >> makefile
 
-      tar -cf $main_dir/work/$prog.tar ./*.$fext ./makefile
+      tar -cf $main_dir/work/$prog.tar ./*.$fext ./*.c ./makefile
       rm -f *.f90 makefile
       echo ' '
     fi
@@ -286,4 +304,4 @@ echo ' '
   echo '                  *********************************'
   echo ' '
 
-# End of w3_make ------------------------------------------------------------ #
+# End of w3_source ---------------------------------------------------------- #

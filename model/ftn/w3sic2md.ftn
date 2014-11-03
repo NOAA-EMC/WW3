@@ -10,7 +10,7 @@
 !/                  | Last update :         10-Mar-2014 |
 !/                  +-----------------------------------+
 !/
-!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01 )
 !/
 !/    For updates see W3SIC1 documentation.
 !/
@@ -24,7 +24,9 @@
 !          subroutine "LIU_REVERSE_DISPERSION".
 !
 !          Includes generalization by F. Ardhuin with viscous and tubulent 
-!          boundary layers 
+!          boundary layers. That part is activating by setting namelist 
+!          parameters that define the under-ice roughness and a friction 
+!          coefficient. For example: &IC2 IC2TURB = 1. , IC2ROUGH =0.02
 !
 !        References for Subtype 2:
 !              Liu et al.    1991: JGR 96 (C3), 4605-4621
@@ -75,13 +77,13 @@
 !/                  |           S. Zieger               |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         10-Mar-2014 |
 !/                  +-----------------------------------+
 !/
 !/    16-Oct-2012 : Origination.                        ( version 4.04 )
 !/                                                        (E. Rogers)
 !/    09-Oct-2013 : W3SIC1 SUBTYPE=2 outsourced to W3SIC2 (S. Zieger)
-!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.xx )
+!/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01)
 !/
 !/        FIXME   : Move field input to W3SRCE and provide
 !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
@@ -167,6 +169,9 @@
 !       IX,IY   I.S.   I   Grid indices.
 !       S       R.A.   O   Source term (1-D version).
 !       D       R.A.   O   Diagonal term of derivative (1-D version).
+!       imported via module: 
+!       ICEP1   R.A.   I   Ice thickness
+!       ICEP2   R.A.   I   Eddy viscosity
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -316,14 +321,13 @@
              END DO
 !
            DO IK=1, NK
-!   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
 !             recall that D=S/E=-2*Cg*k_i
-             D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
+             D1D(IK)= -2.0 * CG_ICE(IK) * WN_I(IK)
              END DO
 !
 ! Alternative by F.A. 
 !
-         ELSE 
+         ELSE ! so case of IC2PARS(1).LE.0.5
            IF (IC2PARS(2).GT.0.) THEN 
              UORB=0.
              AORB=0.
@@ -356,18 +360,17 @@
              IND  = MIN (SIZEFWTABLE-1, INT(XI))
              DELI1= MIN (1. ,XI-FLOAT(IND))
              DELI2= 1. - DELI1
-!IF (IX.EQ.2) WRITE(992,*) 'TEST:',IX,IND,XI,AORB,UORB,AORB/IC2PARS(3),ABMIN
              FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
              DTURB=-1.* FTURB*FW*UORB/GRAV
-           ELSE 
+           ELSE ! so case of IC2PARS(2).LE.0.
              DTURB = 0.
-             END IF
+           END IF ! IF (IC2PARS(2).GT.0.)  
 
            DO IK=1, NK
              DVISC = -1. *IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
              D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
              END DO
-           END IF
+           END IF !  IF (IC2PARS(1).GT.0.5)
 
 !
 ! 2.c Fill diagional matrix
@@ -376,7 +379,7 @@
             D(IKTH) = D1D(MAPWN(IKTH))
             END DO
 !
-        END IF
+        END IF !    IF ( NOICE ) THEN
 !
       S = D * A
 !

@@ -5,7 +5,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -36,7 +36,8 @@
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
-!/    21-Mar-2014 : Add ESMF override for STIME & ETIME ( version 5.XX )
+!/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
+!/    DD-MMM-YYYY : Add ESMF override for STIME & ETIME ( version 5.XX )
 !/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
@@ -91,7 +92,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Mar-2014 |
+!/                  | Last update :         27-May-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -127,7 +128,9 @@
 !/    15-Apr-2013 : Changes the reading of output fields( version 4.10 )
 !/                  (F. Ardhuin) 
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
-!/    21-Mar-2014 : Add ESMF override for STIME & ETIME ( version 5.XX )
+!/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
+!/    17-Sep-2014 : Read mod_def before inp file        ( version 5.xx )
+!/    DD-MMM-YYYY : Add ESMF override for STIME & ETIME ( version 5.XX )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
@@ -246,8 +249,8 @@
 !        a Read data
 !        b Assign input file numbers.
 !        c Set rank and group data
-!        d Output
-!        e Multi-grid model options.
+!        d Unified point output file.                    ( W3IOGR )
+!        e Output
 !      4.  Model run time information and settings
 !      5.  Output requests
 !        a Loop over types for unified output
@@ -284,9 +287,8 @@
 !           3 Grid status indicator and model times
 !           3 Grid data for processors that are NOT used.
 !           5 Test output
-!        b Unified point output file.                    ( W3IOGR )
-!        c Input data files.
-!        d Inter model initialization
+!        b Input data files.
+!        c Inter model initialization
 !           1 Set spectral conversion flags              ( WMRSPC )
 !           2 Prepare unified point output               ( WMIOPO )
 !           3 Relation to lower ranked grids
@@ -417,8 +419,8 @@
       CHARACTER(LEN=6)        :: ACTION(9), YESXX, XXXNO
       CHARACTER(LEN=8)        :: LFILE, STTIME
 !/SHRD      CHARACTER(LEN=9)        :: TFILE
-      CHARACTER(LEN=10)       :: STDATE, PN, MN, TNAMES(7)
-      CHARACTER(LEN=11),                                              &
+      CHARACTER(LEN=13)       :: STDATE, PN, MN, TNAMES(7)
+      CHARACTER(LEN=13),                                              &
                   ALLOCATABLE :: INAMES(:,:), MNAMES(:), PNAMES(:)
       CHARACTER(LEN=12)       :: FORMAT
 !/DIST      CHARACTER(LEN=18)       :: TFILE
@@ -549,7 +551,6 @@
 !/SHRD       TFILE  = 'test.mww3'
 !/DIST       WRITE (TFILE,FORMAT) 'test', IMPROC, '.mww3'
 !/MPRF       WRITE (PFILE,FORMAT) 'prf.', IMPROC, '.mww3'
-      IFT    = LEN_TRIM(TFILE)
 !
       IF ( IMPROC .EQ. NMPLOG ) THEN
           OPEN (MDSO,FILE=FNMPRE(:JJ)//LFILE,ERR=2010,IOSTAT=IERR)
@@ -564,11 +565,13 @@
         END IF
 !
       IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
+          IFT    = LEN_TRIM(TFILE)
           OPEN (MDST,FILE=FNMPRE(:JJ)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
           CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
                         FNMPRE(:JJ)//TFILE(:IFT), 'Test output file')
         END IF
 !
+!/MPRF      IFT    = LEN_TRIM(PFILE)
 !/MPRF      CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
 !/MPRF      CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
 !/MPRF                    FNMPRE(:JJ)//PFILE(:IFT), 'Profiling file')
@@ -898,9 +901,26 @@
 !/T        WRITE (MDST,9037) J, INGRP(J,:INGRP(J,0))
 !/T        END DO
 !
-! ... The rest is done in section 8.b
 !
-! 3.d Output
+! 3.d Unified point output
+!
+!/MPRF      CALL PRTIME ( PRFTN )
+!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.b'
+!/MPRF      PRFT0  = PRFTN
+!
+      IF ( UNIPTS ) THEN
+!
+          J      = LEN_TRIM(MNAMES(0))
+          IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) THEN
+              WRITE (MDSS,986) MNAMES(0)(1:J)
+              WRITE (MDSS,987)
+            END IF
+!
+          CALL W3IOGR ( 'GRID', NDSREC, 0, MNAMES(0)(1:J) )
+!
+        END IF
+!
+! 3.e Output
 !
       IF ( NRINP .GT. 0 ) THEN
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,924)
@@ -2357,25 +2377,7 @@
         IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) GOTO 2070
         END DO
 !
-! 8.b Unified point output
-!
-!/MPRF      CALL PRTIME ( PRFTN )
-!/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.b'
-!/MPRF      PRFT0  = PRFTN
-!
-      IF ( UNIPTS ) THEN
-!
-          J      = LEN_TRIM(MNAMES(0))
-          IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) THEN
-              WRITE (MDSS,986) MNAMES(0)(1:J)
-              WRITE (MDSS,987)
-            END IF
-!
-          CALL W3IOGR ( 'GRID', NDSREC, 0, MNAMES(0)(1:J) )
-!
-        END IF
-!
-! 8.c Input files
+! 8.b Input files
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.c'
@@ -2427,13 +2429,13 @@
 !
       DEALLOCATE ( USEINP )
 !
-! 8.d Inter model initialization
+! 8.c Inter model initialization
 !
 !/MPRF      CALL PRTIME ( PRFTN )
 !/MPRF      WRITE (MDSP,990) PRFT0, PRFTN, get_memory(), 'START Sec. 8.d'
 !/MPRF      PRFT0  = PRFTN
 
-! 8.d.1 Spectral conversion flags and source term flags
+! 8.c.1 Spectral conversion flags and source term flags
 !
       CALL WMRSPC
 !
@@ -2442,7 +2444,7 @@
         FLAGST = .TRUE.
         END DO
 !
-! 8.d.2 Relation to lower ranked grids
+! 8.c.2 Relation to lower ranked grids
 !       Includes update of unit numbers, and bound. data initialization.
 !
       ALLOCATE ( FLRBPI(NRGRD) )
@@ -2521,11 +2523,11 @@
 !/MPI        IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) CALL WMIOBF ( I )
 !/MPI        END DO
 !
-! 8.d.3 Relation to same ranked grids
+! 8.c.3 Relation to same ranked grids
 !
       CALL WMGEQL
 !
-! 8.d.4 Relation to higher ranked grids
+! 8.c.4 Relation to higher ranked grids
 !
       IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,938) &
            'Computing relation to higher ranked grids'
@@ -2533,7 +2535,7 @@
       IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,938) &
            'Finished computing relation to higher ranked grids'
 !
-! 8.d.5 Unified point output
+! 8.c.5 Unified point output
 !
       IF ( UNIPTS ) THEN
 !
@@ -2577,7 +2579,7 @@
 !
         END IF
 !
-! 8.d.6 Output
+! 8.c.6 Output
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                      &
           WRITE (MDSS,938) 'Additional group information'
