@@ -197,9 +197,10 @@ echo ' '
     checks='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp ww3_trck'
     checks="$checks ww3_grib"
     checks="$checks gx_outf gx_outp"
-    checks="$checks ww3_multi ww3_gint ww3_gspl"
+    checks="$checks ww3_multi"
     checks="$checks ww3_sbs1"
     checks="$checks ww3_gint"
+    checks="$checks ww3_gspl"
     checks="$checks ww3_multi_esmf"
 
     for check in $checks
