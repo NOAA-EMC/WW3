@@ -390,7 +390,6 @@
 !/ Local parameters
 !/
       character(ESMF_MAXSTR) :: cname
-      character(len=NUOPC_PhaseMapStringLength) :: initPhases(4)
       integer, parameter :: iwt=1
       real(8) :: wstime, wftime
 !
@@ -406,18 +405,16 @@
 !
 ! -------------------------------------------------------------------- /
 ! Define initialization phases
-! * use IPDv02 to support satisfying inter-model data
-!   dependencies during initialization
-! * skip over IPDv02p2 because we want connected status
-!   set on import/export fields prior to realization
+! * >= IPDv02 supports satisfying inter-model data dependencies
+!   during initialization
+! * >= IPDv03 supports the transfer of ESMF Grid & Mesh objects
+!   between Model and/or Mediator components during initialization
+! IPDv03p2: unspecified by NUOPC -- not required
+! IPDv03p4: relevant for TransferActionGeomObject=="accept"
+! IPDv03p5: relevant for TransferActionGeomObject=="accept"
 !
-      initPhases(1) = "IPDv02p1=1"
-      initPhases(2) = "IPDv02p3=2"
-      initPhases(3) = "IPDv02p4=3"
-      initPhases(4) = "IPDv02p5=5"
-      call ESMF_AttributeSet(gcomp, &
-        name="InitializePhaseMap", valueList=initPhases, &
-        convention="NUOPC", purpose="General", rc=rc)
+      call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
+      acceptStringList=(/"IPDv03p1","IPDv03p3","IPDv03p6","IPDv03p7"/), rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -1225,7 +1222,7 @@
       call SetExport(gcomp, rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
-! 2.e Set Updated Field Attribute to "true", indicating to the IPDv02p5
+! 2.e Set Updated Field Attribute to "true", indicating to the IPDv03p7
 !     generic code to set the timestamp for these fields
 !
       do i = 1,numExpFields
@@ -1235,7 +1232,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
-! 2.f Set InitializeDataComplete Attribute to "true", indicating to the IPDv02p5
+! 2.f Set InitializeDataComplete Attribute to "true", indicating to the IPDv03p7
 !     generic code that all inter-model data dependencies are satisfied
 !
       call ESMF_AttributeSet(gcomp, name="InitializeDataComplete", &
