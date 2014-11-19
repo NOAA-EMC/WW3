@@ -76,8 +76,8 @@ the user attempts to use irregular or unstructured grids within {\file
   ww3\_multi} without this switch, this will result in an error message and
 program termination. SCRIP-WW3 is not required for {\file ww3\_shel}
 (traditional one-way nesting), and is not required for {\file ww3\_multi} with
-only regular grids (since original methods for remapping are retained in the
-code for this purpose). SCRIP-WW3 source files are kept in a separate
+only regular grids, since original methods for remapping are retained in the
+code for this purpose. SCRIP-WW3 source files are kept in a separate
 directory {\file /ftn/SCRIP/}, since it is modified 3rd party software. With
 the {\F SCRIP} switch, the build system ( {\file ww3\_make} ) will
 automatically compile files from this directory and link them into {\file
@@ -127,15 +127,59 @@ used, remapping operations will be distributed among processes: {\file
   rmp\_src\_to\_dst\_conserv\_003\_001.nc} is created by process 2, etc.,
 which will dramatically improve performance in cases where a significant
 number of grids are used. To clarify, there are two modes of operation that are
- targetted with this feature: Mode 1) Precalculate weights, where 
-{\file SCRIP\_STOP} exists and  {\file .nc} files do not exist. Mode 2) Use 
+ targetted with this feature: Mode A) Precalculate weights, where 
+{\file SCRIP\_STOP} exists and  {\file .nc} files do not exist. Mode B) Use 
 precalculated weights, where {\file SCRIP\_STOP} does not exist and {\file .nc}
  files do exist. If both files types exist (through accident) in the work 
 directory, {\file ww3\_multi} will fail with an error. In a hypothetical 
-operational context, Mode 1 is used for the first run and Mode 2 is used for 
-all subsequent runs with the same grid set.  Note: the {\file SCRIP\_STOP} 
-feature is experimental and has been observed to fail on some 
-compilers/platforms. 
+operational context, Mode A is used for the first run and Mode B is used for 
+all subsequent runs with the same grid set. The scalability is limited by 
+the most expensive remapping pair, i.e. load balancing is an issue. 
+For a case where 12 remapping pairs are calculated and each pair requires 
+1/12th of the computation time, speed-up will be by factor twelve. For 
+another case with 12 remapping pairs, where one remapping pair takes 50% 
+of computation time, speed-up will be by factor two only. Note that resources
+are maximized by using a number of processes equal to the number of remapping
+pairs: extra processes will not be used. 
+
+To further explain the options available to users, take an example of a 
+multi-grid system with 9 grids and 12 remapping pairs, with many sea points, 
+run twice a day for several months, for a total of 1000 forecasts. The user 
+may handle this in different ways: 
+
+\begin{list}{\arabic{outpars})\hfill}
+            {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
+             \rightmargin 5mm \itemsep 0mm \parsep 0mm}
+
+\item  Using {\F SCRIP}, {\F SCRIPNC}, and {\F MPI}, and using the {\file 
+SCRIP\_STOP} feature, the calculation of weights will be done in parallel. 
+The first time the model is applied, this may take 5 to 10 minutes to 
+calculate remapping weights (Mode A above) and 20 minutes to perform the 
+model forecast (Mode B above). For forecasts 2 to 1000, only the 20 minutes 
+to perform the model forecast (Mode B) is needed. 
+
+\item Using {\F SCRIP}, {\F SCRIPNC} and the {\file SCRIP\_STOP} feature, 
+but creating the {\file .nc} files running in serial mode and running the 
+forecast with {\F MPI}, the first time the model is applied, this may take 
+20 minutes to calculate remapping weights and 20 minutes to perform the 
+model forecast. For forecasts 2 to 1000, only the 20 minutes to perform 
+the model forecast is needed. 
+
+\item  Using {\F SCRIP}, {\F SCRIPNC}, and {\F MPI}, without using the 
+{\file SCRIP\_STOP} feature, the calculation of weights will not be done 
+in parallel, and will even be slower than if run in serial, because of 
+communications. The first time the model is applied, this may take 40 
+minutes to calculate remapping weights and 20 minutes to perform the model 
+forecast.  For forecasts 2 to 1000, only the 20 minutes to perform the 
+model forecast is needed. 
+
+\item Using {\F SCRIP} and {\F MPI}, running on 12 processors, the 
+calculation of weights will not be done in parallel, will be slow, 
+and will need to be computed each time. For all forecasts 1 to 1000, 
+this may take 40 minutes to calculate remapping weights and 20 minutes 
+to perform the model forecast.  
+
+\end{list}
 
 In some cases, SCRIP-WW3 will return suspicious values for some points, which
 will result in warning message(s) in the screen output. When this occurs for a
@@ -143,14 +187,18 @@ small fraction of grid points, our experience (from analysis of the diagnostic
 output in the {\file .nc} files) is that the remapping weights are valid,
 since the problem points are at edges where \ws\ does not use the
 weights. However, when this occurs for a large fraction of grid points, it is
-likely that SCRIP-WW3 has failed. In this case, \ws\ stops with an error
+likely that SCRIP-WW3 has truly failed. In this case, \ws\ stops with an error
 message. Our experience is that this occurs most often for overlapping regular
-grids with a large number of coincident line segments. It can be remedied by
-adding an artificial offset to one of the grids. It is possible to specify an
-offset in {\file ww3\_grid.inp} in the grid description, but since that offset
-is intended as a real quantity, this other, artificial offset is implemented
-separately as a namelist option. It is {\code GSHIFT} under namelist group
-{\code MISC}. An example namelist would be: {\code MISC GSHIFT = 1.0D-6}.
+grids with a large number of coincident line segments. A workaround exists: it 
+can be remedied by adding an artificial offset to one of the grids. It was already 
+possible to specify an offset in {\file ww3\_grid.inp} in the grid description,
+but since that offset is intended as a real quantity, this other, artificial 
+offset is implemented separately as a namelist option. It is {\code GSHIFT} 
+under namelist group {\code MISC}. An example namelist would be: {\code MISC 
+GSHIFT = 1.0D-6}. A smaller number will result in less regridding error, 
+though the number must be sufficient large to actually have the intended 
+beneficial effect. We recommend to determine this by trial-and-error, varying 
+by factor 10 each time. 
 
 \vssub
 \subsection{~Limitations} \label{sec:scripE}
@@ -161,7 +209,7 @@ Two features are not yet addressed, and will be addressed in a later version:
             {\usecounter{outpars} \leftmargin 15mm \labelwidth 7mm
              \rightmargin 5mm \itemsep 0mm \parsep 0mm}
 \item  Communication between equal rank grids is still limited to regular
-  grids If one of the grids is irregular or unstructured, {\file ww3\_multi}
+  grids. If one of the grids is irregular or unstructured, {\file ww3\_multi}
   will terminate with an error message. It is possible to have non-regular
   grids as part of a multi-grid system which includes equal rank grids, as
   long as the overlapping equal-ranked grids are all regular.
