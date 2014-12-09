@@ -277,6 +277,7 @@ module FRONT_ESM
     type(ESMF_CplComp)                 :: conComp(maxModCount,maxModCount)
     integer(ESMF_KIND_I4)              :: time(6)
     type(ESMF_Time)                    :: startTime
+    type(ESMF_Time)                    :: stopTime
     type(ESMF_TimeInterval)            :: runDuration
     type(ESMF_TimeInterval)            :: timeStep
     type(ESMF_TimeInterval)            :: zeroTimeInterval
@@ -499,21 +500,23 @@ module FRONT_ESM
       h=time(4), m=time(5), s=time(6), rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
-    ! process config for required runDuration input
-    label = 'run_duration:'
-    call ESMF_ConfigGetAttribute(config, time(4:6), count=3, label=trim(label), rc=rc)
+    ! process config for required stopTime input
+    label = 'stop_time:'
+    call ESMF_ConfigGetAttribute(config, time, count=6, label=trim(label), rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) then
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg=trim(cname)//': missing required config input: '// &
-        trim(label)//' hh mm ss')
-      return ! bail out
+        trim(label)//' YYYY MM DD hh mm ss')
+      return  ! bail out
     endif
-    write(msgString,'(a,3(a,i0))') trim(cname)//': '//trim(label),(' ',time(k),k=4,6)
+    write(msgString,'(a,6(a,i0))') trim(cname)//': '//trim(label),(' ',time(k),k=1,6)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
-    call ESMF_TimeIntervalSet(runDuration, h=time(4), m=time(5), s=time(6), rc=rc)
+    call ESMF_TimeSet(stopTime, yy=time(1), mm=time(2), dd=time(3), &
+      h=time(4), m=time(5), s=time(6), rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! check that simulation time is multiple of timeStep
+    runDuration = stopTime - startTime
     call ESMF_TimeIntervalSet(zeroTimeInterval, h=0, m=0, s=0, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     if (mod(runDuration,timeStep) .ne. zeroTimeInterval) then
@@ -522,16 +525,9 @@ module FRONT_ESM
       return ! bail out
     endif
 
-#ifdef ADJOINT
-    ! compiled as adjoint, so reinterpret time inputs
-    startTime   = startTime + runDuration
-    runDuration = -runDuration
-    timeStep    = -timeStep
-#endif
-
     ! create/set the driver clock
     internalClock = ESMF_ClockCreate(name=trim(cname)//'_clock', &
-      timeStep=timeStep, startTime=startTime, runDuration=runDuration, rc=rc)
+      timeStep=timeStep, startTime=startTime, stopTime=stopTime, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     call ESMF_GridCompSet(driver, clock=internalClock, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out

@@ -61,7 +61,7 @@
 !     ----------------------------------------------------------------
 !      InitializeP0    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 0
 !      InitializeP1    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 1
-!      InitializeP2    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 2
+!      InitializeP3    Subr.  Private  Wave model NUOPC/ESMF Initialize phase 3
 !      Finalize        Subr.  Private  Wave model NUOPC/ESMF Finalize
 !      DataInitialize  Subr.  Private  Wave model NUOPC/ESMF Data Initialize
 !      ModelAdvance    Subr.  Private  Wave model NUOPC/ESMF Model Advance
@@ -90,7 +90,7 @@
 ! --- NUOPC modules
       use NUOPC
       use NUOPC_Model, only: &
-        model_routine_SS            => routine_SetServices, &
+        model_routine_SS            => SetServices, &
         model_label_DataInitialize  => label_DataInitialize, &
         model_label_Advance         => label_Advance
 
@@ -124,7 +124,6 @@
 ! --- Miscellaneous
       integer, parameter :: stdo = 6
       integer, parameter :: localDE = 0
-      character (*), parameter :: defaultVerbosity = "low"
       logical :: verbose
       logical :: realizeAllExport
       character(ESMF_MAXSTR) :: msg
@@ -196,7 +195,7 @@
 !     ----------------------------------------------------------------
 !      InitializeP0    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 0
 !      InitializeP1    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 1
-!      InitializeP2    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 2
+!      InitializeP3    Subr.  WMESMFMD  Wave model NUOPC/ESMF Initialize phase 3
 !      Finalize        Subr.  WMESMFMD  Wave model NUOPC/ESMF Finalize
 !      DataInitialize  Subr.  WMESMFMD  Wave model NUOPC/ESMF Data Initialize
 !      ModelAdvance    Subr.  WMESMFMD  Wave model NUOPC/ESMF Model Advance
@@ -225,8 +224,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      character(ESMF_MAXSTR) :: cname
-      character(ESMF_MAXSTR) :: verbosity
+      !NONE
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -238,7 +236,7 @@
 
       wtnam( 1) = 'InitializeP0'
       wtnam( 2) = 'InitializeP1'
-      wtnam( 3) = 'InitializeP2'
+      wtnam( 3) = 'InitializeP3'
       wtnam( 4) = 'DataInitialize'
       wtnam( 5) = 'ModelAdvance'
       wtnam( 6) = 'Finalize'
@@ -246,57 +244,44 @@
       wtnam( 8) = 'SetExport'
       wtcnt( :) = 0
       wtime( :) = 0d0
-
-! --- Query the Component for its name
-
-      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-
-! --- Determine verbosity
-
-      call ESMF_AttributeGet(gcomp, name="Verbosity", value=verbosity, &
-        defaultValue=defaultVerbosity, convention="NUOPC", &
-        purpose="General", rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if (trim(verbosity)=="high") then
-        verbose = .true.
-      else
-        verbose = .false.
-      endif
-      if (verbose) call ESMF_LogWrite(trim(cname)// &
-        ': entered SetServices', ESMF_LOGMSG_INFO)
 !
 ! -------------------------------------------------------------------- /
 ! 1.  NUOPC model component will register the generic methods
 !
-      call model_routine_SS(gcomp, rc=rc)
+      call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Set model entry points
 !
-! --- Initialize - phase 0
+! --- Initialize - phase 0 (requires use of ESMF method)
 
       call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-        UserRoutine=InitializeP0, phase=0, rc=rc)
+        userRoutine=InitializeP0, phase=0, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
-! --- Initialize - phase 1
+! --- Set entry points for initialize methods
 
-      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-        UserRoutine=InitializeP1, phase=1, rc=rc)
+      ! >= IPDv03 supports satisfying inter-model data dependencies and the transfer of ESMF
+      ! Grid & Mesh objects between Model and/or Mediator components during initialization
+      ! IPDv03p1: advertise import & export fields
+      call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+        phaseLabelList=(/"IPDv03p1"/), userRoutine=InitializeP1, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-
-! --- Initialize - phase 2
-
-      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-        UserRoutine=InitializeP2, phase=2, rc=rc)
+      ! IPDv03p2: unspecified by NUOPC -- not required
+      ! IPDv03p3: realize import & export fields
+      call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+        phaseLabelList=(/"IPDv03p3"/), userRoutine=InitializeP3, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      ! IPDv03p4: relevant for TransferActionGeomObject=="accept"
+      ! IPDv03p5: relevant for TransferActionGeomObject=="accept"
+      ! IPDv03p6: check compatibility of fields connected status
+      ! IPDv03p7: handle field data initialization
 
-! --- Finalize
+! --- Set entry point for finalize method
 
-      call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
-        UserRoutine=Finalize, phase=1, rc=rc)
+      call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
+        phaseLabelList=(/"FinalizePhase1"/), userRoutine=Finalize, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -304,21 +289,19 @@
 !
 ! --- Model initialize export data method
 
-      call ESMF_MethodAdd(gcomp, label=model_label_DataInitialize, &
-        UserRoutine=DataInitialize, rc=rc)
+      call NUOPC_CompSpecialize(gcomp, specLabel=model_label_DataInitialize, &
+        specRoutine=DataInitialize, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
 ! --- Model advance method
 
-      call ESMF_MethodAdd(gcomp, label=model_label_Advance, &
-        UserRoutine=ModelAdvance, rc=rc)
+      call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Advance, &
+        specRoutine=ModelAdvance, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! Post
 !
-      if (verbose) call ESMF_LogWrite(trim(cname)// &
-        ': leaving SetServices', ESMF_LOGMSG_INFO)
       rc = ESMF_SUCCESS
 !/
 !/ End of SetServices ------------------------------------------------ /
@@ -390,6 +373,7 @@
 !/ Local parameters
 !/
       character(ESMF_MAXSTR) :: cname
+      character(ESMF_MAXSTR) :: verbosity
       integer, parameter :: iwt=1
       real(8) :: wstime, wftime
 !
@@ -400,21 +384,26 @@
       call ESMF_VMWtime(wstime)
       call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Determine verbosity
+
+      call NUOPC_CompAttributeGet(gcomp, name='Verbosity', value=verbosity, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (trim(verbosity)=="high") then
+        verbose = .true.
+      else
+        verbose = .false.
+      endif
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if (verbose) call ESMF_LogWrite(trim(cname)// &
         ': entered InitializeP0', ESMF_LOGMSG_INFO)
 !
 ! -------------------------------------------------------------------- /
 ! Define initialization phases
-! * >= IPDv02 supports satisfying inter-model data dependencies
-!   during initialization
-! * >= IPDv03 supports the transfer of ESMF Grid & Mesh objects
-!   between Model and/or Mediator components during initialization
-! IPDv03p2: unspecified by NUOPC -- not required
-! IPDv03p4: relevant for TransferActionGeomObject=="accept"
-! IPDv03p5: relevant for TransferActionGeomObject=="accept"
+! * switch to IPDv03 by filtering all other phaseMap entries
 !
       call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
-      acceptStringList=(/"IPDv03p1","IPDv03p3","IPDv03p6","IPDv03p7"/), rc=rc)
+        acceptStringList=(/"IPDv03p"/), rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -553,8 +542,8 @@
 ! 1.c Get background model info
 !
       call ESMF_AttributeGet(gcomp, name="OcnBackground", &
-        value=attstr, defaultValue="none", convention="COAMPS", &
-        purpose="General", rc=rc)
+        value=attrString, defaultValue="none", &
+        convention="COAMPS", purpose="General", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       includeObg = trim(attstr).eq."model"
       call ESMF_AttributeGet(gcomp, name="MissingValue", &
@@ -772,8 +761,8 @@
       end subroutine InitializeP1
 !/ ------------------------------------------------------------------- /
 #undef METHOD
-#define METHOD "InitializeP2"
-      subroutine InitializeP2 ( gcomp, impState, expState, extClock, rc )
+#define METHOD "InitializeP3"
+      subroutine InitializeP3 ( gcomp, impState, expState, extClock, rc )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -849,7 +838,7 @@
       call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if (verbose) call ESMF_LogWrite(trim(cname)// &
-        ': entered InitializeP2', ESMF_LOGMSG_INFO)
+        ': entered InitializeP3', ESMF_LOGMSG_INFO)
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Realize active import fields
@@ -957,11 +946,11 @@
       wtime(iwt) = wtime(iwt) + wftime - wstime
       wtcnt(iwt) = wtcnt(iwt) + 1
       if (verbose) call ESMF_LogWrite(trim(cname)// &
-        ': leaving InitializeP2', ESMF_LOGMSG_INFO)
+        ': leaving InitializeP3', ESMF_LOGMSG_INFO)
 !/
-!/ End of InitializeP2 ----------------------------------------------- /
+!/ End of InitializeP3 ----------------------------------------------- /
 !/
-      end subroutine InitializeP2
+      end subroutine InitializeP3
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "Finalize"
@@ -1222,21 +1211,21 @@
       call SetExport(gcomp, rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
-! 2.e Set Updated Field Attribute to "true", indicating to the IPDv03p7
+! 2.e Set Updated Field Attribute to "true", indicating to the
 !     generic code to set the timestamp for these fields
 !
       do i = 1,numExpFields
         if (.not.isActiveExpField(i)) cycle
-        call ESMF_AttributeSet(expField(i), name="Updated", &
-          value="true", convention="NUOPC", purpose="General", rc=rc)
+        call NUOPC_FieldAttributeSet(expField(i), name="Updated", &
+          value="true", rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
-! 2.f Set InitializeDataComplete Attribute to "true", indicating to the IPDv03p7
+! 2.f Set InitializeDataComplete Attribute to "true", indicating to the
 !     generic code that all inter-model data dependencies are satisfied
 !
-      call ESMF_AttributeSet(gcomp, name="InitializeDataComplete", &
-        value="true", convention="NUOPC", purpose="General", rc=rc)
+      call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", &
+        value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
