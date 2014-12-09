@@ -1,10 +1,10 @@
 & ESMF/NUOPC Documentation
 
 ESMF Fortran Reference Documentation:
-http://www.earthsystemmodeling.org/esmf_releases/public/last/ESMF_refdoc/
+http://www.earthsystemmodeling.org/esmf_releases/last_built/ESMF_refdoc/
 
 NUOPC Layer Reference:
-http://www.earthsystemmodeling.org/esmf_releases/public/ESMF_6_3_0r/NUOPC_refdoc/
+http://www.earthsystemmodeling.org/nuopc/NUOPC_refdoc/
 
 NUOPC Layer Documents:
 https://earthsystemcog.org/projects/nuopc/
@@ -18,6 +18,8 @@ esmApp.F90: coupled application main program
 esm.F90: coupled application driver component
 con.F90: coupled application connector component
 mdl.F90: coupled application model components (ATM, OCN, or ICE)
+dum.F90: dummy model component
+utl.F90: utilities module
 Makefile: the 
 
 The WAV model component is Wavewatch (wmesmfmd.ftn).

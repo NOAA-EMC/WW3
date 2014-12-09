@@ -1,44 +1,23 @@
+#include "macros.h"
 !-------------------------------------------------------------------------------
-! A test Wavewatch III coupled application model component
+! A test coupled application model component
 !
 ! Author:
 !   Tim Campbell
 !   Naval Research Laboratory
-!   March 2014
+!   November 2014
 !-------------------------------------------------------------------------------
-
-!-------------------------------------------------------------------------------
-! ESMF macros for logging
-!-------------------------------------------------------------------------------
-#define FILENAME "mdl.F90"
-#define CONTEXT  line=__LINE__,file=FILENAME
-#define PASSTHRU msg=ESMF_LOGERR_PASSTHRU,CONTEXT
-
-!-------------------------------------------------------------------------------
-! Define real kind for data passed through ESMF interface
-!-------------------------------------------------------------------------------
-#if defined(REAL8)
-#define _ESMF_KIND_RX _ESMF_KIND_R8
-#define ESMF_KIND_RX ESMF_KIND_R8
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
-#else
-#define _ESMF_KIND_RX _ESMF_KIND_R4
-#define ESMF_KIND_RX ESMF_KIND_R4
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
-#endif
-
 
 module MDL
 
   use ESMF
   use NUOPC
   use NUOPC_Model, only: &
-    model_routine_SS            => routine_SetServices, &
-    model_type_IS               => type_InternalState, &
-    model_label_IS              => label_InternalState, &
+    model_routine_SS            => SetServices, &
     model_label_DataInitialize  => label_DataInitialize, &
     model_label_SetClock        => label_SetClock, &
     model_label_Advance         => label_Advance
+  use UTL
 
   implicit none
 
@@ -46,10 +25,9 @@ module MDL
 
   public SetServices
 
-  character (*), parameter :: defaultVerbosity = 'low'
   character (*), parameter :: label_InternalState = 'InternalState'
   character (*), parameter :: inputAlarmName = 'InputAlarm'
-  integer      , parameter :: maxFields = 15
+  integer      , parameter :: maxFields = 25
 
   integer, parameter :: modTypeConstant = 0
   integer, parameter :: modTypeTendency = 1
@@ -60,6 +38,7 @@ module MDL
     logical                         :: verbose
     integer                         :: modType
     type(ESMF_TimeInterval)         :: timeStep
+    type(ESMF_TimeInterval)         :: inputInterval
     real(ESMF_KIND_RX)              :: dtRatio
     character(ESMF_MAXSTR)          :: dataDir
     integer                         :: numf
@@ -77,7 +56,6 @@ module MDL
     type(type_InternalStateStruct), pointer :: wrap
   end type
 
-
   !-----------------------------------------------------------------------------
   contains
   !-----------------------------------------------------------------------------
@@ -87,49 +65,19 @@ module MDL
     integer, intent(out) :: rc
 
     ! local variables
-    character(ESMF_MAXSTR)        :: cname
     character(ESMF_MAXSTR)        :: msgString
-    logical                       :: verbose
-    character(ESMF_MAXSTR)        :: verbosity
     type(type_InternalState)      :: is
     integer                       :: localrc, stat
 
     rc = ESMF_SUCCESS
 
-    ! query the Component for its name
-    call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-
-    ! check supported component names
-    select case (trim(cname))
-    case ('ATM','OCN','ICE')
-    case default
-      call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
-        msg='MOD: unsupported component name'//trim(cname))
-      return  ! bail out
-    endselect
-
-    ! determine verbosity
-    call ESMF_AttributeGet(gcomp, name='Verbosity', value=verbosity, &
-      defaultValue=defaultVerbosity, convention='NUOPC', purpose='General', rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    if (trim(verbosity)=='high') then
-      verbose = .true.
-    else
-      verbose = .false.
-    endif
-
-    if (verbose) &
-    call ESMF_LogWrite(trim(cname)//': entered SetServices', ESMF_LOGMSG_INFO)
-
     ! allocate memory for this internal state and set it in the component
     allocate(is%wrap, stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of internal state memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return  ! bail out
     call ESMF_UserCompSetInternalState(gcomp, label_InternalState, is, rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    is%wrap%verbose = verbose
 
     ! initialize timers
     is%wrap%numwt = 6
@@ -137,10 +85,10 @@ module MDL
       is%wrap%wtime(is%wrap%numwt), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of wall timer memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return  ! bail out
     is%wrap%wtnam(1) = 'InitializeP0'
     is%wrap%wtnam(2) = 'InitializeP1'
-    is%wrap%wtnam(3) = 'InitializeP2'
+    is%wrap%wtnam(3) = 'InitializeP3'
     is%wrap%wtnam(4) = 'DataInitialize'
     is%wrap%wtnam(5) = 'ModelAdvance'
     is%wrap%wtnam(6) = 'Finalize'
@@ -148,38 +96,46 @@ module MDL
     is%wrap%wtime(:) = 0d0
 
     ! the NUOPC model component will register the generic methods
-    call model_routine_SS(gcomp, rc=rc)
+    call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
-    ! set entry points for initialize methods
+    ! set initialize phase 0 requires use of ESMF method
     call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
       userRoutine=InitializeP0, phase=0, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-      userRoutine=InitializeP1, phase=1, rc=rc)
+
+    ! set entry points for initialize methods
+    ! >= IPDv03 supports satisfying inter-model data dependencies and the transfer of ESMF
+    ! Grid & Mesh objects between Model and/or Mediator components during initialization
+    ! IPDv03p1: advertise import & export fields
+    call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+      phaseLabelList=(/"IPDv03p1"/), userRoutine=InitializeP1, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-      userRoutine=InitializeP2, phase=2, rc=rc)
+    ! IPDv03p2: unspecified by NUOPC -- not required
+    ! IPDv03p3: realize import & export fields
+    call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
+      phaseLabelList=(/"IPDv03p3"/), userRoutine=InitializeP3, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    ! IPDv03p4: relevant for TransferActionGeomObject=="accept"
+    ! IPDv03p5: relevant for TransferActionGeomObject=="accept"
+    ! IPDv03p6: check compatibility of fields connected status
+    ! IPDv03p7: handle field data initialization
 
     ! set entry point for finalize method
-    call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
-      userRoutine=Finalize, phase=1, rc=rc)
+    call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
+      phaseLabelList=(/"FinalizePhase1"/), userRoutine=Finalize, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! attach specializing method(s)
-    call ESMF_MethodAdd(gcomp, label=model_label_SetClock, &
-         userRoutine=SetClock, rc=rc)
+    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_SetClock, &
+         specRoutine=SetClock, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call ESMF_MethodAdd(gcomp, label=model_label_DataInitialize, &
-         userRoutine=DataInitialize, rc=rc)
+    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_DataInitialize, &
+         specRoutine=DataInitialize, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call ESMF_MethodAdd(gcomp, label=model_label_Advance, &
-         userRoutine=ModelAdvance, rc=rc)
+    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Advance, &
+         specRoutine=ModelAdvance, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-
-    if (verbose) &
-    call ESMF_LogWrite(trim(cname)//': leaving SetServices', ESMF_LOGMSG_INFO)
 
   end subroutine
 
@@ -195,6 +151,7 @@ module MDL
     character(ESMF_MAXSTR)        :: cname
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
+    character(ESMF_MAXSTR)        :: verbosity
     type(type_InternalState)      :: is
     integer                       :: localrc, stat
     integer, parameter            :: it1=1, it2=0, it3=0
@@ -216,21 +173,35 @@ module MDL
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+
+    ! determine verbosity
+    call NUOPC_CompAttributeGet(gcomp, name='Verbosity', value=verbosity, rc=rc)
+    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    if (trim(verbosity)=='high') then
+      is%wrap%verbose = .true.
+    else
+      is%wrap%verbose = .false.
+    endif
     verbose = is%wrap%verbose
 
     if (verbose) &
     call ESMF_LogWrite(trim(cname)//': entered InitializeP0', ESMF_LOGMSG_INFO)
 
-    ! define required initialization phases
-    ! * >= IPDv02 supports satisfying inter-model data dependencies
-    !   during initialization
-    ! * >= IPDv03 supports the transfer of ESMF Grid & Mesh objects
-    !   between Model and/or Mediator components during initialization
-    ! IPDv03p2: unspecified by NUOPC -- not required
-    ! IPDv03p4: relevant for TransferActionGeomObject=="accept"
-    ! IPDv03p5: relevant for TransferActionGeomObject=="accept"
+    ! check supported component names
+    select case (trim(cname))
+    case ('ATM')
+    case ('OCN')
+    case ('WAV')
+    case ('ICE')
+    case default
+      call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+        msg='MDL: unsupported component name'//trim(cname))
+      return  ! bail out
+    endselect
+
+    ! switch to IPDv03 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
-      acceptStringList=(/"IPDv03p1","IPDv03p3","IPDv03p6","IPDv03p7"/), rc=rc)
+      acceptStringList=(/"IPDv03p"/), rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
 1   if (verbose) &
@@ -291,8 +262,7 @@ module MDL
 
     ! get data directory
     label=trim(cname)//'_work_dir:'
-    call ESMF_ConfigGetAttribute(config, is%wrap%dataDir, label=trim(label), &
-      default='.', rc=rc)
+    call ESMF_ConfigGetAttribute(config, is%wrap%dataDir, label=trim(label), default='.', rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! allocate field/data arrays
@@ -301,7 +271,7 @@ module MDL
       is%wrap%field(maxFields), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of internal state data arrays failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return  ! bail out
     is%wrap%isActive = .false.
 
     ! set attributes for fields
@@ -309,15 +279,30 @@ module MDL
     select case (trim(cname))
     case ('ATM')
       i = i+1
+      is%wrap%sname(i) = 'air_pressure_at_sea_level'
+      is%wrap%fname(i) = 'slpres' !'pres'
+      i = i+1
       is%wrap%sname(i) = 'eastward_wind_at_10m_height'
-      is%wrap%fname(i) = 'uutrue'
+      is%wrap%fname(i) = 'uutrue' !'wnd_utru'
       i = i+1
       is%wrap%sname(i) = 'northward_wind_at_10m_height'
-      is%wrap%fname(i) = 'vvtrue'
-    case ('OCN')
+      is%wrap%fname(i) = 'vvtrue' !'wnd_vtru'
       i = i+1
-      is%wrap%sname(i) = 'sea_surface_height_above_sea_level'
-      is%wrap%fname(i) = 'seahgt'
+      is%wrap%sname(i) = 'magnitude_of_surface_downward_stress'
+      is%wrap%fname(i) = 'wstres' !'wnd_strs'
+      i = i+1
+      is%wrap%sname(i) = 'air_temperature_at_2m_height'
+      is%wrap%fname(i) = 'airtmp' !'air_temp'
+      i = i+1
+      is%wrap%sname(i) = 'relative_humidity_at_2m_height'
+      is%wrap%fname(i) = 'relhum' !'rltv_hum'
+      i = i+1
+      is%wrap%sname(i) = 'surface_net_downward_shortwave_flux'
+      is%wrap%fname(i) = 'solflx' !'sol_rad'
+      i = i+1
+      is%wrap%sname(i) = 'surface_net_downward_longwave_flux'
+      is%wrap%fname(i) = 'lonflx' !'ir_flux'
+    case ('OCN')
       i = i+1
       is%wrap%sname(i) = 'sea_surface_temperature'
       is%wrap%fname(i) = 'seatmp'
@@ -325,15 +310,52 @@ module MDL
       is%wrap%sname(i) = 'sea_surface_salinity'
       is%wrap%fname(i) = 'salint'
       i = i+1
+      is%wrap%sname(i) = 'sea_surface_height_above_sea_level'
+      is%wrap%fname(i) = 'seahgt'
+      i = i+1
       is%wrap%sname(i) = 'surface_eastward_sea_water_velocity'
       is%wrap%fname(i) = 'uucurr'
       i = i+1
       is%wrap%sname(i) = 'surface_northward_sea_water_velocity'
       is%wrap%fname(i) = 'vvcurr'
+    case ('WAV')
+      i = i+1
+      is%wrap%sname(i) = 'wave_induced_charnock_parameter'
+      is%wrap%fname(i) = 'charno'
+      i = i+1
+      is%wrap%sname(i) = 'surface_total_wave_induced_stress'
+      is%wrap%fname(i) = 'wvstrs'
+      i = i+1
+      is%wrap%sname(i) = 'surface_eastward_wave_induced_stress'
+      is%wrap%fname(i) = 'wvstru'
+      i = i+1
+      is%wrap%sname(i) = 'surface_northward_wave_induced_stress'
+      is%wrap%fname(i) = 'wvstrv'
+      i = i+1
+      is%wrap%sname(i) = 'eastward_stokes_drift_current'
+      is%wrap%fname(i) = 'uscurr'
+      i = i+1
+      is%wrap%sname(i) = 'northward_stokes_drift_current'
+      is%wrap%fname(i) = 'vscurr'
+      i = i+1
+      is%wrap%sname(i) = 'eastward_wave_bottom_current'
+      is%wrap%fname(i) = 'wbcuru'
+      i = i+1
+      is%wrap%sname(i) = 'northward_wave_bottom_current'
+      is%wrap%fname(i) = 'wbcurv'
+      i = i+1
+      is%wrap%sname(i) = 'wave_bottom_current_radian_frequency'
+      is%wrap%fname(i) = 'wbcurf'
+      i = i+1
+      is%wrap%sname(i) = 'eastward_wave_radiation_stress_gradient'
+      is%wrap%fname(i) = 'wavsgu'
+      i = i+1
+      is%wrap%sname(i) = 'northward_wave_radiation_stress_gradient'
+      is%wrap%fname(i) = 'wavsgv'
     case ('ICE')
-!     i = i+1
-!     is%wrap%sname(i) = 'sea_ice_concentration'
-!     is%wrap%fname(i) = 'icecon'
+      i = i+1
+      is%wrap%sname(i) = 'sea_ice_concentration'
+      is%wrap%fname(i) = 'icecon'
     endselect
     numf = i
     is%wrap%numf = numf
@@ -375,7 +397,7 @@ module MDL
 
   !-----------------------------------------------------------------------------
 
-  subroutine InitializeP2(gcomp, importState, exportState, clock, rc)
+  subroutine InitializeP3(gcomp, importState, exportState, clock, rc)
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
     type(ESMF_Clock)     :: clock
@@ -417,7 +439,7 @@ module MDL
     verbose = is%wrap%verbose
 
     if (verbose) &
-    call ESMF_LogWrite(trim(cname)//': entered InitializeP2', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(cname)//': entered InitializeP3', ESMF_LOGMSG_INFO)
 
     ! query Component for its config & vm
     call ESMF_GridCompGet(gcomp, config=config, vm=vm, rc=rc)
@@ -483,7 +505,7 @@ module MDL
     enddo
 
 1   if (verbose) &
-    call ESMF_LogWrite(trim(cname)//': leaving InitializeP2', ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(trim(cname)//': leaving InitializeP3', ESMF_LOGMSG_INFO)
 
     ! finish timing
     call ESMF_VMWtime(wf1Time)
@@ -545,20 +567,17 @@ module MDL
     if (verbose) call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     if (localPet.eq.0) write(*,'(a)') trim(msgString)
 
-    ! set Updated Field Attribute to "true", indicating to the IPDv03p7
+    ! set Updated Field Attribute to "true", indicating to the
     ! generic code to set the timestamp for these fields
     do i=1,is%wrap%numf
       if (.not.is%wrap%isActive(i)) cycle
-      call ESMF_AttributeSet(is%wrap%field(i), name="Updated", value="true", &
-        convention="NUOPC", purpose="General", rc=rc)
+      call NUOPC_FieldAttributeSet(is%wrap%field(i), name="Updated", value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
 
-    ! set InitializeDataComplete Attribute to "true", indicating to the IPDv03p7
+    ! set InitializeDataComplete Attribute to "true", indicating to the
     ! generic code that all inter-model data dependencies are satisfied
-    ! *** this is required since not all import fields are required for init ***
-    call ESMF_AttributeSet(gcomp, name="InitializeDataComplete", value="true", &
-      convention="NUOPC", purpose="General", rc=rc)
+    call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", value="true", rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! report
@@ -692,7 +711,7 @@ module MDL
       is%wrap%field, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of internal state data arrays failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return  ! bail out
 
     ! finish timing
     call ESMF_VMWtime(wf1Time)
@@ -707,26 +726,26 @@ module MDL
       deallocate(is%wrap%wtnam, stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg='Deallocation of wtnam array failed.', &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return  ! bail out
     endif
     if (associated(is%wrap%wtcnt)) then
       deallocate(is%wrap%wtcnt, stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg='Deallocation of wtcnt array failed.', &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return  ! bail out
     endif
     if (associated(is%wrap%wtime)) then
       deallocate(is%wrap%wtime, stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg='Deallocation of wtime array failed.', &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return  ! bail out
     endif
 
     ! deallocate internal state memory
     deallocate(is%wrap, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of internal state memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return  ! bail out
 
     if (verbose) &
     call ESMF_LogWrite(trim(cname)//': leaving Finalize', ESMF_LOGMSG_INFO)
@@ -750,9 +769,11 @@ module MDL
     type(ESMF_Clock)              :: clock
     type(ESMF_TimeInterval)       :: zeroti
     type(ESMF_TimeInterval)       :: timeStep
-    integer(ESMF_KIND_I4)         :: time(3)
+    type(ESMF_TimeInterval)       :: inputInterval
     type(ESMF_Alarm)              :: inputAlarm
     real(ESMF_KIND_R8)            :: dtRatio
+    integer(ESMF_KIND_I4)         :: time(3)
+    logical                       :: isPresent
 
     rc = ESMF_SUCCESS
 
@@ -778,15 +799,34 @@ module MDL
     call ESMF_ClockGet(clock, timeStep=timeStep, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
-    ! get time step (data input interval) from config
+    ! get time step from config
+    is%wrap%timeStep = timeStep
     label=trim(cname)//'_time_step:'
-    call ESMF_GridCompGet(gcomp, config=config, rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call ESMF_ConfigGetAttribute(config, time, count=3, label=trim(label), rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call ESMF_TimeIntervalSet(is%wrap%timeStep, h=time(1), m=time(2), s=time(3), rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    if (mod(is%wrap%timeStep,timeStep) /= zeroti) then
+    call ESMF_ConfigFindLabel(config, label=trim(label), isPresent=isPresent, rc=rc)
+    if (isPresent.and.rc.eq.ESMF_SUCCESS) then
+      call ESMF_ConfigGetAttribute(config, time, count=3, label=trim(label), rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+      call ESMF_TimeIntervalSet(is%wrap%timeStep, h=time(1), m=time(2), s=time(3), rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    endif
+    if (mod(timeStep,is%wrap%timeStep) /= zeroti) then
+      call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+        msg=trim(cname)//': '//trim(label)// &
+        ' must be divisible into the driver time step')
+      return  ! bail out
+    endif
+
+    ! get data input interval from config
+    is%wrap%inputInterval = timeStep
+    label=trim(cname)//'_input_interval:'
+    call ESMF_ConfigFindLabel(config, label=trim(label), isPresent=isPresent, rc=rc)
+    if (isPresent.and.rc.eq.ESMF_SUCCESS) then
+      call ESMF_ConfigGetAttribute(config, time, count=3, label=trim(label), rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+      call ESMF_TimeIntervalSet(is%wrap%inputInterval, h=time(1), m=time(2), s=time(3), rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    endif
+    if (mod(is%wrap%inputInterval,timeStep) /= zeroti) then
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg=trim(cname)//': '//trim(label)// &
         ' must be a multiple of driver time step')
@@ -794,12 +834,12 @@ module MDL
     endif
 
     ! setup alarm for reading input fields
-    inputAlarm = ESMF_AlarmCreate(clock, ringInterval=is%wrap%timeStep, &
+    inputAlarm = ESMF_AlarmCreate(clock, ringInterval=is%wrap%inputInterval, &
       name=inputAlarmName, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
-    ! compute ratio of driver timeStep to model timeStep
-    dtRatio = timeStep / is%wrap%timeStep
+    ! compute ratio of driver timeStep to model input interval
+    dtRatio = timeStep / is%wrap%inputInterval
     is%wrap%dtRatio = real(dtRatio,ESMF_KIND_RX)
 
   end subroutine
@@ -860,28 +900,6 @@ module MDL
       ! turn off alarm
       call ESMF_AlarmRingerOff(inputAlarm)
     endif
-
-  end subroutine
-
-  subroutine PrintTimers(cname, wtnam, wtcnt, wtime)
-    character(*)          :: cname
-    character(*)          :: wtnam(:)
-    integer(ESMF_KIND_I4) :: wtcnt(:)
-    real(ESMF_KIND_R8)    :: wtime(:)
-
-    ! local variables
-    character(ESMF_MAXSTR) :: msg
-    integer(ESMF_KIND_I4)  :: k
-
-    write(msg,1) trim(cname),'timer','count','time'
-    call ESMF_LogWrite(TRIM(msg), ESMF_LOGMSG_INFO)
-    do k=lbound(wtcnt,1),ubound(wtcnt,1)
-      write(msg,2) trim(cname),trim(wtnam(k)),wtcnt(k),wtime(k)
-      call ESMF_LogWrite(TRIM(msg), ESMF_LOGMSG_INFO)
-    enddo
-
-1   format(a,': wtime: ',a20,a10,a14)
-2   format(a,': wtime: ',a20,i10,e14.6)
 
   end subroutine
 

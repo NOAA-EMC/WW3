@@ -42,32 +42,25 @@ endif
 
 ################################################################################
 
-DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_CON=CON
-DEP_CMPL_OBJS := $(DEP_CMPL_OBJS) con.o
-DEP_LINK_OBJS := $(DEP_LINK_OBJS) con.o
-DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_ATM=MDL
-DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_OCN=MDL
-DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_ICE=MDL
-DEP_CMPL_OBJS := $(DEP_CMPL_OBJS) mdl.o
-DEP_LINK_OBJS := $(DEP_LINK_OBJS) mdl.o
+DEP_FRONTS    := -DFRONT_ESM=ESM
+DEP_FRONTS    += -DFRONT_ATM=MDL
+DEP_FRONTS    += -DFRONT_OCN=MDL
+DEP_FRONTS    += -DFRONT_ICE=MDL
+DEP_CMPL_OBJS := utl.o con.o mdl.o dum.o
+DEP_LINK_OBJS := esm.o utl.o con.o mdl.o dum.o
 
 ifeq ($(MAKECMDGOALS),ww3_multi_esmf)
 include $(WW3_DIR)/nuopc.mk
-DEP_FRONTS    := $(DEP_FRONTS) -DFRONT_WAV=$(ESMF_DEP_FRONT)
-DEP_INCS      := $(DEP_INCS) $(addprefix -I, $(ESMF_DEP_INCPATH))
-DEP_CMPL_OBJS := $(DEP_CMPL_OBJS) $(ESMF_DEP_CMPL_OBJS)
-DEP_LINK_OBJS := $(DEP_LINK_OBJS) $(ESMF_DEP_LINK_OBJS)
+DEP_FRONTS    += -DFRONT_WAV=$(ESMF_DEP_FRONT)
+DEP_INCS      += $(addprefix -I, $(ESMF_DEP_INCPATH))
+DEP_CMPL_OBJS += $(ESMF_DEP_CMPL_OBJS)
+DEP_LINK_OBJS += $(ESMF_DEP_LINK_OBJS)
 endif
 
 ################################################################################
 ################################################################################
 
-.SUFFIXES: .f90 .F90 .c .C
-
-%.o : %.f90
-	$(ESMF_F90COMPILER) -c $(DEP_FRONTS) $(DEP_INCS) \
-		$(ESMF_F90COMPILEOPTS) $(ESMF_F90COMPILEPATHS) \
-		$(ESMF_F90COMPILEFREENOCPP) $<
+.SUFFIXES: .F90
 
 %.o : %.F90
 	$(ESMF_F90COMPILER) -c $(DEP_FRONTS) $(DEP_INCS) \
@@ -81,13 +74,17 @@ default: env setup switch
 	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 	$(MAKE) ww3_multi_esmf
 
-ww3_multi_esmf: esmApp.o esm.o $(DEP_LINK_OBJS)
+ww3_multi_esmf: esmApp.o $(DEP_LINK_OBJS)
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) -o $(EXE) $^ \
 		$(ESMF_F90LINKPATHS) $(ESMF_F90LINKRPATHS) $(ESMF_F90ESMFLINKLIBS)
 
 # module dependencies:
-esmApp.o: esm.o
-esm.o: con.o mdl.o $(DEP_CMPL_OBJS)
+esmApp.o: macros.h utl.o esm.o
+esm.o: macros.h $(DEP_CMPL_OBJS)
+utl.o: macros.h
+con.o: macros.h utl.o
+mdl.o: macros.h utl.o
+dum.o: macros.h
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------

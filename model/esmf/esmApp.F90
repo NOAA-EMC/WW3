@@ -1,38 +1,19 @@
+#include "macros.h"
 !-------------------------------------------------------------------------------
-! A test Wavewatch III coupled application driver
+! A test coupled application driver
 !
 ! Author:
 !   Tim Campbell
 !   Naval Research Laboratory
-!   March 2014
+!   November 2014
 !-------------------------------------------------------------------------------
-
-!-------------------------------------------------------------------------------
-! ESMF macros for logging
-!-------------------------------------------------------------------------------
-#define FILENAME "esmApp.F90"
-#define CONTEXT  line=__LINE__,file=FILENAME
-#define PASSTHRU msg=ESMF_LOGERR_PASSTHRU,CONTEXT
-
-!-------------------------------------------------------------------------------
-! Define real kind for data passed through ESMF interface
-!-------------------------------------------------------------------------------
-#if defined(REAL8)
-#define _ESMF_KIND_RX _ESMF_KIND_R8
-#define ESMF_KIND_RX ESMF_KIND_R8
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
-#else
-#define _ESMF_KIND_RX _ESMF_KIND_R4
-#define ESMF_KIND_RX ESMF_KIND_R4
-#define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
-#endif
-
 
 program esmApp
 
   use ESMF
   use NUOPC
-  use ESM, only: drvSS => SetServices
+  use FRONT_ESM, only: drmSS => SetServices
+  use UTL
 
   implicit none
 
@@ -51,7 +32,7 @@ program esmApp
   call ESMF_LogSet(flush=.true.)
 
   ! Add required fields to NUOPC field dictionary
-  call SetFieldDictionary(rc=rc)
+  call InitFieldDictionary(rc=rc)
   if (ESMF_LogFoundError(rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! Create the driver Component
@@ -74,7 +55,7 @@ program esmApp
   if (ESMF_LogFoundError(rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
     
   ! SetServices for the driver Component
-  call ESMF_GridCompSetServices(gcomp, drvSS, userRc=urc, rc=rc)
+  call ESMF_GridCompSetServices(gcomp, drmSS, userRc=urc, rc=rc)
   if (ESMF_LogFoundError( rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   if (ESMF_LogFoundError(urc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
     
@@ -104,97 +85,14 @@ program esmApp
   contains
   !-----------------------------------------------------------------------------
 
-  subroutine SetFieldDictionary(rc)
+  subroutine DummyRoutine(rc)
     integer, intent(out) :: rc
 
     ! local variables
-    integer, parameter :: maxFields = 50
-    character(ESMF_MAXSTR) :: standardName(maxFields)
-    character(ESMF_MAXSTR) :: canonicalUnits(maxFields)
-    integer :: i, numFields
-    logical :: isPresent
+    ! none
 
     rc = ESMF_SUCCESS
 
-    i = 0
-    ! ATM export
-    i = i+1; standardName(i) = 'air_pressure_at_sea_level'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'eastward_wind_at_10m_height'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'northward_wind_at_10m_height'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'magnitude_of_surface_downward_stress'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'surface_downward_eastward_stress'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'surface_downward_northward_stress'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'air_temperature_at_2m_height'
-             canonicalUnits(i)='K'
-    i = i+1; standardName(i) = 'relative_humidity_at_2m_height'
-             canonicalUnits(i)='1'
-    i = i+1; standardName(i) = 'surface_downward_latent_heat_flux'
-             canonicalUnits(i)='W m-2'
-    i = i+1; standardName(i) = 'surface_downward_sensible_heat_flux'
-             canonicalUnits(i)='W m-2'
-    i = i+1; standardName(i) = 'surface_net_downward_shortwave_flux'
-             canonicalUnits(i)='W m-2'
-    i = i+1; standardName(i) = 'surface_net_downward_longwave_flux'
-             canonicalUnits(i)='W m-2'
-    ! OCN export
-    i = i+1; standardName(i) = 'sea_surface_height_above_sea_level'
-             canonicalUnits(i)='m'
-    i = i+1; standardName(i) = 'sea_surface_temperature'
-             canonicalUnits(i)='K'
-    i = i+1; standardName(i) = 'sea_surface_salinity'
-             canonicalUnits(i)='1e-3'
-    i = i+1; standardName(i) = 'surface_eastward_sea_water_velocity'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'surface_northward_sea_water_velocity'
-             canonicalUnits(i)='m s-1'
-    ! WAV export
-    i = i+1; standardName(i) = 'wave_induced_charnock_parameter'
-             canonicalUnits(i)='1'
-    i = i+1; standardName(i) = 'surface_total_wave_induced_stress'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'surface_eastward_wave_induced_stress'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'surface_northward_wave_induced_stress'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'eastward_stokes_drift_current'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'northward_stokes_drift_current'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'eastward_wave_bottom_current'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'northward_wave_bottom_current'
-             canonicalUnits(i)='m s-1'
-    i = i+1; standardName(i) = 'wave_bottom_current_radian_frequency'
-             canonicalUnits(i)='rad s-1'
-    i = i+1; standardName(i) = 'eastward_wave_radiation_stress_gradient'
-             canonicalUnits(i)='Pa'
-    i = i+1; standardName(i) = 'northward_wave_radiation_stress_gradient'
-             canonicalUnits(i)='Pa'
-    numFields = i
-
-    do i=1,numFields
-      isPresent = NUOPC_FieldDictionaryHasEntry(trim(standardName(i)), rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-      if (.not.isPresent) then
-        call NUOPC_FieldDictionaryAddEntry(trim(standardName(i)), &
-          trim(canonicalUnits(i)), defaultLongName='none', defaultShortName='none', rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-      endif
-      isPresent = NUOPC_FieldDictionaryHasEntry('mbg_'//trim(standardName(i)), rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-      if (.not.isPresent) then
-        call NUOPC_FieldDictionaryAddEntry('mbg_'//trim(standardName(i)), &
-          trim(canonicalUnits(i)), defaultLongName='none', defaultShortName='none', rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-      endif
-    enddo
-
   end subroutine
-  
+
 end program  
