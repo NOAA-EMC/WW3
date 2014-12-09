@@ -136,6 +136,7 @@
                                  TABNME*9, FILEPREFIX*30, STRINGIPART*30
       LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP), SCALE,  &
                                  VECTOR, TOGETHER, LTEMP(NGRPP)
+      INTEGER                 :: HasNC4
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -265,6 +266,13 @@
           WRITE (NDSE,1010) NCTYPE
           CALL EXTCDE ( 1 )
         END IF
+      ! if NCTYPE = 4 checking that it is compiled with NC4
+      HasNC4=0
+!/NC4      HasNC4=1
+      IF ((HasNC4 .eq. 0).and.(NCTYPE.eq.4)) THEN
+        WRITE (NDSE,1012)
+        CALL EXTCDE ( 1 )
+      END IF
       !IPART  = MAX ( 0 , MIN ( NOSWLL , IPART ) )
 
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -435,6 +443,8 @@
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     ILLEGAL TYPE, NCTYPE =',I4/)
+ 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
+               '     NCTYPE = 4 but ww3_ounf is compiled without NC4'/)
 !/
 !/ Internal subroutine W3EXGO ---------------------------------------- /
 !/
