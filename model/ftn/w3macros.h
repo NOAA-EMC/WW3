@@ -5,10 +5,10 @@
 /*                  | WAVEWATCH III           NOAA/NCEP |             */
 /*                  |        T. J. Campbell, NRL        |             */
 /*                  |                                 C |             */
-/*                  | Last update :         DD-MMM-YYYY |             */
+/*                  | Last update :         10-Dec-2014 |             */
 /*                  +-----------------------------------+             */
 /*                                                                    */
-/*    DD-MMM-YYYY : Origination.                     ( version 5.XX ) */
+/*    10-Dec-2014 : Origination.                     ( version 5.04 ) */
 /*                                                                    */
 /* 1. Purpose :                                                       */
 /*                                                                    */
