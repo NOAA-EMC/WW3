@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3SERVMD
 !/
@@ -223,16 +224,18 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         18-Nov-1999 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
 !/    18-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    DD-MMM-YYYY : Skip blank lines and leading blanks ( version 5.XX )
 !/
 !  1. Purpose :
 !
 !     Sets file pointer to next active line of input file, by skipping
-!     lines starting with the character CHCKC.
+!     blank lines and lines starting with the character CHCKC. Leading
+!     white space is allowed before the character CHCKC.
 !
 !  3. Parameters :
 !
@@ -276,18 +279,24 @@
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: IERR
-      CHARACTER               :: TEST*1
+      CHARACTER(128)          :: MSG
+      CHARACTER(256)          :: LINE, TEST
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'NEXTLN')
 !
   100 CONTINUE
-      READ (NDSI,900,END=800,ERR=801,IOSTAT=IERR) TEST
-      IF (TEST.EQ.CHCKC) THEN
+      ! read line
+      READ ( NDSI, 900, END=800, ERR=801, IOSTAT=IERR, IOMSG=MSG ) LINE
+      ! leading blanks removed and placed on the right
+      TEST = ADJUSTL ( LINE )
+      IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
+        ! if comment or blank line, then skip
           GOTO 100
         ELSE
-          BACKSPACE (NDSI,ERR=802,IOSTAT=IERR)
+        ! otherwise, backup to beginning of line
+          BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
         ENDIF
       RETURN
 !
@@ -296,11 +305,11 @@
       CALL EXTCDE ( 1 )
 !
   801 CONTINUE
-      IF ( NDSE .GE. 0 ) WRITE (NDSE,911) IERR
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,911) IERR, TRIM(MSG)
       CALL EXTCDE ( 2 )
 !
   802 CONTINUE
-      IF ( NDSE .GE. 0 ) WRITE (NDSE,911) IERR
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,912) IERR, TRIM(MSG)
       CALL EXTCDE ( 3 )
 !
 ! Formats
@@ -310,10 +319,12 @@
                '     PREMATURE END OF INPUT FILE'/)
   911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
                '     ERROR IN READING FROM FILE'/               &
-               '     IOSTAT =',I5/)
+               '     IOSTAT =',I5,/                             &
+               '     IOMSG = ',A/)
   912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
                '     ERROR ON BACKSPACE'/                       &
-               '     IOSTAT =',I5/)
+               '     IOSTAT =',I5,/                             &
+               '     IOMSG = ',A/)
 !/
 !/ End of NEXTLN ----------------------------------------------------- /
 !/
@@ -659,21 +670,22 @@
 !/
       END SUBROUTINE WWTIME
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE EXTCDE ( IEXIT )
+      SUBROUTINE EXTCDE ( IEXIT, UNIT, MSG, FILE, LINE )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jan-1999 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    06-Jan-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    23-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    DD-MMM-YYYY : Add error message and context args  ( version 5.XX )
 !/
 !  1. Purpose :
 !
-!     Perfor a program stop with an exit code.
+!     Perform a program stop with an exit code.
 !
 !  2. Method :
 !
@@ -684,6 +696,10 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       IEXIT   Int.   I   Exit code to be used.
+!       UNIT    Int.   I   (optional) file unit to write error message
+!       MSG     Str.   I   (optional) error message
+!       FILE    Str.   I   (optional) name of source code file
+!       LINE    Int.   I   (optional) line number in source code file
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -706,19 +722,50 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: IEXIT
+      INTEGER, INTENT(IN) :: IEXIT
+      INTEGER,      INTENT(IN), OPTIONAL :: UNIT
+      CHARACTER(*), INTENT(IN), OPTIONAL :: MSG
+      CHARACTER(*), INTENT(IN), OPTIONAL :: FILE
+      INTEGER,      INTENT(IN), OPTIONAL :: LINE
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/MPI      INTEGER                 :: IERR_MPI
 !/MPI      LOGICAL                 :: RUN
+      INTEGER                 :: IUN
+      CHARACTER(256)          :: LMSG = ""
+      CHARACTER(6)            :: LSTR
+      CHARACTER(10)           :: PREFIX = "WW3 ERROR:"
+!/
+!/ Set file unit for error output
+!/
+      IUN = 0
+      IF (PRESENT(UNIT)) IUN = UNIT
+!/
+!/ Report error message
+!/
+      IF (PRESENT(MSG)) THEN
+          WRITE (IUN,"(A)") PREFIX//" "//TRIM(MSG)
+        END IF
+!/
+!/ Report context
+!/
+      IF ( PRESENT(FILE) ) THEN
+          LMSG = TRIM(LMSG)//" FILE="//TRIM(FILE)
+        END IF
+      IF ( PRESENT(LINE) ) THEN
+          WRITE (LSTR,'(I0)') LINE
+          LMSG = TRIM(LMSG)//" LINE="//TRIM(LSTR)
+        END IF
+      IF ( LEN_TRIM(LMSG).GT.0 ) THEN
+          WRITE (IUN,"(A)") PREFIX//TRIM(LMSG)
+        END IF
 !/
 !/ Test if MPI needs to be closed
 !/
 !/MPI      CALL MPI_INITIALIZED ( RUN, IERR_MPI )
 !/MPI      IF ( RUN ) THEN
-!/MPI          CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR_MPI )
-!/MPI          CALL MPI_FINALIZE (IERR_MPI )
+!/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF
 !
 !/F90      CALL EXIT ( IEXIT )

@@ -1,10 +1,12 @@
+#include "w3macros.h"
+!/ ------------------------------------------------------------------- /
       MODULE W3ADATMD
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Nov-2013 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -30,6 +32,7 @@
 !/                  Here update of documentation only.
 !/                  (Z0S, CDS, EMN, FMN, WNM, AMX)      ( version 4.13 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -296,6 +299,10 @@
 !
 !/ ------------------------------------------------------------------- /
       PUBLIC
+!/
+!/ Module private variable for checking error returns
+!/
+      INTEGER, PRIVATE        :: ISTAT
 !/
 !/ Conventional declarations
 !/
@@ -572,11 +579,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Dec-2004 !
+!/                  | Last update :         DD-MMM-YYYY !
 !/                  +-----------------------------------+
 !/
 !/    14-Dec-2004 : Origination.                        ( version 3.06 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -648,7 +656,8 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Set variable and allocate arrays
 !
-      ALLOCATE ( WADATS(NGRIDS) )
+      ALLOCATE ( WADATS(NGRIDS), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
       NADATA = NGRIDS
 !
 ! -------------------------------------------------------------------- /
@@ -686,7 +695,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Jun-2013 !
+!/                  | Last update :         DD-MMM-YYYY !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -699,6 +708,7 @@
 !/    25-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/    28-Jul-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
 !/    30-Apr-2014 : Memory reduction for group3.        ( version 5.00 )
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -825,16 +835,20 @@
 !
 !  1) Forcing fields (these arrays are always needed)
 !
-      ALLOCATE ( WADATS(IMOD)%DW(0:NSEA) )
+      ALLOCATE ( WADATS(IMOD)%DW(0:NSEA) , STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
       WADATS(IMOD)%DW(:)=0.            
 !
-      ALLOCATE ( WADATS(IMOD)%CX(0:NSEA) , WADATS(IMOD)%CY(0:NSEA) )
+      ALLOCATE ( WADATS(IMOD)%CX(0:NSEA) , WADATS(IMOD)%CY(0:NSEA) , &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
       WADATS(IMOD)%CX(:)=0.
       WADATS(IMOD)%CY(:)=0.     
 !
       ALLOCATE ( WADATS(IMOD)%UA(0:NSEA) , WADATS(IMOD)%UD(0:NSEA) , &
                  WADATS(IMOD)%U10(NSEA)  , WADATS(IMOD)%U10D(NSEA) , &
-                 WADATS(IMOD)%AS(0:NSEA) )
+                 WADATS(IMOD)%AS(0:NSEA) , STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
 !     Water level WLV stored in W3WDATMD
 !     Ice concentration ICE stored in W3WDATMD
@@ -851,7 +865,9 @@
                  WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0 (NSEALM), &
                  WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS (NSEALM), &
                  WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%FP1 (NSEALM), &
-                 WADATS(IMOD)%THP1 (NSEALM), WADATS(IMOD)%HSIG(NSEALM) )
+                 WADATS(IMOD)%THP1 (NSEALM), WADATS(IMOD)%HSIG(NSEALM), &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%HS     = UNDEF
       WADATS(IMOD)%WLM    = UNDEF
@@ -871,16 +887,31 @@
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
 !                    by specific variables defined through the mod_def file 
 !                    and read by w3iogr, which is called before W3DIMA. 
-      IF (  E3DF(1,1).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)))
-      IF (  E3DF(1,2).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)))
-      IF (  E3DF(1,3).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)))
-      IF (  E3DF(1,4).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,4)))
-      IF (  E3DF(1,5).GT.0 ) &
-         ALLOCATE(WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,5)))
+      IF (  E3DF(1,1).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)),    &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF (  E3DF(1,2).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)),  &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF (  E3DF(1,3).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%STH1M(NSEALM,E3DF(2,3):E3DF(3,3)), &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF (  E3DF(1,4).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%TH2M(NSEALM,E3DF(2,4):E3DF(3,4)),  &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF (  E3DF(1,5).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%STH2M(NSEALM,E3DF(2,5):E3DF(3,5)), &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
       IF (  E3DF(1,1).GT.0 ) WADATS(IMOD)%EF      = UNDEF
       IF (  E3DF(1,2).GT.0 ) WADATS(IMOD)%TH1M    = UNDEF
@@ -897,7 +928,9 @@
                  WADATS(IMOD)%PDIR(NSEALM,0:NOSWLL),                  &
                  WADATS(IMOD)%PSI(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PWS(NSEALM,0:NOSWLL),                   &
-                 WADATS(IMOD)%PWST(NSEALM), WADATS(IMOD)%PNR(NSEALM) )
+                 WADATS(IMOD)%PWST(NSEALM), WADATS(IMOD)%PNR(NSEALM), &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%PHS    = UNDEF
       WADATS(IMOD)%PTP    = UNDEF
@@ -919,7 +952,9 @@
                  WADATS(IMOD)%TAUWIY  (NSEALM),                       &
                  WADATS(IMOD)%TAUWNX  (NSEALM),                       &
                  WADATS(IMOD)%TAUWNY  (NSEALM),                       &
-                 WADATS(IMOD)%WHITECAP(NSEALM,4) )
+                 WADATS(IMOD)%WHITECAP(NSEALM,4),                     &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%CHARN    = UNDEF
       WADATS(IMOD)%CGE      = UNDEF
@@ -946,13 +981,23 @@
                  WADATS(IMOD)%PRMS  (NSEALM) ,                        &
                  WADATS(IMOD)%TPMS  (NSEALM) ,                        &
                  WADATS(IMOD)%PHICE (NSEALM) ,                        &
-                 WADATS(IMOD)%TAUICE(NSEALM,2))
+                 WADATS(IMOD)%TAUICE(NSEALM,2),                       &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
 !                    by specific variables defined through the mod_def file 
 !                    and read by w3iogr, which is called before W3DIMA. 
-      IF (  P2MSF(1).GT.0 ) ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)))
-      IF (  US3DF(1).GT.0 ) ALLOCATE(WADATS(IMOD)%US3D(NSEALM,NK*2)) ! maybe use US3DF(2:3)
+      IF (  P2MSF(1).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)), &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF (  US3DF(1).GT.0 ) THEN ! maybe use US3DF(2:3)
+          ALLOCATE(WADATS(IMOD)%US3D(NSEALM,NK*2), &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
       WADATS(IMOD)%SXX    = UNDEF
       WADATS(IMOD)%SYY    = UNDEF
@@ -978,7 +1023,8 @@
                  WADATS(IMOD)%UBA(NSEALM) , WADATS(IMOD)%UBD(NSEALM) , &
                  WADATS(IMOD)%BEDFORMS(NSEALM,3),                      &
                  WADATS(IMOD)%PHIBBL  (NSEALM)  ,                      &
-                 WADATS(IMOD)%TAUBBL  (NSEALM,2) )
+                 WADATS(IMOD)%TAUBBL  (NSEALM,2), STAT=ISTAT           )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%ABA    = UNDEF
       WADATS(IMOD)%ABD    = UNDEF
@@ -991,7 +1037,9 @@
 ! 8) Spectrum parameters
 !
       ALLOCATE ( WADATS(IMOD)%MSSX(NSEALM), WADATS(IMOD)%MSSY(NSEALM), &
-                 WADATS(IMOD)%MSCX(NSEALM), WADATS(IMOD)%MSCY(NSEALM) )
+                 WADATS(IMOD)%MSCX(NSEALM), WADATS(IMOD)%MSCY(NSEALM), &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%MSSX   = UNDEF
       WADATS(IMOD)%MSSY   = UNDEF
@@ -1005,7 +1053,8 @@
                  WADATS(IMOD)%FCUT    (NSEALM) ,                       &
                  WADATS(IMOD)%CFLXYMAX(NSEALM) ,                       &
                  WADATS(IMOD)%CFLTHMAX(NSEALM) ,                       &
-                 WADATS(IMOD)%CFLKMAX (NSEALM) )
+                 WADATS(IMOD)%CFLKMAX (NSEALM) , STAT=ISTAT            )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%DTDYN    = UNDEF
       WADATS(IMOD)%FCUT     = UNDEF
@@ -1015,30 +1064,42 @@
 !
 ! 10) User defined
 !
-      ALLOCATE ( WADATS(IMOD)%USERO(NSEALM,NOEXTR) )
+      ALLOCATE ( WADATS(IMOD)%USERO(NSEALM,NOEXTR), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WADATS(IMOD)%USERO  = UNDEF
 !
-      ALLOCATE (WADATS(IMOD)%WN(0:NK+1,0:NSEA))
+      ALLOCATE ( WADATS(IMOD)%WN(0:NK+1,0:NSEA), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       IF ( FL_ALL ) THEN
 !
-          ALLOCATE ( WADATS(IMOD)%CG(0:NK+1,0:NSEA) )
+          ALLOCATE ( WADATS(IMOD)%CG(0:NK+1,0:NSEA), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
 !
-          IF ( FLCUR  ) ALLOCATE ( WADATS(IMOD)%CA0(NSEA) ,           &
-                                   WADATS(IMOD)%CAI(NSEA) ,           &
-                                   WADATS(IMOD)%CD0(NSEA) ,           &
-                                   WADATS(IMOD)%CDI(NSEA) )
+          IF ( FLCUR  ) THEN
+              ALLOCATE ( WADATS(IMOD)%CA0(NSEA) ,           &
+                         WADATS(IMOD)%CAI(NSEA) ,           &
+                         WADATS(IMOD)%CD0(NSEA) ,           &
+                         WADATS(IMOD)%CDI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
 !
-          IF ( FLWIND ) ALLOCATE ( WADATS(IMOD)%UA0(NSEA) ,           &
-                                   WADATS(IMOD)%UAI(NSEA) ,           &
-                                   WADATS(IMOD)%UD0(NSEA) ,           &
-                                   WADATS(IMOD)%UDI(NSEA) ,           &
-                                   WADATS(IMOD)%AS0(NSEA) ,           &
-                                   WADATS(IMOD)%ASI(NSEA) )
+          IF ( FLWIND ) THEN
+              ALLOCATE ( WADATS(IMOD)%UA0(NSEA) ,           &
+                         WADATS(IMOD)%UAI(NSEA) ,           &
+                         WADATS(IMOD)%UD0(NSEA) ,           &
+                         WADATS(IMOD)%UDI(NSEA) ,           &
+                         WADATS(IMOD)%AS0(NSEA) ,           &
+                         WADATS(IMOD)%ASI(NSEA) ,           &
+                         STAT=ISTAT )
+              CHECK_ALLOC_STATUS ( ISTAT )
+            END IF
 !
           ALLOCATE ( WADATS(IMOD)%ATRNX(NY*NX,-1:1) ,                 &
-                     WADATS(IMOD)%ATRNY(NY*NX,-1:1) )
+                     WADATS(IMOD)%ATRNY(NY*NX,-1:1) , STAT=ISTAT      )
+          CHECK_ALLOC_STATUS ( ISTAT )
 !
           ALLOCATE ( WADATS(IMOD)%DDDX(NY,NX)  ,                      &
                      WADATS(IMOD)%DDDY(NY,NX)  ,                      &
@@ -1047,30 +1108,36 @@
                      WADATS(IMOD)%DCXDX(NY,NX) ,                      &
                      WADATS(IMOD)%DCYDX(NY,NX) ,                      &
                      WADATS(IMOD)%DCXDY(NY,NX) ,                      &
-                     WADATS(IMOD)%DCYDY(NY,NX) )
+                     WADATS(IMOD)%DCYDY(NY,NX) , STAT=ISTAT           )
+          CHECK_ALLOC_STATUS ( ISTAT )
 !
 !/SMC          ALLOCATE ( WADATS(IMOD)%DHDX(NSEA) ,                        &
 !/SMC                     WADATS(IMOD)%DHDY(NSEA) ,                        &
-!/SMC                     WADATS(IMOD)%DHLMT(NTH,NSEA) )
+!/SMC                     WADATS(IMOD)%DHLMT(NTH,NSEA) , STAT=ISTAT        )
+!/SMC          CHECK_ALLOC_STATUS ( ISTAT )
 !
-          ALLOCATE ( WADATS(IMOD)%ALPHA(NK,NSEAL) )
+          ALLOCATE ( WADATS(IMOD)%ALPHA(NK,NSEAL) , STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
 !
 !/PR1          ALLOCATE ( WADATS(IMOD)%IS0(NSPEC)   ,                 &
 !/PR1                     WADATS(IMOD)%IS2(NSPEC)   ,                 &
 !/PR1                     WADATS(IMOD)%FACVX(NY*NX) ,                 &
-!/PR1                     WADATS(IMOD)%FACVY(NY*NX) )
+!/PR1                     WADATS(IMOD)%FACVY(NY*NX) , STAT=ISTAT      )
+!/PR1          CHECK_ALLOC_STATUS ( ISTAT )
 !
 !/PR2          ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)       ,           &
 !/PR2                     WADATS(IMOD)%MAPY2(NY*NX)       ,           &
 !/PR2                     WADATS(IMOD)%MAPAXY(NY*NX)      ,           &
 !/PR2                     WADATS(IMOD)%MAPXY(NSEA)        ,           &
 !/PR2                     WADATS(IMOD)%MAPTH2((NK+2)*NTH) ,           &
-!/PR2                     WADATS(IMOD)%MAPWN2(NSPEC+NTH) )
+!/PR2                     WADATS(IMOD)%MAPWN2(NSPEC+NTH) , STAT=ISTAT )
+!/PR2          CHECK_ALLOC_STATUS ( ISTAT )
 !/PR2          WADATS(IMOD)%MAPTH2 = 0
 !
              IF (GTYPE .EQ. UNGTYPE) THEN
-               ALLOCATE( WADATS(IMOD)%ITER(NK,NTH))
-             END IF
+                 ALLOCATE( WADATS(IMOD)%ITER(NK,NTH), STAT=ISTAT )
+                 CHECK_ALLOC_STATUS ( ISTAT )
+               END IF
 !
 !/PR3          ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)       ,           &
 !/PR3                     WADATS(IMOD)%MAPY2(NY*NX)       ,           &
@@ -1078,7 +1145,8 @@
 !/PR3                     WADATS(IMOD)%MAPCXY(NSEA)       ,           &
 !/PR3                     WADATS(IMOD)%MAPTH2((NK+2)*NTH) ,           &
 !/PR3                     WADATS(IMOD)%MAPWN2(NSPEC+NTH)  ,           &
-!/PR3                     WADATS(IMOD)%MAPTRN(NY*NX) )
+!/PR3                     WADATS(IMOD)%MAPTRN(NY*NX) , STAT=ISTAT     )
+!/PR3          CHECK_ALLOC_STATUS ( ISTAT )
 !/PR3          WADATS(IMOD)%MAPTH2 = 0
 !
 !/SMC          ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)     ,             &
@@ -1086,11 +1154,13 @@
 !/SMC                     WADATS(IMOD)%MAPAXY(NY*NX)    ,             &
 !/SMC                     WADATS(IMOD)%MAPXY(NSEA)      ,             &
 !/SMC                     WADATS(IMOD)%MAPTH2(NSPEC)    ,             &
-!/SMC                     WADATS(IMOD)%MAPWN2(NSPEC+NTH) )
+!/SMC                     WADATS(IMOD)%MAPWN2(NSPEC+NTH), STAT=ISTAT  )
+!/SMC          CHECK_ALLOC_STATUS ( ISTAT )
 !/SMC          WADATS(IMOD)%MAPTH2 = 0
 !
           ALLOCATE ( WADATS(IMOD)%IAPPRO(NSPEC) ,                     &
-                     WADATS(IMOD)%SPPNT(NTH,NK,4) )
+                     WADATS(IMOD)%SPPNT(NTH,NK,4), STAT=ISTAT         )
+          CHECK_ALLOC_STATUS ( ISTAT )
 !
         END IF
 !
@@ -1141,10 +1211,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 !
+!/                  | Last update :         DD-MMM-YYYY !
 !/                  +-----------------------------------+
 !/
 !/    26-Dec-2012 : Origination.                        ( version 3.06 )
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1210,75 +1281,99 @@
       NXXX   = NSEALM * NAPROC
 !
       IF ( FLAGS( 2, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XHS(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XHS(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XHS(1) )
+          ALLOCATE ( WADATS(IMOD)%XHS(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XWLM(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XWLM(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XWLM(1) )
+          ALLOCATE ( WADATS(IMOD)%XWLM(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XT02(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XT02(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XT02(1) )
+          ALLOCATE ( WADATS(IMOD)%XT02(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XT0M1(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XT0M1(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XT0M1(1) )
+          ALLOCATE ( WADATS(IMOD)%XT0M1(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XT01 (NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XT01 (NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XT01 (1) )
+          ALLOCATE ( WADATS(IMOD)%XT01 (1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 6) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XFP0(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XFP0(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XFP0(1) )
+          ALLOCATE ( WADATS(IMOD)%XFP0(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 7) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTHM(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTHM(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTHM(1) )
+          ALLOCATE ( WADATS(IMOD)%XTHM(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 8) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTHS(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTHS(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTHS(1) )
+          ALLOCATE ( WADATS(IMOD)%XTHS(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 9) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTHP0(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTHP0(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTHP0(1) )
+          ALLOCATE ( WADATS(IMOD)%XTHP0(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 2, 10) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XHSIG(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XHSIG(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XHSIG(1) )
+          ALLOCATE ( WADATS(IMOD)%XHSIG(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
 !     IF ( FLAGS( 2,xx) ) THEN
-!         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX) )
+!         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX), STAT=ISTAT )
+!         CHECK_ALLOC_STATUS ( ISTAT )
 !       ELSE
-!         ALLOCATE ( WADATS(IMOD)%XFP1(1) )
+!         ALLOCATE ( WADATS(IMOD)%XFP1(1), STAT=ISTAT )
+!         CHECK_ALLOC_STATUS ( ISTAT )
 !       END IF
 !
 !     IF ( FLAGS( 2,xx) ) THEN
-!         ALLOCATE ( WADATS(IMOD)%XTHP1(NXXX) )
+!         ALLOCATE ( WADATS(IMOD)%XTHP1(NXXX), STAT=ISTAT )
+!         CHECK_ALLOC_STATUS ( ISTAT )
 !       ELSE
-!         ALLOCATE ( WADATS(IMOD)%XTHP1(1) )
+!         ALLOCATE ( WADATS(IMOD)%XTHP1(1), STAT=ISTAT )
+!         CHECK_ALLOC_STATUS ( ISTAT )
 !       END IF
 !
       WADATS(IMOD)%XHS    = UNDEF
@@ -1295,33 +1390,43 @@
 !     WADATS(IMOD)%XTHP1  = UNDEF
 !
       IF ( FLAGS( 3, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XEF(NXXX,E3DF(2,1):E3DF(3,1)))
+          ALLOCATE ( WADATS(IMOD)%XEF(NXXX,E3DF(2,1):E3DF(3,1)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XEF(1,1))
+          ALLOCATE ( WADATS(IMOD)%XEF(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF 
 
         IF ( FLAGS( 3, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTH1M(NXXX,E3DF(2,2):E3DF(3,2)))
+          ALLOCATE ( WADATS(IMOD)%XTH1M(NXXX,E3DF(2,2):E3DF(3,2)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTH1M(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XTH1M(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 
       IF ( FLAGS( 3, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XSTH1M(NXXX,E3DF(2,3):E3DF(3,3)))
+          ALLOCATE ( WADATS(IMOD)%XSTH1M(NXXX,E3DF(2,3):E3DF(3,3)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XSTH1M(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XSTH1M(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 
       IF ( FLAGS( 3, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTH2M(NXXX,E3DF(2,4):E3DF(3,4)))
+          ALLOCATE ( WADATS(IMOD)%XTH2M(NXXX,E3DF(2,4):E3DF(3,4)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTH2M(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XTH2M(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 3, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XSTH2M(NXXX,E3DF(2,5):E3DF(3,5)))
+          ALLOCATE ( WADATS(IMOD)%XSTH2M(NXXX,E3DF(2,5):E3DF(3,5)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XSTH2M(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XSTH2M(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XEF     = UNDEF
@@ -1331,51 +1436,67 @@
       WADATS(IMOD)%XSTH2M  = UNDEF
 !
       IF ( FLAGS( 4, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPHS(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPHS(NXXX,0:NOSWLL), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPHS(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPHS(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPTP(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPTP(NXXX,0:NOSWLL), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPTP(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPTP(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPLP(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPLP(NXXX,0:NOSWLL), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPLP(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPLP(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPDIR(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPDIR(NXXX,0:NOSWLL), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPDIR(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPDIR(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPSI(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPSI(NXXX,0:NOSWLL), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPSI(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPSI(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 6) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPWS(NXXX,0:NOSWLL) )
+          ALLOCATE ( WADATS(IMOD)%XPWS(NXXX,0:NOSWLL), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPWS(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XPWS(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 7) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPWST(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPWST(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPWST(1) )
+          ALLOCATE ( WADATS(IMOD)%XPWST(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 4, 8) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPNR(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPNR(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPNR(1) )
+          ALLOCATE ( WADATS(IMOD)%XPNR(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XPHS   = UNDEF
@@ -1388,44 +1509,60 @@
       WADATS(IMOD)%XPNR   = UNDEF
 !
       IF ( FLAGS( 5, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XCHARN(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XCHARN(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XCHARN(1) )
+          ALLOCATE ( WADATS(IMOD)%XCHARN(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 5, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XCGE(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XCGE(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XCGE(1) )
+          ALLOCATE ( WADATS(IMOD)%XCGE(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 5, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPHIAW(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPHIAW(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPHIAW(1) )
+          ALLOCATE ( WADATS(IMOD)%XPHIAW(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 5, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTAUWIX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XTAUWIY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWIX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUWIY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTAUWIX(1) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWIX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XTAUWIY(1) )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 5, 6) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTAUWNX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XTAUWNY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWNX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUWNY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTAUWNX(1) )
-          ALLOCATE ( WADATS(IMOD)%XTAUWNY(1) )
+          ALLOCATE ( WADATS(IMOD)%XTAUWNX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUWNY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 5, 7) .OR. FLAGS( 5, 8) .OR.                        &
            FLAGS( 5, 9) .OR. FLAGS( 5,10)) THEN
-          ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4) )
+          ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XWHITECAP(1,4) )
+          ALLOCATE ( WADATS(IMOD)%XWHITECAP(1,4), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XCHARN    = UNDEF
@@ -1438,81 +1575,115 @@
       WADATS(IMOD)%XWHITECAP = UNDEF
 !
       IF ( FLAGS( 6, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XSXX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XSYY(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XSXY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XSXX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XSYY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XSXY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XSXX(1) )
-          ALLOCATE ( WADATS(IMOD)%XSYY(1) )
-          ALLOCATE ( WADATS(IMOD)%XSXY(1) )
+          ALLOCATE ( WADATS(IMOD)%XSXX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XSYY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XSXY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTAUOX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XTAUOY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTAUOX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUOY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTAUOX(1) )
-          ALLOCATE ( WADATS(IMOD)%XTAUOY(1) )
+          ALLOCATE ( WADATS(IMOD)%XTAUOX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTAUOY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XBHD(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XBHD(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XBHD(1) )
+          ALLOCATE ( WADATS(IMOD)%XBHD(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPHIOC(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPHIOC(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPHIOC(1) )
+          ALLOCATE ( WADATS(IMOD)%XPHIOC(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTUSX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XTUSY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XTUSX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTUSY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTUSX(1) )
-          ALLOCATE ( WADATS(IMOD)%XTUSY(1) )
+          ALLOCATE ( WADATS(IMOD)%XTUSX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTUSY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 6) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XUSSX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XUSSY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XUSSX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XUSSY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XUSSX(1) )
-          ALLOCATE ( WADATS(IMOD)%XUSSY(1) )
+          ALLOCATE ( WADATS(IMOD)%XUSSX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XUSSY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 7) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPRMS(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XTPMS(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPRMS(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTPMS(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPRMS(1) )
-          ALLOCATE ( WADATS(IMOD)%XTPMS(1) )
+          ALLOCATE ( WADATS(IMOD)%XPRMS(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XTPMS(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6, 8) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XUS3D(NXXX,2*NK) )
+          ALLOCATE ( WADATS(IMOD)%XUS3D(NXXX,2*NK), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XUS3D(1,1) )
+          ALLOCATE ( WADATS(IMOD)%XUS3D(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF 
 !
       IF ( FLAGS( 6, 9) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XP2SMS(NXXX,P2MSF(2):P2MSF(3)))
+          ALLOCATE ( WADATS(IMOD)%XP2SMS(NXXX,P2MSF(2):P2MSF(3)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XP2SMS(1,1))
+          ALLOCATE ( WADATS(IMOD)%XP2SMS(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF 
 !
       IF ( FLAGS( 6,10) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTAUICE(NXXX,2) )
+          ALLOCATE ( WADATS(IMOD)%XTAUICE(NXXX,2), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTAUICE(1,2) )
+          ALLOCATE ( WADATS(IMOD)%XTAUICE(1,2), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 6,11) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPHICE(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPHICE(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPHICE(1) )
+          ALLOCATE ( WADATS(IMOD)%XPHICE(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XSXX    = UNDEF
@@ -1534,37 +1705,51 @@
       WADATS(IMOD)%XTAUICE = UNDEF
 !
       IF ( FLAGS( 7, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XABA(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XABD(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XABD(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XABA(1) )
-          ALLOCATE ( WADATS(IMOD)%XABD(1) )
+          ALLOCATE ( WADATS(IMOD)%XABA(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XABD(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 7, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XUBA(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XUBD(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XUBA(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XUBD(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XUBA(1) )
-          ALLOCATE ( WADATS(IMOD)%XUBD(1) )
+          ALLOCATE ( WADATS(IMOD)%XUBA(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XUBD(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 7, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XBEDFORMS(NXXX,3) )
+          ALLOCATE ( WADATS(IMOD)%XBEDFORMS(NXXX,3), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XBEDFORMS(1,3) )
+          ALLOCATE ( WADATS(IMOD)%XBEDFORMS(1,3), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 7, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XPHIBBL(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XPHIBBL(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XPHIBBL(1) )
+          ALLOCATE ( WADATS(IMOD)%XPHIBBL(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 7, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XTAUBBL(NXXX,2) )
+          ALLOCATE ( WADATS(IMOD)%XTAUBBL(NXXX,2), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XTAUBBL(1,2) )
+          ALLOCATE ( WADATS(IMOD)%XTAUBBL(1,2), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XABA    = UNDEF
@@ -1576,19 +1761,27 @@
       WADATS(IMOD)%XTAUBBL = UNDEF
 !
       IF ( FLAGS( 8, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XMSSX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XMSSY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XMSSX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XMSSY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XMSSX(1) )
-          ALLOCATE ( WADATS(IMOD)%XMSSY(1) )
+          ALLOCATE ( WADATS(IMOD)%XMSSX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XMSSY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 8, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XMSCX(NXXX) )
-          ALLOCATE ( WADATS(IMOD)%XMSCY(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XMSCX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XMSCY(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XMSCX(1) )
-          ALLOCATE ( WADATS(IMOD)%XMSCY(1) )
+          ALLOCATE ( WADATS(IMOD)%XMSCX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+          ALLOCATE ( WADATS(IMOD)%XMSCY(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XMSSX   = UNDEF
@@ -1597,33 +1790,43 @@
       WADATS(IMOD)%XMSCY   = UNDEF
 !
       IF ( FLAGS( 9, 1) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XDTDYN(1) )
+          ALLOCATE ( WADATS(IMOD)%XDTDYN(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 9, 2) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XFCUT(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XFCUT(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XFCUT(1) )
+          ALLOCATE ( WADATS(IMOD)%XFCUT(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 9, 3) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(1) )
+          ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 9, 4) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(1) )
+          ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       IF ( FLAGS( 9, 5) ) THEN
-          ALLOCATE ( WADATS(IMOD)%XCFLKMAX(NXXX) )
+          ALLOCATE ( WADATS(IMOD)%XCFLKMAX(NXXX), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
-          ALLOCATE ( WADATS(IMOD)%XCFLKMAX(1) )
+          ALLOCATE ( WADATS(IMOD)%XCFLKMAX(1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
       WADATS(IMOD)%XDTDYN    = UNDEF
@@ -1634,9 +1837,11 @@
 !
       DO I=1, NOEXTR
         IF ( FLAGS(10, i) ) THEN
-            ALLOCATE ( WADATS(IMOD)%XUSERO(NXXX,I) )
+            ALLOCATE ( WADATS(IMOD)%XUSERO(NXXX,I), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
           ELSE
-            ALLOCATE ( WADATS(IMOD)%XUSERO(1,I) )
+            ALLOCATE ( WADATS(IMOD)%XUSERO(1,I), STAT=ISTAT )
+            CHECK_ALLOC_STATUS ( ISTAT )
           END IF
         END DO
 !
@@ -1678,11 +1883,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    24-Dec-2004 : Origination.                        ( version 3.06 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -1812,7 +2018,9 @@
 !/NL1                 WADATS(IMOD)%IC72(NSP) ,        &
 !/NL1                 WADATS(IMOD)%IC81(NSP) ,        &
 !/NL1                 WADATS(IMOD)%IC82(NSP) ,        &
-!/NL1                 WADATS(IMOD)%AF11(NSPX) )
+!/NL1                 WADATS(IMOD)%AF11(NSPX),        &
+!/NL1                 STAT=ISTAT                      )
+!/NL1      CHECK_ALLOC_STATUS ( ISTAT )
 !
 !/NL1      WADATS(IMOD)%NLINIT = .TRUE.
 !

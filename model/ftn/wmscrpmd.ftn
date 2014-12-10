@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE WMSCRPMD
 !/
@@ -6,10 +7,11 @@
 !/                  |   E. Rogers, M. Dutour,           |
 !/                  |   A. Roland, F. Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Sep-2012 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    06-Sep-2012 : Origination, transfer from WMGRIDMD ( version 4.08 )
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !/
 !/    Copyright 2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -58,7 +60,14 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
+!/
+!/ Specify default accessibility
+!/
       PUBLIC
+!/
+!/ Module private variable for checking error returns
+!/
+      INTEGER, PRIVATE        :: ISTAT
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -69,7 +78,7 @@
 !/                  | WAVEWATCH III                     |
 !/                  | E. Rogers, M. Dutour, A. Roland   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         DD-MMM-YYYY !
 !/                  +-----------------------------------+
 !/
 !  1. Original author :
@@ -91,6 +100,7 @@
 !                   ---scrip_info_renormalization (conv_x and all that)
 !     11-Apr-2013   Kevin Lind
 !                   Added code for reading/writing SCRIP remap files
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !
 !  4. Copyright :
 !
@@ -125,6 +135,7 @@
       USE SCRIP_CONSTANTS
       USE SCRIP_KINDSMOD
       USE SCRIP_INTERFACE
+      USE W3SERVMD, ONLY: EXTCDE
 !      USE W3GDATMD, ONLY : GRIDS
 
       IMPLICIT NONE
@@ -301,7 +312,8 @@
 !           weights are available  
 !        b) the corresponding set of weights
 
-      ALLOCATE(WGTDATA(GRID2_SIZE))
+      ALLOCATE ( WGTDATA(GRID2_SIZE), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
 
 !.....step 1: count up NR0, NR1, NR2, NRL, NLOC (NR1 and NLOC are denoted
 !             "n" here)
@@ -397,8 +409,10 @@
 
 !.....step 2: allocate according to the size "n" determined above
       DO KDST=1,GRID2_SIZE
-         ALLOCATE(WGTDATA(KDST)%W(WGTDATA(KDST)%N))
-         ALLOCATE(WGTDATA(KDST)%K(WGTDATA(KDST)%N))
+         ALLOCATE ( WGTDATA(KDST)%W(WGTDATA(KDST)%N), STAT=ISTAT )
+         CHECK_ALLOC_STATUS ( ISTAT )
+         ALLOCATE ( WGTDATA(KDST)%K(WGTDATA(KDST)%N), STAT=ISTAT )
+         CHECK_ALLOC_STATUS ( ISTAT )
          WGTDATA(KDST)%N=0
       END DO
 
@@ -460,6 +474,7 @@
 !  3. Revisions :
 !
 !     20-Feb-2012 : Origination
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !
 !  4. Copyright :
 !
@@ -499,6 +514,7 @@
 ! 13. Switches :
 !
 ! 14. Source code :
+      USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY : GRIDS
       IMPLICIT NONE
       INTEGER, INTENT(IN)      :: ID_GRD
@@ -536,11 +552,16 @@
       MNE=GRIDS(ID_GRD)%NTRI
       MNP=GRIDS(ID_GRD)%NX
       IF (THEAPPROACH .EQ. DIRAPPROACH) THEN
-        ALLOCATE(GRID_CENTER_LON(MNE))
-        ALLOCATE(GRID_CENTER_LAT(MNE))
-        ALLOCATE(GRID_CORNER_LON(3,MNE))
-        ALLOCATE(GRID_CORNER_LAT(3,MNE))
-        ALLOCATE(GRID_MASK(MNE))
+        ALLOCATE(GRID_CENTER_LON(MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_CENTER_LAT(MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_CORNER_LON(3,MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_CORNER_LAT(3,MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_MASK(MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
         DO IE=1,MNE
           I1=GRIDS(ID_GRD)%TRIGP(IE,1)
           I2=GRIDS(ID_GRD)%TRIGP(IE,2)
@@ -566,19 +587,31 @@
         GRID_CORNERS=3
       END IF
       IF (THEAPPROACH .EQ. DUALAPPROACH) THEN
-        ALLOCATE(TRIGINCD(MNP))
-        ALLOCATE(IOBP(MNP))
-        ALLOCATE(NEIGHBOR_NEXT(MNP))
-        ALLOCATE(NEIGHBOR_PREV(MNP))
-        ALLOCATE(NBASSIGNEDCORNER(MNP))
-        ALLOCATE(LISTNBCORNER(MNP))
+        ALLOCATE(TRIGINCD(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(IOBP(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(NEIGHBOR_NEXT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(NEIGHBOR_PREV(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(NBASSIGNEDCORNER(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(LISTNBCORNER(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
 
-        ALLOCATE(STATUS(MNP))
-        ALLOCATE(NEXTVERT(MNP))
-        ALLOCATE(PREVVERT(MNP))
-        ALLOCATE(FINALVERT(MNP))
-        ALLOCATE(LON_CENT_TRIG(MNE))
-        ALLOCATE(LAT_CENT_TRIG(MNE))
+        ALLOCATE(STATUS(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(NEXTVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(PREVVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(FINALVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(LON_CENT_TRIG(MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(LAT_CENT_TRIG(MNE), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
         CALL GET_UNSTRUCTURED_VERTEX_DEGREE (MNP, MNE,             &
                GRIDS(ID_GRD)%TRIGP, TRIGINCD)
         CALL GET_BOUNDARY(MNP, MNE, GRIDS(id_grd)%TRIGP, IOBP,     &
@@ -596,11 +629,16 @@
           END IF
         END DO
         GRID_CORNERS=MAXCORNER
-        ALLOCATE(GRID_CENTER_LON(MNP))
-        ALLOCATE(GRID_CENTER_LAT(MNP))
-        ALLOCATE(GRID_CORNER_LON(MAXCORNER,MNP))
-        ALLOCATE(GRID_CORNER_LAT(MAXCORNER,MNP))
-        ALLOCATE(GRID_MASK(MNP))
+        ALLOCATE(GRID_CENTER_LON(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_CENTER_LAT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_CORNER_LON(MAXCORNER,MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_CORNER_LAT(MAXCORNER,MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(GRID_MASK(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
         NBASSIGNEDCORNER(:)=0
         DO IP=1,MNP
           GRID_MASK(IP)=.TRUE.
@@ -745,20 +783,33 @@
             END DO
           END IF
         END DO
-        DEALLOCATE(NBASSIGNEDCORNER)
-        DEALLOCATE(LISTNBCORNER)
-        DEALLOCATE(TRIGINCD)
-        DEALLOCATE(IOBP)
-        DEALLOCATE(NEIGHBOR_PREV)
-        DEALLOCATE(NEIGHBOR_NEXT)
-        DEALLOCATE(STATUS)
-        DEALLOCATE(NEXTVERT)
-        DEALLOCATE(PREVVERT)
-        DEALLOCATE(FINALVERT)
-        DEALLOCATE(LON_CENT_TRIG)
-        DEALLOCATE(LAT_CENT_TRIG)
+        DEALLOCATE(NBASSIGNEDCORNER, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(LISTNBCORNER, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(TRIGINCD, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(IOBP, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(NEIGHBOR_PREV, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(NEIGHBOR_NEXT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(STATUS, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(NEXTVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(PREVVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(FINALVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(LON_CENT_TRIG, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(LAT_CENT_TRIG, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
 
-        ALLOCATE(GRID_DIMS(2))
+        ALLOCATE(GRID_DIMS(2), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
         GRID_DIMS(1)=MNP
         GRID_DIMS(2)=1
         GRID_SIZE=MNP
@@ -782,6 +833,7 @@
 !
 !     20-Feb-2012 : Origination, this is adapted from Erick Rogers
 !                   code by splitting the code into sections.
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !
 !  4. Copyright :
 !
@@ -810,6 +862,7 @@
 ! 13. Switches :
 !
 ! 14. Source code :
+      USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY : GRIDS
       USE SCRIP_CONSTANTS, ONLY : HALF
       IMPLICIT NONE
@@ -830,12 +883,18 @@
       GRID_RANK=2
       N1=SIZE(GRIDS(ID_GRD)%XGRD,1)
       N2=SIZE(GRIDS(ID_GRD)%XGRD,2)
-      ALLOCATE(XIN_GRD(N1,N2))
-      ALLOCATE(YIN_GRD(N1,N2))
-      ALLOCATE(DXDP_GRD(N1,N2))
-      ALLOCATE(DXDQ_GRD(N1,N2))
-      ALLOCATE(DYDP_GRD(N1,N2))
-      ALLOCATE(DYDQ_GRD(N1,N2))
+      ALLOCATE(XIN_GRD(N1,N2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(YIN_GRD(N1,N2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(DXDP_GRD(N1,N2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(DXDQ_GRD(N1,N2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(DYDP_GRD(N1,N2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(DYDQ_GRD(N1,N2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
 
       XIN_GRD=DBLE(GRIDS(ID_GRD)%XGRD)
       YIN_GRD=DBLE(GRIDS(ID_GRD)%YGRD)
@@ -844,7 +903,8 @@
       DYDP_GRD=DBLE(GRIDS(ID_GRD)%DYDP)
       DYDQ_GRD=DBLE(GRIDS(ID_GRD)%DYDQ)
 
-      ALLOCATE(GRID_DIMS(GRID_RANK))
+      ALLOCATE(GRID_DIMS(GRID_RANK), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
       GRID_DIMS(1)=N2
       NI=N2
       GRID_DIMS(2)=N1
@@ -858,11 +918,16 @@
 !         fake it. fortunately, it should be pretty rare to have a multi-grid
 !         case in meters.
 
-      ALLOCATE(GRID_CENTER_LON(NI*NJ))
-      ALLOCATE(GRID_CENTER_LAT(NI*NJ))
-      ALLOCATE(GRID_CORNER_LON(4,NI*NJ))
-      ALLOCATE(GRID_CORNER_LAT(4,NI*NJ))
-      ALLOCATE(GRID_MASK(NI*NJ))
+      ALLOCATE(GRID_CENTER_LON(NI*NJ), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CENTER_LAT(NI*NJ), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CORNER_LON(4,NI*NJ), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CORNER_LAT(4,NI*NJ), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_MASK(NI*NJ), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
 
 !.....notes: this "gridshift" variable is included because SCRIP sometimes
 !            has trouble when grids cell locations are identical between 
@@ -959,6 +1024,7 @@
 ! 13. Switches :
 !
 ! 14. Source code :
+      USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY : GRIDS, UNGTYPE
       IMPLICIT NONE
       INTEGER, INTENT(IN)      :: ID_GRD
@@ -1169,6 +1235,7 @@
 !  Written:
 !
 !    20-Feb-2012
+!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
 !
 !  Author:
 !
@@ -1187,6 +1254,7 @@
 !    returns the neighbor of this point on one side.
 !    if the point is interior then the value 0 is set.
 !    
+        USE W3SERVMD, ONLY: EXTCDE
         IMPLICIT NONE
                
         INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
@@ -1203,10 +1271,14 @@
         INTEGER :: ISFINISHED, INEXT, IPREV
         INTEGER :: IPNEXT, IPPREV, ZNEXT, ZPREV
         
-        ALLOCATE(STATUS(MNP))
-        ALLOCATE(COLLECTED(MNP))
-        ALLOCATE(PREVVERT(MNP))
-        ALLOCATE(NEXTVERT(MNP))
+        ALLOCATE(STATUS(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(COLLECTED(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(PREVVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
+        ALLOCATE(NEXTVERT(MNP), STAT=ISTAT)
+        CHECK_ALLOC_STATUS ( ISTAT )
         IOBP = 0
         NEIGHBOR_NEXT = 0
         NEIGHBOR_PREV = 0
@@ -1337,10 +1409,14 @@
           END IF
         END DO
 
-        DEALLOCATE(STATUS)
-        DEALLOCATE(COLLECTED)
-        DEALLOCATE(NEXTVERT)
-        DEALLOCATE(PREVVERT)
+        DEALLOCATE(STATUS, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(COLLECTED, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(NEXTVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
+        DEALLOCATE(PREVVERT, STAT=ISTAT)
+        CHECK_DEALLOC_STATUS ( ISTAT )
         
       END SUBROUTINE
 !/

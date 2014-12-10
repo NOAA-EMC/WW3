@@ -63,13 +63,7 @@
 
 # 2.a Determine file extension - - - - - - - - - - - - - - - - - - - - - - - - 
 #     .f90 assumes free format, .f assumes fixed format, change if necessary
-
-  if [ -f $name.f90 ]
-  then
-    fext='f90'
-  else
-    fext='f'
-  fi
+# *** file extension (fext) is set and exported by calling program (ad3) ***
 
 # 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #     Save compiler exit code in $OK
@@ -109,6 +103,8 @@
            opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
     esac
   fi
+
+  opt="$opt -I$path_i"
 
 # 2.b.2 Compile
 
