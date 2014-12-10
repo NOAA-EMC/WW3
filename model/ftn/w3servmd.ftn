@@ -224,12 +224,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
 !/    18-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/    DD-MMM-YYYY : Skip blank lines and leading blanks ( version 5.XX )
+!/    10-Dec-2014 : Skip blank lines and leading blanks ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -676,12 +676,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-Jan-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    23-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/    DD-MMM-YYYY : Add error message and context args  ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !

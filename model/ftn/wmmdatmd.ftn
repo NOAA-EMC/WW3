@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                       ( version 3.07 )
@@ -25,7 +25,7 @@
 !/    29-May-2009 : Preparing distribution version.    ( version 3.14 )
 !/    03-Sep-2012 : Add clock parameters (init.).      ( version 4.10 )
 !/    04-Feb-2014 : Switched to DATE_AND_TIME param.   ( version 4.18 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status     ( version 5.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -389,7 +389,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -399,7 +399,7 @@
 !/    25-May-2006 : Add STIME in BPSTGE.                ( version 3.09 )
 !/    12-Jan-2007 : Add FLSTI and FLLSTL.               ( version 3.10 )
 !/    22-Jan-2007 : Add NAVMAX.                         ( version 3.10 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -551,11 +551,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !

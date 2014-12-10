@@ -7,11 +7,11 @@
 !/                  |   E. Rogers, M. Dutour,           |
 !/                  |   A. Roland, F. Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    06-Sep-2012 : Origination, transfer from WMGRIDMD ( version 4.08 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !/    Copyright 2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -78,7 +78,7 @@
 !/                  | WAVEWATCH III                     |
 !/                  | E. Rogers, M. Dutour, A. Roland   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !  1. Original author :
@@ -100,7 +100,7 @@
 !                   ---scrip_info_renormalization (conv_x and all that)
 !     11-Apr-2013   Kevin Lind
 !                   Added code for reading/writing SCRIP remap files
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !
 !  4. Copyright :
 !
@@ -463,6 +463,13 @@
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                             &
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                  &
      &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                     |
+!/                  | M. Dutour, A. Roland              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         10-Dec-2014 !
+!/                  +-----------------------------------+
+!/
 !  1. Original author :
 !
 !     Mathieu Dutour Sikiric, IRB & Aron Roland, Z&P
@@ -474,7 +481,7 @@
 !  3. Revisions :
 !
 !     20-Feb-2012 : Origination
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !
 !  4. Copyright :
 !
@@ -821,6 +828,13 @@
      &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
      &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
      &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                     |
+!/                  | M. Dutour, A. Roland              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         10-Dec-2014 !
+!/                  +-----------------------------------+
+!/
 !  1. Original author :
 !
 !     Mathieu Dutour Sikiric, IRB & Aron Roland, Z&P
@@ -833,7 +847,7 @@
 !
 !     20-Feb-2012 : Origination, this is adapted from Erick Rogers
 !                   code by splitting the code into sections.
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !
 !  4. Copyright :
 !
@@ -1232,10 +1246,17 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE GET_BOUNDARY(MNP, MNE, TRIGP, IOBP, NEIGHBOR_PREV,       &
      &   NEIGHBOR_NEXT)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III                     |
+!/                  | M. Dutour, A. Roland              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         10-Dec-2014 !
+!/                  +-----------------------------------+
+!/
 !  Written:
 !
 !    20-Feb-2012
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !
 !  Author:
 !

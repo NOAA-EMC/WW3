@@ -856,7 +856,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Aug-2010 |
+!/                  | Last update :         12-Jun-2012 |
 !/                  +-----------------------------------+
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -1231,7 +1231,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Jun-2012 |
+!/                  | Last update :         26-Sep-2012 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1998 : Final FORTRAN 77                    ( version 1.18 )

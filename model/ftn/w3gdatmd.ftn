@@ -8,7 +8,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -60,7 +60,7 @@
 !/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
 !/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
 !/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -994,12 +994,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    24-Feb-2004 : Origination.                        ( version 3.06 )
 !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -1141,7 +1141,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -1154,7 +1154,7 @@
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement unstructured grids        ( version 3.14.1)
 !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -1384,13 +1384,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    19-Feb-2004 : Origination.                        ( version 3.06 )
 !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
 !/    05-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -2120,7 +2120,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           T. J. Campbell          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         23-Dec-2010 |
+!/                  | Last update :         20-Jul-2011 |
 !/                  +-----------------------------------+
 !/
 !/    30-Oct-2009 : Origination.                        ( version 3.13 )

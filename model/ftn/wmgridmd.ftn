@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |           W. E. Rogers            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination WMGLOW, WMGHGH, WMRSPC. ( version 3.08 )
@@ -41,7 +41,7 @@
 !/    21-Sep-2012 : Modify WMGHGH to support SCRIP remap( version 4.11 )
 !/                  write/read capabilities (K. Lind, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -123,7 +123,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |           W. E. Rogers            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
@@ -135,7 +135,7 @@
 !/                  (W. E. Rogers, NRL)
 !/    12-Mar-2012 : Use MPI_COMM_NULL in checks.        ( version 4.07 )
 !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -955,7 +955,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |           W. E. Rogers            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2005 : Origination.                        ( version 3.08 )
@@ -981,7 +981,7 @@
 !/                  file read and write option
 !/                  (K. R. Lind, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -3192,7 +3192,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    24-Apr-2006 : Origination.                        ( version 3.09 )
@@ -3213,7 +3213,7 @@
 !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -4499,14 +4499,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    22-Sep-2005 : Origination.                        ( version 3.08 )
 !/    25-Jul-2006 : Point output grid added.            ( version 3.10 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Add checks for allocate status      ( version 5.XX )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
