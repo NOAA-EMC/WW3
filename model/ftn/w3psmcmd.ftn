@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3PSMCMD
 !/
@@ -1524,7 +1525,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jun-2006 |
+!/                  | Last update :         09-Dec-2010 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -1723,7 +1724,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jun-2006 |
+!/                  | Last update :         16-Jan-2012 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )

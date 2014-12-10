@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3SIC3MD
 !/
@@ -616,7 +617,7 @@
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         30-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2013 : Origination (port from Clarkson.f90)( version 4.10 )
@@ -762,7 +763,7 @@
 !/                  |           H. Shen                 |
 !/                  |           E. Rogers               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         17-Apr-2014 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-2014 : Origination (from WN_CMPLXA.f90)      (H. Shen)
@@ -884,7 +885,7 @@
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         30-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2013 : Origination (port from Clarkson.f90)( version 4.10 )
@@ -1057,7 +1058,7 @@
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         30-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2013 : Origination (port from Clarkson.f90)( version 4.10 )
@@ -1149,7 +1150,7 @@
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
+!/                  | Last update :         30-Oct-2013 |
 !/                  +-----------------------------------+
 !/
 !/    06-May-2013 : Origination (port from Clarkson.f90)( version 4.10 )

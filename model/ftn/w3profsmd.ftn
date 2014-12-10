@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3PROFSMD
 !/
@@ -6,7 +7,7 @@
 !/                  |           Aron Roland             |
 !/                  |         Fabrice Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Oct-2013 |
+!/                  | Last update :         15-Dec-2013 |
 !/                  +-----------------------------------+
 !/
 !/    XX-Nov-2007 : Origination.                        ( version 3.10 )
@@ -269,7 +270,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           Fabrice Ardhuin         |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Mar-2011 |
+!/                  | Last update :         20-Jun-2013 |
 !/                  +-----------------------------------+
 !/
 !/    01-Mar-2011 : Origination.                        ( version 3.14 )

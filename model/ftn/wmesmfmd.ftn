@@ -1,6 +1,7 @@
+#include "w3macros.h"
 !/
 !/ ------------------------------------------------------------------- /
-!/ ESMF macros for logging
+!/ Macros for ESMF logging
 !/
 #define FILENAME "wmesmfmd.ftn"
 #define CONTEXT  line=__LINE__,file=FILENAME,method=METHOD
@@ -31,7 +32,7 @@
 !/
 !/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.

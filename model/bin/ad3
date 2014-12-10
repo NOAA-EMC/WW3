@@ -160,11 +160,6 @@
 
 # 1.f Set appropriate Fortran file suffix  - - - - - - - - - - - - - - - - - -
 
-  # list of ftn files that have CPP macros
-  # these files will be assigned a F90 suffix
-  # must match the same list defined in make_makefile.sh
-  cpp_ftn_files="wmesmfmd"
-
   suffixes="ftn f F f90 F90 c"
   fexti=none
   for s in $suffixes
@@ -184,11 +179,7 @@
   fi
   if [ "$fexti" = 'ftn' ]
   then
-    fexto=f90
-    if [ -n "`echo $cpp_ftn_files | grep $name`" ]
-    then
-      fexto=F90
-    fi
+    fexto=F90
   else
     fexto=$fexti
   fi
@@ -326,15 +317,16 @@
 # 3. Compile source code f / f90                                              #
 # --------------------------------------------------------------------------- #
 
+export fext    # for use by comp
+export path_m  # for use by comp
+export path_i  # for use by comp
+
 if [ ! -f $name.c ]
 then
 
 # 3.a Run compile program
 
   error='0'
-
-  export fext    # for use by comp
-  export path_m  # for use by comp
 
   if $path_b/comp $name > comp.out 2> comp.err
   then

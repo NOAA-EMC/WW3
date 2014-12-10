@@ -1010,16 +1010,12 @@
     fi
     if [ "$fexti" = 'ftn' ]
     then
-      fexto=f90
-      if [ -n "`echo $cpp_ftn_files | grep $file`" ]
-      then
-        fexto=F90
-      fi
+      fexto=F90
     else
       fexto=$fexti
     fi
 
-    string1='$(aPo)/'$file'.o : '$file.$fexti' '
+    string1='$(aPo)/'$file'.o : '$file.$fexti' 'w3macros.h' '
     string2='	@$(aPb)/ad3'" $file"
     string3="$NULL"
 

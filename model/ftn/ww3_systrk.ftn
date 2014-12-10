@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       PROGRAM WW3_SYSTRK
 !/
@@ -7,7 +8,7 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :         29-Nov-2013 |
+!/                  | Last update :         11-Feb-2014 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )

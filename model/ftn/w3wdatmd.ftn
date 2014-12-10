@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3WDATMD
 !/
@@ -5,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Nov-2013 |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -16,6 +17,7 @@
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    16-May-2010 : Add iceberg damping                 ( version 3.14.4 )
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -91,6 +93,10 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
+!/ Module private variable for checking error returns
+!/
+      INTEGER, PRIVATE        :: ISTAT
+!/
 !/ Conventional declarations
 !/
       INTEGER                 :: NWDATA = -1, IWDATA = -1
@@ -124,10 +130,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Mar-2004 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    31-Mar-2004 : Origination.                        ( version 3.06 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -199,7 +206,8 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Set variable and allocate arrays
 !
-      ALLOCATE ( WDATAS(0:NGRIDS) )
+      ALLOCATE ( WDATAS(0:NGRIDS), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
       NWDATA = NGRIDS
 !
 ! -------------------------------------------------------------------- /
@@ -232,7 +240,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Nov-2013 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    22-Oct-2004 : Origination.                        ( version 3.06 )
@@ -241,6 +249,7 @@
 !/    05-Jul-2006 : Consolidate stress vector.          ( version 3.09 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    14-Nov-2013 : Initialize UST and USTDIR.          ( version 4.13 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -355,7 +364,8 @@
       NSEATM = NSEALM * NAPROC
 !
       IF ( FL_ALL ) THEN
-          ALLOCATE ( WDATAS(IMOD)%VA(NSPEC,0:NSEALM) )
+          ALLOCATE ( WDATAS(IMOD)%VA(NSPEC,0:NSEALM), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           IF ( NSEAL .NE. NSEALM ) WDATAS(IMOD)%VA(:,NSEALM) = 0.
         END IF
 !
@@ -365,7 +375,8 @@
                  WDATAS(IMOD)%UST(0:NSEATM),                          &
                  WDATAS(IMOD)%USTDIR(0:NSEATM),                       &
                  WDATAS(IMOD)%ASF(NSEATM),                            &
-                 WDATAS(IMOD)%FPIS(NSEATM) )
+                 WDATAS(IMOD)%FPIS(NSEATM), STAT=ISTAT                )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       WDATAS(IMOD)%UST   (:) = 1.E-5
       WDATAS(IMOD)%USTDIR(:) = 0.

@@ -1,56 +1,61 @@
 #!/bin/sh
 # --------------------------------------------------------------------------- #
-# w3_source : Make a FORTRAN source code file of a selected WAVEWATCH III     #
-#             program and put in work directory.                              #
+# w3_source : Make a FORTRAN source code tar file for a selected WAVEWATCH    #
+#             III program and put in a work directory.                        #
 #                                                                             #
 # use       : w3_source [program [...]]                                       #
-#              program: program name(s) of WAVEWATCH III (sub)program(s).     #
-#           - Source codes and make file are put in main directory in a tar   #
-#             file, for instance ww3_grid.tar                                 #
-#           - Check set-up in section 0.                                      #
+#               program: program name(s) of WAVEWATCH III (sub)program(s).    #
+#           - Source files and makefile are created in $WWATCH3_TMP.          #
+#           - Gzipped tar file (e.g., ww3_grid.tar.gz) is created in          #
+#             $WWATCH3_DIR/work.                                              #
+#           - $WWATCH3_TMP is cleaned out after tar file is created.          #
 #                                                                             #
-# error codes : Program ends if error occurs in make_makefile.sh.             #
+# make variables:                                                             #
+#   The following make variables are used in the created makefile for         #
+#   compile settings:                                                         #
+#       CC       : C compiler                                                 #
+#       CFLAGS   : C compiler options                                         #
+#       CPPFLAGS : C preprocessor options (used with both CC and FC)          #
+#       FC       : Fortran compiler                                           #
+#       FFLAGS   : Fortran compiler options                                   #
+#       LDFLAGS  : Linker options                                             #
+#       LIBS     : External libraries                                         #
+#   No defaults are provided for these compile settings.  The variables       #
+#   for which settings are required must be set in the user environment       #
+#   when w3_source is invoked.                                                #
+#                                                                             #
+# error codes : Program ends if error occurs in make_makefile.sh or ad3.      #
 #                                                                             #
 # programs used :                                                             #
 #       make_makefile.sh : Make the makefile.                                 #
+#       ad3              : Preprocess ftn source files.                       #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      May 2009               #
-#                                                      Aug. 2009              #
+#                                                      Nov 2014               #
 #                                                                             #
-#    Copyright 2009-2010 National Weather Service (NWS),                      #
+#    Copyright 2009-2013 National Weather Service (NWS),                      #
 #       National Oceanic and Atmospheric Administration.  All rights          #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-# 0. Set up                                                                   #
+# 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
+# 1.a Internal variables
 
-  progs="$*"
+# 1.a.0 Set default mode and capture script arguments
 
-  if ! [ ${fext} ]
+  if test "$#" = '0'
   then
-    fext='f90'                      # FORTRAN file extension to be used
+    default_mode=1
+    script_args=
+  else
+    default_mode=0
+    script_args="$*"
   fi
 
-  lext='lst'                        # FORTRAN listing extension
- 
-  if ! [ ${comp} ]
-  then
-    comp='ifort'                    # compiler command
-  fi
-
-  fflags='-O0 -g -traceback -check all -fpe0 -ftrapuv -openmp -convert big_endian'
-                                    # compiler flags, '-c' aut. invoked. 
-  ldflags='-O0 -g -traceback -check all -fpe0 -ftrapuv -openmp -convert big_endian'
-                                    # loader (linker) flags
-  libs=                             # libraries
-
-  cc='cc'
-  cflags=
-
-# 0.a.1 Setup file
+# 1.a.1 Setup file
 
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
 # The following line must not be removed: it is a switch for local install 
@@ -61,7 +66,7 @@
 
   if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
-# 0.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
   if test -f $ww3_env
   then
@@ -74,235 +79,345 @@
     exit 1
   fi
 
-# --------------------------------------------------------------------------- #
-# 1. Preparations                                                             #
-# --------------------------------------------------------------------------- #
-
+  iexit=0
+  if [ -z "${WWATCH3_DIR}" ]
+  then
+    echo '*** WWATCH3_DIR not defined '
+    iexit=`expr $iexit + 1`
+  fi
+  if [ -z "${WWATCH3_TMP}" ]
+  then
+    echo '*** WWATCH3_TMP not defined '
+    iexit=`expr $iexit + 1`
+  fi
   echo ' '
+  if [ $iexit -gt 1 ]; then exit 1; fi
+
+# 1.a.3 Check for switch file  - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  work_dir=$main_dir/work
+
+  switch_file=$main_dir/bin/switch
+  if test ! -f $switch_file
+  then
+    echo "*** switch file $switch_file not found ***" ; echo ' '
+    exit 1
+  fi
+  switch_file_old=$main_dir/bin/switch.old
+
+  switches=$(cat $switch_file)
+
+# 1.a.4 Setup suffix list  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  suffixes="f F f90 F90 c"
+
+# 1.a.5 Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# reg_programs = non-NetCDF programs
+  reg_programs="ww3_grid"
+  reg_programs="$reg_programs ww3_strt"
+  reg_programs="$reg_programs ww3_bound"
+  reg_programs="$reg_programs ww3_prep"
+  reg_programs="$reg_programs ww3_shel"
+  reg_programs="$reg_programs ww3_outf"
+  reg_programs="$reg_programs ww3_outp"
+  reg_programs="$reg_programs ww3_trck"
+  reg_programs="$reg_programs ww3_grib"
+  reg_programs="$reg_programs ww3_gspl"
+  reg_programs="$reg_programs ww3_gint"
+  reg_programs="$reg_programs gx_outf"
+  reg_programs="$reg_programs gx_outp"
+
+  if [ -n "`grep TIDE $switch_file`" ]
+  then
+    reg_programs="$reg_programs ww3_prtide"
+  fi
+
+# cdf_programs = NetCDF programs
+  cdf_programs="ww3_prnc"
+  cdf_programs="$cdf_programs ww3_ounf"
+  cdf_programs="$cdf_programs ww3_ounp"
+  cdf_programs="$cdf_programs ww3_bounc"
+
+  if [ -n "`grep TRKNC $switch_file`" ]
+  then
+  cdf_programs="$cdf_programs ww3_systrk"
+  else
+  reg_programs="$reg_programs ww3_systrk"
+  fi
+
+  if [ -n "`grep SCRIPNC $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_multi"
+    cdf_programs="$cdf_programs ww3_multi_esmf"
+    cdf_programs="$cdf_programs ww3_sbs1"
+  else
+    reg_programs="$reg_programs ww3_multi"
+    reg_programs="$reg_programs ww3_multi_esmf"
+    reg_programs="$reg_programs ww3_sbs1"
+  fi
+
+# all_programs = all possible programs
+  all_programs="$reg_programs $cdf_programs"
+
+# progs = programs requested to compile
+  if [ $default_mode -eq 1 ]
+  then
+    progs="$all_programs"
+  else
+    progs="$script_args"
+  fi
+
+# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ''
   echo '               **************************************'
   echo '             ***  making WAVEWATCH III source codes ***'
   echo '               **************************************'
-  echo ' '
+  echo ''
 
-# 1.a Echo to screen choices for internal variables, directory paths etc
-#     screen output of errors
+# 1.c Prepare work and scratch directories - - - - - - - - - - - - - - - - - - 
 
-  iexit=0
-
-  echo ' '
-  echo '             ***  General setting for W3_SOURCE     ***'
-  echo ' '
-
-  if [ ${fext} ]
+  if [ ! -d $work_dir ]
   then
-    echo '           File extension set to:               '$fext
-  else
-    echo ' ERROR : variable fext not set ' 
-    iexit=`expr $iexit + 1`
+    if ! `mkdir $work_dir`
+    then
+      echo '' ; echo "      *** Cannot create $work_dir ***" ; echo ''
+      exit
+    fi
   fi
-  if [ ${comp} ]
-  then
-    echo '           Compiler set to:                     '$comp
-  else
-    echo ' ERROR : no compiler defined   '
-    iexit=`expr $iexit + 1`
-  fi
-  if [ ${WWATCH3_DIR} ]
-  then
-    echo '           Root wwatch3 directory set to:       '${WWATCH3_DIR}
-  else
-    echo ' ERROR : wwatch3 directory source not defined '
-    iexit=`expr $iexit + 1`
-  fi
-    if [ ${WWATCH3_TMP} ]
-  then
-    echo '           Temporary scratch directory set to:  '${WWATCH3_TMP}
-  else
-    echo ' ERROR : temporary directory for scratch not defined '
-    iexit=`expr $iexit + 1`
-  fi
-echo ' '
-
- if [ $iexit -gt 1 ]; then exit; fi
-
-# Set main_dir to WWATCH3_DIR
-
-  main_dir=${WWATCH3_DIR}
-  temp_dir=${WWATCH3_TMP}
-
-# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#                moved up
-
-# 1.c Process/save input - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-  if [ -z "$progs" ]
-  then
-    progs='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp ww3_trck'
-    progs="$progs ww3_grib"
-    progs="$progs gx_outf gx_outp"
-    progs="$progs ww3_multi"
-    progs="$progs ww3_sbs1"
-    progs="$progs ww3_gint"
-    progs="$progs ww3_multi_esmf"
-  fi
-
-# 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
 
   if [ ! -d $temp_dir ]
   then
     if ! `mkdir $temp_dir`
     then
-      echo ' ' ; echo "      *** Cannot create $temp_dir ***" ; echo ' '
+      echo '' ; echo "      *** Cannot create $temp_dir ***" ; echo ''
       exit
     fi
   fi
 
   cd $temp_dir
-  rm -f *.f90 *.$fext *.l makefile
-  cd $main_dir/ftn
+  \rm -f *
 
-# 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.d Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  if [ ! -f $main_dir/bin/switch ]
-  then
-    echo ' ' ; echo "      *** switch file not found ***" ; echo ' '
-    exit
-  fi
-
-  echo 'Making makefile ...'
+  echo 'Making main makefile ...'
+  cd $main_dir
   export WWATCH3_DIR WWATCH3_TMP
   if $main_dir/bin/make_makefile.sh
   then
-    cp $main_dir/bin/switch $main_dir/bin/switch.old
+    \cp -f $switch_file $switch_file_old
   else
     exit 1
   fi
+  echo ''
+  main_makefile=$main_dir/ftn/makefile
 
-  echo ' '
+# 1.e Define some useful functions - - - - - - - - - - - - - - - - - - - - - -
+
+# get make dependencies
+  get_depend () {
+    file=$1
+    make=$2
+    # get target line(s)
+    target=$(awk \
+      'BEGIN { found=0 ; value="" } \
+         /^[[:blank:]]*\@\$\(aPb\)\/ad3[[:blank:]]?'$file'/ { print value ; exit 0 } \
+         /^[[:blank:]]*\$\(aPo\)\/'$file'\.o[[:blank:]]*\:/ { found=1 } \
+         { if (found==1) value=(value $0) } \
+       END { if (found==0) {print "'$file' target not found"; exit 1} }' \
+       $make 2>&1 || return 1) || { echo "awk for $file target failed"; return 1; }
+    # get dependency list
+    depend=$(echo "$target" | \
+      sed -e 's/^[[:blank:]]*$(aPo)\/'$file'.o[[:blank:]]*:[[:blank:]]*//g' \
+          -e 's/$(aPo)\///g' -e 's/SCRIP\///g' -e 's/ftn/F90/g' -e 's/\\//g' \
+      2>&1 || return 1) || { echo "sed for $file target failed"; return 1; }
+    # echo w/o quotes to get rid of all extra whitespace
+    echo $depend
+    return 0
+  }
+
+# check make variable and issue warning
+  check_make_variable () {
+    nam=$1
+    val=$2
+    if [ -z "$val" ]
+    then
+      echo "*** WARNING ***  make variable not set: $nam"
+    fi
+  }
 
 # --------------------------------------------------------------------------- #
 # 2. Make code for all requests                                               #
 # --------------------------------------------------------------------------- #
-# 2.a Loop over all requests
+
+# 2.a Loop over all requests - - - - - - - - - - - - - - - - - - - - - - - - -
 
   for prog in $progs
   do
-    echo "Processing $prog.f90"
-    echo "-----------------------"
-    echo " "
+    echo ''
+    echo "Processing $prog"
+    echo '-----------------------'
+    echo ''
+    tarfile=$work_dir/$prog.tar.gz
+    cd $main_dir
 
-# 2.b Check input  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.b Get file list from makefile  - - - - - - - - - - - - - - - - - - - - - - 
 
-    OK='n'
-    checks='ww3_grid ww3_strt ww3_prep ww3_shel ww3_outf ww3_outp ww3_trck'
-    checks="$checks ww3_grib"
-    checks="$checks gx_outf gx_outp"
-    checks="$checks ww3_multi"
-    checks="$checks ww3_sbs1"
-    checks="$checks ww3_gint"
-    checks="$checks ww3_gspl"
-    checks="$checks ww3_multi_esmf"
-
-    for check in $checks
+    set `grep "link $prog" $main_makefile`
+    until [ "$1" = "$prog" ]
     do
-      if [ "$prog" = "$check" ]
+      shift
+    done
+    files=$*
+    srcs=
+    incs="w3macros.h"
+
+# 2.c Run ad3 to generate source files - - - - - - - - - - - - - - - - - - - - 
+
+    for file in $files
+    do
+      if ${main_dir}/bin/ad3 $file 0 1
       then
-        OK='y'
+        fext=none
+        for s in $suffixes
+        do
+          if [ -f $temp_dir/$file.$s ]
+          then
+            fext=$s
+            break
+          fi
+        done
+        if [ "$fext" = 'none' ]
+        then
+          echo "Source file $temp_dir/$file.* not found"
+          echo "Source file suffixes checked: $suffixes"
+          exit 1
+        fi
+        if [ -z "$srcs" ]
+        then
+          srcs="$file.$fext"
+        else
+          srcs="$srcs $file.$fext"
+        fi
+      else
+        exit 1
       fi
     done
 
-    if [ "$OK" = 'n' ]
-    then
-      echo "   *** Program name not recognized ***"
-      echo ' '
+# 2.d Copy include files - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-# 2.c Get file list from makefile  - - - - - - - - - - - - - - - - - - - - - - 
+    for inc in $incs
+    do
+      if [ -e $main_dir/ftn/$inc ]
+      then
+        \cp -f $main_dir/ftn/$inc $temp_dir/.
+      else
+        echo "Include file $main_dir/ftn/$inc not found"
+        exit 1
+      fi
+    done
 
-    else
-      set `grep "link $prog" $main_dir/ftn/makefile`
-      until [ "$1" = "$prog" ]
-      do
-        shift
-      done
-      files=$*
-      fors=
-        cs=
-      objs=
+# 2.d Create makefile  - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-# 2.c Run ad3 to get sources - - - - - - - - - - - - - - - - - - - - - - - - - 
+    cd $temp_dir
+    \rm -f makefile
+    touch makefile
 
-      for file in $files
-      do
-        ${main_dir}/bin/ad3 $file 0 1
-        if [ "$fext" != 'f90' ] ; then
-          mv $temp_dir/$file.f90 $temp_dir/$file.$fext ; fi
-        if [ -f $temp_dir/$file.$fext ] ; then
-          fors="$fors $file.$fext" ; fi
-        if [ -f $temp_dir/$file.c ] ; then
-          cs="$cs $file.c" ; fi
-        objs="$objs $file.o"
-        mods="$mods $file.mod"
-        lsts="$lsts $file.$lext"
-      done
+    echo '########################################################'>> makefile
+    echo "PROGRAM  = $prog"                                        >> makefile
+    echo '########################################################'>> makefile
+    echo ''                                                        >> makefile
+    echo 'SHELL    = /bin/sh'                                      >> makefile
+    echo ''                                                        >> makefile
+    echo "CC       = $CC"                                          >> makefile
+    echo "CFLAGS   = $CFLAGS"                                      >> makefile
+    echo "CPPFLAGS = $CPPFLAGS"                                    >> makefile
+    echo "FC       = $FC"                                          >> makefile
+    echo "FFLAGS   = $FFLAGS"                                      >> makefile
+    echo "LDFLAGS  = $LDFLAGS"                                     >> makefile
+    echo "LIBS     = $LIBS"                                        >> makefile
+    echo ''                                                        >> makefile
+    echo "INCS     = $incs"                                        >> makefile
+    echo "SRCS     = $srcs"                                        >> makefile
+    echo 'OBJS     = $(addsuffix .o, $(basename $(SRCS)))'         >> makefile
+    echo ''                                                        >> makefile
+    echo "SWITCHES = $switches"                                    >> makefile
+    echo ''                                                        >> makefile
+    echo '########################################################'>> makefile
+    echo '# targets'                                               >> makefile
+    echo '########################################################'>> makefile
+    echo 'default : $(PROGRAM)'                                    >> makefile
+    echo ''                                                        >> makefile
+    echo '$(PROGRAM) : $(OBJS)'                                    >> makefile
+    echo '	$(FC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS)'    >> makefile
+    echo ''                                                        >> makefile
+    echo 'clean :'                                                 >> makefile
+    echo '	\rm -f *.o *.mod'                                  >> makefile
+    echo ''                                                        >> makefile
+    echo '########################################################'>> makefile
+    echo '# compile rules'                                         >> makefile
+    echo '########################################################'>> makefile
+    echo '.SUFFIXES : .f .f90 .F .F90 .c'                          >> makefile
+    echo ''                                                        >> makefile
+    echo '%.o : %.c'                                               >> makefile
+    echo '	$(CC) -c $(CFLAGS) $<'                             >> makefile
+    echo ''                                                        >> makefile
+    echo '%.o : %.f90'                                             >> makefile
+    echo '	$(FC) -c $(FFLAGS) $<'                             >> makefile
+    echo ''                                                        >> makefile
+    echo '%.o : %.F90'                                             >> makefile
+    echo '	$(FC) -c $(FFLAGS) $<'                             >> makefile
+    echo ''                                                        >> makefile
+    echo '%.o : %.f'                                               >> makefile
+    echo '	$(FC) -c $(FFLAGS) $<'                             >> makefile
+    echo ''                                                        >> makefile
+    echo '%.o : %.F'                                               >> makefile
+    echo '	$(FC) -c $(FFLAGS) $<'                             >> makefile
+    echo ''                                                        >> makefile
+    echo '########################################################'>> makefile
+    echo '# dependencies'                                          >> makefile
+    echo '########################################################'>> makefile
+    for file in $files
+    do
+      target="$file.o"
+      depend=$(get_depend $file $main_makefile || return 1) || exit 1
+      echo ''                                                      >> makefile
+      echo "$target : $depend"                                     >> makefile
+    done
 
-# 2.d Make makefile  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.d Create tarfile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      cd $temp_dir
+    echo ''
+    echo "Create tarfile: $tarfile"
+    tar -czf $tarfile $srcs $incs makefile
+    \rm -f $srcs $incs makefile
 
-      echo 'SHELL=/bin/sh'                                       >> makefile
-      echo '#'                                                   >> makefile
-      echo "SRCS=	$fors"                                   >> makefile
-      echo "OBJS=	$objs"                                   >> makefile
-      echo "MODS=	$mods"                                   >> makefile
-      echo "LSTS=	$lsts"                                   >> makefile
-      echo '#'                                                   >> makefile
-      echo "CC =	$cc"                                     >> makefile
-      echo "CFLAGS =	$cflags"                                 >> makefile
-      echo '#'                                                   >> makefile
-      echo "FC =	$comp"                                   >> makefile
-      echo "FFLAGS =	$fflags"                                 >> makefile
-      echo "LDFLAGS =	$ldflags"                                >> makefile
-      echo "LIBS =	$libs"                                   >> makefile
-      echo "CMD =	$prog"                                   >> makefile
-      echo '#'                                                   >> makefile
-      echo 'all:	$(CMD)'                                  >> makefile
-      for file in $files
-      do
-        echo ' '                                                 >> makefile
-        sed -n "/^\$(aPo)\/$file.o :/p" $main_dir/ftn/makefile | \
-           sed -e 's/\$(aPo)\///g' -e "s/ftn/$fext/g" \
-               -e 's/ : /:	/g'                              >> makefile
-        if [ -f ./$file.$fext ]
-        then
-          echo '	$(FC) -c $(FFLAGS)'" $file.$fext"        >> makefile
-        fi
-        if [ -f ./$file.c ]
-        then
-          echo '	$(CC) -c $(CFLAGS)'" $file.c"            >> makefile
-        fi
-      done
-      echo ' '                                                   >> makefile
-      echo '$(CMD):	$(OBJS)'                                 >> makefile
-      echo '	$(FC) $(LDFLAGS) -o $(CMD) $(OBJS) $(LIBS)'      >> makefile
-      echo ' '                                                   >> makefile
-      echo 'clean:'                                              >> makefile
-      echo '	rm -f $(OBJS) $(MODS) $(LSTS)'                   >> makefile
-      echo ' '                                                   >> makefile
+# 2.e End loop over all requests - - - - - - - - - - - - - - - - - - - - - - -
 
-      tar -cf $main_dir/work/$prog.tar ./*.$fext ./*.c ./makefile
-      rm -f *.f90 makefile
-      echo ' '
-    fi
   done
+  echo ''
+
+# 2.f Check make variables and print warnings  - - - - - - - - - - - - - - - -
+
+  check_make_variable CC       "$CC"
+  check_make_variable CFLAGS   "$CFLAGS"
+  check_make_variable CPPFLAGS "$CPPFLAGS"
+  check_make_variable FC       "$FC"
+  check_make_variable FFLAGS   "$FFLAGS"
+  check_make_variable LDFLAGS  "$LDFLAGS"
+  check_make_variable LIBS     "$LIBS"
 
 # --------------------------------------------------------------------------- #
 # 3. End of program ID.                                                       #
 # --------------------------------------------------------------------------- #
 
-  echo ' '
+  echo ''
   echo '                  *********************************'
   echo '                *** end of source code generation ***'
   echo '                  *********************************'
-  echo ' '
+  echo ''
 
 # End of w3_source ---------------------------------------------------------- #
