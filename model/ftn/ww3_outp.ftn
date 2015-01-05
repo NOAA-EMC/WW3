@@ -642,6 +642,8 @@
 !
       IOUT   = 0
 !
+! remark: it would be better to write these warnings only if source term
+!         output is requested
 !/IC1      WRITE(NDSO,3960)
 !/IC2      WRITE(NDSO,3960)
 !/IC3      WRITE(NDSO,3960)
