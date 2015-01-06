@@ -119,6 +119,8 @@
     esac
   fi
 
+  opt="$opt -I$path_i"
+
 # 2.b.2 Compile
 
   $comp $opt                             $name.$fext > $name.out 2> $name.err

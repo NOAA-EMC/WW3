@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE WMMDATMD
 !/
@@ -5,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Feb-2014 |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                       ( version 3.07 )
@@ -24,6 +25,7 @@
 !/    29-May-2009 : Preparing distribution version.    ( version 3.14 )
 !/    03-Sep-2012 : Add clock parameters (init.).      ( version 4.10 )
 !/    04-Feb-2014 : Switched to DATE_AND_TIME param.   ( version 4.18 )
+!/    10-Dec-2014 : Add checks for allocate status     ( version 5.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -271,7 +273,14 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
+!/
+!/ Specify default accessibility
+!/
       PUBLIC
+!/
+!/ Module private variable for checking error returns
+!/
+      INTEGER, PRIVATE        :: ISTAT
 !/
 !/ Conventional declarations
 !/
@@ -380,7 +389,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Jan-2007 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -390,6 +399,7 @@
 !/    25-May-2006 : Add STIME in BPSTGE.                ( version 3.09 )
 !/    12-Jan-2007 : Add FLSTI and FLLSTL.               ( version 3.10 )
 !/    22-Jan-2007 : Add NAVMAX.                         ( version 3.10 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -463,8 +473,12 @@
 !
       ALLOCATE ( MDATAS(NGRIDS), BPSTGE(NGRIDS,NGRIDS),               &
                  HGSTGE(NGRIDS,NGRIDS), EQSTGE(NGRIDS,NGRIDS),        &
-                 BCDUMP(NRGRD), IFLSTI(NRINP), IFLSTL(NRINP)  )
-!/MPI      ALLOCATE ( NBISTA(NGRIDS), HGHSTA(NGRIDS), EQLSTA(NGRIDS) )
+                 BCDUMP(NRGRD), IFLSTI(NRINP), IFLSTL(NRINP),         &
+                 STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+!/MPI      ALLOCATE ( NBISTA(NGRIDS), HGHSTA(NGRIDS), EQLSTA(NGRIDS), &
+!/MPI                 STAT=ISTAT )
+!/MPI      CHECK_ALLOC_STATUS ( ISTAT )
       NMDATA = NGRIDS
 !
 ! -------------------------------------------------------------------- /
@@ -537,10 +551,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Feb-2005 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -640,25 +655,31 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-      IF ( J .EQ. 0 ) ALLOCATE ( MDATAS(IMOD)%TMV(2,-7:4,NMV) ,          &
-                                 MDATAS(IMOD)%AMV(NMV,-7:4)   ,          &
-                                 MDATAS(IMOD)%DMV(NMV,-7:4)     )
+      IF ( J .EQ. 0 ) THEN
+          ALLOCATE ( MDATAS(IMOD)%TMV(2,-7:4,NMV) ,            &
+                     MDATAS(IMOD)%AMV(NMV,-7:4)   ,            &
+                     MDATAS(IMOD)%DMV(NMV,-7:4)   , STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
       IF ( J .EQ. 1 ) THEN
           IF ( FLDAT0 ) DEALLOCATE ( MDATAS(IMOD)%DATA0 )
-          ALLOCATE ( MDATAS(IMOD)%DATA0(RCLD(J),NDT(J)) )
+          ALLOCATE ( MDATAS(IMOD)%DATA0(RCLD(J),NDT(J)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           FLDAT0 = .TRUE.
         END IF
 !
       IF ( J .EQ. 2 ) THEN
           IF ( FLDAT1 ) DEALLOCATE ( MDATAS(IMOD)%DATA1 )
-          ALLOCATE ( MDATAS(IMOD)%DATA1(RCLD(J),NDT(J)) )
+          ALLOCATE ( MDATAS(IMOD)%DATA1(RCLD(J),NDT(J)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           FLDAT1 = .TRUE.
         END IF
 !
       IF ( J .EQ. 3 ) THEN
           IF ( FLDAT2 ) DEALLOCATE ( MDATAS(IMOD)%DATA2 )
-          ALLOCATE ( MDATAS(IMOD)%DATA2(RCLD(J),NDT(J)) )
+          ALLOCATE ( MDATAS(IMOD)%DATA2(RCLD(J),NDT(J)), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           FLDAT2 = .TRUE.
         END IF
 !

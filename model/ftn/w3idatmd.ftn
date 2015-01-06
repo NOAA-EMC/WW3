@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3IDATMD
 !/
@@ -5,13 +6,14 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    02-Apr-2004 : Origination.                        ( version 3.06 )
 !/    19-Jul-2006 : Adding auxiliary grids.             ( version 3.10 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -122,6 +124,10 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
+!/ Module private variable for checking error returns
+!/
+      INTEGER, PRIVATE        :: ISTAT
+!/
 !/ Conventional declarations
 !/
       INTEGER                 :: NIDATA = -1, IIDATA = -1
@@ -189,11 +195,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Jul-2006 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    02-Apr-2004 : Origination.                        ( version 3.06 )
 !/    19-Jul-2006 : Adding auxiliary grids.             ( version 3.10 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -265,7 +272,8 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Set variable and allocate arrays
 !
-      ALLOCATE ( INPUTS(-NAUXGR:NGRIDS) )
+      ALLOCATE ( INPUTS(-NAUXGR:NGRIDS), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
       NIDATA = NGRIDS
 !
 ! -------------------------------------------------------------------- /
@@ -308,12 +316,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    02-Apr-2004 : Origination.                        ( version 3.06 )
 !/    19-Jul-2006 : Adding auxiliary grids.             ( version 3.10 )
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -442,42 +451,80 @@
 ! notes: future improvement: flags for ICEPx should be 
 !     "all or nothing" rather than 5 individual flags
 
-      IF ( FLIC1  ) ALLOCATE ( INPUTS(IMOD)%ICEP1(NX,NY) )
-      IF ( FLIC2  ) ALLOCATE ( INPUTS(IMOD)%ICEP2(NX,NY) )
-      IF ( FLIC3  ) ALLOCATE ( INPUTS(IMOD)%ICEP3(NX,NY) )
-      IF ( FLIC4  ) ALLOCATE ( INPUTS(IMOD)%ICEP4(NX,NY) )
-      IF ( FLIC5  ) ALLOCATE ( INPUTS(IMOD)%ICEP5(NX,NY) )
+      IF ( FLIC1  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%ICEP1(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF ( FLIC2  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%ICEP2(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF ( FLIC3  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%ICEP3(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF ( FLIC4  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%ICEP4(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF ( FLIC5  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%ICEP5(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
-      IF ( FLMDN  ) ALLOCATE ( INPUTS(IMOD)%MUDD(NX,NY) )
-      IF ( FLMTH  ) ALLOCATE ( INPUTS(IMOD)%MUDT(NX,NY) )
-      IF ( FLMVS  ) ALLOCATE ( INPUTS(IMOD)%MUDV(NX,NY) )
+      IF ( FLMDN  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%MUDD(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF ( FLMTH  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%MUDT(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+      IF ( FLMVS  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%MUDV(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
-      IF ( FLLEV  ) ALLOCATE ( INPUTS(IMOD)%WLEV(NX,NY) )
+      IF ( FLLEV  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%WLEV(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
-      IF ( FLCUR  ) ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
-                               INPUTS(IMOD)%CY0(NX,NY) ,              &
-                               INPUTS(IMOD)%CXN(NX,NY) ,              &
-                               INPUTS(IMOD)%CYN(NX,NY) )
+      IF ( FLCUR  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
+                     INPUTS(IMOD)%CY0(NX,NY) ,              &
+                     INPUTS(IMOD)%CXN(NX,NY) ,              &
+                     INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
-!/TIDE      IF ( FLLEVTIDE  ) ALLOCATE ( INPUTS(IMOD)%WLTIDE(NX,NY,NTIDE,2) )
+!/TIDE      IF ( FLLEVTIDE  ) THEN
+!/TIDE          ALLOCATE ( INPUTS(IMOD)%WLTIDE(NX,NY,NTIDE,2), STAT=ISTAT )
+!/TIDE          CHECK_ALLOC_STATUS ( ISTAT )
+!/TIDE        END IF
 !/TIDE!
-!/TIDE      IF ( FLCURTIDE  ) ALLOCATE ( INPUTS(IMOD)%CXTIDE(NX,NY,NTIDE,2),  &
-!/TIDE                                   INPUTS(IMOD)%CYTIDE(NX,NY,NTIDE,2) )
+!/TIDE      IF ( FLCURTIDE  ) THEN
+!/TIDE          ALLOCATE ( INPUTS(IMOD)%CXTIDE(NX,NY,NTIDE,2),  &
+!/TIDE                     INPUTS(IMOD)%CYTIDE(NX,NY,NTIDE,2), STAT=ISTAT )
+!/TIDE          CHECK_ALLOC_STATUS ( ISTAT )
+!/TIDE        END IF
 !
-      IF ( FLWIND ) ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
-                               INPUTS(IMOD)%WY0(NX,NY) ,              &
-                               INPUTS(IMOD)%DT0(NX,NY) ,              &
-                               INPUTS(IMOD)%WXN(NX,NY) ,              &
-                               INPUTS(IMOD)%WYN(NX,NY) ,              &
-                               INPUTS(IMOD)%DTN(NX,NY) )
       IF ( FLWIND ) THEN
+          ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
+                     INPUTS(IMOD)%WY0(NX,NY) ,              &
+                     INPUTS(IMOD)%DT0(NX,NY) ,              &
+                     INPUTS(IMOD)%WXN(NX,NY) ,              &
+                     INPUTS(IMOD)%WYN(NX,NY) ,              &
+                     INPUTS(IMOD)%DTN(NX,NY) , STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           INPUTS(IMOD)%DT0 = 0.
           INPUTS(IMOD)%DTN = 0.
         END IF
 !
-      IF ( FLICE  ) THEN 
-                    ALLOCATE ( INPUTS(IMOD)%ICEI(NX,NY),              &
-                               INPUTS(IMOD)%BERGI(NX,NY) )
+      IF ( FLICE  ) THEN
+          ALLOCATE ( INPUTS(IMOD)%ICEI(NX,NY),              &
+                     INPUTS(IMOD)%BERGI(NX,NY), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
           INPUTS(IMOD)%BERGI = 0.
         END IF
 !

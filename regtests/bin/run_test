@@ -40,7 +40,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:efg:Ghi:m:n:o:Op:q:r:s:t:Sw:"  #option string for getopt function
+optstr="a:c:defg:Ghi:m:n:o:Op:q:r:s:t:Sw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -54,6 +54,7 @@ Options:
                    :   *default is <source_dir>/wwatch3.env
                    :   *file will be created if it does not already exist
   -c cmplr         : setup comp & link files for specified cmplr
+  -d               : invoke main program using gdb (non-parallel)
   -e               : prompt for changes to existing WW3 environment
   -f               : force pre- and post-processing programs to be compiled
                    : non-MPI (i.e., with SHRD switch); default is all programs
@@ -89,7 +90,8 @@ Options:
   -s switch_string : use switch_<switch_string>
   -S               : create stub file <finished>. with end data and time.
                      tests not executed if file is found.
-  -t nthrd         : Threading option. (this is system dependant and can be used only for the hybrid option)
+  -t nthrd         : Threading option. (this is system dependant and can be used
+                   : only for the hybrid option)
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
 
 EOF
@@ -122,6 +124,7 @@ do
   case "$1" in
   -a) shift; ww3_env="$1" ;;
   -c) shift; cmplr="$1" ;;
+  -d) use_gdb=1 ;;
   -e) prompt=1 ;;
   -f) force_shrd=1 ;;
   -g) shift; grdstr="$1" ;;
@@ -254,7 +257,12 @@ then
     exit 1
   fi
 else
-  runcmd=''
+  if [ $use_gdb ]
+  then
+    runcmd='gdb'
+  else
+    runcmd=''
+  fi
 fi
 
 if [ $pomp ]

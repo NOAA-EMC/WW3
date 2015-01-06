@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3SBS1MD
 !/
@@ -5,7 +6,7 @@
 !/                  | WAVEWATCH III                SHOM |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-Mar-2010 |
+!/                  | Last update :         14-Nov-2010 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jul-2005 : Origination.                        ( version 3.07 )

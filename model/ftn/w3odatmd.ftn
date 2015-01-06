@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3ODATMD
 !/
@@ -5,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Aug-2014 |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -32,6 +33,7 @@
 !/    18-Dec-2012 : New 2D field output structure,      ( version 4.11 )
 !/                  reducing memory footprint for fields.
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -280,6 +282,10 @@
 !
 !/ ------------------------------------------------------------------- /
       PUBLIC
+!/
+!/ Module private variable for checking error returns
+!/
+      INTEGER, PRIVATE        :: ISTAT
 !/    
 !/ Conventional declarations
 !/     
@@ -464,7 +470,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Dec-2012 |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -476,6 +482,7 @@
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.11 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -549,7 +556,8 @@
 ! 2.  Set variable and allocate arrays
 !
       NLOW   = MIN ( 0 , -NAUXGR )
-      ALLOCATE ( OUTPTS(NLOW:NGRIDS) )
+      ALLOCATE ( OUTPTS(NLOW:NGRIDS), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
       NOUTP  = NGRIDS
 !
 ! -------------------------------------------------------------------- /
@@ -779,7 +787,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Oct-2009 |
+!/                  | Last update :         10-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    10-Nov-2004 : Origination.                        ( version 3.06 )
@@ -788,6 +796,7 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -902,7 +911,8 @@
                  OUTPTS(IMOD)%OUT2%CAO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%CDO(NPT)        ,                  &
                  OUTPTS(IMOD)%OUT2%SPCO(NSPEC,NPT) ,                  &
-                 OUTPTS(IMOD)%OUT2%PTLOC(2,NPT)    )
+                 OUTPTS(IMOD)%OUT2%PTLOC(2,NPT)    , STAT=ISTAT       )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       OUTPTS(IMOD)%OUT2%O2INIT = .TRUE.
 !
@@ -954,11 +964,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    24-Nov-2004 : Origination.                        ( version 3.06 )
-!/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -1060,7 +1070,8 @@
 ! 2.  Allocate arrays
 !
       ALLOCATE ( OUTPTS(IMOD)%OUT3%MASK1(NY,NX) ,                     &
-                 OUTPTS(IMOD)%OUT3%MASK2(NY,NX) )
+                 OUTPTS(IMOD)%OUT3%MASK2(NY,NX) , STAT=ISTAT          )
+      CHECK_ALLOC_STATUS ( ISTAT )
 !
       OUTPTS(IMOD)%OUT3%O3INIT = .TRUE.
 !
@@ -1109,12 +1120,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Oct-2006 !
+!/                  | Last update :         10-Dec-2014 !
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
 !/    06-Sep-2005 : Second storage for input bound. sp. ( version 3.08 )
-!/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
+!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -1213,7 +1224,8 @@
                    OUTPTS(IMOD)%OUT5%ISBPI(NBI)  ,                    &
                    OUTPTS(IMOD)%OUT5%XBPI(NBI)   ,                    &
                    OUTPTS(IMOD)%OUT5%YBPI(NBI)   ,                    &
-                   OUTPTS(IMOD)%OUT5%RDBPI(NBI,4) )
+                   OUTPTS(IMOD)%OUT5%RDBPI(NBI,4), STAT=ISTAT         )
+        CHECK_ALLOC_STATUS ( ISTAT )
 !
         IPBPI  => OUTPTS(IMOD)%OUT5%IPBPI
         ISBPI  => OUTPTS(IMOD)%OUT5%ISBPI
@@ -1229,7 +1241,8 @@
                    OUTPTS(IMOD)%OUT5%ISBPO(4*NBO(NFBPO)),             &
                    OUTPTS(IMOD)%OUT5%XBPO(NBO(NFBPO))   ,             &
                    OUTPTS(IMOD)%OUT5%YBPO(NBO(NFBPO))   ,             &
-                   OUTPTS(IMOD)%OUT5%RDBPO(NBO(NFBPO),4) )
+                   OUTPTS(IMOD)%OUT5%RDBPO(NBO(NFBPO),4), STAT=ISTAT  )
+        CHECK_ALLOC_STATUS ( ISTAT )
 !
         IPBPO  => OUTPTS(IMOD)%OUT5%IPBPO
         ISBPO  => OUTPTS(IMOD)%OUT5%ISBPO
@@ -1244,7 +1257,8 @@
         ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPI0(NSPEC,0:NBI2),             &
                    OUTPTS(IMOD)%OUT5%ABPIN(NSPEC,0:NBI2),             &
                    OUTPTS(IMOD)%OUT5%BBPI0(NSPEC,0:NBI),              &
-                   OUTPTS(IMOD)%OUT5%BBPIN(NSPEC,0:NBI) )
+                   OUTPTS(IMOD)%OUT5%BBPIN(NSPEC,0:NBI), STAT=ISTAT   )
+        CHECK_ALLOC_STATUS ( ISTAT )
 !
         ABPI0  => OUTPTS(IMOD)%OUT5%ABPI0
         ABPIN  => OUTPTS(IMOD)%OUT5%ABPIN
@@ -1256,7 +1270,8 @@
 !
       CASE (4)
 !
-        ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPOS(NSPEC,0:NBO2(NFBPO)) )
+        ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPOS(NSPEC,0:NBO2(NFBPO)), STAT=ISTAT )
+        CHECK_ALLOC_STATUS ( ISTAT )
 !
         ABPOS  => OUTPTS(IMOD)%OUT5%ABPOS
 !

@@ -1,12 +1,13 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3FLX4MD
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
+!/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :                     |
-!/                  |               S. Zieger  Mar-2011 |
+!/                  | Last update :         15-Mar-2011 |
 !/                  +-----------------------------------+
 !/
 !/    03-Jul-2006 : Origination.                        ( version 3.09 )

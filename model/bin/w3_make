@@ -399,7 +399,7 @@ EOF
   fi
 
   cd $temp_dir
-  rm -f *.f *.f90
+  rm -f *.f *.F *.f90 *.F90
   rm -f *.l
   cd $main_dir/ftn
 
@@ -479,6 +479,7 @@ EOF
     then
       echo "   *** Program name not recognized ***"
       echo ' '
+      exit 1
 
 # 2.c Run make - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -528,8 +529,12 @@ EOF
 
       path_m=$main_dir/mod
       export path_m
-      make -f makefile $aPe/$prog
-      echo ' '
+      if make -f makefile $aPe/$prog
+      then
+        echo ' '
+      else
+        exit 1
+      fi
 
       echo "$prog $pres_type" >> $exec_type_file
 

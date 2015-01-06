@@ -920,24 +920,32 @@
 
   for file in `cat filelist`
   do
-    if [ -f $main_dir/ftn/$file.ftn ]
-    then
-      fext=ftn
-    else
-      if [ -f $main_dir/ftn/$file.c ]
+
+    suffixes="ftn f F f90 F90 c"
+    fexti=none
+    for s in $suffixes
+    do
+      if [ -f $main_dir/ftn/$file.$s ]
       then
-        fext=c
-      else
-        if [ -f $main_dir/ftn/$file.f90 ]
-        then
-          fext=f90
-        else
-          fext=f
-        fi
+        fexti=$s
+        break
       fi
+    done
+    if [ "$fexti" = 'none' ]
+    then
+      echo '      *** make_makefile.sh error ***'
+      echo "          Source file $main_dir/ftn/$file.* not found"
+      echo "          Source file suffixes checked: $suffixes"
+      exit 2
+    fi
+    if [ "$fexti" = 'ftn' ]
+    then
+      fexto=F90
+    else
+      fexto=$fexti
     fi
 
-    string1='$(aPo)/'$file'.o : '$file.$fext' '
+    string1='$(aPo)/'$file'.o : '$file.$fexti' 'w3macros.h' '
     string2='	@$(aPb)/ad3'" $file"
     string3="$NULL"
 
@@ -950,21 +958,14 @@
     fi
     rm -f ad3.out
 
-    if [ -f $file.f90 ]
+    if [ "$fexto" = 'c' ]
     then
-      fext=f90
+      touch check_file
     else
-      if [ -f $file.c ]
-      then
-        fext=c
-      else
-        fext=f
-      fi
+      grep USE $file.$fexto  > check_file
+      grep use $file.$fexto >> check_file
     fi
-
-    grep USE $file.$fext  > check_file
-    grep use $file.$fext >> check_file
-    rm -f $file.$fext
+    rm -f $file.$fexto
 
     for mod in W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
@@ -1139,7 +1140,7 @@
     scrip_dir=$main_dir/ftn/SCRIP
     if [ ! -d $scrip_dir ]
     then
-      echo "*** SCRIPT directory $scrip_dir not found ***"
+      echo "*** SCRIP directory $scrip_dir not found ***"
       exit 21
     fi
 
@@ -1151,7 +1152,7 @@
     fi
     if [ ! -e $scrip_mk ]
     then
-      echo "*** SCRIPT makefile fragment $scrip_mk not found ***"
+      echo "*** SCRIP makefile fragment $scrip_mk not found ***"
       exit 22
     fi
 

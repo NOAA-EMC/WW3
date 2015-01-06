@@ -1,3 +1,4 @@
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 !/NOPA     PROGRAM W3SHEL
 !/PALM     SUBROUTINE W3SHEL()
