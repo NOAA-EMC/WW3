@@ -43,6 +43,8 @@
 !/    27-Sep-2012 : Implement use of tidal constituents ( version 4.08 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka)      
+!/    DD-MMM-YYYY : Adding NCEP Coupler                 ( version 5.xx )
+!/                  (A. Chawla and Dmitry Sheinin)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -208,6 +210,8 @@
 !
 !       !/F90   Timer function included for F90.
 !
+!       !/NCC   Ncep Coupler
+!
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
@@ -229,6 +233,7 @@
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
+!/NCC      USE WW_cc, ONLY: MPI_COMM_WW
 !/TIDE      USE W3TIDEMD
 !
       IMPLICIT NONE
@@ -269,6 +274,8 @@
       LOGICAL             :: FLAGSTIDE(4)
       LOGICAL             :: PRTFRM
       LOGICAL             :: FLLST_ALL(-7:8)
+      LOGICAL             :: DEBUG_NCC = .FALSE.
+!/NCC      LOGICAL             :: CFLAG(10) 
 !
       CHARACTER(LEN=1)    :: COMSTR
       CHARACTER(LEN=3)    :: IDSTR(-7:8), IDTST
@@ -314,6 +321,7 @@
       FLH(:)       = .FALSE.
 !
 !/T      PRTFRM = .TRUE.
+!/T      DEBUG_NCC = .TRUE. 
 !
 !/F90      CALL DATE_AND_TIME ( VALUES=CLKDT1 )
 !
@@ -344,6 +352,10 @@
 !/PALM ! what if PALM but not MPI ???
 !/PALM      MPI_COMM = PL_COMM_EXEC
 !/PALM  ENDIF
+!
+!/NCC      CALL WW_CMP_START
+!/NCC      MPI_COMM = MPI_COMM_WW
+!
 !/MPI      CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
 !/MPI      CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
 !/MPI      IAPROC = IAPROC + 1
@@ -965,7 +977,30 @@
 ! 7.  Model with input
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970)
+!
+!/NCC      CFLAG = .FALSE. 
+!/NCC      CALL WW_INIT(1,GRIDS(1)%NX,GRIDS(1)%NY,            &
+!/NCC      GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY)
+!/NCC      CALL WW_RECVDTC
+!/NCC      CALL WW_SENDGRIDS
+!/NCC      CALL WW_SENDSLM(GRIDS(1)%MAPSTA)
+!/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) THEN
+!/NCC         OPEN(9751,FILE='debug_writeout_wind',           &
+!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN)
+!/NCC         OPEN(9752,FILE='debug_writeout_ice',            &
+!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN)
+!/NCC         OPEN(9753,FILE='data_forDC',                    &
+!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN)
+!/NCC         WRITE(9753) GRIDS(1)%NX,GRIDS(1)%NY,            &
+!/NCC           GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY
+!/NCC         WRITE(9753) GRIDS(1)%MAPSTA
+!/NCC      END IF
   700 CONTINUE
+!
+!/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) WRITE(9753) TIME0
+!/NCC      CALL WW_TSTEP_INIT(TIME0)
+!/NCC      CALL WW_RECV_SBC
+!/NCC      CALL WW_RECV_PSEUDOICE
 !
 ! 7.a Determine next time interval and input fields
 ! 7.a.1 Preparation
@@ -1153,16 +1188,32 @@
                           TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                           TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
                       ELSE
+!/NCC                        IF (.NOT.CFLAG(J)) THEN
                         CALL W3FLDG ('READ', IDSTR(J), NDSF(J),       &
                           NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,  &
                           TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+!/NCC                        END IF
+!/NCC                        CALL WW_CDETECT(CFLAG(J))
+!/NCC                        IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
+!/NCC                             WRITE(9753) TW0, TWN
+!/NCC                        CALL WW_UPDATE_WIND(TW0,TWN,WX0,WY0,WXN,WYN)
+!/NCC                        IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
+!/NCC                             WRITE(9751) TW0, TWN, WX0, WY0, WXN, WYN
                       END IF
                   ELSE IF ( J .EQ. 4 ) THEN
+!/NCC                    IF (.NOT.CFLAG(J)) THEN
                     CALL W3FLDG ('READ', IDSTR(J), NDSF(J),           &
                          NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,   &
                          TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
                     IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
 !could use this:    IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
+!/NCC                    END IF
+!/NCC                    CALL WW_CDETECT(CFLAG(J))
+!/NCC                    IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
+!/NCC                         WRITE(9753) TIN
+!/NCC                    CALL WW_UPDATE_PSEUDOICE(TIN,ICEI)
+!/NCC                    IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
+!/NCC                         WRITE(9752) TIN, ICEI
                   ELSE IF ( J .EQ. 5 ) THEN
                     CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,     &
                          NDSEN, TIME0, T0N, RCLD(J), NDT(J),          &
@@ -1512,6 +1563,7 @@
 !/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
 !/T               '               ',A,L3,17X,2(I10.8,I7.6)/           &
 !/T               '               ',A,L3,2(I10.8,I7.6))
+!
 !/
 !/ End of W3SHEL ----------------------------------------------------- /
 !/
