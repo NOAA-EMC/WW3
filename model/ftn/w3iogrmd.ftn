@@ -777,7 +777,7 @@
 !/IC2          WRITE   (NDSM)                                              &
 !/IC2                IC2PARS(1:7)
 !/IC3          WRITE   (NDSM)                                              &
-!/IC3                IC2PARS(1:7)
+!/IC3                IC2PARS(1:8)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
@@ -793,7 +793,7 @@
 !/IC2         READ   (NDSM)                                                &
 !/IC2                IC2PARS(1:7)
 !/IC3         READ   (NDSM)                                                &
-!/IC3                IC2PARS(1:7)
+!/IC3                IC2PARS(1:8)
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &

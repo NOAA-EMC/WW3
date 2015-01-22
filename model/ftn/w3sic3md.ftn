@@ -259,7 +259,8 @@
 !  ............VISCM=1.83E-6 :  molecular viscosity of water at freezing
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
                                  SMOOTH, RE, UORB, AORB, EB,   &
-                                 DELI1, DELI2, FW, XI, FTURB
+                                 DELI1, DELI2, FW, XI, FTURB,  &
+                                 MAXTHK, MAXCNC
       INTEGER                 :: IND, IS
 !
 !/
@@ -311,6 +312,10 @@
 !     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
       IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
 
+!     Similarly, rename other variables to make code easier to read.
+      MAXTHK=IC2PARS(1)
+      MAXCNC=IC2PARS(8)
+
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
@@ -318,13 +323,14 @@
       IF (ICECOEF1==0.0) NOICE=.TRUE.
       IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
+      write(*,*)'ICECOEF1,MAXTHK,ICECONC,MAXCNC = ',ICECOEF1,MAXTHK,ICECONC,MAXCNC 
+
       IF ( NOICE ) THEN
 
          D1D=0.0
 !
 ! 2.  Ice ------------------------------------------------------------ /
-!old:     ICECOEF1=min(0.10,ICECOEF1)
-      ELSEIF ( ICECOEF1 .LE. IC2PARS(1)) THEN
+      ELSEIF ( (ICECOEF1 .LE. MAXTHK) .OR. (ICECONC .LE. MAXCNC) ) THEN
 !.......... e.g. if ice thickness is .le. 10 cm
 !
 ! 2.a Set constant(s) and write test output -------------------------- /
@@ -336,6 +342,9 @@
 ! 2.b Make calculations ---------------------------------------------- /
 !     --- Input to routine (part 1): 6 ice parameters from single
 !         precision variables. ---------------------------------------
+
+         write(*,*)'selecting Wang&Shen routine'
+
          CALL W3IC3WNCG(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
               ICECOEF3, ICECOEF4, DEPTH     )
 !

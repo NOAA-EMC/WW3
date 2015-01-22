@@ -602,7 +602,7 @@
 
 !/IC3  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                             IC2SMOOTH, IC2VISC, IC2TURBS,        &
-!/IC3                             IC3MAXTHK
+!/IC3                             IC3MAXTHK, IC3MAXCNC
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -673,7 +673,7 @@
 !/IC2      NAMELIST /IC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IC3      NAMELIST /IC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC
 !/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -1896,6 +1896,7 @@
 !/IC2       IC2VISC = 2.
 
 !/IC3       IC3MAXTHK = 0.1 
+!/IC3       IC3MAXCNC = 1.0
 !/IC3       IC2TURB = 2.0 ! from run_test example by F.A.
 !/IC3       IC2TURBS = 0.
 !/IC3       IC2ROUGH = 0.02  !  from run_test example by F.A. (alt:0.1)
@@ -2107,8 +2108,9 @@
 !
 !/IC2         WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
 !/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
-!/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC2TURB, IC2ROUGH,          &
-!/IC3                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
+!/IC3                          IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
+!/IC3                          IC2VISC, IC2TURBS
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -3586,6 +3588,7 @@
 !/IC3       IC2PARS(5)=IC2SMOOTH
 !/IC3       IC2PARS(6)=IC2VISC
 !/IC3       IC2PARS(7)=IC2TURBS
+!/IC3       IC2PARS(8)=IC3MAXCNC
 !
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = ISC2
@@ -4500,7 +4503,8 @@
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
 !
- 2979 FORMAT ( '  &IC3  IC3MAKTHK =',F8.2,', IC2TURB =',F8.2,         &
+ 2979 FORMAT ( '  &IC3  IC3MAXTHK =',F8.2, ', IC3MAXCNC =',F8.4,      &
+               ', IC2TURB =',F8.2,                                    &
                ', IC2ROUGH  =',F10.3,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
