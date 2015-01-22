@@ -75,6 +75,8 @@
 !      FLAGS     L.A.  Public   Array consolidating the above four 
 !                               flags, as well as four additional
 !                               data flags.
+!      FLAGS4    Log.  Public   Like FLAGS(4) but does *not* get changed
+!                               when model reads last record of ice.ww3
 !      JFIRST    Int   Public   First index of arrays related to
 !                               input fields.  At present this is
 !                               hardwired below. Field-related arrays
@@ -156,6 +158,7 @@
 ! note that if size of FLAGS is changed, then TFLAGS in wminitmd.ftn
 !    also must be resized.
         LOGICAL               :: FLAGS(-7:12)
+        LOGICAL               :: FLAGS4
       END TYPE INPUT
 !/
 !/ Data storage
@@ -181,6 +184,7 @@
 !/TIDE                                  CYTIDE(:,:,:,:), WLTIDE(:,:,:,:)
       LOGICAL, POINTER        :: IINIT
       LOGICAL, POINTER        :: FLAGS(:)
+      LOGICAL, POINTER        :: FLAGS4
       LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE
       LOGICAL, POINTER        :: FLMTH, FLMVS, FLMDN
       LOGICAL, POINTER        :: FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
@@ -292,6 +296,7 @@
         INPUTS(I)%TG0(2)   =  0
         INPUTS(I)%IINIT    = .FALSE.
         INPUTS(I)%FLAGS    = .FALSE.
+        INPUTS(I)%FLAGS4   = .FALSE.
         END DO
 !
 !/T      WRITE (NDST,9000) -NAUXGR, NGRIDS
@@ -699,6 +704,7 @@
 !
       IINIT  => INPUTS(IMOD)%IINIT
       FLAGS  => INPUTS(IMOD)%FLAGS
+      FLAGS4 => INPUTS(IMOD)%FLAGS4
 !
       FLIC1  => INPUTS(IMOD)%FLAGS(-7)
       FLIC2  => INPUTS(IMOD)%FLAGS(-6)

@@ -342,7 +342,7 @@
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
-      USE W3IDATMD, ONLY: FLAGS
+      USE W3IDATMD, ONLY: FLAGS, FLAGS4
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLX1      USE W3FLX1MD
 !/FLX2      USE W3FLX2MD
@@ -778,7 +778,7 @@
 !     is reduce to a fraction of the cell size free from ice, and so is
 !     input and dissipation:
 !             SIN = (1-ICE)*SIN and SDS=(1-ICE)*SDS ------------------ *
-        IF ( FLAGS(4) ) THEN
+        IF ( FLAGS4 ) THEN
           VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSIN(1:NSPECH)
           VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDIN(1:NSPECH)
           VSDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSDS(1:NSPECH)
