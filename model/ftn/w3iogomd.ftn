@@ -132,7 +132,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLG ) 
+      SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLGD, FLG2 ) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -152,11 +152,11 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       NDSO    Int.   I   Output file logical unit number
-!       NDSEN   R.A.   I   Error output file logical unit number
-!       FLG     L.A.   O   1D array of flags for groups
-!       FLGRD   L.A.   O   2D array of flags
-!       FLGR2   L.A.   O   2D array of flags
+!       NDSO      Int.   I   Output file logical unit number
+!       NDSEN     R.A.   I   Error output file logical unit number
+!       FLGD,FLG2 L.A.   O   1D array of flags for groups
+!       FLGRD     L.A.   O   2D array of flags
+!       FLGR2     L.A.   O   2D array of flags
 !     ----------------------------------------------------------------
 !
 !
@@ -198,8 +198,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: NDSO, NDSEN
-      LOGICAL, INTENT(INOUT)  :: FLGRD(NOGRP,NGRPP), FLG(NOGRP),     &
-                                 FLGR2(NOGRP,NGRPP)
+      LOGICAL, INTENT(INOUT)  :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),     &
+                                 FLGR2(NOGRP,NGRPP), FLG2(NOGRP)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -212,10 +212,29 @@
 !/S      CALL STRACE (IENT, 'W3FLGRDUPDT')
 !
       DO I=1,5
-        IF (E3DF(1,I).LE.0.OR.E3DF(3,I).LT.E3DF(2,I)) FLGRD(3,I)=.FALSE.
+        IF (E3DF(1,I).LE.0.OR.E3DF(3,I).LT.E3DF(2,I)) THEN
+          FLGRD(3,I)=.FALSE.
+          FLGR2(3,I)=.FALSE.
+        END IF
       END DO
-      IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) FLGRD(6,8)=.FALSE.
-      IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) FLGRD(6,9)=.FALSE.
+      IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) THEN
+        FLGRD(6,8)=.FALSE.
+        FLGR2(6,8)=.FALSE.
+      END IF
+      IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) THEN
+        FLGRD(6,9)=.FALSE.
+        FLGR2(6,9)=.FALSE.
+      END IF
+!
+      FLGD(3) = .FALSE. 
+      FLG2(3) = .FALSE. 
+      IF(ANY(FLGRD(3,:))) FLGD(3)=.TRUE.
+      IF(ANY(FLGR2(3,:))) FLG2(3)=.TRUE.
+      FLGD(6) = .FALSE. 
+      FLG2(6) = .FALSE. 
+      IF(ANY(FLGRD(6,:))) FLGD(6)=.TRUE.
+      IF(ANY(FLGR2(6,:))) FLG2(6)=.TRUE.
+!
       RETURN
 !
       END SUBROUTINE W3FLGRDUPDT

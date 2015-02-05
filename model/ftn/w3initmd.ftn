@@ -113,8 +113,8 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3INIT ( IMOD, FEXT, MDS, MTRACE, ODAT,              &
-                          FLGRD, FLGR2, FLG, NPT, XPT, YPT, PNAMES,   &
+      SUBROUTINE W3INIT ( IMOD, FEXT, MDS, MTRACE, ODAT,FLGRD,         &
+                           FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
                           IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN )
 !/
 !/                  +-----------------------------------+
@@ -363,8 +363,9 @@
       INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
                                        ODAT(35), NPT, IPRT(6), MPI_COMM
       REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
-      LOGICAL, INTENT(INOUT)        :: FLGRD(NOGRP,NGRPP), FLG(NOGRP),&
-                                       FLGR2(NOGRP,NGRPP), PRTFRM
+      LOGICAL, INTENT(INOUT)        :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),&
+                                       FLGR2(NOGRP,NGRPP), FLG2(NOGRP),&
+                                       PRTFRM
       CHARACTER, INTENT(IN)         :: FEXT*(*)
       CHARACTER(LEN=10), INTENT(IN) :: PNAMES(NPT)
       LOGICAL, INTENT(IN), OPTIONAL :: FLAGSTIDEIN(4)
@@ -548,7 +549,7 @@
 !
       CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
 ! Update of output parameter flags based on mod_def parameters (for 3D arrays)
-      CALL W3FLGRDUPDT ( NDSO, NDSE, FLGRD, FLGR2, FLG ) 
+      CALL W3FLGRDUPDT ( NDSO, NDSE, FLGRD, FLGR2, FLGD, FLG2 ) 
 
       IF ( FLAGLL ) THEN
           FACTOR = 1.
@@ -744,7 +745,7 @@
 !
       FLOUT(1) = .FALSE.
       FLOGRD   = FLGRD
-      FLOG     = FLG
+      FLOGD    = FLGD
       DO J=1, NOGRP
         DO K=1, NGRPP
         FLOUT(1) = FLOUT(1) .OR. FLOGRD(J,K)
@@ -753,6 +754,7 @@
 !
       FLOUT(7) = .FALSE.
       FLOGR2   = FLGR2
+      FLOG2    = FLG2
       DO J=1, NOGRP
         DO K=1, NGRPP
         FLOUT(7) = FLOUT(7) .OR. FLOGR2(J,K)

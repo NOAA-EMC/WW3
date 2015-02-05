@@ -264,8 +264,8 @@
                              DATA1(:,:), DATA2(:,:)
       LOGICAL             :: FLLSTL, FLLSTI, FLH(-7:8), FLFLG, FLHOM, &
                              TFLAGI, FLGDAS(3), FLGRD(NOGRP,NGRPP),   &
-                             FLT, FLG(NOGRP)
-      LOGICAL             :: FLGR2(NOGRP,NGRPP)
+                             FLT, FLGD(NOGRP)
+      LOGICAL             :: FLGR2(NOGRP,NGRPP), FLG2(NOGRP)
       LOGICAL             :: FLAGSTIDE(4)
       LOGICAL             :: PRTFRM
       LOGICAL             :: FLLST_ALL(-7:8)
@@ -616,7 +616,7 @@
 !
 ! 4.c Type 1: fields of mean wave parameters
 !
-              CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLG,      &
+              CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
                                  FLGRD, IAPROC, NAPOUT, IERR )
               IF ( IERR .NE. 0 ) GOTO 2222
 !
@@ -738,25 +738,8 @@
 !
 ! 4.i Type 7: coupling
 !
-!/COU                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-!/COU                READ (NDSI,*,END=2001,ERR=2002) FLGR2
-!
-!/COU                IF ( IAPROC .EQ. NAPOUT ) THEN
-!/COU                    FLT    = .TRUE.
-!/COU                    DO IFI=1, NOGRP
-!/COU                    DO IFJ=1, NGRPP
-!/COU                      IF ( FLGR2(IFI,IFJ) ) THEN
-!/COU                          IF ( FLT ) THEN
-!/COU                              WRITE (NDSO,1947) IDOUT(IFI,IFJ)
-!/COU                              FLT    = .FALSE.
-!/COU                            ELSE
-!/COU                              WRITE (NDSO,1946) IDOUT(IFI,IFJ)
-!/COU                            END IF
-!/COU                        END IF
-!/COU                      END DO
-!/COU                      END DO
-!/COU                    IF ( FLT ) WRITE (NDSO,1947) 'no fields defined'
-!/COU                  END IF
+!/COU                CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLG2,     &
+!/COU                                 FLGR2, IAPROC, NAPOUT, IERR )
 !
               END IF
 !
@@ -831,8 +814,8 @@
 !/TIDE        IF (FLAGSTIDE(2)) CALL W3FLDTIDE1 ( 'READ',  NDSF(2), NDST, NDSEN, NX, NY, IDSTR(2), IERR )
 !/TIDE        END IF
 ! 
-     CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLG,     &
-                   NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,         &
+     CALL W3INIT ( 1, 'ww3', NDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD,    &
+                   FLG2, NPTS, X, Y, PNAMES, IPRT, PRTFRM, MPI_COMM,   &
                    FLAGSTIDEIN=FLAGSTIDE )
 !
 !/TIDE      IF (FLAGSTIDE(1)) CALL W3FLDTIDE2 ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), 1, IERR )
