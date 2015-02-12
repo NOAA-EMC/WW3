@@ -345,7 +345,7 @@
                           PTLOC, IPTINT, PTIFAC, UNDEF, IDOUT, FLBPI, &
                           OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN,    &
                           IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE,&
-                          FLOGR2, NOGRP, NGRPP, FLOG
+                          FLOGR2, NOGRP, NGRPP, FLOGD, FLOG2
       USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
                           UA, UD, U10, U10D, AS
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
