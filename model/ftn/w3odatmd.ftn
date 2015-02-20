@@ -131,7 +131,8 @@
 !      IRQGO     I.A.  Public   Array with MPI handles W3IOGO.
 !      FLOGRD    L.A.  Public   FLags for output fields.
 !      FLOGR2    L.A.  Public   FLags for coupling fields.
-!      FLOG      L.A.  Public   Flags for output groups
+!      FLOGD     L.A.  Public   Flags for output groups
+!      FLOG2     L.A.  Public   Flags for coupling groups
 !     ----------------------------------------------------------------
 !
 !     Elements of OUT2 are aliased to pointers with the same
@@ -309,8 +310,9 @@
         INTEGER               :: IPASS1
 !/MPI        INTEGER               :: NRQGO, NRQGO2
 !/MPI        INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
-        LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOG(NOGRP),   &
-                                   FLOGR2(NOGRP,NGRPP), WRITE1
+        LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
+                                 FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
+                                 WRITE1
       END TYPE OTYPE1
 !/
       TYPE OTYPE2
@@ -407,8 +409,8 @@
       INTEGER, POINTER        :: IPASS1
 !/MPI      INTEGER, POINTER        :: NRQGO, NRQGO2
 !/MPI      INTEGER, POINTER        :: IRQGO(:), IRQGO2(:)
-      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:), FLOG(:),   &
-                                 WRITE1
+      LOGICAL, POINTER        :: FLOGRD(:,:), FLOGR2(:,:), FLOGD(:), &
+                                 FLOG2(:), WRITE1
 !/
 !/ Type 2 ...
 !/
@@ -1451,7 +1453,8 @@
 !/MPI      IF ( NRQGO2 .NE. 0 ) IRQGO2 => OUTPTS(IMOD)%OUT1%IRQGO2
       FLOGRD => OUTPTS(IMOD)%OUT1%FLOGRD
       FLOGR2 => OUTPTS(IMOD)%OUT1%FLOGR2
-      FLOG   => OUTPTS(IMOD)%OUT1%FLOG
+      FLOGD   => OUTPTS(IMOD)%OUT1%FLOGD
+      FLOG2   => OUTPTS(IMOD)%OUT1%FLOG2
 !
       IPASS2 => OUTPTS(IMOD)%OUT2%IPASS2
       NOPTS  => OUTPTS(IMOD)%OUT2%NOPTS
