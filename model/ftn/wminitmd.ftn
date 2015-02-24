@@ -413,7 +413,8 @@
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
-                                 FLG(:,:), FLG2D(:,:), FLG1D(:)
+                                 FLGD(:,:), FLG2(:,:), FLG2D(:,:),     &
+                                 FLG1D(:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=3)        :: IDSTR(7), IDTST
       CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
@@ -645,9 +646,10 @@
 ! 2.c Set up I/O for individual models (initial)
 !
       ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
-           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLG(NOGRP,NRGRD),  &
+           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
-           FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
+           FLGR2(NOGRP,NGRPP,NRGRD),FLG2(NOGRP,NRGRD),                &
+           FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
 !
       MDS    = -1
       MDSF   = -1
@@ -1119,7 +1121,7 @@
               CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
                                  FLG2D, NMPSCR, IMPROC, IERR )
               FLGRD(:,:,1)=FLG2D
-              FLG(:,1)    =FLG1D
+              FLGD(:,1)   =FLG1D
 !
             ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -1228,26 +1230,10 @@
 !
 ! 5.i Type 7: coupling
 !
-!/COU                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-!/COU                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,1)
-!
-!/COU                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-!/COU                    FLT    = .TRUE.
-!/COU                    DO IFI=1, NOGRP 
-!/COU                    DO IFJ=1, NGRPP
-!/COU                      IF ( FLGR2(IFI,IFJ,1) ) THEN
-!/COU                          IF ( FLT ) THEN 
-!/COU                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
-!/COU                              FLT    = .FALSE.
-!/COU                            ELSE
-!/COU                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
-!/COU                            END IF
-!/COU                        END IF
-!/COU                      END DO
-!/COU                      END DO
-!/COU                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
-!/COU                  END IF
-
+!/COU              CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
+!/COU                                 FLG2D, NMPSCR, IMPROC, IERR )
+!/COU              FLGR2(:,:,1)=FLG2D
+!/COU              FLG2(:,1)   =FLG1D
 !
 ! ... End of output type selecttion ELSE IF
 !
@@ -1270,8 +1256,9 @@
 !
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
-        FLG(:,I) = FLG(:,1)
+        FLGD(:,I) = FLGD(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
+        FLG2(:,I) = FLG2(:,1)
         FLGR2(:,:,I) = FLGR2(:,:,1)
         IPRT(:,I)  = IPRT(:,1)
         LPRT(I)    = LPRT(1)
@@ -1328,7 +1315,7 @@
 !
 ! 5.j.3 Check the output type
 !
-        IF ( J.LT.0 .OR. J.GT.6 ) GOTO 2052
+        IF ( J.LT.0 .OR. J.GT. NOTYPE ) GOTO 2052
         IF ( J.EQ.2 .AND. UNIPTS ) GOTO 2053
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
             WRITE (MDSS,951) J, IDOTYP(J)
@@ -1372,39 +1359,10 @@
 !
 ! 5.l Type 1: fields of mean wave parameters
 !
-                FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
-! FA: name list should be used here too 
-                DO IFI=1,NOGRP ! Loop over field output groups
-
-                  CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-                  READ (MDSI,*,END=2001,ERR=2002) FLG(IFI,I)
-
-                  IF ( FLG (IFI,1) ) THEN ! Skip if group not requested
-
-                    CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-                    READ (MDSI,*,END=2001,ERR=2002)                    &
-                                          FLGRD(IFI,1:NOGE(IFI),I)
-
-                  ENDIF
-                ENDDO
-
-!
-                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-                    FLT    = .TRUE.
-                    DO IFI=1, NOGRP
-                    DO IFJ=1, NGRPP
-                      IF ( FLGRD(IFI,IFJ,I) ) THEN
-                          IF ( FLT ) THEN
-                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
-                              FLT    = .FALSE.
-                            ELSE
-                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
-                            END IF
-                        END IF
-                      END DO
-                      END DO
-                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
-                  END IF
+                CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
+                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
+                FLGD(:,I)    = FLG1D
+                FLGRD(:,:,I) = FLG2D
 !
               ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -1509,25 +1467,10 @@
 !
 ! 5.p Type 7: coupling fields
 !
-                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,I)
-!
-                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-                    FLT    = .TRUE.
-                    DO IFI=1, NOGRP
-                    DO IFJ=1, NGRPP
-                      IF ( FLGR2(IFI,IFJ,I) ) THEN
-                          IF ( FLT ) THEN
-                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
-                              FLT    = .FALSE.
-                            ELSE
-                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
-                            END IF
-                        END IF
-                      END DO
-                      END DO
-                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
-                  END IF
+                CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
+                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
+                FLG2(:,I)    = FLG1D
+                FLGR2(:,:,I) = FLG2D
 !
           ELSE
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,963)
@@ -2076,9 +2019,9 @@
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
 
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
-                      FLGRD(:,:,I),FLGR2(:,:,I),FLG(:,I),OT2(I)%NPTS,&
-                      OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, IPRT(:,I),   &
-                      LPRT(I), MPI_COMM_LOC )
+                      FLGRD(:,:,I),FLGR2(:,:,I),FLGD(:,I),FLG2(:,I),  &
+                      OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, &
+                      IPRT(:,I), LPRT(I), MPI_COMM_LOC )
 !
 ! ..... Finalize I/O file hook up
 !
@@ -2689,7 +2632,7 @@
       CALL WMUSET ( MDSE, MDST, SCRATCH, .FALSE. )
       IF ( TSTOUT ) CALL WMUDMP ( MDST, 0 )
 !
-      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLG, INAMES,      &
+      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD, FLG2, INAMES,&
                    MNAMES )
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )

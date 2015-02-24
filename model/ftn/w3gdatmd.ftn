@@ -1318,7 +1318,7 @@
       GRIDS(IMOD)%CLATIS(0)=1.
 !
 !/REF1      ALLOCATE ( GRIDS(IMOD)%RREF(4),     &
-!/REF1      ALLOCATE ( GRIDS(IMOD)%REFPARS(10), &
+!/REF1                 GRIDS(IMOD)%REFPARS(10), &
 !/REF1                 STAT=ISTAT               )
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
 !/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes 
