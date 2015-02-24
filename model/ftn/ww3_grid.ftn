@@ -1888,12 +1888,12 @@
 !/IG1      WRITE (NDSO,970) STATUS
 !
 !/IC2       IC2DISPER = .TRUE. 
-!/IC2       IC2TURB = 0.
+!/IC2       IC2TURB = 1.
 !/IC2       IC2TURBS = 0.
-!/IC2       IC2ROUGH = 0.1  ! value from current BL (Shaw et al. JGR 2008) 
+!/IC2       IC2ROUGH = 0.0001 
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 7E4
-!/IC2       IC2VISC = 2.
+!/IC2       IC2VISC = 1.
 
 !/IC3       IC3MAXTHK = 0.1 
 !/IC3       IC3MAXCNC = 1.0
@@ -4499,7 +4499,7 @@
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
  2978 FORMAT ( '  &IC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
-               ', IC2ROUGH  =',F10.3,','/                             &
+               ', IC2ROUGH  =',F10.6,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
 !

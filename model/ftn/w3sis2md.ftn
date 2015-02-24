@@ -513,15 +513,15 @@ CLOSE(996)
 !
 ! time attenuation
 !
-        BETA = ALPHA * CG(IK) 
+        BETA = IS2PARS(1) * ALPHA * CG(IK) 
 ! WRITE(994,*) IK,W,IND1,IND2,SIG(IK)*TPIINV,SIS2ALPHAS(IND1,IK), SIS2ALPHAS(IND2,IK), &
 ! (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W), &
 ! SIS2ALPHA2(IND1,IK)*(1-W)+SIS2ALPHA2(IND2,IK)*W, ALPHA
         SUMALLDIR= 0.
         DO ITH = 1,NTH
           IS  = ITH+(IK-1)*NTH
-          D (IS) = BETA
-          S(IS)  = BETA * A(IS) 
+          D(IS) = BETA
+          S(IS) = BETA * A(IS) 
           SUMALLDIR = SUMALLDIR + S(IS) 
           END DO
         SUMALLDIR = SUMALLDIR / REAL(NTH)

@@ -1233,7 +1233,7 @@
             REFLED(:)=0.
             PSIC=0.
             ICEH    = 0.
-            ICEDAVE = 10.
+            ICEDAVE = 20.
 !
 !/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DELA,DELX,DELY,        &
 !/OMPG/!$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3)
