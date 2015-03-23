@@ -144,10 +144,74 @@
 !        (see also documentation of W3SIC1)
 !
 !     Notes regarding numerics:
+!
 !     Experiments with constant k_i values suggest that results may be
 !        dependent on resolution if insufficient resolution is used.
 !        For detailed information, see documentation of W3SIC1.
 !
+!     Note regarding applicability/validity:
+!
+!     The Wang and Shen model is intended as a generalized model for 
+!     various types of ice cover. It is a "continuum" model for  
+!     which the same model is used from the ice edge to the ice 
+!     interior. Though the ice types are expected to be very different 
+!     from the edge to the interior, this is accomodated by the relative
+!     importance of the "effective viscosity" and the "modulus of 
+!     elasticity". At the ice edge, where one finds frazil ice, pancake
+!     ice, or ice floes much smaller than the wave length, the "viscous"
+!     component of the model is believed to be most appropriate.  At the 
+!     interior, where one finds a continuous ice sheet, the "elastic 
+!     model" component of the generalized visco-elastic model is 
+!     expected to be appropriate. In addition to the case of continuous
+!     ice, Wang and Shen argue that the elastic model is also applicable
+!     to ice floes when the floe sizes are large relative to the 
+!     wavelength. So to summarize,
+!     * frazil ice, pancake ice, and floes smaller than wavelength :
+!          viscosity dominates
+!     * continuous ice, and floes larger than wavelength :
+!          elasticity dominates
+!     * intermediate conditions: neither dominates
+!     All this is accomodated in WW3 by using non-uniform specification
+!     of viscosity and elasticity. 
+!
+!     In the case where a user wishes to utilize only the "viscous 
+!     model" aspect of Wang and Shen, and use an alternative scheme for
+!     continous ice and large ice floes, we allow this through the use 
+!     of a user-defined namelist parameter "IC3MAXTHK". Floe size is 
+!     not (at time of writing) an output available from ice model CICE,
+!     so we use the ice thickness as a way to anticipate the floe size.
+!     When ice thickness exceeds IC3MAXTHK, WW3 will use another model 
+!     in place of the Wang and Shen formulation :
+!
+!     S_ice by F.A., an estimation of dissipation by turbulence 
+!     at the ice-water interface. It uses only namelists for input, and
+!     no space/time varying input (though of course ice concentration is 
+!     space/time varying). Unlike Liu et al. (IC2), it does not use 
+!     ice thickness and does not yield a new C|Cg|k (i.e. it is non-
+!     dispersive), but it has the very nice feature of not requiring  
+!     an eddy viscosity, which is a major drawback of the Liu et al.  
+!     model. That is why we use it here, vs. Liu et al.
+!     (S_ice by Liu et al. and S_ice by F.A. are the two options 
+!     available in IC2, i.e. w3sic2md.ftn)
+!
+!     At time of writing (March 23 2015), there may be some problems 
+!     with the root-selection of IC3. For example with these settings:
+!     hice=1   ; rho_ice=917.0 ; emod=4.9e+12 ; visc=5e+7 ; 
+!     h_water=deep (without using the IC3MAXTHK feature) the solution 
+!     is rather irregular:
+!     T=11.11    k_i = 215.0e-5    
+!     T=10       k_i = 266.0e-5   
+!     T=9        k_i =   1.4e-5   
+!     T=8.1      k_i =   1.7e-5    
+!     With hice=0.1, ki is monotonically increasing in that range:
+!     T=11.11    k_i = 0.97e-5 
+!     T=10       k_i = 2.64e-5 
+!     T=9        k_i = 3.90e-5 
+!     T=8.1      k_i = 4.47e-5 
+!     Of course, when using IC3MAXTHK=0.1, the first example (hice=1)
+!     would switch to the "S_ice by F.A." model, and so this problem
+!     is circumvented.
+!     
 !  3. Parameters :
 !
 !     Parameter list
@@ -187,27 +251,6 @@
 !  7. Remarks :
 !
 !     If ice parameter 1 is zero, no calculations are made.
-!
-!     We use IC3MAXTHK to limit ice thickness: 
-!     IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
-!
-!     When ice thickness exceeds IC3MAXTHK, we use something else,
-!     in place of Shen and Wang formulation :
-!
-!     S_ice by F.A., an estimation of dissipation by turbulence 
-!     at the ice-water interface. It uses only namelists for input, and
-!     no space/time varying input (though of course ice concentration is 
-!     space/time varying). Unlike Liu et al. (IC2), it does not use 
-!     ice thickness and does not yield a new C|Cg|k (i.e. it is non-
-!     dispersive), but it has the very nice feature of not requiring  
-!     an eddy viscosity, which is a major drawback of the Liu et al.  
-!     model. That is why we use it here, vs. Liu et al.
-!     (S_ice by Liu et al. and S_ice by F.A. are the two options 
-!     available in IC2, i.e. w3sic2md.ftn)
 !
 !  8. Structure :
 !
@@ -323,8 +366,6 @@
       IF (ICECOEF1==0.0) NOICE=.TRUE.
       IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
-      write(*,*)'ICECOEF1,MAXTHK,ICECONC,MAXCNC = ',ICECOEF1,MAXTHK,ICECONC,MAXCNC 
-
       IF ( NOICE ) THEN
 
          D1D=0.0
@@ -342,8 +383,6 @@
 ! 2.b Make calculations ---------------------------------------------- /
 !     --- Input to routine (part 1): 6 ice parameters from single
 !         precision variables. ---------------------------------------
-
-         write(*,*)'selecting Wang&Shen routine'
 
          CALL W3IC3WNCG(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
               ICECOEF3, ICECOEF4, DEPTH     )
@@ -550,11 +589,6 @@
       DICE    = DBLE(ICE3)    ! density of ice
       ES_MOD  = DBLE(ICE4)    ! effective shear modulus of ice
 
-!     Limit ice thickness: IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
       HICE=MIN(0.1D0,HICE)
 
       IF (SIZE(WN_R,1).EQ.NK) THEN
