@@ -1996,9 +1996,9 @@
 !/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 
-!/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
-
-!/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
+! see remarks about BT8 and BT9 in ww3_outp.ftn
+!....broken....!/BT8        CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
+!....broken....!/BT9        CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 
 !/BTX                    CALL W3SBTX
 
