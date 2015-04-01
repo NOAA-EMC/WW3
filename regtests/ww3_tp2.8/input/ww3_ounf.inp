@@ -13,8 +13,9 @@ $ Output request flags identifying fields as in ww3_shel.inp. See that
 $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
- N
- WND WLV ICE HS T02 T01 T0M1 CGE PNR DTD UST CHA FAW WCM ABR UBR BED TBB TWO
+N
+DPT HS FP DIR SPR
+$
 $
 $--------------------------------------------------------------------- $
 $ Output type 4 [3,4] (version netCDF)   

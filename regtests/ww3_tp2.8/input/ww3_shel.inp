@@ -21,7 +21,7 @@ $ - Starting time in yyyymmdd hhmmss format.
 $ - Ending time in yyyymmdd hhmmss format.
 $
    20080310 060000
-   20080310 080000
+   20080310 070000
 $
 $---------------------------------------------------------
     1
@@ -45,7 +45,6 @@ $
    20080310 000000  600  20080525 000000
 $
 N
-$
 DPT HS FP DIR SPR 
 $
 $ Type 2 : Point output

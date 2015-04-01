@@ -610,6 +610,85 @@ then
   exit
 fi
 
+# 3.d boundary conditions -------------------------------------------------- #
+
+prog=ww3_bounc
+if [ $exec_p = $prog -o $exec_p = "none" ]
+then
+
+ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
+  echo ' '
+  echo '+---------------------+'
+  echo '| Boundary conditions |'
+  echo '+---------------------+'
+  echo ' '
+
+  if [ $force_shrd ]
+  then # build pre- & post-processing programs with SHRD only
+    cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //' | \
+                  sed 's/OMPG //'    | sed 's/OMPX //'| \
+                  sed 's/OMPH //'                          > $path_b/switch
+  else
+    \cp -f $file_c $path_b/switch
+  fi
+  if $path_b/w3_make $prog
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+
+  if [ ! -f $path_e/$prog ]
+  then
+    errmsg "$path_e/$prog not found"
+    exit 1
+  fi
+
+  for g in $model_grids
+  do
+    if [ $multi -eq 2 ]
+    then
+      gu="_$g"
+    fi
+
+    ofile="$path_w/`basename $ifile .inp`${gu}.out"
+
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
+    if [ $multi -eq 2 ]
+    then
+      \rm -f mod_def.ww3
+      \ln -s mod_def.$g mod_def.ww3
+    fi
+    if $path_e/$prog > $ofile
+    then
+      \rm -f $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        mv nest.ww3 nest.$g
+        \rm -f mod_def.ww3
+      fi
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
+
+  done
+
+fi
+
+fi
+
+if [ $exit_p = $prog ]
+then
+  exit
+fi
+
 # 3.e Prep forcing fields --------------------------------------------------- #
 
 prog=ww3_prep

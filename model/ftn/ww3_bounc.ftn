@@ -7,10 +7,11 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-May-2013 |
+!/                  | Last update :          1-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    24-May-2013 : Adaptation from ww3_bound.ftn    ( version 4.08 )
+!/     1-Apr-2015 : Add checks on lat lon xfr        ( version 5.xx )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -141,7 +142,7 @@
       REAL                                :: DMIN, DIST, DMIN2, COS1, COS2
 
 ! netCDF
-      INTEGER                             :: iret, varid(12)
+      INTEGER                             :: iret, ICODE, varid(12)
       CHARACTER, ALLOCATABLE              :: station(:,:)
       INTEGER, ALLOCATABLE                :: ncid(:), dimid(:,:), dimln(:,:)
       DOUBLE PRECISION, ALLOCATABLE       :: times(:)
@@ -321,9 +322,19 @@
 
         OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
         ALLOCATE(dimid(NBO2,3),dimln(NBO2,3),ncid(NBO2))
+
+        ALLOCATE(lats(NBO2),lons(NBO2),station(16,NBO2))
+
         DO IP=1,NBO2
           ! open file
-	        iret=nf90_open(trim(SPECFILES(IP)),nf90_nowrite,ncid(IP))
+          OPEN(999,FILE=trim(SPECFILES(IP)),FORM='UNFORMATTED',status='old',iostat=ICODE)
+          IF (ICODE.NE.0) THEN 
+            WRITE(6,*) 'File ',trim(SPECFILES(IP)),' does not exist.'
+            lons(IP)=-999.
+            lats(IP)=-999.
+          ELSE 
+          iret=nf90_open(trim(SPECFILES(IP)),nf90_nowrite,ncid(IP))
+          IF (VERBOSE.GE.1) WRITE(6,*) 'Opening file:',trim(SPECFILES(IP))
           call check_err(iret)
           
           ! dimensions
@@ -350,7 +361,6 @@
             NTH1=NTHI
             NSPEC1  = NK1 * NTH1
             ALLOCATE(times(NT1))
-            ALLOCATE(lats(NBO2),lons(NBO2),station(16,NBO2))
             ALLOCATE (FREQ(NK1),THETA(NTH1))
             ALLOCATE (SPEC2D(NTH1,NK1,NT1,NBO2))
             ALLOCATE (ABPIN2(NK*NTH1,NT1,NBO2))
@@ -406,6 +416,7 @@
           iret=nf90_get_var(ncid(IP),varid(7),SPEC2D(:,:,:,IP),start=(/1,1,1,1/),count=(/NTHI,NKI,1,NTI/))
           call check_err(iret)
 !
+          END IF
         END DO ! IP=1,NBO2
 
 
@@ -416,7 +427,10 @@
         IFMIN=1  ! index of first freq. in source spectrum
         IFMIN2=1
         IFMAX=NK1 ! index of last freq. in source spectrum
-
+!
+        ! Checks consistency of XFR
+        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.05) GOTO 2010
+!
         IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
           DO J=1,MIN(NK1,NK)
             IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
@@ -473,7 +487,7 @@
 !
 
 !       Writes header in nest.ww3 file 
-        WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH, XFR, FREQ(1), &
+        WRITE(NDSB) IDSTRBC, VERBPTBC, NKI, NTHI, XFR, FREQ(1), &
         MOD(2.5*PI-THETA(1),TPI), NBO
         IPBPO(:,:)=1
         RDBPO(:,1)=1.
@@ -571,9 +585,18 @@
 
  2001 CONTINUE
       WRITE (NDSE,1001)
+      GOTO 2222
 !
  2002 CONTINUE
       WRITE (NDSE,1002) IERR
+      GOTO 2222
+!
+ 2010 CONTINUE
+      WRITE (NDSE,1010) XFR
+      GOTO 2222
+!
+ 2222 CONTINUE
+!
   901 FORMAT (/' *** WAVEWATCH-III ERROR IN W3IOBC :'/                &
                '     ILEGAL IDSTR, READ : ',A/                        &
                '                  CHECK : ',A/)
@@ -588,7 +611,7 @@
                '     IOSTAT =',I5/)
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL TYPE, ITYPE =',I4/)
+               '     ILLEGAL XFR, XFR =',F/)
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/
