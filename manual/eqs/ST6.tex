@@ -228,22 +228,25 @@ narrowness parameter is set to unity $A(k)\approx 1$ in equations
 
 % -------------------------------------------------------------------
 \begin{table} \begin{center}
-\begin{tabular}{|l|c|c|c|} \hline \hline
-Par.         &  WWATCH var. & namelist &                  \\
+\begin{tabular}{|l|c|c|c|c|} \hline \hline
+Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,\WWver \\
 \hline
-  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T         \\
-  $a_1$            &  SDSA1       & SDS6     & 6.24E-7    \\
-  $p_1$            &  SDSP1       & SDS6     &  4         \\
-  $a_2$            &  SDSA2       & SDS6     & 8.74E-6    \\
-  $p_2$            &  SDSP2       & SDS6     &  4         \\
+  $F_{\mathrm{T}}$ &  SDSET       & SDS6     &  T       &  T         \\
+  $a_1$            &  SDSA1       & SDS6     & 6.24E-7  & 3.74E-7    \\
+  $p_1$            &  SDSP1       & SDS6     &  4       &  4         \\
+  $a_2$            &  SDSA2       & SDS6     & 8.74E-6  & 5.24E-6    \\
+  $p_2$            &  SDSP2       & SDS6     &  4       &  4         \\
 \hline
-  $a_0$            &  SINA0       & SIN6     & 0.04       \\
-  $b_1$            &  SWLB1       & SWL6     & 0.25E-3    \\
-  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4    \\
+  $a_0$            &  SINA0       & SIN6     & 0.04     & 0.09       \\
+  $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         \\
+  $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     \\
+  $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    \\
  \hline \hline
 \end{tabular} \end{center}
 \caption{Summary of calibration parameters for BYDRZ source terms.
-         Values tabulated represent default model settings.}
+         Values tabulated represent default model settings.
+         Abbreviation ``n/a'' indicates that the variable is not applicable
+         in that release of the code.}
 \label{tab:ST601} \botline \end{table}
 % -------------------------------------------------------------------
 
@@ -269,8 +272,21 @@ the full Pierson-Moscowitz development.
 \end{equation}
 
 \noindent
-The value for the non-dimensional proportionality coefficient $b_1$ is
-customizable through namelist parameter {\code \&SWL6 SWLB1}.
+By making coefficient $b_1$ in equation (\ref{eq:ST624}) dependent
+on steepness the large gradient in the spatial bias in wave height
+can be reduced:
+
+\begin{equation}\label{eq:ST625}
+   b_1 = B_1 \, 2\sqrt{E}\,k_p \:\:\:.
+\end{equation}
+
+In equation (\ref{eq:ST625}), $B_1$ is a scaling coefficient,
+$E$ (\ref{eq:etot}) is the total sea surface variance  and $k_p$
+is the peak wavenumber.  Equation (\ref{eq:ST625}) can be
+flagged through namelist parameter {\code \&SWL6 CSTB1}.The value for the
+coefficient $B_1$ in (\ref{eq:ST625}) and/or $b_1$ in (\ref{eq:ST624})
+is customizable through namelist parameter {\code \&SWL6 SWLB1}
+(see Table~\ref{tab:ST601}).
 
 \noindent
 \paragraph{Bulk Adjustments.} The source term
@@ -289,5 +305,5 @@ can potentially eliminate a bias in the wind field, which typically changes
 with the selection of the reanalysis product. This reduction was tested
 for extreme wind conditions such as hurricanes \citep{art:ZBRY13}.  In global
 hindcast, the coefficient for the negative input $a_0$ can be used to tune
-lower wave height in the scatter comparisons, whereas the swell-coefficient
-$b_1$ is able to adjust higher waves.
+the bulk of wave height the scatter comparisons, whereas the scaling
+coefficient for the swell dissipation $B_1$ primarily effect large sea states.
