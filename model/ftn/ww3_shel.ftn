@@ -969,11 +969,11 @@
 !/NCC      CALL WW_SENDSLM(GRIDS(1)%MAPSTA)
 !/NCC      IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC ) THEN
 !/NCC         OPEN(9751,FILE='debug_writeout_wind',           &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN)
+!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
 !/NCC         OPEN(9752,FILE='debug_writeout_ice',            &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN)
+!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
 !/NCC         OPEN(9753,FILE='data_forDC',                    &
-!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN)
+!/NCC              FORM='UNFORMATTED',STATUS='UNKNOWN')
 !/NCC         WRITE(9753) GRIDS(1)%NX,GRIDS(1)%NY,            &
 !/NCC           GRIDS(1)%X0,GRIDS(1)%Y0,GRIDS(1)%SX,GRIDS(1)%SY
 !/NCC         WRITE(9753) GRIDS(1)%MAPSTA
