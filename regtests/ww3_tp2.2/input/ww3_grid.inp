@@ -2,7 +2,7 @@ $ WAVEWATCH III Grid preprocessor input file
 $ ------------------------------------------
   '2-D PROPAGATION AROUND GLOBE  '
 $
-   1.1 0.03679  3  24  0.
+   1.1 0.040 9  24  0.
 $
    F T T T F F
   2200.  2200. 2200.  2200.
@@ -11,6 +11,7 @@ $ &PRO2 DTIME = 0. /
   &PRO2 DTIME = 345600. /
 $ &PRO3 WDTHCG = 0.,   WDTHTH = 0. /
   &PRO3 WDTHCG = 1.50, WDTHTH =1.50 /
+  &OUTS E3D = 1 / 
 END OF NAMELISTS
 $
   'RECT' T 'NONE'

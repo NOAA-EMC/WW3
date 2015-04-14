@@ -704,7 +704,7 @@
 !
 !/ST6        REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
 !/ST6        INTEGER               :: SDS6P1, SDS6P2
-!/ST6        LOGICAL               :: SDS6ET, SWL6S6
+!/ST6        LOGICAL               :: SDS6ET, SWL6S6, SWL6CSTB1
 !
 !/STX        REAL                  :: DUMMY
       END TYPE SRCP
@@ -946,7 +946,7 @@
 !/ST4                                 SSDSBR2, SSDSCOS, SSDSDTH, SSDSBM(:)
 !/ST6      REAL, POINTER           :: SIN6A0, SDS6A1, SDS6A2, SWL6B1
 !/ST6      INTEGER, POINTER        :: SDS6P1, SDS6P2
-!/ST6      LOGICAL, POINTER        :: SDS6ET, SWL6S6
+!/ST6      LOGICAL, POINTER        :: SDS6ET, SWL6S6, SWL6CSTB1
       REAL, POINTER           :: WWNMEANPTAIL, SSTXFTFTAIL
 !/
 !/ Data aliasses for structure SNLP(S)
@@ -1318,7 +1318,7 @@
       GRIDS(IMOD)%CLATIS(0)=1.
 !
 !/REF1      ALLOCATE ( GRIDS(IMOD)%RREF(4),     &
-!/REF1      ALLOCATE ( GRIDS(IMOD)%REFPARS(10), &
+!/REF1                 GRIDS(IMOD)%REFPARS(10), &
 !/REF1                 STAT=ISTAT               )
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
 !/REF1! Memory footprint can be reduced by defining REFLC and REFLD only over nodes 
@@ -2022,6 +2022,7 @@
 !/ST6      SDS6P2 => MPARS(IMOD)%SRCPS%SDS6P2
 !/ST6      SWL6S6 => MPARS(IMOD)%SRCPS%SWL6S6
 !/ST6      SWL6B1 => MPARS(IMOD)%SRCPS%SWL6B1
+!/ST6      SWL6CSTB1 => MPARS(IMOD)%SRCPS%SWL6CSTB1
 !
 !     Structure SRNLS
 !

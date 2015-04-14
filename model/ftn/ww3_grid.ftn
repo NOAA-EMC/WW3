@@ -648,7 +648,7 @@
 !
 !/ST6      REAL                    :: SINA0, SDSA1, SDSA2, SWLB1
 !/ST6      INTEGER                 :: SDSP1, SDSP2
-!/ST6      LOGICAL                 :: SDSET
+!/ST6      LOGICAL                 :: SDSET, CSTB1
 !
 !/NL1      REAL                    :: LAMBDA, KDCONV, KDMIN,               &
 !/NL1                                 SNLCS1, SNLCS2, SNLCS3
@@ -705,7 +705,7 @@
 !/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
 !/ST6      NAMELIST /SIN6/ SINA0
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
-!/ST6      NAMELIST /SWL6/ SWLB1
+!/ST6      NAMELIST /SWL6/ SWLB1, CSTB1
 !/BT1      NAMELIST /SBT1/ GAMMA
 !/BT4      NAMELIST /SBT4/ SEDMAPD50, SED_D50_UNIFORM, RIPFAC1,            &
 !/BT4                      RIPFAC2, RIPFAC3, RIPFAC4, SIGDEPTH,            &
@@ -1188,7 +1188,7 @@
 !/ST4      ZALP   = 0.006
 !/ST4      SINBR   = 0.
 !
-!/ST6      SINA0  = 0.04
+!/ST6      SINA0  = 0.09
 !
 !/ST1      CALL READNL ( NDSS, 'SIN1', STATUS )
 !/ST1      WRITE (NDSO,920) STATUS
@@ -1475,11 +1475,12 @@
 !/ST4      SDSLFGEN  = 0.
 !
 !/ST6      SDSET  = .TRUE.
-!/ST6      SDSA1  = 6.24E-7
+!/ST6      SDSA1  = 3.74E-7
 !/ST6      SDSP1  = 4
-!/ST6      SDSA2  = 8.74E-6
+!/ST6      SDSA2  = 5.24E-6
 !/ST6      SDSP2  = 4
-!/ST6      SWLB1  = 0.25E-3
+!/ST6      CSTB1  = .FALSE.
+!/ST6      SWLB1  = 0.0032
 !
 !/ST1      CALL READNL ( NDSS, 'SDS1', STATUS )
 !/ST1      WRITE (NDSO,924) STATUS
@@ -1579,7 +1580,12 @@
 !/ST6      SWL6S6 = SWLB1.GT.0.0
 !/ST6      IF (.NOT.SWL6S6) J  = 2
 !/ST6      SWL6B1 = SWLB1
-!/ST6      WRITE (NDSO,940) YESXNO(J), SWL6B1 
+!/ST6      SWL6CSTB1 = CSTB1
+!/ST6      IF (CSTB1) THEN
+!/ST6         WRITE (NDSO,940) YESXNO(J), '(constant)           ' ,SWL6B1
+!/ST6      ELSE
+!/ST6         WRITE (NDSO,940) YESXNO(J), '(steepness dependent)' ,SWL6B1
+!/ST6      END IF
 !
 ! 6.g Define Sbt.
 !
@@ -2070,7 +2076,7 @@
 !/ST4                    SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,           &
 !/ST4                    WHITECAPWIDTH, SDSLFGEN, SDSHFGEN
 !/ST6          WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
-!/ST6          WRITE (NDSO,2937) SWLB1
+!/ST6          WRITE (NDSO,2937) SWLB1, CSTB1
 !/BT1          WRITE (NDSO,2926) GAMMA
 !/BT4          WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
@@ -4332,8 +4338,8 @@
 !/ST6  937 FORMAT (/'  Swell dissipation ',A/                            &
 !/ST6               ' --------------------------------------------------')
 !/ST6  940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
-!/ST6               '   coefficient B1 (7.91)                : ',E9.3/   )
-!/ST6 2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,' /')
+!/ST6               '   coefficient b1 ',A,                ' : ',E9.3/   )
+!/ST6 2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
 !
 !/STX  924 FORMAT (/'  Experimental dissipation.'/)
 !

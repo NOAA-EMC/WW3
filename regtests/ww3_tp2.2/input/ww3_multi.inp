@@ -13,7 +13,7 @@ $ (1) Forcing Fields
   F
 $ (2) Standard mean wave Parameters 
   T
-$ HS WL T2 T1 TM FP DM SP DP
+$ HS WL T2 T1 T01 FP DM SP DP
   T  F  F  T  F  F  T  T  F 
 $ (3) Frequency-dependent parameters
   F

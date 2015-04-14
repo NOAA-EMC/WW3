@@ -2788,7 +2788,7 @@
 !/NC4      IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
       iret=nf90_put_att(ncid,varid(1),'long_name','julian day (UT)')
       iret=nf90_put_att(ncid,varid(1),'standard_name','time')
-      iret=nf90_put_att(ncid,varid(1),'units','days since 1990-01-01 00:00:00')
+      iret=nf90_put_att(ncid,varid(1),'units','days since 1990-01-01T00:00:00Z')
       iret=nf90_put_att(ncid,varid(1),'conventions','Relative julian days with decimal part (as parts of the day)')
       iret=nf90_put_att(ncid,varid(1),'axis','T') 
 

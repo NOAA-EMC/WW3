@@ -251,7 +251,8 @@ EOF
       then
         echo "   Clean up $main_dir/bin"
         cd $main_dir/bin
-        rm -f w3adc w3list w3prnt w3split comp link switch switch.old switch.old_DIST switch.old_SHRD switch.old_OMP
+        rm -f w3adc w3list w3prnt w3split comp link switch switch.old
+        rm -f switch.old_DIST switch.old_SHRD switch.old_OMP switch.old_HYB
       fi
       if [ -d $main_dir/aux ]
       then
@@ -261,6 +262,7 @@ EOF
         rm -f makefile_DIST
         rm -f makefile_SHRD
         rm -f makefile_OMP
+        rm -f makefile_HYB
       fi
       if [ -d $main_dir/ftn ]
       then
@@ -270,6 +272,7 @@ EOF
         rm -f makefile_DIST
         rm -f makefile_SHRD
         rm -f makefile_OMP
+        rm -f makefile_HYB
       fi
       if [ -d $main_dir/exe ]
       then
@@ -296,6 +299,11 @@ EOF
         echo "   Remove $main_dir/obj_OMP"
         rm -fr $main_dir/obj_OMP
       fi
+      if [ -d $main_dir/obj_HYB ]
+      then
+        echo "   Remove $main_dir/obj_HYB"
+        rm -fr $main_dir/obj_HYB
+      fi
       if [ -d $main_dir/mod ] || [ -L $main_dir/mod ]
       then
         echo "   Remove $main_dir/mod"
@@ -315,6 +323,11 @@ EOF
       then
         echo "   Remove $main_dir/mod_OMP"
         rm -fr $main_dir/mod_OMP
+      fi
+      if [ -d $main_dir/mod_HYB ]
+      then
+        echo "   Remove $main_dir/mod_HYB"
+        rm -fr $main_dir/mod_HYB
       fi
     else
       echo "   Directory does not exist: $main_dir"
