@@ -171,11 +171,11 @@
       RECRIT = 1.0E5
       RE     = 4.0 * UOSIG * AORB / VA
 !
-!!    IF (RE .GT. RECRIT) THEN
+      IF (RE .GT. RECRIT) THEN
          D = -(16.0/GRAV) * (DAIR/DWAT) * FE * (SIG2**2) *UOSIG
-!!    ELSE
-!!       D = -2.0 * (DAIR/DWAT) * CDSV * WN2 * SQRT(2.0 * VA * SIG2)
-!!    END IF
+      ELSE
+         D = -2.0 * (DAIR/DWAT) * CDSV * WN2 * SQRT(2.0 * VA * SIG2)
+      END IF
 !
       S = D * A
 !
@@ -262,7 +262,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: GRAV
       USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, DDEN, DTH
-      USE W3GDATMD,  ONLY: SWL6B1, FTE, FTWN
+      USE W3GDATMD,  ONLY: SWL6CSTB1, SWL6B1, FTE, FTWN
 !/T6      USE W3ODATMD,  ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
@@ -305,7 +305,20 @@
          END IF
       END DO
       ANAR  = 1.0/( SUM(K,1) * DTH )
-      BN    = ANAR * ( ABAND * SIG(1:NK) * DTH ) * WN**3 
+      BN    = ANAR * ( ABAND * SIG(1:NK) * DTH ) * WN**3
+!
+      IF (.NOT.SWL6CSTB1) THEN
+!
+!/    --- A constant value for B1 attenuates swell too strong in the
+!/        western central Pacific (i.e. cross swell less than 1.0m).
+!/        Workaround is to scale B1 with steepness a*kp, where kp is
+!/        the peak wavenumber. SWL6B1 remains a scaling constant, but
+!/        with different magnitude.  --------------------------------- /
+          IK    = MAXLOC(ABAND,1)         ! Index for peak
+!         EMEAN = SUM(ABAND * DDEN / CG)  ! Total sea surface variance
+          B1    = SWL6B1 * ( 2. * SQRT(SUM(ABAND*DDEN/CG)) * WN(IK) )
+!
+      END IF
 !
 !/ 2) --- Calculate the derivative term only (in units of 1/s) ------- /
       DO IK = 1,NK

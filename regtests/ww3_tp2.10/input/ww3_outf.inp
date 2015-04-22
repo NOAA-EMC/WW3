@@ -10,7 +10,7 @@ $ DPT CUR WND DT  WLV ICE IBG D50
   F   F   T   F   F   F   F   F
 $ (2) Standard mean wave Parameters
   T
-$ HS  LM  TZ  TE  TM  FP  DIR SPR DP
+$ HS  LM  TZ  TE  T01  FP  DIR SPR DP
   T   F   F   F   T   F   F   F   F
 $ (3) Frequency-dependent parameters
   F
