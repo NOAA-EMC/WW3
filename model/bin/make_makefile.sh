@@ -692,7 +692,6 @@
    esac
 
   cplcode=$NULL
-  echo $mcp
   case $mcp in 
    NCC) cplcode='cmp.comm ww.comm'
   esac
@@ -713,7 +712,6 @@
     mprfaux=$NULL
   fi
 
-  echo "Coupling files used $cplcode"
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
