@@ -32,7 +32,7 @@ F90COMP     =  -fast -assume byterecl -convert big_endian
 F90LINK     =  -O2
 #
 # MPI library
-MPI         = $(shell which $(shell awk -F' ' '{print $1}' $(F90)))
+MPI         = $(shell which ifort)
 MPIDIR      = $(shell dirname $(shell dirname $(MPI)))
 MPIBIN      = $(MPIDIR)/bin
 MPI_INCLUDE = $(MPIDIR)/include

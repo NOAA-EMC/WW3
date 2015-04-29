@@ -74,7 +74,7 @@
 
   # compilation options
   opt="-c -CB -O0 -fpe0 -traceback  -assume byterecl -module $path_m"
-  opt="-p -pg -g $opt"
+  #opt="-p -pg -g $opt"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]

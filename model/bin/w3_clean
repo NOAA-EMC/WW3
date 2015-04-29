@@ -111,6 +111,7 @@ EOF
     rm -f *.c
     rm -f *.f
     rm -f *.f90
+    rm -f *.F90
     rm -f *.l
     rm -f *.o
 #   rm -f *.inp
