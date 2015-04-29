@@ -40,7 +40,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:defg:Ghi:m:n:o:Op:q:r:s:t:Sw:"  #option string for getopt function
+optstr="a:c:Cdefg:Ghi:m:n:o:Op:q:r:s:t:Sw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -54,6 +54,7 @@ Options:
                    :   *default is <source_dir>/wwatch3.env
                    :   *file will be created if it does not already exist
   -c cmplr         : setup comp & link files for specified cmplr
+  -C               : enable coupling using OASIS3-mct
   -d               : invoke main program using gdb (non-parallel)
   -e               : prompt for changes to existing WW3 environment
   -f               : force pre- and post-processing programs to be compiled
@@ -65,7 +66,7 @@ Options:
   -i inpdir        : use inputs in test_name/<inpdir> (default  test_name/input)
   -m grid_set      : execute multi-model test
                    :   *grid names are obtained from input/<grid_set>
-                   :   *ww3_multi_<grid_set> will execute instead of ww3_shell
+                   :   *ww3_multi_<grid_set> will execute instead of ww3_shel
                    :   *to execute a single model test case with ww3_multi use
                    :    grid_set = none
   -n nproc         : specify <nproc> processors for parallel run
@@ -124,6 +125,7 @@ do
   case "$1" in
   -a) shift; ww3_env="$1" ;;
   -c) shift; cmplr="$1" ;;
+  -C) coupl=1 ;;
   -d) use_gdb=1 ;;
   -e) prompt=1 ;;
   -f) force_shrd=1 ;;
@@ -348,6 +350,17 @@ then
   then
     \rm -f *.inp *.ww3 *.out *.txt $ncfiles finished
   fi
+fi
+
+if [ $coupl ]
+then
+  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr
+  then :
+  else
+    errmsg "Error occured during WW3 $prog build"
+    exit 1
+  fi
+  export OASISDIR=$path_i/../work_oasis3-mct
 fi
 
 # 3.b Header
@@ -883,6 +896,7 @@ then
 else
   ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
 fi
+
 if [ $? = 0 ]
 then
 
@@ -931,15 +945,26 @@ then
     fi
   fi
 
-  if $runcmd $path_e/$prog | tee $ofile
+  if [ $coupl ]
   then
-    \rm -f track_i.ww3
-    \rm -f $prog.inp
+    if $runcmd $path_e/$prog : -np $nproc $path_w/toy_model | tee $ofile
+    then
+      \rm -f track_i.ww3
+      \rm -f $prog.inp
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
   else
-    errmsg "Error occured during $path_e/$prog execution"
-    exit 1
+    if $runcmd $path_e/$prog | tee $ofile
+    then
+      \rm -f track_i.ww3
+      \rm -f $prog.inp
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
   fi
-
 fi
 
 fi
