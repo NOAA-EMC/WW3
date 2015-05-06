@@ -1327,7 +1327,7 @@
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
 !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
-!/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.xx )
+!/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
 !/
 !  1. Purpose :
 !

@@ -128,7 +128,7 @@
 !/                  (F. Ardhuin) 
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
-!/    17-Sep-2014 : Read mod_def before inp file        ( version 5.xx )
+!/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
 !/
 !  1. Purpose :
 !

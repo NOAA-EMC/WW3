@@ -14,7 +14,8 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    24-Apr-2015 : Adding OASIS coupling flag          ( version 5.xx )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
