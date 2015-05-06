@@ -111,6 +111,7 @@ EOF
     rm -f *.c
     rm -f *.f
     rm -f *.f90
+    rm -f *.F90
     rm -f *.l
     rm -f *.o
 #   rm -f *.inp
@@ -159,7 +160,7 @@ EOF
       done
     fi
 
-    # remove tmp folder is empty
+    # remove tmp folder if empty
     cd $main_dir
     if [ "$(ls -A $temp_dir 2> /dev/null)" = "" ]
     then
@@ -231,7 +232,7 @@ EOF
       fi
     done
 
-    # remove work folder is empty
+    # remove work folder if empty
     cd $main_dir 
     if [ "$(ls -A $main_dir/work 2> /dev/null)" = "" ]
     then
@@ -351,6 +352,13 @@ EOF
           echo "   Remove $work"
           rm -fr $work
         done
+        if [ -d $main_dir/../regtests/ww3_tp2.14 ]
+        then
+          cd $main_dir/../regtests/ww3_tp2.14
+          rm -f input/oasis3-mct/util/make_dir/make
+          rm -f input/toy/toy_model
+          rm -f input/ww3_shel.inp
+        fi
       fi
     fi
   fi

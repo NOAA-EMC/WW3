@@ -126,7 +126,7 @@
 !                          USERO
       USE W3ADATMD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
-                          FLOGRD, FNMPRE, NOSWLL, NOGE, FLOG
+                          FLOGRD, FNMPRE, NOSWLL, NOGE, FLOGD
 !
       IMPLICIT NONE
 !/
@@ -274,7 +274,7 @@
 !
 ! ... Call to interface for reading flags or namelists
 !
-      CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG, FLREQ,   &
+      CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOGD, FLREQ,   &
                          1, 1, IERR )
 !
 ! Inform user of parameters that were requested but failed to make the

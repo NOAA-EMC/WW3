@@ -1,0 +1,30 @@
+
+********************************************
+*** Manual installation of the toy model ***
+********************************************
+
+
+1- Setup your wavewatchIII environment file using w3_setup routine
+ex:
+ cd model/bin
+ w3_setup .. -c mpt -S OASOCM
+
+2- Define the WWATCH3_DIR in your environment
+ex:
+ export WWATCH3_DIR=`grep WWATCH3_DIR $WWATCH3_ENV | awk -F' ' '{print $2}' `
+
+3- Compile the coupler OASIS3-MCT
+ex:
+ cd ../oasis3-mct/util/make_dir
+ ln -sf make.mpt make
+ make realclean -f TopMakefileOasis3 > oasis_clean.out
+ make -f TopMakefileOasis3 > oasis_make.out
+
+4- Compile the toy model
+ex:
+ make clean > toy_clean.out
+ make > toy_make.out
+
+
+
+

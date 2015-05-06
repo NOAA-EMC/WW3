@@ -99,7 +99,8 @@
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
                      s_ice s_is reflection s_xx \
               wind windx rwind curr currx mgwind mgprop mggse \
-              subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf
+              subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
+              coupl agcm ogcm
   do
     case $type in
 #sort:mach:
@@ -329,7 +330,22 @@
                ID='multi-grid model profiling'
                TS='MPRF'
                OK='MPRF' ;;
-    esac
+#sort:agcm:
+      agcm   ) TY='upto1'
+               ID='atmospheric circulation model'
+               TS='OASACM'
+               OK='OASACM' ;;
+#sort:ogcm:
+      ogcm   ) TY='upto1'
+               ID='ocean circulation model'
+               TS='OASOCM'
+               OK='OASOCM' ;;
+#sort:coupl:
+      coupl  ) TY='upto1'
+               ID='type of the coupler'
+               TS='OASIS'
+               OK='OASIS' ;;
+   esac
 
     n_found='0'
     s_found=
@@ -347,7 +363,7 @@
       echo ' '
       echo "   *** No valid $ID switch found  ***"
       echo "       valid : $OK"
-      echo "       found :$s_found"
+      echo "       found : $s_found"
       echo ' ' ; exit 3
     fi
 
@@ -356,7 +372,7 @@
       echo ' '
       echo "   *** Too many $ID switches found (max 1) ***"
       echo "       valid : $OK"
-      echo "       found :$s_found"
+      echo "       found : $s_found"
       echo ' ' ; exit 4
     fi
 
@@ -365,7 +381,7 @@
       echo ' '
       echo "   *** Too many $ID switches found (max 2) ***"
       echo "       valid : $OK"
-      echo "       found :$s_found"
+      echo "       found : $s_found"
       echo ' ' ; exit 5
     fi
 
@@ -445,6 +461,9 @@
       tide   ) tide=$sw ;;
       arctic ) arctic=$sw ;;
       mprf   ) mprf=$sw ;;
+      coupl  ) coupl=$sw ;;
+      agcm   ) agcm=$sw ;;
+      ogcm   ) ogcm=$sw ;;
               *    ) ;;
     esac
   done
@@ -691,6 +710,21 @@
    IG1) igcode='w3gig1md w3canomd'
    esac
 
+  couplmd=$NULL
+  case $coupl in
+   OASIS) couplmd='w3oacpmd'
+   esac
+
+  agcmmd=$NULL
+  case $agcm in
+   OASACM) agcmmd='w3agcmmd'
+   esac
+
+  ogcmmd=$NULL
+  case $ogcm in
+   OASOCM) ogcmmd='w3ogcmmd'
+   esac
+
   cplcode=$NULL
   case $mcp in 
    NCC) cplcode='cmp.comm ww.comm'
@@ -755,28 +789,28 @@
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
              source="w3triamd $stx $nlx $btx  $is"
-                 IO='w3iogrmd'
+                 IO="w3iogrmd $couplmd $agcmmd $ogcmmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
      ww3_prnc) IDstring='NetCDF field preprocessor'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
              source="w3triamd $stx $nlx $btx $is"
-                 IO='w3iogrmd'
+                 IO="w3iogrmd $couplmd $agcmmd $ogcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_prtide) IDstring='Tide prediction'
                core='w3fldsmd'
                data='w3gdatmd w3adatmd w3idatmd w3odatmd'
                prop=
              source="w3triamd $stx $nlx $btx $is"
-                 IO='w3iogrmd'
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3gsrumd" ;;
+                 IO="w3iogrmd $couplmd $agcmmd $ogcmmd"
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_shel) IDstring='Generic shell'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
-                 IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
+                 IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $couplmd $agcmmd $ogcmmd"
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode" ;;
     ww3_multi) IDstring='Multi-grid shell'
@@ -786,7 +820,7 @@
                prop="$pr"
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
-                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd"
+                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $couplmd $agcmmd $ogcmmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
                 aux="$aux  wmunitmd" 
                 if [ "$scrip" = 'SCRIP' ]
@@ -806,7 +840,7 @@
                prop="$pr" 
                source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
-                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd" 
+                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $couplmd $agcmmd $ogcmmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
                 aux="$aux  wmunitmd"  
                 if [ "$scrip" = 'SCRIP' ]
@@ -858,15 +892,15 @@
                core=
                data='w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="$stx $nlx $btx  $is"
+             source="$stx $nlx $btx $is"
                  IO='w3iogrmd w3iogomd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_gspl) IDstring='Grid splitting'
                core='w3fldsmd'
                data='w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop=
-             source="w3triamd $stx $nlx $btx  $is"
-                 IO='w3iogrmd'
+             source="w3triamd $stx $nlx $btx $is"
+                 IO="w3iogrmd  $couplmd $agcmmd $ogcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
      ww3_gint) IDstring='Grid Interpolation'
                core=
@@ -1012,7 +1046,7 @@
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
                WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD \
-               w3getmem WW_cc CMP_COMM
+               w3getmem WW_cc CMP_COMM W3OACPMD W3AGCMMD W3OGCMMD 
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1110,6 +1144,9 @@
          'w3getmem'     ) modtest=w3getmem.o ;;
          'WW_cc'        ) modtest=ww.comm.o  ;;
          'CMP_COMM'     ) modtest=cmp.comm.o  ;;
+         'W3OACPMD'     ) modtest=w3oacpmd.o ;;
+         'W3AGCMMD'     ) modtest=w3agcmmd.o ;;
+         'W3OGCMMD'     ) modtest=w3ogcmmd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
