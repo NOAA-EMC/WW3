@@ -992,7 +992,7 @@
 !/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'standard_name', 'longitude') )
 !/TRKNC      call check( nf90_put_att(ncid, lon_varid, 'axis','X'))
 !/TRKNC      call check(nf90_put_att(ncid,rec_varid,units,& 
-!/TRKNC                  'days since 1990-01-01T00:00:00Z'))
+!/TRKNC                  'days since 1990-01-01 00:00:00'))
 !/TRKNC      call check(nf90_put_att(ncid,rec_varid,'long_name','julian day (UT)'))
 !/TRKNC      call check( nf90_put_att(ncid, rec_varid,'standard_name', 'time') )
 !/TRKNC      call check( nf90_put_att(ncid, rec_varid, 'conventions',&
@@ -1179,7 +1179,7 @@
 !/TRKNC      iret = nf90_put_att(ncid, longitude_id, 'axis', 'X')
 !/TRKNC      call check(iret)
 !/TRKNC      iret = nf90_put_att(ncid, time_id, 'units', &
-!/TRKNC        'days since 1990-01-01T00:00:00Z')
+!/TRKNC        'days since 1990-01-01 00:00:00')
 !/TRKNC      call check(iret)
 !/TRKNC      iret = nf90_put_att(ncid, time_id, 'long_name','julian day(UT)')
 !/TRKNC      call check(iret)

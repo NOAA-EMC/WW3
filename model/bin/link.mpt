@@ -20,7 +20,7 @@
 #    processor.                                                               #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      February 2005          #
+#                                                      April    2015          #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -97,46 +97,55 @@
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
+  # linking options
   libs=""
-  opt="-O2  -o $prog"
+  opt="-O2 -o $prog"
+# opt=" -p -pg -g -O0 -Zp8 -tpp7 -o $prog"
 
+  # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=ifort
-    opt=" -lmpi -O3 -o $prog"
+    comp="ifort -lmpi"
   else
     comp=ifort
   fi
 
+  # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
     opt="$opt -openmp"
   fi
 
-#  Generation of *.a in case of coupled model
-
+  # palm coupler archive
   if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ]
     then
     if [ "$palm_mod" = 'yes' ]
        then
-       comp=xiar
+       comp=ar
        opt="-rv $prog.a"
        prog="$prog.a"
     fi
   fi
 
-  if [ "$oasis_mod" = 'yes' ]
+  # oasis coupler archive
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || \
+     [ "$prog" = 'ww3_prnc' ] || [ "$prog" = 'ww3_prep' ] || [ "$prog" = 'ww3_prtide' ] || \
+     [ "$prog" = 'ww3_gspl' ]
   then
-    echo "link with oasis"
-    libs="$libs $OASISDIR/lib/libpsmile.MPI1.a $OASISDIR/lib/libmct.a $OASISDIR/lib/libmpeu.a $OASISDIR/lib/libscrip.a" ;
+    if [ "$oasis_mod" = 'yes' ]
+    then
+      echo "link with oasis"
+      libs="$libs $OASISDIR/lib/libpsmile.MPI1.a $OASISDIR/lib/libmct.a $OASISDIR/lib/libmpeu.a $OASISDIR/lib/libscrip.a" ;
+    fi
   fi
 
+  # netcdf library dir
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
       NC3) libs="$libs -L$NETCDF_LIBDIR -lnetcdf" ;;
       NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-           libs="$libs `$NETCDF_CONFIG --flibs` " ;;
+           libs="$libs `$NETCDF_CONFIG --flibs`" ;;
     esac
   fi
 

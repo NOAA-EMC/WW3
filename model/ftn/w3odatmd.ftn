@@ -1314,7 +1314,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         19-Dec-2012 |
+!/                  | Last update :         12-Dec-2014 |
 !/                  +-----------------------------------+
 !/
 !/    13-Dec-2004 : Origination.                        ( version 3.06 )
@@ -1325,8 +1325,9 @@
 !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
 !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-!/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
+!/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
+!/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
 !/
 !  1. Purpose :
 !
@@ -1491,7 +1492,7 @@
 !/MPI      IT0TRK => OUTPTS(IMOD)%OUT3%IT0TRK
 !/MPI      IT0PRT => OUTPTS(IMOD)%OUT3%IT0PRT
 !/MPI      NRQTR  => OUTPTS(IMOD)%OUT3%NRQTR
-!/MPI      IF ( NRQTR .EQ. 0 ) IRQTR  => OUTPTS(IMOD)%OUT3%IRQTR
+!/MPI      IF ( NRQTR .NE. 0 ) IRQTR  => OUTPTS(IMOD)%OUT3%IRQTR
       O3INIT => OUTPTS(IMOD)%OUT3%O3INIT
       STOP   => OUTPTS(IMOD)%OUT3%STOP
 !

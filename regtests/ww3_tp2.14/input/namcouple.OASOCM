@@ -1,0 +1,131 @@
+# This is a typical input file for OASIS3-MCT.
+# Keywords used in previous versions of OASIS3 
+# but now obsolete are marked "Not used"
+# Don't hesitate to ask precisions or make suggestions (oasishelp@cerfacs.fr). 
+#
+# Any line beginning with # is ignored. Blank lines are not allowed.
+#
+#########################################################################
+ $NFIELDS
+# The number of fields described in the second part of the namcouple.
+#
+         4
+ $END
+#########################################################################
+ $NBMODEL
+# The number of models in this experiment + their names (6 characters)
+#
+   2  wwatch toyexe
+ $END
+###########################################################################
+ $RUNTIME
+# The total simulated time for this run in seconds
+#
+  1800
+ $END
+###########################################################################
+ $NLOGPRT
+# The first (0 to 30) and second (0 to 3) numbers refer to the ammount of 
+# debug and time statistic information written by OASIS3-MCT for each model
+# and processor (see user manual for more details)
+#
+  30  3
+ $END
+###########################################################################
+ $STRINGS
+#
+# The above variables are the general parameters for the experiment.
+# Everything below has to do with the fields being exchanged.
+#
+# line 1: field in ww3 model, field in target model, unused, coupling 
+#         period, number of transformation, restart file, field status
+# line 2: nb of pts for ww3 grid without halo first dim, and second dim,
+#         for target grid first dim, and second dim (optionals, default=0),
+#         ww3 grid name, target grid name, lag index
+# line 3: ww3 grid periodical (P) or regional (R), and nb of overlapping 
+#         points, target grid periodical (P) or regional (R), and number of
+#         overlapping points
+# line 4: list of transformations performed
+# line 5: parameters for each transformation
+#
+# See the correspondances between WW3 and OASIS fields below:
+#
+# |--------------------------------------------------------------|
+# | received fields by ww3 from Ocean model :       WW3 | OASIS  |
+# |--------------------------------------------------------------|
+# |            not defined   |    WW3__WDH WW3__WDU WW3__WDV     |
+# |                    SSH   |    WW3__SSH                       |
+# |                    CUR   |    WW3___UZ WW3___VZ              |
+# |--------------------------------------------------------------|
+# | received fields by ww3 from Atmospheric model : WW3 | OASIS  |
+#  --------------------------------------------------------------|
+# |                    WND   |    WW3__U10 WW3__V10              |
+# |--------------------------------------------------------------|
+# | sent fields by ww3 from Ocean model :           WW3 | OASIS  |
+# |--------------------------------------------------------------|
+# |            not defined   |    WW3__DRY                       |
+# |                   T0M1   |    WW3_T0M1                       |
+# |                     HS   |    WW3___HS                       |
+# |                    DIR   |    WW3_CDIR WW3_SDIR              |
+# |                    BHD   |    WW3__BHD                       |
+# |                    TWO   |    WW3_TWOX WW3_TWOY              |
+# |                    UBR   |    WW3__UBR                       |
+# |                    FOC   |    WW3__FOC                       |
+# |                    TAW   |    WW3_TAWX WW3_TAWY              |
+# |                     LM   |    WW3___LM                       |
+# |--------------------------------------------------------------|
+# | sent fields by ww3 from Atmospheric model :     WW3 | OASIS  |
+# |--------------------------------------------------------------|
+# |                    CUR   |    WW3___US WW3___VS              |
+# |                    CHA   |    WW3__CHA                       |
+# |                     HS   |    WW3___HS                       |
+# |                     FP   |    WW3___TP                       |
+# |--------------------------------------------------------------|
+#
+#  
+#
+#                     -----------------------------------------
+#                        WW3 (wwatch) ==> TOY (toyexe)
+#                     -----------------------------------------
+#
+#~~~~~~~~~~~
+# Field 1 : 
+#~~~~~~~~~~~
+WW3_CDIR VARRCV01 1 360 1 rstrt.nc EXPOUT
+101 117 66 75 ww3t toyt LAG=+0 
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Field 2 : 
+#~~~~~~~~~~~
+WW3_SDIR VARRCV02 1 360 1 rstrt.nc EXPOUT
+101 117 66 75 ww3t toyt LAG=+0 
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#                     ------------------------------------------
+#                        TOY (toyexe) ==> WW3 (wwatch)
+#                     ------------------------------------------
+#
+#~~~~~~~~~~~
+# Field 3 : 
+#~~~~~~~~~~~
+VARSND01 WW3___UZ  1 360 1 rstrt.nc EXPOUT
+66 75 101 117 toyt ww3t LAG=+90 
+R  0  R  0
+SCRIPR
+BILINEAR LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Field 4 : 
+#~~~~~~~~~~~
+VARSND02 WW3___VZ  1 360 1 rstrt.nc EXPOUT
+66 75 101 117 toyt ww3t LAG=+90 
+R  0  R  0
+SCRIPR
+BICUBIC LR SCALAR LATLON 1 4
+#
+ $END

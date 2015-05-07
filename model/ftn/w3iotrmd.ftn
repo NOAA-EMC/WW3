@@ -72,7 +72,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         12-Dec-2015 |
 !/                  +-----------------------------------+
 !/
 !/    22-Dec-1998 : Final FORTRAN 77                    ( version 1.18 )
@@ -92,9 +92,10 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    26-Dec-2012 ; Initialize ASPTRK.                  ( version 4.11 )
+!/    26-Dec-2012 : Initialize ASPTRK.                  ( version 4.11 )
+!/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
 !/
-!/    Copyright 2009-2012 National Weather Service (NWS),
+!/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
@@ -106,7 +107,7 @@
 !  2. Method :
 !
 !     Time and location data for the track is read from the file
-!     track_i.FILEXT, and output spectra ad adtional information are
+!     track_i.FILEXT, and output spectra additional information are
 !     written to track_o.FILEXT.
 !
 !     The spectrum dumped is the frequency-direction spectrum in
@@ -122,7 +123,7 @@
 !     ----------------------------------------------------------------
 !       NDSINP  Int.   I   Unit number of input file track_i.FILEXT
 !                          If negative, file is unformatted and v.v.
-!       NDSOUT  Int.   I   Unit number of outptu file track_o.FILEXT
+!       NDSOUT  Int.   I   Unit number of output file track_o.FILEXT
 !       A       R.A.   I   Spectra (shape conversion through par list).
 !       IMOD    Int.   I   Model grid number.
 !     ----------------------------------------------------------------
@@ -262,7 +263,7 @@
 !
 !/T      WRITE (NDST,9000) TIME
 !
-!/MPI      IF ( NRQTR .GT. 0 ) THEN
+!/MPI      IF ( NRQTR .NE. 0 ) THEN
 !/MPI          CALL MPI_STARTALL ( NRQTR, IRQTR, IERR_MPI )
 !/MPI          ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQTR) )
 !/MPI          CALL MPI_WAITALL ( NRQTR, IRQTR , STATUS, IERR_MPI )
@@ -641,27 +642,27 @@
 !     Error Escape Locations
 !
   800 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
       GOTO 880
 !
   801 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) IERR
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:I), IERR
       GOTO 880
 !
   802 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002)
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) FILEXT(:I)
       GOTO 880
 !
   803 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) IDSTRI, IDTST
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) FILEXT(:I), IDSTRI, IDTST
       GOTO 880
 !
   810 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) IERR
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) FILEXT(:I), IERR
       GOTO 880
 !
   811 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) IERR
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
 !
 !     Disabeling output
 !
@@ -677,28 +678,28 @@
 !
  1000 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
                '     INPUT FILE WITH TRACK DATA NOT FOUND ',          &
-               '(FILE track_i.ww3, IOSTAT =',I6,')'/                  &
+               '(FILE track_i.',A,' IOSTAT =',I6,')'/                 &
                '     TRACK OUTPUT DISABLED '/)
  1001 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     ERROR IN READING FILE track_i.ww3, IOSTAT =',I6/ &
+               '     ERROR IN READING FILE track_i.',A,' IOSTAT =',I6/&
                '     (ADITIONAL) TRACK OUTPUT DISABLED '/)
  1002 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     PREMATURE END OF FILE track_i.ww3'/              &
+               '     PREMATURE END OF FILE track_i.',A/               &
                '     TRACK OUTPUT DISABLED '/)
  1003 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     UNEXPECTED CONTENTS OF OF FILE track_i.ww3'/     &
+               '     UNEXPECTED CONTENTS OF OF FILE track_i.',A/      &
                '       EXPECTED : ',A/                                &
                '       FOUND    : ',A/                                &
                '     TRACK OUTPUT DISABLED '/)
  1004 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     END OF FILE track_i.ww3'/)
+               '     END OF FILE track_i.',A/)
 !
  1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
                '     ERROR IN OPENING OUTPUT FILE ',                  &
-               '(FILE track_o.ww3, IOSTAT =',I6,')'/                  &
+               '(FILE track_o.',A,' IOSTAT =',I6,')'/                 &
                '     TRACK OUTPUT DISABLED '/)
  1011 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     ERROR IN WRITING TO FILE track_o.ww3, IOSTAT =',I6/ &
+               '     ERROR IN WRITING TO FILE track_o.',A,' IOSTAT =',I6/ &
                '     (ADITIONAL) TRACK OUTPUT DISABLED '/)
 !
 !/T 9000 FORMAT (' TEST W3IOTR : MODEL TIME       : ',I8.8,I7.6)

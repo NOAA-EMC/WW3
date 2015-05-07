@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         24-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    02-Apr-2004 : Origination.                        ( version 3.06 )
@@ -14,6 +14,8 @@
 !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -77,6 +79,7 @@
 !                               data flags.
 !      FLAGS4    Log.  Public   Like FLAGS(4) but does *not* get changed
 !                               when model reads last record of ice.ww3
+!      FLAGSC    L.A.  Public   Coupling or not for input variables
 !      JFIRST    Int   Public   First index of arrays related to
 !                               input fields.  At present this is
 !                               hardwired below. Field-related arrays
@@ -157,7 +160,7 @@
         LOGICAL               :: IINIT
 ! note that if size of FLAGS is changed, then TFLAGS in wminitmd.ftn
 !    also must be resized.
-        LOGICAL               :: FLAGS(-7:12)
+        LOGICAL               :: FLAGS(-7:12), FLAGSC(-7:12)
         LOGICAL               :: FLAGS4
       END TYPE INPUT
 !/
@@ -183,7 +186,7 @@
 !/TIDE       REAL, POINTER           :: CXTIDE(:,:,:,:),         &
 !/TIDE                                  CYTIDE(:,:,:,:), WLTIDE(:,:,:,:)
       LOGICAL, POINTER        :: IINIT
-      LOGICAL, POINTER        :: FLAGS(:)
+      LOGICAL, POINTER        :: FLAGS(:), FLAGSC(:)
       LOGICAL, POINTER        :: FLAGS4
       LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE
       LOGICAL, POINTER        :: FLMTH, FLMVS, FLMDN
@@ -297,6 +300,7 @@
         INPUTS(I)%IINIT    = .FALSE.
         INPUTS(I)%FLAGS    = .FALSE.
         INPUTS(I)%FLAGS4   = .FALSE.
+        INPUTS(I)%FLAGSC   = .FALSE.
         END DO
 !
 !/T      WRITE (NDST,9000) -NAUXGR, NGRIDS
@@ -705,6 +709,7 @@
       IINIT  => INPUTS(IMOD)%IINIT
       FLAGS  => INPUTS(IMOD)%FLAGS
       FLAGS4 => INPUTS(IMOD)%FLAGS4
+      FLAGSC => INPUTS(IMOD)%FLAGSC
 !
       FLIC1  => INPUTS(IMOD)%FLAGS(-7)
       FLIC2  => INPUTS(IMOD)%FLAGS(-6)

@@ -1159,12 +1159,12 @@
 !/T                                  ICEI(IX,IY), 'ICE (NEW)'
 !/IC0                JSEA   = 1 + (ISEA-1)/NAPROC
 !/IC0                VA(:,JSEA) = 0.
-!/T              ELSE
+!/IC0              ELSE
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'ICE (NEW X)'
 !/IC0              END IF
 !
-!/T          ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
+!/IC0          ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
 !/T            WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
 !/T                              ICEI(IX,IY), 'ICE'
 !/IC0          END IF
@@ -1185,17 +1185,17 @@
 !/IC0                    JSEA   = 1 + (ISEA-1)/NAPROC
 !/IC0                    VA(:,JSEA) = 0.
 !
-!/T                  ELSE
+!/IC0                  ELSE
 !/T                    WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
 !/T                                      ICEI(IX,IY), 'SEA (NEW X)'
 !/IC0                  END IF
 !
-!/T              ELSE
+!/IC0              ELSE
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'DIS'
 !/IC0              END IF
 !
-!/T             ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
+!/IC0             ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
 !/T                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
 !/T                                  ICEI(IX,IY), 'SEA'
 !

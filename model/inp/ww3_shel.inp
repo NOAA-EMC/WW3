@@ -1,16 +1,24 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III shell input file                                       $
 $ -------------------------------------------------------------------- $
-$ Define input to be used with flag for use and flag for definition
-$ as a homogeneous field (first three only); eight input lines.
+$ Define input to be used with F/T/C flag for use or nor or coupling and
+$ T/F flag for definition as a homogeneous field.
 $
+   F F     Ice parameter 1
+   F F     Ice parameter 2
+   F F     Ice parameter 3
+   F F     Ice parameter 4
+   F F     Ice parameter 5
+   F F     Mud parameter 1
+   F F     Mud parameter 2
+   F F     Mud parameter 3
    F F     Water levels
    F F     Currents
    T T     Winds
    T       Ice concentrations
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
-   F       Assimilation data : 2-D spectra.
+   F       Assimilation data : 2-D spectra
 $
 $ Time frame of calculations ----------------------------------------- $
 $ - Starting time in yyyymmdd hhmmss format.
@@ -288,6 +296,24 @@ $          First, last step IX and IY, flag for formatted file
 $
    19680606 000000   3600  20010102 000000
       0 999 1 0 999 1 T
+$
+$ Type 7 : Coupling (must be fully commented if not used)
+$          Diagnostic fields to exchange (same format as output fields)
+$
+$  19680606 000000   3600  20010102 000000
+$  N
+$
+$   - Sent fields by ww3:
+$       - Ocean model : T0M1 HS DIR BHD TWO UBR FOC TAW LM DRY
+$       - Atmospheric model : CUR CHA HS FP
+$
+$  CHA
+$
+$   - Received fields by ww3:
+$       - Ocean model : SSH CUR DRY
+$       - Atmospheric model : WND
+$
+$  WND
 $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID

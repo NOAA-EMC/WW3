@@ -1,0 +1,95 @@
+##############################################################################
+#This is the top makefile for compiling OASIS3-MCT coupling library including
+#  mct/mpeu, scrip and psmile (i.e. interpolation and communication)
+#Platform dependent settings, compiler options, cpp keys, 
+#paths and other stuff has to be set in an include file indicated in make.inc.
+# 
+# default : mct/mpeu, scrip and psmile
+# oasis3_psmile (for OASIS3 upward compatibility): mct/mpeu, scrip and psmile
+# realclean : Automatic recompilation of all sources
+#
+#######
+include make.inc
+#
+SHELL = /bin/sh
+MAKEf = $(MAKE) -f TopMakefileOasis3
+#
+# Defining path for FORTRAN and C sources
+LIBSRC  = $(COUPLE)/lib
+#
+# Log and error files for compiling
+LOG = $(ARCHDIR)/COMP.log
+ERR = $(ARCHDIR)/COMP.err
+#
+#######
+default: 
+	 rm -f $(LOG) $(ERR)
+	 $(MAKEf) makedirs
+	 $(MAKEf) makemct
+	 $(MAKEf) makelibs
+	 $(MAKEf) makepsmile
+#
+oasis3_psmile:
+	rm -f $(LOG) $(ERR)
+	$(MAKEf) makedirs
+	$(MAKEf) makemct
+	$(MAKEf) makelibs
+	$(MAKEf) makepsmile
+#
+realclean:
+	$(MAKEf) cleanlibs
+#
+# Rules for creating build and library directories
+#
+makedirs:
+	@mkdir -p $(ARCHDIR)/build/lib/scrip
+	@mkdir -p $(ARCHDIR)/build/lib/mctdir
+	@mkdir -p $(ARCHDIR)/build/lib/mct
+	@mkdir -p $(ARCHDIR)/build/lib/psmile.$(CHAN)
+	@mkdir -p $(ARCHDIR)/lib
+#
+# Rules for compiling mpeu/mct library
+# 
+makemct:
+	@echo "=> Compiling library mpeu and mct"
+	(cd $(ARCHDIR)/build/lib/mctdir; cp -f -r -p $(LIBSRC)/mct/* .;\
+         ./configure MPIFC="$(F90)" FC="$(F90)" CC="$(CC)" \
+         CFLAGS="$(CFLAGS)" \
+         1>> $(LOG) 2>> $(ERR) ;\
+         $(MAKE) 1>> $(LOG) 2>> $(ERR) ; \
+         cp -f ./*/lib*.a   $(ARCHDIR)/lib/; \
+         cp -f ./*/*.o    $(ARCHDIR)/build/lib/mct/; \
+         cp -f ./*/*.mod  $(ARCHDIR)/build/lib/mct/;)
+#
+# Rules for compiling the libraries scrip and psmile
+#
+makelibs:
+	@echo "=> Compiling library scrip"
+	(cd $(ARCHDIR)/build/lib/scrip; cp -f $(LIBSRC)/scrip/src/Makefile .;\
+         $(modifmakefile) ; $(MAKE) all 1>> $(LOG) 2>> $(ERR) )
+
+makepsmile:
+	@echo "=> Compiling library psmile"
+	(cd $(ARCHDIR)/build/lib/psmile.$(CHAN) ; \
+         cp -f $(LIBSRC)/psmile/src/Makefile . ; $(modifmakefile) ; \
+         $(MAKE) all 1>> $(LOG) 2>> $(ERR) )
+#
+# Rules for cleaning
+#
+cleanlibs:
+	@echo cleaning oasis3-mct libraries
+	rm -f $(ARCHDIR)/build/lib/scrip/*
+	rm -f $(ARCHDIR)/build/lib/mct/*
+	rm -f -r $(ARCHDIR)/build/lib/mctdir/*
+	rm -f $(ARCHDIR)/build/lib/psmile.$(CHAN)/*
+	rm -f $(ARCHDIR)/lib/libscrip.a
+	rm -f $(ARCHDIR)/lib/libmct.a
+	rm -f $(ARCHDIR)/lib/libmpeu.a
+	rm -f $(ARCHDIR)/lib/libpsmile.$(CHAN).a
+#
+## Some rules to modify/add variables in makefiles
+#
+modifmakefile =	( echo 'include $(COUPLE)/util/make_dir/make.inc' \
+                         > infile; cat Makefile >> infile ; cp -f infile Makefile )
+#
+########################################################################################

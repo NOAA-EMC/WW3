@@ -330,6 +330,7 @@ $    CSTRG.  Grid closure can only be applied in spherical coordinates.
 $      GSTRG  : String indicating type of grid :
 $               'RECT'  : rectilinear
 $               'CURV'  : curvilinear  
+$               'UNST'  : unstructured (triangle-based)
 $      FLAGLL : Flag to indicate coordinate system :
 $               T  : Spherical (lon/lat in degrees)
 $               F  : Cartesian (meters)
@@ -637,7 +638,7 @@ $ defined by its starting point (X0,Y0), increments (DX,DY) and number
 $ of points. A negative number of points starts a new output file.
 $ Note that this data is only generated if requested by the actual
 $ program. Example again for spherical grid in degrees. Note, these do
-$ not need to be defined for data transfer between grids in te multi
+$ not need to be defined for data transfer between grids in the multi
 $ grid driver.
 $
      1.75  1.50  0.25 -0.10     3

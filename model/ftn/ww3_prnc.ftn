@@ -20,6 +20,7 @@
 !/    18-Oct-2013 : Initialize interpolation weights    ( version 4.12 )
 !/    20-Dec-2013 : Allow scale factor and offset in    ( version 4.16 )
 !/                  NetCDF variables (S. Zieger)
+!/    24-Oct-2014 : Allows "As Is" curvilinear grids    ( version 5.02 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1064,7 +1065,7 @@
           FA = 0.
           MXM = MAX ( NXJ(1), NXJ(2) )
           MYM = MAX ( NYJ(1), NYJ(2) )
-          IF (ITYPE.EQ.1) THEN 
+          IF (ITYPE.EQ.1.AND.GTYPE.EQ.UNGTYPE) THEN 
             ALLOCATE ( XC(MXM,1), YC(MXM,1), AC(MXM,1) )
           ELSE
             ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM) )

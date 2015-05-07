@@ -105,7 +105,7 @@
       PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '5.04  '
+      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '5.07  '
       CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
                     'PUT_SW1' // &
                     'PUT_SW2' // &
@@ -210,6 +210,7 @@
 !                          21-25 Id. for OTYPE = 5; boundary data.
 !                          31-35 Id. for OTYPE = 7; coupling data.
 !       FLGRD   L.A.   I   Flags for gridded output.
+!       FLGR2   L.A.   I   Flags for coupling output.
 !       NPT     Int.   I   Number of output points
 !       X/YPT   R.A.   I   Coordinates of output points.
 !       PNAMES  C.A.   I   Output point names.
@@ -739,7 +740,7 @@
         DTOUT (  J) = REAL ( ODAT(J0+3) )
         TOLAST(1,J) =        ODAT(J0+4) 
         TOLAST(2,J) =        ODAT(J0+5)
-        END DO
+      END DO
 !
 ! 4.b Check if output available
 !
@@ -748,18 +749,18 @@
       FLOGD    = FLGD
       DO J=1, NOGRP
         DO K=1, NGRPP
-        FLOUT(1) = FLOUT(1) .OR. FLOGRD(J,K)
+          FLOUT(1) = FLOUT(1) .OR. FLOGRD(J,K)
         END DO
-        END DO
+      END DO
 !
       FLOUT(7) = .FALSE.
       FLOGR2   = FLGR2
       FLOG2    = FLG2
       DO J=1, NOGRP
         DO K=1, NGRPP
-        FLOUT(7) = FLOUT(7) .OR. FLOGR2(J,K)
+          FLOUT(7) = FLOUT(7) .OR. FLOGR2(J,K)
         END DO
-        END DO
+      END DO
 !
       FLOUT(2) = NPT .GT. 0
 !

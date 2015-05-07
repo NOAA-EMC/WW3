@@ -171,13 +171,15 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3WAVE ( IMOD, TEND, STAMP, NO_OUT )
+      SUBROUTINE W3WAVE ( IMOD, TEND, STAMP, NO_OUT & 
+!/OASIS                  ,id_lcomm                 &
+                         )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         24-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -235,6 +237,8 @@
 !/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    27-May-2014 : Move to OMPG/X switch.              ( version 5.02 )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/
 !  1. Purpose :
 !
@@ -370,6 +374,8 @@
       USE W3TIMEMD
 !/IC3      USE W3SIC3MD
 
+!/OASOCM      USE W3OGCMMD, ONLY: snd_fields_to_ocean
+!/OASACM      USE W3AGCMMD, ONLY: snd_fields_to_atmos
 !/PALM USE palmlib 	    !interface for palm coupler
 !/PALM USE palm_user_param  !min_palm_time_a etc ...
 !
@@ -382,6 +388,7 @@
 !/
       INTEGER, INTENT(IN)           :: IMOD, TEND(2)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
+!/OASIS INTEGER, INTENT(IN), OPTIONAL :: id_lcomm
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters :
@@ -393,6 +400,7 @@
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, ITH, IS, NKCFL
       REAL                    :: ICEH, ICEDAVE
+!/OASIS     INTEGER                 :: OASISED, il_oasis_time
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -462,6 +470,7 @@
 !/OMPX      FLOMP  = .TRUE.
 !
 !/PALM  PALMED = 1
+!/OASIS OASISED = 1
 !
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
       IF ( IGRID  .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
@@ -742,9 +751,7 @@
 !/PALM ! End of current and water level update from coupler
 !/PALM !
 !/PALM IF (PALMED.EQ.0) THEN
-
             CALL W3UCUR ( FLFRST )
-
 !/PALM ENDIF
             IF (GTYPE .NE. UNGTYPE) THEN       
               CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
@@ -1627,8 +1634,18 @@
 !!!/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !!!/MPI                              FLGMPI(1) = .FALSE.
 !!!
-!!!    WARNING: COUPLER CALLS SHOULD BE HERE ... 
-!!!
+!/OASIS !
+!/OASIS ! Send variables to atmospheric or ocean circulation model
+!/OASIS !
+!/OASIS IF (OASISED.EQ.1) THEN
+!/OASIS     il_oasis_time = DSEC21 ( TIME00 , TIME )
+!/OASIS     IF ((MOD(DSEC21(TIME00,TIME),1.0) .LE. 1.0E-2) .AND. (DSEC21 (TIME, TIMEEND) .GT. 0.0) ) THEN
+!/OASACM        CALL snd_fields_to_atmos(il_oasis_time)
+!/OASOCM        CALL snd_fields_to_ocean(il_oasis_time)
+!/OASIS     ENDIF
+!/OASIS END IF
+
+
 !!                            END IF
                         ELSE IF ( J .EQ. 2 ) THEN
 !
