@@ -504,7 +504,7 @@
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
-                                 IST, NKI, NTHI,NRIC,                 &
+                                 IST, NKI, NTHI,NRIC, NRIS,           &
                                  IDFT, NSTAT, NBT, NLAND, NOSW
 !/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
@@ -602,7 +602,7 @@
 
 !/IC3  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                             IC2SMOOTH, IC2VISC, IC2TURBS,        &
-!/IC3                             IC3MAXTHK
+!/IC3                             IC3MAXTHK, IC3MAXCNC
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -673,7 +673,7 @@
 !/IC2      NAMELIST /IC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IC3      NAMELIST /IC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC
 !/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -931,6 +931,7 @@
       NRNL   = 0
       NRBT   = 0
       NRIC   = 0
+      NRIS   = 0
       NRDB   = 0
       NRTR   = 0
       NRBS   = 0
@@ -987,9 +988,9 @@
 !/IC3      NRIC   = NRIC + 1
 !/IC3      FLIC   = .TRUE.
 !
-!/IS1      NRIC   = NRIC + 1
+!/IS1      NRIS   = NRIS + 1
 !/IS1      FLIC   = .TRUE.
-!/IS2      NRIC   = NRIC + 1
+!/IS2      NRIS   = NRIS + 1
 !/IS2      FLIC   = .TRUE.
 !
 !/DB0      NRDB   = NRDB + 1
@@ -1069,6 +1070,11 @@
 !
       IF ( NRIC .GT. 1 ) THEN
           WRITE (NDSE,1034) NRIC
+          CALL EXTCDE ( 19 )
+        END IF
+!
+      IF ( NRIS .GT. 1 ) THEN
+          WRITE (NDSE,1036) NRIS
           CALL EXTCDE ( 19 )
         END IF
 !
@@ -1888,14 +1894,15 @@
 !/IG1      WRITE (NDSO,970) STATUS
 !
 !/IC2       IC2DISPER = .TRUE. 
-!/IC2       IC2TURB = 0.
+!/IC2       IC2TURB = 1.
 !/IC2       IC2TURBS = 0.
-!/IC2       IC2ROUGH = 0.1  ! value from current BL (Shaw et al. JGR 2008) 
+!/IC2       IC2ROUGH = 0.0001 
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 7E4
-!/IC2       IC2VISC = 2.
+!/IC2       IC2VISC = 1.
 
 !/IC3       IC3MAXTHK = 0.1 
+!/IC3       IC3MAXCNC = 1.0
 !/IC3       IC2TURB = 2.0 ! from run_test example by F.A.
 !/IC3       IC2TURBS = 0.
 !/IC3       IC2ROUGH = 0.02  !  from run_test example by F.A. (alt:0.1)
@@ -2107,8 +2114,9 @@
 !
 !/IC2         WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
 !/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
-!/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC2TURB, IC2ROUGH,          &
-!/IC3                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
+!/IC3                          IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
+!/IC3                          IC2VISC, IC2TURBS
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -3586,6 +3594,7 @@
 !/IC3       IC2PARS(5)=IC2SMOOTH
 !/IC3       IC2PARS(6)=IC2VISC
 !/IC3       IC2PARS(7)=IC2TURBS
+!/IC3       IC2PARS(8)=IC3MAXCNC
 !
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = ISC2
@@ -4496,11 +4505,12 @@
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
  2978 FORMAT ( '  &IC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
-               ', IC2ROUGH  =',F10.3,','/                             &
+               ', IC2ROUGH  =',F10.6,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
 !
- 2979 FORMAT ( '  &IC3  IC3MAKTHK =',F8.2,', IC2TURB =',F8.2,         &
+ 2979 FORMAT ( '  &IC3  IC3MAXTHK =',F8.2, ', IC3MAXCNC =',F8.4,      &
+               ', IC2TURB =',F8.2,                                    &
                ', IC2ROUGH  =',F10.3,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
@@ -4768,6 +4778,8 @@
                '     ILLEGAL NUMBER OF !/ICn SWITCHES :',I3)
  1035 FORMAT (/' *** WAVEWATCH III WARNING IN W3GRID :'/              &
                '     ONLY FIRST PROPAGATION SCHEME WILL BE USED: ')
+ 1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+               '     ILLEGAL NUMBER OF !/ISn SWITCHES :',I3)
 !
  1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
                ' -----------------------------------'/)

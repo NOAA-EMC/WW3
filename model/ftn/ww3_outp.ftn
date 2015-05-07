@@ -643,6 +643,8 @@
 !
       IOUT   = 0
 !
+! remark: it would be better to write these warnings only if source term
+!         output is requested
 !/IC1      WRITE(NDSO,3960)
 !/IC2      WRITE(NDSO,3960)
 !/IC3      WRITE(NDSO,3960)
@@ -937,6 +939,57 @@
 !     - Note that arrays CX and CY of the main program now contain
 !       the absolute current speed and direction respectively.
 !
+!     - BT8&9 issues : 
+!
+!       Q: What is the problem?
+!       A: Point output of Sbot with BT8 or BT9 is not presently 
+!          supported.
+!
+!       Q: What can a user do now?
+!       A: When using BT8 or BT9 with ITYPE=3 , the
+!          user should set the 5th T/F value in ww3_outp.inp for
+!          ITYPE=3 to "F" like so :
+!          2  1. 1. 51   T T T T F T  0  F
+!        $               ^ ^ ^ ^ ^ ^ Sum of selected sources
+!        $               | | | | ^ Wave-bottom interactions
+!        $               | | | ^ Dissipation
+!        $               | | ^ Nonlinear interactions
+!        $               | ^ Wind-wave interactions
+!        $               ^ Spectrum 
+!          If the user really need this source function, he/she
+!          needs to add test output to the mud subroutine 
+!          directly
+!
+!       Q: Why doesn't this functionality exist?
+!       A: The Sbot source function in ww3_outp was originally written 
+!          with the case of BT1 in mind. BT1 uses a uniform friction 
+!          factor, so it does not need any special variable for the 
+!          local friction factor. BT8 and BT9 allow non-uniform mud 
+!          variables (thickness, density, viscosity) and the mud 
+!          subroutines are written with ww3_shel in mind, where the 
+!          source function is calculated on the computational grid 
+!          point IX IY. 
+
+!       Q: How can we add this functionality?
+!       A: To fix it, we would need to :
+!          1) interpolate the mud variables from the computational
+!             grid point IX IY to the output points (this is already
+!             done now for wind, for example) (the same should probably
+!             be done for the ice properties also) This would be done
+!             in w3iopomd.ftn, analogous to what is done now for the
+!             wind variable WAO.
+!          2) manage the arrays for the new variables (mud and ice
+!             properties on the output points) This would be done in
+!             w3odatmd.ftn, again analogous to what is done now for the
+!             wind variable WAO.
+!          3) change the mud routines so that they take the local mud
+!             parameters through the subroutine arguments rather than
+!             taking IX IY as subroutine arguments. This would allow
+!             flexibility to call the mud routine from ww3_shel or
+!             ww3_outp (instead of just ww3_shel as is the case now).
+!
+!/---------------------------------------------------------------------/
+!
 !  8. Structure :
 !
 !     See source code.
@@ -1049,6 +1102,7 @@
       CHARACTER               :: DTME21*23
       CHARACTER(LEN=4)         VAR1(5)
       CHARACTER(LEN=1)         IDLAT, IDLON
+      CHARACTER(LEN=100)       BT8MSG
 !
       DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Stot' /
 !/
@@ -1560,9 +1614,16 @@
 !/BT4                    CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   & 
 !/BT4                                       BEDFORM, XBT, DIA, IX, IY )
 
-!/BT8                    CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
+                 BT8MSG='ww3_outp: ITYPE=3 with BT8 or BT9: Sbot out'//&
+                        'put is not yet supported. Use "F" for the 5'//&
+                        'th T/F flag.'
+!/BT8                    CALL EXTCDE( 516,MSG=BT8MSG)
+!/BT9                    CALL EXTCDE( 516,MSG=BT8MSG)
 
-!/BT9                    CALL W3SBT9 ( A, DEPTH, XBT, DIA, IX, IY )
+! For info on this issue, see : "BT8&9 issues" in "Remarks" section above.
+
+!...broken....!/BT8                    CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
+!...broken....!/BT9                    CALL W3SBT9 ( A, DEPTH, XBT, DIA, IX, IY )
 
 !/BTX                    CALL W3SBTX
 
