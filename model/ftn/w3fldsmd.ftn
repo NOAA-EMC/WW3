@@ -439,11 +439,13 @@
       IF ( NDSE .GE. 0 ) WRITE (NDSE,1009)                      &
                                 NXT, NYT, GTYPET,               &
                                 NX , NY , GTYPE
+      IERR   = 9
+      RETURN
 !
   810 CONTINUE
       IF ( NDSE .GE. 0 ) WRITE (NDSE,1010)                      &
                                 FILLER(1:2),TIDEFLAG
-      IERR   = 9
+      IERR   = 10
       RETURN
 !
 ! Formats

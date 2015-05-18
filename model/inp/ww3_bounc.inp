@@ -1,15 +1,18 @@
 $ -------------------------------------------------------------------- $
-$ WAVEWATCH III Boundary input processing                              $
+$ WAVEWATCH III NetCDF boundary input processing                       $
 $--------------------------------------------------------------------- $
-$ This program works like ww3_bound, but using input spectra in NetCDF
-$ rather than ASCI format. For a detailed description see the
-$ ww3_bound.inp input file.
+$
+$ Boundary option: READ or WRITE
 $
  WRITE 
 $
+$ Interpolation method: 1: nearest
+$                       2: linear interpolation
  2 
 $
- 1
+$ List of spectra files. These NetCDF files use the WAVEWATCH III
+$ format as described in the ww3_ounp.inp file. The files are 
+$ defined relative to the directory in which the program is run.
 $
 SPECTRA_NC/ww3.62163_spec.nc
 SPECTRA_NC/ww3.62069_spec.nc

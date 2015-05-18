@@ -341,7 +341,11 @@
 !
 ! This is the Miche parameter for a beach slope of REFLC(3) 
 !
-        SLOPE=MAX(0.001,REFLC(3))
+        IF(ISNAN(REFLC(3))) THEN
+          SLOPE=0.001
+        ELSE
+          SLOPE=MAX(0.001,REFLC(3))
+        END IF
         MICHEFAC=0.0001*GRAV**2*(SLOPE**5)  &
                    /(MAX(EMEANA,1E-4)*MAX(FMEANA,0.001)**4)
         RAMP0=MAX(0.07*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC,0.005)   ! IF REFLC(1)=1, 0.07 should be 0.007
@@ -494,13 +498,21 @@
           IF (REFPARS(6).GT.0) THEN
             RAMP=(MAX((0.75*TPI*FMEANA/SIG(IK)),1.)**REFPARS(10))*RAMP0
             RAMP2=MIN(REFPARS(9),REFLC(2)*RAMP)
-            RAMP4=MIN(REFPARS(9),REFLC(4)*RAMP)
+!
+! recomputes coefficients for iceberg slope given by REFLC(4)
+!
+            SLOPE=MAX(0.001,REFLC(4))
+            MICHEFAC=0.0001*GRAV**2*(SLOPE**5)  &
+                   /(MAX(EMEANA,1E-4)*MAX(FMEANA,0.001)**4)
+            RAMP0=MAX(0.007*(ALOG10(MICHEFAC)+4.5)+1.5*MICHEFAC,0.005)   ! IF REFLC(1)=1, 0.07 should be 0.007
+            RAMP=(MAX((0.75*TPI*FMEANA/SIG(IK)),1.)**REFPARS(10))*RAMP0
+            RAMP4=MIN(REFPARS(9),RAMP)
           ELSE
             RAMP2=RAMP0*REFLC(2)
             RAMP4=RAMP0*REFLC(4)
             END IF
-
-
+!
+!
         R2X=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNX)))  &
             + RAMP4*REFPARS(4)*MAX(0.,MIN(1.,(1-EXP(-BERG*DELX*0.0001))))
         R2Y=  RAMP2*REFPARS(2)*MAX(0.,MIN(1.,(1-TRNY)))  &
