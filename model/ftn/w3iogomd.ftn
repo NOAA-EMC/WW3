@@ -690,7 +690,7 @@
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
-!/    10-Apr-2015 : Remove unused variables             ( version 5.XX )
+!/    10-Apr-2015 : Remove unused variables             ( version 5.08 )
 !/
 !  1. Purpose :
 !

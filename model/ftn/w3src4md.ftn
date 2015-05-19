@@ -1576,6 +1576,7 @@
 !       This codes does either one or the other of 
 !       Ardhuin et al. (JPO 2010)   
 !       Filipot & Ardhuin (JGR 2012)
+!       the choice depends on SDSBCK 
 !
 !  3. Parameters :
 !
@@ -1624,7 +1625,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, DDEN,              &
-                          SSDSC, EC2,                                &
+                          SSDSC, EC2, ESC,                           &
                           SIG, SSDSP, ECOS, ESIN, DTH, DSIP,         &
                           SSDSISO, SSDSDTH, SSDSBR2, SSDSBM,         &
                           SSDSBRFDF, SSDSBCK, SSDSBINT, IKTAB, DCKI, &
@@ -1652,10 +1653,11 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS, IS2, IS0, IS20, IA, J, IKL, ITOT, NTOT, ID, NKL, IO
+      INTEGER                 :: IS, IS2, IS0, IS20, IA, J, IKL, ITOT, &
+                                 IKC, NTOT, ID, NKL, IO
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER                 :: IK, IK1, ITH, I_INT, IK2, ITH2, IKIND, L,       & 
-                                 IKHS, IKD, SDSNTH, IT 
+                                 IKHS, IKD, SDSNTH, IT, IKM, NKM
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO
       REAL                    :: COEF1, COEF2, COEF3, COEF4(NK)
@@ -1674,6 +1676,9 @@
       REAL                    :: BTH(NSPEC)   !saturation spectrum 
       REAL                    :: BTH0S(NK)    !smoothed saturation spectrum 
       REAL                    :: BTHS(NSPEC)  !smoothed saturation spectrum  
+      REAL                    :: SBK(NSPEC)  
+      INTEGER                 :: IMSSMAX(NK)   
+      REAL                    :: SBKT(NK), MSSSUM(NK), FACHF, MSSSUMC, MSSSUMS  
       REAL                    :: W, MICHE, X
 !/T0      REAL                    :: DOUT(NK,NTH)
       REAL                    :: QB(NK), S2(NK), KD, DC(NK)
@@ -1725,6 +1730,26 @@
           IF (SSDSDTH.GE.180) THEN  ! integrates around full circle
             BTH(IS0+1:IS0+NTH)=BTH0(IK)
           ELSE
+!
+! straining effect: first finds the mean direction of mss, then applies cos^2
+!                   straining
+!
+            IF (SSDSC(8).GT.0) THEN 
+              IKC = MAX(1,IK-DIKCUMUL)
+              IMSSMAX (IK) = 1
+              MSSSUM (IK) = 0.
+              MSSSUMC  = 0.
+              MSSSUMS  = 0.
+              DO ITH=1,NTH            
+                IS=ITH+(IK-1)*NTH
+                MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
+                       A(IS) * DDEN(IK) / CG(IK) 
+                MSSSUMC = MSSSUMC +MSSLONG(IK,ITH)*(2*EC2(ITH)-1)
+                MSSSUMS = MSSSUMS +MSSLONG(IK,ITH)*(2*ESC(ITH))
+                MSSSUM  (IK) = MSSSUM (IK) +MSSLONG(IK,ITH)
+                END DO
+              IMSSMAX (IK)=1+NINT(ATAN2(MSSSUMS,MSSSUMC)/2)
+              END IF
             DO ITH=1,NTH            ! partial integration
               IS=ITH+(IK-1)*NTH
 !
@@ -1736,14 +1761,14 @@
 !
               IF (SSDSC(8).GT.0) THEN 
                 MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
-                       DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
-                       CSHIFT(EC2,ITH-1,1))  * DDEN(IK) / CG(IK)
+                       A(IS) * DDEN(IK) / CG(IK) 
+!               MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
+!                       DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
+!                       CSHIFT(EC2,ITH-1,1))  * DDEN(IK) / CG(IK)
+                
+                FACSTRAIN=1+SSDSC(8)*SQRT(MSSSUM(IKC)*EC2(1+ABS(ITH-IMSSMAX (IKC))))
 
-                FACSTRAIN=1+SSDSC(8)*SQRT(MSSLONG(MAX(1,IK-DIKCUMUL),ITH))
-
-!                FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
-WRITE(998,*) IK, ITH, DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
-                       CSHIFT(EC2,ITH-1,1)), MSSLONG(IK,ITH), SSDSC(8), FACSTRAIN
+                FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
                 END IF
 
               BTH(IS)=DOT_PRODUCT(SATWEIGHTS(:,ITH),         &
@@ -1760,7 +1785,7 @@ WRITE(998,*) IK, ITH, DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
             END IF
           END DO
 ! 
-!   Optional smooting of B and B0 over frequencies
+!   Optional smoothing of B and B0 over frequencies
 ! 
         IF (SSDSBRFDF.GT.0.AND.SSDSBRFDF.LT.NK/2) THEN 
           BTH0S(:)=BTH0(:)
@@ -2017,6 +2042,7 @@ WRITE(998,*) IK, ITH, DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
 !
 ! loop over spectrum
 !
+      SBKT(:)=0.
       DO  IK=IK1, NK
         DO ITH=1,NTH       
           IS=ITH+(IK-1)*NTH
@@ -2044,24 +2070,48 @@ WRITE(998,*) IK, ITH, DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
 !
 ! Add effects
 !
+          SBK(IS)  = D(IS)*A(IS)
+          SBKT(IK)  = SBKT(IK) + SBK(IS)
           D(IS) = D(IS) + (SSDSC(3)*RENEWALFREQ+DTURB) 
           END DO
         END DO
 !
-!/ ------------------------------------------------------------------- /
-!                        COMPUTES SOURCES TERM
-!/ ------------------------------------------------------------------- /
+! COMPUTES SOURCES TERM from diagonal term
 !
-        S = D * A
+      S = D * A
 !
-!/ ------------------------------------------------------------------- /
-!                     COMPUTES WHITECAP PARAMETERS
-!/ ------------------------------------------------------------------- /
+! Adds non-diagonal part: high and low frequency generation 
+!
+      IF (SSDSC(1).GT.0) THEN 
+        DO IK2 = IK1+DIKCUMUL, NK
+          DO IK = IK2-DIKCUMUL, IK2-1
+            DO ITH=1,NTH 
+              IS2=ITH+(IK2-1)*NTH
+              IS=ITH+(IK-1)*NTH
+              S(IS) = S(IS) + SSDSC(1)*ABS(SBK(IS2))/DIKCUMUL
+              END DO
+            END DO
+          END DO
+        END IF
+!
+      IF (SSDSC(9).GT.0) THEN 
+        FACHF=SSDSC(9)/FLOAT(NKM*NTH)
+        DO IK2 = IK1, NK-DIKCUMUL
+          IKM= MIN(NK,IK2+2*DIKCUMUL)
+          NKM=IKM-(IK2+DIKCUMUL)+1
+          DO IK = IK2+DIKCUMUL, IKM
+            S((IK-1)*NTH+1:IK*NTH) = S((IK-1)*NTH+1:IK*NTH) + ABS(SBKT(IK2))*FACHF
+            END DO
+          END DO
+        END IF
+
+!
+!  COMPUTES WHITECAP PARAMETERS
 !
       IF ( .NOT. (FLOGRD(5,7).OR.FLOGRD(5,8) ) ) THEN
         RETURN
         END IF
-!/
+!
       WHITECAP(1:2) = 0.
 !
 ! precomputes integration of Lambda over direction 
@@ -2074,22 +2124,22 @@ WRITE(998,*) IK, ITH, DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
         END DO
 !/
       IF ( FLOGRD(5,7) ) THEN
-!/
-!/ Computes the Total WhiteCap Coverage (a=5. ; Reul and Chapron, 2003)
-!/
+!
+! Computes the Total WhiteCap Coverage (a=5. ; Reul and Chapron, 2003)
+!
         DO IK=IK1,NK
           WHITECAP(1) = WHITECAP(1) + COEF4(IK) * (1-WHITECAP(1))
           END DO
         END IF
 !/
       IF ( FLOGRD(5,8) ) THEN
-!/
-!/ Calculates the Mean Foam Thickness for component K(IK) => Fig.3, Reul and Chapron, 2003 
-!/
+!
+! Calculates the Mean Foam Thickness for component K(IK) => Fig.3, Reul and Chapron, 2003 
+!
         DO IK=IK1,NK
-! Duration of active breaking (TAU*)
+!    Duration of active breaking (TAU*)
           TSTR = 0.8 * 2*PI/SIG(IK)                                
-! Time persistence of foam (a=5.)
+!    Time persistence of foam (a=5.)
           TMAX = 5.  * 2*PI/SIG(IK)                                
           DT   = TMAX / 50
           MFT  = 0. 

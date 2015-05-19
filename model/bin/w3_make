@@ -200,16 +200,10 @@
   if [ -n "`grep OASIS $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
-  else
-    reg_programs="$reg_programs ww3_shel"
-  fi
-
-
-  if [ -n "`grep OASACM $switch_file`" ]
-  then
     cdf_programs="$cdf_programs ww3_prep"
     cdf_programs="$cdf_programs ww3_gspl"
   else
+    reg_programs="$reg_programs ww3_shel"
     reg_programs="$reg_programs ww3_prep"
     reg_programs="$reg_programs ww3_gspl"
   fi

@@ -1633,6 +1633,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
+!/    11-May-2015 : Updates to 2-ways nestings for UG   ( version 5.08 )
 !/
 !  1. Purpose :
 !
@@ -1737,16 +1738,10 @@
 !
 !/S      CALL STRACE (IENT, 'WMUPDS')
 !
-
       IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
            GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
           'CURVILINEAR GRID SUPPORT NOT YET IMPLEMENTED ***'
-          CALL EXTCDE ( 999 )
-      ELSE IF ( GRIDS(IMOD)%GTYPE .EQ. UNGTYPE .OR. &
-                GRIDS(JMOD)%GTYPE .EQ. UNGTYPE ) THEN
-          WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDS: ', &
-          'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
           CALL EXTCDE ( 999 )
       END IF
 !

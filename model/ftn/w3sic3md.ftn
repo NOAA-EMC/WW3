@@ -252,27 +252,6 @@
 !
 !     If ice parameter 1 is zero, no calculations are made.
 !
-!     We use IC3MAXTHK to limit ice thickness: 
-!     IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
-!
-!     When ice thickness exceeds IC3MAXTHK, we use something else,
-!     in place of Shen and Wang formulation :
-!
-!     S_ice by F.A., an estimation of dissipation by turbulence 
-!     at the ice-water interface. It uses only namelists for input, and
-!     no space/time varying input (though of course ice concentration is 
-!     space/time varying). Unlike Liu et al. (IC2), it does not use 
-!     ice thickness and does not yield a new C|Cg|k (i.e. it is non-
-!     dispersive), but it has the very nice feature of not requiring  
-!     an eddy viscosity, which is a major drawback of the Liu et al.  
-!     model. That is why we use it here, vs. Liu et al.
-!     (S_ice by Liu et al. and S_ice by F.A. are the two options 
-!     available in IC2, i.e. w3sic2md.ftn)
-!
 !  8. Structure :
 !
 !     See source code.
@@ -610,11 +589,6 @@
       DICE    = DBLE(ICE3)    ! density of ice
       ES_MOD  = DBLE(ICE4)    ! effective shear modulus of ice
 
-!     Limit ice thickness: IC3 is not valid for thick ice, e.g. 
-!     large, thick floes or thick continuous ice.
-!     It is intended primarily for situations where ice cover is of 
-!     grease/frazil/pancake type, and can be approximated as a 
-!     viscoelastic fluid layer.
       HICE=MIN(0.1D0,HICE)
 
       IF (SIZE(WN_R,1).EQ.NK) THEN

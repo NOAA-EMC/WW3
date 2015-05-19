@@ -894,12 +894,12 @@
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
 !/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
-!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
+!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP,         &
+!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, &
-!/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
+!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA, FFXFI,   &
+!/ST4                FFXFD, SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
@@ -908,12 +908,12 @@
 !/ST4                ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
 !/ST4                TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
 !/ST4                ZZ0RAT, SSDSC,                                   &
-!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP, &
-!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL, SSTXFTF, &
+!/ST4                SSDSISO, SSDSBR, SSDSBR2, SSDSBM, SSDSP,         &
+!/ST4                SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
 !/ST4                SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
 !/ST4                SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-!/ST4                SSDSPBK, SSDSBINT, &
-!/ST4                FFXPM, FFXFM, SSDSHCK, DELUST, DELTAIL, DELTAUW, &
+!/ST4                SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA, FFXFI,   &
+!/ST4                FFXFD, SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
 !/ST4                DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
 !/ST4                IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
 !/ST4                DIKCUMUL, CUMULW
