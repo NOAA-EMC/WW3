@@ -12,7 +12,7 @@
 !/
 !/    24-May-2013 : Adaptation from ww3_bound.ftn    ( version 4.08 )
 !/     1-Apr-2015 : Add checks on lat lon xfr        ( version 5.05 )
-!/    11-May-2015 : Allow use of cartesian grids     ( version 5.XX )
+!/    11-May-2015 : Allow use of cartesian grids     ( version 5.08 )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

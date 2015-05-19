@@ -1633,7 +1633,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    11-May-2015 : Enable 2-ways nestings for UG       ( version 5.XX )
+!/    11-May-2015 : Updates to 2-ways nestings for UG   ( version 5.08 )
 !/
 !  1. Purpose :
 !
