@@ -407,7 +407,8 @@
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
-                                 FLG(:,:), FLG2D(:,:), FLG1D(:)
+                                 FLG(:,:), FLG2D(:,:), FLG1D(:),       &
+                                 FLG2(:,:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=3)        :: IDSTR(7), IDTST
       CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
@@ -426,6 +427,7 @@
       CHARACTER(LEN=30)       :: IDOTYP(7)
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
+      CHARACTER(LEN=1024)     :: INFIELDNAMES
 !
       TYPE OT2TPE
         INTEGER                    :: NPTS
@@ -641,11 +643,13 @@
       ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
            FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLG(NOGRP,NRGRD),  &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
-           FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
+           FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
+           FLG2(NOGRP,NRGRD) )
 !
       MDS    = -1
       MDSF   = -1
       FLGR2  = .FALSE.
+      FLG2  = .FALSE.
       IPRT   = 0
 !
 ! ... Fixed and recycleable unit numbers.      
@@ -1213,28 +1217,17 @@
                   END IF
 !
 !/COU              ELSE IF ( J .EQ. 7 ) THEN
-!
-! 5.i Type 7: coupling
-!
+!/COU !
+!/COU ! 5.i Type 7: coupling
+!/COU !
+!/COU                FLGR2(:,:,:)=.FALSE. ! Initialize FLGRD 
+!/COU                CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
+!/COU                                   FLG2D, NMPSCR, IMPROC, IERR )
+!/COU                FLGR2(:,:,1)=FLG2D
+!/COU                FLG2(:,1)=FLG1D
 !/COU                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
-!/COU                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,1)
+!/COU                READ (MDSI,'(A)',END=2001,ERR=2002) INFIELDNAMES
 !
-!/COU                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-!/COU                    FLT    = .TRUE.
-!/COU                    DO IFI=1, NOGRP 
-!/COU                    DO IFJ=1, NGRPP
-!/COU                      IF ( FLGR2(IFI,IFJ,1) ) THEN
-!/COU                          IF ( FLT ) THEN 
-!/COU                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
-!/COU                              FLT    = .FALSE.
-!/COU                            ELSE
-!/COU                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
-!/COU                            END IF
-!/COU                        END IF
-!/COU                      END DO
-!/COU                      END DO
-!/COU                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
-!/COU                  END IF
 
 !
 ! ... End of output type selecttion ELSE IF
@@ -2064,9 +2057,9 @@
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
 
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
-                      FLGRD(:,:,I),FLGR2(:,:,I),FLG(:,I),OT2(I)%NPTS,&
-                      OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, IPRT(:,I),   &
-                      LPRT(I), MPI_COMM_LOC )
+                      FLGRD(:,:,I),FLGR2(:,:,I),FLG(:,I),FLG2(:,I),   &
+                      OT2(I)%NPTS,OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES,  &
+                      IPRT(:,I), LPRT(I), MPI_COMM_LOC )
 !
 ! ..... Finalize I/O file hook up
 !
