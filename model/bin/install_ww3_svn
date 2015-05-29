@@ -1445,7 +1445,7 @@ sleep 2
       tnr_old=`expr $tnr_old + $nr_old`
       tnr_new=`expr $tnr_new + $nr_new`
 
-      if [ ! -z $sdirs ] 
+      if [ ! -z "$sdirs" ] 
       then
         for sdir in $sdirs
         do
