@@ -1397,7 +1397,9 @@ sleep 2
 
     for ndir in $ndirs
     do
-
+      lngth=`echo $ndir | wc -c`
+      lngth=`expr $lngth - 2`
+      ndir=`echo $ndir | cut -c1-$lngth`
       nr_old=0
       nr_new=0
 
@@ -1449,7 +1451,9 @@ sleep 2
       then
         for sdir in $sdirs
         do
-
+          lngth=`echo $sdir | wc -c`
+          lngth=`expr $lngth - 2`
+          sdir=`echo $sdir | cut -c1-$lngth`
           nr_old=0
           nr_new=0
 
@@ -1479,7 +1483,7 @@ sleep 2
                 nr_new=`expr $nr_new + 1`
                 echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
               fi
-              ln -sf ../../../svn/regtests/$dir/$ndir/$sdir/$file
+              ln -sf ../../../../svn/regtests/$dir/$ndir/$sdir/$file
               tmp_files=$all_files
               all_files=`echo -e $tmp_files | sed -e "s/$file//"`
             done
