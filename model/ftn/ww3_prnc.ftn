@@ -1830,7 +1830,6 @@
 !/MPI      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
 !/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
 
-!/MPI      WRITE(NDSE,*) "finalized...", IAPROC, "error :", IERR_MPI
 !
 !/NCO/!     CALL W3TAGE('WAVEPREP')
 !
