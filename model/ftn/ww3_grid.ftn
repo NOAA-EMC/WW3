@@ -3696,14 +3696,14 @@
 !
 !/REF1          NMAPB  = 1 + (NX-1)/NCOL
 !/REF1          WRITE (NDSO,1105) NMAPB
-!/REF1          WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
+!/T               WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
 !
 !/REF1          DO IMAPB=1, NMAPB
 !/REF1            IX0    = 1 + (IMAPB-1)*NCOL
 !/REF1            IXN    = MIN ( NX , IMAPB*NCOL )
-!/REF1            DO IY=NY,1,-1
-!/REF1              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
-!/REF1              END DO
+!/T            DO IY=NY,1,-1
+!/T              WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
+!/T              END DO
 !/REF1            WRITE (NDSO,*) ' '
 !/REF1            END DO
 !/REF1          WRITE (NDSO,1106)

@@ -196,7 +196,6 @@ $                           BJALFA  : Dissipation constant (default = 1)
 $                           BJGAM   : Breaking threshold (default = 0.73)
 $                           BJFLAG  : TRUE  - Use Hmax/d ratio only (default)
 $                                     FALSE - Use Hmax/d in Miche formulation
-
 $
 $ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
 $   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
@@ -532,7 +531,7 @@ $ additional input to define this is needed below. In such cases a
 $ field of fractional obstructions at or between grid points needs to
 $ be supplied.  First the location and format of the data is defined
 $ by (as above) :
-$  - Unit number of file (can be 10, and/or identical to bottem depth
+$  - Unit number of file (can be 10, and/or identical to bottom depth
 $    unit), scale factor for fractional obstruction, IDLA, IDFM,
 $    format for formatted read, FROM and filename
 $
