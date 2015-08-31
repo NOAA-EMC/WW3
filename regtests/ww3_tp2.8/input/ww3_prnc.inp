@@ -45,7 +45,7 @@ $ The input line identifies the filename using for the forcing field.
 $
 $ -> filename
 $
-  'Iroise_AI_UV.nc'
+  '../input/Iroise_AI_UV.nc'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
