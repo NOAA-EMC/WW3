@@ -126,10 +126,10 @@
                ID='GRIB package'
                OK='NOGRB NCEP1 NCEP2' ;;
 #sort:mcp:
-      mcp    ) TY='one'
+      mcp    ) TY='upto2'
                ID='model coupling protocol'
                TS='NOPA'
-               OK='NOPA PALM' ;;
+               OK='NOPA PALM NCC' ;;
 #sort:c90:
       c90    ) TY='upto1'
                ID='Cray C90 compiler directives'
@@ -413,6 +413,18 @@
       sw2="`echo $s_found | awk '{ print $2 }'`"
     fi
 
+    if [ "$type" = 'mcp' ] && [ "$n_found" -gt '1' ]
+    then
+      sw1="`echo $s_found | awk '{ print $1 }'`"
+      sw2="`echo $s_found | awk '{ print $2 }'`"
+      if [ "$sw1" = 'NOPA' ]
+      then
+        sw=$sw2
+      else
+        sw=$sw1
+      fi
+    fi
+
     case $type in
       shared ) shared=$sw ;;
       mpp    ) mpp=$sw ;;
@@ -689,6 +701,10 @@
    IG1) igcode='w3gig1md w3canomd'
    esac
 
+  cplcode=$NULL
+  case $mcp in 
+   NCC) cplcode='cmp.comm ww.comm'
+  esac
 
   if [ -n "$thread1" ] && [ "$s_nl" = 'NL2' ]
   then
@@ -705,6 +721,7 @@
   else
     mprfaux=$NULL
   fi
+
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
@@ -776,7 +793,7 @@
              source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd'
                  IO="$IO w3iosfmd w3partmd"
-                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
+                aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode" ;;
     ww3_multi|ww3_multi_esmf)
                if [ "$prog" = "ww3_multi" ]
                then
@@ -940,6 +957,10 @@
     echo ' '                                     >> makefile
     for file in $files
     do
+      if [ "$prog" = 'ww3_shel' ]
+      then
+      echo "working with $file"
+      fi
       echo "$d_string$file.o"                    >> makefile
       if [ -z "`echo $file | grep scrip 2>/dev/null`" ]
       then
@@ -1061,7 +1082,7 @@
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
                WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD \
-               w3getmem
+               w3getmem WW_cc CMP_COMM
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1158,6 +1179,8 @@
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
          'WMESMFMD'     ) modtest=wmesmfmd.o ;;
          'w3getmem'     ) modtest=w3getmem.o ;;
+         'WW_cc'        ) modtest=ww.comm.o  ;;
+         'CMP_COMM'     ) modtest=cmp.comm.o  ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]
