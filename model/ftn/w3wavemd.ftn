@@ -1240,7 +1240,7 @@
             REFLED(:)=0.
             PSIC=0.
             ICEH    = 0.
-            ICEDAVE = 0.
+            ICEDAVE = 20.
 !
 !/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DELA,DELX,DELY,        &
 !/OMPG/!$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3)
@@ -1273,7 +1273,7 @@
 !/BT4           PSIC=SED_PSIC(ISEA)
 
                 IF ( FLIC1  ) ICEH   =ICEP1(IX,IY) 
-                IF ( FLIC5  ) ICEDAVE=ICEP5(IX,IY) 
+                IF ( FLIC5  ) ICEDAVE=MAX(ICEP5(IX,IY),1.)  ! ice floe mean diameter 
 
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      TMP1   = WHITECAP(JSEA,1:4)

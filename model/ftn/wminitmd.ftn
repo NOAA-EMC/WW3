@@ -1319,7 +1319,7 @@
 !
 ! 5.j.3 Check the output type
 !
-        IF ( J.LT.0 .OR. J.GT.6 ) GOTO 2052
+        IF ( J.LT.0 .OR. J.GT. NOTYPE ) GOTO 2052
         IF ( J.EQ.2 .AND. UNIPTS ) GOTO 2053
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
             WRITE (MDSS,951) J, IDOTYP(J)

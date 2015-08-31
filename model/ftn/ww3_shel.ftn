@@ -561,6 +561,10 @@
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
 !
+!      FLAGS4 is just "initial value of FLAGS(4)", i.e. does *not* get
+!        changed when model reads last record of ice.ww3
+      FLAGS4=FLAGS(4)
+
 !/T      WRITE (NDST,9020) FLFLG, FLAGS, FLHOM, FLH
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
