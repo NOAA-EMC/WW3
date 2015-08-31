@@ -66,8 +66,38 @@
 #                                                                           #
 #  Sample run_test commands :                                               #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test -n 3 -p mpirun -s PR3 ../model ww3_tp2.13                 # 
+#  ./bin/run_test -n 3 -p mpirun -s PR3_MPI ../model ww3_tp2.13             # 
 #                                                                           #
 #   Erick Rogers, Apr 4 2014                                                #
 #                                                                           #
 #############################################################################
+
+more notes:
+
+input_1099x1500 : 
+  * only sea points north of 45N are not masked (this is called mask1)
+  * propagation only
+
+input_1099x1500B
+  * as with 1099x1500, propagation only
+  * experimenting with HYCOM inputs (currents, winds, water levels, ice) 
+  * dates changed to match available HYCOM inputs
+
+input_1099x1500C
+  * as with 1099x1500 and input_1099x1500B, still propagation only
+  * now using full grid (this is called mask2)
+
+input_1099x1500D
+  * back to heavily-masked grid (mask1)
+  * now includes source terms.
+
+input_1099x1500E
+  * full grid (mask2)
+  * includes source terms.
+
+input_1099x1500F
+  * like E but includes C_sigma
+
+
+
+

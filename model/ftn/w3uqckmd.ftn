@@ -860,10 +860,10 @@
 !/OMPH/!$OMP PARALLEL DO PRIVATE (IY)
 !
           DO IY=1, NY
-            Q   (IY+IAD00) = Q   (IY+IADN0)
-            Q   (IY+IADN1) = Q   (   IY   )
-            Q   (IY+IADN2) = Q   (IY+IAD02)
-            CFLL(IY+IADN1) = CFLL(   IY   )
+            Q   (IY+IAD00) = Q   (IY+IADN0) ! 1 ghost column to left
+            Q   (IY+IADN1) = Q   (   IY   ) ! 1st ghost column to right
+            Q   (IY+IADN2) = Q   (IY+IAD02) ! 2nd ghost column to right
+            CFLL(IY+IADN1) = CFLL(   IY   ) ! as for Q above, 1st to rt
             END DO
 !
 !/OMPH/!$OMP END PARALLEL DO
