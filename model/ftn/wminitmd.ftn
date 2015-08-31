@@ -1,4 +1,3 @@
-#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE WMINITMD
 !/
@@ -130,7 +129,7 @@
 !/                  (F. Ardhuin) 
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
-!/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
+!/    17-Sep-2014 : Read mod_def before inp file        ( version 5.xx )
 !/    DD-MMM-YYYY : Add ESMF override for STIME & ETIME ( version 5.XX )
 !/                  (T. J. Campbell, NRL)
 !/
@@ -410,12 +409,10 @@
                                  RP1(:), RPN(:)
 ! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
 !   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(-7:12)
-      LOGICAL                 :: FLT, TFLAGI, PSHARE, LFLAGS(-7:12), FLAGSL
-      INTEGER                 :: TFLAGS(-7:12) 
+      LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
-                                 FLGD(:,:), FLG2(:,:), FLG2D(:,:),     &
-                                 FLG1D(:)
+                                 FLG(:,:), FLG2D(:,:), FLG1D(:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=3)        :: IDSTR(7), IDTST
       CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
@@ -647,10 +644,9 @@
 ! 2.c Set up I/O for individual models (initial)
 !
       ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(35,0:NRGRD),    &
-           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
+           FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLG(NOGRP,NRGRD),  &
            MDSF(-NRINP:NRGRD,JFIRST:7), IPRT(6,NRGRD), LPRT(NRGRD),   &
-           FLGR2(NOGRP,NGRPP,NRGRD),FLG2(NOGRP,NRGRD),                &
-           FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
+           FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP) )
 !
       MDS    = -1
       MDSF   = -1
@@ -714,11 +710,8 @@
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         CALL W3SETI ( -I, MDSE, MDST )
-        FLAGS = 0
-        READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), LFLAGS(JFIRST:7)
-        DO J=JFIRST,7
-          IF (LFLAGS(J)) FLAGS(J)=1
-          END DO
+        FLAGS = .FALSE.
+        READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), FLAGS(JFIRST:7)
 !
         END DO
 !
@@ -728,7 +721,7 @@
 !
           CALL W3SETI ( 0, MDSE, MDST )
           CALL W3SETO ( 0, MDSE, MDST )
-          LFLAGS = .FALSE.
+          FLAGS = .FALSE.
           NDST   = MDST
           NDSE   = MDSE
 !
@@ -764,9 +757,9 @@
           IF ( TMPRNK(J) .EQ. RNKTMP ) THEN
               I      = I + 1
               CALL W3SETI ( I, MDSE, MDST )
-              FLAGSL      = .FALSE.
-!/MGW              FLAGSL(8)   = .TRUE.
-!/MGP              FLAGSL(8)   = .TRUE.
+              FLAGS      = .FALSE.
+!/MGW              FLAGS(8)   = .TRUE.
+!/MGP              FLAGS(8)   = .TRUE.
               INAMES(I,:)= INAMES(J,:)
               MNAMES(I)  = MNAMES(J)
               TMPRNK(I)  = TMPRNK(J)
@@ -774,7 +767,7 @@
               RP1(I)     = RP1(J)
               RPN(I)     = RPN(J)
               BCDUMP(I)  = BCDTMP(J)
-!/T              WRITE (MDST,9031) I, MNAMES(I), FLAGSL, TMPRNK(I),    &
+!/T              WRITE (MDST,9031) I, MNAMES(I), FLAGS, TMPRNK(I),    &
 !/T                                   TMPGRP(I), RP1(I), RPN(I)
             END IF
           END DO
@@ -792,9 +785,9 @@
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
           IF ( INAMES(I,J) .EQ. 'native' ) THEN
-              FLAGS(J) = 1
+              FLAGS(J) = .TRUE.
             ELSE
-              FLAGS(J) = 0
+              FLAGS(J) = .FALSE.
               IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
                   INPMAP(I,J) = -1
                 ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
@@ -805,7 +798,7 @@
                       END IF
                     END DO
                   IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-                  IF ( INPUTS(-INPMAP(I,J))%FLAGS(J).EQ.0 ) GOTO 2031
+                  IF ( .NOT. INPUTS(-INPMAP(I,J))%FLAGS(J) ) GOTO 2031
                   USEINP(INPMAP(I,J)) = .TRUE.
                 END IF
             END IF
@@ -826,7 +819,7 @@
         IF ( I .EQ. 0 ) CYCLE
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
-          IF ( FLAGS(J).EQ.1 ) THEN
+          IF ( FLAGS(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
               CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,               &
                             DESC='Input data file' )
@@ -937,12 +930,12 @@
             CALL W3SETI ( -I, MDSE, MDST )
             ACTION(1:4) = '---   '
             DO J=JFIRST, 4
-              IF ( FLAGS(J).EQ.1 ) ACTION(J) = ' X    '
+              IF ( FLAGS(J) ) ACTION(J) = ' X    '
               END DO
             ACTION(5:7) = '-     '
-            IF ( FLAGS(5).EQ.1 ) ACTION(5) = '1     '
-            IF ( FLAGS(6).EQ.1 ) ACTION(6) = '2     '
-            IF ( FLAGS(7).EQ.1 ) ACTION(7) = '3     '
+            IF ( FLAGS(5) ) ACTION(5) = '1     '
+            IF ( FLAGS(6) ) ACTION(6) = '2     '
+            IF ( FLAGS(7) ) ACTION(7) = '3     '
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,925) I, MNAMES(-I), ACTION(JFIRST:7)
             IF ( NMPLOG .EQ. IMPROC )                                 &
@@ -969,17 +962,17 @@
         CALL W3SETI ( I, MDSE, MDST )
         ACTION(1:4) = '---   '
         DO J=JFIRST, 4
-          IF ( FLAGS(J).EQ.1 ) THEN
+          IF ( FLAGS(J) ) THEN
               ACTION(J) = 'native'
             ELSE IF ( INPMAP(I,J) .NE. 0 ) THEN
               ACTION(J) = MNAMES(-INPMAP(I,J))
             END IF
           END DO
         ACTION(5:9) = '-     '
-        IF ( FLAGS(5).EQ.1 ) ACTION(5) = '1     '
-        IF ( FLAGS(6).EQ.1 ) ACTION(6) = '2     '
-        IF ( FLAGS(7).EQ.1 ) ACTION(7) = '3     '
-        IF ( FLAGS(8).EQ.1 ) THEN
+        IF ( FLAGS(5) ) ACTION(5) = '1     '
+        IF ( FLAGS(6) ) ACTION(6) = '2     '
+        IF ( FLAGS(7) ) ACTION(7) = '3     '
+        IF ( FLAGS(8) ) THEN
             ACTION(8) = 'yes   '
           ELSE
             ACTION(8) = 'no    '
@@ -1125,7 +1118,7 @@
               CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
                                  FLG2D, NMPSCR, IMPROC, IERR )
               FLGRD(:,:,1)=FLG2D
-              FLGD(:,1)   =FLG1D
+              FLG(:,1)    =FLG1D
 !
             ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -1234,10 +1227,26 @@
 !
 ! 5.i Type 7: coupling
 !
-!/COU              CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
-!/COU                                 FLG2D, NMPSCR, IMPROC, IERR )
-!/COU              FLGR2(:,:,1)=FLG2D
-!/COU              FLG2(:,1)   =FLG1D
+!/COU                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+!/COU                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,1)
+!
+!/COU                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+!/COU                    FLT    = .TRUE.
+!/COU                    DO IFI=1, NOGRP 
+!/COU                    DO IFJ=1, NGRPP
+!/COU                      IF ( FLGR2(IFI,IFJ,1) ) THEN
+!/COU                          IF ( FLT ) THEN 
+!/COU                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
+!/COU                              FLT    = .FALSE.
+!/COU                            ELSE
+!/COU                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
+!/COU                            END IF
+!/COU                        END IF
+!/COU                      END DO
+!/COU                      END DO
+!/COU                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
+!/COU                  END IF
+
 !
 ! ... End of output type selecttion ELSE IF
 !
@@ -1260,9 +1269,8 @@
 !
       DO I=2, NRGRD
         ODAT(:,I)  = ODAT(:,1)
-        FLGD(:,I) = FLGD(:,1)
+        FLG(:,I) = FLG(:,1)
         FLGRD(:,:,I) = FLGRD(:,:,1)
-        FLG2(:,I) = FLG2(:,1)
         FLGR2(:,:,I) = FLGR2(:,:,1)
         IPRT(:,I)  = IPRT(:,1)
         LPRT(I)    = LPRT(1)
@@ -1319,7 +1327,7 @@
 !
 ! 5.j.3 Check the output type
 !
-        IF ( J.LT.0 .OR. J.GT. NOTYPE ) GOTO 2052
+        IF ( J.LT.0 .OR. J.GT.6 ) GOTO 2052
         IF ( J.EQ.2 .AND. UNIPTS ) GOTO 2053
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
             WRITE (MDSS,951) J, IDOTYP(J)
@@ -1363,10 +1371,39 @@
 !
 ! 5.l Type 1: fields of mean wave parameters
 !
-                CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
-                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
-                FLGD(:,I)    = FLG1D
-                FLGRD(:,:,I) = FLG2D
+                FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
+! FA: name list should be used here too 
+                DO IFI=1,NOGRP ! Loop over field output groups
+
+                  CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+                  READ (MDSI,*,END=2001,ERR=2002) FLG(IFI,I)
+
+                  IF ( FLG (IFI,1) ) THEN ! Skip if group not requested
+
+                    CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+                    READ (MDSI,*,END=2001,ERR=2002)                    &
+                                          FLGRD(IFI,1:NOGE(IFI),I)
+
+                  ENDIF
+                ENDDO
+
+!
+                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                    FLT    = .TRUE.
+                    DO IFI=1, NOGRP
+                    DO IFJ=1, NGRPP
+                      IF ( FLGRD(IFI,IFJ,I) ) THEN
+                          IF ( FLT ) THEN
+                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
+                              FLT    = .FALSE.
+                            ELSE
+                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
+                            END IF
+                        END IF
+                      END DO
+                      END DO
+                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
+                  END IF
 !
               ELSE IF ( J .EQ. 2 ) THEN
 !
@@ -1471,10 +1508,25 @@
 !
 ! 5.p Type 7: coupling fields
 !
-                CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
-                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
-                FLG2(:,I)    = FLG1D
-                FLGR2(:,:,I) = FLG2D
+                CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
+                READ (MDSI,*,END=2001,ERR=2002) FLGR2(:,:,I)
+!
+                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+                    FLT    = .TRUE.
+                    DO IFI=1, NOGRP
+                    DO IFJ=1, NGRPP
+                      IF ( FLGR2(IFI,IFJ,I) ) THEN
+                          IF ( FLT ) THEN
+                              WRITE (MDSS,955) IDOUT(IFI,IFJ)
+                              FLT    = .FALSE.
+                            ELSE
+                              WRITE (MDSS,956) IDOUT(IFI,IFJ)
+                            END IF
+                        END IF
+                      END DO
+                      END DO
+                    IF ( FLT ) WRITE (MDSS,955) 'no fields defined'
+                  END IF
 !
           ELSE
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,963)
@@ -1496,7 +1548,7 @@
 !     the grids, because this is only intended for test cases. 
 !     For true implementations, the jumping grid will be used.
 !
-      IF ( FLAGS(8).EQ.1 ) THEN
+      IF ( FLAGS(8) ) THEN
 !
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
               WRITE (MDSS,965)
@@ -2023,9 +2075,9 @@
         IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC ) WRITE (MDSS,982)
 
         CALL W3INIT ( I, MNAMES(I), MDS(:,I), NTRACE(:,I), ODAT(:,I), &
-                      FLGRD(:,:,I),FLGR2(:,:,I),FLGD(:,I),FLG2(:,I),  &
-                      OT2(I)%NPTS, OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, &
-                      IPRT(:,I), LPRT(I), MPI_COMM_LOC )
+                      FLGRD(:,:,I),FLGR2(:,:,I),FLG(:,I),OT2(I)%NPTS,&
+                      OT2(I)%X, OT2(I)%Y, OT2(I)%PNAMES, IPRT(:,I),   &
+                      LPRT(I), MPI_COMM_LOC )
 !
 ! ..... Finalize I/O file hook up
 !
@@ -2118,7 +2170,7 @@
 ! ..... regular input files
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J).EQ.1 ) THEN
+          IF ( FLAGS(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
@@ -2156,9 +2208,9 @@
         DO J=JFIRST, 7
           IF ( INPMAP(I,J) .NE. 0 ) THEN
 !
-              TFLAGS(J) = 1
-              FLAGS     = 0
-              FLAGS(J)  = 1
+              TFLAGS(J) = .TRUE.
+              FLAGS     = .FALSE.
+              FLAGS(J)  = .TRUE.
               IINIT     = .FALSE.
               CALL W3DIMI ( I, MDSE, MDST )
 !
@@ -2636,7 +2688,7 @@
       CALL WMUSET ( MDSE, MDST, SCRATCH, .FALSE. )
       IF ( TSTOUT ) CALL WMUDMP ( MDST, 0 )
 !
-      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLGD, FLG2, INAMES,&
+      DEALLOCATE ( MDS, NTRACE, ODAT, FLGRD, FLGR2, FLG, INAMES,      &
                    MNAMES )
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )

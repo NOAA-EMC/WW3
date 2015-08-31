@@ -2023,7 +2023,7 @@
                 SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
                 SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6         SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
-                SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
+                SBT(IK,ITH) = ( XBT(ITH,IK) + XBS(ITH,IK) ) * FACTOR
                 STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) + SDS(IK,ITH) + &
                               SBT(IK,ITH) + XXX(ITH,IK) * FACTOR
                 E1  (IK) = E1  (IK) + E(IK,ITH)
@@ -3435,7 +3435,9 @@
         iret=nf90_put_att(ncid,varid(17),'content','TXY')
         iret=nf90_put_att(ncid,varid(17),'associates','time station npart')
 
-
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 !
 ! ... ITYPE = 2 AND OTYPE = 1
@@ -3528,6 +3530,10 @@
 !/SETUP        iret=nf90_put_att(ncid,varid(11),'_FillValue',NF90_FILL_FLOAT)
 !/SETUP        iret=nf90_put_att(ncid,varid(11),'content','TX')
 !/SETUP        iret=nf90_put_att(ncid,varid(11),'associates','time station')
+
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 !
 ! ... ITYPE = 2 AND OTYPE = 2
@@ -3647,6 +3653,9 @@
         iret=nf90_put_att(ncid,varid(13),'content','TX')
         iret=nf90_put_att(ncid,varid(13),'associates','time station')
 
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 
 !
@@ -3726,6 +3735,9 @@
         iret=nf90_put_att(ncid,varid(10),'associates','time station')
 
 
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 
 !
@@ -3804,6 +3816,9 @@
         iret=nf90_put_att(ncid,varid(10),'content','TX')
         iret=nf90_put_att(ncid,varid(10),'associates','time station')
 
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 
 !
@@ -3911,6 +3926,9 @@
         iret=nf90_put_att(ncid,varid(12),'associates','time station')
 
 
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 
 !
@@ -3974,6 +3992,10 @@
         iret=nf90_put_att(ncid,varid(9),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(9),'content','TX')
         iret=nf90_put_att(ncid,varid(9),'associates','time station')
+
+        ! nf90_enddef function
+        iret=nf90_enddef(ncid)
+        call check_err(iret)
 
 !
 ! ... ITYPE = 3 AND OTYPE = 2
