@@ -7,7 +7,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-Feb-2014 |
+!/                  | Last update :         23-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    19-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -43,7 +43,7 @@
 !/    27-Sep-2012 : Implement use of tidal constituents ( version 4.08 )
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka)      
-!/    DD-MMM-YYYY : Adding NCEP Coupler                 ( version 5.xx )
+!/    23-APR-2015 : Adding NCEP Coupler                 ( version 5.06 )
 !/                  (A. Chawla and Dmitry Sheinin)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
