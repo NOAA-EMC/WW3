@@ -30,6 +30,8 @@ $ case with tripole grid closure :
   20 1.0 0.0 1 1 '(....)' 'NAME' './../input/lon.1500x200'
   21 1.0 0.0 1 1 '(....)' 'NAME' './../input/lat.1500x200'
   -0.1 7.50  9  -1. 1 1 '(....)' 'NAME' './../input/depth.1500x200' 
+$ Note: "load;whos" in matlab will give reverse order of ni nj 
+$ vs. what you specify here, if you use idla=1
 $
 $ Input boundary points and excluded points -------------------------- $
 $    The first line identifies where to get the map data, by unit number

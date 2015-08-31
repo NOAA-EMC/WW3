@@ -365,7 +365,7 @@
 !/T          CALL W3SETW ( I, MDSE, MDST )
 !/T          WRITE (MDST,9001) I, GRSTAT(I), TIME, TSYNC(:,I), TEND(:,I)
 !/T          END DO
-!/T        IF ( ILOOP .EQ. -1 ) CALL EXTCDE ( 00 )
+!/T        IF ( ILOOP .EQ. -1 ) CALL EXTCDE ( 508 )
 !
         DONE   = .FALSE.
         TPRNT  = TSYNC(:,0)

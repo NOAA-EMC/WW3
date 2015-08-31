@@ -1637,7 +1637,7 @@
 !/
 !  1. Purpose :
 !
-!     Interpolate vector field from input grid to model grid.
+!     Interpolate scalar field from input grid to model grid.
 !
 !  2. Method :
 !

@@ -555,6 +555,10 @@
 
                   IF ( .NOT.INGRID ) THEN
 
+! Notes: It would make sense to give this warning for only cases where
+!          the grid point is *not* masked. Obviously we don't care if
+!          a masked grid point is not given winds, etc.
+
                      WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
 
 ! Notes: We need to set these variables, even if we never intend to use them. 

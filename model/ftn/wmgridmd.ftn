@@ -3092,7 +3092,7 @@
 !/SCRIPNC !If L_STOP is set, we are done
 !/SCRIPNC  IF (L_STOP) THEN
 !/SCRIPNC    WRITE (MDSE,*)'Stopping after writing remap files'
-!/SCRIPNC    CALL EXTCDE(895)
+!/SCRIPNC    CALL EXTCDE(0) ! not a true error, so code is zero
 !/SCRIPNC  END IF
 !
       DEALLOCATE ( I1, I2, I3, I4, STAT=ISTAT )
@@ -3390,6 +3390,14 @@
         IF ( NR .EQ. 0 ) CYCLE
 
 !..notes: we will not reach this point if are no equal rank grids. that makes it a good place to check against grid type
+
+! Unresolved bug: this triggers even for 2 irregular grids that are not overlapping!
+!   We should only be checking for cases of 2 irregular grids of equal rank that 
+!   are overlapping. Unfortunately, at this point in the routine, we don't know
+!   whether they are overlapping...requires more code to do this, since all code
+!   in this routine is for regular grids. Fortunately, there is really no 
+!   disadvantage to making the two irregular grids to be different rank using
+!   ww3_multi.inp
 
         IF ( GTYPE .EQ. UNGTYPE ) THEN
            IF ( IMPROC.EQ.NMPERR )WRITE (MDSE,'(/3A)') ' *** ERROR ',  &

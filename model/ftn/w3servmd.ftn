@@ -682,10 +682,19 @@
 !/    06-Jan-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    23-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    11-Mar-2015 : Allow non-error exit (iexit=0)      ( version 5.04 )
 !/
 !  1. Purpose :
 !
 !     Perform a program stop with an exit code.
+!
+!     If exit code IEXIT=0, then it is not an error, but 
+!     a stop has been requested by the calling routine:
+!     wait for other processes to catch up.
+!     
+!     If exit code IEXIT.ne.0, then abort program w/out
+!     waiting for other processes to catch up (important for example
+!     when not all processes are used by WW3).
 !
 !  2. Method :
 !
@@ -765,8 +774,13 @@
 !/
 !/MPI      CALL MPI_INITIALIZED ( RUN, IERR_MPI )
 !/MPI      IF ( RUN ) THEN
+!/MPI        IF (IEXIT.EQ.0)THEN ! non-error state
+!/MPI          CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR_MPI )
+!/MPI          CALL MPI_FINALIZE (IERR_MPI )
+!/MPI        ELSE ! error state
 !/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF
+!/MPI      END IF
 !
 !/F90      CALL EXIT ( IEXIT )
 !/DUM      STOP
