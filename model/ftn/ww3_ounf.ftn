@@ -63,7 +63,7 @@
 !      DSEC21    Func.   Id.    Difference between times.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3IOGO    Subr. W3IOGOMD Reading/writing raw gridded data file.
-!      W3EXGO    Subr. Internal Execute grid output.
+!      W3EXNC    Subr. Internal Execute grid netcdf output.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -125,13 +125,15 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSDT,        &
+      INTEGER                 :: NDSI, NDSM, NDSOG, NDSDT,                &
                                  NDSTRC, NTRACE, IERR, I, J, I1F, I2F,    &
                                  TOUT(2), TDUM(2), IOTEST, NOUT, IFI, IFJ,&
                                  NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,    &
                                  IOUT, S3, S4, S5, IP, iret,              &
                                  NBIPART, CNTIPART, NCVARTYPE, IPART,     &
                                  NCIDS(NOGRP,NGRPP,6)
+      INTEGER                 :: iyc, imc, idc, ihc, iminc, isc
+      CHARACTER*30            :: stopdate
       INTEGER, ALLOCATABLE    :: TABIPART(:)
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST
@@ -157,7 +159,6 @@
       NDSI   = 10
       NDSM   = 20
       NDSOG  = 20
-      NDSDAT = 50
 !
       NDSTRC =  6
       NTRACE = 10
@@ -216,15 +217,14 @@
       IDTIME(1:11) = IDDDAY
       IDTIME(21:23) = '   '
       WRITE (NDSO,941) IDTIME, NOUT
-!
-! ... Output fields
-!
+
+
+! 4.1 Output fields
       CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
                          FLREQ, 1, 1, IERR )
       IF (IERR.NE.0) GOTO 800 
-!
-! ... Output of output fields
-!
+
+! 4.2 Output of output fields
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
           IF ( FLREQ(IFI,IFJ) ) THEN
@@ -233,13 +233,13 @@
             ELSE
               WRITE (NDSO,946) IDOUT(IFI,IFJ), '*** NOT AVAILABLE ***'
               FLREQ(IFI,IFJ) = .FALSE.
-              END IF
             END IF
-          END DO
+          END IF
         END DO
-!
-! ... Output type
-!
+      END DO
+
+
+! 4.3 Output type
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*,END=801,ERR=802) NCTYPE, NCVARTYPE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -266,9 +266,9 @@
       READ (NDSI,*,END=801,ERR=802) TOGETHER
 
       IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
-          WRITE (NDSE,1010) NCTYPE
-          CALL EXTCDE ( 1 )
-        END IF
+        WRITE (NDSE,1010) NCTYPE
+        CALL EXTCDE ( 1 )
+      END IF
       ! if NCTYPE = 4 checking that it is compiled with NC4
       HasNC4=0
 !/NC4      HasNC4=1
@@ -282,13 +282,12 @@
       FILEPREFIX= 'ww3.'
       READ (NDSI,*,END=801,ERR=802) FILEPREFIX
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!
-! S3 defines the number of characters in the date for the filename
-!             S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDTHHZ ...
-!
+
+      ! S3 defines the number of characters in the date for the filename
+      ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDTHHZ ...
       READ (NDSI,*,END=801,ERR=802) S3
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802)                               &
+      READ (NDSI,*,END=801,ERR=802)                                   &
             IX1, IXN, IY1, IYN
       IX1    = MAX ( IX1 , 1 )
       IXN    = MIN ( IXN , NX )
@@ -297,11 +296,9 @@
       VECTOR = .TRUE.
       WRITE (NDSO,3940) IX1, IXN, IY1, IYN
 
-!
-! ... Output of output fields
-!
+
+! 4.4 Output of output fields
       WRITE (NDSO,945)
-!
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
           IF ( FLREQ(IFI,IFJ) ) THEN
@@ -328,8 +325,11 @@
 ! 5.  Time management.
 !
       IOUT = 0
+      NCIDS(:,:,:) = 0
       WRITE (NDSO,970)
-!
+
+
+! 5.1 Loops on out_grd.ww3 to read the time and data
       DO
         DTEST  = DSEC21 ( TIME , TOUT )
         IF ( DTEST .GT. 0. ) THEN
@@ -344,37 +344,77 @@
           CALL TICK21 ( TOUT , DTREQ )
           CYCLE
         END IF
-!
+
+
+! 5.1.1 Increments the time counter IOUT
         IOUT   = IOUT + 1
         CALL STME21 ( TOUT , IDTIME )
         WRITE (NDSO,971) IDTIME
 
-        ! Processes the variable value for the time step IOUT
-        CALL W3EXNC ( NX, NY, NSEA, FILEPREFIX, E3DF, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE, FLREQ, NCIDS )
+
+! 5.1.2  Processes the variable value for the time step IOUT
+        CALL W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA, FILEPREFIX,   &
+                      E3DF, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE,&
+                      FLREQ, NCIDS )
+
+! 5.1.3 Defines the stop date
+        iyc=TOUT(1)/10000
+        imc=(TOUT(1)-iyc*10000)/100
+        idc=TOUT(1)-iyc*10000-100*imc
+        ihc=TOUT(2)/10000
+        iminc=(TOUT(2)-ihc*10000)/100
+        isc=TOUT(2)-ihc*10000-100*iminc
+        ! Puts the start and stop date in global attributes
+        WRITE(stopdate,'(I4.4,A,4(I2.2,A),I2.2)') iyc,'-',imc,'-',idc,' ',ihc,':',iminc,':',isc 
+
         CALL TICK21 ( TOUT , DTREQ )
         IF ( IOUT .GE. NOUT ) EXIT
       END DO
+
+
+! 5.2 Closes the netCDF file
+      IF (TOGETHER .AND. ncids(1,1,1).NE.0) THEN
+        iret=nf90_put_att(ncids(1,1,1),NF90_GLOBAL,'stop_date',stopdate)
+        call check_err(iret)
+        iret=nf90_close(ncids(1,1,1))
+        call check_err(iret)
+      END IF
 !
-      IF (NCTYPE.LT.3.OR.NCTYPE.GT.4) WRITE (NDSO,972)
-!
-      ! Closes all the netCDF files 
       DO IFI=1, NOGRP
         DO IFJ=1, NGRPP
           IF ( FLREQ(IFI,IFJ) ) THEN
             IF ( FLOGRD(IFI,IFJ) ) THEN
-              iret=nf90_close(ncids(IFI,IFJ,1))
-              call check_err(iret)
-              ! close partition files
-              IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
-                DO IPART=0,NBIPART
-                  iret=nf90_close(ncids(IFI,IFJ,IPART+1))
+              IF (.NOT. TOGETHER) THEN
+                iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
+                call check_err(iret)
+                iret=nf90_close(ncids(IFI,IFJ,1))
+                call check_err(iret)
+                ! close partition files
+                IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
+                  DO IPART=0,NBIPART
+                    iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
+                    call check_err(iret)
+                    iret=nf90_close(ncids(IFI,IFJ,IPART+1))
+                    call check_err(iret)
+                  END DO ! IPART
+                END IF ! partition
+              ! else if together
+              ELSE
+                ! close frequency file
+                IF ( ((IFI.EQ.6).AND.(IFJ.EQ.8)) .OR.                 &
+                     ((IFI.EQ.6).AND.(IFJ.EQ.9)) .OR.                 &
+                     (IFI.EQ.3) ) THEN
+                  iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
                   call check_err(iret)
-                END DO ! IPART
-              END IF ! partition
+                  iret=nf90_close(ncids(IFI,IFJ,1))
+                  call check_err(iret)
+                END IF
+              END IF ! TOGETHER
             END IF ! FLOGRD
           END IF ! FLREQ
         END DO ! IFJ
       END DO ! IFI
+
 !
       GOTO 888
 !
@@ -448,11 +488,13 @@
  1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNF : '/               &
                '     NCTYPE = 4 but ww3_ounf is compiled without NC4'/)
 !/
-!/ Internal subroutine W3EXGO ---------------------------------------- /
+!/ Internal subroutine W3EXNC ---------------------------------------- /
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3EXNC ( NX, NY, NSEA, FILEPREFIX, E3DF, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPEI, FLREQ, NCIDS )
+      SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,           &
+                          FILEPREFIX, E3DF, P2MSF, US3DF, NCTYPE,     &
+                          TOGETHER, NCVARTYPEI, FLREQ, NCIDS )
 !/
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
@@ -478,6 +520,8 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       NX/Y    Int.  I  Grid dimensions.
+!       IX1/IXN Int.  I  Grid indexes along X
+!       IY1/IYN Int.  I  Grid indexes along Y
 !       NSEA    Int.  I  Number of sea points.
 !     ----------------------------------------------------------------
 !
@@ -536,8 +580,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: NX, NY, NSEA, E3DF(3,5), P2MSF(3), US3DF(3), NCTYPE,  &
-                                 NCVARTYPEI
+      INTEGER, INTENT(IN)     :: NX, NY, IX1, IXN, IY1, IYN, NSEA, E3DF(3,5),  &
+                                 P2MSF(3), US3DF(3), NCTYPE, NCVARTYPEI
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLREQ(NOGRP,NGRPP)
@@ -546,13 +590,13 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NXMAX, NXTOT, NBLOK, IH, IM, IS, IFI, IFJ, &
+      INTEGER                 :: NXMAX, NXTOT, NBLOK, IH, IM, IS, IFI, IFJ,    &
                                  MFILL, I, J, ISEA, IX, IY, IXB, IB, IXA,      &
                                  NINGRD, JJ, I1, J1, IPART, INDEXIPART
       INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY)
-      INTEGER(KIND=2)         :: MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),  &
+      INTEGER(KIND=2)         :: MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),           &
                                  MXY(NX,NY), MAPOUT(NX,NY)
-      REAL   (KIND=4)         :: MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY),  &
+      REAL   (KIND=4)         :: MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY),        &
                                  MXYR(NX,NY), MFILLR
 !
       INTEGER                 :: S1, S2, ICODE, NCID, COORDTYPE,               & 
@@ -571,7 +615,7 @@
       CHARACTER*80            :: varnm(8),varnm2(8),varnl(8),varnl2(8)
       CHARACTER*120           :: varns(8),varns2(8),varnc(8),varng(8),str2
       CHARACTER*20            :: unitvar(3),FORMAT1
-      CHARACTER*30            :: startdate, stopdate
+      CHARACTER*30            :: startdate
 
       DOUBLE PRECISION        :: timenc,lasttime
       REAL,DIMENSION(:),  ALLOCATABLE    :: lon, lat, freq
@@ -606,7 +650,7 @@
 !/T        WRITE (NDST,9000) IFI, LTEMP
 !/T        END DO
 !/T      WRITE (NDST,9001) NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,          &
-!/T                        SCALE, VECTOR, NDSDAT
+!/T                        SCALE, VECTOR
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
@@ -617,9 +661,9 @@
       XY     = UNDEF
       MAPSTAOUT = 1
       NCVARTYPE  = NCVARTYPEI
-!
-!     Set-up transfer files
-!
+
+
+! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT
       MFILLR  = NF90_FILL_FLOAT
       IF (GTYPE.NE.UNGTYPE) THEN
@@ -627,35 +671,38 @@
       ELSE
         COORDTYPE=2
       ENDIF
-       
-!
-!  S5 is the string length for the time
-!
+
+! 1.2 Sets the date 
+      ! S3 defines the number of characters in the date for the filename
+      ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
+      ! Setups min and max date format
       IF (S3.LT.4) S3=4 
       IF (S3.GT.10) S3=10 
+!
+      ! Defines the format of FILETIME
       S5=S3-8
       S4=S3
-      IF (S5.GT.0) THEN 
-!
-! When the time stamp is longer than 8 characters (YYYYMMDD) then 
-! add a T after the date and a Z after the hours. 
-!
-        S4=S4+2
-        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A)'
-        WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
-               NINT(REAL(TIME(2))/NINT(10.**(6-S5))),'Z'
-      ELSE IF (S5.EQ.0) THEN
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDD HHMMSS'
+      IF (S3.EQ.10) THEN 
+        S4=S4+1 ! space between DD and HH
+        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
+        WRITE (TIMEID,FORMAT1) TIME(1), ' ', &
+               NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
+      ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
+      ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
         WRITE (TIMEID,FORMAT1) TIME(1)
+      ! if S3=>YYYYMM then filetime='YYYYMM'
+      ! or S3=>YYYY then filetime='YYYY'
       ELSE 
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
         WRITE (TIMEID,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
-      END IF
-        
+      END IF       
+      ! redefines filename with updated date format
       S1=LEN_TRIM(FILEPREFIX)
       FNAMENC=''
       FNAMENC(1:S1)=FILEPREFIX(1:S1)
-      IF (S4.GT.0) FNAMENC(S1+1:S1+S4) = TIMEID(1:S4)
+      FNAMENC(S1+1:S1+S4) = TIMEID(1:S4)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Loop over output fields.
@@ -675,18 +722,17 @@
             IPART=TABIPART(INDEXIPART)
             varns(:)=''
 
-!
+
 !  Loop over IPART for partition variables
-!
 555         CONTINUE
-!
+
             ! Initializes the index of field and group at the first flag FLREQ at .TRUE.
             IF (I1.EQ.0) I1=IFI
             IF (J1.EQ.0) J1=IFJ
             FORMF  = '(1X,32I5)'
 !/T            WRITE (NDST,9020) IDOUT(IFI,IFJ)
 !
-! 2.a Set output arrays and parameters
+! 2.1 Set output arrays and parameters
 !
             ! Initializes the flags for freq and direction dimensions
             FLFRQ = .FALSE.
@@ -1011,8 +1057,9 @@
               vmax = 5000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
-              NFIELD = 1
+              ! Information for spectral
               FLFRQ  = .TRUE.
+              NFIELD = 1
               varnm(1)='ef'
               varnl(1)='wave_elevation_spectrum'
               varng(1)=varns(1)
@@ -1040,8 +1087,9 @@
               vmax = 32000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
-              NFIELD = 1
+              ! Information for spectral
               FLFRQ  = .TRUE.
+              NFIELD = 1
               FSC     = 0.1
               varnm(1)='th1m'
               varnl(1)='mean wave direction frequency spectrum'
@@ -1060,8 +1108,9 @@
               vmax = 3600
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
-              NFIELD = 1
+              ! Information for spectral
               FLFRQ  = .TRUE.
+              NFIELD = 1
               FSC     = 0.01
               varnm(1)='sth1m'
               varnl(1)='spreading frequency spectrum'
@@ -1080,8 +1129,9 @@
               vmax = 9000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
-              NFIELD = 1
+              ! Information for spectral
               FLFRQ  = .TRUE.
+              NFIELD = 1
               FSC     = 0.1
               varnm(1)='th2m'
               varnl(1)='second mean wave direction frequency spectrum'
@@ -1100,8 +1150,9 @@
               vmax = 3600
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
-              NFIELD = 1
+              ! Information for spectral
               FLFRQ  = .TRUE.
+              NFIELD = 1
               FSC     = 0.01
               varnm(1)='sth2m'
               varnl(1)='second spreading frequency spectrum'
@@ -1120,6 +1171,8 @@
               vmax = 9000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6 ) THEN
+              ! Information for spectral
+              FLFRQ  = .TRUE.
               FSC    = 0.001
               UNITS  = 'm-1'
               ENAME  = '.wn'
@@ -1130,7 +1183,6 @@
                 XK(:,:,IK)=XX
                 END DO
               NFIELD=1
-              FLFRQ  = .TRUE.
               varnm(1)='wn'
               varnl(1)='wave numbers'
               varns(1)='wave_numbers'
@@ -1640,9 +1692,7 @@
                                                         , MAPSF, XY )
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
-!
-! Information for spectral distribution of surface Stokes drift (2nd file)
-!
+              ! Information for spectral distribution of surface Stokes drift (2nd file)
               FLFRQ=.TRUE.
               varnm(1)='uusf'
               varnm(2)='vusf'
@@ -1670,9 +1720,7 @@
               vmax =  9900
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
-!
-! Information for spectral microseismic generation data (2nd file)
-!
+                ! Information for spectral microseismic generation data (2nd file)
                 FLFRQ=.TRUE.
                 NFIELD=1
                 FSC    = 0.0004
@@ -1889,7 +1937,6 @@
               vmin = 0 
               vmax = 30000
 !
-!
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.1
               UNITS  = 'min.'
@@ -1985,14 +2032,14 @@
               CALL EXTCDE ( 1 )
 !
             END IF ! IFI AND IFJ
-!
-!
-! 
+
+            ! Defines a differents for the second variable if specified
             UNITVAR(:)=UNITS
             IF (UNITS2.NE.'SAME') UNITVAR(2)=UNITS2
-!
-! 2.b Make map
-!
+
+
+! 2.2 Make map
+
             DO IX=1, NX
               DO IY=1, NY
                 MAPOUT(IX,IY)=INT2(MAPSTA(IY,IX) + 8*MAPST2(IY,IX))
@@ -2014,26 +2061,27 @@
                 END IF
               END DO
             END DO
-!
-! 2.c Perform output type 4 ( NetCDF file )
-!
+
+
+! 2.3 Setups the output type 4 ( NetCDF file )
+
             S2=LEN_TRIM(ENAME)
             S1=LEN_TRIM(FILEPREFIX)+S4
             FNAMENC(S1+1:50)='       '
             FNAMENC(S1+1:S1+1) = '_'
 
-            ! If NOT unstructure mesh (i.e. regular grid)
-            IF (GTYPE.NE.UNGTYPE) THEN      
-              ! If spherical coordinate
-              IF (FLAGLL) THEN 
-                varnm(NFIELD+1)='Longitude'
-                varnm(NFIELD+2)='Latitude'
-              ! If cartesian coordinate
-              ELSE
-                varnm(NFIELD+1)='x'
-                varnm(NFIELD+2)='y'
-              END IF
-            END IF   
+            ! If flag TOGETHER and not variable with freq dim &
+            ! (ef, p2l, ...), no variable name in file name
+            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN 
+              S2=0
+            ! If NOT flag TOGETHER or variable with freq dim &
+            ! (ef, p2l, ...), add variable name in file name
+            ELSE
+              FNAMENC(S1+2:S1+S2) = ENAME(2:S2)
+            ENDIF
+            ! Defines the netcdf extension
+            FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
+            FNAMENC(S1+S2+4:S1+S2+6) = '   '
 
             ! If the flag frequency is .TRUE., defines the fourth dimension
             IF (FLFRQ) THEN 
@@ -2045,48 +2093,57 @@
               extradim=0
             END IF 
 
-            ! If flag TOGETHER and not variable ef or p2l (with freq dim), no variable name in file name
-            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN 
-              S2=0
-            ! If NOT flag TOGETHER or variable ef or p2l (with freq dim), add variable name in file name
+            ! If regular grid, initializes the lat/lon or x/y dimension lengths
+            IF (GTYPE.NE.UNGTYPE) THEN 
+              dimln(2)=IXN-IX1+1
+              dimln(3)=IYN-IY1+1
+            ! If unstructured mesh, initializes the nelem,tri dimension lengths
             ELSE
-              FNAMENC(S1+2:S1+S2) = ENAME(2:S2)
+              dimln(2)=IXN-IX1+1
+              dimln(3)=NTRI
             ENDIF
-            ! Defines the netcdf extension
-            FNAMENC(S1+S2+1:S1+S2+3) = '.nc'
-            FNAMENC(S1+S2+4:S1+S2+6) = '   '
 
             ! Defines index of first field variable
             ivar1=3+extradim+(COORDTYPE-1)+MAPSTAOUT
 
-!
-! Checks if the netcdf file already exists
-!      
-            OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=IERR)
 
-            ! If the file does not exist, it will be created 
-            IF (IERR.EQ.0) THEN 
+! 2.4 Gets the netcdf id
+
+            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
+              ncid=ncids(1,1,1)
+            ELSE
+              ncid=ncids(IFI,IFJ,IPART+1)
+            END IF
+                        
+! 2.5 Creates the netcdf file
+
+            IF (NCID.EQ.0) THEN 
 
               ! Initializes the time dimension length
               dimln(1)=1
 
-              ! If regular grid, initializes the lat/lon or x/y dimension lengths
-              IF (GTYPE.NE.UNGTYPE) THEN 
-                dimln(2)=IXN-IX1+1
-                dimln(3)=IYN-IY1+1
-              ! If unstructured mesh, initializes the nelem,tri dimension lengths
-              ELSE
-                dimln(2)=IXN-IX1+1
-                dimln(3)=NTRI
-              ENDIF
+              ! If NOT unstructure mesh (i.e. regular grid)
+              IF (GTYPE.NE.UNGTYPE) THEN      
+                ! If spherical coordinate
+                IF (FLAGLL) THEN 
+                  varnm(NFIELD+1)='Longitude'
+                  varnm(NFIELD+2)='Latitude'
+                ! If cartesian coordinate
+                ELSE
+                  varnm(NFIELD+1)='x'
+                  varnm(NFIELD+2)='y'
+                END IF
+              END IF   
 
-!
-! Creates the netcdf file
-!
+
+
+
+
               ! Initializes the time iteration counter n
               n=1
 
-              ! Creates the NetCDF file 
+! 2.5.1 Creates the NetCDF file 
+
               CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
                            UNITVAR,vmin,vmax,             &
                            extradim,NCTYPE,NCVARTYPE,MAPSTAOUT)
@@ -2095,8 +2152,8 @@
               ! and open/close at each time step
               IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
                 ncids(1,1,1)=ncid
-                ELSE
-                  ncids(IFI,IFJ,IPART+1)=ncid
+              ELSE
+                ncids(IFI,IFJ,IPART+1)=ncid
               END IF
 
               ! If curvilinear grid, instanciates lat / lon
@@ -2106,6 +2163,7 @@
                 lat2D=TRANSPOSE(YGRD)
                 iret=nf90_put_att(ncid,NF90_GLOBAL, &
                                      'latitude_resolution','n/a')
+                call check_err(iret)
                 iret=nf90_put_att(ncid,NF90_GLOBAL, &
                                      'longitude_resolution','n/a')
                 call check_err(iret)
@@ -2124,9 +2182,9 @@
                 END IF
               END IF
 
-!
-! Generates Lat-Lon arrays
-!
+
+! 2.5.2 Generates Lat-Lon arrays
+
               ! If regular grid
               IF (GTYPE.EQ.RLGTYPE) THEN 
                 SXD=DBLE(0.000001d0*DNINT(1d6*(DBLE(SX)) ))
@@ -2142,9 +2200,11 @@
                 WRITE(str2,'(F12.7)') SY 
                 iret=nf90_put_att(ncid,NF90_GLOBAL,   &
                          'latitude_resolution', TRIM(str2))
+                call check_err(iret)
                 WRITE(str2,'(F12.7)') SX 
                 iret=nf90_put_att(ncid,NF90_GLOBAL,   &
                          'longitude_resolution',TRIM(str2))
+                call check_err(iret)
               END IF
 
               ! If unstructured mesh
@@ -2157,8 +2217,10 @@
                 TRIGP2=TRANSPOSE(TRIGP)
                 iret=nf90_put_att(ncid,NF90_GLOBAL, &
                                      'latitude_resolution','n/a')
+                call check_err(iret)
                 iret=nf90_put_att(ncid,NF90_GLOBAL, &
                                      'longitude_resolution','n/a')
+                call check_err(iret)
               END IF
 
               ! Finishes declaration part in file by adding geographical bounds
@@ -2166,25 +2228,31 @@
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                    'southernmost_latitude',TRIM(str2))
+              call check_err(iret)
               WRITE(str2,'(F12.7)') MAXVAL(YGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                    'northernmost_latitude',TRIM(str2))
-
+              call check_err(iret)
               WRITE(str2,'(F12.7)') MINVAL(XGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'westernmost_longitude',TRIM(str2))
+              call check_err(iret)
               WRITE(str2,'(F12.7)') MAXVAL(XGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'easternmost_longitude',TRIM(str2))
+              call check_err(iret)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'minimum_altitude','-12000 m')
+              call check_err(iret)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'maximum_altitude','9000 m')
+              call check_err(iret)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'altitude_resolution','n/a')
+              call check_err(iret)
 
               iyc=TIME(1)/10000
               imc=(TIME(1)-iyc*10000)/100
@@ -2199,14 +2267,14 @@
               iret = nf90_enddef(ncid)
               call check_err(iret)
 
-!
-! Writes longitudes, latitudes, triangles, frequency and status map (mapsta) to netcdf file
-!
+! 2.5.3 Writes longitudes, latitudes, triangles, frequency and status map (mapsta) to netcdf file
+
               ! If regular grid
               IF (GTYPE.EQ.RLGTYPE) THEN 
                 iret=nf90_put_var(ncid,varid(1),lon(IX1:IXN))
                 call check_err(iret)
                 iret=nf90_put_var(ncid,varid(2),lat(IY1:IYN))
+                call check_err(iret)
               END IF
 
               ! If spherical grid
@@ -2220,7 +2288,9 @@
               ! If unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN 
                 iret=nf90_put_var(ncid,varid(1),lon(IX1:IXN))
+                call check_err(iret)
                 iret=nf90_put_var(ncid,varid(2),lat(IX1:IXN))
+                call check_err(iret)
               END IF
 
               ! Writes frequencies to netcdf file
@@ -2230,12 +2300,14 @@
                   freq(i)=SIG(I1F-1+i)*TPIINV
                 END DO
                 iret=nf90_put_var(ncid,varid(3),freq)
+                call check_err(iret)
                 DEALLOCATE(freq)
               END IF
 
               ! Writes triangles to netcdf file
               IF (GTYPE.EQ.UNGTYPE) THEN
                 iret=nf90_put_var(ncid,varid(4+extradim),TRIGP2)
+                call check_err(iret)
               END IF
 
               ! Writes status map array at variable index 2+1+coordtype+idim-4
@@ -2256,22 +2328,21 @@
 
               WRITE (NDSO,973) FNAMENC
 
+! 2.5.4  Defines the field(lon,lat,time) of the variable (i.e. ucur,vcur for current variable)
 
-!
-!  Defines the field(lon,lat,time) of the variable (i.e. ucur,vcur for current variable)
-!
               iret = nf90_redef(ncid)
               call check_err(iret)
               DO I=1,NFIELD
                 ivar=ivar1+I
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN 
-                    iret = nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
+                    iret=nf90_def_var(ncid,varnm(I), nf90_short, dimid(2:4+extradim), varid(ivar))
 !/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
                   ELSE
-                    iret = nf90_def_var(ncid,varnm(I), nf90_float, dimid(2:4+extradim), varid(ivar))
+                    iret=nf90_def_var(ncid,varnm(I), nf90_float, dimid(2:4+extradim), varid(ivar))
 !/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
                   END IF
+                  call check_err(iret)
                 ELSE
                   dimfield(1)=dimid(2)
                   dimfield(2)=dimid(4)
@@ -2282,14 +2353,16 @@
                   ELSE 
                     iret = nf90_def_var(ncid,varnm(I), nf90_float, dimfield(1:2+extradim), varid(ivar))
 !/NC4                        IF (NCTYPE.EQ.4) iret = nf90_def_var_deflate(ncid, varid(ivar), 1, 1, deflate)
-                  END IF                        
+                  END IF  
+                  call check_err(iret)                      
                 END IF
-
-                call check_err(iret)
+!
                 iret=nf90_put_att(ncid,varid(ivar),'long_name',varnl(I))
+                call check_err(iret)
                 iret=nf90_put_att(ncid,varid(ivar),'standard_name',varns(I))
                 call check_err(iret)
                 iret=nf90_put_att(ncid,varid(ivar),'globwave_name',varng(I))
+                call check_err(iret)
                 iret=nf90_put_att(ncid,varid(ivar),'units',unitvar(I))
                 call check_err(iret)
                 IF (NCVARTYPE.EQ.2) THEN 
@@ -2317,30 +2390,21 @@
                   call check_err(iret)
                 END IF
               END DO
+!
+              ! put start date in global attribute
+              iret=nf90_put_att(ncid,NF90_GLOBAL,'start_date',startdate)
+              call check_err(iret)
+!
               iret = nf90_enddef(ncid)
               call check_err(iret)
 
-!        
-!  End of file creation 
-!              
 
-            ! If the file exist, it will get the id of the opened file
-            ELSE  ! IERR.EQ.0
-!
-              CLOSE (NDSDAT)
-!
-              ! If the mode TOGETHER is used and the variable has no freq dim
-              ! use the first index of the array ncids
-              IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
-                  ncid=ncids(1,1,1)
-              ! else get the ncid from the ncids array
-              ELSE
-                  ncid=ncids(IFI,IFJ,IPART+1)
-              END IF
+! 2.6 Append data to the existing file
 
-!
-! Get the dimensions from the netcdf header
-!
+            ELSE  ! NCID.EQ.0
+
+! 2.6.1 Get the dimensions from the netcdf header
+
               ! If it is an unstructured mesh
               IF (GTYPE.EQ.UNGTYPE) THEN
                 iret=NF90_INQ_VARID (ncid, 'tri', varid(4+extradim))
@@ -2370,16 +2434,15 @@
               ! Get the dimension f
               IF (extradim.EQ.1) iret=NF90_INQ_DIMID (ncid, 'f', dimid(4))
 
-!  
-! Increments the time step for existing file
-!
-              ! If it is the first field of the file in mode together, or NOT together or variable with freq dim (ef or p2l)
+! 2.6.2 Increments the time step for existing file
+
+              ! If it is the first field of the file in mode together
+              ! or NOT together or variable with freq dim (ef or p2l)
               IF((IFI.EQ.I1.AND.IFJ.EQ.J1.AND.TOGETHER)  &
                  .OR.(.NOT.TOGETHER).OR.FLFRQ) n=n+1
 
-!
-! Defines or gets the variables identifiers
-!
+! 2.6.3 Defines or gets the variables identifiers
+
               ! If it is the first time step, define all the variables and attributes
               IF (n.EQ.1) THEN 
                 iret = nf90_redef(ncid)
@@ -2449,35 +2512,31 @@
 
               ! If it is not the first time step, get all varid from the netcdf file opened
               ELSE 
+            iret=nf90_redef(ncid)
+            call check_err(iret)
                 DO I=1,NFIELD
                   ivar=ivar1+I
                   iret=NF90_INQ_VARID (ncid, varnm(I), varid(ivar))
                   call check_err(iret)
-                END DO              
+                END DO  
+            iret=nf90_enddef(ncid)
+            call check_err(iret)            
               END IF !   n.EQ.1
             END IF  ! IERR.EQ.0
               
-!
-! Defines the current time step and index
-!     
+! 2.6.4 Defines the current time step and index
+     
             iyc=TIME(1)/10000
             imc=(TIME(1)-iyc*10000)/100
             idc=TIME(1)-iyc*10000-100*imc
             ihc=TIME(2)/10000
             iminc=(TIME(2)-ihc*10000)/100
             isc=TIME(2)-ihc*10000-100*iminc
-            ! Puts the start and stop date in global attributes
-            iret=nf90_redef(ncid)
-            iret=nf90_put_att(ncid,NF90_GLOBAL,'start_date',startdate)
-            WRITE(stopdate,'(I4.4,A,4(I2.2,A),I2.2)') iyc,'-',imc,'-',idc,' ',ihc,':',iminc,':',isc 
-            iret=nf90_put_att(ncid,NF90_GLOBAL,'stop_date',stopdate)
-            iret=nf90_enddef(ncid)
-            call check_err(iret)
-            ! Defines the new value of the time step
+!
             timenc=DBLE(julday(idc,imc,iyc))+(DBLE(ihc)+(DBLE(iminc)+(DBLE(isc)/60.))/60.)/24.
             Jday0=julday(1,1,1990)
             timenc=timenc-Jday0
-
+!
             WRITE(NDSO,'(3A,I6,A,I4,X,I2,X,I2,X,I2,X,I2,2A)')  &
                     'Writing new record ', ENAME(2:) ,'number ',n, & 
                     ' for date:',iyc,imc,idc,ihc,iminc,            &
@@ -2508,9 +2567,7 @@
               call check_err(iret)
             END IF
 
-!
-! Puts field(s) in NetCDF file
-!
+! 2.6.5 Puts field(s) in NetCDF file
 
 ! NFIELD=3
             IF (NCVARTYPE.EQ.2) THEN 
@@ -2729,9 +2786,8 @@
             ! updates the variable index
             ivar1=ivar1+NFIELD
 
-!
-!  Loop over IPART for partition variables
-!
+
+            ! Loops over IPART for partition variables
             IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
 560           CONTINUE
               IF (INDEXIPART.LT.NBIPART) THEN
@@ -2743,10 +2799,7 @@
             ELSE
               INDEXIPART=1
             END IF
-      
-!
-! ... End of fields loop
-!
+!      
           END IF  ! FLREQ(IFI,IFJ)
         END DO  ! IFI=1, NOGRP
       END DO  ! IFJ=1, NGRPP
@@ -2776,8 +2829,7 @@
 !/T 9001 FORMAT (' TEST W3EXNC : ITPYE :',I4/                         &
 !/T              '             IX1/N/S :',3I7/                        &
 !/T              '             IY1/N/S :',3I7/                        &
-!/T              '       SCALE, VECTOR :',2L2/                        &
-!/T              '              NDSDAT :',I4)
+!/T              '       SCALE, VECTOR :',2L2)
 !
 !/T 9012 FORMAT (' TEST W3EXNC : BLOK PARS    : ',3I4)
 !/T 9014 FORMAT ('           BASE NAME : ',A)

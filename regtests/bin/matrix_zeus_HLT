@@ -23,7 +23,7 @@
 # 1. Set up
 # 1.a Computer/ user dependent set up
 
-  echo '#!/bin/sh'                                           > matrix.head
+  echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
   echo '#PBS -l procs=12'                                   >> matrix.head
   echo '#PBS -q batch'                                      >> matrix.head
@@ -36,6 +36,13 @@
 
   export home_dir=`pwd`
   echo "  cd $home_dir"                                     >> matrix.head
+  echo ' '                                                  >> matrix.head
+
+# Netcdf modules
+
+  echo "  module load netcdf/4.1.3-intel"                   >> matrix.head
+  echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
+  echo "  export NETCDF_CONFIG=`which nc-config`"           >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Compiler option. Choose appropriate compiler and set cmplOption to
