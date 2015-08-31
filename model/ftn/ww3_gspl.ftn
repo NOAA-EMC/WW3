@@ -1099,7 +1099,7 @@
 !/O16               'XDEF   ',I6,'  LINEAR ',2F12.5/                  &
 !/O16               'YDEF   ',I6,'  LINEAR ',2F12.5/                  &
 !/O16               'ZDEF        1  LINEAR   1000.00000     1.00000'/ &
-!/O16               'TDEF   ',I6,'  LINEAR   00:00Z06JUN1968   1HR'/  &
+!/O16               'TDEF   ',I6,'  LINEAR   00:00 06JUN1968   1HR'/  &
 !/O16               'VARS        1'/                                  &
 !/O16               'MAP     0  99  grid use map   '/                 &
 !/O16               'ENDVARS')

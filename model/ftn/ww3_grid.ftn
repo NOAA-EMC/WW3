@@ -504,7 +504,7 @@
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
-                                 IST, NKI, NTHI,NRIC, NRIS,           &
+                                 IST, NKI, NTHI, NRIC, NRIS,          &
                                  IDFT, NSTAT, NBT, NLAND, NOSW
 !/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
@@ -572,7 +572,8 @@
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
       LOGICAL                 :: FLLIN, FLINDS, FLNL, FLBT, FLDB,     &
                                  FLTR, FLBS, FLXX, FLPROP, FLREF,     &
-                                 FIRST, CONNCT, FLNEW, INGRID,FLIC
+                                 FIRST, CONNCT, FLNEW, INGRID,FLIC,   &
+                                 FLIS
       LOGICAL                 :: FLTC96 = .FALSE.
       LOGICAL                 :: FLNMLO = .FALSE.
       LOGICAL                 :: FLSTB2 = .FALSE.
@@ -636,7 +637,8 @@
 !/ST4                                 SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
 !/ST4                                 SWELLF6, SWELLF7, FXPM3, FXFM3,      &
 !/ST4                                 WNMEANPTAIL, WNMEANP, STXFTF,        &
-!/ST4                                 STXFTWN, SINBR
+!/ST4                                 STXFTWN, SINBR, FXFMAGE, FXINCUT,    &
+!/ST4                                 FXDSCUT
 !/ST4      REAL                    :: STXFTFTAIL, SDSC1, SDSC2, SDSCUM,    &
 !/ST4                                 SDSC4, SDSC5, SDSC6, WHITECAPWIDTH,  &
 !/ST4                                 SDSSTRAIN, SDSBR, SDSP,              &
@@ -695,14 +697,15 @@
 !/NLS      NAMELIST /SNLS/ A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1      NAMELIST /SDS1/ CDIS, APM
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
-!/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,   &
+!/ST3      NAMELIST /SDS3/ SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,        &
 !/ST3                      SDSDELTA2
-!/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, FXPM3, FXFM3,    &
-!/ST4                      SDSC2, SDSCUM, SDSSTRAIN, SDSC4,  &
+!/ST4      NAMELIST /SDS4/ SDSC1, WNMEANP, WNMEANPTAIL, FXPM3, FXFM3,      &
+!/ST4                      FXFMAGE, SDSC2, SDSCUM, SDSSTRAIN, SDSC4,       &
 !/ST4                      SDSC5, SDSC6, SDSBR, SDSBR2, SDSP, SDSISO,      &
 !/ST4                      SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
 !/ST4                      SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,              &
-!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, WHITECAPWIDTH
+!/ST4                      SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
+!/ST4                      SDSHFGEN, SDSLFGEN, WHITECAPWIDTH, FXINCUT, FXDSCUT
 !/ST6      NAMELIST /SIN6/ SINA0
 !/ST6      NAMELIST /SDS6/ SDSET, SDSA1, SDSA2, SDSP1, SDSP2
 !/ST6      NAMELIST /SWL6/ SWLB1, CSTB1
@@ -989,9 +992,9 @@
 !/IC3      FLIC   = .TRUE.
 !
 !/IS1      NRIS   = NRIS + 1
-!/IS1      FLIC   = .TRUE.
+!/IS1      FLIS   = .TRUE.
 !/IS2      NRIS   = NRIS + 1
-!/IS2      FLIC   = .TRUE.
+!/IS2      FLIS   = .TRUE.
 !
 !/DB0      NRDB   = NRDB + 1
 !/DB0      FLDB   = .FALSE.
@@ -1075,7 +1078,7 @@
 !
       IF ( NRIS .GT. 1 ) THEN
           WRITE (NDSE,1036) NRIS
-          CALL EXTCDE ( 19 )
+          CALL EXTCDE ( 26 )
         END IF
 !
 ! 6.c Pre-process namelists into scratch file
@@ -1444,6 +1447,9 @@
 !/ST4      SDSC1  = 0.0     ! not used in ST4, should be cleaned up                                                             
 !/ST4      WNMEANP = 0.5    ! taken from Bidlot et al. 2005
 !/ST4      FXFM3 = 9.9 
+!/ST4      FXFMAGE = 0. 
+!/ST4      FXINCUT = 0. 
+!/ST4      FXDSCUT = 0. 
 !/ST4      FXPM3 = 4.
 !/ST4      WNMEANPTAIL = -0.5 
 !/ST4      SDSC2     = -2.2E-5
@@ -1555,6 +1561,9 @@
 !/ST4      SSDSDTH  = SDSDTH
 !/ST4      WWNMEANP   = WNMEANP
 !/ST4      FFXFM = FXFM3 * TPI
+!/ST4      FFXFA = FXFMAGE * TPI
+!/ST4      FFXFI = FXINCUT * TPI
+!/ST4      FFXFD = FXDSCUT * TPI
 !/ST4      FFXPM = FXPM3 * GRAV / 28.
 !/ST4      WWNMEANPTAIL   = WNMEANPTAIL
 !/ST4      SSDSBCK   = SDSBCK
@@ -1880,15 +1889,15 @@
 !
 !/IG1       IGMETHOD = 2
 !/IG1       IGADDOUTP= 0 
-!/IG1       IGSOURCE = 1
+!/IG1       IGSOURCE = 2
 !/IG1       IGSTERMS = 0
-!/IG1       IGMAXFREQ=0.035
+!/IG1       IGMAXFREQ=0.03
 !/IG1       IGSOURCEATBP = 0
 !/IG1       IGBCOVERWRITE = 1
-!/IG1       IGSWELLMAX = .FALSE.
+!/IG1       IGSWELLMAX = .TRUE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
-!/IG1       IGEMPIRICAL = 0.0008
+!/IG1       IGEMPIRICAL = 0.00125
 !
 !/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
@@ -2069,7 +2078,7 @@
 !/ST3          WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
 !/ST3                            SDSDELTA2
 !/ST4          WRITE (NDSO,2924) SDSC1, SDSC2, SDSCUM, SDSSTRAIN, SDSC4, SDSC5, SDSC6, &
-!/ST4                    WNMEANP, FXPM3, FXFM3,                            &
+!/ST4                    WNMEANP, FXPM3, FXFM3, FXFMAGE, FXINCUT, FXDSCUT, &
 !/ST4                    SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
 !/ST4                    SDSBR, SDSSTRAIN, SDSBR2, SDSP, SDSISO, SDSCOS,   &
 !/ST4                    SDSDTH, SDSBRF1, SDSBRFDF,                        &
@@ -4308,7 +4317,8 @@
 !/ST4               '        SDSC4 =',F6.2,', SDSC5 =',E12.4,         &
 !/ST4               ', SDSC6 =',E12.4,','/                            &
 !/ST4               '        WNMEANP =',F4.2,', FXPM3 =', F4.2,       &
-!/ST4               ',FXFM3 =',F4.2,','/                              &
+!/ST4               ', FXFM3 =',F4.2,', FXFMAGE =',F6.3,              &
+!/ST4               ', FXINCUT =',F6.3,', FXDSCUT =',F6.3,', '/       &
 !/ST4               '        SDSBINT =',E12.4,', SDSBCK =',E12.4,     &
 !/ST4               ', SDSABK =',F6.3,', SDSPBK =',F6.3,', '/         &
 !/ST4               '        SDSHCK =',F5.2,', SDSBR = ',E12.4,       &
