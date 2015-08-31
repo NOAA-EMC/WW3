@@ -1,0 +1,228 @@
+#include "w3macros.h"
+!/ ------------------------------------------------------------------- /
+MODULE w3agcmmd
+
+   !===========================================================================
+   !                   ***  MODULE  w3agcmmd  ***
+   !
+   ! Module used for coupling applications between atmospheric model and WW3 with OASIS3-MCT 
+   !
+   !===========================================================================
+
+   IMPLICIT NONE
+
+   INCLUDE "mpif.h"
+
+   PRIVATE
+
+  !! * Accessibility
+  PUBLIC snd_fields_to_atmos 
+  PUBLIC rcv_fields_from_atmos
+
+  CONTAINS
+
+
+   !======================================================================
+
+  
+  SUBROUTINE snd_fields_to_atmos(id_oasis_time)
+
+   !&E---------------------------------------------------------------------
+   !&E                 *** ROUTINE snd_fields_to_atmos  ***
+   !&E
+   !&E ** Purpose : Send coupling fields to atmospheric model
+   !&E
+   !&E ** Description : 
+   !&E
+   !&E ** Called by : 
+   !&E
+   !&E ** External calls :
+   !&E
+   !&E ** Used ij-arrays :
+   !&E
+   !&E ** Modified variables : 
+   !&E
+   !&E ** Reference :
+   !&E
+   !&E ** History :
+   !&E        2014-03 : J. PIANEZZE (LPO) : Creation 
+   !&E
+   !&E---------------------------------------------------------------------
+
+   USE W3OACPMD,  ONLY: il_nb_snd, snd_fld, cpl_oasis_snd
+   USE W3GDATMD,  ONLY: NSEAL, NSEA 
+   USE W3ADATMD,  ONLY: CX, CY, CHARN, HS, FP0
+   USE W3ODATMD,  ONLY: UNDEF, NAPROC, IAPROC
+
+   !! * Argument
+   INTEGER, INTENT(IN) :: id_oasis_time
+
+   !! * Local declaration
+   REAL(kind=8), DIMENSION(NSEAL,1) :: rla_oasis_snd
+   INTEGER                        :: ib_do
+   LOGICAL                        :: ll_action   
+   REAL(kind=8), DIMENSION(NSEAL) :: TMP
+   INTEGER                          :: JSEA, ISEA
+
+   !!----------------------------------------------------------------------
+   !! * Executable part
+
+   DO ib_do = 1, il_nb_snd
+
+      ! Ocean sea surface current (m.s-1) (u-component)
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3___US') THEN
+         TMP(1:NSEAL) = 0.0 
+         DO JSEA=1, NSEAL
+             ISEA=IAPROC+(JSEA-1)*NAPROC
+             IF(CX(ISEA) /= UNDEF) TMP(JSEA)=CX(ISEA)
+         END DO
+         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL)) 
+      ENDIF
+
+      ! Ocean sea surface current (m.s-1) (v-component)
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3___VS') THEN
+         TMP(1:NSEAL) = 0.0
+         DO JSEA=1, NSEAL
+             ISEA=IAPROC+(JSEA-1)*NAPROC
+             IF(CY(ISEA) /= UNDEF) TMP(JSEA)=CY(ISEA)
+             TMP(JSEA)=CY(ISEA)
+         END DO
+         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+      ENDIF
+
+      ! Charnock Coefficient (-)
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3__CHA') THEN
+         TMP(1:NSEAL) = 0.0
+         WHERE(CHARN /= UNDEF) TMP=CHARN
+         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+      ENDIF
+
+      ! Significant wave height (m)
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3___HS') THEN
+         TMP(1:NSEAL) = 0.0
+         WHERE(HS /= UNDEF) TMP=HS
+         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+      ENDIF
+
+      ! Peak period (s)
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3___TP') THEN
+         TMP(1:NSEAL) = 0.0
+         WHERE(FP0 /= UNDEF) TMP=1.0/FP0
+         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+      ENDIF
+
+      CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
+
+   ENDDO
+
+  END SUBROUTINE snd_fields_to_atmos
+
+
+   !======================================================================
+
+  
+  SUBROUTINE rcv_fields_from_atmos(id_oasis_time, id_lcomm, FXN, FYN, FAN)
+
+   !&E---------------------------------------------------------------------
+   !&E                 *** ROUTINE rcv_fields_from_atmos  ***
+   !&E
+   !&E ** Purpose : Receive coupling fields from atmospheric model
+   !&E
+   !&E ** Description : 
+   !&E
+   !&E ** Called by : 
+   !&E
+   !&E ** External calls :
+   !&E
+   !&E ** Used ij-arrays :
+   !&E
+   !&E ** Modified variables : 
+   !&E
+   !&E ** Reference :
+   !&E
+   !&E ** History :
+   !&E        2014-03 : J. PIANEZZE (LPO) : Creation 
+   !&E        2015-04 : M. ACCENSI (IFREMER)  : Modification for ww3 coupling
+   !&E
+   !&E---------------------------------------------------------------------
+
+   USE W3OACPMD, ONLY: il_nb_rcv, rcv_fld, cpl_oasis_rcv
+   USE W3GDATMD, ONLY: NX, NY, NSEAL, NSEA, MAPSF
+   USE W3ODATMD, ONLY: NAPROC, IAPROC
+   USE W3SERVMD, ONLY: W3S2XY
+
+   !! * Argument
+   INTEGER, INTENT(IN)              :: id_oasis_time, id_lcomm
+   REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
+   
+   !! * Local declaration
+   LOGICAL                          :: ll_action   
+   INTEGER                          :: ib_do, ib_i, ib_j, il_err
+   REAL(kind=8), DIMENSION(NSEAL,1) :: rla_oasis_rcv
+   REAL(kind=8), DIMENSION(NSEAL)   :: TMP
+   REAL, DIMENSION(1:NSEA)          :: SND_BUFF,RCV_BUFF
+
+   !!----------------------------------------------------------------------
+   !! * Executable part
+
+   rla_oasis_rcv(:,:) = 0.0
+
+   DO ib_do = 1, il_nb_rcv
+
+      ! Wind speed at 10m (m.s-1) (u-component)
+      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__U10') THEN
+         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+         IF (ll_action) THEN
+            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO ib_i = 1, NSEAL
+               ib_j = IAPROC + (ib_i-1)*NAPROC
+               SND_BUFF(ib_j) = TMP(ib_i)
+            ENDDO
+
+            CALL MPI_Allreduce(SND_BUFF(1:NSEA), &
+                               RCV_BUFF(1:NSEA), &
+                               NSEA,     &
+                               MPI_REAL, &
+                               MPI_SUM,  &
+                               id_lcomm, &
+                               il_err)
+
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
+
+         ENDIF
+      ENDIF
+
+
+
+      ! Wind speed at 10m (m.s-1) (v-component)
+      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__V10') THEN
+         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+         IF (ll_action) THEN
+            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO ib_i = 1, NSEAL
+               ib_j = IAPROC + (ib_i-1)*NAPROC
+               SND_BUFF(ib_j) = TMP(ib_i)
+            END DO
+
+            CALL MPI_Allreduce(SND_BUFF(1:NSEA),       &
+                               RCV_BUFF(1:NSEA),       &
+                               NSEA,   &
+                               MPI_REAL, &
+                               MPI_SUM,  &
+                               id_lcomm, &
+                               il_err)
+
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
+
+         ENDIF
+      ENDIF
+
+   ENDDO
+
+  END SUBROUTINE rcv_fields_from_atmos
+
+END MODULE w3agcmmd

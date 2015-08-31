@@ -84,6 +84,7 @@
     echo "*** switch file $switch_file not found ***" ; echo ' '
     exit 1
   fi
+  cp  $switch_file $main_dir/exe/
 
   flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
   flag_OMPX=`grep OMPX $switch_file | wc -l | awk '{ print $1}'`
@@ -160,21 +161,14 @@
   reg_programs="ww3_grid"
   reg_programs="$reg_programs ww3_strt"
   reg_programs="$reg_programs ww3_bound"
-  reg_programs="$reg_programs ww3_prep"
-  reg_programs="$reg_programs ww3_shel"
   reg_programs="$reg_programs ww3_outf"
   reg_programs="$reg_programs ww3_outp"
   reg_programs="$reg_programs ww3_trck"
   reg_programs="$reg_programs ww3_grib"
-  reg_programs="$reg_programs ww3_gspl"
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
 
-  if [ -n "`grep TIDE $switch_file`" ]
-  then
-    reg_programs="$reg_programs ww3_prtide"
-  fi
 
 # cdf_programs = NetCDF programs
   cdf_programs="ww3_prnc"
@@ -182,14 +176,12 @@
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
 
-  if [ -n "`grep TRKNC $switch_file`" ]
+  if [ -n "`grep TIDE $switch_file`" ]
   then
-  cdf_programs="$cdf_programs ww3_systrk"
-  else
-  reg_programs="$reg_programs ww3_systrk"
+    cdf_programs="$cdf_programs ww3_prtide"
   fi
 
-  if [ -n "`grep SCRIPNC $switch_file`" ]
+  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
     cdf_programs="$cdf_programs ww3_multi_esmf"
@@ -200,6 +192,29 @@
     reg_programs="$reg_programs ww3_sbs1"
   fi
 
+  if [ -n "`grep TRKNC $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_systrk"
+  else
+    reg_programs="$reg_programs ww3_systrk"
+  fi
+
+  if [ -n "`grep OASIS $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_shel"
+  else
+    reg_programs="$reg_programs ww3_shel"
+  fi
+
+
+  if [ -n "`grep OASACM $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_prep"
+    cdf_programs="$cdf_programs ww3_gspl"
+  else
+    reg_programs="$reg_programs ww3_prep"
+    reg_programs="$reg_programs ww3_gspl"
+  fi
 
 # all_programs = all possible programs
   all_programs="$reg_programs $cdf_programs"
@@ -514,6 +529,13 @@ EOF
         export palm_mod='yes'
       fi
       export palm_mod
+
+      oasis_mod=no
+      if [ -n "`grep OASIS $switch_file`" ] 
+      then
+        export oasis_mod='yes'
+      fi
+      export oasis_mod
 
       # if esmf is included in program name, then process
       # ESMFMKFILE to get required ESMF compile options

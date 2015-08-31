@@ -1,0 +1,78 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.14 Test for WW-III, toy-model for coupling modelisation.          #
+#            This is a very coarse grid of the sea around Brest, France.    #
+#                                                                           #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/COU !/OASIS !/OASACM                                                  #
+#         selecting coupling atmospheric model with the coupler OASIS3-mct  #
+#   !/COU !/OASIS !/OASOCM                                                  #
+#         selecting coupling ocean model with the coupler OASIS3-mct        #
+#                                                                           #
+# Prerequisites :                                                           #
+#                                                                           #
+# -a makefile must be defined in the oasis3-mct/util/make_dir with the      #
+#  same extension as comp & link in ww3 bin folder                          #
+#                                                                           #
+# -netCDF4 librairies must be installed and NETCDF variables setup          #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# -oasis environment variable OASISDIR is setup in run_test                 #
+# -the coupling is enabled by using -C option in run_test                   #
+#                                                                           #
+# -the coupling periods must be greater or equal than ww3 & toy time steps  #
+# -the coupling periods, ww3 time step and toy DELTA_T must be multiples    #
+# -the coupling periods can be different for the different fields           #
+# -the coupling lag must be equal to the time step of the starting model    #
+# -the diagnostic time step must be equal to the smallest coupling period   #
+#                                                                           #
+# -timesteps of the models and the coupler must be setup like this way:     #
+#    * ww3_grid : maximum time step is 180s                                 #
+#    * ww3_shel type 1 : output fields time step is 180s                    #
+#    * ww3_shel type 7 : diagnostic time step is 360s                       #
+#    * ww3_ounf : output fields time step is 180s                           #
+#    * TOYNAMELIST.nam : DELTA_T is 90s                                     #
+#    * namcouple : coupling period is 360s and lag is 90s                   #
+#                                                                           #
+# - User must select one of available switch inputs:                        #
+#       switch_OASACM : for coupling atmospheric model with oasis           #
+#       switch_OASOCM : for coupling ocean model with oasis                 #
+#                                                                           #
+# - Test case input (default):                                              #
+#   * ww3_shel.inp :                                                        #
+#     + flag C for wind coupling in the forcing parameters                  #
+#     + type 7 enable the coupling                                          #
+#       - time range is used for diagnostic variables                       #
+#       - fields are I/O coupling between the two models                    #
+#       - remark : these fields must also be defined in type 1              #
+#   * prep_env.sh :                                                         #
+#     + compile the toy model, the oasis coupler and coy the inputs         #
+#   * namcouple :                                                           #
+#     + defines the configuration for the oasis coupler                     #
+#       - remark : grid dimensions for ww3 must be -2 to remove the halo    #
+#   * TOYNAMELIST :                                                         #
+#     + defines the configuration for the toy model                         #
+#   * toy :                                                                 #
+#     + source code and makefile                                            #
+#     + python script to create a grid and restart file for the toy model   #
+#   * oasis3-mct :                                                          #
+#     + doc with user manual                                                #
+#     + lib for external libraries (psmile, mct, scrip)                     #
+#     + util for source code and makefiles                                  #
+#       - remark : define a makefile with the same ww3 comp&link extension  #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test -C -c mpt -s OASACM -o netcdf -w work_OASACM -p mpirun    #
+#                 -n 4 ../ ww3_tp2.14                                       #
+#  ./bin/run_test -C -c Intel_Altix -s OASOCM -o netcdf -w work_OASOCM      #
+#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
+#                                                                           #
+#                                             M. Accensi, Feb 2015          #
+#                                             Ifremer Institute             #
+#                                                   Last Mod : Apr 2015     #
+#                                                                           #
+#############################################################################

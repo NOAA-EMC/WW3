@@ -333,6 +333,12 @@
                                    touch wminitmd.ftn
                                    touch wmwavemd.ftn
                                    touch wmfinlmd.ftn ;;
+      'coupl' ) cd $main_dir/ftn ; touch w3oacpmd.ftn ;;
+      'agcm'  ) cd $main_dir/ftn ; touch w3agcmmd.ftn
+                                   touch w3wavemd.ftn ;;
+      'ogcm'  ) cd $main_dir/ftn ; touch w3ogcmmd.ftn
+                                   touch w3wavemd.ftn ;;
+
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac
   done

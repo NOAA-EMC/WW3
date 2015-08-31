@@ -123,6 +123,7 @@
 !/S      USE W3SERVMD, ONLY : STRACE
 !/
       PUBLIC
+      CHARACTER(LEN=1024)                   :: OUTFIELDNAMES
 !/
 !/ Private parameter statements (ID strings)
 !/
@@ -316,7 +317,6 @@
       INTEGER, INTENT(OUT)    :: IERR
       CHARACTER(LEN=1)        :: COMSTR
       LOGICAL, INTENT(OUT)    :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP)
-      CHARACTER(LEN=1024)     :: OUTFIELDNAMES
       CHARACTER(LEN=100)      :: OUT_NAMES(100), TESTSTR
 !/
 !/ ------------------------------------------------------------------- /
@@ -579,6 +579,7 @@
              FLG2D(10,1)=.TRUE.
            CASE('U2')
              FLG2D(10,1)=.TRUE.
+!/COU           CASE('DRY')
            CASE DEFAULT
              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSO,1004) TRIM(TESTSTR)
            END SELECT
@@ -668,7 +669,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         10-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    10-Dec-1998 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -689,6 +690,7 @@
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
+!/    10-Apr-2015 : Remove unused variables             ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -762,15 +764,12 @@
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
 
-      USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
-                          SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
-                          PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
-                          TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
+      USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT, SXX,   &
+                          SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,    &
+                          PWST, PNR, USERO, TUSX, TUSY, PRMS, TPMS,   &
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, BHD, PHICE, TAUICE,        &
-                          CGE, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,    &
-                          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS,         &
-                          US3D, EF, TH1M, STH1M, TH2M, STH2M, HSIG
+                          BHD, CGE, P2SMS, US3D, EF, TH1M, STH1M,     &
+                          TH2M, STH2M, HSIG
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP

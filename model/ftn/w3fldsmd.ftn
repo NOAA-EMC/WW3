@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         05-Mar-2012 |
+!/                  | Last update :         24-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
@@ -28,6 +28,7 @@
 !/    30-Oct-2012 : Implement tidal analysis (F. Ardhuin)(version 4.08 ) 
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.OF )
 !/     5-Mar-2012 : Cleanup of tidal analysis            (version 4.09 ) 
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.xx )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -884,13 +885,15 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3FLDG (INXOUT, IDFLD, NDS, NDST, NDSE, MX, MY,      &
                          NX, NY, T0, TN, TF0, FX0, FY0, FA0,          &
-                         TFN, FXN, FYN, FAN, IERR)
+                         TFN, FXN, FYN, FAN, IERR                     &
+!/OASIS                  , COUPL_TIME, COUPL_COMM                     &
+                         )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         24-Apr-2015 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -898,6 +901,7 @@
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
 !/    04-Apr-2010 : Adding icebergs in ISI              ( version 3.14 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.xx )
 !/
 !  1. Purpose :
 !
@@ -987,7 +991,9 @@
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3TIMEMD
-!
+!/OASACM      USE W3AGCMMD, ONLY: rcv_fields_from_atmos
+!/OASOCM      USE W3OGCMMD, ONLY: rcv_fields_from_ocean
+!/OASIS       USE W3ODATMD, ONLY: DTOUT 
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -1002,11 +1008,14 @@
                                       FA0(MX,MY), FAN(MX,MY)
       CHARACTER, INTENT(IN)        :: INXOUT*(*)
       CHARACTER(LEN=3), INTENT(IN) :: IDFLD
+!/OASIS      INTEGER, INTENT(IN), OPTIONAL :: COUPL_TIME, COUPL_COMM
+
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       INTEGER                 :: IX, IY, J, ISTAT
+!/OASIS      INTEGER                 :: COUPL_TIME2
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTTST
       LOGICAL                 :: WRITE, FL2D, FLFRST, FLBE, FLST
@@ -1016,6 +1025,8 @@
 !/S      CALL STRACE (IENT, 'W3FLDG')
 !/
       IERR   = 0
+!/OASIS      COUPL_TIME2=-1
+!/OASIS      IF (PRESENT(COUPL_TIME)) COUPL_TIME2=COUPL_TIME
 !
 !/T      WRITE (NDST,9000) INXOUT, IDFLD, NDS, NDST, NDSE, MX, MY,    &
 !/T                        NX, NY, TF0, TFN, IERR
@@ -1118,9 +1129,23 @@
 !
           ELSE
 !
-            READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
-!/T            WRITE (NDST,9031) TFN
-            IF ( .NOT. FL2D ) THEN
+!/OASIS            IF (COUPL_TIME2.GE.0) THEN 
+!
+!/OASACM ! Getting U10 (FXN) and V10 (FYN) from atmospheric model
+!/OASACM              CALL rcv_fields_from_atmos(COUPL_TIME2,         &
+!/OASACM                   COUPL_COMM, FXN, FYN, FAN)
+!/OASOCM ! Getting UCUR (CX), VCUR (CY), WLV from ocean model
+!/OASOCM              CALL rcv_fields_from_ocean(COUPL_TIME2,         &
+!/OASOCM                   COUPL_COMM, FXN, FYN, FAN)
+!/OASIS ! Increment the time field TFN to the next coupling time
+!/OASIS              TFN(1)=T0(1)
+!/OASIS              TFN(2)=T0(2)
+!/OASIS              CALL TICK21(TFN,DTOUT(7))
+!
+!/OASIS            ELSE 
+              READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
+!/T             WRITE (NDST,9031) TFN
+              IF ( .NOT. FL2D ) THEN
 ! note: "J" here does *not* refer to data type, wlev etc.
 !       It refers to the dimension.
                 J      = 1
@@ -1142,6 +1167,7 @@
                 IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
                            ((FAN(IX,IY),IX=1,NX),IY=1,NY)
               END IF
+!/OASIS            END IF
 !
 ! Check time, branch back if necessary
 !

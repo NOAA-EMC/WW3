@@ -45,6 +45,8 @@
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
 !      TIME      I.A.  Public   Valid time for spectra.
+!      TIME00    I.A.  Public   Initial time
+!      TIMEEND   I.A.  Public   Final time 
 !      TLEV      I.A.  Public   Valid time for water levels.
 !      TICE      I.A.  Public   Valid time for ice.
 !      VA        R.A.  Public   Storage array for spectra.
@@ -105,6 +107,8 @@
 !/
       TYPE WDATA
         INTEGER               :: TIME(2), TLEV(2), TICE(2)
+!/OASIS        INTEGER               :: TIME00(2)
+!/OASIS        INTEGER               :: TIMEEND(2)
         REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), UST(:),     &
                                  USTDIR(:), ASF(:), FPIS(:), BERG(:)
         LOGICAL               :: DINIT, FL_ALL
@@ -118,6 +122,8 @@
 !/ Data aliasses for structure WDATA(S)
 !/
       INTEGER, POINTER        :: TIME(:), TLEV(:), TICE(:)
+!/OASIS      INTEGER, POINTER        :: TIME00(:)
+!/OASIS      INTEGER, POINTER        :: TIMEEND(:)
       REAL, POINTER           :: VA(:,:), WLV(:), ICE(:), UST(:),     &
                                  USTDIR(:), ASF(:), FPIS(:), BERG(:)
       LOGICAL, POINTER        :: DINIT, FL_ALL
@@ -519,6 +525,8 @@
 ! 3.  Set pointers
 !
       TIME   => WDATAS(IMOD)%TIME
+!/OASIS      TIME00 => WDATAS(IMOD)%TIME00
+!/OASIS      TIMEEND => WDATAS(IMOD)%TIMEEND
       TLEV   => WDATAS(IMOD)%TLEV
       TICE   => WDATAS(IMOD)%TICE
       DINIT  => WDATAS(IMOD)%DINIT
