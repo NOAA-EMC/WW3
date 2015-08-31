@@ -45,7 +45,8 @@
 !/                  (A. Chawla and Mark Szyszka)      
 !/    23-Apr-2015 : Adding NCEP Coupler                 ( version 5.06 )
 !/                  (A. Chawla and Dmitry Sheinin)
-!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.xx )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

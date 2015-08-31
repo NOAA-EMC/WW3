@@ -25,10 +25,12 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLO (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    30-Oct-2012 : Implement tidal analysis (F. Ardhuin)(version 4.08 ) 
+!/    30-Oct-2012 : Implement tidal analysis            ( version 4.08 ) 
+!/                  (F. Ardhuin)
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.OF )
-!/     5-Mar-2012 : Cleanup of tidal analysis            (version 4.09 ) 
-!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.xx )
+!/     5-Mar-2012 : Cleanup of tidal analysis           ( version 4.09 ) 
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -901,7 +903,8 @@
 !/    05-Jul-2005 : Correct first level/ice.            ( version 3.07 )
 !/    04-Apr-2010 : Adding icebergs in ISI              ( version 3.14 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
-!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.xx )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/
 !  1. Purpose :
 !

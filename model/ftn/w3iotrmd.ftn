@@ -93,7 +93,7 @@
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
 !/    26-Dec-2012 : Initialize ASPTRK.                  ( version 4.11 )
-!/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.xx )
+!/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
