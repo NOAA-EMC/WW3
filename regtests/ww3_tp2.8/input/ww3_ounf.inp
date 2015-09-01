@@ -1,40 +1,38 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
-$ Time, time increment and number of outputs
+$ First output time (yyyymmdd hhmmss), increment of output (s), 
+$ and number of output times.
 $
-$ 10800=Every 3 hours. Use a large number to go all the way to end.
-$  20080310 000000 10800
-$ 600=Every 10' . Use a large number to go all the way to end.
-  20080310 000000 600  100
-$ Just once (for depth)
+ 20080310 000000 600  100
+$
+$ Fields requested --------------------------------------------------- $
 $
 $ Output request flags identifying fields as in ww3_shel.inp. See that
 $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
-N
-DPT HS FP DIR SPR
-$
+ N
+ DPT HS FP DIR SPR
 $
 $--------------------------------------------------------------------- $
-$ Output type 4 [3,4] (version netCDF)   
-$        and   variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
-$ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)
-$ variables [T] or not [F] in the same file
+$ netCDF version [3,4]
+$        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
+$ swell partitions [0 1 2 3 4 5]
+$ variables in same file [T] or not [F] 
 $
-  3 4
-  0 
-  F
+ 3 4
+ 0 1 2
+ T
 $
 $ -------------------------------------------------------------------- $
 $ File prefix
 $ number of characters in date [4(yearly),6(monthly),8(daily),10(hourly)]
-$ IX and IY ranges [regular:IX NX IY NY DX DY, unstructured:IP NP DP DP]
+$ IX and IY ranges [regular:IX NX IY NY, unstructured:IP NP 1 1]
 $
-ww3.
-6
- 1 999 1 999 3 2 
+ ww3.
+ 6
+ 1 1000000 1 1000000 
 $
 $ For each field and time a new file is generated with the file name
 $ ww3.date_xxx.nc , where date is a conventional time indicator with S3

@@ -267,6 +267,7 @@
       DOUBLE PRECISION      :: dateref, datecur
       REAL                  :: scur, mncur, hcur, fillvalue
       INTEGER               :: I,K,L,ITIME, dref, mref, yref, dcur, mcur, ycur
+      INTEGER               :: hhref,mmref,ssref
       CHARACTER*14          :: TIME_STR
 ! Variables used in tidal analysis
       REAL(KIND=8), ALLOCATABLE :: ALLTIMES(:)
@@ -500,11 +501,18 @@
 !
       DO I=1,NFIELDS
         iret = nf90_inq_varid(ncid,TRIM(FIELDSNAME(I)),varidf(I))
-        iret = nf90_inquire_variable(ncid, varidf(I), ndims = NDIMSVAR, natts = nAtts)
-        iret = nf90_inquire_variable(ncid, varidf(I), dimids = DIMSVAR(:NDIMSVAR))
+        CALL check_err(iret)
+        iret = nf90_inquire_variable(ncid, varidf(I), ndims=NDIMSVAR,  &
+                                     natts = nAtts)
+        CALL check_err(iret)
+        iret = nf90_inquire_variable(ncid, varidf(I),                  &
+                                     dimids=DIMSVAR(:NDIMSVAR))
+        CALL check_err(iret)
 ! Now the dimensions
         DO J=1,NDIMSVAR
-          iret=nf90_inquire_dimension(ncid,DIMSVAR(J),name=dimname(J),len=dimln(J))
+          iret=nf90_inquire_dimension(ncid,DIMSVAR(J),name=dimname(J), &
+                                      len=dimln(J))
+          CALL check_err(iret)
           END DO
         END DO
 !
@@ -518,16 +526,25 @@
         read(timeunits(15:18),'(I4.4)') yref
         read(timeunits(20:21),'(I2.2)') mref
         read(timeunits(23:24),'(I2.2)') dref
+        read(timeunits(26:27),'(I2.2)') hhref
+        read(timeunits(29:30),'(I2.2)') mmref
+        read(timeunits(32:33),'(I2.2)') ssref
       ELSE IF (INDEX(timeunits, "days").NE.0) THEN
         read(timeunits(12:15),'(I4.4)') yref
         read(timeunits(17:18),'(I2.2)') mref
         read(timeunits(20:21),'(I2.2)') dref
+        read(timeunits(23:24),'(I2.2)') hhref
+        read(timeunits(26:27),'(I2.2)') mmref
+        read(timeunits(29:30),'(I2.2)') ssref
       ELSE IF (index(timeunits, "hours").NE.0) THEN
         read(timeunits(13:16),'(I4.4)') yref
         read(timeunits(18:19),'(I2.2)') mref
         read(timeunits(21:22),'(I2.2)') dref
-        END IF
-      dateref=JULDAY(dref,mref,yref)
+        read(timeunits(24:25),'(I2.2)') hhref
+        read(timeunits(27:28),'(I2.2)') mmref
+        read(timeunits(30:31),'(I2.2)') ssref
+      END IF
+      dateref=JULDAY(dref,mref,yref) + DBLE(hhref)/24. + DBLE(mmref)/1440. + DBLE(ssref)/86400.
 !
 ! instanciates generic variables dimensions
 !
@@ -602,7 +619,7 @@
       CALL check_err(iret)
       iret=nf90_get_att(ncid,varidtmp,"_FillValue", fillvalue)
 !
-! ... type 1
+! ... type 1: "As Is" (AI)
 !
       IF (ITYPE.EQ.1.OR.ITYPE.EQ.6) THEN
 !

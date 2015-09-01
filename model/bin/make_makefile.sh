@@ -941,10 +941,6 @@
     echo ' '                                     >> makefile
     for file in $files
     do
-      if [ "$prog" = 'ww3_shel' ]
-      then
-      echo "working with $file"
-      fi
       echo "$d_string$file.o"                    >> makefile
       if [ -z "`echo $file | grep scrip 2>/dev/null`" ]
       then

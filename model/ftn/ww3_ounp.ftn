@@ -179,8 +179,8 @@
 !/MPI      INTEGER                 :: IERR_MPI
       INTEGER                 :: NDSI, NDSM, NDSOP,  NDSTRC, NTRACE,  &
                                  IERR, I, TOUT(2), NOUT, TDUM(2),     &
-                                 NREQ, ITYPE, OTYPE, NDSTAB, IPOINT,  &
-                                 IOTEST, IK, ITH, IOUT, J, DIMXP, K,  &
+                                 NREQ, ITYPE, OTYPE, IPOINT,          &
+                                 IOTEST, ITH, IOUT, J, DIMXP,         &
                                  icode, strl, strl2, FLWW3, NBFILEOUT,&
                                  S5, S3, NBSTATION, NCTYPE,   &
                                  NCFLUSH, NFL, MFL, IFL, NREQL, NOUTL,&
@@ -208,7 +208,6 @@
       REAL(kind=4),DIMENSION(:),ALLOCATABLE    :: THD
       integer(kind=4)         :: iyc,imc,idc,ihc,iminc,isc
       CHARACTER*20            :: FORMAT1
-      LOGICAL                 :: exist
       CHARACTER(8)            :: EXT
 
 !ITYPE
@@ -353,7 +352,7 @@
       ELSE
         WRITE(DATE,'(I8.8,I6.6)') TIME(1), TIME(2)
       END IF
-      WRITE(FILETIME,'(7A)') DATE(1:4), DATE(5:6), DATE(7:8), ' ', DATE(9:10)
+      WRITE(FILETIME,'(7A)') DATE(1:4), DATE(5:6), DATE(7:8), 'T', DATE(9:10)
 
 
 ! 4.3 Loops on TIME from out_pnt file to reach the first time PASTDATE
@@ -406,6 +405,11 @@
             END IF
           FLREQ(IPOINT) = .TRUE.
         END IF
+        ! read the 'end of list' if nopts reached before it
+        IF ( (IPOINT .GT. 0) .AND. (IPOINT .EQ. NOPTS) ) THEN
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=801,ERR=802) IPOINT
+        END IF
       END DO
 !
       ALLOCATE ( INDREQ(NREQ) )
@@ -431,10 +435,10 @@
 !
       ! Defines the format of FILETIME
       S5=S3-8
-      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDD HHMMSS'
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSS'
       IF (S3.EQ.10) THEN 
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
-        WRITE (FILETIME,FORMAT1) TIME(1), ' ', &
+        WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
                NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
@@ -560,7 +564,7 @@
         ! if S3=>YYYYMMDDHH then filetime='YYYYMMDD HHMMSS'
         IF (S3.EQ.10) THEN 
           WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
-          WRITE (FILETIME,FORMAT1) TIME(1), ' ', &
+          WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
                  NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
         ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
         ELSE IF (S3.EQ.8) THEN
@@ -649,7 +653,7 @@
                 dimln(2)=NBSTATION         ! station
                 dimln(3)=16                ! string station name length
                 dimln(4)=NK                ! freq
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
               END IF
             END DO
 
@@ -664,7 +668,7 @@
                 dimln(3)=16 ! string station name length
                 dimln(4)=NK ! freq
                 dimln(5)=NTH ! dir
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
               END IF
             END DO
 
@@ -678,7 +682,7 @@
                 dimln(2)=NBSTATION ! station
                 dimln(3)=16    ! string station name length
                 dimln(4)=DIMXP ! npart
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
               END IF
             END DO
           ELSE
@@ -697,7 +701,7 @@
               dimln(1)=NF90_UNLIMITED  !time
               dimln(2)=NBSTATION ! station
               dimln(3)=16    ! string station name length
-              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
+              CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
             END IF
           END DO
 
@@ -781,7 +785,7 @@
                 dimln(2)=NBSTATION ! station
                 dimln(3)=16    ! string station name length
                 dimln(4)=NK ! freq
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid,one,two)
               END IF
             END DO
 
@@ -796,7 +800,7 @@
                 dimln(3)=16    ! string station name length
                 dimln(4)=NK ! freq
                 dimln(5)=NTH ! dir
-                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,I,NBFILEOUT,ncfile(I),ncid(I),dimid,dimln,varid,one,two,FLSRCE)
+                CALL W3CRNC(ITYPE,OTYPE,NCTYPE,ncfile(I),ncid(I),dimid,dimln,varid,one,two,FLSRCE)
               END IF
             END DO
 
@@ -1076,13 +1080,10 @@
 !
   888 CONTINUE
 !
-      DEALLOCATE(THD)
-      DEALLOCATE(ncid)
-      DEALLOCATE(ncfile)
-!
-      IF ( TOGETHER ) THEN
-        DEALLOCATE(INDREQ)
-      END IF
+      IF(ALLOCATED(THD)) DEALLOCATE(THD)
+      IF(ALLOCATED(ncid)) DEALLOCATE(ncid)
+      IF(ALLOCATED(ncfile)) DEALLOCATE(ncfile)
+      IF(ALLOCATED(INDREQ)) DEALLOCATE(INDREQ)
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
 !/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
@@ -1142,7 +1143,7 @@
  3944 FORMAT ('''',A,'''',1X,3I6,6L2)
  3945 FORMAT (8E10.3)
  3946 FORMAT (7E11.3)
- 5940 FORMAT ( '      Buffer will be flushed every ',I ,' steps.')
+ 5940 FORMAT ( '      Buffer will be flushed every ',I6,' steps.')
  5950 FORMAT ( '      Point already exists, it will be skipped : ', A)
 !
   960 FORMAT (//'  Output for ',A/                                    &
@@ -1332,8 +1333,7 @@
 !/ Local parameters
 !/
       INTEGER                   :: J, J1, I1, I2, ISP, IKM, IKL, IKH, ITH,  &
-                                   IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
-                                   NPART, IX, IY, ISEA
+                                   IK, ITT, NPART, IX, IY, ISEA
 !/S      INTEGER, SAVE           :: IENT   = 0
       REAL                      :: depth, SQRTH, CDIR, SIX, R1, R2,     &
                                    UDIR, UDIRR, UABS, XL, XH, XL2, XH2, &
@@ -1377,9 +1377,8 @@
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      REAL                    :: LAMBDA(NSPEC)
-      CHARACTER                 :: DTME21*23
       CHARACTER*4               :: VAR1(5)
-      REAL(kind=8)              :: ncDaysOffset,timenc,Jday0
+      REAL(kind=8)              :: timenc,Jday0
       INTEGER(kind=4)           :: iyc,imc,idc,ihc,iminc,isc
 !
       DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Stot' /
@@ -1443,6 +1442,7 @@
       IF (SHORT.AND.ITYPE.EQ.1.AND.OTYPE.EQ.3) THEN 
 
           DEPTH  = MAX ( DMIN, DPO(J) )
+          SQRTH  = SQRT ( depth )
           DO IK=1, NK
             SIX    = SIG(IK) * SQRTH
             I1     = INT(SIX/DSIE)
@@ -2157,7 +2157,7 @@
               iret=nf90_put_var(ncid,varid(9),UDIR,(/J1,IOUT/))
               iret=nf90_put_var(ncid,varid(10),CAO(J),(/J1,IOUT/))
               iret=nf90_put_var(ncid,varid(11),CDIR,(/J1,IOUT/))
-
+              ! XPART infos - see w3partmd.ftn - SUBROUTINE PTMEAN
               iret=nf90_put_var(ncid,varid(12),XPART(1,0:NPART),  &
                                 start=(/1,J1,IOUT/),count=(/NPART,1,1/))
               iret=nf90_put_var(ncid,varid(13),XPART(2,0:NPART),  &
@@ -2724,7 +2724,7 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE W3CRNC (itype, otype, nctype, IND, NFILES, ncfile, ncid, dimid, dimln, varid, one, two, FLSRCE)
+      SUBROUTINE W3CRNC (itype, otype, nctype, ncfile, ncid, dimid, dimln, varid, one, two, FLSRCE)
 
 
       USE W3GDATMD
@@ -2733,13 +2733,13 @@
       implicit none
 
 
-      INTEGER, INTENT(IN)               :: itype,otype,nctype, NFILES, IND, one, two
+      INTEGER, INTENT(IN)               :: itype,otype,nctype, one, two
       CHARACTER*(128), INTENT(IN)       :: ncfile
       INTEGER, INTENT(IN)               :: dimln(5)
       INTEGER, INTENT(OUT)              :: dimid(7), varid(28),ncid
-      INTEGER                           :: iret, deflate=1
+      INTEGER                           :: iret
+!/NC4    INTEGER                             :: deflate=1
       REAL(kind=4)                      :: freq(NK), freq1(NK),freq2(NK), dir(NTH)
-      LOGICAL                           :: filefound, TOGETHER
       LOGICAL, INTENT(IN), OPTIONAL     :: FLSRCE(6)
 
 !

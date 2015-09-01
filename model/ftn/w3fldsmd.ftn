@@ -1141,7 +1141,7 @@
 !/OASACM                   COUPL_COMM, FXN, FYN, FAN)
 !/OASOCM ! Getting UCUR (CX), VCUR (CY), WLV from ocean model
 !/OASOCM              CALL rcv_fields_from_ocean(COUPL_TIME2,         &
-!/OASOCM                   COUPL_COMM, FXN, FYN, FAN)
+!/OASOCM                   COUPL_COMM, IDFLD, FXN, FYN, FAN)
 !/OASIS ! Increment the time field TFN to the next coupling time
 !/OASIS              TFN(1)=T0(1)
 !/OASIS              TFN(2)=T0(2)

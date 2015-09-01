@@ -1368,8 +1368,6 @@
 800   CONTINUE
       IF ( NOFILE ) THEN      
         WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
-        WRITE(NDSE,*)  IDTST, VERTST, INSIGMAX, INAALPHA, INBBETA, INIUSTAR,  &
-                              INIALPHA, INILEVTAIL, INZZALP, INKAPPA, INGRAV
         WRITE(NDSE,*)  IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA,  &
                        ILEVTAIL, ZZALP, KAPPA, GRAV
 !   

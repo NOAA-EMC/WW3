@@ -519,7 +519,7 @@
 !
 !   Local variables
 !
-      INTEGER                   :: K, L, L2, JBASE, J1, J, JL, K1, KM1
+      INTEGER                   :: K, L, L2, JBASE, J1, J, JL, K1
       REAL(KIND=4), PARAMETER   :: PI=3.1415926536
       REAL(KIND=4), PARAMETER   :: TWOPI=2.*3.1415926536
 
@@ -690,8 +690,8 @@
       CHARACTER*4 ,    INTENT(OUT)  :: ITZ
 !
       INTEGER                   :: I, IY
-      INTEGER       ID1,IM1,IY1,ID2,IM2,IY2,IC1,IC2, M
-      INTEGER       L, JSTN, LATD,LATM,LOND,LONM, K, K2
+      INTEGER       ID1,IM1,IY1,ID2,IM2,IY2,IC1,IC2
+      INTEGER       JSTN, LATD,LATM,LOND,LONM, K, K2
       CHARACTER*4   NSTN(5)
 
       open(unit=kr1,file=filename,status='old',form='formatted')
@@ -1307,12 +1307,27 @@
 !       written by j. cherniawsky, august 1997
 !        last modified              august 1998
 !-----------------------------------------------------------------------
-      parameter (nwt=302)      ! make nwt > expected value of N2
-      dimension q(mm,N2)
-      double precision u(mm,N2),v(N2,N2),cov(N2,N2)     &
-                      ,w(N2),b(mm),p(N2),wti(nwt),sig(mm)
+      IMPLICIT NONE
+
+! PARAMETERS
+      integer, parameter        :: nwt=302      ! make nwt > expected value of N2
+
+! I/O VARIABLES
+      integer, intent(IN)               :: ic, m, n, N2, mm
+      real, intent(IN)                  :: toler
+      real, intent(INOUT)               :: q(mm,N2), ssq, res
+      integer, intent(INOUT)            :: jc
+      double precision, intent(OUT)     :: u(mm,N2),v(N2,N2),cov(N2,N2),      &
+                                           w(N2),b(mm),p(N2),sig(mm)
+
+! LOCAL VARIABLES
+      double precision          :: wti(nwt)
+      integer                   :: i, j, k
+      real                      :: wmax, thresh
+      double precision          :: eps, sum, resi
       
       jc=0
+      sig(:)=1.
       do i=1,mm
         b(i)=q(i,N2)
       enddo
@@ -1392,6 +1407,11 @@
 !*     NJ     = THE NUMBER OF SATELLITES FOR THIS CONSTITUENT.
 !*  THE END OF ALL MAIN CONSTITUENTS IS DENOTED BY A BLANK CARD.
 !
+
+      IMPLICIT NONE
+
+      integer          :: JLM
+
       NTIDAL_CON = 45
       NTOTAL_CON = 45+101
       NKONCO = 251
@@ -1650,7 +1670,6 @@
       INTEGER,      INTENT(IN)     :: ITIME
 
       INTEGER          :: K
-      INTEGER(KIND=4)  :: KD0        ! "Gregorian day constant"
 
       DO  K=1,NTOTAL_CON
         IF (TIDECON_ALLNAMES(K).eq.KONX) go to 40
@@ -1685,10 +1704,10 @@
 
       CHARACTER*256, INTENT(IN)     :: filename
 
-      INTEGER       :: J, J1, JBASE, J4, K, K1, JL, JLM, KR
+      INTEGER                  :: J, J1, JBASE, J4, K, K1, JL, JLM, KR
 
-      DOUBLE PRECISION, PARAMETER  :: TWOPI=3.1415926535898*2.
-      DOUBLE PRECISION, PARAMETER  :: FAC=TWPI/360.
+      DOUBLE PRECISION, PARAMETER   :: TWOPI=3.1415926535898*2.
+      DOUBLE PRECISION, PARAMETER   :: FAC=TWPI/360.
       
       KR=8
 !
@@ -1829,14 +1848,17 @@
 !
 !   Local variables
 !
-      INTEGER                   :: IFOUND, ITIME
+      INTEGER                   :: ITIME, KD0, INT24, INTDYS, &
+                                   JBASE, J, K, L, J1, K1, JL, LK, iflag
       REAL(KIND=4), PARAMETER   :: PI=3.1415926536
       REAL(KIND=4), PARAMETER   :: TWOPI=2.*3.1415926536
 
-      REAL                      :: SLAT
-      real(KIND=8)              :: d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp,hh,tau
+      REAL                      :: SLAT, VDBL, IV, VV, SUMC, SUMS, RR, &
+                                   UUDBL, IUU, UU
+      REAL(KIND=8)              :: d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp,hh,tau
 
-      DIMENSION indx(170)
+      INTEGER                   :: indx(170)
+
       SLAT=SIN(PI*XLAT/180.)
 !
 !***********************************************************************
@@ -2051,21 +2073,19 @@
       INTEGER                     :: I, I1, I2, I21, II1, IDEF, ICODE,  INFLAG,  & 
                                      J, INFTOT, IREP, J2, JCODE, JJ1, K, K2, KH1,     &
                                      KH2, KHM, KINF, L, M, MEQ, N, NCOL, NEW, NMAX
-      REAL(KIND=8)                :: AAMP, ADD, ARG, ARG1, ARG2, ARG3, C, C2, C3,     &
+      REAL(KIND=8)                :: AAMP, ARG, ARG1, ARG2, ARG3, C, C2, C3,     &
                                      FX, FXI,  S, S2, S3, UX, VX, UXI, VXI,  &
                                      WMIN, WMAX, XMID
       REAL                        :: TOLER
-      REAL(KIND=8)                     :: AV,SDEV, SUM1,SUM2,round,hrm
-      DOUBLE PRECISION hr
-      DOUBLE PRECISION X(NR),Y(NR), TIME(NR)
-      REAL                             :: Q(NMAXPM,NMAXP1),FREQ(MC),AMP(MC),PH(MC) 
-      DOUBLE PRECISION P(NMAXP1),CENHR,CUMHR  
-      DOUBLE PRECISION dxk,xx,yy,y1
+      REAL(KIND=8)                :: AV, SDEV, SUM2, hrm
+      DOUBLE PRECISION            :: X(NR),Y(NR), TIME(NR)
+      REAL                        :: Q(NMAXPM,NMAXP1),FREQ(MC),AMP(MC),PH(MC) 
+      DOUBLE PRECISION            :: P(NMAXP1),CENHR,CUMHR  
+      DOUBLE PRECISION            :: yy
 !
 !     Additional arrays, for use in the SVD routine (J.Ch., Aug. 1997)
       DOUBLE PRECISION     :: U(NMAXPM,NMAXP1),V(NMAXP1,NMAXP1),      &
-                              COV(NMAXP1,NMAXP1),B(NMAXPM),W(NMAXP1),SIG(NMAXPM),     &
-                              COR(nmaxp1,nmaxp1)
+                              COV(NMAXP1,NMAXP1),B(NMAXPM),W(NMAXP1),SIG(NMAXPM)
 !
 !***********************************************************************
 !
@@ -2438,10 +2458,10 @@
       REAL(KIND=8),  INTENT(OUT)     :: SDEV(NDEF),RMSR(NDEF)
       REAL,          INTENT(OUT)     :: PREDICTED(N,NDEF), RESID(N,NDEF)
  !
-      INTEGER                        :: IDEF, I, K, K2, L
+      INTEGER                        :: IDEF, I, K, K2
       INTEGER                        :: J, M
       REAL                           :: ARG, ADD, SUM1, SSQ
-      REAL(KIND=8)                   :: XMID, VX, UX, FX
+      REAL(KIND=8)                   :: VX, UX, FX
 
       M = 2*TIDE_MF 
 
@@ -2495,10 +2515,10 @@
       REAL,          INTENT(IN)      :: XLAT
       REAL,          INTENT(OUT)     :: PREDICTED(N,NDEF)
  !
-      INTEGER                        :: IDEF, I, K, K2, L
-      INTEGER                        :: J, M
-      REAL                           :: ARG, ADD, SUM1, SSQ
-      REAL(KIND=8)                   :: XMID, VX, UX, FX
+      INTEGER                        :: IDEF, I, K, K2
+      INTEGER                        :: J
+      REAL                           :: ARG, ADD, SUM1
+      REAL(KIND=8)                   :: VX, UX, FX
 
       DO IDEF=1,NDEF
         DO I=1,N

@@ -73,13 +73,13 @@
 # 2.b.1 Build options and determine compiler name
 
   # compilation options
-  opt="-c -g -fast -fconvert=big-endian -J$path_m"
+  opt="-c -g -O3 -static -fconvert=big-endian -J$path_m"
 # opt="-c -g -O0 -fbacktrace -fconvert=big-endian -J$path_m"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=mpiifort
+    comp=gfortran
   else
     comp=gfortran
   fi
