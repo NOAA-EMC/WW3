@@ -215,7 +215,7 @@
           IF ( BB .LT. 1.0 ) THEN 
               CBJ    = SDBC1 * QB * FMEAN * HM * HM / EMEAN
             ELSE
-              CBJ    = SDBC1 * FMEAN / EMEAN
+              CBJ    = SDBC1 * FMEAN 
             END IF
         ELSE
           CBJ    = 0.
