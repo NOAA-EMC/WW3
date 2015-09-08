@@ -128,7 +128,8 @@
      &             grid1_bound_box,  ! lat/lon bounding box for use
      &             grid2_bound_box   ! in restricting grid searches
 
-      integer (SCRIP_i4), save ::    ! Cells overlapping the poles (may be 0)
+      integer (SCRIP_i4), save ::    ! Cells overlapping the poles 
+                                     ! (may be 0)
      &     grid1_npole_cell,        
      &     grid1_spole_cell,         
      &     grid2_npole_cell,
@@ -194,8 +195,10 @@
 !
 !-----------------------------------------------------------------------
 
-      logical(SCRIP_Logical), intent(in) :: l_master  ! Am I the master processor (do I/O)?
-      logical(SCRIP_Logical), intent(in) :: l_test    ! Whether to include test output
+      logical(SCRIP_Logical), intent(in) :: l_master  ! Am I the master
+                                                  ! processor (do I/O)?
+      logical(SCRIP_Logical), intent(in) :: l_test ! Whether to include
+                                                   ! test output
 
 !-----------------------------------------------------------------------
 !
@@ -215,7 +218,7 @@
       integer (SCRIP_i4) :: 
      &  n,      ! loop counter
      &  nele,   ! element loop counter
-     &  i,j,k,
+     &  i,j,
      &  ip1,jp1,
      &  n_add, e_add, ne_add,
      &  nx, ny, ncorners_at_pole

@@ -1,43 +1,43 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
-$ Time, time increment and number of outputs
+$ First output time (yyyymmdd hhmmss), increment of output (s), 
+$ and number of output times.
 $
- 20020101 000000   60  3600  20
+ 20020101 000000   60  3600
+$
+$ Fields requested --------------------------------------------------- $
+$
+$ Output request flags identifying fields as in ww3_shel.inp. See that
+$ file for a full documentation of field output options. Namelist type
+$ selection is used here (for alternative F/T flags, see ww3_shel.inp).
+$
+ N
+ HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD
 $
 $--------------------------------------------------------------------- $
-$ Output request flags identifying fields as in ww3_shel input and
-$ section 2.4 fo the manual.
+$ netCDF version [3,4]
+$        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
+$ swell partitions [0 1 2 3 4 5]
+$ variables in same file [T] or not [F] 
 $
-N 
-HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD
-$
-$--------------------------------------------------------------------- $
-$ Output type 4 [3,4] (version netCDF)   
-$        and   variable type 4 [2 = SHORT, 4 = REAL]
-$ Output type 0 1 2 [0,1,2,3,4,5]   (swell partition)
-$ variables T [T] or not [F] in the same file
-$
-  3 4
-  0 1 2
-  F
+ 3 4
+ 0 1 2
+ F
 $
 $ -------------------------------------------------------------------- $
 $ File prefix
 $ number of characters in date
 $ IX, IY range
 $
-ww3.
-6
- 1 1778 1 1 2
+ ww3.
+ 6
+ 1 1778 1 1
 $
 $ For each field and time a new file is generated with the file name
-$ ww3.date_xxx.nc , where date is a conventional time idicator with S3
-$ characters,
-$ and xxx is a field identifier.
-$
+$ ww3.date_xxx.nc , where date is a conventional time indicator with S3
+$ characters, and xxx is a field identifier.
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
-$ -------------------------------------------------------------------- $
 $ -------------------------------------------------------------------- $

@@ -217,7 +217,7 @@
 ! !IROUTINE: SCRIP_ErrorPrint -- prints the error log
 ! !INTERFACE:
 
- subroutine SCRIP_ErrorPrint(errorCode, printTask)
+ subroutine SCRIP_ErrorPrint(printTask)
 
 ! !DESCRIPTION:
 ! This routine prints all messages in the error log. If a printTask
@@ -228,8 +228,8 @@
 
 ! !INPUT PARAMETERS:
 
-   integer (SCRIP_i4), intent(in) :: &
-      errorCode ! input error code to check success/fail
+!   integer (SCRIP_i4), intent(in) :: &
+!      errorCode ! input error code to check success/fail
 
    !*** currently this has no meaning, but will be used in parallel
    !*** SCRIP version

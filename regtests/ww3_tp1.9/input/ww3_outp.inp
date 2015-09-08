@@ -4,7 +4,7 @@ $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s), 
 $ and number of output times.
 $
-  19680606 003000  1800.  1
+  19680606 000005  1800.  1
 $
 $ Points requested --------------------------------------------------- $
 $ Define points for which output is to be generated. 

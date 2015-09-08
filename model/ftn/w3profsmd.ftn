@@ -150,13 +150,12 @@
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
       REAL, INTENT(INOUT)     :: VQ(1-NY:NY*(NX+2))
       LOGICAL, INTENT(IN)     :: LCALC
-      LOGICAL                 :: SCHEME
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: ITH, IK, ISEA, IXY, IBI    
-      INTEGER                 :: IX, IY, I, J, IE
+      INTEGER                 :: ITH, IK, ISEA, IXY
+      INTEGER                 :: IX
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
@@ -359,18 +358,15 @@
 !/ Local parameters
 !/
       INTEGER                 :: ITH, IK    
-      INTEGER                 :: IP, IP2, IP3, ISEA2, I, J, IE, IV, I1, I2, I3
+      INTEGER                 :: IP, IP2, ISEA2, I, J, IE, IV, I1, I2, I3
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: CCOS, CSIN, CCURX, CCURY
       REAL                    :: C(NX,2)
-      REAL                    :: RD1, RD2
-      INTEGER                 :: COUNTSEACON
       REAL*8                  :: KELEM(3), KTMP(3), LAMBDA(2)
       REAL*8                  :: NM(3), KKSUM, DTMAXEXP
 !/
 !/  Velocities 
 !/
-      REAL                    :: VLCFLX, VLCFLY
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
        REAL,    PARAMETER :: THR       = TINY(1.0) 
@@ -545,7 +541,7 @@
 !
 ! local integer
 !
-         INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
+         INTEGER :: IP, IE, IT, I1, I2, I3, ITH, IK    
          INTEGER :: IBI, NI(3)
 !
 ! local real
@@ -554,12 +550,8 @@
 !:
 ! local double
 !
-         REAL*8  :: IEN1(2), IEN2(2), IEN3(2)
-         REAL*8  :: U1, U2, U3 
          REAL*8  :: UTILDE 
-         REAL*8  :: SUMTHETA
-         REAL*8  :: FL1, FL2, FL3
-         REAL*8  :: FT, CFLXY
+         REAL*8  :: CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
          REAL*8  :: DTSI(NX), U(NX)
@@ -795,7 +787,7 @@
 !
 ! local integer
 !
-         INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
+         INTEGER :: IP, IE, IT, I1, I2, I3, ITH, IK    
          INTEGER :: IBI, NI(3)
 !
 ! local real
@@ -804,11 +796,7 @@
 !:
 ! local double
 !
-         REAL*8  :: IEN1(2), IEN2(2), IEN3(2)
-         REAL*8  :: U1, U2, U3 
          REAL*8  :: UTILDE 
-         REAL*8  :: SUMTHETA
-         REAL*8  :: FL1, FL2, FL3
          REAL*8  :: FT, CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
@@ -1052,8 +1040,8 @@
 !
 ! local integer
 !
-         INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
-         INTEGER :: IBI, NI(3)
+         INTEGER :: IP, IE, POS, I1, I2, I3, I, J, ITH, IK    
+         INTEGER :: IBI
 !
 ! local real
 !
@@ -1061,19 +1049,12 @@
 !:
 ! local double
 !
-         REAL*8  :: IEN1(2), IEN2(2), IEN3(2)
-         REAL*8  :: U1, U2, U3 
-         REAL*8  :: UTILDE 
-         REAL*8  :: SUMTHETA
-         REAL*8  :: FL1, FL2, FL3
-         REAL*8  :: FT, CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
-         REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
-         REAL*8  :: DTSI(NX), U(NX)
-         REAL*8  :: DTMAXGL, DTMAXEXP, REST
-         REAL*8  :: LAMBDA(2), KTMP(3)
-         REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI), KP(3,NTRI)
-         REAL*8  :: KKSUM(NX), ST(NX), K1, DTK, TMP3, KM(3), K(3)
+         REAL*8  :: U(NX)
+         REAL*8  :: DTMAXGL
+         REAL*8  :: LAMBDA(2)
+         REAL*8  :: KP(3,NTRI)
+         REAL*8  :: K1, DTK, TMP3, KM(3), K(3)
          REAL*8  :: NM(NTRI), CRFS(3), DELTAL(3,NTRI)
          REAL*8  :: B(NX), X(NX)
          REAL*8  :: ASPAR(NNZ)
@@ -1366,7 +1347,7 @@
 !
 ! local integer
 !
-         INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK    
+         INTEGER :: IP, IE, IT, I1, I2, I3, I, ITH, IK    
          INTEGER :: IBI, NI(3)
 !
 ! local real
@@ -1375,15 +1356,11 @@
 !:
 ! local double
 !
-         REAL*8  :: IEN1(2), IEN2(2), IEN3(2)
-         REAL*8  :: U1, U2, U3 
          REAL*8  :: UTILDE 
-         REAL*8  :: SUMTHETA
-         REAL*8  :: FL1, FL2, FL3
          REAL*8  :: FT, CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
-         REAL*8  :: DTSI(NX), U(NX), DT4AI, TMP1
+         REAL*8  :: DTSI(NX), U(NX), DT4AI
          REAL*8  :: DTMAXGL, DTMAXEXP, REST
          REAL*8  :: LAMBDA(2), KTMP(3), TMP(3)
          REAL*8  :: BET1(3), BETAHAT(3)
@@ -3618,7 +3595,7 @@ END MODULE W3PROFSMD
 !----------- 
 !        x = The solution of  L x = y .
 !--------------------------------------------------------------------
-      integer ii, jrow, i 
+      integer ii, jrow, i, k
       real*8 t 
 !     
 !     outer loop goes through the levels. (SEQUENTIAL loop)
@@ -4379,7 +4356,8 @@ END MODULE W3PROFSMD
         subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
 
         implicit real*8 (a-h,o-z)
-        real*8 a(*), alu(*)
+        real*8 a(*), alu(*), tl
+        integer n, ju0, ii, jj, i, j, jcol, js, jf, jm, jrow, jw, ierr
         integer ja(*), ia(*), ju(*), jlu(*), iw(n)
 !
 !-----------------------------------------------------------------------
@@ -4818,7 +4796,7 @@ DOUBLE PRECISION X( * )
 !     jack dongarra, linpack, 3/11/78.
 !
       double precision dx(*),dy(*),dtemp
-      integer i,ix,iy,m,mp1,n
+      integer i,m,mp1,n
 !
       ddot = 0.0d0
       dtemp = 0.0d0

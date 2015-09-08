@@ -281,7 +281,7 @@
 !     - If ice or water level time are undefined, the update
 !       takes place asap, otherwise around the "half-way point"
 !       betweem the old and new times.
-!     - To increase accuracy, the calculation o fthe intra-sprectral
+!     - To increase accuracy, the calculation of the intra-spectral
 !       propagation is performed around the spatial propagation.
 !
 !  8. Structure :
@@ -1645,8 +1645,6 @@
 !/OASIS     ENDIF
 !/OASIS END IF
 
-
-!!                            END IF
                         ELSE IF ( J .EQ. 2 ) THEN
 !
 !   Point output

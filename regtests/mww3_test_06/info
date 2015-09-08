@@ -13,7 +13,7 @@
 # Remarks :                                                                 #
 #   For grid sets that include an irregular grid, if SCRIP is not specified,# 
 #    the regression test should fail. It becomes a regression test for      #
-#    "graceful failure", i.e. failure with an informative error message.    #
+#    "graceful failure", i.e. failure with an informative message.          #
 #                                                                           #
 # - Test case input                                                         #
 #                                                                           #

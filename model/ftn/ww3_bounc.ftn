@@ -174,6 +174,7 @@
       NDSB   = 33
       NDSC   = 44
       NDSM   = 20
+      NDSS   = 30
 !
       NDSTRC =  6
       NTRACE = 10
@@ -658,7 +659,7 @@
                '     IOSTAT =',I5/)
 !
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
-               '     ILLEGAL XFR, XFR =',F/)
+               '     ILLEGAL XFR, XFR =',F12.6/)
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/

@@ -97,17 +97,28 @@ MODULE w3ogcmmd
          rla_oasis_snd(:,1) = DBLE(HS(1:NSEAL))
       ENDIF
 
-      ! Cosinus of Mean wave direction (cos(dir) in n/a)
+      ! Cosinus of Mean wave direction (dir * cos(theta) in radians)
+      ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+      ! theta : trigonometric convention ( 0 at East, 90 at North)
       IF (snd_fld(ib_do)%cl_field_name == 'WW3_CDIR') THEN
          TMP(1:NSEAL) = 0.0
-         WHERE(THM /= UNDEF) TMP(:)=cos(THM(:)*DERA)
+         WHERE(THM /= UNDEF)
+            ! reference from ounf (oceanographic convention): MOD ( 630. - RADE*THM(:) , 360. )
+            TMP(1:NSEAL) = MOD ( 7*pi/2 - THM(:) , 2*pi )
+            TMP(1:NSEAL) = TMP(1:NSEAL) * cos( MOD( pi + THM(:) , 2*pi ) )
+         END WHERE
          rla_oasis_snd(:,1) = TMP(1:NSEAL)
       ENDIF
 
-      ! Sinus of Mean wave direction (sin(dir) in n/a)
+      ! Sinus of Mean wave direction (dir* sin(theta) in radians)
+      ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+      ! theta : trigonometric convention ( 0 at East, 90 at North)
       IF (snd_fld(ib_do)%cl_field_name == 'WW3_SDIR') THEN
          TMP(1:NSEAL) = 0.0
-         WHERE(THM /= UNDEF) TMP(:)=sin(THM(:)*DERA)
+         WHERE(THM /= UNDEF)
+            TMP(1:NSEAL) = MOD ( 7*pi/2 - THM(:) , 2*pi )
+            TMP(1:NSEAL) = TMP(1:NSEAL) * sin( MOD( pi + THM(:) , 2*pi ) )
+         END WHERE
          rla_oasis_snd(:,1) = TMP(1:NSEAL)
       ENDIF
 
@@ -180,7 +191,7 @@ MODULE w3ogcmmd
    !======================================================================
 
   
-  SUBROUTINE rcv_fields_from_ocean(id_oasis_time, id_lcomm, FXN, FYN, FAN)
+  SUBROUTINE rcv_fields_from_ocean(id_oasis_time, id_lcomm, IDFLD, FXN, FYN, FAN)
 
    !&E---------------------------------------------------------------------
    !&E                 *** ROUTINE rcv_fields_from_ocean  ***
@@ -188,6 +199,11 @@ MODULE w3ogcmmd
    !&E ** Purpose : Receive coupling fields from ocean model
    !&E
    !&E ** Description : 
+   !&E
+   !&E    IDFLD   C*3  I/O ID string for field type, valid are: 'LEV', 'CUR' (J=1,2)
+   !&E    FXN
+   !&E    FYN
+   !&E    FAN
    !&E
    !&E ** Called by : 
    !&E
@@ -212,11 +228,13 @@ MODULE w3ogcmmd
 
    !! * Argument
    INTEGER, INTENT(IN)              :: id_oasis_time, id_lcomm
+   CHARACTER(LEN=3), INTENT(IN)     :: IDFLD
    REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
-   
+
    !! * Local declaration
    LOGICAL                          :: ll_action   
    INTEGER                          :: ib_do, ib_i, ib_j, il_err
+   INTEGER, SAVE                    :: id_oasis_time_newexchange = -1
    REAL(kind=8), DIMENSION(NSEAL,1) :: rla_oasis_rcv
    REAL(kind=8), DIMENSION(NSEAL)   :: TMP, MASKT, MASKU, MASKV
    REAL, DIMENSION(1:NSEA)          :: SND_BUFF,RCV_BUFF
@@ -230,108 +248,130 @@ MODULE w3ogcmmd
    MASKV(:)=1.
    rla_oasis_rcv(:,:) = 0.0
 
+   ! Perform mask variables
+   IF (id_oasis_time > id_oasis_time_newexchange) THEN
+
+      DO ib_do = 1, il_nb_rcv
+
+         ! Land mask
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDH') THEN
+
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               MASKT(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
+            ENDIF
+         ENDIF
+
+         ! Land mask
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDU') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               MASKU(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
+            ENDIF
+         ENDIF
+
+         ! Land mask
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDV') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               MASKV(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
+            ENDIF
+         ENDIF
+
+      ENDDO
+
+   ENDIF
+
+   ! Treatment of the dynamical variables
    DO ib_do = 1, il_nb_rcv
 
-      ! Land mask
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDH') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            MASKT(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
+      IF (IDFLD == 'LEV') THEN
+
+         ! Sea surface Height (m)
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__SSH') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKT(1:NSEAL)
+               SND_BUFF(1:NSEA) = 0.0
+               DO ib_i = 1, NSEAL
+                  ib_j = IAPROC + (ib_i-1)*NAPROC
+                  SND_BUFF(ib_j) = TMP(ib_i)
+               ENDDO
+
+               CALL MPI_Allreduce(SND_BUFF(1:NSEA), &
+                                  RCV_BUFF(1:NSEA), &
+                                  NSEA,     &
+                                  MPI_REAL, &
+                                  MPI_SUM,  &
+                                  id_lcomm, &
+                                  il_err)
+
+               ! Convert from storage (NSEA) to spatial grid (NX, NY)
+               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+
+            ENDIF
          ENDIF
+
       ENDIF
 
-      ! Land mask
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDU') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            MASKU(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
+      IF (IDFLD == 'CUR') THEN
+
+
+         ! Ocean sea surface current (m.s-1) (u-component)
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3___UZ') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKU(1:NSEAL)
+               SND_BUFF1(0:NSEA) = 0.0
+               DO ib_i = 1, NSEAL
+                  ib_j = IAPROC + (ib_i-1)*NAPROC
+                  SND_BUFF1(ib_j) = TMP(ib_i)
+               ENDDO
+
+               CALL MPI_Allreduce(SND_BUFF1(0:NSEA),       &
+                                  RCV_BUFF1(0:NSEA),       &
+                                  NSEA+1,   &
+                                  MPI_REAL, &
+                                  MPI_SUM,  &
+                                  id_lcomm, &
+                                  il_err)
+
+               ! Convert from storage (NSEA) to spatial grid (NX, NY)
+               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FXN)
+
+            ENDIF
          ENDIF
-      ENDIF
 
-      ! Land mask
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDV') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            MASKV(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
+         ! Ocean sea surface current (m.s-1) (v-component)
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3___VZ') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKV(1:NSEAL)
+               SND_BUFF1(0:NSEA) = 0.0
+               DO ib_i = 1, NSEAL
+                  ib_j = IAPROC + (ib_i-1)*NAPROC
+                  SND_BUFF1(ib_j) = TMP(ib_i)
+               ENDDO
+
+               CALL MPI_Allreduce(SND_BUFF1(0:NSEA),       &
+                                  RCV_BUFF1(0:NSEA),       &
+                                  NSEA+1,   &
+                                  MPI_REAL, &
+                                  MPI_SUM,  &
+                                  id_lcomm, &
+                                  il_err)
+
+               ! Convert from storage (NSEA) to spatial grid (NX, NY)
+               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FYN)
+
+            ENDIF
          ENDIF
-      ENDIF
 
-      ! Sea surface Height (m)
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__SSH') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKT(1:NSEAL)
-            SND_BUFF(1:NSEA) = 0.0
-            DO ib_i = 1, NSEAL
-               ib_j = IAPROC + (ib_i-1)*NAPROC
-               SND_BUFF(ib_j) = TMP(ib_i)
-            ENDDO
-
-            CALL MPI_Allreduce(SND_BUFF(1:NSEA), &
-                               RCV_BUFF(1:NSEA), &
-                               NSEA,     &
-                               MPI_REAL, &
-                               MPI_SUM,  &
-                               id_lcomm, &
-                               il_err)
-
-            ! Convert from storage (NSEA) to spatial grid (NX, NY)
-            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-
-         ENDIF
-      ENDIF
-
-      ! Ocean sea surface current (m.s-1) (u-component)
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3___UZ') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKU(1:NSEAL)
-            SND_BUFF1(0:NSEA) = 0.0
-            DO ib_i = 1, NSEAL
-               ib_j = IAPROC + (ib_i-1)*NAPROC
-               SND_BUFF1(ib_j) = TMP(ib_i)
-            ENDDO
-
-            CALL MPI_Allreduce(SND_BUFF1(0:NSEA),       &
-                               RCV_BUFF1(0:NSEA),       &
-                               NSEA+1,   &
-                               MPI_REAL, &
-                               MPI_SUM,  &
-                               id_lcomm, &
-                               il_err)
-
-            ! Convert from storage (NSEA) to spatial grid (NX, NY)
-            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FXN)
-
-         ENDIF
-      ENDIF
-
-      ! Ocean sea surface current (m.s-1) (v-component)
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3___VZ') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKV(1:NSEAL)
-            SND_BUFF1(0:NSEA) = 0.0
-            DO ib_i = 1, NSEAL
-               ib_j = IAPROC + (ib_i-1)*NAPROC
-               SND_BUFF1(ib_j) = TMP(ib_i)
-            ENDDO
-
-            CALL MPI_Allreduce(SND_BUFF1(0:NSEA),       &
-                               RCV_BUFF1(0:NSEA),       &
-                               NSEA+1,   &
-                               MPI_REAL, &
-                               MPI_SUM,  &
-                               id_lcomm, &
-                               il_err)
-
-            ! Convert from storage (NSEA) to spatial grid (NX, NY)
-            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FYN)
-
-         ENDIF
       ENDIF
 
    ENDDO
+
+   id_oasis_time_newexchange = id_oasis_time
 
   END SUBROUTINE rcv_fields_from_ocean
 

@@ -4,7 +4,7 @@ $--------------------------------------------------------------------- $
 $ First output time (yyyymmdd hhmmss), increment of output (s), 
 $ and number of output times.
 $
-  19680606 000000   900  9999
+  19680606 060000  3600.  1000
 $
 $ Points requested --------------------------------------------------- $
 $
@@ -13,6 +13,7 @@ $ If no one defined, all points are selected
 $ One index number per line, negative number identifies end of list.
 $ 1
 $ 2
+  1
 $ mandatory end of list
  -1
 $
@@ -29,7 +30,7 @@ $
  ww3.
  6
  3
- T 100
+ T 150 
  1
  0
  T
@@ -71,7 +72,7 @@ $                              3 : Nondimensional pars. (U*)
 $                              4 : Nondimensional pars. (U10)
 $                              5 : 'Validation table'
 $                              6 : WMO standard output 
-$  4
+$ 2
 $
 $ -------------------------------------------------------------------- $
 $ ITYPE = 3, netCDF Source terms

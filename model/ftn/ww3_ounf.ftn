@@ -125,11 +125,11 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NDSI, NDSM, NDSOG, NDSDT,                &
+      INTEGER                 :: NDSI, NDSM, NDSOG,                       &
                                  NDSTRC, NTRACE, IERR, I, J, I1F, I2F,    &
                                  TOUT(2), TDUM(2), IOTEST, NOUT, IFI, IFJ,&
-                                 NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,    &
-                                 IOUT, S3, S4, S5, IP, iret,              &
+                                 NCTYPE, IX1, IXN, IY1, IYN,              &
+                                 IOUT, S3, S4, S5, iret,                  &
                                  NBIPART, CNTIPART, NCVARTYPE, IPART,     &
                                  NCIDS(NOGRP,NGRPP,6)
       INTEGER                 :: iyc, imc, idc, ihc, iminc, isc
@@ -138,9 +138,9 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,          &
-                                 TABNME*9, FILEPREFIX*30, STRINGIPART*30
-      LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP), SCALE,  &
-                                 VECTOR, TOGETHER, LTEMP(NGRPP)
+                                 FILEPREFIX*30, STRINGIPART*30
+      LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLOG(NOGRP),         &
+                                 VECTOR, TOGETHER
       INTEGER                 :: HasNC4
 !/
 !/ ------------------------------------------------------------------- /
@@ -355,7 +355,7 @@
 ! 5.1.2  Processes the variable value for the time step IOUT
         CALL W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA, FILEPREFIX,   &
                       E3DF, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE,&
-                      FLREQ, NCIDS )
+                      FLREQ, NCIDS, S3 )
 
 ! 5.1.3 Defines the stop date
         iyc=TOUT(1)/10000
@@ -374,6 +374,8 @@
 
 ! 5.2 Closes the netCDF file
       IF (TOGETHER .AND. ncids(1,1,1).NE.0) THEN
+        iret = nf90_redef(ncids(1,1,1))
+        call check_err(iret)
         iret=nf90_put_att(ncids(1,1,1),NF90_GLOBAL,'stop_date',stopdate)
         call check_err(iret)
         iret=nf90_close(ncids(1,1,1))
@@ -385,6 +387,8 @@
           IF ( FLREQ(IFI,IFJ) ) THEN
             IF ( FLOGRD(IFI,IFJ) ) THEN
               IF (.NOT. TOGETHER) THEN
+                iret = nf90_redef(ncids(IFI,IFJ,1))
+                call check_err(iret)
                 iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
                 call check_err(iret)
                 iret=nf90_close(ncids(IFI,IFJ,1))
@@ -392,6 +396,8 @@
                 ! close partition files
                 IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
                   DO IPART=0,NBIPART
+                    iret = nf90_redef(ncids(IFI,IFJ,IPART+1))
+                    call check_err(iret)
                     iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
                     call check_err(iret)
                     iret=nf90_close(ncids(IFI,IFJ,IPART+1))
@@ -404,6 +410,8 @@
                 IF ( ((IFI.EQ.6).AND.(IFJ.EQ.8)) .OR.                 &
                      ((IFI.EQ.6).AND.(IFJ.EQ.9)) .OR.                 &
                      (IFI.EQ.3) ) THEN
+                  iret = nf90_redef(ncids(IFI,IFJ,1))
+                  call check_err(iret)
                   iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
                   call check_err(iret)
                   iret=nf90_close(ncids(IFI,IFJ,1))
@@ -451,7 +459,7 @@
                ' --------------------------------------------------'/ &
                '      First time         : ',A)
   941 FORMAT ( '      Interval           : ',A/                       &
-               '      Number of requests : ',I4)
+               '      Number of requests : ',I7)
   944 FORMAT (/'      End of file reached '/)
 !
   945 FORMAT (/'  Requested output fields : '/                        &
@@ -494,7 +502,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,           &
                           FILEPREFIX, E3DF, P2MSF, US3DF, NCTYPE,     &
-                          TOGETHER, NCVARTYPEI, FLREQ, NCIDS )
+                          TOGETHER, NCVARTYPEI, FLREQ, NCIDS, S3 )
 !/
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
@@ -580,52 +588,51 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: NX, NY, IX1, IXN, IY1, IYN, NSEA, E3DF(3,5),  &
-                                 P2MSF(3), US3DF(3), NCTYPE, NCVARTYPEI
+      INTEGER, INTENT(IN)     :: NX, NY, IX1, IXN, IY1, IYN, NSEA,     &
+                                 E3DF(3,5), P2MSF(3), US3DF(3), NCTYPE,&
+                                 NCVARTYPEI
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLREQ(NOGRP,NGRPP)
-      INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,6)
+      INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,6), S3
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NXMAX, NXTOT, NBLOK, IH, IM, IS, IFI, IFJ,    &
-                                 MFILL, I, J, ISEA, IX, IY, IXB, IB, IXA,      &
-                                 NINGRD, JJ, I1, J1, IPART, INDEXIPART
+      INTEGER                 :: IFI, IFJ,    &
+                                 MFILL, I, ISEA, IX, IY,      &
+                                 I1, J1, IPART, INDEXIPART
       INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY)
       INTEGER(KIND=2)         :: MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),           &
                                  MXY(NX,NY), MAPOUT(NX,NY)
       REAL   (KIND=4)         :: MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY),        &
                                  MXYR(NX,NY), MFILLR
 !
-      INTEGER                 :: S1, S2, ICODE, NCID, COORDTYPE,               & 
-                                  MAPSTAOUT,                                   &
+      INTEGER                 :: S1, S2, S4, S5, NCID, COORDTYPE,               & 
+                                 MAPSTAOUT, NDSDAT,                            &
                                  NFIELD, N, IRET, IK,                          &
                                  dimid(6), varid(300), extradim, ivar,         &
-                                 idim, ivar1, idvarout, start(4),count(4),     &
+                                 ivar1, idvarout, start(4),count(4),     &
                                  dimln(6),start1D(2), count1D(2), dimfield(3), &
-                                 deflate=1, iyc, imc, idc, ihc, iminc, isc,    &
-                                 Jday, Jday0, IP,  NCVARTYPE
+                                 iyc, imc, idc, ihc, iminc, isc,    &
+                                 Jday0, NCVARTYPE
+!/NC4    INTEGER                  :: deflate=1
 
      INTEGER(KIND=4)          :: VMIN, VMAX
 
       INTEGER(KIND=4), ALLOCATABLE       :: TRIGP2(:,:)
 
-      CHARACTER*80            :: varnm(8),varnm2(8),varnl(8),varnl2(8)
-      CHARACTER*120           :: varns(8),varns2(8),varnc(8),varng(8),str2
+      CHARACTER*80            :: varnm(8),varnl(8)
+      CHARACTER*120           :: varns(8),varnc(8),varng(8),str2
       CHARACTER*20            :: unitvar(3),FORMAT1
       CHARACTER*30            :: startdate
 
-      DOUBLE PRECISION        :: timenc,lasttime
+      DOUBLE PRECISION        :: timenc
       REAL,DIMENSION(:),  ALLOCATABLE    :: lon, lat, freq
       REAL,DIMENSION(:,:),  ALLOCATABLE  :: lon2D, lat2D
 
-!     INTEGER, SAVE           :: NCOL   = 80
-      INTEGER, SAVE           :: NCOL   = 132
 !/S      INTEGER, SAVE           :: IENT   =   0
-      REAL                    :: FSC, FSC3, CABS, UABS, FSCA, XMIN, XMAX,   &
-                                 XAVG, XSTD, YGBX, XGBX, AABS, FSC2
+      REAL                    :: FSC, FSC3, CABS, UABS
       REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
                                  XX(NX+1,NY), XY(NX+1,NY),            &
                                  XK(NX+1,NY,NK),                      &
@@ -635,10 +642,9 @@
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLFRQ, FLDIR
 !/T      LOGICAL                 :: LTEMP(NGRPP)
-      CHARACTER               :: FNAME*16, FNAMENC*50,      &
+      CHARACTER               :: FNAMENC*50,      &
                                  ENAME*6,FORMF*11, UNITS*20, UNITS2*20
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
-      CHARACTER, SAVE         :: FILEID*13 = 'WAVEWATCH III'
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -661,7 +667,7 @@
       XY     = UNDEF
       MAPSTAOUT = 1
       NCVARTYPE  = NCVARTYPEI
-
+      NDSDAT=30
 
 ! 1.1 Set-up transfer files
       MFILL  = NF90_FILL_SHORT
@@ -682,11 +688,11 @@
       ! Defines the format of FILETIME
       S5=S3-8
       S4=S3
-      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDD HHMMSS'
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSS'
       IF (S3.EQ.10) THEN 
-        S4=S4+1 ! space between DD and HH
+        S4=S4+1 ! T between day and minutes
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
-        WRITE (TIMEID,FORMAT1) TIME(1), ' ', &
+        WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
                NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
@@ -2109,10 +2115,15 @@
 
 ! 2.4 Gets the netcdf id
 
-            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
-              ncid=ncids(1,1,1)
+            OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=iret)
+            IF (iret.EQ.0) THEN
+              ncid=0
             ELSE
-              ncid=ncids(IFI,IFJ,IPART+1)
+              IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
+                ncid=ncids(1,1,1)
+              ELSE
+                ncid=ncids(IFI,IFJ,IPART+1)
+              END IF
             END IF
                         
 ! 2.5 Creates the netcdf file
@@ -2145,8 +2156,7 @@
 ! 2.5.1 Creates the NetCDF file 
 
               CALL W3CRNC(FNAMENC,ncid,dimid,dimln,varid, &
-                           UNITVAR,vmin,vmax,             &
-                           extradim,NCTYPE,NCVARTYPE,MAPSTAOUT)
+                          extradim,NCTYPE,MAPSTAOUT)
 
               ! Saves the ncid to keep the file opened to write all the variables
               ! and open/close at each time step
@@ -2197,11 +2207,13 @@
                 DO i=1,NY
                   lat(i)=REAL(Y0D+SYD*DBLE(i-1))
                 END DO
-                WRITE(str2,'(F12.7)') SY 
+                WRITE(str2,*) SY
+                str2=ADJUSTL(str2)
                 iret=nf90_put_att(ncid,NF90_GLOBAL,   &
                          'latitude_resolution', TRIM(str2))
                 call check_err(iret)
-                WRITE(str2,'(F12.7)') SX 
+                WRITE(str2,*) SX 
+                str2=ADJUSTL(str2)
                 iret=nf90_put_att(ncid,NF90_GLOBAL,   &
                          'longitude_resolution',TRIM(str2))
                 call check_err(iret)
@@ -2224,22 +2236,22 @@
               END IF
 
               ! Finishes declaration part in file by adding geographical bounds
-              WRITE(str2,'(F12.7)') MINVAL(YGRD)
+              WRITE(str2,*) MINVAL(YGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                    'southernmost_latitude',TRIM(str2))
               call check_err(iret)
-              WRITE(str2,'(F12.7)') MAXVAL(YGRD)
+              WRITE(str2,*) MAXVAL(YGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                    'northernmost_latitude',TRIM(str2))
               call check_err(iret)
-              WRITE(str2,'(F12.7)') MINVAL(XGRD)
+              WRITE(str2,*) MINVAL(XGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'westernmost_longitude',TRIM(str2))
               call check_err(iret)
-              WRITE(str2,'(F12.7)') MAXVAL(XGRD)
+              WRITE(str2,*) MAXVAL(XGRD)
               str2=ADJUSTL(str2)
               iret=nf90_put_att(ncid,NF90_GLOBAL,  &
                   'easternmost_longitude',TRIM(str2))
@@ -2512,15 +2524,15 @@
 
               ! If it is not the first time step, get all varid from the netcdf file opened
               ELSE 
-            iret=nf90_redef(ncid)
-            call check_err(iret)
+                iret=nf90_redef(ncid)
+                call check_err(iret)
                 DO I=1,NFIELD
                   ivar=ivar1+I
                   iret=NF90_INQ_VARID (ncid, varnm(I), varid(ivar))
                   call check_err(iret)
                 END DO  
-            iret=nf90_enddef(ncid)
-            call check_err(iret)            
+                iret=nf90_enddef(ncid)
+                call check_err(iret)            
               END IF !   n.EQ.1
             END IF  ! IERR.EQ.0
               
@@ -2848,8 +2860,7 @@
 
 !--------------------------------------------------------------------------    
       SUBROUTINE W3CRNC (ncfile, ncid, dimid, dimln, varid,  &
-                           UNITVAR,vmin,vmax,                &
-                           extradim, NCTYPE, NCVARTYPE, mapstaout )
+                         extradim, NCTYPE, mapstaout )
       USE W3GDATMD
       USE NETCDF
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST
@@ -2858,9 +2869,9 @@
       
 
 
-      INTEGER, INTENT(IN)               :: vmin,vmax,extradim
-      INTEGER, INTENT(IN)               :: NCTYPE, NCVARTYPE
-      character*(*), INTENT(IN)         :: ncfile,UNITVAR(3)
+      INTEGER, INTENT(IN)               :: extradim
+      INTEGER, INTENT(IN)               :: NCTYPE
+      character*(*), INTENT(IN)         :: ncfile
       integer, INTENT(OUT)              :: ncid
       integer, INTENT(OUT)              :: dimid(6)
       integer, INTENT(IN)               :: dimln(6)
@@ -2869,11 +2880,10 @@
 !
 !   Local variables
 !
-      INTEGER                           :: I,ivar,iret,dimtri(2), deflate=1
+      INTEGER                           :: ivar,iret,dimtri(2)
+!/NC4    INTEGER                           :: deflate=1
       CHARACTER                         :: attname*120,attval*120
       INTEGER                           :: icode,strl,strl2
-      REAL,DIMENSION(:,:), ALLOCATABLE  :: lon1, lat1
-
 
 !      
 ! Creation in netCDF3 or netCDF4
@@ -3074,7 +3084,9 @@
       ENDIF
       CLOSE(994)
       iret=nf90_put_att(ncid,NF90_GLOBAL,'product_name' ,TRIM(ncfile))   
+      call check_err(iret)
       iret=nf90_put_att(ncid,NF90_GLOBAL,'area',TRIM(GNAME))
+      call check_err(iret)
 
       RETURN
 
