@@ -714,7 +714,7 @@
 !
 ! ... create grid search utility
 !
-          GSI = W3GSUC( .TRUE., FLAGLL, ICLO, NXI, NYI, ALO, ALA )
+          GSI = W3GSUC( .TRUE., FLAGLL, ICLO, ALO, ALA )
 !
 ! ... construct Interpolation data
 !

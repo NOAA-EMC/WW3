@@ -149,9 +149,21 @@
     esac
   fi
 
+  opt="$opt $EXTRA_LINK_OPTIONS"
+
 # 3.b Link
 
-  $comp $opt $objects $libs                         > link.out 2> link.err
+  rprfx="-Wl,-rpath,"
+  rpath=
+  for path in $libs
+  do
+    if [ "${path:0:2}" = '-L' ]
+    then
+      rpath="$rpath ${rprfx}${path//-L/}"
+    fi
+  done
+
+  $comp $opt $objects $libs $rpath                  > link.out 2> link.err
   OK="$?"
 
 # --------------------------------------------------------------------------- #

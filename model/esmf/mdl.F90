@@ -12,11 +12,9 @@ module MDL
 
   use ESMF
   use NUOPC
-  use NUOPC_Model, only: &
-    model_routine_SS            => SetServices, &
-    model_label_DataInitialize  => label_DataInitialize, &
-    model_label_SetClock        => label_SetClock, &
-    model_label_Advance         => label_Advance
+! use NUOPC_Model, parent_SetServices => SetServices
+  use NUOPC_Model, only: parent_SetServices => SetServices, &
+    label_DataInitialize, label_SetClock, label_Advance, label_Finalize
   use UTL
 
   implicit none
@@ -46,6 +44,7 @@ module MDL
     character(ESMF_MAXSTR) ,pointer :: sname(:) => null()
     character(6)           ,pointer :: fname(:) => null()
     type(ESMF_Field)       ,pointer :: field(:) => null()
+    logical                         :: realizeAllExport
     integer(ESMF_KIND_I4)           :: numwt
     character(ESMF_MAXSTR) ,pointer :: wtnam(:) => null()
     integer(ESMF_KIND_I4)  ,pointer :: wtcnt(:) => null()
@@ -67,7 +66,7 @@ module MDL
     ! local variables
     character(ESMF_MAXSTR)        :: msgString
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
 
     rc = ESMF_SUCCESS
 
@@ -75,7 +74,7 @@ module MDL
     allocate(is%wrap, stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of internal state memory failed.', &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return ! bail out
     call ESMF_UserCompSetInternalState(gcomp, label_InternalState, is, rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
@@ -85,7 +84,7 @@ module MDL
       is%wrap%wtime(is%wrap%numwt), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of wall timer memory failed.', &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return ! bail out
     is%wrap%wtnam(1) = 'InitializeP0'
     is%wrap%wtnam(2) = 'InitializeP1'
     is%wrap%wtnam(3) = 'InitializeP3'
@@ -96,7 +95,7 @@ module MDL
     is%wrap%wtime(:) = 0d0
 
     ! the NUOPC model component will register the generic methods
-    call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
+    call NUOPC_CompDerive(gcomp, parent_SetServices, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! set initialize phase 0 requires use of ESMF method
@@ -121,20 +120,18 @@ module MDL
     ! IPDv03p6: check compatibility of fields connected status
     ! IPDv03p7: handle field data initialization
 
-    ! set entry point for finalize method
-    call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
-      phaseLabelList=(/"FinalizePhase1"/), userRoutine=Finalize, rc=rc)
-    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-
     ! attach specializing method(s)
-    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_SetClock, &
+    call NUOPC_CompSpecialize(gcomp, specLabel=label_SetClock, &
          specRoutine=SetClock, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_DataInitialize, &
+    call NUOPC_CompSpecialize(gcomp, specLabel=label_DataInitialize, &
          specRoutine=DataInitialize, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Advance, &
+    call NUOPC_CompSpecialize(gcomp, specLabel=label_Advance, &
          specRoutine=ModelAdvance, rc=rc)
+    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    call NUOPC_CompSpecialize(gcomp, specLabel=label_Finalize, &
+         specRoutine=Finalize, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
   end subroutine
@@ -147,13 +144,13 @@ module MDL
     type(ESMF_Clock)     :: clock
     integer, intent(out) :: rc
 
-    ! local variables    
+    ! local variables
     character(ESMF_MAXSTR)        :: cname
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     character(ESMF_MAXSTR)        :: verbosity
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     integer, parameter            :: it1=1, it2=0, it3=0
     real(ESMF_KIND_R8)            :: ws1Time, wf1Time
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
@@ -196,7 +193,7 @@ module MDL
     case default
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg='MDL: unsupported component name'//trim(cname))
-      return  ! bail out
+      return ! bail out
     endselect
 
     ! switch to IPDv03 by filtering all other phaseMap entries
@@ -222,12 +219,12 @@ module MDL
     type(ESMF_Clock)     :: clock
     integer, intent(out) :: rc
 
-    ! local variables    
+    ! local variables
     character(ESMF_MAXSTR)        :: cname
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     integer, parameter            :: it1=2, it2=0, it3=0
     real(ESMF_KIND_R8)            :: ws1Time, wf1Time
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
@@ -260,6 +257,12 @@ module MDL
     call ESMF_GridCompGet(gcomp, config=config, vm=vm, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
+    ! get realize all export flag
+    label=trim(cname)//'_realize_all_export:'
+    call ESMF_ConfigGetAttribute(config, is%wrap%realizeAllExport, &
+      default=.false., label=trim(label), rc=rc)
+    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+
     ! get data directory
     label=trim(cname)//'_work_dir:'
     call ESMF_ConfigGetAttribute(config, is%wrap%dataDir, label=trim(label), default='.', rc=rc)
@@ -271,7 +274,7 @@ module MDL
       is%wrap%field(maxFields), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of internal state data arrays failed.', &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return ! bail out
     is%wrap%isActive = .false.
 
     ! set attributes for fields
@@ -362,7 +365,7 @@ module MDL
     if (numf.gt.maxFields) then
       write(msgString,'(a,i3)') trim(cname)//': increase maxFields to ',numf
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, msg=trim(msgString))
-      return  ! bail out
+      return ! bail out
     endif
 
     ! advertise exportable fields
@@ -403,12 +406,12 @@ module MDL
     type(ESMF_Clock)     :: clock
     integer, intent(out) :: rc
 
-    ! local variables    
+    ! local variables
     character(ESMF_MAXSTR)        :: cname
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     integer, parameter            :: it1=3, it2=0, it3=0
     real(ESMF_KIND_R8)            :: ws1Time, wf1Time
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
@@ -420,8 +423,10 @@ module MDL
     character(ESMF_MAXSTR)        :: inpstr
     type(ESMF_Time)               :: startTime
     integer                       :: i, n
-    type(ESMF_ArraySpec)          :: arraySpec2d
+    type(ESMF_ArraySpec)          :: arraySpec2d, arraySpec3d
     type(ESMF_Grid)               :: grid
+    logical                       :: inc3d
+    logical                       :: isConnected
 
     rc = ESMF_SUCCESS
 
@@ -445,12 +450,13 @@ module MDL
     call ESMF_GridCompGet(gcomp, config=config, vm=vm, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
-    ! flag connected export fields and remove unconnected
+    ! flag connected export fields
+    ! remove unconnected if not realize all export
     n = 0
     do i = 1,is%wrap%numf
-      is%wrap%isActive(i) = NUOPC_StateIsFieldConnected(exportState, &
-        is%wrap%fname(i), rc=rc)
+      isConnected = NUOPC_StateIsFieldConnected(exportState, is%wrap%fname(i), rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+      is%wrap%isActive(i) = isConnected .or. is%wrap%realizeAllExport
       if (is%wrap%isActive(i)) then
         n = n + 1
       else
@@ -492,6 +498,8 @@ module MDL
     ! create arraySpec
     call ESMF_ArraySpecSet(arraySpec2d, rank=2, typeKind=ESMF_TYPEKIND_RX, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+    call ESMF_ArraySpecSet(arraySpec3d, rank=3, typeKind=ESMF_TYPEKIND_RX, rc=rc)
+    if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! realize active export fields
     do i = 1,is%wrap%numf
@@ -520,12 +528,12 @@ module MDL
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
 
-    ! local variables    
+    ! local variables
     character(ESMF_MAXSTR)        :: cname
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     integer, parameter            :: it1=4, it2=0, it3=0
     real(ESMF_KIND_R8)            :: ws1Time, wf1Time
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
@@ -603,7 +611,7 @@ module MDL
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     integer, parameter            :: it1=5, it2=0, it3=0
     real(ESMF_KIND_R8)            :: ws1Time, wf1Time
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
@@ -662,10 +670,8 @@ module MDL
 
   !-----------------------------------------------------------------------------
 
-  subroutine Finalize(gcomp, importState, exportState, clock, rc)
+  subroutine Finalize(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
-    type(ESMF_State)     :: importState, exportState
-    type(ESMF_Clock)     :: clock
     integer, intent(out) :: rc
 
     ! local variables
@@ -673,7 +679,7 @@ module MDL
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     integer, parameter            :: it1=6, it2=0, it3=0
     real(ESMF_KIND_R8)            :: ws1Time, wf1Time
     real(ESMF_KIND_R8)            :: ws2Time, wf2Time
@@ -711,7 +717,7 @@ module MDL
       is%wrap%field, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of internal state data arrays failed.', &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return ! bail out
 
     ! finish timing
     call ESMF_VMWtime(wf1Time)
@@ -726,26 +732,26 @@ module MDL
       deallocate(is%wrap%wtnam, stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg='Deallocation of wtnam array failed.', &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return ! bail out
     endif
     if (associated(is%wrap%wtcnt)) then
       deallocate(is%wrap%wtcnt, stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg='Deallocation of wtcnt array failed.', &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return ! bail out
     endif
     if (associated(is%wrap%wtime)) then
       deallocate(is%wrap%wtime, stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg='Deallocation of wtime array failed.', &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return ! bail out
     endif
 
     ! deallocate internal state memory
     deallocate(is%wrap, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of internal state memory failed.', &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return ! bail out
 
     if (verbose) &
     call ESMF_LogWrite(trim(cname)//': leaving Finalize', ESMF_LOGMSG_INFO)
@@ -763,7 +769,7 @@ module MDL
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     type(ESMF_Config)             :: config
     character(ESMF_MAXSTR)        :: label
     type(ESMF_Clock)              :: clock
@@ -813,7 +819,7 @@ module MDL
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg=trim(cname)//': '//trim(label)// &
         ' must be divisible into the driver time step')
-      return  ! bail out
+      return ! bail out
     endif
 
     ! get data input interval from config
@@ -830,7 +836,7 @@ module MDL
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg=trim(cname)//': '//trim(label)// &
         ' must be a multiple of driver time step')
-      return  ! bail out
+      return ! bail out
     endif
 
     ! setup alarm for reading input fields
@@ -855,7 +861,7 @@ module MDL
     character(ESMF_MAXSTR)        :: msgString
     logical                       :: verbose
     type(type_InternalState)      :: is
-    integer                       :: localrc, stat
+    integer                       :: lrc, stat
     type(ESMF_VM)                 :: vm
     type(ESMF_Clock)              :: clock
     type(ESMF_Time)               :: startTime, currTime

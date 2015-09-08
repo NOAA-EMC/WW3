@@ -14,12 +14,7 @@ module FRONT_ESM
 
   use ESMF
   use NUOPC
-  use NUOPC_Driver, only: &
-    driver_routine_SS             => SetServices, &
-    driver_label_SetModelServices => label_SetModelServices, &
-    driver_label_SetRunSequence   => label_SetRunSequence, &
-    driver_label_Finalize         => label_Finalize, &
-    NUOPC_DriverAddComp, NUOPC_DriverNewRunSequence, NUOPC_DriverAddRunElement
+  use NUOPC_Driver, parent_SetServices => SetServices
   use UTL
 
   use  FRONT_CON, only: cplSS => SetServices
@@ -105,7 +100,7 @@ module FRONT_ESM
     character(10),pointer              :: conName(:,:)
     logical      ,pointer              :: conActive(:,:)
     character(ESMF_MAXSTR)             :: msgString
-    integer                            :: localrc, stat
+    integer                            :: lrc, stat
     logical                            :: configIsPresent
     integer                            :: i, j, k
 
@@ -234,17 +229,17 @@ module FRONT_ESM
     enddo
 
     ! NUOPC_Driver registers the generic methods
-    call NUOPC_CompDerive(driver, driver_routine_SS, rc=rc)
+    call NUOPC_CompDerive(driver, parent_SetServices, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! attach specializing method(s)
-    call NUOPC_CompSpecialize(driver, specLabel=driver_label_SetModelServices, &
+    call NUOPC_CompSpecialize(driver, specLabel=label_SetModelServices, &
       specRoutine=SetModelServices, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call NUOPC_CompSpecialize(driver, specLabel=driver_label_SetRunSequence, &
+    call NUOPC_CompSpecialize(driver, specLabel=label_SetRunSequence, &
       specRoutine=SetRunSequence, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-    call NUOPC_CompSpecialize(driver, specLabel=driver_label_Finalize, &
+    call NUOPC_CompSpecialize(driver, specLabel=label_Finalize, &
       specRoutine=Finalize, rc=rc)
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
@@ -269,7 +264,7 @@ module FRONT_ESM
     character(10),pointer              :: conName(:,:)
     logical      ,pointer              :: conActive(:,:)
     character(ESMF_MAXSTR)             :: msgString
-    integer                            :: localrc, stat
+    integer                            :: lrc, stat
     integer                            :: i, j, k
     character(ESMF_MAXSTR)             :: verbosity
     character(ESMF_MAXSTR)             :: label
@@ -507,7 +502,7 @@ module FRONT_ESM
       call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg=trim(cname)//': missing required config input: '// &
         trim(label)//' YYYY MM DD hh mm ss')
-      return  ! bail out
+      return ! bail out
     endif
     write(msgString,'(a,6(a,i0))') trim(cname)//': '//trim(label),(' ',time(k),k=1,6)
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
@@ -553,7 +548,7 @@ module FRONT_ESM
     character(10),pointer              :: conName(:,:)
     logical      ,pointer              :: conActive(:,:)
     character(ESMF_MAXSTR)             :: msgString
-    integer                            :: localrc, stat
+    integer                            :: lrc, stat
     integer                            :: i, j, k
     integer                            :: l, m, n, p
     integer                            :: k1, k2
@@ -881,7 +876,7 @@ module FRONT_ESM
     character(10),pointer              :: conName(:,:)
     logical      ,pointer              :: conActive(:,:)
     character(ESMF_MAXSTR)             :: msgString
-    integer                            :: localrc, stat
+    integer                            :: lrc, stat
     integer                            :: i, j, k
 
     rc = ESMF_SUCCESS
@@ -971,7 +966,7 @@ module FRONT_ESM
     character(ESMF_MAXSTR)             :: cname
     type(ESMF_Config)                  :: config
     type(type_InternalState)           :: is
-    logical      ,pointer              :: verbose
+    logical                            :: verbose
     integer      ,pointer              :: modCount
     integer      ,pointer              :: med, atm, ocn, wav, ice, lnd
     character(3) ,pointer              :: modName(:)
@@ -980,7 +975,7 @@ module FRONT_ESM
     character(10),pointer              :: conName(:,:)
     logical      ,pointer              :: conActive(:,:)
     character(ESMF_MAXSTR)             :: msgString
-    integer                            :: localrc, stat
+    integer                            :: lrc, stat
     integer                            :: i, j, k
 
     rc = ESMF_SUCCESS
@@ -995,7 +990,7 @@ module FRONT_ESM
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
 
     ! set local pointers for internal state members
-    verbose => is%wrap%verbose
+    verbose = is%wrap%verbose
     modCount => is%wrap%modCount
     med => is%wrap%med
     atm => is%wrap%atm
@@ -1009,6 +1004,9 @@ module FRONT_ESM
     conName => is%wrap%conName
     conActive => is%wrap%conActive
 
+    if (verbose) &
+    call ESMF_LogWrite(trim(cname)//': entered Finalize', ESMF_LOGMSG_INFO)
+
     ! clean up internal state
     do i = 1,modCount
       if (.not.modActive(i)) cycle
@@ -1017,6 +1015,9 @@ module FRONT_ESM
         msg='Deallocation of '//modName(i)//' PET list array failed.', &
         CONTEXT, rcToReturn=rc)) return ! bail out
     enddo
+
+    if (verbose) &
+    call ESMF_LogWrite(trim(cname)//': leaving Finalize', ESMF_LOGMSG_INFO)
 
   end subroutine
 

@@ -2227,7 +2227,6 @@
 ! 2.  Create grid search utility object
 !
       GRIDS(IMOD)%GSU = W3GSUC( .FALSE., FLAGLL, GRIDS(IMOD)%ICLOSE, &
-                                GRIDS(IMOD)%NX, GRIDS(IMOD)%NY, &
                                 GRIDS(IMOD)%XGRD, GRIDS(IMOD)%YGRD )
 
 !/T      CALL W3GSUP(GRIDS(IMOD)%GSU, NDST)

@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Dec-2010 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -80,7 +80,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         12-Jan-2007 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
@@ -536,7 +536,7 @@
                           TIN, ICEI, T0N, T1N, T2N, TDN, FLAGS,       &
                           TG0, TGN, GA0, GD0, GAN, GDN, BERGI,        &
                           TTN, MUDT, TVN, MUDV, TZN, MUDD,            &
-                          TI1, TI2, TI3, TI4, TI5,                    &    
+                          TI1, TI2, TI3, TI4, TI5,                    &
                           ICEP1, ICEP2,ICEP3, ICEP4, ICEP5
       USE WMMDATMD, ONLY: IMPROC, NMPERR, MDST, MDSE, MDSF, ETIME,    &
                           FLLSTL, FLLSTI, RCLD, NDT, DATA0, DATA1,    &

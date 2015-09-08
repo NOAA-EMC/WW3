@@ -1032,11 +1032,6 @@
   echo '# -------------------------'             >> makefile
   echo ' '                                       >> makefile
 
-  # list of ftn files that have CPP macros
-  # these files will be assigned a F90 suffix
-  # must match the same list defined in ad3
-  cpp_ftn_files="wmesmfmd"
-
 # 3.b Loop over files
 
   for file in `cat filelist`

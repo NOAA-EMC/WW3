@@ -459,16 +459,16 @@
 ! IVER(1)=IVER(4), IVER(2)=IVER(3)
 ! JVER(1)=JVER(2), JVER(3)=JVER(4)
 
- ! point 1:
+! point 1:
                   FLAGOK = ( ABS(GRIDS(J)%MAPSTA(JVER(1),IVER(1))).GE.1 .OR.  &
                                  RW(1).LT.0.05 ) .AND.      &
- ! point 2:
+! point 2:
                            ( ABS(GRIDS(J)%MAPSTA(JVER(2),IVER(2))).GE.1 .OR.  &
                                     RW(2).LT.0.05 ) .AND.      &
- ! point 4:
+! point 4:
                            ( ABS(GRIDS(J)%MAPSTA(JVER(4),IVER(4))).GE.1 .OR.  &
                                  RW(4)   .LT.0.05 ) .AND.      &
- ! point 3:
+! point 3:
                            ( ABS(GRIDS(J)%MAPSTA(JVER(3),IVER(3))).GE.1 .OR.  &
                                     RW(3)   .LT.0.05 ) 
 !

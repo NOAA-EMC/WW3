@@ -10,12 +10,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Define real kind for data passed through ESMF interface
 !/
-#if defined(REAL8)
-#define _ESMF_KIND_RX _ESMF_KIND_R8
+#if defined(ESMF_R8)
 #define ESMF_KIND_RX ESMF_KIND_R8
 #define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
 #else
-#define _ESMF_KIND_RX _ESMF_KIND_R4
 #define ESMF_KIND_RX ESMF_KIND_R4
 #define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R4
 #endif
@@ -90,10 +88,7 @@
 
 ! --- NUOPC modules
       use NUOPC
-      use NUOPC_Model, only: &
-        model_routine_SS            => SetServices, &
-        model_label_DataInitialize  => label_DataInitialize, &
-        model_label_Advance         => label_Advance
+      use NUOPC_Model, parent_SetServices => SetServices
 
 ! --- WW3 modules
       use CONSTANTS
@@ -122,9 +117,15 @@
 !/
 !/ Private module parameters
 !/
+! --- Default Mask Convention for import/export fields
+      INTEGER, PARAMETER :: DEFAULT_MASK_WATER =  0
+      INTEGER, PARAMETER :: DEFAULT_MASK_LAND  =  1
+
 ! --- Miscellaneous
       integer, parameter :: stdo = 6
       integer, parameter :: localDE = 0
+      type(ESMF_VM) :: vm
+      integer :: lpet, npet
       logical :: verbose
       logical :: realizeAllExport
       character(ESMF_MAXSTR) :: msg
@@ -134,23 +135,33 @@
       character(32) :: wtnam(numwt)
       integer       :: wtcnt(numwt)
       real(8)       :: wtime(numwt)
-
+!
+! --- Grid stuff
+      type(ESMF_Grid)    :: grid2d
+      integer            :: maskValueWater
+      integer            :: maskValueLand
+      integer            :: nxproc, nyproc
+      integer            :: ixlb, ixub, iylb, iyub
+      integer            :: nz ! Number of z-levels for 3D fields
+      logical            :: include3d
+!
 ! --- Import Fields
       integer, parameter :: numImpFields = 5
       character(6)       :: impFieldName(numImpFields)
       character(128)     :: impFieldStdName(numImpFields)
+      integer            :: impFieldDim(numImpFields)
+      logical            :: initRqrdImpField(numImpFields)
       logical            :: isActiveImpField(numImpFields)
       logical            :: isVectorImpField(numImpFields)
       type(ESMF_Field)   :: impField(numImpFields)
-
+!
 ! --- Background import Fields
       real(ESMF_KIND_RX) :: missingValue
-      logical            :: includeObg
       character(10)      :: mbgFieldName(numImpFields)
       character(128)     :: mbgFieldStdName(numImpFields)
       logical            :: isActiveMbgField(numImpFields)
       type(ESMF_Field)   :: mbgField(numImpFields)
-
+!
 ! --- Export Fields
       integer, parameter :: numExpFields = 8
       character(6)       :: expFieldName(numExpFields)
@@ -249,7 +260,7 @@
 ! -------------------------------------------------------------------- /
 ! 1.  NUOPC model component will register the generic methods
 !
-      call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
+      call NUOPC_CompDerive(gcomp, parent_SetServices, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -263,8 +274,9 @@
 
 ! --- Set entry points for initialize methods
 
-      ! >= IPDv03 supports satisfying inter-model data dependencies and the transfer of ESMF
-      ! Grid & Mesh objects between Model and/or Mediator components during initialization
+      ! >= IPDv03 supports satisfying inter-model data dependencies and
+      ! the transfer of ESMF Grid & Mesh objects between Model and/or
+      ! Mediator components during initialization
       ! IPDv03p1: advertise import & export fields
       call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
         phaseLabelList=(/"IPDv03p1"/), userRoutine=InitializeP1, rc=rc)
@@ -279,25 +291,26 @@
       ! IPDv03p6: check compatibility of fields connected status
       ! IPDv03p7: handle field data initialization
 
-! --- Set entry point for finalize method
-
-      call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_FINALIZE, &
-        phaseLabelList=(/"FinalizePhase1"/), userRoutine=Finalize, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Register specializing methods
 !
 ! --- Model initialize export data method
 
-      call NUOPC_CompSpecialize(gcomp, specLabel=model_label_DataInitialize, &
+      call NUOPC_CompSpecialize(gcomp, specLabel=label_DataInitialize, &
         specRoutine=DataInitialize, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
 ! --- Model advance method
 
-      call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Advance, &
+      call NUOPC_CompSpecialize(gcomp, specLabel=label_Advance, &
         specRoutine=ModelAdvance, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+! --- Model finalize method
+
+      call NUOPC_CompSpecialize(gcomp, specLabel=label_Finalize, &
+        specRoutine=Finalize, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
@@ -388,7 +401,8 @@
 
 ! --- Determine verbosity
 
-      call NUOPC_CompAttributeGet(gcomp, name='Verbosity', value=verbosity, rc=rc)
+      call NUOPC_CompAttributeGet(gcomp, name='Verbosity', &
+        value=verbosity, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if (trim(verbosity)=="high") then
         verbose = .true.
@@ -473,7 +487,8 @@
 !        b MPI environment
 !        c Identifying output to "screen" unit
 !      2.  Initialization of all wave models / grids       ( WMINIT )
-!      3.  Setup internal clock
+!      3.  Advertise import fields
+!      4.  Advertise export fields
 !     ----------------------------------------------------------------
 !
 !  9. Switches :
@@ -499,16 +514,15 @@
       real(8) :: wstime, wftime
       integer :: idsi, idso, idss, idst, idse
       integer :: mpiComm = -99
-      integer :: lpet, npet
-      type(ESMF_VM) :: vm
       type(ESMF_Config) :: config
-      character(ESMF_MAXSTR) :: wrkdir=' '
-      character(ESMF_MAXSTR) :: preamb=' '
+      character(ESMF_MAXSTR) :: wrkdir='.'
+      character(ESMF_MAXSTR) :: preamb='.'
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
       type(ESMF_TimeInterval) :: tstep, etstep
-      integer :: i, j, n, imod
+      integer :: i, i1, i2, i3, j, n, imod
+      logical :: includeObg, includeAbg
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -523,7 +537,7 @@
 ! -------------------------------------------------------------------- /
 ! 1.  Initialization necessary for driver
 !
-! 1.a Set global flag indicating that model is and ESMF Component
+! 1.a Set global flag indicating that model is an ESMF Component
 !
       is_esmf_component = .true.
 !
@@ -542,15 +556,26 @@
 !
 ! 1.c Get background model info
 !
+#if defined(COAMPS)
       call ESMF_AttributeGet(gcomp, name="OcnBackground", &
-        value=attrString, defaultValue="none", &
+        value=attstr, defaultValue="none", &
         convention="COAMPS", purpose="General", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       includeObg = trim(attstr).eq."model"
-      call ESMF_AttributeGet(gcomp, name="MissingValue", &
-        value=missingValue, defaultValue=0._ESMF_KIND_RX, &
+      call ESMF_AttributeGet(gcomp, name="AtmBackground", &
+        value=attstr, defaultValue="none", &
         convention="COAMPS", purpose="General", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      includeAbg = trim(attstr).eq."model"
+      call ESMF_AttributeGet(gcomp, name="MissingValue", &
+        value=missingValue, defaultValue=real(0,ESMF_KIND_RX), &
+        convention="COAMPS", purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#else
+      includeObg = .false.
+      includeAbg = .false.
+      missingValue = real(0,ESMF_KIND_RX)
+#endif
 !
 ! 1.d Config input
 !
@@ -560,10 +585,18 @@
       call ESMF_ConfigGetAttribute(config, wrkdir, &
         label=trim(cname)//'_work_dir:', default='.', rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      preamb = trim(wrkdir)//'/'
+!     preamb = trim(wrkdir)//'/'
+      preamb = trim(preamb)//'/' !TODO: have separate paths for .inp, logs and data?
       ! realize all export flag
       call ESMF_ConfigGetAttribute(config, realizeAllExport, &
         label=trim(cname)//'_realize_all_export:', default=.false., rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      ! grid mask convention
+      call ESMF_ConfigGetAttribute(config, maskValueWater, &
+        label='mask_value_water:', default=DEFAULT_MASK_WATER, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ConfigGetAttribute(config, maskValueLand, &
+        label='mask_value_land:', default=DEFAULT_MASK_LAND, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 1.e Set internal start/stop time from external start/stop time
@@ -597,6 +630,8 @@
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Initialization of all wave models / grids
+!
+! 2.a Call into WMINIT
 !     Use only one of the three calls ....
 !
 ! ... Log and screen output, no separate test output file
@@ -617,47 +652,56 @@
       call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
                     mpicomm, preamb=preamb )
 !
-! -------------------------------------------------------------------- /
-! 3.  Check consistency between internal timestep and external
+! 2.b Check consistency between internal timestep and external
 !     timestep (coupling interval)
 !
       call ESMF_ClockGet(extClock, timeStep=etstep, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
+! 2.c Create ESMF import/export grid
+!
+      call GridCreate(gcomp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
 ! -------------------------------------------------------------------- /
-! 4.  Advertise import fields
+! 3.  Advertise import fields
 !
-! 4.a Initialize import field list
+! 3.a Initialize import field list
 !
-      imod = 1 !todo: only work with grid 1 (for now)
-      call w3setg ( imod, mdse, mdst )
-      call w3setw ( imod, mdse, mdst )
-      call w3seti ( imod, mdse, mdst )
-      call wmsetm ( imod, mdse, mdst )
+      imod = 1 !TODO: only work with grid 1 (for now)
+      impFieldDim(:) = 2
 
-      isActiveImpField(1) = inpmap(imod,1)
-      impFieldName(1)    = 'seahgt'
-      impFieldStdName(1) = 'sea_surface_height_above_sea_level'
+      j = 1;  i1 = 1;  i2 = 1;
+      isActiveImpField(i1:i2) = inpmap(imod,j).eq.-1
+      impFieldName(i1)        = 'seahgt'
+      impFieldStdName(i1)     = 'sea_surface_height_above_sea_level'
+      initRqrdImpField(i1:i2) = .false.
+      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeObg
 
-      isActiveImpField(2:3) = inpmap(imod,2)
-      impFieldName(2)    = 'uucurr'
-      impFieldStdName(2) = 'surface_eastward_sea_water_velocity'
-      impFieldName(3)    = 'vvcurr'
-      impFieldStdName(3) = 'surface_northward_sea_water_velocity'
+      j = 2;  i1 = 2;  i2 = 3;
+      isActiveImpField(i1:i2) = inpmap(imod,j).eq.-1
+      impFieldName(i1)        = 'uucurr'
+      impFieldStdName(i1)     = 'surface_eastward_sea_water_velocity'
+      impFieldName(i2)        = 'vvcurr'
+      impFieldStdName(i2)     = 'surface_northward_sea_water_velocity'
+      initRqrdImpField(i1:i2) = .false.
+      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeObg
 
-      isActiveImpField(4:5) = inpmap(imod,3)
-      impFieldName(4)    = 'uutrue'
-      impFieldStdName(4) = 'eastward_wind_at_10m_height'
-      impFieldName(5)    = 'vvtrue'
-      impFieldStdName(5) = 'northward_wind_at_10m_height'
+      j = 3;  i1 = 4;  i2 = 5;
+      isActiveImpField(i1:i2) = inpmap(imod,j).eq.-1
+      impFieldName(i1)        = 'uutrue'
+      impFieldStdName(i1)     = 'eastward_wind_at_10m_height'
+      impFieldName(i2)        = 'vvtrue'
+      impFieldStdName(i2)     = 'northward_wind_at_10m_height'
+      initRqrdImpField(i1:i2) = .false.
+      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeAbg
 
-      isActiveMbgField = isActiveImpField
       do i = 1,numImpFields
         mbgFieldName(i) = 'mbg_'//trim(impFieldName(i))
         mbgFieldStdName(i) = 'mbg_'//trim(impFieldStdName(i))
       enddo
 !
-! 4.b Advertise active import fields
+! 3.b Advertise active import fields
 !
       n = 0
       do i = 1,numImpFields
@@ -673,7 +717,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
-! 4.c Report advertised import fields
+! 3.c Report advertised import fields
 !
       write(msg,'(a,i0,a)') trim(cname)// &
         ': List of advertised import fields(',n,'):'
@@ -696,30 +740,45 @@
       enddo
 !
 ! -------------------------------------------------------------------- /
-! 5.  Advertise export fields
+! 4.  Advertise export fields
 !
-! 5.a Initialize export field list
+! 4.a Initialize export field list
 !
-      expFieldName(1)    = 'uscurr'
-      expFieldStdName(1) = 'eastward_stokes_drift_current'
-      expFieldName(2)    = 'vscurr'
-      expFieldStdName(2) = 'northward_stokes_drift_current'
-      expFieldName(3)    = 'wbcuru'
-      expFieldStdName(3) = 'eastward_wave_bottom_current'
-      expFieldName(4)    = 'wbcurv'
-      expFieldStdName(4) = 'northward_wave_bottom_current'
-      expFieldName(5)    = 'wbcurf'
-      expFieldStdName(5) = 'wave_bottom_current_radian_frequency'
-      expFieldName(6)    = 'wavsgu'
-      expFieldStdName(6) = 'eastward_wave_radiation_stress_gradient'
-      expFieldName(7)    = 'wavsgv'
-      expFieldStdName(7) = 'northward_wave_radiation_stress_gradient'
-      expFieldName(8)    = 'charno'
-      expFieldStdName(8) = 'wave_induced_charnock_parameter'
+      i1 = 1;  i2 = 2;  i3 = 2;
+      expFieldName(i1)    = 'uscurr'
+      expFieldStdName(i1) = 'eastward_stokes_drift_current'
+      expFieldDim(i1)     = 3
+      expFieldName(i2)    = 'vscurr'
+      expFieldStdName(i2) = 'northward_stokes_drift_current'
+      expFieldDim(i2)     = 3
+
+      i1 = 3;  i2 = 4;  i3 = 5;
+      expFieldName(i1)    = 'wbcuru'
+      expFieldStdName(i1) = 'eastward_wave_bottom_current'
+      expFieldDim(i1)     = 2
+      expFieldName(i2)    = 'wbcurv'
+      expFieldStdName(i2) = 'northward_wave_bottom_current'
+      expFieldDim(i2)     = 2
+      expFieldName(i3)    = 'wbcurf'
+      expFieldStdName(i3) = 'wave_bottom_current_radian_frequency'
+      expFieldDim(i3)     = 2
+
+      i1 = 6;  i2 = 7;  i3 = 7;
+      expFieldName(i1)    = 'wavsgu'
+      expFieldStdName(i1) = 'eastward_wave_radiation_stress_gradient'
+      expFieldDim(i1)     = 2
+      expFieldName(i2)    = 'wavsgv'
+      expFieldStdName(i2) = 'northward_wave_radiation_stress_gradient'
+      expFieldDim(i2)     = 2
+
+      i1 = 8;  i2 = 8;  i3 = 8;
+      expFieldName(i1)    = 'charno'
+      expFieldStdName(i1) = 'wave_induced_charnock_parameter'
+      expFieldDim(i1)     = 2
 
       isActiveExpField(:) = .false.
 !
-! 5.b Advertise all export fields
+! 4.b Advertise all export fields
 !
       do i = 1,numExpFields
         call NUOPC_StateAdvertiseField(expState, &
@@ -727,7 +786,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
-! 5.c Report advertised export fields
+! 4.c Report advertised export fields
 !
       write(msg,'(a,i0,a)') trim(cname)// &
         ': List of advertised export fields(',numExpFields,'):'
@@ -776,7 +835,7 @@
 !/
 !  1. Purpose :
 !
-!     Initialize wave model (phase 2)
+!     Initialize wave model (phase 3)
 !     * Realize fields in import and export states.
 !
 !  2. Method :
@@ -850,21 +909,15 @@
       do i = 1,numImpFields
         if (.not.isActiveImpField(i)) cycle
         n = n + 1
-!TODO:  impField(i) = CreateField(impFieldName(i),rc=rc)
-!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!TODO:  call ESMF_FieldGet(impField(i), localDE, impData(i)%p, rc=rc)
-!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!TODO:  impData(i)%p = 0.0
-        call NUOPC_StateRealizeField(impState, impField(i), rc=rc)
+        impField(i) = FieldCreate( impFieldName(i), impFieldDim(i), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call NUOPC_StateRealizeField( impState, impField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (.not.isActiveMbgField(i)) cycle
         n = n + 1
-!TODO:  mbgField(i) = CreateField(mbgFieldName(i),rc=rc)
-!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!TODO:  call ESMF_FieldGet(mbgField(i), localDE, mbgData(i)%p, rc=rc)
-!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!TODO:  mbgData(i)%p = 0.0
-        call NUOPC_StateRealizeField(impState, mbgField(i), rc=rc)
+        mbgField(i) = FieldCreate( mbgFieldName(i), impFieldDim(i), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call NUOPC_StateRealizeField( impState, mbgField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
@@ -913,12 +966,9 @@
       do i = 1,numExpFields
         if (.not.isActiveExpField(i)) cycle
         n = n + 1
-!TODO:  expField(i) = CreateField(expFieldName(i),rc=rc)
-!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!TODO:  call ESMF_FieldGet(expField(i), localDE, expData(i)%p, rc=rc)
-!TODO:  if (ESMF_LogFoundError(rc, PASSTHRU)) return
-!TODO:  expData(i)%p = 0.0
-        call NUOPC_StateRealizeField(expState, expField(i), rc=rc)
+        expField(i) = FieldCreate( expFieldName(i), expFieldDim(i), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call NUOPC_StateRealizeField( expState, expField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
@@ -955,7 +1005,7 @@
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "Finalize"
-      subroutine Finalize ( gcomp, impState, expState, extClock, rc )
+      subroutine Finalize ( gcomp, rc )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -977,9 +1027,6 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       gcomp     Type   I/O Gridded component
-!       impState  Type   I/O Import state
-!       expState  Type   I/O Export state
-!       extClock  Type   I   External clock
 !       rc        Int.   O   Return code
 !     ----------------------------------------------------------------
 !
@@ -1008,9 +1055,6 @@
 !/ Parameter list
 !/
       type(ESMF_GridComp) :: gcomp
-      type(ESMF_State)    :: impState
-      type(ESMF_State)    :: expState
-      type(ESMF_Clock)    :: extClock
       integer,intent(out) :: rc
 !/
 !/ ------------------------------------------------------------------- /
@@ -1038,7 +1082,7 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Clean up ESMF data structures
 !
-
+!TODO
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -1149,7 +1193,8 @@
 
       allUpdated = .true.
       do i = 1,numImpFields
-        if (isActiveImpField(i)) then
+        if (.not.isActiveImpField(i)) cycle
+        if (initRqrdImpField(i)) then
           fldUpdated = NUOPC_FieldIsAtTime(impField(i), currTime, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (fldUpdated) then
@@ -1162,10 +1207,16 @@
               trim(impFieldName(i)),': inter-model data dependency: ', &
               'NOT SATISFIED'
           endif
-          if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
-          if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+        else
+          write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
+            trim(impFieldName(i)),': inter-model data dependency: ', &
+            'NOT  REQUIRED'
         endif
-        if (isActiveMbgField(i)) then
+        if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+        if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+        ! background
+        if (.not.isActiveMbgField(i)) cycle
+        if (initRqrdImpField(i)) then
           fldUpdated = NUOPC_FieldIsAtTime(mbgField(i), currTime, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (fldUpdated) then
@@ -1178,9 +1229,13 @@
               trim(mbgFieldName(i)),': inter-model data dependency: ', &
               'NOT SATISFIED'
           endif
-          if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
-          if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
+        else
+          write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
+            trim(mbgFieldName(i)),': inter-model data dependency: ', &
+            'NOT  REQUIRED'
         endif
+        if (verbose) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+        if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
       enddo
 !
 ! If not all import dependencies are satisfied, then return
@@ -1202,7 +1257,7 @@
       call GetImport(gcomp, rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
-! 2.c Finish initialization
+! 2.c Finish initialization (compute initial state)
 !
 !     call wminit2(rc)
 !     if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1473,6 +1528,12 @@
       character(ESMF_MAXSTR) :: cname
       integer, parameter :: iwt=7
       real(8) :: wstime, wftime
+      integer :: i, i1, i2, i3, j, k, imod
+      logical, save :: firstCall = .true.
+      integer :: tstamp(2)
+      integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
+      type(ESMF_Clock) :: clock
+      type(ESMF_Time)  :: currTime
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1485,9 +1546,112 @@
         ': entered GetImport', ESMF_LOGMSG_INFO)
 !
 ! -------------------------------------------------------------------- /
-! Insert sections here
+! 1.  Setup
 !
-
+! 1.a Set pointers for model grid
+!
+      imod = 1 !TODO: only work with grid 1 (for now)
+      call w3setg ( imod, mdse, mdst )
+      call w3setw ( imod, mdse, mdst )
+      call w3seti ( imod, mdse, mdst )
+      call wmsetm ( imod, mdse, mdst )
+!
+! 1.b Set time stamp for import fields
+!
+      call ESMF_GridCompGet(gcomp, clock=clock, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_TimeGet(currTime, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      tstamp(1) = 10000*yy + 100*mm + dd
+      tstamp(2) = 10000*h  + 100*m  + s
+!
+! -------------------------------------------------------------------- /
+! 2.  Water levels
+!
+      j = 1
+      i1 = FieldIndex( impFieldName, 'seahgt', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = i1
+      if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
+        tln = tstamp
+        if ( isActiveMbgField(i1) ) then
+          call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        endif
+        call FieldGather( impField(i1), nx, ny, wlev, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+!
+! -------------------------------------------------------------------- /
+! 3.  Currents
+!
+      j = 2
+      i1 = FieldIndex( impFieldName, 'uucurr', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( impFieldName, 'vvcurr', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
+        if (.not.firstCall) then
+          tc0 = tcn
+          cx0 = cxn
+          cy0 = cyn
+        endif
+        tcn = tstamp
+        if ( isActiveMbgField(i1) ) then
+          call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call FieldCopy( impField(i2), mbgField(i2), missingVal=missingValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        endif
+        call FieldGather( impField(i1), nx, ny, cxn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call FieldGather( impField(i2), nx, ny, cyn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (firstCall) then
+          tc0 = tcn
+          cx0 = cxn
+          cy0 = cyn
+        endif
+      endif
+!
+! -------------------------------------------------------------------- /
+! 4.  Winds
+!
+      j = 3
+      i1 = FieldIndex( impFieldName, 'uutrue', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( impFieldName, 'vvtrue', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
+        if (.not.firstCall) then
+          tw0 = twn
+          wx0 = wxn
+          wy0 = wyn
+        endif
+        twn = tstamp
+        if ( isActiveMbgField(i1) ) then
+          call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call FieldCopy( impField(i2), mbgField(i2), missingVal=missingValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        endif
+        call FieldGather( impField(i1), nx, ny, wxn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call FieldGather( impField(i2), nx, ny, wyn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (firstCall) then
+          tw0 = twn
+          wx0 = wxn
+          wy0 = wyn
+        endif
+      endif
+!
+! -------------------------------------------------------------------- /
+! 5.  Clean up
+!
+      firstCall = .false.
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -1594,6 +1758,302 @@
       end subroutine SetExport
 !/ ------------------------------------------------------------------- /
 #undef METHOD
+#define METHOD "GridCreate"
+      subroutine GridCreate ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Create ESMF import/export grids
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+      integer :: n, nfac, irp, imod
+      real    :: gr, rp, pr, diff
+      integer :: ix, iy
+      integer :: elb(2), eub(2)
+      integer(ESMF_KIND_I4), pointer :: iptr(:,:)
+      real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered GridCreate', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! 1.  Create ESMF grid with 2D subdomain layout
+!
+! 1.a Set pointers for model grid
+!
+      imod = 1 !TODO: only work with grid 1 (for now)
+      call w3setg ( imod, mdse, mdst )
+      call w3setw ( imod, mdse, mdst )
+      call w3seti ( imod, mdse, mdst )
+      call wmsetm ( imod, mdse, mdst )
+!
+! 1.b Compute a 2D subdomain layout
+!
+      if ( nx.gt.ny ) then
+        gr = sqrt(real(nx)/real(ny))
+      else
+        gr = sqrt(real(ny)/real(nx))
+      endif
+      irp = int(sqrt(real(nmproc)))
+      diff = huge(gr)
+      nfac = nmproc
+      do n = irp,nmproc
+        if ( mod(nmproc,n).ne.0 ) cycle
+        pr = real(n**2)/real(nmproc)
+        if ( abs(gr-pr) < diff ) then
+          diff = abs(gr-pr)
+          nfac = n
+        endif
+      enddo
+      if ( nx.gt.ny ) then
+        nxproc = nfac
+        nyproc = nmproc/nfac
+      else
+        nxproc = nmproc/nfac
+        nyproc = nfac
+      endif
+!
+! 1.c Create ESMF import/export grid
+!
+      grid2d = ESMF_GridCreateNoPeriDim( &
+        name=trim(cname)//"_grid", &
+        coordTypeKind=ESMF_TYPEKIND_RX, regDecomp=(/nxproc,nyproc/), &
+        decompFlag=(/ESMF_DECOMP_BALANCED,ESMF_DECOMP_BALANCED/), &
+        minIndex=(/1,1/), maxIndex=(/nx,ny/), &
+        coordDep1=(/1,2/), coordDep2=(/1,2/), &
+        coordSys=ESMF_COORDSYS_SPH_DEG, &
+        indexFlag=ESMF_INDEX_GLOBAL, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 1.d Add coordinate arrays and land/sea mask to ESMF grid
+!
+      call ESMF_GridAddCoord( grid2d, &
+        staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_GridAddItem( grid2d, ESMF_GRIDITEM_MASK, &
+        staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! -------------------------------------------------------------------- /
+! 2.  Set grid coordinates and land/sea mask
+!
+! 2.a Exclusive bounds (global index)
+!
+      call ESMF_GridGet( grid2d, ESMF_STAGGERLOC_CENTER, localDE, &
+        exclusiveLBound=elb, exclusiveUBound=eub, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      ixlb=elb(1);  ixub=eub(1);  iylb=elb(2);  iyub=eub(2);
+!
+! 2.b Set ESMF grid coordinate
+!
+      call ESMF_GridGetCoord( grid2d, 1, localDE=localDE, &
+        staggerLoc=ESMF_STAGGERLOC_CENTER, farrayPtr=rptrx, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_GridGetCoord( grid2d, 2, localDE=localDE, &
+        staggerLoc=ESMF_STAGGERLOC_CENTER, farrayPtr=rptry, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      do iy = iylb,iyub
+        do ix = ixlb,ixub
+          rptrx(ix,iy) = xgrd(iy,ix)
+          rptry(ix,iy) = ygrd(iy,ix)
+        enddo
+      enddo
+!
+! 2.c Set ESMF land/sea mask values.
+!     Land/sea mask is fixed in time and based on excluded points only.
+!
+      call ESMF_GridGetItem( grid2d, ESMF_GRIDITEM_MASK, localDE=localDE, &
+        staggerLoc=ESMF_STAGGERLOC_CENTER, farrayPtr=iptr, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      do iy = iylb,iyub
+        do ix = ixlb,ixub
+          if ( mapsta(iy,ix).ne.0 ) then
+            iptr(ix,iy) = maskValueWater
+          else
+            iptr(ix,iy) = maskValueLand
+          endif
+        enddo
+      enddo
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving GridCreate', ESMF_LOGMSG_INFO)
+!/
+!/ End of GridCreate ------------------------------------------------- /
+!/
+      end subroutine GridCreate
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "FieldCreate"
+      function FieldCreate ( fname, nd, rc ) result(field)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Function to create ESMF field.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       fname     Str.   Name of field
+!       nd        Int.   Number of dimensions
+!       rc        Int.   O   Return code
+!       field     Type   ESMF_Field
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      character(*)        :: fname
+      integer             :: nd
+      integer,intent(out) :: rc
+      type(ESMF_Field)    :: field
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      type(ESMF_ArraySpec) :: arraySpec
+      real(ESMF_KIND_RX), pointer :: rptr2d(:,:), rptr3d(:,:,:)
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+!
+! -------------------------------------------------------------------- /
+! Create ESMF Field
+!
+      select case (nd)
+      case (2)
+        call ESMF_ArraySpecSet( arraySpec, rank=2, &
+          typekind=ESMF_TYPEKIND_RX, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        field = ESMF_FieldCreate( grid2d, arraySpec, &
+          indexFlag=ESMF_INDEX_GLOBAL, staggerLoc=ESMF_STAGGERLOC_CENTER, &
+          name=trim(fname), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( field, farrayPtr=rptr2d, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        rptr2d = 0.0
+      case (3)
+        call ESMF_ArraySpecSet( arraySpec, rank=3, &
+          typekind=ESMF_TYPEKIND_RX, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        field = ESMF_FieldCreate( grid2d, arraySpec, &
+          indexFlag=ESMF_INDEX_GLOBAL, staggerLoc=ESMF_STAGGERLOC_CENTER, &
+          ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+          name=trim(fname), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( field, farrayPtr=rptr3d, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        rptr3d = 0.0
+      case default
+        write (msg,'(a,i3)') 'Unsupported field dimension: '//trim(fname),nd
+        call ESMF_LogWrite( trim(msg), ESMF_LOGMSG_ERROR )
+        rc = ESMF_FAILURE
+        return
+      endselect
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+!/
+!/ End of FieldCreate ------------------------------------------------ /
+!/
+      end function FieldCreate
+!/ ------------------------------------------------------------------- /
+#undef METHOD
 #define METHOD "PrintTimers"
       subroutine PrintTimers ( cname, wtnam, wtcnt, wtime )
 !/
@@ -1679,7 +2139,7 @@
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "FieldIndex"
-      function FieldIndex(fnameList, fname) result (indx)
+      function FieldIndex ( fnameList, fname, rc ) result (indx)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1702,6 +2162,7 @@
 !     ----------------------------------------------------------------
 !       fnameList StrA   I   Array of field names
 !       fname     Str    I   Field name
+!       rc        Int.   O   Return code
 !       indx      Int    I   Returned index of fname
 !     ----------------------------------------------------------------
 !
@@ -1731,27 +2192,488 @@
 !/
       character (6) :: fnameList(:)
       character (6) :: fname
+      integer       :: rc
       integer       :: indx
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      integer       :: i
+      integer       :: i, check
 !
 ! -------------------------------------------------------------------- /
 ! Find name in fnameList that matches fname
 !
-      indx = 0
-      do i=lbound(fnameList,1),ubound(fnameList,1)
-        if (fnameList(i).eq.fname) then
+      check = lbound(fnameList,1) - 1
+      indx = check
+      do i = lbound(fnameList,1),ubound(fnameList,1)
+        if ( fnameList(i).eq.fname ) then
           indx = i
           exit
         endif
       enddo
+      if ( indx.eq.check ) then
+        call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+          msg='FieldIndex: input name ('//fname//') not in list')
+      endif
 !/
 !/ End of FieldIndex ------------------------------------------------- /
 !/
       end function FieldIndex
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "FieldCopy"
+      subroutine FieldCopy(dstField, srcField, dstMaskVal, srcMaskVal, missingVal, rc)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     Copy ESMF Field
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+        type(ESMF_Field)                 :: dstField
+        type(ESMF_Field)                 :: srcField
+        integer(ESMF_KIND_I4), optional  :: dstMaskVal(:)
+        integer(ESMF_KIND_I4), optional  :: srcMaskVal(:)
+        real(ESMF_KIND_RX),    optional  :: missingVal
+        integer,               optional  :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+        integer :: ldecnt, lde, i, j, k
+        integer :: srcDimCount, dstDimCount, ndim, iund
+        integer :: lb2(2), ub2(2)
+        integer :: lb3(3), ub3(3)
+        integer :: srcGridToFieldMap(2), dstGridToFieldMap(2)
+        type(ESMF_Grid) :: srcGrid, dstGrid
+        type(ESMF_StaggerLoc) :: srcStgr, dstStgr
+        type(ESMF_Array) :: srcMaskArray, dstMaskArray
+        integer(ESMF_KIND_I4), pointer :: srcMask(:,:), dstMask(:,:)
+        real(ESMF_KIND_RX), pointer :: sptr2(:,:),   dptr2(:,:)
+        real(ESMF_KIND_RX), pointer :: sptr3(:,:,:), dptr3(:,:,:)
+!
+! -------------------------------------------------------------------- /
+! Copy Field
+!
+        if (present(rc)) rc = ESMF_SUCCESS
+
+        if (present(missingVal)) then
+          if (present(srcMaskVal).or.present(dstMaskVal)) then
+            call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+            msg='FieldCopy: missingVal specified with srcMaskVal '// &
+              'or dstMaskVal not supported')
+            return ! bail out
+          endif
+        endif
+
+        call ESMF_FieldGet(srcField, localDECount=ldecnt, grid=srcGrid, &
+          staggerLoc=srcStgr, dimCount=srcDimCount, &
+          gridToFieldMap=srcGridToFieldMap, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+        if (srcDimCount.ne.2.and.srcDimCount.ne.3) then
+          call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+          msg='FieldCopy: src dimCount must be 2 or 3')
+          return ! bail out
+        endif
+
+        call ESMF_FieldGet(dstField, localDECount=ldecnt, grid=dstGrid, &
+          staggerLoc=dstStgr, dimCount=dstDimCount, &
+          gridToFieldMap=dstGridToFieldMap, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+        if (dstDimCount.ne.2.and.dstDimCount.ne.3) then
+          call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+          msg='FieldCopy: dst dimCount must be 2 or 3')
+          return ! bail out
+        endif
+
+        if (srcDimCount.ne.dstDimCount) then
+          call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+          msg='FieldCopy: src & dst dimCount must be equal')
+          return ! bail out
+        endif
+        ndim = dstDimCount
+
+        if (any(srcGridToFieldMap.ne.dstGridToFieldMap)) then
+          call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
+          msg='FieldCopy: src & dst gridToFieldMap must be equal')
+          return ! bail out
+        endif
+        if (dstGridToFieldMap(1).eq.1.and.dstGridToFieldMap(2).eq.2) then
+          iund = 3
+        elseif (dstGridToFieldMap(1).eq.1.and.dstGridToFieldMap(2).eq.3) then
+          iund = 2
+        else
+          iund = 1
+        endif
+
+        if (present(srcMaskVal)) then
+          call ESMF_GridGetItem(srcGrid, itemFlag=ESMF_GRIDITEM_MASK, &
+            staggerLoc=srcStgr, array=srcMaskArray, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+        endif
+
+        if (present(dstMaskVal)) then
+          call ESMF_GridGetItem(dstGrid, itemFlag=ESMF_GRIDITEM_MASK, &
+            staggerLoc=dstStgr, array=dstMaskArray, rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+        endif
+
+        do lde=0,ldecnt-1
+
+          if (ndim.eq.2) then
+            call ESMF_FieldGet(srcField, localDE=lde, farrayPtr=sptr2, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+            call ESMF_FieldGet(dstField, localDE=lde, farrayPtr=dptr2, &
+                 exclusiveLBound=lb2, exclusiveUBound=ub2, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+          else
+            call ESMF_FieldGet(srcField, localDE=lde, farrayPtr=sptr3, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+            call ESMF_FieldGet(dstField, localDE=lde, farrayPtr=dptr3, &
+                 exclusiveLBound=lb3, exclusiveUBound=ub3, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+          endif
+
+          if (present(srcMaskVal)) then
+            call ESMF_ArrayGet(srcMaskArray, localDE=lde, farrayPtr=srcMask, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+          endif
+          if (present(dstMaskVal)) then
+            call ESMF_ArrayGet(dstMaskArray, localDE=lde, farrayPtr=dstMask, rc=rc)
+            if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+          endif
+
+          if (ndim.eq.2) then
+
+            if (present(srcMaskVal).and.present(dstMaskVal)) then
+              do j = lb2(2),ub2(2)
+              do i = lb2(1),ub2(1)
+                if (all(srcMask(i,j).ne.srcMaskVal).and. &
+                    all(dstMask(i,j).ne.dstMaskVal)) dptr2(i,j) = sptr2(i,j)
+              enddo
+              enddo
+            elseif (present(srcMaskVal)) then
+              do j = lb2(2),ub2(2)
+              do i = lb2(1),ub2(1)
+                if (all(srcMask(i,j).ne.srcMaskVal)) dptr2(i,j) = sptr2(i,j)
+              enddo
+              enddo
+            elseif (present(dstMaskVal)) then
+              do j = lb2(2),ub2(2)
+              do i = lb2(1),ub2(1)
+                if (all(dstMask(i,j).ne.dstMaskVal)) dptr2(i,j) = sptr2(i,j)
+              enddo
+              enddo
+            else
+              if (present(missingVal)) then
+                do j = lb2(2),ub2(2)
+                do i = lb2(1),ub2(1)
+                  if (dptr2(i,j).eq.missingVal) dptr2(i,j) = sptr2(i,j)
+                enddo
+                enddo
+              else
+                dptr2(lb2(1):ub2(1),lb2(2):ub2(2)) = &
+                  sptr2(lb2(1):ub2(1),lb2(2):ub2(2))
+              endif
+            endif
+
+          else
+
+            if (present(srcMaskVal).and.present(dstMaskVal)) then
+              select case (iund)
+              case (1)
+                do j = lb3(3),ub3(3)
+                do i = lb3(2),ub3(2)
+                  if (all(srcMask(i,j).ne.srcMaskVal).and. &
+                      all(dstMask(i,j).ne.dstMaskVal)) &
+                    dptr3(lb3(1):ub3(1),i,j) = sptr3(lb3(1):ub3(1),i,j)
+                enddo
+                enddo
+              case (2)
+                do j = lb3(3),ub3(3)
+                do i = lb3(1),ub3(1)
+                  if (all(srcMask(i,j).ne.srcMaskVal).and. &
+                      all(dstMask(i,j).ne.dstMaskVal)) &
+                    dptr3(i,lb3(2):ub3(2),j) = sptr3(i,lb3(2):ub3(2),j)
+                enddo
+                enddo
+              case (3)
+                do j = lb3(2),ub3(2)
+                do i = lb3(1),ub3(1)
+                  if (all(srcMask(i,j).ne.srcMaskVal).and. &
+                      all(dstMask(i,j).ne.dstMaskVal)) &
+                    dptr3(i,j,lb3(3):ub3(3)) = sptr3(i,j,lb3(3):ub3(3))
+                enddo
+                enddo
+              end select
+            elseif (present(srcMaskVal)) then
+              select case (iund)
+              case (1)
+                do j = lb3(3),ub3(3)
+                do i = lb3(2),ub3(2)
+                  if (all(srcMask(i,j).ne.srcMaskVal)) &
+                    dptr3(lb3(1):ub3(1),i,j) = sptr3(lb3(1):ub3(1),i,j)
+                enddo
+                enddo
+              case (2)
+                do j = lb3(3),ub3(3)
+                do i = lb3(1),ub3(1)
+                  if (all(srcMask(i,j).ne.srcMaskVal)) &
+                    dptr3(i,lb3(2):ub3(2),j) = sptr3(i,lb3(2):ub3(2),j)
+                enddo
+                enddo
+              case (3)
+                do j = lb3(2),ub3(2)
+                do i = lb3(1),ub3(1)
+                  if (all(srcMask(i,j).ne.srcMaskVal)) &
+                    dptr3(i,j,lb3(3):ub3(3)) = sptr3(i,j,lb3(3):ub3(3))
+                enddo
+                enddo
+              end select
+            elseif (present(dstMaskVal)) then
+              select case (iund)
+              case (1)
+                do j = lb3(3),ub3(3)
+                do i = lb3(2),ub3(2)
+                  if (all(dstMask(i,j).ne.dstMaskVal)) &
+                    dptr3(lb3(1):ub3(1),i,j) = sptr3(lb3(1):ub3(1),i,j)
+                enddo
+                enddo
+              case (2)
+                do j = lb3(3),ub3(3)
+                do i = lb3(1),ub3(1)
+                  if (all(dstMask(i,j).ne.dstMaskVal)) &
+                    dptr3(i,lb3(2):ub3(2),j) = sptr3(i,lb3(2):ub3(2),j)
+                enddo
+                enddo
+              case (3)
+                do j = lb3(2),ub3(2)
+                do i = lb3(1),ub3(1)
+                  if (all(dstMask(i,j).ne.dstMaskVal)) &
+                    dptr3(i,j,lb3(3):ub3(3)) = sptr3(i,j,lb3(3):ub3(3))
+                enddo
+                enddo
+              end select
+            else
+              if (present(missingVal)) then
+                do k = lb3(3),ub3(3)
+                do j = lb3(2),ub3(2)
+                do i = lb3(1),ub3(1)
+                  if (dptr3(i,j,k).eq.missingVal) dptr3(i,j,k) = sptr3(i,j,k)
+                enddo
+                enddo
+                enddo
+              else
+                dptr3(lb3(1):ub3(1),lb3(2):ub3(2),lb3(3):ub3(3)) = &
+                  sptr3(lb3(1):ub3(1),lb3(2):ub3(2),lb3(3):ub3(3))
+              endif
+            endif
+
+          endif
+
+        enddo
+!/
+!/ End of FieldCopy -------------------------------------------------- /
+!/
+      end subroutine FieldCopy
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "FieldGather"
+      subroutine FieldGather(field, n1, n2, fout, rc)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     All gather of ESMF field
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_Field)                 :: field
+      integer                          :: n1, n2
+      real                             :: fout(n1,n2)
+      integer,               optional  :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      integer :: k
+      real(ESMF_KIND_RX) :: floc(n1,n2)
+!
+! -------------------------------------------------------------------- /
+! Gather Field
+!
+      if (present(rc)) rc = ESMF_SUCCESS
+
+      do k = 0,npet-1
+        call ESMF_FieldGather( field,  floc, rootPet=k, vm=vm, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+      fout(1:n1,1:n2) = floc(1:n1,1:n2)
+!/
+!/ End of FieldGather ------------------------------------------------ /
+!/
+      end subroutine FieldGather
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "LocalRoutine"
+      subroutine LocalRoutine ( gcomp, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version 5.XX )
+!/
+!  1. Purpose :
+!
+!     A local module routine
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       gcomp     Type   I/O Gridded component
+!       rc        Int.   O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_GridComp) :: gcomp
+      integer,intent(out) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(ESMF_MAXSTR) :: cname
+!
+! -------------------------------------------------------------------- /
+! Prep
+!
+      rc = ESMF_FAILURE
+      call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': entered LocalRoutine', ESMF_LOGMSG_INFO)
+!
+! -------------------------------------------------------------------- /
+! Insert sections here
+!
+
+!
+! -------------------------------------------------------------------- /
+! Post
+!
+      rc = ESMF_SUCCESS
+      if (verbose) call ESMF_LogWrite(trim(cname)// &
+        ': leaving LocalRoutine', ESMF_LOGMSG_INFO)
+!/
+!/ End of LocalRoutine ----------------------------------------------- /
+!/
+      end subroutine LocalRoutine
 !/ ------------------------------------------------------------------- /
 !/
 !/ End of module WMESMFMD -------------------------------------------- /

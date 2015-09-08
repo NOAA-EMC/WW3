@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -93,7 +93,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -793,6 +793,7 @@
               FLAGS(J) = .FALSE.
               IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
                   INPMAP(I,J) = -1
+                  FLAGS(J) = .TRUE.
                 ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
                   DO JJ=1, NRINP
                     IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
@@ -822,6 +823,9 @@
         IF ( I .EQ. 0 ) CYCLE
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
+          IF ( I .GE. 1 ) THEN
+              IF ( INPMAP(I,J) .EQ. -1 ) CYCLE
+            END IF
           IF ( FLAGS(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
               CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,               &
@@ -967,8 +971,10 @@
         DO J=JFIRST, 4
           IF ( FLAGS(J) ) THEN
               ACTION(J) = 'native'
-            ELSE IF ( INPMAP(I,J) .NE. 0 ) THEN
+            ELSE IF ( INPMAP(I,J) .GT. 0 ) THEN
               ACTION(J) = MNAMES(-INPMAP(I,J))
+            ELSE IF ( INPMAP(I,J) .EQ.-1 ) THEN
+              ACTION(J) = 'import'
             END IF
           END DO
         ACTION(5:9) = '-     '
@@ -2114,7 +2120,7 @@
 ! ..... regular input files
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( FLAGS(J) .AND. INPMAP(I,J).NE.-1 ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
@@ -2139,7 +2145,7 @@
           IF ( MDSF(I,J) .NE. -1 ) CALL WMUINQ ( MDSE, MDST, MDSF(I,J) )
           END DO
 !
-! ..... Adjust input flags for other than native input,
+! ..... Adjust input flags for other than native or coupler input,
 !       and initialize input arrays onse set at a time as needed.
 !
         IF ( SIZE(FLAGS) .NE. SIZE(TFLAGS) ) THEN
@@ -2150,7 +2156,7 @@
         TFLAGS = FLAGS
 !
         DO J=JFIRST, 7
-          IF ( INPMAP(I,J) .NE. 0 ) THEN
+          IF ( INPMAP(I,J) .GT. 0 ) THEN
 !
               TFLAGS(J) = .TRUE.
               FLAGS     = .FALSE.
@@ -2251,7 +2257,7 @@
 !/MPI            CALL MPI_BCAST ( YGRD, NX*NY, MPI_REAL, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
-!/MPI                 GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE, NX, NY,  &
+!/MPI                 GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE,          &
 !/MPI                               XGRD, YGRD )
 !/MPI            CALL MPI_BCAST ( DXDP, NX*NY, MPI_REAL, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
