@@ -249,6 +249,7 @@
                 ALLOCATE ( TMP(6,TMPSIZ) )
                 TMP(:,1:OLDSIZ) = TMP2(:,1:OLDSIZ)
                 TMP(:,OLDSIZ+1:) = 0.
+                DEALLOCATE ( TMP2 ) 
 !/T            WRITE (NDST,9050) JSEA, OLDSIZ, TMPSIZ
               END IF
 !
