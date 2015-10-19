@@ -148,7 +148,7 @@
       INTEGER, ALLOCATABLE                :: ncid(:), dimid(:,:), dimln(:,:)
       DOUBLE PRECISION, ALLOCATABLE       :: times(:)
       CHARACTER(120)                      :: timeunits 
-    	INTEGER                             :: dateref, yref, mref, dref
+      INTEGER                             :: dateref, yref, mref, dref
       INTEGER                             :: TIME(2)
       DOUBLE PRECISION                    :: datecur, datetmp
       REAL                                :: is, imn, ih
@@ -332,7 +332,7 @@
             WRITE(NDSO,950) trim(SPECFILES(IP))
             lons(IP)=-999.
             lats(IP)=-999.
-            CYCLE
+            STOP
           END IF
  
           iret=nf90_open(trim(SPECFILES(IP)),nf90_nowrite,ncid(IP))
@@ -357,7 +357,7 @@
           NKI=dimln(IP,2)
           NTHI=dimln(IP,3)
 
-          IF (IP.EQ.1) THEN 
+          IF (IP.EQ.1) THEN
             NT1=NTI
             NK1=NKI
             NTH1=NTHI
@@ -430,6 +430,8 @@
           call check_err(iret)
           iret=nf90_get_var(ncid(IP),varid(7),SPEC2D(:,:,:,IP),       &
                             start=(/1,1,1,1/),count=(/NTHI,NKI,1,NTI/))
+          call check_err(iret)
+          iret=nf90_close(ncid(IP))
           call check_err(iret)
 !
         END DO ! IP=1,NBO2
