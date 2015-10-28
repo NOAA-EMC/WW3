@@ -61,6 +61,7 @@
 !/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
 !/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.xx )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -171,6 +172,8 @@
 !                               processing only).
 !      FLCx      Log.  Public   Flags for prop. is different spaces.
 !      FLSOU     Log.  Public   Flag for source term calcualtion.
+!      FUNO3     Log.  Public   Flag for 3rd order UNO3 scheme on SMC grid. 
+!      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
 !       
@@ -652,6 +655,7 @@
 !/PR2        REAL                  :: DTME, CLATMN
 !/PR3        REAL                  :: WDCG, WDTH
 !/SMC        REAL                  :: DTME, CLATMN, Refran
+!/SMC        LOGICAL               :: FUNO3, FVERG 
       END TYPE PROP
 !
       TYPE SFLP
@@ -905,6 +909,7 @@
 !/PR2      REAL, POINTER           :: DTME, CLATMN
 !/PR3      REAL, POINTER           :: WDCG, WDTH
 !/SMC      REAL, POINTER           :: DTME, CLATMN, Refran
+!/SMC      LOGICAL, POINTER        :: FUNO3, FVERG 
 !/
 !/ Data aliasses for structure SFLP(S)
 !/
@@ -1914,6 +1919,8 @@
 !/SMC      DTME   => MPARS(IMOD)%PROPS%DTME
 !/SMC      CLATMN => MPARS(IMOD)%PROPS%CLATMN
 !/SMC      Refran => MPARS(IMOD)%PROPS%Refran
+!/SMC      FUNO3  => MPARS(IMOD)%PROPS%FUNO3 
+!/SMC      FVERG  => MPARS(IMOD)%PROPS%FVERG 
 !
 !     Structure SFLPS
 !

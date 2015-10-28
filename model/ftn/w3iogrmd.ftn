@@ -1096,10 +1096,10 @@
 !/PR3      IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
 !
 !/SMC      IF ( WRITE ) THEN
-!/SMC          WRITE (NDSM) DTME, CLATMN, Refran
+!/SMC          WRITE (NDSM) DTME, CLATMN, Refran, FUNO3, FVERG
 !/SMC        ELSE
 !/SMC          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-!/SMC                       DTME, CLATMN, Refran
+!/SMC                       DTME, CLATMN, Refran, FUNO3, FVERG
 !/SMC        END IF
 !
 !/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
@@ -1295,7 +1295,7 @@
 !/PR3              '      DATA   : ',2F6.2)
 !
 !/SMC 9060 FORMAT (' TEST W3IOGR : MODULE W3GDATMD PROP'/             &
-!/SMC              '      DATA   : ',2E10.3)
+!/SMC              '      DATA   : ',3E10.3)
 !
 !/T 9070 FORMAT (' TEST W3IOGR : DISPERSION INTEPOLATION TABLES')
 !/
