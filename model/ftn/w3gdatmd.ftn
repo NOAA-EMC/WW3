@@ -61,7 +61,7 @@
 !/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
 !/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.xx )
+!/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.09 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
