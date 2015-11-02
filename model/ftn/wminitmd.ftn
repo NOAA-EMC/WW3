@@ -1469,7 +1469,7 @@
                   END IF
 !
               END IF
-            ELSE IF ( J .EQ. 1 ) THEN
+            ELSE IF ( J .EQ. 7 ) THEN
 !
 ! 5.p Type 7: coupling fields
 !

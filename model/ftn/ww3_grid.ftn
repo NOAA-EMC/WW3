@@ -92,6 +92,7 @@
 !/    16-Feb-2014 : Adds wind bias correction: WCOR     ( version 5.00 )
 !/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
 !/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
+!/    15 Oct-2014 : Change SMC grid input files. JGLi   ( version 5.09 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -448,6 +449,7 @@
 !             correction for swell dispersion.
 !     !/PR3   Averaging ULTIMATE QUICKEST scheme.
 !
+!     !/RTD   Rotated regular lat-lon grid. 
 !     !/SMC   UNO2 scheme on Spherical Multiple-Cell grid.   
 !     !/ARC   Append the Arctic part to the SMC grid.
 !
@@ -514,7 +516,9 @@
 !     INTEGER                 :: NCOL = 180
 !/SMC !!Li     Offset to change Equator index = 0 to regular index JEQT
 !/SMC !!Li     NBISMC number of boundary point for regional SMC grid.  
-!/SMC      INTEGER                 :: JEQT,  NBISMC, JS
+!/SMC !!Li     ISHFT for SMC i-index from regular grid west edge to smc origin.
+!/SMC !!Li     SMC cell only subgrid obstruction array dimensions NCObst, JObs.
+!/SMC      INTEGER                 :: JEQT,  NBISMC, JS, NCObst, JObs, ISHFT
 !/SMC      INTEGER                 :: NGUI, NGVJ
 !/ARC      INTEGER                 :: NAUI, NAVJ
 !
@@ -556,7 +560,7 @@
 !/SMC      REAL                    :: LATMIN, TRNMX, TRNMY
 !/SMC      INTEGER, ALLOCATABLE    :: NLvCelsk(:),  NLvUFcsk(:),  NLvVFcsk(:)
 !/SMC      INTEGER, ALLOCATABLE    :: IJKCelin(:,:),IJKUFcin(:,:),IJKVFcin(:,:)
-!/SMC      INTEGER, ALLOCATABLE    :: NBICelin(:)
+!/SMC      INTEGER, ALLOCATABLE    :: NBICelin(:),  IJKObstr(:,:)
 !/ARC      REAL                    :: PoLonAC, PoLatAC
 !/ARC      INTEGER, ALLOCATABLE    :: IJKCelAC(:,:),IJKUFcAC(:,:),IJKVFcAC(:,:)
 !/ARC      REAL,    ALLOCATABLE    :: XLONAC(:),YLATAC(:),ELONAC(:),ELATAC(:) 
@@ -663,6 +667,7 @@
 !/PR2      REAL                    :: DTIME
 !
 !/SMC      REAL                    :: DTIME, RFMAXD, SYMR
+!/SMC      LOGICAL                 :: UNO3, AVERG 
 !
 !/PR3      REAL                    :: WDTHCG, WDTHTH
            REAL                    :: UGOBCDEPTH
@@ -717,7 +722,7 @@
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !
-!/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD
+!/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD, UNO3, AVERG
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH,                     &
@@ -1757,6 +1762,8 @@
 !/SMC      DTIME  =  0.
 !/SMC      LATMIN = 86.
 !/SMC      RFMAXD = 80.
+!/SMC      UNO3   = .FALSE.
+!/SMC      AVERG  = .FALSE.
 !
 !/PR3      WDTHCG = 1.5
 !/PR3      WDTHTH = WDTHCG
@@ -1796,6 +1803,12 @@
 !/SMC        END IF
 !/SMC      DTME   = DTIME
 !/SMC      Refran = RFMAXD * DERA 
+!/SMC      FUNO3  = UNO3
+!/SMC      FVERG  = AVERG
+!/SMC      IF( UNO3 ) WRITE (NDSO,*)                  &
+!/SMC        " Advection use 3rd order UNO3 instead of UNO2 scheme."
+!/SMC      IF( AVERG) WRITE (NDSO,*)                  &
+!/SMC        " Extra 1-2-1 average smoothing activated on SMC grid."
 !
 !/PR3      CALL READNL ( NDSS, 'PRO3', STATUS )
 !/PR3      IF ( STATUS(18:18) .EQ. ':' ) STATUS(18:18) = ' '
@@ -2276,9 +2289,10 @@
 !
 !/SMC !!Li   Read refined level number for SMC grid. 
 !/SMC      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC      READ (NDSI,*,END=2001,ERR=2002) NRLv, JEQT, NBISMC
+!/SMC      READ (NDSI,*,END=2001,ERR=2002) NRLv, JEQT, ISHFT, NBISMC
 !/SMC      WRITE (NDSO,4001) NRLv
 !/SMC      WRITE (NDSO,4002) JEQT
+!/SMC      WRITE (NDSO,4302) ISHFT
 !/SMC      WRITE (NDSO,4003) NBISMC
 ! 
         ELSE 
@@ -2507,6 +2521,10 @@
 !
 ! Reading depths on structured grid 
 !
+!Li Suspended for SMC grid, which uses depth stored in its cell array.
+!Li               JGLi15Oct2014
+        IF( RGLGRD ) THEN
+!Li
           IF ( NDSG .EQ. NDSI ) THEN
               IF ( IDFM .EQ. 3 ) THEN
                   WRITE (NDSE,1004) NDSG
@@ -2537,14 +2555,25 @@
                 END IF
             END IF  !( NDSG .EQ. NDSI ) 
 !
+!Li     End of RGLGRD block
+        ENDIF
+!Li 
+!
           ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
 !
 !         Initialize subgrid obstructions with zeros.
+          ZBIN(:,:)=0.
           OBSX(:,:)=0.
           OBSY(:,:)=0.
 
+!Li   Suspend read depth file.     JGLi15Oct2014
+        IF( RGLGRD ) THEN
+!Li
           CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
                        IDFM, RFORM, IDLA, VSC, 0.0)
+!Li     End of RGLGRD block
+        ENDIF
+!Li 
 !
         ELSE
 !
@@ -2571,6 +2600,10 @@
           IF ( ZBIN(IX,IY) .LE. ZLIM ) TMPSTA(IY,IX) = 1
           END DO
         END DO
+!
+!Li   Suspended for SMC grid.  JGLi15Oct2014
+      IF( RGLGRD ) THEN
+!Li
 !
 ! 7.g Subgrid information
 !
@@ -2663,6 +2696,9 @@
 !
         END IF
 !
+!Li     End of RGLGRD block
+        ENDIF
+!Li 
 !/RTD ! 7.h  Read rotated grid Polat and Polon and define angleD variable
 !/RTD       CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/RTD !AC   READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
@@ -2705,6 +2741,8 @@
 !/SMC       CLOSE(NDSTR)
 !/SMC !!Li     Offset to change Equator index = 0 to regular grid index JEQT
 !/SMC       IJKCelin( 2, :) = IJKCelin( 2, :) + JEQT 
+!/SMC !!Li     Offset to change i-index = 0 to regular grid index ISHFT
+!/SMC       IJKCelin( 1, :) = IJKCelin( 1, :) + ISHFT
 !/SMC
 !/SMC       WRITE (NDSO,4005) TNAME
 !/SMC       WRITE (NDSO,4006)    1,(IJKCelin(ix,    1), ix=1,5)
@@ -2728,6 +2766,7 @@
 !/SMC       CLOSE(NDSTR)
 !/SMC !!Li     Offset to change Equator index = 0 to regular grid index
 !/SMC       IJKUFcin( 2, :) = IJKUFcin( 2, :) + JEQT 
+!/SMC       IJKUFcin( 1, :) = IJKUFcin( 1, :) + ISHFT
 !/SMC
 !/SMC       WRITE (NDSO,4008) TNAME
 !/SMC       WRITE (NDSO,4009)    1,(IJKUFcin(ix,    1), ix=1,7)
@@ -2751,10 +2790,30 @@
 !/SMC       CLOSE(NDSTR)
 !/SMC !!Li     Offset to change Equator index = 0 to regular grid index
 !/SMC       IJKVFcin( 2, :) = IJKVFcin( 2, :) + JEQT 
+!/SMC       IJKVFcin( 1, :) = IJKVFcin( 1, :) + ISHFT
 !/SMC
 !/SMC       WRITE (NDSO,4011) TNAME
 !/SMC       WRITE (NDSO,4012)    1,(IJKVFcin(ix,    1), ix=1,8)
 !/SMC       WRITE (NDSO,4012) NVFc,(IJKVFcin(ix, NVFc), ix=1,8)
+!/SMC       WRITE (NDSO,*) ' '
+!/SMC
+!/SMC !!Li  Subgrid obstruction for each SMCels.  JGLi15Oct2014
+!/SMC       CALL NEXTLN ( COMSTR , NDSI , NDSE )
+!/SMC       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
+!/SMC       J = LEN_TRIM(FNMPRE)
+!/SMC       OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
+!/SMC                   FORM='FORMATTED',STATUS='OLD',ERR=2000)
+!/SMC       READ (NDSTR,*) NCObst, JObs
+!/SMC       WRITE (NDSO,4110)   NCObst, JObs
+!/SMC
+!/SMC       ALLOCATE (   IJKObstr( JObs, NCObst) )
+!/SMC       CALL INA2I ( IJKObstr, JObs, NCObst, 1, JObs, 1, NCObst, NDSTR, NDST,  &
+!/SMC                    NDSE, IDFM, RFORM, IDLA, 1, 0)
+!/SMC       CLOSE(NDSTR)
+!/SMC
+!/SMC       WRITE (NDSO,4111) TNAME
+!/SMC       WRITE (NDSO,4012)      1, (IJKObstr(ix,      1), ix=1,JObs)
+!/SMC       WRITE (NDSO,4012) NCObst, (IJKObstr(ix, NCObst), ix=1,JObs)
 !/SMC       WRITE (NDSO,*) ' '
 !/SMC
 !/SMC !!Li     Bounary cell sequential numbers are read only if NBISMC>0
@@ -2791,6 +2850,7 @@
 !/ARC       CLOSE(NDSTR)
 !/ARC !!Li     Offset to change Equator index = 0 to regular grid index JEQT
 !/ARC       IJKCelAC( 2, :) = IJKCelAC( 2, :) + JEQT 
+!/ARC       IJKCelAC( 1, :) = IJKCelAC( 1, :) + ISHFT
 !/ARC
 !/ARC       WRITE (NDSO,4016) TNAME
 !/ARC       WRITE (NDSO,4006)    1,(IJKCelAC(ix,    1), ix=1,5)
@@ -2811,6 +2871,7 @@
 !/ARC       CLOSE(NDSTR)
 !/ARC !!Li     Offset to change Equator index = 0 to regular grid index
 !/ARC       IJKUFcAC( 2, :) = IJKUFcAC( 2, :) + JEQT 
+!/ARC       IJKUFcAC( 1, :) = IJKUFcAC( 1, :) + ISHFT
 !/ARC !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
 !/ARC       DO  IP=1, NAUI
 !/ARC         DO  IX=4,7
@@ -2837,6 +2898,7 @@
 !/ARC       CLOSE(NDSTR)
 !/ARC !!Li     Offset to change Equator index = 0 to regular grid index
 !/ARC       IJKVFcAC( 2, :) = IJKVFcAC( 2, :) + JEQT 
+!/ARC       IJKVFcAC( 1, :) = IJKVFcAC( 1, :) + ISHFT
 !/ARC !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
 !/ARC       DO  IP=1, NAVJ
 !/ARC         DO  IY=4,7
@@ -3071,6 +3133,12 @@
           NSTAT  = -1
           IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
           IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+
+!!Li  Suspended for SMC grid though the file input line in  ww3_grid.inp 
+!!Li  is kept to divert the program into this block.  JGLi15Oct2014 
+!!Li
+          IF( RGLGRD ) THEN
+!!Li
 !
           WRITE (NDSO,978) NDSTR, IDLA, IDFT
           IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
@@ -3133,6 +3201,9 @@
               END DO
             END DO
           DEALLOCATE ( READMP )
+!!Li
+          ENDIF   !! RGLGRD
+!!Li
 !
         END IF !FROM .NE. 'PART'
 !
@@ -3151,6 +3222,13 @@
           IF ( TMPSTA(IY,IX) .EQ. 2 ) NBI    = NBI + 1
           END DO
         END DO
+!
+!/SMC !Li   Moved before FLBPI is defined with NBI value.  JGLi05Jun2015
+!/SMC !Li   Overwrite NSEA with NCel for SMC grid. 
+!/SMC        NSEA = NCel
+!/SMC !Li   Use input NBI number for SMC grid because merged
+!/SMC !Li   cells are over-counted by model.   
+!/SMC        NBI = NBISMC
 !
       WRITE (NDSO,980)
       FLBPI  = NBI .GT. 0
@@ -3191,12 +3269,6 @@
         ELSE
           WRITE (NDSO,1986) NBT
         END IF
-!
-!/SMC !Li   Overwrite NSEA with NCel for SMC grid. 
-!/SMC        NSEA = NCel
-!/SMC !Li   Use input NBI number for SMC grid because merged
-!/SMC !Li   cells are over-counted by model.   
-!/SMC        NBI = NBISMC
 !
 ! 8.f Set up all maps
 !
@@ -3424,16 +3496,24 @@
 !/SMC          CLATS(ISEA) = COS( Y )
 !/SMC          CLATIS(ISEA)= 1. / CLATS(ISEA)
 !/SMC          CTHG0S(ISEA)= - TAN( Y ) / RADIUS
-!/ARC !!Li  Arctic part does not need GCT, so set to zero
-!/ARC          IF(ISEA .GT. NGLO) CTHG0S(ISEA)=0.0
-!/ARC
+!/SMC !!Li    Subgrid obstruction is now defined directly from IJKObstr
+!/SMC !!Li    so old OBSX/Y are no longer used.  JGLi15Oct2014
 !/SMC !!Li    Transparency is minimum of all merged cells and >= 0.11
-!/SMC           TRNMX=1.0
+!/SMC !         TRNMX=1.0
+!/SMC !         TRNMY=1.0
+!/SMC !         DO ip = IX, IX+IK-1
+!/SMC !            TRNMX = MIN( TRNMX, ABS(1.0-OBSX(ip,IY)) )
+!/SMC !            TRNMY = MIN( TRNMY, ABS(1.0-OBSY(ip,IY)) )
+!/SMC !         ENDDO
+!/SMC !!Li  Sub-grid obstruction is set zero beyond NCObst cells.
+!/SMC         IF(ISEA .GT. NCObst) THEN
+!/SMC           TRNMX=1.0 
 !/SMC           TRNMY=1.0
-!/SMC           DO ip = IX, IX+IK-1
-!/SMC              TRNMX = MIN( TRNMX, ABS(1.0-OBSX(ip,IY)) )
-!/SMC              TRNMY = MIN( TRNMY, ABS(1.0-OBSY(ip,IY)) )
-!/SMC           ENDDO
+!/SMC         ELSE 
+!/SMC !!Li    Present obstruction is isotropic and in percentage.
+!/SMC           TRNMX=1.0 - IJKObstr(1,    ISEA)*0.01
+!/SMC           TRNMY=1.0 - IJKObstr(JObs, ISEA)*0.01
+!/SMC         ENDIF
 !/SMC           CTRNX(ISEA) = MAX(0.11, TRNMX)
 !/SMC           CTRNY(ISEA) = MAX(0.11, TRNMY)
 !/SMC       END DO
@@ -3459,7 +3539,7 @@
 !/SMC          IK=MAX(1, IJKCel(3,ISEA)/MRFct)
 !/SMC          JS=MAX(1, IJKCel(4,ISEA)/MRFct)
 !/SMC          MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 2
-!/SMC          MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0   !!?
+!/SMC          MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
 !/SMC       ENDDO
 !/SMC       ENDIF
 !/SMC 
@@ -3505,6 +3585,14 @@
 !/ARC       ENDDO
 !/ARC       WRITE (NDSO,4039)  NBAC 
 !/ARC       WRITE (NDSO,4040) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
+!/ARC
+!/ARC !Li   Redefine GCT term factor for Arctic part or the netative of 
+!/ARC !Li   tangient of rotated latitude divided by radius. JGLi14Sep2015
+!/ARC       DO ISEA=NGLO+1, NCel-1
+!/ARC          CTHG0S(ISEA)= - TAN( ELATAC(ISEA-NGLO)*DERA ) / RADIUS
+!/ARC       ENDDO 
+!/ARC          CTHG0S(NCel)=0.0
+!/ARC       
 !
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 0, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Sea points', 'm')
@@ -4442,7 +4530,8 @@
 !/SMC               '       Cut-off latitude    (degr.) :',F8.2/      &
 !/SMC               '       Maximum refraction  (degr.) :',F8.2/)
 !/SMC 2953 FORMAT ( '  &PSMC CFLTM =',F5.2,', DTIME =', F8.0,         &
-!/SMC                        ', LATMIN =',F5.1,', RFMAXD =',F6.2,' /')
+!/SMC                        ', LATMIN =',F5.1,', RFMAXD =',F6.2,     & 
+!/SMC                        ', UNO3 =',L5,', AVERG =',L5,' /')
 !
 !/PR3  953 FORMAT ( '       CFLmax depth refraction     :',F9.3/      &
 !/PR3               '       Averaging area factor Cg    :',F8.2)
@@ -4575,6 +4664,7 @@
  3009 FORMAT ( '       File name                   : ',A)
 !/SMC 4001 FORMAT ( '       SMC refined levels NRLv   = ',I8) 
 !/SMC 4002 FORMAT ( '       SMC Equator j shift no.   = ',I8) 
+!/SMC 4302 FORMAT ( '       SMC I-index shift number  = ',I8) 
 !/SMC 4003 FORMAT ( '       SMC input boundary  no.   = ',I8)
 !/SMC 4004 FORMAT ( '       SMC NCel   = ',6I9)  
 !/SMC 4005 FORMAT ( '       IJKCel(5,NCel) read from ', A)
@@ -4584,6 +4674,8 @@
 !/SMC 4009 FORMAT (8I8)
 !/SMC 4010 FORMAT ( '       SMC NVFc   = ',6I9)
 !/SMC 4011 FORMAT ( '       IJKVFc(8,NCel) read from ', A)
+!/SMC 4110 FORMAT ( '       SMC NCObsr = ',6I9)
+!/SMC 4111 FORMAT ( '       IJKObstr(1,NCel) read from ', A)
 !/SMC 4012 FORMAT (9I8)
 !/SMC 4013 FORMAT ( '       NBICelin(NBISMC) read from ', A)
 !/SMC 4014 FORMAT (2I8)

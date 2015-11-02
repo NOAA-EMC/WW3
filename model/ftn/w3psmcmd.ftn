@@ -7,7 +7,7 @@
 !/                  | Adv, GCT, Rfr, Dif subroutines.    |
 !/                  |           Jian-Guo Li              |
 !/                  | First created:     8 Nov 2010      |
-!/                  | Last modified:    28 Jan 2014      |
+!/                  | Last modified:     3 Sep 2015      |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Coding started by adapting w3pro2md.ftn.
@@ -28,6 +28,9 @@
 !/     3-Jan-2014 : Remove bug in SMCDHXY for AU/V as cell size.  
 !/     7-Jan-2014 : Remove bug in SMCGtCrfr for K definition.     
 !/    28-Jan-2014 : Move Arctic boundary condition update out.  
+!/    18-Aug-2015 : New gradient, average and 3rd order advection subs. 
+!/     3-Sep-2015 : UNO3 advection scheme by logical option FUNO3. 
+!/    14-Sep-2015 : Modify DHDX/Y for Arctic part refraction term.  
 !/
 !  1. Purpose :
 !
@@ -52,8 +55,14 @@
 !      SMCxUNO2r Subr. Public   Regular grid mid-flux on U-faces by UNO2.
 !      SMCyUNO2r Subr. Public   Regular grid mid-flux on V-faces by UNO2.
 !      SMCkUNO2  Subr. Public   Shift in k-space due to refraction by UNO2.
+!      SMCxUNO3  Subr. Public   Irregular grid mid-flux on U-faces by UNO3.
+!      SMCyUNO3  Subr. Public   Irregular grid mid-flux on V-faces by UNO3.
+!      SMCxUNO3r Subr. Public   Regular grid 3rd order U-mid-flux by UNO3.
+!      SMCyUNO3r Subr. Public   Regular grid 3rd order V-mid-flux by UNO3.
 !      SMCGtCrfr Subr. Public   Refraction and GCT rotation in theta.
 !      SMCDHXY   Subr. Public   Evaluate depth gradient and refraction limiter.
+!      SMCGradn  Subr. Public   Evaluate local gradient for sea points.
+!      SMCAverg  Subr. Public   Numerical 1-2-1 average of sea point field.
 !      W3GATHSMC W3SCATSMC      Gather and scatter spectral components.
 !     ----------------------------------------------------------------
 !
@@ -96,7 +105,7 @@
 !/                  | Spherical Multiple-Cell (SMC) grid |
 !/                  | Advection and diffusion sub.       |
 !/                  | First created:   JG Li  8 Nov 2010 |
-!/                  | Last modified:   JG Li 16 Sep 2013 |
+!/                  | Last modified:   JG Li  3 Sep 2015 |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Origination.                JGLi    ( version 1.00 )
@@ -109,6 +118,7 @@
 !/     6 Mar-2012 : Minor adjustments of CLATF. JGLi    ( version 1.70 )
 !/    12 Feb-2012 : Remove net flux bug.        JGLi    ( version 1.80 )
 !/    16 Sep-2013 : Add Arctic part.            JGLi    ( version 2.00 )
+!/     3 Sep-2015 : Gradient, UNO3 and Average. JGLi    ( version 2.10 )
 !/
 !  1. Purpose :
 !
@@ -198,7 +208,7 @@
       USE CONSTANTS
 !
       USE W3GDATMD, ONLY: NK, NTH, DTH, XFR, ESIN, ECOS, SIG, NX, NY,  &
-                          NSEA, SX, SY, MAPSF, FLCX, FLCY,             &
+                          NSEA, SX, SY, MAPSF, FUNO3, FVERG,           &
                           IJKCel, IJKUFc, IJKVFc, NCel, NUFc, NVFc,    &
                           NLvCel, NLvUFc, NLvVFc, NRLv, MRFct,         &
                           DTCFL, CLATS, DTME, CLATMN, CTRNX, CTRNY 
@@ -232,7 +242,7 @@
                                  DFRR,  DX0, DY0, CGD, DSSD,          &
                                  DNND, DCELL, XWIND, TFAC, DSS, DNN
 !/ARC      REAL                    :: PCArea, ARCTH 
-      LOGICAL                 :: YFIRST
+      LOGICAL                 :: YFIRST 
 !/
 !/ Automatic work arrays
 !
@@ -349,9 +359,13 @@
 !     Single-resolution SMC grid uses regular grid advection with
 !     partial blocking enabled when NRLv = 1
        IF ( NRLv .EQ. 1 ) THEN
-
+           IF( FUNO3 ) THEN
+!  Use 3rd order UNO3 scheme.  JGLi20Aug2015
+           CALL SMCxUNO3r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
+           ELSE
 !  Call SMCxUNO2 to calculate MFx value
-          CALL SMCxUNO2r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
+           CALL SMCxUNO2r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
+           ENDIF
 
 !  Store conservative flux in FCNt advective one in AFCN
            DO i=1, NUFc
@@ -373,7 +387,7 @@
               AFCN(N) = AFCN(N) + FUMD(i)*UCFL(N) - FUDIFX(i)
            ENDDO
 
-!  Store conservative update in D and advective update in C
+!  Store conservative update in CQA and advective update in CQ
 !  The side length in MF value has to be cancelled with cell length
 !  Note ULCFLX has been divided by the cell size inside SMCxUNO2.
            DO n=1, NSEA
@@ -382,9 +396,14 @@
               CQ (n)=CQ(n) + AFCN(n)*FUTRN
            ENDDO
 
-!
+!  Call advection subs.
+           IF( FUNO3 ) THEN
+!  Use 3rd order UNO3 scheme.  JGLi20Aug2015
+           CALL SMCyUNO3r(1, NVFc, CQ, VCFL, VLCFLY, DSSD, FVMD, FVDIFY)
+           ELSE
 !  Call SMCyUNO2 to calculate MFy value
            CALL SMCyUNO2r(1, NVFc, CQ, VCFL, VLCFLY, DSSD, FVMD, FVDIFY)
+           ENDIF
 
 !  Store conservative flux in F
            DO j=1, NVFc
@@ -439,8 +458,13 @@
            juf=NLvUFc(LL)
            jvf=NLvVFc(LL)
 !
+!  Use 3rd order UNO3 scheme.  JGLi03Sep2015
+           IF( FUNO3 ) THEN
+           CALL SMCxUNO3(iuf, juf, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX, FMR)
+           ELSE
 !  Call SMCxUNO2 to calculate finest level (size-1) MFx value
            CALL SMCxUNO2(iuf, juf, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX, FMR)
+           ENDIF
 
 !  Store fineset level conservative flux in FCNt advective one in AFCN
 !! No partial blocking for multi-resolution SMC grid.  JGLi02Feb2012
@@ -464,8 +488,13 @@
               AFCN(n)=0.0
            ENDDO
 !
+!  Use 3rd order UNO3 scheme.  JGLi03Sep2015
+           IF( FUNO3 ) THEN
+           CALL SMCyUNO3(ivf, jvf, CQ, VCFL, VLCFLY, DSSD, FVMD, FVDIFY, FMR)
+           ELSE
 !  Call SMCyUNO2 to calculate MFy value
            CALL SMCyUNO2(ivf, jvf, CQ, VCFL, VLCFLY, DSSD, FVMD, FVDIFY, FMR)
+           ENDIF
 !
 !  Store conservative flux in F
 !! No partial blocking for multi-resolution SMC grid.  JGLi02Feb2012
@@ -506,6 +535,9 @@
 !!    End of ITLOC DO
        ENDDO
  
+!  Average with 1-2-1 scheme.  JGLi20Aug2015
+       IF(FVERG) CALL SMCAverg(CQ)
+
 !
 ! 4.  Store results in VQ in proper format --------------------------- *
 !
@@ -1104,7 +1136,7 @@
       END SUBROUTINE SMCxUNO2r
 
 
-! Subroutine that calculate mid-flux values for x dimension 
+! Subroutine that calculate mid-flux values for y dimension 
       SUBROUTINE SMCyUNO2r(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY)
 !!Li        CALL SMCyUNO2r(1, NVFc, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY)
 
@@ -1183,6 +1215,690 @@
 
       RETURN
       END SUBROUTINE SMCyUNO2r
+
+
+! Subroutine that calculate mid-flux values for x dimension with UNO3 scheme 
+       SUBROUTINE SMCxUNO3(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
+!!Li         CALL SMCxUNO3(iuf, juf, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX, FMR)
+
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
+         USE W3ODATMD, ONLY: NDSE, NDST 
+
+         IMPLICIT NONE
+         INTEGER, INTENT( IN):: NUA, NUB
+         REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif, FTS
+         REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
+!
+         INTEGER ::  i, j, k, L, M, N, ij
+         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
+      &        CNST7, CNST8, CNST9
+
+!    Two layer of boundary cells are added to each boundary cell face
+!    with all boundary cell values CF(-9:0)=0.0.
+
+!    Diffusion Fourier no. at sub-time-step, proportional to face size,
+!    which is also equal to the sub-time-step factor FTS.
+!        CNST0=AKDif*FTS*FTS
+!    2.0 factor to cancel that in gradient CNST5.  JGLi03Sep2015
+         CNST0=AKDif*FTS*FTS*2.0
+
+!    Notice an extra side length L is multiplied to mid-flux to give correct
+!    proportion of flux into the cells.  This length will be removed by the
+!    cell length when the tracer concentration is updated.
+
+      DO i=NUA, NUB
+
+!    Select Upstream, Central and Downstream cells
+           K=IJKUFc(4,i)
+           L=IJKUFc(5,i)
+           M=IJKUFc(6,i)
+           N=IJKUFc(7,i)
+
+!    Face bounding cell lengths and central gradient
+           CNST2=FLOAT( IJKCel(3,L) )
+           CNST3=FLOAT( IJKCel(3,M) )
+           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+
+!    Courant number in local size-1 cell, arithmetic average.
+           CNST6=0.5*( UC(L)+UC(M) )*FTS
+           UFLX(i) = CNST6
+
+!    Multi-resolution SMC grid requires flux multiplied by face factor.
+           CNST8 = FLOAT( IJKUFc(3,i) )
+
+!    Diffusion factor in local size-1 cell, plus the cosine factors.
+!    2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
+!    The maximum cell number is used to avoid the boundary cell number
+!    in selection of the cosine factor.
+           ij= MAX(L, M)
+
+!    For positive velocity case
+         IF(CNST6 >= 0.0)  THEN
+
+!    Use central cell velocity for boundary flux.  JGLi06Apr2011
+           IF( M .LE. 0) UFLX(i) = UC(L)*FTS
+
+!    Upstream cell length and gradient, depending on UFLX sign.
+           CNST1=FLOAT( IJKCel(3,K) )
+           CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
+
+!    Second order gradient
+           CNST7 = CNST5 - CNST4 
+           CNST9 = 2.0/( CNST3+CNST2+CNST2+CNST1 )
+
+!    Use 3rd order scheme
+           IF( Abs(CNST7) .LT. 0.6*CNST9*Abs(CF(M)-CF(K)) ) THEN
+               CNST= CNST5 - ( CNST3+UFLX(i) )*CNST7*CNST9/1.5 
+
+!    Use doubled UNO2 scheme
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+               CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+                ELSE
+!    Use minimum gradient UNO2 scheme
+               CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+           ENDIF
+
+!    Mid-flux value inside central cell
+           FU(i)=(CF(L) + CNST*(CNST2 - UFLX(i)))*CNST8
+
+!    For negative velocity case
+         ELSE
+
+!    Use central cell velocity for boundary flux.  JGLi06Apr2011
+           IF( L .LE. 0) UFLX(i) = UC(M)*FTS
+
+!    Upstream cell length and gradient, depending on UFLX sign.
+           CNST1=FLOAT( IJKCel(3,N) )
+           CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
+
+!    Second order gradient
+           CNST7 = CNST4 - CNST5 
+           CNST9 = 2.0/( CNST2+CNST3+CNST3+CNST1 )
+
+!    Use 3rd order scheme
+           IF( Abs(CNST7) .LT. 0.6*CNST9*Abs(CF(N)-CF(L)) ) THEN
+               CNST= CNST5 + ( CNST2-UFLX(i) )*CNST7*CNST9/1.5 
+
+!    Use doubled UNO2 scheme
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+               CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+                ELSE
+!    Use minimum gradient UNO2 scheme. 
+               CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+           ENDIF 
+
+!    Mid-flux value inside central cell M
+           FU(i)=(CF(M) - CNST*(CNST3+UFLX(i)))*CNST8
+
+         ENDIF
+
+!    Diffusion flux by face gradient x DT 
+         FX(i)=CNST0*CNST5*CNST8/( CLATS( ij )*CLATS( ij ) )
+
+      END DO
+
+! 999  PRINT*, ' Sub SMCxUNO3 ended.'
+
+      RETURN
+      END SUBROUTINE SMCxUNO3
+
+
+! Subroutine that calculate mid-flux values for y dimension with UNO3 scheme
+      SUBROUTINE SMCyUNO3(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
+!!Li        CALL SMCyUNO3(ivf, jvf, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY, FMR)
+
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
+         USE W3ODATMD, ONLY: NDSE, NDST
+
+         IMPLICIT NONE
+         INTEGER, INTENT( IN):: NVA, NVB
+         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
+         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+         INTEGER ::  i, j, k, L, M, N, ij
+         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
+      &        CNST7, CNST8, CNST9
+
+!    Notice an extra side length L is multiplied to mid-flux to give correct
+!    proportion of flux into the cells.  This length will be removed by the
+!    cell length when the tracer concentration is updated.
+
+!    Diffusion Fourier no. at sub-time-step, proportional to face size,
+!    which is also equal to the sub-time-step factor FTS.
+!        CNST0=AKDif*FTS*FTS
+!    2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
+         CNST0=AKDif*FTS*FTS*2.0
+!    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
+!        CNST0=AKDif*MRFct*FTS
+
+      DO j=NVA, NVB
+
+!    Select Upstream, Central and Downstream cells
+           K=IJKVFc(4,j)
+           L=IJKVFc(5,j)
+           M=IJKVFc(6,j)
+           N=IJKVFc(7,j)
+
+!    Face bounding cell lengths and gradient
+           CNST2=FLOAT( IJKCel(4,L) )
+           CNST3=FLOAT( IJKCel(4,M) )
+           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+
+!    Courant number in local size-1 cell unit 
+!    Multiply by multi-resolution time step factor  FTS
+           CNST6=0.5*( VC(L)+VC(M) )*FTS
+           VFLY(j) = CNST6
+
+!    Face size integer and cosine factor.  
+!    CLATF is defined on V-face for SMC grid.  JGLi28Feb2012
+         CNST8=CLATF(j)*FLOAT( IJKVFc(3,j) )
+
+!    For positive velocity case
+         IF(CNST6 >= 0.0)  THEN
+
+!    Boundary cell y-size is set equal to central cell y-size 
+!    as y-boundary cell sizes are not proportional to refined 
+!    inner cells but constant of the base cell y-size, and  
+!    Use central cell speed for face speed.  JGLi06Apr2011
+           IF( M .LE. 0 ) THEN
+              VFLY(j) = VC(L)*FTS
+              CNST3   = CNST2
+           ENDIF
+
+!    Upstream cell size and irregular grid gradient, depending on VFLY.
+           CNST1=FLOAT( IJKCel(4,K) )
+           CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
+
+!    Second order gradient
+           CNST7 = CNST5 - CNST4 
+           CNST9 = 2.0/( CNST3+CNST2+CNST2+CNST1 )
+
+!    Use 3rd order scheme
+           IF( Abs(CNST7) .LT. 0.6*CNST9*Abs(CF(M)-CF(K)) ) THEN
+               CNST= CNST5 - ( CNST3+VFLY(j) )*CNST7*CNST9/1.5 
+
+!    Use doubled UNO2 scheme
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+               CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+                ELSE
+
+!    Use minimum gradient outside monotonic region
+               CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+           ENDIF 
+
+!    Mid-flux value multiplied by face width and cosine factor
+           FV(j)=( CF(L) + CNST*(CNST2 - VFLY(j)) )*CNST8
+
+!    For negative velocity case
+         ELSE
+
+!    Set boundary cell y-size equal to central cell y-size and 
+!    Use central cell speed for flux face speed.  JGLi06Apr2011
+           IF( L .LE. 0 ) THEN
+               VFLY(j) = VC(M)*FTS
+               CNST2   = CNST3
+           ENDIF
+
+!    Upstream cell size and gradient, depending on VFLY sign.
+!    Side gradients for central cell includs 0.5 factor.
+           CNST1=FLOAT( IJKCel(4,N) )
+           CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
+
+!    Second order gradient
+           CNST7 = CNST4 - CNST5 
+           CNST9 = 2.0/( CNST2+CNST3+CNST3+CNST1 )
+
+!    Use 3rd order scheme
+           IF( Abs(CNST7) .LT. 0.6*CNST9*Abs(CF(N)-CF(L)) ) THEN
+               CNST= CNST5 + ( CNST2-VFLY(j) )*CNST7*CNST9/1.5 
+
+!    Use doubled UNO2 scheme
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+               CNST=Sign(2.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+                ELSE
+
+!    Use minimum gradient outside monotonic region
+               CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+
+           ENDIF
+
+!    Mid-flux value multiplied by face width and cosine factor
+           FV(j)=( CF(M) - CNST*(CNST3 + VFLY(j)) )*CNST8 
+
+         ENDIF
+
+!    Diffusion flux by face gradient x DT x face_width x cos(lat)
+!    Multiply by multi-resolution time step factor FTS
+         FY(j)=CNST0*CNST5*CNST8
+
+      END DO
+
+! 999  PRINT*, ' Sub SMCyUNO3 ended.'
+
+      RETURN
+      END SUBROUTINE SMCyUNO3
+
+
+! Subroutine that calculate mid-flux values for x dimension with UNO3 
+       SUBROUTINE SMCxUNO3r(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX)
+!!Li         CALL SMCxUNO3r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
+
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NSEA, NY, NCel, NUFc, IJKCel, IJKUFc, CLATS
+         USE W3ODATMD, ONLY: NDSE, NDST 
+
+         IMPLICIT NONE
+         INTEGER, INTENT( IN):: NUA, NUB
+         REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif
+         REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
+!
+         INTEGER ::  i, j, k, L, M, N, ij
+         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, &
+                      CNST7, CNST8, CNST9 
+!    Two layer of boundary cells are added to each boundary cell face
+!    with all boundary cell values CF(-9:0)=0.0.
+
+!    Notice an extra side length L is multiplied to mid-flux to give correct
+!    proportion of flux into the cells.  This length will be removed by the
+!    cell length when the tracer concentration is updated.
+
+      DO i=NUA, NUB
+
+!    Select Upstream, Central and Downstream cells
+           K=IJKUFc(4,i)
+           L=IJKUFc(5,i)
+           M=IJKUFc(6,i)
+           N=IJKUFc(7,i)
+
+!    Face bounding cell lengths and gradient
+           CNST2=FLOAT( IJKCel(3,L) )
+           CNST3=FLOAT( IJKCel(3,M) )
+           CNST5=(CF(M)-CF(L))
+
+!    Averaged Courant number for base-level cell face 
+           CNST6= 0.5*( UC(L)+UC(M) )
+           UFLX(i) = CNST6
+
+!    Diffusion Fourier number in local cell size
+!    To avoid boundary cell number, use maximum of L and M.
+           ij= MAX(L, M)
+           CNST0 = 2.0/( CLATS(ij)*CLATS(ij) )
+
+!    For positive velocity case
+         IF(CNST6 >= 0.0)  THEN
+
+!    Use central cell velocity for boundary flux.  JGLi06Apr2011
+           IF( M .LE. 0) UFLX(i) = UC(L)
+
+!    Side gradient for upstream cell as regular grid.
+           CNST4=(CF(L)-CF(K))
+           CNST8=(CF(M)-CF(K))
+           CNST9=(CNST5-CNST4)
+
+           IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
+!    Use 3rd order scheme in limited zone, note division by 2 grid sizes
+             CNST=0.5*CNST5 - (1.0+UFLX(i)/CNST2)*CNST9/6.0
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN 
+!    Use doubled minimum gradient in rest of monotonic region
+             CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ELSE 
+!    Use minimum gradient all region with 0.5 factor
+             CNST=Sign(0.5, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ENDIF
+!    Mid-flux value inside central cell
+           FU(i)=(CF(L) + CNST*(1.0-UFLX(i)/CNST2))
+           
+!    For negative velocity case
+         ELSE
+
+!    Use central cell velocity for boundary flux.  JGLi06Apr2011
+           IF( L .LE. 0) UFLX(i) = UC(M)
+
+!    Side gradient for upstream cell, depneding on UFLX sign. 
+           CNST4=(CF(N)-CF(M))
+           CNST8=(CF(N)-CF(L))
+           CNST9=(CNST4-CNST5)
+
+           IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
+!    Use 3rd order scheme in limited zone, note division by 2 grid sizes
+             CNST=0.5*CNST5 + (1.0-UFLX(i)/CNST3)*CNST9/6.0
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN
+!    Use doubled minimum gradient in rest of monotonic region
+             CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+                ELSE
+!    Use minimum gradient outside monotonic region, include 0.5 factor
+             CNST=Sign(0.5, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ENDIF
+
+!    Mid-flux value inside central cell M
+           FU(i)=(CF(M) - CNST*(1.0+UFLX(i)/CNST3))
+
+         ENDIF
+
+!    Diffusion flux by face gradient x DT 
+         FX(i)=AKDif*CNST0*CNST5/(CNST2 + CNST3)
+
+      END DO
+
+! 999  PRINT*, ' Sub SMCxUNO3r ended.'
+
+      RETURN
+      END SUBROUTINE SMCxUNO3r
+
+
+! Subroutine that calculate mid-flux values for y dimension with UNO3
+      SUBROUTINE SMCyUNO3r(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY)
+!!Li        CALL SMCyUNO3r(1, NVFc, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY)
+
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NSEA, NY, NCel, NVFc, IJKCel, IJKVFc, CLATF
+         USE W3ODATMD, ONLY: NDSE, NDST
+
+         IMPLICIT NONE
+         INTEGER, INTENT( IN):: NVA, NVB
+         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif
+         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+         INTEGER ::  i, j, k, L, M, N, ij
+         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, &
+      &               CNST7, CNST8, CNST9 
+
+!    Notice an extra side length L is multiplied to mid-flux to give correct
+!    proportion of flux into the cells.  This length will be removed by the
+!    cell length when the tracer concentration is updated.
+
+      DO j=NVA, NVB
+
+!    Select Upstream, Central and Downstream cells
+           K=IJKVFc(4,j)
+           L=IJKVFc(5,j)
+           M=IJKVFc(6,j)
+           N=IJKVFc(7,j)
+
+!    Central face gradient.
+           CNST5=(CF(M)-CF(L))
+
+!    Courant number in basic cell unit as dy is constant
+           CNST6=0.5*( VC(L)+VC(M) )
+           VFLY(j) = CNST6
+
+!    Face size integer and cosine factor
+!    CLATF is defined on V-face for SMC grid.  JGLi28Feb2012
+         CNST7=CLatF(j)*FLOAT( IJKVFc(3,j) )
+
+!    For positive velocity case
+         IF(CNST6 >= 0.0)  THEN
+
+!    Use central cell speed for flux face speed.  JGLi06Apr2011
+           IF( M .LE. 0 ) VFLY(j) = VC(L)
+
+!    Upstream face gradient, depending on VFLY sign. 
+           CNST4=(CF(L)-CF(K))
+
+!    Second gradient for 3rd scheme
+           CNST8=(CF(M)-CF(K))
+           CNST9=(CNST5-CNST4)
+
+           IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
+!    Use 3rd order scheme in limited zone, note division by 2 grid sizes
+             CNST=0.5*CNST5-(1.0+VFLY(j))*CNST9/6.0
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN
+!    Use doubled minimum gradient in rest of monotonic region
+             CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ELSE
+!    Use minimum gradient, including 0.5 factor and central sign. 
+             CNST=Sign(0.5, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ENDIF
+
+!    Mid-flux value multiplied by face width and cosine factor
+           FV(j)=( CF(L) + CNST*(1.0-VFLY(j)) )*CNST7
+
+!    For negative velocity case
+         ELSE
+
+!    Use central cell speed for flux face speed.  JGLi06Apr2011
+           IF( L .LE. 0 ) VFLY(j) = VC(M)
+
+!    Side gradients for upstream face, depending on VFLY sign. 
+           CNST4=(CF(N)-CF(M))
+
+!    Second gradient for 3rd scheme
+           CNST8=(CF(N)-CF(L))
+           CNST9=(CNST4-CNST5)
+
+           IF( Abs(CNST9) <= 0.6*Abs(CNST8) )  THEN
+!    Use 3rd order scheme in limited zone, note division by 2 grid sizes
+             CNST=0.5*CNST5+(1.0-VFLY(j))*CNST9/6.0
+           ELSE IF( CNST4*CNST5 .GT. 0.0 ) THEN
+!    Use doubled minimum gradient in rest of monotonic region
+             CNST=Sign(1.0, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ELSE
+!    Use minimum gradient, including 0.5 factor and central sign.
+             CNST=Sign(0.5, CNST5)*min( Abs(CNST4), Abs(CNST5) )
+           ENDIF
+!    Mid-flux value multiplied by face width and cosine factor
+           FV(j)=( CF(M) - CNST*(1.0+VFLY(j)) )*CNST7 
+
+         ENDIF
+
+!    Diffusion flux by face gradient x DT x face_width x cos(lat)
+         FY(j)=AKDif*CNST5*CNST7
+
+      END DO
+
+! 999  PRINT*, ' Sub SMCyUNO3r ended.'
+
+      RETURN
+      END SUBROUTINE SMCyUNO3r
+
+!
+! Subroutine that calculate cell centre gradient for any input variable.
+! Nemerical average is applied to size-changing faces and the gradients 
+! are along the lat-lon local east-north directions.    JGLi18Aug2015
+!
+       SUBROUTINE SMCGradn(CVQ, GrdX, GrdY) 
+
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,   MRFct,       &
+      &                      IJKCel, IJKUFc, IJKVFC, CLATS, SX, SY
+!/ARC         USE W3GDATMD, ONLY:  NGLO
+         USE W3ODATMD, ONLY: NDSE, NDST 
+
+         IMPLICIT NONE
+         REAL,    INTENT( IN)::  CVQ(-9:NSEA)
+         REAL,    INTENT(Out):: GrdX(NSEA), GrdY(NSEA)
+!
+         INTEGER :: I, J, K, L, M, N
+         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6 
+         REAL :: DX0I, DY0I
+
+!    Use a few working arrays
+         REAL,  Dimension(-9:NSEA):: CVF, AUN, AVN  
+
+!    Two layer of boundary cells are added to each boundary cell face
+!    with all boundary cell values CVF(-9:0)=CV0.
+!        CVF(-9:0)  =CV0
+!        CVF(1:NSEA)=CVQ(1:NSEA) 
+         CVF=CVQ 
+
+!!   Initialize arrays
+         AUN = 0.
+         AVN = 0.
+        GrdX = 0.
+        GrdY = 0.
+
+!!   Multi-resolution base-cell size defined by refined levels.
+!!   So the MRFct converts the base cell SX, SY into size-1 cell lenth.
+!!   Constant size-1 dy=DY0 and dx on Equator DX0, inverted.
+        DX0I   = MRFct/ ( SX * DERA * RADIUS )
+        DY0I   = MRFct/ ( SY * DERA * RADIUS )
+
+!!   Calculate x-gradient by averaging U-face gradients. 
+        DO i=1, NUFc
+
+!    Select Upstream, Central and Downstream cells
+           L=IJKUFc(5,i)
+           M=IJKUFc(6,i)
+
+!    Multi-resolution SMC grid requires flux multiplied by face factor.
+           CNST1=FLOAT( IJKUFc(3,i) ) 
+
+!    Face bounding cell lengths and central gradient
+           CNST2=FLOAT( IJKCel(3,L) ) 
+           CNST3=FLOAT( IJKCel(3,M) ) 
+
+           CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
+
+!    Store side gradient in two neighbouring cells
+           AUN(L) = AUN(L) + CNST5 
+           AUN(M) = AUN(M) + CNST5 
+
+        END DO
+
+!  Assign averaged side-gradient to GrdX, plus latitude factor
+!  Note averaging over 2 times of cell y-width factor but AUN
+!  has already been divied by two cell lengths. 
+        DO n=1, NSEA
+!  Cell y-size IJKCel(4,i) is used to cancel the face size-factor in AUN. 
+!  Plus the actual physical length scale for size-1 cell. 
+!  Note polar cell (if any) AUN = 0.0 as it has no U-face.
+           GrdX(n)=DX0I*AUN(n)/( CLats(n)*IJKCel(4,n) )
+
+        ENDDO
+
+!!   Calculate y-gradient by averaging V-face gradients. 
+        DO j=1, NVFc
+
+!    Select Central and Downstream cells
+           L=IJKVFc(5,j)
+           M=IJKVFc(6,j)
+
+!    Face size is required for multi-resolution grid.
+           CNST1=Real( IJKVFc(3,j) )
+
+!    Cell y-length of UCD cells
+           CNST2=Real( IJKCel(4,L) )
+           CNST3=Real( IJKCel(4,M) )
+
+!    Side gradients over 2 cell lengths for central cell.
+!    Face size factor is also included for average.
+!    Side gradients over 2 cell lengths for central cell.
+!    Face size factor is also included for average.
+           CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
+
+!    Store side gradient in two neighbouring cells
+           AVN(L) = AVN(L) + CNST6 
+           AVN(M) = AVN(M) + CNST6 
+
+        END DO
+
+!  Assign averaged side-gradient to GrdY.
+        DO n=1, NSEA 
+!  AV is divided by the cell x-size IJKCel(3,i) to cancel face
+!  size-factor, and physical y-distance of size-1 cell.
+           GrdY(n)=DY0I*AVN(n)/Real( IJKCel(3,n) )
+
+        END DO
+
+!/ARC  !!Li  Polar cell (if any) y-gradient is set to zero.
+!/ARC        IF( NSEA .GT. NGLO ) GrdY(NSEA) = 0.0
+
+
+! 999  PRINT*, ' Sub SMCGradn ended.'
+
+        RETURN
+        END SUBROUTINE SMCGradn
+
+
+!
+! Subroutine that average sea point values with a 1-2-1 scheme. 
+!
+       SUBROUTINE SMCAverg(CVQ) 
+
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
+      &                      IJKCel, IJKUFc, IJKVFC 
+!/ARC         USE W3GDATMD, ONLY:  NGLO
+         USE W3ODATMD, ONLY: NDSE, NDST 
+
+         IMPLICIT NONE
+         REAL,    INTENT(INOUT)::  CVQ(-9:NSEA)
+!
+         INTEGER :: I, J, K, L, M, N
+         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+
+!    Use a few working arrays
+         REAL,  Dimension(-9:NSEA):: CVF, AUN, AVN  
+
+!    Two layer of boundary cells are added to each boundary cell face
+!    with all boundary cell values stored in CVF(-9:0).
+         CVF=CVQ 
+
+!!   Initialize arrays
+         AUN = 0.
+         AVN = 0.
+
+!!   Calculate x-gradient by averaging U-face gradients. 
+        DO i=1, NUFc
+
+!    Select Upstream, Central and Downstream cells
+           L=IJKUFc(5,i)
+           M=IJKUFc(6,i)
+
+!    Multi-resolution SMC grid requires flux multiplied by face factor.
+           CNST5=Real( IJKUFc(3,i) )*(CVF(M)+CVF(L))
+
+!    Store side gradient in two neighbouring cells
+           AUN(L) = AUN(L) + CNST5 
+           AUN(M) = AUN(M) + CNST5 
+
+        END DO
+
+!!   Calculate y-gradient by averaging V-face gradients. 
+        DO j=1, NVFc
+
+!    Select Central and Downstream cells
+           L=IJKVFc(5,j)
+           M=IJKVFc(6,j)
+
+!    Face size is required for multi-resolution grid.
+           CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
+
+!    Store side gradient in two neighbouring cells
+           AVN(L) = AVN(L) + CNST6 
+           AVN(M) = AVN(M) + CNST6 
+
+       END DO
+
+!/ARC !!Li  Save polar cell value 
+!/ARC       CNST0 = CVQ(NSEA)
+
+!  Assign averaged value back to CVQ.
+       DO n=1, NSEA 
+
+            CNST3=0.125/Real( IJKCel(3,n) )
+            CNST4=0.125/Real( IJKCel(4,n) )
+!  AUN is divided by the cell y-size IJKCel(4,n) and AVN by 
+!  the cell x-size IJKCel(3,n) to cancel face size factors. 
+            CVQ(n)= AUN(n)*CNST4 + AVN(n)*CNST3 
+
+       END DO
+
+!/ARC !!Li  Polar cell (if any) keep original value. 
+!/ARC       IF( NSEA .GT. NGLO ) CVQ(NSEA) = CNST0
+
+
+! 999  PRINT*, ' Sub SMCAverg ended.'
+
+      RETURN
+      END SUBROUTINE SMCAverg
 
 
 !Li
@@ -1356,12 +2072,13 @@
 
 ! Subroutine that calculates water-depth gradient for refraction.
 ! For consistency with the lat-lon grid, full grid DDDX, DDDY are
-! also assigned here.  DHDX, DHDY are not used at present.
+! also assigned here.  DHDX, DHDY are used for refraction at present.
+! It has to be rotated to map-east system in the Arctic part.
        SUBROUTINE SMCDHXY
          USE CONSTANTS
-         USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, SX, SY, DMIN, &
-                             MRFct, NUFC, NVFc, IJKCel, IJKUFc, IJKVFc, &
-                             CLATS, NTH, DTH, ESIN, ECOS, Refran
+         USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel,  &
+                             CLATS, NTH, DTH, ESIN, ECOS, Refran, DMIN
+!/ARC      USE W3GDATMD, ONLY: NGLO, ANGARC
          USE W3ADATMD, ONLY: DW, DDDX, DDDY, DHDX, DHDY, DHLMT
          USE W3ODATMD, ONLY: NDSE, NDST
 
@@ -1369,16 +2086,12 @@
 
          INTEGER :: I, J, K, L, M, N
          REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
-         REAL :: DX0I, DY0I, Frqcy=0.0625
-         REAL, Dimension(NUFc) ::    FU
-         REAL, Dimension(NVFc) ::    FV
-         REAL, Dimension(-9:NSEA) :: AU, AV, CGrp, REFR, HCel
+         REAL, Dimension(NSEA) :: GrHx, GrHy
+         REAL, Dimension(-9:NSEA) :: HCel
 
 !!   Assign water depth to HCel from DW integer values.
 !!   set half the minimum depth DMIN for negative cells.
-       CGRP(-9:0)=0.0
-       REFR(-9:0)=0.0
-       HCel(-9:0)=0.5*DMIN
+       HCel(-9:0) = 0.5*DMIN
        HCel(1:NSEA)= DW(1:NSEA) 
 
 !!   Reset shallow water depth with minimum depth
@@ -1386,52 +2099,23 @@
           IF(DW(k) .LT. DMIN)  HCel(k)=DMIN
        ENDDO
 
-!!   Initialize arrays
+!!   Initialize full grid gradient arrays
        DDDX = 0.
        DDDY = 0.
 
-!!   Multi-resolution base-cell size defined by refined levels.
-!!   So the MRFct converts the base cell SX, SY into size-1 cell lenth.
-!!   Constant size-1 dy=DY0 and dx on Equator DX0, inverted.
-      DX0I   = MRFct/ ( SX * DERA * RADIUS )
-      DY0I   = MRFct/ ( SY * DERA * RADIUS )
+!!   Calculate sea point water depth gradient
+       CALL SMCGradn(HCel, GrHx, GrHy)
 
-!!   Calculate DH/DX using IJKUFc flux array to find neighbouring cells.
-       AU=0.0
-!!   Use the face arrays to calculate the bathymetry x-gradients.
-       DO i=1, NUFc
+!!   Pass gradient values to DHDX, DHDY
+       DHDX(1:NSEA) = GrHx
+       DHDY(1:NSEA) = GrHy
 
-!    Select Central and Downstream cells
-           M=IJKUFc(5,i)
-           N=IJKUFc(6,i)
-
-!    Face size is required for multi-resolution grid.
-           CNST1=Real( IJKUfc(3,i) )
-
-!    Cell length of UCD cells
-           CNST2=Real( IJKCel(3,M) )
-           CNST3=Real( IJKCel(3,N) )
-
-!    Side gradients over averaged cell length for central cells.
-!    Note the FU is divided by 2 cell length, equivalent to central
-!    gradient, so there is no need for the 2.0 divisor for average. 
-           FU(i)=DX0I*CNST1*(HCel(N)-HCel(M))/(CNST3+CNST2)
-
-!    Store side gradient in two neighbouring cells
-           AU(M) = AU(M) + FU(i)
-           AU(N) = AU(N) + FU(i)
-
-       END DO
-
-!  Assign averaged side-gradient to DHDX, plus latitude factor
-!  Note averaging over 2 times of cell y-width factor. 
+!!   Apply limiter to depth-gradient and copy to full grid.
        DO n=1,NSEA
-!  Cell y-size IJKCel(4,i) is used to cancel the face size-factor in AU. 
-!  Note AU has already been divied by two cell lengths.
-           DHDX(n)=AU(n)/( CLats( n )*IJKCel(4,n) )
 
 !  A limiter of gradient <= 0.1 is applied.
-           IF( ABS( DHDX(n) ) .GT.  0.1) DHDX(n)=SIGN( 0.1, DHDX(n))
+           IF( ABS( DHDX(n) ) .GT.  0.1) DHDX(n)=SIGN( 0.1, DHDX(n) )
+           IF( ABS( DHDY(n) ) .GT.  0.1) DHDY(n)=SIGN( 0.1, DHDY(n) )
 
 !! Asign DHDX value to full grid variable DDDX
            i= IJKCel(1,n)/MRFct + 1
@@ -1439,47 +2123,19 @@
            k= MAX(1, IJKCel(3,n)/MRFct)
            m= MAX(1, IJKCel(4,n)/MRFct)
            DDDX(j:j+m-1,i:i+k-1)  = DHDX(n)
-       ENDDO
+           DDDY(j:j+m-1,i:i+k-1)  = DHDY(n)
 
-!!   Calculate DH/DY using IJKVFc flux array to find neighbouring cells.
-       AV=0.0
-!!   Use the face arrays to calculate the bathymetry y-gradients.
-       DO j=1, NVFc
-
-!    Select Central and Downstream cells
-           M=IJKVFc(5,j)
-           N=IJKVFc(6,j)
-
-!    Face size is required for multi-resolution grid.
-           CNST1=Real( IJKVfc(3,j) )
-
-!    Cell y-length of UCD cells
-           CNST2=Real( IJKCel(4,M) )
-           CNST3=Real( IJKCel(4,N) )
-
-!    Side gradients over 2 cell lengths for central cell.
-!    Face size factor is also included for average.
-           FV(j)=DY0I*CNST1*(HCel(N)-HCel(M))/(CNST2+CNST3)
-
-!    Store side gradient in two neighbouring cells
-           AV(M) = AV(M) + FV(j)
-           AV(N) = AV(N) + FV(j)
+!/ARC  !Li  Depth gradient in the Arctic part has to be rotated into 
+!/ARC  !Li  the map-east system for calculation of refraction. 
+!/ARC       IF( n .GT. NGLO ) THEN
+!/ARC          CNST0 = ANGARC(n - NGLO)*DERA 
+!/ARC          CNST1 = DHDX(n)*COS(CNST0) - DHDY(n)*SIN(CNST0)
+!/ARC          CNST2 = DHDX(n)*SIN(CNST0) + DHDY(n)*COS(CNST0)
+!/ARC          DHDX(n) = CNST1
+!/ARC          DHDY(n) = CNST2
+!/ARC       ENDIF
 
        END DO
-
-!  Assign averaged side-gradient to DHDY.
-!  AV is divided by the cell x-size IJKCel(3,i) to cancel face size-factor. 
-!  Note the gradient is already over 2 cell lengths.
-       DO n=1,NSEA 
-           DHDY(n)=AV(n)/Real( IJKCel(3,n) )
-           IF(ABS( DHDY(n) ) .GT.  0.1) DHDY(n)=SIGN(  0.1, DHDY(n) )
-!! Asign DHDY value to full grid variable DDDY
-           i= IJKCel(1,n)/MRFct + 1
-           j= IJKCel(2,n)/MRFct + 1
-           k= MAX(1, IJKCel(3,n)/MRFct)
-           m= MAX(1, IJKCel(4,n)/MRFct)
-           DDDY(j:j+m-1,i:i+k-1)  = DHDY(n)
-       ENDDO
 
 !! Calculate the depth gradient limiter for refraction.  
        L = 0
@@ -1494,7 +2150,6 @@
 !Li   Refraction is done only when depth gradient is non-zero.
 !Li   Note ACOS returns value between [0, Pi), always positive.
                CNST6 = ACOS(-(DHDX(n)*ECOS(i)+DHDY(n)*ESIN(i))/CNST4 )
-!Li            DHLMT(i,n)=0.75*MIN(CNST6,ABS(PI-CNST6))/DTH
 !Li   User-defined refraction limiter added.   JGLi09Jan2012 
                DHLMT(i,n)=MIN(Refran, 0.75*MIN(CNST6,ABS(PI-CNST6)))/DTH
              END DO
@@ -1525,7 +2180,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Dec-2010 |
+!/                  | Last update :         13-Jun-2006 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -1724,7 +2379,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Jan-2012 |
+!/                  | Last update :         13-Jun-2006 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )

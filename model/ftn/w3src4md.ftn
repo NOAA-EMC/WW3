@@ -645,7 +645,7 @@
 !/T0          END DO
 !/T0        END DO
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1), '  ', 1.,         &
+!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG, '  ', 1.,         &
 !/T0                         0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
 !
 !/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sin')
@@ -1331,7 +1331,8 @@
       REAL                    :: ZX,ZARG,ZMU,ZLOG,ZBETA
       REAL                    :: Y,YC,DELY
       INTEGER                 :: I, J, K, L
-      REAL                    :: X0, INSIGMAX, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
+      REAL                    :: X0, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
+      REAL                    :: INSIGMAX
       INTEGER                 :: INIUSTAR, INIALPHA, INILEVTAIL, IERR
       CHARACTER(160)          :: FNAMETAB
       LOGICAL                 :: NOFILE
@@ -1353,9 +1354,9 @@
           IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
               INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
             NOFILE=.FALSE.
-            END IF
           END IF
-        END IF 
+        END IF
+      END IF 
 !
       USTARM = 5.
       ALPHAM = 20.*AALPHA
