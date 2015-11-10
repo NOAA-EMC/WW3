@@ -531,10 +531,25 @@ EOF
       fi
       export oasis_mod
 
-      # if esmf is included in program name, then process
-      # ESMFMKFILE to get required ESMF compile options
+      # if esmf is included in program name, then the compile
+      # requires DIST and NOPA switches and the ESMFMKFILE is
+      # processed to get required ESMF compile options
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
+        if [ -z "`grep DIST $switch_file`" ] 
+        then
+          echo ' '
+          echo "*** DIST switch must be set when compiling with ESMF ***"
+          echo ' '
+          exit 1
+        fi
+        if [ -z "`grep NOPA $switch_file`" ] 
+        then
+          echo ' '
+          echo "*** NOPA switch must be set when compiling with ESMF ***"
+          echo ' '
+          exit 1
+        fi
         ESMF_F90COMPILEPATHS=
         if [ $ESMFMKFILE ]
         then

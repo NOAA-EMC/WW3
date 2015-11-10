@@ -955,25 +955,6 @@
                 aux='w3servmd w3timemd' ;;
     esac
 
-    # ESMF compile requires DIST and NOPA
-    if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
-    then
-      if [ "$shared" != "DIST" ]
-      then
-        echo ' '
-        echo "*** DIST switch must be set when compiling with ESMF ***"
-        echo ' '
-        exit 1
-      fi
-      if [ "$mcp" != "NOPA" ]
-      then
-        echo ' '
-        echo "*** NOPA switch must be set when compiling with ESMF ***"
-        echo ' '
-        exit 1
-      fi
-    fi
-
     # if esmf is included in program name, then
     # the target is compile and create archive
     if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
