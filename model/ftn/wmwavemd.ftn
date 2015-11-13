@@ -346,7 +346,7 @@
 !
 !/T      ILOOP  = 0
 !
-      DO
+      LOOP_OUTER: DO
 !
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC .AND.                &
              DSEC21(TPRNT,TSYNC(:,0)).NE.0. ) THEN
@@ -370,7 +370,7 @@
         DONE   = .FALSE.
         TPRNT  = TSYNC(:,0)
 !
-        DO J=1, NRGRP
+        LOOP_J: DO J=1, NRGRP
 !
 !/MPI          GRSYNC(J) = .FALSE.
 !/MPI          DO JJ=1, INGRP(J,0)
@@ -379,7 +379,7 @@
 !/MPI            GRSYNC(J) = GRSYNC(J) .OR. FBCAST
 !/MPI            END DO
 !
-          DO JJ=1, INGRP(J,0)
+          LOOP_JJ: DO JJ=1, INGRP(J,0)
             I      = INGRP(J,JJ)
             CALL WMSETM ( I, MDSE, MDST )
 !
@@ -466,12 +466,12 @@
 !/MPIT                    WRITE (MDST,9902) I, GRSTAT(I), 'SYNCING DONE'
 !/MPI                    GRSTAT(I) = 1
 !/MPI                    FLSYNC(I) = .FALSE.
-!/MPI                    IF ( GRSYNC(J) ) CYCLE
+!/MPI                    IF ( GRSYNC(J) ) CYCLE LOOP_JJ
 !/MPI                  ELSE
 !/MPIT                    WRITE (MDST,9902) I, GRSTAT(I),             &
 !/MPIT                                      'CYCLE BEFORE SYNCING TDATA'
 !/MPI                    FLSYNC(I) = .TRUE.
-!/MPI                    CYCLE
+!/MPI                    CYCLE LOOP_JJ
 !/MPI                  END IF
 !
 !/MPI              END IF
@@ -574,7 +574,7 @@
 !/T                    WRITE (MDST,9040) TMAX(:,I), DTRES(I), TAUX,   &
 !/T                           TDATA(:,I), TOUTP(:,I), UPNEXT
                     DONE   = .TRUE.
-                    CYCLE
+                    CYCLE LOOP_JJ
 !/T                  ELSE
 !/T                    WRITE (MDST,9041) TMAX(:,I)
                   END IF
@@ -854,7 +854,7 @@
 !/MPRF                    CALL PRTIME ( PRFTN )
 !/MPRF                    WRITE (MDSP,991) PRFT0, PRFTN,          &
 !/MPRF                           get_memory(), 'ST04', I
-                    CYCLE
+                    CYCLE LOOP_JJ
 !
                   END IF
 !
@@ -1220,11 +1220,11 @@
 !
 ! ... End of loops started in 1. ------------------------------------- /
 !
-            END DO
+            END DO LOOP_JJ
 !
  1111       CONTINUE
 !
-          END DO
+          END DO LOOP_J
 !
 !/MPI        NMPSCR = NMPSCS
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
@@ -1235,8 +1235,8 @@
           END DO
 !
         IF ( .NOT. DONE ) GOTO 2099
-        IF ( MINVAL(GRSTAT) .EQ. 99 ) EXIT
-        END DO
+        IF ( MINVAL(GRSTAT) .EQ. 99 ) EXIT LOOP_OUTER
+        END DO LOOP_OUTER
 !
 !    End of routine -------------------------------------------------- /
 !              
@@ -1277,7 +1277,7 @@
 !
  2099 CONTINUE
       IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1099)
-!     CALL EXTCDE ( 2099 )
+      CALL EXTCDE ( 2099 )
       RETURN
 !
 ! Formats
