@@ -127,7 +127,7 @@
       type(ESMF_VM) :: vm
       integer :: lpet, npet
       logical :: verbose
-      logical :: realizeAllExport
+      logical :: realizeAllExport = .false.
       character(ESMF_MAXSTR) :: msg
 !
 ! --- Timing
@@ -138,8 +138,8 @@
 !
 ! --- Grid stuff
       type(ESMF_Grid)    :: grid2d
-      integer            :: maskValueWater
-      integer            :: maskValueLand
+      integer            :: maskValueWater = DEFAULT_MASK_WATER
+      integer            :: maskValueLand  = DEFAULT_MASK_LAND
       integer            :: nxproc, nyproc
       integer            :: ixlb, ixub, iylb, iyub
       integer            :: nz ! Number of z-levels for 3D fields
@@ -514,9 +514,10 @@
       real(8) :: wstime, wftime
       integer :: idsi, idso, idss, idst, idse
       integer :: mpiComm = -99
+      logical :: configIsPresent
       type(ESMF_Config) :: config
-      character(ESMF_MAXSTR) :: wrkdir='.'
-      character(ESMF_MAXSTR) :: preamb='.'
+      character(ESMF_MAXSTR) :: wrkdir = '.'
+      character(ESMF_MAXSTR) :: preamb = '.'
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
@@ -579,25 +580,29 @@
 !
 ! 1.d Config input
 !
-      call ESMF_GridCompGet(gcomp, config=config, rc=rc)
+      call ESMF_GridCompGet(gcomp, configIsPresent=configIsPresent, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      ! working directory
-      call ESMF_ConfigGetAttribute(config, wrkdir, &
-        label=trim(cname)//'_work_dir:', default='.', rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if (configIsPresent) then
+        call ESMF_GridCompGet(gcomp, config=config, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        ! working directory
+        call ESMF_ConfigGetAttribute(config, wrkdir, &
+          label=trim(cname)//'_work_dir:', default='.', rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        ! realize all export flag
+        call ESMF_ConfigGetAttribute(config, realizeAllExport, &
+          label=trim(cname)//'_realize_all_export:', default=.false., rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        ! grid mask convention
+        call ESMF_ConfigGetAttribute(config, maskValueWater, &
+          label='mask_value_water:', default=DEFAULT_MASK_WATER, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_ConfigGetAttribute(config, maskValueLand, &
+          label='mask_value_land:', default=DEFAULT_MASK_LAND, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
 !     preamb = trim(wrkdir)//'/'
       preamb = trim(preamb)//'/' !TODO: have separate paths for .inp, logs and data?
-      ! realize all export flag
-      call ESMF_ConfigGetAttribute(config, realizeAllExport, &
-        label=trim(cname)//'_realize_all_export:', default=.false., rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      ! grid mask convention
-      call ESMF_ConfigGetAttribute(config, maskValueWater, &
-        label='mask_value_water:', default=DEFAULT_MASK_WATER, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      call ESMF_ConfigGetAttribute(config, maskValueLand, &
-        label='mask_value_land:', default=DEFAULT_MASK_LAND, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 1.e Set internal start/stop time from external start/stop time
 !
