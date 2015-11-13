@@ -695,8 +695,8 @@
 !                   sources, and from communication rather than
 !                   files.
 !
-      ALLOCATE ( INAMES(2*NRGRD,JFIRST:7), MNAMES(-NRINP:2*NRGRD),           &
-                 TMPRNK(2*NRGRD), TMPGRP(2*NRGRD), NINGRP(2*NRGRD),   &
+      ALLOCATE ( INAMES(2*NRGRD,JFIRST:7), MNAMES(-NRINP:2*NRGRD),   &
+                 TMPRNK(2*NRGRD), TMPGRP(2*NRGRD), NINGRP(2*NRGRD),  &
                  RP1(2*NRGRD), RPN(2*NRGRD), BCDTMP(NRGRD+1:2*NRGRD) )
       ALLOCATE ( GRANK(NRGRD), GRGRP(NRGRD), USEINP(NRINP) )
       GRANK  = -1
@@ -770,7 +770,7 @@
               RP1(I)     = RP1(J)
               RPN(I)     = RPN(J)
               BCDUMP(I)  = BCDTMP(J)
-!/T              WRITE (MDST,9031) I, MNAMES(I), FLAGS, TMPRNK(I),    &
+!/T              WRITE (MDST,9031) I, MNAMES(I), FLAGS(1:8), TMPRNK(I), &
 !/T                                   TMPGRP(I), RP1(I), RPN(I)
             END IF
           END DO
@@ -2120,12 +2120,12 @@
 ! ..... regular input files
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J) .AND. INPMAP(I,J).NE.-1 ) THEN
-              JJ     = LEN_TRIM(FNMPRE)
+          IF ( FLAGS(J) ) THEN
               IDINP(I,J) = IDSTR(J)
+              IF ( INPMAP(I,J).EQ.-1 ) CYCLE
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
                             NX, NY, GTYPE, IERR, MNAMES(I),           &
-                            FNMPRE(:JJ) )
+                            TRIM(FNMPRE) )
               IF ( IERR .NE. 0 ) GOTO 2080
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                    WRITE (MDSS,985) IDFLDS(J)
