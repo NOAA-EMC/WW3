@@ -685,7 +685,7 @@
       isActiveImpField(i1:i2) = inpmap(imod,j).eq.-1
       impFieldName(i1)        = 'seahgt'
       impFieldStdName(i1)     = 'sea_surface_height_above_sea_level'
-      initRqrdImpField(i1:i2) = .false.
+      initRqrdImpField(i1:i2) = .true.
       isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeObg
 
       j = 2;  i1 = 2;  i2 = 3;
@@ -694,7 +694,7 @@
       impFieldStdName(i1)     = 'surface_eastward_sea_water_velocity'
       impFieldName(i2)        = 'vvcurr'
       impFieldStdName(i2)     = 'surface_northward_sea_water_velocity'
-      initRqrdImpField(i1:i2) = .false.
+      initRqrdImpField(i1:i2) = .true.
       isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeObg
 
       j = 3;  i1 = 4;  i2 = 5;
@@ -703,7 +703,7 @@
       impFieldStdName(i1)     = 'eastward_wind_at_10m_height'
       impFieldName(i2)        = 'vvtrue'
       impFieldStdName(i2)     = 'northward_wind_at_10m_height'
-      initRqrdImpField(i1:i2) = .false.
+      initRqrdImpField(i1:i2) = .true.
       isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeAbg
 
       do i = 1,numImpFields
@@ -1543,7 +1543,7 @@
       integer :: tstamp(2)
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Clock) :: clock
-      type(ESMF_Time)  :: currTime
+      type(ESMF_Time) :: currTime
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1586,6 +1586,7 @@
       i2 = i1
       if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
         tln = tstamp
+        tfn(:,j) = tln
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1609,6 +1610,7 @@
           cy0 = cyn
         endif
         tcn = tstamp
+        tfn(:,j) = tcn
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1641,6 +1643,7 @@
           wy0 = wyn
         endif
         twn = tstamp
+        tfn(:,j) = twn
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
