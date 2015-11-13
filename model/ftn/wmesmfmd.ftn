@@ -518,6 +518,10 @@
       type(ESMF_Config) :: config
       character(ESMF_MAXSTR) :: wrkdir = '.'
       character(ESMF_MAXSTR) :: preamb = '.'
+      character(ESMF_MAXSTR) :: ifname = 'ww3_multi.inp'
+      logical :: lsep_ss = .false.
+      logical :: lsep_st = .false.
+      logical :: lsep_se = .false.
       character(ESMF_MAXSTR) :: attstr
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
@@ -589,6 +593,20 @@
         call ESMF_ConfigGetAttribute(config, wrkdir, &
           label=trim(cname)//'_work_dir:', default='.', rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        ! I/O options
+        call ESMF_ConfigGetAttribute(config, ifname, &
+          label=trim(cname)//'_input_file_name:', &
+          default='ww3_multi.inp', rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_ConfigGetAttribute(config, lsep_ss, &
+          label=trim(cname)//'_stdo_output_to_file:', default=.false., rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_ConfigGetAttribute(config, lsep_st, &
+          label=trim(cname)//'_test_output_to_file:', default=.false., rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_ConfigGetAttribute(config, lsep_se, &
+          label=trim(cname)//'_error_output_to_file:', default=.false., rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
         ! realize all export flag
         call ESMF_ConfigGetAttribute(config, realizeAllExport, &
           label=trim(cname)//'_realize_all_export:', default=.false., rc=rc)
@@ -637,24 +655,11 @@
 ! 2.  Initialization of all wave models / grids
 !
 ! 2.a Call into WMINIT
-!     Use only one of the three calls ....
-!
-! ... Log and screen output, no separate test output file
 !     
-!     idss = stdo;  idst = stdo;  idse = stdo;
-!     call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
-!                   mpicomm, preamb=preamb )
-!
-! ... Screen output disabled
-!
-!     idst = stdo;  idse = stdo;
-!     call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
-!                   mpicomm, preamb=preamb )
-!
-! ... Separate test output file
-!
-      idss = stdo;  idse = stdo;
-      call wminit ( idsi, idso, idss, idst, idse, 'ww3_multi.inp',    &
+      if ( .not.lsep_ss ) idss = stdo
+      if ( .not.lsep_st ) idst = stdo
+      if ( .not.lsep_se ) idse = stdo
+      call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
                     mpicomm, preamb=preamb )
 !
 ! 2.b Check consistency between internal timestep and external
