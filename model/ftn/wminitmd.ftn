@@ -969,11 +969,11 @@
         CALL W3SETI ( I, MDSE, MDST )
         ACTION(1:4) = '---   '
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( INPMAP(I,J) .EQ. 0 ) THEN
               ACTION(J) = 'native'
             ELSE IF ( INPMAP(I,J) .GT. 0 ) THEN
               ACTION(J) = MNAMES(-INPMAP(I,J))
-            ELSE IF ( INPMAP(I,J) .EQ.-1 ) THEN
+            ELSE IF ( INPMAP(I,J) .LT. 0 ) THEN
               ACTION(J) = 'import'
             END IF
           END DO
