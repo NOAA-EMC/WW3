@@ -11,7 +11,7 @@
 /* -------------------------------------------------------------------------- */
 /* Define real kind for data passed through ESMF interface                    */
 /* -------------------------------------------------------------------------- */
-#if defined(REAL8)
+#if defined(ESMF_R8)
 #define _ESMF_KIND_RX _ESMF_KIND_R8
 #define ESMF_KIND_RX ESMF_KIND_R8
 #define ESMF_TYPEKIND_RX ESMF_TYPEKIND_R8
