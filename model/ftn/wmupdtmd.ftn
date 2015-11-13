@@ -160,9 +160,6 @@
       USE W3WDATMD, ONLY: TIME
 
       USE W3IDATMD, ONLY: FLAGS, TLN, TC0, TCN, TW0, TWN, TIN, T0N,   &
-                          T1N, T2N, TG0, TGN, TFN, TDN
-
-      USE W3IDATMD, ONLY: FLAGS, TLN, TC0, TCN, TW0, TWN, TIN, T0N,   &
                           T1N, T2N, TG0, TGN, TFN, TDN, TTN, TVN,     &
                           TZN, TI1, TI2, TI3, TI4, TI5, JFIRST
 
