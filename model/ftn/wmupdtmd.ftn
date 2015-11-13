@@ -226,24 +226,24 @@
           WRITE (MDSS,900) IMOD, DTME21
         END IF
 !
-!/T      WRITE (MDST,9001) '0-N', TIME, ETIME,                 &
-!/T                        IDINP(IMOD,-7), FLAGS(-7), TI1,     &
-!/T                        IDINP(IMOD,-6), FLAGS(-6), TI2,     &
-!/T                        IDINP(IMOD,-5), FLAGS(-5), TI3,     &
-!/T                        IDINP(IMOD,-4), FLAGS(-4), TI4,     &
-!/T                        IDINP(IMOD,-3), FLAGS(-3), TI5,     &
-!/T                        IDINP(IMOD,-2), FLAGS(-2), TZN,     &
-!/T                        IDINP(IMOD,-1), FLAGS(-1), TTN,     &
-!/T                        IDINP(IMOD,0), FLAGS(0), TVN,       &
-!/T                        IDINP(IMOD,1), FLAGS(1), TLN,       &
-!/T                        IDINP(IMOD,2), FLAGS(2), TC0, TCN,  &
-!/T                        IDINP(IMOD,3), FLAGS(3), TW0, TWN,  &
-!/T                        IDINP(IMOD,4), FLAGS(4), TIN,       &
-!/T                        IDINP(IMOD,5), FLAGS(5), T0N,       &
-!/T                        IDINP(IMOD,6), FLAGS(6), T1N,       &
-!/T                        IDINP(IMOD,7), FLAGS(7), T2N,       &
-!/T                        'MOV'        , FLAGS(8), TG0, TGN,  &
-!/T                        NX, NY
+!/T      WRITE (MDST,9001) '0-N', TIME, ETIME
+!/T      IF (LBOUND(IDINP,2).LE.-7) WRITE (MDST,9002) -7, IDINP(IMOD,-7), FLAGS(-7), TI1
+!/T      IF (LBOUND(IDINP,2).LE.-6) WRITE (MDST,9002) -6, IDINP(IMOD,-6), FLAGS(-6), TI2
+!/T      IF (LBOUND(IDINP,2).LE.-5) WRITE (MDST,9002) -5, IDINP(IMOD,-5), FLAGS(-5), TI3
+!/T      IF (LBOUND(IDINP,2).LE.-4) WRITE (MDST,9002) -4, IDINP(IMOD,-4), FLAGS(-4), TI4
+!/T      IF (LBOUND(IDINP,2).LE.-3) WRITE (MDST,9002) -3, IDINP(IMOD,-3), FLAGS(-3), TI5
+!/T      IF (LBOUND(IDINP,2).LE.-2) WRITE (MDST,9002) -2, IDINP(IMOD,-2), FLAGS(-2), TZN
+!/T      IF (LBOUND(IDINP,2).LE.-1) WRITE (MDST,9002) -1, IDINP(IMOD,-1), FLAGS(-1), TTN
+!/T      IF (LBOUND(IDINP,2).LE. 0) WRITE (MDST,9002)  0, IDINP(IMOD, 0), FLAGS( 0), TVN
+!/T      WRITE (MDST,9002) 1, IDINP(IMOD,1), FLAGS(1), TLN
+!/T      WRITE (MDST,9003) 2, IDINP(IMOD,2), FLAGS(2), TC0, TCN
+!/T      WRITE (MDST,9003) 3, IDINP(IMOD,3), FLAGS(3), TW0, TWN
+!/T      WRITE (MDST,9002) 4, IDINP(IMOD,4), FLAGS(4), TIN
+!/T      WRITE (MDST,9002) 5, IDINP(IMOD,5), FLAGS(5), T0N
+!/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), FLAGS(6), T1N
+!/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), FLAGS(7), T2N
+!/T      WRITE (MDST,9003) 8, 'MOV'        , FLAGS(8), TG0, TGN
+!/T      WRITE (MDST,9004)    'GRD', NX, NY
 !
 ! 1.  Loop over input types ------------------------------------------ /
 !
@@ -374,23 +374,23 @@
 !
 ! 7.  Final test output ---------------------------------------------- /
 !
-!/T      WRITE (MDST,9070) '0-N', TIME, ETIME, TDATA,          &
-!/T                        IDINP(IMOD,-7), FLAGS(-7), TI1,     &
-!/T                        IDINP(IMOD,-6), FLAGS(-6), TI2,     &
-!/T                        IDINP(IMOD,-5), FLAGS(-5), TI3,     &
-!/T                        IDINP(IMOD,-4), FLAGS(-4), TI4,     &
-!/T                        IDINP(IMOD,-3), FLAGS(-3), TI5,     &
-!/T                        IDINP(IMOD,-2), FLAGS(-2), TZN,     &
-!/T                        IDINP(IMOD,-1), FLAGS(-1), TTN,     &
-!/T                        IDINP(IMOD,0), FLAGS(0), TVN,       &
-!/T                        IDINP(IMOD,1), FLAGS(1), TLN,       &
-!/T                        IDINP(IMOD,2), FLAGS(2), TC0, TCN,  &
-!/T                        IDINP(IMOD,3), FLAGS(3), TW0, TWN,  &
-!/T                        IDINP(IMOD,4), FLAGS(4), TIN,       &
-!/T                        IDINP(IMOD,5), FLAGS(5), T0N,       &
-!/T                        IDINP(IMOD,6), FLAGS(6), T1N,       &
-!/T                        IDINP(IMOD,7), FLAGS(7), T2N, TDN,  &
-!/T                        'MOV'        , FLAGS(8), TG0, TGN
+!/T      WRITE (MDST,9070) ' J', '0-N', TIME, ETIME, TDATA
+!/T      IF (LBOUND(IDINP,2).LE.-7) WRITE (MDST,9071) -7, IDINP(IMOD,-7), FLAGS(-7), TI1
+!/T      IF (LBOUND(IDINP,2).LE.-6) WRITE (MDST,9071) -6, IDINP(IMOD,-6), FLAGS(-6), TI2
+!/T      IF (LBOUND(IDINP,2).LE.-5) WRITE (MDST,9071) -5, IDINP(IMOD,-5), FLAGS(-5), TI3
+!/T      IF (LBOUND(IDINP,2).LE.-4) WRITE (MDST,9071) -4, IDINP(IMOD,-4), FLAGS(-4), TI4
+!/T      IF (LBOUND(IDINP,2).LE.-3) WRITE (MDST,9071) -3, IDINP(IMOD,-3), FLAGS(-3), TI5
+!/T      IF (LBOUND(IDINP,2).LE.-2) WRITE (MDST,9071) -2, IDINP(IMOD,-2), FLAGS(-2), TZN
+!/T      IF (LBOUND(IDINP,2).LE.-1) WRITE (MDST,9071) -1, IDINP(IMOD,-1), FLAGS(-1), TTN
+!/T      IF (LBOUND(IDINP,2).LE. 0) WRITE (MDST,9071)  0, IDINP(IMOD, 0), FLAGS( 0), TVN
+!/T      WRITE (MDST,9071) 1, IDINP(IMOD,1), FLAGS(1), TLN
+!/T      WRITE (MDST,9072) 2, IDINP(IMOD,2), FLAGS(2), TC0, TCN
+!/T      WRITE (MDST,9072) 3, IDINP(IMOD,3), FLAGS(3), TW0, TWN
+!/T      WRITE (MDST,9071) 4, IDINP(IMOD,4), FLAGS(4), TIN
+!/T      WRITE (MDST,9071) 5, IDINP(IMOD,5), FLAGS(5), T0N
+!/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), FLAGS(6), T1N
+!/T      WRITE (MDST,9073) 7, IDINP(IMOD,7), FLAGS(7), T2N, TDN
+!/T      WRITE (MDST,9071) 8, 'MOV'        , FLAGS(8), TG0, TGN
 !
       RETURN
 !       
@@ -409,24 +409,10 @@
 !
 !/T 9000 FORMAT ( ' TEST WMUPDT : INPUT : ',I4,I10.8,I7.6,            &
 !/T               '  <============================')
-!/T 9001 FORMAT ( ' TEST WMUPDT : ',A,3X,2(I10.8,I7.6)/               &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,2(I10.8,I7.6)/               &
-!/T               '               ',A,L3,2(I10.8,I7.6)/               &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,2(I10.8,I7.6)/               &
-!/T               '               GRD   ',2I10)
+!/T 9001 FORMAT ( ' TEST WMUPDT : ',A2,1X,A3,3X,    2(I10.8,I7.6))
+!/T 9002 FORMAT ( '               ',I2,1X,A3,L3,17X,1(I10.8,I7.6))
+!/T 9003 FORMAT ( '               ',I2,1X,A3,L3,    2(I10.8,I7.6))
+!/T 9004 FORMAT ( '               ',2X,1X,A3,3X,2I10             )
 !/T 9010 FORMAT ( ' TEST WMUPDT : J, FLAG, INPMAP : ',I2,L2,I4)
 !/T 9011 FORMAT ( ' TEST WMUPDT : ',A,', DTTST = ',E10.3,2X,I9.8,I7.6)
 !/T 9020 FORMAT ( ' TEST WMUPDT : USING NATIVE GRID INPUT')
@@ -434,23 +420,10 @@
 !/T 9031 FORMAT ( ' TEST WMUPDT : J =',I4,3XA,', DTTST = ',           &
 !/T                               E10.3,2X,I9.8,I7.6)
 !/T 9040 FORMAT ( ' TEST WMUPDT : USING COUPLER INPUT')
-!/T 9070 FORMAT ( ' TEST WMUPDT : ',A,3X,3(I10.8,I7.6)/               &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,2(I10.8,I7.6)/               &
-!/T               '               ',A,L3,2(I10.8,I7.6)/               &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,(I10.8,I7.6)/            &
-!/T               '               ',A,L3,17X,2(I10.8,I7.6)/           &
-!/T               '               ',A,L3,2(I10.8,I7.6))
+!/T 9070 FORMAT ( ' TEST WMUPDT : ',A2,1X,A3,3X,    3(I10.8,I7.6))
+!/T 9071 FORMAT ( '               ',I2,1X,A3,L3,17X,1(I10.8,I7.6))
+!/T 9072 FORMAT ( '               ',I2,1X,A3,L3,    2(I10.8,I7.6))
+!/T 9073 FORMAT ( '               ',I2,1X,A3,L3,17X,2(I10.8,I7.6))
 !/
 !/ End of WMUPDT ----------------------------------------------------- /
 !/
