@@ -390,7 +390,7 @@
 !/T      WRITE (MDST,9071) 5, IDINP(IMOD,5), FLAGS(5), T0N
 !/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), FLAGS(6), T1N
 !/T      WRITE (MDST,9073) 7, IDINP(IMOD,7), FLAGS(7), T2N, TDN
-!/T      WRITE (MDST,9071) 8, 'MOV'        , FLAGS(8), TG0, TGN
+!/T      WRITE (MDST,9072) 8, 'MOV'        , FLAGS(8), TG0, TGN
 !
       RETURN
 !       
