@@ -1217,11 +1217,7 @@
          IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,1000)
          CALL EXTCDE (1000)
       END IF
-      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGHGH IS'// &
-         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
-         CALL EXTCDE ( 1 )
-      END IF
+
 !/MPIBDI     LMPIBDI=.TRUE.
 !/SCRIP      IF (IMPROC .EQ. 1) THEN
 !/SCRIP         L_MASTER = .TRUE.
@@ -1310,7 +1306,8 @@
 ! -------------------------------------------------------------------- /
 ! 0.b Check solution method
 
-      IF ( (.NOT.LSCRIP) .AND. (.NOT.ALL_REGULAR) ) THEN
+      IF ( (.NOT.LSCRIP) .AND. (.NOT.ALL_REGULAR) .AND. &
+                                      (NRGRD.GT.1) ) THEN
          IF ( IMPROC.EQ.NMPERR ) &
               WRITE (MDSE,'(/3A)') ' *** ERROR WMGHGH: ', &
               'IRREGULAR or UNSTRUCTURED grid detected: this requires ', &
@@ -1596,6 +1593,7 @@
                                            ! one.
 !/T            WRITE (MDST,9021)
          ELSE ! processing required
+
 !
 ! 2.b Process grid
 ! 2.b.1 Preparations
@@ -1607,6 +1605,16 @@
             CALL W3SETO ( GDST, MDSE, MDST )
             CALL W3SETG ( GDST, MDSE, MDST )
             CALL WMSETM ( GDST, MDSE, MDST )
+
+!  W3SETG set ICLOSE for us, and we have determined that there is
+!   interaction between high and low rank. So this is a good point
+!   to check the closure type.
+ 
+            IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+              IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGHGH IS'// &
+              ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+              CALL EXTCDE ( 1 )
+            END IF
             
             ALLOCATE ( MAPTST(NY,NX), INFLND(NY,NX), STAT=ISTAT )
             CHECK_ALLOC_STATUS ( ISTAT )
@@ -3351,12 +3359,6 @@
           FACTOR = 1.
         END IF
       ITAG   = 0
-
-      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-         IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGEQL IS'// &
-         ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
-         CALL EXTCDE ( 1 )
-      END IF
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Grid point relations and temp data storage
@@ -3390,6 +3392,12 @@
         IF ( NR .EQ. 0 ) CYCLE
 
 !..notes: we will not reach this point if are no equal rank grids. that makes it a good place to check against grid type
+
+        IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+           IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGEQL IS'// &
+           ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+           CALL EXTCDE ( 1 )
+        END IF
 
 ! Unresolved bug: this triggers even for 2 irregular grids that are not overlapping!
 !   We should only be checking for cases of 2 irregular grids of equal rank that 
