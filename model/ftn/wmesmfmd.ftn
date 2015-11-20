@@ -717,12 +717,12 @@
       do i = 1,numImpFields
         if (.not.isActiveImpField(i)) cycle
         n = n + 1
-        call NUOPC_StateAdvertiseField(impState, &
+        call NUOPC_Advertise(impState, &
           trim(impFieldStdName(i)), name=trim(impFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (.not.isActiveMbgField(i)) cycle
         n = n + 1
-        call NUOPC_StateAdvertiseField(impState, &
+        call NUOPC_Advertise(impState, &
           trim(mbgFieldStdName(i)), name=trim(mbgFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
@@ -791,7 +791,7 @@
 ! 4.b Advertise all export fields
 !
       do i = 1,numExpFields
-        call NUOPC_StateAdvertiseField(expState, &
+        call NUOPC_Advertise(expState, &
           trim(expFieldStdName(i)), name=trim(expFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
@@ -921,13 +921,13 @@
         n = n + 1
         impField(i) = FieldCreate( impFieldName(i), impFieldDim(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call NUOPC_StateRealizeField( impState, impField(i), rc=rc )
+        call NUOPC_Realize( impState, impField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         if (.not.isActiveMbgField(i)) cycle
         n = n + 1
         mbgField(i) = FieldCreate( mbgFieldName(i), impFieldDim(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call NUOPC_StateRealizeField( impState, mbgField(i), rc=rc )
+        call NUOPC_Realize( impState, mbgField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
@@ -960,7 +960,7 @@
 !     If realizeAllExport, then set all fields as active and realize.
 !
       do i = 1,numExpFields
-        isConnected = NUOPC_StateIsFieldConnected(expState, &
+        isConnected = NUOPC_IsConnected(expState, &
                       expFieldName(i), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         isActiveExpField(i) = isConnected .or. realizeAllExport
@@ -978,7 +978,7 @@
         n = n + 1
         expField(i) = FieldCreate( expFieldName(i), expFieldDim(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call NUOPC_StateRealizeField( expState, expField(i), rc=rc )
+        call NUOPC_Realize( expState, expField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
@@ -1205,7 +1205,7 @@
       do i = 1,numImpFields
         if (.not.isActiveImpField(i)) cycle
         if (initRqrdImpField(i)) then
-          fldUpdated = NUOPC_FieldIsAtTime(impField(i), currTime, rc=rc)
+          fldUpdated = NUOPC_IsAtTime(impField(i), currTime, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (fldUpdated) then
             write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
@@ -1227,7 +1227,7 @@
         ! background
         if (.not.isActiveMbgField(i)) cycle
         if (initRqrdImpField(i)) then
-          fldUpdated = NUOPC_FieldIsAtTime(mbgField(i), currTime, rc=rc)
+          fldUpdated = NUOPC_IsAtTime(mbgField(i), currTime, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (fldUpdated) then
             write(msg,'(a,a10,a,a13)') trim(cname)//': ', &
@@ -1282,7 +1282,7 @@
 !
       do i = 1,numExpFields
         if (.not.isActiveExpField(i)) cycle
-        call NUOPC_FieldAttributeSet(expField(i), name="Updated", &
+        call NUOPC_SetAttribute(expField(i), name="Updated", &
           value="true", rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
@@ -1403,11 +1403,11 @@
 !
       if ( improc .eq. nmpscr ) then
         write(*,'(///)')
-        call NUOPC_ClockPrintCurrTime(clock, &
-          "-->Advancing "//TRIM(cname)//" from: ", rc=rc)
+        call ESMF_ClockPrint(clock, options="currTime", &
+          preString="-->Advancing "//TRIM(cname)//" from: ", rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call NUOPC_ClockPrintStopTime(clock, &
-          "-----------------> to: ", rc=rc)
+        call ESMF_ClockPrint(clock, options="stopTime", &
+          preString="-----------------> to: ", rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
