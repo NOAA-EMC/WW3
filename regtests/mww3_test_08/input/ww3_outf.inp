@@ -1,0 +1,11 @@
+$ WAVEWATCH III Grid output post-processing
+$ -----------------------------------------
+  20151025 000000 10800 999
+$
+  N
+  HS WND ICE DPT DIR
+$
+$ Output type ITYPE [0,1,2,3], and IPART [ 0,...,NOSWLL ]
+$ ITYPE = 3, transfer files.
+  3 0
+  1 999 1 999 1 1

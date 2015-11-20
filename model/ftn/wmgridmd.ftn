@@ -3155,7 +3155,7 @@
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     GRDHGH NOT YET ALLOCATED, CALL WMGLOW FIRST'/)
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
-               '     NBI = 0 MAKES NO SENCE FOR RANK > 1 '/)
+               '     NBI = 0 MAKES NO SENSE FOR RANK > 1 '/)
  1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     TMPINT AND TMPRL TOO SMALL (w/out SCRIP)'/)
  1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &

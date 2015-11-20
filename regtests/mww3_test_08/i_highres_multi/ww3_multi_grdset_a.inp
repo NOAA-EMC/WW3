@@ -1,0 +1,72 @@
+$ WAVEWATCH III multi-scale input file
+$ ------------------------------------
+$   1) Number of wave model grids.                          ( NRGRD )
+$   2) Number of grids defining input fields.               ( NRINP )
+$   3) Flag for using unified point output file.           ( UNIPTS )
+$   4) Output server type as in ww3_shel.inp
+$   5) Flag for dedicated process for unified point output.
+$   6) Flag for grids sharing dedicated output processes.
+  1 0 F 1 F F
+$
+$ input data grids : NONE
+$ unified point output file : NONE
+$
+$ Now each actual wave model grid is defined using 13 parameters to be
+$ read fom a single line in the file. Each line contains the following
+$ parameters
+$     1)   Define the grid with the extension of the mod_def file.
+$    2-8)  Define the inputs used by the grids with 8 keywords 
+$          corresponding to the 8 flags defining the input in the
+$          input files. Valid keywords are:
+$            'no'      : This input is not used.
+$            'native'  : This grid has its own input files, e.g. grid
+$                        grdX (mod_def.grdX) uses ice.grdX.
+$            'MODID'   : Take input from the grid identified by 
+$                        MODID. In the example below, all grids get
+$                        their wind from wind.input (mod_def.input).
+$     9)   Rank number of grid (internally sorted and reassigned).
+$    10)   Group number (internally reassigned so that different
+$          ranks result in different group numbers.
+$   11-12) Define fraction of communicator (processes) used for this
+$          grid.
+$    13)   Flag identifying dumping of boundary data used by this
+$          grid. If true, the file nest.MODID is generated.
+$
+  'highres'   'no' 'no' 'native' 'native' 'no' 'no' 'no'   1  1  0.00 1.00  F
+$
+$ Starting and ending times for the entire model run
+   20151025 000000   20151026 000000
+$  20151025 000000   20151031 000000
+$
+$    Flag for masking computation in two-way nesting 
+$    Flag for masking at printout time.
+    T T
+$
+$ Conventional output requests as in ww3_shel.inp.  Will be applied
+$ to all grids.
+   20151025 000000  10800  20151031 000000
+$
+$ Output request flags identifying fields as in ww3_shel.inp.
+  N
+  HS WND ICE DPT DIR
+$
+$ Points
+   20151025 000000  10800  20151031 000000
+   400e+3 400e+3 'center'
+       0.E3     0.E3  'STOPSTRING'
+$
+$ Track
+   20090525 000000      0  20090526 000000
+$ Restart
+   20090525 000000      0  20090526 000000
+$ Boundaries
+   20090525 000000      0  20090526 000000
+$ Wave field data
+   20090525 000000  36000  20090526 000000
+   0 999 1 0 999 1 F
+$
+  'the_end'  0
+$
+  'STP'
+$
+$ End of input file
