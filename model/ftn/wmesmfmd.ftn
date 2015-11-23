@@ -1404,11 +1404,9 @@
       if ( improc .eq. nmpscr ) then
         write(*,'(///)')
         call ESMF_ClockPrint(clock, options="currTime", &
-          preString="-->Advancing "//TRIM(cname)//" from: ", rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          preString="-->Advancing "//TRIM(cname)//" from: ")
         call ESMF_ClockPrint(clock, options="stopTime", &
-          preString="-----------------> to: ", rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          preString="-----------------> to: ")
       endif
 !
 ! 1.c Check internal current time with component current time
