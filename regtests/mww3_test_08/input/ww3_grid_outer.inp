@@ -1,0 +1,73 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  'outer grid           '
+$
+$ 0.0418 31: fmax = 0.7294 Hz
+$ freq(1)=0.0418 , Cg(h=1000m)=18.67; Cg(h=142m)=22.4 m/s
+  1.1 0.0418  31 36 5.0
+$
+$ Set model flags 
+   F T T T F T
+$ CFL time step: 20 km, 892 sec is OK
+ 800. 800. 800. 80.
+$
+$&MISC CICE0 = 0.25, CICEN = 0.75, LICE = 1.0e+3, FLAGTR = 4 /
+ &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
+ &SBT1 GAMMA = -0.038 /
+END OF NAMELISTS
+$
+$ Grid is designed using that of tp2.3 as a starting point
+$
+$      GSTRG  : String indicating type of grid
+$      FLAGLL : Flag to indicate coordinate system
+$      CSTRG  : String indicating the type of grid index space closure
+  'RECT' F 'NONE'
+$  2 NX, NY. 
+   30 30
+$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+$    If CSTRG='SMPL', then SX is set to 360/NX.
+$ Outer grid resolution: 20 km, 30x30 therefore implies 600 km x 600 km
+    20.E3   20.E3  1.
+$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
+$ Origin = 100 km , 100 km so max x and y is 700 km 700 km
+    100.E3  100.E3  1.
+$
+$  5 Limiting bottom depth (m) to discriminate between land and sea
+$    points, minimum water depth (m) as allowed in model, unit number
+$    of file with bottom depths, scale factor for bottom depths (mult.),
+$    IDLA, IDFM, format for formatted read, FROM and filename.
+  -5. 5.75  10  -2500. 4 1 '(....)' 'UNIT' 'input'
+$
+   900*1
+$
+$ If sub-grid information is available as indicated by FLAGTR above,
+$ additional input to define this is needed below. In such cases a
+$ field of fractional obstructions at or between grid points needs to
+$ be supplied.  First the location and format of the data is defined
+$ by (as above) :
+$  - Unit number of file (can be 10, and/or identical to bottem depth
+$    unit), scale factor for fractional obstruction, IDLA, IDFM,
+$    format for formatted read, FROM and filename
+$
+    10  1         4   1 '(....)' 'UNIT' 'input' 
+ 900*0
+ 900*0
+$ Input boundary points and excluded points -------------------------- $
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ Input boundary points from segment data ( FROM = PART ) ------------ $
+$  Close list by defining point (0,0) (mandatory)
+   0  0  F
+$ Excluded grid points from segment data ( FROM != PART )
+$  Close list by defining point (0,0) (mandatory)
+   0  0  F
+$   Second, define a point in a closed body of sea points to remove
+$   the entire body of sea points. Also close by point (0,0)
+   0  0
+$
+$ Output boundary points --------------------------------------------- $
+$  Close list by defining line with 0 points (mandatory)
+   0. 0. 0. 0.  0
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

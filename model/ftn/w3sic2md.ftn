@@ -246,9 +246,9 @@
       REAL                    :: D1D(NK) !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                  ICECOEF4, ICECOEF5, ICECONC
-      REAL, ALLOCATABLE       :: WN_I(:)  ! exponential decay rate for amplitude
+      REAL, ALLOCATABLE       :: WN_I(:)  ! exponential (spatial) decay rate for amplitude (1/m)
       REAL                    :: WN_R, CG_ICE(NK)
-      REAL                    :: ALPHA ! exponential decay rate for energy
+      REAL                    :: ALPHA ! exponential (spatial) decay rate for energy (1/m)
       REAL                    :: VISCM=1.83E-6 ! molecular viscosity of water at freezing
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
                                  SMOOTH, RE, UORB, AORB, EB,   &
@@ -432,9 +432,12 @@
 !     turbulent boundary layer beneath the ice.").
 !
 !     This subroutine also calculates Cg and alpha.
-!     alpha is the exponential decay rate of *energy*  (not to be 
-!     confused  with k_i which is the exponential decay rate of 
-!     amplitude)
+!     alpha is the exponential decay rate of *energy* (not to be 
+!     confused with k_i which is the exponential decay rate of 
+!     amplitude) 
+!     
+!     Both alpha and k_i are for spatial decay rate, units (1/m)
+!     Neither is for temporal decay rate.
 !
 !     References:
 !     N/A here, but see subroutine "Liu_reverse_dispersion"
@@ -639,9 +642,13 @@
 !     turbulent boundary layer beneath the ice.").
 !
 !     This subroutine also (optionally) calculates Cg and alpha.
-!     alpha is the exponential decay rate of *energy*  (not to be 
+!     alpha is the exponential decay rate of *energy* (not to be 
 !     confused with k_i which is the exponential decay rate of 
 !     amplitude)
+!     
+!     Both alpha and k_i are for spatial decay rate, units (1/m)
+!     Neither is for temporal decay rate.
+
 !     This calculation is optional for reasons of computational 
 !      efficiency (don't calculate if it will not be used). Note that 
 !      if Cg and alpha are not calculated, the value of input viscosity

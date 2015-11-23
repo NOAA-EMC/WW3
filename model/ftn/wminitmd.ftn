@@ -352,7 +352,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
       USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR,        &
-                          FLWIND, JFIRST
+                          FLWIND, JFIRST, FLAGS4
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI, &
                           FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
                           NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
@@ -715,7 +715,6 @@
         CALL W3SETI ( -I, MDSE, MDST )
         FLAGS = .FALSE.
         READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), FLAGS(JFIRST:7)
-!
         END DO
 !
 ! 3.a.2 Unified point output grid.
@@ -818,6 +817,7 @@
         END DO
 !
 ! 3.b Assign input file unit numbers
+!     Also, set FLAGS4. This is the initial value of FLAGS(4).
 !
       DO I=-NRINP, NRGRD
         IF ( I .EQ. 0 ) CYCLE
@@ -833,6 +833,9 @@
               MDSF(I,J) = NDSFND
             END IF
           END DO
+
+          FLAGS4=FLAGS(4) 
+
         END DO
 !
 !/T      WRITE (MDST,9022)
