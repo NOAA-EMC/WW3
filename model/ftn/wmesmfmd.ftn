@@ -146,7 +146,7 @@
       logical            :: include3d
 !
 ! --- Import Fields
-      integer, parameter :: numImpFields = 5
+      integer, parameter :: numImpFields = 6
       character(6)       :: impFieldName(numImpFields)
       character(128)     :: impFieldStdName(numImpFields)
       integer            :: impFieldDim(numImpFields)
@@ -527,7 +527,7 @@
       type(ESMF_Time) :: ttmp
       type(ESMF_TimeInterval) :: tstep, etstep
       integer :: i, i1, i2, i3, j, n, imod
-      logical :: includeObg, includeAbg
+      logical :: includeObg, includeAbg, includeIbg
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -572,6 +572,11 @@
         convention="COAMPS", purpose="General", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       includeAbg = trim(attstr).eq."model"
+      call ESMF_AttributeGet(gcomp, name="IceBackground", &
+        value=attstr, defaultValue="none", &
+        convention="COAMPS", purpose="General", rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      includeIbg = trim(attstr).eq."model"
       call ESMF_AttributeGet(gcomp, name="MissingValue", &
         value=missingValue, defaultValue=real(0,ESMF_KIND_RX), &
         convention="COAMPS", purpose="General", rc=rc)
@@ -579,6 +584,7 @@
 #else
       includeObg = .false.
       includeAbg = .false.
+      includeIbg = .false.
       missingValue = real(0,ESMF_KIND_RX)
 #endif
 !
@@ -705,6 +711,13 @@
       impFieldStdName(i2)     = 'northward_wind_at_10m_height'
       initRqrdImpField(i1:i2) = .true.
       isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeAbg
+
+      j = 4;  i1 = 6;  i2 = 6;
+      isActiveImpField(i1:i2) = inpmap(imod,j).eq.-1
+      impFieldName(i1)        = 'seaice'
+      impFieldStdName(i1)     = 'sea_ice_concentration'
+      initRqrdImpField(i1:i2) = .true.
+      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeIbg
 
       do i = 1,numImpFields
         mbgFieldName(i) = 'mbg_'//trim(impFieldName(i))
@@ -1657,6 +1670,24 @@
           wx0 = wxn
           wy0 = wyn
         endif
+      endif
+!
+! -------------------------------------------------------------------- /
+! 5.  Sea ice concentration
+!
+      j = 4
+      i1 = FieldIndex( impFieldName, 'seaice', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = i1
+      if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
+        tin = tstamp
+        tfn(:,j) = tin
+        if ( isActiveMbgField(i1) ) then
+          call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        endif
+        call FieldGather( impField(i1), nx, ny, icei, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
 ! -------------------------------------------------------------------- /
