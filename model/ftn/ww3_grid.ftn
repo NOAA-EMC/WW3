@@ -4299,7 +4299,7 @@
 !/ST4              '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
 !/ST4              ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
 !/ST4              '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
-!/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,' /')
+!/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,' /')
 !
 !/ST6  920 FORMAT (/'  Wind input (Donelan et al, 2006) ',A/       &
 !/ST6         ' --------------------------------------------------')
@@ -4418,7 +4418,7 @@
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
 !/ST4               F5.2,', '/,                                       &
-!/ST4               ',       WHITECAPWIDTH =',F5.2,', SDSLFGEN = ',   &
+!/ST4               '        WHITECAPWIDTH =',F5.2,', SDSLFGEN = ',   &
 !/ST4               F5.2,', SDSHFGEN = ',F5.2,' /')
 !
 !/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &
@@ -4540,9 +4540,9 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3/      &
-               ',       EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
-               L3,',IMPFSN =',L3         / )
+ 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,','/    &
+               '        EXPFSN =',L3,', EXPFSPSI =',L3,', EXPFSFCT =', &
+               L3,', IMPFSN =',L3,' /' )
 !
   960 FORMAT (/'  Miscellaneous ',A/                                   &
                ' --------------------------------------------------')
