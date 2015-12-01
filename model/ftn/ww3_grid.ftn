@@ -93,6 +93,7 @@
 !/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
 !/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/    15 Oct-2014 : Change SMC grid input files. JGLi   ( version 5.09 )
+!/    DD-MMM-YYYY : Bug fix for mask input from file.   ( version 5.XX )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2612,7 +2613,6 @@
 !
       IF ( TRFLAG .EQ. 0 ) THEN
           WRITE (NDSO,976) 'Not available.'
-          WRITE (NDSO,*)
         ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
           WRITE (NDSO,976) 'In between grid points.'
         ELSE
@@ -2676,12 +2676,12 @@
 ! 7.g.3 Read the data
 !
           CALL INA2R ( OBSX, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-                       IDFM, RFORM, IDLA, VSC, 0.0)
+                       IDFT, RFORM, IDLA, VSC, 0.0)
 !
           IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
           CALL INA2R ( OBSY, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-                       IDFM, RFORM, IDLA, VSC, 0.0)
+                       IDFT, RFORM, IDLA, VSC, 0.0)
 !
 ! 7.g.4 Limit
 !
@@ -3144,13 +3144,14 @@
           IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
           IF (FROM.EQ.'NAME') WRITE (NDSO,974) TNAME
 !
-          IF ( NDSTR .NE. NDSI ) THEN
+          IF ( NDSTR .EQ. NDSI ) THEN
               IF ( IDFT .EQ. 3 ) THEN
                   WRITE (NDSE,1004) NDSTR
                   CALL EXTCDE (23)
                 ELSE
                   CALL NEXTLN ( COMSTR , NDSI , NDSE )
                 END IF
+            ELSE
               IF ( IDFT .EQ. 3 ) THEN
                   IF (FROM.EQ.'NAME') THEN
                       J      = LEN_TRIM(FNMPRE)
@@ -3173,10 +3174,9 @@
                 END IF
             END IF
 !
-          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
           ALLOCATE ( READMP(NX,NY) )
           CALL INA2I ( READMP, NX, NY, 1, NX, 1, NY, NDSTR, NDST,    &
-                       NDSE, IDFM, RFORM, IDLA, 1, 0 )
+                       NDSE, IDFT, RFORM, IDLA, 1, 0 )
 !
           IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
               DO IY=2, NY-1
@@ -4718,12 +4718,12 @@
                '       Format indicator            :',I6)
   973 FORMAT ( '       Format                      : ',A)
   974 FORMAT ( '       File name                   : ',A)
-  976 FORMAT ( '       Sub-grid information        : ',A)
+  976 FORMAT (/'       Sub-grid information        : ',A)
   977 FORMAT ( '       Obstructions unit           :',I6/             &
                '       Scale factor                :',F10.4/          &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)
-  978 FORMAT ( '       Mask information            : From file.'/     &
+  978 FORMAT (/'       Mask information            : From file.'/     &
                '       Mask unit                   :',I6/             &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)
