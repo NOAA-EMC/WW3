@@ -1390,6 +1390,8 @@
       type(ESMF_Time) :: currTime, stopTime
       real :: delt
       logical :: lerr
+      type(ESMF_State) :: state
+      integer, save                 :: slice=1
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1463,6 +1465,16 @@
 !
       call GetImport(gcomp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+!     Dump import fields to file
+
+      call NUOPC_ModelGet(gcomp, importState=state, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call NUOPC_Write(state, filePrefix="field_ww3_import_", &
+        timeslice=slice, relaxedFlag=.true., rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      slice = slice + 1
 !
 ! 1.f Advance model
 !
