@@ -1471,7 +1471,7 @@
       call NUOPC_ModelGet(gcomp, importState=state, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
-      call NUOPC_Write(state, filePrefix="field_ww3_import_", &
+      call NUOPC_Write(state, fileNamePrefix="field_ww3_import_", &
         timeslice=slice, relaxedFlag=.true., rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       slice = slice + 1
