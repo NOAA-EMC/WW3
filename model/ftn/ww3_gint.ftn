@@ -793,7 +793,7 @@
 !/    09-Jul-2009 : Original code                       ( version 3.14 )
 !/    21-Feb-2013 : Modified to new output structure    ( version 4.11 )
 !/    30-Apr-2014 : Add group 3                         ( version 5.00 )
-!/    27-Aug-2015 : ice thick. and floe added as output ( version 5.XX )
+!/    27-Aug-2015 : ice thick. and floe added as output ( version 5.10 )
 !/
 !   1. Purpose :
 !

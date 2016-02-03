@@ -19,7 +19,7 @@
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
-!/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.XX )
+!/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

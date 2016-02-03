@@ -138,7 +138,7 @@
 !/    09-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
 !/    20-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
-!/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.XX )
+!/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
 !/
 !  1. Purpose :
 !
@@ -382,7 +382,7 @@
 !/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
 !/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
 !/    27-May-2014 : Adding OMPG parallelizations dir.   ( version 5.02 )
-!/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.XX )
+!/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
 !/
 !  1. Purpose :
 !
@@ -1033,7 +1033,7 @@
 !/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
-!/    27-Aug-2015 : Creation                            ( version 5.XX )   
+!/    27-Aug-2015 : Creation                            ( version 5.10 )   
 !/
 !  1. Purpose :
 !

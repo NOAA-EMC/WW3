@@ -48,7 +48,7 @@
 !/    04-Jun-2014 : Update use of date   (M. Accensi)   ( version 5.00 )
 !/    13-Jun-2014 : Dimension order opt. (M. Accensi)   ( version 5.00 )
 !/    18-Jun-2014 : add mpi implementat. (M. Accensi)   ( version 5.00 )
-!/    27-Aug-2015 : Sice add as additional output       ( version 5.XX )
+!/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
 !/                  (in source terms)
 !/
 !/    Copyright 2009 National Weather Service (NWS),

@@ -34,7 +34,7 @@
 !/                  reducing memory footprint for fields.
 !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    27-Aug-2015 : Adding interpolated ICEF (mean ice  ( version 5.XX )
+!/    27-Aug-2015 : Adding interpolated ICEF (mean ice  ( version 5.10 )
 !/                  floe diameter), ICEH (ice thickness)
 !/                  and ICE (ice concentration).
 !/

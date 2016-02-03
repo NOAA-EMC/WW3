@@ -727,7 +727,7 @@
 !/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
-!/    27-Aug-2015 : Origination.                        ( version 5.XX )      
+!/    27-Aug-2015 : Origination.                        ( version 5.10 )      
 !
 !  1. Purpose :
 !
@@ -821,7 +821,7 @@
 !/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
-!/    27-Aug-2015 : Origination.                        ( version 5.XX )      
+!/    27-Aug-2015 : Origination.                        ( version 5.10 )      
 !
 !  1. Purpose :
 !
@@ -922,8 +922,8 @@
 !/                  | Last update :         6-Nov-2015  |
 !/                  +-----------------------------------+
 !/
-!/    27-Aug-2015 : Origination.                        ( version 5.XX )      
-!/     6-Nov-2015 : Uses a continuous DMAX->DAVE function(version 5.XX )      
+!/    27-Aug-2015 : Origination.                        ( version 5.10 )      
+!/     6-Nov-2015 : Uses a continuous DMAX->DAVE function(version 5.10 )      
 !
 !  1. Purpose : Computes the mean flow size from the max floe size 
 !
@@ -1009,7 +1009,7 @@
 !/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
-!/    27-Aug-2015 : Origination.                        ( version 5.XX )      
+!/    27-Aug-2015 : Origination.                        ( version 5.10 )      
 !
 !  1. Purpose :
 !
@@ -1100,7 +1100,7 @@
 !/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
-!/    27-Aug-2015 : Origination.                        ( version 5.XX )      
+!/    27-Aug-2015 : Origination.                        ( version 5.10 )      
 !
 !  1. Purpose :
 !
