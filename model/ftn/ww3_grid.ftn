@@ -589,7 +589,9 @@
 !!Li
       REAL                    :: FACBERG, REFSLOPE
 !/IS1      REAL                    :: ISC1, ISC2
-!/IS2      REAL                    :: ISC1, ISC2
+!/IS2      REAL                    :: ISC1, IS2BACKSCAT, IS2C2, IS2C3,&
+!/IS2                                 IS2FRAGILITY, IS2DMIN, IS2DAMP, IS2CONC
+!/IS2      LOGICAL                 :: IS2BREAK, IS2DISP, IS2DUPDATE 
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
@@ -677,11 +679,11 @@
 !
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
-!/IC2      NAMELIST /IC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
+!/IC2      NAMELIST /SIC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
-!/IC3      NAMELIST /IC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
+!/IC3      NAMELIST /SIC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC
-!/IG1      NAMELIST /IG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
+!/IG1      NAMELIST /SIG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
 !/LN1      NAMELIST /SLN1/ CLIN, RFPM, RFHF
@@ -738,8 +740,9 @@
                              STH1MF, I1STH1M, I2STH1M,                &
                              TH2MF, I1TH2M, I2TH2M,                   &
                              STH2MF, I1STH2M, I2STH2M
-!/IS1           NAMELIST /SIS1/ ISC1,ISC2
-!/IS2           NAMELIST /SIS2/ ISC1,ISC2
+!/IS1           NAMELIST /SIS1/ ISC1, ISC2
+!/IS2           NAMELIST /SIS2/ ISC1, IS2C2, IS2C3, IS2BACKSCAT, IS2BREAK,  &
+!/IS2                           IS2DISP, IS2FRAGILITY, IS2CONC, IS2DMIN, IS2DAMP, IS2DUPDATE
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -950,6 +953,7 @@
       FLNL   = .TRUE.
       FLBT   = .TRUE.
       FLIC   = .FALSE.
+      FLIS   = .FALSE.
       FLDB   = .TRUE.
       FLTR   = .TRUE.
       FLBS   = .TRUE.
@@ -1022,10 +1026,10 @@
 !/XX0      FLXX   = .FALSE.
 !/XXX      NRXX   = NRXX + 1
 !
-      IF ( .NOT.FLLIN .AND. .NOT.FLINDS .AND. .NOT.FLNL .AND.         &
-            .NOT.FLBT .AND.  .NOT.FLIC .AND.  .NOT.FLDB .AND.         &
-            .NOT.FLTR .AND.  .NOT.FLBS .AND.  .NOT.FLXX .AND.         &
-            .NOT.FLREF .AND.  FLSOU ) THEN
+      IF ( .NOT.FLLIN .AND.  .NOT.FLINDS .AND.  .NOT.FLNL .AND.        &
+           .NOT.FLBT  .AND.  .NOT.FLIC   .AND.  .NOT.FLIS .AND.        &
+           .NOT.FLDB  .AND.  .NOT.FLTR   .AND.  .NOT.FLBS .AND.        &
+           .NOT.FLXX  .AND.  .NOT.FLREF  .AND.  FLSOU ) THEN
           WRITE (NDSE,1020)
           CALL EXTCDE ( 10 )
         END IF
@@ -1881,10 +1885,20 @@
 !/IS1      IS1C1 = ISC1
 !/IS1      IS1C2 = ISC2
 !/IS2      ISC1 = 1.
-!/IS2      ISC2 = 0.
+!/IS2      IS2C2 = 0.   ! 0.025
+!/IS2      IS2C3 = 0.   ! 2.4253
+!/IS2      IS2CONC = 0.   
+!/IS2      IS2BACKSCAT = 1.
+!/IS2      IS2BREAK = .FALSE.
+!/IS2      IS2DISP=.TRUE.
+!/IS2      IS2DUPDATE=.TRUE.
+!/IS2      IS2FRAGILITY=0.9
+!/IS2      IS2DMIN=20
+!/IS2      IS2DAMP=0.
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
-!/IS2      WRITE (NDSO,948) ISC1, ISC2
+!/IS2      WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2BREAK, IS2DUPDATE, IS2DISP, &
+!/IS2        IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2, IS2C3
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -1912,17 +1926,17 @@
 !/IG1       IGFIXEDDEPTH = 0.
 !/IG1       IGEMPIRICAL = 0.00125
 !
-!/IG1      CALL READNL ( NDSS, 'IG1 ', STATUS )
+!/IG1      CALL READNL ( NDSS, 'SIG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
 !
 !/IC2       IC2DISPER = .TRUE. 
 !/IC2       IC2TURB = 1.
 !/IC2       IC2TURBS = 0.
-!/IC2       IC2ROUGH = 0.0001 
+!/IC2       IC2ROUGH = 0.01 
 !/IC2       IC2REYNOLDS = 1.5E5
-!/IC2       IC2SMOOTH = 7E4
-!/IC2       IC2VISC = 1.
-
+!/IC2       IC2SMOOTH = 2E5
+!/IC2       IC2VISC = 8.
+!
 !/IC3       IC3MAXTHK = 0.1 
 !/IC3       IC3MAXCNC = 1.0
 !/IC3       IC2TURB = 2.0 ! from run_test example by F.A.
@@ -1933,10 +1947,10 @@
 !/IC3       IC2VISC = 2.
 
 !
-!/IC2      CALL READNL ( NDSS, 'IC2 ', STATUS )
+!/IC2      CALL READNL ( NDSS, 'SIC2 ', STATUS )
 !/IC2      WRITE (NDSO,971) STATUS
 !
-!/IC3      CALL READNL ( NDSS, 'IC3 ', STATUS )
+!/IC3      CALL READNL ( NDSS, 'SIC3 ', STATUS )
 !/IC3      WRITE (NDSO,971) STATUS
 
 !
@@ -2104,7 +2118,8 @@
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
 !/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
-!/IS2          WRITE (NDSO,2948) ISC1, ISC2
+!/IS2          WRITE (NDSO,2948) ISC1, IS2BACKSCAT, IS2BREAK, IS2DUPDATE, IS2DISP, &
+!/IS2                    IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2, IS2C3, IS2CONC
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -3694,7 +3709,19 @@
 !/IC3       IC2PARS(8)=IC3MAXCNC
 !
 !/IS2      IS2PARS(1) = ISC1
-!/IS2      IS2PARS(2) = ISC2
+!/IS2      IS2PARS(2) = IS2BACKSCAT
+!/IS2      IS2PARS(3)=0.
+!/IS2      IF (IS2BREAK) IS2PARS(3)=1.
+!/IS2      IS2PARS(4)=IS2C2
+!/IS2      IS2PARS(5)=IS2C3
+!/IS2      IS2PARS(6)=0.
+!/IS2      IF (IS2DISP) IS2PARS(6)=1.
+!/IS2      IS2PARS(7)=IS2DAMP
+!/IS2      IS2PARS(8)=IS2FRAGILITY
+!/IS2      IS2PARS(9)=IS2DMIN 
+!/IS2      IS2PARS(10)=0.
+!/IS2      IF (IS2DUPDATE) IS2PARS(10)=1.
+!/IS2      IS2PARS(11)=IS2CONC
 !
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
@@ -4481,13 +4508,13 @@
 !/XX0  934 FORMAT (/'  Alternative source term slot not used.'/)
 !/XXX  934 FORMAT (/'  Experimental unclasified source term.'/)
 !
-!/IC1  935 FORMAT (/'  Dissipation via ice parameters (IC1).'&
+!/IC1  935 FORMAT (/'  Dissipation via ice parameters (SIC1).'&
 !/IC1           ,/' --------------------------------------------------')
 !
-!/IC2  935 FORMAT (/'  Dissipation via ice parameters (IC2).'&
+!/IC2  935 FORMAT (/'  Dissipation via ice parameters (SIC2).'&
 !/IC2           ,/' --------------------------------------------------')
 !
-!/IC3  935 FORMAT (/'  Dissipation via ice parameters (IC3).'&
+!/IC3  935 FORMAT (/'  Dissipation via ice parameters (SIC3).'&
 !/IC3           ,/' --------------------------------------------------')
 !
 !/IS0 944 FORMAT  (/'  Ice scattering not defined.'/)
@@ -4499,10 +4526,22 @@
 !/IS1 2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
 !/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS2              ' --------------------------------------------------')
-!/IS2 948 FORMAT  ('  WIFAR stuff ... '/&
-!/IS2              '        param 1                 : ',E10.3/ &
-!/IS2              '         param 2                     : ',E10.3)
-!/IS2 2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', ISC2 =',E9.3)
+!/IS2 948 FORMAT  ('  IS2 Scattering ... '/&
+!/IS2              '        scattering coefficient       : ',F5.2/ &
+!/IS2              '        0: no back-scattering        : ',F5.2/ &
+!/IS2              '     TRUE: update of ICEDMAX         : ',L3/ &
+!/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/ &
+!/IS2              '     TRUE: uses Robinson-Palmer disp.: ',L3/ &
+!/IS2              '        attenuation                  : ',F3.1/ &
+!/IS2              '        fragility                    : ',F4.2/ &
+!/IS2              '        minimum floe size in meters  : ',F5.2/ &
+!/IS2              '        pack scattering coef 1       : ',F5.2/ &
+!/IS2              '        pack scattering coef 2       : ',F5.2/ &
+!/IS2              '        scaling by concentration     : ',F5.2)
+!/IS2 2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', IS2BACKSCAT =',E9.3,   &
+!/IS2               ', IS2BREAK =',L3,', IS2DUPDATE =',L3,','/  &
+!/IS2               '       IS2DISP =',L3,', IS2DAMP =',F3.1,', IS2FRAGILITY =',F4.2, &
+!/IS2               ', IS2DMIN =',F5.2,', IS2C2 =',F12.8,', IS2C3 =',F8.4,', IS2CONC =',F5.1,' /')
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
@@ -4603,7 +4642,7 @@
                ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
- 2978 FORMAT ( '  &IC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
+ 2978 FORMAT ( '  &SIC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
                ', IC2ROUGH  =',F10.6,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
@@ -4885,7 +4924,7 @@
 !
  1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
                ' -----------------------------------'/)
- 1101 FORMAT (2X,180I1)
+ 1101 FORMAT (2X,180I2)
  1102 FORMAT ( '  Legend : '/                                         &
                ' -----------------------------'/                      &
                '    0 : Land point            '/                      &
@@ -5083,12 +5122,12 @@
 !/PR3                          READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
 !/REF1                        CASE('REF1') 
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
-!/IG1                        CASE('IG1 ') 
-!/IG1                         READ (NDS,NML=IG1,END=801,ERR=802,IOSTAT=J)
-!/IC2                        CASE('IC2 ') 
-!/IC2                         READ (NDS,NML=IC2,END=801,ERR=802,IOSTAT=J)
-!/IC3                        CASE('IC3 ') 
-!/IC3                         READ (NDS,NML=IC3,END=801,ERR=802,IOSTAT=J)
+!/IG1                        CASE('SIG1') 
+!/IG1                         READ (NDS,NML=SIG1,END=801,ERR=802,IOSTAT=J)
+!/IC2                        CASE('SIC2') 
+!/IC2                         READ (NDS,NML=SIC2,END=801,ERR=802,IOSTAT=J)
+!/IC3                        CASE('SIC3') 
+!/IC3                         READ (NDS,NML=SIC3,END=801,ERR=802,IOSTAT=J)
                         CASE('UNST')
                           READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')

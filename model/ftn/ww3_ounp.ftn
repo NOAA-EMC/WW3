@@ -48,6 +48,8 @@
 !/    04-Jun-2014 : Update use of date   (M. Accensi)   ( version 5.00 )
 !/    13-Jun-2014 : Dimension order opt. (M. Accensi)   ( version 5.00 )
 !/    18-Jun-2014 : add mpi implementat. (M. Accensi)   ( version 5.00 )
+!/    27-Aug-2015 : Sice add as additional output       ( version 5.XX )
+!/                  (in source terms)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -162,7 +164,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
-                          IPASS => IPASS2
+                          IPASS => IPASS2, ICEFO, ICEO, ICEHO
 !/SETUP      USE W3ODATMD, ONLY: ZET_SETO
 !
 !/O14      USE W3ODATMD, ONLY: GRDID
@@ -192,7 +194,7 @@
       REAL                    :: M2KM
       REAL, ALLOCATABLE       :: XPART(:,:)
       INTEGER, ALLOCATABLE    :: INDREQ(:), INDREQTMP(:)
-      LOGICAL                 :: FLFORM, FLSRCE(6)
+      LOGICAL                 :: FLFORM, FLSRCE(7)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
       LOGICAL                 :: TOGETHER, ORDER
 
@@ -202,7 +204,7 @@
                                  NCNAME*128, FILETIME*16,   &
                                  attname*120,attval*120
 
-      CHARACTER*25            :: IDSRCE(6)
+      CHARACTER*25            :: IDSRCE(7)
 
       REAL(kind=4)            :: DTHD,RTH0
       REAL(kind=4),DIMENSION(:),ALLOCATABLE    :: THD
@@ -225,6 +227,7 @@
                     'Nonlinear interactions   ' ,                     &
                     'Dissipation              ' ,                     &
                     'Wave-bottom interactions ' ,                     &
+                    'Wave-ice interactions    ' ,                     &
                     'Sum of selected sources  ' /
       FLSRCE = .FALSE.
 !
@@ -1310,6 +1313,7 @@
 !/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
 !/BSX      USE W3SBSXMD
+!/IS2      USE W3SIS2MD
 !/XXX      USE W3SXXXMD
       USE W3PARTMD, ONLY: W3PART
       USE W3DISPMD, ONLY: WAVNU1
@@ -1345,6 +1349,8 @@
                                    XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                    YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
                                    FMEAN, WNMEAN, UDIRCA, CHARN, M2KM
+      REAL                      :: ICETHICK, ICECON
+!/IS2       REAL                     :: ICEF, ICEDMAX				   
       REAL                      :: UDIR1(NREQ), CDIR1(NREQ)
       LOGICAL                   :: LASTSTATION=.FALSE.
       LOGICAL                   :: SHORT=.TRUE.
@@ -1366,22 +1372,22 @@
       REAL                      :: E(NK,NTH), E1(NK), APM(NK),          &
                                    THBND(NK), SPBND(NK), A(NTH,NK),     &
                                    WN2(NTH,NK)
-      REAL                      :: DIA(NTH,NK), SWN(NK,NTH), SNL(NK,NTH),&
-                                   SDS(NK,NTH), SBT(NK,NTH), XLN(NTH,NK),&
-                                   XIN(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
+      REAL                      :: STT(NK,NTH), SWN(NK,NTH), SNL(NK,NTH),&
+                                   SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH)
+      REAL                      :: XIN(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
                                    XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
-                                   XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH),&
-                                   XWL(NTH,NK)
+                                   XBS(NTH,NK), XXX(NTH,NK), DIA(NTH,NK),&
+                                   XLN(NTH,NK), XWL(NTH,NK), XIS(NTH,NK)
       REAL                      :: SIN1(NK), SNL1(NK), SDS1(NK),         &
-                                   SBT1(NK), STT1(NK), E1ALL(NK,5)
+                                   SBT1(NK), SIS1(NK), STT1(NK), E1ALL(NK,6)
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      REAL                    :: LAMBDA(NSPEC)
-      CHARACTER*4               :: VAR1(5)
+      CHARACTER*4               :: VAR1(6)
       REAL(kind=8)              :: timenc,Jday0
       INTEGER(kind=4)           :: iyc,imc,idc,ihc,iminc,isc
 !
-      DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Stot' /
+      DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Sice', 'Stot' /
 
 
 
@@ -1413,6 +1419,7 @@
           XBT = 0.
           XBS = 0.
           XWL = 0.
+          XIS = 0.
           XXX = 0.
         END IF
 
@@ -1574,13 +1581,17 @@
 !
 ! 2. Calculate grid parameters using and inlined version of WAVNU1.
 !
-          DEPTH  = MAX ( DMIN, DPO(J) )
-          SQRTH  = SQRT ( depth )
-          UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
-          UDIRCA = WDO(J)*RADE
-          UDIRR  = WDO(J)
-          UABS   = MAX ( 0.001 , WAO(J) )
-          CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
+          DEPTH    = MAX ( DMIN, DPO(J) )
+          SQRTH    = SQRT ( depth )
+          UDIR     = MOD ( 270. - WDO(J)*RADE , 360. )
+          UDIRCA   = WDO(J)*RADE
+          UDIRR    = WDO(J)
+          UABS     = MAX ( 0.001 , WAO(J) )
+          CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
+!/IS2           ICEDMAX  = MAX ( 0., ICEFO(J))
+!/IS2           ICEF     = ICEDMAX
+          ICETHICK = MAX (0., ICEHO(J))
+          ICECON   = MAX (0., ICEO(J))
 !
 !/STAB2            STAB0  = ZWIND * GRAV / 273.
 !/STAB2            STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
@@ -1989,6 +2000,10 @@
 !/BSX                    CALL W3SBSX
 !
             END IF
+            IF ( FLSRCE(6) ) THEN
+!/IS2              CALL W3SIS2(A, ICECON, ICETHICK, ICEF, ICEDMAX,  &
+!/IS2                          IX, IY, XIS, DIA, WN, CG)  	      
+            END IF
 !
 !/XXX                CALL W3SXXX
 !
@@ -2015,6 +2030,7 @@
               SNL1(IK) = 0.
               SDS1(IK) = 0.
               SBT1(IK) = 0.
+              SIS1(IK) = 0.
               STT1(IK) = 0.
               DO ITH=1, NTH
                 ISP         = ITH + (IK-1)*NTH
@@ -2024,27 +2040,31 @@
                 SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6         SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
                 SBT(IK,ITH) = ( XBT(ITH,IK) + XBS(ITH,IK) ) * FACTOR
+                SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
                 STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) + SDS(IK,ITH) + &
-                              SBT(IK,ITH) + XXX(ITH,IK) * FACTOR
+                              SBT(IK,ITH) + SIS(IK,ITH) + XXX(ITH,IK) * FACTOR
                 E1  (IK) = E1  (IK) + E(IK,ITH)
                 SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
                 SNL1(IK) = SNL1(IK) + SNL(IK,ITH)
                 SDS1(IK) = SDS1(IK) + SDS(IK,ITH)
                 SBT1(IK) = SBT1(IK) + SBT(IK,ITH)
+                SIS1(IK) = SIS1(IK) + SIS(IK,ITH)
               END DO
               E1  (IK) = E1(IK)   * DTH * FACE
               SIN1(IK) = SIN1(IK) * DTH * FACS
               SNL1(IK) = SNL1(IK) * DTH * FACS
               SDS1(IK) = SDS1(IK) * DTH * FACS
               SBT1(IK) = SBT1(IK) * DTH * FACS
+              SIS1(IK) = SIS1(IK) * DTH * FACS
             END DO
 !
-            STT1       = SIN1 + SNL1 + SDS1 + SBT1
+            STT1       = SIN1 + SNL1 + SDS1 + SBT1 + SIS1
             E1ALL(:,1) = SIN1
             E1ALL(:,2) = SNL1
             E1ALL(:,3) = SDS1
             E1ALL(:,4) = SBT1
-            E1ALL(:,5) = STT1
+            E1ALL(:,5) = SIS1
+            E1ALL(:,6) = STT1
 !
           END IF ! 3.e
 
@@ -2340,8 +2360,8 @@
                            PTNME(J) )
                   IF (FLSRCE(2) .OR. FLSRCE(3) .OR.             &
                       FLSRCE(4) .OR. FLSRCE(5) .OR.             &
-                      FLSRCE(6) )                               &
-                      CALL PRT1DM (NDSO, NK, 5, E1ALL, SIG(1:NK),&
+                      FLSRCE(6) .OR. FLSRCE(7) )                &
+                      CALL PRT1DM (NDSO, NK, 6, E1ALL, SIG(1:NK),&
                            'RAD/S', 17, SCALE1, VAR1, 'M2',     &
                            PTNME(J) )
               END IF
@@ -2367,6 +2387,10 @@
                           SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
                            'Sbt(f,th)', 'm^2', PTNME(J) )
                   IF ( FLSRCE(6) )                              &
+                      CALL PRT2DS (NDSO, NK, NK, NTH, SIS,      &
+                          SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                           'Sice(f,th)', 'm^2', PTNME(J) )
+		          IF ( FLSRCE(7) )                              &
                       CALL PRT2DS (NDSO, NK, NK, NTH, STT,      &
                           SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
                            'Stot(f,th)', 'm^2', PTNME(J) )
@@ -2391,7 +2415,8 @@
               iret=nf90_put_var(ncid,varid(12),SNL1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               iret=nf90_put_var(ncid,varid(13),SDS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               iret=nf90_put_var(ncid,varid(14),SBT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
-              iret=nf90_put_var(ncid,varid(15),STT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
+              iret=nf90_put_var(ncid,varid(15),SIS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))	      
+              iret=nf90_put_var(ncid,varid(16),STT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
 
 !
 !  Performs subtype 3
@@ -2416,13 +2441,15 @@
                   iret=nf90_put_var(ncid,varid(12),FACT*SNL1(IK),(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(13),FACT*SDS1(IK),(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(14),FACT*SBT1(IK),(/ IK,J1,IOUT /))
-                  iret=nf90_put_var(ncid,varid(15),FACT*STT1(IK),(/ IK,J1,IOUT /))
+                  iret=nf90_put_var(ncid,varid(15),FACT*SIS1(IK),(/ IK,J1,IOUT /))		  
+                  iret=nf90_put_var(ncid,varid(16),FACT*STT1(IK),(/ IK,J1,IOUT /))
                 ELSE
                   iret=nf90_put_var(ncid,varid(11),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(12),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(13),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(14),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(15),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
+                  iret=nf90_put_var(ncid,varid(16),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
                 END IF
               END DO
 
@@ -2464,6 +2491,9 @@
                  TRANSPOSE(SBT(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
                  count=(/NTH,NK,1,1/)                               )
               IF ( FLSRCE(6) )  iret=nf90_put_var(ncid,varid(21),   &
+                 TRANSPOSE(SIS(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
+                 count=(/NTH,NK,1,1/)                               )		 
+              IF ( FLSRCE(7) )  iret=nf90_put_var(ncid,varid(22),   &
                  TRANSPOSE(STT(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
                  count=(/NTH,NK,1,1/)                               )
 !
@@ -2653,55 +2683,55 @@
               ' U*       : ',F9.3,' m/s'/                        &
               ' U10      : ',F7.1,'   m/s'/)
  2921 FORMAT ('    f           E      ',                              &
-              '    Sin        Snl        Sds        Sbt       Stot'/  &
+              '    Sin        Snl        Sds        Sbt       Sice       Stot'/  &
               '   (Hz)       (m2s)    ',                              &
-              '   (m2)       (m2)       (m2)       (m2)       (m2)'/  &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '   (m2)       (m2)       (m2)       (m2)       (m2)       (m2)'/  &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2922 FORMAT ('    f*          E*    ',                               &
-              '    Sin*       Snl*       Sds*       Sbt*      Stot*'/ &
+              '    Sin*       Snl*       Sds*       Sbt*      Sice*       Stot*'/ &
               '   (-)         (-)    ',                               &
-              '    (-)        (-)        (-)        (-)        (-)'/  &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '    (-)        (-)        (-)        (-)        (-)        (-)'/  &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2923 FORMAT ('   f/fp         E      ',                              &
-              '   Sin        Snl        Sds        Sbt       Stot'/   &
+              '   Sin        Snl        Sds        Sbt       Sice       Stot'/   &
               '   (-)        (m2s)    ',                              &
-              '  (m2)       (m2)       (m2)       (m2)       (m2)'/   &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '  (m2)       (m2)       (m2)       (m2)       (m2)       (m2)'/   &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2924 FORMAT ('   f/fp         E*     ',                              &
-              '   Sin*       Snl*       Sds*       Sbt*      Stot*'/  &
+              '   Sin*       Snl*       Sds*       Sbt*      Sice*      Stot*'/  &
               '     (-)       (-)     ',                              &
-              '   (-)        (-)        (-)        (-)        (-)'/   &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '   (-)        (-)        (-)        (-)        (-)        (-)'/   &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2925 FORMAT ('    f         E      ',                                &
-              '  Tini       Tnli       Tdsi       Tbti      Ttoti'/   &
+              '  Tini       Tnli       Tdsi       Tbti      Ticei      Ttoti'/   &
               '   (Hz)     (m2s)    ',                                &
-              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
+              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
  2926 FORMAT ('    f*        E*     ',                                &
-              ' Tini*      Tnli*      Tdsi*      Tbti*     Ttoti*'/   &
+              ' Tini*      Tnli*      Tdsi*      Tbti*     Ticei*     Ttoti*'/   &
               '   (-)       (-)     ',                                &
-              '  (-)        (-)        (-)        (-)        (-)'/    &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
+              '  (-)        (-)        (-)        (-)        (-)        (-)'/    &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
  2927 FORMAT ('   f/fp       E      ',                                &
-              '  Tini       Tnli       Tdsi       Tbti      Ttoti'/   &
+              '  Tini       Tnli       Tdsi       Tbti      Ticei      Ttoti'/   &
               '   (-)       (m2s)    ',                               &
-              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
+              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
  2928 FORMAT ('   f/fp       E*     ',                                &
-              ' Tini*      Tnli*      Tdsi*      Tbti*     Ttoti*'/   &
+              ' Tini*      Tnli*      Tdsi*      Tbti*     Ticei*     Ttoti*'/   &
               '   (-)       (-)     ',                                &
-              '  (-)        (-)        (-)        (-)        (-)'/    &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
- 2930 FORMAT (1X,F7.4,2X,6E11.3)
- 2931 FORMAT (1X,F7.4,6E11.3)
+              '  (-)        (-)        (-)        (-)        (-)        (-)'/    &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
+ 2930 FORMAT (1X,F7.4,2X,7E11.3)
+ 2931 FORMAT (1X,F7.4,7E11.3)
  2940 FORMAT ( ' '/' ' )
 !
 !/T 9000 FORMAT (' TEST W3EXNC : FLAGS :',40L2)
@@ -2740,7 +2770,7 @@
       INTEGER                           :: iret
 !/NC4    INTEGER                             :: deflate=1
       REAL(kind=4)                      :: freq(NK), freq1(NK),freq2(NK), dir(NTH)
-      LOGICAL, INTENT(IN), OPTIONAL     :: FLSRCE(6)
+      LOGICAL, INTENT(IN), OPTIONAL     :: FLSRCE(7)
 
 !
 ! Creation in netCDF3 or netCDF4
@@ -4173,16 +4203,16 @@
         iret=nf90_put_att(ncid,varid(14),'content','TXY')
         iret=nf90_put_att(ncid,varid(14),'associates','time station frequency')
 
-!Stot
+!Sice
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
-          iret=nf90_def_var(ncid, 'stot', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
+          iret=nf90_def_var(ncid, 'sice', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
         ELSE
-          iret=nf90_def_var(ncid, 'stotstar', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
+          iret=nf90_def_var(ncid, 'sicestar', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
         END IF
 !/NC4       IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(15), 1, 1, deflate)
-        iret=nf90_put_att(ncid,varid(15),'long_name','total source term')
-        iret=nf90_put_att(ncid,varid(15),'standard_name','total_source_term')
-        iret=nf90_put_att(ncid,varid(15),'globwave_name','total_source_term')
+        iret=nf90_put_att(ncid,varid(15),'long_name','wave-ice interactions source term')
+        iret=nf90_put_att(ncid,varid(15),'standard_name','wave_ice_interactions_source_term')
+        iret=nf90_put_att(ncid,varid(15),'globwave_name','wave_ice_interactions_source_term')
         iret=nf90_put_att(ncid,varid(15),'units','m2 rad-1')
         iret=nf90_put_att(ncid,varid(15),'scale_factor',1.)
         iret=nf90_put_att(ncid,varid(15),'add_offset',0.)
@@ -4191,6 +4221,26 @@
         iret=nf90_put_att(ncid,varid(15),'_FillValue', NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(15),'content','TXY')
         iret=nf90_put_att(ncid,varid(15),'associates','time station frequency')
+
+
+!Stot
+        IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
+          iret=nf90_def_var(ncid, 'stot', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(16))
+        ELSE
+          iret=nf90_def_var(ncid, 'stotstar', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(16))
+        END IF
+!/NC4       IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(16), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(16),'long_name','total source term')
+        iret=nf90_put_att(ncid,varid(16),'standard_name','total_source_term')
+        iret=nf90_put_att(ncid,varid(16),'globwave_name','total_source_term')
+        iret=nf90_put_att(ncid,varid(16),'units','m2 rad-1')
+        iret=nf90_put_att(ncid,varid(16),'scale_factor',1.)
+        iret=nf90_put_att(ncid,varid(16),'add_offset',0.)
+        iret=nf90_put_att(ncid,varid(16),'valid_min',-1.)
+        iret=nf90_put_att(ncid,varid(16),'valid_max',1.)
+        iret=nf90_put_att(ncid,varid(16),'_FillValue', NF90_FILL_FLOAT)
+        iret=nf90_put_att(ncid,varid(16),'content','TXY')
+        iret=nf90_put_att(ncid,varid(16),'associates','time station frequency')
 
 
 !  Add values in netCDF file   
@@ -4376,16 +4426,16 @@
         iret=nf90_put_att(ncid,varid(14),'content','TXY')
         iret=nf90_put_att(ncid,varid(14),'associates','time station frequency')
 
-!Ttoti
+!Ticei
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
-          iret=nf90_def_var(ncid, 'ttoti', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
+          iret=nf90_def_var(ncid, 'ticei', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
         ELSE
-          iret=nf90_def_var(ncid, 'ttotistar', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
+          iret=nf90_def_var(ncid, 'ticeistar', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(15))
         END IF
-!/NC4       IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(15), 1, 1, deflate)
-        iret=nf90_put_att(ncid,varid(15),'long_name','ttoti')
-        iret=nf90_put_att(ncid,varid(15),'standard_name','ttoti')
-        iret=nf90_put_att(ncid,varid(15),'globwave_name','ttoti')
+!/NC4       IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(14), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(15),'long_name','tbti')
+        iret=nf90_put_att(ncid,varid(15),'standard_name','ticei')
+        iret=nf90_put_att(ncid,varid(15),'globwave_name','ticei')
         iret=nf90_put_att(ncid,varid(15),'units','m2 rad-1')
         iret=nf90_put_att(ncid,varid(15),'scale_factor',1.)
         iret=nf90_put_att(ncid,varid(15),'add_offset',0.)
@@ -4394,6 +4444,25 @@
         iret=nf90_put_att(ncid,varid(15),'_FillValue', NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(15),'content','TXY')
         iret=nf90_put_att(ncid,varid(15),'associates','time station frequency')
+
+!Ttoti
+        IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
+          iret=nf90_def_var(ncid, 'ttoti', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(16))
+        ELSE
+          iret=nf90_def_var(ncid, 'ttotistar', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(16))
+        END IF
+!/NC4       IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(16), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(16),'long_name','ttoti')
+        iret=nf90_put_att(ncid,varid(16),'standard_name','ttoti')
+        iret=nf90_put_att(ncid,varid(16),'globwave_name','ttoti')
+        iret=nf90_put_att(ncid,varid(16),'units','m2 rad-1')
+        iret=nf90_put_att(ncid,varid(16),'scale_factor',1.)
+        iret=nf90_put_att(ncid,varid(16),'add_offset',0.)
+        iret=nf90_put_att(ncid,varid(16),'valid_min',-1.)
+        iret=nf90_put_att(ncid,varid(16),'valid_max',1.)
+        iret=nf90_put_att(ncid,varid(16),'_FillValue', NF90_FILL_FLOAT)
+        iret=nf90_put_att(ncid,varid(16),'content','TXY')
+        iret=nf90_put_att(ncid,varid(16),'associates','time station frequency')
 
 
 !  Add values in netCDF file   
@@ -4654,13 +4723,13 @@
             iret=nf90_put_att(ncid,varid(20),'associates','time station frequency')
           ENDIF
 
-!Stt
+!Sice
           IF ( FLSRCE(6) )  THEN
-            iret=nf90_def_var(ncid,'stt',NF90_FLOAT,(/dimid(5),dimid(4),dimid(two),dimid(one)/),varid(21))
+            iret=nf90_def_var(ncid,'sice',NF90_FLOAT,(/dimid(5),dimid(4),dimid(two),dimid(one)/),varid(21))
 !/NC4            IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(21), 1, 1, deflate)
-            iret=nf90_put_att(ncid,varid(21),'long_name','Stt')
-            iret=nf90_put_att(ncid,varid(21),'standard_name','Stt')
-            iret=nf90_put_att(ncid,varid(21),'globwave_name','Stt')
+            iret=nf90_put_att(ncid,varid(21),'long_name','wave-ice interactions source term')
+            iret=nf90_put_att(ncid,varid(21),'standard_name','wave_ice_intercations_source_term')
+            iret=nf90_put_att(ncid,varid(21),'globwave_name','wave_ice_intercations_source_term')
             iret=nf90_put_att(ncid,varid(21),'units','m2 rad-1')
             iret=nf90_put_att(ncid,varid(21),'scale_factor',1.)
             iret=nf90_put_att(ncid,varid(21),'add_offset',0.)
@@ -4669,6 +4738,23 @@
             iret=nf90_put_att(ncid,varid(21),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(21),'content','TXY')
             iret=nf90_put_att(ncid,varid(21),'associates','time station frequency')
+          ENDIF
+
+!Stt
+          IF ( FLSRCE(7) )  THEN
+            iret=nf90_def_var(ncid,'stt',NF90_FLOAT,(/dimid(5),dimid(4),dimid(two),dimid(one)/),varid(22))
+!/NC4            IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(22), 1, 1, deflate)
+            iret=nf90_put_att(ncid,varid(22),'long_name','Stt')
+            iret=nf90_put_att(ncid,varid(22),'standard_name','Stt')
+            iret=nf90_put_att(ncid,varid(22),'globwave_name','Stt')
+            iret=nf90_put_att(ncid,varid(22),'units','m2 rad-1')
+            iret=nf90_put_att(ncid,varid(22),'scale_factor',1.)
+            iret=nf90_put_att(ncid,varid(22),'add_offset',0.)
+            iret=nf90_put_att(ncid,varid(22),'valid_min',-1.)
+            iret=nf90_put_att(ncid,varid(22),'valid_max',1.)
+            iret=nf90_put_att(ncid,varid(22),'_FillValue',NF90_FILL_FLOAT)
+            iret=nf90_put_att(ncid,varid(22),'content','TXY')
+            iret=nf90_put_att(ncid,varid(22),'associates','time station frequency')
           ENDIF
         ENDIF
 

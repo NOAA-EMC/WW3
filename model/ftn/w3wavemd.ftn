@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -76,6 +76,9 @@
 !/    27-Nov-2013 : Fixes for OpenMP versions.          ( version 4.15 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    27-May-2014 : Move to OMPG/X switch.              ( version 5.02 )
+!/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
+!/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    27-Aug-2015 : Update for ICEH, ICEF               ( version 5.08 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -179,7 +182,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         24-Apr-2015 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -239,6 +242,7 @@
 !/    27-May-2014 : Move to OMPG/X switch.              ( version 5.02 )
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    27-Aug-2015 : Update for ICEH, ICEF               ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -373,6 +377,7 @@
       USE W3SERVMD
       USE W3TIMEMD
 !/IC3      USE W3SIC3MD
+!/IS2      USE W3SIS2MD
 
 !/OASOCM      USE W3OGCMMD, ONLY: snd_fields_to_ocean
 !/OASACM      USE W3AGCMMD, ONLY: snd_fields_to_atmos
@@ -398,15 +403,15 @@
       INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
-                                 REFLED(6), IK, ITH, IS, NKCFL
-      REAL                    :: ICEH, ICEDAVE
+                                 REFLED(6), IK, NKCFL
 !/OASIS     INTEGER                 :: OASISED, il_oasis_time
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
 !/MPI      INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
       REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
-                                 DTL0, DTI0, DTGA, DTG, DTRES,        &
+                                 DTL0, DTI0, DTI10, DTI50,            &
+                                 DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
                                  FACX, SXM, SYM, XXX, REFLEC(4),      &
                                  DELX, DELY, DELA, DEPTH, D50, PSIC
@@ -433,7 +438,7 @@
 !/MPI      LOGICAL                 :: FLGMPI(0:6)
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
-      CHARACTER(LEN=11)       :: IDACT 
+      CHARACTER(LEN=17)       :: IDACT 
       CHARACTER(LEN=13)       :: OUTID
       CHARACTER(LEN=23)       :: IDTIME
 !
@@ -509,7 +514,7 @@
 ! 0.c Local parameter initialization
 !
       IPASS  = IPASS + 1
-      IDACT  = '           '
+      IDACT  = '                 '
       OUTID  = '             '
       FLACT  = ITIME .EQ. 0
       FLMAP  = ITIME .EQ. 0
@@ -615,7 +620,7 @@
             END IF
         END IF
 !
-! 1.e Ice time
+! 1.e Ice concentration interval
 !
       IF ( FLICE ) THEN
           IF ( TICE(1) .GE. 0 ) THEN
@@ -631,6 +636,40 @@
         ELSE
           DTI0   = 0.
         END IF
+!
+! 1.e Ice thickness interval
+!
+      IF ( FLIC1 ) THEN
+          IF ( TIC1(1) .GE. 0 ) THEN
+              DTI10   = DSEC21 ( TIC1 , TI1 )
+            ELSE
+              DTI10   = 1.
+            END IF
+!/T          WRITE (NDST,9015) DTI10
+          IF ( DTI10 .LT. 0. ) THEN
+              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1005)
+              CALL EXTCDE ( 5 )
+            END IF
+        ELSE
+          DTI10   = 0.
+        END IF
+!
+! 1.e Ice floe interval
+!
+!/IS2      IF ( FLIC5 ) THEN
+!/IS2          IF ( TIC5(1) .GE. 0 ) THEN
+!/IS2              DTI50   = DSEC21 ( TIC5 , TI5 )
+!/IS2            ELSE
+!/IS2              DTI50   = 1.
+!/IS2            END IF
+!/T          WRITE (NDST,9016) DTI50
+!/IS2          IF ( DTI50 .LT. 0. ) THEN
+!/IS2              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006)
+!/IS2              CALL EXTCDE ( 5 )
+!/IS2            END IF
+!/IS2        ELSE
+!/IS2          DTI50   = 0.
+!/IS2        END IF
 !
 ! 2.  Determine next time from ending and output --------------------- /
 !     time and get corresponding time step.
@@ -807,7 +846,7 @@
 !
             END IF
 !
-! 3.3 Update ice coverage (if new ice map).
+! 3.3.1 Update ice coverage (if new ice map).
 !     Need to be run on output nodes too, to update MAPSTx
 !
           IF ( FLICE .AND. DTI0.NE.0. ) THEN
@@ -831,6 +870,60 @@
                 END IF
 !
             END IF
+!
+! 3.3.2 Update ice thickness
+!
+          IF ( FLIC1 .AND. DTI10.NE.0. ) THEN
+!
+              IF ( TIC1(1).GE.0 ) THEN
+                  IF ( DTI10 .LT. 0. ) THEN
+                      IDACT(11:11) = 'B'
+                    ELSE
+                      DTTST  = DSEC21 ( TIME, TI1 )
+                      IF ( DTTST .LE. 0.5*DTI10 ) IDACT(11:11) = 'U'
+                    END IF
+                ELSE
+                  IDACT(11:11) = 'I'
+                END IF
+  
+!
+              IF ( IDACT(11:11).NE.' ' ) THEN
+                  CALL W3UIC1 ( FLFRST )
+                  DTI10   = 0.
+                  FLACT  = .TRUE.
+                  FLMAP  = .TRUE.
+                END IF
+!
+            END IF
+!
+! 3.3.3 Update ice floe diameter
+!
+!/IS2          IF ( FLIC5 .AND. DTI50.NE.0. ) THEN
+!
+!/IS2              IF ( TIC5(1).GE.0 ) THEN
+!/IS2                  IF ( DTI50 .LT. 0. ) THEN
+!/IS2                      IDACT(14:14) = 'B'
+!/IS2                    ELSE
+!/IS2                      DTTST  = DSEC21 ( TIME, TI5 )
+!/IS2                      IF ( DTTST .LE. 0.5*DTI50 ) IDACT(14:14) = 'U'
+!/IS2                    END IF
+!/IS2                ELSE
+!/IS2                  IDACT(14:14) = 'I'
+!/IS2                END IF
+!
+!/IS2              IF ( IDACT(14:14).NE.' ' ) THEN
+!/IS2               CALL W3UIC5( FLFRST )
+!/IS2                  DTI50   = 0.
+!/IS2                  FLACT  = .TRUE.
+!/IS2                  FLMAP  = .TRUE.
+!/IS2                END IF
+!
+!/IS2            END IF
+
+
+
+
+
 !
 ! 3.4 Transform grid (if new water level).
 !
@@ -1239,8 +1332,6 @@
             REFLEC(:)=0.
             REFLED(:)=0.
             PSIC=0.
-            ICEH    = 0.
-            ICEDAVE = 20.
 !
 !/OMPG/!$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DELA,DELX,DELY,        &
 !/OMPG/!$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3)
@@ -1272,8 +1363,6 @@
 !/BT4           D50=SED_D50(ISEA)
 !/BT4           PSIC=SED_PSIC(ISEA)
 
-                IF ( FLIC1  ) ICEH   =ICEP1(IX,IY) 
-                IF ( FLIC5  ) ICEDAVE=MAX(ICEP5(IX,IY),1.)  ! ice floe mean diameter 
 
                 IF ( MAPSTA(IY,IX).EQ.1 .AND. FLAGST(ISEA) ) THEN
                      TMP1   = WHITECAP(JSEA,1:4)
@@ -1286,7 +1375,8 @@
                           CG(1:NK,ISEA), DW(ISEA), U10(ISEA),         &
                           U10D(ISEA), AS(ISEA), UST(ISEA),            &
                           USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
-                          ICE(ISEA), ICEH, ICEDAVE,                   &
+                          ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &
+                          ICEDMAX(ISEA),                              &
                           REFLEC, REFLED, DELX, DELY, DELA,           &
                           TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),       &
                           FPIS(ISEA), DTDYN(JSEA),                    &
@@ -1738,7 +1828,7 @@
               END IF
             IF ( TDN(1) .GT. 0  ) THEN
                 DTTST  = DSEC21 ( TIME , TDN )
-                IF ( DTTST .EQ. 0. ) IDACT(11:11) = 'X'
+                IF ( DTTST .EQ. 0. ) IDACT(17:17) = 'X'
               END IF
 !
             IF ( IDLAST.NE.TIME(1) ) THEN
@@ -1781,10 +1871,10 @@
 !
 ! Formats
 !
-  900 FORMAT (8X,I6,'  |',I4,'  | ', A19  ,' | ',A,' | ',A,' |')
-  901 FORMAT (8X,I6,'  |',I4,'  | ',11X,A8,' | ',A,' | ',A,' |')
-  902 FORMAT (8X,'--------+------+---------------------+'             &
-                ,'-------------+---------------+')
+  900 FORMAT (2X,I6,'  |',I4,'  | ', A19  ,' | ',A,' | ',A,' |')
+  901 FORMAT (2X,I6,'  |',I4,'  | ',11X,A8,' | ',A,' | ',A,' |')
+  902 FORMAT (2X,'--------+------+---------------------+'             &
+                ,'-------------------+---------------+')
 !
 !/IC3  920 FORMAT ('     Updating k and Cg from ice param. 1,2,3,4.'/)
   950 FORMAT ('  WAVEWATCH III calculating for ',A,' at ',A)
@@ -1799,6 +1889,10 @@
                '     ILLEGAL WIND INTERVAL '/)
  1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW ICE FIELD BEFORE OLD ICE FIELD '/)
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
+               '     NEW IC1 FIELD BEFORE OLD IC1 FIELD '/)
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
+               '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
  1030 FORMAT (/' *** WAVEWATCH III WARING IN W3WAVE :'/               &
                '     AT LEAST ONE PROCESSOR HAS 0 ACTIVE POINTS',     &
                    ' IN GRID',I3)
@@ -1821,6 +1915,8 @@
 !/T              '                        ',F12.1/                    &
 !/T              '                        ',F12.1)
 !/T 9014 FORMAT (' TEST W3WAVE : DT ICE  =',F12.1)
+!/T 9015 FORMAT (' TEST W3WAVE : DT IC1  =',F12.1)
+!/T 9016 FORMAT (' TEST W3WAVE : DT IC5  =',F12.1)
 !/T 9020 FORMAT (' TEST W3WAVE : IT0, NT, DTG :',2I4,F8.1)
 !/T 9021 FORMAT (' TEST W3WAVE : ITIME etc',I6,I4,I10.8,I7.6,1X,2L1,  &
 !/T                                         2F6.2,F7.1,F6.2)

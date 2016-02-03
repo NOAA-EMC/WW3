@@ -1111,14 +1111,14 @@
   983 FORMAT ( ' Ice field time   : ',A)
 !
   984 FORMAT (//                                                      &
-        43X,'  |    input    |     output    |'/                      &
-        43X,'  |-------------|---------------|'/                      &
-         8X,'   step | pass |    date      time   | b w l c i d |',   &
-              ' g p t r b f c |'/                                     &
-         8X,'--------|------|---------------------|-------------|',   &
-              '---------------|'/                                     &
-         8X,'--------+------+---------------------+-------------+',   &
-              '---------------+')
+        37X,'  |       input       |     output    |'/                &
+        37X,'  |-------------------|---------------|'/                &
+         2X,'   step | pass |    date      time   |',                 &
+              ' b w l c i i1 i5 d | g p t r b f c |'/                 &
+         2X,'--------|------|---------------------|',                 &
+            '-------------------|---------------|'/                   &
+         2X,'--------+------+---------------------+',                 &
+            '-------------------+---------------+')
   987 FORMAT (/' Coupling output fields : '/                          &
                '--------------------------------------------------')
 !
@@ -1463,7 +1463,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jul-2013 |
+!/                  | Last update :         11-Nov-2015 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -1483,6 +1483,7 @@
 !/    25-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
 !/                  structure and smaller memory footprint.
 !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
+!/    11-Nov-2015 : Added ICEF                          ( version 5.08 )
 !/
 !  1. Purpose :
 !
@@ -1549,7 +1550,7 @@
 !/
       USE W3GDATMD, ONLY: NSEA
 !/MPI      USE W3GDATMD, ONLY: NX, NSPEC, MAPFS, E3DF, P2MSF, US3DF
-!/MPI      USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS
+!/MPI      USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS, ICEF
 !/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC
 !/MPI      USE W3ADATMD, ONLY: HS, WLM, T02
 
@@ -1651,6 +1652,14 @@
 !/MPI          IF ( IAPROC .LE. NAPROC ) THEN
 !/MPI              IT     = IT0
 !/MPIT              WRITE (NDST,9010) '(SEND)'
+!
+!/MPI              IF ( FLGRDALL( 1, 9) ) THEN
+!/MPI                  IH     = IH + 1
+!/MPI                  IT     = IT + 1
+!/MPI      CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC,    &
+!/MPI                                IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+!/MPIT      WRITE (NDST,9011) IH, ' 1/09', IROOT, IT, IRQGO(IH), IERR
+!/MPI                END IF
 !
 !/MPI              IF ( FLGRDALL( 2, 1) ) THEN
 !/MPI                  IH     = IH + 1
@@ -2254,6 +2263,14 @@
 !/MPI              DO I0=1, NAPROC
 !/MPI                IT     = IT0
 !/MPI                IFROM  = I0 - 1
+!
+!/MPI                IF ( FLGRDALL( 1, 9) ) THEN
+!/MPI                    IH     = IH + 1
+!/MPI                    IT     = IT + 1
+!/MPI      CALL MPI_RECV_INIT (ICEF (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+!/MPI                               MPI_COMM_WAVE, IRQGO2(IH), IERR )
+!/MPIT      WRITE (NDST,9011) IH, ' 1/09', IFROM, IT, IRQGO2(IH), IERR
+!/MPI                  END IF
 !
 !/MPI                IF ( FLGRDALL( 2, 1) ) THEN
 !/MPI                    IH     = IH + 1

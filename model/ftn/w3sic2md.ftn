@@ -243,7 +243,7 @@
 !/T0      INTEGER                 :: ITH
 !/T0      REAL                    :: DOUT(NK,NTH)
       INTEGER                 :: IKTH, IK
-      REAL                    :: D1D(NK) !In SBT1: D1D was named "CBETA"
+      REAL                    :: D1D(NK)        !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                  ICECOEF4, ICECOEF5, ICECONC
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential (spatial) decay rate for amplitude (1/m)
@@ -326,13 +326,15 @@
              D1D(IK)= -2.0 * CG_ICE(IK) * WN_I(IK)
              END DO
 !
-! Alternative by F.A. 
+! Alternative by F.A.: generalization to a turbulent boundary layer
+!                      uses the ice-free dispersion, to be updated later
 !
-         ELSE ! so case of IC2PARS(1).LE.0.5
+         ELSE ! goes here if IC2PARS(1).LE.0.5
            IF (IC2PARS(2).GT.0.) THEN 
              UORB=0.
              AORB=0.
              FTURB = IC2PARS(2)
+! Special treatment in the southern ocean ... 
              IF (IC2PARS(7).GT.0) THEN 
                IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) FTURB = IC2PARS(7)
                END IF

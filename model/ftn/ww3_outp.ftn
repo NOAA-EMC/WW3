@@ -11,7 +11,7 @@
 !/                  |             E. Rogers             |
 !/                  |            T. Campbell            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Feb-2014 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -55,6 +55,8 @@
 !/    10-Sep-2013 : Implement second order correction   ( version 4.12 )
 !/                  (F. Ardhuin)
 !/    06-Feb-2014 : Fix header format in part. files.   ( version 4.18 )
+!/    27-Aug-2015 : Sice add as additional output       ( version 5.XX )
+!/                  (in source terms)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -174,7 +176,8 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
-                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE
+                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE,&
+                          ICEO, ICEHO, ICEFO
       USE W3BULLMD, ONLY: NPTAB, NFLD, NPMAX, BHSMIN, BHSDROP, IYY,  &
                           HST, TPT, DMT, ASCBLINE, CSVBLINE
 !/NCO       USE W3BULLMD, ONLY: CASCBLINE
@@ -200,11 +203,11 @@
       REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
       REAL                    :: M2KM
       REAL, ALLOCATABLE       :: XPART(:,:)
-      LOGICAL                 :: FLFORM, FLSRCE(6)
+      LOGICAL                 :: FLFORM, FLSRCE(7)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
                                  TABNME*9, TFNAME*16
-      CHARACTER(LEN=25)       :: IDSRCE(6)
+      CHARACTER(LEN=25)       :: IDSRCE(7)
       CHARACTER               :: HSTR*6, HTYPE*3
 !/BT2      REAL                    :: SBTC2
 !/
@@ -215,6 +218,7 @@
                     'Nonlinear interactions   ' ,                     &
                     'Dissipation              ' ,                     &
                     'Wave-bottom interactions ' ,                     &
+                    'Wave-ice interactions    ' ,                     &
                     'Sum of selected sources  ' /
       FLSRCE = .FALSE.
 !
@@ -527,7 +531,7 @@
               CALL EXTCDE ( 30 )
             END IF
 !
-          DO I=1, 6
+          DO I=1, 7
             IF ( FLSRCE(I) ) WRITE (NDSO,3940) IDSRCE(I)
             END DO
           WRITE (NDSO,*) ' '
@@ -1045,6 +1049,7 @@
 !/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
 !/BSX      USE W3SBSXMD
+!/IS2      USE W3SIS2MD
 !/XXX      USE W3SXXXMD
       USE W3PARTMD, ONLY: W3PART
       USE W3DISPMD, ONLY: WAVNU1
@@ -1070,7 +1075,8 @@
                                  FPSTAR, FACF, FACE, FACS, HMAT, WNA, &
                                  XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                  YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
-                                 FMEAN, WNMEAN, UDIRCA, X, Y, CHARN, M2KM
+                                 FMEAN, WNMEAN, UDIRCA, X, Y, CHARN,  &
+                                 M2KM, ICEF, ICEDMAX, ICETHICK, ICECON
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
@@ -1085,26 +1091,28 @@
 !/STAB2                                 THARG1, THARG2
       REAL, SAVE              :: HSMIN  = 0.05
       REAL                    :: WN(NK), CG(NK)
-      REAL                    :: E(NK,NTH), E1(NK), APM(NK),          &
-                                 THBND(NK), SPBND(NK), A(NTH,NK),     &
+      REAL                    :: E(NK,NTH), E1(NK), APM(NK),           &
+                                 THBND(NK), SPBND(NK), A(NTH,NK),      &
                                  WN2(NTH,NK)
       REAL                    :: DIA(NTH,NK), SWN(NK,NTH), SNL(NK,NTH),&
-                                 SDS(NK,NTH), SBT(NK,NTH), XLN(NTH,NK),&
-                                 XIN(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
-                                 XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
-                                 XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH),&
-                                 XWL(NTH,NK)
+                                 SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH),&
+                                 STT(NK,NTH)
+      REAL                    :: XLN(NTH,NK), XIN(NTH,NK), XNL(NTH,NK),&
+                                 XTR(NTH,NK), XDS(NTH,NK), XDB(NTH,NK),&
+                                 XBT(NTH,NK), XBS(NTH,NK), XXX(NTH,NK),&
+                                 XIS(NTH,NK), XWL(NTH,NK)
       REAL                    :: SIN1(NK), SNL1(NK), SDS1(NK),         &
-                                 SBT1(NK), STT1(NK), E1ALL(NK,5)
+                                 SBT1(NK), STT1(NK), SIS1(NK),         &
+                                 E1ALL(NK,6)
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      LOGICAL                 :: LLWS(NSPEC)
 !/ST4      REAL                    :: LAMBDA(NSPEC)
       CHARACTER               :: DTME21*23
-      CHARACTER(LEN=4)         VAR1(5)
+      CHARACTER(LEN=4)         VAR1(6)
       CHARACTER(LEN=1)         IDLAT, IDLON
       CHARACTER(LEN=100)       BT8MSG
 !
-      DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Stot' /
+      DATA VAR1   / 'Sin ' , 'Snl ', 'Sds ' , 'Sbt ' , 'Sice', 'Stot' /
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1135,6 +1143,7 @@
           XBS = 0.
           XWL = 0.
           XXX = 0.
+          XIS = 0.
         END IF
 !
 !/T      WRITE (NDST,9000) (FLREQ(J),J=1,NOPTS)
@@ -1219,13 +1228,17 @@
 !
 ! 2. Calculate grid parameters using and inlined version of WAVNU1.
 !
-            DEPTH  = MAX ( DMIN, DPO(J) )
-            SQRTH  = SQRT ( DEPTH )
-            UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
-            UDIRCA = WDO(J)*RADE
-            UDIRR  = WDO(J)
-            UABS   = MAX ( 0.001 , WAO(J) )
-            CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
+            DEPTH    = MAX ( DMIN, DPO(J) )
+            SQRTH    = SQRT ( DEPTH )
+            UDIR     = MOD ( 270. - WDO(J)*RADE , 360. )
+            UDIRCA   = WDO(J)*RADE
+            UDIRR    = WDO(J)
+            UABS     = MAX ( 0.001 , WAO(J) )
+            CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
+            ICEDMAX  = MAX ( 0., ICEFO(J))
+            ICEF     = ICEDMAX
+            ICETHICK = MAX (0., ICEHO(J))
+            ICECON   = MAX (0., ICEO(J))
 !
 !/STAB2            STAB0  = ZWIND * GRAV / 273.
 !/STAB2            STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
@@ -1635,6 +1648,11 @@
 !
                   END IF
 !
+                IF ( FLSRCE(6) ) THEN
+!/IS2                  CALL W3SIS2(A, ICECON, ICETHICK, ICEF, ICEDMAX, &
+!/IS2                              IX, IY, XIS, DIA, WN, CG)    
+                  END IF
+!
 !/XXX                CALL W3SXXX
 !
 !/STAB2                UABS   = UABS * ASFAC
@@ -1661,6 +1679,7 @@
                   SDS1(IK) = 0.
                   SBT1(IK) = 0.
                   STT1(IK) = 0.
+                  SIS1(IK) = 0.
                   DO ITH=1, NTH
                     ISP         = ITH + (IK-1)*NTH
                     E  (IK,ITH) = SPCO(ISP,J)
@@ -1669,27 +1688,32 @@
                     SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6               SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
                     SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
-                    STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH) + SDS(IK,ITH) + &
-                                  SBT(IK,ITH) + XXX(ITH,IK) * FACTOR
+                    SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
+                    STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH)+SDS(IK,ITH)&
+                                  + SBT(IK,ITH) + SIS(IK,ITH) &
+                                  + XXX(ITH,IK) * FACTOR
                     E1  (IK) = E1  (IK) + E(IK,ITH)
                     SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
                     SNL1(IK) = SNL1(IK) + SNL(IK,ITH)
                     SDS1(IK) = SDS1(IK) + SDS(IK,ITH)
                     SBT1(IK) = SBT1(IK) + SBT(IK,ITH)
+                    SIS1(IK) = SIS1(IK) + SIS(IK,ITH)
                     END DO
                   E1  (IK) = E1(IK)   * DTH * FACE
                   SIN1(IK) = SIN1(IK) * DTH * FACS
                   SNL1(IK) = SNL1(IK) * DTH * FACS
                   SDS1(IK) = SDS1(IK) * DTH * FACS
                   SBT1(IK) = SBT1(IK) * DTH * FACS
+                  SIS1(IK) = SIS1(IK) * DTH * FACS
                   END DO
 !
-                STT1       = SIN1 + SNL1 + SDS1 + SBT1
+                STT1       = SIN1 + SNL1 + SDS1 + SBT1 + SIS1
                 E1ALL(:,1) = SIN1
                 E1ALL(:,2) = SNL1
                 E1ALL(:,3) = SDS1
                 E1ALL(:,4) = SBT1
-                E1ALL(:,5) = STT1
+                E1ALL(:,5) = SIS1
+                E1ALL(:,6) = STT1
 !
               END IF
 !
@@ -1885,8 +1909,8 @@
                                  PTNME(J) )
                         IF (FLSRCE(2) .OR. FLSRCE(3) .OR.             &
                             FLSRCE(4) .OR. FLSRCE(5) .OR.             &
-                            FLSRCE(6) )                               &
-                            CALL PRT1DM (NDSO, NK, 5, E1ALL, SIG(1:NK),&
+                            FLSRCE(6) .OR. FLSRCE(7) )                &
+                            CALL PRT1DM (NDSO, NK, 6, E1ALL, SIG(1:NK),&
                                  'RAD/S', 17, SCALE1, VAR1, 'M2',     &
                                  PTNME(J) )
                       END IF
@@ -1912,6 +1936,10 @@
                                 SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
                                  'Sbt(f,th)', 'm^2', PTNME(J) )
                         IF ( FLSRCE(6) )                              &
+                            CALL PRT2DS (NDSO, NK, NK, NTH, SIS,      &
+                                SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                                 'Sice(f,th)', 'm^2', PTNME(J) )
+                        IF ( FLSRCE(7) )                              &
                             CALL PRT2DS (NDSO, NK, NK, NTH, STT,      &
                                 SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
                                  'Stot(f,th)', 'm^2', PTNME(J) )
@@ -1941,7 +1969,9 @@
                     IF ( ISCALE.GE.3 ) FACF = 1. / FP
                     DO IK=1, NK
                       WRITE (NDSTAB,2930) FACF*SIG(IK), E1(IK),       &
-                        SIN1(IK), SNL1(IK), SDS1(IK), SBT1(IK), STT1(IK)
+                        SIN1(IK), SNL1(IK), SDS1(IK), SBT1(IK),       &
+                        SIS1(IK), STT1(IK)
+                     
                       END DO
                     WRITE (NDSTAB,2940)
 !
@@ -1973,7 +2003,8 @@
                       IF ( E1(IK) .GT. 1.E-10 ) THEN
                           WRITE (NDSTAB,2931) FACF*SIG(IK), E1(IK),   &
                             FACT*SIN1(IK), FACT*SNL1(IK),             &
-                            FACT*SDS1(IK), FACT*SBT1(IK), FACT*STT1(IK)
+                            FACT*SDS1(IK), FACT*SBT1(IK),             &
+                            FACT*SIS1(IK),FACT*STT1(IK)
                         ELSE
                           WRITE (NDSTAB,2931) FACF*SIG(IK), E1(IK)
                         END IF
@@ -1997,6 +2028,8 @@
                         IF ( FLSRCE(5) ) WRITE (NDSTAB)               &
                               ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
                         IF ( FLSRCE(6) ) WRITE (NDSTAB)               &
+                              ((SIS(IK,ITH),IK=1,NK),ITH=1,NTH)
+                        IF ( FLSRCE(7) ) WRITE (NDSTAB)               &
                               ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
                       ELSE
                         IF ( FLAGLL ) THEN
@@ -2019,6 +2052,8 @@
                         IF ( FLSRCE(5) ) WRITE (NDSTAB,902)           &
                               ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
                         IF ( FLSRCE(6) ) WRITE (NDSTAB,902)           &
+                              ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH) 
+                        IF ( FLSRCE(7) ) WRITE (NDSTAB,902)           &
                               ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
                       END IF
 !
@@ -2301,55 +2336,55 @@
               ' U*       : ',F9.3,' m/s'/                        &
               ' U10      : ',F7.1,'   m/s'/)
  2921 FORMAT ('    f           E      ',                              &
-              '    Sin        Snl        Sds        Sbt       Stot'/  &
+              '    Sin        Snl        Sds        Sbt       Sice       Stot'/  &
               '   (Hz)       (m2s)    ',                              &
-              '   (m2)       (m2)       (m2)       (m2)       (m2)'/  &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '   (m2)       (m2)       (m2)       (m2)       (m2)       (m2)'/  &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2922 FORMAT ('    f*          E*    ',                               &
-              '    Sin*       Snl*       Sds*       Sbt*      Stot*'/ &
+              '    Sin*       Snl*       Sds*       Sbt*      Sice*      Stot*'/ &
               '   (-)         (-)    ',                               &
-              '    (-)        (-)        (-)        (-)        (-)'/  &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '    (-)        (-)        (-)        (-)        (-)        (-)'/  &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2923 FORMAT ('   f/fp         E      ',                              &
-              '   Sin        Snl        Sds        Sbt       Stot'/   &
+              '   Sin        Snl        Sds        Sbt       Sice      Stot'/   &
               '   (-)        (m2s)    ',                              &
-              '  (m2)       (m2)       (m2)       (m2)       (m2)'/   &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '  (m2)       (m2)       (m2)       (m2)       (m2)      (m2)'/   &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2924 FORMAT ('   f/fp         E*     ',                              &
-              '   Sin*       Snl*       Sds*       Sbt*      Stot*'/  &
+              '   Sin*       Snl*       Sds*       Sbt*      Sice*      Stot*'/  &
               '     (-)       (-)     ',                              &
-              '   (-)        (-)        (-)        (-)        (-)'/   &
-              ' -------------------------------------',               &
-              '--------------------------------------')
+              '   (-)        (-)        (-)        (-)        (-)        (-)'/   &
+              ' ------------------------------------------',               &
+              '-------------------------------------------')
  2925 FORMAT ('    f         E      ',                                &
-              '  Tini       Tnli       Tdsi       Tbti      Ttoti'/   &
+              '  Tini       Tnli       Tdsi       Tbti      Ticei      Ttoti'/   &
               '   (Hz)     (m2s)    ',                                &
-              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
+              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
  2926 FORMAT ('    f*        E*     ',                                &
-              ' Tini*      Tnli*      Tdsi*      Tbti*     Ttoti*'/   &
+              ' Tini*      Tnli*      Tdsi*      Tbti*     Ticei*      Ttoti*'/   &
               '   (-)       (-)     ',                                &
-              '  (-)        (-)        (-)        (-)        (-)'/    &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
+              '  (-)        (-)        (-)        (-)        (-)        (-)'/    &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
  2927 FORMAT ('   f/fp       E      ',                                &
-              '  Tini       Tnli       Tdsi       Tbti      Ttoti'/   &
+              '  Tini       Tnli       Tdsi       Tbti      Ticei      Ttoti'/   &
               '   (-)       (m2s)    ',                               &
-              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
+              ' (1/s)      (1/s)      (1/s)      (1/s)      (1/s)      (1/s)'/   &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
  2928 FORMAT ('   f/fp       E*     ',                                &
-              ' Tini*      Tnli*      Tdsi*      Tbti*     Ttoti*'/   &
+              ' Tini*      Tnli*      Tdsi*      Tbti*     Ticei*      Ttoti*'/   &
               '   (-)       (-)     ',                                &
-              '  (-)        (-)        (-)        (-)        (-)'/    &
-              ' -----------------------------------',                 &
-              '--------------------------------------')
- 2930 FORMAT (1X,F6.4,2X,6E11.3)
- 2931 FORMAT (1X,F6.4,6E11.3)
+              '  (-)        (-)        (-)        (-)        (-)        (-)'/    &
+              ' ----------------------------------------',                 &
+              '-------------------------------------------')
+ 2930 FORMAT (1X,F6.4,2X,7E11.3)
+ 2931 FORMAT (1X,F6.4,7E11.3)
  2940 FORMAT ( ' '/' ' )
 !
 !/T 9000 FORMAT (' TEST W3EXPO : FLAGS :',40L2)

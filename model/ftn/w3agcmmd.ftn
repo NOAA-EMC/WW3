@@ -76,7 +76,8 @@ MODULE w3agcmmd
              ISEA=IAPROC+(JSEA-1)*NAPROC
              IF(CX(ISEA) /= UNDEF) TMP(JSEA)=CX(ISEA)
          END DO
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL)) 
+         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Ocean sea surface current (m.s-1) (v-component)
@@ -88,6 +89,7 @@ MODULE w3agcmmd
              TMP(JSEA)=CY(ISEA)
          END DO
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Charnock Coefficient (-)
@@ -95,13 +97,15 @@ MODULE w3agcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(CHARN /= UNDEF) TMP=CHARN
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Significant wave height (m)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3___HS') THEN
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3__aHS') THEN
          TMP(1:NSEAL) = 0.0
          WHERE(HS /= UNDEF) TMP=HS
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Peak period (s)
@@ -109,9 +113,8 @@ MODULE w3agcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(FP0 /= UNDEF) TMP=1.0/FP0
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
-
-      CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
 
    ENDDO
 
@@ -121,7 +124,7 @@ MODULE w3agcmmd
    !======================================================================
 
   
-  SUBROUTINE rcv_fields_from_atmos(id_oasis_time, id_lcomm, FXN, FYN, FAN)
+  SUBROUTINE rcv_fields_from_atmos(id_oasis_time, id_lcomm, IDFLD, FXN, FYN, FAN)
 
    !&E---------------------------------------------------------------------
    !&E                 *** ROUTINE rcv_fields_from_atmos  ***
@@ -153,6 +156,7 @@ MODULE w3agcmmd
 
    !! * Argument
    INTEGER, INTENT(IN)              :: id_oasis_time, id_lcomm
+   CHARACTER(LEN=3), INTENT(IN)     :: IDFLD
    REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
    
    !! * Local declaration
@@ -168,59 +172,59 @@ MODULE w3agcmmd
    rla_oasis_rcv(:,:) = 0.0
 
    DO ib_do = 1, il_nb_rcv
+      IF (IDFLD == 'WND') THEN
 
-      ! Wind speed at 10m (m.s-1) (u-component)
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__U10') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1)
-            SND_BUFF(1:NSEA) = 0.0
-            DO ib_i = 1, NSEAL
-               ib_j = IAPROC + (ib_i-1)*NAPROC
-               SND_BUFF(ib_j) = TMP(ib_i)
-            ENDDO
+         ! Wind speed at 10m (m.s-1) (u-component)
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__U10') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1)
+               SND_BUFF(1:NSEA) = 0.0
+               DO ib_i = 1, NSEAL
+                  ib_j = IAPROC + (ib_i-1)*NAPROC
+                  SND_BUFF(ib_j) = TMP(ib_i)
+               ENDDO
 
-            CALL MPI_Allreduce(SND_BUFF(1:NSEA), &
-                               RCV_BUFF(1:NSEA), &
-                               NSEA,     &
-                               MPI_REAL, &
-                               MPI_SUM,  &
-                               id_lcomm, &
-                               il_err)
+               CALL MPI_Allreduce(SND_BUFF(1:NSEA), &
+                                  RCV_BUFF(1:NSEA), &
+                                  NSEA,     &
+                                  MPI_REAL, &
+                                  MPI_SUM,  &
+                                  id_lcomm, &
+                                 il_err)
 
-            ! Convert from storage (NSEA) to spatial grid (NX, NY)
-            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
+               ! Convert from storage (NSEA) to spatial grid (NX, NY)
+               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
 
+            ENDIF
          ENDIF
-      ENDIF
 
+         ! Wind speed at 10m (m.s-1) (v-component)
+         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__V10') THEN
+            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
+            IF (ll_action) THEN
+               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1)
+               SND_BUFF(1:NSEA) = 0.0
+               DO ib_i = 1, NSEAL
+                  ib_j = IAPROC + (ib_i-1)*NAPROC
+                  SND_BUFF(ib_j) = TMP(ib_i)
+               END DO
 
+               CALL MPI_Allreduce(SND_BUFF(1:NSEA),       &
+                                  RCV_BUFF(1:NSEA),       &
+                                  NSEA,   &
+                                  MPI_REAL, &
+                                  MPI_SUM,  &
+                                  id_lcomm, &
+                                  il_err)
 
-      ! Wind speed at 10m (m.s-1) (v-component)
-      IF (rcv_fld(ib_do)%cl_field_name == 'WW3__V10') THEN
-         CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-         IF (ll_action) THEN
-            TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1)
-            SND_BUFF(1:NSEA) = 0.0
-            DO ib_i = 1, NSEAL
-               ib_j = IAPROC + (ib_i-1)*NAPROC
-               SND_BUFF(ib_j) = TMP(ib_i)
-            END DO
+               ! Convert from storage (NSEA) to spatial grid (NX, NY)
+               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
 
-            CALL MPI_Allreduce(SND_BUFF(1:NSEA),       &
-                               RCV_BUFF(1:NSEA),       &
-                               NSEA,   &
-                               MPI_REAL, &
-                               MPI_SUM,  &
-                               id_lcomm, &
-                               il_err)
-
-            ! Convert from storage (NSEA) to spatial grid (NX, NY)
-            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
-
+            ENDIF
          ENDIF
-      ENDIF
 
+      ENDIF
    ENDDO
 
   END SUBROUTINE rcv_fields_from_atmos

@@ -82,7 +82,8 @@ MODULE w3ogcmmd
 
       ! Mask - wet-drying
       IF (snd_fld(ib_do)%cl_field_name == 'WW3__DRY') THEN
-         rla_oasis_snd(:,1) = DBLE(MASK(1:NSEAL)) 
+         rla_oasis_snd(:,1) = DBLE(MASK(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Mean wave period (tmn in s) (m0,-1)
@@ -90,11 +91,13 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(T0M1 /= UNDEF) TMP=T0M1
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Wave height (hs in m)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3___HS') THEN
+      IF (snd_fld(ib_do)%cl_field_name == 'WW3__oHS') THEN
          rla_oasis_snd(:,1) = DBLE(HS(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Cosinus of Mean wave direction (dir * cos(theta) in radians)
@@ -108,6 +111,7 @@ MODULE w3ogcmmd
             TMP(1:NSEAL) = TMP(1:NSEAL) * cos( MOD( pi + THM(:) , 2*pi ) )
          END WHERE
          rla_oasis_snd(:,1) = TMP(1:NSEAL)
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Sinus of Mean wave direction (dir* sin(theta) in radians)
@@ -120,11 +124,13 @@ MODULE w3ogcmmd
             TMP(1:NSEAL) = TMP(1:NSEAL) * sin( MOD( pi + THM(:) , 2*pi ) )
          END WHERE
          rla_oasis_snd(:,1) = TMP(1:NSEAL)
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Wave-induced Bernoulli head pressure (bhd in N.m-1) (J term, Smith JPO 2006)
       IF (snd_fld(ib_do)%cl_field_name == 'WW3__BHD') THEN
          rla_oasis_snd(:,1) = DBLE(BHD(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Wave-ocean momentum flux (tauox in m2.s-2)
@@ -132,6 +138,7 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(TAUOX /= UNDEF) TMP(:)=TAUOX(:)
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Wave-ocean momentum flux (tauoy in m2.s-2)
@@ -139,11 +146,13 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(TAUOY /= UNDEF) TMP(:)=TAUOY (:)
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
       IF (snd_fld(ib_do)%cl_field_name == 'WW3__UBR') THEN
          rla_oasis_snd(:,1) = DBLE(UBA(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Wave-to-ocean TKE flux (phioc in W.m-2)
@@ -151,6 +160,7 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(PHIOC /= UNDEF) TMP(:)=PHIOC(:)
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Net wave-supported stress, u component (tauwix in m2.s-2)
@@ -158,6 +168,7 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(TAUWIX /= UNDEF) TMP(:)=TAUWIX(:)
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Net wave-supported stress, v component (tauwix in m2.s-2)
@@ -165,6 +176,7 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(TAUWIY /= UNDEF) TMP(:)=TAUWIY(:)
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
       ! Mean wave length (wlm in m)
@@ -172,6 +184,7 @@ MODULE w3ogcmmd
          TMP(1:NSEAL) = 0.0
          WHERE(WLM /= UNDEF) TMP(:)=WLM(:)
          rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
+         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
       ENDIF
 
 
@@ -181,7 +194,7 @@ MODULE w3ogcmmd
       ! (or a time step smaller than the coupling time step).
       ! In such conditions, OASIS get the information every time step
       ! but only send the information to the other code when the time matches the coupling time.
-      CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
+      !CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
 
    ENDDO
 

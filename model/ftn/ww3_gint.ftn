@@ -91,7 +91,7 @@
         USE W3ODATMD, ONLY : W3NOUT, W3SETO
         USE W3IDATMD
         USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
-        USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, UST, USTDIR, ASF
+        USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF, UST, USTDIR, ASF
         USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
         USE W3ARRYMD, ONLY : PRTBLK
@@ -787,12 +787,13 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Apr-2013 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
-!/   09-Jul-2009 : Original code      ( version 3.14 )
-!/      21-Feb-2013 : Modified to new output structure ( version 4.11 )
-!/      30-Apr-2014 : Add group 3                      ( version 5.00 )
+!/    09-Jul-2009 : Original code                       ( version 3.14 )
+!/    21-Feb-2013 : Modified to new output structure    ( version 4.11 )
+!/    30-Apr-2014 : Add group 3                         ( version 5.00 )
+!/    27-Aug-2015 : ice thick. and floe added as output ( version 5.XX )
 !/
 !   1. Purpose :
 !
@@ -847,8 +848,8 @@
         REAL                    :: VAR1, VAR2, WT
 ! Local group 1 variables
         REAL                    :: DWAUX, CXAUX, CYAUX, UAAUX, UDAUX, ASAUX,   &
-                                   WLVAUX, ICEAUX, BERGAUX, SED_D50AUX,        &
-                                   SUMWT1(10) 
+                                   WLVAUX, ICEAUX, ICEHAUX, ICEFAUX, BERGAUX,  &
+                                   SED_D50AUX, SUMWT1(10) 
 ! Local group2 variables
         REAL                    :: HSAUX, WLMAUX, T02AUX, T0M1AUX, T01AUX,     &
                                    FP0AUX, THMAUX1, THMAUX2, THSAUX, THP0AUX1, &
@@ -858,7 +859,7 @@
                                    TH1MAUX(E3DF(2,2):E3DF(3,2)),               &
                                    STH1MAUX(E3DF(2,3):E3DF(3,3)),              &
                                    TH2MAUX(E3DF(2,4):E3DF(3,4)),               &
-                                   STH2MAUX(E3DF(2,5):E3DF(3,4)), WNAUX(1:NK), &
+                                   STH2MAUX(E3DF(2,5):E3DF(3,5)), WNAUX(1:NK), &
                                    SUMWT3A(E3DF(2,1):E3DF(3,1)),               &
                                    SUMWT3B(E3DF(2,2):E3DF(3,2)),               &
                                    SUMWT3C(E3DF(2,3):E3DF(3,3)),               &
@@ -903,6 +904,8 @@
         ICE      = UNDEF
         BERG     = UNDEF
 !/BT4        SED_D50  = UNDEF
+!/IS2        ICEH     = UNDEF
+!/IS2        ICEF     = UNDEF
 !
 ! Group 2 variables
 !
@@ -1085,6 +1088,8 @@
                 ICEAUX      = UNDEF
                 BERGAUX     = UNDEF
                 SED_D50AUX  = UNDEF
+                ICEHAUX     = UNDEF
+                ICEFAUX     = UNDEF		
                 SUMWT1      = 0
 !   
 ! Group 2 variables
@@ -1274,6 +1279,28 @@
 !/BT4                      END IF
 !/BT4                    END IF
 !/BT4                  END IF
+!
+!/IS2                  IF ( FLOGRD(1,9) ) THEN
+!/IS2                    IF ( WDATAS(IGRID)%ICEH(GSEA) .NE. UNDEF ) THEN
+!/IS2                      SUMWT1(9) = SUMWT1(9) + WT
+!/IS2                      IF (ICEHAUX .EQ. UNDEF) THEN
+!/IS2                        ICEHAUX = WDATAS(IGRID)%ICEH(GSEA)*WT
+!/IS2                      ELSE 
+!/IS2                        ICEHAUX = ICEHAUX + WDATAS(IGRID)%ICEH(GSEA)*WT
+!/IS2                      END IF
+!/IS2                    END IF
+!/IS2                  END IF
+!
+!/IS2                  IF ( FLOGRD(1,10) ) THEN
+!/IS2                    IF ( WDATAS(IGRID)%ICEF(GSEA) .NE. UNDEF ) THEN
+!/IS2                      SUMWT1(10) = SUMWT1(10) + WT
+!/IS2                      IF (ICEFAUX .EQ. UNDEF) THEN
+!/IS2                        ICEFAUX = WDATAS(IGRID)%ICEF(GSEA)*WT
+!/IS2                      ELSE 
+!/IS2                        ICEFAUX = ICEFAUX + WDATAS(IGRID)%ICEF(GSEA)*WT
+!/IS2                      END IF
+!/IS2                    END IF
+!/IS2                  END IF
 !   
 ! Group 2 variables
 !
@@ -1893,6 +1920,24 @@
 !/BT4                    SED_D50(ISEA) = SED_D50(ISEA) + SED_D50AUX / REAL( SUMGRD )
 !/BT4                  END IF
 !/BT4                END IF
+!
+!/IS2                IF ( ICEHAUX .NE. UNDEF ) THEN
+!/IS2                  ICEHAUX = ICEHAUX / SUMWT1(9)
+!/IS2                  IF ( ICEH(ISEA) .EQ. UNDEF )  THEN
+!/IS2                    ICEH(ISEA) = ICEHAUX / REAL( SUMGRD )
+!/IS2                  ELSE
+!/IS2                    ICEH(ISEA) = ICEH(ISEA) + ICEHAUX / REAL( SUMGRD )
+!/IS2                  END IF
+!/IS2                END IF
+!
+!/IS2                IF ( ICEFAUX .NE. UNDEF ) THEN
+!/IS2                  ICEFAUX = ICEFAUX / SUMWT1(10)
+!/IS2                  IF ( ICEF(ISEA) .EQ. UNDEF )  THEN
+!/IS2                    ICEF(ISEA) = ICEFAUX / REAL( SUMGRD )
+!/IS2                  ELSE
+!/IS2                    ICEF(ISEA) = ICEF(ISEA) + ICEFAUX / REAL( SUMGRD )
+!/IS2                  END IF
+!/IS2                END IF
 !   
 ! Group 2 variables
 !

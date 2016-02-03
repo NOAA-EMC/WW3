@@ -20,9 +20,8 @@ modified wavenumber ${k_r}$ produces effects analogous to shoaling and
 refraction by bathymetry. No special action is required to activate the
 shoaling effect. To activate the refraction effect, the model should be
 compiled with switch {\code REFRX}. With this switch, the model computes
-refraction based on spatial gradients in phase velocity, rather than the
-simpler, original approach of computing refraction based on spatial gradients
-in water depth. These effects are demonstrated in the regression test {\file
+refraction based on spatial gradients in phase velocity that include ice effects, rather than the
+simpler wave dispersion relation without ice. These effects are demonstrated in the regression test {\file
 ww3\_tic1.3} which is provided with the code.
 
 This method of $S_{ice}$ ({\code IC3}) is much more expensive than

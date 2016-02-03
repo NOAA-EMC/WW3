@@ -26,7 +26,7 @@ of the WAM model.
 
 The code for the canonical transform written by P. Janssen was interfaced with
 \ws.  Using the {\code IG1} switch and setting the parameter {\code IGADDOUTP
-= 2} in the {\code IG1} namelist, this canonical transformed, which conserves
+= 2} in the {\code SIG1} namelist, this canonical transformed, which conserves
 energy, will be used for the output point spectra.  If {\code IGADDOUTP = 1},
 then the second order spectrum is added on top of the model spectrum using the
 theory by \citep[e.g.][]{art:Has62}. That option does not conserve energy and
@@ -51,7 +51,7 @@ would require solving the bispectral evolution across the surf zone at a very
 high spatial resolution \citep[e.g.][]{art:HB97}. The default namelist settings
 correspond to the parameterization presented by \cite{art:Aea14}.
  In practice the free infragravity wave energy is
-added via the $S_{ref}$ source term, by setting the {\code IG1} namelist
+added via the $S_{ref}$ source term, by setting the {\code SIG1} namelist
 {\code IGSOURCE} to 1 or 2.
 
 In the first method, activated with {\code IGSOURCE =1}, the second order
@@ -80,7 +80,7 @@ moments
 
 \noindent
 and the empirical coefficient $\alpha_1$ is of the order of
-$10^{-3}$~s$^{-1}$, and is set by the IG1 namelist parameter {\code
+$10^{-3}$~s$^{-1}$, and is set by the {\code SIG1} namelist parameter {\code
 IGEMPIRICAL}. The minimum frequency $f_{min}$ used to define $ T_{m0,-2}$ is
 set by the namelist parameter {\code IGMAXFREQ} and it is also the maximum
 frequency of the IG band over which this source of energy is applied.  Also,

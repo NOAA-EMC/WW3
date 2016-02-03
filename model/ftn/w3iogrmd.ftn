@@ -1065,9 +1065,9 @@
 !/IS1        END IF
 !
 !/IS2      IF ( WRITE ) THEN
-!/IS2          WRITE (NDSM)                            IS2PARS(1:6)
+!/IS2          WRITE (NDSM)                            IS2PARS
 !/IS2        ELSE
-!/IS2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS(1:6)
+!/IS2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
 !/IS2          IF ( .NOT. FLIS ) THEN
 !/IS2            CALL INSIS2
 !/IS2            FLIS  = .TRUE.

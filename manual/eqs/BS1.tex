@@ -6,8 +6,8 @@
 
 \noindent
 Waves propagating over a sloping bottom are partially reflected.  In the limit
-of small variation in water depth $\Delta H$ with respect to the mean water
-depth $H$, the reflection coefficient is proportional to the bottom spectrum
+of small variation in water depth $\Delta d$ with respect to the mean water
+depth $d$, the reflection coefficient is proportional to the bottom spectrum
 \cite{art:Kre49} and leads to a redistribution of wave energy in direction.
 This process may be formulated as a source term, which leads to accurate
 reflection coefficients when considering the evolution of the spectrum over
@@ -62,18 +62,21 @@ F^B(k_x,k_y)  {\mathrm d} k_x  {\mathrm d} k_y.
 \noindent
 In the present implementation this bottom spectrum is assumed to be the same
 at all grid points.
-
+ 
 The source term is computed according to different methods depending on the
 value of the current. For zero current, the interactions only involves waves
 of the same frequency and the interaction is always the same and linear in
 terms of the directional spectrum. In this case the interaction is expressed
-as a matrix problem, and the interaction matrices are diagonalized as a
+as a matrix problem. Namely, the directional spectrum $F$ is an {\F NTH} component vector, 
+and the source term is a vector $S = M F$ with $M$ a square ({\F NTH,NTH}) array that is 
+a function of the bottom spectrum and the non-dimensional depth $kh$.  This 
+scattering matrix is precomputed and diagonalized as a
 preprocessing step for a finite number of wavenumber magnitudes
 \citep{art:AH02}.  The cost of this preprocessing increases linearly with the
 number of discrete wavenumbers.
 
 For non-zero current, the interaction pattern depends on the current magnitude
-and direction (magnitude only for an isotropic bottom spectrum), and this
-would increase the overhead cost by at least one order of magnitude. In the
-present implementation, the interaction integration is recomputed at every
+and direction (magnitude only for an isotropic bottom spectrum), and a precomputation of 
+the scattering matrix would increase the overhead cost by at least one order of magnitude. In the
+present implementation, the interaction integration with non-zero current is recomputed at every
 source term call.

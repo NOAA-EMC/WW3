@@ -84,14 +84,14 @@ $          - Scaling factors for 1-D and 2-D source terms. Negative
 $            factor disables print plots, factor = 0. gives normalized
 $            print plots.
 $          - Flags for spectrum, input, interactions, dissipation,
-$            bottom and total source term.
+$            bottom, ice and total source term.
 $          - scale ISCALE for OTYPE=2,3
 $                              0 : Dimensional.
 $                              1 : Nondimensional in terms of U10
 $                              2 : Nondimensional in terms of U*
 $                             3-5: like 0-2 with f normalized with fp.
 $
-$  4  0  0  T T T T T T  0
+$  4  0  0  T T T T T T T  0
 $
 $ The transfer file contains records with the following contents.
 $
@@ -109,6 +109,7 @@ $ - Sin(f,theta) if requested                  |           |
 $ - Snl(f,theta) if requested                  |           |
 $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
+$ - Sice(f,theta) if requested                 |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
 $

@@ -251,7 +251,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*80, FROMF*4, NAMEF*80
-      CHARACTER*12            :: IDSTR1(5)
+      CHARACTER*12            :: IDSTR1(-7:5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
       CHARACTER*20            :: IDSTR2(6)
@@ -292,9 +292,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      DATA IDSTR1 / 'ice         ' , 'water levels' ,                 &
-                    'winds       ' , 'currents    ' ,                 &
-                    'data        ' /
+      DATA IDSTR1 / 'ice thickness ' , 'ice viscosity' ,              &
+                    'ice density   ' , 'ice modulus  ' ,              &
+                    'ice flow diam.' , 'mud density  ' ,              &
+                    'mud thickness ', 'mud viscosity ' ,              &
+                    'ice conc.     ' , 'water levels ' ,              &
+                    'winds         ' , 'currents     ' ,              &
+                    'data          ' /
       DATA IDSTR2 / 'pre-processed file  ' , 'long.-lat. grid     ' , &
                     'grid from file (1)  ' , 'grid from file (2)  ' , &
                     'data (assimilation) ' , 'pre-pro. file + tide'  /
@@ -389,7 +393,23 @@
 !
       FLSTAB = IDFLD .EQ. 'WNS'
       FLBERG = IDFLD .EQ. 'ISI'
-      IF ( IDFLD.EQ.'ICE' .OR. FLBERG ) THEN
+      IF        ( IDFLD.EQ.'IC1' ) THEN
+          IFLD    = -7
+        ELSE IF ( IDFLD.EQ.'IC2' ) THEN
+          IFLD    = -6
+        ELSE IF ( IDFLD.EQ.'IC3' ) THEN
+          IFLD    = -5
+        ELSE IF ( IDFLD.EQ.'IC4' ) THEN
+          IFLD    = -4
+        ELSE IF ( IDFLD.EQ.'IC5' ) THEN
+          IFLD    = -3
+        ELSE IF ( IDFLD.EQ.'MDN' ) THEN
+          IFLD    = -2
+        ELSE IF ( IDFLD.EQ.'MTH' ) THEN
+          IFLD    = -1
+        ELSE IF ( IDFLD.EQ.'MVS' ) THEN
+          IFLD    = 0
+        ELSE IF ( IDFLD.EQ.'ICE' .OR. FLBERG ) THEN
           IFLD    = 1
         ELSE IF ( IDFLD.EQ.'LEV' ) THEN
           IFLD    = 2
@@ -571,6 +591,8 @@
         iret=nf90_inq_varid(ncid,"longitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lon",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"Longitude",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"x",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"X",varidtmp)
         IRET = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         call check_err(iret)
         IF (numDimsLon.EQ.1) THEN
@@ -595,6 +617,8 @@
         iret=nf90_inq_varid(ncid,"latitude",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"lat",varidtmp)
         IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"Latitude",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"y",varidtmp)
+        IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"Y",varidtmp)
         iret = nf90_inquire_variable(ncid, varidtmp, ndims = numDimsLon, natts = numAttsLon)
         CALL check_err(iret)
         iret=nf90_get_var(ncid,varidtmp,Y0I, start=(/1/))
@@ -1844,11 +1868,13 @@
 !/O15      CALL EXTCDE ( 54 )
 !
   888 CONTINUE
-!/MPI      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
 !/MPI      CALL MPI_FINALIZE  ( IERR_MPI )
 
 !
 !/NCO/!     CALL W3TAGE('WAVEPREP')
+
+
 !
 ! Formats
 !

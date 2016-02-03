@@ -2,13 +2,38 @@
 \subsubsection{~$S_{is}$: Scattering by sea ice} \label{sec:IS2}
 \vsssub
 
-\opthead{IS2}{\ws}{F. Ardhuin, P. Nicot, D. Dumont, T. Williams}
+\opthead{IS2}{\ws}{F. Ardhuin, P. Nicot, D. Dumont, C. Sevigne, T. Williams}
 
 \noindent
-The implementation of this scattering term is work in progress, and generally 
+The implementation of this scattering term generally 
 follows the approach of \cite{art:MM06}. The first implementation here is based on \cite{art:KM08}, 
-using 1D propagation, the rate of attenuation in the initial direction is given by a 
-parameter $\alpha_{s}$. The present implementation is thus not conservative and is only here 
-to test the consistency with other models. A conservative correction will be implemented shortly. 
+using 1D propagation, the rate of temporal attenuation in the initial direction is given by a 
+parameter $\cS_{\mathrm{is}}({\bk}) = \beta_{s,\mathrm{MIZ}} N(\textbf{k})$, which is determined from pre-computed reflection coefficients 
+over ice-water boundaries. The fraction of that energy which is re-distributed 
+isotropically in all directions is defined by the  parameter $s_\mathrm{scat}$ wich is modified by 
+{\code IS2BACKSCAT} in namelist SIS2. 
+
+Additional scattering in the pack ice was introduced following \cite{art:SVB09} with a coefficient 
+$\beta_{s,\mathrm{PACK}}=2 s_2 \exp(-s_3 / \sigma)$, where $s_2$ and $s_3$ are set by the 
+{\code IS2C2} and {\code IS2C3} namelist parameters.  The total scattering coefficient is thus, 
+
+\begin{equation}\label{eq:is2}
+  \beta_{is} = \beta_{s,\mathrm{MIZ}} + \beta_{s,\mathrm{PACK}}
+\end{equation}
+
+In the end, the scattering-dissipation source term 
+is a linear function of the spectrum. Namely, the directional spectrum $F$ is an {\F NTH} component vector, 
+and the source term is a vector $S = M F$ with $M$ a square ({\F NTH,NTH}) array. Assuming an isotropic 
+scattering, this linear scattering operator is easily diagonalized. There is one eigenvector that is 
+the isotropic spectrum, for which the eigenvalue is 0, and the other eigenvectors have an eigenvalue equal 
+to $s_\mathrm{scat} \beta$. It is thus straightforward to integrate both 
+$\cS_{\mathrm{ice}}({\bk}) = \beta_{\mathrm{ice}}N(\textbf{k})$ and $\cS_{is}$ over any finite 
+time step $\Delta t$. We have thus split the ice source terms from the other source terms, with a separate integration, 
+\begin{equation}\label{eq:is2}
+ N(t+\Delta t) = \exp(\beta_{\mathrm{ice}} \Delta t) \overline{N}(t)  + \exp \left[\left(\beta_{\mathrm{ice}} + \beta_{is} s_\mathrm{scat}\right) \Delta t\right] \left[N(t)-\overline{N}(t)\right]
+\end{equation}
+where $\overline{N}$ is the average over all directions. As a result, for a spatially homogeneous field, 
+the spectrum exponentially tends to isotropy over a time scale $1/(\beta_{is} s_\mathrm{scat})$.
+
 
 

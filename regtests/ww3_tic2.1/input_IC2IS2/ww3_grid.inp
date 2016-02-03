@@ -1,0 +1,49 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '2-D parameterized ice test    '
+$
+   1.25 0.08  3  24  0.
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+$
+   F T T F F T
+  300. 300. 300. 300.
+$
+$    &MISC CICE0 = 0.00, CICEN = 1.00 /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   51 51
+$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+    5.0E3   5.0E3  1.
+$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
+   0.0 0.0 1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+ -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC1/bot.dat'
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$
+$ Input boundary points from segment data ( FROM = PART ) ------------ $
+   2  2    F
+   50 2   T
+   50 50   T
+$
+$  Close list by defining point (0,0) (mandatory)
+   0  0  F
+$ Excluded grid points from segment data ( FROM != PART )
+$   First defined as lines, identical to the definition of the input
+$   boundary points, and closed the same way.
+   0  0  F
+$   Second, define a point in a closed body of sea points to remove
+$   the entire body of sea points. Also close by point (0,0)
+   0  0
+$
+$ Output boundary points --------------------------------------------- $
+$  Close list by defining line with 0 points (mandatory)
+$
+   0. 0. 0. 0.  0

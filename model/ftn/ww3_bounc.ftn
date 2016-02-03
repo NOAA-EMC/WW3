@@ -128,7 +128,7 @@
                                              NDSI,NDSM, NDSI2,NDSS,NDSB, NDSC, NDSTRC,    &
                                              NTRACE, NK1,NTH1,NT1, NSPEC1, NBI, NBI2,     &
                                              NKI, NTHI, NTI, NBO, NBO2, IERR, INTERP,     &
-                                             ILOOP, IFMIN, IFMIN2, IFMAX, IBO
+                                             ILOOP, IFMIN, IFMIN2, IFMAX, VERBOSE, IBO
 !/S      INTEGER, SAVE           :: IENT = 0
 
 ! arrays
@@ -140,7 +140,7 @@
                                              XBPO(:), YBPO(:), RDBPO(:,:),        &
                                              ABPIN(:,:), ABPIN2(:,:,:) 
       INTEGER, ALLOCATABLE                :: IPBPI(:,:), IPBPO(:,:)
-      REAL                                :: DMIN, DIST, DMIN2, COS1, COS2
+      REAL                                :: DMIN, DIST, DMIN2, COS1, COS2, DLON, DLAT, DLA, DLO
 
 ! netCDF
       INTEGER                             :: iret, ICODE, varid(12)
@@ -200,6 +200,8 @@
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
       READ (NDSI,*) INTERP
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*) VERBOSE
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
       NBO2 = 0          
 !
@@ -252,20 +254,20 @@
         IF ( IDTST .NE. IDSTRBC ) GOTO 2003
         WRITE(NDSO,940) VERTEST
         WRITE(NDSO,941) IDTST
-!/T        WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I,   &
-!/T              NBI :', NK1,NTH1,XFR, FR1I, TH1I, NBI 
+        IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', & 
+                    NK1,NTH1,XFR, FR1I, TH1I, NBI 
         ALLOCATE (XBPI(NBI),YBPI(NBI))
         ALLOCATE (IPBPI(NBI,4),RDBPI(NBI,4))
         READ(NDSB) (XBPI(I),I=1,NBI),                                 &
                    (YBPI(I),I=1,NBI),                                 &
                    ((IPBPI(I,J),I=1,NBI),J=1,4),                      &
                    ((RDBPI(I,J),I=1,NBI),J=1,4)
-!/T        WRITE(NDSO,*)      'XBPI:',XBPI
-!/T        WRITE(NDSO,*)      'YBPI:',YBPI
-!/T        WRITE(NDSO,*)      'IPBPI:'
+        IF (VERBOSE.GE.1) WRITE(NDSO,*)      'XBPI:',XBPI
+        IF (VERBOSE.GE.1) WRITE(NDSO,*)      'YBPI:',YBPI
+        IF (VERBOSE.GE.1) WRITE(NDSO,*)      'IPBPI:'
         DO I=1,NBI
-!/T          WRITE(NDSO,*) I,' interpolated from:',IPBPI(I,1:4)
-!/T          WRITE(NDSO,*) I,' with coefficient :',RDBPI(I,1:4)
+          IF (VERBOSE.GE.1) WRITE(NDSO,*) I,' interpolated from:',IPBPI(I,1:4)
+          IF (VERBOSE.GE.1) WRITE(NDSO,*) I,' with coefficient :',RDBPI(I,1:4)
         END DO
 !
         READ (NDSB) TIME2, NBI2
@@ -275,7 +277,7 @@
         DO WHILE (IERR.EQ.0)
           READ (NDSB,IOSTAT=IERR) TIME2, NBI2
           IF (IERR.EQ.0) THEN 
-!/T            WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
+            IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR      
             DO IP=1, NBI2
               READ (NDSB,END=2003,ERR=2004) ABPIN(:,IP)
             END DO
@@ -336,7 +338,7 @@
           END IF
  
           iret=nf90_open(trim(SPECFILES(IP)),nf90_nowrite,ncid(IP))
-!/T          WRITE(6,*) 'Opening file:',trim(SPECFILES(IP))
+          WRITE(6,*) 'Opening file:',trim(SPECFILES(IP))
           call check_err(iret)
           
           ! dimensions
@@ -383,11 +385,17 @@
               read(timeunits(20:21),'(I2.2)') dref
             END IF
             dateref=julday(dref,mref,yref)
-          END IF
+          ELSE 
+            IF (NKI.NE.NK1.OR.NTHI.NE.NTH1) THEN 
+               WRITE(NDSE,*) 'ERROR: inconsistent spectral dimension',NKI,NTHI,'in file ', &
+                trim(SPECFILES(IP)),' compared to ',NK1,NT1,' in first file'
+               STOP 
+               END IF  
+            END IF
 
           ! position variables : lon/lat or x/y
           IF ( FLAGLL ) THEN
-            WRITE (NDSO,951)
+            !WRITE (NDSO,951)
             iret=nf90_inq_varid(ncid(IP), 'latitude', varid(2))	
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
@@ -397,7 +405,7 @@
             iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
             call check_err(iret)
           ELSE
-            WRITE (NDSO,952)
+            !WRITE (NDSO,952)
             iret=nf90_inq_varid(ncid(IP), 'y', varid(2))	
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
@@ -446,7 +454,7 @@
         IFMAX=NK1 ! index of last freq. in source spectrum
 !
         ! Checks consistency of XFR
-        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.05) GOTO 2006
+        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 2006
 !
         IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
           DO J=1,MIN(NK1,NK)
@@ -472,9 +480,6 @@
             END IF
           END DO 
         END IF 
-
-
-
 !
 ! 7. Loops on files and instanciate ABPIN2
 !
@@ -493,7 +498,7 @@
 
 !         Fills tail of spectrum            
           IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN 
-!!/T            WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
+            IF (VERBOSE.GE.2) WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
             ABPIN2((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,:,IP)=0.
           END IF 
         END DO ! IP=1,NBO2
@@ -504,7 +509,7 @@
 ! 8. Writes header
 !
 !       Writes header in nest.ww3 file 
-        WRITE(NDSB) IDSTRBC, VERBPTBC, NKI, NTHI, XFR, FREQ(1),       &
+        WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH1, XFR, FREQ(1),       &
         MOD(2.5*PI-THETA(1),TPI), NBO
         IPBPO(:,:)=1
         RDBPO(:,1)=1.
@@ -517,7 +522,11 @@
 !         Loops on files
           DO IP=1,NBO2
 !           Searches for the nearest 2 points where spectra are available
-            DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
+            IF (FLAGLL)  THEN 
+              DIST=SQRT((MOD(LONS(IP)-XBPO(IP1)+360,360.))**2+(LATS(IP)-YBPO(IP1))**2)
+            ELSE 
+              DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
+              END IF
             IF (DMIN.EQ.(360.+180.)) THEN 
               IF(DIST.LT.DMIN) THEN 
                 IPBPO(IP1,1)=IP
@@ -537,30 +546,49 @@
               END IF
             END IF
           END DO ! IP1=1,NBO2
-!!/T          WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
-!!/T                         LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
-!!/T                         LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
+          IF (VERBOSE.GE.1) WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
+                                          LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
+                                          LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
 
 
 !
 ! 9. Computes linear interpolation coefficient between the nearest 2 points
 !
           IF (INTERP.GT.1.AND.NBO2.GT.1) THEN 
-            DIST=SQRT((LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))**2   &
+            IF (FLAGLL) THEN 
+              DLON=LONS(IPBPO(IP1,2))-LONS(IPBPO(IP1,1))
+              DLAT=LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))
+              DLO=XBPO(IP1)-LONS(IPBPO(IP1,1))
+              IF (DLON.GT.180.) DLON=DLON-360
+              IF (DLON.LT.-180.) DLON=DLON+360
+              IF (DLO.GT.180.) DLO=DLO-360
+              IF (DLO.LT.-180.) DLO=DLO+360
+              DIST=SQRT(DLON**2+DLAT**2) 
+              COS1=( DLO*DLON &
+                  + (YBPO(IP1)-LATS(IPBPO(IP1,1)))  &
+                  *DLAT )/(DIST**2)
+            ELSE 
+              DIST=SQRT((LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))**2   &
                +(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2)))**2)
-            COS1=( (XBPO(IP1)-LONS(IPBPO(IP1,1)))  &
+              COS1=( (XBPO(IP1)-LONS(IPBPO(IP1,1)))  &
                   *(LONS(IPBPO(IP1,2))-LONS(IPBPO(IP1,1))) &
                   + (YBPO(IP1)-LATS(IPBPO(IP1,1)))  &
-                  *(LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))))/(DIST**2)
+                  *(LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))) )/(DIST**2)
+              END IF
             !COS2=( (XBPO(IP1)-LONS(IPBPO(IP1,2)))  &
             !      *(LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))
             !      + (YBPO(IP1)-LATS(IPBPO(IP1,2)))  &
             !      *(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2))))/(DIST**2)
             RDBPO(IP1,1)=1-MIN(1.,MAX(0.,COS1))
             RDBPO(IP1,2)=MIN(1.,MAX(0.,COS1))
-          END IF
-!/T          WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
-!/T          WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
+          ELSE 
+            ! in this case: nearest point
+            RDBPO(IP1,1)=1.
+            RDBPO(IP1,1)=0.
+            END IF
+          IF (VERBOSE.GE.1) WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
+          IF (VERBOSE.GE.1) WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
+          !IF (VERBOSE.GE.1) WRITE(NDSO,*) 'RDBP:',COS1,DIST,DLON,DLO,DLAT,XBPO(IP1)-360.,LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2))
         END DO ! IP1=1,NBO
 
         WRITE(NDSB)  (XBPO(I),I=1,NBO),            &
@@ -585,7 +613,7 @@
           is=int(is)
           TIME(1)=iyy*10000 + im *100 + id
           TIME(2)=ih*10000 + imn*100 + is
-          WRITE(NDSO,1900) TIME, NBO2
+         WRITE(NDSO,'(A,2I9,A,I,A)') 'Writing boundary data for time:', TIME, 'at ',NBO2,' points'
           WRITE(NDSB,IOSTAT=IERR) TIME, NBO2
           DO IP=1, NBO2
             WRITE(NDSB) ABPIN2(:,IT,IP)
@@ -639,7 +667,7 @@
                   file'/)
 !
  1900 FORMAT ( '  Writing boundary data for time : ',I8.8, I6.6/      &
-                                                    ,I4)
+               '  for this number of positions   : ',I4)
 !
 !
  1001 FORMAT (/' *** WAVEWATCH-III ERROR IN W3BOUNC : '/              &

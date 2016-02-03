@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -46,6 +46,7 @@
 !/    10-Feb-2014 : Bug correction for US3D: div. by df ( version 4.18 ) 
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
+!/    27-Aug-2015 : Add ICEF,ICEH as output fields      ( version 5.XX )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -406,6 +407,10 @@
              FLG2D(1,7)=.TRUE.
 !/BT4           CASE('D50')
 !/BT4             FLG2D(1,8)=.TRUE.
+!/IS2           CASE('IC1')
+!/IS2             FLG2D(1,9)=.TRUE.
+!/IS2           CASE('IC5')
+!/IS2             FLG2D(1,10)=.TRUE.
 !
 ! Group 2
 !
@@ -1614,7 +1619,8 @@
       USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
       USE W3ODATMD, ONLY: W3SETO
 !/
-      USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, BERG, UST, USTDIR, ASF
+      USE W3WDATMD, ONLY: TIME, DINIT, WLV, ICE, ICEF, ICEH, BERG,    &
+                          UST,  USTDIR, ASF
       USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
       USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
@@ -1957,10 +1963,11 @@
                     WRITE ( NDSOG ) BERG(1:NSEA)
 !/BT4                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
 !/BT4                    WRITE ( NDSOG ) SED_D50(1:NSEA)
-!                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
-!                    WRITE ( NDSOG ) CSHLDN(1:NSEA)
-!                  ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
-!                    WRITE ( NDSOG ) BRGKN0(1:NSEA)
+!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2                    WRITE (NDSOG ) ICEH(1:NSEA)
+!/IS2                  ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2                    WRITE (NDSOG ) ICEF(1:NSEA)
+
 !
 !     Section 2)
 !
@@ -2184,6 +2191,10 @@
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) BERG(1:NSEA)
 !/BT4                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
 !/BT4                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SED_D50(1:NSEA)
+!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9) THEN
+!/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEH(1:NSEA)
+!/IS2                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10) THEN
+!/IS2                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
 !
 !     Section 2)
 !

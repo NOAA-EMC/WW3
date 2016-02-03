@@ -1794,6 +1794,89 @@ END SUBROUTINE STR_TO_UPPER
       ENDIF
       RETURN
       END SUBROUTINE SSORT1
+
+
+!*********************************************************************
+   SUBROUTINE DIAGONALIZE(a,d,v,nrot)
+!*********************************************************************
+   IMPLICIT NONE
+   INTEGER,                          INTENT(out)   :: nrot
+   DOUBLE PRECISION, DIMENSION(:)  , INTENT(OUT)   ::d
+   DOUBLE PRECISION, DIMENSION(:,:), INTENT(INOUT) ::a
+   DOUBLE PRECISION, DIMENSION(:,:), INTENT(OUT)   ::v
+
+   INTEGER    i,j,ip,iq,n
+   DOUBLE PRECISION       c,g,h,s,sm,t,tau,theta,tresh
+   DOUBLE PRECISION    , DIMENSION(size(d)) ::b,z
+   LOGICAL, DIMENSION(size(d),size(d)) :: upper_triangle
+   
+   n=size(d)
+   v(:,:)=0.
+   upper_triangle(:,:)=.FALSE.
+   DO I=1,n
+      v(I,I)=1.
+      b(I)=a(I,I)
+      DO J=I+1,n
+         upper_triangle(I,J)=.TRUE.
+      ENDDO
+   ENDDO
+   d(:)=b(:)
+   z(:)=0.0
+   nrot=0
+      DO I=1,50
+      sm=SUM(ABS(a),mask=upper_triangle)
+      IF (sm.EQ.0.0) RETURN
+      tresh=merge(0.2*sm/n**2,0.0D0,i<4)
+      DO ip=1,n-1
+         do iq=ip+1,n
+            g=100.0*abs(a(ip,iq))
+            IF((i > 4).AND.(ABS(d(ip))+g.EQ.abs(d(ip))) &
+               .AND.(ABS(d(iq))+g.EQ.abs(d(iq)))) THEN
+               a(ip,iq)=0.0
+            ELSE IF (abs(a(ip,iq)) > tresh) THEN
+               h=d(iq)-d(ip)
+               if (abs(h)+g == abs(h)) THEN
+                  t=a(ip,iq)/h
+               ELSE
+                  theta=0.5*h/a(ip,iq)
+                  t=1.0/(abs(theta)+sqrt(1.0+theta**2))
+                  IF ( theta < 0.0) t=-t
+               ENDIF
+               c=1.0/sqrt(1+t**2)
+               s=t*c
+               tau=s/(1.0+c)
+               h=t*a(ip,iq)
+               z(ip)=z(ip)-h
+               z(iq)=z(iq)+h
+               d(ip)=d(ip)-h
+               d(iq)=d(iq)+h
+               a(ip,iq)=0.0
+               IF (ip.GE.1) CALL ROTATE(a(1:ip-1,ip),a(1:ip-1,iq))
+!The IF test was added by F.A. (2005/04/04) because of the following error:
+!Subscript out of range. Location: line 593 column 36 of 'cb_botsc.f90'
+!Subscript number 1 has value 0 in array 'A'
+               CALL ROTATE(a(ip,ip+1:iq-1),a(ip+1:iq-1,iq))
+               CALL ROTATE(a(ip,iq+1:n),a(iq,iq+1:n))
+               CALL ROTATE(v(:,ip),v(:,iq))
+               nrot=nrot+1
+            ENDIF
+         ENDDO
+      ENDDO
+      b(:)=b(:)+z(:)
+      d(:)=b(:)
+      z(:)=0.0
+   ENDDO
+   WRITE(6,*) 'Too many iterations in DIAGONALIZE'
+   CONTAINS
+   SUBROUTINE ROTATE(X1,X2)
+   DOUBLE PRECISION, DIMENSION(:), INTENT(INOUT) :: X1,X2
+   DOUBLE PRECISION, DIMENSION(size(X1)) :: MEM
+   MEM(:)=X1(:)
+   X1(:)=X1(:)-s*(X2(:)+X1(:)*tau)
+   X2(:)=X2(:)+s*(MEM(:)-X2(:)*tau)
+   END SUBROUTINE ROTATE
+   END SUBROUTINE DIAGONALIZE
+
 !/
 !/ End of module W3SERVMD -------------------------------------------- /
 !/

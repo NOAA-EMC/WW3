@@ -109,8 +109,10 @@ $  T  T  1     3   UA         WND   Wind speed.
 $  T  T  1     4   AS         AST   Air-sea temperature difference.
 $  T  T  1     5   WLV        WLV   Water levels.
 $  T  T  1     6   ICE        ICE   Ice concentration.
-$  T  T  1     7   IBG        IBG   Iceberg-induced damping
-$  T  T  1     8   D50        D50   Median sediment grain size
+$  T  T  1     7   IBG        IBG   Iceberg-induced damping.
+$  T  T  1     8   D50        D50   Median sediment grain size.
+$  T  T  1     9   IC1        IC1   Ice thickness.
+$  T  T  1    10   IC5        IC5   Ice flow diameter.
 $   -------------------------------------------------
 $        2                          Standard mean wave Parameters
 $   -------------------------------------------------
@@ -127,11 +129,11 @@ $  T  T  2    10   HIG        HIG   Infragravity height
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------
-$  F  F  3     1   Ef         EF    Wave frequency spectrum
-$  F  F  3     2   th1m       TH1M  Mean wave direction from a1,b2
-$  F  F  3     3   sth1m      STH1M Directional spreading from a1,b2
-$  F  F  3     4   th2m             Mean wave direction from a2,b2
-$  F  F  3     5   sth2m            Directional spreading from a2,b2
+$  F  F  3     1   EF         EF    Wave frequency spectrum
+$  F  F  3     2   TH1M       TH1M  Mean wave direction from a1,b2
+$  F  F  3     3   STH1M      STH1M Directional spreading from a1,b2
+$  F  F  3     4   TH2M       TH2M  Mean wave direction from a2,b2
+$  F  F  3     5   STH2M      STH2M Directional spreading from a2,b2
 $  F  F  3     6   WN         WN    Wavenumber array
 $   -------------------------------------------------
 $        4                          Spectral Partition Parameters 
@@ -169,6 +171,8 @@ $  F  F  6     6   USS[X,Y]   USS   Surface Stokes drift
 $  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure 
 $  F  F  6     8   US3D       USF   Spectrum of surface Stokes drift
 $  F  F  6     9   P2SMS      P2L   Micro seism  source term
+$  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
+$  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
 $   -------------------------------------------------
 $        7                          Wave-bottom layer 
 $   -------------------------------------------------
@@ -204,8 +208,8 @@ $ Actual active parameter selection section
 $
 $ (1) Forcing Fields
   T
-$ DPT CUR WND AST WLV ICE IBG D50
-  T   T   T   T   T   F   F   F
+$ DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
+  T   T   T   T   T   F   F   F   F   F
 $ (2) Standard mean wave Parameters
   T
 $ HS  LM  T02 T0M1 T01 FP DIR SPR DP
@@ -224,8 +228,8 @@ $ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM
   T   T   T   T   T   T   T   T   T   T
 $ (6) Wave-Ocean layer
   T
-$ SXY TWO BHD FOC TUS USS P2S USF P2L
-  T   T   T   T   T   T   T   F   F   F
+$ SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+  T   T   T   T   T   T   T   F   F   F   F
 $ (7) Wave-bottom layer
   T
 $ ABR UBR BED FBB TBB

@@ -645,7 +645,7 @@
 !/T0          END DO
 !/T0        END DO
 !
-!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG, '  ', 1.,         &
+!/T0      CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1), '  ', 1.,         &
 !/T0                         0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
 !
 !/T1      CALL OUTMAT (NDST, D, NTH, NTH, NK, 'diag Sin')
@@ -848,7 +848,7 @@
 !
       IF (SSDSBCK.GT.0) THEN 
 !
-! Precomputes the indices for integrating the spectrum over frquency bandwidth
+! Precomputes the indices for integrating the spectrum over frequency bandwidth
 !
         BINF=(1-SSDSBINT) ! Banner et al 2002: Hp=4*sqrt(int_0.7^1.3fp E df), SSDSBINT=0.3
         BSUP=(1+SSDSBINT)
@@ -1331,8 +1331,7 @@
       REAL                    :: ZX,ZARG,ZMU,ZLOG,ZBETA
       REAL                    :: Y,YC,DELY
       INTEGER                 :: I, J, K, L
-      REAL                    :: X0, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
-      REAL                    :: INSIGMAX
+      REAL                    :: X0, INSIGMAX, INAALPHA, INBBETA, INZZALP, INKAPPA, INGRAV
       INTEGER                 :: INIUSTAR, INIALPHA, INILEVTAIL, IERR
       CHARACTER(160)          :: FNAMETAB
       LOGICAL                 :: NOFILE
@@ -1354,9 +1353,9 @@
           IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
               INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
             NOFILE=.FALSE.
+            END IF
           END IF
-        END IF
-      END IF 
+        END IF 
 !
       USTARM = 5.
       ALPHAM = 20.*AALPHA

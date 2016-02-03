@@ -612,9 +612,12 @@
 !/RTD !!   Use spectral rotation sub and angle.  JGLi12Jun2012
 !/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD 
 !/RTD      USE W3SERVMD, ONLY: w3acturn 
-      USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY, SP => SPPNT
+      USE W3WDATMD, ONLY: ICE, ICEH, ICEF 
+      USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY,                 &
+                          SP => SPPNT
       USE W3ODATMD, ONLY: NDST, NOPTS, IPTINT, PTIFAC, IL, IW, II,    &
-                          DPO, WAO, WDO, ASO, CAO, CDO, SPCO
+                          DPO, WAO, WDO, ASO, CAO, CDO, ICEO, ICEHO,  &
+                          ICEFO, SPCO, NAPROC
 !/MPI      USE W3ODATMD, ONLY: IRQPO2
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -640,6 +643,7 @@
       REAL                    :: RD(4), RDS, RDI, FACRD,              &
                                  WNDX, WNDY, CURX, CURY, FAC1(NK),    &
                                  FAC2(NK), FAC3(NK), FAC4(NK)
+      INTEGER                 :: JSEA, ISEA
 !/T      REAL                    :: SPTEST(NK,NTH)
 !/RTD        REAL :: Spectr(NSPEC), AnglDIS      !! JGLi12Jun2012
 !/
@@ -699,7 +703,22 @@
 !
 !/T        WRITE (NDST,9002) (IS(J),J=1,4), (IM(J),J=1,4), (RD(J),J=1,4)
 !
-! Interpolate depth wind and current
+! Interpolate ice depth wind and current
+!
+        ICEFO(I) = 0
+        DO J=1, 4
+          ISEA = MAPFS(IY(J),IX(J))        
+!/DIST          JSEA = 1 + (ISEA-1)/NAPROC
+!/SHRD          JSEA = ISEA
+        
+          ICEFO(I) = ICEFO(I) + RD(J)*ICEF(JSEA)
+        END DO
+
+        ICEO(I) = RD(1)*ICE(IS(1)) + RD(2)*ICE(IS(2)) +               &
+                 RD(3)*ICE(IS(3)) + RD(4)*ICE(IS(4))
+
+        ICEHO(I) = RD(1)*ICEH(IS(1)) + RD(2)*ICEH(IS(2)) +            &
+                 RD(3)*ICEH(IS(3)) + RD(4)*ICEH(IS(4))
 !
         DPO(I) = RD(1)*DW(IS(1)) + RD(2)*DW(IS(2)) +                  &
                  RD(3)*DW(IS(3)) + RD(4)*DW(IS(4))
@@ -832,6 +851,7 @@
 !/    10-Nov-2004 : Multiple grid version.              ( version 3.06 )
 !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
 !/    25-Jul-2006 : Adding grid ID per point.           ( version 3.10 )
+!/    27-Aug-2015 : Adding interpolation for the ice.   ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -898,7 +918,7 @@
       USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
                           IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
                           ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
-                          GRDID
+                          GRDID, ICEO, ICEHO, ICEFO
 !/
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -1036,13 +1056,13 @@
         IF ( WRITE ) THEN
              WRITE (NDSOP)                                            &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
-                    ASO(I), CAO(I), CDO(I), GRDID(I),                 &
-                    (SPCO(J,I),J=1,NSPEC)
+                    ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
+                    ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
           ELSE
              READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                 &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
-                    ASO(I), CAO(I), CDO(I), GRDID(I),                 &
-                    (SPCO(J,I),J=1,NSPEC)
+                    ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
+                    ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
           END IF
 !
         END DO
