@@ -1114,6 +1114,9 @@
       END DO
 !
       RETURN
+!/T 9010 FORMAT ( ' TEST W3UIC1 : TIME     :',I9.8,I7.6/              &
+!/T               '               OLD TICE :',I9.8,I7.6/              &
+!/T               '               NEW TICE :',I9.8,I7.6)
 !/
 !/ End of W3UIC1 ----------------------------------------------------- /
 !/
@@ -1179,7 +1182,7 @@
 !/ ------------------------------------------------------------------- /   
       USE W3IDATMD, ONLY: TI5, ICEP5
       USE W3GDATMD, ONLY: NSEA, MAPSF
-      USE W3WDATMD, ONLY: TIC5, ICE, ICEH, ICEF, ICEDMAX
+      USE W3WDATMD, ONLY: TIME, TIC5, ICE, ICEH, ICEF, ICEDMAX
 !/
       IMPLICIT NONE
 !/
@@ -1219,6 +1222,9 @@
       END DO
 !
       RETURN
+!/T 9010 FORMAT ( ' TEST W3UIC5 : TIME     :',I9.8,I7.6/              &
+!/T               '               OLD TICE :',I9.8,I7.6/              &
+!/T               '               NEW TICE :',I9.8,I7.6)
 
 !/
 !/

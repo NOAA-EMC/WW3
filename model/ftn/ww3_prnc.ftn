@@ -7,7 +7,7 @@
 !/                  |           M. Accensi              |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Oct-2014 |
+!/                  | Last update :         14-Oct-2015 |
 !/                  +-----------------------------------+
 !/
 !/    01-Jan-2011 : Creation                            ( version 4.01 )   
@@ -21,6 +21,7 @@
 !/    20-Dec-2013 : Allow scale factor and offset in    ( version 4.16 )
 !/                  NetCDF variables (S. Zieger)
 !/    24-Oct-2014 : Allows "As Is" curvilinear grids    ( version 5.02 )
+!/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.XX )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -636,6 +637,11 @@
           YNI=ALA(1,NYI)
           END IF
         END IF
+        IF (Y0I.GT.YNI) THEN
+          WRITE (NDSE,1032)
+          CALL EXTCDE ( 2 )
+        END IF
+
 !
 ! gets FillValue
 !
@@ -1973,7 +1979,8 @@
  1031 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ILLEGAL FORMAT ID -->',A,'<--'/)
  1032 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     THIS FORMAT TYPE IS ALLOWED FOR ICE AND LEV ONLY'/)
+               '     LATITUDE VALUES MUST BE REVERSED'/                      &
+               '     EXAMPLE: ncpdq -h -O -a -lat file.nc'/ )
 !
  1033 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ILLEGAL DATA RECORD LENGTH : ',I6/)

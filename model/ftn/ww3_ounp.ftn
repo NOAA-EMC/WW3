@@ -1377,7 +1377,7 @@
       REAL                      :: XIN(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
                                    XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
                                    XBS(NTH,NK), XXX(NTH,NK), DIA(NTH,NK),&
-                                   XLN(NTH,NK), XWL(NTH,NK), XIS(NTH,NK)
+                                   XLN(NTH,NK), XWL(NTH,NK), XIS(NTH,NK), DIA2(NTH,NK)
       REAL                      :: SIN1(NK), SNL1(NK), SDS1(NK),         &
                                    SBT1(NK), SIS1(NK), STT1(NK), E1ALL(NK,6)
 !/ST3      LOGICAL                 :: LLWS(NSPEC)
@@ -2002,7 +2002,7 @@
             END IF
             IF ( FLSRCE(6) ) THEN
 !/IS2              CALL W3SIS2(A, ICECON, ICETHICK, ICEF, ICEDMAX,  &
-!/IS2                          IX, IY, XIS, DIA, WN, CG)  	      
+!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG)  	      
             END IF
 !
 !/XXX                CALL W3SXXX

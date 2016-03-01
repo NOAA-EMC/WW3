@@ -575,10 +575,11 @@
 !/SMC         ENDIF
 ! 
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
-          WRITE (NDSM)                                                &
+          WRITE (NDSM)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-               FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
-               FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
+               FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
+               FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
+               CLATS, CLATIS,CTHG0S
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
 !/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
@@ -651,8 +652,9 @@
             END IF
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-               FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
-               FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,CTHG0S
+               FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
+               FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
+               CLATS, CLATIS,CTHG0S
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 !/SEC1         READ (NDSM) NITERSEC1

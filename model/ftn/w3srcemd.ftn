@@ -460,7 +460,7 @@
 !/BSX                                 VSBS(NSPEC), VDBS(NSPEC),            &
 !/REF1                                VREF(NSPEC),                         &
 !/IS1                                 VSIR(NSPEC), VDIR(NSPEC),            &
-!/IS2                                 VSIR(NSPEC), VDIR(NSPEC),            &
+!/IS2                                 VSIR(NSPEC), VDIR(NSPEC),VDIR2(NSPEC), &
 !/XXX                                 VSXX(NSPEC), VDXX(NSPEC),            &
                                  VS  (NSPEC), VD  (NSPEC), EB(NK)
 !/ST6      REAL                    :: SWL(NSPEC), DWL(NSPEC)
@@ -510,6 +510,7 @@
 !/IS1      VDIR = 0.
 !/IS2      VSIR = 0.
 !/IS2      VDIR = 0.
+!/IS2      VDIR2= 0.
 !
 !/ST6      VSWL = 0.
 !/ST6      VDWL = 0.
@@ -1071,12 +1072,12 @@
 !
       IF ( FLAGS4.AND.ICE.GT.0 ) THEN 
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
-!/IC2      CALL W3SIC2 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+!/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !
 !/IS1      CALL W3SIS1 ( SPEC, ICE, VSIR )
 !/IS2      CALL W3SIS2 ( SPEC, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
-!/IS2                              VSIR, VDIR, WN1, CG1 )
+!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1 )
       SPEC2 = SPEC
 !
            TAUICE(:) = 0.
@@ -1089,11 +1090,11 @@
 !/IC3             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IS1             ATT=ATT*EXP(VDIR(IS)*DTG)
 !/IS2             IF (IS2PARS(2).EQ.0) THEN 
-!/IS2               ATT=ATT*EXP(VDIR(IS)*(1.-IS2PARS(2))*DTG)
+!/IS2               ATT=ATT*EXP((VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2             ELSE 
 !/IS2               SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-!/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
+!/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*EXP(VDIR2(IS)*DTG)*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2               ATT = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
 !/IS2! Warning, the following line is only correct for isotropic diffusion               
 !/IS2! in that case the spectrum relaxes exponentially to an isotropic spectrum              

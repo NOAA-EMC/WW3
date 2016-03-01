@@ -613,7 +613,7 @@
           is=int(is)
           TIME(1)=iyy*10000 + im *100 + id
           TIME(2)=ih*10000 + imn*100 + is
-         WRITE(NDSO,'(A,2I9,A,I,A)') 'Writing boundary data for time:', TIME, 'at ',NBO2,' points'
+         WRITE(NDSO,'(A,2I9,A,I6,A)') 'Writing boundary data for time:', TIME, 'at ',NBO2,' points'
           WRITE(NDSB,IOSTAT=IERR) TIME, NBO2
           DO IP=1, NBO2
             WRITE(NDSB) ABPIN2(:,IT,IP)

@@ -427,13 +427,13 @@
 !/
       END SUBROUTINE INSIS2
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SIS2 (A, CICE, ICEH, ICEF, ICEDMAX, IX, IY, S, D, WN, CG )
+      SUBROUTINE W3SIS2 (A, CICE, ICEH, ICEF, ICEDMAX, IX, IY, S, D, DCREEP, WN, CG )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  | P. Nicot & F. Ardhuin & G. Boutin |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Jan-2015 |
+!/                  | Last update :          6-Feb-2016 |
 !/                  +-----------------------------------+
 !/
 !/    16-Mar-2014 : Origination.                        ( version 4.18 )
@@ -442,7 +442,8 @@
 !/    27-Aug-2015 : Add breaking criterion, WIM1d       ( version 5.05 )
 !/                  (ref. Williams, 2012)
 !/    02-Nov-2015 : Integration of strain over bandwidth( version 5.05 )
-!/    13-Jan-2016 : Changed initialization of ICEDMAX   ( version 5.08 ) 
+!/    13-Jan-2016 : Changed initialization of ICEDMAX   ( version 5.10 ) 
+!/    06-Feb-2016 : Added IICEHMIN and creep dissipation( version 5.10 ) 
 !
 !  1. Purpose :
 !     Wave scattering in the MIZ, adapted from Dumont et al.  
@@ -450,6 +451,10 @@
 !/ ------------------------------------------------------------------- /
 !
 !  2. Method :
+!     This scattering routine allows the estimation of the maximum floe 
+!     size and an estimate of the creep-induced dissipation. 
+!     For the scattering, it is based on the normal incidence results of 
+!     Kohout and Meylan which are provided in a table. 
 !
 !  3. Parameters :
 !
@@ -462,7 +467,8 @@
 !       ICEDMAX Real  I     Maximum floe size
 !       IX,IY   Int   I     Not used
 !       S       R.A.  O     Source term (1-D version).
-!       D       R.A.  O     Non linear interactions (1-D version).
+!       D       R.A.  O     Diagonal part of scattering (1-D version).
+!       DCREEP  R.A.  O     Diagonal creep term (1-D version).
 !       WN      R.A.  I/O   Wave number
 !       CG      R.A.  I/O   Group speed
 !     ----------------------------------------------------------------
@@ -505,9 +511,10 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
-      USE CONSTANTS, ONLY: TPIINV, PI, TPI, GRAV
+      USE CONSTANTS, ONLY: TPIINV, PI, TPI, GRAV, DWAT
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN, IS2PARS, XFR
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN, IS2PARS, XFR, &
+                          IICEHMIN 
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ARRYMD, ONLY: PRT2DS
@@ -518,7 +525,7 @@
 !/ Parameter list
       REAL, INTENT(IN)        :: A(NSPEC), CICE, ICEH, ICEDMAX, WN(NK), CG(NK)
       INTEGER, INTENT(IN)     :: IX, IY
-      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
+      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), DCREEP(NSPEC)
       REAL, INTENT(INOUT)     :: ICEF
 !/
 !/ ------------------------------------------------------------------- /
@@ -529,15 +536,17 @@
       REAL                    :: W
       INTEGER                 :: IKBREAK, NSUM
       LOGICAL                 :: BRK_CRIT_W, BRK_CRIT
-      REAL                    :: ALPHA, STRAIN_C, WAMP(NK), D_FLEX_FAIL, AC, &
-                                 DMAX, S_ATT, FACTOR, BETA, BETA1(NK)
-      REAL                    :: ICEDAVE
-      REAL                    :: SUMALLDIR, SUMA, SUME, STRAINSPEC(NK), STRAIN
+      REAL                    :: ALPHA, STRAIN_C, WAMP(NK), D_FLEX_FAIL,  &
+                                 AC, SMOOTHD,                             &
+                                 DMAX, S_ATT, FACTOR, BETA
+      REAL                    :: ICEDAVE, CURVTOSTRAIN, CREEPFAC, MP2, B
+      REAL                    :: SUMALLDIR, SUMA, SUME, CURVSPEC(NK), ESPEC(NK),STRAIN
       REAL, PARAMETER         :: YOUNG = 5.49E+9   ! Young modulus 
       REAL, PARAMETER         :: POISSON = 0.3     ! Poisson Ratio 
       REAL, PARAMETER         :: SIGMA_C =  2.7414E+05  ! Flexural strenght in Pa
       REAL, PARAMETER         :: DENS = 1025.0     ! ice density 
-      REAL, DIMENSION(NK)        :: WN_I, WN_RP, WSQ, WLG, WLG_I, CG_I, CG_EFF, DUMMY
+      REAL, DIMENSION(NK)        :: WN_I, WN_RP, WSQ, WLG, WLG_I, CG_I,   &
+                                    R, CURV, CGRATIO, CG_EFF, DUMMY
 !/T      REAL                    :: SOUT(NK,NTH)
 !/
 !/ ------------------------------------------------------------------- /
@@ -548,14 +557,27 @@
 !
       S = 0.
       D = 0.
+      DCREEP = 0.
       DUMMY = WN
       WN_I = 0.
       WN_RP = 0.
       CG_I = 0.
       CG_EFF = 0.
+      MP2=(1-POISSON**2)
+      IF (IS2PARS(12).GT.0) THEN 
+	B=IS2PARS(12)
+! 2 is the ratio of <H/2^4> to (Hrms/2)^4 for a Rayleigh distribution 
+! 0.375 is the average of cos^4 
+! 0.4 is 2/5 
+        CREEPFAC = -2*(0.25/(IS2PARS(15)+2))*0.375*B*ICEH**(IS2PARS(15)+2)  &
+                        *(YOUNG/(2*B*MP2))**(IS2PARS(15)+1)/(DWAT*GRAV)
+      ELSE 
+        CREEPFAC=1.
+        ENDIF
+
       WLG = TPI/WN
       DMAX = ICEF
-      IF (IS2PARS(10).LT.0.5) THEN 
+      IF (IS2PARS(10).LT.0.5) THEN ! resets max floe size to the last forcing or initial value
         DMAX = ICEDMAX
         ICEF = ICEDMAX
       END IF
@@ -565,7 +587,7 @@
       STRAIN_C = SIGMA_C/YOUNG
 
 ! Minimum floe size that can break 
-      D_FLEX_FAIL =  ( (PI**4*YOUNG*ICEH**3)/( 48*DENS*GRAV*(1-POISSON**2) ) )**.25
+      D_FLEX_FAIL =  ( (PI**4*YOUNG*ICEH**3)/( 48*DENS*GRAV*MP2 ) )**.25
 ! Estimates mean floe diameter from max floe diameter 
       IF (DMAX.GT.NICED) THEN
         ICEDAVE=DMAX
@@ -577,8 +599,9 @@
 !
       IF (CICE .GT. 0 .AND. DMAX .GT. 0) THEN
 !
-!  1. Calculate wavelength, Robinson-Palmer dispersion relation (should be tabulated)
-!                                                                    and made consistent with IC2... 
+!  1. Calculate wavelength, Robinson-Palmer dispersion relation 
+!     (should be tabulated and made consistent with IC2, eg. using Wadhams73...)
+!     Warning: it only applies to unbroken ice. 
 !
         IF (IS2PARS(6).GT.0.5) THEN 
           CALL W3RPWNICE(ICEH,WN_I,WN_RP,CG_I)
@@ -589,6 +612,7 @@
           END IF          
         WLG_I = TPI/WN_I  ! Ice wavelength 
         WSQ = (WLG/WLG_I)  
+        CGRATIO(:)=CG_I(:)/CG(:)
 !
 !  2. gets reflection coefficient from table 
 !
@@ -632,18 +656,13 @@
 ! time decay
 !
         BETA = ALPHA * CICE * CG_EFF(IK) 
-        BETA1(IK) = BETA
-! Test output ... 
-! WRITE(994,*) IK,W,IND1,IND2,SIG(IK)*TPIINV,SIS2ALPHAS(IND1,IK), SIS2ALPHAS(IND2,IK), &
-! (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W), &
-! SIS2ALPHA2(IND1,IK)*(1-W)+SIS2ALPHA2(IND2,IK)*W, ALPHA
-
 !
 !  3. attenuation due to scattering for all spectral components
 !     with added backscattering for energy conservation ( if IS2PARS(2).EQ.1)
 !
         SUMALLDIR= 0.
         SUMA = 0.
+        CURVTOSTRAIN =  (0.25*MAX(ICEH,IICEHMIN)**2)
         DO ITH = 1,NTH
           IS  = ITH+(IK-1)*NTH
           D(IS) = BETA
@@ -651,13 +670,19 @@
           SUMALLDIR = SUMALLDIR + S(IS) 
           SUMA = SUMA + A(IS)
           END DO ! loop over directions
-        SUME = SUMA*DDEN(IK) / CG(IK)
+!
+! R is the ratio of energy (including bending of ice) to wave energy without ice
+! Wadhams 1973 eq. 34, warning, his ice thickness is 2*h 
+!
+        R(IK) =1+IS2PARS(16)*4*YOUNG*ICEH**3*(PI/WLG_I(IK))**4/(3*DWAT*GRAV*MP2) 
+        SUME = SUMA*DDEN(IK) / CG(IK)  / (R(IK)*CGRATIO(IK))
 
 ! AC = WLG_I(IK)**2 * STRAIN_C /(2*WSQ(IK)*PI**2*ICEH)
+! CURVSPEC is the curvature variance = elevation variance * k^4 
 ! STRAINSPEC is the strain variance = elevation variance * k^4 * ICEH^2/4 
-        STRAINSPEC (IK) = (0.25*ICEH**2) * SUME * (2*PI/ WLG_I(IK))**4
-
-        SUMALLDIR = SUMALLDIR / REAL(NTH)
+	CURVSPEC (IK) = SUME * (2*PI/ WLG_I(IK))**4
+	ESPEC (IK) = SUME 
+	SUMALLDIR = SUMALLDIR / REAL(NTH)
 !
 ! Adds the scattered energy isotropically to conserve the energy 
 ! This may not be a very good scheme numerically. Another possible 
@@ -666,15 +691,18 @@
         S(1+(IK-1)*NTH:IK*NTH)=S(1+(IK-1)*NTH:IK*NTH)-SUMALLDIR*IS2PARS(2)
         END DO ! loop over wavenumbers IK
 !
-!  3. update of floe size 
+!  4. update of floe size 
 !      
       IF (IS2PARS(3).GT.0.5) THEN
         IKBREAK=0
         DO IK = 1, NK 
-          STRAIN = SUM(STRAINSPEC(MAX(1,IK-NSUM):MIN(NK,IK+NSUM)))
+          CURV(IK) = SUM(CURVSPEC(MAX(1,IK-NSUM):MIN(NK,IK+NSUM)))  ! this is the variance of the curvature 
+          STRAIN = CURV(IK)*CURVTOSTRAIN                            ! converts curvature variance to strain variance 
           IF (D_FLEX_FAIL .LT. DMAX) THEN 
-            WAMP(IK) = SQRT(2*STRAIN)
+            ! Williams et al. used IS2PARS(17)=SQRT(2), default is 3.6
+            WAMP(IK) = IS2PARS(17)*SQRT(STRAIN)
             BRK_CRIT_W = WAMP(IK) .GT. STRAIN_C .AND. WLG_I(IK)/2 .GT. ICEDMIN .AND. WLG_I(IK)/2 .LT. DMAX               
+!
             IF (BRK_CRIT_W) THEN
               IKBREAK=IK
               BRK_CRIT = .TRUE.
@@ -682,9 +710,10 @@
             END IF
           END DO ! end of loop on IK
 !
+! 4.b Correction for bias introduced by the finite bandwidth sum .. .
+!
         IF (BRK_CRIT) THEN
           DO IK=IKBREAK,MAX(IKBREAK-NSUM,1),-1
-! Correction for bias introduced by the finite bandwidth sum .. .
             IF (WAMP(IK).GE.WAMP(IKBREAK).AND.DMAX.GE.(WLG_I(IK)/2)) THEN 
               IKBREAK = IK
               END IF
@@ -692,7 +721,29 @@
           DMAX = WLG_I(IKBREAK)/2  ! could use a parabolic fit to have a continuous shift of DMAX ..
           ICEF = DMAX
           END IF
-        END IF
+        END IF  !end of test  (IS2PARS(3).GT.0.5)
+!
+!  5. creep dissipation 
+!      
+      IF (IS2PARS(12).GT.0) THEN
+        DO IK = 1, NK 
+!        
+! The TANH((DMAX-D*WLG_I(IK))/DMAX*C) 
+! is an ad hoc factor that goes to zero for WLG << DMAX and 1 for WLG >> DMAX 
+! this should probably be adjusted... 
+!
+          IF (IS2PARS(14)*WLG_I(IK).LT.DMAX) THEN 
+            SMOOTHD=TANH((DMAX-IS2PARS(14)*WLG_I(IK))/(DMAX*IS2PARS(13)))
+            DCREEP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)*CG(IK) & 
+                                        *((2*PI)/WLG_I(IK))**(IS2PARS(15)+1) &
+                                        /(CGRATIO(IK)**2*R(IK)**2)           &
+                                        *SMOOTHD
+            END IF
+          END DO ! end of loop on IK
+       ENDIF ! end of test (IS2PARS(12).GT.0)
+!
+!  6. Case of no scattering nor dissipation 
+!      
      ELSE 
        DMAX = 0.
        ICEF = 0. 

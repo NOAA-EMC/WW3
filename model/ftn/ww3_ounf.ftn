@@ -919,11 +919,11 @@
 !/IS2              varng(1)='ice_thickness'
 !/IS2              varnc(1)=''
 !/IS2              vmin = 0
-!/IS2              vmax = 1000
+!/IS2              vmax = 30000
 !
 !
 !/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
-!/IS2              FSC = 0.001
+!/IS2              FSC = 0.05
 !/IS2              UNITS = 'm'
 !/IS2              ENAME = '.ic5'
 !/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF  , MAPSF, X1 )
@@ -934,7 +934,7 @@
 !/IS2              varng(1)='maximum_ice_floe_diameter'
 !/IS2              varnc(1)=''
 !/IS2              vmin = 0
-!/IS2              vmax = 1000
+!/IS2              vmax = 30000
 
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
 !

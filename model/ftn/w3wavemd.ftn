@@ -413,7 +413,7 @@
                                  DTL0, DTI0, DTI10, DTI50,            &
                                  DTGA, DTG, DTRES,        &
                                  FAC, VGX, VGY, FACK, FACTH,          &
-                                 FACX, SXM, SYM, XXX, REFLEC(4),      &
+                                 FACX, XXX, REFLEC(4),                &
                                  DELX, DELY, DELA, DEPTH, D50, PSIC
 !/SEC1     REAL                    :: DTGTEMP
 !
@@ -1325,9 +1325,6 @@
   370     CONTINUE
           IF ( FLSOU ) THEN
 !
-!/REF1            SXM    = SX / FACX 
-!/REF1            SYM    = SY / FACX
-
             D50=0.0002
             REFLEC(:)=0.
             REFLED(:)=0.
@@ -1346,8 +1343,8 @@
                 DELX=1. 
                 DELY=1. 
 !/REF1                IF (GTYPE.EQ.RLGTYPE) THEN 
-!/REF1                  DELX=SXM*CLATS(ISEA)
-!/REF1                  DELY=SYM
+!/REF1                  DELX=SX*CLATS(ISEA)/FACX
+!/REF1                  DELY=SY/FACX
 !/REF1                  DELA=DELX*DELY
 !/REF1                  END IF
 !/REF1                IF (GTYPE.EQ.CLGTYPE) THEN 

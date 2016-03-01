@@ -319,7 +319,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NSPEC, NSEA, NSEAL
+      USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NSPEC, NSEA, NSEAL, GRIDS
       USE W3ODATMD, ONLY: NAPROC
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -398,9 +398,9 @@
       WDATAS(IMOD)%USTDIR(:) = 0.
       WDATAS(IMOD)%BERG  (:) = 0.
       WDATAS(IMOD)%ICE   (:) = 0.
-      WDATAS(IMOD)%ICEH  (:) = 0.
-      WDATAS(IMOD)%ICEF  (:) = 0.
-      WDATAS(IMOD)%ICEDMAX(:) = 0.
+      WDATAS(IMOD)%ICEH  (:) = GRIDS(IMOD)%IICEHINIT
+      WDATAS(IMOD)%ICEF  (:) = 1000.
+      WDATAS(IMOD)%ICEDMAX(:) = 1000.
       WDATAS(IMOD)%DINIT     = .TRUE.
       CALL W3SETW ( IMOD, NDSE, NDST )
 !

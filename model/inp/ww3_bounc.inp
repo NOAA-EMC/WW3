@@ -9,10 +9,8 @@ $
 $ Interpolation method: 1: nearest
 $                       2: linear interpolation
  2 
-$
-$
-$ verbose mode [0-1]
- 1
+$ Verbose (0, 1, 2)
+1
 $
 $ List of spectra files. These NetCDF files use the WAVEWATCH III
 $ format as described in the ww3_ounp.inp file. The files are 

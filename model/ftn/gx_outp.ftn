@@ -688,7 +688,7 @@
                                  A(NTH,NK), WN2(NTH,NK)
       REAL                    :: DIA(NTH,NK), SWI(NK,NTH), SNL(NK,NTH),&
                                  SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH),&
-                                 STT(NK,NTH)
+                                 STT(NK,NTH), DIA2(NK,NTH)
       REAL                    :: XLN(NTH,NK), XWI(NTH,NK), XNL(NTH,NK),&
                                  XTR(NTH,NK), XDS(NTH,NK), XDB(NTH,NK),&
                                  XBT(NTH,NK), XBS(NTH,NK), XXX(NTH,NK),&
@@ -1022,7 +1022,7 @@
               END IF
            IF ( FLSRCE(6) ) THEN
 !/IS2           CALL W3SIS2(A, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
-!/IS2                       XIS, DIA, WN, CG)  	   	     
+!/IS2                       XIS, DIA, DIA2, WN, CG)  	   	     
            END IF
 !
 !/XXX            CALL W3SXXX
