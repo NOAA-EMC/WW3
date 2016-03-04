@@ -33,9 +33,6 @@
 !                               (set in ITRACE).
 !      NTRACE    Int.  Private  Maximum number of trace prints in
 !                               strace (set in ITRACE).
-!
-!      PRFTB     I.A.  Private  Base time for profiling.
-!      FLPROF    Log.  Private  Flag for profiling initialization.
 !     ----------------------------------------------------------------
 !
 !  3. Subroutines and functions :
@@ -51,8 +48,6 @@
 !      WWDATE    Subr. Public   Get system date.
 !      WWTIME    Subr. Public   Get system time.
 !      EXTCDE    Subr. Public   Abort program with exit code.
-!      PRINIT    Subr. Public   Initialize profiling.
-!      PRTIME    Subr. Public   Get profiling time.
 !     Four subs for rotated grid are appended to this module.  As they 
 !     are shared with SMC grid, they are not quoted by option /RTD but 
 !     are available for general use.     JGLi12Jun2012
@@ -80,8 +75,7 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !
-      INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0, PRFTB(8)
-      LOGICAL, PRIVATE        :: FLPROF = .FALSE.
+      INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -788,151 +782,6 @@
 !/ End of EXTCDE ----------------------------------------------------- /
 !/
       END SUBROUTINE EXTCDE
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE PRINIT
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-May-2005 !
-!/                  +-----------------------------------+
-!/
-!/    06-May-2005 : Origination.                        ( version 3.07 )
-!/
-!  1. Purpose :
-!
-!     Initialize profilinf routine PRTIME.
-!
-!  2. Method :
-!
-!     FORTRAN 90 SYSTEM_CLOCK intrinsic routine.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      SYSTEM_CLOCK
-!                Sur.    n/a    Get system time ( !/F90 )
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!  6. Error messages :
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!  9. Switches :
-!
-!     !/F90  FORTRAN 90 specific calls.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      IMPLICIT NONE
-!/
-! -------------------------------------------------------------------- /
-!
-!/F90      CALL DATE_AND_TIME ( VALUES=PRFTB )
-!
-      FLPROF = .TRUE.
-!
-      RETURN
-!/
-!/ End of PRINIT ----------------------------------------------------- /
-!/
-      END SUBROUTINE PRINIT
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE PRTIME ( PTIME )
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-May-2005 !
-!/                  +-----------------------------------+
-!/
-!/    06-May-2005 : Origination.                        ( version 3.07 )
-!/
-!  1. Purpose :
-!
-!     Get wallclock time for profiling purposes.
-!
-!  2. Method :
-!
-!     FORTRAN 90 SYSTEM_CLOCK intrinsic routine.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!       PTIME   Real   O   Time retrieced from system.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      SYSTEM_CLOCK
-!                Sur.    n/a    Get system time ( !/F90 )
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!     Any, after PRINIT has been called.
-!
-!  6. Error messages :
-!
-!     - If no initialization, returned time equals -1.
-!     - If no system clock, returned time equals -1.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!  9. Switches :
-!
-!     !/F90  FORTRAN 90 specific calls.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      USE W3TIMEMD, ONLY: TDIFF
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-      REAL, INTENT(OUT)       :: PTIME
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
-      INTEGER                 :: PRFTA(8)
-!
-! -------------------------------------------------------------------- /
-!
-      PTIME  = -1.
-!
-      IF ( .NOT. FLPROF ) RETURN
-!
-!/F90      CALL DATE_AND_TIME ( VALUES=PRFTA )
-!/F90      PTIME  = TDIFF ( PRFTB,PRFTA )
-!
-      RETURN
-!/
-!/ End of PRTIME ----------------------------------------------------- /
-!/
-      END SUBROUTINE PRTIME
 !/ ------------------------------------------------------------------- /
 !  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !  This subroutine turn the wave spectrum by an fixed angle anti-clockwise

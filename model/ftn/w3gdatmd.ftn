@@ -2706,6 +2706,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
+!/S   USE W3SERVMD, ONLY : STRACE
 !
       IMPLICIT NONE
 !/
