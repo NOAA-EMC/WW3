@@ -428,6 +428,8 @@
 !                  (Liu and Mollo 1988: JPO 18       1720-1712)
 !     !/IC3   Sink term for interaction with ice (Wang and Shen method)
 !                  (Wang and Shen JGR 2010)
+!     !/IC4   Sink term for empirical, frequency-dependent attenuation
+!                   in ice (Wadhams et al. 1988: JGR 93 (C6) 6799-6818)
 !
 !     !/DB0   No depth-induced breaking included.
 !     !/DB1   Battjes-Janssen depth-limited breaking.
@@ -611,7 +613,11 @@
 
 !/IC3  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                             IC2SMOOTH, IC2VISC, IC2TURBS,        &
-!/IC3                             IC3MAXTHK, IC3MAXCNC
+!/IC3                             IC3MAXTHK, IC3MAXCNC        ,        &
+!/IC3                             IC3HILIM, IC3KILIM
+!/IC3  LOGICAL                 :: IC3CHENG
+
+!/IC4  INTEGER                 :: IC4METHOD
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -685,7 +691,9 @@
 !/IC2      NAMELIST /SIC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IC3      NAMELIST /SIC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC
+!/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC,      &
+!/IC3                      IC3CHENG, IC3HILIM, IC3KILIM
+!/IC4      NAMELIST /SIC4/  IC4METHOD  
 !/IG1      NAMELIST /SIG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -1005,6 +1013,8 @@
 !/IC2      FLIC   = .TRUE.
 !/IC3      NRIC   = NRIC + 1
 !/IC3      FLIC   = .TRUE.
+!/IC4      NRIC   = NRIC + 1
+!/IC4      FLIC   = .TRUE.
 !
 !/IS1      NRIS   = NRIS + 1
 !/IS1      FLIS   = .TRUE.
@@ -1702,7 +1712,11 @@
 !/IC3      WRITE(NDSO,'(A/A)')'    Sice will be calculated using '&
 !/IC3            //'Wang and Shen method.','        '&
 !/IC3            //'Required field input: ice parameters 1, 2, 3 and 4.'
-
+!
+!/IC4      WRITE (NDSO,935)
+!/IC4      WRITE(NDSO,'(A/A)')'    Sice will be calculated using '&
+!/IC4            //'Empirical method.','        '&
+!/IC4            //'Required field input: ice parameters (varies).'
 !
 ! 6.l Read unstructured data 
 ! initialisation of logical related to unstructured grid
@@ -1952,14 +1966,18 @@
 !/IC2       IC2SMOOTH = 2E5
 !/IC2       IC2VISC = 8.
 !
-!/IC3       IC3MAXTHK = 0.1 
-!/IC3       IC3MAXCNC = 1.0
+!/IC3       IC3MAXTHK = 100.0
+!/IC3       IC3MAXCNC = 100.0
 !/IC3       IC2TURB = 2.0 ! from run_test example by F.A.
 !/IC3       IC2TURBS = 0.
 !/IC3       IC2ROUGH = 0.02  !  from run_test example by F.A. (alt:0.1)
 !/IC3       IC2REYNOLDS = 1.5E5
-!/IC3       IC2SMOOTH = 7E4
-!/IC3       IC2VISC = 2.
+!/IC3       IC2SMOOTH = 7.0E4
+!/IC3       IC2VISC = 2.0
+!/IC3       IC3CHENG = .FALSE.
+!/IC3       IC3HILIM = 100.0
+!/IC3       IC3KILIM = 100.0
+!/IC4       IC4METHOD = 1 !switch for methods within IC4
 
 !
 !/IC2      CALL READNL ( NDSS, 'SIC2 ', STATUS )
@@ -1967,7 +1985,9 @@
 !
 !/IC3      CALL READNL ( NDSS, 'SIC3 ', STATUS )
 !/IC3      WRITE (NDSO,971) STATUS
-
+!
+!/IC4      CALL READNL ( NDSS, 'SIC4 ', STATUS )
+!/IC4      WRITE (NDSO,971) STATUS
 !
       CALL READNL ( NDSS, 'OUTS', STATUS )
       WRITE (NDSO,4970) STATUS
@@ -2172,7 +2192,9 @@
 !/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
 !/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
 !/IC3                          IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
-!/IC3                          IC2VISC, IC2TURBS
+!/IC3                          IC2VISC, IC2TURBS, IC3CHENG,           &
+!/IC3                          IC3HILIM, IC3KILIM
+!/IC4         WRITE(NDSO,2980) IC4METHOD  
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, ICEHMIN, PMOVE, XSEED,&
@@ -3719,15 +3741,20 @@
 !/IC2       IC2PARS(6)=IC2VISC
 !/IC2       IC2PARS(7)=IC2TURBS
 !
-!/IC3       IC2PARS(:)=0.
-!/IC3       IC2PARS(1)=IC3MAXTHK
-!/IC3       IC2PARS(2)=IC2TURB
-!/IC3       IC2PARS(3)=IC2ROUGH
-!/IC3       IC2PARS(4)=IC2REYNOLDS
-!/IC3       IC2PARS(5)=IC2SMOOTH
-!/IC3       IC2PARS(6)=IC2VISC
-!/IC3       IC2PARS(7)=IC2TURBS
-!/IC3       IC2PARS(8)=IC3MAXCNC
+!/IC3       IC3PARS(:)=0.
+!/IC3       IC3PARS(1)=IC3MAXTHK
+!/IC3       IC3PARS(2)=IC2TURB
+!/IC3       IC3PARS(3)=IC2ROUGH
+!/IC3       IC3PARS(4)=IC2REYNOLDS
+!/IC3       IC3PARS(5)=IC2SMOOTH
+!/IC3       IC3PARS(6)=IC2VISC
+!/IC3       IC3PARS(7)=IC2TURBS
+!/IC3       IC3PARS(8)=IC3MAXCNC
+!/IC3       IF (IC3CHENG) IC3PARS(9)=1.0
+!/IC3       IC3PARS(10)=IC3HILIM
+!/IC3       IC3PARS(11)=IC3KILIM
+!
+!/IC4       IC2PARS(1)=IC4METHOD
 !
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = IS2BACKSCAT
@@ -4544,6 +4571,9 @@
 !/IC3  935 FORMAT (/'  Dissipation via ice parameters (SIC3).'&
 !/IC3           ,/' --------------------------------------------------')
 !
+!/IC4  935 FORMAT (/'  Dissipation via ice parameters (SIC4).'&
+!/IC4           ,/' --------------------------------------------------')
+!
 !/IS0 944 FORMAT  (/'  Ice scattering not defined.'/)
 !/IS1 945 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS1              ' --------------------------------------------------')
@@ -4662,6 +4692,8 @@
 !/IC2               ' --------------------------------------------------')
 !/IC3  971 FORMAT (/'  Visco-elastic ice layer   ',A/      &
 !/IC3               ' --------------------------------------------------')
+!/IC4  971 FORMAT (/'  Empirical wave-ice physics   ',A/      &
+!/IC4               ' --------------------------------------------------')
 !
 !
  4970 FORMAT (/'  Spectral output on full grid ',A/                   &
@@ -4685,11 +4717,14 @@
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
 !
- 2979 FORMAT ( '  &IC3  IC3MAXTHK =',F8.2, ', IC3MAXCNC =',F8.4,      &
+ 2979 FORMAT ( '  &SIC3  IC3MAXTHK =',F6.2, ', IC3MAXCNC =',F6.2,     &
                ', IC2TURB =',F8.2,                                    &
                ', IC2ROUGH  =',F10.3,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
-               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
+               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,', IC3CHENG =',&
+               L3,', IC3HILIM = ',F6.2,', IC3KILIM = ',E9.2,' /')
+!
+ 2980 FORMAT ( '  &SIC4  IC4METHOD = ',I1)
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1, ', ICEHMIN = ',F5.2,           &
@@ -5167,6 +5202,8 @@
 !/IC2                         READ (NDS,NML=SIC2,END=801,ERR=802,IOSTAT=J)
 !/IC3                        CASE('SIC3') 
 !/IC3                         READ (NDS,NML=SIC3,END=801,ERR=802,IOSTAT=J)
+!/IC4                        CASE('SIC4 ') 
+!/IC4                         READ (NDS,NML=SIC4,END=801,ERR=802,IOSTAT=J)
                         CASE('UNST')
                           READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
                         CASE('OUTS')

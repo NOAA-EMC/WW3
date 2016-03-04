@@ -314,8 +314,9 @@
       TYPE WADAT
 !
 ! The grid
-!
+! 
         REAL, POINTER         :: CG(:,:), WN(:,:)
+!/IC3   REAL, POINTER         :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
 !
 ! Arrays for processing model input
 !
@@ -470,9 +471,10 @@
 !/
       TYPE(WADAT), TARGET, ALLOCATABLE :: WADATS(:)
 !/
-!/ Data aliasses for structure WADAT(S)
+!/ Data aliases for structure WADAT(S)
 !/
       REAL, POINTER           :: CG(:,:), WN(:,:)
+      REAL, POINTER           :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
 !
       REAL, POINTER           :: CA0(:), CAI(:), CD0(:), CDI(:),      &
                                  UA0(:), UAI(:), UD0(:), UDI(:),      &
@@ -1073,11 +1075,21 @@
 !
       ALLOCATE ( WADATS(IMOD)%WN(0:NK+1,0:NSEA), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
+
+!/IC3     ALLOCATE (WADATS(IMOD)%IC3WN_R(0:NK+1,0:300), STAT=ISTAT )
+!/IC3     CHECK_ALLOC_STATUS ( ISTAT )
+!/IC3     ALLOCATE (WADATS(IMOD)%IC3WN_I(0:NK+1,0:300), STAT=ISTAT )
+!/IC3     CHECK_ALLOC_STATUS ( ISTAT )
+
 !
       IF ( FL_ALL ) THEN
 !
           ALLOCATE ( WADATS(IMOD)%CG(0:NK+1,0:NSEA), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
+
+!/IC3     ALLOCATE (WADATS(IMOD)%IC3CG(0:NK+1,0:300), STAT=ISTAT )
+!/IC3     CHECK_ALLOC_STATUS ( ISTAT )
+
 !
           IF ( FLCUR  ) THEN
               ALLOCATE ( WADATS(IMOD)%CA0(NSEA) ,           &
@@ -2333,10 +2345,13 @@
           USERO  => WADATS(IMOD)%USERO
 !
           WN     => WADATS(IMOD)%WN
+!/IC3     IC3WN_R=> WADATS(IMOD)%IC3WN_R
+!/IC3     IC3WN_I=> WADATS(IMOD)%IC3WN_I
 !
           IF ( FL_ALL ) THEN
 !
               CG     => WADATS(IMOD)%CG
+!/IC3         IC3CG  => WADATS(IMOD)%IC3CG
 !
               ATRNX  => WADATS(IMOD)%ATRNX
               ATRNY  => WADATS(IMOD)%ATRNY

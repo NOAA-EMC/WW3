@@ -245,8 +245,7 @@
 !/T0      REAL                    :: DOUT(NK,NTH)
       INTEGER                 :: IKTH, IK
       REAL                    :: D1D(NK)        !In SBT1: D1D was named "CBETA"
-      REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
-                                 ICECOEF4, ICECOEF5, ICECONC
+      REAL                    :: ICECOEF1, ICECOEF2, ICECONC
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential (spatial) decay rate for amplitude (1/m)
       REAL                    :: WN_R, CG_ICE(NK)
       REAL                    :: ALPHA ! exponential (spatial) decay rate for energy (1/m)
@@ -270,15 +269,10 @@
       WN_I     = 0.0
       ICECOEF1 = ICEH
       ICECOEF2 = 0.0
-      ICECOEF3 = 0.0
-      ICECOEF4 = 0.0
-      ICECOEF5 = 0.0
       ICECONC  = 0.0
 !
-      IF (FLAGS(-6)) ICECOEF2 = ICEP2(IX,IY)
-      IF (FLAGS(-5)) ICECOEF3 = ICEP3(IX,IY)
-      IF (FLAGS(-4)) ICECOEF4 = ICEP4(IX,IY)
-      IF (FLAGS(-3)) ICECOEF5 = ICEP5(IX,IY)
+! TODO: fix flags usage
+      ICECOEF2 = ICEP2(IX,IY)  ! IF (FLAGS(-6)) removed
       IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
 !
 !
@@ -286,7 +280,8 @@
 !
       NOICE=.FALSE.
       IF (ICECOEF1==0.0) NOICE=.TRUE.
-      IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
+      IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE. ! use FLAGS4
+                                                    ! instead?
 
       IF ( NOICE ) THEN
          D = 0.0
@@ -298,13 +293,22 @@
 !
 !         (none)
 !
-!/T38        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+!/T38        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2
 !
 ! 2.b Make calculations ---------------------------------------------- /
-         !IF (.NOT.FLAGS(-7))THEN
-         !   WRITE (NDSE,1001) 'ICE PARAMETER 1'
-         !   CALL EXTCDE(2)
-         !ENDIF
+
+! We cannot use this check, since FLAGS(J) will be false once
+! it has run out past end of available data.
+! We should implement a different way to check for the existence of
+!   the fields
+!        IF (.NOT.FLAGS(-7))THEN
+!           WRITE (NDSE,1001) 'ICE PARAMETER 1'
+!           CALL EXTCDE(2)
+!        ENDIF
+!        IF (.NOT.FLAGS(-6))THEN
+!           WRITE (NDSE,1001) 'ICE PARAMETER 2'
+!           CALL EXTCDE(2)
+!        ENDIF
 
          !  ICECOEF1 = H_ICE
          !  ICECOEF2 = VISC

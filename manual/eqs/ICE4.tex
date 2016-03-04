@@ -1,0 +1,47 @@
+\vsssub
+\subsubsection{~$S_{ice}$: Frequency dependent damping by sea ice} \label{sec:ICE4}
+\vsssub
+
+\opthead{IC4}{\ws/NRL}{E. Rogeradds and C. Collins}
+
+\noindent
+The fourth method for damping of waves by sea ice gives options to implement one of several simple, empirically based wave-ice interaction physics. The option is set by the integer value (1, 2, 3, or 4) for {\code IC4METHOD} namelist parameter. The first three options of {\code IC4} feature frequency-dependent attenuation, whereas with the last option, like {\code IC1}, attenuation is uniform across the frequencies. The motivation is to provide a simple, flexible, and efficient source term which reproduces, albeit in a highly parameterized way, some basic physics of wave-ice interaction. Out of several possibilities, four have been included: 1) an exponential fit to the field data of \cite{art:WAD88}, 2) the polynomial fit in \cite{art:MBK14}, 3) a quadratic fit to the calculations of \cite{art:KM08} given in \cite{art:HT15}, and 4) Eq. 1 of \cite{art:Ko14}. Whereas in {\code IC1}, ${C_{ice,1}}$ is the user determined attenuation, for options 1, 2, and 4 ${C_{ice,n}}$ are constants of the equations, and for option 3 ${C_{ice,1}}$ is ice thickness. 
+
+An exponential equation was chosen to fit the data contained in table 2 of \cite{art:WAD88} which results in preferential attenuation of high frequency waves. This parametrizes the well known low-pass filtering effect of ice. The equation has the following form:
+
+\begin{equation}\label{eq:ice1}
+  {\alpha} = \exp[\frac{-{2\pi}C_{ice, 1}}{{\sigma}} - C_{ice, 2}]
+\end{equation}
+
+\noindent
+The values determined from the of the data are ${C_{ice,1...2}}=[0.18, 7.3]$ but these may be tweaked for attenuation of a qualitatively similar character. 
+
+\cite{art:MBK14} used a polynomial to fit their data. The additional physics parameterized here is the so called “roll-over effect” where the attenuation levels off at the higher frequencies. The equation is the following:
+
+\begin{equation}\label{eq:ice2}
+  {\alpha} = C_{ice,1} + C_{ice,2}[{\frac{\sigma}{2\pi}}] + C_{ice,3}[{\frac{\sigma}{2\pi}}]^2 + C_{ice,4}[{\frac{\sigma}{2\pi}}]^3 + C_{ice,5}[{\frac{\sigma}{2\pi}}]^4
+\end{equation}
+
+\noindent
+From \cite{art:MBK14}, the suggested values for the coefficients are ${C_{ice,1...5}}=[0, 0, 2.12\times 10^{-3}, 0, 4.59\times 10^{-2}]$. \cite{art:HT15} fit a quadratic equation to the attenuation coefficient calculated by \cite{art:KM08} as a function of frequency, T, and ice thickness, h. Attenuation increases for thicker ice and higher frequencies (lower periods).The number of of coefficients of the quadratic equation were prohibitively large to be user determined, so equation is hardwired in and the tunable parameter, ${C_{ice,1}}$, is ice thickness - h. For reference, the equation is the following:
+
+\begin{equation}\label{eq:ice3}
+  {\ln{\alpha(T,h)}} = -0.3203 + 2.058h - 0.9375T - 0.4269h^2 + 0.1566hT + 0.0006T^2
+\end{equation}
+
+\noindent
+Be advised, the equation itself was an extrapolation of the original range of h used to calculate the attenuation coefficients in \cite{art:KM08} which was between 0.5 and 3 m, see \cite{art:HT15}. 
+
+\cite{art:Ko14} found that attenuation was a function of significant wave height. Attenuation increased linearly with ${H_s}$ until ${H_s} = 3 m$ at which point attenuation is capped, thus:
+
+\begin{equation}
+\left \{
+\begin{array}{ccrcl}
+{\alpha} = {C_{ice,1}}\times {H_s}   & & for \> {H_s} \leq 3 m  \\
+{\alpha} = {C_{ice,2}}               & & for \> {H_s} > 3 m     \\
+\end{array} \right .
+\end{equation}
+
+The values given in \cite{art:Ko14} are ${C_{ice,1...2}}=[5.35\times 10^{-6}, 16.05\times 10^{-6}]$. See regtest {\file ww3\_tic1.1} for examples.
+
+

@@ -614,10 +614,11 @@
 !/REF1        REAL,    POINTER      :: REFPARS(:)
 !/IG1        REAL,    POINTER      :: IGPARS(:)
 !/IC2        REAL,    POINTER      :: IC2PARS(:)
-!/IC3        REAL,    POINTER      :: IC2PARS(:)
+!/IC3        REAL,    POINTER      :: IC3PARS(:)
+!/IC4        INTEGER, POINTER      :: IC2PARS(:)
 !/IS2        REAL,    POINTER      :: IS2PARS(:)
 !
-! unstructured data	
+! unstructured data
 !
         INTEGER               :: NTRI
         DOUBLE PRECISION, POINTER         :: XYB(:,:)
@@ -809,7 +810,7 @@
       TYPE(SGRD), TARGET, ALLOCATABLE :: SGRDS(:)
       TYPE(MPAR), TARGET, ALLOCATABLE :: MPARS(:)
 !/
-!/ Data aliasses for structure GRID(S)
+!/ Data aliases for structure GRID(S)
 !/
       INTEGER, POINTER :: GTYPE
       INTEGER, POINTER :: ICLOSE
@@ -841,7 +842,8 @@
       REAL,    POINTER        :: REFPARS(:)
 !/IG1      REAL,    POINTER        :: IGPARS(:)
 !/IC2      REAL,    POINTER        :: IC2PARS(:)
-!/IC3      REAL,    POINTER        :: IC2PARS(:)
+!/IC3      REAL,    POINTER        :: IC3PARS(:)
+!/IC4      INTEGER, POINTER        :: IC2PARS(:)
 !/IS2      REAL,    POINTER        :: IS2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
@@ -1344,8 +1346,11 @@
 !/IG1       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7), STAT=ISTAT )
 !/IC2       CHECK_ALLOC_STATUS ( ISTAT )
-!/IC3       ALLOCATE ( GRIDS(IMOD)%IC2PARS(8), STAT=ISTAT )
+!/IC3       ALLOCATE ( GRIDS(IMOD)%IC3PARS(11), STAT=ISTAT )
 !/IC3       CHECK_ALLOC_STATUS ( ISTAT )
+!TODO: rename IC4's IC2PARS as IC4PARS
+!/IC4       ALLOCATE ( GRIDS(IMOD)%IC2PARS(1), STAT=ISTAT )
+!/IC4       CHECK_ALLOC_STATUS ( ISTAT )
 !/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(18), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
 !/T      WRITE (NDST,9001)
@@ -1740,7 +1745,8 @@
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
 !/IG1       IGPARS => GRIDS(IMOD)%IGPARS
 !/IC2       IC2PARS => GRIDS(IMOD)%IC2PARS
-!/IC3       IC2PARS => GRIDS(IMOD)%IC2PARS
+!/IC3       IC3PARS => GRIDS(IMOD)%IC3PARS
+!/IC4       IC2PARs => GRIDS(IMOD)%IC2PARS
 !/IS2       IS2PARS => GRIDS(IMOD)%IS2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY

@@ -318,6 +318,7 @@
 !/IC1      TNAMEI = 'Ice sink term (uniform k_i)   '
 !/IC2      TNAMEI = 'Ice sink term (Lui et al)     '
 !/IC3      TNAMEI = 'Ice sink term (Wang and Shen) '
+!/IC4      TNAMEI = 'Ice sink term (empirical)     '
 !/DB0      TNAME4 = 'Not defined                   '
 !/DB1      TNAME4 = 'Battjes and Janssen (1978)    '
 !/DBX      TNAME4 = 'Experimental                  '
@@ -788,7 +789,9 @@
 !/IC2          WRITE   (NDSM)                                              &
 !/IC2                IC2PARS(1:7)
 !/IC3          WRITE   (NDSM)                                              &
-!/IC3                IC2PARS(1:8)
+!/IC3                IC3PARS(1:11)
+!/IC4          WRITE   (NDSM)                                              &
+!/IC4                IC2PARS(1)
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
@@ -804,7 +807,9 @@
 !/IC2         READ   (NDSM)                                                &
 !/IC2                IC2PARS(1:7)
 !/IC3         READ   (NDSM)                                                &
-!/IC3                IC2PARS(1:8)
+!/IC3                IC3PARS(1:11)
+!/IC4         READ   (NDSM)                                                &
+!/IC4                IC2PARS(1)
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &

@@ -506,6 +506,7 @@
 !/IC3      JFIRST=-7
 !/BT8      JFIRST=-7
 !/BT9      JFIRST=-7
+!/IC4      JFIRST=-7
 
       DO J=JFIRST, 7
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -808,7 +809,7 @@
 !
 ! For outputs with non-zero time step, check dates :
 ! If output ends before run start OR output starts after run end,
-! desactivate output cleanly with output time step = 0
+! deactivate output cleanly with output time step = 0
 ! This is usefull for IOSTYP=3 (Multiple dedicated output processes)
 ! to avoid the definition of dedicated proc. for unused output.
 !
@@ -1444,8 +1445,18 @@
 !/OASIS             ,.TRUE., .FALSE., MPI_COMM                        &
                   )
 !
+      ! The following lines prevents us from trying to read past the end 
+      ! of the files. "4" is for ice concentration: 
       IF ( FLLSTL ) FLAGS(1) = .FALSE.
       IF ( FLLSTI ) FLAGS(4) = .FALSE.
+
+      ! We include something like this for mud and ice parameters also:
+      DO J=-7,0
+         IF (FLLST_ALL(J))THEN
+            FLAGS(J)=.FALSE.
+         END IF
+      END DO
+
 !
 ! 7.c Run data assimilation at ending time
 !
@@ -1580,7 +1591,7 @@
                '            IY first,last,inc :',3I5/                 &
                '            Formatted file    :    ',A)
  8945 FORMAT ( '            Dates out of run dates : output ', A,     &
-               ' desactivated')
+               ' deactivated')
 !
   950 FORMAT (/'  Initializations :'/                                 &
                ' --------------------------------------------------')

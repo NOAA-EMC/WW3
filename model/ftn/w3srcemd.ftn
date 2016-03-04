@@ -309,7 +309,8 @@
 !     !/IC2            2) Liu et al. model
 !     !/IC3   Dissipation via interaction with ice according to a
 !             viscoelastic sea ice model (Wang and Shen 2010).
-!
+!     !/IC4   Dissipation via interaction with ice as a function of freq.
+!             (empirical/parametric methods)
 !     !/DB0   No depth-limited breaking.                 ( Choose one )
 !     !/DB1   Battjes-Janssen depth-limited breaking.
 !     !/DBX   User-defined bottom friction.
@@ -379,6 +380,7 @@
 !/IC1      USE W3SIC1MD
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
+!/IC4      USE W3SIC4MD
 !/IS1      USE W3SIS1MD
 !/IS2      USE W3SIS2MD
 !/IS2      USE W3GDATMD, ONLY : IS2PARS
@@ -452,6 +454,7 @@
 !/IC1                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/IC2                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/IC3                                 VSIC(NSPEC), VDIC(NSPEC),            &
+!/IC4                                 VSIC(NSPEC), VDIC(NSPEC),            &
 !/DB1                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/DBX                                 VSDB(NSPEC), VDDB(NSPEC),            &
 !/TR1                                 VSTR(NSPEC), VDTR(NSPEC),            &
@@ -505,6 +508,8 @@
 !/IC2      VDIC = 0.
 !/IC3      VSIC = 0.
 !/IC3      VDIC = 0.
+!/IC4      VSIC = 0.
+!/IC4      VDIC = 0.
 !
 !/IS1      VSIR = 0.
 !/IS1      VDIR = 0.
@@ -1074,6 +1079,7 @@
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+!/IC4      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !
 !/IS1      CALL W3SIS1 ( SPEC, ICE, VSIR )
 !/IS2      CALL W3SIS2 ( SPEC, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
@@ -1088,6 +1094,7 @@
 !/IC1             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC2             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC3             ATT=EXP(ICE*VDIC(IS)*DTG)
+!/IC4             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IS1             ATT=ATT*EXP(VDIR(IS)*DTG)
 !/IS2             IF (IS2PARS(2).EQ.0) THEN 
 !/IS2               ATT=ATT*EXP((VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
