@@ -13,7 +13,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- DPT WLV HS DIR
+ DPT WLV HS DIR ICE
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
@@ -23,7 +23,7 @@ $ variables in same file [T] or not [F]
 $
  3 4
  0 1 2
- F
+ T
 $
 $ -------------------------------------------------------------------- $
 $ File prefix

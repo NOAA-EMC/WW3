@@ -671,6 +671,10 @@
               TLEV(2) =  0
               TICE(1) = -1
               TICE(2) =  0
+              TIC1(1) = -1
+              TIC1(2) =  0
+              TIC5(1) = -1
+              TIC5(2) =  0
               WLV     =  0.
               ICE     =  0.
               ASF     =  1.

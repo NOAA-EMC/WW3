@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    28-Dec-2004 : Origination.                        ( version 3.06 )
@@ -42,7 +42,7 @@
 !/
 !  1. Purpose :
 !
-!     Define data structures to set up wave model auxiliary daya for
+!     Define data structures to set up wave model auxiliary data for
 !     several models simultaneously.
 !
 !  2. Variables and types :
@@ -852,6 +852,7 @@
 !
 !     Water level WLV stored in W3WDATMD
 !     Ice concentration ICE stored in W3WDATMD
+!     Ice floe sizes ICEF and ICEDMAX stored in W3WDATMD
 !     Iceberg damping BERG stored in W3WDATMD
 !
 ! 2) Standard mean wave parameters
@@ -928,7 +929,8 @@
                  WADATS(IMOD)%PDIR(NSEALM,0:NOSWLL),                  &
                  WADATS(IMOD)%PSI(NSEALM,0:NOSWLL),                   &
                  WADATS(IMOD)%PWS(NSEALM,0:NOSWLL),                   &
-                 WADATS(IMOD)%PWST(NSEALM), WADATS(IMOD)%PNR(NSEALM), &
+                 WADATS(IMOD)%PWST(NSEALM),                           &
+                 WADATS(IMOD)%PNR(NSEALM),                            &
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 !

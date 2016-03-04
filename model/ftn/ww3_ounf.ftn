@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Oct-2014 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -19,6 +19,7 @@
 !/    30-Apr-2014 : Correct group3 freq dim.            ( version 5.00 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
+!/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -101,7 +102,7 @@
       USE W3INITMD, ONLY: WWVER, SWITCHES
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR, BERG
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
                           THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,      &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
@@ -906,6 +907,35 @@
 !/BT4              vmin = -10000
 !/BT4              vmax = 32000
 !
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
+!/IS2              FSC = 0.001
+!/IS2              UNITS = 'm'
+!/IS2              ENAME = '.ic1'
+!/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEH  , MAPSF, X1 )
+!/IS2              NFIELD=1
+!/IS2              varnm(1)='ic1'
+!/IS2              varnl(1)='ice thickness'
+!/IS2              varns(1)='ice_thickness'
+!/IS2              varng(1)='ice_thickness'
+!/IS2              varnc(1)=''
+!/IS2              vmin = 0
+!/IS2              vmax = 30000
+!
+!
+!/IS2 ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
+!/IS2              FSC = 0.05
+!/IS2              UNITS = 'm'
+!/IS2              ENAME = '.ic5'
+!/IS2              CALL W3S2XY (NSEA, NSEA, NX+1, NY, ICEF  , MAPSF, X1 )
+!/IS2              NFIELD=1
+!/IS2              varnm(1)='ic5'
+!/IS2              varnl(1)='maximum floe diameter'
+!/IS2              varns(1)='maximum_ice_floe_diameter'
+!/IS2              varng(1)='maximum_ice_floe_diameter'
+!/IS2              varnc(1)=''
+!/IS2              vmin = 0
+!/IS2              vmax = 30000
+
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
 !
               NFIELD=1
@@ -2019,8 +2049,8 @@
               vmax = 32000
 !
             ELSE IF ( IFI .EQ. 10 ) THEN
-              FSC    = 0.01
-              UNITS  = 'TBD'
+              FSC    = 0.1
+              UNITS  = 'm'
               WRITE (ENAME,'(A2,I2.2)') '.u', IFJ
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)        &
                                                         , MAPSF, X1 )

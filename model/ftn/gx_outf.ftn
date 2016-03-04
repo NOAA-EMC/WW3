@@ -8,7 +8,7 @@
 !/                  |           A. Chawla               |
 !/                  |           J.H.G.M. Alves          |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Feb-2013 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -35,6 +35,7 @@
 !/    05-Oct-2011 : Updating to the 53 output parameter ( version 4.05 ) 
 !/                  (J-H Alves) 
 !/    25-Feb-2013 : Adding double-index output fields   ( version 4.11 ) 
+!/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -122,7 +123,7 @@
       USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
 !/
       USE W3GDATMD
-      USE W3WDATMD, ONLY: TIME, WLV, ICE, UST, USTDIR
+      USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
      USE W3ADATMD, ONLY:  CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN, &
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,&
                           THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
@@ -487,6 +488,10 @@
            WRITE (NDSCTL,991) 'wlv  ', 0, IU, 'Water Level (m)'
       IF ( FLREQ(01,06) )                                              &
            WRITE (NDSCTL,991) 'ice  ', 0, IU, 'Ice Conc. (-)  '
+!/IS2  IF (FLREQ(01,09) )                                              &
+!/IS2      WRITE (NDSCTL,991) 'ic1 ', 0, IU, 'Ice thick. (m) '
+!/IS2  IF (FLREQ(01,10) )                                              &
+!/IS2      WRITE (NDSCTL,991) 'ic5 ', 0, IU, 'Floe diam. (m)  '
       IF ( FLREQ(02,01) )                                              &
            WRITE (NDSCTL,991) 'hs   ', 0, IU, 'Wave height (m)'
       IF ( FLREQ(02,02) )                                              &
@@ -961,6 +966,19 @@
               ELSE IF ( J.EQ.1 .AND. K.EQ.6 ) THEN
                 FLONE = .TRUE.
                 CALL W3S2XY ( NSEA, NSEA, NX, NY, ICE   , MAPSF, X1 )
+!
+!     Ice thickness
+!
+!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.9 ) THEN
+!/IS2          FLONE = .TRUE.
+!/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEH  , MAPSF, X1 )
+!
+!     Average sea ice floe diameter
+!
+!/IS2        ELSE IF ( J.EQ.1 .AND. K.EQ.10) THEN
+!/IS2          FLONE = .TRUE.
+!/IS2          CALL W3S2XY (NSEA, NSEA, NX, NY, ICEF  , MAPSF, X1 )
+!
 !
 !     Significant wave height
 !

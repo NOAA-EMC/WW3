@@ -5,7 +5,7 @@
 #  (this test was previously known as ice_test11)                           #
 #                                                                           #
 # For recommended switches, please refer to switch file(s) in the input     #
-# directory "input_IC1"                                                     #
+# directory "input_IC1" or "input_IC2IS2"                                   #
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
@@ -46,10 +46,12 @@
 #  Example run_test command(s):                                             #
 #  (some details will vary by local system and configuration)               #
 #  ./bin/run_test -w work_IC1 -i input_IC1 ../ ww3_tic2.1                   #
+#  ./bin/run_test -w work_IC2IS2 -c gnu_debug -i input_IC2IS2               #
+#                                     ../model ww3_tic2.1                   #
 #                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
-#                                last updated: Erick Rogers, Nov 2013       #
+#                                last updated: Fabrice Ardhuin, Nov 2015    #
 #                                                                           #
 #    Copyright 2009 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #

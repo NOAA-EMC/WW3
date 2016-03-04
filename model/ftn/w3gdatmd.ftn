@@ -152,6 +152,8 @@
 !      CTMAX     Real  Public   Maximum CFL number for depth refr.
 !      FICE0/N   Real  Public   Cut-off ice conc. for ice coverage.
 !      FICEL     Real  Public   Length scale for sea ice damping
+!      IICEHMIN  Real  Public   Minimum thickness of sea ice
+!      IICEHINIT Real  Public   Initial value of ice thickness
 !      PFMOVE    Real  Public   Tunable parameter in GSE correction
 !                               for moving grids.
 !      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
@@ -570,7 +572,8 @@
 !
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                             DTMAX, DTMIN, DMIN, CTMAX,           &
-                            FICE0, FICEN, FICEL, PFMOVE
+                            FICE0, FICEN, FICEL, PFMOVE,         &
+                            IICEHMIN, IICEHINIT
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
 !/RTD        REAL                  :: Polat, Polon   ! Rotated N-Pole lat/lon
@@ -769,6 +772,7 @@
       TYPE SICP
 !/IS0        REAL                  :: DUMMY
 !/IS1        REAL                  :: IS1C1, IS1C2
+!/IS2        REAL                  :: IS2C1, IS2C2
       END TYPE SICP
 !
       TYPE SXXP
@@ -852,7 +856,8 @@
 !/SEC1      INTEGER, POINTER        :: NITERSEC1
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                                  DTMAX, DTMIN, DMIN, CTMAX,           &
-                                 FICE0, FICEN, FICEL, PFMOVE
+                                 FICE0, FICEN, FICEL, PFMOVE,         &
+                                 IICEHMIN, IICEHINIT
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: Polat, Polon
 !/RTD        REAL, POINTER         :: AnglD(:)
@@ -1341,7 +1346,7 @@
 !/IC2       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC3       ALLOCATE ( GRIDS(IMOD)%IC2PARS(8), STAT=ISTAT )
 !/IC3       CHECK_ALLOC_STATUS ( ISTAT )
-!/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(6), STAT=ISTAT )
+!/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(18), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
 !/T      WRITE (NDST,9001)
 !
@@ -1755,6 +1760,8 @@
 !/RTD      Polon  => GRIDS(IMOD)%Polon
       FICEN  => GRIDS(IMOD)%FICEN
       FICEL  => GRIDS(IMOD)%FICEL
+      IICEHMIN  => GRIDS(IMOD)%IICEHMIN
+      IICEHINIT  => GRIDS(IMOD)%IICEHINIT
       PFMOVE => GRIDS(IMOD)%PFMOVE
 !
       GINIT  => GRIDS(IMOD)%GINIT
@@ -2698,6 +2705,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
+!/S   USE W3SERVMD, ONLY : STRACE
 !
       IMPLICIT NONE
 !/

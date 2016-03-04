@@ -127,14 +127,12 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/S      INTEGER, SAVE           :: IENT = 0
 !/
-!/S      CALL STRACE (IENT, 'XXXXXX')
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Initializations
 !
-      INTEGER, SAVE           :: IENT = 0
+!/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DHSMAX, DTPMAX,        &
                                  DDMMAX, DDWMAX, AGEMIN
       PARAMETER     ( DHSMAX =   1.50 )
@@ -165,6 +163,8 @@
       CHARACTER(LEN=16)       :: PART2
 !/
 !/ ------------------------------------------------------------------- /
+!
+!/S      CALL STRACE (IENT, 'XXXXXX')
 !
 ! 1.a Constants etc.
 !

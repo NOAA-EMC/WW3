@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-May-2014 |
+!/                  | Last update :         13-Jan-2016 |
 !/                  +-----------------------------------+
 !/
 !/    21-Jan-2000 : Origination.                        ( version 2.00 )
@@ -49,6 +49,10 @@
 !/    08-May-2014 : Implement tripolar grid for first order propagation
 !/                  scheme                              ( version 5.03 )
 !/                  (W. E. Rogers, NRL)
+!/    27-Aug-2015 : New function to update variables    ( version 5.08 )
+!/                  ICEF and ICEDMAX at the first time step
+!/                  and add ICEH initialization in W3UICE.
+!/    13-Jan-2016 : Changed initial value of ICEDMAX    ( version 5.08 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -134,6 +138,7 @@
 !/    09-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
 !/    20-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
+!/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
 !/
 !  1. Purpose :
 !
@@ -214,7 +219,7 @@
 !/
       INTEGER                 :: ISEA, IX, IY
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: D0, DN, DD, DTT, DT0, RD, CABS, CDIR
+      REAL                    :: D0, DN, DD, DT0N, DT0T, RD, CABS, CDIR
 !/CRT2      REAL                    :: RD2, CI2
 !/TIDE      INTEGER          :: J,K
 !/TIDE      INTEGER(KIND=4)  :: TIDE_KD0, INT24, INTDYS       ! "Gregorian day constant"
@@ -258,14 +263,14 @@
 !
 ! 2.  Calculate interpolation factor
 !
-      DTT    = DSEC21 ( TC0, TCN )
-      DT0    = DSEC21 ( TC0, TIME )
+      DT0N    = DSEC21 ( TC0, TCN )
+      DT0T    = DSEC21 ( TC0, TIME )
 !
-!/CRT1      RD     = DT0 / MAX ( 1.E-7 , DTT )
-!/CRT2      RD     = DT0 / MAX ( 1.E-7 , DTT )
+!/CRT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+!/CRT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD2    = 1. - RD
 !
-!/T      WRITE (NDST,9000) DTT, DT0, RD
+!/T      WRITE (NDST,9000) DT0N, DT0T, RD
 
 !/TIDE        IF (FLCURTIDE) THEN 
 !/TIDE!          WRITE(6,*) 'TIME CUR:',TIME, '##',TC0, '##',TCN
@@ -354,7 +359,7 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3UCUR : DTT, DT0, RD :',2F8.1,F6.3)
+!/T 9000 FORMAT (' TEST W3UCUR : DT0N, DT0T, RD :',2F8.1,F6.3)
 !/
 !/ End of W3UCUR ----------------------------------------------------- /
 !/
@@ -376,7 +381,8 @@
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
 !/    16-Sep-2013 : Rotating wind for Arctic part.      ( version 4.11 )
-!/    27-May-2014 : Ading OMPG parallelizations dir,    ( version 5.02 )
+!/    27-May-2014 : Adding OMPG parallelizations dir.   ( version 5.02 )
+!/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
 !/
 !  1. Purpose :
 !
@@ -468,7 +474,7 @@
 !/
       INTEGER                 :: ISEA, IX, IY
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: D0, DN, DD, DTT, DT00, RD, UI2,      &
+      REAL                    :: D0, DN, DD, DT0N, DT0T, RD, UI2,      &
                                  UXR, UYR
 !/WNT2      REAL                    :: RD2
 !/STAB2      REAL                    :: STAB0, STAB, THARG1, THARG2, COR1, COR2
@@ -512,19 +518,19 @@
 !
 ! 2.  Calculate interpolation factor
 !
-      DTT    = DSEC21 ( TW0, TWN )
-      DT00   = DSEC21 ( TW0, TIME )
+      DT0N    = DSEC21 ( TW0, TWN )
+      DT0T   = DSEC21 ( TW0, TIME )
 !
-!/WNT0      IF ( DT00 .GE. 0.5*DTT ) THEN
+!/WNT0      IF ( DT0T .GE. 0.5*DT0N ) THEN
 !/WNT0          RD     = 1.
 !/WNT0        ELSE
 !/WNT0          RD     = 0.
 !/WNT0        END IF
-!/WNT1      RD     = DT00 / MAX ( 1.E-7 , DTT )
-!/WNT2      RD     = DT00 / MAX ( 1.E-7 , DTT )
+!/WNT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
+!/WNT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/WNT2      RD2    =  1. - RD
 !
-!/T      WRITE (NDST,9000) DTT, DT00, RD
+!/T      WRITE (NDST,9000) DT0N, DT0T, RD
 !
 ! 3.  Actual wind for all grid points
 !
@@ -612,7 +618,7 @@
 !
 ! Formats
 !
-!/T 9000 FORMAT (' TEST W3UWND : DTT, DT00, RD :',2F8.1,F6.3)
+!/T 9000 FORMAT (' TEST W3UWND : DT0N, DT0T, RD :',2F8.1,F6.3)
 !/
 !/ End of W3UWND ----------------------------------------------------- /
 !/
@@ -1018,6 +1024,215 @@
 !/
       END SUBROUTINE W3UBPT
 !/ ------------------------------------------------------------------- /
+      SUBROUTINE W3UIC1( FLFRST )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           C. Sevigny              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         27-Aug-2015 |
+!/                  +-----------------------------------+
+!/
+!/    27-Aug-2015 : Creation                            ( version 5.10 )   
+!/
+!  1. Purpose :
+!
+!     Update ice thickness in the wave model.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      FLFRST   L.    I     Spectra in 1-D or 2-D representation
+!                           (points to same address).
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/SHRD  Switch for shared / distributed memory architecture.
+!     !/DIST  Id.
+!
+!     !/S  Enable subroutine tracing.
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /   
+      USE W3GDATMD, ONLY: NSEA, NSEA, MAPSF
+      USE W3WDATMD, ONLY: TIME, TIC1, ICEH
+      USE W3IDATMD, ONLY: TI1, ICEP1, FLIC1
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+      LOGICAL, INTENT(IN)     :: FLFRST
+!/    
+!/ ------------------------------------------------------------------- /
+!/ Local variables
+!/      
+      INTEGER                 :: IX, IY, ISEA
+!/
+!/
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Update times
+!
+!/T      WRITE (NDST,9010) TIME, TIC1, TI1
+      TIC1(1) = TI1(1)
+      TIC1(2) = TI1(2)
+
+! 2.  Main loop over sea points -------------------------------------- *
+
+      DO ISEA=1, NSEA
+!
+        IX        = MAPSF(ISEA,1)
+        IY        = MAPSF(ISEA,2)
+        ICEH(ISEA) = ICEP1(IX,IY)
+      END DO
+!
+      RETURN
+!/T 9010 FORMAT ( ' TEST W3UIC1 : TIME     :',I9.8,I7.6/              &
+!/T               '               OLD TICE :',I9.8,I7.6/              &
+!/T               '               NEW TICE :',I9.8,I7.6)
+!/
+!/ End of W3UIC1 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3UIC1
+!/ ------------------------------------------------------------------- /  
+      SUBROUTINE W3UIC5( FLFRST )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |  C. Sevigny  & F. Ardhuin         |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         13-Jan-2016 |
+!/                  +-----------------------------------+
+!/
+!/    27-Aug-2015 : Creation                            ( version 5.08 )   
+!/    13-Jan-2016 : Changed initial value of ICEDMAX    ( version 5.08 )   
+!/
+!  1. Purpose :
+!
+!     Update ice floe mean and max diameters in the wave model.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!      FLFRST   L.    I     Spectra in 1-D or 2-D representation
+!                           (points to same address).
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/SHRD  Switch for shared / distributed memory architecture.
+!     !/DIST  Id.
+!
+!     !/S  Enable subroutine tracing.
+!     !/T  Enable test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /   
+      USE W3IDATMD, ONLY: TI5, ICEP5
+      USE W3GDATMD, ONLY: NSEA, MAPSF
+      USE W3WDATMD, ONLY: TIME, TIC5, ICE, ICEH, ICEF, ICEDMAX
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+      LOGICAL, INTENT(IN)     :: FLFRST
+!/    
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local variables
+!/      
+      INTEGER                 :: IX, IY, ISEA
+      LOGICAL                 :: FLFLOE
+!/
+!/
+! 1.  Preparations --------------------------------------------------- *
+! 1.a Update times
+!
+!/T      WRITE (NDST,9010) TIME, TIC5, TI5
+      TIC5(1) = TI5(1)
+      TIC5(2) = TI5(2)
+
+! 2.  Main loop over sea points -------------------------------------- *
+
+      DO ISEA=1, NSEA 
+!
+        IX        = MAPSF(ISEA,1)
+        IY        = MAPSF(ISEA,2)
+        FLFLOE = ICE(ISEA) .EQ. 0 .OR. ICEH(ISEA) .EQ. 0
+        IF ( FLFLOE) THEN          
+          ICEF(ISEA) = 0.0
+          ICEDMAX(ISEA) = 1000.0
+        ELSE
+          ICEF(ISEA) = ICEP5(IX,IY)
+          ICEDMAX(ISEA) = ICEP5(IX,IY)          
+        END IF
+      END DO
+!
+      RETURN
+!/T 9010 FORMAT ( ' TEST W3UIC5 : TIME     :',I9.8,I7.6/              &
+!/T               '               OLD TICE :',I9.8,I7.6/              &
+!/T               '               NEW TICE :',I9.8,I7.6)
+
+!/
+!/
+!/ End of W3UIC5 ----------------------------------------------------- /
+!/
+      END SUBROUTINE W3UIC5
+!/ ------------------------------------------------------------------- /      
+      
       SUBROUTINE W3UICE ( A, VA )
 !/
 !/                  +-----------------------------------+

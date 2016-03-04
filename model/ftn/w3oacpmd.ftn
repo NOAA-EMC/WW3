@@ -640,10 +640,10 @@
      TESTSTR=OUT_NAMES(IOUT+1)
      SELECT CASE(TRIM(TESTSTR(1:6)))
 
-!/OASIS    CASE('HS')
-!/OASIS      ! Significant wave height (m)
-!/OASIS      id_nb_snd = id_nb_snd +1
-!/OASIS      snd(id_nb_snd)%cl_field_name='WW3___HS'
+!/OASOCM   CASE('oHS')
+!/OASOCM     ! Significant wave height (m)
+!/OASOCM     id_nb_snd = id_nb_snd +1
+!/OASOCM     snd(id_nb_snd)%cl_field_name='WW3__oHS'
 
 !/OASOCM   CASE('DRY')
 !/OASOCM     ! mask to manage wet-drying
@@ -701,6 +701,11 @@
 !/OASOCM     ! wlm / wave_wlm : mean length wave (m)
 !/OASOCM     id_nb_snd = id_nb_snd +1
 !/OASOCM     snd(id_nb_snd)%cl_field_name='WW3___LM'
+
+!/OASACM   CASE('aHS')
+!/OASACM     ! Significant wave height (m)
+!/OASACM     id_nb_snd = id_nb_snd +1
+!/OASACM     snd(id_nb_snd)%cl_field_name='WW3__aHS'
 
 !/OASACM   CASE('CUR')
 !/OASACM     ! Ocean sea surface current (m.s-1)

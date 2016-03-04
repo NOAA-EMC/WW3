@@ -1,0 +1,53 @@
+#############################################################################
+#                                                                           #
+# ww3_tic1.4:Test script for WW III, one-dimensional propagation            #
+#            through an ice layer with ice floes and ice thickness inputs   #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - Test case input (default):                                              #
+#   * ww3_grid_1000m_nondisp.inp                                            #
+#     + Spectral grid (applies to all)                                      #
+#      Number of directions        :  24                                    #
+#      Directional increment (deg.):  15.0                                  #
+#      First direction       (deg.):   0.0                                  #
+#      Number of frequencies       :   3                                    #
+#      Frequency range        (Hz) :   0.0800-0.1250                        #
+#      Increment factor            :   1.250                                #
+#     + Spatial grid (applies to ww3_grid_2500m.inp only, many others       #
+#                    are avaliable)                                         #
+#      Dimensions                  :    153       3                         #
+#      Increments             (km) :    1.00    1.00                        #
+#      X range                (km) :   -1.00  152.00                        #
+#      Y range                (km) :   -1.00    1.00                        #
+#                                                                           #
+#  Waves propagate from low-x to high-x. Boundary forcing is constant (not  #
+#      updated) defined at x=0. SWH~1 m at boundary. Direction is 270 deg.  #
+#      Waves propagate through ice, starting from rest (except at           #
+#      boundary). Ice concentration and ice floe are uniforms but ice       #
+#      thickness is growing from 0.1 to 1.0 with the time on all the grid.  #
+#   Scattering of waves by ice floes is treated separately from             #
+#   IC0/IC1/IC2 and is activated by IS2 which is included in this test case.#
+#                                                                           #
+#  Example run_test commands:                                               #
+#                                                                           #
+# ./bin/run_test -g 1000m      -w work_IC0IS2 -c debug -s IC0IS2 -o netcdf  #
+#                ../ ww3_tic1.4                                             #
+#                                                                           #
+# ./bin/run_test -g 1000m      -w work_IC1IS2 -c debug -s IC1IS2 -o netcdf  #
+#                ../ ww3_tic1.4                                             #
+#                                                                           #
+# bin/run_test -g IC2b_1000m  -w work_IC2IS2 -c gnu_debug -s IC2IS2         #
+#                -o netcdf ../model ww3_tic1.4                              #  
+# bin/run_test -g IC2d_1000m  -w work_IC2IS2 -c debug -s IC2IS2  -o netcdf ../model ww3_tic1.4                            
+#                                                                           #
+#                                                                           #
+#                                 origination: Mickael Accensi, Oct 2015    #
+#                                last updated: Mickael Accensi, Oct 2015    #
+#                                                                           #
+#    Copyright 2009-2015 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

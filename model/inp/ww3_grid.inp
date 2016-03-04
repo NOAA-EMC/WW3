@@ -150,7 +150,7 @@ $                           FHFC   : Proportionality constants.
 $                           DMN    : Maximum relative change.
 $                           FC1-3  : Constants in frequency filter.
 $
-$ Dissipation  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+$ Whitecapping dissipation   - - - - - - - - - - - - - - - - - - - - -
 $   WAM-3               : Namelist SDS1
 $                           CDIS, APM : As in source term.
 $
@@ -197,6 +197,35 @@ $                           BJGAM   : Breaking threshold (default = 0.73)
 $                           BJFLAG  : TRUE  - Use Hmax/d ratio only (default)
 $                                     FALSE - Use Hmax/d in Miche formulation
 $
+$ Dissipation in the ice   - - - - - - - - - - - - - - - - - - - - - - 
+$   Generalization of Liu et al. : Namelist SIC2
+$                           IC2DISPER  : If true uses Liu formulation with eddy viscosity
+$                                        If false, uses the generalization with turbulent 
+$                                        to laminar transition 
+$                           IC2TURB    : empirical factor for the turbulent part
+$                           IC2ROUGH   : under-ice roughness length 
+$                           IC2REYNOLDS: Re number for laminar to turbulent transition 
+$                           IC2SMOOTH  : smoothing of transition reprensenting random waves
+$                           IC2VISC    : empirical factor for viscous part 
+$
+$
+$ Scattering in the ice    - - - - - - - - - - - - - - - - - - - - - - 
+$   Generalization of Wiliams et al. : Namelist SIS2
+$                           ISC1          : scattering coefficient (default = 1)
+$                           IS2BACKSCAT   : fraction of energy back-scattered (default = 1 )
+$                           IS2BREAK      : TRUE  - changes floe max diameter
+$                                         : FALSE - does not change floe max diameter
+$                           IS2C1         : scattering in pack ice 
+$                           IS2C2         : frequency dependance of scattering in pack ice 
+$                           IS2C3         : frequency dependance of scattering in pack ice 
+$                           ISBACKSCAT    : fraction of scattered energy actualy redistributed
+$                           IS2DISP       : use of ice-specific dispersion relation (T/F)
+$                           FRAGILITY     : parameter between 0 and 1 that gives the shape of FSD
+$                           IS2DMIN       : minimum floe diameter in meters
+$                           IS2DAMP       : multiplicative coefficient for dissipation term from RP
+$                           IS2UPDATE     : TRUE  - updates the max floe diameter with forcing only
+$                                         : FALSE - updates the max floe diameter at each time step
+$
 $ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
 $   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
 $                           PTRIAD1 : Proportionality coefficient (default 0.05)
@@ -222,7 +251,7 @@ $                           REFCOSP_STRAIGHT: power of cosine used for
 $                                       straight shoreline
 $
 $ Bound 2nd order spectrum and free IG - - - - - - - - - - - - - - - - - 
-$   IG1 parameters       : Namelist IG1
+$   IG1 parameters       : Namelist SIG1
 $                           IGMETHOD  : 1: Hasselmann, 2: Krasitskii-Janssen
 $                           IGADDOUTP : activation of bound wave correction 
 $                                       in ww3_outp / ww3_ounp

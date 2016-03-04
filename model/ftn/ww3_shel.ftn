@@ -1115,6 +1115,7 @@
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
 !/TIDE                 END IF
 !
+! IC1 : ice thickness
                 IF ( J .EQ. -7 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1126,6 +1127,7 @@
                            TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! IC2 : ice viscosity
                 ELSE IF ( J .EQ. -6 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1137,6 +1139,7 @@
                            TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! IC3 : ice density
                 ELSE IF ( J .EQ. -5 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1148,6 +1151,7 @@
                            TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! IC4 : ice modulus
                 ELSE IF ( J .EQ. -4 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1159,6 +1163,7 @@
                            TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! IC5 : ice flow diam.
                 ELSE IF ( J .EQ. -3 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1170,6 +1175,7 @@
                            TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! MUD1 : mud density
                 ELSE IF ( J .EQ. -2 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1181,6 +1187,7 @@
                            TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! MUD2 : mud thickness
                 ELSE IF ( J .EQ. -1 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1192,6 +1199,7 @@
                            TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! MUD3 : mud viscosity
                 ELSE IF ( J .EQ. 0 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1203,6 +1211,7 @@
                            TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
+! LEV : water levels
                 ELSE IF ( J .EQ. 1 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1220,6 +1229,9 @@
 !/OASIS                 IF (FLAGSC(J)) THEN
 !/OASIS                   COUPL_TIME = il_oasis_time
 !/OASIS                   COUPL_COMM = MPI_COMM
+!/OASIS                 ELSE
+!/OASIS                   COUPL_TIME = -1
+!/OASIS                   COUPL_COMM = MPI_COMM
 !/OASIS                 END IF
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
@@ -1231,6 +1243,7 @@
                    END IF
                    IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
 !could use this:   IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
+! CUR : currents
                 ELSE IF ( J .EQ. 2 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1248,6 +1261,9 @@
 !/OASIS                 IF (FLAGSC(J)) THEN
 !/OASIS                   COUPL_TIME = il_oasis_time
 !/OASIS                   COUPL_COMM = MPI_COMM
+!/OASIS                 ELSE
+!/OASIS                   COUPL_TIME = -1
+!/OASIS                   COUPL_COMM = MPI_COMM
 !/OASIS                 END IF
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
@@ -1257,6 +1273,7 @@
                            )
 !/TIDE                          END IF
                    END IF
+! WND : winds
                 ELSE IF ( J .EQ. 3 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1265,6 +1282,9 @@
                    ELSE
 !/OASIS                      IF (FLAGSC(J)) THEN
 !/OASIS                        COUPL_TIME = il_oasis_time
+!/OASIS                        COUPL_COMM = MPI_COMM
+!/OASIS                      ELSE
+!/OASIS                        COUPL_TIME = -1
 !/OASIS                        COUPL_COMM = MPI_COMM
 !/OASIS                      END IF
 !/NCC                        IF (.NOT.CFLAG(J)) THEN
@@ -1282,6 +1302,7 @@
 !/NCC                        IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )     &
 !/NCC                             WRITE(9751) TW0, TWN, WX0, WY0, WXN, WYN
                       END IF
+! ICE : ice conc.
                 ELSE IF ( J .EQ. 4 ) THEN
 !/NCC                    IF (.NOT.CFLAG(J)) THEN
                    CALL W3FLDG ('READ', IDSTR(J), NDSF(J),            &
@@ -1296,6 +1317,7 @@
 !/NCC                    CALL WW_UPDATE_PSEUDOICE(TIN,ICEI)
 !/NCC                    IF ( IAPROC .EQ. NAPOUT .AND. DEBUG_NCC )    &
 !/NCC                         WRITE(9752) TIN, ICEI
+! Assim data
                 ELSE IF ( J .EQ. 5 ) THEN
                    CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
                         NDSEN, TIME0, T0N, RCLD(J), NDT(J),           &
@@ -1311,6 +1333,7 @@
                              NDSEN, TIME0, T0N, RCLD(J), NDT(J),      &
                              NDTNEW, DATA0, IERR )
                    END IF
+! Assim data
                 ELSE IF ( J .EQ. 6 ) THEN
                    CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
                         NDSEN, TIME0, T1N, RCLD(J), NDT(J),           &
@@ -1326,6 +1349,7 @@
                              NDSEN, TIME0, T1N, RCLD(J), NDT(J),      &
                              NDTNEW, DATA1, IERR )
                    END IF
+! Assim data
                 ELSE IF ( J .EQ. 7 ) THEN
                    CALL W3FLDD ('SIZE', IDSTR(J), NDSF(J), NDST,      &
                         NDSEN, TIME0, T2N, RCLD(J), NDT(J),           &
@@ -1341,6 +1365,7 @@
                              NDSEN, TIME0, T2N, RCLD(J), NDT(J),      &
                              NDTNEW, DATA2, IERR )
                    END IF
+! Track
                 ELSE IF ( J .EQ. 8 ) THEN
                    CALL W3FLDM (4, NDST, NDSEN, TIME0, TIMEN, NH(4),  &
                            NHMAX, THO, HA, HD, TG0, GA0, GD0,         &
@@ -1377,8 +1402,10 @@
 !
           END IF
 !
-        END DO
+        END DO ! J=JFIRST,8
 !
+! update the next assimilation data time
+
       TDN = TTIME
       CALL TICK21 ( TDN, 1. )
       DO J=5, 7

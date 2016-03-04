@@ -1024,7 +1024,8 @@
 !/OASIS      INTEGER                 :: COUPL_TIME2
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTTST
-      LOGICAL                 :: WRITE, FL2D, FLFRST, FLBE, FLST
+      LOGICAL                 :: WRITE, FL2D, FLFRST, FLBE, FLST,    &
+                                 FLINTERP
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1055,6 +1056,7 @@
                               .OR. IDFLD.EQ.'ISI'
       FLBE   = IDFLD.EQ.'ISI'       
       FLST   = IDFLD.EQ.'WNS' 
+      FLINTERP = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS'
       FLFRST = TFN(1) .EQ. -1
 !
 !/T      WRITE (NDST,9001) WRITE, FL2D, FLBE, FLST, FLFRST
@@ -1139,7 +1141,7 @@
 !
 !/OASACM ! Getting U10 (FXN) and V10 (FYN) from atmospheric model
 !/OASACM              CALL rcv_fields_from_atmos(COUPL_TIME2,         &
-!/OASACM                   COUPL_COMM, FXN, FYN, FAN)
+!/OASACM                   COUPL_COMM, IDFLD, FXN, FYN, FAN)
 !/OASOCM ! Getting UCUR (CX), VCUR (CY), WLV from ocean model
 !/OASOCM              CALL rcv_fields_from_ocean(COUPL_TIME2,         &
 !/OASOCM                   COUPL_COMM, IDFLD, FXN, FYN, FAN)
@@ -1164,10 +1166,12 @@
                 J      = 2
                 READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
                            ((FYN(IX,IY),IX=1,NX),IY=1,NY)
-                FAN(:,:) = FXN(:,:)    ! this was added for ISI files 
 
-! note: it appears that FAN is immediately overwritten below if FLST.
-!       I do not know if this is intended.
+! this was added for ISI files to store ICE in FAN and BERG in FYN
+
+                IF (FLBE) FAN(:,:) = FXN(:,:)
+
+! this was added for WNS files to store WND in FXN & FYN and AST in FAN
 
                 J      = 3
                 IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
@@ -1179,12 +1183,10 @@
 !
             DTTST  = DSEC21 ( T0 , TFN )
 
-! notes: my guess is that DTTST is the difference between the time of
-! computations (T0) and the time that we just read (TFN).  Again, 
-! this code appears to be using a false association between "is this
-! 2d?" vs. "is this field interpolated in time"?
 
-            IF ( .NOT.FL2D .AND. FLFRST .AND. DTTST .EQ. 0. )EXIT
+! "is this field interpolated in time? " : will not exit only for WND, WNS, CUR
+
+            IF ( .NOT.FLINTERP .AND. FLFRST .AND. DTTST .EQ. 0. )EXIT
 
 ! notes: If it will be interpolated in time, we need to continue until
 ! we have one that has a date larger than the current time, so we have
@@ -1196,20 +1198,19 @@
 !
         END DO
 !
-! Branch point for EOF in 2d fields, current and wind
+! Branch point for EOF in interpolated fields, current, wind and winds
 !
   300 CONTINUE
 !
-! Check first field (2d fields only)
+! Check first field (interpolated fields only)
 !
 ! note: Nothing appears to be checked here. Rather, this is setting 
 !       "0" values as "N" values
 
-! note: Again, this code appears to be using a false association between
-!      "is this 2d" and "is this field interpolated in time"?
+! "is this field interpolated in time? " : will not exit only for WND, WNS, CUR
 !      The "0" variables are needed only if there is interpolation in time.
 
-      IF ( .NOT.WRITE .AND. FL2D .AND. TF0(1) .EQ. -1 ) THEN
+      IF ( .NOT.WRITE .AND. FLINTERP .AND. TF0(1) .EQ. -1 ) THEN
 !
 !/T          WRITE (NDST,9040)
           TF0(1) = T0(1)
@@ -1229,11 +1230,11 @@
 !
         END IF
 !
-! Branch point for EOF in 1d fields, e.g. level and ice 
+! Branch point for EOF in not interpolated fields, e.g. level, ice, isi, ic*, mud*
 !
   500 CONTINUE
 !
-!/T      IF ( FL2D ) THEN
+!/T      IF ( FLINTERP ) THEN
 !/T          WRITE (NDST,9041) TF0, TFN
 !/T        ELSE
 !/T          WRITE (NDST,9042) TFN
@@ -1248,14 +1249,14 @@
   800 CONTINUE
       IERR   = -1
 !
-      IF ( FL2D ) THEN
+      IF ( FLINTERP ) THEN
           TFN(1) = TN(1)
           TFN(2) = TN(2)
           CALL TICK21 ( TFN , 1. )
         END IF
 !/T      WRITE (NDST,9032) TFN, IERR
 !
-      IF ( FL2D ) THEN
+      IF ( FLINTERP ) THEN
           GOTO 300
         ELSE
           GOTO 500

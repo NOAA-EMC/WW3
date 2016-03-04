@@ -1,0 +1,22 @@
+$ WAVEWATCH III Initial conditions input file
+$ -------------------------------------------
+  1
+$ ITYPE = 1 ---------------------------------------------------------- $
+$ Gaussian in frequency and space, cos type in direction.
+$ - fp and spread (Hz), mean direction (degr., oceanographic
+$    convention) and cosine power, Xm and spread (degr. or m) Ym and
+$    spread (degr. or m), Hmax (m) (Example for lon-lat grid in degr.).
+$
+   0.1       0.0001 135. 12  125.E3  999.E5 125.E3 999.E5  1.0
+$  fp        sip    thm  ncos   xm   six      ym    siy    hmax
+$  0.1       0.0001 135. 12  125.E3    3.E3 125.E3   3.E3  1.0   $ narrow
+$  0.1       0.0001 135. 12  125.E3    5.E3 125.E3   5.E3  1.0   $ narrow
+$  0.1       0.0001 135. 12  125.E3   10.E3 125.E3   1.E8  1.0   $ narrow in x, uniform in y
+$  0.1       0.0001 135. 12  125.E3   15.E3 125.E3  15.E3  1.0   $ less narrow
+$  0.1       0.0001 135. 12  125.E3   30.E3 125.E3 999.E6  1.0   $ less narrow in x, uniform in y
+$  0.1       0.0001 135. 12  125.E3   40.E3 125.E3  40.E3  1.0   $ broad 
+$  0.1       0.0001 135. 12  125.E3   75.E3 125.E3  75.E3  1.0   $ very broad 
+$  0.1       0.0001 135. 12  125.E3   90.E3 125.E3 999.E6  1.0   $ very broad in x, uniform in y
+$  0.1       0.0001 135. 12  125.E3  150.E3 125.E3 150.E3  1.0   $ very broad 
+$  0.1       0.0001 135. 12  125.E3  999.E3 125.E3  15.E3  1.0   $ less narrow in y, uniform in x
+$  0.1       0.0001 135. 12  125.E3  999.E3 125.E3 999.E3  1.0   $ completely uniform

@@ -8,7 +8,7 @@
 !/                  |            J.H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         26-Dec-2012 |
+!/                  | Last update :         27-Aug-2015 |
 !/                  +-----------------------------------+
 !/
 !/    30-Jun-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -38,6 +38,8 @@
 !/    16-Jul-2012 : Move GMD (SNL3) and nonlinear filter (SNLS)
 !/                  from 3.15 (HLT).                    ( version 4.08 )
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
+!/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
+!/                  (in source terms)
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -147,7 +149,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,      &
                           DPO, WAO, WDO, ASO, CAO, CDO, SPCO, FNMPRE, &
-                          GRDID
+                          GRDID, ICEO, ICEHO, ICEFO
 !
       IMPLICIT NONE
 !/
@@ -164,12 +166,12 @@
       REAL                    :: DTREQ, DTEST
       REAL                    :: UNDEFP = -99.E20
       REAL                    :: FACT
-      LOGICAL                 :: FLSRCE(6)
+      LOGICAL                 :: FLSRCE(7)
       LOGICAL, ALLOCATABLE    :: FLREQ(:)
       CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
                                  CINC*2
       CHARACTER(LEN=3)        :: MNTH(12)
-      CHARACTER(LEN=25)       :: IDSRCE(6)
+      CHARACTER(LEN=25)       :: IDSRCE(7)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -178,9 +180,10 @@
                     'Nonlinear interactions   ' ,                     &
                     'Dissipation              ' ,                     &
                     'Wave-bottom interactions ' ,                     &
+                    'Wave-ice interactions ' ,                     &		    
                     'Sum of selected sources  ' /
       DATA FLSRCE / .FALSE. , .FALSE. , .FALSE. ,                     &
-                    .FALSE. , .FALSE. , .FALSE. /
+                    .FALSE. , .FALSE. , .FALSE., .FALSE. /
       DATA TIME0  / -1, 0 /
       DATA MNTH   / 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',         &
                     'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC' /
@@ -314,7 +317,7 @@
       READ (NDSI,*,END=801,ERR=802) FLSRCE
       WRITE (NDSO,952)
       NLEV   = 0
-      DO I=1, 6
+      DO I=1, 7
         IF ( FLSRCE(I) ) THEN
             WRITE (NDST,953) IDSRCE(I)
             NLEV   = NLEV + 1
@@ -645,6 +648,7 @@
 !/TRX      USE W3STRXMD
 !/BS1      USE W3SBS1MD
 !/BSX      USE W3SBSXMD
+!/IS2      USE W3SIS2MD
 !/XXX      USE W3SXXXMD
 !/
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
@@ -663,7 +667,9 @@
                                  HSIG, WLEN, TMEAN, THMEAN, THSPRD,   &
                                  EMAX, EL, EH, DENOM, FP, THP, SPP,   &
                                  FACTOR, CD, USTAR, FHIGH, ZWND, ICE, &
-                                 USTD, Z0, CHARN, EMEAN, FMEAN, WNMEAN
+                                 USTD, Z0, CHARN, EMEAN, FMEAN, WNMEAN,&
+                                 ICETHICK, ICECON
+!/IS2       REAL		   :: ICEDMAX, ICEF
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: FMEANS, FMEANWS, TAUWX, TAUWY, AMAX, &
@@ -681,11 +687,12 @@
                                  APM(NK), THBND(NK), SPBND(NK),       &
                                  A(NTH,NK), WN2(NTH,NK)
       REAL                    :: DIA(NTH,NK), SWI(NK,NTH), SNL(NK,NTH),&
-                                 SDS(NK,NTH), SBT(NK,NTH), XLN(NTH,NK),&
-                                 XWI(NTH,NK), XNL(NTH,NK), XTR(NTH,NK),&
-                                 XDS(NTH,NK), XDB(NTH,NK), XBT(NTH,NK),&
-                                 XBS(NTH,NK), XXX(NTH,NK), STT(NK,NTH),&
-                                 XWL(NTH,NK)
+                                 SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH),&
+                                 STT(NK,NTH), DIA2(NK,NTH)
+      REAL                    :: XLN(NTH,NK), XWI(NTH,NK), XNL(NTH,NK),&
+                                 XTR(NTH,NK), XDS(NTH,NK), XDB(NTH,NK),&
+                                 XBT(NTH,NK), XBS(NTH,NK), XXX(NTH,NK),&
+                                 XWL(NTH,NK), XIS(NTH,NK)
 !/ST3      LOGICAL                :: LLWS(NTH,NK) 
 !/ST4      LOGICAL                :: LLWS(NTH,NK)
 !/ST4      REAL                   :: LAMBDA(NSPEC)
@@ -710,6 +717,7 @@
       XBT = 0.
       XBS = 0.
       XWL = 0.
+      XIS = 0.
       XXX = 0.
 !
 !/T      WRITE (NDST,9000) (FLREQ(J),J=1,NOPTS)
@@ -730,12 +738,16 @@
 !
 ! 2. Calculate grid parameters using and inlined version of WAVNU1.
 !
-            DEPTH  = MAX ( DMIN, DPO(J) )
-            SQRTH  = SQRT ( DEPTH )
-            UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
-            UDIRR  = WDO(J)
-            UABS   = MAX ( 0.001 , WAO(J) )
-            CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
+          DEPTH  = MAX ( DMIN, DPO(J) )
+          SQRTH  = SQRT ( DEPTH )
+          UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
+          UDIRR  = WDO(J)
+          UABS   = MAX ( 0.001 , WAO(J) )
+          CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
+!/IS2	        ICEDMAX = MAX ( 0., ICEFO(J))
+!/IS2          ICEF     = ICEDMAX
+	        ICETHICK = MAX (0., ICEHO(J))
+	        ICECON = MAX (0., ICEO(J))
 !
 !/STAB2            STAB0  = ZWIND * GRAV / 273.
 !/STAB2            STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
@@ -1008,6 +1020,10 @@
 !/BSX                CALL W3SBSX
 !
               END IF
+           IF ( FLSRCE(6) ) THEN
+!/IS2           CALL W3SIS2(A, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
+!/IS2                       XIS, DIA, DIA2, WN, CG)  	   	     
+           END IF
 !
 !/XXX            CALL W3SXXX
 !
@@ -1023,10 +1039,11 @@
                 SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 !/ST6               SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
                 SBT(IK,ITH) = ( XBT(ITH,IK) + XBS(ITH,IK) ) * FACTOR
+                SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
                 STT(IK,ITH) = XXX(ITH,IK) * FACTOR
                 END DO
               END DO
-            STT    = STT + SWI + SNL + SDS + SBT
+            STT    = STT + SWI + SNL + SDS + SBT + SIS
 
 !
 ! 4.a Perform output
@@ -1042,6 +1059,8 @@
             IF ( FLSRCE(5) ) WRITE (NDSGRD)                           &
                ((SBT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
             IF ( FLSRCE(6) ) WRITE (NDSGRD)                           &
+               ((SIS(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+            IF ( FLSRCE(7) ) WRITE (NDSGRD)                           &
                ((STT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
 !
             IF ( FLAGLL ) THEN

@@ -73,7 +73,7 @@
 # 2.b.1 Build options and determine compiler name
 
   # compilation options
-  opt="-c -CB -O0 -fpe0 -traceback -assume byterecl -convert big_endian -module $path_m"
+  opt="-c -CB -O0 -fpe0 -fp-model source -traceback -assume byterecl -convert big_endian -module $path_m"
   opt="-p -pg -g $opt"
   opt="-check bounds -check uninit -ftrapuv -warn -warn interface $opt"
   opt="-fno-alias -fno-fnalias -debug -check all  -implicitnone -warn all -fp-stack-check -heap-arrays -gen-interface $opt"
