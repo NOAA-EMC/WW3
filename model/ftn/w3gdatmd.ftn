@@ -1327,8 +1327,10 @@
 !
       GRIDS(IMOD)%FLAGST = .TRUE.
       GRIDS(IMOD)%GINIT  = .TRUE.
+      GRIDS(IMOD)%MAPSF(:,3)=0.
       GRIDS(IMOD)%CLATS(0)=1.
       GRIDS(IMOD)%CLATIS(0)=1.
+      GRIDS(IMOD)%CTHG0S(0)=1.
 !
 !/REF1      ALLOCATE ( GRIDS(IMOD)%RREF(4),     &
 !/REF1                 GRIDS(IMOD)%REFPARS(10), &
@@ -1340,8 +1342,6 @@
 !/REF1                 GRIDS(IMOD)%REFLD(6,0:NSEA), &
 !/REF1                 STAT=ISTAT                    )
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
-!/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
-!/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12), STAT=ISTAT )
 !/IG1       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7), STAT=ISTAT )
@@ -1354,6 +1354,12 @@
 !/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(18), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
 !/T      WRITE (NDST,9001)
+!
+!/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
+!/REF1      GRIDS(IMOD)%REFLD(:,:)=0
+!/IG1      GRIDS(IMOD)%IGPARS(:)=0.
+!/IC2      GRIDS(IMOD)%IC2PARS(:)=0.
+!/IS2      GRIDS(IMOD)%IS2PARS(:)=0.
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Update counters in grid

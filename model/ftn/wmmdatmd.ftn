@@ -61,7 +61,7 @@
 !                               grid model).
 !      IMPROC    Int.  Public   Corresponding actual processor number.
 !      NMPLOG, NMPSCR, NMPTST, NMPERR, NMPUPT
-!                Int.  Public   Preocessors in NMPROC designated for
+!                Int.  Public   Processors in NMPROC designated for
 !                               the above output units numbers.
 !
 !      STIME     I.A.  Public   Model run starting time.

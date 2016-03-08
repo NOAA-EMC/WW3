@@ -124,7 +124,7 @@
 !/S      USE W3SERVMD, ONLY : STRACE
 !/
       PUBLIC
-      CHARACTER(LEN=1024)                   :: OUTFIELDNAMES
+      CHARACTER(LEN=1024)                   :: FLDLIST
 !/
 !/ Private parameter statements (ID strings)
 !/
@@ -358,9 +358,9 @@
         IF ( FLG1D (IFI) ) THEN ! Skip if group not requested
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
           READ (NDSI,'(A)',END=2001,ERR=2006,IOSTAT=IERR)              &
-                                                       OUTFIELDNAMES
+                                                       FLDLIST
           OUT_NAMES(:)=''
-          CALL STRSPLIT(OUTFIELDNAMES,OUT_NAMES)
+          CALL STRSPLIT(FLDLIST,OUT_NAMES)
           IFJ=0
           DO WHILE (len_trim(OUT_NAMES(IFJ+1)).NE.0)
              IFJ=IFJ+1
@@ -376,9 +376,9 @@
 ! 2. Reads and splits list of output field names
 !
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-        READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) OUTFIELDNAMES
+        READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) FLDLIST
         OUT_NAMES(:)=''
-        CALL STRSPLIT(OUTFIELDNAMES,OUT_NAMES)
+        CALL STRSPLIT(FLDLIST,OUT_NAMES)
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
           CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
@@ -666,6 +666,353 @@
                ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)')
 !
       END SUBROUTINE W3READFLGRD
+
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE W3FLGRDFLAG ( NDSO, NDSS, NDSEN, FLDLIST,      &
+                               FLG1D, FLG2D, IAPROC, NAPOUT, IERR) 
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         30-Apr-2014 |
+!/                  +-----------------------------------+
+!/
+!/    15-Apr-2013 : Origination.                        ( version 4.10 )
+!/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
+!/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
+!/    17-Fev-2016 : New version from namelist use       ( version 5.12 )
+!/
+!  1. Purpose :
+!
+!     Fills in FLG2D and FLG2D2 arrays from ASCII input file
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDSI    Int.   I   Input file logical unit number
+!       NDSO    Int.   I   Output file logical unit number
+!       NDSEN   R.A.   I   Error output file logical unit number
+!       FLDLIST Cha.   I   List of field names
+!       FLG     L.A.   O   1D array of flags for groups
+!       FLG2D   L.A.   O   2D array of flags
+!       IAPROC  Int.   I   index of current processor 
+!       IERR    Int.   O   Error message number
+!     ----------------------------------------------------------------
+!
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      WW3_SHEL  Prog.   N/A    Actual wave model program
+!      WW3_OUTF  Prog.   N/A    Output postprocessor.
+!      WW3_OUNF  Prog.   N/A    NetCDF output postprocessor.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR, FLOGD
+      USE W3SERVMD, ONLY: STRSPLIT, STR_TO_UPPER
+      USE W3NAMLMD 
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)     :: NDSO, NDSS, NDSEN, IAPROC, NAPOUT
+      CHARACTER(1024), INTENT(IN)   :: FLDLIST
+      INTEGER, INTENT(OUT)    :: IERR
+      LOGICAL, INTENT(OUT)    :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP)
+      CHARACTER(LEN=100)      :: OUT_NAMES(100), TESTSTR
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER             :: I, IFI, IFJ, IOUT
+!/S      INTEGER, SAVE           :: IENT = 0
+      LOGICAL             :: FLT
+      type(output_type_t) :: output_type
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'W3FLGRDFLAG')
+!
+!
+! 1.  Initialize flags -------------------------------------- *
+!
+      IERR=0
+      FLG2D(:,:)=.FALSE. ! Initialize FLG2D 
+      FLG1D(:)=.FALSE. ! Initialize FLOG 
+!
+! 2. Splits list of output field names
+!
+        OUT_NAMES(:)=''
+        CALL STRSPLIT(FLDLIST,OUT_NAMES)
+        IOUT=0
+        DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
+          CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
+          !WRITE(6,*) 'Requested:',OUT_NAMES(IOUT+1)
+!
+! 2. Matches names with expected ... 
+!
+         TESTSTR=OUT_NAMES(IOUT+1)
+         SELECT CASE(TRIM(TESTSTR(1:6)))
+!
+! Group 1
+!
+         CASE('DPT')
+           FLG2D(1,1)=.TRUE.
+         CASE('CUR')
+           FLG2D(1,2)=.TRUE.
+         CASE('WND')
+           FLG2D(1,3)=.TRUE.
+         CASE('AST')
+           FLG2D(1,4)=.TRUE.
+         CASE('WLV')
+           FLG2D(1,5)=.TRUE.
+         CASE('ICE')
+           FLG2D(1,6)=.TRUE.
+         CASE('IBG')
+           FLG2D(1,7)=.TRUE.
+!/BT4           CASE('D50')
+!/BT4             FLG2D(1,8)=.TRUE.
+!
+! Group 2
+!
+         CASE('HS')
+           FLG2D(2,1)=.TRUE.
+         CASE('LM')
+           FLG2D(2,2)=.TRUE.
+         CASE('T02')
+           FLG2D(2,3)=.TRUE.
+         CASE('T0M1')
+           FLG2D(2,4)=.TRUE.
+         CASE('T01')
+           FLG2D(2,5)=.TRUE.
+         CASE('FP')
+           FLG2D(2,6)=.TRUE.
+         CASE('DIR')
+           FLG2D(2,7)=.TRUE.
+         CASE('SPR')
+           FLG2D(2,8)=.TRUE.
+         CASE('DP')
+           FLG2D(2,9)=.TRUE.
+         CASE('HIG')
+           FLG2D(2,10)=.TRUE.
+!
+! Group 3
+!
+         CASE('EF')
+           IF (E3DF(1,1).EQ.1) THEN 
+             FLG2D(3,1)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'EF','E3D'
+             END IF
+         CASE('TH1M')
+           IF (E3DF(1,2).EQ.1) THEN 
+             FLG2D(3,2)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'TH1M','TH1MF'
+             END IF
+         CASE('STH1M')
+           IF (E3DF(1,3).EQ.1) THEN 
+             FLG2D(3,3)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'STH1M','STH1MF'
+             END IF
+         CASE('TH2M')
+           IF (E3DF(1,4).EQ.1) THEN 
+             FLG2D(3,4)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'TH2M','TH2MF'
+             END IF
+         CASE('STH2M')
+           IF (E3DF(1,5).EQ.1) THEN 
+             FLG2D(3,5)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'STH2M','STH2MF'
+             END IF
+         CASE('WN')
+           FLG2D(3,6)=.TRUE.
+!
+! Group 4
+!
+         CASE('PHS')
+           FLG2D(4,1)=.TRUE.
+         CASE('PTP')
+           FLG2D(4,2)=.TRUE.
+         CASE('PLP')
+           FLG2D(4,3)=.TRUE.
+         CASE('PDIR')
+           FLG2D(4,4)=.TRUE.
+         CASE('PSPR')
+           FLG2D(4,5)=.TRUE.
+         CASE('PWS')
+           FLG2D(4,6)=.TRUE.
+         CASE('TWS')
+           FLG2D(4,7)=.TRUE.
+         CASE('PNR')
+           FLG2D(4,8)=.TRUE.
+!
+! Group 5
+!
+         CASE('UST')
+           FLG2D(5,1)=.TRUE.
+         CASE('CHA')
+           FLG2D(5,2)=.TRUE.
+         CASE('CGE')
+           FLG2D(5,3)=.TRUE.
+         CASE('FAW')
+           FLG2D(5,4)=.TRUE.
+         CASE('TAW')
+           FLG2D(5,5)=.TRUE.
+         CASE('TWA')
+           FLG2D(5,6)=.TRUE.
+         CASE('WCC')
+           FLG2D(5,7)=.TRUE.
+         CASE('WCF')
+           FLG2D(5,8)=.TRUE.
+         CASE('WCH')
+           FLG2D(5,9)=.TRUE.
+         CASE('WCM')
+           FLG2D(5,10)=.TRUE.
+!
+! Group 6
+!
+         CASE('SXY')
+           FLG2D(6,1)=.TRUE.
+         CASE('TWO')
+           FLG2D(6,2)=.TRUE.
+         CASE('BHD')
+           FLG2D(6,3)=.TRUE.
+         CASE('FOC')
+           FLG2D(6,4)=.TRUE.
+         CASE('TUS')
+           FLG2D(6,5)=.TRUE.
+         CASE('USS')
+           FLG2D(6,6)=.TRUE.
+         CASE('P2S')
+           FLG2D(6,7)=.TRUE.
+         CASE('USF')
+           IF (US3DF(1).EQ.1) THEN 
+             FLG2D(6,8)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'USF','US3D'
+             END IF
+         CASE('P2L')
+           IF (P2MSF(1).EQ.1) THEN 
+             FLG2D(6,9)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'P2L','P2SF'
+             END IF
+         CASE('TWI')
+           FLG2D(6,10)=.TRUE.
+         CASE('FIC')
+           FLG2D(6,11)=.TRUE.
+!
+! Group 7
+!
+         CASE('ABR')
+           FLG2D(7,1)=.TRUE.
+         CASE('UBR')
+           FLG2D(7,2)=.TRUE.
+         CASE('BED')
+           FLG2D(7,3)=.TRUE.
+         CASE('FBB')
+           FLG2D(7,4)=.TRUE.
+         CASE('TBB')
+           FLG2D(7,5)=.TRUE.
+!
+! Group 8
+!
+         CASE('MSS')
+           FLG2D(8,1)=.TRUE.
+         CASE('MSC')
+           FLG2D(8,2)=.TRUE.
+!
+! Group 9
+!
+         CASE('DTD')
+           FLG2D(9,1)=.TRUE.
+         CASE('FC')
+           FLG2D(9,2)=.TRUE.
+         CASE('CFX')
+           FLG2D(9,3)=.TRUE.
+         CASE('CFD')
+           FLG2D(9,4)=.TRUE.
+         CASE('CFK')
+           FLG2D(9,5)=.TRUE.
+!
+! Group 10
+!
+         CASE('U1')
+           FLG2D(10,1)=.TRUE.
+         CASE('U2')
+           FLG2D(10,1)=.TRUE.
+!/COU           CASE('DRY')
+         CASE DEFAULT
+           IF ( IAPROC .EQ. NAPERR ) WRITE (NDSO,1004) TRIM(TESTSTR)
+         END SELECT
+!
+        IOUT=IOUT+1
+!
+      END DO 
+!
+      IF ( NDSS.NE.NDSO .AND. IAPROC .EQ. NAPOUT ) THEN
+        FLT    = .TRUE.
+        DO IFI=1, NOGRP
+          DO IFJ=1, NGRPP
+            IF ( FLG2D(IFI,IFJ) ) THEN
+              IF ( FLT ) THEN
+                WRITE (NDSO,1945) IDOUT(IFI,IFJ)
+                FLT    = .FALSE.
+              ELSE
+                WRITE (NDSO,1946) IDOUT(IFI,IFJ)
+              END IF
+            END IF
+          END DO
+          IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLOG
+        END DO
+        IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
+      END IF
+!
+      RETURN 
+!
+ 1945 FORMAT ( '            Fields   : ',A)
+ 1946 FORMAT ( '                       ',A)
+!
+ 1004 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+               '     REQUESTED OUTPUT FIELD ',A,' WAS NOT RECOGNIZED.'/)
+!
+ 1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+               '     PARAMETER ',A,' not allowed: need to set',        &
+               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)')
+!
+      END SUBROUTINE W3FLGRDFLAG
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3OUTG ( A, FLPART, FLOUTG, FLOUTG2 )
@@ -1109,12 +1456,18 @@
                 THS(JSEA) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
                 MAX(0.,(ETX(JSEA)**2+ETY(JSEA)**2)/ET(JSEA)**2) ) ) ) )
                 IF ( THS(JSEA) .LT. 0.01*RADE*DTH ) THS(JSEA) = 0.
+              ELSE
+                WLM(JSEA) = 0.
+                T0M1(JSEA) = TPI / SIG(NK)
+                THS(JSEA) = 0.
               END IF
             IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 ) THEN
                 THM(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
 !/RTD  !!  Subtract AnglD from mean direction and wrap to 0-2Pi. JGLi12Jun2012
 !/RTD            THM(JSEA) = THM(JSEA) - AnglD(ISEA)*DERA
 !/RTD            IF( THM(JSEA) .LT. 0.0 )  THM(JSEA) = THM(JSEA) + TPi
+              ELSE
+                THM(JSEA) = 0.
               END IF
             ABR(JSEA) = SQRT ( 2. * MAX ( 0. , ABR(JSEA) ) )
             IF ( ABR(JSEA) .GE. 1.E-7 ) THEN

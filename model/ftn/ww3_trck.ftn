@@ -63,10 +63,12 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY : W3NMOD, FLAGLL, W3SETG
-      USE W3ODATMD, ONLY : W3NOUT, FNMPRE
+      USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
       USE W3TIMEMD, ONLY : STME21
+!
+      USE W3ODATMD, ONLY: NDSO, NDSE, NDST
 !
       IMPLICIT NONE
 !/
@@ -76,7 +78,7 @@
       CHARACTER*34, PARAMETER ::                                      &
                        IDTST  = 'WAVEWATCH III TRACK OUTPUT SPECTRA'
 !
-      INTEGER                 :: NDSI, NDSO, NDSE, NDST, NDSINP,      &
+      INTEGER                 :: NDSI, NDSINP,                        &
                                  NDSOUT, NDSTRC, NTRACE, NK, NTH,     &
                                  NSPEC, IERR, MK, MTH,                &
                                  NREC, ILOC, ISPEC, TIME(2), TTST(2), &
@@ -104,6 +106,7 @@
       CALL W3NMOD ( 1, 6, 6 )
       CALL W3SETG ( 1, 6, 6 )
       CALL W3NOUT (    6, 6 )
+      CALL W3SETO ( 1, 6, 6 )
 !
 ! 1.b IO set-up.
 !

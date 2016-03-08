@@ -175,6 +175,7 @@
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
+  cdf_programs="$cdf_programs ww3_trnc"
 
   if [ -n "`grep TIDE $switch_file`" ]
   then
@@ -301,6 +302,11 @@ EOF
         fi
       ;;
       NC4)
+        if [ ! -n "`grep NC4 $switch_file`" ]
+        then
+          echo "WARNING: NC4 is set in WWATCH3_NETCDF but not in the switch file"; echo ' '
+#          return 1
+        fi
         if [ -z "$NETCDF_CONFIG" ]
         then
           netcdf_compile_message

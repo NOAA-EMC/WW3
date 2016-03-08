@@ -1,0 +1,721 @@
+!/ ------------------------------------------------------------------- /
+      PROGRAM W3TRNC
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         17-Fev-2016 |
+!/                  +-----------------------------------+
+!/
+!/    17-Fev-2016 : Creation                            ( version 5.12 )
+!/
+!/    Copyright 2014 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     Convert direct access track output file to netCDF file.
+!
+!  2. Method :
+!
+!     Info read from track_o.ww3, written to track.nc
+!
+!  3. Parameters :
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMOD    Subr. W3GDATMD Set number of model.
+!      W3NOUT    Subr. W3ODATMD Set number of model for output.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     None, stand-alone program.
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY : W3NMOD, FLAGLL, W3SETG
+      USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
+      USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+!/S      USE W3SERVMD, ONLY : STRACE
+      USE W3TIMEMD, ONLY : STME21,JULDAY
+!
+      USE W3ODATMD, ONLY: NDSO, NDSE, NDST
+!
+      USE NETCDF
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      CHARACTER*34, PARAMETER ::                                      &
+                       IDTST  = 'WAVEWATCH III TRACK OUTPUT SPECTRA'
+!
+      INTEGER                 :: NDSI, NDSINP,                        &
+                                 NDSOUT, NDSTRC, NTRACE, NK, NTH,     &
+                                 NSPEC, IERR, MK, MTH, IT,            &
+                                 NREC, ILOC, ISPEC, TIME(2), TTST(2), &
+                                 ILAST, NZERO, IK, ITH, IWZERO, ICH,  &
+                                 IWDTH, J
+!/S      INTEGER, SAVE           :: IENT   = 0
+      INTEGER                 :: LINELN = 81
+!  JS 18/06/2014
+      INTEGER                 :: iret, NCTYPE,NCID
+      INTEGER                 :: FLMAP
+      CHARACTER(1024)         :: ncfile
+      INTEGER                 :: dimid(3), dimln(3), varid(14)
+      CHARACTER               :: globalAtt*60
+      REAL(kind=8)            :: timenc,Jday0
+      INTEGER(kind=4)         :: iyc,imc,idc,ihc,iminc,isc
+
+      REAL                    :: TH1, DTH, X, Y, DW, CX, CY, WX, WY,  &
+                                 UST, AS, VALUE
+      REAL                    :: SCALE  = 0.001
+      REAL                    :: FACTOR
+      REAL, ALLOCATABLE       :: SIG(:), DSIP(:), SPEC(:,:), TH(:)
+      CHARACTER               :: COMSTR*1, IDSTR*34, TSTSTR*3,        &
+                                 STIME*23, STRING*81, EMPTY*81,       &
+                                 PART*9, ZEROS*9
+!
+      DATA EMPTY(01:40) / '                                        ' /
+      DATA EMPTY(41:81) / '                                         ' /
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!
+! 1.a Initialize data structure
+!
+      CALL W3NMOD ( 1, 6, 6 )
+      CALL W3SETG ( 1, 6, 6 )
+      CALL W3NOUT (    6, 6 )
+      CALL W3SETO ( 1, 6, 6 )
+!
+! 1.b IO set-up.
+!
+      NDSI   = 10
+      NDSINP = 11
+      NDSOUT = 51
+!
+      NDSTRC =  6
+      NTRACE = 10
+      CALL ITRACE ( NDSTRC, NTRACE )
+!
+!/S      CALL STRACE ( IENT, 'W3TRNC' )
+!
+      WRITE (NDSO,900)
+!
+      J      = LEN_TRIM(FNMPRE)
+      OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_trnc.inp',STATUS='OLD',        &
+            ERR=805,IOSTAT=IERR)
+      READ (NDSI,'(A)',END=806,ERR=807) COMSTR
+      IF (COMSTR.EQ.' ') COMSTR = '$'
+      WRITE (NDSO,901) COMSTR
+!
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=806,ERR=807) NK, NTH
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=806,ERR=807) NCTYPE
+      NSPEC  = NK * NTH
+      WRITE (NDSO,902) NK, NTH
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 2.  Open and test input data file
+!
+      WRITE (NDSO,920)
+!
+      OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',FORM='UNFORMATTED', &
+            STATUS='OLD',ERR=800,IOSTAT=IERR)
+      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH
+!
+      IF ( FLAGLL ) THEN
+          FACTOR  = 1.
+        ELSE
+          FACTOR  = 1.E-3
+        END IF
+!
+      IF ( IDSTR .NE. IDTST ) GOTO 810
+      IF ( NK.NE.MK .OR. NTH.NE.MTH ) GOTO 811
+
+      ALLOCATE ( SIG(MK), DSIP(MK), SPEC(MK,MTH), TH(MTH) )
+!
+      READ (NDSINP,ERR=801,IOSTAT=IERR) TH1, DTH, SIG, DSIP
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 3.  Open output file and prepare
+!
+      WRITE (NDSO,930)
+!
+      WRITE(NCFILE,'(2A)') FNMPRE(:J), 'track.nc'
+      dimln(1)=NF90_UNLIMITED ! time
+      dimln(2)=MK ! frequency
+      dimln(3)=MTH ! direction
+      CALL W3CRNC (nctype,ncfile,ncid,dimid,dimln,varid)
+!
+!
+      iret=nf90_put_var(ncid,varid(2),SIG)
+      call check_err(iret)
+!
+      iret=nf90_put_var(ncid,varid(3),DSIP)
+      call check_err(iret)
+!
+      DO J=1,MTH 
+        TH(J)=TH1+DTH*(J-1)
+      END DO
+      iret=nf90_put_var(ncid,varid(4),TH)
+      call check_err(iret)
+!
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 4.  Process data
+!
+      ILOC    = 0
+      ISPEC   = 0
+      IT      = 0
+      READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TTST
+      BACKSPACE (NDSINP)
+      WRITE (NDSO,940)
+!
+  400 CONTINUE
+!
+! 4.a Read/write basic data
+!
+      READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR
+      iyc=TIME(1)/10000
+      imc=(TIME(1)-iyc*10000)/100
+      idc=TIME(1)-iyc*10000-100*imc
+      ihc=TIME(2)/10000
+      iminc=(TIME(2)-ihc*10000)/100
+      isc=TIME(2)-ihc*10000-100*iminc  
+
+      timenc=DBLE(julday(idc,imc,iyc))                 & 
+            +(DBLE(ihc)+(DBLE(iminc)+(DBLE(isc)/60.))/60.)/24.
+      Jday0=JULDAY(1,1,1990)
+      timenc=timenc-Jday0
+!      IT=IT+1
+
+      IF ( TIME(1).EQ.TTST(1) .AND. TIME(2).EQ.TTST(2) ) THEN
+          ILOC = ILOC + 1
+          IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+        ENDIF
+      IF ( TIME(1).NE.TTST(1) .OR. TIME(2).NE.TTST(2) ) THEN
+          CALL STME21 ( TTST , STIME )
+          WRITE (NDSO,941) STIME, ILOC, ISPEC
+          ILOC    = 1
+          ISPEC   = 0
+          IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+          TTST(1) = TIME(1)
+          TTST(2) = TIME(2)
+        ENDIF
+!
+! 4.b Check if sea point
+!
+      IF ( TSTSTR .NE. 'SEA' ) GOTO 400
+     
+!
+! 4.b Write time, lon, lat
+!
+      IT=IT+1
+      ! time
+      iret=nf90_put_var(ncid,varid(1),timenc,start=(/IT/))
+      call check_err(iret)
+      ! longitude
+      iret=nf90_put_var(ncid,varid(5),FACTOR*X,start=(/IT/))
+      call check_err(iret)
+      ! latitude
+      iret=nf90_put_var(ncid,varid(6),FACTOR*Y,start=(/IT/))
+      call check_err(iret)
+
+!
+! WAVEWATCH only saves data that are SEA points so this information
+!   is not needed
+! map flag
+!      FLMAP=1
+!      iret=nf90_put_var(ncid,varid(7),FLMAP,start=(/IT/))
+!      call check_err(iret)
+
+
+! 4.b Read data
+!
+      IF ( TSTSTR .EQ. 'SEA' ) THEN
+
+! ... from input file 
+        READ (NDSINP,ERR=801,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, AS, &
+                                        SPEC
+        IF ( UST .LT. 0. ) UST = -1.0
+
+! 4.c Write spectrum
+        iret=nf90_put_var(ncid,varid(7),                               &
+           TRANSPOSE(SPEC),start=(/1,1,IT/), count=(/MTH,MK,1/))
+        call check_err(iret)
+
+! 4.d Write the basic stuff
+        ! Write DW (depth)
+        iret=nf90_put_var(ncid, varid(8),DW ,start=(/IT/))
+        call check_err(iret)
+        ! Write CX (current - x direction)
+        iret=nf90_put_var(ncid, varid(9),CX ,start=(/IT/))
+        call check_err(iret)   
+        ! Write CY (current - y direction)
+        iret=nf90_put_var(ncid,varid(10),CY ,start=(/IT/))
+        call check_err(iret)
+        ! Write WX (wind velocity - x direction)
+        iret=nf90_put_var(ncid,varid(11),WX ,start=(/IT/))
+        call check_err(iret)
+        ! Write WY (wind velocity - y direction)
+        iret=nf90_put_var(ncid,varid(12),WY ,start=(/IT/))
+        call check_err(iret)
+        ! Write UST (friction velocity)
+        iret=nf90_put_var(ncid,varid(13),UST,start=(/IT/))
+        call check_err(iret)
+        ! Write AS (air sea temperature difference)
+        iret=nf90_put_var(ncid,varid(14),AS ,start=(/IT/))
+        call check_err(iret)
+
+
+!      ELSE
+!        ! ... with fillvalue
+!        SPEC=nf90_Fill_Float
+!        DW  =nf90_Fill_Float
+!        CX  =nf90_Fill_Float
+!        CY  =nf90_Fill_Float
+!        WX  =nf90_Fill_Float
+!        WY  =nf90_Fill_Float
+!        UST =nf90_Fill_Float
+!        AS  =nf90_Fill_Float
+      END IF
+!
+! ... Loop back to top
+!
+      GOTO 400
+!
+! 4.f All data done, write last batch info
+!
+  444 CONTINUE
+!
+      CALL STME21 ( TTST , STIME )
+      WRITE (NDSO,941) STIME, ILOC, ISPEC
+!
+! close netcdf file
+      iret=NF90_CLOSE(ncid)
+      call check_err(iret)
+!
+      GOTO 888
+!
+! Escape locations read errors :
+!
+  800 CONTINUE
+      WRITE (NDSE,1000) IERR
+      CALL EXTCDE ( 1 )
+!
+  801 CONTINUE
+      WRITE (NDSE,1001) IERR
+      CALL EXTCDE ( 2 )
+!
+  802 CONTINUE
+      WRITE (NDSE,1002) IERR
+      CALL EXTCDE ( 3 )
+!
+  803 CONTINUE
+      WRITE (NDSE,1003) IERR
+      CALL EXTCDE ( 4 )
+!
+  805 CONTINUE
+      WRITE (NDSE,1004) IERR
+      CALL EXTCDE ( 5 )
+!
+  806 CONTINUE
+      WRITE (NDSE,1005) IERR
+      CALL EXTCDE ( 6 )
+!
+  807 CONTINUE
+      WRITE (NDSE,1006) IERR
+      CALL EXTCDE ( 7 )
+!
+  810 CONTINUE
+      WRITE (NDSE,1010) IDSTR, IDTST
+      CALL EXTCDE ( 5 )
+!
+  811 CONTINUE
+      WRITE (NDSE,1011) MK, MTH, NK, NTH
+      CALL EXTCDE ( 6 )
+!
+  888 CONTINUE
+!
+      WRITE (NDSO,999)
+!
+! Formats
+!
+  900 FORMAT (/15X,'    *** WAVEWATCH III Track output post.***    '/ &
+               15X,'==============================================='/)
+  901 FORMAT ( '  Comment character is ''',A,''''/)
+  902 FORMAT ( '  Spectral grid size is ',I3,' by ',I3//              &
+                   '  Opening files : '/                              &
+                   ' -----------------------------------------------')
+  920 FORMAT ( '     Input file ...')
+  930 FORMAT ( '     Output file ...')
+  940 FORMAT (/'  Processing data : '/                                &
+               ' -----------------------------------------------')
+  941 FORMAT ( '     ',A,' :',I6,' points and',I6,'  spectra.')
+!
+  980 FORMAT (A)
+  981 FORMAT (2I6,2E13.5)
+  982 FORMAT (7E11.4)
+  983 FORMAT (7E11.4)
+  984 FORMAT (I8.8,I7.6,2F9.3,2X,A3)
+  974 FORMAT (I8.8,I7.6,2(F9.2,'E3'),2X,A3)
+  985 FORMAT (F8.1,2F6.2,2F8.2,f9.5,f7.2,E12.5)
+  986 FORMAT (A)
+  987 FORMAT (I9)
+!
+  999 FORMAT (/'  End of program '/                                   &
+               ' ========================================='/          &
+               '         WAVEWATCH III Track output '/)
+!
+ 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN OPENING INPUT DATA FILE'/               &
+               '     IOSTAT =',I5/)
+!
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN READING FROM INPUT DATA FILE'/          &
+               '     IOSTAT =',I5/)
+!
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN OPENING OUTPUT DATA FILE'/              &
+               '     IOSTAT =',I5/)
+!
+ 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN WRITING TO OUTPUT FILE'/                &
+               '     IOSTAT =',I5/)
+!
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN OPENING INPUT FILE'/                    &
+               '     IOSTAT =',I5/)
+!
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN READING FROM INPUT FILE'/               &
+               '     IOSTAT =',I5/)
+!
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     ERROR IN OPENING OUTPUT FILE'/                   &
+               '     IOSTAT =',I5/)
+!
+ 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     UNEXPECTED ID STRING IN INPUT : ',A/             &
+               '                         SHOULD BE : ',A/)
+!
+ 1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
+               '     UNEXPECTED SPECTRAL DIMENSIONS : ',2I4/          &
+               '                          SHOULD BE : ',2I4/)
+!
+CONTAINS
+!--------------------------------------------------------------------------
+      SUBROUTINE W3CRNC (nctype,ncfile,ncid,dimid,dimln,varid)
+
+      USE W3GDATMD, ONLY : FLAGLL
+
+      USE NETCDF
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN)               :: nctype
+      CHARACTER*(*), INTENT(IN)         :: ncfile
+      INTEGER, INTENT(IN)               :: dimln(3)
+      INTEGER, INTENT(OUT)              :: dimid(3), varid(14), ncid
+      INTEGER                           :: iret, deflate=1
+
+!
+! Creation in netCDF3 or netCDF4
+!
+      IF(NCTYPE.EQ.3)  iret = nf90_create(trim(ncfile), NF90_CLOBBER, ncid)
+!/NC4      IF(NCTYPE.EQ.4) iret = nf90_create(trim(ncfile), NF90_NETCDF4, ncid)
+      call check_err(iret)
+
+!
+!     Define generals dimensions
+!
+      iret = nf90_def_dim(ncid, 'time', dimln(1), dimid(1))
+      call check_err(iret)
+      iret = nf90_def_dim(ncid, 'frequency', dimln(2), dimid(2))
+      call check_err(iret)
+      iret = nf90_def_dim(ncid, 'direction', dimln(3), dimid(3))
+      call check_err(iret)
+
+!
+!     define generals variables
+!
+
+!  time
+      iret=nf90_def_var(ncid, 'time', NF90_DOUBLE, dimid(1), varid(1))
+!/NC4      IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(1), 1, 1, deflate)
+      iret=nf90_put_att(ncid,varid(1),'long_name','julian day (UT)')
+      iret=nf90_put_att(ncid,varid(1),'standard_name','time')
+      iret=nf90_put_att(ncid,varid(1),'units',                         &
+         'days since 1990-01-01T00:00:00Z')
+      iret=nf90_put_att(ncid,varid(1),'conventions',                   &
+         'Relative julian days with decimal part (as parts of the day)')
+      iret=nf90_put_att(ncid,varid(1),'axis','T') 
+
+! frequency
+      iret=nf90_def_var(ncid, 'frequency', NF90_FLOAT, (/dimid(2)/),   &
+         varid(2))
+      iret=nf90_put_att(ncid,varid(2),'long_name',                     &
+         'center frequencies for spectra')
+      iret=nf90_put_att(ncid,varid(2),'standard_name','frequency')
+      iret=nf90_put_att(ncid,varid(2),'units','s-1')
+
+! frequency area
+      iret=nf90_def_var(ncid, 'frequency_area', NF90_FLOAT,            &
+         (/dimid(2)/),varid(3))
+      iret=nf90_put_att(ncid,varid(3),'long_name',                     &
+         'frequency spectral bin width')
+      iret=nf90_put_att(ncid,varid(3),'standard_name','frequency_area')
+      iret=nf90_put_att(ncid,varid(3),'units','s-2')
+
+! direction
+      iret=nf90_def_var(ncid, 'direction', NF90_FLOAT, (/dimid(3)/),   &
+         varid(4))
+      iret=nf90_put_att(ncid,varid(4),'long_name',                     &
+         'Direction - local incidence angle "coming from"')
+      iret=nf90_put_att(ncid,varid(4),'standard_name','theta')
+      iret=nf90_put_att(ncid,varid(4),'units','rad')
+
+      IF (FLAGLL) THEN 
+!  longitude
+        iret=nf90_def_var(ncid, 'longitude', NF90_FLOAT, (/dimid(1)/), &
+           varid(5))
+!/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(5), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(5),'long_name','longitude')
+        iret=nf90_put_att(ncid,varid(5),'standard_name','longitude')
+        iret=nf90_put_att(ncid,varid(5),'units','degree_east')
+        iret=nf90_put_att(ncid,varid(5),'valid_min',-180.0)
+        iret=nf90_put_att(ncid,varid(5),'valid_max',180.)
+        iret=nf90_put_att(ncid,varid(5),'_FillValue',NF90_FILL_FLOAT)
+        iret=nf90_put_att(ncid,varid(5),'content','T')
+        iret=nf90_put_att(ncid,varid(5),'associates','time')
+
+
+!  latitude
+        iret=nf90_def_var(ncid, 'latitude', NF90_FLOAT, (/dimid(1)/),  &
+           varid(6))
+!/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(6), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(6),'long_name','latitude')
+        iret=nf90_put_att(ncid,varid(6),'standard_name','latitude')
+        iret=nf90_put_att(ncid,varid(6),'units','degree_north')
+        iret=nf90_put_att(ncid,varid(6),'valid_min',-90.0)
+        iret=nf90_put_att(ncid,varid(6),'valid_max',90.)
+        iret=nf90_put_att(ncid,varid(6),'_FillValue',NF90_FILL_FLOAT)
+        iret=nf90_put_att(ncid,varid(6),'content','T')
+        iret=nf90_put_att(ncid,varid(6),'associates','time')
+      ELSE
+!  longitude
+        iret=nf90_def_var(ncid, 'x', NF90_FLOAT, (/dimid(1)/), &
+           varid(5))
+!/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(5), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(5),'long_name','x')
+        iret=nf90_put_att(ncid,varid(5),'standard_name','x')
+        iret=nf90_put_att(ncid,varid(5),'units','km')
+        iret=nf90_put_att(ncid,varid(5),'_FillValue',NF90_FILL_FLOAT)
+        iret=nf90_put_att(ncid,varid(5),'content','T')
+        iret=nf90_put_att(ncid,varid(5),'associates','time')
+
+!  latitude
+        iret=nf90_def_var(ncid, 'y', NF90_FLOAT, (/dimid(1)/), &
+           varid(6))
+!/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(6), 1, 1, deflate)
+        iret=nf90_put_att(ncid,varid(6),'long_name','y')
+        iret=nf90_put_att(ncid,varid(6),'standard_name','y')
+        iret=nf90_put_att(ncid,varid(6),'units','km')
+        iret=nf90_put_att(ncid,varid(6),'_FillValue',NF90_FILL_FLOAT)
+        iret=nf90_put_att(ncid,varid(6),'content','T')
+        iret=nf90_put_att(ncid,varid(6),'associates','time')
+
+      END IF
+
+! Removed FLMAP
+! FLMAP
+!        iret=nf90_def_var(ncid, 'FLMAP', NF90_SHORT, (/dimid(1)/), varid(7))
+!/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(7), 1, 1, deflate)
+        
+
+
+! Efth
+      iret=nf90_def_var(ncid,'efth',NF90_FLOAT,(/dimid(3),       &
+         dimid(2),dimid(1)/),varid(7))
+!/NC4            IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(8), 1, 1, deflate)
+      iret=nf90_put_att(ncid,varid(7),'long_name',                     &
+         'sea surface wave directional variance spectral density')
+      iret=nf90_put_att(ncid,varid(7),'standard_name',                 &
+         'sea_surface_wave_directional_variance_spectral_density')
+      iret=nf90_put_att(ncid,varid(7),'globwave_name',                 &
+         'directional_variance_spectral_density')
+      iret=nf90_put_att(ncid,varid(7),'units','m2 s rad-1')
+      iret=nf90_put_att(ncid,varid(7),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(7),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(7),'valid_min',0.)
+      iret=nf90_put_att(ncid,varid(7),'valid_max',10.)
+      iret=nf90_put_att(ncid,varid(7),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(7),'content','TXY')
+      iret=nf90_put_att(ncid,varid(7),'associates',                    &
+         'time frequency direction')
+
+! DW - depth
+      iret=nf90_def_var(ncid, 'dpt', NF90_FLOAT, (/dimid(1)/), &
+           varid(8))
+      iret=nf90_put_att(ncid,varid(8),'long_name','depth')
+      iret=nf90_put_att(ncid,varid(8),'standard_name','depth')
+      iret=nf90_put_att(ncid,varid(8),'globwave_name','depth')
+      iret=nf90_put_att(ncid,varid(8),'units','m')
+      iret=nf90_put_att(ncid,varid(8),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(8),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(8),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(8),'content','T')
+      iret=nf90_put_att(ncid,varid(8),'associates','time')
+
+! CX - current speed - x-direction (m/s)
+      iret=nf90_def_var(ncid, 'ucur', NF90_FLOAT,                      &
+         (/dimid(1)/), varid(9))
+      iret=nf90_put_att(ncid,varid(9),'long_name',                     &
+         'eastward current')
+      iret=nf90_put_att(ncid,varid(9),'standard_name',                 &
+         'eastward_sea_water_velocity')
+      iret=nf90_put_att(ncid,varid(9),'globwave_name',                 &
+         'eastward_sea_water_velocity')
+      iret=nf90_put_att(ncid,varid(9),'units','m s-1')
+      iret=nf90_put_att(ncid,varid(9),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(9),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(9),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(9),'content','T')
+      iret=nf90_put_att(ncid,varid(9),'associates','time')
+
+! CY - current speed - y-direction (m/s)
+      iret=nf90_def_var(ncid, 'vcur', NF90_FLOAT,                      &
+         (/dimid(1)/), varid(10))
+      iret=nf90_put_att(ncid,varid(10),'long_name',                    &
+         'northward current')
+      iret=nf90_put_att(ncid,varid(10),'standard_name',                &
+         'northward_sea_water_velocity')
+      iret=nf90_put_att(ncid,varid(10),'globwave_name',                &
+         'northward_sea_water_velocity')
+      iret=nf90_put_att(ncid,varid(10),'units','m s-1')
+      iret=nf90_put_att(ncid,varid(10),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(10),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(10),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(10),'content','T')
+      iret=nf90_put_att(ncid,varid(10),'associates','time')
+
+! WX - wind speed - x-direction (m/s)
+      iret=nf90_def_var(ncid, 'uwnd', NF90_FLOAT,                      &
+         (/dimid(1)/), varid(11))
+      iret=nf90_put_att(ncid,varid(11),'long_name',                    &
+         'eastward wind')
+      iret=nf90_put_att(ncid,varid(11),'standard_name',                &
+         'eastward_wind')
+      iret=nf90_put_att(ncid,varid(11),'globwave_name',                &
+         'eastward_wind')
+      iret=nf90_put_att(ncid,varid(11),'units','m s-1')
+      iret=nf90_put_att(ncid,varid(11),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(11),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(11),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(11),'content','T')
+      iret=nf90_put_att(ncid,varid(11),'associates','time')
+
+! WY - wind speed - y-direction (m/s)
+      iret=nf90_def_var(ncid, 'vwnd', NF90_FLOAT,                      &
+         (/dimid(1)/), varid(12))
+      iret=nf90_put_att(ncid,varid(12),'long_name',                    &
+         'northward wind')
+      iret=nf90_put_att(ncid,varid(12),'standard_name',                &
+         'northward_wind')
+      iret=nf90_put_att(ncid,varid(12),'globwave_name',                &
+         'northward_wind')
+      iret=nf90_put_att(ncid,varid(12),'units','m s-1')
+      iret=nf90_put_att(ncid,varid(12),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(12),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(12),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(12),'content','T')
+      iret=nf90_put_att(ncid,varid(12),'associates','time')
+
+! UST - friction velocity  (m/s)
+      iret=nf90_def_var(ncid, 'ust', NF90_FLOAT,                       &
+         (/dimid(1)/), varid(13))
+      iret=nf90_put_att(ncid,varid(13),'long_name',                    &
+         'friction velocity')
+      iret=nf90_put_att(ncid,varid(13),'standard_name',                &
+         'friction_velocity')
+      iret=nf90_put_att(ncid,varid(13),'globwave_name',                &
+         'friction_velocity')
+      iret=nf90_put_att(ncid,varid(13),'units','m s-1')
+      iret=nf90_put_att(ncid,varid(13),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(13),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(13),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(13),'content','T')
+      iret=nf90_put_att(ncid,varid(13),'associates','time')
+
+! AS - air-sea temperature difference (deg C)
+      iret=nf90_def_var(ncid, 'ast',                                   &
+         NF90_FLOAT,(/dimid(1)/), varid(14))
+      iret=nf90_put_att(ncid,varid(14),'long_name',                    &
+         'air sea temperature difference')
+      iret=nf90_put_att(ncid,varid(14),'standard_name',                &
+         'air_sea_temperature_difference')
+      iret=nf90_put_att(ncid,varid(14),'globwave_name',                &
+         'air_sea_temperature_difference')
+      iret=nf90_put_att(ncid,varid(14),'units','degrees C')
+      iret=nf90_put_att(ncid,varid(14),'scale_factor',1.)
+      iret=nf90_put_att(ncid,varid(14),'add_offset',0.)
+      iret=nf90_put_att(ncid,varid(14),'_FillValue',NF90_FILL_FLOAT)
+      iret=nf90_put_att(ncid,varid(14),'content','T')
+      iret=nf90_put_att(ncid,varid(14),'associates','time')
+!
+      iret=nf90_enddef(ncid)
+      call check_err(iret)
+
+      return
+
+
+      END SUBROUTINE W3CRNC 
+
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+      subroutine check_err(iret)
+
+      USE NETCDF
+      implicit none
+      
+      integer iret
+
+      if (iret .ne. NF90_NOERR) then
+         print *, nf90_strerror(iret)
+         stop
+      endif
+      return
+      END subroutine check_err
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+!/
+!/ End of W3TRNC ----------------------------------------------------- /
+!/
+      END PROGRAM W3TRNC

@@ -140,6 +140,7 @@
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
+  cdf_programs="$cdf_programs ww3_trnc"
 
   if [ -n "`grep TRKNC $switch_file`" ]
   then

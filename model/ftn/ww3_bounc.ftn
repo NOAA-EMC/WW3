@@ -456,6 +456,13 @@
         ! Checks consistency of XFR
         IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 2006
 !
+        ! Checks consistency of NTH
+        ! WARNING: check is only done on number of directions, no check 
+        ! is done on the relative offset of first direction in terms of 
+        ! the directional increment [-0.5,0.5] (last parameter of the 
+        ! spectral definition in ww3_grid.inp, on second active line) 
+        IF (NTHI.NE.NTH) GOTO 2007
+!
         IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
           DO J=1,MIN(NK1,NK)
             IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
@@ -650,6 +657,10 @@
       WRITE (NDSE,1006) XFR
       GOTO 2222
 !
+ 2007 CONTINUE
+      WRITE (NDSE,1007) NTH, NTHI
+      GOTO 2222
+!
  2222 CONTINUE
 !
   920 FORMAT ( '  Grid name : ',A/)
@@ -690,6 +701,9 @@
 !
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
                '     ILLEGAL XFR, XFR =',F12.6/)
+!
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/

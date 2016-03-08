@@ -883,19 +883,47 @@ fi
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-ifile="`ls $path_i/track_i.ww3 2>/dev/null`"
-if [ $? = 0 ]
+# track file - multigrid option (ge 1)
+if [ $multi -ge 1 ]
 then
-  \rm -f track_i.ww3
-  \ln -s $ifile
+  for g in $all_grids
+  do
+    ifile="`ls $path_i/track_i.$g 2>/dev/null`"
+    if [ $? = 0 ]
+    then
+      \rm -f track_i.$g
+      \ln -s $ifile
+    fi
+  done
+else
+  ifile="`ls $path_i/track_i.ww3 2>/dev/null`"
+  if [ $? = 0 ]
+  then
+    \rm -f track_i.ww3
+    \ln -s $ifile
+  fi
 fi
 
+# inp / nml file - gridset option (eq 2)
 if [ $multi -eq 2 ]
 then
-  ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
+  if [ ! -z "`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`"
+    files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
+  else
+    ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
+  fi
 else
-  ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
+  if [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  then
+    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+    files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
+  else
+    ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
+  fi
 fi
+
 
 if [ $? = 0 ]
 then
@@ -924,6 +952,20 @@ then
 
   \rm -f $prog.inp
   \ln -s $ifile $prog.inp
+  if [ ${prog} = ww3_multi ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  then
+    \rm -f $prog.inp
+    \rm -f $prog.nml
+    \ln -s $ifile $prog.nml
+    for file_p in ${files_p}
+    do
+      if [ -e ${path_i}/${file_p} ]
+      then
+        \ln -s ${path_i}/${file_p} .
+      fi
+    done
+  fi
+
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
   if [ $pmpi ]
@@ -960,6 +1002,11 @@ then
     then
       \rm -f track_i.ww3
       \rm -f $prog.inp
+      \rm -f $prog.nml
+      for file_p in ${files_p}
+      do
+        \rm -f ${file_p}
+      done
     else
       errmsg "Error occured during $path_e/$prog execution"
       exit 1
@@ -1321,12 +1368,17 @@ done # end of loop on progs
 
 # 3.i Track output ---------------------------------------------------------- #
 
-prog=ww3_trck
-if [ $exec_p = $prog -o $exec_p = "none" ]
-then
+case $outopt in
+  native) out_progs="ww3_trck" ;;
+  netcdf) out_progs="ww3_trnc" ;;
+  both)   out_progs="ww3_trck ww3_trnc" ;;
+  *)      out_progs="" ;;
+esac
 
-ifile="`ls $path_i/$prog.inp 2>/dev/null`"
-if [ $? = 0 ]
+for prog in $out_progs
+do
+
+if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
   echo ' '
@@ -1356,21 +1408,54 @@ then
     exit 1
   fi
 
-  ofile="$path_w/`basename $ifile .inp`.out"
+  for g in $point_grids
+  do
 
-  \rm -f $prog.inp
-  \ln -s $ifile $prog.inp
-  echo "   Processing $ifile"
-  echo "   Screen output routed to $ofile"
-  if $path_e/$prog > $ofile
-  then
+    if [ $multi -eq 2 ]
+    then
+      if [ ! -e track_o.$g ]
+      then
+        continue
+      fi
+      gu="_$g"
+    fi
+
+    ifile=$path_i/$prog${gu}.inp
+    if [ ! -f $ifile ]
+    then
+      errmsg "$ifile not found"
+      exit 1
+    fi
+    otype="`basename $ifile .inp | sed s/^${prog}_//`"
+    ofile="$path_w/`basename $ifile .inp`.out"
+    echo "   Processing $ifile"
+    echo "   Screen output routed to $ofile"
     \rm -f $prog.inp
-  else
-    errmsg "Error occured during $path_e/$prog execution"
-    exit 1
-  fi
-
-fi
+    \ln -s $ifile $prog.inp
+    if [ $multi -eq 2 ]
+    then
+      \rm -f track_o.ww3
+      \ln -s track_o.$g track_o.ww3
+    fi
+    if $path_e/$prog > $ofile
+    then
+      \rm -f $prog.inp
+      if [ $multi -eq 2 ]
+      then
+        \rm -f track_o.ww3
+        if [ -e track.ww3 ]
+        then
+          mv track.ww3 track.$g
+        elif [ -e track.nc ]
+        then
+          mv track.nc track_$g.nc
+        fi        
+      fi
+    else
+      errmsg "Error occured during $path_e/$prog execution"
+      exit 1
+    fi
+  done
 
 fi
 
@@ -1378,6 +1463,8 @@ if [ $exit_p = $prog ]
 then
   exit
 fi
+
+done # end of loop on progs
 
 # 3.j Wave system tracking -------------------------------------------------- #
 

@@ -751,7 +751,7 @@
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
-         ww3_outf ww3_outp ww3_trck ww3_grib gx_outf gx_outp ww3_ounf 
+         ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf 
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
 
   for prog in $progs
@@ -823,7 +823,7 @@
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $couplmd $agcmmd $ogcmmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
-                aux="$aux  wmunitmd" 
+                aux="$aux  wmunitmd w3namlmd" 
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
@@ -843,7 +843,7 @@
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $couplmd $agcmmd $ogcmmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
-                aux="$aux  wmunitmd"  
+                aux="$aux  wmunitmd w3namlmd"  
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
@@ -883,6 +883,13 @@
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
      ww3_trck) IDstring='Track output post'
+               core=
+               data='w3gdatmd w3odatmd'
+               prop=
+             source=
+                 IO=
+                aux="constants w3servmd w3timemd w3gsrumd" ;;
+     ww3_trnc) IDstring='Track NetCDF output post'
                core=
                data='w3gdatmd w3odatmd'
                prop=
@@ -1043,7 +1050,7 @@
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
                WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD \
-               w3getmem WW_cc CMP_COMM W3OACPMD W3AGCMMD W3OGCMMD 
+               w3getmem WW_cc CMP_COMM W3OACPMD W3AGCMMD W3OGCMMD W3NAMLMD
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;
@@ -1145,6 +1152,7 @@
          'W3OACPMD'     ) modtest=w3oacpmd.o ;;
          'W3AGCMMD'     ) modtest=w3agcmmd.o ;;
          'W3OGCMMD'     ) modtest=w3ogcmmd.o ;;
+         'W3NAMLMD'     ) modtest=w3namlmd.o ;;
       esac
       nr=`grep $mod check_file | wc -c | awk '{ print $1 }'`
       if [ "$nr" -gt '8' ]

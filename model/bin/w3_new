@@ -107,8 +107,10 @@
                                    touch ww3_prnc.ftn ;;
      'netcdf' ) cd $main_dir/ftn ; touch ww3_ounf.ftn
                                    touch ww3_ounp.ftn
+                                   touch ww3_bounc.ftn
                                    touch ww3_systrk.ftn
-                                   touch ww3_prnc.ftn ;;
+                                   touch ww3_prnc.ftn
+                                   touch ww3_trnc.ftn ;;
      'scrip'  ) cd $main_dir/ftn ; touch wmgridmd.ftn 
                                    touch wmscrpmd.ftn
                                    touch ww3_grid.ftn ;;
