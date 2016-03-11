@@ -4978,7 +4978,7 @@
 !/MPI            CALL MPI_BCAST ( YGRD, NX*NY, MPI_REAL, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
 !/MPI            IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL )               &
-!/MPI                 GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE, NX, NY,  &
+!/MPI                 GSU = W3GSUC( .FALSE., FLAGLL, ICLOSE,          &
 !/MPI                               XGRD, YGRD )
 !/MPI            CALL MPI_BCAST ( DXDP, NX*NY, MPI_REAL, 0,           &
 !/MPI                             MPI_COMM_BCT, IERR_MPI )
