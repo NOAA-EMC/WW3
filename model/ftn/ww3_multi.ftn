@@ -11,6 +11,7 @@
 !/
 !/    04-May-2005 : Origination.                        ( version 3.07 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    17-Fev-2016 : New version from namelist use       ( version 5.12 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -73,7 +74,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE WMINITMD, ONLY: WMINIT
+      USE WMINITMD, ONLY: WMINIT, WMINITNML
       USE WMWAVEMD, ONLY: WMWAVE
       USE WMFINLMD, ONLY: WMFINL
 !/
@@ -88,6 +89,7 @@
 !/
       INTEGER              :: I, MPI_COMM = -99
       INTEGER, ALLOCATABLE :: TEND(:,:)
+      LOGICAL              :: FLGNML
 !/MPI      INTEGER              :: IERR_MPI
 !/
 !/ ------------------------------------------------------------------- /
@@ -125,7 +127,14 @@
 !
 ! ... Separate test output file
 !
-      CALL WMINIT ( 8, 9, 6, 10, 6, 'ww3_multi.inp', MPI_COMM )
+      INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML) 
+      IF (FLGNML) THEN
+        CALL WMINITNML ( 8, 9, 6, 10, 6, 'ww3_multi.nml', MPI_COMM )
+      ELSE
+        CALL WMINIT ( 8, 9, 6, 10, 6, 'ww3_multi.inp', MPI_COMM )
+      END IF
+!
+
 !
 !/ ------------------------------------------------------------------- /
 ! 2.  Run the wave model

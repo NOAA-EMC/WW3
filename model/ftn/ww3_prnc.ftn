@@ -637,7 +637,7 @@
           YNI=ALA(1,NYI)
           END IF
         END IF
-        IF (Y0I.GT.YNI) THEN
+        IF ((GTYPE .NE. CLGTYPE) .AND. (Y0I.GT.YNI)) THEN
           WRITE (NDSE,1032)
           CALL EXTCDE ( 2 )
         END IF

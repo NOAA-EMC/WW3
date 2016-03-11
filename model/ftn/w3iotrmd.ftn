@@ -223,7 +223,6 @@
 !/T1      CHARACTER(LEN=17), SAVE :: TSTLOC = '                 '
 !/T2      CHARACTER(LEN=1)        :: MAPSTR(NX)
 !
-!FAB: was not in trunk ...?  
       EQUIVALENCE                (IXX(1),IX1) , (IXX(2),IX2) ,        &
                                  (IYY(1),IY1) , (IYY(3),IY2)
 !/
@@ -471,7 +470,7 @@
 ! 3.g End of input file escape location
 !
   390 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004)
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004) 'ww3'
 !/T          WRITE (NDST,9033)
       STOP   = .TRUE.
 !

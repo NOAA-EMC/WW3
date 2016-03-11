@@ -1054,6 +1054,11 @@
       DO I=1, NOPTS
 !
         IF ( WRITE ) THEN
+             ! set IW, II and IL to 0 because it is not used and gives &
+             ! outlier values in out_pnt.points
+             IW(I) = 0
+             II(I) = 0
+             IL(I) = 0
              WRITE (NDSOP)                                            &
                     IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
                     ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &

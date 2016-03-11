@@ -1,0 +1,180 @@
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via domain_def_nml namelist
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     domain%nrinp  =  0  ! Number of grids defining input fields.
+!     domain%nrgrd  =  1  ! Number of wave model grids.
+!     domain%nmove  =  0  ! Number of moving grid inputs.
+!     domain%unipts =  F  ! Flag for using unified point output file.
+!     domain%iostyp =  1  ! Output server type as in ww3_shel.nml
+!     domain%upproc =  F  ! Flag for dedicated process for unified point output.
+!     domain%pshare =  F  ! Flag for grids sharing dedicated output processes.
+!     domain%flghg1 =  T  ! Flag for masking computation in two-way nesting
+!     domain%flghg2 =  T  ! Flag for masking at printout time
+!     domain%start  = '19680606 000000'  ! Start date for the entire model 
+!     domain%stop   = '19680607 000000'  ! Stop date for the entire model
+! -------------------------------------------------------------------- !
+&domain_def_nml
+  domain%nrgrd  = 3
+  domain%unipts = T
+  domain%upproc = T
+  domain%pshare = T
+  domain%flghg2 = F
+  domain%stop   = '19680607 120000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the input_grid_nml namelist
+! * namelist must be terminated with /
+! * input(i)%name must be set for each active input grid i
+! * definitions & defaults:
+!     input(i)%name                  = 'unset'
+!     input(i)%forcing%water_levels  = F
+!     input(i)%forcing%currents      = F
+!     input(i)%forcing%winds         = F
+!     input(i)%forcing%ice_conc      = F
+!     input(i)%forcing%ice_param1    = F
+!     input(i)%forcing%ice_param2    = F
+!     input(i)%forcing%ice_param3    = F
+!     input(i)%forcing%ice_param4    = F
+!     input(i)%forcing%ice_param5    = F
+!     input(i)%forcing%mud_density   = F
+!     input(i)%forcing%mud_thickness = F
+!     input(i)%forcing%mud_viscosity = F
+!     input(i)%assim%mean            = F
+!     input(i)%assim%spec1d          = F
+!     input(i)%assim%spec2d          = F
+! -------------------------------------------------------------------- !
+&input_grid_nml
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the model_grid_nml namelist
+! * namelist must be terminated with /
+! * model(i)%name must be set for each active model grid i
+! * definitions & defaults:
+!     model(i)%name                  = 'unset'
+!     model(i)%forcing%water_levels  = 'no'
+!     model(i)%forcing%currents      = 'no'
+!     model(i)%forcing%winds         = 'no'
+!     model(i)%forcing%ice_conc      = 'no'
+!     model(i)%forcing%ice_param1    = 'no'
+!     model(i)%forcing%ice_param2    = 'no'
+!     model(i)%forcing%ice_param3    = 'no'
+!     model(i)%forcing%ice_param4    = 'no'
+!     model(i)%forcing%ice_param5    = 'no'
+!     model(i)%forcing%mud_density   = 'no'
+!     model(i)%forcing%mud_thickness = 'no'
+!     model(i)%forcing%mud_viscosity = 'no'
+!     model(i)%assim%mean            = 'no'
+!     model(i)%assim%spec1d          = 'no'
+!     model(i)%assim%spec2d          = 'no'
+!     model(i)%resource%rank_id      = i
+!     model(i)%resource%group_id     = 1
+!     model(i)%resource%sibling_id   = 0
+!     model(i)%resource%comm_frac    = 0.00,1.00
+!     model(i)%resource%bound_flag   = F
+!
+!     model(i)%forcing = 'no' 'no' 'no' 'no' 'no' 'no'
+!
+!     model(i)%resource = i 1 0 0.00 1.00 f
+! -------------------------------------------------------------------- !
+&model_grid_nml
+  model(1)%name                  = 'bound'
+  model(2)%name                  = 'outer'
+  model(3)%name                  = 'mount'
+  model(3)%forcing%currents      = 'native'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via output_type_nml namelist
+! * namelist must be terminated with /
+! * alltype will apply the output types for all the model grids
+! * itype(i) will apply the output types for the model grid number i
+! * the full list of field names is : 
+!  DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 T0M1 T01 FP DIR SPR
+!  DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS TWS PNR
+!  UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S
+!  USF P2L TWI FIC ABR UBR BED FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
+! * need domain%unipts equal true to use a unified point output file
+! * the point file is a space separated values per line : lon lat 'name'
+! * output track file formatted (t) or unformated (f)
+! * definitions & defaults:
+!     alltype%field%list         =  'unset'
+!     alltype%point%name         =  'unset'
+!     alltype%point%file         =  'unset'
+!     alltype%track%format       =  T
+!     alltype%partition%x0       =  0
+!     alltype%partition%xn       =  0
+!     alltype%partition%nx       =  0
+!     alltype%partition%y0       =  0
+!     alltype%partition%yn       =  0
+!     alltype%partition%ny       =  0
+!     alltype%partition%format   =  T
+!
+!     itype(i)%track%format      =  T
+!
+!     alltype%partition          =  0 0 0 0 0 0 T
+! -------------------------------------------------------------------- !
+&output_type_nml
+  alltype%field%list       = 'DPT CUR HS FP DP DIR SPR'
+  alltype%point%name       = 'points'
+  alltype%point%file       = 'points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via output_date_nml namelist
+! * namelist must be terminated with /
+! * alldate will apply the output dates for all the model grids
+! * idate(i) will apply the output dates for the model grid number i
+! * start and stop times are with format 'yyyymmdd hhmmss'
+! * if time stride is equal '0', then output is disabled
+! * time stride is given in seconds
+! * it is possible to overwrite a global output date for a given grid
+! * definitions & defaults:
+!     alldate%field%start          =  '19680606 000000'
+!     alldate%field%stride         =  '0'
+!     alldate%field%stop           =  '19680607 000000'
+!     alldate%point%start          =  '19680606 000000'
+!     alldate%point%stride         =  '0'
+!     alldate%point%stop           =  '19680607 000000'
+!     alldate%track%start          =  '19680606 000000'
+!     alldate%track%stride         =  '0'
+!     alldate%track%stop           =  '19680607 000000'
+!     alldate%restart%start        =  '19680606 000000'
+!     alldate%restart%stride       =  '0'
+!     alldate%restart%stop         =  '19680607 000000'
+!     alldate%boundary%start       =  '19680606 000000'
+!     alldate%boundary%stride      =  '0'
+!     alldate%boundary%stop        =  '19680607 000000'
+!     alldate%partition%start      =  '19680606 000000'
+!     alldate%partition%stride     =  '0'
+!     alldate%partition%stop       =  '19680607 000000'
+!     
+!     idate(i)%partition%startdate =  '19680606 000000' 
+!
+!     alldate%restart              =  '19680606 000000' '0' '19680607 000000'
+! -------------------------------------------------------------------- !
+&output_date_nml
+  alldate%field          = '19680606 000000' '1200' '19680608 000000'
+  alldate%point          = '19680606 000000' '3600' '19680608 000000'
+  alldate%track          = '19680606 000000' '0' '19680608 000000'
+  alldate%restart        = '19680606 011200' '0' '19680606 011200'
+  alldate%boundary       = '19680606 000000' '0' '19680608 000000'
+  alldate%partition      = '19680606 000000' '0' '19680608 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via homonegenous_input_nml namelist
+! * namelist must be terminated with /
+! * the number of moving grid inputs is defined by domain_def%nmove
+! * each homogeneous input must start from index imove = 1 to nmove
+! * if speed is equal 0, then the moving grid is desactivated
+! * definitions & defaults:
+!     homogeneous(imove)%moving%start      =  '19680606 000000'
+!     homogeneous(imove)%moving%speed      =  0
+!     homogeneous(imove)%moving%direction  =  0
+! -------------------------------------------------------------------- !
+&homogeneous_input_nml
+/
+

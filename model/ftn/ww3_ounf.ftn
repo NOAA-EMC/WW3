@@ -254,13 +254,13 @@
         END IF
       END DO
       ALLOCATE(TABIPART(NBIPART))
-      CNTIPART=1
+      CNTIPART=0
       DO I=1,29
         IF ((STRINGIPART(I:I+1).EQ.'0').OR.(STRINGIPART(I:I+1).EQ.'1')      &
             .OR.(STRINGIPART(I:I+1).EQ.'2').OR.(STRINGIPART(I:I+1).EQ.'3')  &
             .OR.(STRINGIPART(I:I+1).EQ.'4').OR.(STRINGIPART(I:I+1).EQ.'5')) THEN
-          read(STRINGIPART(I:I+1),'(I1)') TABIPART(CNTIPART)
           CNTIPART=CNTIPART+1
+          read(STRINGIPART(I:I+1),'(I1)') TABIPART(CNTIPART)
         END IF
       END DO
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -388,21 +388,26 @@
           IF ( FLREQ(IFI,IFJ) ) THEN
             IF ( FLOGRD(IFI,IFJ) ) THEN
               IF (.NOT. TOGETHER) THEN
-                iret = nf90_redef(ncids(IFI,IFJ,1))
-                call check_err(iret)
-                iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
-                call check_err(iret)
-                iret=nf90_close(ncids(IFI,IFJ,1))
-                call check_err(iret)
-                ! close partition files
+                IF (ncids(IFI,IFJ,1).NE.0) THEN
+                  iret = nf90_redef(ncids(IFI,IFJ,1))
+                  call check_err(iret)
+                  iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
+                  call check_err(iret)
+                  iret=nf90_close(ncids(IFI,IFJ,1))
+                  call check_err(iret)
+                END IF ! NCIDS
+                ! close partition files (except part 0 which is already closed by (IFI,IFJ,1)
                 IF ((IFI.EQ.4).AND.(IFJ.LE.6)) THEN
-                  DO IPART=0,NBIPART
-                    iret = nf90_redef(ncids(IFI,IFJ,IPART+1))
-                    call check_err(iret)
-                    iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
-                    call check_err(iret)
-                    iret=nf90_close(ncids(IFI,IFJ,IPART+1))
-                    call check_err(iret)
+                  DO IPART=1,5
+                    IF (ncids(IFI,IFJ,IPART+1).NE.0) THEN
+                      iret = nf90_redef(ncids(IFI,IFJ,IPART+1))
+                      call check_err(iret)
+                      iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
+                      call check_err(iret)
+
+                      iret=nf90_close(ncids(IFI,IFJ,IPART+1))
+                      call check_err(iret)
+                    END IF ! NCIDS
                   END DO ! IPART
                 END IF ! partition
               ! else if together
@@ -411,13 +416,15 @@
                 IF ( ((IFI.EQ.6).AND.(IFJ.EQ.8)) .OR.                 &
                      ((IFI.EQ.6).AND.(IFJ.EQ.9)) .OR.                 &
                      (IFI.EQ.3) ) THEN
-                  iret = nf90_redef(ncids(IFI,IFJ,1))
-                  call check_err(iret)
-                  iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
-                  call check_err(iret)
-                  iret=nf90_close(ncids(IFI,IFJ,1))
-                  call check_err(iret)
-                END IF
+                  IF (ncids(IFI,IFJ,1).NE.0) THEN
+                    iret = nf90_redef(ncids(IFI,IFJ,1))
+                    call check_err(iret)
+                    iret=nf90_put_att(ncids(IFI,IFJ,1),NF90_GLOBAL,'stop_date',stopdate)
+                    call check_err(iret)
+                    iret=nf90_close(ncids(IFI,IFJ,1))
+                    call check_err(iret)
+                  END IF ! NCIDS
+                END IF ! IFI
               END IF ! TOGETHER
             END IF ! FLOGRD
           END IF ! FLREQ
@@ -882,7 +889,7 @@
               UNITS  = 'km-1'
               ENAME  = '.ibg'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BERG   , MAPSF, X1 )
-              WHERE ( XX.NE.UNDEF) X1 = X1*0.1
+              WHERE ( X1.NE.UNDEF) X1 = X1*0.1
               NFIELD=1
               varnm(1)='ibg'
               varnl(1)='icebergs_damping'
@@ -897,7 +904,7 @@
 !/BT4              UNITS  = 'Krumbein phi scale'
 !/BT4              ENAME  = '.d50'
 !/BT4              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SED_D50   , MAPSF, X1 )
-!/BT4              WHERE ( XX.NE.UNDEF) X1 = -LOG(XX/0.001)/LOG2    
+!/BT4              WHERE ( X1.NE.UNDEF) X1 = -LOG(X1/0.001)/LOG2    
 !/BT4              NFIELD=1
 !/BT4              varnm(1)='d50'
 !/BT4              varnl(1)='grain_size'

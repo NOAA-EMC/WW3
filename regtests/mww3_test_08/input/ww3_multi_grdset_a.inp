@@ -36,8 +36,8 @@ $
   'inner'    'no' 'no' 'native' 'native' 'no' 'no' 'no'   2  1  0.00 1.00  F
 $
 $ Starting and ending times for the entire model run
-$  20151025 000000   20151026 000000
-   20151025 000000   20151031 000000
+  20151025 000000   20151026 000000
+$   20151025 000000   20151031 000000
 $
 $    Flag for masking computation in two-way nesting 
 $    Flag for masking at printout time.

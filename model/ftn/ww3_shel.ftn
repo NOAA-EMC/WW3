@@ -234,7 +234,7 @@
       USE W3WDASMD
 !/
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3READFLGRD, OUTFIELDNAMES
+      USE W3IOGOMD, ONLY: W3READFLGRD, FLDLIST
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
@@ -1015,7 +1015,7 @@
 !/OASIS      ENDIF 
 !/OASIS      CALL cpl_oasis_grid(L_MASTER,MPI_COMM)
 !/OASIS ! Estimate the weights for the spatial interpolation
-!/OASIS      CALL cpl_oasis_define(NDSO, INFIELDNAMES, OUTFIELDNAMES)
+!/OASIS      CALL cpl_oasis_define(NDSO, INFIELDNAMES, FLDLIST)
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
