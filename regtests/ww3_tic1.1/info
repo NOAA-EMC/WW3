@@ -5,7 +5,7 @@
 #  (this test was previously known as ice_test6)                            #
 #                                                                           #
 # For recommended switches, please refer to switch files in the input       #
-# directories input_IC1, input_IC2, input_IC3                               #
+# directories input_IC1, input_IC2, input_IC3, input_IC4                    #
 #                                                                           #
 # Remarks :                                                                 #
 #                                                                           #
@@ -34,16 +34,17 @@
 #      sensitive to spatial resulution, but converge to a proper result     #
 #      if adequate resolution is used. Also, there are tests for three      #
 #      alternative routines to represent S_{ice}. These are identified by   #
-#      their switches : IC1, IC2, IC3                                       #
+#      their switches : IC1, IC2, IC3, IC4                                  #
 #          IC1 = constant dissipation rate                                  #
-#          IC2 = Liu and M-C (JPO 1988), Liu et al (JGR 1991): dissipation  #
+#          IC2 = Liu and M-C (JPO 1988), Liu et al. (JGR 1991): dissipation #
 #                is caused by interaction between waves and turbulence at   #
 #                ice-water interface                                        #
 #          IC3 = Wang and Shen (JGR 2010), dissipation is caused by         #
 #                interaction between waves and ice, where ice layer is      #
 #                represented as a continuous viscoelastic layer             #
+#          IC4 = Choice of 4 simple physics.                      # 
 #   Scattering of waves by ice floes will be treated separately from        #
-#   IC1/IC2/IC3 and and is not included in this test case.                  #
+#   IC1/IC2/IC3/IC4 and and is not included in this test case.              #
 #                                                                           #
 #  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
 #  available from http://www7320.nrlssc.navy.mil/pubs.php                   #
@@ -63,7 +64,7 @@
 # ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr \           #
 #      -i input_IC2_ifr -c gnu_debug  ../ ww3_tic1.1                        #
 # ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr \           #
-#      -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../ ww3_tic1.1                            #
+#      -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../ ww3_tic1.1      #
 # ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../ ww3_tic1.1         #
 # ./bin/run_test -w work_IC2_nondisp_SMPL -i input_IC2_nondisp ../ \        #
 #       ww3_tic1.1                                                          #
@@ -78,13 +79,17 @@
 #                                                                           #
 # ./bin/run_test -w work_IC3_nondisp -i input_IC3_nondisp ../ ww3_tic1.1    #
 #                                                                           #
+# ./bin/run_test -w work_IC4 -g 1000m -i input_IC4 ../ ww3_tic1.1           #
+# ./bin/run_test -w work_IC4_M3 -g 1000m -i input_IC4/input_IC4_M3 \        #
+#       ../ ww3_tic1.1                                                      #
+#                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
 #                                     updated: Erick Rogers, Nov 2013       #
 #                                     updated: Fabrice Ardhuin, Jun 2014    #
 #                                     updated: Erick Rogers, July 2014      #
-#                                last updated: Fabrice Ardhuin, Sep 2014    #
-#                                                                           #
+#                                     updated: Fabrice Ardhuin, Sep 2014    #
+#                                last updated: Clarence Collins, Dec 2015   #
 #    Copyright 2009-2014 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #

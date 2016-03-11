@@ -678,8 +678,18 @@
       DO
 !
 !
-! 2.a Update group velocity and wavenumber from ice parameters ------ /
-!     from W3SIC3MD module. ----------------------------------------- /
+! 2.a Pre-calculate table for IC3 ------------------------------------ /
+!/IC3        IF( (IC3PARS(9)==1.0) .AND. (CALLEDIC3TABLE==0) )THEN
+!/IC3            IX     = MAPSF(1,1)
+!/IC3            IY     = MAPSF(1,2)
+!/IC3            CALL IC3TABLE_CHENG(ICEP2(IX,IY),ICEP3(IX,IY),ICEP4(IX,IY))
+!/IC3            CALLEDIC3TABLE = 1
+!/IC3        ENDIF
+
+! 2.b Update group velocity and wavenumber from ice parameters ------- /
+!     from W3SIC3MD module. ------------------------------------------ /
+!     (this block of code is disabled until stability concerns are --- /
+!      resolved) ----------------------------------------------------- /
 !
 !........!/IC3        IF (FLFRST.AND.FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
 !........!/IC3           IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)

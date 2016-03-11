@@ -107,6 +107,7 @@ eqs/BS1.tex \
 eqs/ICE1.tex \
 eqs/ICE2.tex \
 eqs/ICE3.tex \
+eqs/ICE4.tex \
 eqs/IS1.tex \
 eqs/IS2.tex \
 eqs/REF1.tex \

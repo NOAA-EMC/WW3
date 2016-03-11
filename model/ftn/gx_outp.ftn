@@ -643,6 +643,7 @@
 !/IC1      USE W3SIC1MD
 !/IC2      USE W3SIC2MD
 !/IC3      USE W3SIC3MD
+!/IC4      USE W3SIC4MD
 !/DB1      USE W3SDB1MD
 !/DBX      USE W3SDBXMD
 !/TRX      USE W3STRXMD
@@ -1001,6 +1002,7 @@
 !/IC1                CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 !/IC2                CALL W3SIC2 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 !/IC3                CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
+!/IC4                CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA ) 
 
 !/BT4                    IX=1    ! to be fixed later 
 !/BT4                    IY=1    ! to be fixed later 

@@ -236,7 +236,7 @@
 #sort:s_ice:
       s_ice  ) TY='one'
                ID='ice sink term'
-               OK='IC0 IC1 IC2 IC3' ;;
+               OK='IC0 IC1 IC2 IC3 IC4' ;;
 #sort:s_is:
       s_is  ) TY='one'
                ID='ice scattering term'
@@ -689,6 +689,7 @@
    IC1) ic='w3sic1md' ;;
    IC2) ic='w3sic2md' ;;
    IC3) ic='w3sic3md' ;;
+   IC4) ic='w3sic4md' ;;
   esac
 
   is=$NULL
@@ -1082,7 +1083,7 @@
                W3SDB1MD W3SDBXMD \
                W3STR1MD W3STRXMD \
                W3SBS1MD W3SBSXMD \
-               W3SIC1MD W3SIC2MD W3SIC3MD W3SIS1MD  W3SIS2MD \
+               W3SIC1MD W3SIC2MD W3SIC3MD W3SIC4MD W3SIS1MD W3SIS2MD \
                W3REF1MD \
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
@@ -1162,6 +1163,7 @@
          'W3SIC1MD'     ) modtest=w3sic1md.o ;;
          'W3SIC2MD'     ) modtest=w3sic2md.o ;;
          'W3SIC3MD'     ) modtest=w3sic3md.o ;;
+         'W3SIC4MD'     ) modtest=w3sic4md.o ;;
          'W3SIS1MD'     ) modtest=w3sis1md.o ;;
          'W3SIS2MD'     ) modtest=w3sis2md.o ;;
          'W3REF1MD'     ) modtest=w3ref1md.o ;;
