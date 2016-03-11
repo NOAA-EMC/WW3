@@ -53,8 +53,8 @@
 !/    DD-MMM-YYYY : Add small non-zero tolerance to bounding box checks,
 !/                  point coincidence checks and checks for points that
 !/                  lie exactly on a cell side          ( version 5.XX )
-!/    DD-MMM-YYYY : Add option to W3GFCL, W3GRMP, and W3GFIJ to allow
-!/                  target outside of source grid       ( version 5.XX )
+!/    DD-MMM-YYYY : Add option to W3GFCL, W3GRMP, W3GFPT, and W3GFIJ to
+!/                  allow target outside of source grid ( version 5.XX )
 !/    DD-MMM-YYYY : Implement more accurate sin(d/2) equation in W3DIST
 !/                  for computing angular distance      ( version 5.XX )
 !/    DD-MMM-YYYY : Implement stereographic projection for remapping
@@ -2115,7 +2115,7 @@
 !/
 !/ =================================================================== /
 !/
-!/    FUNCTION W3GFPT( GSU, XTIN, YTIN, IX, IY, DEBUG ) &
+!/    FUNCTION W3GFPT( GSU, XTIN, YTIN, IX, IY, EPS, DCIN, DEBUG ) &
 !/    RESULT(INGRID)
 !/
 !/ =================================================================== /
@@ -2141,6 +2141,12 @@
 !       XTIN    Real   I   X-coordinate of target point.
 !       YTIN    Real   I   Y-coordinate of target point.
 !       IX,JX   I.A.   O   (I,J) indices of nearest grid point.
+!       EPS     Real   I   OPTIONAL small non-zero tolerance used to check if
+!                          target point is in domain and for point coincidence.
+!       DCIN    Real   I   OPTIONAL distance outside of source grid in
+!                          units of cell width to treat target point as
+!                          inside the source grid.
+!                          Default is 0.
 !       DEBUG   Log.   I   OPTIONAL logical flag to turn on debug mode.
 !                          Default is FALSE.
 !     ----------------------------------------------------------------
@@ -2173,7 +2179,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      FUNCTION W3GFPT_R4( GSU, XTIN, YTIN, IX, IY, DEBUG ) &
+      FUNCTION W3GFPT_R4( GSU, XTIN, YTIN, IX, IY, EPS, DCIN, DEBUG ) &
       RESULT(INGRID)
 !     Single precision interface
       LOGICAL                 :: INGRID
@@ -2181,24 +2187,37 @@
       REAL(4), INTENT(IN)     :: XTIN
       REAL(4), INTENT(IN)     :: YTIN
       INTEGER, INTENT(OUT)    :: IX, IY
+      REAL(4), INTENT(IN), OPTIONAL :: EPS
+      REAL(4), INTENT(IN), OPTIONAL :: DCIN
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
 
 !     Local parameters
-      REAL(8) :: XT8, YT8
+      REAL(8) :: XT8, YT8, EPS8, DCIN8
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3GFPT_R4')
 !
 !-----set inputs
       XT8 = XTIN; YT8 = YTIN;
+      IF ( PRESENT(EPS) ) THEN
+          EPS8 = EPS
+        ELSE
+          EPS8 = EPS_DEFAULT
+        END IF
+      IF ( PRESENT(DCIN) ) THEN
+          DCIN8 = DCIN
+        ELSE
+          DCIN8 = ZERO
+        END IF
 !
 !-----call double precision method
-      INGRID = W3GFPT( GSU, XT8, YT8, IX, IY, DEBUG=DEBUG )
+      INGRID = W3GFPT( GSU, XT8, YT8, IX, IY, EPS=EPS8, DCIN=DCIN8, &
+                       DEBUG=DEBUG )
 
       END FUNCTION W3GFPT_R4
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      FUNCTION W3GFPT_R8( GSU, XTIN, YTIN, IX, IY, DEBUG ) &
+      FUNCTION W3GFPT_R8( GSU, XTIN, YTIN, IX, IY, EPS, DCIN, DEBUG ) &
       RESULT(INGRID)
 !     Single precision interface
       LOGICAL                 :: INGRID
@@ -2206,16 +2225,19 @@
       REAL(8), INTENT(IN)     :: XTIN
       REAL(8), INTENT(IN)     :: YTIN
       INTEGER, INTENT(OUT)    :: IX, IY
+      REAL(8), INTENT(IN), OPTIONAL :: EPS
+      REAL(8), INTENT(IN), OPTIONAL :: DCIN
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
 
 !     Local parameters
       REAL(8), PARAMETER :: BIG = 1D16
-      LOGICAL :: LDBG
+      REAL(8) :: LEPS, LDCIN
+      LOGICAL :: LDBG, FNCL, POLE
       INTEGER :: I, J, K, L
-      REAL(8) :: XT, YT
       INTEGER :: IS(4), JS(4)
-      REAL(8) :: XS(4), YS(4)
-      REAL(8) :: DD, DMIN
+      REAL(8) :: XT, YT, XS(4), YS(4)
+      REAL(8) :: XTC, YTC, XSC(4), YSC(4)
+      REAL(8) :: IXR, JXR, DD, LON0, LAT0, DMIN
       LOGICAL :: IJG, LLG
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3GFPT_R8')
@@ -2227,6 +2249,26 @@
           WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
           'grid search utility object not created'
           CALL EXTCDE (1)
+        END IF
+      IF ( PRESENT(EPS) ) THEN
+          IF ( EPS .LT. ZERO ) THEN
+              WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
+              'EPS parameter must be >= 0'
+              CALL EXTCDE (1)
+            END IF
+          LEPS = EPS
+        ELSE
+          LEPS = EPS_DEFAULT
+        END IF
+      IF ( PRESENT(DCIN) ) THEN
+          IF ( DCIN .LT. ZERO ) THEN
+              WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
+              'DCIN parameter must be >= 0'
+              CALL EXTCDE (1)
+            END IF
+          LDCIN = DCIN
+        ELSE
+          LDCIN = ZERO
         END IF
 !
 ! -------------------------------------------------------------------- /
@@ -2243,6 +2285,8 @@
       LLG = GSU%PTR%LLG
 !
       INGRID = .FALSE.
+      IX = GSU%PTR%LBX-1
+      IY = GSU%PTR%LBY-1
 !
       XT = XTIN;  YT = YTIN;
       IF ( LDBG ) &
@@ -2251,17 +2295,38 @@
 ! -------------------------------------------------------------------- /
 ! 3.  Find enclosing cell and compute closest point
 !
-      INGRID = W3GFCL( GSU, XT, YT, IS, JS, XS, YS, DEBUG=LDBG )
+      FNCL = LDCIN .GT. ZERO
+      INGRID = W3GFCL( GSU, XT, YT, IS, JS, XS, YS, EPS=LEPS, FNCL=FNCL, DEBUG=LDBG )
+      IF ( .NOT.INGRID .AND. .NOT.FNCL ) RETURN
+!
+!-----Set in grid if point is within DCIN cell width distance of closest cell
+      IF ( .NOT.INGRID .AND. FNCL ) THEN
+!-------Compute cell relative index space location
+        LON0 = SUM(XS)/FOUR; LAT0 = SUM(YS)/FOUR;
+        IF ( D90-ABS(LAT0).GT.NEAR_POLE ) THEN
+!-----------non-pole cell: compute relative location using (lon,lat)
+            CALL W3RMBL(XT,YT,XS,YS,IX=IXR,JX=JXR,EPS=LEPS,DEBUG=LDBG)
+          ELSE
+!-----------pole cell: compute relative location using stereographic projection
+            CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
+            DO I=1,4
+                CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
+              END DO
+            CALL W3RMBL(XTC,YTC,XSC,YSC,IX=IXR,JX=JXR,EPS=LEPS,DEBUG=LDBG)
+          ENDIF
+          DD = HALF + LDCIN
+          INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
+        END IF
+!
+!-----Compute indices of closest point in cell
       IF ( INGRID ) THEN
-          DMIN = BIG
-          DO L=1,4
-              DD = W3DIST( LLG, XT, YT, XS(L), YS(L) )
-              IF ( DD .LT. DMIN ) THEN
-                  DMIN = DD;  IX = IS(L);  IY = JS(L);
-                END IF
-            END DO !L
-        ELSE
-          IX = 0;  IY = 0;
+        DMIN = BIG
+        DO L=1,4
+            DD = W3DIST( LLG, XT, YT, XS(L), YS(L) )
+            IF ( DD .LT. DMIN ) THEN
+                DMIN = DD;  IX = IS(L);  IY = JS(L);
+              END IF
+          END DO !L
         END IF
 
       END FUNCTION W3GFPT_R8

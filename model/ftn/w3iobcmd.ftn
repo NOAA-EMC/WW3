@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Jan-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -74,7 +74,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         14-Jan-2014 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -98,6 +98,9 @@
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    03-Jul-2013 : Corrected ABPIN indices             ( version 4.11 )
 !/    14-Jan-2014 : Corrected ABPIN indices for W3CSPC  ( version 4.18 ) 
+!/    DD-MMM-YYYY : Allow input boundary points to lie outside the grid
+!/                  within a distance of 0.1 times the grid cell size.
+!/                  (T.J. Campbell, NRL)                ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -395,7 +398,10 @@
             CALL W3NESTUG(DXYMAX,FLOK) 
           ELSE 
             DO I=1, NBI
-              IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY ) ) THEN
+              ! W3GFTP: find the nearest grid point to the input boundary point
+              ! DCIN=0.1 is the distance outside of source grid in units of
+              ! cell width to treat target point as inside the source grid.
+              IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY, DCIN=0.1 ) ) THEN
                 IF ( ABS(MAPSTA(IY,IX)) .NE. 2 ) THEN
                     IF ( IAPROC .EQ. NAPERR )                         &
                         WRITE (NDSE,909) IX, IY, ABS(MAPSTA(IY,IX))
