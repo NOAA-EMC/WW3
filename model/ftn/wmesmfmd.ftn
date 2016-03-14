@@ -301,6 +301,14 @@
         specRoutine=DataInitialize, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
+! --- Model checkImport method (overriding default)
+
+      call ESMF_MethodRemove(gcomp, label_CheckImport, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call NUOPC_CompSpecialize(gcomp, specLabel=label_CheckImport, &
+        specRoutine=NUOPC_NoOp, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      
 ! --- Model advance method
 
       call NUOPC_CompSpecialize(gcomp, specLabel=label_Advance, &
