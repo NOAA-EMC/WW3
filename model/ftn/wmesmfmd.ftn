@@ -1391,7 +1391,7 @@
       real :: delt
       logical :: lerr
       type(ESMF_State) :: state
-      integer, save                 :: slice=1
+      integer, save :: slice=1
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1466,8 +1466,8 @@
       call GetImport(gcomp, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
+#if ! defined(COAMPS)
 !     Dump import fields to file
-
       call NUOPC_ModelGet(gcomp, importState=state, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
@@ -1475,6 +1475,8 @@
         timeslice=slice, relaxedFlag=.true., rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       slice = slice + 1
+#endif
+
 !
 ! 1.f Advance model
 !
@@ -1563,10 +1565,10 @@
       real(8) :: wstime, wftime
       integer :: i, i1, i2, i3, j, k, imod
       logical, save :: firstCall = .true.
-      integer :: tstamp(2)
+      integer :: tcur(2), tend(2)
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Clock) :: clock
-      type(ESMF_Time) :: currTime
+      type(ESMF_Time) :: currTime, stopTime
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1589,7 +1591,7 @@
       call w3seti ( imod, mdse, mdst )
       call wmsetm ( imod, mdse, mdst )
 !
-! 1.b Set time stamp for import fields
+! 1.b Setup time stamps using currTime and stopTime
 !
       call ESMF_GridCompGet(gcomp, clock=clock, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1597,8 +1599,14 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_TimeGet(currTime, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      tstamp(1) = 10000*yy + 100*mm + dd
-      tstamp(2) = 10000*h  + 100*m  + s
+      tcur(1) = 10000*yy + 100*mm + dd
+      tcur(2) = 10000*h  + 100*m  + s
+      call ESMF_ClockGet(clock, stopTime=stopTime, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_TimeGet(stopTime, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      tend(1) = 10000*yy + 100*mm + dd
+      tend(2) = 10000*h  + 100*m  + s
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Water levels
@@ -1608,7 +1616,11 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = i1
       if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
-        tln = tstamp
+        if (firstCall) then
+          tln = tcur
+        else
+          tln = tend
+        endif
         tfn(:,j) = tln
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
@@ -1632,7 +1644,11 @@
           cx0 = cxn
           cy0 = cyn
         endif
-        tcn = tstamp
+        if (firstCall) then
+          tcn = tcur
+        else
+          tcn = tend
+        endif
         tfn(:,j) = tcn
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
@@ -1665,7 +1681,11 @@
           wx0 = wxn
           wy0 = wyn
         endif
-        twn = tstamp
+        if (firstCall) then
+          twn = tcur
+        else
+          twn = tend
+        endif
         tfn(:,j) = twn
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )
@@ -1692,7 +1712,11 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = i1
       if ( inpmap(imod,j).eq.-1 .and. isActiveImpField(i1) ) then
-        tin = tstamp
+        if (firstCall) then
+          tin = tcur
+        else
+          tin = tend
+        endif
         tfn(:,j) = tin
         if ( isActiveMbgField(i1) ) then
           call FieldCopy( impField(i1), mbgField(i1), missingVal=missingValue, rc=rc )

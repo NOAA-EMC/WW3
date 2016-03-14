@@ -333,6 +333,9 @@
 !
           ELSE
 !
+! Data input and time stamp settings for fields from coupler
+! are handled in wmesmfmd.ftn:GetImport
+!
 !/T            WRITE (MDST,9040)
 !
           END IF
