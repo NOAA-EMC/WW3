@@ -74,17 +74,17 @@
 !      FLCUR     Log.  Public   Flag for current input.
 !      FLWIND    Log.  Public   Flag for wind input.
 !      FLICE     Log.  Public   Flag for ice input.
-!      FLAGS     L.A.  Public   Array consolidating the above four 
+!      INFLAGS1  L.A.  Public   Array consolidating the above four 
 !                               flags, as well as four additional
 !                               data flags.
-!      FLAGS4    Log.  Public   Like FLAGS(4) but does *not* get changed
+!      INFLAGS2  L.A.  Public   Like INFLAGS1 but does *not* get changed
 !                               when model reads last record of ice.ww3
 !      FLAGSC    L.A.  Public   Coupling or not for input variables
 !      JFIRST    Int   Public   First index of arrays related to
 !                               input fields.  At present this is
 !                               hardwired below. Field-related arrays
-!                               (e.g., FLAGS) will be allocated from
-!                               JFIRST:7 (e.g., ALLOCATE(FLAGS(JFIRST:7))).
+!                               (e.g., INFLAGS1) will be allocated from
+!                               JFIRST:7 (e.g., ALLOCATE(INFLAGS1(JFIRST:7))).
 !       CXTIDE    R.A.  Public   Tidal constituents of X current component
 !       CYTIDE    R.A.  Public   Tidal constituents of Y current component
 !       WLTIDE    R.A.  Public   Tidal constituents of water level
@@ -115,7 +115,7 @@
 !     - The number of grids is taken from W3GDATMD, and needs to be
 !       set first with W3DIMG.
 !
-!     - FLAGS dimensioning is hardwired as FLAGS(-7:12) where lowest possible 
+!     - INFLAGS1 dimensioning is hardwired as INFLAGS1(-7:12) where lowest possible 
 !       value of JFIRST is JFIRST=-7
 !
 !  6. Switches :
@@ -158,10 +158,10 @@
 !/TIDE REAL, POINTER         ::  CXTIDE(:,:,:,:), CYTIDE(:,:,:,:),    &
 !/TIDE                           WLTIDE(:,:,:,:)
         LOGICAL               :: IINIT
-! note that if size of FLAGS is changed, then TFLAGS in wminitmd.ftn
+! note that if size of INFLAGS1 is changed, then TFLAGS in wminitmd.ftn
 !    also must be resized.
-        LOGICAL               :: FLAGS(-7:12), FLAGSC(-7:12)
-        LOGICAL               :: FLAGS4
+        LOGICAL               :: INFLAGS1(-7:12), FLAGSC(-7:12),      &
+                                 INFLAGS2(-7:12)
       END TYPE INPUT
 !/
 !/ Data storage
@@ -186,8 +186,7 @@
 !/TIDE       REAL, POINTER           :: CXTIDE(:,:,:,:),         &
 !/TIDE                                  CYTIDE(:,:,:,:), WLTIDE(:,:,:,:)
       LOGICAL, POINTER        :: IINIT
-      LOGICAL, POINTER        :: FLAGS(:), FLAGSC(:)
-      LOGICAL, POINTER        :: FLAGS4
+      LOGICAL, POINTER        :: INFLAGS1(:), INFLAGS2(:), FLAGSC(:)
       LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE
       LOGICAL, POINTER        :: FLMTH, FLMVS, FLMDN
       LOGICAL, POINTER        :: FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
@@ -298,8 +297,8 @@
         INPUTS(I)%TG0(1)   = -1
         INPUTS(I)%TG0(2)   =  0
         INPUTS(I)%IINIT    = .FALSE.
-        INPUTS(I)%FLAGS    = .FALSE.
-        INPUTS(I)%FLAGS4   = .FALSE.
+        INPUTS(I)%INFLAGS1 = .FALSE.
+        INPUTS(I)%INFLAGS2 = .FALSE.
         INPUTS(I)%FLAGSC   = .FALSE.
         END DO
 !
@@ -432,30 +431,30 @@
 !/TIDE          FLAGSTIDE(:) = FLAGSTIDEIN(:)
 !/TIDE        END IF
 
-      FLIC1  => INPUTS(IMOD)%FLAGS(-7)
-      FLIC2  => INPUTS(IMOD)%FLAGS(-6)
-      FLIC3  => INPUTS(IMOD)%FLAGS(-5)
-      FLIC4  => INPUTS(IMOD)%FLAGS(-4)
-      FLIC5  => INPUTS(IMOD)%FLAGS(-3)
+      FLIC1  => INPUTS(IMOD)%INFLAGS1(-7)
+      FLIC2  => INPUTS(IMOD)%INFLAGS1(-6)
+      FLIC3  => INPUTS(IMOD)%INFLAGS1(-5)
+      FLIC4  => INPUTS(IMOD)%INFLAGS1(-4)
+      FLIC5  => INPUTS(IMOD)%INFLAGS1(-3)
 !
-      FLMDN  => INPUTS(IMOD)%FLAGS(-2)
-      FLMTH  => INPUTS(IMOD)%FLAGS(-1)
-      FLMVS  => INPUTS(IMOD)%FLAGS(0)
+      FLMDN  => INPUTS(IMOD)%INFLAGS1(-2)
+      FLMTH  => INPUTS(IMOD)%INFLAGS1(-1)
+      FLMVS  => INPUTS(IMOD)%INFLAGS1(0)
 !
-      FLLEV  => INPUTS(IMOD)%FLAGS(1)
-      FLCUR  => INPUTS(IMOD)%FLAGS(2)
-!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%FLAGS(9)
-!/TIDE      FLCURTIDE  => INPUTS(IMOD)%FLAGS(10)
-!/TIDE      FLLEVRESI  => INPUTS(IMOD)%FLAGS(11)
-!/TIDE      FLCURRESI  => INPUTS(IMOD)%FLAGS(12)
+      FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
+      FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
+!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%INFLAGS1(9)
+!/TIDE      FLCURTIDE  => INPUTS(IMOD)%INFLAGS1(10)
+!/TIDE      FLLEVRESI  => INPUTS(IMOD)%INFLAGS1(11)
+!/TIDE      FLCURRESI  => INPUTS(IMOD)%INFLAGS1(12)
 !/TIDE!
 !/TIDE      FLLEVTIDE = FLAGSTIDE(1)
 !/TIDE      FLCURTIDE = FLAGSTIDE(2)
 !/TIDE      FLLEVRESI = FLAGSTIDE(3)
 !/TIDE      FLCURRESI = FLAGSTIDE(4)     
  
-      FLWIND => INPUTS(IMOD)%FLAGS(3)
-      FLICE  => INPUTS(IMOD)%FLAGS(4)
+      FLWIND => INPUTS(IMOD)%INFLAGS1(3)
+      FLICE  => INPUTS(IMOD)%INFLAGS1(4)
 !
 ! notes: future improvement: flags for ICEPx should be 
 !     "all or nothing" rather than 5 individual flags
@@ -707,29 +706,29 @@
       GDN    => INPUTS(IMOD)%GDN
 !
       IINIT  => INPUTS(IMOD)%IINIT
-      FLAGS  => INPUTS(IMOD)%FLAGS
-      FLAGS4 => INPUTS(IMOD)%FLAGS4
+      INFLAGS1  => INPUTS(IMOD)%INFLAGS1
+      INFLAGS2  => INPUTS(IMOD)%INFLAGS2
       FLAGSC => INPUTS(IMOD)%FLAGSC
 !
-      FLIC1  => INPUTS(IMOD)%FLAGS(-7)
-      FLIC2  => INPUTS(IMOD)%FLAGS(-6)
-      FLIC3  => INPUTS(IMOD)%FLAGS(-5)
-      FLIC4  => INPUTS(IMOD)%FLAGS(-4)
-      FLIC5  => INPUTS(IMOD)%FLAGS(-3)
+      FLIC1  => INPUTS(IMOD)%INFLAGS1(-7)
+      FLIC2  => INPUTS(IMOD)%INFLAGS1(-6)
+      FLIC3  => INPUTS(IMOD)%INFLAGS1(-5)
+      FLIC4  => INPUTS(IMOD)%INFLAGS1(-4)
+      FLIC5  => INPUTS(IMOD)%INFLAGS1(-3)
 !
-      FLMDN  => INPUTS(IMOD)%FLAGS(-2)
-      FLMTH  => INPUTS(IMOD)%FLAGS(-1)
-      FLMVS  => INPUTS(IMOD)%FLAGS(0)
+      FLMDN  => INPUTS(IMOD)%INFLAGS1(-2)
+      FLMTH  => INPUTS(IMOD)%INFLAGS1(-1)
+      FLMVS  => INPUTS(IMOD)%INFLAGS1(0)
 !
-      FLLEV  => INPUTS(IMOD)%FLAGS(1)
-      FLCUR  => INPUTS(IMOD)%FLAGS(2)
-!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%FLAGS(9)
-!/TIDE      FLCURTIDE  => INPUTS(IMOD)%FLAGS(10)
-!/TIDE      FLLEVRESI  => INPUTS(IMOD)%FLAGS(11)
-!/TIDE      FLCURRESI  => INPUTS(IMOD)%FLAGS(12)
+      FLLEV  => INPUTS(IMOD)%INFLAGS1(1)
+      FLCUR  => INPUTS(IMOD)%INFLAGS1(2)
+!/TIDE      FLLEVTIDE  => INPUTS(IMOD)%INFLAGS1(9)
+!/TIDE      FLCURTIDE  => INPUTS(IMOD)%INFLAGS1(10)
+!/TIDE      FLLEVRESI  => INPUTS(IMOD)%INFLAGS1(11)
+!/TIDE      FLCURRESI  => INPUTS(IMOD)%INFLAGS1(12)
 
-      FLWIND => INPUTS(IMOD)%FLAGS(3)
-      FLICE  => INPUTS(IMOD)%FLAGS(4)
+      FLWIND => INPUTS(IMOD)%INFLAGS1(3)
+      FLICE  => INPUTS(IMOD)%INFLAGS1(4)
 !
       IF ( IINIT ) THEN
 !

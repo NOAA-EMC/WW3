@@ -148,6 +148,15 @@
 !     - A rigourous input check is made in W3INIT.
 !     - See W3WDAS for documentation on the set-up of the data
 !       assimilation.
+!     - in "7.a.2 Check if update is needed"
+!       Field is updated when compute time is past old input time, and
+!       (in case of homogeneous input field),  grabs field value at next
+!       input time, which may in fact be far in the future from current
+!       compute time. Example: user says
+!       field=1   on 19680101 000000 and 
+!       field=100 on 20160101 000000 
+!       then on if 7.a.2 is reached on 19680101 010000, WW3 will set 
+!       field to 100.
 !
 !  8. Structure :
 !
@@ -513,23 +522,23 @@
         IF ( J .LT. 4 ) THEN
             READ (NDSI,*,END=2001,ERR=2002) FLAGTFC, FLH(J)
             IF (FLAGTFC.EQ.'T') THEN 
-              FLAGS(J)=.TRUE.
+              INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.FALSE.
             END IF
             IF (FLAGTFC.EQ.'F') THEN 
-              FLAGS(J)=.FALSE.
+              INFLAGS1(J)=.FALSE.
               FLAGSC(J)=.FALSE.
             END IF
             IF (FLAGTFC.EQ.'C') THEN 
-              FLAGS(J)=.TRUE.
+              INFLAGS1(J)=.TRUE.
               FLAGSC(J)=.TRUE.
             END IF
-            FLH(J) = FLH(J) .AND. FLAGS(J)
+            FLH(J) = FLH(J) .AND. INFLAGS1(J)
           ELSE
-            READ (NDSI,*,END=2001,ERR=2002) FLAGS(J)
+            READ (NDSI,*,END=2001,ERR=2002) INFLAGS1(J)
             FLH(J) = .FALSE.
           END IF
-        IF ( FLAGS(J) ) THEN
+        IF ( INFLAGS1(J) ) THEN
             YESXNO = 'YES/--'
           ELSE
             YESXNO = '---/NO'
@@ -545,29 +554,29 @@
               WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
         END DO
 !
-      FLAGS(8) = .FALSE.
+      INFLAGS1(8) = .FALSE.
       FLH(8)   = .FALSE.
-!/MGW      FLAGS(8) = .TRUE.
-!/MGP      FLAGS(8) = .TRUE.
-      IF ( FLAGS(8) .AND. IAPROC.EQ.NAPOUT )                          &
+!/MGW      INFLAGS1(8) = .TRUE.
+!/MGP      INFLAGS1(8) = .TRUE.
+      IF ( INFLAGS1(8) .AND. IAPROC.EQ.NAPOUT )                          &
            WRITE (NDSO,921) IDFLDS(8), 'YES/--', ' '
 !
-      FLFLG  = FLAGS(-7) .OR. FLAGS(-6) .OR. FLAGS(-5) .OR. FLAGS(-4) &
-               .OR. FLAGS(-3) .OR. FLAGS(-2) .OR. FLAGS(-1)           &
-               .OR. FLAGS(0)  .OR. FLAGS(1)  .OR. FLAGS(2)            &
-               .OR. FLAGS(3)  .OR. FLAGS(4)  .OR. FLAGS(5)            &
-               .OR. FLAGS(6)  .OR. FLAGS(7)
-      FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLAGS(-4)       &
-               .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLAGS(0)   &
-               .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLAGS(8)
+      FLFLG  = INFLAGS1(-7) .OR. INFLAGS1(-6) .OR. INFLAGS1(-5) .OR. INFLAGS1(-4) &
+               .OR. INFLAGS1(-3) .OR. INFLAGS1(-2) .OR. INFLAGS1(-1)           &
+               .OR. INFLAGS1(0)  .OR. INFLAGS1(1)  .OR. INFLAGS1(2)            &
+               .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
+               .OR. INFLAGS1(6)  .OR. INFLAGS1(7)
+      FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. INFLAGS1(-4)       &
+               .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. INFLAGS1(0)   &
+               .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. INFLAGS1(8)
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
 !
-!      FLAGS4 is just "initial value of FLAGS(4)", i.e. does *not* get
+!     INFLAGS2 is just "initial value of INFLAGS1", i.e. does *not* get
 !        changed when model reads last record of ice.ww3
-      FLAGS4=FLAGS(4)
+      INFLAGS2=INFLAGS1
 
-!/T      WRITE (NDST,9020) FLFLG, FLAGS, FLHOM, FLH
+!/T      WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Set time frame
@@ -842,7 +851,7 @@
 !
 
           DO J=JFIRST, 4
-            IF ( FLAGS(J) .AND. .NOT. FLAGSC(J)) THEN
+            IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
                 IF ( FLH(J) ) THEN
                     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
                   ELSE
@@ -862,7 +871,7 @@
           END DO
 !
           DO J=5, 7
-            IF ( FLAGS(J) .AND. .NOT. FLAGSC(J)) THEN
+            IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
                 CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
                              RCLD(J), NY, NODATA(J),                 &
                              IERR, FPRE=FNMPRE(:JJ) )
@@ -977,7 +986,7 @@
 !/O7              END IF
 !/O7            END DO
 !
-!/O7          IF ( FLAGS(8) .AND. IAPROC.EQ.NAPOUT ) THEN
+!/O7          IF ( INFLAGS1(8) .AND. IAPROC.EQ.NAPOUT ) THEN
 !/O7              WRITE (NDSO,952) NH(4), IDFLDS(8)
 !/O7              DO I=1, NH(J)
 !/O7                WRITE (NDSO,953) I, THO(1,4,I), THO(2,4,I),       &
@@ -996,7 +1005,7 @@
                ( FLH(1)  .AND. (NH(1).EQ.0)  ) .OR.                     &
                ( FLH(2)  .AND. (NH(2).EQ.0)  ) .OR.                     &
                ( FLH(3)  .AND. (NH(3).EQ.0)  ) .OR.                     &
-               ( FLAGS(8) .AND. (NH(4).EQ.0) ) ) GOTO 2007
+               ( INFLAGS1(8) .AND. (NH(4).EQ.0) ) ) GOTO 2007
 !
         END IF
 !
@@ -1068,30 +1077,32 @@
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,971) DTME21
 !
 !/T      WRITE (NDST,9070) '0-N', TIME0, TTIME,           &
-!/T                        IDSTR(-7), FLAGS(-7), TI1,     &
-!/T                        IDSTR(-6), FLAGS(-6), TI2,     &
-!/T                        IDSTR(-5), FLAGS(-5), TI3,     &
-!/T                        IDSTR(-4), FLAGS(-4), TI4,     &
-!/T                        IDSTR(-3), FLAGS(-3), TI5,     &
-!/T                        IDSTR(-2), FLAGS(-2), TZN,     &
-!/T                        IDSTR(-1), FLAGS(-1), TTN,     &
-!/T                        IDSTR(0), FLAGS(0), TVN,       &
-!/T                        IDSTR(1), FLAGS(1), TLN,       &
-!/T                        IDSTR(2), FLAGS(2), TC0, TCN,  &
-!/T                        IDSTR(3), FLAGS(3), TW0, TWN,  &
-!/T                        IDSTR(4), FLAGS(4), TIN,       &
-!/T                        IDSTR(5), FLAGS(5), T0N,       &
-!/T                        IDSTR(6), FLAGS(6), T1N,       &
-!/T                        IDSTR(7), FLAGS(7), T2N,       &
-!/T                        IDSTR(8), FLAGS(8), TG0, TGN
+!/T                        IDSTR(-7), INFLAGS1(-7), TI1,     &
+!/T                        IDSTR(-6), INFLAGS1(-6), TI2,     &
+!/T                        IDSTR(-5), INFLAGS1(-5), TI3,     &
+!/T                        IDSTR(-4), INFLAGS1(-4), TI4,     &
+!/T                        IDSTR(-3), INFLAGS1(-3), TI5,     &
+!/T                        IDSTR(-2), INFLAGS1(-2), TZN,     &
+!/T                        IDSTR(-1), INFLAGS1(-1), TTN,     &
+!/T                        IDSTR(0), INFLAGS1(0), TVN,       &
+!/T                        IDSTR(1), INFLAGS1(1), TLN,       &
+!/T                        IDSTR(2), INFLAGS1(2), TC0, TCN,  &
+!/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
+!/T                        IDSTR(4), INFLAGS1(4), TIN,       &
+!/T                        IDSTR(5), INFLAGS1(5), T0N,       &
+!/T                        IDSTR(6), INFLAGS1(6), T1N,       &
+!/T                        IDSTR(7), INFLAGS1(7), T2N,       &
+!/T                        IDSTR(8), INFLAGS1(8), TG0, TGN
 !
 
       DO J=JFIRST,8
 !
-        IF ( FLAGS(J) ) THEN
+        IF ( INFLAGS1(J) ) THEN
 !
 ! 7.a.2 Check if update is needed
-!
+!  Note: Field is updated when compute time is past old input time, and
+!        grabs field value at next input time, which may in fact be
+!        far in the future from current compute time
             IF (.NOT.FLAGSC(J)) THEN 
               TTT(1) = TFN(1,J)
               TTT(2) = TFN(2,J)
@@ -1116,7 +1127,7 @@
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
 !/TIDE                 END IF
 !
-! IC1 : ice thickness
+! IC1 : (in context of IC3, this is ice thickness)
                 IF ( J .EQ. -7 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1128,7 +1139,7 @@
                            TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-! IC2 : ice viscosity
+! IC2 : (in context of IC3, this is ice viscosity)
                 ELSE IF ( J .EQ. -6 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1140,7 +1151,7 @@
                            TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-! IC3 : ice density
+! IC3 : (in context of IC3, this is ice density)
                 ELSE IF ( J .EQ. -5 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1152,7 +1163,7 @@
                            TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
-! IC4 : ice modulus
+! IC4 : (in context of IC3, this is ice modulus)
                 ELSE IF ( J .EQ. -4 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
@@ -1324,7 +1335,7 @@
                         NDSEN, TIME0, T0N, RCLD(J), NDT(J),           &
                         NDTNEW, DATA0, IERR )
                    IF ( IERR .LT. 0 ) THEN
-                        FLAGS(J) = .FALSE.
+                        INFLAGS1(J) = .FALSE.
                         IF ( ALLOCATED(DATA0) ) DEALLOCATE(DATA0)
                    ELSE
                         NDT(J) = NDTNEW
@@ -1340,7 +1351,7 @@
                         NDSEN, TIME0, T1N, RCLD(J), NDT(J),           &
                         NDTNEW, DATA1, IERR )
                    IF ( IERR .LT. 0 ) THEN
-                        FLAGS(J) = .FALSE.
+                        INFLAGS1(J) = .FALSE.
                         IF ( ALLOCATED(DATA1) ) DEALLOCATE(DATA1)
                    ELSE
                         NDT(J) = NDTNEW
@@ -1356,7 +1367,7 @@
                         NDSEN, TIME0, T2N, RCLD(J), NDT(J),           &
                         NDTNEW, DATA2, IERR )
                    IF ( IERR .LT. 0 ) THEN
-                        FLAGS(J) = .FALSE.
+                        INFLAGS1(J) = .FALSE.
                         IF ( ALLOCATED(DATA2) ) DEALLOCATE(DATA2)
                    ELSE
                         NDT(J) = NDTNEW
@@ -1381,7 +1392,7 @@
 !
 ! 7.a.4 Update next ending time
 !
-            IF ( FLAGS(J) ) THEN
+            IF ( INFLAGS1(J) ) THEN
                 TTT    = TFN(:,J)
                 DTTST  = DSEC21 ( TTT , TTIME )
                 IF ( DTTST.GT.0. .AND. .NOT.                          &
@@ -1410,7 +1421,7 @@
       TDN = TTIME
       CALL TICK21 ( TDN, 1. )
       DO J=5, 7
-        IF ( FLAGS(J) ) THEN
+        IF ( INFLAGS1(J) ) THEN
             TTT    = TFN(:,J)
             DTTST  = DSEC21 ( TTT , TDN )
             IF ( DTTST.GT.0. ) TDN = TTT
@@ -1418,22 +1429,22 @@
         END DO
 !
 !/T      WRITE (NDST,9072) '0-N', TIME0, TTIME,           &
-!/T                        IDSTR(-7), FLAGS(-7), TI1,     &
-!/T                        IDSTR(-6), FLAGS(-6), TI2,     &
-!/T                        IDSTR(-5), FLAGS(-5), TI3,     &
-!/T                        IDSTR(-4), FLAGS(-4), TI4,     &
-!/T                        IDSTR(-3), FLAGS(-3), TI5,     &
-!/T                        IDSTR(-2), FLAGS(-2), TZN,     &
-!/T                        IDSTR(-1), FLAGS(-1), TTN,     &
-!/T                        IDSTR(0), FLAGS(0), TVN,       &
-!/T                        IDSTR(1), FLAGS(1), TLN,       &
-!/T                        IDSTR(2), FLAGS(2), TC0, TCN,  &
-!/T                        IDSTR(3), FLAGS(3), TW0, TWN,  &
-!/T                        IDSTR(4), FLAGS(4), TIN,       &
-!/T                        IDSTR(5), FLAGS(5), T0N,       &
-!/T                        IDSTR(6), FLAGS(6), T1N,       &
-!/T                        IDSTR(7), FLAGS(7), T2N, TDN,  &
-!/T                        IDSTR(8), FLAGS(8), TG0, TGN
+!/T                        IDSTR(-7), INFLAGS1(-7), TI1,     &
+!/T                        IDSTR(-6), INFLAGS1(-6), TI2,     &
+!/T                        IDSTR(-5), INFLAGS1(-5), TI3,     &
+!/T                        IDSTR(-4), INFLAGS1(-4), TI4,     &
+!/T                        IDSTR(-3), INFLAGS1(-3), TI5,     &
+!/T                        IDSTR(-2), INFLAGS1(-2), TZN,     &
+!/T                        IDSTR(-1), INFLAGS1(-1), TTN,     &
+!/T                        IDSTR(0), INFLAGS1(0), TVN,       &
+!/T                        IDSTR(1), INFLAGS1(1), TLN,       &
+!/T                        IDSTR(2), INFLAGS1(2), TC0, TCN,  &
+!/T                        IDSTR(3), INFLAGS1(3), TW0, TWN,  &
+!/T                        IDSTR(4), INFLAGS1(4), TIN,       &
+!/T                        IDSTR(5), INFLAGS1(5), T0N,       &
+!/T                        IDSTR(6), INFLAGS1(6), T1N,       &
+!/T                        IDSTR(7), INFLAGS1(7), T2N, TDN,  &
+!/T                        IDSTR(8), INFLAGS1(8), TG0, TGN
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,*) ' '
 !
@@ -1446,14 +1457,16 @@
                   )
 !
       ! The following lines prevents us from trying to read past the end 
-      ! of the files. "4" is for ice concentration: 
-      IF ( FLLSTL ) FLAGS(1) = .FALSE.
-      IF ( FLLSTI ) FLAGS(4) = .FALSE.
+      ! of the files. This feature existed in v3.14.
+      ! "1" is for water levels
+      ! "4" is for ice concentration: 
+      IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
+      IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
 
       ! We include something like this for mud and ice parameters also:
       DO J=-7,0
          IF (FLLST_ALL(J))THEN
-            FLAGS(J)=.FALSE.
+            INFLAGS1(J)=.FALSE.
          END IF
       END DO
 

@@ -209,8 +209,9 @@
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN
-      USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, &
-                          MUDT, MUDV, MUDD
+      USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, &
+                          MUDT, MUDV, MUDD, INFLAGS2
+
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
@@ -272,33 +273,29 @@
       HS       = 0.0
       EMEAN    = 0.0      
 !
-! This check can give false positives, since FLAGS(J) will be false
-! once it has run out past end of available data.
-! We should implement a different way to check for the existence of
-!   the fields
-! We cannot comment out this error check while we have the other use
-!   of FLAGS below. We cannot remove the other use of FLAGS below, 
-!   because we would get array not allocated error for the methods
-!   that don't use MUDV, etc. and don't have MUDV allocated.
-      IF (.NOT.FLAGS(-7))THEN
+      IF (.NOT.INFLAGS2(-7))THEN
          WRITE (NDSE,1001) 'ICE PARAMETER 1'
          CALL EXTCDE(201)
       ENDIF
 !
-      IF (FLAGS(-7)) ICECOEF1 = ICEP1(IX,IY) ! a.k.a. IC1
-      IF (FLAGS(-6)) ICECOEF2 = ICEP2(IX,IY) ! etc.
-      IF (FLAGS(-5)) ICECOEF3 = ICEP3(IX,IY)
-      IF (FLAGS(-4)) ICECOEF4 = ICEP4(IX,IY)
-      IF (FLAGS(-3)) ICECOEF5 = ICEP5(IX,IY)
+!   We cannot remove the other use of INFLAGS below, 
+!   because we would get array not allocated error for the methods
+!   that don't use MUDV, etc. and don't have MUDV allocated.
+
+      IF (INFLAGS2(-7)) ICECOEF1 = ICEP1(IX,IY) ! a.k.a. IC1
+      IF (INFLAGS2(-6)) ICECOEF2 = ICEP2(IX,IY) ! etc.
+      IF (INFLAGS2(-5)) ICECOEF3 = ICEP3(IX,IY)
+      IF (INFLAGS2(-4)) ICECOEF4 = ICEP4(IX,IY)
+      IF (INFLAGS2(-3)) ICECOEF5 = ICEP5(IX,IY)
 
 ! Borrow from Smud (error if BT8 or BT9)
 !/BT8    WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
 !/BT8    CALL EXTCDE(202)
 !/BT9    WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
 !/BT9    CALL EXTCDE(202)
-      IF (FLAGS(-2)) ICECOEF6 = MUDD(IX,IY) ! a.k.a. MDN
-      IF (FLAGS(-1)) ICECOEF7 = MUDT(IX,IY) ! a.k.a. MTH
-      IF (FLAGS(0 )) ICECOEF8 = MUDV(IX,IY) ! a.k.a. MVS
+      IF (INFLAGS2(-2)) ICECOEF6 = MUDD(IX,IY) ! a.k.a. MDN
+      IF (INFLAGS2(-1)) ICECOEF7 = MUDT(IX,IY) ! a.k.a. MTH
+      IF (INFLAGS2(0 )) ICECOEF8 = MUDV(IX,IY) ! a.k.a. MVS
 
       IC4METHOD = IC2PARS(1)
 !

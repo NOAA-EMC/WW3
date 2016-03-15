@@ -347,7 +347,7 @@
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
-      USE W3IDATMD, ONLY: FLAGS, FLAGS4
+      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLX1      USE W3FLX1MD
 !/FLX2      USE W3FLX2MD
@@ -781,7 +781,9 @@
 !     is reduce to a fraction of the cell size free from ice, and so is
 !     input and dissipation:
 !             SIN = (1-ICE)*SIN and SDS=(1-ICE)*SDS ------------------ *
-        IF ( FLAGS4 ) THEN
+!     INFLAGS2(4) is true if ice concentration was ever read during  
+!             this simulation
+        IF ( INFLAGS2(4) ) THEN
           VSLN(1:NSPECH) = (MAX(0.,MIN(1.,1.-ICE)))**2 * VSLN(1:NSPECH)
           VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSIN(1:NSPECH)
           VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDIN(1:NSPECH)
@@ -976,7 +978,7 @@
 !/SEED          UC     = FACSD * GRAV / SIG(IK)
 !/SEED          SLEV   = MIN ( 1. , MAX ( 0. , U10ABS/UC-1. ) ) *      &
 !/SEED                       6.25E-4 / WN1(IK)**3 / SIG(IK)
-!/SEED          IF (FLAGS4) SLEV=SLEV*(1-ICE)
+!/SEED          IF (INFLAGS2(4)) SLEV=SLEV*(1-ICE)
 !/SEED          DO ITH=1, NTH
 !/SEED            SPEC(ITH+(IK-1)*NTH) = MAX ( SPEC(ITH+(IK-1)*NTH) ,  &
 !/SEED                  SLEV * MAX ( 0. , COS(U10DIR-TH(ITH)) )**2 )
@@ -1074,8 +1076,10 @@
       PHIBBL=DWAT*GRAV*PHIBBL/DTG        
 ! 
 ! 9.b  Adds ice scattering and dissipation ---------------------------- *
+!     INFLAGS2(4) is true if ice concentration was ever read during  
+!             this simulation
 !
-      IF ( FLAGS4.AND.ICE.GT.0 ) THEN 
+      IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )

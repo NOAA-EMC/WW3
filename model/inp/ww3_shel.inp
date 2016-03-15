@@ -4,6 +4,7 @@ $ -------------------------------------------------------------------- $
 $ Define input to be used with F/T/C flag for use or nor or coupling and
 $ T/F flag for definition as a homogeneous field.
 $
+$ Include ice and mud parameters only if IC1/2/3/4 used :
    F F     Ice parameter 1
    F F     Ice parameter 2
    F F     Ice parameter 3

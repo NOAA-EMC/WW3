@@ -1219,7 +1219,7 @@
 !/
       END SUBROUTINE W3DIMA
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3XDMA  ( IMOD, NDSE, NDST, FLAGS )
+      SUBROUTINE W3XDMA  ( IMOD, NDSE, NDST, OUTFLAGS )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1254,7 +1254,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)           :: IMOD, NDSE, NDST
-      LOGICAL, INTENT(IN)           :: FLAGS(NOGRP,NGRPP)
+      LOGICAL, INTENT(IN)           :: OUTFLAGS(NOGRP,NGRPP)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1294,7 +1294,7 @@
 !/DIST      NSEALM = 1 + (NSEA-1)/NAPROC
       NXXX   = NSEALM * NAPROC
 !
-      IF ( FLAGS( 2, 1) ) THEN
+      IF ( OUTFLAGS( 2, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XHS(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1302,7 +1302,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 2) ) THEN
+      IF ( OUTFLAGS( 2, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XWLM(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1310,7 +1310,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 3) ) THEN
+      IF ( OUTFLAGS( 2, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XT02(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1318,7 +1318,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 4) ) THEN
+      IF ( OUTFLAGS( 2, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XT0M1(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1326,7 +1326,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 5) ) THEN
+      IF ( OUTFLAGS( 2, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XT01 (NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1334,7 +1334,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 6) ) THEN
+      IF ( OUTFLAGS( 2, 6) ) THEN
           ALLOCATE ( WADATS(IMOD)%XFP0(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1342,7 +1342,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 7) ) THEN
+      IF ( OUTFLAGS( 2, 7) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTHM(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1350,7 +1350,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 8) ) THEN
+      IF ( OUTFLAGS( 2, 8) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTHS(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1358,7 +1358,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 9) ) THEN
+      IF ( OUTFLAGS( 2, 9) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTHP0(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1366,7 +1366,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 2, 10) ) THEN
+      IF ( OUTFLAGS( 2, 10) ) THEN
           ALLOCATE ( WADATS(IMOD)%XHSIG(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1374,7 +1374,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-!     IF ( FLAGS( 2,xx) ) THEN
+!     IF ( OUTFLAGS( 2,xx) ) THEN
 !         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX), STAT=ISTAT )
 !         CHECK_ALLOC_STATUS ( ISTAT )
 !       ELSE
@@ -1382,7 +1382,7 @@
 !         CHECK_ALLOC_STATUS ( ISTAT )
 !       END IF
 !
-!     IF ( FLAGS( 2,xx) ) THEN
+!     IF ( OUTFLAGS( 2,xx) ) THEN
 !         ALLOCATE ( WADATS(IMOD)%XTHP1(NXXX), STAT=ISTAT )
 !         CHECK_ALLOC_STATUS ( ISTAT )
 !       ELSE
@@ -1403,7 +1403,7 @@
 !     WADATS(IMOD)%XFP1   = UNDEF
 !     WADATS(IMOD)%XTHP1  = UNDEF
 !
-      IF ( FLAGS( 3, 1) ) THEN
+      IF ( OUTFLAGS( 3, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XEF(NXXX,E3DF(2,1):E3DF(3,1)), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1411,7 +1411,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF 
 
-        IF ( FLAGS( 3, 2) ) THEN
+        IF ( OUTFLAGS( 3, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTH1M(NXXX,E3DF(2,2):E3DF(3,2)), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1419,7 +1419,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 
-      IF ( FLAGS( 3, 3) ) THEN
+      IF ( OUTFLAGS( 3, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XSTH1M(NXXX,E3DF(2,3):E3DF(3,3)), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1427,7 +1427,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 
-      IF ( FLAGS( 3, 4) ) THEN
+      IF ( OUTFLAGS( 3, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTH2M(NXXX,E3DF(2,4):E3DF(3,4)), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1435,7 +1435,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 3, 5) ) THEN
+      IF ( OUTFLAGS( 3, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XSTH2M(NXXX,E3DF(2,5):E3DF(3,5)), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1449,7 +1449,7 @@
       WADATS(IMOD)%XTH2M   = UNDEF
       WADATS(IMOD)%XSTH2M  = UNDEF
 !
-      IF ( FLAGS( 4, 1) ) THEN
+      IF ( OUTFLAGS( 4, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPHS(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1457,7 +1457,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 2) ) THEN
+      IF ( OUTFLAGS( 4, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPTP(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1465,7 +1465,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 3) ) THEN
+      IF ( OUTFLAGS( 4, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPLP(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1473,7 +1473,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 4) ) THEN
+      IF ( OUTFLAGS( 4, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPDIR(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1481,7 +1481,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 5) ) THEN
+      IF ( OUTFLAGS( 4, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPSI(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1489,7 +1489,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 6) ) THEN
+      IF ( OUTFLAGS( 4, 6) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPWS(NXXX,0:NOSWLL), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1497,7 +1497,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 7) ) THEN
+      IF ( OUTFLAGS( 4, 7) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPWST(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1505,7 +1505,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 4, 8) ) THEN
+      IF ( OUTFLAGS( 4, 8) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPNR(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1522,7 +1522,7 @@
       WADATS(IMOD)%XPWST  = UNDEF
       WADATS(IMOD)%XPNR   = UNDEF
 !
-      IF ( FLAGS( 5, 2) ) THEN
+      IF ( OUTFLAGS( 5, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XCHARN(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1530,7 +1530,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 5, 3) ) THEN
+      IF ( OUTFLAGS( 5, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XCGE(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1538,7 +1538,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 5, 4) ) THEN
+      IF ( OUTFLAGS( 5, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPHIAW(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1546,7 +1546,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 5, 5) ) THEN
+      IF ( OUTFLAGS( 5, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTAUWIX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XTAUWIY(NXXX), STAT=ISTAT )
@@ -1558,7 +1558,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 5, 6) ) THEN
+      IF ( OUTFLAGS( 5, 6) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTAUWNX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XTAUWNY(NXXX), STAT=ISTAT )
@@ -1570,8 +1570,8 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 5, 7) .OR. FLAGS( 5, 8) .OR.                        &
-           FLAGS( 5, 9) .OR. FLAGS( 5,10)) THEN
+      IF ( OUTFLAGS( 5, 7) .OR. OUTFLAGS( 5, 8) .OR.                        &
+           OUTFLAGS( 5, 9) .OR. OUTFLAGS( 5,10)) THEN
           ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1588,7 +1588,7 @@
       WADATS(IMOD)%XTAUWNY   = UNDEF
       WADATS(IMOD)%XWHITECAP = UNDEF
 !
-      IF ( FLAGS( 6, 1) ) THEN
+      IF ( OUTFLAGS( 6, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XSXX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XSYY(NXXX), STAT=ISTAT )
@@ -1604,7 +1604,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 2) ) THEN
+      IF ( OUTFLAGS( 6, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTAUOX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XTAUOY(NXXX), STAT=ISTAT )
@@ -1616,7 +1616,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 3) ) THEN
+      IF ( OUTFLAGS( 6, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XBHD(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1624,7 +1624,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 4) ) THEN
+      IF ( OUTFLAGS( 6, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPHIOC(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1632,7 +1632,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 5) ) THEN
+      IF ( OUTFLAGS( 6, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTUSX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XTUSY(NXXX), STAT=ISTAT )
@@ -1644,7 +1644,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 6) ) THEN
+      IF ( OUTFLAGS( 6, 6) ) THEN
           ALLOCATE ( WADATS(IMOD)%XUSSX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XUSSY(NXXX), STAT=ISTAT )
@@ -1656,7 +1656,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 7) ) THEN
+      IF ( OUTFLAGS( 6, 7) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPRMS(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XTPMS(NXXX), STAT=ISTAT )
@@ -1668,7 +1668,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6, 8) ) THEN
+      IF ( OUTFLAGS( 6, 8) ) THEN
           ALLOCATE ( WADATS(IMOD)%XUS3D(NXXX,2*NK), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1676,7 +1676,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF 
 !
-      IF ( FLAGS( 6, 9) ) THEN
+      IF ( OUTFLAGS( 6, 9) ) THEN
           ALLOCATE ( WADATS(IMOD)%XP2SMS(NXXX,P2MSF(2):P2MSF(3)), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1684,7 +1684,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF 
 !
-      IF ( FLAGS( 6,10) ) THEN
+      IF ( OUTFLAGS( 6,10) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTAUICE(NXXX,2), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1692,7 +1692,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 6,11) ) THEN
+      IF ( OUTFLAGS( 6,11) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPHICE(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1718,7 +1718,7 @@
       WADATS(IMOD)%XPHICE  = UNDEF
       WADATS(IMOD)%XTAUICE = UNDEF
 !
-      IF ( FLAGS( 7, 1) ) THEN
+      IF ( OUTFLAGS( 7, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XABD(NXXX), STAT=ISTAT )
@@ -1730,7 +1730,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 7, 2) ) THEN
+      IF ( OUTFLAGS( 7, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XUBA(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XUBD(NXXX), STAT=ISTAT )
@@ -1742,7 +1742,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 7, 3) ) THEN
+      IF ( OUTFLAGS( 7, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XBEDFORMS(NXXX,3), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1750,7 +1750,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 7, 4) ) THEN
+      IF ( OUTFLAGS( 7, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XPHIBBL(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1758,7 +1758,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 7, 5) ) THEN
+      IF ( OUTFLAGS( 7, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTAUBBL(NXXX,2), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1774,7 +1774,7 @@
       WADATS(IMOD)%XPHIBBL = UNDEF
       WADATS(IMOD)%XTAUBBL = UNDEF
 !
-      IF ( FLAGS( 8, 1) ) THEN
+      IF ( OUTFLAGS( 8, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XMSSX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XMSSY(NXXX), STAT=ISTAT )
@@ -1786,7 +1786,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 8, 2) ) THEN
+      IF ( OUTFLAGS( 8, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XMSCX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
           ALLOCATE ( WADATS(IMOD)%XMSCY(NXXX), STAT=ISTAT )
@@ -1803,7 +1803,7 @@
       WADATS(IMOD)%XMSCX   = UNDEF
       WADATS(IMOD)%XMSCY   = UNDEF
 !
-      IF ( FLAGS( 9, 1) ) THEN
+      IF ( OUTFLAGS( 9, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1811,7 +1811,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 9, 2) ) THEN
+      IF ( OUTFLAGS( 9, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XFCUT(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1819,7 +1819,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 9, 3) ) THEN
+      IF ( OUTFLAGS( 9, 3) ) THEN
           ALLOCATE ( WADATS(IMOD)%XCFLXYMAX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1827,7 +1827,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 9, 4) ) THEN
+      IF ( OUTFLAGS( 9, 4) ) THEN
           ALLOCATE ( WADATS(IMOD)%XCFLTHMAX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1835,7 +1835,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-      IF ( FLAGS( 9, 5) ) THEN
+      IF ( OUTFLAGS( 9, 5) ) THEN
           ALLOCATE ( WADATS(IMOD)%XCFLKMAX(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         ELSE
@@ -1850,7 +1850,7 @@
       WADATS(IMOD)%XCFLKMAX  = UNDEF
 !
       DO I=1, NOEXTR
-        IF ( FLAGS(10, i) ) THEN
+        IF ( OUTFLAGS(10, i) ) THEN
             ALLOCATE ( WADATS(IMOD)%XUSERO(NXXX,I), STAT=ISTAT )
             CHECK_ALLOC_STATUS ( ISTAT )
           ELSE
@@ -2371,14 +2371,14 @@
 !
               ALPHA  => WADATS(IMOD)%ALPHA
 !
-              IF ( INPUTS(IMOD)%FLAGS(2) ) THEN
+              IF ( INPUTS(IMOD)%INFLAGS1(2) ) THEN
                   CA0    => WADATS(IMOD)%CA0
                   CAI    => WADATS(IMOD)%CAI
                   CD0    => WADATS(IMOD)%CD0
                   CDI    => WADATS(IMOD)%CDI
                 END IF
 !
-              IF ( INPUTS(IMOD)%FLAGS(3) ) THEN
+              IF ( INPUTS(IMOD)%INFLAGS1(3) ) THEN
                   UA0    => WADATS(IMOD)%UA0
                   UAI    => WADATS(IMOD)%UAI
                   UD0    => WADATS(IMOD)%UD0

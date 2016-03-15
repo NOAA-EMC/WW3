@@ -222,7 +222,8 @@
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
                           FLAGLL, YGRD, GTYPE, RLGTYPE
-      USE W3IDATMD, ONLY: FLAGS,ICEP1,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,ICEI
+      USE W3IDATMD, ONLY: INFLAGS2,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,      &
+                          ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
@@ -271,17 +272,16 @@
       ICECOEF2 = 0.0
       ICECONC  = 0.0
 !
-! TODO: fix flags usage
-      ICECOEF2 = ICEP2(IX,IY)  ! IF (FLAGS(-6)) removed
-      IF (FLAGS(4))  ICECONC = ICEI(IX,IY)
+!     Note that ICEP1 is not used here.
+      IF (INFLAGS2(-6))ICECOEF2 = ICEP2(IX,IY)
+      IF (INFLAGS2(4))  ICECONC = ICEI(IX,IY)
 !
 !
 ! 1.  No ice --------------------------------------------------------- /
 !
       NOICE=.FALSE.
       IF (ICECOEF1==0.0) NOICE=.TRUE.
-      IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE. ! use FLAGS4
-                                                    ! instead?
+      IF (INFLAGS2(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
       IF ( NOICE ) THEN
          D = 0.0
@@ -297,28 +297,19 @@
 !
 ! 2.b Make calculations ---------------------------------------------- /
 
-! We cannot use this check, since FLAGS(J) will be false once
-! it has run out past end of available data.
-! We should implement a different way to check for the existence of
-!   the fields
-!        IF (.NOT.FLAGS(-7))THEN
-!           WRITE (NDSE,1001) 'ICE PARAMETER 1'
-!           CALL EXTCDE(2)
-!        ENDIF
-!        IF (.NOT.FLAGS(-6))THEN
-!           WRITE (NDSE,1001) 'ICE PARAMETER 2'
-!           CALL EXTCDE(2)
-!        ENDIF
-
          !  ICECOEF1 = H_ICE
          !  ICECOEF2 = VISC
 
          IF (IC2PARS(1).GT.0.5) THEN 
-!
-           IF (.NOT.FLAGS(-6))THEN
-             WRITE (NDSE,1001) 'ICE PARAMETER 2'
-             CALL EXTCDE(2)
-             ENDIF
+
+           IF (.NOT.INFLAGS2(-7))THEN
+              WRITE (NDSE,1001) 'ICE PARAMETER 1'
+              CALL EXTCDE(2)
+           ENDIF
+           IF (.NOT.INFLAGS2(-6))THEN
+              WRITE (NDSE,1001) 'ICE PARAMETER 2'
+              CALL EXTCDE(2)
+           ENDIF
 !
            DO IK=1, NK
              CALL LIU_FORWARD_DISPERSION (ICECOEF1,ICECOEF2,DEPTH, &

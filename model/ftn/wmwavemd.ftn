@@ -209,7 +209,7 @@
       USE W3ODATMD, ONLY: FLOUT, TONEXT, DTOUT, TOLAST, IAPROC,       &
                           NAPPNT, NOPTS, UNIPTS
 !/MPI      USE W3ODATMD, ONLY: NRQPO, IRQPO1
-      USE W3IDATMD, ONLY: FLAGS
+      USE W3IDATMD, ONLY: INFLAGS1
       USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, IMPROC,       &
                           NMPROC, NMPSCR, NMPERR, NMPTST, NMPLOG,     &
                           STIME, ETIME, NMV, TMV, AMV, DMV,           &
@@ -751,8 +751,8 @@
 !
                 CALL WMSETM ( I, MDSE, MDST )
                 CALL W3WAVE ( I, TSYNC(:,I), .FALSE., .TRUE. )
-                IF ( FLLSTL ) FLAGS(1) = .FALSE.
-                IF ( FLLSTI ) FLAGS(4) = .FALSE.
+                IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
+                IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
 !
 ! 5.b Stage data for grids with equal rank
 !
@@ -1025,8 +1025,8 @@
                           END DO
                       END IF
 !
-                    IF ( FLLSTL ) FLAGS(1) = .FALSE.
-                    IF ( FLLSTI ) FLAGS(4) = .FALSE.
+                    IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
+                    IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
 !
 ! 9.c Update TOUPT
 !
