@@ -681,7 +681,7 @@
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
-!/    17-Fev-2016 : New version from namelist use       ( version 5.12 )
+!/    17-Feb-2016 : New version from namelist use       ( version 5.11 )
 !/
 !  1. Purpose :
 !
