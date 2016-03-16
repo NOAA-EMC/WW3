@@ -5,7 +5,7 @@
 ##  Output is saved as newISD.dat
 ##
 ##  First created:   Jian-Guo Li    26 Feb 2010
-##  Last modified:   Jian-Guo Li     4 Oct 2012
+##  Last modified:   Jian-Guo Li    28 Feb 2014
 ##
 
 ##  Use given input files.
@@ -38,8 +38,8 @@ fi
       sort -s -k 8,8n -k 2,2n -k 1,1n  $VSide > temp2 
 
 ##  cut out y-size field for counting
-      cut -c13-18  temp1 > temp3
-      cut -c49-    temp2 > temp8
+      cut -c14-19  temp1 > temp3
+      cut -c51-    temp2 > temp8
 
 ##  count the different sizes
       NU1=`grep ' 1 ' temp3 | wc -l `
@@ -48,9 +48,9 @@ fi
       NU8=`grep ' 8 ' temp3 | wc -l `
       NUT=`cat temp3 | wc -l `
 
-    echo "   NU     NU1    NU2   NU4  NU8 "
-    echo "  $NUT   $NU1   $NU2  $NU4 $NU8 "
-    echo "  $NUT   $NU1   $NU2  $NU4 " > temp4 
+    echo "   NU     NU1    NU2   NU4   NU8 "
+    echo "  $NUT   $NU1   $NU2  $NU4  $NU8 "
+    echo "  $NUT   $NU1   $NU2  $NU4  $NU8 " > temp4 
 
 
       NV1=`grep ' 1' temp8 | wc -l `
@@ -59,9 +59,9 @@ fi
       NV8=`grep ' 8' temp8 | wc -l `
       NVT=`cat temp8 | wc -l `
 
-    echo "   NV     NV1    NV2   NV4  NV8 "
-    echo "  $NVT   $NV1   $NV2  $NV4 $NV8 "
-    echo "  $NVT   $NV1   $NV2  $NV4 " > temp5 
+    echo "   NV     NV1    NV2   NV4   NV8 "
+    echo "  $NVT   $NV1   $NV2  $NV4  $NV8 "
+    echo "  $NVT   $NV1   $NV2  $NV4  $NV8 " > temp5 
 
 ##  Merge saved counts with sorted face array files
     cat temp4 temp1 > new_$USide

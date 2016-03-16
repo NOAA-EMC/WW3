@@ -1,6 +1,7 @@
 ; IDL program to generate SMC 50km global grid. 
 ; Read bathymetry ASCII file and output cell array. 
 ; For WW3 users outside Met Office.  JGLi15Nov2013
+; Add single sea point filling.   JGLi20Oct2014
 ;
  
 ;; Open a message file to store SMC grid cell array 
@@ -31,39 +32,44 @@
    Print, "Bathymetry data read done."
    CLOSE, 9
 
-;; Add island Andros as a single 50km cell at 78W 24.5N
+;; Workout zero lat/lon
+   NR=NRow 
+   NC=NCol 
+   zlat=FLat - DLat
+   zlon=FLon - DLon 
+   PRINT,    "Basic 50km NR, NC=", NR, NC
+   PRINT,    "Zlon, Dlon, Zlat, Dlat=", zlon, dlon, zlat, dlat
+
+
+;; Add island Andros as two 50km cells at 78W 24.3N
    iandr = FIX( (282.0 - FLon)/DLon ) 
-   jandr = FIX( ( 24.5 - FLat)/DLat ) 
+   jandr = FIX( ( 24.0 - FLat)/DLat ) 
    Print, 'Island Andros i, j=', iandr, jandr, Bathy(iandr, jandr)
    Bathy(iandr, jandr) = 10.0 
-;; Add Grand Bahama island as single cell at 78.5W 26.5N
-   iandr = FIX( (281.5 - FLon)/DLon - 0.5 ) 
-   jandr = FIX( ( 26.5 - FLat)/DLat - 0.5 ) 
+   Print, 'Island Andros i j+=', iandr, jandr+1, Bathy(iandr, jandr+1)
+   Bathy(iandr, jandr+1) = 10.0 
+;; Add Grand Bahama island as single cell at 78.0W 26.0N
+   iandr = FIX( (282.0 - FLon)/DLon ) 
+   jandr = FIX( ( 26.0 - FLat)/DLat ) 
    Print, 'Grand Bahama  i, j=', iandr, jandr, Bathy(iandr, jandr)
-   Bathy(iandr, jandr) = 10.0 
-;; Add Abaco islands as single cell at 77.4W 26.2N
-   iandr = FIX( (282.6 - FLon)/DLon - 0.5 ) 
-   jandr = FIX( ( 26.2 - FLat)/DLat - 0.5 ) 
-   Print, 'Island Abaco  i, j=', iandr, jandr, Bathy(iandr, jandr)
    Bathy(iandr, jandr) = 10.0 
 ;; These 3 islands are added to control high wave energy. JGLi20Nov2013
 
-;; Select N boundary latitude 
-;; NR = 344  ;; about 83N
-  NR=NRow 
-  NC=NCol 
 
-  PRINT,    "Basic 50km NR, NC=", NR, NC
+;; Filling isolated sea points before generating SMC cells
+   Print, "Filling isolated sea points before generating SMC cells ..."
+   BATHYFILL, Bathy, NC, NR, MinPnt=6, LndSgn=-1, Global=1
 
-  zlat=FLat - DLat
-  zlon=FLon - DLon 
  
-  PRINT,    "zlon, dlon, zlat, dlat=", zlon, dlon, zlat, dlat
-
 ;; Check whether N Pole is included
    Arctic = 0
    fnlat=FLat+FLOAT(NR)*DLat
    IF( fnlat GT 90.0-DLat ) THEN  Arctic = 1
+
+
+;; Cell array output format
+;  oldformat='(2i6,2i4,i6)' 
+   celformat='(2i6,i5,i4,i6)' 
 
 ;;  Initialise cell count variables
    N9=0L
@@ -99,7 +105,7 @@
              ENDFOR
              IF( ksum GE 64) THEN Begin
                 kdepth = NINT( -dsum/FLOAT(ksum) )
-                Printf,8, i, jj, 128, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 128, 1, max([5,kdepth]), Format=celformat 
                 NL = NL + 1
                 N9 = N9 + 1
                 Print,  ' Size 128 cells for j, jj, yj=', j, jj, yj
@@ -121,7 +127,7 @@
              ENDFOR
              IF( ksum GE 32 ) THEN Begin
                 kdepth = NINT( -dsum/FLOAT(ksum) )
-                Printf,8, i, jj, 64, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 64, 1, max([5,kdepth]), Format=celformat 
                 NL = NL + 1
                 N9 = N9 + 1
                 Print, ' Size 64 cells for j, jj, yj=', j, jj, yj
@@ -143,7 +149,7 @@
              ENDFOR
              IF( ksum GE 16 ) THEN Begin
                 kdepth = NINT( -dsum/FLOAT(ksum) )
-                Printf,8, i, jj, 32, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 32, 1, max([5,kdepth]), Format=celformat 
                 NL = NL + 1
                 N9 = N9 + 1
          Print,    ' Size 32 cells for j, jj, yj=', j, jj, yj
@@ -164,7 +170,7 @@
              ENDFOR
              IF( ksum GE 8 ) THEN Begin
                 kdepth = NINT( -dsum/FLOAT(ksum) )
-                Printf,8, i, jj, 16, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 16, 1, max([5,kdepth]), Format=celformat 
                 NL = NL + 1
                 N9 = N9 + 1
                 IF(N9 LT 3) THEN Print, ' Size 16 cells for j, jj, yj=', j, jj, yj 
@@ -186,7 +192,7 @@
              ENDFOR
              IF( ksum GE 4 ) THEN Begin
                 kdepth = NINT( -dsum/FLOAT(ksum) )
-                Printf,8, i, jj, 8, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 8, 1, max([5,kdepth]), Format=celformat 
                 NL = NL + 1
                 N8 = N8 + 1
                 IF(N8 LT 3) THEN Print, ' Size 8 cells for j, jj, yj=', j, jj, yj
@@ -207,7 +213,7 @@
              ENDFOR
              IF( ksum GE 2 ) THEN Begin
                 kdepth = NINT( -dsum/FLOAT(ksum) )
-                Printf,8, i, jj, 4, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 4, 1, max([5,kdepth]), Format=celformat  
                 NL = NL + 1
                 N4 = N4 + 1
                 IF(N4 LT 3) THEN Print, ' Size 4 cells for j, jj, yj=', j, jj, yj 
@@ -228,7 +234,7 @@
                ENDFOR
                IF( ksum GE 1 ) THEN Begin
                  kdepth = NINT( -dsum/FLOAT(ksum) ) 
-                 Printf,8, i, jj, 2, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+                 Printf,8, i, jj, 2, 1, max([5,kdepth]), Format=celformat 
                  NL = NL + 1
                  N2 = N2 + 1
                  IF(N2 LT 3) THEN Print, ' Size 2 cells for j, jj, yj=', j, jj, yj 
@@ -242,7 +248,7 @@
            FOR i=0, NC-1  DO BEGIN
                 depth=fix(Bathy(i,j))
              IF( depth LT 0 ) THEN Begin
-                Printf,8, i, jj, 1, 1, max([5,-depth]), Format='(2i6,2i4,i6)'
+                Printf,8, i, jj, 1, 1, max([5,-depth]), Format=celformat 
                 NL = NL + 1
                 N1 = N1 + 1
                 IF(N1 LT 3) THEN Print, ' Size 1 cells for j, jj, yj=', j, jj, yj 
@@ -267,7 +273,7 @@
              ENDIF
          ENDFOR
              kdepth = NINT( -dsum/FLOAT(ksum) ) 
-             Printf,8, 0, jj, LastSize, 1, max([5,kdepth]), Format='(2i6,2i4,i6)'
+             Printf,8, 0, jj, LastSize, 1, max([5,kdepth]), Format=celformat 
              NL = NL + 1
              N9 = N9 + 1
      ENDIF 

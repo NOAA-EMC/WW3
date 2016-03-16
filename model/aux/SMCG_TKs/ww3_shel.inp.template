@@ -75,8 +75,8 @@ $ EF TH1M STH1M TH1M STH1M WN
   F  F  F  F  F  F
 $ (4) Spectral Partition Parameters
   T
-$ PHS PTP PLP PDIR PSP PWS WSF PNR
-  F   F   F   F    F   F   F   F
+$ PHS PTP PLP PTH PSP PWS WSF PNR
+  F   F   F   F   F   F   F   F
 $ (5) Atmosphere-waves layer
   T
 $ UST CHN CGE FAW TAW NWS WCC WCF WCH WCM
@@ -166,13 +166,13 @@ $
   -118.034    32.491    'B46086'
   -123.167    48.333    'B46088'
   -154.056    23.546    'B51000'
-  -153.900    23.558    'B51100'
-  -162.058    24.321    'B51101'
+   -79.805    24.609    'B66677'
+   -79.102    25.078    'B66688'
    -76.289    22.734    'B66699'
      0.0       0.0  'STOPSTRING'
 $
-$  -79.805    24.609    'B66677'
-$  -79.102    25.078    'B66688'
+$ -153.900    23.558    'B51100'
+$ -162.058    24.321    'B51101'
 $
 $ Type 3 : Output along  track.
 $          Flag for formatted input file.

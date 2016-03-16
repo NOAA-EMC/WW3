@@ -10,69 +10,31 @@
 ;; Adapted for G50SMC grid.       J G Li   19 Aug 2011
 ;; Extended to fill the Arctic.   J G Li    5 Oct 2011
 ;; Rectify polar cell position.   J G Li   25 Oct 2011
+;; Simplify with readcell and steromap.  JGLi12Nov2014
 ;
 
-;;  Global part from G50SMCels.dat
- ng=0L
- n1=0L
- n2=0L
- n4=0L
- n8=0L
- n9=0L
+;;  Read global and Arctic part cells. 
+  Cel_file = 'DatGMC/G50SMCels.dat'
+  Arc_file = 'DatGMC/G50SMCBAr.dat'
 
- openr, 9, 'DatGMC/G50SMCels.dat'
- readf, 9, ng, n1, n2, n4
- cel=intarr(5,ng)
- readf, 9, cel
- close, 9
+  READCELL, Cel_File, cel, nc, ArcFile = Arc_file, NArc = na, NBAr = nb
 
 ;; Maximum j row number in Global part
- jmxglb = max( cel(1,*) )
- Print, ' Maximum j row =', jmxglb
- Print, ' GloMCels read done'
- Print, ng, n4, n2, n1
- Print, cel(*,0)
- Print, cel(*,ng-1)
-
-;;  Arctic part from G50SMCArc.dat
- na=0L
- ns=0L
- n8=0L
- n9=0L
-
- openr, 9, 'DatGMC/G50SMCBAr.dat'
- readf, 9, na, n9, n8 
- ael=intarr(5,na)
- readf, 9, ael
- close, 9
-
- Print, ' SMCArcels read done'
- Print, na, n9, n8
- Print, ael(*,0)
- Print, ael(*,na-1)
-
-;;  Merge Arctic part, including boundary cells together
- nb=n8+n9  
- nc=ng + na  
-;nc=ng + na - nb 
-;arl=ael(*,nb:na-1)
- cel=transpose([transpose(cel), transpose(ael)])
-
- Print, ' Total cell number =', nc
- Print, ' Excluded Boundary =', nb
+  jmxglb = max( cel(1,nc-na-1L) )
+  Print, ' Maximum j row =', jmxglb
 
 ;;  Degree to radian conversion parameter.
- d2rad=!Pi/180.0
+  d2rad=!Pi/180.0
 
 ;;  Maximum mapping radius.
- radius=10.0
+  radius=10.0
 
-;; Number of radius of sterographic projection distance
- np=4.0
+;; Whole global projection angle from N Pole to be 90.0
+   pangle=90.0
+;; Reduced projection angle from rotated N Pole
+;  pangle=27.5
 
-;; Projected Equator radius * np to be (np-1)*radius
- PRadus=(np-1.0)*radius
-
+;; Size-1 cell increments
  dxlon=0.703125
  dylat=0.468750
 
@@ -184,21 +146,8 @@
 
 ;; Convert slat slon to elat elon with given new pole
 
-   LL2EqDeg, slat, slon, elat, elon, PoLat=Plat, PoLon=Plon
-
-   if(elat(0) ge 0.0) then BEGIN
-     pradmp=PRadus*cos(elat*d2rad)/(np - 1.0 + sin(elat*d2rad))
-     syc = pradmp*cos(elon*d2rad)
-     sxc =-pradmp*sin(elon*d2rad)
-   endif else BEGIN
-     pradmp=PRadus*cos(elat*d2rad)/(np - 1.0 - sin(elat*d2rad))
-     syc = pradmp*cos(elon*d2rad)
-     sxc = pradmp*sin(elon*d2rad)
-   endelse 
-;  syc= radius*cos(elat*d2rad)*cos(elon*d2rad)
-;  sxc0=-radius*cos(elat*d2rad)*sin(elon*d2rad)
-;  if(elat(0) ge 0.0) then sxc= sxc0
-;  if(elat(0) lt 0.0) then sxc=-sxc0
+   STEROMAP, slat, slon, elat, elon, sxc, syc, $ 
+             Polat=plat, Polon=plon, Pangl=pangle, /Onecl
 
    seq=[elat(0), elon(0)]
 
@@ -235,20 +184,8 @@
 
 ;; Convert slat slon to elat elon with given new pole
 
-   LL2EqDeg, slat, slon, elat, elon, PoLat=Plat, PoLon=Plon
-
-   if(elat(0) ge 0.0) then BEGIN
-     pradmp=PRadus*cos(elat*d2rad)/(np - 1.0 + sin(elat*d2rad))
-     syc = pradmp*cos(elon*d2rad)
-     sxc =-pradmp*sin(elon*d2rad)
-   endif else BEGIN
-     pradmp=PRadus*cos(elat*d2rad)/(np - 1.0 - sin(elat*d2rad))
-     syc = pradmp*cos(elon*d2rad)
-     sxc = pradmp*sin(elon*d2rad)
-   endelse
-
-;  syc= radius*cos(elat*d2rad)*cos(elon*d2rad)
-;  sxc0=-radius*cos(elat*d2rad)*sin(elon*d2rad)
+   STEROMAP, slat, slon, elat, elon, sxc, syc, $ 
+             Polat=plat, Polon=plon, Pangl=pangle, /Onecl
 
    seq=[elat(0), elon(0)]
 
@@ -300,9 +237,9 @@
            Alignment=0.5, Color=0,   Charthick=2,CharSize=1.5
    xyouts, -10.2, - 9.0, 'NC='+string(nc, Format='(I7)'),$
            Alignment=0.5, Color=254, Charthick=2,CharSize=1.3
-   xyouts, -10.2, - 8.4, 'NG='+string(ng, Format='(I7)'),$
+   xyouts, -10.2, - 8.4, 'NA='+string(na, Format='(I7)'),$
            Alignment=0.5, Color=254, Charthick=2,CharSize=1.3
-   xyouts, -10.2, - 7.8, 'NA='+string(na, Format='(I6)'),$
+   xyouts, -10.2, - 7.8, 'NB='+string(nb, Format='(I6)'),$
            Alignment=0.5, Color=254, Charthick=2,CharSize=1.3
 ;  xyouts, -10.2, - 7.2, 'N4='+string(n4, Format='(I5)'),$
 ;          Alignment=0.5, Color=254, Charthick=2,CharSize=1.3

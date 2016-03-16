@@ -92,7 +92,7 @@
 !/    16-Feb-2014 : Adds wind bias correction: WCOR     ( version 5.00 )
 !/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
 !/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
-!/    15 Oct-2014 : Change SMC grid input files. JGLi   ( version 5.09 )
+!/    15 Oct-2015 : Change SMC grid input files. JGLi   ( version 5.09 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -517,12 +517,13 @@
 !     INTEGER                 :: NCOL = 130
 !     INTEGER                 :: NCOL = 180
 !/SMC !!Li     Offset to change Equator index = 0 to regular index JEQT
+!/SMC !!Li     LvSMC  levels of refinded resolutions for SMC grid.  
 !/SMC !!Li     NBISMC number of boundary point for regional SMC grid.  
-!/SMC !!Li     ISHFT for SMC i-index from regular grid west edge to smc origin.
+!/SMC !!Li     ISHFT for SMC i-index from smc origin to regular grid west edge. 
 !/SMC !!Li     SMC cell only subgrid obstruction array dimensions NCObst, JObs.
-!/SMC      INTEGER                 :: JEQT,  NBISMC, JS, NCObst, JObs, ISHFT
-!/SMC      INTEGER                 :: NGUI, NGVJ
-!/ARC      INTEGER                 :: NAUI, NAVJ
+!/SMC      INTEGER      :: JEQT, LvSMC, NBISMC, JS, NCObst, JObs, ISHFT
+!/SMC      INTEGER      :: NGUI, NGVJ
+!/ARC      INTEGER      :: NAUI, NAVJ
 !
 !/O2      INTEGER                 :: NMAP, IMAP
       INTEGER                 :: NMAPB, IMAPB
@@ -677,7 +678,7 @@
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
 !
-!/SMC      REAL                    :: DTIME, RFMAXD, SYMR
+!/SMC      REAL                    :: DTIME, RFMAXD, SYMR, YJ0R
 !/SMC      LOGICAL                 :: UNO3, AVERG 
 !
 !/PR3      REAL                    :: WDTHCG, WDTHTH
@@ -735,7 +736,8 @@
 !/PR1      NAMELIST /PRO1/ CFLTM
 !/PR2      NAMELIST /PRO2/ CFLTM, DTIME, LATMIN
 !
-!/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD, UNO3, AVERG
+!/SMC      NAMELIST /PSMC/ CFLTM, DTIME, LATMIN, RFMAXD, UNO3, AVERG, &
+!/SMC                      LvSMC, ISHFT, JEQT,   NBISMC
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH,                     &
@@ -1783,9 +1785,14 @@
 !/PR2      DTIME  =  0.
 !/PR2      LATMIN = 70.
 !
-!/SMC      DTIME  =  0.
-!/SMC      LATMIN = 86.
-!/SMC      RFMAXD = 80.
+!/SMC !Li  Default values of smc grid parameters.  JGLi23Nov2015
+!/SMC      LvSMC  =  1
+!/SMC      ISHFT  =  0
+!/SMC      JEQT   =  0
+!/SMC      NBISMC =  0
+!/SMC      DTIME  =  0.0
+!/SMC      LATMIN = 86.0
+!/SMC      RFMAXD = 80.0
 !/SMC      UNO3   = .FALSE.
 !/SMC      AVERG  = .FALSE.
 !
@@ -1833,6 +1840,11 @@
 !/SMC        " Advection use 3rd order UNO3 instead of UNO2 scheme."
 !/SMC      IF( AVERG) WRITE (NDSO,*)                  &
 !/SMC        " Extra 1-2-1 average smoothing activated on SMC grid."
+!/SMC      NRLv = LvSMC 
+!/SMC      WRITE (NDSO,4001) NRLv
+!/SMC      WRITE (NDSO,4002) JEQT
+!/SMC      WRITE (NDSO,4302) ISHFT
+!/SMC      WRITE (NDSO,4003) NBISMC
 !
 !/PR3      CALL READNL ( NDSS, 'PRO3', STATUS )
 !/PR3      IF ( STATUS(18:18) .EQ. ':' ) STATUS(18:18) = ' '
@@ -2166,7 +2178,8 @@
 !/DB1            END IF
 !/PR1          WRITE (NDSO,2953) CFLTM
 !/PR2          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
-!/SMC          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
+!/SMC          WRITE (NDSO,2953) CFLTM, DTIME, LATMIN, RFMAXD, UNO3, &
+!/SMC                            AVERG, LvSMC, NBISMC, ISHFT,  JEQT
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
         WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
@@ -2344,15 +2357,6 @@
           NX     = MAX ( 3 , NX )
           NY     = MAX ( 3 , NY )
           WRITE (NDSO,3003) NX, NY
-!
-!/SMC !!Li   Read refined level number for SMC grid. 
-!/SMC      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/SMC      READ (NDSI,*,END=2001,ERR=2002) NRLv, JEQT, ISHFT, NBISMC
-!/SMC      WRITE (NDSO,4001) NRLv
-!/SMC      WRITE (NDSO,4002) JEQT
-!/SMC      WRITE (NDSO,4302) ISHFT
-!/SMC      WRITE (NDSO,4003) NBISMC
-! 
         ELSE 
           NY =1 
         END IF
@@ -3287,6 +3291,8 @@
 !/SMC !Li   Use input NBI number for SMC grid because merged
 !/SMC !Li   cells are over-counted by model.   
 !/SMC        NBI = NBISMC
+!/SMC !Li   No land points are used in SMC grid.   JGLi26Feb2016 
+!/SMC        NLAND = 0
 !
       WRITE (NDSO,980)
       FLBPI  = NBI .GT. 0
@@ -3408,7 +3414,6 @@
               ISEA           = ISEA + 1
               MAPFS (IY,IX)  = ISEA
               ZB(ISEA)       = ZBIN(IX,IY)
-!/RTD            AnglD(ISEA) = AnglDin(IX,IY)
 !/T              MAPOUT(IX,IY)  = 1
               MAPSF(ISEA,1)  = IX
               MAPSF(ISEA,2)  = IY
@@ -3521,6 +3526,8 @@
 !/SMC
 !/SMC !Li   Cosine for SMC uses refined latitude increment.
 !/SMC       SYMR = SY*DERA/FLOAT( MRFct )
+!/SMC !Li   Reference y point for adjusted cell j=0 in radian.  JGLi16Feb2016
+!/SMC       YJ0R = ( Y0 - 0.5*SY )*DERA
 !/SMC
 !/SMC       DO ISEA=1, NCel
 !/ARC !Li   There is no polar cell row so it is mapped to last row.
@@ -3546,8 +3553,10 @@
 !/SMC          MAPSF(ISEA,3)  = IY + (IX    -1)*NY
 !/SMC !Li   New variable CLATS to hold cosine latitude at cell centre.
 !/SMC !Li   Also added CLATIS and CTHG0S for version 4.08.
-!/SMC          JJ=IJKCel(2,ISEA) - JEQT 
-!/SMC          Y = SYMR*( FLOAT(JJ)+0.5*FLOAT(IJKCel(4,ISEA)) )
+!/SMC !        JJ=IJKCel(2,ISEA) - JEQT 
+!/SMC !        Y = SYMR*( FLOAT(JJ)+0.5*FLOAT(IJKCel(4,ISEA)) )
+!/SMC !Li   Use adjusted j-index to calculate cell centre y from YJ0R.  
+!/SMC          Y = YJ0R + SYMR*( FLOAT(IJKCel(2,ISEA))+0.5*FLOAT(IJKCel(4,ISEA)) )
 !/ARC !Li   Arctic polar cell does not need COS(LAT), set 1 row down.
 !/ARC          IF(Y .GE. HPI-0.1*SYMR) Y=HPI - SYMR*0.5*FLOAT( MRFct )
 !/ARC
@@ -3586,7 +3595,9 @@
 !/SMC 
 !/SMC !Li   New variable CLATF to hold cosine latitude at cell V face.
 !/SMC       DO IP = 1, NVFC
-!/SMC          CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP) - JEQT) )
+!/SMC !        CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP) - JEQT) )
+!/SMC !Li   Use adjusted j-index to calculate cell face Y from YJ0R.
+!/SMC          CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP)) + YJ0R )
 !/SMC       ENDDO
 !/SMC !Li   Reset MAPSTA for boundary cells if any.  
 !/SMC       IF(NBISMC .GT. 0) THEN
@@ -3651,6 +3662,14 @@
 !/ARC       ENDDO 
 !/ARC          CTHG0S(NCel)=0.0
 !/ARC       
+!
+!/RTD !!Li    Assign rotated grid angle for all sea points.  JGLi01Feb2016
+!/RTD           DO ISEA=1,NSEA
+!/RTD             IX = MAPSF(ISEA,1)
+!/RTD             IY = MAPSF(ISEA,2)
+!/RTD             AnglD(ISEA) = AnglDin(IX,IY)
+!/RTD           END DO
+!/RTD 
 !
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 0, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Sea points', 'm')
@@ -4636,9 +4655,11 @@
 !/SMC               '       Effective swell age     (h) :',F8.2/      &
 !/SMC               '       Cut-off latitude    (degr.) :',F8.2/      &
 !/SMC               '       Maximum refraction  (degr.) :',F8.2/)
-!/SMC 2953 FORMAT ( '  &PSMC CFLTM =',F5.2,', DTIME =', F8.0,         &
-!/SMC                        ', LATMIN =',F5.1,', RFMAXD =',F6.2,     & 
-!/SMC                        ', UNO3 =',L5,', AVERG =',L5,' /')
+!/SMC 2953 FORMAT ( '  &PSMC CFLTM  =',F5.2,', DTIME  =', F9.1/     &
+!/SMC               '        LATMIN =',F5.1,', RFMAXD =', F9.2/     & 
+!/SMC               '        UNO3   =',L5,  ', AVERG  =',L5/        &
+!/SMC               '        LvSMC  =',i5,  ', NBISMC =',i9/        &
+!/SMC               '        ISHFT  =',i5,  ', JEQT   =',i9, ' /')
 !
 !/PR3  953 FORMAT ( '       CFLmax depth refraction     :',F9.3/      &
 !/PR3               '       Averaging area factor Cg    :',F8.2)

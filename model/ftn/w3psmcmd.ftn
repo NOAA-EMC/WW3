@@ -105,7 +105,7 @@
 !/                  | Spherical Multiple-Cell (SMC) grid |
 !/                  | Advection and diffusion sub.       |
 !/                  | First created:   JG Li  8 Nov 2010 |
-!/                  | Last modified:   JG Li  3 Sep 2015 |
+!/                  | Last modified:   JG Li 26 Feb 2016 |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Origination.                JGLi    ( version 1.00 )
@@ -119,6 +119,7 @@
 !/    12 Feb-2012 : Remove net flux bug.        JGLi    ( version 1.80 )
 !/    16 Sep-2013 : Add Arctic part.            JGLi    ( version 2.00 )
 !/     3 Sep-2015 : Gradient, UNO3 and Average. JGLi    ( version 2.10 )
+!/    26 Feb-2016 : Update boundary spectra.    JGLi    ( version 2.20 )
 !/
 !  1. Purpose :
 !
@@ -207,6 +208,8 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
 !
+      USE W3TIMEMD, ONLY: DSEC21
+!
       USE W3GDATMD, ONLY: NK, NTH, DTH, XFR, ESIN, ECOS, SIG, NX, NY,  &
                           NSEA, SX, SY, MAPSF, FUNO3, FVERG,           &
                           IJKCel, IJKUFc, IJKVFc, NCel, NUFc, NVFc,    &
@@ -215,7 +218,9 @@
 !/ARC      USE W3GDATMD, ONLY: NGLO, ANGARC 
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, WN, U10, CX, CY, ATRNX, ATRNY, ITIME
-      USE W3ODATMD, ONLY: NDSE, NDST
+!
+      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
+                          ISBPI, BBPI0, BBPIN
 !
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
@@ -237,7 +242,7 @@
       INTEGER                 :: i, j, k, L, M, N, LL, MM, NN, LMN,   &
                                  iuf, juf, ivf, jvf, icl, jcl
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: CG0, CGA, CGN, CGX, CGY, FMR
+      REAL                    :: CG0, CGA, CGN, CGX, CGY, FMR, RD1, RD2
       REAL                    :: DTLOC, CGCOS, CGSIN, FUTRN, FVTRN,   &
                                  DFRR,  DX0, DY0, CGD, DSSD,          &
                                  DNND, DCELL, XWIND, TFAC, DSS, DNN
@@ -532,6 +537,25 @@
 !  End of multi-resolution advection ELSE block of NRLv > 1
          ENDIF
 
+!!   Update boundary spectra if any.  JGLi26Feb2016
+!
+         IF ( FLBPI ) THEN
+            RD1 = DSEC21(TBPI0, TIME)-DTG*REAL(NTLOC-ITLOC)/REAL(NTLOC)
+            RD2 = DSEC21(TBPI0, TBPIN)
+            IF ( RD2 .GT. 0.001 ) THEN
+                 RD2    = MIN(1.,MAX(0.,RD1/RD2))
+                 RD1    = 1. - RD2
+            ELSE
+                 RD1    = 0.
+                 RD2    = 1.
+            END IF
+            DO IBI=1, NBI
+               ISEA     = ISBPI(IBI)
+               CQ(ISEA) = (RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI))   &
+                          /CG(IK,ISEA) 
+            END DO
+         ENDIF
+!
 !!    End of ITLOC DO
        ENDDO
  
