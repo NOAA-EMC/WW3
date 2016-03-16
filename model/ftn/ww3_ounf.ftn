@@ -356,7 +356,7 @@
 ! 5.1.2  Processes the variable value for the time step IOUT
         CALL W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA, FILEPREFIX,   &
                       E3DF, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE,&
-                      FLREQ, NCIDS, S3 )
+                      FLREQ, NCIDS, S3, stopdate )
 
 ! 5.1.3 Defines the stop date
         iyc=TOUT(1)/10000
@@ -510,7 +510,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,           &
                           FILEPREFIX, E3DF, P2MSF, US3DF, NCTYPE,     &
-                          TOGETHER, NCVARTYPEI, FLREQ, NCIDS, S3 )
+                          TOGETHER, NCVARTYPEI, FLREQ, NCIDS, S3, stopdate )
 !/
 !/                  +-----------------------------------+
 !/                  |           F. Ardhuin              |
@@ -603,6 +603,7 @@
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLREQ(NOGRP,NGRPP)
       INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,6), S3
+      CHARACTER*30,INTENT(OUT):: stopdate
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -644,14 +645,15 @@
       REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
                                  XX(NX+1,NY), XY(NX+1,NY),            &
                                  XK(NX+1,NY,NK),                      &
-                                 XXK(NX+1,NY,NK),                       & 
+                                 XXK(NX+1,NY,NK),                     & 
                                  XYK(NX+1,NY,NK) 
 !/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLFRQ, FLDIR
 !/T      LOGICAL                 :: LTEMP(NGRPP)
-      CHARACTER               :: FNAMENC*50,      &
+      CHARACTER               :: FNAMENC*50,                          &
                                  ENAME*6,FORMF*11, UNITS*20, UNITS2*20
+      CHARACTER, SAVE         :: OLDTIMEID*16 = '0000000000000000'
       CHARACTER, SAVE         :: TIMEID*16 = '0000000000000000'
 !/
 !/ ------------------------------------------------------------------- /
@@ -696,6 +698,7 @@
       ! Defines the format of FILETIME
       S5=S3-8
       S4=S3
+      OLDTIMEID=TIMEID
       ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSS'
       IF (S3.EQ.10) THEN 
         S4=S4+1 ! T between day and minutes
@@ -2153,11 +2156,33 @@
 ! 2.4 Gets the netcdf id
 
             OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=iret)
-            IF (iret.EQ.0) THEN
-              ncid=0
-            ELSE
-              IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
+            IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
+              IF (iret.EQ.0) THEN
+                ! close old file
+                IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
+                  iret = nf90_redef(ncids(1,1,1))
+                  call check_err(iret)
+                  iret=nf90_put_att(ncids(1,1,1),NF90_GLOBAL,'stop_date',stopdate)
+                  call check_err(iret)
+                  iret=nf90_close(ncids(1,1,1))
+                  call check_err(iret)
+                END IF
+                ncid=0
+              ELSE
                 ncid=ncids(1,1,1)
+              END IF
+            ELSE ! TOGETHER AND NOR FLFRQ
+              IF (iret.EQ.0) THEN
+                ! close old file
+                IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
+                  iret = nf90_redef(ncids(IFI,IFJ,IPART+1))
+                  call check_err(iret)
+                  iret=nf90_put_att(ncids(IFI,IFJ,IPART+1),NF90_GLOBAL,'stop_date',stopdate)
+                  call check_err(iret)
+                  iret=nf90_close(ncids(IFI,IFJ,IPART+1))
+                  call check_err(iret)
+                END IF
+                ncid=0
               ELSE
                 ncid=ncids(IFI,IFJ,IPART+1)
               END IF
