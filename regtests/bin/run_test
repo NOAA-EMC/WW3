@@ -1411,6 +1411,10 @@ do
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
+inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+if [ $? = 0 ]
+then
+
   echo ' '
   echo '+--------------------+'
   echo '|    Track output    |'
@@ -1486,6 +1490,8 @@ then
       exit 1
     fi
   done
+
+fi
 
 fi
 

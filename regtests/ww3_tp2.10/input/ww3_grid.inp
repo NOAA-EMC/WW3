@@ -2,7 +2,7 @@ $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid preprocessor input file                           $
 $ -------------------------------------------------------------------- $
 $ Adapted for SMC grid test.  JGLi18Dec2012
-$ Last modified:   JGLi28Oct2015
+$ Last modified:   JGLi23Nov2015
 $
   '***** WW3 SMC0512 Grid *****  '
 $
@@ -20,8 +20,10 @@ $ ST4 option with new parameters in SIN4 and SDS4.  JGLi13Feb2013
 $ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0  /
 $ Smoothing swell age reduced to 1 hr for SMC0512 GtLakes model.  23May2013
 $ Use 3rd order advection scheme UNO3 plus extra smoothing. JGLi28Oct2015
-$
-  &PSMC DTIME = 3600.0, LATMIN=85.0, RFMAXD = 36.0, UNO3 = .TRUE., AVERG = .TRUE. /
+$ &PSMC DTIME = 3600.0, LATMIN=85.0, RFMAXD = 36.0, UNO3 = .TRUE., AVERG = .TRUE. /
+$ PSMC namelist is enlarged to include other smc grid paramters with 
+$ default values LvSMC=1, ISHFT=0, JEQT=0, and NBISMC=0.  JGLi23Nov2015
+  &PSMC DTIME = 3600.0, LATMIN=85.0, RFMAXD = 36.0, UNO3 = .TRUE., LvSMC=3 /
   &MISC CICE0 = 0.25, CICEN = 0.75, FLAGTR = 4 /
 $
 END OF NAMELISTS
@@ -35,9 +37,9 @@ $
 $ SMC grid refined level NRLv, j-count shift, and boundary cell number. JGLi18Dec2012
 $ Zero boundary cell number will make the model to skip all boundary update lines.
 $ Non-zero boundary cell number will require an extra boundary cell list input file.
-$   3  1344   0
 $ New I-Shift number is inserted after j-shift for x0 alignment.  JGLi26Oct2015 
-    3     0   0   0 
+$ SMC grid parameters are now grouped into namelist PSMC.  JGLi23Nov2015
+$   3     0   0   0 
 $
      0.02000     0.01600   1.
    276.41000    41.02800   1.

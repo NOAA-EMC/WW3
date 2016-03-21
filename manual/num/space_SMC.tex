@@ -16,18 +16,23 @@ high latitudes in a similar fashion as the reduced grid
 of the differential transport equation by switching to an integral
 equation. The upstream non-oscillatory 2nd order (UNO2) advection schemes
 \citep{art:Li08} is implemented on the SMC grid for both spatial and
-inter-spectral propagation. A simple rotation scheme is used for wave refraction 
-induced rotation and the great circle turning \citep{art:Li12}.  The refraction
-scheme is unconditionally stable for any time step but the maximum refraction 
-induced rotation angle is limited by the maximum possible refraction angle 
-towards the local gradient direction.  Diffusion term similar to the 
-\cite{art:BH87} for alleviation of the garden sprinkler effect is used but
-the diffusion coefficient is simplified to a single homogeneous parameter
-($D_{nn}$ as in Eq.~(\ref{eq:Dnn_d})).  Reduction of computing time with this
-new grid is significant in comparison with the conventional grid, thanks to
-the relaxed time step restriction at high latitudes and removal of land points
-from the model. A remedy for the invalided scalar assumption at high latitude
-is provided to extend the global wave model into the entire Arctic Ocean.
+inter-spectral propagation. This 2nd order scheme can be replaced with a 3rd 
+scheme using a namelist (PSMC) varialbe (UNO3).  The UNO3 scheme is similar to 
+the UQ scheme but replacing the flux limiters with the UNO2 scheme.  A simple 
+rotation scheme is used for wave refraction induced rotation and the great circle 
+turning \citep{art:Li12}.  The refraction scheme is unconditionally stable for 
+any time step but the maximum refraction induced rotation angle is limited by 
+the maximum possible refraction angle towards the local gradient direction.  
+Diffusion term similar to the \cite{art:BH87} for alleviation of the garden 
+sprinkler effect is used but the diffusion coefficient is simplified to a single 
+homogeneous parameter ($D_{nn}$ as in Eq.~(\ref{eq:Dnn_d})).  An additional 
+1-2-1 weighted averaging scheme is also available by namelist (PSMC) logic 
+variable AVERG.  Reduction of computing time with this SMC grid is significant 
+in comparison with the conventional grid, thanks to the relaxed time step 
+restriction at high latitudes and removal of land points from the model.  
+A remedy for the invalided scalar assumption at high latitude is provided to 
+extend the global wave model into the entire Arctic Ocean.  This Arctic part 
+can be activated by adding the ARC switch along side the SMC switch.
 
 The SMC grid can be used for replacing the regular lat-lon grid so that the
 model domain can be extended to high latitudes or even the North Pole without
@@ -48,7 +53,10 @@ to be at the base level resolution for all SMC grids (one level or
 multi-level) and it will be interpolated on to the refined levels
 (if any) inside the WW3 model. The normal regular grid input files,
 such as the water depth, land-sea masks, and sub-grid obstruction,
-are also required at present. 
+are not longer required, replaced with sea-point only cell and face arrays
+and a sub-grid obstruction file.  The water depth is stored in the cell array 
+in the last (5-th) column as an integer in meter.  The masks will be defined  
+inside ww3\_grid with the sea-point cell array.
 
 \begin{figure}
 \centerline{\epsfig{file=./num/smcelary.eps,angle=0,width=3.in}}
@@ -62,21 +70,20 @@ position. For the convenience of multi-resolution SMC grid, the cells are
 sorted by their sizes so that cells on one given level are grouped together in
 one sub-loop for a shared sub-time-step.  The base level time step is halved
 as the grid length for the refined level sub-step. This effectively avoids the
-model to be slowed down by the refined cells due to their CFL
-restrictions. Neighboring cells information for propagation schemes are
-provided with cell face arrays, which are pre-calculated for the given cell
-array list. So there is no need to expand the sea point only SMC grid cells
-onto a full grid for propagation. Figure~\ref{fig:SMCells} illustrates how SMC
-cell arrays are defined and Fig.~\ref{fig:SMC_Arctic} shows the Arctic region
-in a 6-12-25 km three level SMC grid. The golden and red circles mark the
-global and Arctic parts in the SMC6-25 grid. The Arctic part within the golden
-circle requires a fixed reference direction to define its wave directional
-bins. The global part (upto the golden circle) can be run independently
-without the Arctic part. The 4 rows from the red to the golden circles are
-duplicated in the Arctic part as boundary cells if the Arctic part is
-activated with the ARC option. Separate cell and face arrays are used for the
-Arctic part and they are merged into the global ones within the wave model for
-propagation.
+model to be slowed down by the refined cells due to their CFL restrictions. 
+Neighboring cells information for propagation schemes are provided with cell 
+face arrays, which are pre-calculated for the given cell array list. So there 
+is no need to expand the sea point only SMC grid cells onto a full grid for 
+propagation. Figure~\ref{fig:SMCells} illustrates how SMC cell arrays are 
+defined and Fig.~\ref{fig:SMC_Arctic} shows the Arctic region in a 6-12-25 km 
+three level SMC grid. The golden and red circles mark the global and Arctic 
+parts in the SMC6-25 grid. The Arctic part within the golden circle requires a 
+fixed reference direction to define its wave directional bins. The global part 
+(upto the golden circle) can be run independently without the Arctic part. 
+The 4 rows from the red to the golden circles are duplicated in the Arctic part 
+as boundary cells if the Arctic part is activated with the ARC option.  
+Separate cell and face arrays are used for the Arctic part and they are merged 
+into the global ones within the wave model for propagation.
 
 \begin{figure}
 \centerline{\epsfig{file=./num/JCP_Fig2_GArc.eps,angle=0,width=4.in}}
@@ -98,11 +105,12 @@ sorted with a simple Linux script (countcells) before it is fed into the face ar
 generation program.  The face arrays also need to be sorted with a Linux script 
 (countijsd) to determine the multi-level sub-loop counts.  An independent spectral 
 propagation test (G50SMCSRGD.f90) can be run to test the cell and face arrays and 
-the its output can be visulised with an IDL script, g50smstrspb.pro, which uses the 
+its output can be visulised with an IDL script, g50smstrspb.pro, which uses the 
 saved projection files from the SMC grid visualization program, g50smcgrids.pro. 
 By modifying the projection parameters in g50smcgrids.pro, users can choose a 
 projection view point (in lat-lon degree) and save the projection for model 
-output visualization.
+output visualization.  The sub-grid obstruction file can be generated with the 
+idl script Glob50SMCObstr.pro.
 
 Compilation of the SMC grid option is similar to that for the regular
 lat-lon grid except for that the SMC switch is substituted for the
@@ -111,12 +119,14 @@ the regular lat-lon grid type so regular lat-lon grid parameters,
 such as NX, NY, SX, SY, X1, and Y1, are still required for SMC grid
 in ww3\_grid.inp file at the base resolution level. The regular lat-lon
 grid water depth, land-sea masks, and sub-grid obstruction input files
-are also required and are set at the SMC grid base resolution level.
+are no longer required and they are replaced with SMC grid cell point only 
+files (depth is stored in the cell array and subgrid obstrction in 
+G50GObstr.dat).  The sea points are set at all smc grid cell points. 
 Due to the merges at high latitudes and refined resolutions if any,
-these regular grid input files are modified slightly for consistency
-with the SMC grid cells. An IDL program (G50SMCDepth.pro) is an example 
-program to generated the regular grid input files for the 50km global 
-SMC grid. Refer to the regression test \emph{regtests/ww3\_tp2.10}
+regular grid mapping arrays are modified slightly for consistency
+with the SMC grid cells. 
+
+Refer to the regression test \emph{regtests/ww3\_tp2.10}
 for an example of a 3-level SMC grid model for the Lake Erie.
 
 Output for the SMC grid can be processed by the ww3\_outf program
@@ -127,7 +137,7 @@ output but the refined resolution cells have been converted into
 corresponding base resolution cells for a multi-resolution grid. 
 The all cell ASCII output gives field values at the cell centre
 so its resolution conforms with the SMC grid. Visulisation of the
-all cell ASCII output can done with the aid of the input cell array
+all cell ASCII output can be done with the aid of the input cell array
 file because the output cell sequency is the same as the input cell
 array. The IDL script g50smcswhglb.pro is an example program to plot
 the global 50km SMC grid SWH output. It uses the projection files

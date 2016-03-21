@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+#PBS -N SMCr50Grid 
+#PBS -q shared
+#PBS -l select=1:ncpus=1
+#PBS -l walltime=00:08:00
+#PBS -j oe
+
+# #PBS -q parallel
+# #PBS -l select=1:ncpus=32
+
+##-----------------------------------------------------------------------------
+#
+# Description:  Cray XC40 Job script to run ww3_grid 
+# 
+# First Created:    Jian-Guo Li   15 Jun 2015
+# Last modified:    Jian-Guo Li   20 Nov 2015
+#------------------------------------------------------------------------------
+
+# Set up directory path:
+RUNDIR='/home/d02/frjl/WW3Run'
+WW3DIR='/data/d02/frjl/WW3Vn5'
+SCRDIR="/scratch/d02/frjl"
+
+# set mandatory WW3 environment variables:
+export WW3_STRT_INP=ww3_strt
+export WW3_SHEL_INP=ww3_shel
+export WW3_GRID_INP=ww3_grid
+export WW3_MOD_DEF=mod_def
+export WW3_WIND=wind
+export WW3_RESTART=restart
+export WW3_LOG=log
+export WW3_OUT_GRD=out_grd
+export WW3_OUT_PNT=out_pnt
+
+# Change to scratch directory for this run:
+cd $SCRDIR
+CC=$?
+if test $CC -ne 0
+then
+ mkdir $SCRDIR
+ cd    $SCRDIR
+fi
+
+echo "Clearing working dir `pwd`"
+rm -f $SCRDIR/*
+
+##############################################################################
+## Copy executable and input files to scratch dir
+## Note lat-lon grid g25 model input files are still read by ww3_grid
+##      though they are not used in the SMC version.  JGLi06Dec2010.
+## New cell, face, depth, mask and sub-transparency files.  JGLi10Jan2012
+echo "Copy executables and input files ..."
+cp $WW3DIR/exearc/ww3_grid          ./
+cp $WW3DIR/inps50/ww3_grid.inp      ./
+cp $WW3DIR/inps50/G50SMCels.dat     ./
+cp $WW3DIR/inps50/G50GISide.dat     ./
+cp $WW3DIR/inps50/G50GJSide.dat     ./
+cp $WW3DIR/inps50/G50GObstr.dat     ./
+cp $WW3DIR/inps50/G50SMCBAr.dat     ./
+cp $WW3DIR/inps50/G50AISide.dat     ./
+cp $WW3DIR/inps50/G50AJSide.dat     ./
+ls -l
+
+##############################################################################
+##  Run the grid preprocessor:
+ echo " *** Grid *** "
+   ./ww3_grid 
+
+##  Save model definition file
+cp mod_def.ww3  $WW3DIR/inps50/
+
+ echo " *** End *** "
+
+exit 0
+

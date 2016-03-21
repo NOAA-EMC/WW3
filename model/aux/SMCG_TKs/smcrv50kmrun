@@ -1,0 +1,210 @@
+#!/bin/bash
+#
+#PBS -N SMCr50mrun 
+#PBS -q normal
+#PBS -l select=4:ncpus=32
+#PBS -l walltime=00:10:00
+#PBS -j oe
+#
+# #PBS -q shared 
+# #PBS -l select=1:ncpus=1
+#
+#######################################################################
+#
+# First Created:   3 Feb 2009        Jian-Guo Li 
+# Last Modified:  20 Nov 2015        Jian-Guo Li
+#
+#######################################################################
+#
+# Cray environment for mpi job on the shared node (single-node only)
+# module load cray-snplauncher
+
+#----------------------------------------------------------------------
+# Set up directory path:
+ RUNDIR='/home/d02/frjl/WW3Run'
+ WW3DIR='/data/d02/frjl/WW3Vn5'
+ OUTDIR='/data/d02/frjl'
+ SCRDIR="/scratch/d02/frjl"
+
+# Change to scratch directory for this run:
+cd $SCRDIR
+CC=$?
+if test $CC -ne 0
+then
+ echo "*** $SCRDIR *** not available, exit!!!"
+ exit 1
+fi
+
+##############################################################################
+## Copy executable and input files to scratch dir
+echo "Copy executables and input files ..."
+cp $WW3DIR/exearc/ww3_strt         ./
+cp $WW3DIR/exearc/ww3_shel         ./
+cp $WW3DIR/exearc/ww3_outp         ./
+cp $WW3DIR/exearc/ww3_outf         ./
+cp $WW3DIR/inps50/mod_def.ww3      ./
+
+ls -l
+
+##############################################################################
+##  Run the grid preprocessor:
+##############################################################################
+
+# set mandatory WW3 environment variables:
+export WW3_RUN_DIR="$SCRDIR"
+export WW3_STRT_INP=ww3_strt
+export WW3_SHEL_INP=ww3_shel
+export WW3_GRID_INP=ww3_grid
+export WW3_OUTP_INP=ww3_outp
+export WW3_OUTF_INP=ww3_outf
+export WW3_MOD_DEF=mod_def
+export WW3_WIND=wind
+export WW3_RESTART=restart
+export WW3_LOG=log
+export WW3_OUT_GRD=out_grd
+export WW3_OUT_PNT=out_pnt
+export WW3_NEST=nest
+export WW3_ICE=ice
+#export WW3_PP_BPLAT=37.5 
+#export WW3_PP_BPLON=177.5 
+
+## Paul Selwood suggested the following setting to overcome the unexplained hangs.
+##                        JGLi24Jul2015
+export MPICH_COLL_SYNC=1 
+export MPICH_GNI_DATAGRAM_TIMEOUT=60 
+## Paul Selwood's further MPI setting for hanging jobs.  JGLi07Oct2015
+export MPICH_GNI_VSHORT_MSG_SIZE=8192
+export MPICH_GNI_MAX_EAGER_MSG_SIZE=65536
+
+
+##############################################################################
+# 2. Move restart file from previous run so it will be used on this run:
+if [[ -f restart.ww3 ]]; then
+        echo "Using restart file from previous run"
+        ls -l  restart.ww3
+else
+	# no restart file, run the ww3_strt start file preprocessor
+	# (creates a calm start condition)
+        echo "WARNING! No restart file available from previous run: running ww3_strt"
+
+## Parallel job of 128 threads/cpus on 4 nodes, or 32 threads per node.
+        aprun -n 128  ./ww3_strt
+## Parallel job of 384 threads/cpus on 12 nodes, or 32 threads per node.
+#       aprun -n 384  ./ww3_strt
+## Parallel job of 256 threads/cpus on 8 nodes, or 32 threads per node.
+#       aprun -n 256  ./ww3_strt
+#    New parallel job of 192 threads/cpus on 6 nodes, or 32 threads per node.
+#       aprun -n 192  ./ww3_strt
+
+	if [[ $? -ne 0 ]]; then
+		echo "ERROR: ww3_strt failed."
+	        exit 1
+	fi
+fi
+
+##############################################################################
+# 3. Run parallel job of 256 threads/cpus on 8 nodes, or 32 threads per node.
+#    New parallel job of 192 threads/cpus on 6 nodes, or 32 threads per node.
+#    New parallel job of 384 threads/cpus on 12 nodes or 32 threads per node.
+
+     echo " *** SMCVn5 *** "
+     aprun -n 128  ./ww3_shel
+#    aprun -n 384  ./ww3_shel
+#    aprun -n 256  ./ww3_shel
+#    aprun -n 192  ./ww3_shel
+
+if [[ $? -ne 0 ]]; then
+	echo "SMCVn5 Shell crashed..."
+fi
+
+ ls -lt
+
+##############################################################################
+
+# 4. Save restart1.ww3, nest1.ww3 and out_grd.pp files
+if [[ -f date_glb ]]; then
+# DATEGLB=`cut -c3-10 date_glb`
+  DATEGLB=`cut -c1-8 date_glb`
+else
+  DATEGLB=`date +%y%m%d%H `
+fi
+  echo "Date stamp for output $DATEGLB"
+
+## Detect whether ww3 or pp output before saving
+  if [[ -s out_grd.ww3 ]];  then
+  cp -p out_grd.ww3   $OUTDIR/G50SMCout/glbw${DATEGLB}.ww3
+  fi
+  if [[ -s out_grd.pp ]];  then
+  cp -p out_grd.pp    $OUTDIR/G50SMCout/glbw${DATEGLB}.pp
+  fi
+
+## Boundary data files are no longer saved for SMC6W. 
+# cp nest1.ww3     $DATADIR/G50SMCbdy/nest${DATEGLB}00
+
+## Save test message file if non-zero
+  if [[ -s fort.21 ]];  then
+     cp -p fort.21    $OUTDIR/G50SMCout/msge${DATEGLB}.txt
+  fi
+
+##  Restart file saved for run end time
+  rstfile=`rose date -s +18h -f"%Y%m%d%H"  ${DATEGLB}T060606`
+  echo " Restart file to be saved as restart$rstfile "
+  cp -p restart001.ww3  $OUTDIR/G50SMCrst/restart$rstfile
+
+# 5. Post-process out_pnt.ww3 into type 1 (2D spectral) ASCII files
+  echo " Converting out_pnt.ww3 into 2D spectral text file ..."
+  ./ww3_outp
+ 
+  if [[ $? -ne 0 ]]; then
+        echo "ERROR: ww3_outp failed."
+  else
+        echo " Point output 2D conversion done."
+        cp -p ww3*.spc  $OUTDIR/G50SMCf2d/glbw${DATEGLB}.spc
+  fi
+
+# 6. Post-process out_grd.ww3 into type 1 ASCII files
+   if [[ -s out_grd.ww3 ]];  then
+      echo " Converting out_grd.ww3 into sea-point text file ..."
+      ./ww3_outf
+     if [[ $? -ne 0 ]]; then
+        echo "ERROR: ww3_outf failed."
+     else
+        echo " Sea-point text output done."
+#       cp -p s*.dat  $OUTDIR/G50SMCtxt/
+#       cp -p w*.dat  $OUTDIR/G50SMCtxt/
+        cp -p  *.wnd *.hs *.t01  $OUTDIR/G50SMCtxt/
+     fi
+   fi
+
+ ls -lt
+
+echo  "--------- "
+
+# 6. Submit next run if finished ok.  12 Feb 2009
+ cd $RUNDIR 
+ if test -f $OUTDIR/G50SMCrst/restart$rstfile 
+    then
+#   nextrun=`rose date -s +24h -f"%Y%m%dT%H%M"  ${DATEGLB}T000006`
+    nextrun=`rose date -s +24h -f"%Y%m%d"  ${DATEGLB}T000006`
+    datend=`cut -c1-8 date_end`
+    echo $nextrun > date_glb
+
+##  Exit if reaches given date
+    if test $nextrun -eq $datend
+       then
+       echo " Reached end date $nextrun, stop."
+       exit 0
+    else
+##  Submit next run
+#      echo $nextrun > date_glb
+       qsub   smcrv50kinit 
+       echo " smcrv50kinit submit-ed for $nextrun "
+    fi
+
+ fi
+
+ echo " *** End *** "
+
+exit 0
+
+

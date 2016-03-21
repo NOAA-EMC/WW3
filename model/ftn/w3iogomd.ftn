@@ -681,7 +681,7 @@
 !/    15-Apr-2013 : Origination.                        ( version 4.10 )
 !/    31-Jan-2014 : Bug fix warning output (Tolman).    ( version 4.18 )
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
-!/    17-Fev-2016 : New version from namelist use       ( version 5.12 )
+!/    17-Feb-2016 : New version from namelist use       ( version 5.11 )
 !/
 !  1. Purpose :
 !
@@ -2012,6 +2012,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: AUX1(NSEA), AUX2(NSEA),              &
                                  AUX3(NSEA), AUX4(NSEA)
+!/ARC      REAL                    :: UDARC 
       CHARACTER(LEN=30)       :: IDTST, TNAME
       CHARACTER(LEN=10)       :: VERTST
 !/
@@ -2296,6 +2297,11 @@
                     WRITE ( NDSOG ) CY(1:NSEA)
                   ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
                     DO ISEA=1, NSEA
+!/ARC  !!Li  Rotate map-east wind in Arctic part back to local east.  JGLi02Feb2016
+!/ARC                      IF(ISEA .GT. NGLO) THEN
+!/ARC                        UDARC = UD(ISEA) - ANGARC(ISEA - NGLO)*DERA
+!/ARC                        UD(ISEA) = MOD(TPI + UDARC, TPI)
+!/ARC                      ENDIF
                       IF (UA(ISEA) .NE.UNDEF) THEN
                           AUX1(ISEA) = UA(ISEA)*COS(UD(ISEA))
                           AUX2(ISEA) = UA(ISEA)*SIN(UD(ISEA))

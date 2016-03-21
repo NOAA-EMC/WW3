@@ -5,10 +5,10 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Fev-2016 |
+!/                  | Last update :         17-Feb-2016 |
 !/                  +-----------------------------------+
 !/
-!/    17-Fev-2016 : Creation                            ( version 5.12 )
+!/    17-Feb-2016 : Creation                            ( version 5.11 )
 !/
 !/    Copyright 2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
