@@ -205,7 +205,7 @@
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN
-      USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5
+      USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, INFLAGS2
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
@@ -247,16 +247,13 @@
       ICECOEF4 = 0.0
       ICECOEF5 = 0.0
 !
-! We cannot use this check, since FLAGS(J) will be false once
-! it has run out past end of available data.
-! We should implement a different way to check for the existence of
-!   the fields
-!     IF (.NOT.FLAGS(-7))THEN
-!        WRITE (NDSE,1001) 'ICE PARAMETER 1'
-!        CALL EXTCDE(2)
-!     ENDIF
+      IF (.NOT.INFLAGS2(-7))THEN
+         WRITE (NDSE,1001) 'ICE PARAMETER 1'
+         CALL EXTCDE(2)
+      ENDIF
 !
-      ICECOEF1 = ICEP1(IX,IY) ! IF (FLAGS(-7)) removed
+      ICECOEF1 = ICEP1(IX,IY)
+
 !
 ! 1.  No ice --------------------------------------------------------- /
 !

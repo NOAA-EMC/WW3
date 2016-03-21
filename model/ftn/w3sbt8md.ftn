@@ -135,7 +135,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NK,SIG,NSPEC,MAPWN
-      USE W3IDATMD, ONLY: MUDT, MUDV, MUDD, FLAGS
+      USE W3IDATMD, ONLY: MUDT, MUDV, MUDD, INFLAGS1
       USE CONSTANTS, ONLY: PI,GRAV,DWAT,NU_WATER
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
@@ -240,19 +240,19 @@
       !     Converted to Fortran by Erick Rogers
 
       ! Initialize properties from mud fields if available
-      IF (FLAGS(-2))THEN
+      IF (INFLAGS1(-2))THEN
          RHOM = MUDD(IX,IY)
       ELSE
          WRITE(NDSE,*)'RHOM NOT SET'
          CALL EXTCDE ( 1 )
       ENDIF
-      IF (FLAGS(-1)) THEN
+      IF (INFLAGS1(-1)) THEN
          THICKM = MUDT(IX,IY)
       ELSE
          WRITE(NDSE,*)'THICKM NOT SET'
          CALL EXTCDE ( 2 )
       ENDIF
-      IF (FLAGS(0)) THEN
+      IF (INFLAGS1(0)) THEN
          KINVISM = MUDV(IX,IY)
       ELSE
          WRITE(NDSE,*)'KINVISM NOT SET'

@@ -83,7 +83,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3WDAS ( FLAGS, RECL, NDAT, DATA0, DATA1, DATA2 )
+      SUBROUTINE W3WDAS ( DASFLAG, RECL, NDAT, DATA0, DATA1, DATA2 )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -106,7 +106,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       FLAGS   L.A.   I   FLags for three data sets.
+!       DASFLAG   L.A.   I   FLags for three data sets.
 !       RECLD   I.A.   I   Record lengths for three data sets.
 !       ND      I.A.   I   Number of data for three data sets.
 !       DATAn   R.A.   I   Observations.
@@ -163,7 +163,7 @@
       REAL, INTENT(IN)        :: DATA0(RECL(1),NDAT(1))
       REAL, INTENT(IN)        :: DATA1(RECL(2),NDAT(2))
       REAL, INTENT(IN)        :: DATA2(RECL(3),NDAT(3))
-      LOGICAL, INTENT(IN)     :: FLAGS(3)
+      LOGICAL, INTENT(IN)     :: DASFLAG(3)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters :
@@ -184,8 +184,8 @@
 !/T      WRITE (NDST,9000) NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC,  &
 !/T                        NAPOUT, NAPERR, TIME
 !/T      DO J=1, 3
-!/T        IF ( FLAGS(J) ) THEN
-!/T            WRITE (NDST,9001) J, FLAGS(J), RECL(J), NDAT(J)
+!/T        IF ( DASFLAG(J) ) THEN
+!/T            WRITE (NDST,9001) J, DASFLAG(J), RECL(J), NDAT(J)
 !/T            MREC    = MIN(RECL(J),6)
 !/T            MDAT    = MIN(NDAT(J),10)
 !/T            IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
@@ -199,7 +199,7 @@
 !/T                       TDATA(MREC+1:RECL(J),IDAT)
 !/T              END DO
 !/T          ELSE
-!/T            WRITE (NDST,9001) J, FLAGS(J)
+!/T            WRITE (NDST,9001) J, DASFLAG(J)
 !/T          END IF
 !/T        END DO
 !/T      IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)

@@ -159,7 +159,7 @@
       USE W3GDATMD, ONLY: NX, NY, FILEXT
       USE W3WDATMD, ONLY: TIME
 
-      USE W3IDATMD, ONLY: FLAGS, TLN, TC0, TCN, TW0, TWN, TIN, T0N,   &
+      USE W3IDATMD, ONLY: INFLAGS1, TLN, TC0, TCN, TW0, TWN, TIN, T0N,   &
                           T1N, T2N, TG0, TGN, TFN, TDN, TTN, TVN,     &
                           TZN, TI1, TI2, TI3, TI4, TI5, JFIRST
 
@@ -227,22 +227,22 @@
         END IF
 !
 !/T      WRITE (MDST,9001) ' J', '0-N', TIME, ETIME
-!/T      IF (LBOUND(IDINP,2).LE.-7) WRITE (MDST,9002) -7, IDINP(IMOD,-7), FLAGS(-7), TI1
-!/T      IF (LBOUND(IDINP,2).LE.-6) WRITE (MDST,9002) -6, IDINP(IMOD,-6), FLAGS(-6), TI2
-!/T      IF (LBOUND(IDINP,2).LE.-5) WRITE (MDST,9002) -5, IDINP(IMOD,-5), FLAGS(-5), TI3
-!/T      IF (LBOUND(IDINP,2).LE.-4) WRITE (MDST,9002) -4, IDINP(IMOD,-4), FLAGS(-4), TI4
-!/T      IF (LBOUND(IDINP,2).LE.-3) WRITE (MDST,9002) -3, IDINP(IMOD,-3), FLAGS(-3), TI5
-!/T      IF (LBOUND(IDINP,2).LE.-2) WRITE (MDST,9002) -2, IDINP(IMOD,-2), FLAGS(-2), TZN
-!/T      IF (LBOUND(IDINP,2).LE.-1) WRITE (MDST,9002) -1, IDINP(IMOD,-1), FLAGS(-1), TTN
-!/T      IF (LBOUND(IDINP,2).LE. 0) WRITE (MDST,9002)  0, IDINP(IMOD, 0), FLAGS( 0), TVN
-!/T      WRITE (MDST,9002) 1, IDINP(IMOD,1), FLAGS(1), TLN
-!/T      WRITE (MDST,9003) 2, IDINP(IMOD,2), FLAGS(2), TC0, TCN
-!/T      WRITE (MDST,9003) 3, IDINP(IMOD,3), FLAGS(3), TW0, TWN
-!/T      WRITE (MDST,9002) 4, IDINP(IMOD,4), FLAGS(4), TIN
-!/T      WRITE (MDST,9002) 5, IDINP(IMOD,5), FLAGS(5), T0N
-!/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), FLAGS(6), T1N
-!/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), FLAGS(7), T2N
-!/T      WRITE (MDST,9003) 8, 'MOV'        , FLAGS(8), TG0, TGN
+!/T      IF (LBOUND(IDINP,2).LE.-7) WRITE (MDST,9002) -7, IDINP(IMOD,-7), INFLAGS1(-7), TI1
+!/T      IF (LBOUND(IDINP,2).LE.-6) WRITE (MDST,9002) -6, IDINP(IMOD,-6), INFLAGS1(-6), TI2
+!/T      IF (LBOUND(IDINP,2).LE.-5) WRITE (MDST,9002) -5, IDINP(IMOD,-5), INFLAGS1(-5), TI3
+!/T      IF (LBOUND(IDINP,2).LE.-4) WRITE (MDST,9002) -4, IDINP(IMOD,-4), INFLAGS1(-4), TI4
+!/T      IF (LBOUND(IDINP,2).LE.-3) WRITE (MDST,9002) -3, IDINP(IMOD,-3), INFLAGS1(-3), TI5
+!/T      IF (LBOUND(IDINP,2).LE.-2) WRITE (MDST,9002) -2, IDINP(IMOD,-2), INFLAGS1(-2), TZN
+!/T      IF (LBOUND(IDINP,2).LE.-1) WRITE (MDST,9002) -1, IDINP(IMOD,-1), INFLAGS1(-1), TTN
+!/T      IF (LBOUND(IDINP,2).LE. 0) WRITE (MDST,9002)  0, IDINP(IMOD, 0), INFLAGS1( 0), TVN
+!/T      WRITE (MDST,9002) 1, IDINP(IMOD,1), INFLAGS1(1), TLN
+!/T      WRITE (MDST,9003) 2, IDINP(IMOD,2), INFLAGS1(2), TC0, TCN
+!/T      WRITE (MDST,9003) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
+!/T      WRITE (MDST,9002) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
+!/T      WRITE (MDST,9002) 5, IDINP(IMOD,5), INFLAGS1(5), T0N
+!/T      WRITE (MDST,9002) 6, IDINP(IMOD,6), INFLAGS1(6), T1N
+!/T      WRITE (MDST,9002) 7, IDINP(IMOD,7), INFLAGS1(7), T2N
+!/T      WRITE (MDST,9003) 8, 'MOV'        , INFLAGS1(8), TG0, TGN
 !/T      WRITE (MDST,9004)    'GRD', NX, NY
 !
 ! 1.  Loop over input types ------------------------------------------ /
@@ -251,9 +251,9 @@
 !
 ! 1.a Check if update needed
 !
-        IF ( .NOT. FLAGS(J) ) CYCLE
+        IF ( .NOT. INFLAGS1(J) ) CYCLE
 !
-!/T        WRITE (MDST,9010) J, FLAGS(J), INPMAP(IMOD,J)
+!/T        WRITE (MDST,9010) J, INFLAGS1(J), INPMAP(IMOD,J)
 !
 ! 1.b Test time
 !
@@ -356,7 +356,7 @@
       TDATA  = ETIME
 !
       DO J=JFIRST, 8
-        IF ( .NOT. FLAGS(J) ) CYCLE
+        IF ( .NOT. INFLAGS1(J) ) CYCLE
         DTTST  = DSEC21 ( TFN(:,J) , TDATA )
         IF ( DTTST.GT.0. .AND. .NOT.  ( (FLLSTL .AND. J.EQ.1) .OR.    &
                                         (FLLSTI .AND. J.EQ.4) ) ) THEN
@@ -369,7 +369,7 @@
       TDN    = TDATA
       CALL TICK21 ( TDN, 1. )
       DO J=5, 7
-        IF ( FLAGS(J) ) THEN
+        IF ( INFLAGS1(J) ) THEN
             DTTST  = DSEC21 ( TFN(:,J) , TDN )
             IF ( DTTST.GT.0. ) TDN = TFN(:,J)
           END IF
@@ -378,22 +378,22 @@
 ! 7.  Final test output ---------------------------------------------- /
 !
 !/T      WRITE (MDST,9070) ' J', '0-N', TIME, ETIME, TDATA
-!/T      IF (LBOUND(IDINP,2).LE.-7) WRITE (MDST,9071) -7, IDINP(IMOD,-7), FLAGS(-7), TI1
-!/T      IF (LBOUND(IDINP,2).LE.-6) WRITE (MDST,9071) -6, IDINP(IMOD,-6), FLAGS(-6), TI2
-!/T      IF (LBOUND(IDINP,2).LE.-5) WRITE (MDST,9071) -5, IDINP(IMOD,-5), FLAGS(-5), TI3
-!/T      IF (LBOUND(IDINP,2).LE.-4) WRITE (MDST,9071) -4, IDINP(IMOD,-4), FLAGS(-4), TI4
-!/T      IF (LBOUND(IDINP,2).LE.-3) WRITE (MDST,9071) -3, IDINP(IMOD,-3), FLAGS(-3), TI5
-!/T      IF (LBOUND(IDINP,2).LE.-2) WRITE (MDST,9071) -2, IDINP(IMOD,-2), FLAGS(-2), TZN
-!/T      IF (LBOUND(IDINP,2).LE.-1) WRITE (MDST,9071) -1, IDINP(IMOD,-1), FLAGS(-1), TTN
-!/T      IF (LBOUND(IDINP,2).LE. 0) WRITE (MDST,9071)  0, IDINP(IMOD, 0), FLAGS( 0), TVN
-!/T      WRITE (MDST,9071) 1, IDINP(IMOD,1), FLAGS(1), TLN
-!/T      WRITE (MDST,9072) 2, IDINP(IMOD,2), FLAGS(2), TC0, TCN
-!/T      WRITE (MDST,9072) 3, IDINP(IMOD,3), FLAGS(3), TW0, TWN
-!/T      WRITE (MDST,9071) 4, IDINP(IMOD,4), FLAGS(4), TIN
-!/T      WRITE (MDST,9071) 5, IDINP(IMOD,5), FLAGS(5), T0N
-!/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), FLAGS(6), T1N
-!/T      WRITE (MDST,9073) 7, IDINP(IMOD,7), FLAGS(7), T2N, TDN
-!/T      WRITE (MDST,9072) 8, 'MOV'        , FLAGS(8), TG0, TGN
+!/T      IF (LBOUND(IDINP,2).LE.-7) WRITE (MDST,9071) -7, IDINP(IMOD,-7), INFLAGS1(-7), TI1
+!/T      IF (LBOUND(IDINP,2).LE.-6) WRITE (MDST,9071) -6, IDINP(IMOD,-6), INFLAGS1(-6), TI2
+!/T      IF (LBOUND(IDINP,2).LE.-5) WRITE (MDST,9071) -5, IDINP(IMOD,-5), INFLAGS1(-5), TI3
+!/T      IF (LBOUND(IDINP,2).LE.-4) WRITE (MDST,9071) -4, IDINP(IMOD,-4), INFLAGS1(-4), TI4
+!/T      IF (LBOUND(IDINP,2).LE.-3) WRITE (MDST,9071) -3, IDINP(IMOD,-3), INFLAGS1(-3), TI5
+!/T      IF (LBOUND(IDINP,2).LE.-2) WRITE (MDST,9071) -2, IDINP(IMOD,-2), INFLAGS1(-2), TZN
+!/T      IF (LBOUND(IDINP,2).LE.-1) WRITE (MDST,9071) -1, IDINP(IMOD,-1), INFLAGS1(-1), TTN
+!/T      IF (LBOUND(IDINP,2).LE. 0) WRITE (MDST,9071)  0, IDINP(IMOD, 0), INFLAGS1( 0), TVN
+!/T      WRITE (MDST,9071) 1, IDINP(IMOD,1), INFLAGS1(1), TLN
+!/T      WRITE (MDST,9072) 2, IDINP(IMOD,2), INFLAGS1(2), TC0, TCN
+!/T      WRITE (MDST,9072) 3, IDINP(IMOD,3), INFLAGS1(3), TW0, TWN
+!/T      WRITE (MDST,9071) 4, IDINP(IMOD,4), INFLAGS1(4), TIN
+!/T      WRITE (MDST,9071) 5, IDINP(IMOD,5), INFLAGS1(5), T0N
+!/T      WRITE (MDST,9071) 6, IDINP(IMOD,6), INFLAGS1(6), T1N
+!/T      WRITE (MDST,9073) 7, IDINP(IMOD,7), INFLAGS1(7), T2N, TDN
+!/T      WRITE (MDST,9072) 8, 'MOV'        , INFLAGS1(8), TG0, TGN
 !
       RETURN
 !       
@@ -506,7 +506,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3IDATMD, ONLY: TLN, WLEV, TC0, TCN, CX0, CXN, CY0, CYN,    &
                           TW0, TWN, WX0, WXN, WY0, WYN, DT0, DTN,     &
-                          TIN, ICEI, T0N, T1N, T2N, TDN, FLAGS,       &
+                          TIN, ICEI, T0N, T1N, T2N, TDN, INFLAGS1,       &
                           TG0, TGN, GA0, GD0, GAN, GDN, BERGI,        &
                           TTN, MUDT, TVN, MUDV, TZN, MUDD,            &
                           TI1, TI2, TI3, TI4, TI5,                    &
@@ -641,7 +641,7 @@
                         TIME, T0N, RCLD(1), NDT(1), NDTNEW,           &
                         DATA0, IERR )
           IF ( IERR .LT. 0 ) THEN
-              FLAGS(J) = .FALSE.
+              INFLAGS1(J) = .FALSE.
               RCLD(1)  = 1
               NDT(1)   = 1
               CALL WMDIMD ( IMOD, MDSE, MDST, 1 )
@@ -660,7 +660,7 @@
                         TIME, T1N, RCLD(2), NDT(2), NDTNEW,           &
                         DATA1, IERR )
           IF ( IERR .LT. 0 ) THEN
-              FLAGS(J) = .FALSE.
+              INFLAGS1(J) = .FALSE.
               RCLD(2)  = 1
               NDT(2)   = 1
               CALL WMDIMD ( IMOD, MDSE, MDST, 2 )
@@ -679,7 +679,7 @@
                         TIME, T2N, RCLD(3), NDT(3), NDTNEW,           &
                         DATA2, IERR )
           IF ( IERR .LT. 0 ) THEN
-              FLAGS(J) = .FALSE.
+              INFLAGS1(J) = .FALSE.
               RCLD(3)  = 1
               NDT(3)   = 1
               CALL WMDIMD ( IMOD, MDSE, MDST, 3 )

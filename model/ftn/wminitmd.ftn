@@ -351,8 +351,8 @@
 !/MPI      USE W3GSRUMD
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
-      USE W3IDATMD, ONLY: FLAGS, FLAGS4, INPUTS, IINIT, IIDATA, FLCUR,&
-                          FLWIND, JFIRST
+      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, INPUTS, IINIT, IIDATA,  &
+                          FLCUR, FLWIND, JFIRST
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI,  &
                           FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
                           NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
@@ -408,8 +408,6 @@
 !/MPRF      REAL(KIND=8)            :: get_memory
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
                                  RP1(:), RPN(:)
-! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
-!   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(-7:12)
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
@@ -713,8 +711,8 @@
 !
         CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
         CALL W3SETI ( -I, MDSE, MDST )
-        FLAGS = .FALSE.
-        READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), FLAGS(JFIRST:7)
+        INFLAGS1 = .FALSE.
+        READ (MDSI,*,END=2001,ERR=2002) MNAMES(-I), INFLAGS1(JFIRST:7)
 !
         END DO
 !
@@ -724,7 +722,7 @@
 !
           CALL W3SETI ( 0, MDSE, MDST )
           CALL W3SETO ( 0, MDSE, MDST )
-          FLAGS = .FALSE.
+          INFLAGS1 = .FALSE.
           NDST   = MDST
           NDSE   = MDSE
 !
@@ -760,9 +758,9 @@
           IF ( TMPRNK(J) .EQ. RNKTMP ) THEN
               I      = I + 1
               CALL W3SETI ( I, MDSE, MDST )
-              FLAGS      = .FALSE.
-!/MGW              FLAGS(8)   = .TRUE.
-!/MGP              FLAGS(8)   = .TRUE.
+              INFLAGS1      = .FALSE.
+!/MGW              INFLAGS1(8)   = .TRUE.
+!/MGP              INFLAGS1(8)   = .TRUE.
               INAMES(I,:)= INAMES(J,:)
               MNAMES(I)  = MNAMES(J)
               TMPRNK(I)  = TMPRNK(J)
@@ -770,7 +768,7 @@
               RP1(I)     = RP1(J)
               RPN(I)     = RPN(J)
               BCDUMP(I)  = BCDTMP(J)
-!/T              WRITE (MDST,9031) I, MNAMES(I), FLAGS(1:8), TMPRNK(I), &
+!/T              WRITE (MDST,9031) I, MNAMES(I), INFLAGS1, TMPRNK(I),    &
 !/T                                   TMPGRP(I), RP1(I), RPN(I)
             END IF
           END DO
@@ -785,30 +783,32 @@
       IDINP  = '---'
 !
       DO I=1, NRGRD
-        CALL W3SETI ( I, MDSE, MDST )
-        DO J=JFIRST, 7
-          IF ( INAMES(I,J) .EQ. 'native' ) THEN
-              FLAGS(J) = .TRUE.
+         CALL W3SETI ( I, MDSE, MDST )
+         DO J=JFIRST, 7
+            IF ( INAMES(I,J) .EQ. 'native' ) THEN
+               INFLAGS1(J) = .TRUE.
             ELSE
-              FLAGS(J) = .FALSE.
-              IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
+               INFLAGS1(J) = .FALSE.
+               IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
                   INPMAP(I,J) = -1
-                  FLAGS(J) = .TRUE.
+                  INFLAGS1(J) = .TRUE.
                 ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
                   DO JJ=1, NRINP
-                    IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
+                     IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
                         INPMAP(I,J) = JJ
                         EXIT
-                      END IF
-                    END DO
+                     END IF
+                  END DO
                   IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-                  IF ( .NOT. INPUTS(-INPMAP(I,J))%FLAGS(J) ) GOTO 2031
+                  IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) )GOTO 2031
                   USEINP(INPMAP(I,J)) = .TRUE.
-                END IF
+               END IF
             END IF
-          END DO
-        FLAGS4=FLAGS(4)
-        END DO
+         END DO !         DO J=JFIRST, 7
+!        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1, 
+!           it does not change during the simulation
+         INFLAGS2=INFLAGS1
+      END DO !      DO I=1, NRGRD
 !
       DO I=1, NRINP
         IF ( .NOT.USEINP(I) .AND.                                     &
@@ -827,7 +827,7 @@
           IF ( I .GE. 1 ) THEN
               IF ( INPMAP(I,J) .EQ. -1 ) CYCLE
             END IF
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
               CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,               &
                             DESC='Input data file' )
@@ -938,12 +938,12 @@
             CALL W3SETI ( -I, MDSE, MDST )
             ACTION(1:4) = '---   '
             DO J=JFIRST, 4
-              IF ( FLAGS(J) ) ACTION(J) = ' X    '
+              IF ( INFLAGS1(J) ) ACTION(J) = ' X    '
               END DO
             ACTION(5:7) = '-     '
-            IF ( FLAGS(5) ) ACTION(5) = '1     '
-            IF ( FLAGS(6) ) ACTION(6) = '2     '
-            IF ( FLAGS(7) ) ACTION(7) = '3     '
+            IF ( INFLAGS1(5) ) ACTION(5) = '1     '
+            IF ( INFLAGS1(6) ) ACTION(6) = '2     '
+            IF ( INFLAGS1(7) ) ACTION(7) = '3     '
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,925) I, MNAMES(-I), ACTION(JFIRST:7)
             IF ( NMPLOG .EQ. IMPROC )                                 &
@@ -979,10 +979,10 @@
             END IF
           END DO
         ACTION(5:9) = '-     '
-        IF ( FLAGS(5) ) ACTION(5) = '1     '
-        IF ( FLAGS(6) ) ACTION(6) = '2     '
-        IF ( FLAGS(7) ) ACTION(7) = '3     '
-        IF ( FLAGS(8) ) THEN
+        IF ( INFLAGS1(5) ) ACTION(5) = '1     '
+        IF ( INFLAGS1(6) ) ACTION(6) = '2     '
+        IF ( INFLAGS1(7) ) ACTION(7) = '3     '
+        IF ( INFLAGS1(8) ) THEN
             ACTION(8) = 'yes   '
           ELSE
             ACTION(8) = 'no    '
@@ -1499,7 +1499,7 @@
 !     the grids, because this is only intended for test cases. 
 !     For true implementations, the jumping grid will be used.
 !
-      IF ( FLAGS(8) ) THEN
+      IF ( INFLAGS1(8) ) THEN
 !
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
               WRITE (MDSS,965)
@@ -2121,7 +2121,7 @@
 ! ..... regular input files
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               IDINP(I,J) = IDSTR(J)
               IF ( INPMAP(I,J).EQ.-1 ) CYCLE
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
@@ -2149,19 +2149,25 @@
 ! ..... Adjust input flags for other than native or coupler input,
 !       and initialize input arrays onse set at a time as needed.
 !
-        IF ( SIZE(FLAGS) .NE. SIZE(TFLAGS) ) THEN
+        IF ( SIZE(INFLAGS1) .NE. SIZE(TFLAGS) ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMINIT: ', &
-                 'SIZE(FLAGS).NE.SIZE(TFLAGS) ***'
+                 'SIZE(INFLAGS1).NE.SIZE(TFLAGS) ***'
           CALL EXTCDE ( 999 )
         END IF
-        TFLAGS = FLAGS
+        IF ( SIZE(INFLAGS2) .NE. SIZE(TFLAGS) ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMINIT: ', &
+                 'SIZE(INFLAGS2).NE.SIZE(TFLAGS) ***'
+          CALL EXTCDE ( 999 )
+        END IF
+
+        TFLAGS = INFLAGS1
 !
         DO J=JFIRST, 7
           IF ( INPMAP(I,J) .GT. 0 ) THEN
 !
               TFLAGS(J) = .TRUE.
-              FLAGS     = .FALSE.
-              FLAGS(J)  = .TRUE.
+              INFLAGS1     = .FALSE.
+              INFLAGS1(J)  = .TRUE.
               IINIT     = .FALSE.
               CALL W3DIMI ( I, MDSE, MDST )
 !
@@ -2177,13 +2183,13 @@
                                        WADATS(I)%AS0(NSEA) ,          &
                                        WADATS(I)%ASI(NSEA) )
 !
-            END IF
-          END DO
+          END IF !  IF ( INPMAP(I,J) .NE. 0 ) THEN
+        END DO !  DO J=JFIRST, 7
 !
-        FLAGS  = TFLAGS
+        INFLAGS1  = TFLAGS
+        INFLAGS2  = TFLAGS ! necessary?
         CALL W3SETI ( I, MDSE, MDST )
         CALL W3SETA ( I, MDSE, MDST )
-        FLAGS4=FLAGS(4)
 !
 ! 8.a.3 Status indicator and model times
 !
@@ -2349,7 +2355,7 @@
         CALL W3DIMI ( -I, MDSE, MDST )
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(-I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
@@ -3243,9 +3249,9 @@
 !/MPI      USE W3GSRUMD
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: WADATS
-      USE W3IDATMD, ONLY: FLAGS, INPUTS, IINIT, IIDATA, FLCUR,        &
-                          FLWIND, JFIRST, FLAGS4
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI, &
+      USE W3IDATMD, ONLY: INFLAGS1, INPUTS, IINIT, IIDATA, FLCUR,     &
+                          FLWIND, JFIRST, INFLAGS2
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, FLOUT, TONEXT, FLBPI,  &
                           FLBPO, NFBPO, NBI, NDS, IAPROC, NAPLOG,     &
                           NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
                           NAPPRT, NAPROC, FNMPRE, OUTPTS, NDST, NDSE, &
@@ -3300,8 +3306,6 @@
 !/MPRF      REAL(KIND=8)            :: get_memory
       REAL, ALLOCATABLE       :: X(:), Y(:), AMOVE(:), DMOVE(:),      &
                                  RP1(:), RPN(:)
-! bug fix: was TFLAGS(8): size of TFLAGS needs to be consistent with 
-!   size of FLAGS as declared in w3idatmd.ftn, which is now FLAGS(-7:12)
       LOGICAL                 :: FLT, TFLAGI, TFLAGS(-7:12), PSHARE
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
@@ -3625,23 +3629,23 @@
       DO I=1, NRINP
 !
         CALL W3SETI ( -I, MDSE, MDST )
-        FLAGS = .FALSE.
+        INFLAGS1 = .FALSE.
         MNAMES(-I) = input_grid(I)%name 
-        FLAGS(-7) = input_grid(I)%forcing%ice_param1
-        FLAGS(-6) = input_grid(I)%forcing%ice_param2
-        FLAGS(-5) = input_grid(I)%forcing%ice_param3
-        FLAGS(-4) = input_grid(I)%forcing%ice_param4
-        FLAGS(-3) = input_grid(I)%forcing%ice_param5
-        FLAGS(-2) = input_grid(I)%forcing%mud_density
-        FLAGS(-1) = input_grid(I)%forcing%mud_thickness
-        FLAGS(0) = input_grid(I)%forcing%mud_viscosity
-        FLAGS(1) = input_grid(I)%forcing%water_levels
-        FLAGS(2) = input_grid(I)%forcing%currents
-        FLAGS(3) = input_grid(I)%forcing%winds
-        FLAGS(4) = input_grid(I)%forcing%ice_conc
-        FLAGS(5) = input_grid(I)%assim%mean
-        FLAGS(6) = input_grid(I)%assim%spec1d
-        FLAGS(7) = input_grid(I)%assim%spec2d
+        INFLAGS1(-7) = input_grid(I)%forcing%ice_param1
+        INFLAGS1(-6) = input_grid(I)%forcing%ice_param2
+        INFLAGS1(-5) = input_grid(I)%forcing%ice_param3
+        INFLAGS1(-4) = input_grid(I)%forcing%ice_param4
+        INFLAGS1(-3) = input_grid(I)%forcing%ice_param5
+        INFLAGS1(-2) = input_grid(I)%forcing%mud_density
+        INFLAGS1(-1) = input_grid(I)%forcing%mud_thickness
+        INFLAGS1(0) = input_grid(I)%forcing%mud_viscosity
+        INFLAGS1(1) = input_grid(I)%forcing%water_levels
+        INFLAGS1(2) = input_grid(I)%forcing%currents
+        INFLAGS1(3) = input_grid(I)%forcing%winds
+        INFLAGS1(4) = input_grid(I)%forcing%ice_conc
+        INFLAGS1(5) = input_grid(I)%assim%mean
+        INFLAGS1(6) = input_grid(I)%assim%spec1d
+        INFLAGS1(7) = input_grid(I)%assim%spec2d
       END DO
 !
 ! 3.a.2 Unified point output grid.
@@ -3650,7 +3654,7 @@
 !
           CALL W3SETI ( 0, MDSE, MDST )
           CALL W3SETO ( 0, MDSE, MDST )
-          FLAGS = .FALSE.
+          INFLAGS1 = .FALSE.
           NDST   = MDST
           NDSE   = MDSE
 !
@@ -3703,9 +3707,9 @@
           IF ( TMPRNK(J) .EQ. RNKTMP ) THEN
               I      = I + 1
               CALL W3SETI ( I, MDSE, MDST )
-              FLAGS      = .FALSE.
-!/MGW              FLAGS(8)   = .TRUE.
-!/MGP              FLAGS(8)   = .TRUE.
+              INFLAGS1      = .FALSE.
+!/MGW              INFLAGS1(8)   = .TRUE.
+!/MGP              INFLAGS1(8)   = .TRUE.
               INAMES(I,:)= INAMES(J,:)
               MNAMES(I)  = MNAMES(J)
               TMPRNK(I)  = TMPRNK(J)
@@ -3713,7 +3717,7 @@
               RP1(I)     = RP1(J)
               RPN(I)     = RPN(J)
               BCDUMP(I)  = BCDTMP(J)
-!/T              WRITE (MDST,9031) I, MNAMES(I), FLAGS, TMPRNK(I),    &
+!/T              WRITE (MDST,9031) I, MNAMES(I), INFLAGS1, TMPRNK(I),    &
 !/T                                   TMPGRP(I), RP1(I), RPN(I)
             END IF
           END DO
@@ -3731,9 +3735,9 @@
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
           IF ( INAMES(I,J) .EQ. 'native' ) THEN
-              FLAGS(J) = .TRUE.
+              INFLAGS1(J) = .TRUE.
             ELSE
-              FLAGS(J) = .FALSE.
+              INFLAGS1(J) = .FALSE.
               IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
                   INPMAP(I,J) = -1
                 ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
@@ -3744,7 +3748,7 @@
                       END IF
                     END DO
                   IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-                  IF ( .NOT. INPUTS(-INPMAP(I,J))%FLAGS(J) ) GOTO 2031
+                  IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) )GOTO 2031
                   USEINP(INPMAP(I,J)) = .TRUE.
                 END IF
             END IF
@@ -3760,23 +3764,21 @@
         END DO
 !
 ! 3.b Assign input file unit numbers
-!     Also, set FLAGS4. This is the initial value of FLAGS(4).
+!     Also, set INFLAGS2. This is the initial value of INFLAGS1.
 !
       DO I=-NRINP, NRGRD
         IF ( I .EQ. 0 ) CYCLE
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
               CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,               &
                             DESC='Input data file' )
               MDSF(I,J) = NDSFND
-            END IF
-          END DO
-
-          FLAGS4=FLAGS(4) 
-
-        END DO
+          END IF
+        END DO !        DO J=JFIRST, 7
+        INFLAGS2=INFLAGS1
+      END DO !    DO I=-NRINP, NRGRD
 !
 !/T      WRITE (MDST,9022)
 !/T      DO I=-NRINP, NRGRD
@@ -3881,12 +3883,12 @@
             CALL W3SETI ( -I, MDSE, MDST )
             ACTION(1:4) = '---   '
             DO J=JFIRST, 4
-              IF ( FLAGS(J) ) ACTION(J) = ' X    '
+              IF ( INFLAGS1(J) ) ACTION(J) = ' X    '
               END DO
             ACTION(5:7) = '-     '
-            IF ( FLAGS(5) ) ACTION(5) = '1     '
-            IF ( FLAGS(6) ) ACTION(6) = '2     '
-            IF ( FLAGS(7) ) ACTION(7) = '3     '
+            IF ( INFLAGS1(5) ) ACTION(5) = '1     '
+            IF ( INFLAGS1(6) ) ACTION(6) = '2     '
+            IF ( INFLAGS1(7) ) ACTION(7) = '3     '
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,925) I, MNAMES(-I), ACTION(JFIRST:7)
             IF ( NMPLOG .EQ. IMPROC )                                 &
@@ -3913,17 +3915,17 @@
         CALL W3SETI ( I, MDSE, MDST )
         ACTION(1:4) = '---   '
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               ACTION(J) = 'native'
             ELSE IF ( INPMAP(I,J) .NE. 0 ) THEN
               ACTION(J) = MNAMES(-INPMAP(I,J))
             END IF
           END DO
         ACTION(5:9) = '-     '
-        IF ( FLAGS(5) ) ACTION(5) = '1     '
-        IF ( FLAGS(6) ) ACTION(6) = '2     '
-        IF ( FLAGS(7) ) ACTION(7) = '3     '
-        IF ( FLAGS(8) ) THEN
+        IF ( INFLAGS1(5) ) ACTION(5) = '1     '
+        IF ( INFLAGS1(6) ) ACTION(6) = '2     '
+        IF ( INFLAGS1(7) ) ACTION(7) = '3     '
+        IF ( INFLAGS1(8) ) THEN
             ACTION(8) = 'yes   '
           ELSE
             ACTION(8) = 'no    '
@@ -4272,7 +4274,7 @@
 !     the grids, because this is only intended for test cases. 
 !     For true implementations, the jumping grid will be used.
 !
-      IF ( FLAGS(8) ) THEN
+      IF ( INFLAGS1(8) ) THEN
 !
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
               WRITE (MDSS,965)
@@ -4841,7 +4843,7 @@
 ! ..... regular input files
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
@@ -4867,21 +4869,27 @@
           END DO
 !
 ! ..... Adjust input flags for other than native input,
-!       and initialize input arrays onse set at a time as needed.
+!       and initialize input arrays one set at a time as needed.
 !
-        IF ( SIZE(FLAGS) .NE. SIZE(TFLAGS) ) THEN
+        IF ( SIZE(INFLAGS1) .NE. SIZE(TFLAGS) ) THEN
           WRITE (MDSE,'(/2A)') ' *** ERROR WMINITNML: ', &
-                 'SIZE(FLAGS).NE.SIZE(TFLAGS) ***'
+                 'SIZE(INFLAGS1).NE.SIZE(TFLAGS) ***'
           CALL EXTCDE ( 999 )
         END IF
-        TFLAGS = FLAGS
+        IF ( SIZE(INFLAGS2) .NE. SIZE(TFLAGS) ) THEN
+          WRITE (MDSE,'(/2A)') ' *** ERROR WMINITNML: ', &
+                 'SIZE(INFLAGS2).NE.SIZE(TFLAGS) ***'
+          CALL EXTCDE ( 999 )
+        END IF
+
+        TFLAGS = INFLAGS1
 !
         DO J=JFIRST, 7
           IF ( INPMAP(I,J) .NE. 0 ) THEN
 !
               TFLAGS(J) = .TRUE.
-              FLAGS     = .FALSE.
-              FLAGS(J)  = .TRUE.
+              INFLAGS1     = .FALSE.
+              INFLAGS1(J)  = .TRUE.
               IINIT     = .FALSE.
               CALL W3DIMI ( I, MDSE, MDST )
 !
@@ -4900,7 +4908,7 @@
             END IF
           END DO
 !
-        FLAGS  = TFLAGS
+        INFLAGS1  = TFLAGS
         CALL W3SETI ( I, MDSE, MDST )
         CALL W3SETA ( I, MDSE, MDST )
 !
@@ -5068,7 +5076,7 @@
         CALL W3DIMI ( -I, MDSE, MDST )
 !
         DO J=JFIRST, 4
-          IF ( FLAGS(J) ) THEN
+          IF ( INFLAGS1(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
               IDINP(-I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &

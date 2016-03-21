@@ -31,7 +31,11 @@
 #  ./bin/run_test -s ST2  -w work_ST2 ../ ww3_ts1                           #
 #  ./bin/run_test -c gnu -o netcdf ../ ww3_ts1                              #
 #                                                                           #
-#  ./bin/run_test -i input_icesct -o both ../model ww3_ts1                  #
+#  ./bin/run_test -i input_icesct/IC0 -o both ../model ww3_ts1              #
+#  ./bin/run_test -i input_icesct/IC1 -w work_IC1 ../model ww3_ts1          #
+#  ./bin/run_test -i input_icesct/IC2 -w work_IC2 ../model ww3_ts1          #
+#  ./bin/run_test -i input_icesct/IC3 -w work_IC3 ../model ww3_ts1          #
+#  ./bin/run_test -i input_icesct/IC4 -w work_IC4 ../model ww3_ts1          #
 #                                                                           #
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #

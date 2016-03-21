@@ -308,7 +308,8 @@
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC3PARS, DDEN,  & 
                           FLAGLL, YGRD, GTYPE, RLGTYPE
-      USE W3IDATMD, ONLY: FLAGS, ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI
+      USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI,    &
+                          INFLAGS2
       USE W3ADATMD, ONLY: IC3WN_R, IC3WN_I, IC3CG
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -366,27 +367,22 @@
       ICECOEF5 = 0.0
       ICECONC  = 0.0
 !
-
-! We cannot use this check, since FLAGS(J) will be false once
-! it has run out past end of available data.
-! We should implement a different way to check for the existence of
-!   the fields
-!     IF (.NOT.FLAGS(-7)) THEN
-!        WRITE (NDSE,1001) 'ICE PARAMETER 1'
-!        CALL EXTCDE(2)
-!     ENDIF
-!     IF (.NOT.FLAGS(-6)) THEN
-!        WRITE (NDSE,1001) 'ICE PARAMETER 2'
-!        CALL EXTCDE(2)
-!     ENDIF
-!     IF (.NOT.FLAGS(-5)) THEN
-!        WRITE (NDSE,1001) 'ICE PARAMETER 3'
-!        CALL EXTCDE(2)
-!     ENDIF
-!     IF (.NOT.FLAGS(-4)) THEN
-!        WRITE (NDSE,1001) 'ICE PARAMETER 4'
-!        CALL EXTCDE(2)
-!     ENDIF
+      IF (.NOT.INFLAGS2(-7)) THEN
+         WRITE (NDSE,1001) 'ICE PARAMETER 1'
+         CALL EXTCDE(2)
+      ENDIF
+      IF (.NOT.INFLAGS2(-6)) THEN
+         WRITE (NDSE,1001) 'ICE PARAMETER 2'
+         CALL EXTCDE(2)
+      ENDIF
+      IF (.NOT.INFLAGS2(-5)) THEN
+         WRITE (NDSE,1001) 'ICE PARAMETER 3'
+         CALL EXTCDE(2)
+      ENDIF
+      IF (.NOT.INFLAGS2(-4)) THEN
+         WRITE (NDSE,1001) 'ICE PARAMETER 4'
+         CALL EXTCDE(2)
+      ENDIF
 
 !     --- Set local value to be used subsequently (ICEPx variables 
 !         are not used beyond this point). --------------------------- /
@@ -395,7 +391,7 @@
       ICECOEF3 = ICEP3(IX,IY) ! density of ice
       ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
 !     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
-      IF (FLAGS(4))  ICECONC = ICEI(IX,IY) ! use flags4 instead?
+      IF (INFLAGS2(4))  ICECONC = ICEI(IX,IY)
 
 !     Similarly, rename other variables to make code easier to read.
       MAXTHK=IC3PARS(1)
@@ -407,8 +403,7 @@
 !
       NOICE=.FALSE.
       IF (ICECOEF1==0.0) NOICE=.TRUE.
-      IF (FLAGS(4).AND.(ICECONC==0.0)) NOICE=.TRUE. ! use flags4
-                                                    ! instead?
+      IF (INFLAGS2(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
       IF ( NOICE ) THEN
 
@@ -1902,7 +1897,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NK,SIG
       USE W3ADATMD, ONLY: IC3WN_R, IC3WN_I, IC3CG
-      USE W3IDATMD, ONLY: FLAGS
+      USE W3IDATMD, ONLY: INFLAGS2
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
       USE CONSTANTS, ONLY: GRAV
@@ -1912,24 +1907,22 @@
       INTEGER ::  I1, I2, JITK, ITKNUM, IK
 
 !     --- Verify that required variables are here -------------------- /
-! We cannot use this check, since FLAGS(J) will be false once
-! it has run out past end of available data.
-!      IF (.NOT.FLAGS(-7)) THEN
-!         WRITE (NDSE,1001) 'ICE PARAMETER 1'
-!         CALL EXTCDE(2)
-!      ENDIF
-!      IF (.NOT.FLAGS(-6)) THEN
-!         WRITE (NDSE,1001) 'ICE PARAMETER 2'
-!         CALL EXTCDE(2)
-!      ENDIF
-!      IF (.NOT.FLAGS(-5)) THEN
-!         WRITE (NDSE,1001) 'ICE PARAMETER 3'
-!         CALL EXTCDE(2)
-!      ENDIF
-!      IF (.NOT.FLAGS(-4)) THEN
-!         WRITE (NDSE,1001) 'ICE PARAMETER 4'
-!         CALL EXTCDE(2)
-!      ENDIF
+       IF (.NOT.INFLAGS2(-7)) THEN
+          WRITE (NDSE,1001) 'ICE PARAMETER 1'
+          CALL EXTCDE(2)
+       ENDIF
+       IF (.NOT.INFLAGS2(-6)) THEN
+          WRITE (NDSE,1001) 'ICE PARAMETER 2'
+          CALL EXTCDE(2)
+       ENDIF
+       IF (.NOT.INFLAGS2(-5)) THEN
+          WRITE (NDSE,1001) 'ICE PARAMETER 3'
+          CALL EXTCDE(2)
+       ENDIF
+       IF (.NOT.INFLAGS2(-4)) THEN
+          WRITE (NDSE,1001) 'ICE PARAMETER 4'
+          CALL EXTCDE(2)
+       ENDIF
 !
       DPT    = 999.
 
