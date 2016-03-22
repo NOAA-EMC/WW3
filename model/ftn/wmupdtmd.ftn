@@ -271,7 +271,7 @@
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
              WRITE (MDSS,901) IDFLDS(J)
 !
-! 2.  Using native input --------------------------------------------- /
+! 2.  Forcing input from file & defined on the native grid ----------- /
 !
         IF ( INPMAP(IMOD,J) .EQ. 0 ) THEN
 !
@@ -279,7 +279,7 @@
 !
             CALL WMUPD1 ( IMOD, IDINP(IMOD,J), J, IERR )
 !
-! 3.  Using input from other grid ------------------------------------ /
+! 3.  Forcing input from file & defined on an input grid ------------- /
 !
           ELSE IF ( INPMAP(IMOD,J) .GT. 0 ) THEN
 !
@@ -329,14 +329,19 @@
 !
             CALL WMUPD2 ( IMOD, J, JJ, IERR )
 !
-! 4.  Using input from coupler --------------------------------------- /
+! 4.  Forcing input from CPL ----------------------------------------- /
 !
-          ELSE
+          ELSE ! INPMAP(IMOD,J) .LT. 0
+          ! Data input and time stamp settings for forcing input from
+          ! CPL are handled in wmesmfmd.ftn:GetImport
 !
-! Data input and time stamp settings for fields from coupler
-! are handled in wmesmfmd.ftn:GetImport
-!
-!/T            WRITE (MDST,9040)
+!/T            IF ( INPMAP(IMOD,J) .EQ. -999 ) THEN
+!/T              ! *** Forcing input from CPL & defined on native grid ***
+!/T                WRITE (MDST,9040)
+!/T              ELSE
+!/T              ! *** Forcing input from CPL & defined on an input grid ***
+!/T                WRITE (MDST,9050) -INPMAP(IMOD,J)
+!/T              END IF
 !
           END IF
 !
@@ -418,11 +423,12 @@
 !/T 9004 FORMAT ( '               ',2X,1X,A3,3X,2I10             )
 !/T 9010 FORMAT ( ' TEST WMUPDT : J, FLAG, INPMAP : ',I2,L2,I4)
 !/T 9011 FORMAT ( ' TEST WMUPDT : ',A,', DTTST = ',E10.3,2X,I9.8,I7.6)
-!/T 9020 FORMAT ( ' TEST WMUPDT : USING NATIVE GRID INPUT')
-!/T 9030 FORMAT ( ' TEST WMUPDT : USING INPUT GRID',I4)
+!/T 9020 FORMAT ( ' TEST WMUPDT : FORCING INPUT FROM FILE & DEFINED ON THE NATIVE GRID')
+!/T 9030 FORMAT ( ' TEST WMUPDT : FORCING INPUT FROM FILE & DEFINED ON INPUT GRID',I4)
 !/T 9031 FORMAT ( ' TEST WMUPDT : J =',I4,3XA,', DTTST = ',           &
 !/T                               E10.3,2X,I9.8,I7.6)
-!/T 9040 FORMAT ( ' TEST WMUPDT : USING COUPLER INPUT')
+!/T 9040 FORMAT ( ' TEST WMUPDT : FORCING INPUT FROM CPL & DEFINED ON THE NATIVE GRID')
+!/T 9050 FORMAT ( ' TEST WMUPDT : FORCING INPUT FROM CPL & DEFINED ON INPUT GRID',I4)
 !/T 9070 FORMAT ( ' TEST WMUPDT : ',A2,1X,A3,3X,    3(I10.8,I7.6))
 !/T 9071 FORMAT ( '               ',I2,1X,A3,L3,17X,1(I10.8,I7.6))
 !/T 9072 FORMAT ( '               ',I2,1X,A3,L3,    2(I10.8,I7.6))

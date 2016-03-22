@@ -412,7 +412,7 @@
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
                                  FLGD(:,:), FLG2(:,:), FLG2D(:,:),     &
-                                 FLG1D(:)
+                                 FLG1D(:), CPLINP(:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=3)        :: IDSTR(7), IDTST
       CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
@@ -697,9 +697,11 @@
                  TMPRNK(2*NRGRD), TMPGRP(2*NRGRD), NINGRP(2*NRGRD),  &
                  RP1(2*NRGRD), RPN(2*NRGRD), BCDTMP(NRGRD+1:2*NRGRD) )
       ALLOCATE ( GRANK(NRGRD), GRGRP(NRGRD), USEINP(NRINP) )
+      ALLOCATE ( CPLINP(NRINP) )
       GRANK  = -1
       GRGRP  = -1
       USEINP = .FALSE.
+      CPLINP = .FALSE.
 !
 ! 3.a Read data
 !
@@ -786,24 +788,41 @@
          CALL W3SETI ( I, MDSE, MDST )
          DO J=JFIRST, 7
             IF ( INAMES(I,J) .EQ. 'native' ) THEN
-               INFLAGS1(J) = .TRUE.
-            ELSE
-               INFLAGS1(J) = .FALSE.
-               IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
-                  INPMAP(I,J) = -1
-                  INFLAGS1(J) = .TRUE.
-                ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
-                  DO JJ=1, NRINP
-                     IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
-                        INPMAP(I,J) = JJ
-                        EXIT
-                     END IF
-                  END DO
-                  IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-                  IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) )GOTO 2031
-                  USEINP(INPMAP(I,J)) = .TRUE.
-               END IF
-            END IF
+            ! *** forcing input from file & defined on the native grid ***
+                INFLAGS1(J) = .TRUE.
+              ELSE
+                INFLAGS1(J) = .FALSE.
+                IF ( INAMES(I,J)(1:4) .EQ. 'CPL:' ) THEN
+                    IF ( INAMES(I,J)(5:) .EQ. 'native' ) THEN
+                      ! *** forcing input from CPL & defined on the native grid ***
+                        INFLAGS1(J) = .TRUE.
+                        INPMAP(I,J) = -999
+                      ELSE
+                      ! *** forcing input from CPL & defined on an input grid ***
+                        DO JJ=1, NRINP
+                          IF ( MNAMES(-JJ) .EQ. INAMES(I,J)(5:) ) THEN
+                              INPMAP(I,J) = -JJ
+                              EXIT
+                            END IF
+                          END DO
+                        IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
+                        IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+                        USEINP(-INPMAP(I,J)) = .TRUE.
+                        CPLINP(-INPMAP(I,J)) = .TRUE.
+                      END IF
+                  ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
+                    ! *** forcing input from file & defined on an input grid ***
+                    DO JJ=1, NRINP
+                       IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
+                          INPMAP(I,J) = JJ
+                          EXIT
+                       END IF
+                    END DO
+                    IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
+                    IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+                    USEINP(INPMAP(I,J)) = .TRUE.
+                  END IF
+              END IF
          END DO !         DO J=JFIRST, 7
 !        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1, 
 !           it does not change during the simulation
@@ -825,7 +844,7 @@
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
           IF ( I .GE. 1 ) THEN
-              IF ( INPMAP(I,J) .EQ. -1 ) CYCLE
+              IF ( INPMAP(I,J) .LT. 0 ) CYCLE
             END IF
           IF ( INFLAGS1(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
@@ -970,12 +989,14 @@
         CALL W3SETI ( I, MDSE, MDST )
         ACTION(1:4) = '---   '
         DO J=JFIRST, 4
-          IF ( INPMAP(I,J) .EQ. 0 ) THEN
+          IF ( INFLAGS1(J) .AND. INPMAP(I,J) .EQ. 0 ) THEN
+              ACTION(J) = 'native'
+            ELSE IF ( INFLAGS1(J) .AND. INPMAP(I,J) .EQ. -999 ) THEN
               ACTION(J) = 'native'
             ELSE IF ( INPMAP(I,J) .GT. 0 ) THEN
               ACTION(J) = MNAMES(-INPMAP(I,J))
             ELSE IF ( INPMAP(I,J) .LT. 0 ) THEN
-              ACTION(J) = 'import'
+              ACTION(J) = MNAMES( INPMAP(I,J))
             END IF
           END DO
         ACTION(5:9) = '-     '
@@ -2123,7 +2144,7 @@
         DO J=JFIRST, 4
           IF ( INFLAGS1(J) ) THEN
               IDINP(I,J) = IDSTR(J)
-              IF ( INPMAP(I,J).EQ.-1 ) CYCLE
+              IF ( INPMAP(I,J) .LT. 0 ) CYCLE
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
                             NX, NY, GTYPE, IERR, MNAMES(I),           &
                             TRIM(FNMPRE) )
@@ -2146,7 +2167,7 @@
           IF ( MDSF(I,J) .NE. -1 ) CALL WMUINQ ( MDSE, MDST, MDSF(I,J) )
           END DO
 !
-! ..... Adjust input flags for other than native or coupler input,
+! ..... Adjust input flags for other than native or CPL input,
 !       and initialize input arrays onse set at a time as needed.
 !
         IF ( SIZE(INFLAGS1) .NE. SIZE(TFLAGS) ) THEN
@@ -2163,7 +2184,7 @@
         TFLAGS = INFLAGS1
 !
         DO J=JFIRST, 7
-          IF ( INPMAP(I,J) .GT. 0 ) THEN
+          IF ( INPMAP(I,J) .NE. 0 ) THEN
 !
               TFLAGS(J) = .TRUE.
               INFLAGS1     = .FALSE.
@@ -2354,6 +2375,8 @@
         CALL W3IOGR ( 'GRID', NDSREC, -I, MNAMES(-I)(1:J) )
         CALL W3DIMI ( -I, MDSE, MDST )
 !
+        IF ( CPLINP(I) ) CYCLE
+!
         DO J=JFIRST, 4
           IF ( INFLAGS1(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
@@ -2381,11 +2404,13 @@
 !
       DO I=1, NRGRD
         DO J=JFIRST, 7
+          IF ( INPMAP(I,J) .LT. 0 ) IDINP(I,J) = IDINP( INPMAP(I,J),J)
           IF ( INPMAP(I,J) .GT. 0 ) IDINP(I,J) = IDINP(-INPMAP(I,J),J)
           END DO
         END DO
 !
       DEALLOCATE ( USEINP )
+      DEALLOCATE ( CPLINP )
 !
 ! 8.c Inter model initialization
 !
