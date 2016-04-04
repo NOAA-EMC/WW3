@@ -193,6 +193,16 @@
             IXY    = IY +(IXNEXT-1)*NY
             IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
          END DO
+!BGR: Adding the following lines to compute FACVX over all
+!      IX for IY=NY (this allows along-seam propagation).
+!      Located here since already inside "TRPL" if-block.
+!{
+         DO IX=1, NX-1
+            IXY    = IY +(IX-1)*NY
+            IF ( MAPSTA( IXY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+            IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+         END DO
+!}
       END IF
 !
 !.....FACVX
