@@ -70,7 +70,7 @@ endif
 
 # -----------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-default: env setup switch
+default: env setup gout switch
 	$(WW3_BINDIR)/w3_make ww3_multi_esmf
 	$(MAKE) ww3_multi_esmf
 
@@ -135,3 +135,20 @@ setup: env
 switch:
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/switch
 # ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Setup switch file and compile serial routines ww3_grid, ww3_outf and ww3_outp 
+# ------------------------------------------------------------------------------
+gout: 
+	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
+	@sed -e "s/DIST/SHRD/g"\
+	     -e "s/MPIT/ /g"\
+             -e "s/MPI/ /g"\
+                  $(WW3_BINDIR)/tempswitch > $(WW3_BINDIR)/switch
+	\rm -f $(WW3_BINDIR)/tempswitch
+	$(WW3_BINDIR)/w3_make ww3_grid
+	$(WW3_BINDIR)/w3_make ww3_outf
+	$(WW3_BINDIR)/w3_make ww3_outp
+# ------------------------------------------------------------------------------
+
+
