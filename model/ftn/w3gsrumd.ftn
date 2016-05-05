@@ -63,6 +63,8 @@
 !/                  for a curvilinear grid and routines for computing
 !/                  gradient and divergence of fields defined on a
 !/                  curvilinear grid                    ( version 5.XX )
+!/    DD-MMM-YYYY : Add routine for computing computing bounding box
+!/                  for a curvilinear grid              ( version 5.XX )
 !/
 !  1. Purpose :
 !
@@ -168,6 +170,7 @@
 !      W3GSUC    Func. Public   Create grid-search-utility object.
 !      W3GSUD    Subr. Public   Destroy grid-search-utility object.
 !      W3GSUP    Subr. Public   Print grid-search-utility object to stdout.
+!      W3BBOX    Subr. Public   Get bounding box associated with grid.
 !      W3GFCL    Func. Public   Find grid cell that encloses target point (bucket search).
 !      W3GFCD    Func. Public   Find grid cell that encloses target point (direct search).
 !      W3GFPT    Func. Public   Find grid point that is closest to target point.
@@ -237,6 +240,7 @@
       PUBLIC W3GSUC
       PUBLIC W3GSUD
       PUBLIC W3GSUP
+      PUBLIC W3BBOX
       PUBLIC W3GFCL
       PUBLIC W3GFCD
       PUBLIC W3GFPT
@@ -360,7 +364,11 @@
       REAL(8), PARAMETER :: ONE  = 1.0D0
       REAL(8), PARAMETER :: TWO  = 2.0D0
       REAL(8), PARAMETER :: FOUR = 4.0D0
-      REAL(8), PARAMETER :: REARTH = 4.D7/PI2
+#if defined(COAMPS)
+      REAL(8), PARAMETER :: REARTH = 6371229.D0
+#else
+      REAL(8), PARAMETER :: REARTH = 4.D7/PI2 !this gives D2M = 111111.111111
+#endif
       REAL(8), PARAMETER :: D2M  = REARTH*D2R
       REAL(8), PARAMETER :: M2D  = 1D0/D2M
 !     Default small non-zero tolerance used to check if
@@ -384,6 +392,11 @@
         MODULE PROCEDURE W3GSUC_R4
         MODULE PROCEDURE W3GSUC_R8
       END INTERFACE W3GSUC
+      INTERFACE W3BBOX
+        MODULE PROCEDURE W3BBOX_GSU
+        MODULE PROCEDURE W3BBOX_GRD_R4
+        MODULE PROCEDURE W3BBOX_GRD_R8
+      END INTERFACE W3BBOX
       INTERFACE W3GFCL
         MODULE PROCEDURE W3GFCL_R4
         MODULE PROCEDURE W3GFCL_R8
@@ -623,7 +636,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       FUNCTION GSU_CREATE( IJG, LLG, ICLO, XG4, YG4, XG8, YG8, &
-                           NCB, NNP, DEBUG ) RESULT(GSU)
+                           BBOX_ONLY, NCB, NNP, DEBUG ) RESULT(GSU)
 !     *** INTERNAL SUBROUTINE ***
       TYPE(T_GSU)         :: GSU
       LOGICAL, INTENT(IN) :: IJG
@@ -633,6 +646,7 @@
       REAL(4), POINTER, OPTIONAL    :: YG4(:,:)
       REAL(8), POINTER, OPTIONAL    :: XG8(:,:)
       REAL(8), POINTER, OPTIONAL    :: YG8(:,:)
+      LOGICAL, INTENT(IN), OPTIONAL :: BBOX_ONLY
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
@@ -640,7 +654,7 @@
 !     Local parameters
       TYPE(CLASS_GSU), POINTER :: PTR
       LOGICAL :: TYPE_R4, TYPE_R8
-      LOGICAL :: LDBG, LBC,LPL, LNPL, LSPL
+      LOGICAL :: LDBG, LBBOX, LBC, LPL, LNPL, LSPL
       INTEGER :: LBX, LBY, UBX, UBY, NX, NY
       INTEGER :: LXC, LYC, UXC, UYC
       INTEGER :: I, J, K, L, N, IC(4), JC(4), IB, JB
@@ -710,6 +724,12 @@
           CALL EXTCDE (1)
         END IF
 
+      IF ( PRESENT(BBOX_ONLY) ) THEN
+          LBBOX = BBOX_ONLY
+        ELSE
+          LBBOX = .FALSE.
+        END IF
+
       IF ( PRESENT(NCB) ) THEN
           IF ( NCB .LE. 0 ) THEN
               WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
@@ -752,14 +772,19 @@
           PTR%YG8 => YG8
           PTR%GKIND = 8
         END IF
+      NULLIFY( PTR%NNP )
+      NULLIFY( PTR%B )
+      NULLIFY( PTR%NNB )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create nearest-neighbor point search object
 !
-      IF ( PRESENT(NNP) ) THEN
-          PTR%NNP => W3NNSC(NNP)
-        ELSE
-          PTR%NNP => W3NNSC(NNP_DEFAULT)
+      IF ( .NOT.LBBOX ) THEN
+          IF ( PRESENT(NNP) ) THEN
+              PTR%NNP => W3NNSC(NNP)
+            ELSE
+              PTR%NNP => W3NNSC(NNP_DEFAULT)
+            END IF
         END IF
 !
 ! -------------------------------------------------------------------- /
@@ -890,6 +915,12 @@
       IF ( LSPL ) PTR%YMIN = -D90
       IF ( LNPL ) PTR%YMAX =  D90
       PTR%L360 = PTR%XMIN.GE.ZERO
+!
+!-----if bbox only, then set pointer and return
+      IF ( LBBOX ) THEN
+          GSU%PTR => PTR
+          RETURN
+        END IF
 !
 !-----compute number of search buckets and bucket size
       IF ( PRESENT(NCB) ) THEN
@@ -1193,18 +1224,22 @@
 !
           CALL W3NNSD(GSU%PTR%NNP)
 !
-          DO IB=1,GSU%PTR%NBX
-              DO JB=1,GSU%PTR%NBY
-                  IF ( GSU%PTR%B(JB,IB)%N .GT. 0 ) THEN
-                      DEALLOCATE(GSU%PTR%B(JB,IB)%I)
-                      NULLIFY(GSU%PTR%B(JB,IB)%I)
-                      DEALLOCATE(GSU%PTR%B(JB,IB)%J)
-                      NULLIFY(GSU%PTR%B(JB,IB)%J)
-                    END IF
+          IF ( ASSOCIATED(GSU%PTR%B) ) THEN
+              DO IB=1,GSU%PTR%NBX
+                  DO JB=1,GSU%PTR%NBY
+                      IF ( GSU%PTR%B(JB,IB)%N .GT. 0 ) THEN
+                          DEALLOCATE(GSU%PTR%B(JB,IB)%I)
+                          NULLIFY(GSU%PTR%B(JB,IB)%I)
+                          DEALLOCATE(GSU%PTR%B(JB,IB)%J)
+                          NULLIFY(GSU%PTR%B(JB,IB)%J)
+                        END IF
+                    END DO
                 END DO
-            END DO
-          DEALLOCATE(GSU%PTR%B)
-          NULLIFY(GSU%PTR%B)
+              DEALLOCATE(GSU%PTR%B)
+              NULLIFY(GSU%PTR%B)
+            END IF
+!
+          CALL W3NNSD(GSU%PTR%NNB)
 !
           DEALLOCATE(GSU%PTR)
           NULLIFY(GSU%PTR)
@@ -1380,6 +1415,171 @@
       END SUBROUTINE W3GSUP
 !/
 !/ End of W3GSUP ===================================================== /
+!/
+
+
+
+
+!/
+!/ =================================================================== /
+!/
+!/    SUBROUTINE W3BBOX( GSU, XMIN, YMIN, XMAX, YMAX )
+!/      OR
+!/    SUBROUTINE W3BBOX( IJG, LLG, ICLO, XG, YG, XMIN, YMIN, XMAX, YMAX )
+!/
+!/ =================================================================== /
+!/
+!  1. Purpose :
+!
+!     Get bounding box associated with grid.
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     Inputs (for W3BBOX_GSU):
+!       GSU     Type   I   Grid-search-utility object
+!
+!     Inputs (for W3BBOX_GRD):
+!       IJG     Log.   I   Logical flag indicating ordering of input
+!                          coord. arrays: T = (NX,NY) and F = (NY,NX).
+!       LLG     Log.   I   Logical flag indicating the coordinate system:
+!                          T = spherical lat/lon (degrees) and F = Cartesian.
+!       ICLO    Int.   I   Parameter indicating type of index space closure
+!       XG      R.A.   I   Pointer to array of x-coordinates of input grid.
+!       YG      R.A.   I   Pointer to array of y-coordinates of input grid.
+!
+!     Outputs:
+!       XMIN    Int.   O   Minimum X-coord of bounding box
+!       YMIN    Int.   O   Minimum Y-coord of bounding box
+!       XMAX    Int.   O   Maximum X-coord of bounding box
+!       YMAX    Int.   O   Maximum Y-coord of bounding box
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!     - Check on previous creation of grid-search-utility object.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!
+! 10. Source code :
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      SUBROUTINE W3BBOX_GSU( GSU, XMIN, YMIN, XMAX, YMAX )
+      TYPE(T_GSU), INTENT(IN) :: GSU
+      REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
+
+!     Local parameters
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3BBOX_GSU')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
+          WRITE(0,'(/1A,1A/)') 'W3BBOX_GSU ERROR -- ', &
+          'grid search utility object not created'
+          CALL EXTCDE (1)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Set bounding box
+!
+      XMIN = GSU%PTR%XMIN
+      YMIN = GSU%PTR%YMIN
+      XMAX = GSU%PTR%XMAX
+      YMAX = GSU%PTR%YMAX
+
+      END SUBROUTINE W3BBOX_GSU
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      SUBROUTINE W3BBOX_GRD_R4( IJG, LLG, ICLO, XG, YG, &
+                                XMIN, YMIN, XMAX, YMAX )
+      LOGICAL, INTENT(IN)     :: IJG
+      LOGICAL, INTENT(IN)     :: LLG
+      INTEGER, INTENT(IN)     :: ICLO
+      REAL(4), POINTER        :: XG(:,:), YG(:,:)
+      REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
+
+!     Local parameters
+      TYPE(T_GSU) :: GSU
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3BBOX_GRD_R4')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
+          WRITE(0,'(/1A,1A/)') 'W3BBOX_GRD_R4 ERROR -- ', &
+          'input grid coordinate array pointers are not associated'
+          CALL EXTCDE (1)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Set bounding box
+!
+      GSU = GSU_CREATE( IJG, LLG, ICLO, XG4=XG, YG4=YG, BBOX_ONLY=.TRUE. )
+      XMIN = GSU%PTR%XMIN
+      YMIN = GSU%PTR%YMIN
+      XMAX = GSU%PTR%XMAX
+      YMAX = GSU%PTR%YMAX
+      CALL W3GSUD( GSU )
+
+      END SUBROUTINE W3BBOX_GRD_R4
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      SUBROUTINE W3BBOX_GRD_R8( IJG, LLG, ICLO, XG, YG, &
+                                XMIN, YMIN, XMAX, YMAX )
+      LOGICAL, INTENT(IN)     :: IJG
+      LOGICAL, INTENT(IN)     :: LLG
+      INTEGER, INTENT(IN)     :: ICLO
+      REAL(8), POINTER        :: XG(:,:), YG(:,:)
+      REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
+
+!     Local parameters
+      TYPE(T_GSU) :: GSU
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3BBOX_GRD_R8')
+!
+! -------------------------------------------------------------------- /
+! 1.  Test input
+!
+      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
+          WRITE(0,'(/1A,1A/)') 'W3BBOX_GRD_R8 ERROR -- ', &
+          'input grid coordinate array pointers are not associated'
+          CALL EXTCDE (1)
+        END IF
+!
+! -------------------------------------------------------------------- /
+! 2.  Set bounding box
+!
+      GSU = GSU_CREATE( IJG, LLG, ICLO, XG8=XG, YG8=YG, BBOX_ONLY=.TRUE. )
+      XMIN = GSU%PTR%XMIN
+      YMIN = GSU%PTR%YMIN
+      XMAX = GSU%PTR%XMAX
+      YMAX = GSU%PTR%YMAX
+      CALL W3GSUD( GSU )
+
+      END SUBROUTINE W3BBOX_GRD_R8
+!/
+!/ End of W3BBOX ===================================================== /
 !/
 
 
@@ -3589,7 +3789,7 @@
 !/
 !/ =================================================================== /
 !/
-!/    SUBROUTINE W3CGDM( IJG, LLG, ICLO, TILED, &
+!/    SUBROUTINE W3CGDM( IJG, LLG, ICLO, PTILED, QTILED, &
 !/                       NP, NQ, LBI, UBI, LBO, UBO, X, Y, &
 !/                       NFD, SPHERE, RADIUS, DX, DY, &
 !/                       GPPC, GQQC, GPQC, GSQR, &
@@ -3675,8 +3875,10 @@
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
 !       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure
-!       TILED   Log.   I   Logical flag indicating that input arrays are tiled
-!                          with halos of width >= NFD/2
+!       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in P-axis with halos of width >= NFD/2
+!       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in Q-axis with halos of width >= NFD/2
 !       NP      Int.   I   Range of P index coordinate: P in [1,NP]
 !       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
@@ -3744,7 +3946,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3CGDM_R4( IJG, LLG, ICLO, TILED, &
+      SUBROUTINE W3CGDM_R4( IJG, LLG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, X, Y, &
                             NFD, SPHERE, RADIUS, DX, DY, &
                             GPPC, GQQC, GPQC, GSQR, &
@@ -3756,7 +3958,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -3898,7 +4100,7 @@
                   DXDPL = DX
                   DYDPL = ZERO
                 ELSE
-                  CALL DXYDP( N, K, C, IJG, LLG, ICLO, TILED, &
+                  CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               NP, NQ, LBI, UBI, P, Q, DXDPL, DYDPL, &
                               X4=X, Y4=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
@@ -3914,7 +4116,7 @@
                   DXDQL = ZERO
                   DYDQL = DY
                 ELSE
-                  CALL DXYDQ( N, K, C, IJG, LLG, ICLO, TILED, &
+                  CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               NP, NQ, LBI, UBI, P, Q, DXDQL, DYDQL, &
                               X4=X, Y4=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
@@ -4001,7 +4203,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3CGDM_R8( IJG, LLG, ICLO, TILED, &
+      SUBROUTINE W3CGDM_R8( IJG, LLG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, X, Y, &
                             NFD, SPHERE, RADIUS, DX, DY, &
                             GPPC, GQQC, GPQC, GSQR, &
@@ -4013,7 +4215,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -4155,7 +4357,7 @@
                   DXDPL = DX
                   DYDPL = ZERO
                 ELSE
-                  CALL DXYDP( N, K, C, IJG, LLG, ICLO, TILED, &
+                  CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               NP, NQ, LBI, UBI, P, Q, DXDPL, DYDPL, &
                               X8=X, Y8=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
@@ -4171,7 +4373,7 @@
                   DXDQL = ZERO
                   DYDQL = DY
                 ELSE
-                  CALL DXYDQ( N, K, C, IJG, LLG, ICLO, TILED, &
+                  CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               NP, NQ, LBI, UBI, P, Q, DXDQL, DYDQL, &
                               X8=X, Y8=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
@@ -4258,7 +4460,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE DXYDP( N, K, C, IJG, LLG, ICLO, TILED, NP, NQ, &
+      SUBROUTINE DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, NP, NQ, &
                         LB, UB, P, Q, DXDP, DYDP, X4, Y4, X8, Y8, RC )
 !     *** INTERNAL SUBROUTINE ***
       INTEGER, INTENT(IN)   :: N
@@ -4267,7 +4469,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
@@ -4309,33 +4511,32 @@
 
       P0 = P
       Q0 = Q
-      IF ( .NOT.TILED ) THEN
-        IF ( MOD(ICLO,2).EQ.0 ) THEN
-            IF ( P0.LT.1 ) THEN
-                P0 = NP + P0
-              ELSE IF ( P0.GT.NP ) THEN
-                P0 = P0 - NP
-              END IF
-          END IF
-        IF ( MOD(ICLO,3).EQ.0 ) THEN
-            IF ( Q0.LT.1 ) THEN
-                Q0 = NQ + Q0
-              ELSE IF ( Q0.GT.NQ ) THEN
-                Q0 = Q0 - NQ
-              END IF
-          END IF
-        IF ( P0.LT.1 .OR. P0.GT.NP .OR. Q0.LT.1 .OR. Q0.GT.NQ ) THEN
-            WRITE(0,'(/1A,1A,/1A,1A,6I6/)') 'DXYDP ERROR -- ', &
-            'input index coordinates outside allowed range', &
-            'DXYDP ERROR -- ','NP,NQ,P,Q,P0,Q0:',NP,NQ,P,Q,P0,Q0
-            ISTAT = 1
-            IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-              ELSE
-                CALL EXTCDE (ISTAT)
-              END IF
-          END IF
+      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.PTILED ) THEN
+          IF ( P0.LT.1 ) THEN
+              P0 = NP + P0
+            ELSE IF ( P0.GT.NP ) THEN
+              P0 = P0 - NP
+            END IF
+        END IF
+      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.QTILED ) THEN
+          IF ( Q0.LT.1 ) THEN
+              Q0 = NQ + Q0
+            ELSE IF ( Q0.GT.NQ ) THEN
+              Q0 = Q0 - NQ
+            END IF
+        END IF
+      IF ( (P0.LT.1 .OR. P0.GT.NP) .AND. .NOT.PTILED .OR. &
+           (Q0.LT.1 .OR. Q0.GT.NQ) .AND. .NOT.QTILED ) THEN
+          WRITE(0,'(/1A,1A,/1A,1A,6I6/)') 'DXYDP ERROR -- ', &
+          'input index coordinates outside allowed range', &
+          'DXYDP ERROR -- ','NP,NQ,P,Q,P0,Q0:',NP,NQ,P,Q,P0,Q0
+          ISTAT = 1
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
         END IF
 !
 ! -------------------------------------------------------------------- /
@@ -4353,7 +4554,7 @@
             END IF
         END IF
 
-      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.TILED ) THEN
+      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.PTILED ) THEN
           QQ = Q0
           DO L = 0, N
               PP = P0 + K(L,I)
@@ -4441,7 +4642,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE DXYDQ( N, K, C, IJG, LLG, ICLO, TILED, NP, NQ, &
+      SUBROUTINE DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, NP, NQ, &
                         LB, UB, P, Q, DXDQ, DYDQ, X4, Y4, X8, Y8, RC )
 !     *** INTERNAL SUBROUTINE ***
       INTEGER, INTENT(IN)   :: N
@@ -4450,7 +4651,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
@@ -4492,33 +4693,32 @@
 
       P0 = P
       Q0 = Q
-      IF ( .NOT.TILED ) THEN
-        IF ( MOD(ICLO,2).EQ.0 ) THEN
-            IF ( P0.LT.1 ) THEN
-                P0 = NP + P0
-              ELSE IF ( P0.GT.NP ) THEN
-                P0 = P0 - NP
-              END IF
-          END IF
-        IF ( MOD(ICLO,3).EQ.0 ) THEN
-            IF ( Q0.LT.1 ) THEN
-                Q0 = NQ + Q0
-              ELSE IF ( Q0.GT.NQ ) THEN
-                Q0 = Q0 - NQ
-              END IF
-          END IF
-        IF ( P0.LT.1 .OR. P0.GT.NP .OR. Q0.LT.1 .OR. Q0.GT.NQ ) THEN
-            WRITE(0,'(/1A,1A,/1A,1A,6I6/)') 'DXYDQ ERROR -- ', &
-            'input index coordinates outside allowed range', &
-            'DXYDP ERROR -- ','NP,NQ,P,Q,P0,Q0:',NP,NQ,P,Q,P0,Q0
-            ISTAT = 1
-            IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-              ELSE
-                CALL EXTCDE (ISTAT)
-              END IF
-          END IF
+      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.PTILED ) THEN
+          IF ( P0.LT.1 ) THEN
+              P0 = NP + P0
+            ELSE IF ( P0.GT.NP ) THEN
+              P0 = P0 - NP
+            END IF
+        END IF
+      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.QTILED ) THEN
+          IF ( Q0.LT.1 ) THEN
+              Q0 = NQ + Q0
+            ELSE IF ( Q0.GT.NQ ) THEN
+              Q0 = Q0 - NQ
+            END IF
+        END IF
+      IF ( (P0.LT.1 .OR. P0.GT.NP) .AND. .NOT.PTILED .OR. &
+           (Q0.LT.1 .OR. Q0.GT.NQ) .AND. .NOT.QTILED ) THEN
+          WRITE(0,'(/1A,1A,/1A,1A,6I6/)') 'DXYDQ ERROR -- ', &
+          'input index coordinates outside allowed range', &
+          'DXYDQ ERROR -- ','NP,NQ,P,Q,P0,Q0:',NP,NQ,P,Q,P0,Q0
+          ISTAT = 1
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
         END IF
 !
 ! -------------------------------------------------------------------- /
@@ -4542,7 +4742,7 @@
             END IF
         END IF
 
-      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.TILED ) THEN
+      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.QTILED ) THEN
           PP = P0
           DO L = 0, N
               QQ = Q0 + K(L,J)
@@ -4569,7 +4769,7 @@
                     END IF
                 END IF
             END DO
-        ELSE IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.TILED ) THEN
+        ELSE IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.(PTILED.OR.QTILED) ) THEN
           DO L = 0, N
               PP = P0
               QQ = Q0 + K(L,J)
@@ -4794,7 +4994,7 @@
 !/
 !/ =================================================================== /
 !/
-!/    SUBROUTINE W3GRD0( NFD, IJG, ICLO, TILED, &
+!/    SUBROUTINE W3GRD0( NFD, IJG, ICLO, PTILED, QTILED, &
 !/                       NP, NQ, LBI, UBI, LBO, UBO, &
 !/                       DPDX, DPDY, DQDX, DQDY, &
 !/                       F, DFDX, DFDY, MASK, RC )
@@ -4819,8 +5019,10 @@
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
 !       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure.
-!       TILED   Log.   I   Logical flag indicating that input arrays are tiled
-!                          with halos of width >= NFD/2
+!       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in P-axis with halos of width >= NFD/2
+!       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in Q-axis with halos of width >= NFD/2
 !       NP      Int.   I   Range of P index coordinate: P in [1,NP]
 !       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
@@ -4868,7 +5070,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3GRD0_R4( NFD, IJG, ICLO, TILED, &
+      SUBROUTINE W3GRD0_R4( NFD, IJG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             F, DFDX, DFDY, MASK, RC )
@@ -4876,7 +5078,7 @@
       INTEGER, INTENT(IN)   :: NFD
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -4953,6 +5155,9 @@
 !
       DO I2 = LBO(2), UBO(2)
           DO I1 = LBO(1), UBO(1)
+              IF ( PRESENT(MASK) ) THEN
+                  IF ( MASK(I1,I2) ) CYCLE
+                END IF
               IF ( IJG ) THEN
                   P = I1
                   Q = I2
@@ -4960,7 +5165,7 @@
                   P = I2
                   Q = I1
                 END IF
-              CALL DFDPQ ( NFD, K, C, IJG, ICLO, TILED, &
+              CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
                            NP, NQ, LBI, UBI, P, Q, &
                            F4=F, DFDP=DFDP, DFDQ=DFDQ, &
                            MASK=MASK, RC=ISTAT )
@@ -4981,7 +5186,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3GRD0_R8( NFD, IJG, ICLO, TILED, &
+      SUBROUTINE W3GRD0_R8( NFD, IJG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             F, DFDX, DFDY, MASK, RC )
@@ -4989,7 +5194,7 @@
       INTEGER, INTENT(IN)   :: NFD
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -5066,6 +5271,9 @@
 !
       DO I2 = LBO(2), UBO(2)
           DO I1 = LBO(1), UBO(1)
+              IF ( PRESENT(MASK) ) THEN
+                  IF ( MASK(I1,I2) ) CYCLE
+                END IF
               IF ( IJG ) THEN
                   P = I1
                   Q = I2
@@ -5073,7 +5281,7 @@
                   P = I2
                   Q = I1
                 END IF
-              CALL DFDPQ ( NFD, K, C, IJG, ICLO, TILED, &
+              CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
                            NP, NQ, LBI, UBI, P, Q, &
                            F8=F, DFDP=DFDP, DFDQ=DFDQ, &
                            MASK=MASK, RC=ISTAT )
@@ -5094,7 +5302,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE DFDPQ( N, K, C, IJG, ICLO, TILED, &
+      SUBROUTINE DFDPQ( N, K, C, IJG, ICLO, PTILED, QTILED, &
                         NP, NQ, LB, UB, P, Q, &
                         F4, F8, DFDP, DFDQ, &
                         G4, G8, DGDP, DGDQ, &
@@ -5106,7 +5314,7 @@
       REAL(8), INTENT(IN)   :: C(0:N,0:N,1:N)
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
@@ -5157,33 +5365,32 @@
 
       P0 = P
       Q0 = Q
-      IF ( .NOT.TILED ) THEN
-        IF ( MOD(ICLO,2).EQ.0 ) THEN
-            IF ( P0.LT.1 ) THEN
-                P0 = NP + P0
-              ELSE IF ( P0.GT.NP ) THEN
-                P0 = P0 - NP
-              END IF
-          END IF
-        IF ( MOD(ICLO,3).EQ.0 ) THEN
-            IF ( Q0.LT.1 ) THEN
-                Q0 = NQ + Q0
-              ELSE IF ( Q0.GT.NQ ) THEN
-                Q0 = Q0 - NQ
-              END IF
-          END IF
-        IF ( P0.LT.1 .OR. P0.GT.NP .OR. Q0.LT.1 .OR. Q0.GT.NQ ) THEN
-            WRITE(0,'(/1A,1A,/1A,1A,6I6/)') 'DFDPQ ERROR -- ', &
-            'input index coordinates outside allowed range', &
-            'DXYDP ERROR -- ','NP,NQ,P,Q,P0,Q0:',NP,NQ,P,Q,P0,Q0
-            ISTAT = 1
-            IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-              ELSE
-                CALL EXTCDE (ISTAT)
-              END IF
-          END IF
+      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.PTILED ) THEN
+          IF ( P0.LT.1 ) THEN
+              P0 = NP + P0
+            ELSE IF ( P0.GT.NP ) THEN
+              P0 = P0 - NP
+            END IF
+        END IF
+      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.QTILED ) THEN
+          IF ( Q0.LT.1 ) THEN
+              Q0 = NQ + Q0
+            ELSE IF ( Q0.GT.NQ ) THEN
+              Q0 = Q0 - NQ
+            END IF
+        END IF
+      IF ( (P0.LT.1 .OR. P0.GT.NP) .AND. .NOT.PTILED .OR. &
+           (Q0.LT.1 .OR. Q0.GT.NQ) .AND. .NOT.QTILED ) THEN
+          WRITE(0,'(/1A,1A,/1A,1A,6I6/)') 'DFDPQ ERROR -- ', &
+          'input index coordinates outside allowed range', &
+          'DFDPQ ERROR -- ','NP,NQ,P,Q,P0,Q0:',NP,NQ,P,Q,P0,Q0
+          ISTAT = 1
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
         END IF
 
       COMP_M = PRESENT(MASK)
@@ -5210,7 +5417,7 @@
             END IF
         END IF
 
-      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.TILED ) THEN
+      IF ( MOD(ICLO,2).EQ.0 .AND. .NOT.PTILED ) THEN
           QQ = Q0
           DO L = 0, N
               PP = P0 + K(L,I,N)
@@ -5335,7 +5542,7 @@
             END IF
         END IF
 
-      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.TILED ) THEN
+      IF ( MOD(ICLO,3).EQ.0 .AND. .NOT.QTILED ) THEN
           PP = P0
           DO L = 0, N
               QQ = Q0 + K(L,J,N)
@@ -5368,7 +5575,7 @@
                     END IF
                 END IF
             END DO
-        ELSE IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.TILED ) THEN
+        ELSE IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.(PTILED.OR.QTILED) ) THEN
           DO L = 0, N
               PP = P0
               QQ = Q0 + K(L,J,N)
@@ -5508,7 +5715,7 @@
 !/
 !/ =================================================================== /
 !/
-!/    SUBROUTINE W3DIV1( NFD, IJG, ICLO, TILED, &
+!/    SUBROUTINE W3DIV1( NFD, IJG, ICLO, PTILED, QTILED, &
 !/                       NP, NQ, LBI, UBI, LBO, UBO, &
 !/                       DPDX, DPDY, DQDX, DQDY, &
 !/                       VP, VQ, DIVV, MASK, RC )
@@ -5533,8 +5740,10 @@
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
 !       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure.
-!       TILED   Log.   I   Logical flag indicating that input arrays are tiled
-!                          with halos of width >= NFD/2
+!       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in P-axis with halos of width >= NFD/2
+!       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in Q-axis with halos of width >= NFD/2
 !       NP      Int.   I   Range of P index coordinate: P in [1,NP]
 !       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
@@ -5584,7 +5793,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3DIV1_R4( NFD, IJG, ICLO, TILED, &
+      SUBROUTINE W3DIV1_R4( NFD, IJG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             VP, VQ, DIVV, MASK, RC )
@@ -5592,7 +5801,7 @@
       INTEGER, INTENT(IN)   :: NFD
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -5670,6 +5879,9 @@
 !
       DO I2 = LBO(2), UBO(2)
           DO I1 = LBO(1), UBO(1)
+              IF ( PRESENT(MASK) ) THEN
+                  IF ( MASK(I1,I2) ) CYCLE
+                END IF
               IF ( IJG ) THEN
                   P = I1
                   Q = I2
@@ -5677,7 +5889,7 @@
                   P = I2
                   Q = I1
                 END IF
-              CALL DFDPQ ( NFD, K, C, IJG, ICLO, TILED, &
+              CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
                            NP, NQ, LBI, UBI, P, Q, &
                            F4=VP, DFDP=DVPDP, DFDQ=DVPDQ, &
                            G4=VQ, DGDP=DVQDP, DGDQ=DVQDQ, &
@@ -5700,7 +5912,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3DIV1_R8( NFD, IJG, ICLO, TILED, &
+      SUBROUTINE W3DIV1_R8( NFD, IJG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             VP, VQ, DIVV, MASK, RC )
@@ -5708,7 +5920,7 @@
       INTEGER, INTENT(IN)   :: NFD
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -5786,6 +5998,9 @@
 !
       DO I2 = LBO(2), UBO(2)
           DO I1 = LBO(1), UBO(1)
+              IF ( PRESENT(MASK) ) THEN
+                  IF ( MASK(I1,I2) ) CYCLE
+                END IF
               IF ( IJG ) THEN
                   P = I1
                   Q = I2
@@ -5793,7 +6008,7 @@
                   P = I2
                   Q = I1
                 END IF
-              CALL DFDPQ ( NFD, K, C, IJG, ICLO, TILED, &
+              CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
                            NP, NQ, LBI, UBI, P, Q, &
                            F8=VP, DFDP=DVPDP, DFDQ=DVPDQ, &
                            G8=VQ, DGDP=DVQDP, DGDQ=DVQDQ, &
@@ -5823,7 +6038,7 @@
 !/
 !/ =================================================================== /
 !/
-!/    SUBROUTINE W3DIV2( NFD, IJG, ICLO, TILED, &
+!/    SUBROUTINE W3DIV2( NFD, IJG, ICLO, PTILED, QTILED, &
 !/                       NP, NQ, LBI, UBI, LBO, UBO, &
 !/                       DPDX, DPDY, DQDX, DQDY, &
 !/                       SPP, SQQ, SPQ, DSX, DSY, MASK, RC )
@@ -5848,8 +6063,10 @@
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
 !       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure.
-!       TILED   Log.   I   Logical flag indicating that input arrays are tiled
-!                          with halos of width >= NFD/2
+!       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in P-axis with halos of width >= NFD/2
+!       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
+!                          in Q-axis with halos of width >= NFD/2
 !       NP      Int.   I   Range of P index coordinate: P in [1,NP]
 !       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
@@ -5902,7 +6119,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3DIV2_R4( NFD, IJG, ICLO, TILED, &
+      SUBROUTINE W3DIV2_R4( NFD, IJG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             SPP, SQQ, SPQ, DSX, DSY, MASK, RC )
@@ -5910,7 +6127,7 @@
       INTEGER, INTENT(IN)   :: NFD
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -5990,6 +6207,9 @@
 !
       DO I2 = LBO(2), UBO(2)
           DO I1 = LBO(1), UBO(1)
+              IF ( PRESENT(MASK) ) THEN
+                  IF ( MASK(I1,I2) ) CYCLE
+                END IF
               IF ( IJG ) THEN
                   P = I1
                   Q = I2
@@ -5997,7 +6217,7 @@
                   P = I2
                   Q = I1
                 END IF
-              CALL DFDPQ ( NFD, K, C, IJG, ICLO, TILED, &
+              CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
                            NP, NQ, LBI, UBI, P, Q, &
                            F4=SPP, DFDP=DPPDP, DFDQ=DPPDQ, &
                            G4=SQQ, DGDP=DQQDP, DGDQ=DQQDQ, &
@@ -6024,7 +6244,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3DIV2_R8( NFD, IJG, ICLO, TILED, &
+      SUBROUTINE W3DIV2_R8( NFD, IJG, ICLO, PTILED, QTILED, &
                             NP, NQ, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             SPP, SQQ, SPQ, DSX, DSY, MASK, RC )
@@ -6032,7 +6252,7 @@
       INTEGER, INTENT(IN)   :: NFD
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
-      LOGICAL, INTENT(IN)   :: TILED
+      LOGICAL, INTENT(IN)   :: PTILED, QTILED
       INTEGER, INTENT(IN)   :: NP, NQ
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
@@ -6112,6 +6332,9 @@
 !
       DO I2 = LBO(2), UBO(2)
           DO I1 = LBO(1), UBO(1)
+              IF ( PRESENT(MASK) ) THEN
+                  IF ( MASK(I1,I2) ) CYCLE
+                END IF
               IF ( IJG ) THEN
                   P = I1
                   Q = I2
@@ -6119,7 +6342,7 @@
                   P = I2
                   Q = I1
                 END IF
-              CALL DFDPQ ( NFD, K, C, IJG, ICLO, TILED, &
+              CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
                            NP, NQ, LBI, UBI, P, Q, &
                            F8=SPP, DFDP=DPPDP, DFDQ=DPPDQ, &
                            G8=SQQ, DGDP=DQQDP, DGDQ=DQQDQ, &
