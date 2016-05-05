@@ -62,9 +62,6 @@
 !/
 !/ Public variables
 !/
-      INTEGER, PARAMETER      :: NHMAX =    25
-      INTEGER(KIND=4)         :: NH(3), THO(2,3,NHMAX)
-      REAL                    :: HA(NHMAX,3), HD(NHMAX,3), HA2(NHMAX,3)
       !air kinematic viscosity (used in WAM)
       INTEGER, PARAMETER      :: ITAUMAX=200,JUMAX=200
       INTEGER, PARAMETER      :: IUSTAR=100,IALPHA=200, ILEVTAIL=50
@@ -77,24 +74,11 @@
       REAL                    :: DELTAIL
       REAL,    PARAMETER      :: UMAX    = 50.
       REAL,    PARAMETER      :: TAUWMAX = 2.2361 !SQRT(5.)
-      REAL, DIMENSION(:)   , ALLOCATABLE :: XSTRESS,YSTRESS
       INTEGER                 :: DIKCUMUL
 !  Size of wave height table for integrating the PDF of wave heights
       INTEGER,    PARAMETER      :: NKHI=100
-      REAL, PARAMETER         :: PI=3.14157, G=9.81
       REAL,    PARAMETER      :: FAC_KD1=1.01, FAC_KD2=1000., KHSMAX=2., KHMAX=2.
       REAL,    PARAMETER      ::KDMAX=200000.
-! variables for negative wind input (beta from ST2)
-!
-      INTEGER, PARAMETER, PRIVATE :: NRSIGA =  400
-      INTEGER, PARAMETER, PRIVATE :: NRDRAG =   20
-      REAL, PARAMETER, PRIVATE    :: SIGAMX =   40.
-      REAL, PARAMETER, PRIVATE    :: DRAGMX =    1.E-2
-!
-      REAL, PRIVATE           :: DSIGA, DDRAG,                        &
-                                 BETATB(-NRSIGA:NRSIGA+1,NRDRAG+1)
-!/
-      LOGICAL, SAVE , PRIVATE :: FIRST = .TRUE.
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -172,7 +156,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: TPIINV
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, DDEN, WWNMEANP, &
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF 
@@ -195,13 +179,11 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IKP1   ! wind sea peak index
-      INTEGER                 :: IS, IK, ITH, I1, ITT
+      INTEGER                 :: IS, IK, ITH
 !/S      INTEGER, SAVE           :: IENT = 0
 
-      REAL                    :: TAUW, EBAND, EMEANWS, RDCH, FXPMC,    &
-                                 WNP, UNZ, FP,                         &
-                                 R1, CP, EB(NK),EB2(NK),ALFA(NK)
+      REAL                    :: TAUW, EBAND, EMEANWS,UNZ,            &
+                                 EB(NK),EB2(NK),ALFA(NK) 
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -288,18 +270,18 @@
 !
 ! 6.  Final test output ---------------------------------------------- *
 !
-!/T      WRITE (NDST,9060) EMEAN, WNMEAN, TPIINV, CP, CD, Z0
+!/T      WRITE (NDST,9060) EMEAN, WNMEAN, TPIINV, USTAR, CD, Z0
 !
       RETURN
 !
 ! Formats
 !
-!/T 9060 FORMAT (' TEST W3SPR3 : E,WN MN :',F8.3,F8.4/                   &
-!/T              '        FP, CP, CD, Z0 :',F8.3,F7.2,1X,2F9.5)
+!/T 9060 FORMAT (' TEST W3SPR4 : E,WN MN :',F8.3,F8.4/                   &
+!/T              ' TPIINV, USTAR, CD, Z0 :',F8.3,F7.2,1X,2F9.5)
 !/
-!/ End of W3SPR3 ----------------------------------------------------- /
+!/ End of W3SPR4 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE W3SPR4
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SIN4 (A, CG, K, U, USTAR, DRAT, AS, USDIR, Z0, CD,    &
                          TAUWX, TAUWY, TAUWNX, TAUWNY, S, D, LLWS,       &
@@ -382,7 +364,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: GRAV,nu_air,KAPPA,TPI,FWTABLE,SIZEFWTABLE, & 
+!/T                        RADE                                      & 
+                           DELAB,ABMIN
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&
                           TTAUWSHELTER, SSWELLF, DDEN2, DTH, SSINTHP,  &
@@ -408,21 +392,18 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS,IK,ITH, IOMA, ICL
+      INTEGER                 :: IS,IK,ITH
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: FACLN1, FACLN2, ULAM, CLAM, OMA, &
-                                 RD1, RD2, LAMBDA, COSFAC 
+      REAL                    :: FACLN1, FACLN2, LAMBDA
       REAL                    :: COSU, SINU, TAUX, TAUY, USDIRP, USTP
       REAL                    :: TAUPX, TAUPY, UST2, TAUW, TAUWB
       REAL   , PARAMETER      :: EPS1 = 0.00001, EPS2 = 0.000001
       REAL                    :: Usigma           !standard deviation of U due to gustiness
       REAL                    :: USTARsigma       !standard deviation of USTAR due to gustiness
-      REAL                    :: BETA, mu_janssen, omega_janssen,     &
-                                 CM,ZCO,UCO,UCN,ZCN, &
+      REAL                    :: CM,UCN,ZCN, &
                                  Z0VISC, Z0NOZ, EB,  &
-                                 EBX, EBY, AORB, AORB1, FW, UORB, M2, TH2, &
+                                 EBX, EBY, AORB, AORB1, FW, UORB, TH2, &
                                  RE, FU, FUD, SWELLCOEFV, SWELLCOEFT
-      REAL                   :: HSBLOW, ABJSEA, FACTOR
       REAL                   ::  PTURB, PVISC, SMOOTH
       REAL XI,DELI1,DELI2
       REAL XJ,DELJ1,DELJ2
@@ -438,12 +419,18 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-!/S      CALL STRACE (IENT, 'W3SIN3')
+!/S      CALL STRACE (IENT, 'W3SIN4')
 !
 !/T      WRITE (NDST,9000) BBETA, USTAR, USDIR*RADE
 !
 ! 1.  Preparations
 !
+      !JDM: Initializing values to zero, they shouldn't be used unless
+      !set in another place, but seems to solve some bugs with certain
+      !compilers. 
+      DSTAB =0.
+      STRESSSTAB =0. 
+      STRESSSTABN =0.
 !
 ! 1.a  estimation of surface roughness parameters
 !
@@ -711,9 +698,9 @@
 !
 !/T 9000 FORMAT (' TEST W3SIN4 : COMMON FACT.: ',3E10.3)
 !/
-!/ End of W3SIN3 ----------------------------------------------------- /
+!/ End of W3SIN4 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE W3SIN4
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INSIN4(FLTABS)
 !/
@@ -793,9 +780,9 @@
       INTEGER  SDSNTH, ITH, I_INT, J_INT, IK, IK2, ITH2 , IS, IS2
       INTEGER  IKL, ID, ICON, IKD, IKHS, IKH, TOTO
       REAL     C, C2
-      REAL     DIFF1, DIFF2, K_SUP(NK), BINF, BSUP, K(NK), CGG, PROF
-      REAL     KIK, DHS, KD, KHS, KH, B, XT, GAM, DKH, PR, W, EPS
-      REAL     DKD, DELTAFIT, NHI, H, IH, DH
+      REAL     DIFF1, DIFF2, BINF, BSUP, CGG, PROF
+      REAL     KIK, DHS, KD, KHS, KH, XT, GAM, DKH, PR, W, EPS
+      REAL     DKD
       REAL, DIMENSION(:,:)   , ALLOCATABLE :: SIGTAB
       REAL, DIMENSION(:,:)   , ALLOCATABLE :: K1, K2
 !/
@@ -1040,7 +1027,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: KAPPA, GRAV
       USE W3GDATMD, ONLY: ZZWND, AALPHA, ZZ0MAX
       IMPLICIT NONE
       INTEGER, PARAMETER      :: NITER=10
@@ -1151,7 +1138,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: KAPPA, GRAV
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE, ZZ0MAX
 !/T      USE W3ODATMD, ONLY: NDST
@@ -1184,7 +1171,7 @@
       REAL, ALLOCATABLE       :: W(:)
       REAL                    :: ZX,ZARG,ZMU,ZLOG,ZZ00,ZBETA
       REAL                    :: Y,YC,DELY
-      INTEGER                 :: I,J,K,L
+      INTEGER                 :: J,K,L
       REAL                    :: X0
 !
 !/S      CALL STRACE (IENT, 'TABU_HF')
@@ -1294,7 +1281,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS, ONLY: KAPPA, GRAV
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE,  &
                           TTAUWSHELTER, ZZ0MAX
@@ -1518,11 +1505,9 @@
       REAL, intent(in) :: WINDSPEED,TAUW
       REAL, intent(out) :: USTAR, Z0, CHARN
       ! local variables
-      real a,b  ! constants of parameterisation
-      real cd   ! drag coefficient
       REAL SQRTCDM1
-      REAL X,XI,DELI1,DELI2,XJ,delj1,delj2
-      REAL UST,DELTOLD,TAUW_LOCAL
+      REAL XI,DELI1,DELI2,XJ,delj1,delj2
+      REAL TAUW_LOCAL
       INTEGER IND,J
 !
       TAUW_LOCAL=MAX(MIN(TAUW,TAUWMAX),0.)
@@ -1551,7 +1536,6 @@
       END SUBROUTINE CALC_USTAR
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, S,      &
-
                          D, IX, IY, BRLAMBDA, WHITECAP )
 !/
 !/                  +-----------------------------------+
@@ -1621,7 +1605,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
+      USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, RADE
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, DDEN,              &
                           SSDSC, EC2, ESC,                           &
                           SIG, SSDSP, ECOS, ESIN, DTH, DSIP,         &
@@ -1651,24 +1635,22 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: IS, IS2, IS0, IS20, IA, J, IKL, ITOT, &
-                                 IKC, NTOT, ID, NKL, IO
+      INTEGER                 :: IS, IS2, IS0, IKL, IKC, ID, NKL
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER                 :: IK, IK1, ITH, I_INT, IK2, ITH2, IKIND, L,       & 
+      INTEGER                 :: IK, IK1, ITH, IK2, ITH2,             & 
                                  IKHS, IKD, SDSNTH, IT, IKM, NKM
       INTEGER                 :: NSMOOTH(NK)
-      REAL                    :: FACTOR, COSWIND, ASUM, SDIAGISO
+      REAL                    :: COSWIND, ASUM, SDIAGISO
       REAL                    :: COEF1, COEF2, COEF3, COEF4(NK)
-      REAL                    :: ALFAMEAN, KB, MSSLONG(NK,NTH)
-      REAL                    :: FACTURB, DTURB, DCUMULATIVE, BREAKFRACTION
+      REAL                    :: MSSLONG(NK,NTH)
+      REAL                    :: FACTURB, DTURB, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
       REAL                    :: S1(NK), E1(NK)
       INTEGER                 :: NTIMES(NK)
-      REAL                    :: GAM, XT, M1
+      REAL                    :: GAM, XT
       REAL                    :: DK(NK), HS(NK), KBAR(NK), DCK(NK)
       REAL                    :: EFDF(NK)     ! Energy integrated over a spectral band
       INTEGER                 :: IKSUP(NK)
-      REAL                    :: Q1(NK) 
       REAL                    :: FACSAT, DKHS, FACSTRAIN 
       REAL                    :: BTH0(NK)     !saturation spectrum 
       REAL                    :: BTH(NSPEC)   !saturation spectrum 
@@ -1677,12 +1659,11 @@
       REAL                    :: SBK(NSPEC)  
       INTEGER                 :: IMSSMAX(NK)   
       REAL                    :: SBKT(NK), MSSSUM(NK), FACHF, MSSSUMC, MSSSUMS  
-      REAL                    :: W, MICHE, X
+      REAL                    :: MICHE, X
 !/T0      REAL                    :: DOUT(NK,NTH)
-      REAL                    :: QB(NK), S2(NK), KD, DC(NK)
+      REAL                    :: QB(NK), S2(NK)
       REAL                    :: TSTR, TMAX, DT, T, MFT
-      REAL                    :: PB(NSPEC), PB2(NSPEC), LAMBDA(NSPEC)
-      LOGICAL                 :: MASK(NSPEC)
+      REAL                    :: PB(NSPEC), PB2(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1691,6 +1672,18 @@
 !
 !---------------------------------------------------------------------- 
 !
+! 0.  Pre-Initialization to zero out arrays. All arrays should be reset
+!     within the computation, but these are helping with some bugs
+!     found in certain compilers
+      NSMOOTH=0
+      MSSLONG=0.;S1=0.; E1=0.
+      NTIMES=0;IKSUP=0;IMSSMAX=0
+      DK=0.; HS=0.; KBAR=0.; DCK=0.; EFDF=0.
+      BTH0=0.; BTH=0.; BTH0S=0.
+      BTHS=0.; SBK=0.; SBKT=0.; MSSSUM=0.
+!/T0  DOUT=0.
+      QB=0.; S2=0.;PB=0.; PB2=0.
+
 ! 1.  Initialization and numerical factors
 !
       FACTURB=SSDSC(5)*USTAR**2/GRAV*DAIR/DWAT
@@ -2093,10 +2086,10 @@
         END IF
 !
       IF (SSDSC(9).GT.0) THEN 
-        FACHF=SSDSC(9)/FLOAT(NKM*NTH)
         DO IK2 = IK1, NK-DIKCUMUL
           IKM= MIN(NK,IK2+2*DIKCUMUL)
           NKM=IKM-(IK2+DIKCUMUL)+1
+          FACHF=SSDSC(9)/FLOAT(NKM*NTH)
           DO IK = IK2+DIKCUMUL, IKM
             S((IK-1)*NTH+1:IK*NTH) = S((IK-1)*NTH+1:IK*NTH) + ABS(SBKT(IK2))*FACHF
             END DO
