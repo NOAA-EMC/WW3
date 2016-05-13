@@ -9,8 +9,8 @@
 !/                  +-----------------------------------+
 !/
 !/    01-Jul-2013 : Origination.                        ( version 4.xx )
-!/    18-Mar-2015 : Clean-up/prepare for distribution   ( version 5.xx )
-!/    15-Jan-2016 : Updates                             ( version 5.xx )
+!/    18-Mar-2015 : Clean-up/prepare for distribution   ( version 5.12 )
+!/    15-Jan-2016 : Updates                             ( version 5.12 )
 !/                                                      ( B. G. Reichl )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -84,7 +84,7 @@
 !/                  +-----------------------------------+
 !/
 !/    01-Jul-2013 : Origination.                        ( version 4.xx )
-!/    18-Mar-2015 : Prepare for submission              ( version 5.xx )
+!/    18-Mar-2015 : Prepare for submission              ( version 5.12 )
 !/
 !  1. Purpose :
 !
@@ -739,7 +739,7 @@
 !/                  | Last update :         15-Jan-2016 |
 !/                  +-----------------------------------+
 !/
-!/    15-Jan-2016 : Origination.                        ( version 5.xx )
+!/    15-Jan-2016 : Origination.                        ( version 5.12 )
 !/
 !  1. Purpose :
 !
@@ -829,7 +829,7 @@
 !/                  | Last update :         15-Jan-2016 |
 !/                  +-----------------------------------+
 !/
-!/    15-Jan-2016 : Origination.                        ( version 5.xx )
+!/    15-Jan-2016 : Origination.                        ( version 5.12 )
 !/
 !  1. Purpose :
 !

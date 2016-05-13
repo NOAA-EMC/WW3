@@ -9,8 +9,8 @@
 !/                  +-----------------------------------+
 !/
 !/    01-Jul-2013 : Origination                         (version 3.14)
-!/    16-May-2014 : Finalizing                          (version 4.xx)
-!/    19-Mar-2015 : Extending for non-10 m winds        (version 5.xx)
+!/    16-May-2014 : Finalizing                          (version 4.18)
+!/    19-Mar-2015 : Extending for non-10 m winds        (version 5.12)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -69,7 +69,7 @@
 !/                  +-----------------------------------+
 !/
 !/    01-Jul-2013 : Origination                         (version 3.14)
-!/    19-Mar-2015 : Clean-up for submission             (version 5.xx)
+!/    19-Mar-2015 : Clean-up for submission             (version 5.12)
 !/
 !  1. Purpose :
 !
