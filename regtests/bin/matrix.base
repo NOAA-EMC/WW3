@@ -923,6 +923,8 @@
     echo "$rtst -s ST3_PR3_UQ   -w work_ST3_PR3_UQ  $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST3_PR3_UNO  -w work_ST3_PR3_UNO $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST4_PR1      -w work_ST4_PR1     $ww3 ww3_ts3" >> matrix.body
+    echo "$rtst -s ST4_PR1_FLD1 -w work_ST4_FLD1    $ww3 ww3_ts3" >> matrix.body
+    echo "$rtst -s ST4_PR1_FLD2 -w work_ST4_FLD2    $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST4_PR2_UQ   -w work_ST4_PR2_UQ  $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST4_PR2_UNO  -w work_ST4_PR2_UNO $ww3 ww3_ts3" >> matrix.body
     echo "$rtst -s ST4_PR3_UQ   -w work_ST4_PR3_UQ  $ww3 ww3_ts3" >> matrix.body
@@ -1114,6 +1116,8 @@
       echo ' ' >> matrix.body ; fi
     if [ "$hur1mg" = 'y' ]
     then
+      echo "$rtst -s ST4_PR1_FLD1_MPI -w work_ST4_FLD1_MPI               -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
+      echo "$rtst -s ST4_PR1_FLD2_MPI -w work_ST4_FLD2_MPI               -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
       echo "$rtst -s ST4_PR1_MPI     -w work_ST4_PR1_MPI                 -f -p $mpi -n $np $ww3 ww3_ts3" >> matrix.body
     fi
     if [ "$multi05" = 'y' ]

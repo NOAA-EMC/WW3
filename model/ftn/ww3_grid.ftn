@@ -634,6 +634,10 @@
                                  XSEED, XR, HSPM, WSM, WSC
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC
+!/FLD1      INTEGER                 :: TAILTYPE
+!/FLD1      REAL                    :: TAILLEV
+!/FLD2      INTEGER                 :: TAILTYPE
+!/FLD2      REAL                    :: TAILLEV 
 !/FLX3      INTEGER                 :: CTYPE
 !/FLX3      REAL                    :: CDMAX
 !/FLX4      REAL                    :: CDFAC
@@ -687,6 +691,8 @@
                                       EXPFSFCT,IMPFSN
            INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
 !
+!/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV
+!/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
 !/IC2      NAMELIST /SIC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
@@ -2103,6 +2109,22 @@
       IF ( FHMAX.LT.0.50 .AND. J.EQ.1 ) WRITE (NDST,968)
       WRITE (NDSO,*)
 !
+! 6.x Read values for FLD stress calculation
+!
+!/FLD1      TAILTYPE = 0
+!/FLD1      TAILLEV  = 0.006
+!/FLD2      TAILTYPE = 0
+!/FLD2      TAILLEV  = 0.006
+!
+!/FLD1      CALL READNL ( NDSS, 'FLD1', STATUS )
+!/FLD1      TAILLEV  = MIN( MAX ( 0.001 , TAILLEV ), 0.02)
+!/FLD1      TAIL_LEV = TAILLEV
+!/FLD1      TAIL_ID = TAILTYPE
+!/FLD2      CALL READNL ( NDSS, 'FLD2', STATUS )
+!/FLD2      TAILLEV  = MIN( MAX ( 0.001 , TAILLEV ), 0.02)
+!/FLD2      TAIL_LEV = TAILLEV
+!/FLD2      TAIL_ID = TAILTYPE
+!
 ! 6.o End of namelist processing
 !
       CLOSE (NDSS,STATUS='DELETE')
@@ -2223,6 +2245,9 @@
                                 ICEHINIT
 
           END IF
+!
+!/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV
+!/FLD2         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV
 !
         WRITE (NDSO,918)
         END IF
@@ -4771,6 +4796,7 @@
                '        REFRMAX=',F5.2,', REFFREQPOW =',F5.2,                    &
                ', REFICEBERG =',F5.2,', REFCOSP_STRAIGHT =',F4.1,' /')
 !
+ 2987 FORMAT ( '  &FLD TAIL_ID =',I1,'TAIL_LEV =',F5.4,' /')
 
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &
@@ -5153,6 +5179,10 @@
                   IF ( LINE(I+1:I+4) .EQ. NAME ) THEN
                       BACKSPACE (NDS)
                       SELECT CASE(NAME)
+!/FLD1                        CASE('FLD1')
+!/FLD1                          READ (NDS,NML=FLD1,END=801,ERR=802,IOSTAT=J)
+!/FLD2                        CASE('FLD2')
+!/FLD2                          READ (NDS,NML=FLD2,END=801,ERR=802,IOSTAT=J)
 !/FLX3                        CASE('FLX3')
 !/FLX3                          READ (NDS,NML=FLX3,END=801,ERR=802,IOSTAT=J)
 !/FLX4                        CASE('FLX4')

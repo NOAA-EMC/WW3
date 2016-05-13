@@ -97,7 +97,7 @@
   for type in mach nco grib mcp c90 nec lrecl netcdf scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
-                     s_ice s_is reflection s_xx \
+              dstress s_ice s_is reflection s_xx \
               wind windx rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
               coupl agcm ogcm
@@ -180,6 +180,11 @@
       stress ) TY='one'
                ID='stress computation'
                OK='FLX0 FLX1 FLX2 FLX3 FLX4 FLXX' ;;
+#sort:dstress:
+      dstress) TY='upto1'
+               ID='Diagnostic stress comp'
+               TS='FLD'
+               OK='FLD0 FLD1 FLD2' ;;
 #sort:s_ln:
       s_ln   ) TY='one'
                ID='linear input'
@@ -442,6 +447,7 @@
       source ) s_inds=$sw ;;
       stab   ) stab=$sw ;;
       stress ) stress=$sw ;;
+      dstress) dstress=$sw ;;
       scrip  ) scrip=$sw ;;
       scripnc) scripnc=$sw ;;
       s_nl   ) s_nl=$sw ;;
@@ -536,6 +542,15 @@
    FLXX) str_st1='no' ; str_st2='no' ; str_st3='no'
          flx='w3flxxmd'
          flxx=$NULL ;;
+  esac
+
+  case $dstress in
+   FLD0) ds=$NULL
+         dsx=$NULL ;;
+   FLD1) ds=$NULL
+         dsx='w3fld1md' ;;
+   FLD2) ds=$NULL
+         dsx='w3fld1md w3fld2md' ;;
   esac
 
   case $s_ln in
@@ -810,7 +825,7 @@
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
+             source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO="w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd $couplmd $agcmmd $ogcmmd"
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode"
@@ -820,7 +835,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
-             source="w3triamd w3srcemd $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
+             source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $couplmd $agcmmd $ogcmmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
@@ -840,7 +855,7 @@
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                prop="$pr" 
-               source="w3triamd w3srcemd $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic" 
+               source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $xx $refcode $igcode $is $ic" 
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $couplmd $agcmmd $ogcmmd" 
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
@@ -1034,6 +1049,7 @@
 
     for mod in W3INITMD W3WAVEMD W3WDASMD W3UPDTMD W3FLDSMD W3CSPCMD \
                W3GDATMD W3WDATMD W3ADATMD W3ODATMD W3IDATMD \
+               W3FLD1MD  W3FLD2MD \
                W3IOGRMD W3IOGOMD W3IOPOMD W3IOTRMD W3IORSMD W3IOBCMD \
                         W3IOSFMD W3PARTMD W3BULLMD \
                W3TIDEMD W3CANOMD W3GIG1MD W3STRKMD \
@@ -1070,6 +1086,8 @@
          'W3ADATMD'     ) modtest=w3adatmd.o ;;
          'W3ODATMD'     ) modtest=w3odatmd.o ;;
          'W3IDATMD'     ) modtest=w3idatmd.o ;;
+         'W3FLD1MD'     ) modtest=w3fld1md.o ;;
+         'W3FLD2MD'     ) modtest=w3fld2md.o ;;
          'W3IOGRMD'     ) modtest=w3iogrmd.o ;;
          'W3IOGOMD'     ) modtest=w3iogomd.o ;;
          'W3IOPOMD'     ) modtest=w3iopomd.o ;;

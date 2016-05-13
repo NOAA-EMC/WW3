@@ -1111,6 +1111,17 @@
 !
 !/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
 !
+!/FLD1      IF ( WRITE ) THEN
+!/FLD1          WRITE (NDSM)                            TAIL_ID, TAIL_LEV
+!/FLD1        ELSE
+!/FLD1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TAIL_ID, TAIL_LEV
+!/FLD1        END IF
+!/FLD2      IF ( WRITE ) THEN
+!/FLD2          WRITE (NDSM)                            TAIL_ID, TAIL_LEV
+!/FLD2        ELSE
+!/FLD2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TAIL_ID, TAIL_LEV
+!/FLD2        END IF
+!
 ! Interpolation tables ( fill locally ) ----------------------------- *
 !                                                      Module W3DISPMD
 !

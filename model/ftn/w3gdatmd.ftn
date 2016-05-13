@@ -662,6 +662,13 @@
 !/SMC        LOGICAL               :: FUNO3, FVERG 
       END TYPE PROP
 !
+      TYPE FLDP
+         REAL :: DUMMY
+!/FLD1        INTEGER               :: Tail_ID
+!/FLD1        REAL                  :: Tail_Lev
+!/FLD2        INTEGER               :: Tail_ID
+!/FLD2        REAL                  :: Tail_Lev
+      END TYPE FLDP
       TYPE SFLP
 !/FLX0        REAL                  :: DUMMY
 !/FLX1        REAL                  :: DUMMY
@@ -791,6 +798,7 @@
         LOGICAL               :: PINIT
         TYPE(NPAR)            :: NPARS
         TYPE(PROP)            :: PROPS
+        TYPE(FLDP)            :: FLDPS
         TYPE(SFLP)            :: SFLPS
         TYPE(SLNP)            :: SLNPS
         TYPE(SRCP)            :: SRCPS
@@ -917,6 +925,13 @@
 !/PR3      REAL, POINTER           :: WDCG, WDTH
 !/SMC      REAL, POINTER           :: DTME, CLATMN, Refran
 !/SMC      LOGICAL, POINTER        :: FUNO3, FVERG 
+!/
+!/ Data aliasses for structure FLDP(S)
+!/
+!/FLD1     INTEGER, POINTER         :: TAIL_ID
+!/FLD1     REAL, POINTER            :: TAIL_LEV
+!/FLD2     INTEGER, POINTER         :: TAIL_ID
+!/FLD2     REAL, POINTER            :: TAIL_LEV
 !/
 !/ Data aliasses for structure SFLP(S)
 !/
@@ -1940,6 +1955,13 @@
 !/SMC      Refran => MPARS(IMOD)%PROPS%Refran
 !/SMC      FUNO3  => MPARS(IMOD)%PROPS%FUNO3 
 !/SMC      FVERG  => MPARS(IMOD)%PROPS%FVERG 
+!
+!     Structure FLDP
+!
+!/FLD1      TAIL_ID  => MPARS(IMOD)%FLDPS%TAIL_ID
+!/FLD1      TAIL_LEV => MPARS(IMOD)%FLDPS%TAIL_LEV
+!/FLD2      TAIL_ID  => MPARS(IMOD)%FLDPS%TAIL_ID
+!/FLD2      TAIL_LEV => MPARS(IMOD)%FLDPS%TAIL_LEV
 !
 !     Structure SFLPS
 !

@@ -57,7 +57,7 @@
                           TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
                           TAUWNY, PHIAW, CHARN, PHIOC, WHITECAP, D50, &
                           PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,     &
-                          PHICE ) 
+                          PHICE, COEF) 
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -349,6 +349,8 @@
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
       USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
+!/FLD1      USE W3FLD1MD, ONLY: W3FLD1
+!/FLD2      USE W3FLD2MD, ONLY: W3FLD2
 !/FLX1      USE W3FLX1MD
 !/FLX2      USE W3FLX2MD
 !/FLX3      USE W3FLX3MD
@@ -417,6 +419,7 @@
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
                                  ICEF
       REAL, INTENT(OUT)       :: DTDYN, FCUT
+      REAL, INTENT(IN)        :: COEF
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -472,6 +475,8 @@
 !/ST4      REAL                    :: BRLAMBDA(NSPEC)
 !/IS2      DOUBLE PRECISION        :: SCATSPEC(NTH) 
       REAL                    :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
+!/FLD1     REAL, SAVE              :: TAUNUX, TAUNUY
+!/FLD2     REAL, SAVE              :: TAUNUX, TAUNUY
       LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
       LOGICAL                 :: SHAVE
       LOGICAL, SAVE           :: FIRST = .TRUE.
@@ -525,6 +530,7 @@
 !/ST0      ZWND   = 10.
 !/ST1      ZWND   = 10.
 !/ST2      ZWND   = ZWIND
+!/ST4      ZWND   = ZZWND
 !/ST6      ZWND   = 10.
 !
        DRAT  = DAIR / DWAT
@@ -1136,6 +1142,25 @@
 !/IS2               ICEF = 0. 
 !/IS2             ENDIF 
            END IF
+!
+! 
+! - - - - - - - - - - - - - - - - - - - - - -
+! 9.c Sea state dependent stress routine calls
+! - - - - - - - - - - - - - - - - - - - - - -
+!Note the Sea-state dependent stress calculations are primarily for high-wind
+!conditions (>10 m/s).  It is not recommended to use these at lower wind
+!in their current state.
+!
+!/FLD1      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
+!/FLD1          CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
+!/FLD1                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
+!/FLD1                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY)
+!/FLD1      ENDIF
+!/FLD2      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
+!/FLD2          CALL W3FLD2 ( SPEC, min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
+!/FLD2                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
+!/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY)
+!/FLD2      ENDIF
 !
 ! 10 includes shoreline reflection --------------------------------------------- *
 !
