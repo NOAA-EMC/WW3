@@ -338,6 +338,21 @@ $                                    in field output.
 $                           FMICHE : Constant in Miche limiter.
 $                           P2SF   : ......
 $
+$ Diagnostic Sea-state Dependent Stress- - - - - - - - - - - - - - - - -
+$   Reichl et al. 2014  : Namelist FLD1
+$                           TAILTYPE  : High Frequency Tail Method
+$                                       0: Constant value (prescribed)
+$                                       1: Wind speed dependent
+$                                          (Based on GFDL Hurricane
+$                                          Model Z0 relationship)
+$                           TAILLEV   : Level of high freuency tail 
+$                                       (if TAILTYPE==0)
+$                                       Valid choices:
+$                                       Capped min: 0.001, max: 0.02
+$   Donelan et al. 2012 : Namelist FLD2
+$                           TAILTYPE : See above (FLD1)
+$                           TAILLEV  : See above (FLD1)
+$
 $ In the 'Out of the box' test setup we run with sub-grid obstacles
 $ and with continuous ice treatment.
 $

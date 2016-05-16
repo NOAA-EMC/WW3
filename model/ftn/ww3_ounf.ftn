@@ -2065,7 +2065,7 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USERO(:,IFJ)        &
                                                         , MAPSF, X1 )
               NFIELD=1
-              WRITE (varnm(1),'(A2,I2.2)') 'u', IFJ
+              WRITE (varnm(1),'(A1,I2.2)') 'u', IFJ
               WRITE (varnl(1),'(A12,I2.2)') 'User_defined', IFJ
               WRITE (varns(1),'(A12,I2.2)') 'User_defined', IFJ
               WRITE (varng(1),'(A12,I2.2)') 'user_defined', IFJ

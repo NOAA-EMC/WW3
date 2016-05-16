@@ -148,6 +148,12 @@
                                    touch ww3_ounp.ftn
                                    touch ww3_grid.ftn
                                    touch gx_outp.ftn ;;
+     'dstress') cd $main_dir/ftn ; touch w3srcemd.ftn
+                                   touch w3gdatmd.ftn
+                                   touch w3iogrmd.ftn
+                                   touch w3fld1md.ftn
+                                   touch w3fld2md.ftn
+                                   touch ww3_grid.ftn ;;
      's_ln'   ) cd $main_dir/ftn ; touch w3gdatmd.ftn
                                    touch w3srcemd.ftn
                                    touch w3iogrmd.ftn

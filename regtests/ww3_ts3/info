@@ -19,6 +19,12 @@
 #   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
 #   !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.            #
 #                                                                           #
+# Optional switches to test sea-state dependent wind stress:                #
+#   !/FLD1 : See Reichl et al. (2014)  JGR                                  #
+#                'Sea State Dependence of the Wind Stress"                  #
+#   !/FLD2 : See Donelan et al. (2012) JGR                                  #
+#                "Modeling Waves and Wind Stress"                           #
+#                                                                           #
 # Remarks :                                                                 #
 #   * This problem is big enough to run it under MPI to speed it up and     #
 #     test MPI behavior.                                                    #
@@ -71,6 +77,10 @@
 #       - switch_ST3_PR2_UQ_MPI                                             #
 #       - switch_ST3_PR3_UNO_MPI                                            #
 #       - switch_ST3_PR3_UQ_MPI                                             #
+#       - switch_ST4_FLD1                                                   #
+#       - switch_ST4_FLD1_MPI                                               #
+#       - switch_ST4_FLD2                                                   #
+#       - switch_ST4_FLD2_MPI                                               #
 #       - switch_ST4_PR1_MPI                                                #
 #       - switch_ST4_PR2_UNO_MPI                                            #
 #       - switch_ST4_PR2_UQ_MPI                                             #

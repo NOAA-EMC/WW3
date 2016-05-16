@@ -583,7 +583,7 @@
            CASE('U1')
              FLG2D(10,1)=.TRUE.
            CASE('U2')
-             FLG2D(10,1)=.TRUE.
+             FLG2D(10,2)=.TRUE.
 !/COU           CASE('DRY')
            CASE DEFAULT
              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSO,1004) TRIM(TESTSTR)

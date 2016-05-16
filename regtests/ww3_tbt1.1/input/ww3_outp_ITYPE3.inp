@@ -98,8 +98,9 @@ $                              2 : Nondimensional in terms of U*
 $                             3-5: like 0-2 with f normalized with fp.
 $          - Flag for unformatted transfer file.
 $
-  2  1. 1. 51   T T T T F T  0  F
-$               ^ ^ ^ ^ ^ ^ Sum of selected sources
+  2  1. 1. 51   T T T T F F T  0  F
+$               ^ ^ ^ ^ ^ ^ ^ Sum of selected sources
+$               | | | | | ^ Wave-ice interactions 
 $               | | | | ^ Wave-bottom interactions
 $               | | | ^ Dissipation
 $               | | ^ Nonlinear interactions
@@ -121,6 +122,7 @@ $ - Sin(f,theta) if requested                  |           |
 $ - Snl(f,theta) if requested                  |           |
 $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
+$ - Sice(f,theta) if requested                 |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
 $ -------------------------------------------------------------------- $
