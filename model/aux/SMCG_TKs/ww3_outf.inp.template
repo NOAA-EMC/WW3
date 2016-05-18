@@ -8,51 +8,20 @@ $ 19680606 060000 10800. 1
 $
 $ Output request flags identifying fields as in ww3_shel input and
 $ section 2.4 of the manual. If the first flag is 'N' then a namelist
-$ is read. See ww3_ounf.inp for an example
+$ is read.  Namelist type selection is used here 
+$ (for alternative F/T flags, see ww3_shel.inp).
 $
-$ (1) Forcing Fields
-  T
-$ DPT CUR WND DT  WLV ICE IBG D50
-  F   F   T   F   F   F   F   F
-$ (2) Standard mean wave Parameters
-  T
-$ HS  LM  TZ  TE  TM  FP  DIR SPR DP
-  T   F   F   F   T   F   F   F   F
-$ (3) Frequency-dependent parameters
-  T
-$ EF TH1M STH1M TH1M STH1M WN
-  F  F  F  F  F  F
-$ (4) Spectral Partition Parameters
-  T
-$ PHS PTP PLP PTH PSP PWS WSF PNR
-  F   F   F   F   F   F   F   F
-$ (5) Atmosphere-waves layer
-  T
-$ UST CHN CGE FAW TAW NWS WCC WCF WCH WCM
-  F   F   F   F   F   F   F   F   F   F
-$ (6) Wave-Ocean layer
-  T
-$ SXY TWO BHD FOC TUS USS P2S U3D P2L
-  F   F   F   F   F   F   F   F   F   F
-$ (7) Wave-bottom layer
-  T
-$ ABR UBR BED FBB TBB
-  F   F   F   F   F
-$ (8) Spectrum parameters
-  T
-$ MSS MSC
-  F   F
-$ (9) Numerical diagnostics
-  T
-$ DTD FC  CFX CFD CFK
-  F   F   F   F   F
-$ (10) User defined (NOEXTR flags needed)
-  T
-$  US1  US2
-  F   F
+$ DPT CUR WND AST WLV ICE IBG D50 IC1 IC5 HS LM T02 T0M1 T01 FP DIR SPR
+$ DP HIG EF TH1M STH1M TH2M STH2M WN PHS PTP PLP PDIR PSPR PWS TWS PNR
+$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S 
+$ USF P2L TWI FIC ABR UBR BED FBB TBB MSS MSC DTD FC CFX CFD CFK U1 U2 
+$
+  N
+  WND HS T01
 $
 $ Output type ITYPE [0,1,2,3], and IPART [ 0,...,NOSWLL ]
 $
+$ 1  0
   4  1
 $ -------------------------------------------------------------------- $
 $ ITYPE = 0, inventory of file.
@@ -64,7 +33,7 @@ $            IX,IY range and stride, flag for automatic scaling to
 $            maximum value (otherwise fixed scaling),
 $            vector component flag (dummy for scalar quantities),
 $
-   1 12 1 1 12 1 F T
+$  1 12 1 1 12 1 F T
 $
 $ -------------------------------------------------------------------- $
 $ ITYPE = 2, field statistics.

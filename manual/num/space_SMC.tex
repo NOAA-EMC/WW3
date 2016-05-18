@@ -95,7 +95,7 @@ into the global ones within the wave model for propagation.
 Some IDL and F90 programs have been developed for generation of SMC grid cell
 and face arrays and visualization of the grid mesh and wave fields but they
 have not been formally included in the WW3 package yet. An IDL program 
-(Glob50SMCels.pro) is provided in aux/smc/SMCG\_TKs/ to generate a global 50km 
+(Glob50SMCels.pro) is provided in model/aux/SMCG\_TKs/ to generate a global 50km 
 SMC grid using a 50km regular grid bathymetry ASCII input file (G50kmBathy.dat). 
 Face array generation is done with two F90 programs, one for the global part 
 (G50SGlSide.f90) and one for the Arctic part (G50SAcSide.f90).  Due to the special 
@@ -131,7 +131,7 @@ for an example of a 3-level SMC grid model for the Lake Erie.
 
 Output for the SMC grid can be processed by the ww3\_outf program
 as either the fully expanded regular lat-lon grid output at the base
-resolution level or as ASCII out at all SMC grid cell points (type-4).
+resolution level or as ASCII output at all SMC grid cell points (type-4).
 The regular grid format output can be viewed as other regular grid
 output but the refined resolution cells have been converted into 
 corresponding base resolution cells for a multi-resolution grid. 

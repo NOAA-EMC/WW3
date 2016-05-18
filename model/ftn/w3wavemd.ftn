@@ -243,6 +243,7 @@
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
 !/    27-Aug-2015 : Update for ICEH, ICEF               ( version 5.10 )
+!/    31-Mar-2016 : Current option for smc grid.        ( version 5.18 )
 !/
 !  1. Purpose :
 !
@@ -856,8 +857,12 @@
             CALL W3UCUR ( FLFRST )
 !/PALM ENDIF
             IF (GTYPE .NE. UNGTYPE) THEN       
+              IF( RGLGRD ) THEN
               CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
               CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
+              ENDIF
+!/SMC !!Li  Use new sub for DCXDX/Y and DCYDX/Y assignment.  
+!/SMC         CALL SMCDCXY 
             ELSE
               CALL UG_GRADIENTS(CX, DCXDX, DCXDY)
               CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
@@ -1184,7 +1189,10 @@
 !/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
 !/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/SMC               DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA), VA(:,JSEA) )  
+!/SMC                           DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
+!/SMC                           CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
+!/SMC                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
+!/SMC                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
 !
                     END IF
                   END DO
@@ -1368,7 +1376,10 @@
 !/SMC  !!Li    Refraction and GCT in theta direction is done by rotation.
 !/SMC                      CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
 !/SMC                           CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-!/SMC               DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA), VA(:,JSEA) )  
+!/SMC                           DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
+!/SMC                           CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
+!/SMC                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
+!/SMC                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
 !
                     END IF
                   END DO

@@ -204,16 +204,18 @@ $                           FLC    : Flag for combining wind seas in
 $                                    partitioning.
 $                           FMICHE : Constant in Miche limiter.
 $
+$ SMC grid related parameters in namelist PSMC ----------------------- $
+$ PSMC default parameter values for SMC grid.   JGLi11Apr2016
+$      LvSMC=1, ISHFT=0, JEQT=0, NBISMC=0, 
+$      DTIME = 0.0, LATMIN = 86.0, and RFMAXD = 80.0,   
+$      UNO3 = .FALSE., AVERG = .FALSE.      
+$
 $ In the 'Out of the box' test setup we run with sub-grid obstacles
 $ and with continuous ice treatment.
 $
 $ PSMC namelist is enlarged to include other smc grid paramters with 
 $ default values LvSMC=1, ISHFT=0, JEQT=0, and NBISMC=0.  JGLi23Nov2015
   &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, JEQT=176  /
-$ SMC grid swell age to 11. hr with refined cell-scaling.  JGLi18Dec2012
-$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0  /
-$ Refraction limiter reduced to 12 deg to suppress focus.  JGLi20Nov2013
-$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 12.0  /
 $ ST4 option with new parameters in SIN4 and SDS4.  JGLi13Feb2013
 $ &SIN4 BETAMAX = 1.50, Z0MAX = 1.002 /
 $ &SDS4 SDSHCK = 1.5,  SDSBCK = 0.185 /

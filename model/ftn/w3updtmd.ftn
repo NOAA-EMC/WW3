@@ -139,6 +139,7 @@
 !/    20-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    15-Dec-2004 : Multiple grid version.              ( version 3.06 )
 !/    27-Aug-2015 : Rename DT0,DTT by DT0T,DT0N         ( version 5.10 )
+!/    23-Mar-2016 : SMC grid Arctic part adjustment.    ( version 5.18 )
 !/
 !  1. Purpose :
 !
@@ -200,6 +201,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF
+!/ARC      USE W3GDATMD, ONLY: NARC, NGLO, ANGARC 
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CX, CY, CA0, CAI, CD0, CDI
       USE W3IDATMD, ONLY: TC0, CX0, CY0, TCN, CXN, CYN
@@ -347,6 +349,13 @@
 !/CRT2                          RD  *(CA0(ISEA)+CAI(ISEA))**2 )
 !/CRT2        CABS    = CABS * MIN( 1.25 , CI2/MAX(1.E-7,CABS) )
         CDIR    = CD0(ISEA) + RD * CDI(ISEA)
+
+!/ARC  !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
+!/ARC        IF( ISEA .GT. NGLO ) THEN
+!/ARC            DN = CDIR + ANGARC( ISEA - NGLO )*DERA
+!/ARC            CDIR = MOD ( TPI + DN, TPI )
+!/ARC        ENDIF
+
         CX(ISEA) = CABS * COS(CDIR)
         CY(ISEA) = CABS * SIN(CDIR)
 !/TIDE  !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
