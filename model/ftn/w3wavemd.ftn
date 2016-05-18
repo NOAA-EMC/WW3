@@ -436,6 +436,8 @@
       LOGICAL                 :: RGLGRD = .TRUE., ARCTIC = .FALSE.
 !!Li
 !/MPI      LOGICAL                 :: FLGMPI(0:6)
+!/IC3      REAL                    :: FIXEDVISC,FIXEDDENS,FIXEDELAS
+!/IC3      REAL                    :: USE_CHENG, USE_CGICE, HICE
       LOGICAL                 :: UGDTUPDATE    ! true if time step should be updated for UG schemes
       CHARACTER(LEN=8)        :: STTIME
       CHARACTER(LEN=17)       :: IDACT 
@@ -461,6 +463,7 @@
 !/ARC      REAL, ALLOCATABLE       :: BACSPEC(:)
 !/ARC      REAL                    :: BACANGL
 !/ARC
+
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
 
@@ -679,31 +682,81 @@
 !
 !
 ! 2.a Pre-calculate table for IC3 ------------------------------------ /
-!/IC3        IF( (IC3PARS(9)==1.0) .AND. (CALLEDIC3TABLE==0) )THEN
-!/IC3            IX     = MAPSF(1,1)
-!/IC3            IY     = MAPSF(1,2)
-!/IC3            CALL IC3TABLE_CHENG(ICEP2(IX,IY),ICEP3(IX,IY),ICEP4(IX,IY))
-!/IC3            CALLEDIC3TABLE = 1
+!/IC3        USE_CHENG=IC3PARS(9)
+!/IC3        IF( USE_CHENG==1.0 )THEN
+!/IC3           FIXEDVISC=IC3PARS(14)
+!/IC3           FIXEDDENS=IC3PARS(15)
+!/IC3           FIXEDELAS=IC3PARS(16)
+!/IC3           IF ( (FIXEDVISC.LT.0.0).OR.(FIXEDDENS.LT.0.0) .OR. &
+!/IC3              (FIXEDELAS.LT.0.0) ) THEN
+!/IC3               IF ( IAPROC .EQ. NAPERR )                          &
+!/IC3               WRITE(NDSE,*)'Cheng method requires stationary',   &
+!/IC3                            ' and uniform rheology from namelist.'
+!/IC3               CALL EXTCDE(2)
+!/IC3           END IF
+!/IC3           IF (CALLEDIC3TABLE==0) THEN
+!/IC3             CALL IC3TABLE_CHENG(FIXEDVISC,FIXEDDENS,FIXEDELAS)
+!/IC3             CALLEDIC3TABLE = 1
+!/IC3           ENDIF   
 !/IC3        ENDIF
 
 ! 2.b Update group velocity and wavenumber from ice parameters ------- /
 !     from W3SIC3MD module. ------------------------------------------ /
-!     (this block of code is disabled until stability concerns are --- /
-!      resolved) ----------------------------------------------------- /
-!
-!........!/IC3        IF (FLFRST.AND.FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
-!........!/IC3           IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)
-!........!/IC3           ALLOCATE(WN_I(SIZE(WN(:,JSEA))))
-!........!/IC3           WN_I(:) = 0.
-!........!/IC3           DO JSEA=1,NSEAL
-!........!/IC3             DEPTH  = MAX( DMIN , DW(JSEA) )
-!........!/IC3             IX     = MAPSF(JSEA,1)
-!........!/IC3             IY     = MAPSF(JSEA,2)
-!........!/IC3             CALL W3IC3WNCG(WN(:,JSEA),WN_I(:),CG(:,JSEA),ICEP1(IX,IY), &
-!........!/IC3                            ICEP2(IX,IY),ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
-!........!/IC3           END DO
-!........!/IC3           DEALLOCATE(WN_I)
-!........!/IC3        END IF
+!     Note: "IF FLFRST" can be added for efficiency, but testing req'd
+
+         JSEA=1 ! no switch (intentional)
+
+!/IC3        IF ( USE_CGICE==1.0 ) THEN
+!/IC3          IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)
+
+!/IC3          DO JSEA=1,NSEAL
+!/DIST           ISEA   = IAPROC + (JSEA-1)*NAPROC
+!/SHRD           ISEA   = JSEA
+!/IC3            ALLOCATE(WN_I(SIZE(WN(:,ISEA))))
+!/IC3            WN_I(:) = 0.
+!/IC3            DEPTH  = MAX( DMIN , DW(ISEA) )
+!/IC3            IX     = MAPSF(ISEA,1)
+!/IC3            IY     = MAPSF(ISEA,2)
+
+! 2.b.1 Using Cheng method: requires stationary/uniform rheology. 
+!       However, ice thickness may be input by either method
+
+!/IC3            IF ( USE_CHENG==1.0 ) THEN
+!/IC3               IF (FLIC1) THEN
+!/IC3                  HICE=ICEP1(IX,IY)
+!/IC3               ELSEIF (IC3PARS(13).GE.0.0)THEN
+!/IC3                  HICE=IC3PARS(13)
+!/IC3               ELSE
+!/IC3                  IF ( IAPROC .EQ. NAPERR )                       &
+!/IC3                  WRITE(NDSE,*)'ICE THICKNESS NOT AVAILABLE ',    &
+!/IC3                               'FOR CG CALC'
+!/IC3                  CALL EXTCDE(2)
+!/IC3               ENDIF
+!/IC3               CALL W3IC3WNCG_CHENG(WN(:,ISEA),WN_I(:),           &
+!/IC3                    CG(:,ISEA),HICE,FIXEDVISC,                    &
+!/IC3                    FIXEDDENS, FIXEDELAS, DEPTH)
+
+!/IC3            ELSE ! not using Cheng method          
+
+! 2.b.2 If not using Cheng method: require FLIC1 to FLIC4 (not strictly
+!       necesssary, but makes code simpler)
+
+
+!/IC3               IF (FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
+!/IC3                  CALL W3IC3WNCG_V1(WN(:,ISEA),WN_I(:),           &
+!/IC3                       CG(:,ISEA),ICEP1(IX,IY),ICEP2(IX,IY),      &
+!/IC3                       ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
+!/IC3               ELSE
+!/IC3                  IF ( IAPROC .EQ. NAPERR )                       &
+!/IC3                  WRITE(NDSE,*)'ICE PARAMETERS NOT AVAILABLE ',   &
+!/IC3                               'FOR CG CALC'
+!/IC3                  CALL EXTCDE(2)
+!/IC3               END IF      
+!/IC3            ENDIF ! IF USE_CHENG...
+
+!/IC3            DEALLOCATE(WN_I)
+!/IC3          END DO ! DO JSEA=1,NSEAL
+!/IC3        END IF !  IF USE_CGICE ...
 !
         IF ( TOFRST(1) .GT. 0 ) THEN
             DTTST  = DSEC21 ( TEND , TOFRST )

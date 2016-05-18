@@ -343,7 +343,7 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
-                          FTE, FTF, FHMAX, ECOS, ESIN
+                          FTE, FTF, FHMAX, ECOS, ESIN, ICE100WIND
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
@@ -791,8 +791,10 @@
 !             this simulation
         IF ( INFLAGS2(4) ) THEN
           VSLN(1:NSPECH) = (MAX(0.,MIN(1.,1.-ICE)))**2 * VSLN(1:NSPECH)
-          VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSIN(1:NSPECH)
-          VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDIN(1:NSPECH)
+          VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE*ICE100WIND)) & 
+                           * VSIN(1:NSPECH)
+          VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE*ICE100WIND)) & 
+                           * VDIN(1:NSPECH)
           VSDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSDS(1:NSPECH)
           VDDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDDS(1:NSPECH)
           END IF
@@ -1085,6 +1087,7 @@
 !     INFLAGS2(4) is true if ice concentration was ever read during  
 !             this simulation
 !
+
       IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC )

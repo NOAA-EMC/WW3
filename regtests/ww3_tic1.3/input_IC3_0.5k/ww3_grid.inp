@@ -14,6 +14,9 @@ $
 END OF NAMELISTS
 $
   'RECT' F 'NONE'
+!!! WARNING !!!
+This regtest is broken: ww3_prep uses "AI" and ice concentration input is 13x3
+!!! WARNING !!!
    303  3
     0.5E3   0.5E3  1.
    -0.5E3  -0.5E3  1.

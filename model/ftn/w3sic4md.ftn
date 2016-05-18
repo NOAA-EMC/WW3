@@ -15,9 +15,9 @@
 !  1. Purpose :
 !
 !     Calculate ice source term S_{ice} according to simple methods.
-!          Attenucation is a function of frequency and specified directly 
-!          by the user. The function is based on an exponential fit to the
-!          emerpical data of Wadhams et al. (1988). 
+!          Attenuation is a function of frequency and specified directly 
+!          by the user. Example: a function is based on an exponential fit to
+!          the empirical data of Wadhams et al. (1988). 
 !
 !  2. Variables and types :
 !
@@ -95,7 +95,10 @@
 !     4) Eq. 1 from Kohout et al. 2014 
 !
 !     5) Simple step function for ki as a function of frequency
-!          with up to 4 "steps"
+!          with up to 4 "steps". Controlling parameters KIx and FCx are
+!          read in as input fields, so they may be nonstationary and 
+!          non-uniform in the same manner that ice concentration and
+!          water levels may be nonstationary and non-uniform.
 !                                          444444444444
 !                               33333333333
 !                   222222222222
@@ -139,6 +142,31 @@
 !                'IC5' 19680606 000000   0.10
 !                'MDN' 19680606 000000   0.12
 !                'MTH' 19680606 000000   0.16
+!
+!     6) Simple step function for ki as a function of frequency
+!          with up to 10 "steps". Controlling parameters KIx and FCx are
+!          read in as namelist parameters, so they are stationary and
+!          uniform.
+!          The last non-zero FCx value should be a large number, e.g. 99 Hz
+!
+!                                          4444444444  <--- ki=ic4_ki(4)
+!                               3333333333             <--- ki=ic4_ki(3)
+!                   2222222222                         <--- ki=ic4_ki(2)
+!      11111111111                                     <--- ki=ic4_ki(1)
+!                 ^           ^           ^         ^
+!                 |           |           |         |
+!          ic4_fc(1)   ic4_fc(2)   ic4_fc(3) ic4_fc(4)=large number
+!       Example: Beaufort Sea, AWAC mooring, 2012, Oct 27 to 30
+!           &SIC4  IC4METHOD = 6,
+!                  IC4KI =    0.50E-05,   0.70E-05,   0.15E-04,  
+!                             0.10E+00,   0.00E+00,   0.00E+00,   
+!                             0.00E+00,   0.00E+00,   0.00E+00,
+!                             0.00E+00,
+!                  IC4FC =    0.100,      0.120,      0.160, 
+!                             99.00,      0.000,      0.000,
+!                             0.000,      0.000,      0.000,
+!                             0.000
+!                             /
 !
 !     More verbose description of implementation of Sice in WW3:
 !      See documentation for IC1
@@ -208,7 +236,8 @@
       USE CONSTANTS, ONLY: TPI
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC4PARS, DDEN, &
+                          IC4_KI, IC4_FC, NIC4
       USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, &
                           MUDT, MUDV, MUDD, INFLAGS2
 
@@ -231,7 +260,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/T0      INTEGER                 :: ITH
 !/T0      REAL                    :: DOUT(NK,NTH)
-      INTEGER                 :: IKTH, IK, ITH, IC4METHOD
+      INTEGER                 :: IKTH, IK, ITH, IC4METHOD, IFC
       REAL                    :: D1D(NK), EB(NK)
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                  ICECOEF4, ICECOEF5, ICECOEF6, &
@@ -273,13 +302,14 @@
       HS       = 0.0
       EMEAN    = 0.0      
 !
-      IF (.NOT.INFLAGS2(-7))THEN
-         WRITE (NDSE,1001) 'ICE PARAMETER 1'
-         CALL EXTCDE(201)
-      ENDIF
+!     IF (.NOT.INFLAGS2(-7))THEN
+!        WRITE (NDSE,1001) 'ICE PARAMETER 1'
+!        CALL EXTCDE(201)
+!     ENDIF
+
 !
 !   We cannot remove the other use of INFLAGS below, 
-!   because we would get array not allocated error for the methods
+!   because we would get 'array not allocated' error for the methods
 !   that don't use MUDV, etc. and don't have MUDV allocated.
 
       IF (INFLAGS2(-7)) ICECOEF1 = ICEP1(IX,IY) ! a.k.a. IC1
@@ -297,7 +327,7 @@
       IF (INFLAGS2(-1)) ICECOEF7 = MUDT(IX,IY) ! a.k.a. MTH
       IF (INFLAGS2(0 )) ICECOEF8 = MUDV(IX,IY) ! a.k.a. MVS
 
-      IC4METHOD = IC2PARS(1)
+      IC4METHOD = IC4PARS(1)
 !
 ! x.  No ice --------------------------------------------------------- /
 !
@@ -317,6 +347,7 @@
 ! 1.  Make calculations ---------------------------------------------- /
 !                
 ! 1.a Calculate WN_I
+
       SELECT CASE (IC4METHOD)
     
         CASE (1) !Exponential fit to Wadhams et al. 1988
@@ -382,10 +413,33 @@
               ENDIF
            END DO
 
+        CASE (6) ! Simple step function (from namelist)
+
+           ! error checking: require at least 3 steps
+           IF((IC4_KI(1).EQ.0.0).OR.(IC4_KI(2).EQ.0.0).OR. &
+              (IC4_KI(3).EQ.0.0).OR.(IC4_FC(1).EQ.0.0).OR. &
+              (IC4_FC(2).EQ.0.0) )THEN
+              WRITE (NDSE,1001)'ICE PARAMETERS'
+              CALL EXTCDE(201)
+           END IF
+
+           DO IK=1, NK
+              FREQ=SIG(IK)/TPI
+              ! select ki
+              DO IFC=1,NIC4
+                 IF(FREQ.LT.IC4_FC(IFC))THEN
+                    WN_I(IK)=IC4_KI(IFC)
+                    EXIT
+                 END IF
+              END DO
+!             write(*,'(a,I2.2,a,f6.3,a,e10.3)')'ik = ',ik,' ; freq = ',freq,' ; selected ki = ',wn_i(ik)
+           END DO
+
         CASE DEFAULT
           WN_I = ICECOEF1 !Default to IC1: Uniform in k
       
       END SELECT
+
 !
 ! 1.b Calculate DID
 !        

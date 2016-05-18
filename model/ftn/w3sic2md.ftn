@@ -318,8 +318,11 @@
              END DO
 !
            DO IK=1, NK
-!             recall that D=S/E=-2*Cg*k_i
-             D1D(IK)= -2.0 * CG_ICE(IK) * WN_I(IK)
+!            recall that D=S/E=-2*Cg*k_i
+!            Note: We should not use CG_ICE here unless CG_ICE is also
+!            used for advection in w3wavemd.ftn (see lines for IC3
+!            there).
+             D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
              END DO
 !
 ! Alternative by F.A.: generalization to a turbulent boundary layer

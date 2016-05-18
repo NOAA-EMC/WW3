@@ -1,9 +1,9 @@
 $ WAVEWATCH III shell input file
 $ ------------------------------
-   T T     Ice parameter 1
-   T T     Ice parameter 2
-   T T     Ice parameter 3
-   T T     Ice parameter 4
+   F F     Ice parameter 1
+   F F     Ice parameter 2
+   F F     Ice parameter 3
+   F F     Ice parameter 4
    F F     Ice parameter 5
    F F     Mud parameter 1
    F F     Mud parameter 2
@@ -71,10 +71,10 @@ $      ICE2  effective viscosity of ice cover, e.g. 0.05 m2/sec
 $      ICE3  density of ice, e.g. 917.0 kg/m3
 $      ICE4  effective shear modulus of ice, e.g. 0.0 Pa or 1.0e+6 Pa
 $ constant case:
-   'IC1' 19680606 000000   0.4
-   'IC2' 19680606 000000   1.0
-   'IC3' 19680606 000000 917.0
-   'IC4' 19680606 000000  1.0e+3
+$  'IC1' 19680606 000000   0.4
+$  'IC2' 19680606 000000   1.0
+$  'IC3' 19680606 000000 917.0
+$  'IC4' 19680606 000000  1.0e+3
   'STP'
 $
 $ -------------------------------------------------------------------- $

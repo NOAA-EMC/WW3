@@ -5,17 +5,15 @@ $
    1.25 0.08  3  24  0.
 $
    F T F F F T
-  30. 30. 30. 1.
+  60. 60. 60. 60.
 $
+ &SIC3 IC3CHENG=.FALSE., USECGICE =  .FALSE. /
 END OF NAMELISTS
 $
   'RECT' F 'NONE'
-!!! WARNING !!!
-This regtest is broken: ww3_prep uses "AI" and ice concentration input is 13x3
-!!! WARNING !!!
    156  3
-    3.5E2   3.5E2  1.
-   -3.5E2  -3.5E2  1.
+    1.0E3   1.0E3  1.
+   -1.0E3  -1.0E3  1.
 $ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
  -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC1/depth1d.flat'
 $
