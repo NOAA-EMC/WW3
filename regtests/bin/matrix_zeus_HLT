@@ -25,7 +25,7 @@
 
   echo '#!/bin/sh --login'                                   > matrix.head
   echo ' '                                                  >> matrix.head
-  echo '#PBS -l procs=12'                                   >> matrix.head
+  echo '#PBS -l procs=24'                                   >> matrix.head
   echo '#PBS -q batch'                                      >> matrix.head
   echo '#PBS -l walltime=08:00:00'                          >> matrix.head
   echo '#PBS -A omd'                                        >> matrix.head
@@ -51,10 +51,10 @@
   cmplr=Intel
   export cmplOption='-'
 
-  export  mpi='mpiexec_mpt'
-  export   np='12'
-  export   nr='6'
-  export  nth='2'
+  export  mpi='mpirun'
+  export   np='24'
+  export   nr='12'
+  export  nth='6'
 
   if [ "$cmplOption" = 'y' ]
   then
