@@ -343,11 +343,13 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
-                          FTE, FTF, FHMAX, ECOS, ESIN, ICE100WIND
+                          FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
+                          ICE100WIND
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
-      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2
+      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, ICEP2
+      USE W3DISPMD 	
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLD1      USE W3FLD1MD, ONLY: W3FLD1
 !/FLD2      USE W3FLD2MD, ONLY: W3FLD2
@@ -431,6 +433,7 @@
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
       REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT
+      REAL 		              :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2
       DOUBLE PRECISION        :: ATT
 !/ST1      REAL                    :: FH1, FH2
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
@@ -1089,14 +1092,29 @@
 !
 
       IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
+
+        IF ( INFLAGS2(-6)) THEN 
+          ICECOEF2 = ICEP2(IX,IY)
+        ELSE 
+          ICECOEF2 = 0.
+          END IF
+!
+        IF (IICEDISP) THEN
+          CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
+                                       SIG,WN_R,CG_ICE,ALPHA_LIU)
+         ELSE
+            WN_R=WN1
+            CG_ICE=CG1
+            END IF
+!
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
-!/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC )
+!/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC ,WN_R, CG_ICE,ALPHA_LIU)
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC4      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !
 !/IS1      CALL W3SIS1 ( SPEC, ICE, VSIR )
-!/IS2      CALL W3SIS2 ( SPEC, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
-!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1 )
+!/IS2      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
+!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1,WN_R, CG_ICE )
       SPEC2 = SPEC
 !
            TAUICE(:) = 0.

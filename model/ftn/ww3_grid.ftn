@@ -642,7 +642,7 @@
                                  LICE, ICEHMIN, ICEHINIT, ICEWIND,    &
                                  XSEED, XR, HSPM, WSM, WSC
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
-      LOGICAL                 :: FLC
+      LOGICAL                 :: FLC, ICEDISP
 !/FLD1      INTEGER                 :: TAILTYPE
 !/FLD1      REAL                    :: TAILLEV
 !/FLD2      INTEGER                 :: TAILTYPE
@@ -762,7 +762,7 @@
            NAMELIST /MISC/ CICE0, CICEN, LICE, ICEHMIN, XSEED, FLAGTR,&
                       XP, XR, XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, &
                       FMICHE, RWNDC, FACBERG, NOSW, GSHIFT,           &
-                      ICEHINIT, WCOR1, WCOR2, ICEWIND
+                      ICEHINIT, WCOR1, WCOR2, ICEDISP, ICEWIND
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              E3D, I1E3D, I2E3D,                       &
@@ -1903,6 +1903,7 @@
       RWNDC  = 1.
       WCOR1  = 99. 
       WCOR2  = 0.
+      ICEDISP = .TRUE.
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
@@ -1942,7 +1943,7 @@
 !/IS2      IS2BACKSCAT = 1.
 !/IS2      IS2BREAK = .FALSE.
 !/IS2      IS2BREAKF = 3.6
-!/IS2      IS2DISP=.TRUE.
+!/IS2      IS2DISP=.FALSE. !not dispersion only attenuation following Liu disp. eq.
 !/IS2      IS2DUPDATE=.TRUE.
 !/IS2      IS2FRAGILITY=0.9
 !/IS2      IS2DMIN=20
@@ -1987,7 +1988,7 @@
 !/IG1      CALL READNL ( NDSS, 'SIG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
 !
-!/IC2       IC2DISPER = .TRUE. 
+!/IC2       IC2DISPER = .FALSE. 
 !/IC2       IC2TURB = 1.
 !/IC2       IC2TURBS = 0.
 !/IC2       IC2ROUGH = 0.01 
@@ -2077,6 +2078,7 @@
       FICEL  = LICE
       IICEHMIN  = ICEHMIN
       IICEHINIT  = ICEHINIT
+      IICEDISP= ICEDISP
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
@@ -2261,13 +2263,13 @@
                                 FLAGTR, XP, XR, XFILT, IHMAX, HSPMIN, &
                                 WSMULT, WSCUT, '.TRUE.', NOSWLL,FHMAX,&
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                ICEHINIT, ICEWIND
+                                ICEHINIT, ICEDISP, ICEWIND
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, ICEHMIN, PMOVE, XSEED,&
                                 FLAGTR, XP, XR, XFILT, IHMAX, HSPMIN, &
                                 WSMULT, WSCUT, '.FALSE.',NOSWLL,FHMAX,&
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                ICEHINIT, ICEWIND
+                                ICEHINIT, ICEDISP, ICEWIND
 
           END IF
 !
@@ -4822,7 +4824,8 @@
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
                         F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/   &
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,          &
-                     ', ICEHINIT = ',F5.2,', ICEWIND = ',F6.2,' /')
+                     ', ICEHINIT = ',F5.2,', ICEDISP = ',L3/,         &
+                     ', ICEWIND = ',F6.2,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  

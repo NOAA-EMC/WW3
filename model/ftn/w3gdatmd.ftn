@@ -8,7 +8,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         04-May-2016 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -62,6 +62,7 @@
 !/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.09 )
+!/    04-May-2016 : Add IICEDISP                  GB&FA ( version 5.10 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -188,6 +189,7 @@
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
+!      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
 !       
 !
 !      GNAME     C*30  Public   Grid name.
@@ -607,7 +609,7 @@
         REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
-        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
         LOGICAL          :: FLAGLL
         LOGICAL, POINTER :: FLAGST(:)
         CHARACTER(LEN=30):: GNAME
@@ -903,7 +905,7 @@
       REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 !/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
-      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
       LOGICAL, POINTER :: FLAGLL
       LOGICAL, POINTER :: FLAGST(:)
 
@@ -1821,6 +1823,7 @@
       FLCTH  => GRIDS(IMOD)%FLCTH
       FLCK   => GRIDS(IMOD)%FLCK
       FLSOU  => GRIDS(IMOD)%FLSOU
+      IICEDISP => GRIDS(IMOD)%IICEDISP
 !
       GNAME  => GRIDS(IMOD)%GNAME
       FILEXT => GRIDS(IMOD)%FILEXT

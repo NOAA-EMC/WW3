@@ -1316,7 +1316,8 @@
 !/IS2      USE W3SIS2MD
 !/XXX      USE W3SXXXMD
       USE W3PARTMD, ONLY: W3PART
-      USE W3DISPMD, ONLY: WAVNU1
+      USE W3DISPMD, ONLY: WAVNU1, LIU_FORWARD_DISPERSION
+      USE W3GDATMD, ONLY: IICEDISP
 !/
       USE W3ARRYMD, ONLY: PRT1DS, PRT2DS, PRT1DM
       USE W3DISPMD, ONLY: NAR1D, DFAC, N1MAX, ECG1, EWN1, DSIE
@@ -1349,7 +1350,7 @@
                                    XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                    YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
                                    FMEAN, WNMEAN, UDIRCA, CHARN, M2KM
-      REAL                      :: ICETHICK, ICECON
+      REAL                      :: ICETHICK, ICECON, WN_R(NK),CG_ICE(NK), ALPHA_LIU(NK)
 !/IS2       REAL                     :: ICEF, ICEDMAX				   
       REAL                      :: UDIR1(NREQ), CDIR1(NREQ)
       LOGICAL                   :: LASTSTATION=.FALSE.
@@ -2001,8 +2002,16 @@
 !
             END IF
             IF ( FLSRCE(6) ) THEN
-!/IS2              CALL W3SIS2(A, ICECON, ICETHICK, ICEF, ICEDMAX,  &
-!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG)  	      
+              IF (IICEDISP) THEN  
+	              CALL LIU_FORWARD_DISPERSION (ICETHICK,0.,DEPTH, &
+                     SIG,WN_R,CG_ICE,ALPHA_LIU)
+              ELSE
+                WN_R=WN
+                CG_ICE=CG
+                END IF
+!
+!/IS2              CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX,  &
+!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)  	      
             END IF
 !
 !/XXX                CALL W3SXXX

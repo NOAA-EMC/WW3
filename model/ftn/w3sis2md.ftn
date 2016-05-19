@@ -427,13 +427,13 @@
 !/
       END SUBROUTINE INSIS2
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SIS2 (A, CICE, ICEH, ICEF, ICEDMAX, IX, IY, S, D, DCREEP, WN, CG )
+      SUBROUTINE W3SIS2 (A, DEPTH, CICE, ICEH, ICEF, ICEDMAX, IX, IY, S, D, DCREEP, WN, CG, WN_R, CG_ICE)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  | P. Nicot & F. Ardhuin & G. Boutin |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          6-Feb-2016 |
+!/                  | Last update :          04-May-2016 |
 !/                  +-----------------------------------+
 !/
 !/    16-Mar-2014 : Origination.                        ( version 4.18 )
@@ -444,6 +444,8 @@
 !/    02-Nov-2015 : Integration of strain over bandwidth( version 5.05 )
 !/    13-Jan-2016 : Changed initialization of ICEDMAX   ( version 5.10 ) 
 !/    06-Feb-2016 : Added IICEHMIN and creep dissipation( version 5.10 ) 
+!/    10-Mar-2016 : Added depth and call to Liu disp.   ( version 5.10 )
+!/    02-May-2016 : Call to Liu disp moved to w3srce(GB)( version 5.10 )
 !
 !  1. Purpose :
 !     Wave scattering in the MIZ, adapted from Dumont et al.  
@@ -461,6 +463,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       A       R.A.  I     Action density spectrum (1-D)
+!       DEPTH   Real  I     Water depth
 !       CICE    Real  I     Sea ice concentration.
 !       ICEH    Real  I     ice thickness
 !       ICEF    Real  I/O   Maximum floe size (updated)
@@ -518,15 +521,18 @@
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ARRYMD, ONLY: PRT2DS
+      USE W3DISPMD 
 !
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-      REAL, INTENT(IN)        :: A(NSPEC), CICE, ICEH, ICEDMAX, WN(NK), CG(NK)
+      REAL, INTENT(IN)        :: A(NSPEC), DEPTH, CICE, ICEH, ICEDMAX, WN(NK), CG(NK)
       INTEGER, INTENT(IN)     :: IX, IY
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), DCREEP(NSPEC)
       REAL, INTENT(INOUT)     :: ICEF
+      REAL, INTENT(IN)        :: WN_R(NK), CG_ICE(NK)
+
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -546,7 +552,7 @@
       REAL, PARAMETER         :: SIGMA_C =  2.7414E+05  ! Flexural strenght in Pa
       REAL, PARAMETER         :: DENS = 1025.0     ! ice density 
       REAL, DIMENSION(NK)        :: WN_I, WN_RP, WSQ, WLG, WLG_I, CG_I,   &
-                                    R, CURV, CGRATIO, CG_EFF, DUMMY
+                                    R, CURV, CGRATIO, CG_EFF, DUMMY, ALPHA_DISP
 !/T      REAL                    :: SOUT(NK,NTH)
 !/
 !/ ------------------------------------------------------------------- /
@@ -565,7 +571,7 @@
       CG_EFF = 0.
       MP2=(1-POISSON**2)
       IF (IS2PARS(12).GT.0) THEN 
-	B=IS2PARS(12)
+        B=IS2PARS(12)
 ! 2 is the ratio of <H/2^4> to (Hrms/2)^4 for a Rayleigh distribution 
 ! 0.375 is the average of cos^4 
 ! 0.4 is 2/5 
@@ -600,14 +606,16 @@
       IF (CICE .GT. 0 .AND. DMAX .GT. 0) THEN
 !
 !  1. Calculate wavelength, Robinson-Palmer dispersion relation 
-!     (should be tabulated and made consistent with IC2, eg. using Wadhams73...)
+!     (should be tabulated )
 !     Warning: it only applies to unbroken ice. 
 !
         IF (IS2PARS(6).GT.0.5) THEN 
           CALL W3RPWNICE(ICEH,WN_I,WN_RP,CG_I)
         ELSE 
-          WN_I=WN
-          CG_I=CG
+
+          WN_I  = WN_R
+          CG_I  = CG_ICE
+
           WN_RP=WN*0.
           END IF          
         WLG_I = TPI/WN_I  ! Ice wavelength 
@@ -829,7 +837,7 @@
       REAL, INTENT(IN)        :: ICEH
       REAL, INTENT(INOUT)  :: WN_I(:), DAMPING(:), CG_I(:) 
 
-!/	
+!/    
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/

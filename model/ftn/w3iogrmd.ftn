@@ -580,7 +580,7 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
                FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
-               CLATS, CLATIS,CTHG0S, ICE100WIND
+               CLATS, CLATIS,CTHG0S, IICEDISP, ICE100WIND
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
 !/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
@@ -655,7 +655,7 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
                FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
-               CLATS, CLATIS,CTHG0S, ICE100WIND
+               CLATS, CLATIS,CTHG0S, IICEDISP, ICE100WIND
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 !/SEC1         READ (NDSM) NITERSEC1
