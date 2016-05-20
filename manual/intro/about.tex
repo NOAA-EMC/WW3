@@ -2,6 +2,15 @@
 \subsection{~About this manual}
 \vssub
 
+This document describes the governing equations (\textbf{chapter ~\ref{chapt:eq}}), numerical approaches (\textbf{chapter~\ref{chapt:num}}),
+compilation (\textbf{chapter~\ref{chapt:run}}), installing (\textbf{chapter~\ref{chapt:impl}}) and running of \ws. Further details on the general code 
+structure and implementation of different aspects are given in \textbf{chapter~\ref{chapt:sys}}. A user wishing to install the model 
+may thus jump directly to \textbf{chapter~\ref{chapt:impl}}, and then successively
+modify input files in example runs (chapter~\ref{chapt:run}). However this will not replace a thorough knowledge of \ws\ that can be obtained by
+following chapters~\ref{chapt:eq} through \ref{chapt:impl}.
+
+
+
 This is the user manual and system documentation of version \WWver\ of the
 third-generation wind-wave modeling framework \ww. This underlying model has
 been developed at the Marine Modeling and Analysis Branch (MMAB) of the
@@ -11,8 +20,9 @@ Delft University of Technology, and NASA Goddard Space Flight Center,
 respectively. \ws\ differs from its predecessors in all major aspects; i.e.,
 governing equations, program structure, numerical and physical approaches.
 
-This manual describes the governing equations, numerical approaches,
-compilation, and running of \ws. The format of a combined user manual and
+
+
+The format of a combined user manual and
 system documentation has been chosen, to give users the necessary background
 to include new physical and numerical approaches in the framework according to
 their own specifications.  This approach became more important as \ws\
@@ -25,15 +35,6 @@ complete and self-contained, this is not the case for all elements in the
 system documentation. For additional system details, reference is made to the
 source code, which is fully documented. Note that a best practices guide for
 code development for \ws\ is now available \citep{tol:MMAB10a, tol:MMAB14b}.
-
-The governing equations and numerical approaches used in this model are
-described in chapters~\ref{chapt:eq} and \ref{chapt:num}. Running the model is
-described in chapter~\ref{chapt:run}. Installing \ws\ is described in
-chapter~\ref{chapt:impl}. Finally, a short system documentation is given in
-chapter~\ref{chapt:sys}. A thorough knowledge of \ws\ can be obtained by
-following chapters~\ref{chapt:eq} through \ref{chapt:impl}. A shortcut is to
-first install the model (chapter~\ref{chapt:impl}), and then successively
-modify input files in example runs (chapter~\ref{chapt:run}).
 
 \vspace{\baselineskip} 
 \noindent 
@@ -68,7 +69,7 @@ following modifications have been made:
 
 \item Adding sea ice scattering and creep dissipation source terms (model version 5.10)
 
-\item Introducing namelists formats for most input files. Traditional way of providing inputs is still possible using the inp suffix (model version 5.11)
+\item Introducing namelists formats for input files. Traditional way of providing inputs is still possible using the inp suffix (model version 5.11)
 
 \item Sea-state dependent stress-calculations are added.  Updates to the restart files related to file size and optimization of initialization from restart files. Note, this means restart files are not backwards compatible  (model version 5.12).
 

@@ -2,38 +2,190 @@
 \subsubsection{~$S_{is}$: Scattering by sea ice} \label{sec:IS2}
 \vsssub
 
-\opthead{IS2}{\ws}{F. Ardhuin, P. Nicot, D. Dumont, C. Sevigne, T. Williams}
+\opthead{IS2}{\ws}{F. Ardhuin, C. Sevigny, G. Boutin,  D. Dumont,  T. Williams}
 
 \noindent
 The implementation of this scattering term generally 
-follows the approach of \cite{art:MM06}. The first implementation here is based on \cite{art:KM08}, 
-using 1D propagation, the rate of temporal attenuation in the initial direction is given by a 
-parameter $\cS_{\mathrm{is}}({\bk}) = \beta_{s,\mathrm{MIZ}} N(\textbf{k})$, which is determined from pre-computed reflection coefficients 
-over ice-water boundaries. The fraction of that energy which is re-distributed 
-isotropically in all directions is defined by the  parameter $s_\mathrm{scat}$ wich is modified by 
-{\code IS2BACKSCAT} in namelist SIS2. 
+follows the approach of \cite{art:MM06}, to which has been added an estimation of the breakup of the ice 
+by waves to be able to update a maximum floe size diameter. Finally a creep-based dissipation was also 
+combined with the scattering.  
 
-Additional scattering in the pack ice was introduced following \cite{art:SVB09} with a coefficient 
-$\beta_{s,\mathrm{PACK}}=2 s_2 \exp(-s_3 / \sigma)$, where $s_2$ and $s_3$ are set by the 
-{\code IS2C2} and {\code IS2C3} namelist parameters.  The total scattering coefficient is thus, 
+\noindent 
+The scatering source term source term uses for now a back-scatter that is uniform in 
+all directions,  giving the action-conserving formulation, 
+\begin{equation}
+ \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is},\mathrm{MIZ}} [s_\mathrm{scat}  N(k,\theta')-N(k,\theta)] d\theta'  
+ \end{equation}
+where $s_\mathrm{scat}$ is set to 1.0 by default but can be modified by 
+{\code IS2BACKSCAT} in namelist SIS2. \\
 
-\begin{equation}\label{eq:is2}
-  \beta_{is} = \beta_{s,\mathrm{MIZ}} + \beta_{s,\mathrm{PACK}}
+\noindent
+The determination of scattering coefficients  $\beta_{\mathrm{is},\mathrm{MIZ}}$ is based on the theoretical 
+reflection coefficient $\alpha_n(\sigma,h)$
+for waves with a normal incidence going from a half-plane of open water to a half-plane of ice-covered water with a 
+constant ice thickness $h$.  Values of $\alpha_n(\sigma,h)$ as computed by \cite{art:KM08} are tabulated 
+in the {\code W3SIS2MD} module. Following \cite{art:Dea11}, the broken ice is treated as a series of 
+such ice-water interfaces. Neglecting multiple reflections, the scattering parameterization defines the attenuation 
+per unit time as if the ice-covered part of a grid cell was a succession of floes of mean diameter $D_{m}$ with a partial 
+reflection $\alpha_n(\sigma,h)$ for each floe, giving, 
+\begin{equation}
+\beta_{\mathrm{is},\mathrm{MIZ}}=\mathrm{ICE}~c_g \alpha_n(\sigma,h) / D_{m},
+ \end{equation}
+where ICE is the ice concentration. \\
+ 
+\noindent
+The estimation of the mean floe diameter $D_m$ is based on an assumed power law for the number of 
+floe of diameter $D$, taken  proportional to $D^{-\gamma}$. This power low is further assumed to 
+apply for $D$ ranging from 
+the minimum $D_{\min}$ and a maximum $D_{\max}$. The average is thus given by  
+\begin{equation}
+D_m=\frac{\gamma}{\gamma -1}\times\frac{D_{\max}^{-\gamma +1}-D_{\min}^{-\gamma +1}}{D_{\max}^{-\gamma}-D_{\min}^{-\gamma}}
+\label{analytic_Dbar}
 \end{equation}
 
-In the end, the scattering-dissipation source term 
-is a linear function of the spectrum. Namely, the directional spectrum $F$ is an {\F NTH} component vector, 
-and the source term is a vector $S = M F$ with $M$ a square ({\F NTH,NTH}) array. Assuming an isotropic 
-scattering, this linear scattering operator is easily diagonalized. There is one eigenvector that is 
-the isotropic spectrum, for which the eigenvalue is 0, and the other eigenvectors have an eigenvalue equal 
-to $s_\mathrm{scat} \beta$. It is thus straightforward to integrate both 
-$\cS_{\mathrm{ice}}({\bk}) = \beta_{\mathrm{ice}}N(\textbf{k})$ and $\cS_{is}$ over any finite 
-time step $\Delta t$. We have thus split the ice source terms from the other source terms, with a separate integration, 
-\begin{equation}\label{eq:is2}
- N(t+\Delta t) = \exp(\beta_{\mathrm{ice}} \Delta t) \overline{N}(t)  + \exp \left[\left(\beta_{\mathrm{ice}} + \beta_{is} s_\mathrm{scat}\right) \Delta t\right] \left[N(t)-\overline{N}(t)\right]
+\noindent
+At present $D_{\min}$ is a user-supplied value. $D_{\max}$ can either be 
+provided as a forcing field, e.g. from an 
+ice model or some observations, or, if the namelist parameter {\code IS2BREAK} is set to {\code TRUE}, 
+estimated from 
+the breaking of the ice by the local wave field. If the namelist parameter {\code IS2DUPATE}  is set to  
+{\code TRUE}, small values of $D_{\max}$ will persist even if the waves become too small to be able to break the ice to 
+that size. This is probably the proper model 
+use when  external forcing / coupling is available (e.g. advection of ice properties in an ice model). 
+ On the contrary, if {\code IS2DUPDATE} is set to  {\code FALSE}, the value of $D_{\max}$ will be alwas adjusted to the local sea state, 
+even if that means increasing $D_{\max}$.\\
+
+\noindent
+Ice breaking by waves of wavelength $\lambda$ is assumed to produce floes of diameter $\lambda / 2$. 
+In the parametrization, ice breaking occurs if the three following criteria are fulfilled \citep{art:Wea13}:
+\begin{enumerate}
+\item $\lambda/2 \geq D_{\min} \quad \mathrm{and} \quad  \lambda/2 \leq D_{\max}$
+\item $D_{\max}>D_c$, as it exists a critical diameter, which depends on ice properties, below which no flexural failure is possible
+\item $\varepsilon>\varepsilon_c$, the strain due to the incoming wave has to 
+be greater than a defined critical strain
+\end{enumerate}
+The first criterion is simply checking that the new value of $D_{\max}$ will be larger than $D_{\min}$ and smaller 
+than the previous value of $D_{\max}$.\\
+
+\noindent
+The second criterion relies on \cite{inc:M86}, who defines $D_{c}$ as
+\begin{equation}
+D_{c}=\left(\frac{\pi^4 Y^* h^3}{48 \rho g (1 -\nu ^2)}\right)^{1/4}. 
 \end{equation}
-where $\overline{N}$ is the average over all directions. As a result, for a spatially homogeneous field, 
-the spectrum exponentially tends to isotropy over a time scale $1/(\beta_{is} s_\mathrm{scat})$.
+ 
+
+
+\noindent
+The third criterion corresponds to the flexural strain threshold. The horizontal 
+strain caused by waves is related to 
+the curvature of the ice layer, which, in one dimension is 
+$\varepsilon = 0.5 h \partial ^2 \eta_{\mathrm ice} / \partial x^2$. 
+The strain variance is given 
+\begin{equation}
+\langle\varepsilon^2\rangle = \left( \frac{h}{2} \right) ^2   \int_{k_1}^{k_2} k_{ice}^4 F(k)dk 
+\label{strain_sign}
+\end{equation}
+where $h$ is the ice thikness and $k_{ice}$ is the wavenumber $2 \pi /\lambda_{ice}$. 
+Borrowing from wave breaking 
+ideas \citep{art:BBY00}, the integration of the curvature variance is limited around 
+the local wavenumber $k_{\mathrm ice}$. 
+We also note that we have defined an effective minimum ice thickness $h_{\min}$ so that, 
+if $h<h_{\min}$, the strain 
+variance is computed with $h=h_{\min}$ to avoid unbreakable elastic thin ice in the model 
+that does not correspond to 
+usual observations. We thus take $D_{\max}$ to be half the wavelength of the shortest 
+waves for which the following criterion is met 
+\begin{equation}
+F_{break}\, \sqrt{\varepsilon^2} > \frac{\sigma_c}{Y^*} 
+\label{strain_crit}
+\end{equation}
+where $\sigma_c$ is the ice flexural strength. $F_{break}$ is a factor representing random waves and adjustable with 
+the namelist parameter  {\code IS2BREAKF}. It should in theory depend on the duration for which the ice is forced by the 
+waves, and, based on the typical maximum value over 500 Rayleigh-distributes waves, was taken to be $F_{break}=3.6$. 
+$F_{break} \, E_s$ is thus the maximum strain for random waves. \\ 
+
+
+
+\noindent
+Creep dissipation was  finally added, following \cite{art:Wad73}.  It assumes that the floes deformation is not fully elastic, and that the secondary creep under the wave-induced cyclic causes the dissipation of wave energy into heat. 
+We use the ice flow law
+\begin{equation}
+%\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^{n-1}}{B^n}\sigma_{i,j}'
+\left(\frac{d\varepsilon}{dt}\right)_{ij}=\frac{\tau^2}{B^3}\sigma_{i,j}'
+\end{equation}
+$B$ is the flow law  constant and is a function of ice temperature. Using the normalized parameter estimated by \cite{art:Cea98} from 
+laboratory experiments, $A=10^{11}$,  and  a uniform ice temperature of 270~K  gives a value 
+of $B=10^7$~s$^{1/3}$. The volumic dissipation rate is 
+\begin{equation}
+%\frac{de}{dt}= | \sigma_{xx}^{n+1}/(2B)^{n} |
+\frac{de}{dt}= | \sigma_{xx}^{4}/(2B)^3 |
+\end{equation}
+Also, the cyclic deformation of the ice can require a much larger elastic energy than the gravity potential 
+energy, but this is only true if the ice is not broken. As a result, working with a wave elevation spectrum $E(k)$ 
+could introduce large changes in $E(k)$ when the ice is broken or reformed. Instead we prefer 
+to work with an energy spectrum $ R C_g E(k)/C_{g,\mathrm{ice}}$, using the coefficient $R$ introduced by \cite{art:Wad73}, which 
+is the ratio of elastic to gravity potential energies. 
+%For monochromatic waves of amplitude $a$, the energy by unit surface of waves in ice is thus 
+%$R= \frac{1}{2} \rho g a^2 C_g$. It results that, without reflection nor dissipation, the wave variance in ice is such as :
+%\begin{equation}
+%E_{ice}=\frac{E\,C_{g}}{Cg_{ice}\,R}
+%\label{eq:RWad}
+%\end{equation}
+%Note that if creep is activated (hence if {\code IS2BREAKE} $ > 0$), eq.~\ref{eq:RWad} 
+%is also applied for the scattering curvature variance computation in $S_{IS2}$. 
+For unbroken ice  $R$ is 
+\begin{equation}
+R=1+C_R\frac{4Y^*h^3\pi^4}{3\rho g \lambda^4(1-\nu^2)},
+\label{R}
+\end{equation}
+where we have been careful that \cite{art:Wad73} used $2h$ for the  ice thickness, 
+and $C_R$ is by default set to 1.0 using the namelist parameter {\code IS2BREAKE}, but it can 
+be set to zero to work with the true elevation spectrum instead. This factor $R$ is also 
+applied in the calculation of ice breakup by the waves.\\
+
+\noindent
+The creep dissipation is linearized as  $S_{\mathrm{creep}}=-\alpha_{\mathrm{creep}} E_{ice}$. 
+The coefficient $\alpha_{\mathrm{creep}}$ was adapted from the 
+\cite{art:Wad73} monochromatic formula and is equal to
+\begin{equation}
+%\alpha_{\mathrm{creep}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{(n+1)} I_n k^{n+1} \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F \int_{k_1}^{k_2} k_{ice}^4 E(k)dk 
+\alpha_{\mathrm{creep}}=0.05 B h^5 \left(\frac{Y^*}{2B(1-\nu^2)}\right)^{4} I_3 k^4 \frac{C_g^2}{\rho g C_{g_{ice}}R^2} F \int_{k_1}^{k_2} k_{ice}^4 E(k)dk 
+\label{eq:alpha_creep}
+\end{equation}
+where $I_3=\frac{1}{\pi} \int_0^\pi \sin^{4}\beta d\beta$. 
+$F_{\rm broken}$  is a heuristic smooth transition from unbroken to broken ice, so that the dissipation 
+gradually goes to zero for waves much longuer than the floe sizes, because in that case the ice does 
+not deform and produces no disspation of wave energy, 
+\begin{equation}
+F_{\rm broken}=\tanh \left( {\frac{D_{\max}-C_{\lambda}\lambda_{ice}} {D_{\max}C_{smooth} } }\right) 
+\label{smooth}
+\end{equation}
+Creep is computed after updating $D_{\max}$. 
+%dissipation is full for
+%$\lambda_{ice}\leq D_{\max}$ and disappears for $C_{\lambda}\lambda_{ice}< D_{\max}$.  
+The two parameters in this smooth transition $C_{\lambda}$ and $C_{smooth}$ are 
+set to  $0.4$ and $0.2$ by the adjustable namelist parameters {\code IS2CREEPD} and {\code IS2CREEPC}.\\
+
+Finally we recall the various model parameters used in IS2 in the following table. Some are defined 
+as constants in the {\code W3IS2MD} module, others can be adjusted with the IS2 namelist. 
+
+{\centering
+\begin{tabular}{l  c c  c}
+Parameters & Symbol &  namelist parameter &  default values \\
+\hline
+Minimum floe size    & $D_{\min}$  & N. A. & 20~m \\
+Initial floe size    & $D_{init}$  & N. A. & 1000~m \\
+Ice fragility        & $\xi $      & N. A. & $0.9$ \\
+Ice density          & $\rho_{ice}$& N. A. & 922.5~kg~m$^{-3}$ \\
+Effective Young Modulus & $Y^{*}$  & N. A. & 5.49~GPa \\
+Poisson Coefficient  & $\nu$       & N. A. & 0.3 \\
+Flexural strength    &  $\sigma_c$ & N. A. & 0.27~MPa \\
+Flow law parameter &$n$          & {\code IS2CREEPN} & 3\\
+Flow law parameter &$B$          & {\code IS2CREEPB} &  10$^7$~s$^{1/3}$\\
+Correction for elastic energy & $C_R$ & {\code IS2BREAKE} & 1.0 \\
+\hline
+\end{tabular}
+}
 
 
 

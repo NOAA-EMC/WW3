@@ -1,8 +1,4 @@
-\vssub
-\subsection{~Basic concepts} \label{sec:basic_num}
-\vsssub
-
-Equation (\ref{eq:bal_plane}) or (\ref{eq:bal_sphere}) represents the basic
+The Wave Action Equation in Cartesian (\ref{eq:bal_plane}) or spherical (\ref{eq:bal_sphere}) coordinates is the basic
 equations of the wave model. However, modified versions of these equations are
 used in the model, where (a) they are solved on a variable wavenumber grid
 (see below), where (b) a modified versions of these equations are used to
@@ -10,20 +6,26 @@ properly described dispersion for discretized equations in selected numerical
 schemes (see \para\ref{sub:xy_prop}), and where (c) sub-grid obstacles such as
 islands are considered (see \para\ref{sub:xy_prop}).
 
+
+\vssub
+\subsection{~Spectral discretization} \label{sec:basic_num}
+\vsssub
+
+
 If (\ref{eq:bal_plane}) or (\ref{eq:bal_sphere}) is solved directly, an
 effective reduction of spectral resolution occurs in shallow water
 \citep[see][]{tol:GAOS98b}. This loss of resolution can be avoided if the
 equation is solved on a variable wavenumber grid, which implicitly
 incorporates the kinematic wavenumber changes due to shoaling. Such a
-wavenumber grid corresponds to a spatially and temporally invariant frequency
-grid \citep{tol:GAOS98b}. The corresponding local wavenumber grid can be
+wavenumber grid corresponds to a spatially and temporally invariant
+grid in relartive frequency \citep{tol:GAOS98b}. The corresponding local wavenumber grid can be
 calculated directly from the invariant frequency grid and the dispersion
 relation (\ref{eq:disp}), and hence becomes a function of the local depth
-$d$. To accommodate economical calculations of $S_{nl}$, a logarithmic
-frequency grid is adopted,
+$d$. To accommodate economical calculations of $S_{nl}$ and allow a good separation of swell frequencies, a frequency discretization with 
+exponentially increasing lags is adopted, so that the varying frequency resolution is proportional to the local frequency, 
 
 %----------------------------%
-% Logarithmic frequency grid %
+% Exponential frequency grid %
 %----------------------------%
 % eq:sigma_grid
 
@@ -34,7 +36,7 @@ frequency grid is adopted,
 \noindent
 where $m$ is a discrete grid counter in $k$-space. $X_\sigma$ is defined by
 the user in the input files of the program. Traditionally, in most
-applications of third-generation models $X_\sigma = 1.1$ is used.
+applications of third-generation models $X_\sigma \simeq 1.1$ is used.
 
 The effects of a spatially varying grid will be discussed for the Cartesian
 equation (\ref{eq:bal_plane}) only. Adaptation to the spherical grid is
@@ -53,7 +55,7 @@ equation becomes
 \frac{\p}{\p y} \frac{\dot{y} N}{c_g} + 
 \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + 
 \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =
-0 \: , \label{eq:bal_f_grid} \end{equation} \begin{equation}
+\frac{S}{\sigma c_g} \: , \label{eq:bal_f_grid} \end{equation} \begin{equation}
 \dot{\kappa} \:\frac{\p k}{\p \kappa} =
      c_g^{-1} \frac{\p \sigma}{\p d} \left (
     \frac{\p d}{\p t} + {\bf U} \cdot \nabla_x d \: \right ) -
@@ -62,29 +64,52 @@ equation becomes
 \end{equation}
 
 \noindent
-Equation (\ref{eq:bal_f_grid}) is solved using a fractional step method, as is
-commonplace in wave modeling. The first step considers temporal variations of
+
+\vssub
+\subsection{~Splitting of the wave action equation} \label{sec:basic_num}
+\vsssub
+
+In \ww, equation (\ref{eq:bal_f_grid}) is solved using a fractional step method. 
+The first step treats the temporal variations of
 the depth, and corresponding changes in the wavenumber grid. As is discussed
 by \cite{tol:GAOS98b}, this step can be invoked sparsely. By splitting off
 effects of (temporal) water level variations, the grid becomes invariant, and
 the depth becomes quasi-steady for the remaining fractional steps. Other
 fractional steps consider spatial propagation, intra-spectral propagation and
-source terms.
+source terms. Starting with version 5.10, the source term $S$ is further split into 
+non-ice $S_{no~ice}$ and ice $S_{ice}$ source term. For a single model grid, the following sequence of integration  is performed 
+by the {\code W3WAVE} routine,
+\begin{itemize}
+ \item[1.] update of water level 
+ \item[2.] intra-spectral part 1: integration over $\Delta t_g/2$ of  $\frac{\p}{\p t} \frac{N}{c_g} + \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =0 $ 
+ \item[3.] spatial propagation : integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g} +  
+\frac{\p}{\p x} \frac{\dot{x} N}{c_g} + 
+\frac{\p}{\p y} \frac{\dot{y} N}{c_g}  = 0$
+ \item[4.] intra-spectral part 2: integration over $\Delta t_g/2$ of  $\frac{\p}{\p t} \frac{N}{c_g} + \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =0 $ 
+ \item[5.] source term integration : integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{no~ice}}{\sigma c_g}$
+ \item[6.] ice source term integration : integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{ice}}{\sigma c_g}$ 
+\end{itemize}
+The succession of these 6 steps is, in the limit $\Delta t_g \rightarrow 0$, equivalent to the integration of eq. (\ref{eq:bal_f_grid}) over a global 
+time step $\Delta t_g$. 
 
-The multiple splitting technique results in a model that can efficiently be
-vectorized and parallelized at the same time. The time splitting furthermore
+This splitting in multiple steps allows an  efficient 
+vectorization and parallelization at the same time. The time splitting furthermore
 allows for the use of separate partial or dynamically adjusted time steps in
 the different fractional steps of the model. \ws\ makes a distinction between
 4 different time steps. \label{dt_list}
 
 \begin{list}{xx}{\itemsep 0mm \parsep 0mm \rightmargin 5mm}
 
-\item[1)] The `global' time step $\Delta t_g$, by which the entire solution is
-propagated in time, and at which intervals input winds and currents are
-interpolated. This time step is provided by the user, but can be reduced
+\item[1)] The `global' time step $\Delta t_g$, is the common step of all the splitted sub-integrations. In that sense, 
+it is the smallest time step for which a physically meaningful solution can be obtained, because all terms in the equation have been 
+integrated. As a result, this is a possible time step for evaluating model output or coupling with other models, 
+and, in the case of a multi-grid system,  it is the time step at which communication 
+between grids is performed. In the case of a forced -- not coupled -- model, input winds and currents are
+interpolated at this global step. This time step is provided by the user in the input file of {\code ww3\_grid}, but can be reduced
 within the model to reach a requested input or output time.
 
-\item[2)] The second time step is the time step for spatial propagation. The
+\item[2)] The second time step is the time step for spatial propagation. This is not used for triangular-based 
+grids, for which the advection step is -- in the case of explicit schemes -- adjusted internally for each spectral component. For other grid types, the
 user supplies a reference maximum propagation time step for the lowest model
 frequency $\Delta t_{p,r}$, assuming no currents, and no grid motion. For the
 frequency with counter $m$, the maximum time step $\Delta t_{p,m}$ is
@@ -119,7 +144,7 @@ be taken equal to the global time step $\Delta t_g$. For shallow water grids,
 smaller intra-spectral propagation time steps allow for larger effects of
 refraction within the stability constraints of the scheme. Note that the order
 of invoking spatial and intra-spectral propagation is alternated to enhance
-numerical accuracy. If strong refraction o narrow swells occur, this may
+numerical accuracy. If strong refraction of long period swells occur, this may
 result in a notable undulation of mean wave parameters. This can be avoided by
 setting this time step to an even integer fraction of $\Delta t_g$.
 
@@ -127,7 +152,8 @@ setting this time step to an even integer fraction of $\Delta t_g$.
 source terms, which is dynamically adjusted for each separate grid point and
 global time step $\Delta t_g$ (see \para~\ref{sub:source}). This results in
 more accurate calculations for rapidly changing wind and wave conditions, and
-a more economical integration for slowly varying conditions.
+a more economical integration for slowly varying conditions. In order to limit the 
+calculation time, a minimum time step is defined by the user. 
 
 \end{list}
 

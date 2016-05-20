@@ -12,8 +12,13 @@ observed in a frame of reference moving with the mean current, and the
 absolute (radian) frequency $\omega$ $(= 2 \pi f_a)$, which is observed in a
 fixed frame of reference.  The direction $\theta$ is by definition
 perpendicular to the crest of the wave (or spectral component), and equals the
-direction of {\bk}. Generally, scales of variation of depths and currents are
-assumed to be much larger than those of an individual wave. The quasi-uniform
+direction of {\bk}. Equations given here follow the geometrical optics approximation, 
+which is exact in the limit when scales of variation of depths and currents are
+ much larger than those of an individual wave\footnote{Even with a factor 5 change in wave height over half a wavelength, 
+ the geometrical optics approximation can provide reasonable results as was shown over submarine canyons \citep{art:Mea07}}. 
+ Diffraction, scattering and interference effects that are neglected by this approximation can be 
+ added a posteriori as source terms in the wave action equation. Under this approximation of slowly varying 
+ current and depth, the quasi-uniform
 (linear) wave theory then can be applied locally, giving the following
 dispersion relation and Doppler type equation to interrelate the phase
 parameters
@@ -58,7 +63,7 @@ here]{rep:Chr82,bk:Mei83,tol:JPO90}.
 
 For monochromatic waves, the amplitude is described as the amplitude, the wave
 height, or the wave energy. For irregular wind waves, the (random) variance of
-the sea surface is described using variance density spectra (in the wave
+the sea surface is described using the surface elevation variance density spectra (in the wave
 modeling community usually denoted as energy spectra). The variance spectrum
 $F$ is a function of all independent phase parameters, i.e.,
 $F({\bk},\sigma,\omega)$, and furthermore varies in space and time at scales

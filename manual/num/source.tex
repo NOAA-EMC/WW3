@@ -1,5 +1,5 @@
 \vssub
-\subsection{~Source terms} \label{sub:source}
+\subsection{~Non-ice source terms integration} \label{sub:source}
 \vssub
 
 Finally, the source terms are accounted for by solving
@@ -10,7 +10,7 @@ Finally, the source terms are accounted for by solving
 % eq:step_source
 
 \begin{equation}
-\frac{\p N}{\p t} = \cS \: . \label{eq:step_source}
+\frac{\p N}{\p t} = \cS_{no~ice} \: . \label{eq:step_source}
 \end{equation}
 
 \noindent 
@@ -211,3 +211,55 @@ al. dissipation, makes it possible to have unrealistically steep short waves
 in the presence of swell. A future extension of this limiter could be to limit
 the steepness with a partial spectral integration in frequencies, to make sure
 that waves of all scales are indeed not too steep.
+
+\vssub
+\subsection{Ice source terms integration} \label{sub:source}
+\vssub
+
+Because the attenuation and scattering in the ice can be very strong although they are linear, it is convenient 
+to performe a separate integration of the ice terms $S_{\mathrm{ice}}=S_{\mathrm{id}}+S_{\mathrm{is}}$. This combines 
+a dissipation term 
+\begin{equation}
+S_{\mathrm{id}}/\sigma  = \beta_{\mathrm{id}} N 
+\end{equation}
+ and a scattering term 
+which is of the form 
+\begin{equation}
+ \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is}} [N(k,\theta')-N(k,\theta)] d\theta'  
+ \end{equation}
+ in which the scattering coefficient $\beta_{\mathrm{is}}$ is a priori a function of the difference in direction between 
+ incident $\theta'$ and scattered $\theta$ directions, as well as the shape of ice floes. In general 
+  the directional spectrum $N(k,.)$ is a vector with {\F NTH} components, 
+and the source term is a vector of the same size  given by the matric product $S/\sigma = M N(k,.)$ where  
+$M$ is a positive symmetric square {\F NTH} by {\F NTH} matrix with components given from the $\beta_{\mathrm{id}}$ values.
+The matrix $M$ is easily diagonalized as 
+\begin{equation}
+ M  =  V D V^T  
+ \end{equation}
+ where $D$ is a diagonal matrix containing all eigenvalues and $V$ is the array of eigenvectors, 
+ and $V^T$ is its transpose. As a result the split wave action equation for ice source terms 
+ \begin{equation}
+\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{\mathrm{id}}}{\sigma c_g} 
+ \end{equation}
+ can be rewritten for the action $N_i$ of each eigenvector $V_i$ with eigenvalue $\lambda_i$ as 
+  \begin{equation}
+\frac{\p}{\p t} \frac{N_i}{c_g}   = \frac{\beta_{\mathrm{id}} + \lambda_i}{\sigma c_g} N_i 
+ \end{equation}
+ which has the following exact solution 
+   \begin{equation}
+ {N_i}(t+\Delta t_g)   = N_i(t) \exp \left[ (\beta_{\mathrm{id}} + \lambda_i) +\Delta t_g\right].
+ \end{equation}
+ 
+ In all cases the eigenvector corresponding to an isotropic spectrum has an eigenvalue $\lambda=\beta_{\mathrm{id}}$. 
+ In the case of an isotropic back-scatter, the other eigenvalues are all equal to $(\beta_{\mathrm{id}} + \beta_{\mathrm{is}})$. 
+ This decomposition over the two eigenspaces simplifies the solution to 
+%---------------------%
+% Step : Source terms %
+%---------------------%
+% eq:exact_st_ice
+
+\begin{equation}
+ N(t+\Delta t_g) = \exp(\beta_{\mathrm{id}} \Delta t_g) \overline{N}(t)  + \exp \left[\left(\beta_{\mathrm{id}} + \beta_{\mathrm{is}}\right) \Delta t_g\right] \left[N(t)-\overline{N}(t)\right]
+\: , \label{eq:exact_st_ice} \end{equation}
+where $\overline{N}$ is the average over all directions. As a result, for a spatially homogeneous field, 
+the spectrum exponentially tends to isotropy over a time scale $1/(\beta_{\mathrm{id}})$.

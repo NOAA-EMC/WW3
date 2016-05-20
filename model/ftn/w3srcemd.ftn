@@ -1121,6 +1121,9 @@
            PHICE = 0.
            DO IK=1,NK
              IS = 1+(IK-1)*NTH 
+!
+! First part of ice term integration: dissipation part ATT. 
+!
              ATT=1.
 !/IC1             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC2             ATT=EXP(ICE*VDIC(IS)*DTG)
@@ -1131,6 +1134,9 @@
 !/IS2               ATT=ATT*EXP((VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2             ELSE 
+!
+! Second part of ice term integration: scattering (only if there is back-scattering, i.e. IS2PARS(2).NE.0 ) 
+!
 !/IS2               SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
 !/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*EXP(VDIR2(IS)*DTG)*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2               ATT = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH

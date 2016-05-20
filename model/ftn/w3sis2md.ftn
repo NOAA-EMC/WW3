@@ -658,8 +658,6 @@
           IF (CICE.GT.0.8) ALPHA = 0.
           IF (CICE.GE.0.2.AND.CICE.LE.0.8) ALPHA = ALPHA*(CICE-0.2)*(0.8-CICE)
           END IF 
-        !IF (IX.EQ.5) WRITE(996,*)  &
-        !    'ALPHA:',IK,ALPHA,CICE,IS2PARS(1), IS2PARS(4),IS2PARS(5),-2.*IS2PARS(4)*EXP(-1.*IS2PARS(5)/SIG(IK))
 !
 ! time decay
 !
@@ -748,7 +746,7 @@
                                         *SMOOTHD
             END IF
           END DO ! end of loop on IK
-       ENDIF ! end of test (IS2PARS(12).GT.0)
+        ENDIF ! end of test (IS2PARS(12).GT.0)
 !
 !  6. Case of no scattering nor dissipation 
 !      

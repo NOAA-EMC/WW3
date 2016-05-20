@@ -346,8 +346,6 @@ Input and dissipation module \wam-4 and ECWAM. \hfill {\file w3src3md.ftn}
 \fit{w3sds3}{Calculation of $S_{ds}$.}
 \fit{tabu\_stress}{Tabulation of wind stress as a function of $U_{10}$ and $\tau_w$}
 \fit{tabu\_tauhf}{Tabulation of the short waves-supported stress}
-\fit{tabu\_tauhf2}{Tabulation of the short waves-supported stress with sheltering}
-\fit{tabu\_swellft}{Tabulation of oscillatory friction factor}
 \fit{calc\_ustar}{Computes friction velocity using stress table}
 \end{flisti}
 
@@ -526,8 +524,6 @@ Bottom scattering module \hfill {\file w3sbs1md.ftn}
 \fit{w3sbs1}{Calculation of $S_{bs}$ and associated momentum flux to the
              bottom.}  
 \fit{insbs1}{Initialization of $S_{bs}$.}
-\fit{diagonalize}{Square matrix diagonalization} \fit{rotate}{Square matrix
-    rotation, used by DIAGONALIZE}
 \end{flisti}
 
 \noindent
@@ -551,7 +547,6 @@ Wave-ice interactions (Liu et al.) \hfill {\file w3sic2md.ftn}
 
 \begin{flisti}
 \fit{w3sic2}{Calculation of $S_{ice}$.}
-\fit{liu\_foreward\_dispersion, liu\_inverse\_dispersion}{}
 \fit{      }{Interpolation tables.}
 \end{flisti}
 
@@ -599,8 +594,8 @@ code files.
                    'print plot' routines.}
 \fit{w3bullmd.ftn}{Perform bulletin style output for output points.}
 \fit{w3cspcmd.ftn}{Conversion of spectral discretization.}
-\fit{w3dispmd.ftn}{Routines to solve the dispersion relation,
-                   including interpolation tables.}
+\fit{w3dispmd.ftn}{Routines to solve the Laplace dispersion relation (linear waves, flat bottom, no ice),
+                   including interpolation tables. Includes also ice corrections in liu\_foreward\_dispersion and liu\_inverse\_dispersion}
 \fit{w3gsrumd.ftn}{Regridding utilities.}
 \fit{w3partmd.ftn}{Perform spectral partitioning for a single spectrum.}
 \fit{w3servmd.ftn}{General service routines.}

@@ -55,10 +55,9 @@ thickness (m), and mud viscosity (m2/s), in that order.
 The user is referred to the regression tests {\file ww3\_tbt1.1} {\file
 ww3\_tbt2.1} for examples of how to use the new mud source functions.
 
-\textrm{\textit{\underline{Limitations of the code}}}: The interface for the
-new mud and ice coefficients have only been implemented for {\file
-ww3\_shel}. Interface for {\file ww3\_multi} will be available in a future
-revision. In the case of mud, though the ${k_r}$ is calculated, its effect is
+\textrm{\textit{\underline{Limitations of the code}}}: In the case of {\file ww3\_multi}, 
+the interface for the necessary mud and ice forcing fields has only been implemented when using 
+the namelist type of input file.  In the case of mud, though the ${k_r}$ is calculated, its effect is
 not passed back to the main program. The only effect is via ${k_i}$
 (dissipation). Full implementation of ${k_r}$, already possible with IC3, and
 will be available in a future version of the model.
