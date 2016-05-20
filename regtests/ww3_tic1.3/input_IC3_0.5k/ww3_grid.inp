@@ -11,12 +11,10 @@ $
  &PRO2 CFLTM = 0.75 /
  &PRO3 CFLTM = 0.75, WDTHCG = 0., WDTHTH = 0. /
  &PRO4 CFLTM = 0.75, RNFAC = 0., RSFAC = 0. /
+ &SIC3 IC3CHENG=.FALSE., USECGICE =  .FALSE. /
 END OF NAMELISTS
 $
   'RECT' F 'NONE'
-!!! WARNING !!!
-This regtest is broken: ww3_prep uses "AI" and ice concentration input is 13x3
-!!! WARNING !!!
    303  3
     0.5E3   0.5E3  1.
    -0.5E3  -0.5E3  1.

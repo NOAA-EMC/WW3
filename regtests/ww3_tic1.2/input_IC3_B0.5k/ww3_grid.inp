@@ -7,12 +7,10 @@ $
    F T F F F T
   60. 60. 60. 60.
 $
+ &SIC3 IC3CHENG=.FALSE., USECGICE =  .FALSE. /
 END OF NAMELISTS
 $
   'RECT' F 'NONE'
-!!! WARNING !!!
-This regtest is broken: ww3_prep uses "AI" and ice concentration input is 13x3
-!!! WARNING !!!
    303  3
     0.5E3   0.5E3  1.
    -0.5E3  -0.5E3  1.

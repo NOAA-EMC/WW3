@@ -1843,10 +1843,10 @@
     echo "$rtst -s BT8           -w work_BT8                                $ww3 ww3_tbt2.1" >> matrix.body
     echo "$rtst -s BT9           -w work_BT9                                $ww3 ww3_tbt1.1" >> matrix.body
     echo "$rtst -s BT9           -w work_BT9                                $ww3 ww3_tbt2.1" >> matrix.body
-    echo "$rtst -g 100m          -w work_100m_IC1  -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 350m          -w work_350m_IC1  -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_1000m_IC1 -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 2500m         -w work_2500m_IC1 -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 100m          -w work_100m_IC1  -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 350m          -w work_350m_IC1  -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_1000m_IC1 -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 2500m         -w work_2500m_IC1 -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 5km           -w work_5km_IC1   -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 10km          -w work_10km_IC1  -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 20km          -w work_20km_IC1  -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
