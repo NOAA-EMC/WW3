@@ -62,7 +62,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3GDATMD, ONLY : W3NMOD, FLAGLL, W3SETG
+      USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR
       USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
       USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 !/S      USE W3SERVMD, ONLY : STRACE
@@ -93,7 +93,7 @@
       REAL, ALLOCATABLE       :: SIG(:), DSIP(:), SPEC(:,:)
       CHARACTER               :: COMSTR*1, IDSTR*34, TSTSTR*3,        &
                                  STIME*23, STRING*81, EMPTY*81,       &
-                                 PART*9, ZEROS*9
+                                 PART*9, ZEROS*9, TRCKID*32
 !
       DATA EMPTY(01:40) / '                                        ' /
       DATA EMPTY(41:81) / '                                         ' /
@@ -141,7 +141,7 @@
 !
       OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',FORM='UNFORMATTED', &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
-      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH
+      READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
 !
       IF ( FLAGLL ) THEN
           FACTOR  = 1.
@@ -182,13 +182,14 @@
 !
 ! 4.a Read/write basic data
 !
-      READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR
+      READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR,  &
+                                                 TRCKID
       IF ( FLAGLL ) THEN
           WRITE (NDSOUT,984,ERR=803,IOSTAT=IERR)                      &
-                 TIME, FACTOR*X, FACTOR*Y, TSTSTR
+                 TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
         ELSE
           WRITE (NDSOUT,974,ERR=803,IOSTAT=IERR)                      &
-                 TIME, FACTOR*X, FACTOR*Y, TSTSTR
+                 TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
         END IF
 !
       IF ( TIME(1).EQ.TTST(1) .AND. TIME(2).EQ.TTST(2) ) THEN
@@ -407,8 +408,8 @@
   981 FORMAT (2I6,2E13.5)
   982 FORMAT (7E11.4)
   983 FORMAT (7E11.4)
-  984 FORMAT (I8.8,I7.6,2F9.3,2X,A3)
-  974 FORMAT (I8.8,I7.6,2(F9.2,'E3'),2X,A3)
+  984 FORMAT (I8.8,I7.6,2F9.3,2X,A3,2X,A32)
+  974 FORMAT (I8.8,I7.6,2(F9.2,'E3'),2X,A3,2X,A32)
   985 FORMAT (F8.1,2F6.2,2F8.2,f9.5,f7.2,E12.5)
   986 FORMAT (A)
   987 FORMAT (I9)

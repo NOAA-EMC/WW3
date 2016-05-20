@@ -36,15 +36,15 @@
   !
   ! Dimensions
   !
-  CALL hdlerr(NF90_OPEN(data_filename, NF90_NOWRITE, il_file_id), __LINE__ )
+  CALL hdlerr(NF90_OPEN(data_filename, NF90_NOWRITE, il_file_id), __LINE__,__FILE__ )
   !
   !
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'lon' , il_lon_id), __LINE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'lat' , il_lat_id), __LINE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'clo' , il_clo_id), __LINE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'cla' , il_cla_id), __LINE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'srf' , il_srf_id), __LINE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'imask' , il_indice_id), __LINE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'longitude' , il_lon_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'latitude' , il_lat_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'clo_t' , il_clo_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'cla_t' , il_cla_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'srf' , il_srf_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'imask_t' , il_indice_id), __LINE__,__FILE__ )
   !
   ila_what(:)=1
   !
@@ -58,39 +58,39 @@
   !
   ! Data
   !
-  CALL hdlerr( NF90_OPEN(data_filename, NF90_NOWRITE, il_file_id), __LINE__ )
+  CALL hdlerr( NF90_OPEN(data_filename, NF90_NOWRITE, il_file_id), __LINE__,__FILE__ )
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_lon_id, gridlon, &
-     ila_what(1:2), ila_dim(1:2)), __LINE__ )
+     ila_what(1:2), ila_dim(1:2)), __LINE__,__FILE__ )
   WRITE(w_unit,*) 'Global grid longitudes reading done'
   CALL flush(w_unit)
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_lat_id, gridlat, &
-     ila_what(1:2), ila_dim(1:2)), __LINE__ )
+     ila_what(1:2), ila_dim(1:2)), __LINE__,__FILE__ )
   WRITE(w_unit,*) 'Global grid latitudes reading done'
   CALL flush(w_unit)
   !
   CALL hdlerr( NF90_GET_VAR(il_file_id, il_clo_id, gridclo, &
-     ila_what, ila_corners), __LINE__ )
+     ila_what, ila_corners), __LINE__,__FILE__ )
   WRITE(w_unit,*) 'Global grid longitude corners reading done'
   CALL flush(w_unit)
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_cla_id, gridcla, &
-     ila_what, ila_corners), __LINE__ )
+     ila_what, ila_corners), __LINE__,__FILE__ )
   WRITE(w_unit,*) 'Global grid latitude corners reading done'
   CALL flush(w_unit)
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_srf_id, gridsrf, &
-     ila_what(1:2), ila_dim(1:2)), __LINE__ )
+     ila_what(1:2), ila_dim(1:2)), __LINE__,__FILE__ )
   WRITE(w_unit,*) 'Global grid surfaces reading done'
   CALL flush(w_unit)
   !
   CALL hdlerr( NF90_GET_VAR (il_file_id, il_indice_id, indice_mask, &
-     ila_what, ila_dim), __LINE__ )
+     ila_what, ila_dim), __LINE__,__FILE__ )
   WRITE(w_unit,*) 'Global grid mask reading done'
   CALL flush(w_unit)
   !
-  CALL hdlerr( NF90_CLOSE(il_file_id), __LINE__ )
+  CALL hdlerr( NF90_CLOSE(il_file_id), __LINE__,__FILE__ )
   !
   WRITE(w_unit,*) 'End of routine read_grid'
   CALL flush(w_unit)

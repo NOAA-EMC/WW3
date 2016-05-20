@@ -122,6 +122,7 @@
       CHARACTER*32                        :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
       CHARACTER*120, ALLOCATABLE          :: SPECFILES(:)
       CHARACTER*120                       :: FILENAME
+      CHARACTER*14                        :: TIME_STR
 
 ! index
       INTEGER                             :: IX, IY, ISEA, I,JJ,IP,IP1,J,IT,              &
@@ -530,7 +531,7 @@
           DO IP=1,NBO2
 !           Searches for the nearest 2 points where spectra are available
             IF (FLAGLL)  THEN 
-              DIST=SQRT((MOD(LONS(IP)-XBPO(IP1)+360,360.))**2+(LATS(IP)-YBPO(IP1))**2)
+              DIST=SQRT((MOD(ABS(LONS(IP)-XBPO(IP1))+360,360.))**2+(LATS(IP)-YBPO(IP1))**2)
             ELSE 
               DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
               END IF
@@ -612,15 +613,23 @@
           IF (index(timeunits, "seconds").NE.0) datetmp=times(IT)/86400.
           datecur=datetmp+dateref
           call caldat(int(datecur),id,im,iyy)
-          ih=(datecur-int(datecur))*24
-          imn=(ih-int(ih))*60
-          is=(imn-int(imn))*60
-          ih=int(ih)
-          imn=int(imn)
-          is=int(is)
-          TIME(1)=iyy*10000 + im *100 + id
-          TIME(2)=ih*10000 + imn*100 + is
-         WRITE(NDSO,'(A,2I9,A,I6,A)') 'Writing boundary data for time:', TIME, 'at ',NBO2,' points'
+ 
+          ih=(datecur-INT(datecur))*24.
+          IF (ABS(ih-NINT(ih)).LT.1.E-5) ih=NINT(ih)
+
+          imn=(ih-INT(ih))*60.
+          IF (ABS(imn-NINT(imn)).LT.1.E-5) imn=NINT(imn)
+
+          is=(imn-INT(imn))*60.
+          IF (ABS(is-NINT(is)).LT.1.E-5) is=NINT(is)
+
+          WRITE(TIME_STR,'(I4.4,5I2.2)') INT(iyy), INT(im), INT(id), &
+                                        INT(ih), INT(imn), INT(is)
+
+          read(TIME_STR(1:8),'(I8.8)') TIME(1)
+          read(TIME_STR(9:14),'(I6.6)') TIME(2)
+
+          WRITE(NDSO,'(A,2I9,A,I6,A)') 'Writing boundary data for time:', TIME, ' at ',NBO2,' points'
           WRITE(NDSB,IOSTAT=IERR) TIME, NBO2
           DO IP=1, NBO2
             WRITE(NDSB) ABPIN2(:,IT,IP)

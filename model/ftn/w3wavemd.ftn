@@ -175,7 +175,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3WAVE ( IMOD, TEND, STAMP, NO_OUT & 
-!/OASIS                  ,id_lcomm                 &
+!/OASIS                  ,ID_LCOMM                 &
                          )
 !/
 !/                  +-----------------------------------+
@@ -394,7 +394,7 @@
 !/
       INTEGER, INTENT(IN)           :: IMOD, TEND(2)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
-!/OASIS INTEGER, INTENT(IN), OPTIONAL :: id_lcomm
+!/OASIS INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters :
@@ -405,7 +405,7 @@
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, NKCFL
-!/OASIS     INTEGER                 :: OASISED, il_oasis_time
+!/OASIS     INTEGER                 :: OASISED, IL_OASIS_TIME
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -1646,6 +1646,11 @@
 ! ==================================================================== /
 !
   400 CONTINUE
+
+! In coupling mode, do not perform output if TIME is the last time of integration TEND 
+! except for the last time of the run TIMEEND
+!/OASIS        IF ( ( DSEC21 ( TIME, TEND ) .EQ. 0. ) .AND. &
+!/OASIS             ( DSEC21 ( TIME, TIMEEND ).NE. 0 ) ) EXIT
 !
 ! 4.  Perform output to file if requested ---------------------------- /
 ! 4.a Check if time is output time
@@ -1702,7 +1707,8 @@
 !/MPI            NRQMAX = 0
 !
 !/MPI            IF ( (FLOUT(1) .OR.  FLOUT(7)) .AND. NRQGO.NE.0 ) THEN
-!/MPI                IF ( DSEC21(TIME,TONEXT(:,1)).EQ.0. ) THEN
+!/MPI                IF ( ( DSEC21(TIME,TONEXT(:,1)).EQ.0. ) .OR. &
+!/MPI                     ( DSEC21(TIME,TONEXT(:,7)).EQ.0. ) ) THEN
 !/MPI                    CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
 !/MPI                    FLGMPI(0) = .TRUE.
 !/MPI                    NRQMAX    = MAX ( NRQMAX , NRQGO )
@@ -1711,7 +1717,8 @@
 !/MPI              END IF
 !
 !/MPI            IF ( (FLOUT(1) .OR.  FLOUT(7)) .AND. NRQGO2.NE.0 ) THEN
-!/MPI                IF ( DSEC21(TIME,TONEXT(:,1)).EQ.0. ) THEN
+!/MPI                IF ( ( DSEC21(TIME,TONEXT(:,1)).EQ.0. ) .OR. &
+!/MPI                     ( DSEC21(TIME,TONEXT(:,7)).EQ.0. ) ) THEN
 !/MPI                    CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
 !/MPI                    FLGMPI(1) = .TRUE.
 !/MPI                    NRQMAX    = MAX ( NRQMAX , NRQGO2 )
@@ -1772,16 +1779,16 @@
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
                   IF ( DTTST .EQ. 0. ) THEN
-                      IF ( J .EQ. 1 ) THEN
+                      IF ( ( J .EQ. 1 ) .OR. ( J .EQ. 7 ) ) THEN
                           IF ( IAPROC .EQ. NAPFLD ) THEN
 !/MPI                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
 !/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
-                              CALL W3IOGO                             &
+                              IF ( J .EQ. 1 ) CALL W3IOGO              &
                                  ( 'WRITE', NDS(7), ITEST, IMOD )
-!
-!     Generate output flag file for fields and SBS coupling.
-!
+!/SBS !
+!/SBS !     Generate output flag file for fields and SBS coupling.
+!/SBS !
 !/SBS                              JJ = LEN_TRIM ( FILEXT )
 !/SBS                              CALL STME21 ( TIME, IDTIME )
 !/SBS                              FOUTNAME = 'Field_done.' // IDTIME(1:4) &
@@ -1790,22 +1797,24 @@
 !/SBS                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
 !/SBS                              CLOSE( NDSOFLG )
                             END IF
-!!                        ELSE IF ( J .EQ. 7 ) THEN
-!!                          IF ( IAPROC .EQ. NAPFLD ) THEN
-!!!/MPI                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
-!!!/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
-!!!/MPI                              FLGMPI(1) = .FALSE.
-!!!
+
+                          IF ( J .EQ. 7 ) THEN
 !/OASIS !
 !/OASIS ! Send variables to atmospheric or ocean circulation model
 !/OASIS !
-!/OASIS IF (OASISED.EQ.1) THEN
-!/OASIS     il_oasis_time = DSEC21 ( TIME00 , TIME )
-!/OASIS     IF ((MOD(DSEC21(TIME00,TIME),1.0) .LE. 1.0E-2) .AND. (DSEC21 (TIME, TIMEEND) .GT. 0.0) ) THEN
-!/OASACM        CALL snd_fields_to_atmos(il_oasis_time)
-!/OASOCM        CALL snd_fields_to_ocean(il_oasis_time)
-!/OASIS     ENDIF
-!/OASIS END IF
+!/OASIS                              IF (OASISED.EQ.1) THEN
+!/OASIS                                IL_OASIS_TIME = DSEC21 ( TIME00 , TIME )
+!/OASIS                                IF ( (MOD(DSEC21(TIME00,TIME),1.0) .LE. 1.0E-2) .AND. &
+!/OASIS                                     (DSEC21 (TIME, TIMEEND) .GT. 0.0) ) THEN
+!/OASACM                                  CALL SND_FIELDS_TO_ATMOS(IL_OASIS_TIME)
+!/OASACM                                  IF ( FLWIND ) IDACT(3:3) = 'C'
+!/OASOCM                                  CALL SND_FIELDS_TO_OCEAN(IL_OASIS_TIME)
+!/OASOCM                                  IF ( FLLEV ) IDACT(5:5) = 'C'
+!/OASOCM                                  IF ( FLCUR ) IDACT(7:7) = 'C'
+!/OASIS                                ENDIF
+
+!/OASIS                            END IF
+                          END IF
 
                         ELSE IF ( J .EQ. 2 ) THEN
 !

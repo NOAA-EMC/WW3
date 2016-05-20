@@ -341,6 +341,7 @@
 !/MPI        INTEGER, POINTER      :: IRQTR(:)
         LOGICAL               :: O3INIT, STOP
         LOGICAL, POINTER      :: MASK1(:,:), MASK2(:,:)
+        CHARACTER(LEN=32), POINTER  :: TRCKID(:,:)
       END TYPE OTYPE3
 !/
       TYPE OTYPE4
@@ -440,6 +441,7 @@
 !/MPI      INTEGER, POINTER        :: IRQTR(:)
       LOGICAL, POINTER        :: O3INIT, STOP
       LOGICAL, POINTER        :: MASK1(:,:), MASK2(:,:)
+      CHARACTER(LEN=32), POINTER   :: TRCKID(:,:)
 !/
 !/ Type 4 ...
 !/
@@ -1083,7 +1085,8 @@
 ! 2.  Allocate arrays
 !
       ALLOCATE ( OUTPTS(IMOD)%OUT3%MASK1(NY,NX) ,                     &
-                 OUTPTS(IMOD)%OUT3%MASK2(NY,NX) , STAT=ISTAT          )
+                 OUTPTS(IMOD)%OUT3%MASK2(NY,NX) ,                     &
+                 OUTPTS(IMOD)%OUT3%TRCKID(NY,NX), STAT=ISTAT          )
       CHECK_ALLOC_STATUS ( ISTAT )
 !
       OUTPTS(IMOD)%OUT3%O3INIT = .TRUE.
@@ -1513,6 +1516,7 @@
       IF ( O3INIT ) THEN
           MASK1  => OUTPTS(IMOD)%OUT3%MASK1
           MASK2  => OUTPTS(IMOD)%OUT3%MASK2
+          TRCKID => OUTPTS(IMOD)%OUT3%TRCKID
         END IF
 !
       IFILE4 => OUTPTS(IMOD)%OUT4%IFILE4

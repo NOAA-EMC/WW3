@@ -4458,7 +4458,7 @@
 !/ST4              '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
 !/ST4              ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
 !/ST4              '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
-!/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,' /')
+!/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,'  /')
 !
 !/ST6  920 FORMAT (/'  Wind input (Donelan et al, 2006) ',A/       &
 !/ST6         ' --------------------------------------------------')

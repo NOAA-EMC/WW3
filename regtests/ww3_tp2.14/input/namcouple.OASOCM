@@ -15,13 +15,13 @@
  $NBMODEL
 # The number of models in this experiment + their names (6 characters)
 #
-   2  wwatch toyexe
+   2  toyexe   wwatch
  $END
 ###########################################################################
  $RUNTIME
 # The total simulated time for this run in seconds
 #
-  1800
+  3600
  $END
 ###########################################################################
  $NLOGPRT
@@ -84,48 +84,48 @@
 #
 #  
 #
-#                     -----------------------------------------
-#                        WW3 (wwatch) ==> TOY (toyexe)
-#                     -----------------------------------------
-#
-#~~~~~~~~~~~
-# Field 1 : 
-#~~~~~~~~~~~
-WW3_CDIR VARRCV01 1 360 1 rstrt.nc EXPOUT
-101 117 66 75 ww3t toyt LAG=+0 
-R  0  R  0
-SCRIPR
-DISTWGT LR SCALAR LATLON 1 4
-#
-#~~~~~~~~~~~
-# Field 2 : 
-#~~~~~~~~~~~
-WW3_SDIR VARRCV02 1 360 1 rstrt.nc EXPOUT
-101 117 66 75 ww3t toyt LAG=+0 
-R  0  R  0
-SCRIPR
-DISTWGT LR SCALAR LATLON 1 4
-#
 #                     ------------------------------------------
 #                        TOY (toyexe) ==> WW3 (wwatch)
 #                     ------------------------------------------
 #
 #~~~~~~~~~~~
-# Field 3 : 
+# Field 1 : 
 #~~~~~~~~~~~
-VARSND01 WW3___UZ  1 360 1 rstrt.nc EXPOUT
-66 75 101 117 toyt ww3t LAG=+90 
+TOY___UZ WW3___UZ  1 180 1 r-toy.nc EXPOUT
+80 80 101 117 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
 BILINEAR LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
-# Field 4 : 
+# Field 2 : 
 #~~~~~~~~~~~
-VARSND02 WW3___VZ  1 360 1 rstrt.nc EXPOUT
-66 75 101 117 toyt ww3t LAG=+90 
+TOY___VZ WW3___VZ  1 180 1 r-toy.nc EXPOUT
+80 80 101 117 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
 BICUBIC LR SCALAR LATLON 1 4
+#
+#                     -----------------------------------------
+#                        WW3 (wwatch) ==> TOY (toyexe)
+#                     -----------------------------------------
+#
+#~~~~~~~~~~~
+# Field 3 : 
+#~~~~~~~~~~~
+WW3_CDIR TOY_CDIR 1 180 1 r-ww3.nc EXPOUT
+101 117 80 80 ww3t toyt LAG=+180
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Field 4 : 
+#~~~~~~~~~~~
+WW3_SDIR TOY_SDIR 1 180 1 r-ww3.nc EXPOUT
+101 117 80 80 ww3t toyt LAG=+180
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
 #
  $END

@@ -18,7 +18,7 @@ CPPKEYDP=NO_USE_DOUBLE_PRECISION
 CPPLOCAL = -D${CPPKEYDECOMP} -D${CPPKEYDP}
 #
 OBJ =  routine_hdlerr.o read_dimgrid.o  \
-       read_grid.o read_namelist.o decomp_def.o \
+       read_grid.o read_forcing.o read_namelist.o decomp_def.o \
        function_sent.o
 #
 #-------------------------------------------------------------------------------
@@ -51,6 +51,8 @@ read_dimgrid.o :	read_dimgrid.F90
 				$(F90) $(INCPSMILE) $(CPPDEF) -I$(NETCDF_INCLUDE) $(F90COMP) -c read_dimgrid.F90
 read_grid.o :		read_grid.F90
 				$(F90) $(INCPSMILE) $(CPPDEF) -I$(NETCDF_INCLUDE) $(F90COMP) -c read_grid.F90
+read_forcing.o :	read_forcing.F90
+				$(F90) $(INCPSMILE) $(CPPDEF) -I$(NETCDF_INCLUDE) $(F90COMP) -c read_forcing.F90
 read_namelist.o :       read_namelist.F90
 				$(F90) $(INCPSMILE) $(CPPDEF) -I$(NETCDF_INCLUDE) $(F90COMP) -c read_namelist.F90
 decomp_def.o : 		decomp_def.F90

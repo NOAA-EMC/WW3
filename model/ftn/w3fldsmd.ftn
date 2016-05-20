@@ -1055,7 +1055,18 @@
                               .OR. IDFLD.EQ.'ISI'
       FLBE   = IDFLD.EQ.'ISI'       
       FLST   = IDFLD.EQ.'WNS' 
+
+! this flag is necessary to define the field at the start and end time
+! of integration for the first time step which is integrated on 0
+! to be able to output integrated variables like cha, ust, taw
+
       FLINTERP = IDFLD.EQ.'CUR' .OR. IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS'
+
+! if the model is coupled, no interpolation in time must be done
+
+!/OASACM  FLINTERP = IDFLD.EQ.'CUR'
+!/OASOCM  FLINTERP = IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS'
+
       FLFRST = TFN(1) .EQ. -1
 !
 !/T      WRITE (NDST,9001) WRITE, FL2D, FLBE, FLST, FLFRST
@@ -1064,25 +1075,9 @@
 !
       DO
 !
-! Shift fields (2d fields only)
+! Shift fields (interpolated fields only)
 !
-!---------------------------------------------
-! begin temporary notes
-! Why are fields shifted only if 2d? This does not make sense.
-! My guess is that this is a false association: 
-!    at present the fields that are 2d also happen to be the fields 
-!    that are interpolated in time (winds and currents)
-
-!      SUBROUTINE W3UCUR ( FLFRST )
-!     Interpolate the current field to the present time.
-!      SUBROUTINE W3UWND ( FLFRST, VGX, VGY )
-!     Interpolate wind fields to the given time.
-
-!      The "0" variables are needed only if there is interpolation in time.
-! end temporary notes
-!---------------------------------------------
-
-        IF ( (.NOT.WRITE) .AND. FL2D ) THEN
+        IF ( (.NOT.WRITE) .AND. FLINTERP ) THEN
 !
             TF0(1) = TFN(1)
             TF0(2) = TFN(2)
@@ -1182,32 +1177,24 @@
 !
             DTTST  = DSEC21 ( T0 , TFN )
 
+! Exit if the time is the first time and the field is not interpolated in time 
 
-! "is this field interpolated in time? " : will not exit only for WND, WNS, CUR
+            IF ( .NOT.FLINTERP .AND. FLFRST .AND. DTTST .EQ. 0. ) EXIT
 
-            IF ( .NOT.FLINTERP .AND. FLFRST .AND. DTTST .EQ. 0. )EXIT
+! Exit if the time of the input field is larger than the current time
 
-! notes: If it will be interpolated in time, we need to continue until
-! we have one that has a date larger than the current time, so we have
-! something to interpolate to.
-
-            IF ( DTTST .GT. 0. )EXIT
+            IF ( DTTST .GT. 0. ) EXIT
 !
           END IF
 !
         END DO
 !
-! Branch point for EOF in interpolated fields, current, wind and winds
+! Branch point for EOF and interpolated fields (forcing current, wind or winds)
 !
   300 CONTINUE
-!
-! Check first field (interpolated fields only)
-!
-! note: Nothing appears to be checked here. Rather, this is setting 
-!       "0" values as "N" values
 
-! "is this field interpolated in time? " : will not exit only for WND, WNS, CUR
-!      The "0" variables are needed only if there is interpolation in time.
+! If the field is interpolated in time and the start time of interpolation is not set
+! save the time and field values at the start time and field of interpolation
 
       IF ( .NOT.WRITE .AND. FLINTERP .AND. TF0(1) .EQ. -1 ) THEN
 !
@@ -1229,7 +1216,7 @@
 !
         END IF
 !
-! Branch point for EOF in not interpolated fields, e.g. level, ice, isi, ic*, mud*
+! Branch point for EOF and not interpolated fields (coupled fields, ice, lev, ...)
 !
   500 CONTINUE
 !

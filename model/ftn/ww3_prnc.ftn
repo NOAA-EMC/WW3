@@ -252,7 +252,7 @@
       CHARACTER               :: COMSTR*1, IDFLD*3, IDTYPE*2,         &
                                  IDTIME*23, FROMLL*4, FORMLL*16,      &
                                  NAMELL*80, FROMF*4, NAMEF*80
-      CHARACTER*12            :: IDSTR1(-7:5)
+      CHARACTER*14            :: IDSTR1(-7:5)
       CHARACTER*15            :: IDSTR3(3)
       CHARACTER*32            :: FORMT(2), FORMF(2)
       CHARACTER*20            :: IDSTR2(6)
@@ -539,6 +539,12 @@
 !
 ! instanciates time
 !
+      yref=0.
+      mref=0.
+      dref=0.
+      hhref=0.
+      mmref=0.
+      ssref=0.
       iret=nf90_inq_varid(ncid,"time",varidtmp)
       IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
       CALL check_err(iret)
@@ -637,7 +643,7 @@
           YNI=ALA(1,NYI)
           END IF
         END IF
-        IF ((GTYPE .NE. CLGTYPE) .AND. (Y0I.GT.YNI)) THEN
+        IF ((ITYPE.EQ.2) .AND. (GTYPE .EQ. RLGTYPE) .AND. (Y0I.GT.YNI)) THEN
           WRITE (NDSE,1032)
           CALL EXTCDE ( 2 )
         END IF
@@ -1150,11 +1156,15 @@
         iret=nf90_get_var(ncid,varidtmp,ALLTIMES,start=(/1/))
         CALL check_err(iret)
         IF (INDEX(timeunits, "seconds").NE.0)   ALLTIMES=ALLTIMES/86400.
+        IF (INDEX(timeunits, "hours").NE.0)   ALLTIMES=ALLTIMES/24.
         ALLTIMES=dateref+ALLTIMES
         CALL CALDAT(INT(ALLTIMES(1)),dcur,mcur,ycur)
-        hcur=(ALLTIMES(1)-INT(ALLTIMES(1)))*24
-        mncur=(hcur-INT(hcur))*60
-        scur=(mncur-INT(mncur))*60
+        hcur=(ALLTIMES(1)-INT(ALLTIMES(1)))*24.
+        IF (ABS(hcur-NINT(hcur)).LT.1.E-5) hcur=NINT(hcur)
+        mncur=(hcur-INT(hcur))*60.
+        IF (ABS(mncur-NINT(mncur)).LT.1.E-5) mncur=NINT(mncur)
+        scur=(mncur-INT(mncur))*60.
+        IF (ABS(scur-NINT(scur)).LT.1.E-5) scur=NINT(scur)
 ! 
 ! Performs tidal analysis
 !
@@ -1175,6 +1185,26 @@
 !/TIDE          iret=nf90_inq_varid(ncid,FIELDSNAME(I),varidf(I))
 !/TIDE        END DO
 !/TIDE        iret=nf90_get_att(ncid,varidtmp,"_FillValue", fillvalue)
+
+!/TIDE       IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'scale_factor')
+!/TIDE             IF ( IRET .EQ. NF90_NOERR ) THEN
+!/TIDE          IRET = NF90_GET_ATT(NCID,VARIDF(1),'scale_factor',XCFAC)
+!/TIDE        ENDIF
+!/TIDE              IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(1),'add_offset')
+!/TIDE              IF ( IRET .EQ. NF90_NOERR) THEN
+!/TIDE                 IRET = NF90_GET_ATT(NCID,VARIDF(1),'add_offset',XCOFF)
+!/TIDE              END IF
+!/TIDE              IF ( NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG ) THEN
+!/TIDE                IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'scale_factor')
+!/TIDE                IF (IRET .EQ. NF90_NOERR) THEN
+!/TIDE                   IRET = NF90_GET_ATT(NCID,VARIDF(2),'scale_factor',YCFAC)
+!/TIDE                ENDIF
+!/TIDE                IRET = NF90_INQUIRE_ATTRIBUTE(NCID,VARIDF(2),'add_offset')
+!/TIDE                IF (IRET .EQ. NF90_NOERR) THEN
+!/TIDE         IRET = NF90_GET_ATT(NCID,VARIDF(2),'add_offset',YCOFF)
+!/TIDE                END IF
+!/TIDE              END IF
+
 !
 ! Loop on grid points: reads all points for same IY to limit I/O time
 ! this may require too much memory
@@ -1192,6 +1222,8 @@
 
 
         WRITE(NDSE,*) "Number of points for this processor :", IAPROC,NXL(IAPROC)
+              DISTSWITCH = .FALSE.
+!/DIST        DISTSWITCH = .TRUE.
 !/TIDE        IF (DISTSWITCH) THEN 
 !/TIDE          TIDESIZ = MAXVAL(NXL) * TIDE_MF * NFIELDS * 2
 !/MPI          CALL MPI_TYPE_VECTOR ( TIDESIZ, 1, 1, MPI_REAL, TIDALSTUFF, IERR_MPI )
@@ -1211,12 +1243,16 @@
                 iret=nf90_get_var(ncid,varidf(I),TIDE_DATA_ALL(:,:,I), &
                                 start=(/1+(IAPROC-1)*NXLM,1/),count=(/NXL(IAPROC),NTI/))
               CALL check_err(iret)
+           if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
+           if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
               END DO
           ELSE 
             DO I=1,NFIELDS
               iret=nf90_get_var(ncid,varidf(I),TIDE_DATA_ALL(:,:,I), &
                                 start=(/1+(IAPROC-1)*NXLM,IY,1/),count=(/NXL(IAPROC),1,NTI/))
               CALL check_err(iret)
+              if (i.eq.1) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*XCFAC+XCOFF
+              if (i.eq.2) TIDE_DATA_ALL(:,:,I)=TIDE_DATA_ALL(:,:,I)*YCFAC+YCOFF
               END DO
           END IF
 !
@@ -1273,8 +1309,6 @@
 !                END DO
 
 ! Fills 1-D array for MPI communication
-            DISTSWITCH = .FALSE.
-!/DIST      DISTSWITCH = .TRUE.
             IF (DISTSWITCH) THEN 
 !/TIDE         DO J=1,TIDE_MF
 !/TIDE           DO K=1,NFIELDS
@@ -1423,13 +1457,21 @@
             IF (index(timeunits, "seconds").NE.0)   datecur=datecur/86400.
             IF (index(timeunits, "hours").NE.0)   datecur=datecur/24. 
             datecur=dateref+datecur
+
             CALL caldat(INT(datecur),dcur,mcur,ycur)
 
-            hcur=(datecur-INT(datecur))*24
-            mncur=(hcur-INT(hcur))*60
-            scur=(mncur-INT(mncur))*60
+            hcur=(datecur-INT(datecur))*24.
+            IF (ABS(hcur-NINT(hcur)).LT.1.E-5) hcur=NINT(hcur)
+
+            mncur=(hcur-INT(hcur))*60.
+            IF (ABS(mncur-NINT(mncur)).LT.1.E-5) mncur=NINT(mncur)
+
+            scur=(mncur-INT(mncur))*60.
+            IF (ABS(scur-NINT(scur)).LT.1.E-5) scur=NINT(scur)
+
             WRITE(TIME_STR,'(I4.4,5I2.2)') INT(ycur), INT(mcur), INT(dcur), &
                                           INT(hcur), INT(mncur), INT(scur)
+
             read(TIME_STR(1:8),'(I8.8)') TIME(1)
             read(TIME_STR(9:14),'(I6.6)') TIME(2)
 
@@ -1979,7 +2021,7 @@
  1031 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ILLEGAL FORMAT ID -->',A,'<--'/)
  1032 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-               '     LATITUDE VALUES MUST BE REVERSED'/                      &
+               '     LATITUDE VALUES MUST BE REVERSED'/               &
                '     EXAMPLE: ncpdq -h -O -a -lat file.nc'/ )
 !
  1033 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &

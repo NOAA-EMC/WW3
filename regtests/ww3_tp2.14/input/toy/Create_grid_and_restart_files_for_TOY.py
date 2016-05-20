@@ -146,8 +146,8 @@ GRID_FILE.Description='Grid file for OASIS coupling'
 # ----------------------------------
 # Create the dimensions of the files
 # ----------------------------------
-GRID_FILE.createDimension ('nlon', NLON)
-GRID_FILE.createDimension ('nlat', NLAT)
+GRID_FILE.createDimension ('longitude', NLON)
+GRID_FILE.createDimension ('latitude', NLAT)
 GRID_FILE.createDimension ('ncorner', 4 )
 
 # ----------------------------------
@@ -155,36 +155,36 @@ GRID_FILE.createDimension ('ncorner', 4 )
 # ----------------------------------
 
 # Longitude
-VAROUT=GRID_FILE.createVariable('lon','d',('nlat','nlon'))
+VAROUT=GRID_FILE.createVariable('longitude','d',('latitude','longitude'))
 VAROUT.long_name = 'longitude' ;
 VAROUT.units = 'degree' ;
 VAROUT.actual_range = np.min(LON2D), np.max(LON2D) ;
 
 # Latitude
-VAROUT=GRID_FILE.createVariable('lat','d',('nlat','nlon'))
+VAROUT=GRID_FILE.createVariable('latitude','d',('latitude','longitude'))
 VAROUT.long_name = 'latitude' ;
 VAROUT.units = 'degree' ;
 VAROUT.actual_range = np.min(LAT2D), np.max(LAT2D) ;
 
 # Coins
-VAROUT=GRID_FILE.createVariable('clo','d',('ncorner','nlat','nlon'))
+VAROUT=GRID_FILE.createVariable('clo','d',('ncorner','latitude','longitude'))
 VAROUT.long_name = 'longitude of the corners' ;
 VAROUT.units = 'degree' ;
 VAROUT.actual_range = np.min(CLO), np.max(CLO) ;
 
-VAROUT=GRID_FILE.createVariable('cla','d',('ncorner','nlat','nlon'))
+VAROUT=GRID_FILE.createVariable('cla','d',('ncorner','latitude','longitude'))
 VAROUT.long_name = 'latitude of the corners' ;
 VAROUT.units = 'degree' ;
 VAROUT.actual_range = np.min(CLA), np.max(CLA) ;
 
 # Surface
-VAROUT=GRID_FILE.createVariable('srf','d',('nlat','nlon'))
+VAROUT=GRID_FILE.createVariable('srf','d',('latitude','longitude'))
 VAROUT.long_name = 'surface' ;
 VAROUT.units = '-' ;
 VAROUT.actual_range = np.min(SURFACE), np.max(SURFACE) ;
 
 # Mask
-VAROUT=GRID_FILE.createVariable('imask','d',('nlat','nlon'))
+VAROUT=GRID_FILE.createVariable('imask','d',('latitude','longitude'))
 VAROUT.long_name = 'imask' ;
 VAROUT.units = '0 for land, 1 for sea' ;
 VAROUT.actual_range = np.min(MASK), np.max(MASK) ;
@@ -192,8 +192,8 @@ VAROUT.actual_range = np.min(MASK), np.max(MASK) ;
 # ---------------------------------------
 # Write out the data arrays into the file
 # ---------------------------------------
-GRID_FILE.variables['lon'][:,:] = LON2D[:,:]
-GRID_FILE.variables['lat'][:,:] = LAT2D[:,:]
+GRID_FILE.variables['longitude'][:,:] = LON2D[:,:]
+GRID_FILE.variables['latitude'][:,:] = LAT2D[:,:]
 GRID_FILE.variables['clo'][:,:] = CLO[:,:,:]
 GRID_FILE.variables['cla'][:,:] = CLA[:,:,:]
 GRID_FILE.variables['srf'][:,:] = SURFACE[:,:]
@@ -218,18 +218,18 @@ RSTRT_FILE.Description='Restart file for OASIS coupling'
 # ----------------------------------
 # Create the dimensions of the files
 # ----------------------------------
-RSTRT_FILE.createDimension ('nlon', NLON)
-RSTRT_FILE.createDimension ('nlat', NLAT)
+RSTRT_FILE.createDimension ('longitude', NLON)
+RSTRT_FILE.createDimension ('latitude', NLAT)
 
 # ----------------------------------
 # Create the variables of the files
 # ----------------------------------
-VAROUT=RSTRT_FILE.createVariable('VARSND01','d',('nlat','nlon'))
+VAROUT=RSTRT_FILE.createVariable('VARSND01','d',('latitude','longitude'))
 VAROUT.long_name = 'Output variable for toy model' ;
 VAROUT.units = '-' ;
 VAROUT.actual_range = np.min(TOYVAROU), np.max(TOYVAROU) ;
 
-VAROUT=RSTRT_FILE.createVariable('VARSND02','d',('nlat','nlon'))
+VAROUT=RSTRT_FILE.createVariable('VARSND02','d',('latitude','longitude'))
 VAROUT.long_name = 'Output variable for toy model' ;
 VAROUT.units = '-' ;
 VAROUT.actual_range = np.min(TOYVAROU), np.max(TOYVAROU) ;

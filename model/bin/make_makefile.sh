@@ -100,7 +100,7 @@
               dstress s_ice s_is reflection s_xx \
               wind windx rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag arctic nnt mprf \
-              coupl agcm ogcm
+              coupl agcm ogcm trknc
   do
     case $type in
 #sort:mach:
@@ -142,12 +142,12 @@
                OK='NC4' ;;
 #sort:scrip:
       scrip  ) TY='upto1'
-               ID='grid to grid interpolation '
+               ID='grid to grid interpolation'
                TS='SCRIP'
                OK='SCRIP' ;;
 #sort:scripnc:
       scripnc ) TY='upto1'
-               ID='use of netcdf in grid to grid interpolation '
+               ID='use of netcdf in grid to grid interpolation'
                TS='SCRIPNC'
                OK='SCRIPNC' ;;
 #sort:shared:
@@ -260,7 +260,7 @@
 #sort:curr:
       curr   ) TY='one'
                ID='current interpolation in time'
-               OK='CRT1 CRT2' ;;
+               OK='CRT0 CRT1 CRT2' ;;
 #sort:currx:
       currx  ) TY='one'
                ID='current interpolation in space'
@@ -350,6 +350,11 @@
                ID='type of the coupler'
                TS='OASIS'
                OK='OASIS' ;;
+#sort:trknc:
+      trknc  ) TY='upto1'
+               ID='use of netcdf for tracking of wave systems'
+               TS='TRKNC'
+               OK='TRKNC' ;;
    esac
 
     n_found='0'
@@ -470,6 +475,7 @@
       coupl  ) coupl=$sw ;;
       agcm   ) agcm=$sw ;;
       ogcm   ) ogcm=$sw ;;
+      trknc  ) trknc=$sw ;;
               *    ) ;;
     esac
   done
@@ -730,6 +736,14 @@
   case $coupl in
    OASIS) couplmd='w3oacpmd'
    esac
+
+  if [ "$coupl" = 'OASIS' ] && [ "$str_st3" = 'no' ]
+  then
+      echo ' '
+      echo "   *** !/OASIS cannot be used in combination with !/$stress"
+      echo "       Stresses embedded in source terms, use FLX0."
+      echo ' ' ; exit 11
+  fi
 
   agcmmd=$NULL
   case $agcm in

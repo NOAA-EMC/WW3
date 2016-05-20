@@ -350,7 +350,7 @@ then
   then
     # restart, nest, etc. may have been placed there manually, so don't remove them
     \rm -f *.inp *.out *.txt $ncfiles finished
-    ls *.ww3 | grep -v 'restart.ww3' | grep -v 'nest.ww3' | grep -v 'wind.ww3' | grep -v 'ice.ww3' | grep -v 'ice1.ww3' | xargs rm
+    \ls *.ww3  2>/dev/null | grep -v 'restart.ww3' | grep -v 'nest.ww3' | grep -v 'wind.ww3' | grep -v 'ice.ww3' | grep -v 'ice1.ww3' | xargs \rm 2>/dev/null
   fi
 fi
 

@@ -57,6 +57,7 @@ CHARACTER(LEN=30) :: DATA_FILENAME
 !
 CHARACTER(LEN=5) :: CTYPE_FCT
 REAL :: VALUE
+CHARACTER(LEN=30) :: CNAME_FILE
 !
 ! Global definition parition parameters
 ! -------------------------------------
@@ -67,11 +68,11 @@ INTEGER, DIMENSION(:), ALLOCATABLE :: IL_PARAL ! Decomposition for each proc
 ! -----------------------------------
 !
 INTEGER :: NB_RECV_FIELDS
-INTEGER, PARAMETER :: NB_RECV_FIELDS_MAX=5
+INTEGER, PARAMETER :: NB_RECV_FIELDS_MAX=10
 CHARACTER(LEN=8), DIMENSION(NB_RECV_FIELDS_MAX) :: CRCVFIELDS='        '
 !
 INTEGER :: NB_SEND_FIELDS
-INTEGER, PARAMETER :: NB_SEND_FIELDS_MAX=5
+INTEGER, PARAMETER :: NB_SEND_FIELDS_MAX=10
 CHARACTER(LEN=8), DIMENSION(NB_SEND_FIELDS_MAX) :: CSNDFIELDS='        '
 !
 ! Used in oasis_def_var
@@ -91,7 +92,7 @@ INTEGER :: ITAP_SEC         ! Time
 ! Exchanged local fields arrays
 ! used in routines oasis_put and oasis_get
 REAL(KIND=WP), POINTER :: FIELD_RECV(:,:)
-REAL(KIND=WP), POINTER :: FIELD_SEND(:,:)
+REAL(KIND=WP), POINTER :: FIELD_SEND(:,:,:)
 !
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ! Open a flog file
@@ -135,7 +136,7 @@ WRITE(IOUTDIAG_UNIT,*) '========================================================
 !
 CALL READ_NAMELIST(IOUTDIAG_UNIT,IL_NB_TIME_STEPS,DELTA_T, &
                    DATA_FILENAME, &
-                   CTYPE_FCT, VALUE, &
+                   CTYPE_FCT, VALUE, CNAME_FILE, &
                    NB_RECV_FIELDS, CRCVFIELDS, &
                    NB_SEND_FIELDS, CSNDFIELDS)
 !
@@ -258,7 +259,7 @@ WRITE(IOUTDIAG_UNIT,*) '========================================================
 ALLOCATE(FIELD_RECV(VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4)), STAT=IERR)
 IF (IERR /= 0 ) WRITE(IOUTDIAG_UNIT,*) 'ERROR ALLOCATING FIELD_RECV'
 !
-ALLOCATE(FIELD_SEND(VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4)),STAT=IERR)
+ALLOCATE(FIELD_SEND(VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4),NB_SEND_FIELDS),STAT=IERR)
 IF (IERR /= 0 ) WRITE(IOUTDIAG_UNIT,*) 'ERROR ALLOCATING FIELD_SEND'
 !
 DEALLOCATE(IL_PARAL)
@@ -295,17 +296,18 @@ DO IB=1, IL_NB_TIME_STEPS
   ! Send the field to coupled model (atmosphere/wave/ocean)
   ! -------------------------------------------------------
   ! 
-  CALL FUNCTION_SENT(IOUTDIAG_UNIT,VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4), &
+  CALL FUNCTION_SENT(IOUTDIAG_UNIT,INDI_BEG,INDI_END,INDJ_BEG,INDJ_END, &
+                     VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4), NB_SEND_FIELDS, &
                      RESHAPE(GLOBALGRID_LON(INDI_BEG:INDI_END,INDJ_BEG:INDJ_END),&
                      (/ VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4) /)), &
                      RESHAPE(GLOBALGRID_LAT(INDI_BEG:INDI_END,INDJ_BEG:INDJ_END),&
                      (/ VAR_ACTUAL_SHAPE(2), VAR_ACTUAL_SHAPE(4) /)), &
                      FIELD_SEND,IB, &
-                     CTYPE_FCT, VALUE)
-  !		      
+                     CTYPE_FCT, VALUE, CNAME_FILE, CSNDFIELDS)
+  !		     
   DO IND=1, NB_SEND_FIELDS 
     WRITE(IOUTDIAG_UNIT,*) 'SEND FIELD : ', CSNDFIELDS(IND), ' => ', ITAP_SEC, MINVAL(FIELD_SEND), MAXVAL(FIELD_SEND)
-    CALL OASIS_PUT(VAR_ID(IND+NB_RECV_FIELDS),ITAP_SEC, FIELD_SEND, IERR)
+    CALL OASIS_PUT(VAR_ID(IND+NB_RECV_FIELDS),ITAP_SEC, FIELD_SEND(:,:,IND), IERR)
     IF ( IERR .NE. OASIS_Ok .AND. IERR .LT. OASIS_Sent) THEN
       WRITE (IOUTDIAG_UNIT,*) 'OASIS_PUT ABORT BY TOY MODEL COMPID ',ICOMP_ID
       CALL OASIS_ABORT(ICOMP_ID,CMODEL_NAME,'PROBLEM DURING OASIS_PUT')

@@ -73,7 +73,7 @@
   then
     ww3_NetCDF=
   else
-    ww3_NetCDF="ww3_prnc ww3_ounf ww3_ounp ww3_bounc"
+    ww3_NetCDF="ww3_prnc ww3_ounf ww3_ounp ww3_bounc ww3_trnc"
   fi
 
 # --------------------------------------------------------------------------- #
@@ -117,7 +117,7 @@
 # --------------------------------------------------------------------------- #
 
   rm -f switch.hold switch.shrd switch.OMP
-# w3_clean
+  w3_clean
 
   echo ' '
   echo ' '

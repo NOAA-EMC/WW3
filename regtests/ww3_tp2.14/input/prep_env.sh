@@ -36,13 +36,15 @@ ln -sf ../input/namcouple.$swtstr namcouple
 
 echo '   copy toy model inputs'
 cd $path_w
-cp ../input/toy/rstrt.nc .
+cp ../input/toy/r-toy.nc.$swtstr r-toy.nc
 ln -sf ../input/toy/grid_toy_model.nc .
+ln -sf ../input/toy/toy_coupled_field.nc.$swtstr toy_coupled_field.nc
 ln -sf ../input/TOYNAMELIST.nam.$swtstr TOYNAMELIST.nam
 ln -sf ../input/toy/toy_model .
 
 echo '   copy ww3 model inputs'
 cd $path_w
+cp ../input/r-ww3.nc.$swtstr r-ww3.nc
 cd ../input
 ln -sf ww3_shel.inp.$swtstr ww3_shel.inp
 

@@ -15,13 +15,13 @@
  $NBMODEL
 # The number of models in this experiment + their names (6 characters)
 #
-   2  wwatch toyexe
+   2  toyexe   wwatch
  $END
 ###########################################################################
  $RUNTIME
 # The total simulated time for this run in seconds
 #
-  1800
+  3600
  $END
 ###########################################################################
  $NLOGPRT
@@ -84,39 +84,39 @@
 #
 #  
 #
-#                     -----------------------------------------
-#                        WW3 (wwatch) ==> TOY (toyexe)
-#                     -----------------------------------------
-#
-#~~~~~~~~~~~
-# Field 1 : 
-#~~~~~~~~~~~
-WW3__CHA VARRCV01 1 360 1 rstrt.nc EXPOUT
-101 117 66 75 ww3t toyt LAG=+0 
-R  0  R  0
-SCRIPR
-DISTWGT LR SCALAR LATLON 1 4
-#
 #                     ------------------------------------------
 #                        TOY (toyexe) ==> WW3 (wwatch)
 #                     ------------------------------------------
 #
 #~~~~~~~~~~~
-# Field 2 : 
+# Field 1 : 
 #~~~~~~~~~~~
-VARSND01 WW3__U10 1 360 1 rstrt.nc EXPOUT
-66 75 101 117 toyt ww3t LAG=+90 
+TOY_U10M WW3__U10 1 180 1 r-toy.nc EXPOUT
+80 80 101 117 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
 BILINEAR LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
-# Field 3 : 
+# Field 2 : 
 #~~~~~~~~~~~
-VARSND02 WW3__V10 1 360 1 rstrt.nc EXPOUT
-66 75 101 117 toyt ww3t LAG=+90 
+TOY_V10M WW3__V10 1 180 1 r-toy.nc EXPOUT
+80 80 101 117 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
 BICUBIC LR SCALAR LATLON 1 4
+#
+#                     -----------------------------------------
+#                        WW3 (wwatch) ==> TOY (toyexe)
+#                     -----------------------------------------
+#
+#~~~~~~~~~~~
+# Field 3 : 
+#~~~~~~~~~~~
+WW3__CHA TOY__CHA 1 180 1 r-ww3.nc EXPOUT
+101 117 80 80 ww3t toyt LAG=+180 
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
 #
  $END

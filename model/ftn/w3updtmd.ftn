@@ -99,6 +99,7 @@
 !
 !       !/OMPG   OpenMP compiler directives.
 !
+!       !/CRT0   No current interpolation.
 !       !/CRT1   Linear current interpolation.
 !       !/CRT2   Quasi-quadratic current interpolation.
 !
@@ -191,6 +192,7 @@
 !
 !  9. Switches :
 !
+!     !/CRT0  No current interpolation.
 !     !/CRT1  Linear current interpolation.
 !     !/CRT2  Quasi-quadratic current interpolation.
 !
@@ -268,6 +270,11 @@
       DT0N    = DSEC21 ( TC0, TCN )
       DT0T    = DSEC21 ( TC0, TIME )
 !
+!/CRT0      IF ( DT0T .GE. 0.5*DT0N ) THEN
+!/CRT0          RD     = 1.
+!/CRT0        ELSE
+!/CRT0          RD     = 0.
+!/CRT0        END IF
 !/CRT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD2    = 1. - RD

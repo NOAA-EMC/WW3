@@ -99,7 +99,7 @@
 
   # linking options
   libs=""
-  opt="-O2 -o $prog"
+ opt=" -p -pg -g -O0 -Zp8 -tpp7 -o $prog"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
