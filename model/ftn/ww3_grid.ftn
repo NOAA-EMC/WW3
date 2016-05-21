@@ -1903,7 +1903,7 @@
       RWNDC  = 1.
       WCOR1  = 99. 
       WCOR2  = 0.
-      ICEDISP = .TRUE.
+      ICEDISP = .FALSE.
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
