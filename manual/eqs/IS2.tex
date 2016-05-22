@@ -11,7 +11,7 @@ by waves to be able to update a maximum floe size diameter. Finally a creep-base
 combined with the scattering.  
 
 \noindent 
-The scatering source term source term uses for now a back-scatter that is uniform in 
+The scattering source term source term uses for now a back-scatter that is uniform in 
 all directions,  giving the action-conserving formulation, 
 \begin{equation}
  \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is},\mathrm{MIZ}} [s_\mathrm{scat}  N(k,\theta')-N(k,\theta)] d\theta'  
@@ -52,7 +52,7 @@ the breaking of the ice by the local wave field. If the namelist parameter {\cod
 {\code TRUE}, small values of $D_{\max}$ will persist even if the waves become too small to be able to break the ice to 
 that size. This is probably the proper model 
 use when  external forcing / coupling is available (e.g. advection of ice properties in an ice model). 
- On the contrary, if {\code IS2DUPDATE} is set to  {\code FALSE}, the value of $D_{\max}$ will be alwas adjusted to the local sea state, 
+ On the contrary, if {\code IS2DUPDATE} is set to  {\code FALSE}, the value of $D_{\max}$ will be always adjusted to the local sea state, 
 even if that means increasing $D_{\max}$.\\
 
 \noindent
@@ -85,7 +85,7 @@ The strain variance is given
 \langle\varepsilon^2\rangle = \left( \frac{h}{2} \right) ^2   \int_{k_1}^{k_2} k_{ice}^4 F(k)dk 
 \label{strain_sign}
 \end{equation}
-where $h$ is the ice thikness and $k_{ice}$ is the wavenumber $2 \pi /\lambda_{ice}$. 
+where $h$ is the ice thickness and $k_{ice}$ is the wavenumber $2 \pi /\lambda_{ice}$. 
 Borrowing from wave breaking 
 ideas \citep{art:BBY00}, the integration of the curvature variance is limited around 
 the local wavenumber $k_{\mathrm ice}$. 
@@ -154,8 +154,8 @@ The coefficient $\alpha_{\mathrm{creep}}$ was adapted from the
 \end{equation}
 where $I_3=\frac{1}{\pi} \int_0^\pi \sin^{4}\beta d\beta$. 
 $F_{\rm broken}$  is a heuristic smooth transition from unbroken to broken ice, so that the dissipation 
-gradually goes to zero for waves much longuer than the floe sizes, because in that case the ice does 
-not deform and produces no disspation of wave energy, 
+gradually goes to zero for waves much longer than the floe sizes, because in that case the ice does 
+not deform and produces no dissipation of wave energy, 
 \begin{equation}
 F_{\rm broken}=\tanh \left( {\frac{D_{\max}-C_{\lambda}\lambda_{ice}} {D_{\max}C_{smooth} } }\right) 
 \label{smooth}
