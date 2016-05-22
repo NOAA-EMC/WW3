@@ -1,0 +1,47 @@
+\vssub
+\subsection{~Source terms for wave-ice interactions}
+\vsssub
+
+\noindent
+Wave-ice interaction processes have been the topic of many investigations. In general, wave-ice interactions require 
+a description of the ice properties that usually include at least the ice concentration (fraction of ocean surface covered by ice), 
+mean ice thickness, and maximum floe diameter. Indeed, the ice is often broken into pieces (the floes) that can have a wide variety of sizes, 
+and these sizes strongly modify the dispersion and wave-ice interaction processes. 
+
+\noindent
+In the present version of \ww, the different options 
+for treating the ice are the result of ongoing research effort and are not completely self-consistent. In particular, the forcing fields may take 
+different meanings for different source terms. There are now 4 different 
+version of dissipation processes activated with {\code IC1}, {\code IC2},  {\code IC3}, and {\code IC4} that can be combined with 2 
+different versions of scattering effects  {\code IS1} and {\code IS2}. The second scatering routine, because it was the only routine 
+to use a maximum floe diameter, also containing a estimation of 
+ice break-up and resulting maximum floe diameter and some dissipation due to creep. 
+
+\noindent
+At present it is not possible to combine dissipation parametrizations designed for frazil or pancake ice (  {\code IC3} or {\code IC4}) with 
+a parametrization designed for the ice pack, such  as {\code IC2}. Further, all parameterizations are not yet completely consistent: 
+for example the floe size is not yet taken into account in some modified dispersion relations that take into account the ice, and 
+the spatial variability of the ice properties, in particular the thickness, is generally not taken into account. As a result, 
+the various ice effects have only been tested in very  few real conditions \citep[e.g.][]{art:Aea16}
+We expect to have a more streamline way to combine various processes in future versions of \ww, possibly using 
+a maximum floe diameter to call one or the other routines. 
+
+\noindent
+In several source terms, a modified dispersion relation can be used. In particular {\code IC2} and {\code IS2} share 
+the optional use of the \cite{art:LMC88} dispersion relation for unbroken ice, 
+\begin{equation}
+\sigma^2 =  \left(gk_{ice} + B k_{ice}^5\right)  / \left(1/\tanh ( k_{ice}H) +\frac{\rho_{ice}  h k_{ice}} {\rho_{w} }\right)
+\end{equation}
+\begin{equation}
+C_g =  (g+(5 + 4 k_{ice} M)Bk_{ice}^5)/(2\sigma(1+k_{ice}M)^2).
+\end{equation}
+
+\noindent
+$B$ and $M$ quantify the effects of, respectively, ice bending due to waves and ice inertia. 
+The group velocity under the ice, derived from the same relation, is used in the module {\code W3SIS2MD} and computed in  
+{\code W3DISPMD}.  See \citet{art:LMC88} for details.\\
+
+\noindent
+This equation is only solved when ICEDISP=TRUE in the MISC namelist. Otherwise, $k_{ice}=k$, just like in open water. 
+Note that the effect of $k_{ice}$ is limited to wave breaking and dissipation, and is not passed back to the main program. \\
+
