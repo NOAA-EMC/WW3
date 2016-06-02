@@ -167,7 +167,7 @@
       REAL, ALLOCATABLE, DIMENSION(:,:) :: SPC2
       !-Stress Calculation
       INTEGER :: K, T, ITS
-      REAL :: TAUXW, TAUYW, TAUXV, TAUYV, TAUX, TAUY
+      REAL :: TAUXW, TAUYW, TAUX, TAUY
       REAL :: USTRA, USTRB, USTSM
       REAL :: A1, SCIN
       REAL :: CD, CDF, CDS
@@ -435,11 +435,11 @@
                ! smooth drag adjustment based on full drag
                CDS = CDS / 3.0 * ( 1.0 + 2.0 * CDS / ( CDS + CDF ) )
                !-----Solve for viscous stress from smooth Cd
-               TAUXV = DAIR * CDS * wnd_10_mag**2.0 * COS( wnd_10_dir )
-               TAUYV = DAIR * CDS * wnd_10_mag**2.0 * SIN( wnd_10_dir )
+               TAUNUX = DAIR * CDS * wnd_10_mag**2.0 * COS( wnd_10_dir )
+               TAUNUY = DAIR * CDS * wnd_10_mag**2.0 * SIN( wnd_10_dir )
                !-----Sum drag components
-               TAUX = TAUXV + TAUXW
-               TAUY = TAUYV + TAUYW
+               TAUX = TAUNUX + TAUXW
+               TAUY = TAUNUY + TAUYW
                !-----Calculate USTAR
                USTRB = SQRT( SQRT( TAUY**2.0 + TAUX**2.0) / DAIR )
                !-----Calculate stress direction
