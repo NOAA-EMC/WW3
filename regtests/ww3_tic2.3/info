@@ -1,0 +1,60 @@
+#############################################################################
+#                                                                           #
+# ww3_tic2.3: Test script for WW III, two-dimensional propagation           #
+#            through a uniform ice layer with an increasing thickness       #
+#            and a variable maximum floe diameter                           #
+#                                                                           #
+# For recommended switches, please refer to switch file(s) in the input     #
+# directory "input"                                                         #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - Test case input:                                                        #
+#   * ww3_grid_*.inp                                                        #
+#     + Spectral grid                                                       #
+#       Number of directions        :  24                                   #
+#       Directional increment (deg.):  15.0                                 #
+#       First direction       (deg.):   0.0                                 #
+#       Number of frequencies       :   20                                  #
+#       Frequency range        (Hz) :   0.0400- xx                          #
+#       Increment factor            :   1.1                                 #
+#     + Spatial grid                                                        #
+#       Grid type                   : rectilinear                           #
+#       Coordinate system           : Cartesian                             #
+#       Index closure type          : none                                  #
+#       Dimensions                  :    100    100                         #
+#       Increments             (km) :    2.50    2.50                       #
+#       X range                (km) :    0.00  250.00                       #
+#       Y range                (km) :    0.00  250.00                       #
+#                                                                           #
+#  Test case description:                                                   #
+#  Waves propagate from E to W. Initial condition is a gaussian field       # 
+#  SWH=3 m. Waves start in open water and penetrate into an ice layer with  #
+#  parabolic increasing thickness and a constant concentration (75%).       #
+#  As the waves get in the ice, the ice gets broken resulting in            #
+#  a smaller maximum floe diameter. This max FSD can enhance the scattering.#
+#  With the namelist parameter IS2DUPDATE=FALSE the maximum floe size is    #
+#  recomputed to be in equilibrium with the current wave field.             #
+#  With IS2DUPDATE=TRUE, the maximum floe diameter is kept in memory or     #
+#  forced.                                                                  # 
+#                                                                           #
+#                                                                           #
+#  Example run_test command(s):                                             #
+#  (some details will vary by local system and configuration)               #
+#   bin/run_test -s IC2IS2 -g scat -w work_IC2IS2scat -c gnu_debug          #
+#                -o netcdf  ../model ww3_tic2.3                             #
+#                                                                           #
+#   bin/run_test -s IC2IS2 -g creepOnly -w work_IC2IS2creep -c gnu_debug    #
+#               -o netcdf  ../model ww3_tic2.3                              #
+#                                                                           #
+#   bin/run_test -s IC2IS2 -g dissipOnly -w work_IC2IS2dissip -c gnu_debug  #
+#               -o netcdf  ../model ww3_tic2.3                              #
+#                                                                           #
+#                                 origination: Guillaume Boutin, 2016 June  #
+#                                                                           #
+#    Copyright 2016 National Weather Service (NWS),                         #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
