@@ -241,6 +241,8 @@ Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,\WWver \\
   $b_1$ is constant&  CSTB1       & SWL6     & n/a      &  F         \\
   $b_1$, $B_1$     &  SWLB1       & SWL6     & 0.25E-3  & 0.0032     \\
   $\mathrm{FAC}$   &  CDFAC       & FLX4     & 1.00E-4  & 1.00E-4    \\
+\hline
+  $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    \\
  \hline \hline
 \end{tabular} \end{center}
 \caption{Summary of calibration parameters for BYDRZ source terms.
@@ -303,7 +305,15 @@ wind fields. When optimizing the wave model, it is recommended to
 only re-tune parameters $a_0$, $b_1$ and $\mathrm{FAC}$. Again, $\mathrm{FAC}$
 can potentially eliminate a bias in the wind field, which typically changes
 with the selection of the reanalysis product. This reduction was tested
-for extreme wind conditions such as hurricanes \citep{art:ZBRY13}.  In global
-hindcast, the coefficient for the negative input $a_0$ can be used to tune
-the bulk of wave height the scatter comparisons, whereas the scaling
-coefficient for the swell dissipation $B_1$ primarily effect large sea states.
+for extreme wind conditions such as hurricanes \citep{art:ZBRY15}.  In global
+hindcast, the coefficient for the negative input can be used to tune
+the bulk of wave height in scatter comparisons, whereas the scaling
+coefficient for swell dissipation primarily effect large sea states.
+When discrete interactive approximation (DIA) is used to compute the four-wave
+interaction the default value for the proportionality constant changes to
+$C=3.00\;10^7$.
+
+\textrm{\textit{\underline{Limitations of the code:}}} In cases where the
+minimum time step for dynamical source term integration is much smaller
+than the overall time step (i.e. less than 1/15th) the model becomes unstable.
+The issue is known and will be removed in a future revision.
