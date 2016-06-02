@@ -67,7 +67,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Apr-2016 |
+!/                  | Last update :         31-May-2016 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -88,8 +88,8 @@
 !/    30-Oct-2009 : Output file name with 3 digit id.   ( version 3.14 )
 !/                  (W. E. Rogers, NRL)
 !/    14-Nov-2013 : Remove cold start init. UST(DIR).   ( version 4.13 )
-!/    06-Apr-2016 : Remove bug in restart file size for ( version 5.10 )
-!/                  unstructured grids and file read.
+!/    31-May-2016 : Optimize restart file size for un-  ( version 5.10 )
+!/                  structured grid and restart read.
 !/                  (M. Ward, NCI, S. Zieger, BOM)
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -265,9 +265,10 @@
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/MPI      INTEGER                 :: IERR_MPI, IH, IB, ISEA0, ISEAN, &
-!/MPI                                 NRQ, NSEAL_MIN, RPOS
-!/MPI      INTEGER, ALLOCATABLE    :: STAT1(:,:), STAT2(:,:),         &
-!/MPI                                 VGBUFF(:), VLBUFF(:)
+!/MPI                                 NRQ, NSEAL_MIN
+!/MPI      INTEGER(KIND=8)         :: RPOS
+!/MPI      INTEGER, ALLOCATABLE    :: STAT1(:,:), STAT2(:,:)
+!/MPI      REAL, ALLOCATABLE       :: VGBUFF(:), VLBUFF(:)
       LOGICAL                 :: WRITE, IOSFLG
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
@@ -527,7 +528,7 @@
 !/T              WRITE (NDST,9020) TYPE
           ELSE
 !/MPI            NSEAL_MIN = 1 + (NSEA-NAPROC)/NAPROC
-!/MPI            IF ( TYPE.EQ.'FULL' .AND. NAPROC.GT.1 ) THEN
+!/MPI            IF ( NAPROC.GT.1 ) THEN
 !/MPI!/ ----------- Large number of small-sized record reads will tend ---- *
 !/MPI!/             to perform badly on most file systems. We read this part
 !/MPI!/             using streams and scatter the results using MPI.
@@ -544,8 +545,8 @@
 !/MPI!
 !/MPI               DO JSEA = 1, NSEAL_MIN
 !/MPI!                Read NAPROC records into buffer VGBUFF. ------------- *
-!/MPI                 IF ( IAPROC .EQ. NAPRST ) THEN
-!/MPI                     RPOS = 1 + (2 + (JSEA - 1) * NAPROC) * LRECL
+!/MPI                 IF ( IAPROC .EQ. NAPROC ) THEN
+!/MPI                     RPOS = 1_8 + (2 + (JSEA - 1_8) * NAPROC) * LRECL
 !/MPI                     READ(NDSR, POS=RPOS,ERR=802,IOSTAT=IERR) VGBUFF(:)
 !/MPI                   ELSE
 !/MPI                     VGBUFF(:) = 0.
