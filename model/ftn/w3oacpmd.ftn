@@ -45,6 +45,10 @@
 !     --------------------------------------------------------------------
 !
 !  5. Remarks
+!
+!     Module adapted from WRF-OASIS routine implemented by
+!     Sebastien Masson (IPSL), Guillaume Samson (Legos) and Eric Maisonnave (Cerfacs)
+!
 !  6. Switches :
 !  7. Source code :
 !
@@ -68,6 +72,8 @@
       END TYPE CPL_FIELD
 !
       TYPE(CPL_FIELD), DIMENSION(IP_MAXFLD), PUBLIC :: RCV_FLD, SND_FLD   ! Coupling fields
+!
+      INTEGER, PUBLIC       :: ID_OASIS_TIME=0           ! time counter for coupling exchanges
 !
 ! * Accessibility
       PUBLIC CPL_OASIS_INIT
@@ -146,6 +152,8 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
+!/                  |           V. Garnier              |
+!/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          April-2016 |
 !/                  +-----------------------------------+
@@ -312,6 +320,8 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
+!/                  |           V. Garnier              |
+!/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          April-2016 |
 !/                  +-----------------------------------+
@@ -685,6 +695,8 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           A. Thevenin             |
+!/                  |           V. Garnier              |
+!/                  |           A.C. Bennis             |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :          April-2016 |
 !/                  +-----------------------------------+
@@ -768,15 +780,15 @@
 !/OASOCM      CASE('DRY')
 !/OASOCM         ! wet-drying at the middle of the cell
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
-!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__WDH'
+!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
 !
 !/OASOCM         ! wet-drying at u-location
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
-!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__WDU'
+!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
 !  
 !/OASOCM         ! wet-drying at v-location
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
-!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__WDV'
+!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
 !
 !/OASOCM      CASE('SSH')
 !/OASOCM         ! ssh : sea surface height (m)
@@ -786,11 +798,11 @@
 !/OASOCM      CASE('CUR')
 !/OASOCM         ! uz : sea surface zonal currents (m.s-1)
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
-!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3___UZ'
+!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSU'
 !
 !/OASOCM         ! vz : sea surface meridional currents (m.s-1)
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
-!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3___VZ'
+!/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSV'
 !
 !/OASACM      CASE('WND')
 !/OASACM         ! U10 : 10m u-wind speed (m.s-1)
@@ -818,15 +830,15 @@
          TESTSTR=OUT_NAMES(IOUT+1)
          SELECT CASE(TRIM(TESTSTR(1:6)))
                  !
-!/OASOCM         CASE('oHS')
+!/OASOCM         CASE('OHS')
 !/OASOCM            ! Significant wave height (m)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
-!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__oHS'
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__OHS'
 !
 !/OASOCM         CASE('DRY')
 !/OASOCM            ! mask to manage wet-drying
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
-!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__DRY'
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ODRY'
 !
 !/OASOCM         CASE('T0M1')
 !/OASOCM            ! T0M1 / wave_t0m1 : mean period (s)
@@ -880,19 +892,19 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___LM'
 !
-!/OASACM         CASE('aHS')
+!/OASACM         CASE('AHS')
 !/OASACM            ! Significant wave height (m)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
-!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__aHS'
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__AHS'
 !
 !/OASACM         CASE('CUR')
 !/OASACM            ! Ocean sea surface current (m.s-1)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
-!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___US'
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_WSSU'
 !
 !/OASACM            ! Ocean sea surface current (m.s-1)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
-!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___VS'
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_WSSV'
 !
 !/OASACM         CASE('CHA')
 !/OASACM            ! Charnock Coefficient (-)
@@ -900,9 +912,9 @@
 !/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__CHA'
 !
 !/OASACM         CASE('FP')
-!/OASACM            ! Peak period (s)
+!/OASACM            ! Peak frequency (s-1)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
-!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___TP'
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___FP'
                     !
          CASE DEFAULT
             WRITE (NDSO,1002) TRIM(TESTSTR(1:6))

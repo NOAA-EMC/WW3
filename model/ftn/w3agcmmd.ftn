@@ -58,7 +58,7 @@
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE SND_FIELDS_TO_ATMOS(ID_OASIS_TIME)
+      SUBROUTINE SND_FIELDS_TO_ATMOS()
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -76,12 +76,6 @@
 !
 !  2. Method :
 !  3. Parameters :
-!
-!     Parameter list
-!     ------------------------------------------------------------------
-!     ID_OASIS_TIME   Int.   I   Elapsed time in s.
-!     ------------------------------------------------------------------
-!
 !  4. Subroutines used :
 !
 !     Name             Type    Module     Description
@@ -104,15 +98,10 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      USE W3OACPMD,  ONLY: IL_NB_SND, SND_FLD, CPL_OASIS_SND
+      USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, NSEA 
       USE W3ADATMD,  ONLY: CX, CY, CHARN, HS, FP0
       USE W3ODATMD,  ONLY: UNDEF, NAPROC, IAPROC
-!
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-!/
-      INTEGER, INTENT(IN) :: ID_OASIS_TIME
 !
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -130,7 +119,7 @@
          !
          ! Ocean sea surface current (m.s-1) (u-component)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___US') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_WSSU') THEN
             TMP(1:NSEAL) = 0.0 
             DO JSEA=1, NSEAL
                ISEA=IAPROC+(JSEA-1)*NAPROC
@@ -142,7 +131,7 @@
          !
          ! Ocean sea surface current (m.s-1) (v-component)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___VS') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_WSSV') THEN
             TMP(1:NSEAL) = 0.0
             DO JSEA=1, NSEAL
                 ISEA=IAPROC+(JSEA-1)*NAPROC
@@ -164,18 +153,18 @@
          !
          ! Significant wave height (m)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__aHS') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__AHS') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(HS /= UNDEF) TMP=HS
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
-         ! Peak period (s)
+         ! Peak frequency (s-1)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___TP') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___FP') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(FP0 /= UNDEF) TMP=1.0/FP0
+            WHERE(FP0 /= UNDEF) TMP=FP0
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -185,7 +174,7 @@
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE SND_FIELDS_TO_ATMOS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE RCV_FIELDS_FROM_ATMOS(ID_OASIS_TIME, ID_LCOMM, IDFLD, FXN, FYN, FAN)
+      SUBROUTINE RCV_FIELDS_FROM_ATMOS(ID_LCOMM, IDFLD, FXN, FYN, FAN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -207,7 +196,6 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!     ID_OASIS_TIME     Int.      I     Elapsed time
 !     ID_LCOMM          Char.     I     MPI communicator
 !     IDFLD             Int.      I     Name of the exchange fields    
 !     FXN               Int.     I/O    First exchange field
@@ -239,7 +227,7 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      USE W3OACPMD, ONLY: IL_NB_RCV, RCV_FLD, CPL_OASIS_RCV
+      USE W3OACPMD, ONLY: ID_OASIS_TIME, IL_NB_RCV, RCV_FLD, CPL_OASIS_RCV
       USE W3GDATMD, ONLY: NX, NY, NSEAL, NSEA, MAPSF
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3SERVMD, ONLY: W3S2XY
@@ -247,7 +235,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)              :: ID_OASIS_TIME, ID_LCOMM
+      INTEGER, INTENT(IN)              :: ID_LCOMM
       CHARACTER(LEN=3), INTENT(IN)     :: IDFLD
       REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
 !

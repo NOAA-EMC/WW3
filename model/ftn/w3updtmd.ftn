@@ -270,14 +270,11 @@
       DT0N    = DSEC21 ( TC0, TCN )
       DT0T    = DSEC21 ( TC0, TIME )
 !
-!/CRT0      IF ( DT0T .GE. 0.5*DT0N ) THEN
-!/CRT0          RD     = 1.
-!/CRT0        ELSE
-!/CRT0          RD     = 0.
-!/CRT0        END IF
+!/CRT0      RD     = 0.
 !/CRT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD2    = 1. - RD
+!/OASIS      RD     = 1.
 !
 !/T      WRITE (NDST,9000) DT0N, DT0T, RD
 
@@ -537,14 +534,11 @@
       DT0N    = DSEC21 ( TW0, TWN )
       DT0T   = DSEC21 ( TW0, TIME )
 !
-!/WNT0      IF ( DT0T .GE. 0.5*DT0N ) THEN
-!/WNT0          RD     = 1.
-!/WNT0        ELSE
-!/WNT0          RD     = 0.
-!/WNT0        END IF
+!/WNT0      RD     = 0.
 !/WNT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/WNT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/WNT2      RD2    =  1. - RD
+!/OASIS      RD     = 1.
 !
 !/T      WRITE (NDST,9000) DT0N, DT0T, RD
 !

@@ -4024,6 +4024,7 @@
         READ(output_date(I)%partition%start, *)   ODAT(26,I), ODAT(27,I)
         READ(output_date(I)%partition%stride, *)  ODAT(28,I)
         READ(output_date(I)%partition%stop, *)    ODAT(29,I), ODAT(30,I)
+!/COU! NOT YET IMPLEMENTED
 !/COU        READ(output_date(I)%coupling%start, *)   ODAT(31,I), ODAT(32,I)
 !/COU        READ(output_date(I)%coupling%stride, *)  ODAT(33,I)
 !/COU        READ(output_date(I)%coupling%stop, *)    ODAT(34,I), ODAT(35,I)
@@ -4218,6 +4219,8 @@
                         WRITE (MDSS,960) 'output', 'FORMATTED'
                       END IF
                   END IF
+
+!/COU! NOT YET IMPLEMENTED
 !
 !/COU              ELSE IF ( J .EQ. 7 ) THEN
 !

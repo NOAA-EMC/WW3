@@ -414,6 +414,10 @@
 !
 ! Group 2
 !
+           CASE('AHS')
+             FLG2D(2,1)=.TRUE.
+           CASE('OHS')
+             FLG2D(2,1)=.TRUE.
            CASE('HS')
              FLG2D(2,1)=.TRUE.
            CASE('LM')
@@ -807,6 +811,10 @@
 !
 ! Group 2
 !
+!/OASACM         CASE('AHS')
+!/OASACM           FLG2D(2,1)=.TRUE.
+!/OASOCM         CASE('OHS')
+!/OASOCM           FLG2D(2,1)=.TRUE.
          CASE('HS')
            FLG2D(2,1)=.TRUE.
          CASE('LM')

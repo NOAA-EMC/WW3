@@ -249,7 +249,8 @@
       USE W3TIMEMD
 !/NCC      USE WW_cc, ONLY: MPI_COMM_WW
 !/OASIS USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
-!/OASIS                     CPL_OASIS_DEFINE, CPL_OASIS_FINALIZE
+!/OASIS                     CPL_OASIS_DEFINE, CPL_OASIS_FINALIZE,      &
+!/OASIS                     ID_OASIS_TIME
 !/TIDE      USE W3TIDEMD
 !
       IMPLICIT NONE
@@ -265,7 +266,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/OASIS INTEGER :: OASISED, IL_OASIS_TIME
+!/OASIS INTEGER :: OASISED
 !/PALM  INTEGER :: PALMED
       INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST,     &
                              NDSF(-7:7), NDSEN, NDS(13), NTRACE(2),   &
@@ -277,7 +278,7 @@
 !/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
       INTEGER             :: NODATA(5:7), FLAGTIDE
-      INTEGER             :: COUPL_TIME, COUPL_COMM
+      INTEGER             :: COUPL_COMM
       REAL                :: FACTOR, DTTST, XX, YY,                   &
                              HA(NHMAX,-7:4), HD(NHMAX,-7:4),          &
                              HS(NHMAX,-7:4)
@@ -397,6 +398,10 @@
       NDSO   =  6
       NDSE   =  6
       NDST   =  6
+!/OASIS      NDSO   =  333
+!/OASIS      NDSE   =  333
+!/OASIS      NDST   =  333
+
 
       NDSF(-7)  = 1008
       NDSF(-6)  = 1009
@@ -1016,7 +1021,7 @@
         END IF
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!/OASIS ! Initialize L_MASTER, COUPL_TIME, COUPL_COMM
+!/OASIS ! Initialize L_MASTER, COUPL_COMM
 !/OASIS      IF ( IAPROC .EQ. 1) THEN
 !/OASIS         L_MASTER = .TRUE.
 !/OASIS      ELSE
@@ -1109,8 +1114,8 @@
                 DTTST  = DSEC21 ( TIME0 , TTT )
               END IF
             ELSE 
-!/OASIS             IL_OASIS_TIME = DSEC21 ( TIME00 , TIME )
-!/OASIS             IF ( (MOD(DSEC21(TIME00,TIME),1.0) .LE. 1.0E-2) .AND. &
+!/OASIS             ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
+!/OASIS             IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0) .LT. 1.E-7 ) .AND. &
 !/OASIS                  (DSEC21 (TIME, TIMEEND) .GT. 0.0)) DTTST=0.
              END IF
 !
@@ -1236,18 +1241,13 @@
 !/TIDE                            CALL TICK21 ( TLN, TIDE_DT )
 !/TIDE                            END IF
 !/TIDE                        ELSE
-!/OASIS                 IF (FLAGSC(J)) THEN
-!/OASIS                   COUPL_TIME = IL_OASIS_TIME
-!/OASIS                   COUPL_COMM = MPI_COMM
-!/OASIS                 ELSE
-!/OASIS                   COUPL_TIME = -1
-!/OASIS                   COUPL_COMM = MPI_COMM
-!/OASIS                 END IF
+!/OASIS                 COUPL_COMM = MPI_COMM
+!/OASIS                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV,   &
                            IERR                                       &
-!/OASIS                    , COUPL_TIME, COUPL_COMM                   &
+!/OASIS                    , COUPL_COMM                               &
                            )
 !/TIDE                          END IF
                    END IF
@@ -1268,18 +1268,14 @@
 !/TIDE                          TC0(:) = TCN(:)               
 !/TIDE                          CALL TICK21 ( TCN, TIDE_DT )
 !/TIDE                        ELSE
-!/OASIS                 IF (FLAGSC(J)) THEN
-!/OASIS                   COUPL_TIME = IL_OASIS_TIME
-!/OASIS                   COUPL_COMM = MPI_COMM
-!/OASIS                 ELSE
-!/OASIS                   COUPL_TIME = -1
-!/OASIS                   COUPL_COMM = MPI_COMM
-!/OASIS                 END IF
+!/OASIS                 COUPL_COMM = MPI_COMM
+!/OASIS                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
                            IERR                                       &
-!/OASIS                    , COUPL_TIME, COUPL_COMM                   &
+!/OASIS                    , COUPL_COMM                               &
                            )
 !/TIDE                          END IF
                    END IF
@@ -1290,19 +1286,14 @@
                            TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                            TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
                    ELSE
-!/OASIS                      IF (FLAGSC(J)) THEN
-!/OASIS                        COUPL_TIME = IL_OASIS_TIME
-!/OASIS                        COUPL_COMM = MPI_COMM
-!/OASIS                      ELSE
-!/OASIS                        COUPL_TIME = -1
-!/OASIS                        COUPL_COMM = MPI_COMM
-!/OASIS                      END IF
+!/OASIS                 COUPL_COMM = MPI_COMM
+!/OASIS                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 !/NCC                        IF (.NOT.CFLAG(J)) THEN
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
                            IERR                                       &
-!/OASIS                    , COUPL_TIME, COUPL_COMM                   &
+!/OASIS                    , COUPL_COMM                               &
                            )
 !/NCC                        END IF
 !/NCC                        CALL WW_CDETECT(CFLAG(J))

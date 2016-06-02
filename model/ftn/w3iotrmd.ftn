@@ -481,7 +481,6 @@
 ! 3.g End of input file escape location
 !
   390 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004) 'ww3'
 !/T          WRITE (NDST,9033)
       STOP   = .TRUE.
 !
@@ -701,9 +700,6 @@
                '       EXPECTED : ',A/                                &
                '       FOUND    : ',A/                                &
                '     TRACK OUTPUT DISABLED '/)
- 1004 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     END OF FILE track_i.',A/)
-!
  1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
                '     ERROR IN OPENING OUTPUT FILE ',                  &
                '(FILE track_o.',A,' IOSTAT =',I6,')'/                 &

@@ -380,8 +380,10 @@
 !/IC3      USE W3SIC3MD
 !/IS2      USE W3SIS2MD
 
-!/OASOCM      USE W3OGCMMD, ONLY: snd_fields_to_ocean
-!/OASACM      USE W3AGCMMD, ONLY: snd_fields_to_atmos
+!/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME
+!/OASOCM      USE W3OGCMMD, ONLY: SND_FIELDS_TO_OCEAN
+!/OASACM      USE W3AGCMMD, ONLY: SND_FIELDS_TO_ATMOS
+
 !/PALM USE palmlib 	    !interface for palm coupler
 !/PALM USE palm_user_param  !min_palm_time_a etc ...
 !
@@ -405,7 +407,7 @@
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, NKCFL
-!/OASIS     INTEGER                 :: OASISED, IL_OASIS_TIME
+!/OASIS     INTEGER                 :: OASISED
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -478,8 +480,9 @@
 !
 !/OMPX      FLOMP  = .TRUE.
 !
-!/PALM  PALMED = 1
-!/OASIS OASISED = 1
+!/PALM      PALMED = 1
+!/OASIS      OASISED = 1
+!/OASIS      SCREEN   =  333
 !
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
       IF ( IGRID  .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
@@ -1646,11 +1649,6 @@
 ! ==================================================================== /
 !
   400 CONTINUE
-
-! In coupling mode, do not perform output if TIME is the last time of integration TEND 
-! except for the last time of the run TIMEEND
-!/OASIS        IF ( ( DSEC21 ( TIME, TEND ) .EQ. 0. ) .AND. &
-!/OASIS             ( DSEC21 ( TIME, TIMEEND ).NE. 0 ) ) EXIT
 !
 ! 4.  Perform output to file if requested ---------------------------- /
 ! 4.a Check if time is output time
@@ -1803,14 +1801,11 @@
 !/OASIS ! Send variables to atmospheric or ocean circulation model
 !/OASIS !
 !/OASIS                              IF (OASISED.EQ.1) THEN
-!/OASIS                                IL_OASIS_TIME = DSEC21 ( TIME00 , TIME )
-!/OASIS                                IF ( (MOD(DSEC21(TIME00,TIME),1.0) .LE. 1.0E-2) .AND. &
-!/OASIS                                     (DSEC21 (TIME, TIMEEND) .GT. 0.0) ) THEN
-!/OASACM                                  CALL SND_FIELDS_TO_ATMOS(IL_OASIS_TIME)
-!/OASACM                                  IF ( FLWIND ) IDACT(3:3) = 'C'
-!/OASOCM                                  CALL SND_FIELDS_TO_OCEAN(IL_OASIS_TIME)
-!/OASOCM                                  IF ( FLLEV ) IDACT(5:5) = 'C'
-!/OASOCM                                  IF ( FLCUR ) IDACT(7:7) = 'C'
+!/OASIS                                IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0)  .LT. 1.E-7 ) .AND. &
+!/OASIS                                     (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN
+!/OASACM                                  CALL SND_FIELDS_TO_ATMOS()
+!/OASOCM                                  CALL SND_FIELDS_TO_OCEAN()
+!/OASIS                                  ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
 !/OASIS                                ENDIF
 
 !/OASIS                            END IF
@@ -1853,6 +1848,8 @@
                       FLOUT(J)    = DTTST.GE.0.
                       IF ( FLOUT(J) ) THEN
                           OUTID(2*J-1:2*J-1) = 'X'
+!/OASIS                          IF ( (DSEC21(TIME,TIME00).EQ.0) .OR.       &
+!/OASIS                               (DSEC21(TIME,TIMEEND).EQ.0) ) OUTID(13:13) = ' '
                         ELSE
                           OUTID(2*J-1:2*J-1) = 'L'
                         END IF

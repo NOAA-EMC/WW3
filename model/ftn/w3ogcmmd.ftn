@@ -58,7 +58,7 @@
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE SND_FIELDS_TO_OCEAN(ID_OASIS_TIME)
+      SUBROUTINE SND_FIELDS_TO_OCEAN()
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -76,12 +76,6 @@
 !
 !  2. Method :
 !  3. Parameters :
-!
-!     Parameter list
-!     ------------------------------------------------------------------
-!     ID_OASIS_TIME   Int.   I   Elapsed time in s.
-!     ------------------------------------------------------------------
-!
 !  4. Subroutines used :
 !
 !     Name             Type    Module     Description
@@ -112,7 +106,7 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      USE W3OACPMD,  ONLY: IL_NB_SND, SND_FLD, CPL_OASIS_SND
+      USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
       USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
                            TAUWIX, TAUWIY, WLM
@@ -122,7 +116,6 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN) :: ID_OASIS_TIME
 !
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -149,7 +142,7 @@
          !
          ! Mask - wet-drying
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__DRY') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ODRY') THEN
             RLA_OASIS_SND(:,1) = DBLE(MASK(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -165,7 +158,7 @@
          !
          ! Wave height (hs in m)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__oHS') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__OHS') THEN
             RLA_OASIS_SND(:,1) = DBLE(HS(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -264,7 +257,7 @@
 !/ ------------------------------------------------------------------- /
      END SUBROUTINE SND_FIELDS_TO_OCEAN
 !/ ------------------------------------------------------------------- /
-     SUBROUTINE RCV_FIELDS_FROM_OCEAN(ID_OASIS_TIME, ID_LCOMM, IDFLD, FXN, FYN, FAN)
+     SUBROUTINE RCV_FIELDS_FROM_OCEAN(ID_LCOMM, IDFLD, FXN, FYN, FAN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -286,7 +279,6 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!     ID_OASIS_TIME     Int.      I     Elapsed time
 !     ID_LCOMM          Char.     I     MPI communicator
 !     IDFLD             Int.      I     Name of the exchange fields    
 !     FXN               Int.     I/O    First exchange field
@@ -321,7 +313,7 @@
 !
 !/ ------------------------------------------------------------------- /
 !
-      USE W3OACPMD, ONLY: IL_NB_RCV, RCV_FLD, CPL_OASIS_RCV
+      USE W3OACPMD, ONLY: ID_OASIS_TIME, IL_NB_RCV, RCV_FLD, CPL_OASIS_RCV
       USE W3GDATMD, ONLY: NX, NY, NSEAL, NSEA, MAPSF
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3SERVMD, ONLY: W3S2XY
@@ -329,7 +321,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)              :: ID_OASIS_TIME, ID_LCOMM
+      INTEGER, INTENT(IN)              :: ID_LCOMM
       CHARACTER(LEN=3), INTENT(IN)     :: IDFLD
       REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
 !
@@ -338,7 +330,7 @@
 !/
       LOGICAL                          :: LL_ACTION   
       INTEGER                          :: IB_DO, IB_I, IB_J, IL_ERR
-      INTEGER, SAVE                    :: ID_OASIS_TIME_NEWEXCHANGE = -1
+      INTEGER, SAVE                    :: ID_OASIS_TIME_WETDRYONLYONCE = -1
       REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_RCV
       REAL(kind=8), DIMENSION(NSEAL)   :: TMP, MASKT, MASKU, MASKV
       REAL, DIMENSION(1:NSEA)          :: SND_BUFF,RCV_BUFF
@@ -355,13 +347,18 @@
 ! ---------------------------------------------------------------------
 ! Perform mask variables
 ! ---------------------------------------------------------------------
-      IF (ID_OASIS_TIME > ID_OASIS_TIME_NEWEXCHANGE) THEN
+!
+! For the same coupling time, W3FLDG is called for the level and current variables.
+! As RCV_FIELDS_FROM_OCEAN is called from W3FLDG, the following test prevents to 
+! exchange the wet-dry variables more than once per coupling time.
+
+      IF (ID_OASIS_TIME > ID_OASIS_TIME_WETDRYONLYONCE) THEN
          !
          DO IB_DO = 1, IL_NB_RCV
             !
             ! Land mask - u
             ! ---------------------------------------------------------------------
-            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__WDH') THEN
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDH') THEN
 
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
@@ -371,7 +368,7 @@
             !
             ! Land mask - h
             ! ---------------------------------------------------------------------
-            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__WDU') THEN
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDU') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
                   MASKU(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
@@ -380,7 +377,7 @@
             !
             ! Land mask - v
             ! ---------------------------------------------------------------------
-            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__WDV') THEN
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDV') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
                   MASKV(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
@@ -431,7 +428,7 @@
          !
             ! u-component
             ! ---------------------------------------------------------------------
-            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___UZ') THEN
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSU') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKU(1:NSEAL)
@@ -457,7 +454,7 @@
             !
             ! v-component
             ! ---------------------------------------------------------------------
-            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___VZ') THEN
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSV') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKV(1:NSEAL)
@@ -483,7 +480,7 @@
          ENDIF
       ENDDO
 !
-      ID_OASIS_TIME_NEWEXCHANGE = ID_OASIS_TIME
+      ID_OASIS_TIME_WETDRYONLYONCE = ID_OASIS_TIME
 !
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE RCV_FIELDS_FROM_OCEAN
