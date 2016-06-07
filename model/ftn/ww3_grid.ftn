@@ -1994,7 +1994,7 @@
 !/IC2       IC2ROUGH = 0.01 
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 2E5
-!/IC2       IC2VISC = 8.
+!/IC2       IC2VISC = 1.
 !
 !/IC3       IC3MAXTHK = 100.0
 !/IC3       IC3MAXCNC = 100.0
