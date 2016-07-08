@@ -111,7 +111,7 @@
 !     alltype%partition          =  0 0 0 0 0 0 T
 ! -------------------------------------------------------------------- !
 &output_type_nml
-  alltype%field%list       = 'HS FP DP'
+  alltype%field%list       = 'HS FP DP EF TH1M STH1M'
   alltype%point%file       = 'points.list'
 /
 

@@ -488,7 +488,7 @@
         S4=S4+1 ! T between day and minutes
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
         WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
-               NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
+               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5)))
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -497,7 +497,7 @@
       ! or S3=>YYYY then filetime='YYYY'
       ELSE 
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-        WRITE (TIMEID,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
+        WRITE (TIMEID,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
       END IF       
       ! redefines filename with updated date format
       S1=LEN_TRIM(FILEPREFIX)

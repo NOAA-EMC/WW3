@@ -68,6 +68,7 @@
 # 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #     Save compiler exit code in $OK
 #
+# Gnu compiler on Linux ------------------------------------------------------
 # 2.b.1 Build options and determine compiler name
 #       Note that all but GrADS output is forced to big endian data
 
@@ -80,9 +81,11 @@
 #     -Idir : where to search for .mod files
 #     -Jdir or -Mdir : where to put .mod files
 
-  opt="-c -O3 -J$path_m -fno-second-underscore -ffree-line-length-none -fconvert=big-endian"
+  # compilation options
+  opt="-c -O3 -fno-second-underscore -ffree-line-length-none -fconvert=big-endian -J$path_m"
 # opt="$opt -I$HOME/g2lib -I/opt/local/include"
 
+  # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=mpif90
@@ -90,11 +93,25 @@
     comp=gfortran
   fi
 
+  # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
     opt="$opt -fopenmp"
   fi
 
+  # oasis coupler include dir
+  if [ "$oasis_mod" = 'yes' ]
+  then
+    opt="$opt -I$OASISDIR/build/lib/psmile.MPI1"
+  fi
+
+  # palm coupler include dir
+  if [ "$palm_mod" = 'yes' ]
+  then
+    opt="$opt -I$PALM_LIBDIR -I$PALM_DIR"
+  fi
+
+  # netcdf include dir
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
@@ -104,6 +121,7 @@
     esac
   fi
 
+  # ftn include dir
   opt="$opt -I$path_i"
 
 # 2.b.2 Compile
@@ -143,11 +161,8 @@
 
   if [ -s $name.err ]
   then
-    echo > /dev/null
-
-    nr_err=`grep 'Error:' $name.err | wc -l | awk '{ print $1 }'`
-    nr_war=`grep 'Warning:' $name.err | wc -l | awk '{ print $1 }'`
-
+    nr_err=`grep 'error' $name.err | wc -l | awk '{ print $1 }'`
+    nr_war=`grep 'warning' $name.err | wc -l | awk '{ print $1 }'`
   else
     if [ "$OK" != '0' ]
     then

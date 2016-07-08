@@ -1,6 +1,6 @@
 $ WAVEWATCH III multi-grid input file
 $ ------------------------------------
-  2 0 T 0 F T
+  2 0 T 1 F T
 $
 $ 'wind_ncep'  F F T F F F F
 $ 'ice_cep2b'  F F F T F F F

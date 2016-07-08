@@ -83,17 +83,17 @@ $          diffucult to use point names in data files.
 $
    19680606 000000    60  19680606 120000
 $
-      0.    0.  'Point   1 '
-      1.E4  0.  'Point   2 '
-      2.E4  0.  'Point   3 '
-      3.E4  0.  'Point   4 '
-      4.E4  0.  'Point   5 '
-     5.E4  0.  'Point   6 '
-     6.E4  0.  'Point   7 '
-     7.E4  0.  'Point   8 '
-     8.E4  0.  'Point   9 '
-     9.E4  0.  'Point  10 '
-     10.E4  0.  'Point  11 '
+      0.    0.  'Point1'
+      1.E4  0.  'Point2'
+      2.E4  0.  'Point3'
+      3.E4  0.  'Point4'
+      4.E4  0.  'Point5'
+     5.E4  0.  'Point6'
+     6.E4  0.  'Point7'
+     7.E4  0.  'Point8'
+     8.E4  0.  'Point9'
+     9.E4  0.  'Point10'
+     10.E4  0.  'Point11'
 $
       0.    0.  'STOPSTRING'
 $

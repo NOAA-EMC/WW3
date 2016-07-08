@@ -528,7 +528,7 @@
 !/T              WRITE (NDST,9020) TYPE
           ELSE
 !/MPI            NSEAL_MIN = 1 + (NSEA-NAPROC)/NAPROC
-!/MPI            IF ( TYPE.EQ.'FULL' .AND. NAPROC.GT.1 ) THEN
+!/MPI            IF ( NAPROC.GT.1 ) THEN
 !/MPI!/ ----------- Large number of small-sized record reads will tend ---- *
 !/MPI!/             to perform badly on most file systems. We read this part
 !/MPI!/             using streams and scatter the results using MPI.

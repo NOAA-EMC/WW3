@@ -69,11 +69,14 @@
 # 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #     Save compiler exit code in $OK
 #
+# Lahey compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
 
+  # compilation options
   opt="-c --lst --fast -M $path_m"
 # opt="-c --lst -g --trap --chk --chkglobal -M $path_m"
 
+  # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=lf95 -Lmpi
@@ -81,11 +84,25 @@
     comp=lf95
   fi
 
+  # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
     opt="$opt i--openmp"
   fi
 
+  # oasis coupler include dir
+  if [ "$oasis_mod" = 'yes' ]
+  then
+    opt="$opt -I$OASISDIR/build/lib/psmile.MPI1"
+  fi
+
+  # palm coupler include dir
+  if [ "$palm_mod" = 'yes' ]
+  then
+    opt="$opt -I$PALM_LIBDIR -I$PALM_DIR"
+  fi
+
+  # netcdf include dir
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
@@ -95,6 +112,7 @@
     esac
   fi
 
+  # ftn include dir
   opt="$opt -I$path_i"
 
 # 2.b.2 Compile

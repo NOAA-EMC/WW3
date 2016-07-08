@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 
 if [ $# -ne 1 ]
@@ -143,7 +143,7 @@ done
 echo ${fielddate[@]}
 
 # field list
-if [ ${fielddate[3]} != 0 ]
+if [ ${fielddate[3]} -ne 0 ]
 then
   read line
   fieldformat="$(echo $line)"
@@ -169,7 +169,7 @@ done
 echo ${pointdate[@]}
 
 # point list
-if [ ${pointdate[3]} != 0 ]
+if [ ${pointdate[3]} -ne 0 ]
 then
   pointfile="${pointname}.list"
   rm -f $pointfile
@@ -195,7 +195,7 @@ done
 echo ${trackdate[@]}
 
 # track flag
-if [ ${trackdate[3]} != 0 ]
+if [ ${trackdate[3]} -ne 0 ]
 then
   read line
   trackflag="$(echo $line)"
@@ -232,7 +232,7 @@ done
 echo ${partitiondate[@]}
 
 # partition info
-if [ ${partitiondate[3]} != 0 ]
+if [ ${partitiondate[3]} -ne 0 ]
 then
   read line
   for i in $(seq 1 7)
@@ -269,7 +269,7 @@ done
 read line
 grdname="$(echo $line | cut -d ' ' -f1 | cut -d \" -f2  | cut -d \' -f2)"
 grdnum="$(echo $line | cut -d ' ' -f2 | cut -d \" -f2  | cut -d \' -f2)"
-while [ $grdname != 'the_end' ]
+while [ "$grdname" != 'the_end' ]
 do
   for irgrd in $(seq 1 $nrgrd)
   do
@@ -383,7 +383,7 @@ echo $grdname
 read line
 dataname="$(echo $line | cut -d ' ' -f1 | cut -d \" -f2  | cut -d \' -f2)"
 imove=0
-while [ $dataname != 'STP' ]
+while [ "$dataname" != 'STP' ]
 do
   imove=$(expr $imove + 1 )
   echo $dataname

@@ -564,6 +564,11 @@ EOF
 
   done
 
+# 2.d copy comp and link 
+
+  cp  $main_dir/bin/comp $main_dir/exe/
+  cp  $main_dir/bin/link $main_dir/exe/
+
 # --------------------------------------------------------------------------- #
 # 3. End of program ID.                                                       #
 # --------------------------------------------------------------------------- #

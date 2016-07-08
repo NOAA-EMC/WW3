@@ -62,7 +62,7 @@ $                               The raw data file is out_pnt.ww3,
 $                               see w3iogo.ftn for additional doc.
 $
    20080522 000000 360   20080523 000000
-    214.0 42.5 'start location'
+    214.0 42.5 'start_location'
      0.0   0.0   'STOPSTRING'
 $
 $

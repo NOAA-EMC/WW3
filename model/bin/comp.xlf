@@ -59,6 +59,8 @@
 # Add here the correct compiler call including command line options
 # Note: - do not invoke a link step
 #       - if possible, generate a listing $name.l
+#       - make sure the compiler point to the proper directory where the 
+#         modules are stored ($m_path), see examples below.
 
 # 2.a Determine file extension - - - - - - - - - - - - - - - - - - - - - - - - 
 #     .f90 assumes free format, .f assumes fixed format, change if necessary
@@ -79,6 +81,7 @@
   fi
   fext='f'
 
+  # compilation options
   opt="-c -qsource -O3 -qstrict -qarch=auto -qtune=auto -qcache=auto -qfloat=hsflt -I$path_m -qnosave"
 
 # debug=' -g -C -qcheck -qfltrap:enable -qsigtrap -qfullpath'
@@ -86,19 +89,34 @@
 
   opt="$opt$debug"
 
-  comp="xlf90_r -q64"
-
+  # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
     comp="mpxlf90_r -q64"
+  else
+    comp="xlf90_r -q64"
   fi
 
+  # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
     comp="xlf90_r -q64"
     opt="$opt -qsmp=noauto"
   fi
 
+  # oasis coupler include dir
+  if [ "$oasis_mod" = 'yes' ]
+  then
+    opt="$opt -I$OASISDIR/build/lib/psmile.MPI1"
+  fi
+
+  # palm coupler include dir
+  if [ "$palm_mod" = 'yes' ]
+  then
+    opt="$opt -I$PALM_LIBDIR -I$PALM_DIR"
+  fi
+
+  # netcdf include dir
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in
@@ -108,6 +126,7 @@
     esac
   fi
 
+  # ftn include dir
   opt="$opt -I$path_i"
 
 # 2.b.2 Compile

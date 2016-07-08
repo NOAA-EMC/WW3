@@ -41,7 +41,7 @@
 !
 !     Local parameters.
 !     ----------------------------------------------------------------
-!       NDSI    Int.  Input unit number ("ww3_prep.inp").
+!       NDSI    Int.  Input unit number ("ww3_prnc.inp").
 !       NDSLL   Int.  Unit number(s) of long-lat file(s)
 !       NDSF    I.A.  Unit number(s) of input file(s).
 !       NDSDAT  Int.  Unit number for output data file.
@@ -264,7 +264,7 @@
       INTEGER               :: DIMSVAR(4)
        INTEGER               :: dimln(5),dimid(5) 
       CHARACTER*20          :: dimname(5)
-      CHARACTER*50          :: timeunits
+      CHARACTER*50          :: timeunits, calendar
       DOUBLE PRECISION      :: dateref, datecur
       REAL                  :: scur, mncur, hcur, fillvalue
       INTEGER               :: I,K,L,ITIME, dref, mref, yref, dcur, mcur, ycur
@@ -548,28 +548,37 @@
       iret=nf90_inq_varid(ncid,"time",varidtmp)
       IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
       CALL check_err(iret)
+      iret=nf90_get_att(ncid,varidtmp,"calendar",calendar)
+      IF ( iret/=nf90_noerr ) THEN 
+        WRITE(NDSE,1028)
+      ELSE IF ((INDEX(calendar, "julian").EQ.0) .AND. &
+               (INDEX(calendar, "gregorian").EQ.0)) THEN
+        WRITE(NDSE,1029)
+      END IF
+!
+      IF (INDEX(timeunits, "seconds").NE.0) THEN
       iret=nf90_get_att(ncid,varidtmp,"units",timeunits)
       IF (INDEX(timeunits, "seconds").NE.0) THEN
-        read(timeunits(15:18),'(I4.4)') yref
-        read(timeunits(20:21),'(I2.2)') mref
-        read(timeunits(23:24),'(I2.2)') dref
-        read(timeunits(26:27),'(I2.2)') hhref
-        read(timeunits(29:30),'(I2.2)') mmref
-        read(timeunits(32:33),'(I2.2)') ssref
+        read(timeunits(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) yref
+        read(timeunits(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) mref
+        read(timeunits(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) dref
+        read(timeunits(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) hhref
+        read(timeunits(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) mmref
+        read(timeunits(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) ssref
       ELSE IF (INDEX(timeunits, "days").NE.0) THEN
-        read(timeunits(12:15),'(I4.4)') yref
-        read(timeunits(17:18),'(I2.2)') mref
-        read(timeunits(20:21),'(I2.2)') dref
-        read(timeunits(23:24),'(I2.2)') hhref
-        read(timeunits(26:27),'(I2.2)') mmref
-        read(timeunits(29:30),'(I2.2)') ssref
+        read(timeunits(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) yref
+        read(timeunits(17:18),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) mref
+        read(timeunits(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) dref
+        read(timeunits(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) hhref
+        read(timeunits(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) mmref
+        read(timeunits(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) ssref
       ELSE IF (index(timeunits, "hours").NE.0) THEN
-        read(timeunits(13:16),'(I4.4)') yref
-        read(timeunits(18:19),'(I2.2)') mref
-        read(timeunits(21:22),'(I2.2)') dref
-        read(timeunits(24:25),'(I2.2)') hhref
-        read(timeunits(27:28),'(I2.2)') mmref
-        read(timeunits(30:31),'(I2.2)') ssref
+        read(timeunits(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) yref
+        read(timeunits(18:19),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) mref
+        read(timeunits(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) dref
+        read(timeunits(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) hhref
+        read(timeunits(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) mmref
+        read(timeunits(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) ssref
       END IF
       dateref=JULDAY(dref,mref,yref) + DBLE(hhref)/24. + DBLE(mmref)/1440. + DBLE(ssref)/86400.
 !
@@ -1862,58 +1871,66 @@
 !
   803 CONTINUE
       WRITE (NDSE,1003) IERR
-      CALL EXTCDE ( 42 )
+      CALL EXTCDE ( 43 )
+!
+  804 CONTINUE
+      WRITE (NDSE,1004)
+      CALL EXTCDE ( 44 )
+!
+  805 CONTINUE
+      WRITE (NDSE,1005) IERR
+      CALL EXTCDE ( 45 )
 !
   837 CONTINUE
       WRITE (NDSE,1037) NDSI
-      CALL EXTCDE ( 43 )
+      CALL EXTCDE ( 46 )
 !
   840 CONTINUE
       WRITE (NDSE,1040) X0I, XNI
-      CALL EXTCDE ( 45 )
+      CALL EXTCDE ( 47 )
 !
   841 CONTINUE
       WRITE (NDSE,1041) Y0I, YNI
-      CALL EXTCDE ( 46 )
+      CALL EXTCDE ( 48 )
 !
   845 CONTINUE
       WRITE (NDSE,1045) IERR
-      CALL EXTCDE ( 47 )
+      CALL EXTCDE ( 49 )
 !
   846 CONTINUE
       WRITE (NDSE,1046) IERR
-      CALL EXTCDE ( 48 )
+      CALL EXTCDE ( 50 )
 !
   850 CONTINUE
       WRITE (NDSE,1050) IERR, NDSF(J), NAMEF
-      CALL EXTCDE ( 49 )
+      CALL EXTCDE ( 51 )
 !
   860 CONTINUE
       WRITE (NDSE,1060) J, IERR
-      CALL EXTCDE ( 50 )
+      CALL EXTCDE ( 52 )
 !
   861 CONTINUE
       WRITE (NDSE,1061) TIME, TIME2
-      CALL EXTCDE ( 51 )
+      CALL EXTCDE ( 53 )
 !
   862 CONTINUE
       WRITE (NDSE,1062) IERR
-      CALL EXTCDE ( 52 )
+      CALL EXTCDE ( 54 )
 !
   863 CONTINUE
       WRITE (NDSE,1063) IDAT, IERR
-      CALL EXTCDE ( 53 )
+      CALL EXTCDE ( 55 )
   864 CONTINUE
       WRITE (NDSE,1064)  TRIM(STRDIMSNAME)
-      CALL EXTCDE ( 53 )
+      CALL EXTCDE ( 56 )
 !
 !/O15  870 CONTINUE
 !/O15      WRITE (NDSE,1070) IDFLD, IERR
-!/O15      CALL EXTCDE ( 54 )
+!/O15      CALL EXTCDE ( 57 )
 !
 !/O15  871 CONTINUE
 !/O15      WRITE (NDSE,1071) IDTIME, IERR
-!/O15      CALL EXTCDE ( 54 )
+!/O15      CALL EXTCDE ( 58 )
 !
   888 CONTINUE
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
@@ -2016,6 +2033,21 @@
                '     EXPECTING LIST OF TIDAL CONST. OR FAST OR VFAST'/&
                '     IOSTAT =',I5/)
 !
+ 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+               '     PREMATURE END OF TIME ATTRIBUTE '/               &
+               '     FROM INPUT DATA FILE'/)
+!
+ 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+               '     ERROR IN READING OF TIME ATTRIBUTE '/            &
+               '     FROM INPUT DATA FILE'/                           &
+               '     IOSTAT =',I5/)
+!
+ 1028 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
+               '     CALENDAR ATTRIBUTE NOT FOUND'/                   &
+               '     IT MUST RESPECT JULIAN OR GREGORIAN CALENDAR')
+ 1029 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
+               '     CALENDAR ATTRIBUTE NOT MATCH'/                   &
+               '     IT MUST RESPECT JULIAN OR GREGORIAN CALENDAR')
  1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
                '     ILLEGAL FIELD ID -->',A,'<--'/)
  1031 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &

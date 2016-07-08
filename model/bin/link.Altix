@@ -93,14 +93,12 @@
 # --------------------------------------------------------------------------- #
 # Add here the correct linker call including switches
 
-# Intel compiler ------------------------------------------------------------
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
   # linking options
   libs=""
-  opt="-O0 -Zp8 -tpp7 -o $prog"
-  opt="-p -pg -g $opt"
+  opt="-O2 -o $prog"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]

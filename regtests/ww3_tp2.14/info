@@ -68,11 +68,11 @@
 #   (Note: mpirun commands differ by local system)                          #
 #  ./bin/run_test -C -c mpt -s OASACM -o netcdf -w work_OASACM -p mpirun    #
 #                 -n 4 ../ ww3_tp2.14                                       #
-#  ./bin/run_test -C -c Intel_Altix -s OASOCM -o netcdf -w work_OASOCM      #
-#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
+#  ./bin/run_test -C -c Altix -s OASOCM -o netcdf -w work_OASOCM -p mpirun  #
+#                 -n 4 ../ ww3_tp2.14                                       #
 #                                                                           #
 #                                             M. Accensi, Feb 2015          #
 #                                             Ifremer Institute             #
-#                                                   Last Mod : Apr 2015     #
+#                                                   Last Mod : Jun 2016     #
 #                                                                           #
 #############################################################################

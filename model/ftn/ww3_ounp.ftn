@@ -404,7 +404,7 @@
         IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
           IF ( .NOT. FLREQ(IPOINT) ) THEN 
             NREQ = NREQ + 1
-            INDREQTMP(NREQ)=I
+            INDREQTMP(NREQ)=IPOINT
             END IF
           FLREQ(IPOINT) = .TRUE.
         END IF
@@ -442,7 +442,7 @@
       IF (S3.EQ.10) THEN 
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
         WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
-               NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
+               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5)))
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -451,7 +451,7 @@
       ! or S3=>YYYY then filetime='YYYY'
       ELSE 
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-        WRITE (FILETIME,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
+        WRITE (FILETIME,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
       END IF
  
 
@@ -826,7 +826,7 @@
         ! together
         IF (TOGETHER) THEN
           DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBSTATION
-            IF (FLREQ(I) .OR. TOGETHER) THEN
+            IF (FLREQ(I)) THEN
               IF ( FLAGLL ) THEN
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
                                            M2KM*PTLOC(2,I)
@@ -839,7 +839,7 @@
         ! not together
         ELSE
           DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
-            IF (FLREQ(I) .OR. TOGETHER) THEN
+            IF (FLREQ(I)) THEN
               IF ( FLAGLL ) THEN
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
                                            M2KM*PTLOC(2,I)
@@ -906,7 +906,7 @@
           DO I=1+(IFL-1)*MFL,(IFL-1)*MFL+NBFILEOUT
             IF (FLREQ(I) .OR. TOGETHER) THEN
               ! together
-              IF ( TOGETHER ) THEN  
+              IF ( TOGETHER ) THEN 
                 CALL W3EXNC(I,ncid(I),NREQ,INDREQ,ORDER)
               ! not together
               ELSE 

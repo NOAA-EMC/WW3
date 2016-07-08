@@ -95,9 +95,12 @@
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
+  # linking options
+  libs=""
 # libs="-L/opt/local/lib -L$HOME/g2lib -lg2 -lw3 -lpng -ljasper"
   opt="-o $prog"
 
+  # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
     comp=mpif90
@@ -105,11 +108,36 @@
     comp=gfortran
   fi
 
+  # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
     opt="$opt -fopenmp"
   fi
 
+  # palm coupler archive
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ]
+    then
+    if [ "$palm_mod" = 'yes' ]
+       then
+       comp=ar
+       opt="-rv $prog.a"
+       prog="$prog.a"
+    fi
+  fi
+
+  # oasis coupler archive
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || \
+     [ "$prog" = 'ww3_prnc' ] || [ "$prog" = 'ww3_prep' ] || [ "$prog" = 'ww3_prtide' ] || \
+     [ "$prog" = 'ww3_gspl' ]
+  then
+    if [ "$oasis_mod" = 'yes' ]
+    then
+      echo "link with oasis"
+      libs="$libs $OASISDIR/lib/libpsmile.MPI1.a $OASISDIR/lib/libmct.a $OASISDIR/lib/libmpeu.a $OASISDIR/lib/libscrip.a" ;
+    fi
+  fi
+
+  # netcdf library dir
   if [ "$netcdf_compile" = 'yes' ]
   then
     case $WWATCH3_NETCDF in

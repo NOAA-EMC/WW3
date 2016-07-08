@@ -1063,6 +1063,10 @@
 !
 ! 5.a Loop over types for unified output
 !
+      CALL W3SETO ( 1, MDSE, MDST )
+      CALL W3SETG ( 1, MDSE, MDST )
+      CALL W3IOGR ( 'GRID', NDSREC, 1, MNAMES(1)(1:LEN_TRIM(MNAMES(1))) )
+!
       NOTYPE = 6
 !/COU      NOTYPE = 7
       DO J=1, NOTYPE
@@ -1109,7 +1113,7 @@
 !
               FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
               CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
-                                 FLG2D, NMPSCR, IMPROC, IERR )
+                                 FLG2D, IMPROC, NMPSCR, IERR )
               FLGRD(:,:,1)=FLG2D
               FLGD(:,1)   =FLG1D
 !
@@ -1221,7 +1225,7 @@
 ! 5.i Type 7: coupling
 !
 !/COU              CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
-!/COU                                 FLG2D, NMPSCR, IMPROC, IERR )
+!/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,1)=FLG2D
 !/COU              FLG2(:,1)   =FLG1D
 !
@@ -1254,10 +1258,10 @@
         LPRT(I)    = LPRT(1)
         END DO
 !
+      IF ( NPTS.EQ.0 .OR. ODAT(8,0).EQ.0 ) UNIPTS = .FALSE.
       IF ( UNIPTS ) THEN
           IF ( ( NPTS.EQ.0 .OR.  ODAT(8,0).EQ.0 ) .AND.               &
               IMPROC.EQ.NMPERR ) WRITE (MDSE,1050)
-          IF ( NPTS.EQ.0 .OR. ODAT(8,0).EQ.0 ) UNIPTS = .FALSE.
           OT2(0)%NPTS = NPTS
           ALLOCATE (OT2(0)%X(NPTS),OT2(0)%Y(NPTS),OT2(0)%PNAMES(NPTS))
           OT2(0)%X      = X
@@ -1297,6 +1301,8 @@
         II     = LEN_TRIM(MN)
         DO I=1, NRGRD
           IF ( MN(:II) .EQ. MNAMES(I)(1:II) ) EXIT
+            CALL W3SETO ( I, MDSE, MDST )
+            CALL W3SETG ( I, MDSE, MDST )
           END DO
 !
         IF ( I .GT. NRGRD ) GOTO 2051
@@ -1350,7 +1356,7 @@
 ! 5.l Type 1: fields of mean wave parameters
 !
                 CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
-                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
+                                 FLG1D, FLG2D, IMPROC, NMPSCR, IERR )
                 FLGD(:,I)    = FLG1D
                 FLGRD(:,:,I) = FLG2D
 !
@@ -1458,7 +1464,7 @@
 ! 5.p Type 7: coupling fields
 !
                 CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
-                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
+                                 FLG1D, FLG2D, IMPROC, NMPSCR, IERR )
                 FLG2(:,I)    = FLG1D
                 FLGR2(:,:,I) = FLG2D
 !
@@ -4002,6 +4008,12 @@
 ! 5.a Loop over types
 !
       DO I=1, NRGRD
+
+         CALL W3SETO ( I, MDSE, MDST )
+         CALL W3SETG ( I, MDSE, MDST )
+         J = LEN_TRIM(MNAMES(I))
+         CALL W3IOGR ( 'GRID', NDSREC, I, MNAMES(I)(1:J) )
+
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,950) TRIM(MNAMES(NRGRD+I))
         NOTYPE = 6
 !/COU      NOTYPE = 7
@@ -4084,7 +4096,7 @@
                 FLGRD(:,:,I)=.FALSE. ! Initialize FLGRD
                 FLDLIST = output_type(I)%field%list
                 CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDLIST, FLG1D,       &
-                                   FLG2D, NMPSCR, IMPROC, IERR )
+                                   FLG2D, IMPROC, NMPSCR, IERR )
                 FLGRD(:,:,I)=FLG2D
                 FLGD(:,I)   =FLG1D
   !
@@ -4228,7 +4240,7 @@
 !
 !/COU              FLDLIST = output_type(I)%coupling%list
 !/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDLIST, FLG1D,       &
-!/COU                                 FLG2D, NMPSCR, IMPROC, IERR )
+!/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,I)=FLG2D
 !/COU              FLG2(:,I)   =FLG1D
 !
@@ -5225,7 +5237,7 @@
           OUTPTS(0)%TONEXT(:,2) = TOUT
 !
           DTTST  = DSEC21 ( TOUT , TLST )
-          IF ( DTTST .LT. 0. ) THEN
+          IF (( DTTST .LT. 0. ) .OR. ( ODAT(8,0) .EQ. 0 )) THEN
               UNIPTS = .FALSE.
             ELSE
               CALL WMIOPP ( OT2(0)%NPTS, OT2(0)%X, OT2(0)%Y,          &
