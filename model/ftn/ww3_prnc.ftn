@@ -556,7 +556,6 @@
         WRITE(NDSE,1029)
       END IF
 !
-      IF (INDEX(timeunits, "seconds").NE.0) THEN
       iret=nf90_get_att(ncid,varidtmp,"units",timeunits)
       IF (INDEX(timeunits, "seconds").NE.0) THEN
         read(timeunits(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) yref
