@@ -680,9 +680,9 @@
       TYPE FLDP
          REAL :: DUMMY
 !/FLD1        INTEGER               :: Tail_ID
-!/FLD1        REAL                  :: Tail_Lev
+!/FLD1        REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2        INTEGER               :: Tail_ID
-!/FLD2        REAL                  :: Tail_Lev
+!/FLD2        REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
       END TYPE FLDP
       TYPE SFLP
 !/FLX0        REAL                  :: DUMMY
@@ -946,9 +946,9 @@
 !/ Data aliasses for structure FLDP(S)
 !/
 !/FLD1     INTEGER, POINTER         :: TAIL_ID
-!/FLD1     REAL, POINTER            :: TAIL_LEV
+!/FLD1     REAL, POINTER            :: TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2     INTEGER, POINTER         :: TAIL_ID
-!/FLD2     REAL, POINTER            :: TAIL_LEV
+!/FLD2     REAL, POINTER            :: TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/
 !/ Data aliasses for structure SFLP(S)
 !/
@@ -1985,8 +1985,12 @@
 !
 !/FLD1      TAIL_ID  => MPARS(IMOD)%FLDPS%TAIL_ID
 !/FLD1      TAIL_LEV => MPARS(IMOD)%FLDPS%TAIL_LEV
+!/FLD1      TAIL_TRAN1 => MPARS(IMOD)%FLDPS%TAIL_TRAN1
+!/FLD1      TAIL_TRAN2 => MPARS(IMOD)%FLDPS%TAIL_TRAN2
 !/FLD2      TAIL_ID  => MPARS(IMOD)%FLDPS%TAIL_ID
 !/FLD2      TAIL_LEV => MPARS(IMOD)%FLDPS%TAIL_LEV
+!/FLD2      TAIL_TRAN1 => MPARS(IMOD)%FLDPS%TAIL_TRAN1
+!/FLD2      TAIL_TRAN2 => MPARS(IMOD)%FLDPS%TAIL_TRAN2
 !
 !     Structure SFLPS
 !

@@ -12,6 +12,8 @@
 !/    18-Mar-2015 : Clean-up/prepare for distribution   ( version 5.12 )
 !/    15-Jan-2016 : Updates                             ( version 5.12 )
 !/                                                      ( B. G. Reichl )
+!/    27-Jul-2016 : Added Charnock output  (J.Meixner)  ( version 5.12 )
+!/                  
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -70,11 +72,15 @@
       ! Tail_Choice: Chose the method to determine the level of the tail
       INTEGER, SAVE :: Tail_Choice
       REAL, SAVE    :: Tail_Level !if Tail_Choice=0, tail is constant
+      REAL, SAVE    :: Tail_transition_ratio1! freq/fpi where tail 
+                                             !  adjustment begins
+      REAL, SAVE    :: Tail_transition_ratio2! freq/fpi where tail 
+                                             !  adjustment ends
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLD1( ASPC, FPI, WNDX,WNDY, ZWND, &
-                         DEPTH, RIB, UST, USTD, Z0,TAUNUX,TAUNUY)
+      SUBROUTINE W3FLD1( ASPC, FPI, WNDX,WNDY, ZWND,               & 
+                    DEPTH, RIB, UST, USTD, Z0, TAUNUX,TAUNUY, CHARN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
@@ -103,7 +109,7 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       ASPC    Real   I   1-D Wave action spectrum.
-!       FPI     Real   I   Peak input frequency.
+!       FPI     Real   I   Peak input frequency. 
 !       WNDX    Real   I   X-dir wind (assumed referenced to current)    
 !       WNDY    Real   I   Y-dir wind (assumed referenced to current)
 !       ZWND    Real   I   Wind height.
@@ -116,6 +122,7 @@
 !       UST     Real   O   Friction velocity.
 !       USTD    Real   O   Direction of friction velocity.
 !       Z0      Real   O   Surface roughness length
+!       CHARN   Real   O,optional    Charnock parameter 
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -162,9 +169,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: ASPC(NSPEC), FPI, WNDX, WNDY,  & 
-                                 ZWND, DEPTH, RIB 
-      REAL, INTENT(OUT)       :: UST, USTD, Z0
+      REAL, INTENT(IN)        :: ASPC(NSPEC), WNDX, WNDY,  & 
+                                 ZWND, DEPTH, RIB, FPI
+      REAL, INTENT(OUT)       :: UST, USTD, Z0 
+      REAL, INTENT(OUT), OPTIONAL :: CHARN
       REAL, INTENT(INOUT)     :: TAUNUX, TAUNUY
 !/
 !/ ------------------------------------------------------------------- /
@@ -311,10 +319,11 @@
 !
 ! 1c. Calculate transitions for new (constant saturation ) tail ------ *
 !
+!
       !i. Find wavenumber for beginning spc level transition to tail
-      call sig2wn (FPI*TPI*1.25,depth,ktaila )
+      call sig2wn (FPI*TPI*tail_transition_ratio1,depth,ktaila )
       !ii. Find wavenumber for ending spc level transition to tail
-      call sig2wn ( FPI*TPI*3.0,depth,ktailb )
+      call sig2wn (FPI*TPI*tail_transition_ratio2,depth,ktailb )
       !iii. Find wavenumber for ending spc direction transition to tail
       KTAILC= KTAILB * 2.0
       !iv. Find corresponding indices of wavenumber transitions
@@ -332,8 +341,8 @@
       ENDDO
       !v. Call subroutine to perform actually tail truncation
       ! only if there is some energy in spectrum
-      !CALL APPENDTAIL(SPC2, WN, NKT, KA1, KA2, KA3,&
-      !     wnd_in_dir, SAT)
+      CALL APPENDTAIL(SPC2, WN, NKT, KA1, KA2, KA3,&
+           wnd_in_dir, SAT)
       ! Spectrum is now set for stress integration
 !
 ! 2.  Prepare for iterative calculation of wave-form stress----------- *
@@ -640,8 +649,8 @@
           ! ENDIF
         ENDDO
         ITERATION = ITERATION + 1
-        !CALL APPENDTAIL(SPC2, WN, NKT, KA1, KA2, KA3,&
-        !              atan2(VPROF(KB),UPROF(KB)), SAT)
+        CALL APPENDTAIL(SPC2, WN, NKT, KA1, KA2, KA3,&
+                      atan2(VPROF(KB),UPROF(KB)), SAT)
         DIFU10XX = WND_3X - WND_1X
         DIFU10YX = WND_3Y - WND_1Y
         DIFU10XY = WND_2X - WND_1X
@@ -711,6 +720,7 @@
       WND_PA=wnd_in_mag*COS(wnd_in_dir-USTD)
       Z0 = ZWND/exp(wnd_pa*kappa/ust)
       CD = UST**2 / wnd_in_mag**2
+      CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
       FSFL1=.not.((CD .LT. 0.01).AND.(CD .GT. 0.0001))
       FSFL2=.not.(cos(wnd_in_dir-ustd).GT.0.9)
       IF (FSFL1 .or. FSFL2) THEN
@@ -785,7 +795,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3ODATMD, ONLY: NDSE
-      USE W3GDATMD, ONLY: TAIL_ID, TAIL_LEV
+      USE W3GDATMD, ONLY: TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
@@ -808,6 +818,9 @@
 !
       Tail_Choice=Tail_ID
       Tail_Level=TAIL_Lev
+      Tail_transition_ratio1 = TAIL_TRAN1
+      Tail_transition_ratio2 = TAIL_TRAN2
+      
 !
       RETURN
 !
@@ -1150,84 +1163,223 @@
 !/ ------------------------------------------------------------------- /
 !/
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE WND2Z0M( U10 , ZNOTM )
-!/ ------------------------------------------------------------------- /
-!/ Date: Feb - 04 - 2014
-!/ Author: Biju Thomas URI-GSO
-!/ Updated: Apr - 09 - 2014
-!/ Author: Brandon Reichl URI-GSO
-!/ Title: WND2Z0M
-!/ Purpose: Get bulk momentum z0 from 10-m wind.
-!/          Bulk stress corresponds to 2015 GFDL Hurricane model
-!/          Not published yet, but contact Brandon Reichl or
-!/          Isaac Ginis (Univ. of Rhode Island) for further info
-!/ Input:  U10   - 10-m wind (magnitude) in m/s
-!/ Output: ZNOTM - momentum z0 in m
-!/ ------------------------------------------------------------------- /
+      SUBROUTINE WND2Z0M( W10M , ZNOTM )
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           B. G. Reichl            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Aug-2016 |
+!/                  +-----------------------------------+
 !/
+!/    09-Apr-2014 : Last Update.                        ( version 5.12 )
+!/    15-Aug-2016 : Updated for 2016 HWRF z0            ( J. Meixner   )
 !/
-        IMPLICIT NONE
+!  1. Purpose :
+!
+!     Get bulk momentum z0 from 10-m wind.
+!          Bulk stress corresponds to 2015 GFDL Hurricane model
+!          Not published yet, but contact Brandon Reichl or
+!          Isaac Ginis (Univ. of Rhode Island) for further info 
+!
+!  2. Method :
+!          This has now been updated for 2016 HWRF z0 using routines 
+!          from HWRF  znot_m_v1, Biju Thomas, 02/07/2014
+!           and       znot_wind10m Weiguo Wang, 02/24/2016
+!
+!  3. Parameters :
+!       Name  Unit  Type      Description 
+!     ----------------------------------------------------------------
+!       W10M   m/s  input    10 m neutral wind [m/s]
+!       ZNOTM  m    output   Roughness scale for momentum
+!     ----------------------------------------------------------------
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3FLD1    Subr. W3FLD1MD Corresponding source term.
+!      W3FLD2    Subr. W3FLD2MD Corresponding source term. 
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
 !/ ------------------------------------------------------------------- /
-      REAL, INTENT(IN)   :: U10
-      REAL, INTENT(OUT)  :: ZNOTM
-!/ ------------------------------------------------------------------- /
-      REAL, PARAMETER :: a1=1.044183210405817e-12
-      REAL, PARAMETER :: a2=-5.707116220939218e-11
-      REAL, PARAMETER :: a3=8.005722172810571e-10
-      REAL, PARAMETER :: a4=6.322045801589353e-09
-      REAL, PARAMETER :: a5=-2.422002988137712e-07
-      REAL, PARAMETER :: a6=2.269200594753249e-06
-      REAL, PARAMETER :: a7=-6.029592778169796e-06
-      REAL, PARAMETER :: a8=8.882284703541603e-06
-      REAL, PARAMETER :: a9=-2.371341185499601e-06
+!/S      USE W3SERVMD, ONLY: STRACE
 !/
-      REAL, PARAMETER :: b1=1.814407011197660e-15
-      REAL, PARAMETER :: b2=-1.602907562918788e-13
-      REAL, PARAMETER :: b3=-3.351205313520358e-11
-      REAL, PARAMETER :: b4= 6.036179295940524e-09
-      REAL, PARAMETER :: b5=-3.725481686822030e-07
-      REAL, PARAMETER :: b6= 1.059761705898929e-05
-      REAL, PARAMETER :: b7=-1.375241830530252e-04
-      REAL, PARAMETER :: b8= 8.538858261732818e-04
-      REAL, PARAMETER :: b9=-1.936638976963742e-03
-!/ ------------------------------------------------------------------- /
-      IF ( U10 .LE. 0.4) THEN
-         ZNOTM = 4E-7
-      ELSEIF( U10 .LE. 9.3 ) THEN
-         ZNOTM = A9 + A8*U10 + A7*U10**2 + A6*U10**3 + A5*U10**4 + &
-              A4*U10**5 + A3*U10**6 + A2*U10**7 + A1*U10**8
-      ELSEIF (U10 .LT. 60.0) THEN
-         ZNOTM = B9 + B8*U10 + B7*U10**2 + B6*U10**3 + B5*U10**4 + &
-              B4*U10**5 + B3*U10**6 +B2*U10**7 + B1*U10**8
+      IMPLICIT NONE
+      REAL, INTENT(IN) :: W10M
+      REAL, INTENT(OUT):: ZNOTM
+
+      !Parameters from znot_m_v1
+      REAL, PARAMETER :: bs0 = -8.367276172397277e-12
+      REAL, PARAMETER :: bs1 = 1.7398510865876079e-09
+      REAL, PARAMETER :: bs2 = -1.331896578363359e-07
+      REAL, PARAMETER :: bs3 = 4.507055294438727e-06
+      REAL, PARAMETER :: bs4 = -6.508676881906914e-05
+      REAL, PARAMETER :: bs5 = 0.00044745137674732834
+      REAL, PARAMETER :: bs6 = -0.0010745704660847233
+
+      REAL, PARAMETER :: cf0 = 2.1151080765239772e-13
+      REAL, PARAMETER :: cf1 = -3.2260663894433345e-11
+      REAL, PARAMETER :: cf2 = -3.329705958751961e-10
+      REAL, PARAMETER :: cf3 = 1.7648562021709124e-07
+      REAL, PARAMETER :: cf4 = 7.107636825694182e-06
+      REAL, PARAMETER :: cf5 = -0.0013914681964973246
+      REAL, PARAMETER :: cf6 = 0.0406766967657759
+
+      !Variables from znot_wind10m
+      REAL            :: Z10, U10,AAA,TMP
+
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'WND2Z0M')
+
+      !Values as set in znot_wind10m
+      Z10=10.0
+      U10=W10M
+      if (U10 > 85.0) U10=85.0
+
+      !Calculation of z0 as in znot_m_v1
+      IF ( U10 .LE. 5.0 ) THEN
+        ZNOTM = (0.0185 / 9.8*(7.59e-4*U10**2+2.46e-2*U10)**2)
+      ELSEIF (U10 .GT. 5.0 .AND. U10 .LT. 10.0) THEN
+        ZNOTM =.00000235*(U10**2 - 25 ) + 3.805129199617346e-05
+      ELSEIF ( U10 .GE. 10.0  .AND. U10 .LT. 60.0) THEN
+        ZNOTM = bs6 + bs5*U10 + bs4*U10**2 + bs3*U10**3 + bs2*U10**4 +&
+              bs1*U10**5 + bs0*U10**6
       ELSE
-        ZNOTM = 1.3025e-3
+        ZNOTM = cf6 + cf5*U10 + cf4*U10**2 + cf3*U10**3 + cf2*U10**4 +&
+              cf1*U10**5 + cf0*U10**6
       END IF
-!/
-      RETURN
-    END SUBROUTINE WND2Z0M
+
+      !Modifications as in znot_wind10m for icoef_sf=4 
+
+      !for wind<20, cd similar to icoef=2 at 10m, then reduced 
+      TMP=0.4*0.4/(ALOG(10.0/ZNOTM))**2   ! cd at zlev
+      AAA=0.75
+      IF (U10 < 20) THEN
+        AAA=0.99
+      ELSEIF(U10 < 45.0) THEN
+        AAA=0.99+(U10-20)*(0.75-0.99)/(45.0-20.0)
+      END IF
+      ZNOTM=Z10/EXP( SQRT(0.4*0.4/(TMP*AAA)) )
+
+      END SUBROUTINE WND2Z0M
 !/ ------------------------------------------------------------------- /
-    SUBROUTINE WND2SAT(WND10,SAT)
-      !Author: Brandon Reichl - GSO/URI
+      SUBROUTINE WND2SAT(WND10,SAT)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           B. G. Reichl            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Aug-2016 |
+!/                  +-----------------------------------+
+!/
+!/    15-Jan-2016 : Origination.                        ( version 5.12 )
+!/    04-Aug-2016 : Updated for 2016 HWRF CD/U10 curve  ( J. Meixner   )
+!/
+!  1. Purpose :
+!
+!     Gives level of saturation spectrum to produce 
+!         equivalent Cd as in wnd2z0m (for neutral 10m wind)
+!         tuned for method of Reichl et al. 2014
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
       !Input: WND10 - 10 m neutral wind [m/s]
       !Output: SAT  - Level 1-d saturation spectrum in tail [non-dim]
-      !Purpose: Gives level of saturation spectrum to produce 
-      !         equivalent Cd as in wnd2z0m (for neutral 10m wind)
-      !         tuned for method of Reichl et al. 2014
+!     ----------------------------------------------------------------
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3FLD1    Subr. W3FLD1MD Corresponding source term.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
 !/
         IMPLICIT NONE
 !/
         REAL, INTENT(IN) :: WND10
         REAL, INTENT(OUT) :: SAT
-!/
-        SAT =0.000000000001237 * WND10**6 +&
-             -0.000000000364155 * WND10**5 +&
-             0.000000037435015 * WND10**4 +&
-             -0.000001424719473 * WND10**3 +&
-             0.000000471570975 * WND10**2 +&
-             0.000778467452178 * WND10**1 +&
-             0.002962335390055
+!/S      INTEGER, SAVE           :: IENT = 0
+!
+!/S      CALL STRACE (IENT, 'WND2SAT')
+!/ Old HWRF 2015 and ST2 
+!        SAT =0.000000000001237 * WND10**6 +&
+!             -0.000000000364155 * WND10**5 +&
+!             0.000000037435015 * WND10**4 +&
+!             -0.000001424719473 * WND10**3 +&
+!             0.000000471570975 * WND10**2 +&
+!             0.000778467452178 * WND10**1 +&
+!             0.002962335390055
+!
+!     SAT values based on 
+!     HWRF 2016 CD curve, created with  fetch limited cases ST4 physics
+        IF (WND10<20.0) THEN
+          SAT = -0.000018541921682*WND10**2  &
+                +0.000751515452434*WND10     &
+                +0.002466529381004
+        ELSEIF (WND10<45) THEN
+          SAT = -0.000000009060349*WND10**4  &
+                +0.000001276678367*WND10**3  &
+                -0.000068274393789*WND10**2  &
+                +0.001418180888868*WND10     &
+                +0.000262277682984
+        ELSE
+          SAT = -0.000155976275073*WND10     &
+                +0.012027763023184
+        ENDIF
+
         SAT = min(max(SAT,0.002),0.014)
       END SUBROUTINE WND2SAT
+!
 !/ End of module W3FLD1MD -------------------------------------------- /
 !/
       END MODULE W3FLD1MD

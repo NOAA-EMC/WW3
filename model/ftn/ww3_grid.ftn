@@ -644,9 +644,9 @@
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC, ICEDISP
 !/FLD1      INTEGER                 :: TAILTYPE
-!/FLD1      REAL                    :: TAILLEV
+!/FLD1      REAL                    :: TAILLEV, TAILT1, TAILT2
 !/FLD2      INTEGER                 :: TAILTYPE
-!/FLD2      REAL                    :: TAILLEV 
+!/FLD2      REAL                    :: TAILLEV, TAILT1, TAILT2
 !/FLX3      INTEGER                 :: CTYPE
 !/FLX3      REAL                    :: CDMAX
 !/FLX4      REAL                    :: CDFAC
@@ -700,8 +700,8 @@
                                       EXPFSFCT,IMPFSN
            INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
 !
-!/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV
-!/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV
+!/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV, TAILT1, TAILT2
+!/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV, TAILT1, TAILT2
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
 !/IC2      NAMELIST /SIC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
@@ -2138,17 +2138,25 @@
 !
 !/FLD1      TAILTYPE = 0
 !/FLD1      TAILLEV  = 0.006
+!/FLD1      TAILT1 = 1.25
+!/FLD1      TAILT2 = 3.00
 !/FLD2      TAILTYPE = 0
 !/FLD2      TAILLEV  = 0.006
+!/FLD2      TAILT1 = 1.25
+!/FLD2      TAILT2 = 3.00
 !
 !/FLD1      CALL READNL ( NDSS, 'FLD1', STATUS )
-!/FLD1      TAILLEV  = MIN( MAX ( 0.001 , TAILLEV ), 0.02)
+!/FLD1      TAILLEV  = MIN( MAX ( 0.0005 , TAILLEV ), 0.04)
 !/FLD1      TAIL_LEV = TAILLEV
 !/FLD1      TAIL_ID = TAILTYPE
+!/FLD1      TAIL_TRAN1 = TAILT1
+!/FLD1      TAIL_TRAN2 = TAILT2
 !/FLD2      CALL READNL ( NDSS, 'FLD2', STATUS )
-!/FLD2      TAILLEV  = MIN( MAX ( 0.001 , TAILLEV ), 0.02)
+!/FLD2      TAILLEV  = MIN( MAX ( 0.0005 , TAILLEV ), 0.04)
 !/FLD2      TAIL_LEV = TAILLEV
 !/FLD2      TAIL_ID = TAILTYPE
+!/FLD2      TAIL_TRAN1 = TAILT1
+!/FLD2      TAIL_TRAN2 = TAILT2
 !
 ! 6.o End of namelist processing
 !
@@ -2275,8 +2283,8 @@
 
           END IF
 !
-!/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV
-!/FLD2         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV
+!/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+!/FLD2         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !
         WRITE (NDSO,918)
         END IF
@@ -4842,7 +4850,8 @@
                '        REFRMAX=',F5.2,', REFFREQPOW =',F5.2,                    &
                ', REFICEBERG =',F5.2,', REFCOSP_STRAIGHT =',F4.1,' /')
 !
- 2987 FORMAT ( '  &FLD TAIL_ID =',I1,'TAIL_LEV =',F5.4,' /')
+ 2987 FORMAT ( '  &FLD TAIL_ID =',I1,' TAIL_LEV =',F5.4,' TAILT1 =',F5.3,&
+               ' TAILT2 =',F5.3,' /')
 
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &
