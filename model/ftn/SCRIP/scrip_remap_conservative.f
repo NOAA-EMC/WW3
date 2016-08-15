@@ -316,14 +316,16 @@ C$OMP& srch_center_lon_find_adj_cell)
 
       if(is_master)print *,'grid1 sweep'
 
-      if (grid1_size >     300000) then
-         progint =         100000
-      elseif (grid1_size > 150000) then
-         progint =          50000 
-      elseif (grid1_size >  75000) then
-         progint =          20000 
+!NRL  Progress is slow when the other grid (grid 2) is large, so we use
+!NRL    that. Really, it would be a better to do this with a timer...
+      if (grid2_size >     500000) then
+         progint =         1000
+      elseif (grid2_size > 250000) then
+         progint =         2000 
+      elseif (grid2_size > 100000) then
+         progint =         5000 
       else
-         progint =          10000
+         progint =         10000
       endif
 
       grid_num = 1
@@ -338,7 +340,7 @@ C$OMP DO SCHEDULE(DYNAMIC)
       do grid1_add = 1,grid1_size
 
          if (mod(grid1_add,progint) .eq. 0 .and. is_master) then
-            print *, grid1_add, ' cells processed ...'
+            print *, grid1_add,' of ',grid1_size,' cells processed ...'
          endif
 
          call cell_integrate(grid1_add, grid_num, phi_or_theta)
@@ -357,14 +359,16 @@ C$OMP END PARALLEL
 
       if(is_master)print *,'grid2 sweep '
 
-      if (grid2_size >     300000) then
-         progint =         100000
-      elseif (grid2_size > 150000) then
-         progint =          50000 
-      elseif (grid2_size >  60000) then
-         progint =          20000 
+!NRL  Progress is slow when the other grid (grid 1) is large, so we use
+!NRL    that.
+      if (grid1_size >     500000) then
+         progint =         1000
+      elseif (grid1_size > 250000) then
+         progint =         2000 
+      elseif (grid1_size > 100000) then
+         progint =         5000 
       else
-         progint =          10000
+         progint =         10000
       endif
 
       grid_num = 2
@@ -379,7 +383,7 @@ C$OMP DO SCHEDULE(DYNAMIC)
       do grid2_add = 1,grid2_size
 
          if (mod(grid2_add,progint) .eq. 0 .and. is_master) then
-            print *, grid2_add, ' cells processed ...'
+            print *, grid2_add,' of ',grid2_size,' cells processed ...'
          endif
 
          call cell_integrate(grid2_add, grid_num, phi_or_theta)
@@ -1080,8 +1084,10 @@ C$OMP END PARALLEL
      &     search,              ! Do we have to search to locate point 
                                 ! in grid
      &     inpolar,             ! Are we in the polar region?
-     &     special_cell         ! Is this a special cell 
+     &     special_cell,        ! Is this a special cell 
                                 ! (only 1 vtx at pole)
+     &     L_exit_do            ! Do we need to escape from infinite 
+                                ! loop? (NRL)
 
       real (SCRIP_r8) ::
      &     intrsct_lat,         ! lat of next intersection point
@@ -1212,7 +1218,6 @@ C$OMP END PARALLEL
 
       endif
 
-
       if (special_cell) then
 
          !***
@@ -1240,8 +1245,6 @@ C$OMP END PARALLEL
 
       endif
 
-
-
       !***
       !*** Cell info set up - Now process the cell
       !***
@@ -1259,7 +1262,6 @@ C$OMP END PARALLEL
          endlon = cell_corner_lon(next_corn)
          lrevers = .false.
 
-
          !***
          !*** if this is a constant-longitude segment, skip the rest 
          !*** since the line integral contribution will be zero.
@@ -1267,7 +1269,6 @@ C$OMP END PARALLEL
 
          if ((phi_or_theta == 1 .and. endlon == beglon) .or.
      &        (phi_or_theta == 2 .and. endlat == beglat)) cycle
-
 
          !***
          !*** to ensure exact path taken during both
@@ -1303,7 +1304,6 @@ C$OMP END PARALLEL
 
          begseg(1) = beglat
          begseg(2) = beglon
-         
 
          fullseg_dlat = endlat-beglat
          fullseg_dlon = endlon-beglon
@@ -1313,7 +1313,6 @@ C$OMP END PARALLEL
      &        fullseg_dlon*fullseg_dlon
          
          partseg_len2 = 0.0
-
 
          !***
          !*** Is this an edge on the boundary of the grid or 
@@ -1355,7 +1354,6 @@ C$OMP END PARALLEL
                endif
             endif
          endif
-         
 
          !***
          !*** integrate along this segment, detecting intersections 
@@ -1380,8 +1378,12 @@ C$OMP END PARALLEL
          search = .true.
          ns = 1
 
+! outer "do while"
+
          do while (beglat /= endlat .or. beglon /= endlon)
             
+            L_exit_do=.false.         !NRL
+
             if ((ns .eq. nseg) .or. (inpolar .eqv. .false.)) then
                !
                ! Last subseg or out of the polar region
@@ -1395,6 +1397,9 @@ C$OMP END PARALLEL
             endif
             
             num_subseg = 0
+
+! inner "do while"
+
             do while (beglat /= endlat1 .or. beglon /= endlon1)
                
                !*** 
@@ -1402,9 +1407,17 @@ C$OMP END PARALLEL
                !*** numerical errors), we are done with this segment
                !***
 
-               if (partseg_len2 .ge. fullseg_len2) exit
-
-
+!NRL see notes below re: infinite "do while" loop
+               L_exit_do=.false.                  !NRL
+               if (partseg_len2 .ge. fullseg_len2) then
+                  write(*,*)'partseg_len2 .ge. fullseg_len2'
+                  write(*,*)'beglat,beglon = ',beglat,beglon
+                  write(*,*)'endlat,endlon = ',endlat,endlon
+                  write(*,*)'endlat1,endlon1 = ',endlat1,endlon1
+                  write(*,*)'exiting inner do while loop'
+                  L_exit_do=.true.                !NRL
+                  exit
+               end if
 
                !******************************************************
                !*** Try to find which cell of the opposite grid this
@@ -1432,11 +1445,9 @@ C$OMP END PARALLEL
                
                do while (.not. intrsct_success) 
 
-
                   !*************************************************
                   !*** Find out which cell the segment starts in
                   !*************************************************
-
 
                   srch_success = .false.
                   if (search) then
@@ -1506,8 +1517,6 @@ C$OMP END PARALLEL
                      
                   endif
                   
-                  
-                  
                   !*****************************************************
                   !*** Find where the segment exits this cell, if at all
                   !*****************************************************
@@ -1549,13 +1558,10 @@ C$OMP END PARALLEL
                         special_cell = special_polar_cell1(oppcell_add)
                      endif
 
-
                      if (special_cell) then
                         call modify_polar_cell(ncorners_opp, nalloc_opp,
      &                       oppcell_corner_lat, oppcell_corner_lon)
                      endif
-
-
                      
                      !***
                      !*** First see if the segment end is in the same cell
@@ -1610,7 +1616,6 @@ C$OMP END PARALLEL
                         endif
                         
                      else
-
                       
                         !***
                         !*** Do an intersection to find out where the 
@@ -1739,7 +1744,6 @@ C$OMP END PARALLEL
      &                                special_polar_cell1(oppcell_add)
                               endif
                               
-                              
                               if (special_cell) then
                                  call modify_polar_cell(ncorners_opp, 
      &                                nalloc_opp, oppcell_corner_lat, 
@@ -1781,7 +1785,6 @@ C$OMP END PARALLEL
      &                          cell_add, grid_num, opp_grid_num, 
      &                          oppcell_add, lboundary1, bedgeid1)
                            
-                           
                            if (oppcell_add /= 0) then
                               srch_success = .true.
 
@@ -1821,7 +1824,6 @@ C$OMP END PARALLEL
 !     &                                grid1_add
 !                                 print *, beglat,beglon
 !                                 print *, endlat1,endlon1
-
 
                                  seg_outside = .true.
 
@@ -1877,12 +1879,7 @@ C$OMP END PARALLEL
                      
                   endif      ! if (srch_success) then ... else ....
 
-
                end do        ! do while (.not. intrsct_success)
-
-
-
-
 
                !********************************************************
                !*** Compute the line integrals for this subsegment
@@ -1899,7 +1896,6 @@ C$OMP END PARALLEL
      &                 cell_center_lat, cell_center_lon,
      &                 cell_center_lat, cell_center_lon)
                endif
-
              
                !***
                !*** if integrating in reverse order, change
@@ -1909,7 +1905,6 @@ C$OMP END PARALLEL
                if (lrevers) then
                   weights = -weights
                endif
-               
 
                !***
                !*** store the appropriate addresses and weights. 
@@ -1991,14 +1986,12 @@ C$OMP CRITICAL(block4)
 C$OMP END CRITICAL(block4)
                endif
 
-
                !***
                !*** reset beglat and beglon for next subsegment.
                !***
 
                beglat = intrsct_lat
                beglon = intrsct_lon
-               
 
                !***
                !*** How far have we come from the start of the segment
@@ -2010,7 +2003,6 @@ C$OMP END CRITICAL(block4)
                if (vec2_lon < -pi) vec2_lon = vec2_lon + pi2
                
                partseg_len2 = vec2_lat*vec2_lat + vec2_lon*vec2_lon
-
 
                !***
                !*** prevent infinite loops if integration gets stuck
@@ -2032,8 +2024,26 @@ C$OMP END CRITICAL(block4)
                   stop       ! Give up and stop
                endif
 
-
+! inner "do while"
             end do           ! do while (beglat /= endlat1 ...
+
+!NRL We add an exit to outer do similar to exit of inner do:
+!NRL   This was an apparent bug: exit statement would escape 
+!NRL   inner do but then computation could not get out of 
+!NRL   outer do since beglat, beglon controlling outer do
+!NRL   never changed b/c it never gets to the part of the
+!NRL   code that changes beglat, beglon, b/c it keeps 
+!NRL   exiting inner do.
+
+!NRL This should happen very rarely, so we have a print
+!NRL   statement to notify user.
+
+            if (L_exit_do)then                           ! NRL
+               write(*,*)'partseg_len2,fullseg_len2 = ', ! NRL
+     &                    partseg_len2,fullseg_len2      ! NRL
+               write(*,*)'exiting outer do while loop'   ! NRL
+               exit                                      ! NRL
+            endif                                        ! NRL
 
             ns = ns + 1
             if ((beglat > 0 .and. beglat < north_thresh) .or. 
@@ -2042,8 +2052,8 @@ C$OMP END CRITICAL(block4)
                inpolar = .false.
             endif
 
+! outer "do while"
          end do              ! do while (beglat /= endlat ....
-
 
          call line_integral(phi_or_theta, weights, num_wts,
      &        begseg(2), endlon, begseg(1), endlat,
@@ -2051,7 +2061,6 @@ C$OMP END CRITICAL(block4)
      &        cell_center_lon,
      &        cell_center_lat, 
      &        cell_center_lon)
-
 
          !***
          !*** end of segment

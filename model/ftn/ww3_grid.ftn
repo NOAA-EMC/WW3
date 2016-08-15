@@ -2085,8 +2085,10 @@
 ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
 !     grid, that is initialized with zeros as default.
       IF ( FLAGTR .LT. 3 ) THEN
-         CICE0 = CICEN
-         IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+         IF (CICE0.NE.CICEN) THEN
+            CICE0 = CICEN
+            IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+         END IF
       END IF
 !/IC0      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
