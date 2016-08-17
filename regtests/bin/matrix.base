@@ -1858,13 +1858,13 @@
     echo "$rtst -g 1000m         -w work_1000m_IC3 -i input_IC3             $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 2500m         -w work_2500m_IC3 -i input_IC3             $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst                  -w work_IC3_nondisp -i input_IC3_nondisp   $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g CGICE_CHENG   -w work_IC3_CGICE_CHENG -i input_IC3NL     $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst                  -w work_IC3_A0.5k -i input_IC3_A0.5k       $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst                  -w work_IC3_A1.0k -i input_IC3_A1.0k       $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst                  -w work_IC3_A2.5k -i input_IC3_A2.5k       $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst                  -w work_IC3_B0.5k -i input_IC3_B0.5k       $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst                  -w work_IC3_B1.0k -i input_IC3_B1.0k       $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst                  -w work_IC3_B2.5k -i input_IC3_B2.5k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC1              -i input_IC1      $ww3 ww3_tic2.1" >> matrix.body
     echo "$rtst -s PR1_REFRX     -w work_IC3_0.5k_PR1 -i input_IC3_0.5k     $ww3 ww3_tic1.3" >> matrix.body
     echo "$rtst -s PR1_REFRX     -w work_IC3_2.5k_PR1 -i input_IC3_2.5k     $ww3 ww3_tic1.3" >> matrix.body
     echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_0.5k_PR2_UQ -i input_IC3_0.5k  $ww3 ww3_tic1.3" >> matrix.body
@@ -1875,6 +1875,15 @@
     echo "$rtst -s PR3_UQ_REFRX  -w work_IC3_2.5k_PR3_UQ -i input_IC3_2.5k  $ww3 ww3_tic1.3" >> matrix.body
     echo "$rtst -s PR3_UNO_REFRX -w work_IC3_0.5k_PR3_UNO -i input_IC3_0.5k $ww3 ww3_tic1.3" >> matrix.body
     echo "$rtst -s PR3_UNO_REFRX -w work_IC3_2.5k_PR3_UNO -i input_IC3_2.5k $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s IC0IS2        -w work_IC0IS2_1000 -g 1000m  -o netcdf    $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC1IS2        -w work_IC1IS2_1000 -g 1000m  -o netcdf    $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC2IS2       -w work_IC2IS2_IC2b -g IC2b_1000m -o netcdf $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC2IS2       -w work_IC2IS2_IC2d -g IC2d_1000m -o netcdf $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst                  -w work_IC1              -i input_IC1      $ww3 ww3_tic2.1" >> matrix.body
+    echo "$rtst                  -w work_IC2IS2 -o netcdf                   $ww3 ww3_tic2.2" >> matrix.body
+    echo "$rtst -s IC2IS2        -w work_IC2IS2scat   -g scat               $ww3 ww3_tic2.3" >> matrix.body    
+    echo "$rtst -s IC2IS2        -w work_IC2IS2creep  -g creepOnly          $ww3 ww3_tic2.3" >> matrix.body
+    echo "$rtst -s IC2IS2        -w work_IC2IS2dissip -g dissipOnly         $ww3 ww3_tic2.3" >> matrix.body
   fi
 
   if [ "$mudice" = 'y' ] && [ "$dist" = 'y' ]
@@ -1884,6 +1893,10 @@
     echo "$rtst -s BT8_MPI -w work_BT8_MPI  -f -p $mpi -n $np $ww3 ww3_tbt2.1" >> matrix.body
     echo "$rtst -s BT9_MPI -w work_BT9_MPI  -f -p $mpi -n $np $ww3 ww3_tbt1.1" >> matrix.body
     echo "$rtst -s BT9_MPI -w work_BT9_MPI  -f -p $mpi -n $np $ww3 ww3_tbt2.1" >> matrix.body
+    echo "$rtst -s MPI -g CGICE_CHENG   -w work_IC3_CGICE_CHENG_MPI   -i input_IC3NL -f -p $mpi -n $np $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -s MPI -g CGICE_NOCHENG -w work_IC3_CGICE_NOCHENG_MPI -i input_IC3NL -f -p $mpi -n $np $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -s MPI -g CGOW_CHENG    -w work_IC3_CGOW_CHENG_MPI    -i input_IC3NL -f -p $mpi -n $np $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -s MPI -g CGOW_NOCHENG  -w work_IC3_CGOW_NOCHENG_MPI  -i input_IC3NL -f -p $mpi -n $np $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -s MPI -w work_IC3_A0.5k_MPI -i input_IC3_A0.5k -f -p $mpi -n $np $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst -s MPI -w work_IC3_A1.0k_MPI -i input_IC3_A1.0k -f -p $mpi -n $np $ww3 ww3_tic1.2" >> matrix.body
     echo "$rtst -s MPI -w work_IC3_A2.5k_MPI -i input_IC3_A2.5k -f -p $mpi -n $np $ww3 ww3_tic1.2" >> matrix.body

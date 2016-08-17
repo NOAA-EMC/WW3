@@ -60,10 +60,10 @@
   then
      export rtst="./bin/run_test -c $cmplr -a ~/.wwatch3.env -S"
   else
-     export rtst="./bin/run_test -a ~/.wwatch3.env -S"
+     export rtst="./bin/run_test -a ../model/wwatch3.env -S"
   fi
 
-  export  ww3='../.'
+  export  ww3='../model'
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 #     Addition selection by commenting out lines as below
