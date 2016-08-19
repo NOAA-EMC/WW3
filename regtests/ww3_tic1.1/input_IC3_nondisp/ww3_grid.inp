@@ -8,7 +8,8 @@ $
   60. 60. 60. 6.
 $
 $ IC2TURB = 2. , IC2ROUGH =0.02 corresponds to the turbulent -> laminar transition
- &SIC3 IC3MAXTHK=0.1,  IC2TURB = 2. , IC2ROUGH =0.02 /
+ &SIC3 IC3MAXTHK=0.1,  IC2TURB = 2. , IC2ROUGH =0.02,
+       IC3CHENG=.FALSE., USECGICE =  .FALSE./
 END OF NAMELISTS
 $
   'RECT' F 'NONE'

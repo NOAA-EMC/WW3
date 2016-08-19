@@ -207,23 +207,39 @@
 !/ Local parameters
 !/
       INTEGER             :: I
+      CHARACTER(LEN=10)  :: VARNAME1(5),VARNAME2(5)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
 !/ ------------------------------------------------------------------- /
 !/
 !/S      CALL STRACE (IENT, 'W3FLGRDUPDT')
 !
+      VARNAME1(1) = 'EF';    VARNAME2(1) = 'E3D'
+      VARNAME1(2) = 'TH1M';  VARNAME2(2) = 'TH1MF'
+      VARNAME1(3) = 'STH1M'; VARNAME2(3) = 'STH1MF'
+      VARNAME1(4) = 'TH2M';  VARNAME2(4) = 'TH2MF'
+      VARNAME1(5) = 'STH2M'; VARNAME2(5) = 'STH2MF'
+
       DO I=1,5
         IF (E3DF(1,I).LE.0.OR.E3DF(3,I).LT.E3DF(2,I)) THEN
+          IF (FLGRD(3,I).EQ..TRUE..OR.FLGR2(3,I).EQ..TRUE.) THEN 
+             WRITE(NDSEN,1008) VARNAME1(I),VARNAME2(I)
+          END IF
           FLGRD(3,I)=.FALSE.
           FLGR2(3,I)=.FALSE.
         END IF
       END DO
       IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) THEN
+        IF (FLGRD(6,8).EQ..TRUE..OR.FLGR2(6,8).EQ..TRUE.) THEN
+          WRITE(NDSEN,1008) 'USF','US3D'
+        END IF
         FLGRD(6,8)=.FALSE.
         FLGR2(6,8)=.FALSE.
       END IF
       IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) THEN
+        IF (FLGRD(6,8).EQ..TRUE..OR.FLGR2(6,8).EQ..TRUE.) THEN
+          WRITE(NDSEN,1008) 'P2L','P2SF'
+        END IF
         FLGRD(6,9)=.FALSE.
         FLGR2(6,9)=.FALSE.
       END IF
@@ -238,6 +254,11 @@
       IF(ANY(FLGR2(6,:))) FLG2(6)=.TRUE.
 !
       RETURN
+!
+ 1008 FORMAT (/' *** WAVEWATCH III WARNING  : '/                       &
+               '     PARAMETER ',A,' not allowed: need to set',        &
+               ' parameter ',A,' in OUTS namelist (in ww3_grid.inp)'   & 
+               ' with proper bounds' )
 !
       END SUBROUTINE W3FLGRDUPDT
 !/ ------------------------------------------------------------------- /
@@ -270,6 +291,7 @@
 !       FLG     L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
 !       IAPROC  Int.   I   index of current processor 
+!       NAPOUT  Int.   I   index of processor for output (screen)
 !       IERR    Int.   O   Error message number
 !     ----------------------------------------------------------------
 !
@@ -304,8 +326,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR, FLOGD
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
       USE W3SERVMD, ONLY: NEXTLN, STRSPLIT, STR_TO_UPPER
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -414,6 +435,10 @@
 !
 ! Group 2
 !
+           CASE('AHS')
+             FLG2D(2,1)=.TRUE.
+           CASE('OHS')
+             FLG2D(2,1)=.TRUE.
            CASE('HS')
              FLG2D(2,1)=.TRUE.
            CASE('LM')
@@ -438,35 +463,15 @@
 ! Group 3
 !
            CASE('EF')
-             IF (E3DF(1,1).EQ.1) THEN 
-               FLG2D(3,1)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'EF','E3D'
-               END IF
+             FLG2D(3,1)=.TRUE.
            CASE('TH1M')
-             IF (E3DF(1,2).EQ.1) THEN 
-               FLG2D(3,2)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'TH1M','TH1MF'
-               END IF
+             FLG2D(3,2)=.TRUE.
            CASE('STH1M')
-             IF (E3DF(1,3).EQ.1) THEN 
-               FLG2D(3,3)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'STH1M','STH1MF'
-               END IF
+             FLG2D(3,3)=.TRUE.
            CASE('TH2M')
-             IF (E3DF(1,4).EQ.1) THEN 
-               FLG2D(3,4)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'TH2M','TH2MF'
-               END IF
+             FLG2D(3,4)=.TRUE.
            CASE('STH2M')
-             IF (E3DF(1,5).EQ.1) THEN 
-               FLG2D(3,5)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'STH2M','STH2MF'
-               END IF
+             FLG2D(3,5)=.TRUE.
            CASE('WN')
              FLG2D(3,6)=.TRUE.
 !
@@ -529,17 +534,9 @@
            CASE('P2S')
              FLG2D(6,7)=.TRUE.
            CASE('USF')
-             IF (US3DF(1).EQ.1) THEN 
-               FLG2D(6,8)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'USF','US3D'
-               END IF
+             FLG2D(6,8)=.TRUE.
            CASE('P2L')
-             IF (P2MSF(1).EQ.1) THEN 
-               FLG2D(6,9)=.TRUE.
-             ELSE
-               WRITE(NDSEN,1008) 'P2L','P2SF'
-               END IF
+             FLG2D(6,9)=.TRUE.
            CASE('TWI')
              FLG2D(6,10)=.TRUE.
            CASE('FIC')
@@ -586,7 +583,7 @@
              FLG2D(10,2)=.TRUE.
 !/COU           CASE('DRY')
            CASE DEFAULT
-             IF ( IAPROC .EQ. NAPERR ) WRITE (NDSO,1004) TRIM(TESTSTR)
+             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
            END SELECT
 !
           IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLOG
@@ -617,20 +614,20 @@
       RETURN 
 !
  2001 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN,1001)
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1001)
       RETURN 
  2002 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1002) IFI, IERR
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1002) IFI, IERR
       RETURN 
  2003 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1003) IERR
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1003) IERR
       RETURN 
 !2004 CONTINUE ! replaced by warning in code ....
  2005 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1005) AFLG
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1005) AFLG
       RETURN 
  2006 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSEN, 1006) IFI,IERR
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1006) IFI,IERR
       RETURN 
 !
  1945 FORMAT ( '            Fields   : ',A)
@@ -698,6 +695,7 @@
 !       FLG     L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
 !       IAPROC  Int.   I   index of current processor 
+!       NAPOUT  Int.   I   index of processor for output (screen)
 !       IERR    Int.   O   Error message number
 !     ----------------------------------------------------------------
 !
@@ -732,10 +730,10 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF
-      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT, NAPERR, FLOGD
+      USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
       USE W3SERVMD, ONLY: STRSPLIT, STR_TO_UPPER
       USE W3NAMLMD 
+
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -755,7 +753,10 @@
       INTEGER             :: I, IFI, IFJ, IOUT
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL             :: FLT
+
       type(output_type_t) :: output_type
+
+
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -803,6 +804,10 @@
 !
 ! Group 2
 !
+!/OASACM         CASE('AHS')
+!/OASACM           FLG2D(2,1)=.TRUE.
+!/OASOCM         CASE('OHS')
+!/OASOCM           FLG2D(2,1)=.TRUE.
          CASE('HS')
            FLG2D(2,1)=.TRUE.
          CASE('LM')
@@ -827,35 +832,15 @@
 ! Group 3
 !
          CASE('EF')
-           IF (E3DF(1,1).EQ.1) THEN 
-             FLG2D(3,1)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'EF','E3D'
-             END IF
+           FLG2D(3,1)=.TRUE.
          CASE('TH1M')
-           IF (E3DF(1,2).EQ.1) THEN 
-             FLG2D(3,2)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'TH1M','TH1MF'
-             END IF
+           FLG2D(3,2)=.TRUE.
          CASE('STH1M')
-           IF (E3DF(1,3).EQ.1) THEN 
-             FLG2D(3,3)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'STH1M','STH1MF'
-             END IF
+           FLG2D(3,3)=.TRUE.
          CASE('TH2M')
-           IF (E3DF(1,4).EQ.1) THEN 
-             FLG2D(3,4)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'TH2M','TH2MF'
-             END IF
+           FLG2D(3,4)=.TRUE.
          CASE('STH2M')
-           IF (E3DF(1,5).EQ.1) THEN 
-             FLG2D(3,5)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'STH2M','STH2MF'
-             END IF
+           FLG2D(3,5)=.TRUE.
          CASE('WN')
            FLG2D(3,6)=.TRUE.
 !
@@ -918,17 +903,9 @@
          CASE('P2S')
            FLG2D(6,7)=.TRUE.
          CASE('USF')
-           IF (US3DF(1).EQ.1) THEN 
-             FLG2D(6,8)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'USF','US3D'
-             END IF
+           FLG2D(6,8)=.TRUE.
          CASE('P2L')
-           IF (P2MSF(1).EQ.1) THEN 
-             FLG2D(6,9)=.TRUE.
-           ELSE
-             WRITE(NDSEN,1008) 'P2L','P2SF'
-             END IF
+           FLG2D(6,9)=.TRUE.
          CASE('TWI')
            FLG2D(6,10)=.TRUE.
          CASE('FIC')
@@ -975,7 +952,7 @@
            FLG2D(10,1)=.TRUE.
 !/COU           CASE('DRY')
          CASE DEFAULT
-           IF ( IAPROC .EQ. NAPERR ) WRITE (NDSO,1004) TRIM(TESTSTR)
+           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN,1004) TRIM(TESTSTR)
          END SELECT
 !
         IOUT=IOUT+1

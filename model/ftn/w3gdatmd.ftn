@@ -21,7 +21,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         04-May-2016 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -75,6 +75,7 @@
 !/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.09 )
+!/    04-May-2016 : Add IICEDISP                  GB&FA ( version 5.10 )
 !/    DD-MMM-YYYY : Change to preprocessor macros to enable test output.
 !/                  (T.J. Campbell, NRL)                ( version 5.XX )
 !/    DD-MMM-YYYY : Change calculation of curvilinear grid metric and
@@ -172,6 +173,16 @@
 !      FICEL     Real  Public   Length scale for sea ice damping
 !      IICEHMIN  Real  Public   Minimum thickness of sea ice
 !      IICEHINIT Real  Public   Initial value of ice thickness
+!      ICE100WIND Real  Publ.   Reduction of wind input if ice fraction=1.0
+!                               Default is 1.0, meaning that 100% ice 
+!                               concentration result in zero wind input. 
+!                               Sin_in_ice=Sin_in_open_water * (1-ICE*ICEWIND)
+!                               If set to 0.0, then ice has no direct impact on
+!                               wind input source function.
+!      IC3PARS   R.A.  Public   various parameters for use in IC4, handled as
+!                               an array for simplicity
+!      IC4_KI    R.A.  Public   KI (dissipation rate) values for use in IC4
+!      IC4_FC    R.A.  Public   FC (frequency bin separators) for use in IC4
 !      PFMOVE    Real  Public   Tunable parameter in GSE correction
 !                               for moving grids.
 !      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
@@ -196,6 +207,7 @@
 !      FVERG     Log.  Public   Flag for 1-2-1 averaging smoothing on SMC grid.
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
+!      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
 !       
 !
 !      GNAME     C*30  Public   Grid name.
@@ -557,6 +569,7 @@
       INTEGER                 :: NGRIDS = -1, IGRID = -1, ISGRD = -1, &
                                  IPARS = -1, NAUXGR
 !
+!/IC4      INTEGER, PARAMETER      :: NIC4=10
       INTEGER, PARAMETER      :: RLGTYPE = 1
       INTEGER, PARAMETER      :: CLGTYPE = 2
       INTEGER, PARAMETER      :: UNGTYPE = 3      
@@ -592,7 +605,7 @@
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                             DTMAX, DTMIN, DMIN, CTMAX,           &
                             FICE0, FICEN, FICEL, PFMOVE,         &
-                            IICEHMIN, IICEHINIT
+                            IICEHMIN, IICEHINIT, ICE100WIND
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
 !/RTD        REAL                  :: Polat, Polon   ! Rotated N-Pole lat/lon
@@ -615,7 +628,7 @@
         REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
-        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
         LOGICAL          :: FLAGLL
         LOGICAL, POINTER :: FLAGST(:)
         CHARACTER(LEN=30):: GNAME
@@ -634,7 +647,9 @@
 !/IG1        REAL,    POINTER      :: IGPARS(:)
 !/IC2        REAL,    POINTER      :: IC2PARS(:)
 !/IC3        REAL,    POINTER      :: IC3PARS(:)
-!/IC4        INTEGER, POINTER      :: IC2PARS(:)
+!/IC4        INTEGER, POINTER      :: IC4PARS(:)
+!/IC4        REAL, POINTER         :: IC4_KI(:)
+!/IC4        REAL, POINTER         :: IC4_FC(:)
 !/IS2        REAL,    POINTER      :: IS2PARS(:)
 !
 ! unstructured data
@@ -684,9 +699,9 @@
       TYPE FLDP
          REAL :: DUMMY
 !/FLD1        INTEGER               :: Tail_ID
-!/FLD1        REAL                  :: Tail_Lev
+!/FLD1        REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2        INTEGER               :: Tail_ID
-!/FLD2        REAL                  :: Tail_Lev
+!/FLD2        REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
       END TYPE FLDP
       TYPE SFLP
 !/FLX0        REAL                  :: DUMMY
@@ -870,7 +885,9 @@
 !/IG1      REAL,    POINTER        :: IGPARS(:)
 !/IC2      REAL,    POINTER        :: IC2PARS(:)
 !/IC3      REAL,    POINTER        :: IC3PARS(:)
-!/IC4      INTEGER, POINTER        :: IC2PARS(:)
+!/IC4      INTEGER, POINTER        :: IC4PARS(:)
+!/IC4      REAL, POINTER           :: IC4_KI(:)
+!/IC4      REAL, POINTER           :: IC4_FC(:)
 !/IS2      REAL,    POINTER        :: IS2PARS(:)
       INTEGER, POINTER        :: MAPSTA(:,:), MAPST2(:,:),            &
                                  MAPFS(:,:), MAPSF(:,:)
@@ -886,7 +903,7 @@
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
                                  DTMAX, DTMIN, DMIN, CTMAX,           &
                                  FICE0, FICEN, FICEL, PFMOVE,         &
-                                 IICEHMIN, IICEHINIT
+                                 IICEHMIN, IICEHINIT, ICE100WIND
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: Polat, Polon
 !/RTD        REAL, POINTER         :: AnglD(:)
@@ -907,7 +924,7 @@
       REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 !/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
-      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
       LOGICAL, POINTER :: FLAGLL
       LOGICAL, POINTER :: FLAGST(:)
 
@@ -948,9 +965,9 @@
 !/ Data aliasses for structure FLDP(S)
 !/
 !/FLD1     INTEGER, POINTER         :: TAIL_ID
-!/FLD1     REAL, POINTER            :: TAIL_LEV
+!/FLD1     REAL, POINTER            :: TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2     INTEGER, POINTER         :: TAIL_ID
-!/FLD2     REAL, POINTER            :: TAIL_LEV
+!/FLD2     REAL, POINTER            :: TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/
 !/ Data aliasses for structure SFLP(S)
 !/
@@ -1380,10 +1397,14 @@
 !/IG1       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7), STAT=ISTAT )
 !/IC2       CHECK_ALLOC_STATUS ( ISTAT )
-!/IC3       ALLOCATE ( GRIDS(IMOD)%IC3PARS(11), STAT=ISTAT )
+!/IC3       ALLOCATE ( GRIDS(IMOD)%IC3PARS(16), STAT=ISTAT )
 !/IC3       CHECK_ALLOC_STATUS ( ISTAT )
-!TODO: rename IC4's IC2PARS as IC4PARS
-!/IC4       ALLOCATE ( GRIDS(IMOD)%IC2PARS(1), STAT=ISTAT )
+
+!/IC4       ALLOCATE ( GRIDS(IMOD)%IC4PARS(1), STAT=ISTAT )
+!/IC4       CHECK_ALLOC_STATUS ( ISTAT )
+!/IC4       ALLOCATE ( GRIDS(IMOD)%IC4_KI(NIC4), STAT=ISTAT )
+!/IC4       CHECK_ALLOC_STATUS ( ISTAT )
+!/IC4       ALLOCATE ( GRIDS(IMOD)%IC4_FC(NIC4), STAT=ISTAT )
 !/IC4       CHECK_ALLOC_STATUS ( ISTAT )
 !/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(18), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
@@ -1791,11 +1812,13 @@
       FFACBERG => GRIDS(IMOD)%FFACBERG
 !/REF1      RREF   => GRIDS(IMOD)%RREF
 !/REF1      REFPARS=> GRIDS(IMOD)%REFPARS
-!/IG1       IGPARS => GRIDS(IMOD)%IGPARS
-!/IC2       IC2PARS => GRIDS(IMOD)%IC2PARS
-!/IC3       IC3PARS => GRIDS(IMOD)%IC3PARS
-!/IC4       IC2PARs => GRIDS(IMOD)%IC2PARS
-!/IS2       IS2PARS => GRIDS(IMOD)%IS2PARS
+!/IG1      IGPARS => GRIDS(IMOD)%IGPARS
+!/IC2      IC2PARS => GRIDS(IMOD)%IC2PARS
+!/IC3      IC3PARS => GRIDS(IMOD)%IC3PARS
+!/IC4      IC4PARS => GRIDS(IMOD)%IC4PARS
+!/IC4      IC4_KI => GRIDS(IMOD)%IC4_KI
+!/IC4      IC4_FC => GRIDS(IMOD)%IC4_FC
+!/IS2      IS2PARS => GRIDS(IMOD)%IS2PARS
       SX     => GRIDS(IMOD)%SX
       SY     => GRIDS(IMOD)%SY
       X0     => GRIDS(IMOD)%X0
@@ -1816,6 +1839,7 @@
       FICEL  => GRIDS(IMOD)%FICEL
       IICEHMIN  => GRIDS(IMOD)%IICEHMIN
       IICEHINIT  => GRIDS(IMOD)%IICEHINIT
+      ICE100WIND  => GRIDS(IMOD)%ICE100WIND
       PFMOVE => GRIDS(IMOD)%PFMOVE
 !
       GINIT  => GRIDS(IMOD)%GINIT
@@ -1826,6 +1850,7 @@
       FLCTH  => GRIDS(IMOD)%FLCTH
       FLCK   => GRIDS(IMOD)%FLCK
       FLSOU  => GRIDS(IMOD)%FLSOU
+      IICEDISP => GRIDS(IMOD)%IICEDISP
 !
       GNAME  => GRIDS(IMOD)%GNAME
       FILEXT => GRIDS(IMOD)%FILEXT
@@ -1987,8 +2012,12 @@
 !
 !/FLD1      TAIL_ID  => MPARS(IMOD)%FLDPS%TAIL_ID
 !/FLD1      TAIL_LEV => MPARS(IMOD)%FLDPS%TAIL_LEV
+!/FLD1      TAIL_TRAN1 => MPARS(IMOD)%FLDPS%TAIL_TRAN1
+!/FLD1      TAIL_TRAN2 => MPARS(IMOD)%FLDPS%TAIL_TRAN2
 !/FLD2      TAIL_ID  => MPARS(IMOD)%FLDPS%TAIL_ID
 !/FLD2      TAIL_LEV => MPARS(IMOD)%FLDPS%TAIL_LEV
+!/FLD2      TAIL_TRAN1 => MPARS(IMOD)%FLDPS%TAIL_TRAN1
+!/FLD2      TAIL_TRAN2 => MPARS(IMOD)%FLDPS%TAIL_TRAN2
 !
 !     Structure SFLPS
 !

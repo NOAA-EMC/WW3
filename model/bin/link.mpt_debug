@@ -93,19 +93,17 @@
 # --------------------------------------------------------------------------- #
 # Add here the correct linker call including switches
 
-# Intel compiler ------------------------------------------------------------
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 
   # linking options
   libs=""
-  opt="-O0 -Zp8 -tpp7 -o $prog"
-  opt="-p -pg -g $opt"
+ opt=" -p -pg -g -O0 -Zp8 -tpp7 -o $prog"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=mpiifort
+    comp="ifort -lmpi"
   else
     comp=ifort
   fi
@@ -149,21 +147,9 @@
     esac
   fi
 
-  opt="$opt $EXTRA_LINK_OPTIONS"
-
 # 3.b Link
 
-  rprfx="-Wl,-rpath,"
-  rpath=
-  for path in $libs
-  do
-    if [ "${path:0:2}" = '-L' ]
-    then
-      rpath="$rpath ${rprfx}${path//-L/}"
-    fi
-  done
-
-  $comp $opt $objects $libs $rpath                  > link.out 2> link.err
+  $comp $opt $objects $libs                         > link.out 2> link.err
   OK="$?"
 
 # --------------------------------------------------------------------------- #

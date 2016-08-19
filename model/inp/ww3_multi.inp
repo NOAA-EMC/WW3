@@ -151,12 +151,16 @@ $
 $
 $  Four additional output types: see ww3_shel.inp for documentation.
 $ 
+$  track output
    19680606 000000      0  19680608 000000
 $
+$  restart files
    19680606 000000      0  19680608 000000
 $
+$  boundary output
    19680606 000000      0  19680608 000000
 $
+$  separated wave field data
    19680606 000000      0  19680608 000000
 $
 $ -------------------------------------------------------------------- $

@@ -98,14 +98,13 @@
 
 !/ ------------------------------------------------------------------- /
 !/
-!Li   SUBROUTINE W3PSMC ( ISP, FACX, FACY, DTG, VQ )
       SUBROUTINE W3PSMC ( ISP, DTG, VQ )
 !/
 !/                  +------------------------------------+
 !/                  | Spherical Multiple-Cell (SMC) grid |
 !/                  | Advection and diffusion sub.       |
 !/                  | First created:   JG Li  8 Nov 2010 |
-!/                  | Last modified:   JG Li 26 Feb 2016 |
+!/                  | Last modified:   JG Li 23 Mar 2016 |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Origination.                JGLi    ( version 1.00 )
@@ -120,6 +119,7 @@
 !/    16 Sep-2013 : Add Arctic part.            JGLi    ( version 2.00 )
 !/     3 Sep-2015 : Gradient, UNO3 and Average. JGLi    ( version 2.10 )
 !/    26 Feb-2016 : Update boundary spectra.    JGLi    ( version 2.20 )
+!/    23 Mar-2016 : Add current option.         JGLi    ( version 2.30 )
 !/
 !  1. Purpose :
 !
@@ -150,9 +150,11 @@
 !       DSSD, DNND    Deep water diffusion coefficients.
 !       ULCFLX  R.A.  Local courant numbers in 'x' (norm. velocities)
 !       VLCFLY  R.A.  Id. in 'y'.
+!       CXTOT   R.A.  Propagation velocities in physical space.
+!       CYTOT   R.A.
 !       DFRR    Real  Relative frequency increment.
-!       DX0     Real  Grid incremenent in meters (longitude, eq.).
-!       DY0     Real  Grid incremenent in meters (latitude).
+!       DX0I    Real  Inverted grid incremenent in meters (longitude, eq.).
+!       DY0I    Real  Inverted grid incremenent in meters (latitude).
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -219,6 +221,7 @@
       USE W3WDATMD, ONLY: TIME
       USE W3ADATMD, ONLY: CG, WN, U10, CX, CY, ATRNX, ATRNY, ITIME
 !
+      USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
                           ISBPI, BBPI0, BBPIN
 !
@@ -242,16 +245,19 @@
       INTEGER                 :: i, j, k, L, M, N, LL, MM, NN, LMN,   &
                                  iuf, juf, ivf, jvf, icl, jcl
 !/S      INTEGER, SAVE           :: IENT = 0
-      REAL                    :: CG0, CGA, CGN, CGX, CGY, FMR, RD1, RD2
+      REAL                    :: CG0, CGA, CGN, CGX, CGY, FMR, RD1,   &
+                                 RD2, CXMIN, CXMAX, CYMIN, CYMAX,     &
+                                 CXC, CYC, DTLDX, DTLDY 
       REAL                    :: DTLOC, CGCOS, CGSIN, FUTRN, FVTRN,   &
-                                 DFRR,  DX0, DY0, CGD, DSSD,          &
+                                 DFRR, DX0I, DY0I, CGD, DSSD,         &
                                  DNND, DCELL, XWIND, TFAC, DSS, DNN
 !/ARC      REAL                    :: PCArea, ARCTH 
       LOGICAL                 :: YFIRST 
 !/
 !/ Automatic work arrays
 !
-      REAL, Dimension(-9:NCel) ::  FCNt, AFCN, BCNt, UCFL, VCFL, CQ, CQA
+      REAL, Dimension(-9:NCel) ::  FCNt, AFCN, BCNt, UCFL, VCFL, CQ,  &
+                                   CQA, CXTOT, CYTOT
       REAL, Dimension(   NUFc) ::  FUMD, FUDIFX, ULCFLX
       REAL, Dimension(   NVFc) ::  FVMD, FVDIFY, VLCFLY
 !/
@@ -272,31 +278,55 @@
 
 !!Li  Maximum group speed for given spectral bin. First bin speed is 
 !!Li  used to avoid zero speed component.
-      CGX    = ABS( CGA * ECOS(ITH) )
-      CGY    = ABS( CGA * ESIN(ITH) )
+!     CGX    = ABS( CGA * ECOS(ITH) )
+!     CGY    = ABS( CGA * ESIN(ITH) )
+      CGX    =  CGA * ECOS(ITH) 
+      CGY    =  CGA * ESIN(ITH) 
+
+!!Li  Add maximum current components to maximum group components.
+      IF ( FLCUR ) THEN
+          CXMIN  = MINVAL ( CX(1:NSEA) )
+          CXMAX  = MAXVAL ( CX(1:NSEA) )
+          CYMIN  = MINVAL ( CY(1:NSEA) )
+          CYMAX  = MAXVAL ( CY(1:NSEA) )
+          IF ( ABS(CGX+CXMIN) .GT. ABS(CGX+CXMAX) ) THEN
+              CGX    = CGX + CXMIN
+            ELSE
+              CGX    = CGX + CXMAX
+            END IF
+          IF ( ABS(CGY+CYMIN) .GT. ABS(CGY+CYMAX) ) THEN
+              CGY    = CGY + CYMIN
+            ELSE
+              CGY    = CGY + CYMAX
+            END IF
+          CXC    = MAX ( ABS(CXMIN) , ABS(CXMAX) )
+          CYC    = MAX ( ABS(CYMIN) , ABS(CYMAX) )
+        ELSE
+          CXC    = 0.
+          CYC    = 0.
+        END IF
 
 !!Li  Base-cell grid lenth at Equator (size-4 on SMC625 grid).
-      DX0    = SX * DERA * RADIUS
-      DY0    = SY * DERA * RADIUS
+      DX0I  = 1.0/(SX * DERA * RADIUS)
+      DY0I  = 1.0/(SY * DERA * RADIUS)
 
 !!Li  Miminum time step determined by Courant number < 0.8
 !!Li  Note, minimum x grid length is half the Equator value.
 !!Li  Minimum time step should not be less than sub w3init requirement,
 !!Li  where IAPPRO array is initialised for propagation parallization.
-      CGN   = 0.9999 * MAX( CGX, CGY, 0.001*CG0 )
-!!      DTLOC = MIN( 0.4*DX0/CGX, 0.8*DY0/CGY, DTCFL*CG0/CGN )
-!!AC  Replacing DTLOC with one below to avoid divide by zero error when 
-!!AC  waves are travelling in one direction only
+      CGN   = 0.9999 * MAX( ABS(CGX), ABS(CGY), CXC, CYC, 0.001*CG0 )
       DTLOC = DTCFL*CG0/CGN 
       NTLOC  = 1 + INT(DTG/DTLOC - 0.001)
       DTLOC  = DTG / REAL(NTLOC)
 
-!!Li  Group speed component common factor, note FACX=DTG/DX0 
+!!Li  Group speed component common factors, FACX=DTG*DX0I 
 !!Li  FACX and FACY are evaluated here directly.  JGLi16Jan2013
 !     CGCOS   = FACX * ECOS(ITH) / REAL(NTLOC)
 !     CGSIN   = FACY * ESIN(ITH) / REAL(NTLOC)
-      CGCOS   = DTLOC * ECOS(ITH) / DX0 
-      CGSIN   = DTLOC * ESIN(ITH) / DY0 
+      CGCOS   = ECOS(ITH) 
+      CGSIN   = ESIN(ITH) 
+      DTLDX   = DTLOC * DX0I 
+      DTLDY   = DTLOC * DY0I 
 !
       YFIRST = MOD(ITIME,2) .EQ. 0
 !
@@ -308,8 +338,8 @@
           DFRR   = XFR - 1.
           CGD    = 0.5 * GRAV / SIG(IK)
           DNN    = ((DTH*CGD)**2)*DTME / 12.
-          DNND   = DNN*DTLOC/(DX0*DX0)
-          DSSD   = DNN*DTLOC/(DY0*DY0)
+          DNND   = DNN*DTLOC*(DX0I*DX0I)
+          DSSD   = DNN*DTLOC*(DY0I*DY0I)
       ELSE
           DSSD = 0.0
           DNND = 0.0
@@ -328,24 +358,44 @@
            CQ(ISEA) = VQ(ISEA)/CG(IK,ISEA) 
 !Li  Resetting NaNQ VQ to zero if any.   JGLi18Mar2013
          IF( .NOT. (CQ(ISEA) .EQ. CQ(ISEA)) )  CQ(ISEA) = 0.0
-!Li
-!/ARC  !Li  Arctic cell spectral component direction needs to be 
-!/ARC  !Li  mapped back to local east referenence system.
-!/ARC       IF( ISEA .LE. NGLO ) THEN
-         UCFL(ISEA) =  CGCOS * CG(IK,ISEA) / CLATS(ISEA)
-         VCFL(ISEA) =  CGSIN * CG(IK,ISEA)
-!Li  Note CGCOS = DTLOC*cos(theta)/DX0, and CGSIN = DTLOC*sin(theta)/DY0
-!/ARC       ELSE
-!/ARC          ARCTH = MOD( DTH*REAL(ITH-1) - ANGARC(ISEA-NGLO)*DERA + TPI, TPI)
-!/ARC          UCFL(ISEA) = DTLOC*COS(ARCTH)*CG(IK,ISEA)/(DX0*CLATS(ISEA))
-!/ARC          VCFL(ISEA) = DTLOC*SIN(ARCTH)*CG(IK,ISEA)/ DY0
-!/ARC       ENDIF
       END DO
+
+!Li  Add current components if any to wave velocity.
+      IF ( FLCUR ) THEN
+         DO ISEA=1, NSEA
+            CXTOT(ISEA) = (CGCOS * CG(IK,ISEA) + CX(ISEA))
+            CYTOT(ISEA) = (CGSIN * CG(IK,ISEA) + CY(ISEA))
+         ENDDO 
+      ELSE
+!Li   No current case use group speed only.
+         DO ISEA=1, NSEA
+            CXTOT(ISEA) =  CGCOS * CG(IK,ISEA) 
+            CYTOT(ISEA) =  CGSIN * CG(IK,ISEA)
+         END DO
+!Li   End of IF( FLCUR ) block.
+      ENDIF
+
+!/ARC  !Li   Arctic cell velocity components need to be rotated 
+!/ARC  !Li   back to local east referenence system for propagation.
+!/ARC         DO ISEA=NGLO+1, NSEA
+!/ARC            ARCTH = ANGARC(ISEA-NGLO)*DERA 
+!/ARC            CXC = CXTOT(ISEA)*COS(ARCTH) + CYTOT(ISEA)*SIN(ARCTH)
+!/ARC            CYC = CYTOT(ISEA)*COS(ARCTH) - CXTOT(ISEA)*SIN(ARCTH)
+!/ARC            CXTOT(ISEA) = CXC 
+!/ARC            CYTOT(ISEA) = CYC 
+!/ARC         END DO
 !/ARC  !Li   Polar cell area factor for V-flux update 
-!/ARC        PCArea = DX0/(MRFct*PI*DY0*FLOAT(IJKCel(4,NSEA)))
+!/ARC        PCArea = DY0I/(MRFct*PI*DX0I*FLOAT(IJKCel(4,NSEA)))
 !/ARC  !Li   V-component is reset to zero for Polar cell as direction
 !/ARC  !Li   is undefined there.  
-!/ARC          VCFL(NSEA) = 0.0
+!/ARC         CYTOT(NSEA) = 0.0
+!/ARC
+
+!Li     Convert velocity components into CFL factors.
+         DO ISEA=1, NSEA
+            UCFL(ISEA) = DTLDX*CXTOT(ISEA)/CLATS(ISEA)
+            VCFL(ISEA) = DTLDY*CYTOT(ISEA) 
+         ENDDO 
 
 !Li  Initialise boundary cell CQ and Velocity values.
            CQ(-9:0)=0.0
@@ -593,14 +643,15 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3KRTN ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
-                          DDDX, DDDY, ALFLMT, VA )
+                          DDDX, DDDY, ALFLMT, CX, CY, DCXDX, DCXDY,   &
+                          DCYDX, DCYDY, DCDX, DCDY, VA )
 !/
 !/                  +------------------------------------+
 !/                  | Spherical Multiple-Cell (SMC) grid |
 !/                  | Refraction and great-cirle turning |
 !/                  |           Jian-Guo Li              |
 !/                  | First created:     8 Nov 2010      |
-!/                  | Last modified:    28 Jul 2011      |
+!/                  | Last modified:    23 Mar 2016      |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Origination.                        ( version 1.00 )
@@ -609,6 +660,7 @@
 !/    21-Jul-2011 : Old refraction formula + limiter.   ( version 1.30 )
 !/    26-Jul-2011 : Tidy up refraction schemes.         ( version 1.40 )
 !/    28-Jul-2011 : Finalise with old refraction.       ( version 1.50 )
+!/    23-Mar-2016 : Add current option in refraction.   ( version 2.30 )
 !/
 !/
 !  1. Purpose :
@@ -637,6 +689,7 @@
 !       DDDx    Real   I   Depth gradients.
 !       CX/Y    Real   I   Current components.
 !       DCxDx   Real   I   Current gradients.
+!       DCDx    Real   I   Phase speed gradients.
 !       VA      R.A.  I/O  Spectrum.
 !     ----------------------------------------------------------------
 !
@@ -699,8 +752,9 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
-                          FLCTH, FLCK, CTMAX, DTH
+                          EC2, ESC, ES2, FLCTH, FLCK, CTMAX, DTH
       USE W3ADATMD, ONLY: ITIME
+      USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST
 !/
       IMPLICIT NONE
@@ -708,11 +762,12 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      INTEGER, INTENT(IN)     :: ISEA
-      REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
-                                 WN(0:NK+1), DEPTH, DDDX, DDDY,       &
-                                 ALFLMT(NTH)
-      REAL, INTENT(INOUT)     :: VA(NSPEC)
+      INTEGER, INTENT(IN) :: ISEA
+      REAL, INTENT(IN)    :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
+                             WN(0:NK+1), DEPTH, DDDX, DDDY,       &
+                             ALFLMT(NTH), CX, CY, DCXDX, DCXDY,   & 
+                             DCYDX, DCYDY, DCDX(0:NK+1), DCDY(0:NK+1) 
+      REAL, INTENT(INOUT) :: VA(NSPEC)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -773,14 +828,24 @@
             FRG(IK) = FGC * CG(IK)
           END DO
 !
+!Li   Current induced refraction stored in FKC.    JGLi30Mar2016
+          IF ( FLCUR ) THEN
+             DO ITH=1, NTH
+                FKC(ITH) = FACTH*( DCYDX*ES2(ITH) - DCXDY*EC2(ITH) +  & 
+                                  (DCXDX - DCYDY)*ESC(ITH) )
+             END DO
+          ELSE
+                FKC(:)=0.0
+          END IF
+!
 ! 3.b Depth refraction and great-circle turning.
 !
           DO ITH=1, NTH
              DDNorm(ITH)=ESIN(ITH)*DDDX-ECOS(ITH)*DDDY
              DO IK=1, NK
                 ISP = (IK-1)*NTH + ITH
-!Li   Apply depth gradient limited refraction and add GCT term
-                VCFLT(ISP)=FRG(IK)*ECOS(ITH) +                     & 
+!Li   Apply depth gradient limited refraction, current and GCT term
+                VCFLT(ISP)=FRG(IK)*ECOS(ITH) + FKC(ITH) +          & 
                 SIGN( MIN(ABS(FRK(IK)*DDNorm(ITH)), ALFLMT(ITH)),  &
 !Li   For new refraction scheme using Cg.  JGLi26Jul2011
 !                             FRK(IK)*DDNorm(ITH) )
@@ -791,15 +856,20 @@
 
       END IF
 !
-! 4.  Wavenumber shift velocities due to refraction ------------------ *
+! 4.  Wavenumber shift velocities due to current refraction ---------- *
 !
       IF ( FLCK ) THEN
 !
 ! 4.a Directionally dependent part
 !
           DO ITH=1, NTH
-            FKC(ITH) = ( ECOS(ITH)*DDDX + ESIN(ITH)*DDDY )
+!Li   Depth induced refraction is suspended as it is absorbed in
+!Li   the fixed frequency bin used for wave spectrum.  JGLi30Mar2016
+!           FKC(ITH) = ( ECOS(ITH)*DDDX + ESIN(ITH)*DDDY )
+            FKC(ITH) = -DCXDX*EC2(ITH) -DCYDY*ES2(ITH)               &
+                       -(DCXDY + DCYDX)*ESC(ITH)
             END DO
+            FKD = CX*DDDX + CY*DDDY
 !
 ! 4.b Band widths
 !
@@ -823,11 +893,15 @@
 !Li   For new refraction scheme using Cg.  JGLi3Jun2011
 !           FKS   = - FACK*WN(IK)*SIG(IK)/SNH2K(IK)
 !Li   Old refraction formulation using phase speed.  JGLi8Jun2011
-            FKS   = - FACK*WN(IK)*SIGSNH(IK)
+!           FKS   = - FACK*WN(IK)*SIGSNH(IK)
+!Li   Current induced k-shift.   JGLi30Mar2016
+            FKS = MAX( 0.0, CG(IK)*WN(IK)-0.5*SIG(IK) )*FKD /    &
+                     ( DEPTH30*CG(IK) )
             DO ITH=1, NTH
-              CFLK(ITH,IK) = FKS*FKC(ITH)
+              CFLK(ITH,IK) = FACK*( FKS + FKC(ITH)*WN(IK) )
             END DO
           END DO
+!Li   No CFL limiter is required here as it is applied in SMCkUNO2.
 !
         END IF
 !
@@ -2193,6 +2267,109 @@
 
        RETURN
        END SUBROUTINE SMCDHXY 
+
+
+! Subroutine that calculates current velocity gradient for refraction.
+! For consistency with the lat-lon grid, full grid DCXDXY, DCYDXY are
+! assigned here.  They are rotated to map-east system in the Arctic part.
+!                 JGLi23Mar2016
+!
+       SUBROUTINE SMCDCXY
+         USE CONSTANTS
+         USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel 
+!/ARC         USE W3GDATMD, ONLY: NGLO, ANGARC
+         USE W3ADATMD, ONLY: CX, CY, DCXDX, DCXDY, DCYDX, DCYDY 
+         USE W3ODATMD, ONLY: NDSE, NDST
+
+         IMPLICIT NONE
+
+         INTEGER :: I, J, K, L, M, N
+         REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+         REAL, Dimension(NSEA) :: GrHx, GrHy
+         REAL, Dimension(-9:NSEA) :: CXCY
+
+!!   Assign current CX speed to CXCY and set negative cells.
+       CXCY(-9:0) = 0.0
+       CXCY(1:NSEA)= CX(1:NSEA) 
+
+!!   Initialize full grid gradient arrays
+       DCXDX = 0.0
+       DCXDY = 0.0
+
+!!   Calculate sea point water depth gradient
+       CALL SMCGradn(CXCY, GrHx, GrHy)
+
+!!   Apply limiter to CX-gradient and copy to full grid.
+       DO n=1,NSEA
+
+!  A limiter of gradient <= 0.1 is applied.
+           IF( ABS( GrHx(n) ) .GT.  0.1) GrHx(n)=SIGN( 0.1, GrHx(n) )
+           IF( ABS( GrHy(n) ) .GT.  0.1) GrHy(n)=SIGN( 0.1, GrHy(n) )
+
+!/ARC  !Li  Current gradient in the Arctic part has to be rotated into 
+!/ARC  !Li  the map-east system for calculation of refraction. 
+!/ARC       IF( n .GT. NGLO ) THEN
+!/ARC          CNST0 = ANGARC(n - NGLO)*DERA 
+!/ARC          CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
+!/ARC          CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
+!/ARC          GrHx(n) = CNST1
+!/ARC          GrHy(n) = CNST2
+!/ARC       ENDIF
+
+!! Asign CX gradients to full grid variable DCXDX/Y
+           i= IJKCel(1,n)/MRFct + 1
+           j= IJKCel(2,n)/MRFct + 1
+           k= MAX(1, IJKCel(3,n)/MRFct)
+           m= MAX(1, IJKCel(4,n)/MRFct)
+           DCXDX(j:j+m-1,i:i+k-1)  = GrHx(n)
+           DCXDY(j:j+m-1,i:i+k-1)  = GrHy(n)
+
+       END DO
+
+!!   Assign current CY speed to CXCY and set negative cells.
+       CXCY(-9:0) = 0.0
+       CXCY(1:NSEA)= CY(1:NSEA) 
+
+!!   Initialize full grid gradient arrays
+       DCYDX = 0.0
+       DCYDY = 0.0
+
+!!   Calculate sea point water depth gradient
+       CALL SMCGradn(CXCY, GrHx, GrHy)
+
+!!   Apply limiter to CX-gradient and copy to full grid.
+       DO n=1,NSEA
+
+!  A limiter of gradient <= 0.1 is applied.
+           IF( ABS( GrHx(n) ) .GT.  0.1) GrHx(n)=SIGN( 0.1, GrHx(n) )
+           IF( ABS( GrHy(n) ) .GT.  0.1) GrHy(n)=SIGN( 0.1, GrHy(n) )
+
+!/ARC  !Li  Current gradient in the Arctic part has to be rotated into 
+!/ARC  !Li  the map-east system for calculation of refraction. 
+!/ARC       IF( n .GT. NGLO ) THEN
+!/ARC          CNST0 = ANGARC(n - NGLO)*DERA 
+!/ARC          CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
+!/ARC          CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
+!/ARC          GrHx(n) = CNST1
+!/ARC          GrHy(n) = CNST2
+!/ARC       ENDIF
+
+!! Asign CX gradients to full grid variable DCXDX/Y
+           i= IJKCel(1,n)/MRFct + 1
+           j= IJKCel(2,n)/MRFct + 1
+           k= MAX(1, IJKCel(3,n)/MRFct)
+           m= MAX(1, IJKCel(4,n)/MRFct)
+           DCYDX(j:j+m-1,i:i+k-1)  = GrHx(n)
+           DCYDY(j:j+m-1,i:i+k-1)  = GrHy(n)
+
+       END DO
+
+!/T 999  PRINT*, ' Sub SMCDCXY ended.'
+
+       RETURN
+       END SUBROUTINE SMCDCXY 
+
+
 !/
 !/ ------------------------------------------------------------------- /
 !/ Two modified subs for SMC grid.   JGLi 15Mar2011

@@ -1,0 +1,31 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D parameterized ice test    '
+$
+   1.25 0.08  3  24  0.
+$
+   F T F F F T
+  60. 60. 60. 60.
+$
+ &SIC3 IC3CHENG=.TRUE., USECGICE =  .TRUE.,
+       IC3HICE=0.4,IC3VISC=1.0, IC3DENS=917.0, IC3ELAS=1.0e+3 /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   156  3
+    1.0E3   1.0E3  1.
+   -1.0E3  -1.0E3  1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+ -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC1/depth1d.flat'
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ First grid
+$
+   2  2  F
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

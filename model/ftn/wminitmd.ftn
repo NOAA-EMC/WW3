@@ -1147,7 +1147,7 @@
 !
               FLGRD(:,:,:)=.FALSE. ! Initialize FLGRD 
               CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
-                                 FLG2D, NMPSCR, IMPROC, IERR )
+                                 FLG2D, IMPROC, NMPSCR, IERR )
               FLGRD(:,:,1)=FLG2D
               FLGD(:,1)   =FLG1D
 !
@@ -1259,7 +1259,7 @@
 ! 5.i Type 7: coupling
 !
 !/COU              CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
-!/COU                                 FLG2D, NMPSCR, IMPROC, IERR )
+!/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,1)=FLG2D
 !/COU              FLG2(:,1)   =FLG1D
 !
@@ -1388,7 +1388,7 @@
 ! 5.l Type 1: fields of mean wave parameters
 !
                 CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
-                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
+                                 FLG1D, FLG2D, IMPROC, NMPSCR, IERR )
                 FLGD(:,I)    = FLG1D
                 FLGRD(:,:,I) = FLG2D
 !
@@ -1496,7 +1496,7 @@
 ! 5.p Type 7: coupling fields
 !
                 CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR,    &
-                                 FLG1D, FLG2D, NMPSCR, IMPROC, IERR )
+                                 FLG1D, FLG2D, IMPROC, NMPSCR, IERR )
                 FLG2(:,I)    = FLG1D
                 FLGR2(:,:,I) = FLG2D
 !
@@ -4066,6 +4066,7 @@
         READ(output_date(I)%partition%start, *)   ODAT(26,I), ODAT(27,I)
         READ(output_date(I)%partition%stride, *)  ODAT(28,I)
         READ(output_date(I)%partition%stop, *)    ODAT(29,I), ODAT(30,I)
+!/COU! NOT YET IMPLEMENTED
 !/COU        READ(output_date(I)%coupling%start, *)   ODAT(31,I), ODAT(32,I)
 !/COU        READ(output_date(I)%coupling%stride, *)  ODAT(33,I)
 !/COU        READ(output_date(I)%coupling%stop, *)    ODAT(34,I), ODAT(35,I)
@@ -4125,7 +4126,7 @@
                 FLGRD(:,:,I)=.FALSE. ! Initialize FLGRD
                 FLDLIST = output_type(I)%field%list
                 CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDLIST, FLG1D,       &
-                                   FLG2D, NMPSCR, IMPROC, IERR )
+                                   FLG2D, IMPROC, NMPSCR, IERR )
                 FLGRD(:,:,I)=FLG2D
                 FLGD(:,I)   =FLG1D
   !
@@ -4260,6 +4261,8 @@
                         WRITE (MDSS,960) 'output', 'FORMATTED'
                       END IF
                   END IF
+
+!/COU! NOT YET IMPLEMENTED
 !
 !/COU              ELSE IF ( J .EQ. 7 ) THEN
 !
@@ -4267,7 +4270,7 @@
 !
 !/COU              FLDLIST = output_type(I)%coupling%list
 !/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDLIST, FLG1D,       &
-!/COU                                 FLG2D, NMPSCR, IMPROC, IERR )
+!/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,I)=FLG2D
 !/COU              FLG2(:,I)   =FLG1D
 !
@@ -5264,7 +5267,7 @@
           OUTPTS(0)%TONEXT(:,2) = TOUT
 !
           DTTST  = DSEC21 ( TOUT , TLST )
-          IF ( DTTST .LT. 0. ) THEN
+          IF (( DTTST .LT. 0. ) .OR. ( ODAT(8,0) .EQ. 0 )) THEN
               UNIPTS = .FALSE.
             ELSE
               CALL WMIOPP ( OT2(0)%NPTS, OT2(0)%X, OT2(0)%Y,          &

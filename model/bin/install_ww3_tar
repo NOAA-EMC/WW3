@@ -1250,7 +1250,7 @@
                 nr_new=`expr $nr_new + 1`
                 echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
               fi
-              cp ../../../../svn/regtests/$dir/$ndir/$sdir/$file .
+              cp ../../../../${src_dir}/regtests/$dir/$ndir/$sdir/$file .
               tmp_files=$all_files
               all_files=`echo -e $tmp_files | sed -e "s/$file//"`
             done

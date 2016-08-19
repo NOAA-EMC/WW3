@@ -9,12 +9,16 @@ using the {\code TIDE} switch which activates the detection of the needed
 information in current.ww3 and level.ww3 files. The tidal analysis can be
 performed from NetCDF current or water level files, using the {\file
   ww3\_prnc} preprocessing program. In that case the analysis method uses the
-flexible tide analysis package by \cite{art:For09}.  In the present version,
+flexible tide analysis package by \cite{art:For09}. The precomputed tidal consituents 
+can be used at run time by {\file ww3\_shel}.
+
+However, that method may not be very efficient due to the large memory 
+required to store a large number of tidal consituents because, like other 
+forcing parameters, they are not decomposed across processors: each processor stores the full 
+spatial grid of forcing parameters. To avoid this,  
 the tidal constituents can be used to generated time series with the tidal
-prediction program {\file ww3\_prtide}, or to compute the current or level
-values at the current time step in {\file ww3\_shel}. That second possibility,
-however, require a large amount of memory and is not very practical for large
-grids.
+prediction program {\file ww3\_prtide}, which produces the usual {\file current.ww3} or 
+{\file level.ww3} files.
 
 The choice of tidal constituents for the analysis and prediction are specified
 in the input files for {\file ww3\_prnc} and {\file ww3\_prtide}. Two
@@ -28,4 +32,4 @@ tidal constituents that is performed: unrealistically large values of the
 amplitudes for some constituents can be defined in {\file ww3\_prtide.inp}.
 For model grid points where these are exceeded, all components are set to
 zero, except for UNST grids, in which the neighbors are searched to provide a
-reasonable value.
+reasonable value and avoid strong gradients.

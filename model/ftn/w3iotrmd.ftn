@@ -173,7 +173,7 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, NSEA, NSEAL, NX, NY,        &
                           FLAGLL, ICLOSE, XGRD, YGRD, GSU,            &
                           DPDX, DPDY, DQDX, DQDY, MAPSTA, MAPST2,     &
-                          MAPFS, TH, DTH, SIG, DSIP, FILEXT
+                          MAPFS, TH, DTH, SIG, DSIP, XFR, FILEXT
       USE W3GSRUMD, ONLY: W3GFCL
 !/T      USE W3GSRUMD, ONLY: W3GSUP      
       USE W3GDATMD, ONLY: XYB, MAXX, MAXY, GTYPE, UNGTYPE
@@ -183,10 +183,11 @@
       USE W3ODATMD, ONLY: NDST, NDSE, IAPROC, NAPROC, NAPTRK, NAPERR, &
                           IPASS => IPASS3, ATOLAST => TOLAST,         &
                           ADTOUT => DTOUT, O3INIT, STOP, MASK1,       &
-                          MASK2, FNMPRE
+                          MASK2, TRCKID, FNMPRE
 !/MPI      USE W3ODATMD, ONLY: IT0TRK, NRQTR, IRQTR
 !/
       USE W3TIMEMD
+      USE w3SERVMD, ONLY : STRSPLIT
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -218,8 +219,8 @@
                                  DTOUT, XX(4), YY(4)
       REAL, SAVE              :: RDCHCK = 0.05, RTCHCK = 0.05
       LOGICAL                 :: FORMI, FLAG1, FLAG2, INGRID
-      CHARACTER(LEN=3)        :: TSTSTR
-      CHARACTER(LEN=34)       :: IDTST
+      CHARACTER               :: TRCKT*32, LINE*1024, TSTSTR*3, IDTST*34
+      CHARACTER(LEN=100)      :: LIST(5)
 !/T1      CHARACTER(LEN=17), SAVE :: TSTLOC = '                 '
 !/T2      CHARACTER(LEN=1)        :: MAPSTR(NX)
 !
@@ -304,7 +305,8 @@
 !/T                                'UNFORMATTED'
               OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
                     FORM='UNFORMATTED',ERR=810,IOSTAT=IERR)
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK, NTH
+              WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
+                                                NTH, XFR
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
                     (SIG(IK)*TPIINV,IK=1,NK),                          &
                     (DSIP(IK)*TPIINV,IK=1,NK)
@@ -315,6 +317,7 @@
 !/T          WRITE (NDST,9015)
 !
           MASK2  = .FALSE.
+          TRCKID = ''
 !
         END IF
 !
@@ -357,9 +360,16 @@
       DO
 !
         IF ( FORMI ) THEN
-            READ (NDSTI,*,ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT
+            READ (NDSTI,'(A)',ERR=801,END=390,IOSTAT=IERR) LINE
+            LIST(:)=''
+            CALL STRSPLIT(LINE,LIST)
+            READ(LIST(1),'(I8)') TTIME(1)
+            READ(LIST(2),'(I6)') TTIME(2)
+            READ(LIST(3),*) XT
+            READ(LIST(4),*) YT
+            IF(SIZE(LIST).GE.5) TRCKT=LIST(5)
           ELSE
-            READ (NDSTI , ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT
+            READ (NDSTI, ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT, TRCKT
           END IF
 !/T        NREAD  = NREAD + 1
 !
@@ -433,12 +443,13 @@
 !
           IX     = IXX(J)
           IY     = IYY(J)
-          IF(GTYPE .EQ. UNGTYPE) THEN	  
+          IF(GTYPE .EQ. UNGTYPE) THEN
             X = XYB(IX,1)
             Y = XYB(IX,2)
-            ENDIF 	  
+            ENDIF
           MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
           MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
+          TRCKID(IY,IX) = TRCKT
 !
 !/T1          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
 !/T1              IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
@@ -470,7 +481,6 @@
 ! 3.g End of input file escape location
 !
   390 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004) 'ww3'
 !/T          WRITE (NDST,9033)
       STOP   = .TRUE.
 !
@@ -507,12 +517,12 @@
           IF ( MASK1(IY,IX) ) THEN
 !
             IF(GTYPE .EQ. UNGTYPE) THEN
-	      X = XYB(IX,1)
-              Y = XYB(IX,2)	  
-	      ELSE
-              X = XGRD(IY,IX)
-              Y = YGRD(IY,IX)
-              ENDIF 	      
+                X = XYB(IX,1)
+                Y = XYB(IX,2)
+              ELSE
+                X = XGRD(IY,IX)
+                Y = YGRD(IY,IX)
+              ENDIF
 !/MPI              IT     = IT + 1
 !/T              NLOCO  = NLOCO + 1
 !
@@ -603,7 +613,7 @@
 ! 4.e Sea point, write general data + spectrum
 !
                       WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
-                         TIME, X, Y, TSTSTR
+                         TIME, X, Y, TSTSTR, TRCKID(IY,IX)
                       WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
                          DW(ISEA), CX(ISEA), CY(ISEA), WX, WY,        &
                          UST(ISEA), AS(ISEA), SPEC
@@ -612,7 +622,7 @@
 !
                     ELSE
                       WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
-                         TIME, X, Y, TSTSTR
+                         TIME, X, Y, TSTSTR, TRCKID(IY,IX)
 !
 ! ..... Sea and non-sea points processed
 !
@@ -690,9 +700,6 @@
                '       EXPECTED : ',A/                                &
                '       FOUND    : ',A/                                &
                '     TRACK OUTPUT DISABLED '/)
- 1004 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
-               '     END OF FILE track_i.',A/)
-!
  1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3IOTR : '/             &
                '     ERROR IN OPENING OUTPUT FILE ',                  &
                '(FILE track_o.',A,' IOSTAT =',I6,')'/                 &

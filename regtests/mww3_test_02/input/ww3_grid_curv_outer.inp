@@ -7,6 +7,7 @@ $
    F T T F F F
    900.  900.  900.   15.
 $
+  &OUTS E3D=1, TH1MF=1, STH1MF=1, TH2MF=1, STH2MF=1 /
   &PRO2 DTIME = 0. /
 $ &PRO2 DTIME = 21600. /
   &PRO3 WDTHCG = 0., WDTHTH = 0. /

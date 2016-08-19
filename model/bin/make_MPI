@@ -73,7 +73,7 @@
   then
     ww3_NetCDF=
   else
-    ww3_NetCDF="ww3_prnc ww3_ounf ww3_ounp ww3_bounc"
+    ww3_NetCDF="ww3_prnc ww3_ounf ww3_ounp ww3_bounc ww3_trnc"
   fi
 
 # --------------------------------------------------------------------------- #
@@ -110,7 +110,6 @@
 # --------------------------------------------------------------------------- #
 
   cp switch.hold switch
-# cp switch.shrd switch
 
 # --------------------------------------------------------------------------- #
 # 5. Clean up                                                                 #

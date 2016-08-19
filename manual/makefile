@@ -215,6 +215,7 @@ app/nest.tex \
 app/mpi.tex \
 app/scrip.tex \
 app/to_do.tex \
+app/oasis.tex \
 test.tex
 
 # TeX files generated from $(INPDIR) files

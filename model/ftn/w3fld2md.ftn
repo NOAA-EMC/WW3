@@ -11,6 +11,7 @@
 !/    01-Jul-2013 : Origination                         (version 3.14)
 !/    16-May-2014 : Finalizing                          (version 4.18)
 !/    19-Mar-2015 : Extending for non-10 m winds        (version 5.12)
+!/    27-Jul-2016 : Added Charnock output (J.Meixner)   (version 5.12)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -58,8 +59,8 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLD2( ASPC, FPI, WNDX, WNDY, ZWND, &
-                         DEPTH, RIB, UST, USTD, Z0, TAUNUX, TAUNUY)
+      SUBROUTINE W3FLD2(  ASPC,FPI, WNDX,WNDY, ZWND,                 &
+                DEPTH, RIB, UST, USTD, Z0, TAUNUX,TAUNUY,CHARN)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
@@ -95,6 +96,7 @@
 !       UST     Real   O   Friction velocity.
 !       USTD    Real   O   Direction of friction velocity.
 !       Z0      Real   O   Surface roughness length
+!       CHARN   Real   O,optional   Charnock parameter 
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -106,6 +108,7 @@
 !      SIG2WN     Subr. W3FLD1MD  Depth-dependent dispersion relation
 !      MFLUX      Subr. W3FLD1MD  MO stability correction
 !      WND2Z0M    Subr. W3FLD1MD  Bulk Z0 from wind
+!      CALC_FPI   Subr. W3FLD1MD  Calculate peak frequency 
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -135,10 +138,12 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: DWAT, DAIR, GRAV, TPI, PI, KAPPA
-      USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
-      USE W3ODATMD, ONLY: NDSE
-      USE W3SERVMD, ONLY: EXTCDE
-      USE W3FLD1MD, ONLY: APPENDTAIL,sig2wn, wnd2z0m, infld,tail_choice,tail_level
+      USE W3GDATMD,  ONLY: NK, NTH, NSPEC, SIG, DTH, XFR, TH
+      USE W3ODATMD,  ONLY: NDSE
+      USE W3SERVMD,  ONLY: EXTCDE
+      USE W3FLD1MD,  ONLY: APPENDTAIL,sig2wn,wnd2z0m,infld,tail_choice,&
+                           tail_level, tail_transition_ratio1,         &
+                           tail_transition_ratio2
 !/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
@@ -146,9 +151,10 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: ASPC(NSPEC), FPI, WNDX, WNDY, &
-                                 ZWND, DEPTH, RIB
-      REAL, INTENT(OUT)       :: UST, USTD, Z0
+      REAL, INTENT(IN)        :: ASPC(NSPEC), WNDX, WNDY, &
+                                 ZWND, DEPTH, RIB, FPI 
+      REAL, INTENT(OUT)       :: UST, USTD, Z0 
+      REAL, INTENT(OUT),OPTIONAL :: CHARN
       REAL, INTENT(INOUT)     :: TAUNUX, TAUNUY
 !/
 !/ ------------------------------------------------------------------- /
@@ -167,7 +173,7 @@
       REAL, ALLOCATABLE, DIMENSION(:,:) :: SPC2
       !-Stress Calculation
       INTEGER :: K, T, ITS
-      REAL :: TAUXW, TAUYW, TAUXV, TAUYV, TAUX, TAUY
+      REAL :: TAUXW, TAUYW, TAUX, TAUY
       REAL :: USTRA, USTRB, USTSM
       REAL :: A1, SCIN
       REAL :: CD, CDF, CDS
@@ -213,9 +219,7 @@
       IF ( FIRST ) THEN
           CALL INFLD
           FIRST  = .FALSE.
-          print*,'Tail choice: ',Tail_choice
-          print*,'Tail level:  ',Tail_level
-       END IF
+      END IF
       !----------------------------|
       ! Calculate Reference height |
       !  wind magnitude            |
@@ -320,9 +324,9 @@
 ! 1c. Calculate transitions for new (constant saturation ) tail ------ *
 !
 !-----Wavenumber for beginning of (spectrum level) transition to tail- *
-      call sig2wn (FPI*TPI*1.25,depth,ktaila )
+      call sig2wn (FPI*TPI*tail_transition_ratio1,depth,ktaila )
 !-----Wavenumber for end of (spectrum level) transition to tail------- *
-      call sig2wn ( FPI*TPI*3.0,depth,ktailb )
+      call sig2wn (FPI*TPI*tail_transition_ratio2,depth,ktailb )
 !-----Wavenumber for end of (spectrum direction) transition to tail--- *
       KTAILC= KTAILB * 2.0
       KA1 = 2     ! Do not modify 1st wavenumber bin
@@ -435,11 +439,11 @@
                ! smooth drag adjustment based on full drag
                CDS = CDS / 3.0 * ( 1.0 + 2.0 * CDS / ( CDS + CDF ) )
                !-----Solve for viscous stress from smooth Cd
-               TAUXV = DAIR * CDS * wnd_10_mag**2.0 * COS( wnd_10_dir )
-               TAUYV = DAIR * CDS * wnd_10_mag**2.0 * SIN( wnd_10_dir )
+               TAUNUX = DAIR * CDS * wnd_10_mag**2.0 * COS( wnd_10_dir )
+               TAUNUY = DAIR * CDS * wnd_10_mag**2.0 * SIN( wnd_10_dir )
                !-----Sum drag components
-               TAUX = TAUXV + TAUXW
-               TAUY = TAUYV + TAUYW
+               TAUX = TAUNUX + TAUXW
+               TAUY = TAUNUY + TAUYW
                !-----Calculate USTAR
                USTRB = SQRT( SQRT( TAUY**2.0 + TAUX**2.0) / DAIR )
                !-----Calculate stress direction
@@ -543,6 +547,7 @@
       UST = USTRB
       USTD = ATAN2(TAUY, TAUX)
       CD = UST**2 / UREF**2
+      CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
       IF (.not.((CD .LT. 0.01).AND.(CD .GT. 0.0005)).or. .not.(NO_ERR)) THEN
          !Fail safe to bulk
          print*,'Attn: W3FLD2 failed, using bulk stress'
@@ -563,23 +568,97 @@
       END SUBROUTINE W3FLD2
 
       SUBROUTINE WND2SAT(WND10,SAT)
-      !Author: Brandon Reichl - GSO/URI
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           B. G. Reichl            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Aug-2016 |
+!/                  +-----------------------------------+
+!/
+!/    15-Jan-2016 : Origination.                        ( version 5.12 )
+!/    05-Aug-2016 : Updated for 2016 HWRF CD/U10 curve  ( J. Meixner   )
+!/
+!  1. Purpose :
+!
+!     Gives level of saturation spectrum to produce 
+!         equivalent Cd as in wnd2z0m (for neutral 10m wind)
+!         tuned for method of Donelan et al. 2012
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
       !Input: WND10 - 10 m neutral wind [m/s]
       !Output: SAT  - Level 1-d saturation spectrum in tail [non-dim]
-      !Purpose: Gives level of saturation spectrum to produce
-      !         equivalent Cd as in wnd2z0m (for neutral 10m wind)
-      !         tuned for method of Donelan et al. 2012
+!     ----------------------------------------------------------------
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3FLD2    Subr. W3FLD2MD Corresponding source term.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!       None.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/S      USE W3SERVMD, ONLY: STRACE
+!
         IMPLICIT NONE
         REAL, INTENT(IN) :: WND10
         REAL, INTENT(OUT) :: SAT
-        SAT =0.000000000000349* WND10**6 +&
-             -0.000000000250547* WND10**5 +&
-             0.000000039543565* WND10**4 +&
-             -0.000002229206185* WND10**3 +&
-             0.000034922624204* WND10**2 +&
-             0.000339117617027* WND10**1 +&
-             0.003521314236550
+!/S      INTEGER, SAVE           :: IENT = 0
+!
+!/S      CALL STRACE (IENT, 'WND2SAT')
+!
+! ST2, previous HWRF relationship: 
+!        SAT =0.000000000000349* WND10**6 +&
+!             -0.000000000250547* WND10**5 +&
+!             0.000000039543565* WND10**4 +&
+!             -0.000002229206185* WND10**3 +&
+!             0.000034922624204* WND10**2 +&
+!             0.000339117617027* WND10**1 +&
+!             0.003521314236550
+!     SAT values based on 
+!     HWRF 2016 CD curve, created with  fetch limited cases ST4 physics
+        IF (WND10<20) THEN 
+          SAT = -0.022919753482426e-3* WND10**2 &
+                +0.960758623686446e-3* WND10    & 
+                -0.084461041915030e-3
+        ELSEIF (WND10<45) THEN 
+          SAT = -0.000000006585745* WND10**4 &
+                +0.000001058147954* WND10**3 &
+                -0.000065829151883* WND10**2 &
+                +0.001587028483595* WND10    &
+                -0.002857112191889
+        ELSE 
+          SAT = -0.000178498197241* WND10    &
+                +0.012706067280674
+        ENDIF 
         SAT = min(max(SAT,0.002),0.014)
+
       END SUBROUTINE WND2SAT
 !/ ------------------------------------------------------------------- /
 !/

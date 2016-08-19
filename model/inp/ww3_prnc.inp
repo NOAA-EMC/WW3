@@ -31,7 +31,8 @@ $
   'WND' 'LL' T T
 $
 $ Name of spatial dimensions------------------------------------------ $
-$ NB: time dimension is expected to be called 'time'
+$ NB: time dimension is expected to be called 'time' and must respect 
+$     Julian or Gregorian calendar with leap day.
 $
  longitude latitude
 $

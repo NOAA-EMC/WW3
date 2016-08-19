@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :            Oct-2013 |
+!/                  | Last update :            Apr-2016 |
 !/                  +-----------------------------------+
 !/
 !/    29-May-2009 : Origination (w3srcxmd.ftn)          ( version 3.14 )
@@ -210,7 +210,7 @@
 !/                  | WAVEWATCH III      NOAA/NCEP/NOPP |
 !/                  |           S. Zieger               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :            Oct-2013 |
+!/                  | Last update :            Apr-2016 |
 !/                  +-----------------------------------+
 !/
 !/    20-Dec-2010 : Origination.                        ( version 4.04 )
@@ -404,7 +404,7 @@
 !     --- compute negative component of the wave supported stresses
 !         from negative part of the wind input  ---------------------- /
         SDENSIG = RESHAPE(S*SIG2/CG2,(/ NTH,NK /))
-        CALL TAU_WAVE_ATMOS(S, CINV, SIG, DSII, TAUNWX, TAUNWY )
+        CALL TAU_WAVE_ATMOS(SDENSIG, CINV, SIG, DSII, TAUNWX, TAUNWY )
       END IF
 !
 !/

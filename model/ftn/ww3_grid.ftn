@@ -264,10 +264,11 @@
 !     NTH directions, equally spaced over a full circle. the first
 !     direction corresponds to the direction 0, etc.
 !
-!!Li   
+! (Begin SMC description)
+!
 !      Spherical Multiple-Cell (SMC) grid 
 !     -----------------------------------
-!!Li
+!
 !     SMC grid is a multi-resolution grid using cells of multiple times 
 !     of each other.  It is similar to the lat-lon grid using rectangular 
 !     cells but only cells at sea points are retained.  All land points 
@@ -324,9 +325,15 @@
 !     Multiple-Cell Grid.  J. Comput. Phys., 231, 8262-8277.  online at
 !     http://dx.doi.org/10.1016/j.jcp.2012.08.007
 !
-!Li
+! (End SMC description)
 !
+!     ICEWIND is the scale factor for reduction of wind input by ice 
+!     concentration. Value specified corresponds to the fractional 
+!     input for 100% ice concentration. Default is 1.0, meaning that
+!     100% ice concentration result in zero wind input. 
+!     Sin_in_ice=Sin_in_open_water * (1-ICE*ICEWIND)
 
+!     -----------------------------------------------------------------*
 !  8. Structure :
 !
 !     ----------------------------------------------------------------
@@ -615,11 +622,13 @@
 
 !/IC3  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                             IC2SMOOTH, IC2VISC, IC2TURBS,        &
-!/IC3                             IC3MAXTHK, IC3MAXCNC        ,        &
-!/IC3                             IC3HILIM, IC3KILIM
-!/IC3  LOGICAL                 :: IC3CHENG
+!/IC3                             IC3MAXTHK, IC3MAXCNC,                &
+!/IC3                             IC3HILIM, IC3KILIM,                  &
+!/IC3                             IC3VISC, IC3ELAS, IC3DENS, IC3HICE
+!/IC3  LOGICAL                 :: IC3CHENG,USECGICE
 
 !/IC4  INTEGER                 :: IC4METHOD
+!/IC4  REAL                    :: IC4KI(NIC4), IC4FC(NIC4)
 
       CHARACTER               :: COMSTR*1, PNAME*30, RFORM*16,        &
                                  FROM*4, FNAME*60, TNAME*60, LINE*80, &
@@ -631,14 +640,14 @@
 !/
       INTEGER                 :: FLAGTR, IHM
       REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,   &
-                                 LICE, ICEHMIN, ICEHINIT,             &
+                                 LICE, ICEHMIN, ICEHINIT, ICEWIND,    &
                                  XSEED, XR, HSPM, WSM, WSC
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
-      LOGICAL                 :: FLC
+      LOGICAL                 :: FLC, ICEDISP
 !/FLD1      INTEGER                 :: TAILTYPE
-!/FLD1      REAL                    :: TAILLEV
+!/FLD1      REAL                    :: TAILLEV, TAILT1, TAILT2
 !/FLD2      INTEGER                 :: TAILTYPE
-!/FLD2      REAL                    :: TAILLEV 
+!/FLD2      REAL                    :: TAILLEV, TAILT1, TAILT2
 !/FLX3      INTEGER                 :: CTYPE
 !/FLX3      REAL                    :: CDMAX
 !/FLX4      REAL                    :: CDFAC
@@ -692,16 +701,17 @@
                                       EXPFSFCT,IMPFSN
            INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
 !
-!/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV
-!/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV
+!/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV, TAILT1, TAILT2
+!/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV, TAILT1, TAILT2
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
 !/IC2      NAMELIST /SIC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
 !/IC3      NAMELIST /SIC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC,      &
-!/IC3                      IC3CHENG, IC3HILIM, IC3KILIM
-!/IC4      NAMELIST /SIC4/  IC4METHOD  
+!/IC3                      IC3CHENG, USECGICE, IC3HILIM, IC3KILIM,      &
+!/IC3                      IC3VISC, IC3ELAS, IC3DENS, IC3HICE
+!/IC4      NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC
 !/IG1      NAMELIST /SIG1/  IGMETHOD, IGADDOUTP, IGSOURCE, IGBCOVERWRITE,   &
 !/IG1                      IGMAXFREQ, IGSTERMS, IGSWELLMAX,                &
 !/IG1                      IGSOURCEATBP, IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL 
@@ -753,7 +763,7 @@
            NAMELIST /MISC/ CICE0, CICEN, LICE, ICEHMIN, XSEED, FLAGTR,&
                       XP, XR, XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, &
                       FMICHE, RWNDC, FACBERG, NOSW, GSHIFT,           &
-                      ICEHINIT, WCOR1, WCOR2
+                      ICEHINIT, WCOR1, WCOR2, ICEDISP, ICEWIND
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              E3D, I1E3D, I2E3D,                       &
@@ -1876,6 +1886,7 @@
       LICE   = 0.
       ICEHMIN= 0.2  ! the 0.2 value is arbitrary and needs to be tuned.
       ICEHINIT=0.5  
+      ICEWIND=1.0
       GSHIFT = 0.0D0
       PMOVE  = 0.5
       XSEED  = 1.
@@ -1893,6 +1904,7 @@
       RWNDC  = 1.
       WCOR1  = 99. 
       WCOR2  = 0.
+      ICEDISP = .FALSE.
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
@@ -1932,7 +1944,7 @@
 !/IS2      IS2BACKSCAT = 1.
 !/IS2      IS2BREAK = .FALSE.
 !/IS2      IS2BREAKF = 3.6
-!/IS2      IS2DISP=.TRUE.
+!/IS2      IS2DISP=.FALSE. !not dispersion only attenuation following Liu disp. eq.
 !/IS2      IS2DUPDATE=.TRUE.
 !/IS2      IS2FRAGILITY=0.9
 !/IS2      IS2DMIN=20
@@ -1977,13 +1989,13 @@
 !/IG1      CALL READNL ( NDSS, 'SIG1 ', STATUS )
 !/IG1      WRITE (NDSO,970) STATUS
 !
-!/IC2       IC2DISPER = .TRUE. 
+!/IC2       IC2DISPER = .FALSE. 
 !/IC2       IC2TURB = 1.
 !/IC2       IC2TURBS = 0.
 !/IC2       IC2ROUGH = 0.01 
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 2E5
-!/IC2       IC2VISC = 8.
+!/IC2       IC2VISC = 1.
 !
 !/IC3       IC3MAXTHK = 100.0
 !/IC3       IC3MAXCNC = 100.0
@@ -1993,10 +2005,17 @@
 !/IC3       IC2REYNOLDS = 1.5E5
 !/IC3       IC2SMOOTH = 7.0E4
 !/IC3       IC2VISC = 2.0
-!/IC3       IC3CHENG = .FALSE.
+!/IC3       IC3CHENG = .TRUE.
+!/IC3       USECGICE = .TRUE.
 !/IC3       IC3HILIM = 100.0
 !/IC3       IC3KILIM = 100.0
+!/IC3       IC3HICE = -1.0
+!/IC3       IC3VISC = -2.0
+!/IC3       IC3DENS = -3.0
+!/IC3       IC3ELAS = -4.0
 !/IC4       IC4METHOD = 1 !switch for methods within IC4
+!/IC4       IC4KI=0.0
+!/IC4       IC4FC=0.0
 
 !
 !/IC2      CALL READNL ( NDSS, 'SIC2 ', STATUS )
@@ -2052,23 +2071,29 @@
 !
       IF ( FLAGTR.LT.0 .OR. FLAGTR.GT.6 ) FLAGTR = 0
       CICEN  = MIN ( 1. , MAX ( 0. , CICEN ) )
+      ICEWIND  = MIN ( 1. , MAX ( 0. , ICEWIND ) )
       FICEN  = CICEN
       GRIDSHIFT=GSHIFT
+      ICE100WIND=ICEWIND
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
       FICEL  = LICE
       IICEHMIN  = ICEHMIN
       IICEHINIT  = ICEHINIT
+      IICEDISP= ICEDISP
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
 ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
 !     grid, that is initialized with zeros as default.
       IF ( FLAGTR .LT. 3 ) THEN
-         CICE0 = CICEN
-         IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+         IF (CICE0.NE.CICEN) THEN
+            CICE0 = CICEN
+            IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+         END IF
       END IF
 !/IC0      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
+      WRITE (NDSO,8972) ICEWIND
       FICE0  = CICE0
 
 !/MGG      WRITE (NDSO,962) PMOVE
@@ -2114,17 +2139,25 @@
 !
 !/FLD1      TAILTYPE = 0
 !/FLD1      TAILLEV  = 0.006
+!/FLD1      TAILT1 = 1.25
+!/FLD1      TAILT2 = 3.00
 !/FLD2      TAILTYPE = 0
 !/FLD2      TAILLEV  = 0.006
+!/FLD2      TAILT1 = 1.25
+!/FLD2      TAILT2 = 3.00
 !
 !/FLD1      CALL READNL ( NDSS, 'FLD1', STATUS )
-!/FLD1      TAILLEV  = MIN( MAX ( 0.001 , TAILLEV ), 0.02)
+!/FLD1      TAILLEV  = MIN( MAX ( 0.0005 , TAILLEV ), 0.04)
 !/FLD1      TAIL_LEV = TAILLEV
 !/FLD1      TAIL_ID = TAILTYPE
+!/FLD1      TAIL_TRAN1 = TAILT1
+!/FLD1      TAIL_TRAN2 = TAILT2
 !/FLD2      CALL READNL ( NDSS, 'FLD2', STATUS )
-!/FLD2      TAILLEV  = MIN( MAX ( 0.001 , TAILLEV ), 0.02)
+!/FLD2      TAILLEV  = MIN( MAX ( 0.0005 , TAILLEV ), 0.04)
 !/FLD2      TAIL_LEV = TAILLEV
 !/FLD2      TAIL_ID = TAILTYPE
+!/FLD2      TAIL_TRAN1 = TAILT1
+!/FLD2      TAIL_TRAN2 = TAILT2
 !
 ! 6.o End of namelist processing
 !
@@ -2229,26 +2262,30 @@
 !/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
 !/IC3                          IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
 !/IC3                          IC2VISC, IC2TURBS, IC3CHENG,           &
-!/IC3                          IC3HILIM, IC3KILIM
-!/IC4         WRITE(NDSO,2980) IC4METHOD  
+!/IC3                          USECGICE, IC3HILIM, IC3KILIM,          &
+!/IC3                          IC3HICE, IC3VISC, IC3DENS, IC3ELAS
+
+!/IC4         WRITE(NDSO,2980) IC4METHOD,(IC4KI(JJ),JJ=1,NIC4),       &
+!/IC4                          (IC4FC(JJ),JJ=1,NIC4)
+
 !
         IF ( FLCOMB ) THEN
           WRITE (NDSO,2966) CICE0, CICEN, LICE, ICEHMIN, PMOVE, XSEED,&
                                 FLAGTR, XP, XR, XFILT, IHMAX, HSPMIN, &
                                 WSMULT, WSCUT, '.TRUE.', NOSWLL,FHMAX,&
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                ICEHINIT
+                                ICEHINIT, ICEDISP, ICEWIND
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, ICEHMIN, PMOVE, XSEED,&
                                 FLAGTR, XP, XR, XFILT, IHMAX, HSPMIN, &
                                 WSMULT, WSCUT, '.FALSE.',NOSWLL,FHMAX,&
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                ICEHINIT
+                                ICEHINIT, ICEDISP, ICEWIND
 
           END IF
 !
-!/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV
-!/FLD2         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV
+!/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+!/FLD2         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !
         WRITE (NDSO,918)
         END IF
@@ -3797,8 +3834,15 @@
 !/IC3       IF (IC3CHENG) IC3PARS(9)=1.0
 !/IC3       IC3PARS(10)=IC3HILIM
 !/IC3       IC3PARS(11)=IC3KILIM
+!/IC3       IF (USECGICE) IC3PARS(12)=1.0
+!/IC3       IC3PARS(13)=IC3HICE
+!/IC3       IC3PARS(14)=IC3VISC
+!/IC3       IC3PARS(15)=IC3DENS
+!/IC3       IC3PARS(16)=IC3ELAS
 !
-!/IC4       IC2PARS(1)=IC4METHOD
+!/IC4      IC4PARS(1)=IC4METHOD
+!/IC4      IC4_KI=IC4KI
+!/IC4      IC4_FC=IC4FC
 !
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = IS2BACKSCAT
@@ -4424,7 +4468,7 @@
 !/ST4              '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
 !/ST4              ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
 !/ST4              '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
-!/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,' /')
+!/ST4              ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,'  /')
 !
 !/ST6  920 FORMAT (/'  Wind input (Donelan et al, 2006) ',A/       &
 !/ST6         ' --------------------------------------------------')
@@ -4740,6 +4784,10 @@
 !/IC3               ' --------------------------------------------------')
 !/IC4  971 FORMAT (/'  Empirical wave-ice physics   ',A/      &
 !/IC4               ' --------------------------------------------------')
+ 8972 FORMAT ( '       Wind input reduction factor in presence of ', &
+               /'         ice :',F6.2, &
+               /'         (0.0==> no reduction and 1.0==> no wind', &
+               /'         input with 100% ice cover)')
 !
 !
  4970 FORMAT (/'  Spectral output on full grid ',A/                   &
@@ -4758,19 +4806,23 @@
                ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
 !
- 2978 FORMAT ( '  &SIC2  IC2DISPER =',L3,', IC2TURB =',F8.2,           &
+ 2978 FORMAT ( '  &SIC2  IC2DISPER =',L3,', IC2TURB =',F8.2,          &
                ', IC2ROUGH  =',F10.6,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
                ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
 !
- 2979 FORMAT ( '  &SIC3  IC3MAXTHK =',F6.2, ', IC3MAXCNC =',F6.2,     &
-               ', IC2TURB =',F8.2,                                    &
-               ', IC2ROUGH  =',F10.3,','/                             &
+ 2979 FORMAT ( '  &SIC3 IC3MAXTHK =',F6.2, ', IC3MAXCNC =',F6.2,','/  &
+               '        IC2TURB =',F8.2,                              &
+               ', IC2ROUGH  =',F7.3,','/                              &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
-               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,', IC3CHENG =',&
-               L3,', IC3HILIM = ',F6.2,', IC3KILIM = ',E9.2,' /')
+               ', IC2VISC =',F10.3,','/                               &
+               '        IC2TURBS =',F8.2,', IC3CHENG =',L3,           &
+               ', USECGICE =',L3,', IC3HILIM = ',F6.2,','/            &
+               '        IC3KILIM = ',E9.2,', IC3HICE = ',E9.2,        &
+               ', IC3VISC = ',E9.2,','/                               &
+               '        IC3DENS = ',E9.2,', IC3ELAS = ',E9.2,' /')
 !
- 2980 FORMAT ( '  &SIC4  IC4METHOD = ',I1)
+ 2980 FORMAT ( '  &SIC4  IC4METHOD = ',I1,','/'         IC4KI = ',10(1X,E10.2,',')/'         IC4FC = ',8(1X,F8.3,','), F8.3/' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1, ', ICEHMIN = ',F5.2,           &
@@ -4780,8 +4832,10 @@
                '        IHM =',I5,', HSPM =',F6.3,', WSM =',F6.3,     &
                      ', WSC =',F6.3,', FLC = ',A/                     &
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
-                        F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/                                     &
-               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,', ICEHINIT = ',F5.2,' /')
+                        F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/   &
+               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,          &
+                     ', ICEHINIT = ',F5.2,', ICEDISP = ',L3/,         &
+                     ', ICEWIND = ',F6.2,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  
@@ -4796,7 +4850,8 @@
                '        REFRMAX=',F5.2,', REFFREQPOW =',F5.2,                    &
                ', REFICEBERG =',F5.2,', REFCOSP_STRAIGHT =',F4.1,' /')
 !
- 2987 FORMAT ( '  &FLD TAIL_ID =',I1,'TAIL_LEV =',F5.4,' /')
+ 2987 FORMAT ( '  &FLD TAIL_ID =',I1,' TAIL_LEV =',F5.4,' TAILT1 =',F5.3,&
+               ' TAILT2 =',F5.3,' /')
 
  3000 FORMAT (/'  The spatial grid: '/                                &
                ' --------------------------------------------------'/ &

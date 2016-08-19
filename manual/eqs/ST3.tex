@@ -166,13 +166,12 @@ frequency may be different from that of the source term it is defined with
 another exponent $p_{\mathrm{tail}}$.
 
 Unfortunately these parameterizations are sensitive to swell. An increase in
-swell height typically reduces dissipation at the windsea peak (the first
-factor is reduced) and increases dissipation at high frequencies (the second
-factor is reduced). For $p< 2$, as in the WAM-Cycle 4 and BJA
-parameterizations, this sensitivity is much larger than the expected effect of
+swell height typically reduces dissipation at the windsea peak because the mean wavenumber $\overline{k}$ and 
+thus the mean steepness $\overline{\alpha}$ are reduced. For $p< 2$, as in the WAM-Cycle 4 and BJA
+parameterizations, this sensitivity is much larger and opposite to the expected effect of
 short wave modulation by long waves.
 
-The source term code was thus generalized to
+The source term code was generalized to
 allow the use of WAM4, BJA or others ECWAM parameterization, via a simple change of
 the parameters in the namelists SIN3 and SDS3. At present, the default values of the namelist
 parameters correspond to BJA \citep{rep:Bea05}.

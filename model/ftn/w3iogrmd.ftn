@@ -580,7 +580,7 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
                FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
-               CLATS, CLATIS,CTHG0S
+               CLATS, CLATIS,CTHG0S, IICEDISP, ICE100WIND
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
 !/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
@@ -655,7 +655,7 @@
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
                FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
                FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
-               CLATS, CLATIS,CTHG0S
+               CLATS, CLATIS,CTHG0S, IICEDISP, ICE100WIND
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 !/SEC1         READ (NDSM) NITERSEC1
@@ -789,9 +789,9 @@
 !/IC2          WRITE   (NDSM)                                              &
 !/IC2                IC2PARS(1:7)
 !/IC3          WRITE   (NDSM)                                              &
-!/IC3                IC3PARS(1:11)
+!/IC3                IC3PARS
 !/IC4          WRITE   (NDSM)                                              &
-!/IC4                IC2PARS(1)
+!/IC4                IC4PARS,IC4_KI,IC4_FC
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                 FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
@@ -807,9 +807,9 @@
 !/IC2         READ   (NDSM)                                                &
 !/IC2                IC2PARS(1:7)
 !/IC3         READ   (NDSM)                                                &
-!/IC3                IC3PARS(1:11)
+!/IC3                IC3PARS
 !/IC4         READ   (NDSM)                                                &
-!/IC4                IC2PARS(1)
+!/IC4                IC4PARS,IC4_KI,IC4_FC
         END IF
 !
 !/T      WRITE (NDST,9040) FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC,    &
@@ -1112,14 +1112,16 @@
 !/SMC      IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN, Refran
 !
 !/FLD1      IF ( WRITE ) THEN
-!/FLD1          WRITE (NDSM)                            TAIL_ID, TAIL_LEV
+!/FLD1          WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD1        ELSE
-!/FLD1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TAIL_ID, TAIL_LEV
+!/FLD1          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+!/FLD1                         TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD1        END IF
 !/FLD2      IF ( WRITE ) THEN
-!/FLD2          WRITE (NDSM)                            TAIL_ID, TAIL_LEV
+!/FLD2          WRITE (NDSM) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2        ELSE
-!/FLD2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TAIL_ID, TAIL_LEV
+!/FLD2          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+!/FLD2                         TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 !/FLD2        END IF
 !
 ! Interpolation tables ( fill locally ) ----------------------------- *

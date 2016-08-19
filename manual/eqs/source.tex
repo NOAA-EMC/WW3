@@ -5,22 +5,23 @@
 \vsssub
 
 In deep water, the net source term $S$ is generally considered to consist of
-three parts, a wind-wave interaction term $S_{in}$, a nonlinear wave-wave
-interactions term $S_{nl}$ and a dissipation (`whitecapping') term
-$S_{ds}$. More recently, explicit swell disipation has been added to this
-source term in some model.  The input term $S_{in}$ is dominated by the
-exponential growth term, and this source term generally describes this
+three parts, an atmosphere-wave interaction term $S_{in}$, which 
+is usually a positive energy input but can also be negative in the case of swell, a nonlinear wave-wave
+interactions term $S_{nl}$ and a wave-ocean interaction term that generally contains the dissipation 
+$S_{ds}$. The input term $S_{in}$ is dominated by the
+exponential wind-wave growth term, and this source term generally describes this
 dominant process only. For model initialization, and to provide more realistic
-initial wave growth, a linear input term $S_{ln}$ can also be considered in
+initial wave growth, a linear input term $S_{ln}$ can also be added in
 \ws.
 
 In shallow water additional processes have to be considered, most notably
 wave-bottom interactions $S_{bot}$ \cite[e.g.,][]{pro:Sea78}. In extremely
-shallow water, depth-induced breaking ($S_{db}$) and triad wave-wave
-interactions ($S_{tr}$) become important. Also available in \ws\ are source
+shallow water, depth-induced breaking ($S_{db}$) can be considered separately from $S_{ds}$ when 
+paramterized dissipation rates in $S_{ds}$ are not strong enough, and triad wave-wave
+interactions ($S_{tr}$) also become important. Also available in \ws\ are source
 terms for scattering of waves by bottom features ($S_{sc}$), wave-ice
 interactions ($S_{ice}$), reflection off shorelines or floating objects such
-as icebergs ($S_{ref}$) and a general purpose slot for additional, user
+as icebergs ($S_{ref}$), which can include sources of infragravity wave energy, and a general purpose slot for additional, user
 defined source terms ($S_{xx}$).
 
 This defines the general source terms used in \ws\ as
@@ -42,20 +43,22 @@ Other source terms are easily added. These source terms are defined for the
 calculated for the action spectrum. The latter source terms are denoted as
 $\cS \equiv S/\sigma$.
 
-The treatment of the nonlinear interactions defines a third-generation wave
-model. Therefore, the options for the calculation of $S_{nl}$ will be
+The explicit treatment of the nonlinear interactions defines third-generation wave
+models. Therefore, the options for the calculation of $S_{nl}$ will be
 discussed first, starting in section \ref{sec:NL1}. $S_{in}$ and $S_{ds}$
-represent separate processes, but should be considered as interrelated,
+represent separate processes, but are often interrelated,
 because the balance of these two source terms governs the integral growth
 characteristics of the wave model. Several combinations of these basic source
 terms are available, and are described in section~\ref{sec:ST1} and following.
 The description of linear input starts in section~\ref{sec:LN1}, and
-section~\ref{sec:BT1} and following describe available additional (mostly
-shallow water) processes.
+section~\ref{sec:BT1} and following describe available additional processes, mostly
+related to shallow water and sea ice. 
 
 \vspace{\baselineskip} \noindent
 A third-generation wave model effectively integrates the spectrum only up to a
-cut-off frequency $f_{hf}$ (or wavenumber $k_{hf}$). Above this frequency a
+cut-off frequency $f_{hf}$ (or wavenumber $k_{hf}$), that is ideally equal to the 
+highest discretization frequency. In practice the source terms parameterization or the time step used may not allow a proper 
+balance to be obtained, and thus $f_{hf}$  may be taken within the model frequency range. Above the cut-off frequency a
 parametric tail is applied \citep[e.g.,][]{art:WAM88}
 
 %--------------------------------------%

@@ -93,7 +93,6 @@
 # --------------------------------------------------------------------------- #
 # Add here the correct linker call including switches
 
-# Intel compiler ------------------------------------------------------------
 # 3.a Build options and determine compiler name
 #     No GRIB libraries for this one
 

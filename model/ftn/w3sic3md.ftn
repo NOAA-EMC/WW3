@@ -288,6 +288,35 @@
 !     Comments are "maps may not be compatible"
 !     This feature is not understood by me (ER) and so omitted.
 !
+!/ ------------------------------------------------------------------- /
+!     On array size, S. Cheng says: 
+!     Upon checking the origin of CG, I would say CG = CG_IC3, this is 
+!     the topic ‘call W3IC3WNCG twice’. Recently I find they are not 
+!     exactly the same due to calculation and smoothing of cg using 
+!     several neighbor points. For different input array size, results 
+!     are slightly different. In subr. w3wave, the size of input arrays 
+!     is 0:NK+1, while in w3sic3, the size of all input arrays is 1:NK. 
+!     This array size  difference is reflected in the resulting cg. The 
+!     small difference in cg between calling IC3 twice or just calling 
+!     once produces small difference in SWH. To eliminate this small 
+!     difference, I suggest to keep CG instead of CG_IC3, as well as WN, 
+!     WN_I, because other source terms use CG. I confirmed this change 
+!     would make results of ICE the same whether calling twice or once 
+!     by defining dimension WN_R, WN_I, CG_IC3 as 0:NK+1 instead of 
+!     1:NK. Then CG_IC3 = CG.
+!/ ------------------------------------------------------------------- /
+!     On optimization, S. Cheng says:
+!     For Wang and Shen’s model, D does not change in the loop 
+!     corresponding to NSTEPS in subr. W3SRCE. I find the most efficient
+!     and easy way to speed up is that Add D and NSTEPS as inputs of
+!     W3SIC3
+!     If NSTEPS==1
+!          Current Wang and Shen’s model code above.
+!     ELSE
+!          S = D*A
+!     Endif 
+!/ ------------------------------------------------------------------- /
+!
 !  8. Structure :
 !
 !     See source code.
@@ -304,13 +333,13 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: TPI, DWAT, ABMIN, DELAB, SIZEFWTABLE,      &
                            FWTABLE, GRAV
-      USE W3ODATMD, ONLY: NDSE
+      USE W3ODATMD, ONLY: NDSE, IAPROC, NAPROC, NAPERR
+!     USE WMMDATMD, ONLY: IMPROC, NMPERR ! WMMDATMD unavailable to outp
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC3PARS, DDEN,  & 
                           FLAGLL, YGRD, GTYPE, RLGTYPE
       USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, ICEI,    &
                           INFLAGS2
-      USE W3ADATMD, ONLY: IC3WN_R, IC3WN_I, IC3CG
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T0      USE W3ARRYMD, ONLY: PRT2DS
@@ -334,7 +363,7 @@
       INTEGER                    :: IKTH, IK
       REAL                       :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                     ICECOEF4, ICECOEF5, ICECONC
-      REAL, DIMENSION(NK)        :: D1D, WN_I, WN_R, CG_IC3
+      REAL, DIMENSION(NK)        :: D1D, WN_I, WN_R, CG_IC3, CG_TMP
       LOGICAL                    :: NOICE
       REAL                       :: VISCM=1.83E-6
       REAL                       :: FREQ
@@ -342,8 +371,10 @@
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
                                  SMOOTH, RE, UORB, AORB, EB,   &
                                  DELI1, DELI2, FW, XI, FTURB,  &
-                                 MAXTHK, MAXCNC, USE_CHENG
-      INTEGER                 :: IND, IS
+                                 MAXTHK, MAXCNC, USE_CHENG,    &
+                                 USE_CGICE, FIXEDHICE,   &
+                                 FIXEDVISC,FIXEDDENS,FIXEDELAS
+      INTEGER                 :: IND, IS, NUMIN
 !
 !/
 !/ ------------------------------------------------------------------- /
@@ -359,6 +390,7 @@
       WN_R     = WN
       WN_I     = 0.0
       CG_IC3   = 0.0
+      CG_TMP   = 0.0
 !
       ICECOEF1 = 0.0
       ICECOEF2 = 0.0
@@ -367,36 +399,83 @@
       ICECOEF5 = 0.0
       ICECONC  = 0.0
 !
-      IF (.NOT.INFLAGS2(-7)) THEN
-         WRITE (NDSE,1001) 'ICE PARAMETER 1'
+!     Rename variables to make code easier to read.
+      MAXTHK=IC3PARS(1)
+      MAXCNC=IC3PARS(8)
+      USE_CHENG=IC3PARS(9)
+      USE_CGICE=IC3PARS(12)
+      FIXEDHICE=IC3PARS(13)
+      FIXEDVISC=IC3PARS(14)
+      FIXEDDENS=IC3PARS(15)
+      FIXEDELAS=IC3PARS(16)
+            
+!     --- Error checking for input ----------------------------------- /
+!     --- Allow one and only one input option for each variable ------ /
+      NUMIN=0
+      IF (INFLAGS2(-7)) NUMIN=NUMIN+1
+      IF (FIXEDHICE.GE.0.0) NUMIN=NUMIN+1
+      IF (NUMIN.NE.1) THEN
+         IF ( IAPROC .EQ. NAPERR )                       &
+         WRITE (NDSE,1001) 'ICE PARAMETER 1 (HICE)',NUMIN
          CALL EXTCDE(2)
       ENDIF
-      IF (.NOT.INFLAGS2(-6)) THEN
-         WRITE (NDSE,1001) 'ICE PARAMETER 2'
+
+      NUMIN=0
+      IF (INFLAGS2(-6)) NUMIN=NUMIN+1
+      IF (FIXEDVISC.GE.0.0) NUMIN=NUMIN+1
+      IF (NUMIN.NE.1) THEN
+         IF ( IAPROC .EQ. NAPERR )                       &
+         WRITE (NDSE,1001) 'ICE PARAMETER 2 (VISC)',NUMIN
          CALL EXTCDE(2)
       ENDIF
-      IF (.NOT.INFLAGS2(-5)) THEN
-         WRITE (NDSE,1001) 'ICE PARAMETER 3'
+
+      NUMIN=0
+      IF (INFLAGS2(-5)) NUMIN=NUMIN+1
+      IF (FIXEDDENS.GE.0.0) NUMIN=NUMIN+1
+      IF (NUMIN.NE.1) THEN
+         IF ( IAPROC .EQ. NAPERR )                       &
+         WRITE (NDSE,1001) 'ICE PARAMETER 3 (DENS)',NUMIN
          CALL EXTCDE(2)
       ENDIF
-      IF (.NOT.INFLAGS2(-4)) THEN
-         WRITE (NDSE,1001) 'ICE PARAMETER 4'
+
+      NUMIN=0
+      IF (INFLAGS2(-4)) NUMIN=NUMIN+1
+      IF (FIXEDELAS.GE.0.0) NUMIN=NUMIN+1
+      IF (NUMIN.NE.1) THEN
+         IF ( IAPROC .EQ. NAPERR )                       &
+         WRITE (NDSE,1001) 'ICE PARAMETER 4 (ELAS)',NUMIN
          CALL EXTCDE(2)
       ENDIF
 
 !     --- Set local value to be used subsequently (ICEPx variables 
 !         are not used beyond this point). --------------------------- /
-      ICECOEF1 = ICEP1(IX,IY) ! ice thickness
-      ICECOEF2 = ICEP2(IX,IY) ! effective viscosity of ice cover
-      ICECOEF3 = ICEP3(IX,IY) ! density of ice
-      ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
-!     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
-      IF (INFLAGS2(4))  ICECONC = ICEI(IX,IY)
+      IF (INFLAGS2(-7)) THEN
+         ICECOEF1 = ICEP1(IX,IY) ! ice thickness
+      ELSE
+         ICECOEF1 = FIXEDHICE
+      ENDIF
 
-!     Similarly, rename other variables to make code easier to read.
-      MAXTHK=IC3PARS(1)
-      MAXCNC=IC3PARS(8)
-      USE_CHENG=IC3PARS(9)
+      IF (INFLAGS2(-6)) THEN
+         ICECOEF2 = ICEP2(IX,IY) ! effective viscosity of ice cover
+      ELSE
+         ICECOEF2 = FIXEDVISC
+      ENDIF
+
+      IF (INFLAGS2(-5)) THEN
+         ICECOEF3 = ICEP3(IX,IY) ! density of ice
+      ELSE
+         ICECOEF3 = FIXEDDENS
+      ENDIF
+
+      IF (INFLAGS2(-4)) THEN
+         ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
+      ELSE
+         ICECOEF4 = FIXEDELAS
+      ENDIF
+
+!     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
+
+      IF (INFLAGS2(4))  ICECONC = ICEI(IX,IY)
 
 !
 ! 1.  No ice --------------------------------------------------------- /
@@ -410,7 +489,8 @@
          D1D=0.0
 !
 ! 2.  Ice ------------------------------------------------------------ /
-      ELSEIF ( USE_CHENG==1.0 ) THEN
+      ELSEIF ( USE_CHENG==1.0 .AND.  &
+             ((ICECOEF1.LE.MAXTHK).OR.(ICECONC.LE.MAXCNC)) ) THEN
 
 ! 2.a Write test output ---------------------------------------------- /
 !/T38        WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
@@ -424,12 +504,19 @@
                                   ICECOEF3, ICECOEF4, DEPTH)
 !
 !    --- calculate source term --------------------------------------- /
+!    --- see Remarks section re: array size -------------------------- /
+         IF ( USE_CGICE==1.0 ) THEN
+            CG_TMP=CG_IC3
+         ELSE
+            CG_TMP=CG
+         ENDIF
          DO IK=1, NK
             !            recall that D=S/E=-2*Cg*k_i
-            D1D(IK)= -2.0 * CG_IC3(IK) * WN_I(IK)
-! reminder: delete temporary lines (lower case "write")
+            D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
+! reminder: delete temporary lines (lower case "write") before public release
 !           freq=sig(ik)/tpi
-!           write(*,*)freq,wn_i(ik),' % freq,k_i '
+!           write(*,*)freq,wn_i(ik),(CG_tmp(IK)/CG(IK)),' % freq,k_i,CG_IC3/CG'
+!           write(*,*)freq,wn_i(ik),ix,iy,' % freq,k_i,ix,iy'
 
          END DO
          !
@@ -449,9 +536,14 @@
               ICECOEF3, ICECOEF4, DEPTH     )
 !
 !    --- calculate source term --------------------------------------- /
+         IF ( USE_CGICE==1.0 ) THEN
+            CG_TMP=CG_IC3
+         ELSE
+            CG_TMP=CG
+         ENDIF
          DO IK=1, NK
             !            recall that D=S/E=-2*Cg*k_i
-            D1D(IK)= -2.0 * CG_IC3(IK) * WN_I(IK)
+            D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
 
 ! reminder: delete temporary lines (lower case "write")
 !           write(*,*)'V1 WN_I(',IK,') = ',WN_I(IK)
@@ -517,7 +609,7 @@
 ! sign convention (example): 
 !        S is from -10e-3 to 0
 !        A is from 0 to 10
-
+! See Remarks section re: optimization
       S = D * A
 !
 ! ... Test output of arrays
@@ -536,7 +628,8 @@
 ! Formats
 !
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC3 : '/               &
-               '     ',A,' REQUIRED BUT NOT SELECTED'/)
+               '     ',A,' REQUIRED ONCE, BUT WAS PROVIDED BY USER '/ &
+               '     ',I4,' TIMES.'/)
 !
 !/T 9000 FORMAT (' TEST W3SIC3 : depth and 4 ice coef. : ',5E10.3)
 !/
@@ -1741,6 +1834,11 @@
 !  6. Error messages :
 !
 !  7. Remarks :
+!     On pre-calculation table, S. Cheng says:
+!     Instead of interpolation, WN_R of arbitrary HICE is approximated
+!     by IC3WN_R in the look up table. IC3WN_R is related to an ice
+!     thickness in the table, which is closest to HICE and less than
+!     HICE
 !
 !  8. Structure :
 !
@@ -1802,6 +1900,7 @@
       I       = MIN(INT(HICE/IC3_DITK)+1,ITKNUM)
 
 ! Find values in pre-calculated look-up table
+! See Remarks section.
       WN_R    =   IC3WN_R(I1:I2, I)
       WN_I    =   IC3WN_I(I1:I2, I)
       CG      =   IC3CG(I1:I2, I)
@@ -1906,24 +2005,6 @@
       REAL       :: ICE1, ICE2, ICE3, ICE4, DPT
       INTEGER ::  I1, I2, JITK, ITKNUM, IK
 
-!     --- Verify that required variables are here -------------------- /
-       IF (.NOT.INFLAGS2(-7)) THEN
-          WRITE (NDSE,1001) 'ICE PARAMETER 1'
-          CALL EXTCDE(2)
-       ENDIF
-       IF (.NOT.INFLAGS2(-6)) THEN
-          WRITE (NDSE,1001) 'ICE PARAMETER 2'
-          CALL EXTCDE(2)
-       ENDIF
-       IF (.NOT.INFLAGS2(-5)) THEN
-          WRITE (NDSE,1001) 'ICE PARAMETER 3'
-          CALL EXTCDE(2)
-       ENDIF
-       IF (.NOT.INFLAGS2(-4)) THEN
-          WRITE (NDSE,1001) 'ICE PARAMETER 4'
-          CALL EXTCDE(2)
-       ENDIF
-!
       DPT    = 999.
 
       ITKNUM = CEILING(IC3_MAXITK/IC3_DITK)
@@ -1936,8 +2017,6 @@
       ENDDO
 
 RETURN
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC3 : '/               &
-               '     ',A,' REQUIRED BUT NOT SELECTED'/)
 END SUBROUTINE IC3TABLE_CHENG
 
 !/ ------------------------------------------------------------------- /

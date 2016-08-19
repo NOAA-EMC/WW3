@@ -343,11 +343,13 @@
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
-                          FTE, FTF, FHMAX, ECOS, ESIN
+                          FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
+                          ICE100WIND
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
-      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2
+      USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, ICEP2
+      USE W3DISPMD 	
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLD1      USE W3FLD1MD, ONLY: W3FLD1
 !/FLD2      USE W3FLD2MD, ONLY: W3FLD2
@@ -431,6 +433,7 @@
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
       REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT
+      REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2
       DOUBLE PRECISION        :: ATT
 !/ST1      REAL                    :: FH1, FH2
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
@@ -791,8 +794,10 @@
 !             this simulation
         IF ( INFLAGS2(4) ) THEN
           VSLN(1:NSPECH) = (MAX(0.,MIN(1.,1.-ICE)))**2 * VSLN(1:NSPECH)
-          VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSIN(1:NSPECH)
-          VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDIN(1:NSPECH)
+          VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE*ICE100WIND)) & 
+                           * VSIN(1:NSPECH)
+          VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE*ICE100WIND)) & 
+                           * VDIN(1:NSPECH)
           VSDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSDS(1:NSPECH)
           VDDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDDS(1:NSPECH)
           END IF
@@ -1085,21 +1090,40 @@
 !     INFLAGS2(4) is true if ice concentration was ever read during  
 !             this simulation
 !
+
       IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
+
+        IF ( INFLAGS2(-6)) THEN 
+          ICECOEF2 = ICEP2(IX,IY)
+        ELSE 
+          ICECOEF2 = 0.
+          END IF
+!
+        IF (IICEDISP) THEN
+          CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
+                                       SIG,WN_R,CG_ICE,ALPHA_LIU)
+         ELSE
+            WN_R=WN1
+            CG_ICE=CG1
+            END IF
+!
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
-!/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC )
+!/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC ,WN_R, CG_ICE,ALPHA_LIU)
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC4      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !
 !/IS1      CALL W3SIS1 ( SPEC, ICE, VSIR )
-!/IS2      CALL W3SIS2 ( SPEC, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
-!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1 )
+!/IS2      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
+!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1,WN_R, CG_ICE )
       SPEC2 = SPEC
 !
            TAUICE(:) = 0.
            PHICE = 0.
            DO IK=1,NK
              IS = 1+(IK-1)*NTH 
+!
+! First part of ice term integration: dissipation part ATT. 
+!
              ATT=1.
 !/IC1             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC2             ATT=EXP(ICE*VDIC(IS)*DTG)
@@ -1110,6 +1134,9 @@
 !/IS2               ATT=ATT*EXP((VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2             ELSE 
+!
+! Second part of ice term integration: scattering (only if there is back-scattering, i.e. IS2PARS(2).NE.0 ) 
+!
 !/IS2               SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
 !/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*EXP(VDIR2(IS)*DTG)*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2               ATT = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
@@ -1151,15 +1178,19 @@
 !conditions (>10 m/s).  It is not recommended to use these at lower wind
 !in their current state.
 !
+! FLD1/2 requires the calculation of FPI: 
+!/FLD1      CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
+!/FLD2      CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
+!
 !/FLD1      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
 !/FLD1          CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD1                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-!/FLD1                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY)
+!/FLD1                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD1      ENDIF
 !/FLD2      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
-!/FLD2          CALL W3FLD2 ( SPEC, min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
+!/FLD2          CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD2                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-!/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY)
+!/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD2      ENDIF
 !
 ! 10 includes shoreline reflection --------------------------------------------- *
@@ -1232,6 +1263,118 @@
 !/
       END SUBROUTINE W3SRCE
 !/
+      SUBROUTINE CALC_FPI( A, CG, FPI, S )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |          Jessica Meixner          |
+!/                  |                                   |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         6-July-2016 |
+!/                  +-----------------------------------+
+!/
+!/    06-Jul-2016 : Origination                         ( version 5.12 )
+!/
+!  1. Purpose :
+!
+!     Calculate equivalent peak frequency
+!
+!  2. Method :
+!
+!     Tolman and Chalikov (1996), equivalent peak frequency from source
+
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       A       R.A.  I   Action density spectrum (1-D).
+!       CG      R.A.  I   Group velocities for k-axis of spectrum.
+!       FPI     R.A.  O   Input 'peak' frequency.
+!       S       R.A.  I   Source term (1-D version).
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      STRACE    Subr. W3SERVMD Subroutine tracing.
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3SRCE Subr.            
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!       !/S      Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG,FTE, FTTR
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: A(NSPEC), CG(NK), S(NSPEC)
+      REAL, INTENT(OUT)       :: FPI
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IS, IK
+!/S      INTEGER, SAVE           :: IENT = 0
+      REAL                    ::  M0, M1, SIN1A(NK)
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'CALC_FPI')
+!
+!     Calculate FPI: equivalent peak frequncy from wind source term
+!     input
+!
+      DO IK=1, NK
+        SIN1A(IK) = 0.
+        DO IS=(IK-1)*NTH+1, IK*NTH
+          SIN1A(IK) = SIN1A(IK) + MAX ( 0. , S(IS) )
+        END DO
+      END DO
+!
+      M0     = 0.
+      M1     = 0.
+      DO IK=1, NK
+        SIN1A(IK) = SIN1A(IK) * DDEN(IK) / ( CG(IK) * SIG(IK)**3 )
+        M0        = M0 + SIN1A(IK)
+        M1        = M1 + SIN1A(IK)/SIG(IK)
+      END DO
+!
+      SIN1A(NK) = SIN1A(NK) / DDEN(NK)
+      M0        = M0 + SIN1A(NK) * FTE
+      M1        = M1 + SIN1A(NK) * FTTR
+      IF ( M1 .LT. 1E-20 ) THEN
+          FPI    = XFR * SIG(NK)
+      ELSE
+          FPI    = M0 / M1
+      END IF
+
+      END SUBROUTINE CALC_FPI
+!
+!
 !/ End of module W3SRCEMD -------------------------------------------- /
 !/
       END MODULE W3SRCEMD

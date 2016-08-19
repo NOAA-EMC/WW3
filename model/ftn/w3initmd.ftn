@@ -1136,7 +1136,7 @@
 !/DIST         '     NSEA, NAPROC =',2I8/)
 !/DIST 8021 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/         &
 !/DIST    '     NUMBER OF SPECTRAL POINTS LESS THAN NUMBER OF PROC.'/ &
-!/DIST         '     NSEA, NAPROC =',2I8/)
+!/DIST         '     NSPEC, NAPROC =',2I8/)
 !/DIST 8028 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/       &
 !/DIST         '     INCREASING TARGET IN MPP PROPAGATION MAP.'/      &
 !/DIST         '     IMBALANCE BETWEEN OVERALL AND CFL TIME STEPS'/)
@@ -1242,9 +1242,9 @@
 !       messages in this routine !
 !     - No testing on IMOD, since only called by W3INIT.
 !     - In version 3.09 STORE was split into a send and receive 
-!       buffer, to avoid/reduce possible conflicts btween the FORTRAN
+!       buffer, to avoid/reduce possible conflicts between the FORTRAN
 !       and MPI standards when a gather is posted in a given buffer
-!       right after a send in completed.
+!       right after a send is completed.
 !
 !  8. Structure :
 !

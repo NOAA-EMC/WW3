@@ -48,8 +48,8 @@ henceforth denoted simply as $N$)
 \noindent
 where ${\bf c}_g$ is given by $c_g$ and $\theta$, $s$ is a coordinate in the
 direction $\theta$ and $m$ is a coordinate perpendicular to $s$.
-Equation~(\ref{eq:bal_plane}) is valid for a Cartesian grid. For large-scale
-applications, this equation is usually transferred to a spherical grid,
+Equation~(\ref{eq:bal_plane}) is valid for Cartesian coordinates. For large-scale
+applications, this equation is usually transferred to spherical coordinates,
 defined by longitude $\lambda$ and latitude $\phi$, but maintaining the
 definition of the local variance \citep[i.e., per unit surface, as
 in][]{art:WAM88}
@@ -90,7 +90,11 @@ where $R$ is the radius of the earth and $U_\phi$ and $U_\lambda$ are current
 components. Equation~(\ref{eq:theta_g_dot}) includes a correction term for
 propagation along great circles, using a Cartesian definition of $\theta$
 where $\theta = 0$ corresponds to waves traveling from west to east. \ws\ can
-be run on either a Cartesian of spherical grid. Note that unresolved obstacles
+be run using either Cartesian or spherical coordinates. Note that unresolved obstacles
 such as islands can be included in the equations. In \ws\ this is done at the
-level of the numerical scheme, as is discussed in section~\ref{sub:num_obst}.
-
+level of the numerical scheme, as is discussed in section~\ref{sub:num_obst}. Also, depth variations 
+at the scale of the wavelength can be introduced by a scattering source term described in 
+ section~\ref{sec:BS1}. 
+ 
+ Finally, both Cartesian  and spherical coordinates can be discretized in many ways, using quadrangles (rectangular, curvulinear or SMC grids) and triangles. 
+That aspect is treated in chapter~\ref{chapt:num}.

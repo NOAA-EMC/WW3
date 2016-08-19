@@ -53,10 +53,10 @@
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
 #                                                                           #
-# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1 ../ ww3_tic1.1         #
-# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1 ../ ww3_tic1.1         #
-# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1 ../ ww3_tic1.1         #
-# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1 ../ ww3_tic1.1         #
+# ./bin/run_test -g 100m  -w w100m_IC1  -i input_IC1_156x3 ../ ww3_tic1.1   #
+# ./bin/run_test -g 350m  -w w350m_IC1  -i input_IC1_156x3 ../ ww3_tic1.1   #
+# ./bin/run_test -g 1000m -w w1000m_IC1 -i input_IC1_156x3 ../ ww3_tic1.1   #
+# ./bin/run_test -g 2500m -w w2500m_IC1 -i input_IC1_156x3 ../ ww3_tic1.1   #
 # ./bin/run_test -g 5km   -w w5km_IC1   -i input_IC1 ../ ww3_tic1.1         #
 # ./bin/run_test -g 10km  -w w10km_IC1  -i input_IC1 ../ ww3_tic1.1         #
 # ./bin/run_test -g 20km  -w w20km_IC1  -i input_IC1 ../ ww3_tic1.1         #
@@ -83,13 +83,28 @@
 # ./bin/run_test -w work_IC4_M3 -g 1000m -i input_IC4/input_IC4_M3 \        #
 #       ../ ww3_tic1.1                                                      #
 #                                                                           #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_CHENG \                     #
+#        -w work_IC3_CGICE_CHENG -i input_IC3NL ../model ww3_tic1.1         #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_CHENG \                      #
+#        -w work_IC3_CGOW_CHENG -i input_IC3NL ../model ww3_tic1.1          #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_NOCHENG \                   #
+#        -w work_IC3_CGICE_NOCHENG -i input_IC3NL ../model ww3_tic1.1       #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_NOCHENG \                    #
+#        -w work_IC3_CGOW_NOCHENG -i input_IC3NL ../model ww3_tic1.1        #
+# ./bin/run_test -g CGICE_NOCHENG -w work_IC3_CGICE_NOCHENG_TT \            #
+#        -i input_IC3 ../model ww3_tic1.1                                   #
+# ./bin/run_test -g CGOW_NOCHENG -w work_IC3_CGOW_NOCHENG_TT \              #
+#        -i input_IC3 ../model ww3_tic1.1                                   #
+#                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
 #                                     updated: Erick Rogers, Nov 2013       #
 #                                     updated: Fabrice Ardhuin, Jun 2014    #
 #                                     updated: Erick Rogers, July 2014      #
 #                                     updated: Fabrice Ardhuin, Sep 2014    #
-#                                last updated: Clarence Collins, Dec 2015   #
+#                                     updated: Clarence Collins, Dec 2015   #
+#                                     updated: Erick Rogers, Apr 2016       #
+#                                last updated: Jessica Meixner, May 2016    #
 #    Copyright 2009-2014 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #

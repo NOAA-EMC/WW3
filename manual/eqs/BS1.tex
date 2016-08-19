@@ -2,7 +2,7 @@
 \subsubsection{~$S_{bs}$: Bottom scattering} \label{sec:BS1}
 \vsssub
 
-\opthead{BS1}{Crest model}{R. Magne and F. Ardhuin}
+\opthead{BS1}{CREST model}{ F. Ardhuin}
 
 \noindent
 Waves propagating over a sloping bottom are partially reflected.  In the limit
@@ -67,8 +67,9 @@ The source term is computed according to different methods depending on the
 value of the current. For zero current, the interactions only involves waves
 of the same frequency and the interaction is always the same and linear in
 terms of the directional spectrum. In this case the interaction is expressed
-as a matrix problem. Namely, the directional spectrum $F$ is an {\F NTH} component vector, 
-and the source term is a vector $S = M F$ with $M$ a square ({\F NTH,NTH}) array that is 
+as a matrix problem. Namely, the directional spectrum $F$ is vector of {\F NTH} components, 
+and the source term is a vector of same size that is obtained by 
+the matrix multiplication $S = M F$ with $M$ a square ({\F NTH,NTH}) array. This array is 
 a function of the bottom spectrum and the non-dimensional depth $kh$.  This 
 scattering matrix is precomputed and diagonalized as a
 preprocessing step for a finite number of wavenumber magnitudes

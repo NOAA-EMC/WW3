@@ -15,13 +15,13 @@
  $NBMODEL
 # The number of models in this experiment + their names (6 characters)
 #
-   2  wwatch toyexe
+   2  toyexe   wwatch
  $END
 ###########################################################################
  $RUNTIME
 # The total simulated time for this run in seconds
 #
-  1800
+  3600
  $END
 ###########################################################################
  $NLOGPRT
@@ -53,19 +53,19 @@
 # |--------------------------------------------------------------|
 # | received fields by ww3 from Ocean model :       WW3 | OASIS  |
 # |--------------------------------------------------------------|
-# |            not defined   |    WW3__WDH WW3__WDU WW3__WDV     |
+# |            not defined   |    WW3_OWDH WW3_OWDU WW3_OWDV     |
 # |                    SSH   |    WW3__SSH                       |
-# |                    CUR   |    WW3___UZ WW3___VZ              |
+# |                    CUR   |    WW3_OSSU WW3_OSSV              |
 # |--------------------------------------------------------------|
 # | received fields by ww3 from Atmospheric model : WW3 | OASIS  |
 #  --------------------------------------------------------------|
 # |                    WND   |    WW3__U10 WW3__V10              |
 # |--------------------------------------------------------------|
-# | sent fields by ww3 from Ocean model :           WW3 | OASIS  |
+# | sent fields by ww3 to Ocean model :             WW3 | OASIS  |
 # |--------------------------------------------------------------|
-# |            not defined   |    WW3__DRY                       |
+# |            not defined   |    WW3_ODRY                       |
 # |                   T0M1   |    WW3_T0M1                       |
-# |                     HS   |    WW3___HS                       |
+# |                     HS   |    WW3__OHS                       |
 # |                    DIR   |    WW3_CDIR WW3_SDIR              |
 # |                    BHD   |    WW3__BHD                       |
 # |                    TWO   |    WW3_TWOX WW3_TWOY              |
@@ -74,58 +74,58 @@
 # |                    TAW   |    WW3_TAWX WW3_TAWY              |
 # |                     LM   |    WW3___LM                       |
 # |--------------------------------------------------------------|
-# | sent fields by ww3 from Atmospheric model :     WW3 | OASIS  |
+# | sent fields by ww3 to Atmospheric model :       WW3 | OASIS  |
 # |--------------------------------------------------------------|
-# |                    CUR   |    WW3___US WW3___VS              |
+# |                    CUR   |    WW3_WSSU WW3_WSSV              |
 # |                    CHA   |    WW3__CHA                       |
-# |                     HS   |    WW3___HS                       |
-# |                     FP   |    WW3___TP                       |
+# |                     HS   |    WW3__AHS                       |
+# |                     FP   |    WW3___FP                       |
 # |--------------------------------------------------------------|
 #
 #  
-#
-#                     -----------------------------------------
-#                        WW3 (wwatch) ==> TOY (toyexe)
-#                     -----------------------------------------
-#
-#~~~~~~~~~~~
-# Field 1 : 
-#~~~~~~~~~~~
-WW3_CDIR VARRCV01 1 360 1 rstrt.nc EXPOUT
-101 117 66 75 ww3t toyt LAG=+0 
-R  0  R  0
-SCRIPR
-DISTWGT LR SCALAR LATLON 1 4
-#
-#~~~~~~~~~~~
-# Field 2 : 
-#~~~~~~~~~~~
-WW3_SDIR VARRCV02 1 360 1 rstrt.nc EXPOUT
-101 117 66 75 ww3t toyt LAG=+0 
-R  0  R  0
-SCRIPR
-DISTWGT LR SCALAR LATLON 1 4
 #
 #                     ------------------------------------------
 #                        TOY (toyexe) ==> WW3 (wwatch)
 #                     ------------------------------------------
 #
 #~~~~~~~~~~~
-# Field 3 : 
+# Field 1 : 
 #~~~~~~~~~~~
-VARSND01 WW3___UZ  1 360 1 rstrt.nc EXPOUT
-66 75 101 117 toyt ww3t LAG=+90 
+TOY___UZ WW3_OSSU  1 180 1 r-toy.nc EXPOUT
+80 80 101 117 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
 BILINEAR LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
-# Field 4 : 
+# Field 2 : 
 #~~~~~~~~~~~
-VARSND02 WW3___VZ  1 360 1 rstrt.nc EXPOUT
-66 75 101 117 toyt ww3t LAG=+90 
+TOY___VZ WW3_OSSV  1 180 1 r-toy.nc EXPOUT
+80 80 101 117 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
 BICUBIC LR SCALAR LATLON 1 4
+#
+#                     -----------------------------------------
+#                        WW3 (wwatch) ==> TOY (toyexe)
+#                     -----------------------------------------
+#
+#~~~~~~~~~~~
+# Field 3 : 
+#~~~~~~~~~~~
+WW3_CDIR TOY_CDIR 1 180 1 r-ww3.nc EXPOUT
+101 117 80 80 ww3t toyt LAG=+180
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# Field 4 : 
+#~~~~~~~~~~~
+WW3_SDIR TOY_SDIR 1 180 1 r-ww3.nc EXPOUT
+101 117 80 80 ww3t toyt LAG=+180
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
 #
  $END

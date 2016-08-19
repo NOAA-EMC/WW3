@@ -10,6 +10,7 @@ $
 $
 $ &PRO2 DTIME = 21600. /
 $ &PRO3 WDTHCG = 0., WDTHTH = 0. /
+  &OUTS E3D=1 /
 
 END OF NAMELISTS
 $

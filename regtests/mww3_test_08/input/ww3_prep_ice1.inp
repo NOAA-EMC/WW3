@@ -39,7 +39,7 @@ $ IDFM, the second (third) lines give the file unit number and name.
 $
 $  'UNIT' 3 1 '(..T..)' '(..F..)' 
   'NAME' 1 2 '(I10,1x,I10)' '(1000(F5.2))' 
-  402 '../input/ic1.ascii'
+  402 '../input/ice1.ascii'
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

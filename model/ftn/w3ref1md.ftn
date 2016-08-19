@@ -341,7 +341,7 @@
 !
 ! This is the Miche parameter for a beach slope of REFLC(3) 
 !
-        IF(ISNAN(REFLC(3))) THEN
+        IF(REFLC(3)/=REFLC(3)) THEN ! isnan test
           SLOPE=0.001
         ELSE
           SLOPE=MAX(0.001,REFLC(3))

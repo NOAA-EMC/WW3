@@ -1,49 +1,59 @@
-SUBROUTINE function_sent(IOUTDIAG_UNIT,ni,nj, &
-                         coords_1,coords_2, &
-                         fnc_ana,ib, CTYPE_FCT, VALUE)
+SUBROUTINE FUNCTION_SENT(IOUTDIAG_UNIT,INDI_BEG,INDI_END,INDJ_BEG,INDJ_END, &
+                         NI,NJ, NBFIELDS, &
+                         COORDS_1,COORDS_2, &
+                         FNC_ANA, IB, CTYPE_FCT, VALUE, CNAME_FILE, CSNDFIELDS)
   !*********************************************************************************************************************
   !
   IMPLICIT NONE
   !
 #ifdef NO_USE_DOUBLE_PRECISION
-  INTEGER, PARAMETER :: wp = SELECTED_REAL_KIND(6,37)   ! real
+  INTEGER, PARAMETER :: WP = SELECTED_REAL_KIND(6,37)   ! real
 #elif USE_DOUBLE_PRECISION
-  INTEGER, PARAMETER :: wp = SELECTED_REAL_KIND(12,307) ! double
+  INTEGER, PARAMETER :: WP = SELECTED_REAL_KIND(12,307) ! double
 #endif
   !
   ! Constants
   !
-  REAL (kind=wp), PARAMETER    :: dp_pi=3.14159265359
-  REAL (kind=wp), PARAMETER    :: dp_length= 1000.0
-  REAL (kind=wp), PARAMETER    :: dp_conv = dp_pi/180.
+  REAL (KIND=WP), PARAMETER    :: DP_PI=3.14159265359
+  REAL (KIND=WP), PARAMETER    :: DP_LENGTH= 1000.0
+  REAL (KIND=WP), PARAMETER    :: DP_CONV = DP_PI/180.
   !
-  INTEGER, INTENT(in) :: ni,nj,ib
-  INTEGER, INTENT(in) :: IOUTDIAG_UNIT
+  INTEGER, INTENT(IN) :: NI,NJ,IB, NBFIELDS
+  INTEGER, INTENT(IN) :: IOUTDIAG_UNIT
+  INTEGER, INTENT(IN) :: INDI_BEG,INDI_END,INDJ_BEG,INDJ_END
   !
-  INTEGER             :: i,j
+  INTEGER             :: I,J
   !
-  REAL (kind=wp), INTENT(out)         :: fnc_ana(ni,nj)
+  REAL (KIND=WP), INTENT(OUT)         :: FNC_ANA(NI,NJ,NBFIELDS)
   !
-  REAL (kind=wp), INTENT(IN)          :: coords_1(ni,nj)
-  REAL (kind=wp), INTENT(IN)          :: coords_2(ni,nj)
+  REAL (KIND=WP), INTENT(IN)          :: COORDS_1(NI,NJ)
+  REAL (KIND=WP), INTENT(IN)          :: COORDS_2(NI,NJ)
   !
   CHARACTER(LEN=5), INTENT(IN)        :: CTYPE_FCT
   REAL, INTENT(IN)                    :: VALUE
+  CHARACTER(LEN=30), INTENT(IN)       :: CNAME_FILE
+  CHARACTER(LEN=8), DIMENSION(10), INTENT(IN) :: CSNDFIELDS
   !
   !
   IF (CTYPE_FCT .EQ. 'CNSTE') THEN
-    FNC_ANA(:,:)=VALUE
+    FNC_ANA(:,:,:)=VALUE
+    IF (NBFIELDS .GE. 3) THEN
+      FNC_ANA(:,:,2)=0.0
+      FNC_ANA(:,:,3)=0.0
+    END IF
   ELSE IF (CTYPE_FCT .EQ. 'SINUS') THEN
-    DO j=1,nj
-      DO i=1,ni
-        FNC_ANA(i,j) = VALUE*SIN(coords_2(i,j)*dp_conv*dp_length + dp_pi/100.0*ib)
+    DO J=1,NJ
+      DO I=1,NI
+        FNC_ANA(I,J,:) = VALUE*SIN(COORDS_2(I,J)*DP_CONV*DP_LENGTH + DP_PI/100.0*IB)
       ENDDO
     ENDDO
+  ELSE IF (CTYPE_FCT .EQ. 'FILES') THEN
+    CALL READ_FORCING(IOUTDIAG_UNIT,NBFIELDS,INDI_BEG,INDI_END,INDJ_BEG,INDJ_END,IB,CNAME_FILE,CSNDFIELDS,NI,NJ,COORDS_1,COORDS_2,FNC_ANA)
   ELSE
     WRITE(IOUTDIAG_UNIT,*) 'PROBLEM DURING DEFINITION OF THE FUNCTION ANALYTIC : ', CTYPE_FCT
     CALL ABORT
   END IF
   !
   !
-END SUBROUTINE function_sent
+END SUBROUTINE FUNCTION_SENT
 !

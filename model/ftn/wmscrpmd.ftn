@@ -401,8 +401,7 @@
          ' points.'
          WRITE(*,'(4x,I8,A)')NGOODPNTS,' points appear to be OK.'
       ENDIF
-      IF(((NBADPNTS.GT.1000).OR.(NBADPNTS.GT.NGOODPNTS)) &
-         .AND.L_MASTER)THEN
+      IF( (NBADPNTS.GT.(NGOODPNTS/30)) .AND.L_MASTER )THEN
          WRITE(*,'(4x,A)')'Error: excessive SCRIP failure. Stopping.'
          STOP
       ENDIF

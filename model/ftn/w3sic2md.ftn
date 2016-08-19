@@ -40,8 +40,6 @@
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
 !      W3SIC2                 Subr. Public   Ice source term.
-!      LIU_FORWARD_DISPERSION Subr. Private  Dispersion relation calc.
-!      LIU_REVERSE_DISPERSION Subr. Private  Dispersion relation calc.
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -66,11 +64,10 @@
 !/ ------------------------------------------------------------------- /
 !/
       PUBLIC  :: W3SIC2
-      PRIVATE :: LIU_FORWARD_DISPERSION, LIU_REVERSE_DISPERSION
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SIC2 (A, DEPTH, ICEH, CG, WN, IX, IY, S, D)
+      SUBROUTINE W3SIC2 (A, DEPTH, ICEH, CG, WN, IX, IY, S, D, WN_R, CG_ICE,ALPHA)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -86,7 +83,7 @@
 !/    09-Oct-2013 : W3SIC1 SUBTYPE=2 outsourced to W3SIC2 (S. Zieger)
 !/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01 )
 !/    16-Feb-2016 : Passes ICEH as parameter            ( version 5.10 )
-!/
+!/    02-May-2016 : Call to Liu disp moved to w3srce    ( version 5.10 )
 !/        FIXME   : Move field input to W3SRCE and provide
 !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
 !/                : versatile for point output processors ww3_outp
@@ -168,7 +165,9 @@
 !       DEPTH   Real   I   Local water depth
 !       ICEH    Real   I   Ice thickness 
 !       CG      R.A.   I   Group velocities.
+!       CG_ICE  R.A.   I   Group velocities in ice.
 !       WN      R.A.   I   Wavenumbers.
+!       WN_R    R.A.   I   Wavenumbers in ice.
 !       IX,IY   I.S.   I   Grid indices.
 !       S       R.A.   O   Source term (1-D version).
 !       D       R.A.   O   Diagonal term of derivative (1-D version).
@@ -220,9 +219,10 @@
       USE CONSTANTS
       USE W3ODATMD, ONLY: NDSE
       USE W3SERVMD, ONLY: EXTCDE
+      USE W3DISPMD
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC2PARS, DDEN,  & 
                           FLAGLL, YGRD, GTYPE, RLGTYPE
-      USE W3IDATMD, ONLY: INFLAGS2,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,      &
+      USE W3IDATMD, ONLY: INFLAGS2,ICEP1,ICEP2,ICEP3,ICEP4,ICEP5,WLEV,&
                           ICEI
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -236,7 +236,9 @@
       REAL, INTENT(IN)        :: A(NSPEC), DEPTH, ICEH
       REAL, INTENT(IN)        :: CG(NK),   WN(NK)
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
+      REAL, INTENT(IN)       :: ALPHA(NK) ! exponential (spatial) decay rate for energy (1/m)	
       INTEGER, INTENT(IN)     :: IX, IY
+      REAL, INTENT(IN)       :: WN_R(NK), CG_ICE(NK)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -248,15 +250,15 @@
       REAL                    :: D1D(NK)        !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECONC
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential (spatial) decay rate for amplitude (1/m)
-      REAL                    :: WN_R, CG_ICE(NK)
-      REAL                    :: ALPHA ! exponential (spatial) decay rate for energy (1/m)
+      ! REAL                    :: WN_R(NK), CG_ICE(NK)
       REAL                    :: VISCM=1.83E-6 ! molecular viscosity of water at freezing
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
                                  SMOOTH, RE, UORB, AORB, EB,   &
-                                 DELI1, DELI2, FW, XI, FTURB
+                                 DELI1, DELI2, FW, XI, FTURB,  & 
+				                 CG_EFF(NK)
       INTEGER                 :: IND, ITH, IS
       LOGICAL                 :: NOICE=.FALSE.
-                                       ! ALPHA = 2 * WN_I
+        ! Warning, ALPHA = 2 * WN_I -> Makes WN_I useless, doesnt it ?
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -268,11 +270,11 @@
 !
       ALLOCATE(WN_I(NK))
       WN_I     = 0.0
-      ICECOEF1 = ICEH
       ICECOEF2 = 0.0
       ICECONC  = 0.0
-!
-!     Note that ICEP1 is not used here.
+      CG_EFF = 0.
+!	
+      IF (INFLAGS2(-7))ICECOEF1 = ICEH
       IF (INFLAGS2(-6))ICECOEF2 = ICEP2(IX,IY)
       IF (INFLAGS2(4))  ICECONC = ICEI(IX,IY)
 !
@@ -299,9 +301,11 @@
 
          !  ICECOEF1 = H_ICE
          !  ICECOEF2 = VISC
-
+!
+! Branches out depending on choice of dispersion relation... 
+! by default IC2PARS(1)=0, and attenuation computed as described in Stopa et al. 2016
+!
          IF (IC2PARS(1).GT.0.5) THEN 
-
            IF (.NOT.INFLAGS2(-7))THEN
               WRITE (NDSE,1001) 'ICE PARAMETER 1'
               CALL EXTCDE(2)
@@ -312,20 +316,17 @@
            ENDIF
 !
            DO IK=1, NK
-             CALL LIU_FORWARD_DISPERSION (ICECOEF1,ICECOEF2,DEPTH, &
-                  SIG(IK)/TPI,WN_R,CG_ICE(IK),ALPHA)
-             WN_I(IK) = 0.5 * ALPHA !  ALPHA=2*WN_I
-             END DO
-!
-           DO IK=1, NK
-!             recall that D=S/E=-2*Cg*k_i
-             D1D(IK)= -2.0 * CG_ICE(IK) * WN_I(IK)
+!            recall that D=S/E=-2*Cg*k_i
+!            Note: We should not use CG_ICE here unless CG_ICE is also
+!            used for advection in w3wavemd.ftn (see lines for IC3
+!            there).
+             D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
              END DO
 !
 ! Alternative by F.A.: generalization to a turbulent boundary layer
 !                      uses the ice-free dispersion, to be updated later
 !
-         ELSE ! goes here if IC2PARS(1).LE.0.5
+         ELSE ! goes here if IC2PARS(1).LE.0.5 (this is the default behavior) 
            IF (IC2PARS(2).GT.0.) THEN 
              UORB=0.
              AORB=0.
@@ -342,6 +343,8 @@
                  END DO   
 !
 !  UORB and AORB are the variances of the orbital velocity and surface elevation
+! of the water relative to the ice ... this is only correct if the ice layer 
+! does not move. This should be changed by taking into account DMAX.
 !
                UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
                AORB = AORB + EB             * DDEN(IK) / CG(IK)  !deep water only
@@ -368,7 +371,8 @@
            END IF ! IF (IC2PARS(2).GT.0.)  
 !
            DO IK=1, NK
-             DVISC = IC2PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.) 
+! WN_R is used here but warning, this is only OK for unbroken ice
+             DVISC = IC2PARS(6) * WN_R(IK) * SQRT(VISCM* SIG(IK) / 2.) 
              D1D(IK) = -1.*(PTURB*MAX(DTURB*SIG(IK)**2,DVISC) + PVISC*DVISC)
              END DO
            END IF !  IF (IC2PARS(1).GT.0.5)
@@ -407,414 +411,7 @@
 !/ End of W3SIC2 ----------------------------------------------------- /
 !/
       END SUBROUTINE W3SIC2
-!/ ------------------------------------------------------------------- /
-!/
-      SUBROUTINE LIU_FORWARD_DISPERSION (H_ICE,VISC,H_WDEPTH,FWANTED &
-                                         ,K_SOLUTION,CG,ALPHA)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |        W. E. Rogers (NRL-SSC)     |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
-!/                  +-----------------------------------+
-!/
-!/    16-Oct-2012 : Origination.                        ( version 4.04 )
-!/                                                        (E. Rogers)
-!/
-!  1. Purpose :
-!
-!     Dispersion relation calculation: given frequency, find k
-!     This is for dispersion in ice, so it requires the ice thickness
-!     and viscosity also. (the latter is the "eddy viscosity in the 
-!     turbulent boundary layer beneath the ice.").
-!
-!     This subroutine also calculates Cg and alpha.
-!     alpha is the exponential decay rate of *energy* (not to be 
-!     confused with k_i which is the exponential decay rate of 
-!     amplitude) 
-!     
-!     Both alpha and k_i are for spatial decay rate, units (1/m)
-!     Neither is for temporal decay rate.
-!
-!     References:
-!     N/A here, but see subroutine "Liu_reverse_dispersion"
-!
-!  2. Method :
-!
-!     Newton-Raphson. 
-!     For actual dispersion relation, see documentation of subroutine
-!     "Liu_reverse_dispersion"
-!
-!  3. Parameters :
-!
-!      Parameter list
-!     ----------------------------------------------------------------
-!      H_ICE      REAL    I  Ice thickness
-!      VISC       REAL    I  Eddy viscosity (m2/sec)
-!      H_WDEPTH   REAL    I  Water depth
-!      FWANTED    REAL    I  Wave frequency
-!      K_SOLUTION REAL    O  Frequency
-!      CG         REAL    O  Group velocity 
-!      ALPHA      REAL    O  Exponential decay rate of energy 
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name                   | Type |  Module | Description
-!     ----------------------------------------------------------------
-!      Liu_reverse_dispersion | Subr.| W3SIC2MD| As name implies. 
-!      STRACE                 | Subr.| W3SERVMD| Subroutine tracing.
-!      WAVNU1                 | Subr.| W3DISPMD| Wavenumber for waves
-!                                                in open water.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name                   | Type |  Module | Description
-!     ----------------------------------------------------------------
-!      W3SIC2                 | Subr.| W3SIC2MD| S_ice source term
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     Fails if solution is not found in a given number of iterations
-!
-!  7. Remarks :
-!
-!     Eventually, k and Cg should be used for propagation. This is not 
-!     implemented yet. For now, it is only used to calculate the source
-!     term.
-!
-!     For discussion of the eddy viscosity term, see documentation of 
-!     subroutine "Liu_reverse_dispersion"
-!
-!     This subroutine expects eddy viscosity in units of m2/sec even
-!     though values are given in units of cm2/sec in the Liu paper.
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/S   Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: TPI
-      USE W3ODATMD,  ONLY: NDSE
-      USE W3SERVMD,  ONLY: EXTCDE
-      USE W3DISPMD,  ONLY: WAVNU1
-!/S      USE W3SERVMD,  ONLY: STRACE
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-      REAL   , INTENT(IN)  :: H_ICE,H_WDEPTH,FWANTED
-      REAL   , INTENT(IN)  :: VISC    ! in m2/sec
-      REAL   , INTENT(OUT) :: K_SOLUTION,CG,ALPHA
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/S      INTEGER, SAVE     :: IENT = 0
-      REAL, PARAMETER    :: FERRORMAX=1.0E-5  ! maximum acceptable error
-      INTEGER, PARAMETER :: N_ITER=20  ! number of iterations prior to
-                                       ! failure
-      LOGICAL            :: GET_CG     ! indicates whether to get Cg
-                                       ! and alpha 
-                                       ! from "Liu_reverse_dispersion"
-      REAL, ALLOCATABLE  :: FREQ(:)    ! wave frequency at current 
-                                       ! iteration 
-      REAL, ALLOCATABLE  :: KWN(:)     ! wavenumber at current 
-                                       ! iteration 
-      INTEGER            :: ITER       ! iteration number
-      REAL               :: DK,DF,DFDK ! as name implies
-      REAL               :: FDUMMY     ! as name implies
-      REAL               :: SIGMA      ! 2*pi/T
-      REAL               :: K_OPEN     ! open-water value of k
-      REAL               :: CG_OPEN    ! open-water value of Cg
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'LIU_FORWARD_DISPERSION')
-!
-!/ 0) --- Initialize/allocate variables ------------------------------ /
 
-      ALLOCATE ( FREQ(N_ITER) )
-      ALLOCATE ( KWN(N_ITER) )
-
-      GET_CG  = .FALSE.
-
-!/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
-!/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
-
-! First guess for k :
-      SIGMA=FWANTED*TPI
-      CALL WAVNU1(SIGMA,H_WDEPTH,K_OPEN,CG_OPEN)
-!     KWN(1)  = 0.2 ! (old method)
-      KWN(1)  =K_OPEN ! new method, Mar 10 2014
-!
-!/ 1) ----- Iteration loop to find k --------------------------------- /
-      ITER = 0
-      DF   = 999.
-      DO WHILE ( ABS(DF).GE.FERRORMAX .AND. ITER.LE.N_ITER )
-         ITER = ITER + 1
-         ! compute freq for this iteration
-         CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,KWN(ITER), &
-                                     GET_CG,FREQ(ITER),CG,ALPHA)
-
-         ! calculate dk
-         IF (ITER == 1)THEN
-            ! We do not have slope yet, so pick a number...
-            DK = 0.01
-         ELSEIF (ITER.EQ.N_ITER+1) THEN
-            WRITE(NDSE,800) N_ITER
-            CALL EXTCDE(2)
-         ELSE
-            ! use slope
-            DFDK = (FREQ(ITER)-FREQ(ITER-1)) / (KWN(ITER)-KWN(ITER-1))
-            DF   = FWANTED - FREQ(ITER)
-!/T38       WRITE(*,*)'ITER = ',ITER,' ;  K = ',KWN(ITER),' ; F = ', &
-!/T38                  FREQ(ITER),' ; DF = ',DF
-            DK   = DF / DFDK
-         ENDIF
-
-         ! Decide on next k to try
-         KWN(ITER+1) = KWN(ITER) + DK
-         ! If we end up with a negative k for the next iteration, don't 
-         !   allow this. 
-         IF(KWN(ITER+1) < 0.0)THEN
-            KWN(ITER+1) = TPI / 1000.0
-         ENDIF
-
-      ENDDO
-
-!/ 2) -------- Finish up. -------------------------------------------- /
-!     Success, so return K_SOLUTION, and call LIU_REVERSE_DISPERSION one
-!     last time, to get CG and ALPHA
-
-      K_SOLUTION = KWN(ITER)
-      GET_CG     = .TRUE.
-      CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,K_SOLUTION, &
-           GET_CG,FDUMMY,CG,ALPHA)
-
-      DEALLOCATE ( FREQ )
-      DEALLOCATE ( KWN )
-!
-!/T38      WRITE(*,*)'FORWARD OUT: K_SOLUTION,CG,ALPHA = ', &
-!/T38                          K_SOLUTION,CG,ALPHA
-!/T38      IF (H_ICE==1.0)THEN
-!/T38         WRITE(*,*)FWANTED,ALPHA
-!/T38      ENDIF
-!
-  800 FORMAT (/' *** WAVEWATCH III ERROR IN '           &
-               'W3SIC2_LIU_FORWARD_DISPERSION : ' /     &
-               '     NO SOLUTION FOUND AFTER ',I4,' ITERATIONS.')
-!/
-!/ End of LIU_FORWARD_DISPERSION ------------------------------------- /
-!/
-      END SUBROUTINE LIU_FORWARD_DISPERSION
-!/ ------------------------------------------------------------------- /
-!/
-      SUBROUTINE LIU_REVERSE_DISPERSION (H_ICE,VISC,H_WDEPTH,KWN &
-             ,GET_CG,FREQ,CG,ALPHA)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |        W. E. Rogers (NRL-SSC)     |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-Oct-2013 |
-!/                  +-----------------------------------+
-!/
-!/    12-Oct-2012 : Origination.                        ( version 4.04 )
-!/                                                        (E. Rogers)
-!/
-!  1. Purpose :
-!
-!     Dispersion relation calculation: given k, find frequency.
-!     This is for dispersion in ice, so it requires the ice thickness
-!     and viscosity also. (the latter is the "eddy viscosity in the 
-!     turbulent boundary layer beneath the ice.").
-!
-!     This subroutine also (optionally) calculates Cg and alpha.
-!     alpha is the exponential decay rate of *energy* (not to be 
-!     confused with k_i which is the exponential decay rate of 
-!     amplitude)
-!     
-!     Both alpha and k_i are for spatial decay rate, units (1/m)
-!     Neither is for temporal decay rate.
-
-!     This calculation is optional for reasons of computational 
-!      efficiency (don't calculate if it will not be used). Note that 
-!      if Cg and alpha are not calculated, the value of input viscosity
-!      is irrelevant.
-!
-!     References:
-!       Liu et al.    1991: JGR 96 (C3), 4605-4621
-!       Liu and Mollo 1988: JPO 18       1720-1712 
-!
-!  2. Method :
-!
-!     In 1991 paper, see equations on page 4606. The key equations are:
-!     sigma2=(grav*k+B*k^5)/((coth(k*H_wdepth))+k*M);
-!     Cg=(grav+(5+4*k*M)*(B*k^4))/((2*sigma)*((1+k*M)^2));
-!     alpha=(sqrt(visc)*k*sqrt(sigma))/(Cg*sqrt(2)*(1+k*M));
-!
-!  3. Parameters :
-!
-!      Parameter list
-!     ----------------------------------------------------------------
-!      H_ICE     REAL    I  Ice thickness
-!      VISC      REAL    I  Eddy viscosity (if GET_CG) (m2/sec)
-!      H_WDEPTH  REAL    I  Water depth
-!      KWN       REAL    I  Wavenumber
-!      GET_CG    LOGICAL I  Indicates whether to calculate Cg and alpha
-!      FREQ      REAL    O  Frequency
-!      CG        REAL    O  Group velocity (if GET_CG)
-!      ALPHA     REAL    O  Exponential decay rate of energy (if GET_CG)
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD Subroutine tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name                  | Type |  Module | Description
-!     ----------------------------------------------------------------
-!      Liu_forward_dispersion| Subr.| W3SIC2MD| As name implies. 
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!       None.
-!
-!  7. Remarks :
-!
-!     Eventually, k and Cg should be used for propagation. This is not 
-!     implemented yet. For now, it is only used to calculate the source
-!     term.
-!
-!     The eddy viscosity term given by Liu is unfortunately highly 
-!     variable, and "not a physical parameter", which suggests that it
-!     is difficult to specify in practice. In this paper, we see values
-!     of:
-!     nu= 160.0e-4 m2/sec (Brennecke (1921)
-!     nu=  24.0e-4 m2/sec (Hunkins 1966)
-!     nu=3450.0e-4 m2/sec (Fig 11)
-!     nu=   4.0e-4 m2/sec (Fig 12)
-!     nu= 150.0e-4 m2/sec (Fig 13)
-!     nu=  54.0e-4 m2/sec (Fig 14)
-!     nu= 384.0e-4 m2/sec (Fig 15)
-!     nu=1536.0e-4 m2/sec (Fig 16)
-!
-!     The paper states: "The only tuning parameter is the turbulent eddy
-!     viscosity, and it is a function of the flow conditions in the
-!     turbulent boundary layer which are determined by the ice 
-!     thickness, floe sizes, ice concentration, and wavelength."
-!
-!     Another criticism of this source term is that it does not use the 
-!     ice concentration in actual calculations. The method appears to 
-!     simply rely on concentration being high, "When the ice is highly
-!     compact with high concentration, the flexural waves obey the 
-!     dispersion relation (1) as similar waves in a continuous ice 
-!     sheet." Later, "Five of these  cases with high ice conentration
-!     (larger than 60%) in the MIZ have been selected"
-!
-!     This subroutine expects eddy viscosity in units of m2/sec even
-!     though values are given in units of cm2/sec in the Liu paper.
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/S   Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: DWAT, TPI, GRAV
-!/S      USE W3SERVMD,  ONLY: STRACE
-!/
-      IMPLICIT NONE
-!/
-!/ ------------------------------------------------------------------- /
-!/ Parameter list
-      REAL   , INTENT(IN)  :: H_ICE,H_WDEPTH,KWN
-      REAL   , INTENT(IN)  :: VISC    ! in m2/sec
-      LOGICAL, INTENT(IN)  :: GET_CG
-      REAL   , INTENT(OUT) :: FREQ,CG,ALPHA
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/S      INTEGER, SAVE     :: IENT = 0
-      REAL, PARAMETER   :: E = 6.0E+9 ! Young's modulus of elasticity
-      REAL, PARAMETER   :: S = 0.3    ! "s", Poisson's ratio
-      REAL              :: DICE       ! "dice", density of ice
-      REAL              :: B          ! quantifies effect of bending
-                                      ! of ice
-      REAL              :: M          ! quantifies effect of inertia
-                                      ! of ice
-      REAL              :: COTHTERM   ! temporary variable
-      REAL              :: SIGMA      ! 2*pi/T
-      REAL              :: KH         ! k*h
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!/S      CALL STRACE (IENT, 'LIU_REVERSE_DISPERSION')
-!
-!/ 0) --- Initialize essential parameters ---------------------------- /
-      CG    = 0.
-      ALPHA = 0.
-      FREQ  = 0.
-      DICE = DWAT * 0.9 ! from Liu 1991 pg 4606
-
-!/T38      WRITE(*,*)'REVERSE IN: H_ICE,VISC,H_WDEPTH,KWN,GET_CG = ', &
-!/T38                          H_ICE,VISC,H_WDEPTH,KWN,GET_CG
-
-!
-!/ 1) --- Calculate frequency ---------------------------------------- /
-
-! Note: Liu et al 1991 have "kwn*h_ice" in COTH(_) but I believe they
-! meant to write "kwn*H_wdepth"
-
-      B  = (E * H_ICE**3) / (12. * (1. - S**2) * DWAT)
-      M  = DICE * H_ICE / DWAT
-      KH = KWN * H_WDEPTH
-      IF ( KH>5.0 ) THEN
-         COTHTERM = 1.0
-      ELSEIF ( KH<1.0E-4 ) THEN
-         COTHTERM = 1.0 / KH
-      ELSE
-         COTHTERM = COSH(KH) / SINH(KH)
-      ENDIF
-      SIGMA = SQRT((GRAV * KWN + B * KWN**5) / (COTHTERM + KWN * M))
-      FREQ  = SIGMA/(TPI)
-
-!/ 2) --- Calculate Cg and alpha if requested ------------------------ /
-
-      IF (GET_CG) THEN
-         CG    = (GRAV + (5.0+4.0 * KWN * M) * (B * KWN**4)) &
-               / (2.0 * SIGMA * ((1.0 + KWN * M)**2))
-         ALPHA = (SQRT(VISC) * KWN * SQRT(SIGMA)) &
-               / (CG * SQRT(2.0) * (1 + KWN * M))
-      ENDIF
-
-!/T38      WRITE(*,*)'REVERSE OUT: FREQ,CG,ALPHA = ',FREQ,CG,ALPHA
-
-!/
-!/ End of LIU_REVERSE_DISPERSION ------------------------------------- /
-!/
-      END SUBROUTINE LIU_REVERSE_DISPERSION
-!/ ------------------------------------------------------------------- /
 !/
 !/ End of module W3SIC2MD -------------------------------------------- /
 !/

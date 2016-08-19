@@ -1,391 +1,491 @@
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-MODULE w3ogcmmd
-
-   !===========================================================================
-   !                   ***  MODULE  w3ogcmmd  ***
-   !
-   ! Module used for coupling applications between OCEAN model and WW3 with OASIS3-MCT 
-   !
-   !===========================================================================
-
-   IMPLICIT NONE
-
-   INCLUDE "mpif.h"
-
-   PRIVATE
-
-  !! * Accessibility
-  PUBLIC snd_fields_to_ocean
-  PUBLIC rcv_fields_from_ocean
-
-  CONTAINS
-
-
-   !======================================================================
-
-  
-  SUBROUTINE snd_fields_to_ocean(id_oasis_time)
-
-   !&E---------------------------------------------------------------------
-   !&E                 *** ROUTINE snd_fields_to_ocean  ***
-   !&E
-   !&E ** Purpose : Send coupling fields to ocean model 
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E ** Called by : 
-   !&E
-   !&E ** External calls :
-   !&E
-   !&E ** Used ij-arrays :
-   !&E
-   !&E ** Modified variables : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E        2013-10 : A. THEVENIN (CERFACS) : Creation 
-   !&E
-   !&E---------------------------------------------------------------------
-
-   USE W3OACPMD,  ONLY: il_nb_snd, snd_fld, cpl_oasis_snd
-   USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
-   USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
-                        TAUWIX, TAUWIY, WLM
-   USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
-   USE CONSTANTS, ONLY: PI, DERA
-
-   !! * Argument
-   INTEGER, INTENT(IN) :: id_oasis_time
-
-   !! * Local declaration
-   INTEGER                        :: I, ISEA, IX, IY
-   INTEGER, DIMENSION(NSEAL)      :: MASK
-   REAL(kind=8), DIMENSION(NSEAL,1) :: rla_oasis_snd
-   INTEGER                        :: ib_do
-   LOGICAL                        :: ll_action   
-   REAL(kind=8), DIMENSION(NSEAL) :: TMP
-
-   !!----------------------------------------------------------------------
-   !! * Executable part
-
-   DO I = 1, NSEAL
-     ISEA = IAPROC + (I-1)*NAPROC
-     IX = MAPSF(ISEA,1)
-     IY = MAPSF(ISEA,2)
-     ! Get the mask : 1 - sea 0 - open boundary cells dried cells
-     MASK(I) = MOD(MAPSTA(IY,IX),2)
-   END DO
-
-   DO ib_do = 1, il_nb_snd
-
-      ! Mask - wet-drying
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3__DRY') THEN
-         rla_oasis_snd(:,1) = DBLE(MASK(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Mean wave period (tmn in s) (m0,-1)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_T0M1') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(T0M1 /= UNDEF) TMP=T0M1
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Wave height (hs in m)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3__oHS') THEN
-         rla_oasis_snd(:,1) = DBLE(HS(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Cosinus of Mean wave direction (dir * cos(theta) in radians)
-      ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
-      ! theta : trigonometric convention ( 0 at East, 90 at North)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_CDIR') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(THM /= UNDEF)
-            ! reference from ounf (oceanographic convention): MOD ( 630. - RADE*THM(:) , 360. )
-            TMP(1:NSEAL) = MOD ( 7*pi/2 - THM(:) , 2*pi )
-            TMP(1:NSEAL) = TMP(1:NSEAL) * cos( MOD( pi + THM(:) , 2*pi ) )
-         END WHERE
-         rla_oasis_snd(:,1) = TMP(1:NSEAL)
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Sinus of Mean wave direction (dir* sin(theta) in radians)
-      ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
-      ! theta : trigonometric convention ( 0 at East, 90 at North)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_SDIR') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(THM /= UNDEF)
-            TMP(1:NSEAL) = MOD ( 7*pi/2 - THM(:) , 2*pi )
-            TMP(1:NSEAL) = TMP(1:NSEAL) * sin( MOD( pi + THM(:) , 2*pi ) )
-         END WHERE
-         rla_oasis_snd(:,1) = TMP(1:NSEAL)
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Wave-induced Bernoulli head pressure (bhd in N.m-1) (J term, Smith JPO 2006)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3__BHD') THEN
-         rla_oasis_snd(:,1) = DBLE(BHD(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Wave-ocean momentum flux (tauox in m2.s-2)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_TWOX') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(TAUOX /= UNDEF) TMP(:)=TAUOX(:)
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Wave-ocean momentum flux (tauoy in m2.s-2)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_TWOY') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(TAUOY /= UNDEF) TMP(:)=TAUOY (:)
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3__UBR') THEN
-         rla_oasis_snd(:,1) = DBLE(UBA(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Wave-to-ocean TKE flux (phioc in W.m-2)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3__FOC') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(PHIOC /= UNDEF) TMP(:)=PHIOC(:)
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Net wave-supported stress, u component (tauwix in m2.s-2)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_TAWX') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(TAUWIX /= UNDEF) TMP(:)=TAUWIX(:)
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Net wave-supported stress, v component (tauwix in m2.s-2)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3_TAWY') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(TAUWIY /= UNDEF) TMP(:)=TAUWIY(:)
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-      ! Mean wave length (wlm in m)
-      IF (snd_fld(ib_do)%cl_field_name == 'WW3___LM') THEN
-         TMP(1:NSEAL) = 0.0
-         WHERE(WLM /= UNDEF) TMP(:)=WLM(:)
-         rla_oasis_snd(:,1) = DBLE(TMP(1:NSEAL))
-         CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-      ENDIF
-
-
-      ! According to the present implementation, fields are sent at each coupling time step to OASIS
-      ! Consequently, OASIS cannot estimate any time average
-      ! For such an application, one must estimate the fields at each time step
-      ! (or a time step smaller than the coupling time step).
-      ! In such conditions, OASIS get the information every time step
-      ! but only send the information to the other code when the time matches the coupling time.
-      !CALL cpl_oasis_snd(ib_do, id_oasis_time, rla_oasis_snd, ll_action)
-
-   ENDDO
-
-  END SUBROUTINE snd_fields_to_ocean
-
-
-   !======================================================================
-
-  
-  SUBROUTINE rcv_fields_from_ocean(id_oasis_time, id_lcomm, IDFLD, FXN, FYN, FAN)
-
-   !&E---------------------------------------------------------------------
-   !&E                 *** ROUTINE rcv_fields_from_ocean  ***
-   !&E
-   !&E ** Purpose : Receive coupling fields from ocean model
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E    IDFLD   C*3  I/O ID string for field type, valid are: 'LEV', 'CUR' (J=1,2)
-   !&E    FXN
-   !&E    FYN
-   !&E    FAN
-   !&E
-   !&E ** Called by : 
-   !&E
-   !&E ** External calls :
-   !&E
-   !&E ** Used ij-arrays :
-   !&E
-   !&E ** Modified variables : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E        2013-10 : A. THEVENIN (CERFACS) : Creation 
-   !&E        2015-04 : M. ACCENSI (IFREMER)  : Modification for ww3 coupling
-   !&E
-   !&E---------------------------------------------------------------------
-
-   USE W3OACPMD, ONLY: il_nb_rcv, rcv_fld, cpl_oasis_rcv
-   USE W3GDATMD, ONLY: NX, NY, NSEAL, NSEA, MAPSF
-   USE W3ODATMD, ONLY: NAPROC, IAPROC
-   USE W3SERVMD, ONLY: W3S2XY
-
-   !! * Argument
-   INTEGER, INTENT(IN)              :: id_oasis_time, id_lcomm
-   CHARACTER(LEN=3), INTENT(IN)     :: IDFLD
-   REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
-
-   !! * Local declaration
-   LOGICAL                          :: ll_action   
-   INTEGER                          :: ib_do, ib_i, ib_j, il_err
-   INTEGER, SAVE                    :: id_oasis_time_newexchange = -1
-   REAL(kind=8), DIMENSION(NSEAL,1) :: rla_oasis_rcv
-   REAL(kind=8), DIMENSION(NSEAL)   :: TMP, MASKT, MASKU, MASKV
-   REAL, DIMENSION(1:NSEA)          :: SND_BUFF,RCV_BUFF
-   REAL, DIMENSION(0:NSEA)          :: SND_BUFF1,RCV_BUFF1
-
-   !!----------------------------------------------------------------------
-   !! * Executable part
-
-   MASKT(:)=1.
-   MASKU(:)=1.
-   MASKV(:)=1.
-   rla_oasis_rcv(:,:) = 0.0
-
-   ! Perform mask variables
-   IF (id_oasis_time > id_oasis_time_newexchange) THEN
-
-      DO ib_do = 1, il_nb_rcv
-
-         ! Land mask
-         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDH') THEN
-
-            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-            IF (ll_action) THEN
-               MASKT(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
-            ENDIF
+      MODULE W3OGCMMD
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           A. Thevenin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          April-2016 |
+!/                  +-----------------------------------+
+!/
+!/    Jul-2013 : Origination.                       ( version 4.18 )
+!/               For upgrades see subroutines.
+!/    Apr-2016 : Add comments (J. Pianezze)         ( version 5.07 )
+!/
+!/    Copyright 2009-2012 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     Module used for coupling applications between oceanic model and WW3 with OASIS3-MCT 
+!
+!  2. Variables and types :
+!
+!  3. Subroutines and functions :
+!
+!      Name                   Type  Scope    Description
+!     ----------------------------------------------------------------
+!      SND_FIELDS_TO_OCEAN    Subr. Public   Send fields to ocean model
+!      RCV_FIELDS_FROM_OCEAN  Subr. Public   Receive fields from ocean model
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines and functions used :
+!
+!      Name                Type  Module    Description
+!     ----------------------------------------------------------------
+!      CPL_OASIS_SEND       Subr.   W3OACPMD   Send fields
+!      CPL_OASIS_RECV       Subr.   W3OACPMD   Receive fields
+!     ----------------------------------------------------------------
+!
+!  5. Remarks
+!  6. Switches :
+!  7. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+      IMPLICIT NONE
+!
+      INCLUDE "mpif.h"
+!
+      PRIVATE
+!
+! * Accessibility
+      PUBLIC SND_FIELDS_TO_OCEAN
+      PUBLIC RCV_FIELDS_FROM_OCEAN
+!
+      CONTAINS
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE SND_FIELDS_TO_OCEAN()
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           A. Thevenin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          April-2016 |
+!/                  +-----------------------------------+
+!/
+!/    Jul-2013 : Origination.                    ( version 4.18 )
+!/    Apr-2016 : Add comments (J. Pianezze)      ( version 5.07 )
+!/
+!  1. Purpose :
+!
+!     Send coupling fields to oceanic model
+!
+!  2. Method :
+!  3. Parameters :
+!  4. Subroutines used :
+!
+!     Name             Type    Module     Description
+!     -------------------------------------------------------------------
+!     CPL_OASIS_SND    Subr.   W3OACPMD   Send field to atmos/ocean model
+!     -------------------------------------------------------------------
+!
+!  5. Called by :
+!
+!      Name            Type    Module     Description
+!     ------------------------------------------------------------------
+!     W3WAVE           Subr.   W3WAVEMD   Wave model 
+!     ------------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks :
+!
+!     According to the present implementation, fields are sent at each coupling time step to OASIS
+!     Consequently, OASIS cannot estimate any time average
+!     For such an application, one must estimate the fields at each time step
+!     (or a time step smaller than the coupling time step).
+!     In such conditions, OASIS get the information every time step
+!     but only send the information to the other code when the time matches the coupling time.
+!
+!  8. Structure :
+!  9. Switches :
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+      USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
+      USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
+      USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
+                           TAUWIX, TAUWIY, WLM
+      USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
+      USE CONSTANTS, ONLY: PI, DERA
+!
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+!
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                        :: I, ISEA, IX, IY
+      INTEGER, DIMENSION(NSEAL)      :: MASK
+      REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_SND
+      INTEGER                        :: IB_DO
+      LOGICAL                        :: LL_ACTION   
+      REAL(kind=8), DIMENSION(NSEAL) :: TMP
+!
+!----------------------------------------------------------------------
+! * Executable part
+!
+      DO I = 1, NSEAL
+         ISEA = IAPROC + (I-1)*NAPROC
+         IX = MAPSF(ISEA,1)
+         IY = MAPSF(ISEA,2)
+         ! Get the mask : 1 - sea 0 - open boundary cells dried cells
+         MASK(I) = MOD(MAPSTA(IY,IX),2)
+      END DO
+      !
+      DO IB_DO = 1, IL_NB_SND
+         !
+         ! Mask - wet-drying
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ODRY') THEN
+            RLA_OASIS_SND(:,1) = DBLE(MASK(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
-
-         ! Land mask
-         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDU') THEN
-            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-            IF (ll_action) THEN
-               MASKU(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
-            ENDIF
+         !
+         ! Mean wave period (tmn in s) (m0,-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_T0M1') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(T0M1 /= UNDEF) TMP=T0M1
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
-
-         ! Land mask
-         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__WDV') THEN
-            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-            IF (ll_action) THEN
-               MASKV(1:NSEAL)  = rla_oasis_rcv(1:NSEAL,1)
-            ENDIF
+         !
+         ! Wave height (hs in m)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__OHS') THEN
+            RLA_OASIS_SND(:,1) = DBLE(HS(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
-
+         !
+         ! Cosinus of Mean wave direction (cos(theta) in radians)
+         ! ---------------------------------------------------------------------
+         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! theta : trigonometric convention ( 0 at East, 90 at North)
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_CDIR') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(THM /= UNDEF) TMP=COS(THM)
+            RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Sinus of Mean wave direction (sin(theta) in radians)
+         ! ---------------------------------------------------------------------
+         ! dir : oceanographic convention (GRIDDED files) - 0 degree from north, 90 from east 
+         ! theta : trigonometric convention ( 0 at East, 90 at North)
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_SDIR') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(THM /= UNDEF) TMP=SIN(THM)
+            RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Wave-induced Bernoulli head pressure (bhd in N.m-1) (J term, Smith JPO 2006)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__BHD') THEN
+            RLA_OASIS_SND(:,1) = DBLE(BHD(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Wave-ocean momentum flux (tauox in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOX') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUOX /= UNDEF) TMP(:)=TAUOX(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Wave-ocean momentum flux (tauoy in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUOY /= UNDEF) TMP(:)=TAUOY (:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__UBR') THEN
+            RLA_OASIS_SND(:,1) = DBLE(UBA(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Wave-to-ocean TKE flux (phioc in W.m-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FOC') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(PHIOC /= UNDEF) TMP(:)=PHIOC(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Net wave-supported stress, u component (tauwix in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TAWX') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUWIX /= UNDEF) TMP(:)=TAUWIX(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Net wave-supported stress, v component (tauwix in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TAWY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUWIY /= UNDEF) TMP(:)=TAUWIY(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Mean wave length (wlm in m)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___LM') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(WLM /= UNDEF) TMP(:)=WLM(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
       ENDDO
+!/ ------------------------------------------------------------------- /
+     END SUBROUTINE SND_FIELDS_TO_OCEAN
+!/ ------------------------------------------------------------------- /
+     SUBROUTINE RCV_FIELDS_FROM_OCEAN(ID_LCOMM, IDFLD, FXN, FYN, FAN)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           A. Thevenin             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          April-2016 |
+!/                  +-----------------------------------+
+!/
+!/    Jul-2013 : Origination.                               ( version 4.18 )
+!/    Apr-2014 : Add IDFLD, FXN, FYX and FAN (M. Accensi)   ( version 5.07 )
+!/    Apr-2016 : Add comments (J. Pianezze)                 ( version 5.07 )
+!/
+!  1. Purpose :
+!
+!     Receive coupling fields from oceanic model
+!
+!  2. Method :
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ID_LCOMM          Char.     I     MPI communicator
+!     IDFLD             Int.      I     Name of the exchange fields    
+!     FXN               Int.     I/O    First exchange field
+!     FYN               Int.     I/O    Second exchange field
+!     FAN               Int.     I/O    Third exchange field
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     Name             Type    Module     Description
+!     -------------------------------------------------------------------
+!     CPL_OASIS_RCV    Subr.   W3OACPMD   Receive fields from atmos/ocean model
+!     W3S2XY           Subr.   W3SERVMD   Convert from storage (NSEA) to spatial grid (NX, NY)
+!     -------------------------------------------------------------------
+!
+!  5. Called by :
+!
+!     Name            Type    Module     Description
+!     ------------------------------------------------------------------
+!     W3FLDG          Subr.   W3FLDSMD   Manage input fields of depth,
+!                                        current, wind and ice concentration
+!     ------------------------------------------------------------------
+!
+!  6. Error messages :
+!  7. Remarks :
+!
+!     IDFLD   C*3  I/O ID string for field type, valid are: 'LEV', 'CUR' (J=1,2)
+!
+!  8. Structure :
+!  9. Switches :
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+      USE W3OACPMD, ONLY: ID_OASIS_TIME, IL_NB_RCV, RCV_FLD, CPL_OASIS_RCV
+      USE W3GDATMD, ONLY: NX, NY, NSEAL, NSEA, MAPSF
+      USE W3ODATMD, ONLY: NAPROC, IAPROC
+      USE W3SERVMD, ONLY: W3S2XY
+!
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)              :: ID_LCOMM
+      CHARACTER(LEN=3), INTENT(IN)     :: IDFLD
+      REAL, INTENT(INOUT)              :: FXN(:,:), FYN(:,:), FAN(:,:)
+!
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      LOGICAL                          :: LL_ACTION   
+      INTEGER                          :: IB_DO, IB_I, IB_J, IL_ERR
+      INTEGER, SAVE                    :: ID_OASIS_TIME_WETDRYONLYONCE = -1
+      REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_RCV
+      REAL(kind=8), DIMENSION(NSEAL)   :: TMP, MASKT, MASKU, MASKV
+      REAL, DIMENSION(1:NSEA)          :: SND_BUFF,RCV_BUFF
+      REAL, DIMENSION(0:NSEA)          :: SND_BUFF1,RCV_BUFF1
+!
+!----------------------------------------------------------------------
+! * Executable part
+!
+      MASKT(:)=1.
+      MASKU(:)=1.
+      MASKV(:)=1.
+      RLA_OASIS_RCV(:,:) = 0.0
+!
+! ---------------------------------------------------------------------
+! Perform mask variables
+! ---------------------------------------------------------------------
+!
+! For the same coupling time, W3FLDG is called for the level and current variables.
+! As RCV_FIELDS_FROM_OCEAN is called from W3FLDG, the following test prevents to 
+! exchange the wet-dry variables more than once per coupling time.
 
-   ENDIF
+      IF (ID_OASIS_TIME > ID_OASIS_TIME_WETDRYONLYONCE) THEN
+         !
+         DO IB_DO = 1, IL_NB_RCV
+            !
+            ! Land mask - u
+            ! ---------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDH') THEN
 
-   ! Treatment of the dynamical variables
-   DO ib_do = 1, il_nb_rcv
-
-      IF (IDFLD == 'LEV') THEN
-
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  MASKT(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
+               ENDIF
+            ENDIF
+            !
+            ! Land mask - h
+            ! ---------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDU') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  MASKU(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
+               ENDIF
+            ENDIF
+            !
+            ! Land mask - v
+            ! ---------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDV') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  MASKV(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
+               ENDIF
+            ENDIF
+            !
+         ENDDO
+         !
+      ENDIF
+!
+! ---------------------------------------------------------------------
+! Treatment of the dynamical variables
+! ---------------------------------------------------------------------
+      DO IB_DO = 1, IL_NB_RCV
+         !
          ! Sea surface Height (m)
-         IF (rcv_fld(ib_do)%cl_field_name == 'WW3__SSH') THEN
-            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-            IF (ll_action) THEN
-               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKT(1:NSEAL)
-               SND_BUFF(1:NSEA) = 0.0
-               DO ib_i = 1, NSEAL
-                  ib_j = IAPROC + (ib_i-1)*NAPROC
-                  SND_BUFF(ib_j) = TMP(ib_i)
-               ENDDO
-
-               CALL MPI_Allreduce(SND_BUFF(1:NSEA), &
-                                  RCV_BUFF(1:NSEA), &
-                                  NSEA,     &
-                                  MPI_REAL, &
-                                  MPI_SUM,  &
-                                  id_lcomm, &
-                                  il_err)
-
-               ! Convert from storage (NSEA) to spatial grid (NX, NY)
-               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-
+         ! ---------------------------------------------------------------------
+         IF (IDFLD == 'LEV') THEN
+         !
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__SSH') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKT(1:NSEAL)
+                  SND_BUFF(1:NSEA) = 0.0
+                  DO IB_I = 1, NSEAL
+                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     SND_BUFF(IB_J) = TMP(IB_I)
+                  ENDDO
+                  !
+                  CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                                     RCV_BUFF(1:NSEA), &
+                                     NSEA,     &
+                                     MPI_REAL, &
+                                     MPI_SUM,  &
+                                     ID_LCOMM, &
+                                     IL_ERR)
+                  !
+                  ! Convert from storage (NSEA) to spatial grid (NX, NY)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+                  !
+               ENDIF
             ENDIF
          ENDIF
-
-      ENDIF
-
-      IF (IDFLD == 'CUR') THEN
-
-
-         ! Ocean sea surface current (m.s-1) (u-component)
-         IF (rcv_fld(ib_do)%cl_field_name == 'WW3___UZ') THEN
-            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-            IF (ll_action) THEN
-               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKU(1:NSEAL)
-               SND_BUFF1(0:NSEA) = 0.0
-               DO ib_i = 1, NSEAL
-                  ib_j = IAPROC + (ib_i-1)*NAPROC
-                  SND_BUFF1(ib_j) = TMP(ib_i)
-               ENDDO
-
-               CALL MPI_Allreduce(SND_BUFF1(0:NSEA),       &
-                                  RCV_BUFF1(0:NSEA),       &
-                                  NSEA+1,   &
-                                  MPI_REAL, &
-                                  MPI_SUM,  &
-                                  id_lcomm, &
-                                  il_err)
-
-               ! Convert from storage (NSEA) to spatial grid (NX, NY)
-               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FXN)
-
+         !
+         ! Ocean sea surface current (m.s-1)
+         ! ---------------------------------------------------------------------
+         IF (IDFLD == 'CUR') THEN
+         !
+            ! u-component
+            ! ---------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSU') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKU(1:NSEAL)
+                  SND_BUFF1(0:NSEA) = 0.0
+                  DO IB_I = 1, NSEAL
+                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     SND_BUFF1(IB_J) = TMP(IB_I)
+                  ENDDO
+                  !
+                  CALL MPI_ALLREDUCE(SND_BUFF1(0:NSEA),       &
+                                     RCV_BUFF1(0:NSEA),       &
+                                     NSEA+1,   &
+                                     MPI_REAL, &
+                                     MPI_SUM,  &
+                                     ID_LCOMM, &
+                                     IL_ERR)
+                  !
+                  ! Convert from storage (NSEA) to spatial grid (NX, NY)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FXN)
+                  !
+               ENDIF
+            ENDIF
+            !
+            ! v-component
+            ! ---------------------------------------------------------------------
+            IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSV') THEN
+               CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+               IF (LL_ACTION) THEN
+                  TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKV(1:NSEAL)
+                  SND_BUFF1(0:NSEA) = 0.0
+                  DO IB_I = 1, NSEAL
+                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     SND_BUFF1(IB_J) = TMP(IB_I)
+                  ENDDO
+                  !
+                  CALL MPI_ALLREDUCE(SND_BUFF1(0:NSEA),       &
+                                     RCV_BUFF1(0:NSEA),       &
+                                     NSEA+1,   &
+                                     MPI_REAL, &
+                                     MPI_SUM,  &
+                                     ID_LCOMM, &
+                                     IL_ERR)
+                  !
+                  ! Convert from storage (NSEA) to spatial grid (NX, NY)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FYN)
+                  !
+               ENDIF
             ENDIF
          ENDIF
-
-         ! Ocean sea surface current (m.s-1) (v-component)
-         IF (rcv_fld(ib_do)%cl_field_name == 'WW3___VZ') THEN
-            CALL cpl_oasis_rcv(ib_do, id_oasis_time, rla_oasis_rcv, ll_action)
-            IF (ll_action) THEN
-               TMP(1:NSEAL) = rla_oasis_rcv(1:NSEAL,1) * MASKV(1:NSEAL)
-               SND_BUFF1(0:NSEA) = 0.0
-               DO ib_i = 1, NSEAL
-                  ib_j = IAPROC + (ib_i-1)*NAPROC
-                  SND_BUFF1(ib_j) = TMP(ib_i)
-               ENDDO
-
-               CALL MPI_Allreduce(SND_BUFF1(0:NSEA),       &
-                                  RCV_BUFF1(0:NSEA),       &
-                                  NSEA+1,   &
-                                  MPI_REAL, &
-                                  MPI_SUM,  &
-                                  id_lcomm, &
-                                  il_err)
-
-               ! Convert from storage (NSEA) to spatial grid (NX, NY)
-               CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FYN)
-
-            ENDIF
-         ENDIF
-
-      ENDIF
-
-   ENDDO
-
-   id_oasis_time_newexchange = id_oasis_time
-
-  END SUBROUTINE rcv_fields_from_ocean
-
-END MODULE w3ogcmmd
+      ENDDO
+!
+      ID_OASIS_TIME_WETDRYONLYONCE = ID_OASIS_TIME
+!
+!/ ------------------------------------------------------------------- /
+      END SUBROUTINE RCV_FIELDS_FROM_OCEAN
+!/ ------------------------------------------------------------------- /
+!/
+      END MODULE W3OGCMMD
+!/
+!/ ------------------------------------------------------------------- /

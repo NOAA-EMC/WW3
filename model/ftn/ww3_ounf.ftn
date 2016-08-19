@@ -130,7 +130,7 @@
                                  NDSTRC, NTRACE, IERR, I, J, I1F, I2F,    &
                                  TOUT(2), TDUM(2), IOTEST, NOUT, IFI, IFJ,&
                                  NCTYPE, IX1, IXN, IY1, IYN,              &
-                                 IOUT, S3, S4, S5, iret,                  &
+                                 IOUT, S3, iret,                          &
                                  NBIPART, CNTIPART, NCVARTYPE, IPART,     &
                                  NCIDS(NOGRP,NGRPP,6)
       INTEGER                 :: iyc, imc, idc, ihc, iminc, isc
@@ -482,7 +482,6 @@
   970 FORMAT (//'  Generating files '/                                &
                ' --------------------------------------------------')
   971 FORMAT ( '      Files for ',A)
-  972 FORMAT ( ' NetCDF type should be 3 or 4 ')
 !
   999 FORMAT (/'  End of program '/                                   &
                ' ========================================='/          &
@@ -603,7 +602,7 @@
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLREQ(NOGRP,NGRPP)
       INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,6), S3
-      CHARACTER*30,INTENT(OUT):: stopdate
+      CHARACTER*30,INTENT(IN) :: stopdate
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -623,8 +622,7 @@
                                  dimid(6), varid(300), extradim, ivar,         &
                                  ivar1, idvarout, start(4),count(4),     &
                                  dimln(6),start1D(2), count1D(2), dimfield(3), &
-                                 iyc, imc, idc, ihc, iminc, isc,    &
-                                 Jday0, NCVARTYPE
+                                 iyc, imc, idc, ihc, iminc, isc, NCVARTYPE
 !/NC4    INTEGER                  :: deflate=1
 
      INTEGER(KIND=4)          :: VMIN, VMAX
@@ -699,12 +697,12 @@
       S5=S3-8
       S4=S3
       OLDTIMEID=TIMEID
-      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSS'
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHH'
       IF (S3.EQ.10) THEN 
         S4=S4+1 ! T between day and minutes
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
         WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
-               NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
+               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5)))
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -713,7 +711,7 @@
       ! or S3=>YYYY then filetime='YYYY'
       ELSE 
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-        WRITE (TIMEID,FORMAT1) NINT(REAL(TIME(1))/NINT(10.**(8-S3)))
+        WRITE (TIMEID,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
       END IF       
       ! redefines filename with updated date format
       S1=LEN_TRIM(FILEPREFIX)
@@ -2607,13 +2605,14 @@
             iminc=(TIME(2)-ihc*10000)/100
             isc=TIME(2)-ihc*10000-100*iminc
 !
-            timenc=DBLE(julday(idc,imc,iyc))+(DBLE(ihc)+(DBLE(iminc)+(DBLE(isc)/60.))/60.)/24.
-            Jday0=julday(1,1,1990)
-            timenc=timenc-Jday0
+            timenc=DBLE(julday(idc,imc,iyc)) - DBLE(julday(1,1,1990))              &
+                   + DBLE((ihc + DBLE((iminc + DBLE(isc /60.)) /60.)) /24.)
+
 !
-            WRITE(NDSO,'(3A,I6,A,I4,X,I2,X,I2,X,I2,X,I2,2A)')  &
+
+            WRITE(NDSO,'(3A,I6,A,I4,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,2A)')       &
                     'Writing new record ', ENAME(2:) ,'number ',n, & 
-                    ' for date:',iyc,imc,idc,ihc,iminc,            &
+                    ' for ',iyc,':',imc,':',idc,'T',ihc,':',iminc,':',isc,         &
                     ' in file ',TRIM(FNAMENC)
 
             ! Defines starting point and size of arrays to be written
@@ -3017,13 +3016,13 @@
         iret=nf90_put_att(ncid,varid(1),'long_name','longitude')
         iret=nf90_put_att(ncid,varid(1),'standard_name','longitude')
         iret=nf90_put_att(ncid,varid(1),'valid_min',-180.0)
-        iret=nf90_put_att(ncid,varid(1),'valid_max',180.)
+        iret=nf90_put_att(ncid,varid(1),'valid_max',360.)
 !
         iret=nf90_put_att(ncid,varid(2),'units','degree_north')
         iret=nf90_put_att(ncid,varid(2),'long_name','latitude')
         iret=nf90_put_att(ncid,varid(2),'standard_name','latitude')
         iret=nf90_put_att(ncid,varid(2),'valid_min',-90.0)
-        iret=nf90_put_att(ncid,varid(2),'valid_max',90.)
+        iret=nf90_put_att(ncid,varid(2),'valid_max',180.)
       ELSE 
         IF (GTYPE.EQ.RLGTYPE) THEN 
           iret = nf90_def_var(ncid, 'x', nf90_float, dimid(2), varid(1))

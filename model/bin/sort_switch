@@ -1,7 +1,7 @@
 #!/bin/sh
 # --------------------------------------------------------------------------- #
-# sort_switch: Script to unify the way the switches are irderd in the switch  #
-#              file,while checking and correcting for missing switches.       #
+# sort_switch: Script to unify the way the switches are ordered in the switch #
+#              file, while checking and correcting for missing switches.      #
 #                                                                             #
 # use        : sort_switch [options] switch_file                              #
 #              See usage function for options.                                #

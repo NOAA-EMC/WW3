@@ -1041,6 +1041,22 @@
 !                if they do not match (built-in regression testing)
 !                For more info, see Section 0a below.
 !
+!     re: Inconsistent RANK vs NBI (warning message) in Section 1.d :
+!         This was an error, but has been changed to a warning to allow
+!         more flexibility, e.g. having two outer grids with different
+!         rank (latter to avoid handling via WMGEQL).
+!         Change made July 2016.
+!         Old system:
+!           * grid rank > 1 and NBI>0 : do computations
+!           * grid rank > 1 and NBI=0 : error message
+!           * grid rank = 1 and NBI>0 : do nothing
+!           * grid rank = 1 and NBI=0 : do nothing
+!         New system:
+!           * grid rank > 1 and NBI>0 : do computations
+!           * grid rank > 1 and NBI=0 : do nothing w/ warning message
+!           * grid rank = 1 and NBI>0 : do nothing
+!           * grid rank = 1 and NBI=0 : do nothing
+!         
 !  8. Structure :
 !
 !     See source code.
@@ -1365,19 +1381,24 @@
 !
 !/T            WRITE (MDST,9011) GDST, GRANK(GDST), NBI
 !
-! 1.c Not needed (test output only)
+! -------------------------------------------------------------------- /
+! Inconsistent RANK vs NBI (warning message)
+!   This was an error, now changed to a warning (see notes section)
+            IF ( (GRANK(GDST).NE.1) .AND. (NBI.EQ.0) ) THEN 
+               IF ( IMPROC.EQ.NMPERR ) &
+                  WRITE (MDSE,'(/2A)') ' WARNING in WMGHGH:   ', &
+                  'NBI=0 AND RANK > 1 '
+            END IF
+
+! -------------------------------------------------------------------- /
+! 1.c NBI=0, so computations not needed (test output only)
 !
-            IF ( GRANK(GDST) .EQ. 1 ) THEN
-!
+            IF ( (NBI.EQ.0) .OR. (GRANK(GDST).EQ.1) ) THEN
+! (then do nothing except test output)
 !/T                WRITE (MDST,9012)
-!
-! 1.d Inconsistent RANK vs NBI (error message)
-!
-            ELSE IF ( NBI .EQ. 0 ) THEN
-               IF ( IMPROC.EQ.NMPERR ) WRITE (MDSE,1010)
-               CALL EXTCDE (1010)
-!
-! 1.e Generate map with distances to boundary.
+
+! -------------------------------------------------------------------- /
+! 1.d NBI>0, Generate map with distances to boundary.
 
 !!HT: Initialize MAPBDI
 !!HT:   0. for active boundary points
@@ -1386,6 +1407,7 @@
 !!HT:  -2. for points that still need to be processed.
 
             ELSE
+
                IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A)') &
                    '  Generating map with distances to boundary.'
 !  for purposes of screen output, would be useful to wait for other processors to catch up here...(if mpibdi switch used)
@@ -1416,9 +1438,15 @@
 !/MPIBDI               END IF
 !KRL           Setup complete
 !
+! -------------------------------------------------------------------- /
 ! Loop to determine MAPBDI
+! -------------------------------------------------------------------- /
+
+               IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A)') &
+                   'Starting MAPBDI 1st loop.'
+
                DO IDST=NX_BEG(IMPROC), NX_END(IMPROC)
-                  IF(MOD(IDST,25).EQ.0)THEN
+                  IF(MOD(IDST,250).EQ.0)THEN
                      IF(LMPIBDI)THEN
                         WRITE(MDSE,'(4x,3(A,I5))')&
                              'processing column ',IDST,' out of ',NX, &
@@ -1431,16 +1459,26 @@
                   DO JDST=1, NY
                      IF ( MAPSTA(JDST,IDST) .EQ. 0 ) THEN ! (excluded point)
                         MAPBDI(JDST,IDST) = -1. / SIG(1) * DTMAX ! new (bug fix)
-                    ELSE IF ( ABS(MAPSTA(JDST,IDST)) .EQ. 2 ) THEN 
+                     ELSE IF ( ABS(MAPSTA(JDST,IDST)) .EQ. 2 ) THEN 
                         ! (boundary point)
                         MAPBDI(JDST,IDST) =  0.
                      ELSE ! ABS(MAPSTA)=1 (sea point)
                         MAPBDI(JDST,IDST) = 1.0E+10
-                     ENDIF ! (if sea point)
-                  END DO ! DO IDST...
-               END DO ! DO JDST...
+                     ENDIF ! IF MAPSTA
+                  END DO ! DO JDST...
+               END DO ! DO IDST...
+
+! -------------------------------------------------------------------- /
+
+               IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A)') &
+                   'Starting MAPBDI 2nd loop.'
 
                DO IBND=1,NX
+                  IF ( (MOD(IBND,25).EQ.0) .AND. &
+                       (IMPROC.EQ.NMPERR) ) THEN
+                           WRITE(MDSE,'(4x,2(A,I5))') &
+                          'bnd. point ',IBND,' out of ',NX
+                  ENDIF
                   DO JBND=1,NY
                      IF ( ABS(MAPSTA(JBND,IBND)) .EQ. 2 ) THEN
                         ! (boundary point)
@@ -1461,12 +1499,18 @@
                                  DD=DD/ ( 0.58 * GRAV )
                                  MAPBDI(JDST,IDST)=MIN(MAPBDI(JDST,IDST),DD)
                               ENDIF
-                           END DO ! DO IBND=1,NX
-                        END DO ! DO JBND=1,NY
-                     ENDIF ! (if sea point)
+                           END DO ! DO JDST
+                        END DO ! DO IDST
+                     ENDIF ! (if BND point)
 
-                  END DO ! DO IDST...
-               END DO ! DO JDST...
+                  END DO ! DO JBND
+               END DO ! DO IBND
+
+               IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A)') &
+                   'Finished MAPBDI 2nd loop.'
+
+! -------------------------------------------------------------------- /
+
 !/MPIBDI !KRL          Exchange (Note: for efficiency, post receives first)
 !/MPIBDI !KRL          MPI_ALLGATHERV would do this, but freezes for PGI and open_mpi
 !/MPIBDI !KRL          This suggests they use blocking SEND/RECV, so this is faster anyway and less implementation-dependent
@@ -1489,6 +1533,7 @@
 !/MPIBDI               END DO
 !/MPIBDI               CALL MPI_WAITALL( NRQ, IRQ, MPI_STATUS_IGNORE, IERR_MPI )
 !/MPIBDI               CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
+
                IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A/)') &
                '  Finished generating map with distances to boundary.'
 
@@ -1518,7 +1563,7 @@
 !!HT: 
 !!HT: ERROR : Should be CLAT(JDST), not CLATI(JDST) : "STX    = FACTOR * SX * CLATI(JDST) / ( 0.58 * GRAV )"
 
-! 1.f Test output
+! 1.e Test output
 !
 !!HT: Note that SIG(1) and DTMAX are included here so that the map defines
 !!HT: how many time steps DTMAX it takes to reach this place.
@@ -1706,7 +1751,7 @@
 !/SCRIP                     WRITE(MDSE,'(A,2(I5),A,I5)')'Calling SCRIP for GSRC,GDST = ', &
 !/SCRIP                          GSRC,GDST,' on processor ',IMPROC
 !/SCRIP                   ELSEIF(IMPROC.EQ.NMPERR)THEN
-!/SCRIP                     WRITE(MDSE,'(A,2(I5))')'Calling SCRIP for GSRC,GDST = ', &
+!/SCRIP                     WRITE(MDSE,'(A,2(I5))')'Calling SCRIP interface for GSRC,GDST = ', &
 !/SCRIP                          GSRC,GDST
 !/SCRIP                   ENDIF
 !/SCRIP                   CALL scrip_wrapper (GSRC, GDST,         &
@@ -3154,8 +3199,6 @@
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     GRDHGH NOT YET ALLOCATED, CALL WMGLOW FIRST'/)
- 1010 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
-               '     NBI = 0 MAKES NO SENSE FOR RANK > 1 '/)
  1020 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &
                '     TMPINT AND TMPRL TOO SMALL (w/out SCRIP)'/)
  1021 FORMAT (/' *** WAVEWATCH III ERROR IN WMGHGH : *** '/           &

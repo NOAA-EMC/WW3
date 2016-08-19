@@ -120,11 +120,16 @@ module w3namlmd
     logical                     :: format
   end type partition_t
 !
+!/COU  type coupling_t
+!/COU    character(1024)             :: list
+!/COU  end type coupling_t
+!
   type output_type_t
     type(point_t)               :: point
     type(field_t)               :: field
     type(track_t)               :: track
     type(partition_t)           :: partition
+!/COU    type(coupling_t)           :: coupling
   end type output_type_t
 
 
@@ -143,6 +148,7 @@ module w3namlmd
     type(output_time_t)         :: restart
     type(output_time_t)         :: boundary
     type(output_time_t)         :: partition
+!/COU    type(output_time_t)         :: coupling
   end type output_date_t
 
 
@@ -547,6 +553,7 @@ module w3namlmd
       itype(i)%partition%yn = 0
       itype(i)%partition%ny = 0
       itype(i)%partition%format = .true.
+!/COU      itype(i)%coupling%list   = 'unset'
     enddo
     alltype%point%name   = 'unset'
     alltype%point%file   = 'unset'
@@ -559,6 +566,7 @@ module w3namlmd
     alltype%partition%yn = 0
     alltype%partition%ny = 0
     alltype%partition%format = .true.
+!/COU    alltype%coupling%list   = 'unset'
 
 
     ! read output_type namelist
@@ -631,6 +639,9 @@ module w3namlmd
       idate(i)%partition%start = '19680606 000000'
       idate(i)%partition%stride = '0'
       idate(i)%partition%stop = '19680607 000000'
+!/COU      idate(i)%coupling%start = '19680606 000000'
+!/COU      idate(i)%coupling%stride = '0'
+!/COU      idate(i)%coupling%stop = '19680607 000000'
     end do
     alldate%field%start = '19680606 000000'
     alldate%field%stride = '0'
@@ -650,6 +661,9 @@ module w3namlmd
     alldate%partition%start = '19680606 000000'
     alldate%partition%stride = '0'
     alldate%partition%stop = '19680607 000000'
+!/COU    alldate%coupling%start = '19680606 000000'
+!/COU    alldate%coupling%stride = '0'
+!/COU    alldate%coupling%stop = '19680607 000000'
 
 
     ! read output_date namelist
@@ -878,6 +892,7 @@ module w3namlmd
       write (MDSS,11) trim(msg),'partition % yn       = ',output_type(i)%partition%yn
       write (MDSS,11) trim(msg),'partition % ny       = ',output_type(i)%partition%ny
       write (MDSS,13) trim(msg),'partition % format   = ',output_type(i)%partition%format
+!/COU      write (MDSS,10) trim(msg),'coupling % list         = ',trim(output_type(i)%coupling%list)
     end do
     write (MDSS,'(a)')
 
@@ -921,6 +936,9 @@ module w3namlmd
       write (MDSS,10) trim(msg),'partition start    = ',trim(output_date(i)%partition%start)
       write (MDSS,10) trim(msg),'partition stride   = ',trim(output_date(i)%partition%stride)
       write (MDSS,10) trim(msg),'partition stop     = ',trim(output_date(i)%partition%stop)
+!/COU      write (MDSS,10) trim(msg),'coupling start    = ',trim(output_date(i)%coupling%start)
+!/COU      write (MDSS,10) trim(msg),'coupling stride   = ',trim(output_date(i)%coupling%stride)
+!/COU      write (MDSS,10) trim(msg),'coupling stop     = ',trim(output_date(i)%coupling%stop)
     end do
     write (MDSS,'(a)')
 

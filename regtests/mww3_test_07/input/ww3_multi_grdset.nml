@@ -17,7 +17,7 @@
 &domain_def_nml
   domain%nrgrd  = 2
   domain%unipts = T
-  domain%iostyp = 0
+  domain%iostyp = 1
   domain%pshare = T
   domain%flghg1 = F
   domain%flghg2 = F

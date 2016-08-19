@@ -1,11 +1,20 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III shell input file                                       $
 $ -------------------------------------------------------------------- $
-$ Define input to be used with flag for use and flag for definition
-$ as a homogeneous field (first three only); eight input lines.
+$ Define input to be used with F/T/C flag for use or nor or coupling and
+$ T/F flag for definition as a homogeneous field.
 $
+$ Include ice and mud parameters only if IC1/2/3/4 used :
+$  F F     Ice parameter 1
+$  F F     Ice parameter 2
+$  F F     Ice parameter 3
+$  F F     Ice parameter 4
+$  F F     Ice parameter 5
+$  F F     Mud parameter 1
+$  F F     Mud parameter 2
+$  F F     Mud parameter 3
    F F     Water levels
-   F F     Currents
+   T T     Currents
    T F     Winds
    F       Ice concentrations
    F       Assimilation data : Mean parameters
@@ -63,28 +72,28 @@ $ is read. See ww3_ounf.inp for an example
 $
 $ (1) Forcing Fields
   T
-$ DPT CUR WND DT  WLV ICE IBG D50
-  F   F   T   F   F   F   F   F
+$ DPT CUR WND AST WLV ICE IBG D50 IC1 IC5
+  F   F   T   F   F   F   F   F   F   F
 $ (2) Standard mean wave Parameters
   T
-$ HS  LM  TZ  TE  TM  FP  DIR SPR DP
+$ HS  LM  T02 T0M1 T01 FP DIR SPR DP
   T   F   F   F   T   F   F   F   F
 $ (3) Frequency-dependent parameters
   T
-$ EF TH1M STH1M TH1M STH1M WN
+$ EF TH1M STH1M TH2M STH2M WN
   F  F  F  F  F  F
 $ (4) Spectral Partition Parameters
   T
-$ PHS PTP PLP PTH PSP PWS WSF PNR
+$ PHS PTP PLP PDIR PSPR PWS TWS PNR
   F   F   F   F   F   F   F   F
 $ (5) Atmosphere-waves layer
   T
-$ UST CHN CGE FAW TAW NWS WCC WCF WCH WCM
+$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM
   F   F   F   F   F   F   F   F   F   F
 $ (6) Wave-Ocean layer
   T
-$ SXY TWO BHD FOC TUS USS P2S U3D P2L
-  F   F   F   F   F   F   F   F   F   F
+$ SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
+  F   F   F   F   F   F   F   F   F   F   F
 $ (7) Wave-bottom layer
   T
 $ ABR UBR BED FBB TBB
@@ -202,7 +211,10 @@ $          First, last step IX and IY, flag for formatted file
 $
 $  19680606 000000   3600  20010102 000000
    <START_TIME> 0 <END_TIME>
-      0 999 1 0 999 1 T
+$     0 999 1 0 999 1 T
+$ The above extra line for type 6 was not read somehow and was misused
+$ as the following homogeneous current line, causing the model crashes.
+$ Commenting it off solved the crash.    JGLi31Mar2016.
 $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID
@@ -217,6 +229,10 @@ $  'LEV' 19680606 010000    1.00
 $  'CUR' 19680606 073125    2.0    25.
 $  'WND' 19680606 000000   20.    145.    2.0
 $  'MOV' 19680606 013000    4.0    25.
+   'CUR'  <START_TIME>     0.1    45.0
+   'CUR'  <END_TIME>     0.1    45.0
+$  'CUR'  <START_TIME>     0.0     0.0
+$  'CUR'  <END_TIME>     0.0     0.0
    'STP'
 $
 $ -------------------------------------------------------------------- $

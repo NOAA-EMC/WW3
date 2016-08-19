@@ -81,8 +81,8 @@ $
 $output points for cartesian grid
 $output points for IROISE 
 $
- -83.02097840     9.98081977 POINT1 
- -83.01589326     9.98398516 POINT2 
+ -83.02097840     9.98081977 'POINT1' 
+ -83.01589326     9.98398516 'POINT2' 
 $
      0.0   0.0  'STOPSTRING'
 $
