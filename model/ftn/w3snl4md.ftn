@@ -12,7 +12,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -197,7 +197,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!
 !!    it returns: 11 look-up tables arrays dim=(npts,nang,nzz,ndep)
@@ -549,7 +549,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!
@@ -1381,7 +1381,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!
@@ -1851,7 +1851,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!
@@ -2086,7 +2086,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!
@@ -2618,7 +2618,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!
 !!    it returns: the coupling coefficient  csq
@@ -2979,7 +2979,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!    ==================================================================
@@ -3461,7 +3461,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!
@@ -4076,7 +4076,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    ------------------------------------------------------------------
 !!
@@ -4691,7 +4691,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!
 !! 1. Purpose :
@@ -4951,7 +4951,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!
 !!    it returns: wavenumber 'k' in wkfnc
@@ -5040,7 +5040,7 @@
 !/                  | Last update :         12-Apr-2016 |
 !/                  +-----------------------------------+
 !/
-!/    01-Mar-2016 : Origination.                        ( version 5.xx )
+!/    01-Mar-2016 : Origination.                        ( version 5.13 )
 !/
 !!    it returns:  group velocity (m/s) in cgfnc
 !!
