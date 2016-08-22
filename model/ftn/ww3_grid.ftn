@@ -420,6 +420,7 @@
 !     !/NL1   Discrete interaction approximation (DIA).
 !     !/NL2   Exact interactions (WRT).
 !     !/NL3   Generalized Multiple DIA (GMD).
+!     !/NL4   Two Scale Approximation
 !     !/NLX   Open slot.
 !     !/NLS   Snl based HF filter.
 !
@@ -687,6 +688,7 @@
 !/NL2      REAL                    :: TAILNL
 !/NL3      INTEGER                 :: NQDEF
 !/NL3      REAL                    :: MSC, NSC, KDFD, KDFS
+!/NL4      INTEGER                 :: INDTSA, ALTLP
 !/DB1      REAL                    :: BJALFA, BJGAM
 !/DB1      LOGICAL                 :: BJFLAG
 !/PR2      REAL                    :: DTIME
@@ -729,6 +731,7 @@
 !/NL2      NAMELIST /ANL2/ DEPTHS
 !/NL3      NAMELIST /SNL3/ NQDEF, MSC, NSC, KDFD, KDFS
 !/NL3      NAMELIST /ANL3/ QPARMS
+!/NL4      NAMELIST /SNL4/ INDTSA, ALTLP
 !/NLS      NAMELIST /SNLS/ A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1      NAMELIST /SDS1/ CDIS, APM
 !/ST2      NAMELIST /SDS2/ SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
@@ -1015,6 +1018,7 @@
 !/NL1      NRNL   = NRNL + 1
 !/NL2      NRNL   = NRNL + 1
 !/NL3      NRNL   = NRNL + 1
+!/NL4      NRNL   = NRNL + 1
 !/NLX      NRNL   = NRNL + 1
 !
 !/BT0      NRBT   = NRBT + 1
@@ -1356,6 +1360,8 @@
 !/NL3      NSC    = -3.5
 !/NL3      KDFD   =  0.20
 !/NL3      KDFS   =  5.00
+!/NL4      INDTSA =  1
+!/NL4      ALTLP  =  2
 !/NLS      A34    =  0.05
 !/NLS      FHFC   =  1.E10
 !/NLS      DNM    =  0.25
@@ -1450,6 +1456,12 @@
 !/NL3      SNLCD  = QPARMS(4:NQDEF*5:5)
 !/NL3      SNLCS  => MPARS(1)%SNLPS%SNLCS
 !/NL3      SNLCS  = QPARMS(5:NQDEF*5:5)
+!
+!/NL4      CALL READNL ( NDSS, 'SNL4', STATUS )
+!/NL4      WRITE (NDSO,922) STATUS
+!/NL4      WRITE (NDSO,923) INDTSA, ALTLP
+!/NL4      ITSA = INDTSA
+!/NL4      IALT = ALTLP
 !
 !/NLS      CALL READNL ( NDSS, 'SNLS', STATUS )
 !/NLS      WRITE (NDSO,9922) STATUS
@@ -2203,6 +2215,7 @@
 !/NL3                END DO
 !/NL3              WRITE (NDSO,6923) QPARMS((NQDEF-1)*5+1:NQDEF*5)
 !/NL3            END IF
+!/NL4          WRITE (NDSO,2922) INDTSA, ALTLP
 !/NLS          WRITE (NDSO,8922) A34, FHFC, DNM, FC1, FC2, FC3
 !/ST1          WRITE (NDSO,2924) CDIS, APM
 !/ST2          WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
@@ -4523,6 +4536,13 @@
 !/NL3 6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
 !/NL3               ', ',E10.4,' /')
 !
+!/NL4  922 FORMAT (/'  Nonlinear interactions (TSA) ',A/              &
+!/NL4        ' --------------------------------------------------')
+!/NL4  923 FORMAT ( '   Source term computation (1=TSA,0=FBI) : ',I2/ &
+!/NL4               '   Alternate loops (1=no,2=yes)          : ',I2/ &
+!/NL4               '   (To speed up computation) ')
+!/NL4 2922 FORMAT ( '  &SNL4 ITSA =',I2,', IALT =',I2 )
+!
 !/NLX  922 FORMAT (/'  Experimental nonlinear interactions.'/)
 !
 !/NLS 9922 FORMAT (/'  HF filter based on Snl ',A/                    &
@@ -5268,6 +5288,8 @@
 !/NL3                        CASE('ANL3')
 !/NL3                          IF ( NQDEF .GT. 100 ) GOTO 804
 !/NL3                          READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
+!/NL4                        CASE('SNL4')
+!/NL4                          READ (NDS,NML=SNL4,END=801,ERR=802,IOSTAT=J)
 !/NLS                        CASE('SNLS')
 !/NLS                          READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
 !/ST1                        CASE('SDS1')

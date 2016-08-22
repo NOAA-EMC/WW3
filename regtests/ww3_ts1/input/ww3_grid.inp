@@ -2,7 +2,7 @@ $ WAVEWATCH III Grid preprocessor input file
 $ ------------------------------------------
   'HOMOGENEOUS SOURCE TERM TEST  '
 $
-   1.10  0.042  25  24  0.
+   1.10  0.0485  36  24  0.
 $  1.07  0.042  40  36  0.
 $
    F F F F F T

@@ -293,6 +293,7 @@
 !     !/NL1   Discrete interaction approximation.
 !     !/NL2   Exact nonlinear interactions.
 !     !/NL3   Generalized Multiple DIA.
+!     !/NL4   Two Scale Approximation
 !     !/NLX   User-defined nonlinear interactions.
 !     !/NLS   Nonlinear HF smoother.
 !
@@ -374,6 +375,7 @@
 !/NL1      USE W3SNL1MD
 !/NL2      USE W3SNL2MD
 !/NL3      USE W3SNL3MD
+!/NL4      USE W3SNL4MD
 !/NLX      USE W3SNLXMD
 !/NLS      USE W3SNLSMD
 !/BT1      USE W3SBT1MD
@@ -698,9 +700,10 @@
 !
 ! 2.b Nonlinear interactions.
 !
-!/NL1        CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH,          VSNL, VDNL )
-!/NL2        CALL W3SNL2 ( SPEC, CG1, DEPTH,                 VSNL, VDNL )
-!/NL3        CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,            VSNL, VDNL )
+!/NL1        CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH,        VSNL, VDNL )
+!/NL2        CALL W3SNL2 ( SPEC, CG1, DEPTH,               VSNL, VDNL )
+!/NL3        CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
+!/NL4        CALL W3SNL4 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
 !/NLX        CALL W3SNLX 
 !
 !/TR1        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )

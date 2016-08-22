@@ -121,6 +121,11 @@ $                         Namelist ANL3
 $                           QPARMS : 5 x NQDEF paramaters describing the
 $                                    quadruplets, repeating LAMBDA, MU, DT12.
 $                                    Cdeep and Cshal. See examples below.
+$   Two Scale Approx.   : Namelist SNL4
+$                           INDTSA : Index for TSA/FBI computations
+$                                    (0 = FBI ; 1 = TSA)
+$                           ALTLP  : Index for alternate looping
+$                                    (1 = no ; 2 = yes)
 $
 $ Traditional DIA setup (default):
 $
