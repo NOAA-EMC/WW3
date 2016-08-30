@@ -2827,11 +2827,11 @@
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         case (iclose_smpl)
           natGrid = ESMF_GridCreate1PeriDim( &
-            periodicDim=1, &
-            poleDim=2, &
+            periodicDim=2, &
+            poleDim=1, &
             poleKindFlag=(/ESMF_POLEKIND_NONE,ESMF_POLEKIND_NONE/), &
             minIndex=(/ 1, 1/), &
-            maxIndex=(/nx,ny/), &
+            maxIndex=(/ny,nx/), &
             coordDep1=(/ESMF_DIM_ARB,ESMF_DIM_ARB/), &
             coordDep2=(/ESMF_DIM_ARB,ESMF_DIM_ARB/), &
             arbIndexCount=arbIndexCount, &
