@@ -22,9 +22,9 @@
 !/ Macros for enabling test output
 !/
 #define TEST_WMESMFMD___disabled
-#define TEST_WMESMFMD_GETIMPORT___disabled
-#define TEST_WMESMFMD_SETEXPORT___disabled
-#define TEST_WMESMFMD_CREATEIMPGRID___disabled
+#define TEST_WMESMFMD_GETIMPORT .true.
+#define TEST_WMESMFMD_SETEXPORT .true. 
+#define TEST_WMESMFMD_CREATEIMPGRID___disabled 
 #define TEST_WMESMFMD_CREATEEXPGRID___disabled
 #define TEST_WMESMFMD_BLENDIMPFIELDS___disabled
 !/
@@ -213,7 +213,7 @@
       logical               :: include3D
       integer               :: nz ! Number of z-levels for 3D fields
       logical               :: noActiveExpFields
-      integer, parameter    :: numExpFields = 1
+      integer, parameter    :: numExpFields = 2
       character(6)          :: expFieldName(numExpFields)
       character(128)        :: expFieldStdName(numExpFields)
       integer               :: expFieldDim(numExpFields)
@@ -825,6 +825,11 @@
       i1 = 1;  i2 = 1;  i3 = 1;
       expFieldName(i1)    = 'charno'
       expFieldStdName(i1) = 'wave_induced_charnock_parameter'
+      expFieldDim(i1)     = 2
+
+      i1 = 2;  i2 = 2;  i3 = 2;
+      expFieldName(i1)    = 'z0rlen'
+      expFieldStdName(i1) = 'wave_z0_roughness_length'
       expFieldDim(i1)     = 2
 
 !     i1 = 2;  i2 = 3;  i3 = 3;
@@ -1998,6 +2003,7 @@
       real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
                  tauwx, tauwy, cd, z0, fmeanws
       logical :: llws(nspec)
+      real, allocatable :: z0wave(:)
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETEXPORT)
       type(ESMF_State) :: dumpState
       integer, save :: timeSlice = 1
@@ -2075,15 +2081,44 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! 3.  Stokes Drift
+! 3.  Surface Roughness 
+!
+      i1 = FieldIndex( expFieldName, 'z0rlen', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( isActiveExpField(i1) ) then
+        if (.NOT.ALLOCATED(z0wave)) ALLOCATE(z0wave(NSEALM))
+        fillValue = 0.02 !????????????????????
+        if ( natGridIsLocal ) then
+          call FieldFill( natField, fillValue, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if ( firstCall ) then
+            z0wave = fillValue
+          else
+            do jsea = 1,nseal
+!/DIST              isea = iaproc + (jsea-1)*naproc
+!/SHRD              isea = jsea 
+              z0wave(jsea) = charn(jsea)*UST(ISEA)**2/GRAV
+!/ST0              z0wave(jsea) = fillValue !no charn calculated
+            enddo
+          endif
+          call ESMF_FieldGet( natField, farrayPtr=natPtr, rc=rc )
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          natPtr(1:nseal) = z0wave(1:nseal)
+        endif
+        call ESMF_FieldRedist( natField, expField(i1), n2eRH, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+!
+! -------------------------------------------------------------------- /
+! 4.  Stokes Drift
 !
 !
 ! -------------------------------------------------------------------- /
-! 4.  Bottom Current
+! 5.  Bottom Current
 !
 !
 ! -------------------------------------------------------------------- /
-! 5.  Clean up
+! 6.  Clean up
 !
       call ESMF_FieldDestroy( natField, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
