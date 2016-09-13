@@ -1,0 +1,58 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.15 Test script for WW-III, space-time extremes parameters         #
+#            Simulation of wave-growth in Adriatic Sea                      #
+#                                                                           #
+# Prerequisites :                                                           #
+# -netCDF4 librairies must be installed and NETCDF variables setup          #
+#                                                                           #
+# Remarks :                                                                 #
+# Requires NETCDF parameters to be exported                                 #
+# e.g., export WWATCH3_NETCDF=NC4; export NETCDF_CONFIG=`which nc-config`   #
+#                                                                           #
+# Description                                                               #
+#   Test case is for wind-wave growth in the Adriatic Sea near the ISMAR    #
+#   research platform Acqua Alta, where space-time extremes measurements    #
+#   have been performed. Model outputs include space-time extremes          #
+#   parameters as follows:                                                  #
+#     STMAXE     MXE   Max surface elev (STE)                               #
+#     STMAXD     MXES  St Dev of max surface elev (STE)                     #
+#     HMAXE      MXH   Max wave height (STE)                                #
+#     HCMAXE     MXHC  Max wave height from crest (STE)                     #
+#     HMAXD      SDMH  St Dev of MXC (STE)                                  #
+#     HCMAXD     SDMHC St Dev of MXHC (STE)                                 #
+#                                                                           #
+# Wind data for this test case was produced by the COSMO-ME model, and have #
+# been provided by CNMCA (National Meteorological Service, Rome, Italy).    #
+#                                                                           #
+# Output from this regression test is intended to test the space-time       #
+#  extremes values. The test simulates a field experiment that yielded the  #
+#  following paramters:                                                     #
+#    STMAXE = 1.84 m; STMAXD = 0.12 m; HCMAXE = 2.77 m; HCMAXD= 0.21 m;     #
+#    Hs = 1.33 m (HMAXE and HMAXD not observed).                            #
+#  Numerical simulations performed provide the following parameter values:  #
+#    STMAXE = 2.05 m; STMAXD = 0.18 m; HCMAXE = 2.93 m;  HCMAXD = 0.21 m;   #
+#    HMAXE = 3.23 m;  HMAXD = 0.24 m; Hs = 1.60 m.                          #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test -o netcdf  ../ ww3_tp2.15                                 #
+#                                                                           #
+# Options                                                                   #
+#  Run on MPI mode                                                          #
+#  ./bin/run_test -n 16 -p mpirun -s MPI -w work_MPI ../ ww3_tp2.15         #
+#                                                                           #
+# Full resolution (5km grid) and entire Adriatic Sea. MPI recommended.      #
+#  ./bin/run_test -g 5km -w work_5km ../ ww3_tp2.15                         #
+#  ./bin/run_test -g 5km -n 16 -p mpirun -s MPI -w work_5km_MPI \           #
+#                 ../ ww3_tp2.15                                            #
+#                                                                           #
+#                                                                           #
+#                       Francesco Barbariol, Jose-Henrique Alves, Sep 2016  #
+#                                                   Last Mod : Sep 2016     #
+#                                                                           #
+#    Copyright 2009-2016 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

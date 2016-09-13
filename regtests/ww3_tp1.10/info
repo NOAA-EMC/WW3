@@ -1,0 +1,48 @@
+#############################################################################
+#                                                                           #
+# ww3_tp1.1 Test script for WW-III, one-dimensional propagation.            #
+#           Full global propagation along the equator.                      #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                         #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: Representative for all UQ schemes              #
+#                         3: Switch smoothing off to reproduce 2.           #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+# - Test case input (default):                                              #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 360 x 3 rectilinear lat/lon grid (global)             #
+#       - dx = 1.0 deg, dy= 1.0 deg                                         #
+#       - Xrange = -180:179 deg, Yrange = -1:1 deg                          #
+#     + Spectral grid: ntheta =  4, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * switch options :                                                      #
+#     + switch_PR1     : First order scheme                                 #
+#     + switch_PR2_UNO : UNO scheme with diffusion (off)                    #
+#     + switch_PR2_UQ  : UQ scheme with diffusion (off)                     #
+#     + switch_PR3_UNO : UNO scheme with averaging (off)                    #
+#     + switch_PR3_UQ  : UQ scheme with averaging (off) (default)           #
+# - Test case input2: Like input but with waves traveling in the opp. dir.  #
+#                                                                           #
+#  Example run_test commands:                                               #
+#  (some details will vary by local system and configuration)               #
+#  ./bin/run_test -s PR1    -w work_PR1 ../ ww3_tp1.1                       #
+#  ./bin/run_test -s PR2_UQ -w work_PR2 ../ ww3_tp1.1                       #
+#  ./bin/run_test -s PR3_UQ -w work_PR3 ../ ww3_tp1.1                       #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Sep 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

@@ -127,6 +127,12 @@ $  T  T  2     7   THM        DIR   Mean wave direction.
 $  T  T  2     8   THS        SPR   Mean directional spread.
 $  T  T  2     9   THP0       DP    Peak direction.
 $  T  T  2    10   HIG        HIG   Infragravity height
+$  T  T  2    11   STMAXE     MXE   Max surface elev (STE)
+$  T  T  2    12   STMAXD     MXES  St Dev of max surface elev (STE)
+$  T  T  2    13   HMAXE      MXH   Max wave height (STE)
+$  T  T  2    14   HCMAXE     MXHC  Max wave height from crest (STE)
+$  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
+$  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------
@@ -187,6 +193,10 @@ $        8                          Spectrum parameters
 $   -------------------------------------------------
 $  F  F  8     1   MSS[X,Y]   MSS   Mean square slopes
 $  F  F  8     2   MSC[X,Y]   MSC   Spectral level at high frequency tail
+$  F  F  8     3   WL02[X,Y]  WL02  East/X North/Y mean wavelength compon
+$  F  F  8     4   ALPXT      AXT   Correl sea surface gradients (x,t)
+$  F  F  8     5   ALPYT      AYT   Correl sea surface gradients (y,t)
+$  F  F  8     6   ALPXY      AXY   Correl sea surface gradients (x,y)
 $   -------------------------------------------------
 $        9                          Numerical diagnostics  
 $   -------------------------------------------------
@@ -237,8 +247,8 @@ $ ABR UBR BED FBB TBB
   T   T   T   T   T
 $ (8) Spectrum parameters
   T
-$ MSS MSC
-  T   T
+$ MSS MSC WL02 AXT AYT AXY
+  T   T   T   T   T   T
 $ (9) Numerical diagnostics
   T
 $ DTD FC  CFX CFD CFK

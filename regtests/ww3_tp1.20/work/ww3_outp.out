@@ -1,0 +1,76 @@
+
+                   *** WAVEWATCH III Point output post.***    
+               ===============================================
+
+  Comment character is '$'
+
+  Grid name : 1-D PROPAGATION EQUATOR       
+
+  Points in file : 
+ ------------------------------------
+      Point -10     -10.00      0.00
+      Point  -9      -9.00      0.00
+      Point  -7      -8.00      0.00
+      Point  -7      -7.00      0.00
+      Point  -6      -6.00      0.00
+      Point  -5      -5.00      0.00
+      Point  -4      -4.00      0.00
+      Point  -3      -3.00      0.00
+      Point  -2      -2.00      0.00
+      Point  -1      -1.00      0.00
+      Center          0.00      0.00
+      Point   1       1.00      0.00
+      Point   2       2.00      0.00
+      Point   3       3.00      0.00
+      Point   4       4.00      0.00
+      Point   5       5.00      0.00
+      Point   6       6.00      0.00
+      Point   7       7.00      0.00
+      Point   8       8.00      0.00
+      Point   9       9.00      0.00
+      Point  10      10.00      0.00
+
+  Output time data : 
+ --------------------------------------------------
+      First time         : 1968/06/01 00:00:00 UTC
+      Interval           :         24 00:00:00    
+      Number of requests :     24
+
+  Output type  2 :
+ --------------------------------------------------
+      Table of mean wave parameters
+
+      Table output : Mean wave parameters
+      File name    : tab50.ww3
+
+  Requested output for 21 points : 
+ --------------------------------------------------
+      Point -10     -10.00      0.00
+      Point  -9      -9.00      0.00
+      Point  -7      -8.00      0.00
+      Point  -7      -7.00      0.00
+      Point  -6      -6.00      0.00
+      Point  -5      -5.00      0.00
+      Point  -4      -4.00      0.00
+      Point  -3      -3.00      0.00
+      Point  -2      -2.00      0.00
+      Point  -1      -1.00      0.00
+      Center          0.00      0.00
+      Point   1       1.00      0.00
+      Point   2       2.00      0.00
+      Point   3       3.00      0.00
+      Point   4       4.00      0.00
+      Point   5       5.00      0.00
+      Point   6       6.00      0.00
+      Point   7       7.00      0.00
+      Point   8       8.00      0.00
+      Point   9       9.00      0.00
+      Point  10      10.00      0.00
+
+      End of file reached 
+
+
+  End of program 
+ =========================================
+         WAVEWATCH III Point output 
+

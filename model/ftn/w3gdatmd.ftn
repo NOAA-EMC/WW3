@@ -171,6 +171,9 @@
 !      PoLat/Lon R.A.  Public   Rotated N-Pole standard latitude/longitude. 
 !      AnglD     R.A.  Public   Rotation angle in degree to turn rotated grid
 !                               back to standard grid.  JGLi12Jun2012
+!      STEXU     Real  Public   Length-scale (X) for space-time extreme averaging
+!      STEYU     Real  Public   Length-scale (Y) for space-time extreme averaging
+!      STEDU     Real  Public   Time-scale for space-time extreme averaging
 !      ZB        R.A.  Public   Bottom levels on storage grid.
 !      CLATS(I)  R.A.  Public   (Inverse) cosine of latitude at sea points.
 !      CTHG0S    R.A.  Public   Constant in great-circle refr. term at sea points.
@@ -586,10 +589,10 @@
 !/ARC        INTEGER               :: NGLO, NARC, NBGL, NBAC
 !/ARC        INTEGER, POINTER      :: ICLBAC(:)
 !
-        REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
-                            DTMAX, DTMIN, DMIN, CTMAX,           &
-                            FICE0, FICEN, FICEL, PFMOVE,         &
-                            IICEHMIN, IICEHINIT, ICE100WIND
+        REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
+                            DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
+                            PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
+                            IICEHINIT, ICE100WIND
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
 !/RTD        REAL                  :: Polat, Polon   ! Rotated N-Pole lat/lon
@@ -885,9 +888,9 @@
 !/ARC        INTEGER, POINTER      :: ICLBAC(:)
 !
 !/SEC1      INTEGER, POINTER        :: NITERSEC1
-      REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI,       &
-                                 DTMAX, DTMIN, DMIN, CTMAX,           &
-                                 FICE0, FICEN, FICEL, PFMOVE,         &
+      REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX, &
+                                 DTMIN, DMIN, CTMAX, FICE0, FICEN,     &
+                                 FICEL, PFMOVE, STEXU, STEYU, STEDU,   &
                                  IICEHMIN, IICEHINIT, ICE100WIND
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: Polat, Polon
@@ -1819,6 +1822,9 @@
       IICEHINIT  => GRIDS(IMOD)%IICEHINIT
       ICE100WIND  => GRIDS(IMOD)%ICE100WIND
       PFMOVE => GRIDS(IMOD)%PFMOVE
+      STEXU  => GRIDS(IMOD)%STEXU
+      STEYU  => GRIDS(IMOD)%STEYU
+      STEDU  => GRIDS(IMOD)%STEDU
 !
       GINIT  => GRIDS(IMOD)%GINIT
       GUGINIT  => GRIDS(IMOD)%GUGINIT      
