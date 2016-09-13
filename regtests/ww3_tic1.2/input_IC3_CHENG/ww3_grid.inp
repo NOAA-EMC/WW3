@@ -1,0 +1,29 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D parameterized ice shoaling'
+$
+  1.10 0.0333 36 24 0.
+$
+   F T F T T T
+  60. 60. 60. 60.
+$
+ &SIC3 IC3CHENG=.TRUE., USECGICE=.TRUE.,  
+  IC3VISC = 1.0e3, IC3DENS = 917.0, IC3ELAS = 1.0e3 /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   303  3
+    0.5E3   0.5E3  1.
+   -0.5E3  -0.5E3  1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+ -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC3_A0.5k/bot.dat'
+$
+  10  1 1 '(....)' 'PART' 'input'
+$ 
+   2  2  F
+$
+   0  0  F
+   0  0  F
+   0  0 
+$
+   0. 0. 0. 0.  0

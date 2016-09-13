@@ -1931,6 +1931,12 @@
 
         END DO
 !
+
+      IF ( TSTAMP .AND. SCREEN.NE.NDSO .AND. IAPROC.EQ.NAPOUT ) THEN
+         CALL WWTIME ( STTIME )
+         WRITE (SCREEN,951) STTIME
+      END IF
+
       IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
 !
       IF ( .NOT. FLOMP ) DEALLOCATE ( FIELD )
@@ -1956,7 +1962,8 @@
 !
 !/IC3  920 FORMAT ('     Updating k and Cg from ice param. 1,2,3,4.'/)
   950 FORMAT ('  WAVEWATCH III calculating for ',A,' at ',A)
-!
+  951 FORMAT ('  WAVEWATCH III reached the end of a computation',     &
+               ' loop at ',A)
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     ENDING TIME BEFORE STARTING TIME '/)
  1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &

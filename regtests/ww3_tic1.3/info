@@ -2,6 +2,7 @@
 #                                                                               #
 # ww3_tic1.3  Test script for WW-III, ice source term refraction (X)            #
 #                                                                               #
+#                                                                               #    
 # Model should be compiled with the switches :                                  #
 #                                                                               #
 #   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0 !/XX0                             #
@@ -14,6 +15,20 @@
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.           #
 #                                                                               #
 # - No other optional switches should be used.                                  #
+#  REMARKS:                                                                     #
+#  Waves propagate from low-x to high-x. Boundary forcing is constant (not      #
+#      updated) defined at x=0. SWH~1 m at boundary. Direction is 300 deg.      #
+#      Waves propagate through ice, starting from rest (except at               #
+#      boundary). See tab50.ww3 for summary output. These test cases are        # 
+#      demonstrated for IC3, which solves the real part of the complex          #
+#      dispersion relation. The change in wavelength and results in             #
+#      shoaling and refraction. IC3 requires four ice paramemters. There        #
+#      are two solvers, CHENG and V1. CHENG requires stationary and             #
+#      homogenous effective viscosity, density, and effective shear modulus     #
+#      to be specified in shel.inp. V1 can take variable ice parameters. A      #
+#      thickness gradient is tested with both solvers, CHENG and V1. In         #
+#      addition ice elasticity gradient is tested with V1.                      #
+#                                                                               #
 # - Test case input (default):                                                  #
 #   * ww3_grid.inp :                                                            #
 #     + Spatial grid options: rectilinear Cartesian grid                        #
@@ -27,6 +42,28 @@
 #           - IC1range= 0.00:1.60m, IC2=0.25m2/s, IC3=917kg/m3 IC4=5.E8Pa       #
 #     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.105, fgamma = 1.07          #
 #                                                                               #
+# - Test case input (CHENG):                                                    #
+#   * ww3_grid.inp :                                                            #
+#     + Spatial grid options: rectilinear Cartesian grid                        #
+#       + input_IC3_CHENG                                                       #
+#           - dx = 0.5 km, dy = 0.5 km, depth = 1000 m                          #
+#           - Xrange = -dx:150 km                                               #
+#           - IC1range= 0.0:1.0m, IC2=1.E3m2/s, IC3=917kg/m3 IC4=1.E3Pa         #
+#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.105, fgamma = 1.07          #
+#                                                                               #
+# - Test case input (V1):                                                       #
+#   * ww3_grid.inp :                                                            #
+#     + Spatial grid options: rectilinear Cartesian grid                        #
+#       + input_IC3_V1_h                                                        #
+#           - dx = 0.5 km, dy = 0.5 km, depth = 1000 m                          #
+#           - Xrange = -dx:150 km                                               #
+#           - IC1range= 0.0:1.0m, IC2=1.E3m2/s, IC3=917kg/m3 IC4=1.E3Pa         #
+#       + input_IC3_V1_G                                                        #
+#           - dx = 2.5 km, dy = 2.5 km, depth = 1000 m                          #
+#           - Xrange = -dx:150 km                                               #
+#           - IC1range= 0.75m, IC2=1.E3m2/s, IC3=917kg/m3 IC4=0.0:1.E9Pa        #
+#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.105, fgamma = 1.07          #
+#                                                                               #    
 # - Examples:                                                                   #
 #   bin/run_test -c gnu -s PR1_REFRX     -i input_IC3_0.5k ../ ww3_tic1.3       #
 #   bin/run_test -c gnu -s PR2_UQ_REFRX  -i input_IC3_0.5k ../ ww3_tic1.3       #
@@ -40,7 +77,12 @@
 #   bin/run_test -c gnu -s PR3_UQ_REFRX  -i input_IC3_2.5k ../ ww3_tic1.3       #
 #   bin/run_test -c gnu -s PR3_UNO_REFRX -i input_IC3_2.5k ../ ww3_tic1.3       #
 #                                                                               #
+#   bin/run_test -c gnu -s PR1_REFRX     -i input_IC3_CHENG ../ ww3_tic1.3      #
+#   bin/run_test -c gnu -s PR2_UQ_REFRX  -i input_IC3_V1_h  ../ ww3_tic1.3      #
+#   bin/run_test -c gnu -s PR2_UNO_REFRX -i input_IC3_V1_G  ../ ww3_tic1.3      #
+#                                                                               #        
 #                                               Stefan Zieger, Nov 2013         #
+#                                            Clarence Collins, Sep 2016         #
 #                                                                               #
 #    Copyright 2009-2013 National Weather Service (NWS),                        #
 #       National Oceanic and Atmospheric Administration.  All rights            #

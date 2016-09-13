@@ -1239,6 +1239,11 @@
         END DO
 !
 !    End of routine -------------------------------------------------- /
+
+        IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
+           CALL WWTIME ( WTIME )
+           WRITE (MDSS,902) WTIME
+        ENDIF
 !              
 !/MPI      DO I=1, NRGRD
 !/MPI        CALL WMSETM ( I, MDSE, MDST )
@@ -1286,6 +1291,7 @@
                '============================'/)
   901 FORMAT ('  MWW3 calculating for ',A,' at ',A,'  status [',      &
                  I2,'-',I2,']')
+  902 FORMAT ('  MWW3 reached the end of the computation loop at ',A)
 !/MPRF  990 FORMAT (1X,3F12.3,' WMWAVE INIT')
 !/MPRF  991 FORMAT (1X,3F12.3,' WMWAVE ',A4,I6)
 !/MPRF  992 FORMAT (1X,3F12.3,' WMWAVE ',A4,I9.8,I7.6)
