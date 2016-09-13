@@ -10,6 +10,10 @@ $
 $ IC4METHOD determines calculation
 $ IC4METHOD = 1 - Wadhams et al. (1988)
 $ IC4METHOD = 2 - Meylan et al. (2014)
+$ IC4METHOD = 3 - Kohout & Meylan (2008) in Horvat & Tziperman (2015)
+$ IC4METHOD = 4 - Kohout et al. (2014)
+$ IC4METHOD = 5 - Simple ki step function
+$ IC4METHOD = 6 - Simple ki step function via namelist
   &SIC4 IC4METHOD = 4 /
 END OF NAMELISTS
 $

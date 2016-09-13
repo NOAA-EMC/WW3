@@ -710,6 +710,7 @@
 
          JSEA=1 ! no switch (intentional)
 
+!/IC3        USE_CGICE=IC3PARS(12)
 !/IC3        IF ( USE_CGICE==1.0 ) THEN
 !/IC3          IF ( IAPROC .EQ. NAPERR ) WRITE(SCREEN,920)
 
@@ -736,20 +737,22 @@
 !/IC3                               'FOR CG CALC'
 !/IC3                  CALL EXTCDE(2)
 !/IC3               ENDIF
-!/IC3               CALL W3IC3WNCG_CHENG(WN(:,ISEA),WN_I(:),           &
+!/IC3               IF (HICE > 0.0) THEN ! non-zero ice
+!/IC3                  CALL W3IC3WNCG_CHENG(WN(:,ISEA),WN_I(:),        &
 !/IC3                    CG(:,ISEA),HICE,FIXEDVISC,                    &
 !/IC3                    FIXEDDENS, FIXEDELAS, DEPTH)
+!/IC3               END IF ! non-zero ice
 
 !/IC3            ELSE ! not using Cheng method          
-
 ! 2.b.2 If not using Cheng method: require FLIC1 to FLIC4 (not strictly
 !       necesssary, but makes code simpler)
 
-
 !/IC3               IF (FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
-!/IC3                  CALL W3IC3WNCG_V1(WN(:,ISEA),WN_I(:),           &
+!/IC3                  IF (ICEP1(IX,IY)>0.0) THEN ! non-zero ice
+!/IC3                     CALL W3IC3WNCG_V1(WN(:,ISEA),WN_I(:),        &
 !/IC3                       CG(:,ISEA),ICEP1(IX,IY),ICEP2(IX,IY),      &
 !/IC3                       ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
+!/IC3                  END IF ! non-zero ice
 !/IC3               ELSE
 !/IC3                  IF ( IAPROC .EQ. NAPERR )                       &
 !/IC3                  WRITE(NDSE,*)'ICE PARAMETERS NOT AVAILABLE ',   &

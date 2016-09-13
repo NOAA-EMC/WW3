@@ -2024,13 +2024,15 @@
 !/IC3       IC2SMOOTH = 7.0E4
 !/IC3       IC2VISC = 2.0
 !/IC3       IC3CHENG = .TRUE.
-!/IC3       USECGICE = .TRUE.
+!/IC3       USECGICE = .FALSE.
 !/IC3       IC3HILIM = 100.0
 !/IC3       IC3KILIM = 100.0
 !/IC3       IC3HICE = -1.0
 !/IC3       IC3VISC = -2.0
 !/IC3       IC3DENS = -3.0
 !/IC3       IC3ELAS = -4.0
+!fixme: if USECGICE = .TRUE., don't allow use of IC3MAXTHK<100.0
+
 !/IC4       IC4METHOD = 1 !switch for methods within IC4
 !/IC4       IC4KI=0.0
 !/IC4       IC4FC=0.0
@@ -2301,8 +2303,7 @@
 !/IC3                          USECGICE, IC3HILIM, IC3KILIM,          &
 !/IC3                          IC3HICE, IC3VISC, IC3DENS, IC3ELAS
 
-!/IC4         WRITE(NDSO,2980) IC4METHOD,(IC4KI(JJ),JJ=1,NIC4),       &
-!/IC4                          (IC4FC(JJ),JJ=1,NIC4)
+!/IC4         WRITE(NDSO,NML=SIC4)
 
 !
         IF ( FLCOMB ) THEN
@@ -4867,8 +4868,6 @@
                '        IC3KILIM = ',E9.2,', IC3HICE = ',E9.2,        &
                ', IC3VISC = ',E9.2,','/                               &
                '        IC3DENS = ',E9.2,', IC3ELAS = ',E9.2,' /')
-!
- 2980 FORMAT ( '  &SIC4  IC4METHOD = ',I1,','/'         IC4KI = ',10(1X,E10.2,',')/'         IC4FC = ',8(1X,F8.3,','), F8.3/' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1,', PMOVE =',F6.3,','/           &
