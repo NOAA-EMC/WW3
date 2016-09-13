@@ -664,8 +664,8 @@
 !/T        LTEMP  = FLREQ(IFI,:)
 !/T        WRITE (NDST,9000) IFI, LTEMP
 !/T        END DO
-!/T      WRITE (NDST,9001) NCTYPE, IX1, IXN, IXS, IY1, IYN, IYS,          &
-!/T                        SCALE, VECTOR
+!/T      WRITE (NDST,9001) NCTYPE, IX1, IXN, IY1, IYN,               &
+!/T                        VECTOR
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
@@ -2985,9 +2985,9 @@
 !
 !/T 9000 FORMAT (' TEST W3EXNC : FLAGS :',I3,2X,20L2)
 !/T 9001 FORMAT (' TEST W3EXNC : ITPYE :',I4/                         &
-!/T              '             IX1/N/S :',3I7/                        &
-!/T              '             IY1/N/S :',3I7/                        &
-!/T              '       SCALE, VECTOR :',2L2)
+!/T              '             IX1/N   :',2I7/                        &
+!/T              '             IY1/N   :',2I7/                        &
+!/T              '             VECTOR  :',1L2)
 !
 !/T 9012 FORMAT (' TEST W3EXNC : BLOK PARS    : ',3I4)
 !/T 9014 FORMAT ('           BASE NAME : ',A)

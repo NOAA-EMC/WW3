@@ -756,6 +756,7 @@
       USE W3ADATMD, ONLY: ITIME
       USE W3IDATMD, ONLY: FLCUR
       USE W3ODATMD, ONLY: NDSE, NDST
+!/S      USE W3SERVMD, ONLY: STRACE
 !/
       IMPLICIT NONE
 !/
@@ -763,6 +764,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN) :: ISEA
+!/S      INTEGER, SAVE           :: IENT = 0
       REAL, INTENT(IN)    :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
                              WN(0:NK+1), DEPTH, DDDX, DDDY,       &
                              ALFLMT(NTH), CX, CY, DCXDX, DCXDY,   & 

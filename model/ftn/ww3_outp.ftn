@@ -2411,7 +2411,7 @@
 !/T              '               NREQ   :',I4/                        &
 !/T              '               SCALE1 :',E10.3/                     &
 !/T              '               SCALE2 :',E10.3/                     &
-!/T              '               FLSRCE :',6L2)
+!/T              '               FLSRCE :',7L2)
 !/T 9002 FORMAT (' TEST W3EXPO : OUTPUT POINT : ',A)
 !/T 9010 FORMAT (' TEST W3EXPO : DEPTH =',F7.1,'  IK, T, K, CG :')
 !/T 9011 FORMAT ('               ',I3,F8.2,F8.4,F8.2)

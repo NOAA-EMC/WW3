@@ -669,7 +669,7 @@
 !/IS2            ELSE
 !/IS2              DTI50   = 1.
 !/IS2            END IF
-!/T          WRITE (NDST,9016) DTI50
+!/IS2!/T          WRITE (NDST,9016) DTI50
 !/IS2          IF ( DTI50 .LT. 0. ) THEN
 !/IS2              IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006)
 !/IS2              CALL EXTCDE ( 5 )

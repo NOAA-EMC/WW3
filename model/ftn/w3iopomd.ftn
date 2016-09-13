@@ -666,7 +666,7 @@
         IY(:)  = IPTINT(2,:,I)
         RD(:)  = PTIFAC(:,I)
 !
-!/T        WRITE (NDST,9001) IX1, IY1, IX(2)
+!/T!        WRITE (NDST,9001) IX1, IY1, IX(2)
 !
 !
 ! Correct for land and ice and get sea point counters

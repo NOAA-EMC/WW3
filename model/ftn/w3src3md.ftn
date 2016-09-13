@@ -154,6 +154,7 @@
                           WWNMEANPTAIL, FTE, FTF, SSTXFTF, SSTXFTWN,&
                           SSTXFTFTAIL, SSWELLF
 !/T      USE W3ODATMD, ONLY: NDST
+!/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
 !/
@@ -857,6 +858,7 @@
       USE CONSTANTS
       USE W3GDATMD, ONLY: AALPHA, BBETA, ZZALP, XFR, FACHFE, ZZ0MAX
 !/T      USE W3ODATMD, ONLY: NDST
+!/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
 !/
@@ -887,6 +889,7 @@
       REAL                    :: Y,YC,DELY
       INTEGER                 :: I,J,K,L
       REAL                    :: X0
+!/S      INTEGER, SAVE           :: IENT = 0
 !
 !/S      CALL STRACE (IENT, 'TABU_HF')
 !
