@@ -31,11 +31,11 @@
 #      sec. 3.a : Provide correct error capturing.                            #
 #      sec. 3.d : Remove unnecessary files.                                   #
 #                                                                             #
-#  - This version is made for the Intel ifort version 8.1 on a Pentium 4      #
-#    processor.                                                               #
+#  - This version is made for the Portland pgf90 compiler versions 6 and up.  #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
-#                                                      April    2015          #
+#                                                      February 2012          #
+#                                                                             #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -69,25 +69,44 @@
 # 2.b Perform compilation  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #     Save compiler exit code in $OK
 #
-# Intel compiler on Linux ----------------------------------------------------
+# Portland Group Inc FORTRAN on Redhad Linux  --------------------------------
 # 2.b.1 Build options and determine compiler name
 
   # compilation options
-  opt="-c -g -O3 -static -fconvert=big-endian -J$path_m"
-# opt="-c -g -O0 -fbacktrace -fconvert=big-endian -J$path_m"
+  opt="-c -Mlist -module $path_m" ; fast="yes"
+#   opt="-c -Mlist -fast -module $path_m"
+
+# opt="-c -O0 -g -traceback -Mbounds -Mchkfpstk -Mchkptr -Mchkstk -Mlist -module $path_m" ; fast=
+
+  if [ "$name" != 'ww3_gspl' ]
+  then
+    opt="$opt -byteswapio"
+  fi
+
+  if [ "$fast" = 'yes' ]
+  then
+    if [ "$name" = 'w3iogrmd' ] ||  [ "$name" = 'w3iogomd' ] 
+    then
+      opt="-O3 $opt"
+    else
+      opt="-fast $opt"
+    fi
+  else
+    opt="-O3 $opt"
+  fi
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=gfortran
+    comp=mpif90
   else
-    comp=gfortran
+    comp=pgf90
   fi
 
   # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
-    opt="$opt -fopenmp"
+    opt="$opt -mp"
   fi
 
   # oasis coupler include dir
@@ -152,8 +171,34 @@
 
   if [ -s $name.err ]
   then
-    nr_err=`grep 'error' $name.err | wc -l | awk '{ print $1 }'`
-    nr_war=`grep 'warning' $name.err | wc -l | awk '{ print $1 }'`
+    echo > /dev/null
+
+    grep inform $name.err | grep warnings | grep severes > $name.err2
+    mv $name.err2 $name.err
+    err_lines=`wc -l $name.err | awk '{ print $1 }'`
+
+    nr_inf=0
+    nr_war=0
+    nr_sev=0
+    nr_fat=0
+
+    line=1
+    while [ "$line" -le "$err_lines" ]
+    do
+      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $1}'`
+      nr_inf=`expr $nr_inf + $nr_loc`
+      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $3}'`
+      nr_war=`expr $nr_war + $nr_loc`
+      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $5}'`
+      nr_sev=`expr $nr_sev + $nr_loc`
+      nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $7}'`
+      nr_fat=`expr $nr_fat + $nr_loc`
+      line=`expr $line + 1`
+    done
+
+    nr_err=`expr $nr_sev + $nr_fat`
+    nr_war=`expr $nr_war + $nr_inf`
+
   else
     if [ "$OK" != '0' ]
     then
