@@ -9,8 +9,8 @@
 !     domain%iostyp =  1  ! Output server type as in ww3_shel.nml
 !     domain%upproc =  f  ! Flag for dedicated process for unified point output.
 !     domain%pshare =  f  ! Flag for grids sharing dedicated output processes.
-!     domain%flghg1 =  t  ! Flag for masking computation in two-way nesting
-!     domain%flghg2 =  t  ! Flag for masking at printout time
+!     domain%flghg1 =  f  ! Flag for masking computation in two-way nesting
+!     domain%flghg2 =  f  ! Flag for masking at printout time
 !     domain%start  = '19680606 000000'  ! Start date for the entire model 
 !     domain%stop   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !

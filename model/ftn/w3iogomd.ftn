@@ -124,7 +124,7 @@
 !/S      USE W3SERVMD, ONLY : STRACE
 !/
       PUBLIC
-      CHARACTER(LEN=1024)                   :: FLDLIST
+      CHARACTER(LEN=1024)                   :: FLDOUT
 !/
 !/ Private parameter statements (ID strings)
 !/
@@ -379,9 +379,9 @@
         IF ( FLG1D (IFI) ) THEN ! Skip if group not requested
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
           READ (NDSI,'(A)',END=2001,ERR=2006,IOSTAT=IERR)              &
-                                                       FLDLIST
+                                                       FLDOUT
           OUT_NAMES(:)=''
-          CALL STRSPLIT(FLDLIST,OUT_NAMES)
+          CALL STRSPLIT(FLDOUT,OUT_NAMES)
           IFJ=0
           DO WHILE (len_trim(OUT_NAMES(IFJ+1)).NE.0)
              IFJ=IFJ+1
@@ -397,9 +397,9 @@
 ! 2. Reads and splits list of output field names
 !
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-        READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) FLDLIST
+        READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) FLDOUT
         OUT_NAMES(:)=''
-        CALL STRSPLIT(FLDLIST,OUT_NAMES)
+        CALL STRSPLIT(FLDOUT,OUT_NAMES)
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
           CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
@@ -677,7 +677,7 @@
       END SUBROUTINE W3READFLGRD
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLGRDFLAG ( NDSO, NDSS, NDSEN, FLDLIST,      &
+      SUBROUTINE W3FLGRDFLAG ( NDSO, NDSS, NDSEN, FLDOUT,      &
                                FLG1D, FLG2D, IAPROC, NAPOUT, IERR) 
 !/
 !/                  +-----------------------------------+
@@ -703,7 +703,7 @@
 !       NDSI    Int.   I   Input file logical unit number
 !       NDSO    Int.   I   Output file logical unit number
 !       NDSEN   R.A.   I   Error output file logical unit number
-!       FLDLIST Cha.   I   List of field names
+!       FLDOUT  Cha.   I   List of field names
 !       FLG     L.A.   O   1D array of flags for groups
 !       FLG2D   L.A.   O   2D array of flags
 !       IAPROC  Int.   I   index of current processor 
@@ -754,7 +754,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: NDSO, NDSS, NDSEN, IAPROC, NAPOUT
-      CHARACTER(1024), INTENT(IN)   :: FLDLIST
+      CHARACTER(1024), INTENT(IN)   :: FLDOUT
       INTEGER, INTENT(OUT)    :: IERR
       LOGICAL, INTENT(OUT)    :: FLG2D(NOGRP,NGRPP), FLG1D(NOGRP)
       CHARACTER(LEN=100)      :: OUT_NAMES(100), TESTSTR
@@ -784,7 +784,7 @@
 ! 2. Splits list of output field names
 !
         OUT_NAMES(:)=''
-        CALL STRSPLIT(FLDLIST,OUT_NAMES)
+        CALL STRSPLIT(FLDOUT,OUT_NAMES)
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
           CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           

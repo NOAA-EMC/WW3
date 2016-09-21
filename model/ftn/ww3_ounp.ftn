@@ -409,11 +409,16 @@
           FLREQ(IPOINT) = .TRUE.
         END IF
         ! read the 'end of list' if nopts reached before it
-        IF ( (IPOINT .GT. 0) .AND. (IPOINT .EQ. NOPTS) ) THEN
+        IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
           READ (NDSI,*,END=801,ERR=802) IPOINT
         END IF
       END DO
+      ! check if last point index is -1
+      IF (IPOINT .NE. -1) THEN
+        WRITE (NDSE,1007)
+        CALL EXTCDE ( 47 )
+      END IF
 !
       ALLOCATE ( INDREQ(NREQ) )
       INDREQ(:)=INDREQTMP(1:NREQ)
@@ -517,8 +522,10 @@
       IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.3)) WRITE(EXT,'(A)') '_tab.nc'
       IF ((ITYPE .EQ. 3) .AND. (OTYPE.EQ.4)) WRITE(EXT,'(A)') '_src.nc'
       ! checks if extension exists
-      IF (LEN_TRIM(EXT).EQ.0) GOTO 806
-
+      IF (LEN_TRIM(EXT).EQ.0) THEN
+        WRITE (NDSE,1006)
+        CALL EXTCDE ( 46 )
+      END IF
 
 ! 5.3 Redefines netCDF type 
 !/NC4      IF((NCTYPE.EQ.4).AND.(.NOT.TOGETHER).AND.(NFL.GT.300).AND.(NREQ.GT.9000))  THEN
@@ -1077,9 +1084,6 @@
 !/O14      WRITE (NDSE,1005) IERR
 !/O14      CALL EXTCDE ( 45 )
 !
-  806 CONTINUE
-      WRITE (NDSE,1006) 
-      CALL EXTCDE ( 46 )
 !
   888 CONTINUE
 !
@@ -1181,6 +1185,11 @@
 !
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/              &
                '     ITYPE AND OTYPE COMBINATION NOT RECOGNIZED'/)
+!
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/              &
+               '     ERROR IN READING FROM INPUT FILE'/              &
+               '     LAST POINT INDEX IS NOT -1'/                    &
+               '     OR TOO MANY POINT INDEXES DEFINED'/)
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
                '     ILLEGAL TYPE, ITYPE =',I4/)
@@ -2584,8 +2593,8 @@
 !
 ! Creation in netCDF3 or netCDF4
 !
-      IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_SHARE, ncid)
-!/NC4      IF(NCTYPE.EQ.4) iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
+      IF(NCTYPE.EQ.3)  iret = nf90_create(trim(ncfile), NF90_CLOBBER, ncid)
+!/NC4      IF(NCTYPE.EQ.4) iret = nf90_create(trim(ncfile), NF90_NETCDF4, ncid)
       call check_err(iret)
 
 !

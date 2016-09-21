@@ -1254,6 +1254,7 @@
         LPRT(I)    = LPRT(1)
         END DO
 !
+      IF ( NPTS.EQ.0 .OR. ODAT(8,0).EQ.0 ) UNIPTS = .FALSE.
       IF ( UNIPTS ) THEN
           IF ( ( NPTS.EQ.0 .OR.  ODAT(8,0).EQ.0 ) .AND.               &
               IMPROC.EQ.NMPERR ) WRITE (MDSE,1050)
@@ -3217,7 +3218,7 @@
       USE WMINIOMD, ONLY: WMIOBS, WMIOBG, WMIOBF
       USE WMIOPOMD, ONLY: WMIOPP
 !/
-      USE W3SERVMD, ONLY: ITRACE, EXTCDE, WWDATE, WWTIME
+      USE W3SERVMD, ONLY: ITRACE, EXTCDE, NEXTLN, WWDATE, WWTIME
 !/S      USE W3SERVMD, ONLY: STRACE
 !/MPRF      USE W3SERVMD, ONLY: PRINIT, PRTIME
       USE W3TIMEMD, ONLY: STME21, DSEC21, TICK21, TDIFF
@@ -3295,6 +3296,7 @@
                                  FLGD(:,:), FLG2(:,:), FLG2D(:,:),     &
                                  FLG1D(:)
       CHARACTER(LEN=1)        :: COMSTR
+      CHARACTER(LEN=256)      :: TMPLINE, TEST
       CHARACTER(LEN=3)        :: IDSTR(-7:7), IDTST
       CHARACTER(LEN=5)        :: STOUT, OUTSTR(6)
       CHARACTER(LEN=6)        :: YESXX, XXXNO
@@ -3314,7 +3316,7 @@
       CHARACTER(LEN=30)       :: IDOTYP(7)
       CHARACTER(LEN=80)       :: TNAME
       CHARACTER(LEN=80)       :: LINE
-      CHARACTER(LEN=1024)     :: FLDLIST
+      CHARACTER(LEN=1024)     :: FLDOUT
 !
       type(domain_def_t)                      :: domain_def
       type(input_grid_t), allocatable         :: input_grid(:) 
@@ -3405,6 +3407,8 @@
       MDSS   = IDSS
       MDST   = IDST
       MDSE   = IDSE
+!
+      COMSTR = '$'
 !
       IF ( IMPROC .EQ. NMPERR ) THEN
           MDSE2  = MDSE
@@ -4082,8 +4086,8 @@
   ! 5.c Type 1: fields of mean wave parameters
   !
                 FLGRD(:,:,I)=.FALSE. ! Initialize FLGRD
-                FLDLIST = output_type(I)%field%list
-                CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDLIST, FLG1D,       &
+                FLDOUT = output_type(I)%field%list
+                CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
                                    FLG2D, IMPROC, NMPSCR, IERR )
                 FLGRD(:,:,I)=FLG2D
                 FLGD(:,I)   =FLG1D
@@ -4140,8 +4144,19 @@
                   END IF
 !
                   DO
-                    READ (MDSI,*,ERR=2004,IOSTAT=ierr) XX, YY, PN
-                    IF (ierr.NE.0) exit
+                    READ (MDSI,*,ERR=2004,IOSTAT=IERR) TMPLINE
+                    ! if end of file or stopstring, then exit
+                    IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
+                    ! leading blanks removed and placed on the right
+                    TEST = ADJUSTL ( TMPLINE )
+                    IF ( TEST(1:1).EQ.COMSTR .OR. LEN_TRIM(TEST).EQ.0 ) THEN
+                      ! if comment or blank line, then skip
+                      CYCLE
+                    ELSE
+                      ! otherwise, backup to beginning of line
+                      BACKSPACE ( MDSI, ERR=2004, IOSTAT=IERR)
+                      READ (MDSI,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
+                    ENDIF
                     OT2(I)%NPTS = OT2(I)%NPTS + 1
                     IF ( ILOOP .EQ. 1 ) CYCLE
                     IF ( ILOOP .EQ. 2 ) THEN
@@ -4226,8 +4241,8 @@
 !
 ! 5.i Type 7: coupling
 !
-!/COU              FLDLIST = output_type(I)%coupling%list
-!/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDLIST, FLG1D,       &
+!/COU              FLDOUT = output_type(I)%coupling%list
+!/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
 !/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,I)=FLG2D
 !/COU              FLG2(:,I)   =FLG1D

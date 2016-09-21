@@ -122,13 +122,13 @@ $
  N
 $
 $   - Sent fields by ww3:
-$       - Ocean model : T0M1 OHS DIR BHD TWO UBR FOC TAW LM DRY
-$       - Atmospheric model : CUR CHA AHS FP
+$       - Ocean model : T0M1 OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
+$       - Atmospheric model : CHA AHS FP
 $
  CHA
 $
 $   - Received fields by ww3:
-$       - Ocean model : SSH CUR DRY
+$       - Ocean model : SSH CUR
 $       - Atmospheric model : WND
 $
  WND

@@ -92,7 +92,7 @@ $    Flag for masking computation in two-way nesting (except at
 $                                                     output times).
 $    Flag for masking at printout time.
 $
-  T T
+  F F
 $
 $ -------------------------------------------------------------------- $
 $ Conventional output requests as in ww3_shel.inp.  Will be applied

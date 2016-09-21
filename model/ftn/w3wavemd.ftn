@@ -482,7 +482,7 @@
 !
 !/PALM      PALMED = 1
 !/OASIS      OASISED = 1
-!/OASIS      SCREEN   =  333
+!/COU      SCREEN   =  333
 !
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
       IF ( IGRID  .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )

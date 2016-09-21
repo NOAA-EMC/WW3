@@ -160,6 +160,7 @@
 !/
 !/    Jul-2013 : Origination.                    ( version 4.18 )
 !/    April-2016 : Add comments (J. Pianezze)    ( version 5.07 )
+!/    Sept-2016 : Correct bug MPI (J. Pianezze)  ( version 5.12 )
 !/
 !  1. Purpose :
 !
@@ -310,7 +311,7 @@
          !
       ENDIF
 !
-!/MPI      CALL MPI_BARRIER(ID_LCOMM,IL_ERR)
+!/MPI      CALL MPI_BCAST(NNODES,1,MPI_INTEGER,0,ID_LCOMM,IERR_MPI)
 !
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE CPL_OASIS_GRID
@@ -897,6 +898,24 @@
 !/OASACM            ID_NB_SND = ID_NB_SND +1
 !/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__AHS'
 !
+!/OASOCM         CASE('TUS')
+!/OASOCM            ! Volume transport associated to Stokes drift, u component (m2.s-1)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TUSX'
+!
+!/OASOCM            ! Volume transport associated to Stokes drift, v component (m2.s-1)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TUSY'
+!
+!/OASOCM         CASE('USS')
+!/OASOCM            ! Surface Stokes drift, u component (m.s-1)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_USSX'
+!
+!/OASOCM            ! Surface Stokes drift, v component (m.s-1)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_USSY'
+
 !/OASACM         CASE('CUR')
 !/OASACM            ! Ocean sea surface current (m.s-1)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
@@ -915,7 +934,12 @@
 !/OASACM            ! Peak frequency (s-1)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
 !/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___FP'
-                    !
+!
+!/OASACM         CASE('TP')
+!/OASACM            ! Peak period (s)
+!/OASACM            ID_NB_SND = ID_NB_SND +1
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___TP'
+!
          CASE DEFAULT
             WRITE (NDSO,1002) TRIM(TESTSTR(1:6))
          END SELECT

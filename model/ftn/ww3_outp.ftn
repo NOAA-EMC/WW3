@@ -330,16 +330,37 @@
       FLREQ = .FALSE.
       NREQ   = 0
 !
-  410 CONTINUE
-      CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) IPOINT
-      IF ( IPOINT .GT. 0 ) THEN
-          IF ( IPOINT .LE. NOPTS ) THEN
-              IF ( .NOT. FLREQ(IPOINT) ) NREQ   = NREQ + 1
-              FLREQ(IPOINT) = .TRUE.
-            END IF
-          GOTO 410
+      DO I=1, NOPTS
+        ! reads point index
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802) IPOINT
+        ! last index
+        IF (IPOINT .LT. 0) THEN
+          IF (I.EQ.1) THEN
+            FLREQ = .TRUE.
+            NREQ = NOPTS
+          END IF
+          EXIT
         END IF
+        ! existing index in out_pnt.ww3   
+        IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
+          IF ( .NOT. FLREQ(IPOINT) ) THEN 
+            NREQ = NREQ + 1
+          END IF
+          FLREQ(IPOINT) = .TRUE.
+        END IF
+        ! read the 'end of list' if nopts reached before it
+        IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=801,ERR=802) IPOINT
+        END IF
+      END DO
+      ! check if last point index is -1
+      IF (IPOINT .NE. -1) THEN
+        WRITE (NDSE,1007)
+        CALL EXTCDE ( 47 )
+      END IF
+
 !
 ! ... Output type
 !
@@ -833,6 +854,11 @@
 !/O14 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/          &
 !/O14               '     ERROR IN OPENING BUOY LOG FILE'/            &
 !/O14               '     IOSTAT =',I5/)
+!
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/              &
+               '     ERROR IN READING FROM INPUT FILE'/               &
+               '     LAST POINT INDEX IS NOT -1'/                    &
+               '     OR TOO MANY POINT INDEXES DEFINED'/)
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
                '     ILLEGAL TYPE, ITYPE =',I4/)

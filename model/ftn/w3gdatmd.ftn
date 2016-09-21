@@ -650,7 +650,7 @@
         REAL, POINTER         :: ANGLE(:,:),ANGLE0(:,:)
         INTEGER               :: COUNTRI,COUNTOT,NNZ
         INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), VNEIGH(:,:),  &
-                                 POS_CELL(:), IOBP(:), IOBPD(:,:),   &
+                                 POS_CELL(:), IOBP(:), IOBPD(:,:), IOBPA(:),     &
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:) 
         DOUBLE PRECISION, POINTER         :: TRIA(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
@@ -861,7 +861,7 @@
       INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),    &
                                  POS_CELL(:), IOBP(:), IOBPD(:,:),     &
                                  IAA(:), JAA(:), POSI(:,:),            &
-                                 VNEIGH(:,:), INDEX_CELL(:)
+                                 VNEIGH(:,:), INDEX_CELL(:), IOBPA(:)
       DOUBLE PRECISION, POINTER  :: TRIA(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
@@ -1153,7 +1153,7 @@
       CHECK_ALLOC_STATUS ( ISTAT )
 !
 ! -------------------------------------------------------------------- /
-! 2.  Initialize GINIT adn SINIT
+! 2.  Initialize GINIT and SINIT
 !
       DO I=NLOW, NUMBER
         GRIDS(I)%GINIT  = .FALSE.
@@ -1860,6 +1860,7 @@
       POSI     => GRIDS(IMOD)%POSI
       NNZ      => GRIDS(IMOD)%NNZ
       IOBPD     => GRIDS(IMOD)%IOBPD
+      IOBPA    => GRIDS(IMOD)%IOBPA
       TRIA     => GRIDS(IMOD)%TRIA
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
       MAXX     => GRIDS(IMOD)%MAXX
@@ -2681,6 +2682,7 @@
                  GRIDS(IMOD)%POSI(3,COUNTOTA),                      &
                  GRIDS(IMOD)%IOBP(MX),                              &
                  GRIDS(IMOD)%IOBPD(NTH,MX),                         &
+                 GRIDS(IMOD)%IOBPA(MX),                             &
                  STAT=ISTAT                                         )
       CHECK_ALLOC_STATUS ( ISTAT )
 !

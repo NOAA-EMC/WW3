@@ -7,12 +7,13 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         11-May-2015 |
+!/                  | Last update :         17-Aug-2016 |
 !/                  +-----------------------------------+
 !/
 !/    24-May-2013 : Adaptation from ww3_bound.ftn    ( version 4.08 )
 !/     1-Apr-2015 : Add checks on lat lon xfr        ( version 5.05 )
 !/    11-May-2015 : Allow use of cartesian grids     ( version 5.08 )
+!/    17-Aug-2016 : Bug correction on RDBPO          ( version 5.10 ) 
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -102,7 +103,7 @@
       USE W3IOBCMD, ONLY: VERBPTBC, IDSTRBC
       USE W3IOGRMD, ONLY: W3IOGR
       USE W3TIMEMD
-      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, DIST_SPHERE
       USE NETCDF
 !/S      USE W3SERVMD, ONLY : STRACE
 
@@ -133,7 +134,7 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 
 ! arrays
-      INTEGER                             :: TIME1(2),TIME2(2)
+      INTEGER                             :: TIME2(2)
       REAL, ALLOCATABLE                   :: SPEC2D(:,:,:,:), LATS(:), LONS(:)
       REAL, ALLOCATABLE                   :: FREQ(:), THETA(:)
       REAL                                :: FR1I, TH1I
@@ -141,7 +142,7 @@
                                              XBPO(:), YBPO(:), RDBPO(:,:),        &
                                              ABPIN(:,:), ABPIN2(:,:,:) 
       INTEGER, ALLOCATABLE                :: IPBPI(:,:), IPBPO(:,:)
-      REAL                                :: DMIN, DIST, DMIN2, COS1, COS2, DLON, DLAT, DLA, DLO
+      REAL                                :: DMIN, DIST, DMIN2, COS1, DLON, DLAT, DLA, DLO
 
 ! netCDF
       INTEGER                             :: iret, ICODE, varid(12)
@@ -532,7 +533,7 @@
           DO IP=1,NBO2
 !           Searches for the nearest 2 points where spectra are available
             IF (FLAGLL)  THEN 
-              DIST=SQRT((MOD(ABS(LONS(IP)-XBPO(IP1))+360,360.))**2+(LATS(IP)-YBPO(IP1))**2)
+              DIST=DIST_SPHERE ( LONS(IP),LATS(IP),XBPO(IP1),YBPO(IP1) )
             ELSE 
               DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
               END IF
@@ -593,7 +594,7 @@
           ELSE 
             ! in this case: nearest point
             RDBPO(IP1,1)=1.
-            RDBPO(IP1,1)=0.
+            RDBPO(IP1,2:4)=0.
             END IF
           IF (VERBOSE.GE.1) WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
           IF (VERBOSE.GE.1) WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)

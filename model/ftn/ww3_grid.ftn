@@ -611,9 +611,9 @@
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
 !/REF1                                 REFFREQPOW
 !
-!/IG1  LOGICAL                 :: IGSWELLMAX
+!/IG1  LOGICAL                 :: IGSWELLMAX, IGBCOVERWRITE
 !/IG1  INTEGER                 :: IGMETHOD, IGADDOUTP, IGSOURCE,      &
-!/IG1                             IGSOURCEATBP, IGBCOVERWRITE, IGSTERMS
+!/IG1                             IGSOURCEATBP, IGSTERMS
 !/IG1  REAL                    :: IGMAXFREQ, IGMINDEP, IGMAXDEP,      &
 !/IG1                             IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL
 !
@@ -1998,7 +1998,7 @@
 !/IG1       IGSTERMS = 0
 !/IG1       IGMAXFREQ=0.03
 !/IG1       IGSOURCEATBP = 0
-!/IG1       IGBCOVERWRITE = 1
+!/IG1       IGBCOVERWRITE = .TRUE.
 !/IG1       IGSWELLMAX = .TRUE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
@@ -2106,11 +2106,11 @@
 ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
 !     grid, that is initialized with zeros as default.
       IF ( FLAGTR .LT. 3 ) THEN
-         IF (CICE0.NE.CICEN) THEN
-            CICE0 = CICEN
-            IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
-         END IF
-      END IF
+        IF (CICE0.NE.CICEN) THEN
+          CICE0 = CICEN
+          IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+          END IF
+        END IF
 !/IC0      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
       WRITE (NDSO,8972) ICEWIND
@@ -3836,7 +3836,8 @@
 !/IG1       IGPARS(1)=IGMETHOD
 !/IG1       IGPARS(2)=IGADDOUTP
 !/IG1       IGPARS(3)=IGSOURCE
-!/IG1       IGPARS(4)=IGBCOVERWRITE
+!/IG1       IGPARS(4)=0
+!/IG1       IF (IGBCOVERWRITE) IGPARS(4)=IGPARS(4)+1
 !/IG1       IF (IGSWELLMAX) IGPARS(4)=IGPARS(4)+2
 !/IG1       IGPARS(5)=1
 !/IG1       DO IK=1,NK
@@ -4847,8 +4848,8 @@
                ' --------------------------------------------------')
  4981 FORMAT ( '       Coefficient for shorelines  :',F6.4)
  4989 FORMAT ( '          *** CURVLINEAR GRID: REFLECTION NOT IMPLEMENTED YET ***')
- 2977 FORMAT ( '  &IG1  IGMETHOD =',I2,', IGADDOUTP =',I2,', IGSOURCE =',I2, &
-               ', IGSTERMS = ',I2,', IGBCOVERWRITE =', I2,','/        & 
+ 2977 FORMAT ( '  &SIG1  IGMETHOD =',I2,', IGADDOUTP =',I2,', IGSOURCE =',I2, &
+               ', IGSTERMS = ',I2,', IGBCOVERWRITE =', L3,','/        & 
                '        IGSWELLMAX =', L3,', IGMAXFREQ =',F6.4,       &
                ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')

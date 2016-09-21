@@ -196,6 +196,8 @@
 !
 !/IG1 IGBCOVERWRITE =(MOD( NINT(IGPARS(4)),2).EQ.1)
 !/IG1 IGSWELLMAX =( NINT(IGPARS(4)).GE.2)
+! This following line is a quick fix before the bug is understood .... 
+!/IG1 IF (GTYPE.EQ.UNGTYPE) IGSWELLMAX =.FALSE.
 !/IG1 IGFAC1 = 0.25
 !/IG1 IGFAC2 = 0.25
       EMEANA  = 0.
@@ -380,6 +382,7 @@
 ! Special treatment for unstructured grids
 !
           IF (GTYPE.EQ.UNGTYPE) THEN 
+! FA: this do loop should be commented if reflection method changed ... 
             DO ITH=1, NTH
               ISPECI=ITH+(IK-1)*NTH
               A(ISPECI)=A(ISPECI)*IOBPD(ITH,IX) !puts to zero the energy not going to coast
@@ -406,11 +409,19 @@
                     IF (R4.GT.0.) THEN 
 !
 ! Tests the type of shoreline geometry
-! NB: REFLD(3) or REFLD(4) is equal to 1 if the sea point is between two land points 
+! 
                     SELECT CASE (REFLD(2))
                       CASE (0)
                    ! Sharp corner: broad reflection
                         S(ISPEC)=S(ISPEC)+R2*FAC1/DT
+
+! FA: analog to following lines to be swapped in if reflection method changed 
+                        ! RECT CASE: 
+                        !  S(ISPEC)=S(ISPEC)+    &
+                        !    REAL(REFLD(3))*R2*CG(IK)*ABS(ECOS(ITH2X)/DELX)*FAC1   &
+                        !   +REAL(REFLD(4))*R2*CG(IK)*ABS(ESIN(ITH2Y)/DELY)*FAC1
+
+
                       CASE (1)
                    ! mild corner: average reflection
                         S(ISPEC)=S(ISPEC)+R2*ABS(R4)*FAC2/DT

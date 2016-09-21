@@ -1694,7 +1694,7 @@
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3 ) THEN
               FSC    = 0.1
-              UNITS  = 'N m-1'
+              UNITS  = 'm2 s-2'
               ENAME  = '.bhd'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BHD(1:NSEA)    &
                                                         , MAPSF, X1 )
@@ -1823,6 +1823,7 @@
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
               ! Information for spectral distribution of surface Stokes drift (2nd file)
               FLFRQ=.TRUE.
+              NFIELD=2
               varnm(1)='uusf'
               varnm(2)='vusf'
               varnl(1)='eastward spectral variance of surface stokes drift'
@@ -1833,7 +1834,7 @@
               varng(2)='northward_spectral_variance_of_surface_stokes_drift'
               varnc(1)='usf=sqrt(uusf**2+vusf**2)'
               varnc(2)='usf=sqrt(uusf**2+vusf**2)'
-              UNITS   = 'm s-1'
+              UNITS   = 'm s-1 Hz-1'
               I1F=US3DF(2)
               I2F=US3DF(3)
               DO IK= I1F,I2F
@@ -3034,8 +3035,8 @@
 !      
 ! Creation in netCDF3 or netCDF4
 !
-      IF(NCTYPE.EQ.3)  iret = nf90_create(ncfile, NF90_CLOBBER, ncid)
-!/NC4      IF(NCTYPE.EQ.4)  iret = nf90_create(ncfile, NF90_NETCDF4, ncid)
+      IF(NCTYPE.EQ.3)  iret = nf90_create(trim(ncfile), NF90_CLOBBER, ncid)
+!/NC4      IF(NCTYPE.EQ.4) iret = nf90_create(trim(ncfile), NF90_NETCDF4, ncid)
       call check_err(iret)
 !
 ! Define dimensions
