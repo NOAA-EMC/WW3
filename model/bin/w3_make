@@ -194,8 +194,15 @@
   if [ -n "`grep TRKNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
+    systrck_nc4notrknc=0
   else
-    reg_programs="$reg_programs ww3_systrk"
+    if [ -n "`grep NC4 $switch_file`" ]
+    then 
+      systrck_nc4notrknc=1 
+    else 
+      systrck_nc4notrknc=0
+      reg_programs="$reg_programs ww3_systrk"
+    fi
   fi
 
   if [ -n "`grep OASIS $switch_file`" ]
@@ -378,6 +385,11 @@ EOF
     then
       echo "NetCDF enabled programs ($cdf_programs)"
       echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
+      if [ $systrck_nc4notrknc -eq 1 ] 
+      then 
+         echo "WARNING: ww3_systrk will not be compiled due to invalid switch option."; echo ' '
+         echo "TRKNC switch is also required with NC4."; echo ' '
+      fi 
       echo "Continuing with compile of non-NetCDF programs ..."; echo ' '
       progs="$reg_programs"
     fi
@@ -400,6 +412,20 @@ EOF
         exit 1
       fi
     fi
+    systrkprog="ww3_systrk"
+    for prog in $systrkprog
+    do
+      if [ -n "`echo $progs | grep $prog`" ]
+      then   
+        if [ $systrck_nc4notrknc -eq 1 ]
+        then
+          echo "ERROR: ww3_systrk will not be compiled due to invalid switch option."; echo ' '
+          echo "TRKNC switch is also required with NC4."; echo ' '
+          echo "Now exiting ..."; echo ' '
+          exit 1
+        fi
+      fi
+    done
   fi
 
 # 1.d Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 

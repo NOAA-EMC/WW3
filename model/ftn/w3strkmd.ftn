@@ -16,6 +16,8 @@
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
 !/    29-Nov-2013 : Remove DOC control characters,
 !/                  update MPI! to MPI/! (H. L. Tolman). ( version 4.15 )
+!/    26-Sep-2016 : Optimization updates (A. van der Westhuysen) 
+!/                                                      ( version 5.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -281,6 +283,7 @@
                                       dt         ,ntint      , & 
                                       minlon     ,maxlon     , & 
                                       minlat     ,maxlat     , &
+                                      mxcwt      ,mycwt      , &
                                       dirKnob    ,             &
                                       perKnob    ,hsKnob     , &
                                       wetPts     ,seedLat    , &
@@ -359,9 +362,11 @@
       INTEGER      :: maxGroup, intype, tmax, tcur, ntint
       INTEGER, POINTER :: maxSys(:)
       TYPE(dat2d), POINTER :: wsdat(:)
-      TYPE(timsys), POINTER :: sysA(:)
+      TYPE(timsys), POINTER :: sysA(:), sysAA(:)
+      INTEGER      :: NumConsSys, iConsSys
       REAL         :: dt
       REAL         :: minlon, maxlon, minlat, maxlat 
+      INTEGER      :: mxcwt, mycwt
 
 !     Note: Variables wsdat, sysA and maxSys have IN/OUT intent so that they 
 !     can be manipulated outside of this subroutine, e.g. re-indexing of 
@@ -405,7 +410,7 @@
                                 tp0(:),dir0(:),dspr0(:),wf0(:),&
                                 wndSpd0(:),wndDir0(:),wndFce0(:)
       REAL*8, ALLOCATABLE :: date0(:)
-      INTEGER    :: maxTs, t0, nout, maxI, maxJ
+      INTEGER    :: maxTs, t0, nout1, nout2, maxI, maxJ
       REAL, ALLOCATABLE :: mlon(:,:), mlat(:,:)
       REAL, POINTER :: uniqueTim(:),uniqueLatraw(:),uniqueLonraw(:), &
                        uniqueLat(:),uniqueLon(:)
@@ -418,6 +423,7 @@
       REAL       :: dx
       INTEGER    :: latind1, latind2, lonind1, lonind2
       REAL       :: lonext, latext
+
 !/MPI      INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
 !/MPI/!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR 
 !/MPI      INTEGER    :: MPI_STATUS(MPI_STATUS_SIZE)
@@ -700,8 +706,32 @@
          CALL UNIQUE(REAL(ts),SIZE(ts),uniqueTim,maxTs)
 
 !        Find unique lat and lon values (and sort in ascending order)
-         CALL UNIQUE(llat(1:line),SIZE(llat(1:line)),uniqueLatraw,nout)
-         CALL UNIQUE(llon(1:line),SIZE(llon(1:line)),uniqueLonraw,nout)
+         CALL UNIQUE(llat(1:line),SIZE(llat(1:line)),uniqueLatraw,nout1)
+         CALL UNIQUE(llon(1:line),SIZE(llon(1:line)),uniqueLonraw,nout2)
+
+!--042916-----------------------
+!
+!        Redefine uniqueLatraw and uniqueLonrawto based on domain extent
+         WRITE(20,*) 'uniqueLatraw(:) =', uniqueLatraw(:)
+         WRITE(20,*) 'uniqueLonraw(:) =', uniqueLonraw(:)
+
+         WRITE(20,*) 'No. increments: Longitude, Latitue =', mxcwt, mycwt
+         DEALLOCATE(uniqueLatraw)
+         DEALLOCATE(uniqueLonraw)
+         ALLOCATE(uniqueLatraw(mycwt+1))
+         ALLOCATE(uniqueLonraw(mxcwt+1))
+         DO i = 1,(mycwt+1)
+            uniqueLatraw(i) =  minlat + & 
+                               (REAL(i)-1)/REAL(mycwt)*(maxlat-minlat)
+         END DO
+         DO i = 1,(mxcwt+1)
+            uniqueLonraw(i) =  minlon + &
+                               (REAL(i)-1)/REAL(mxcwt)*(maxlon-minlon)
+         END DO
+         WRITE(20,*) 'uniqueLatraw(:) =', uniqueLatraw(:)
+         WRITE(20,*) 'uniqueLonraw(:) =', uniqueLonraw(:)
+!
+!--042916-----------------------
 
 !        Filter out lats and lons outside of domain of interest
          DO latind1 = 1,SIZE(uniqueLatraw)
@@ -730,9 +760,11 @@
          ALLOCATE(uniqueLon(lonind2-lonind1+1))
          uniqueLat = uniqueLatraw(latind1:latind2)
          uniqueLon = uniqueLonraw(lonind1:lonind2)
-         WRITE(20,*) 'In waveTracking_NWS_V2: Longitude range =', &
+         WRITE(20,'(A,2F7.2)') &
+                    'In waveTracking_NWS_V2: Longitude range =', &
                      uniqueLon(1), uniqueLon(SIZE(uniqueLon))
-         WRITE(20,*) '                        Latitude range  =', &
+         WRITE(20,'(A,2F7.2)') &
+                    '                        Latitude range  =', &
                      uniqueLat(1), uniqueLat(SIZE(uniqueLat))
 
 !        Map is transposed (rotated by 90 deg), so that: 
@@ -798,9 +830,13 @@
          DO l = 1,line
             DO j = 1,maxJ
                DO i = 1,maxI            
-                  IF ( (llat(l).EQ.mlat(i,j)).AND. &
-                       (llon(l).EQ.mlon(i,j)) ) THEN
-
+!>042916                  IF ( (llat(l).EQ.mlat(i,j)).AND. &
+!>042916                       (llon(l).EQ.mlon(i,j)) ) THEN
+                  IF ( (ABS(llat(l)-mlat(i,j)).LT.0.01).AND. &
+                       (ABS(llon(l)-mlon(i,j)).LT.0.01) ) THEN
+!                     WRITE(20,*) 'MATCHED! ',l,&
+!                        llat(l),mlat(i,j),ABS(llat(l)-mlat(i,j)),&
+!                        llon(l),mlon(i,j),ABS(llon(l)-mlon(i,j))
                      wsdat(ts(l))%lat(i,j) = llat(l)
                      wsdat(ts(l))%lon(i,j) = llon(l)
 !                    Find next free partition. Do not include more that 10
@@ -871,7 +907,7 @@
 !/MPI
 !/MPI                DO j = 1,maxJ
 !/MPI                   DO i = 1,maxI
-!/MPI                      tag1 = ((j-1)*maxI+i)*100
+!/MPI                      tag1 = ((j-1)*maxI+i)*10
 !/MPI
 !/MPI                      IF (rank.EQ.0) THEN
 !/MPI/!                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
@@ -943,7 +979,8 @@
 ! ----*** Test Output *** --------------------------------------------------
       IF (testout) THEN
 !-----RAW PARTITION output: Coordinates
-      OPEN(unit=31,recl=2147483646,file='PART_COORD.OUT',status='unknown')
+!      OPEN(unit=31,recl=2147483646,file='PART_COORD.OUT',status='unknown')
+      OPEN(unit=31,file='PART_COORD.OUT',status='unknown')
 
       WRITE(31,*) 'Longitude ='
       DO j = maxJ,1,-1
@@ -964,7 +1001,9 @@
       CLOSE(31)
 
 !-----RAW PARTITION output: hs
-      OPEN(unit=32,recl=2147483646, file='PART_HSIGN.OUT', &
+!      OPEN(unit=32,recl=2147483646, file='PART_HSIGN.OUT', &
+!           status='unknown')
+      OPEN(unit=32, file='PART_HSIGN.OUT', &
            status='unknown')
 
       maxpartout = 5
@@ -986,7 +1025,9 @@
       CLOSE(32)
 
 !-----RAW PARTITION output: tp
-      OPEN(unit=33,recl=2147483646, file='PART_TP.OUT', &
+!      OPEN(unit=33,recl=2147483646, file='PART_TP.OUT', &
+!           status='unknown')
+      OPEN(unit=33, file='PART_TP.OUT', &
            status='unknown')
 
       DO tsA = 1,SIZE(wsdat)
@@ -1007,7 +1048,9 @@
       CLOSE(33)
 
 !-----RAW PARTITION output: dir
-      OPEN(unit=34,recl=2147483646, file='PART_DIR.OUT', & 
+!      OPEN(unit=34,recl=2147483646, file='PART_DIR.OUT', & 
+!           status='unknown')
+      OPEN(unit=34, file='PART_DIR.OUT', & 
            status='unknown')
 
       DO tsA = 1,SIZE(wsdat)
@@ -1028,7 +1071,9 @@
       CLOSE(34)
 
 !-----RAW PARTITION output: dspr
-      OPEN(unit=35,recl=2147483646, file='PART_DSPR.OUT', & 
+!      OPEN(unit=35,recl=2147483646, file='PART_DSPR.OUT', & 
+!           status='unknown')
+      OPEN(unit=35, file='PART_DSPR.OUT', & 
            status='unknown')
 
       DO tsA = 1,SIZE(wsdat)
@@ -2915,8 +2960,10 @@
 !
       LOGICAL   :: found
       INTEGER, ALLOCATABLE :: sysOut(:)
+      INTEGER, ALLOCATABLE :: actSysInd(:)
       INTEGER   :: iter, ok, nSys, mS, s, so, ss, ind, leng, &
                    iw, jw, iloop
+      INTEGER   :: actSys
       REAL      :: dev, hsCmp, maxHgt, temp(5)
 !
 !  4. Subroutines used :
@@ -2949,10 +2996,15 @@
 !012912      WRITE(20,*) 'maxSys,maxPts,maxI,maxJ,hsKnob,combine =', &
 !012912                  maxSys,maxPts,maxI,maxJ,hsKnob,combine
 
+!     Set up initial index array of active systems      
+      IF (.NOT.ALLOCATED(actSysInd)) ALLOCATE( actSysInd(maxSys) )
+      actSysInd(1:maxSys) = (/ (ind, ind = 1, maxSys) /)
+!opt      WRITE(20,*) 'actSysInd =',actSysInd
+
       IF (combine.EQ.1) THEN
 !         Combine wave systems
           WRITE(20,*) 'Calling printFinalSys...'
-          CALL printFinalSys (wsdat,maxSys,maxI,maxJ,1,sys)
+          CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
           iter=0
           ok=0
 !         Keep on combining wave systems until all possible combining
@@ -2960,32 +3012,41 @@
           DO WHILE (ok.EQ.0)
               iter = iter+1
 !             No of systems before combining
-              nSys = maxSys
+              IF (ALLOCATED(actSysInd)) THEN
+                 nSys = SIZE(actSysInd)
+              ELSE
+                 nSys = maxSys
+              END IF
               WRITE(20,'(A,A,I3,A,I5,A)') 'Calling combineSys for ', & 
                            'iteration',iter,' (maxSys =',nSys,').'
+!opt              WRITE(20,*) 'SIZE(sys)=',SIZE(sys)
               CALL combineSys (wsdat,sys,maxSys,maxI,maxJ, &
-                               perKnob,dirKnob)
+                               actSysInd,perKnob,dirKnob)
 !             No of systems after combining
-              IF (maxSys.EQ.nSys) ok = 1
+!opt              WRITE(20,*) 'maxSys,nSys,SIZE(actSysInd) =', &
+!opt                           maxSys,nSys,SIZE(actSysInd)
+!              IF (maxSys.EQ.nSys) ok = 1
+              IF (SIZE(actSysInd).EQ.nSys) ok = 1
           END DO
       ELSE
 !         Do not combine wave systems
-          CALL printFinalSys (wsdat,maxSys,maxI,maxJ,3,sys)
+          CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,3,sys)
       END IF
 
 !     Remove small and low-energy systems from set, based on
 !     the parameters maxPts and maxHgt. 
-      ALLOCATE( sysOut(maxSys) )
-      sysOut = sys(1:maxSys)%sysInd
-      mS = maxSys
+!      ALLOCATE( sysOut(maxSys) )
+!      sysOut = sys(1:maxSys)%sysInd
+!      mS = maxSys
+      mS = SIZE(actSysInd)
       ss = 1
+      WRITE(20,*) 'Filtering the set of',mS,'systems on size and mag.'
 
       DO so = 1, mS
-          s = sysOut(so)
-          DO WHILE (ss.LE.mS)
-             IF ( sys(ss)%sysInd.EQ.s ) EXIT
-             ss = ss + 1
-          END DO
+          s = actSysInd(so)
+!opt      NOTE: if we deallocate the individual records without
+!opt      compressing sys, then s and sysInd will remain the same  
+          ss = s
           leng = LENGTH(REAL(sys(ss)%hs), &
                         SIZE(sys(ss)%hs),REAL(9999.))
           dev = STD(sys(ss)%hs(1:leng),leng)
@@ -3001,42 +3062,43 @@
 !                   REPLACE WITH CSHIFT(ARRAY, SHIFT, dim)?
 !                    IF (ind.LT.maxSys) &
 !                       sys( ind:(maxSys-1) ) = sys( (ind+1):maxSys )
-                    IF (ind.LT.maxSys) THEN
+                    IF (ind.LE.maxSys) THEN
 !                      Since we use pointers, we have to copy each index and
 !                      field individually. Otherwise memory corruption occurs.
-                       DO iloop = ind,(maxSys-1)
-                          sys(iloop)%hs(:) = sys(iloop+1)%hs(:)
-                          sys(iloop)%tp(:) = sys(iloop+1)%tp(:)
-                          sys(iloop)%dir(:) = sys(iloop+1)%dir(:)
-                          sys(iloop)%dspr(:) = sys(iloop+1)%dspr(:)
-!                          sys(iloop)%wf(:) = sys(iloop+1)%wf(:)
-                          sys(iloop)%i(:) = sys(iloop+1)%i(:)
-                          sys(iloop)%j(:) = sys(iloop+1)%j(:)
-                          sys(iloop)%lat(:) = sys(iloop+1)%lat(:)
-                          sys(iloop)%lon(:) = sys(iloop+1)%lon(:)
-                          sys(iloop)%sysInd = sys(iloop+1)%sysInd
-                          sys(iloop)%hsMean = sys(iloop+1)%hsMean
-                          sys(iloop)%tpMean = sys(iloop+1)%tpMean
-                          sys(iloop)%dirMean = sys(iloop+1)%dirMean
-                          sys(iloop)%nPoints = sys(iloop+1)%nPoints
-                          sys(iloop)%ngbr(:) = sys(iloop+1)%ngbr(:)
-                          sys(iloop)%grp = sys(iloop+1)%grp
+                       DO iloop = ind,ind
+                          sys(iloop)%sysInd = 9999
+                          sys(iloop)%nPoints = 0
+                          sys(iloop)%grp = 9999
+                          DEALLOCATE( sys(iloop)%hs )
+                          DEALLOCATE( sys(iloop)%tp )
+                          DEALLOCATE( sys(iloop)%dir )
+                          DEALLOCATE( sys(iloop)%dspr )
+!                          DEALLOCATE( sys(iloop)%wf )
+                          DEALLOCATE( sys(iloop)%i )
+                          DEALLOCATE( sys(iloop)%j )
+                          DEALLOCATE( sys(iloop)%lat )
+                          DEALLOCATE( sys(iloop)%lon )
+!                          DEALLOCATE( sys(iloop)%hsMean )
+!                          DEALLOCATE( sys(iloop)%tpMean )
+!                          DEALLOCATE( sys(iloop)%dirMean )
+!                          DEALLOCATE( sys(iloop)%ngbr )
+                          NULLIFY( sys(iloop)%hs )
+                          NULLIFY( sys(iloop)%tp )
+                          NULLIFY( sys(iloop)%dir )
+                          NULLIFY( sys(iloop)%dspr )
+!                          NULLIFY( sys(iloop)%wf )
+                          NULLIFY( sys(iloop)%i )
+                          NULLIFY( sys(iloop)%j )
+                          NULLIFY( sys(iloop)%lat )
+                          NULLIFY( sys(iloop)%lon )
+!                          NULLIFY( sys(iloop)%hsMean )
+!                          NULLIFY( sys(iloop)%tpMean )
+!                          NULLIFY( sys(iloop)%dirMean )
+!                          NULLIFY( sys(iloop)%ngbr )
                        END DO
                     END IF
-!                   Deallocate record at the end
-                    WRITE(20,*) 'Deallocating record',maxSys
-                    DEALLOCATE( sys(maxSys)%hs )
-                    DEALLOCATE( sys(maxSys)%tp )
-                    DEALLOCATE( sys(maxSys)%dir )
-                    DEALLOCATE( sys(maxSys)%dspr )
-!                    DEALLOCATE( sys(maxSys)%wf )
-                    DEALLOCATE( sys(maxSys)%i )
-                    DEALLOCATE( sys(maxSys)%j )
-                    DEALLOCATE( sys(maxSys)%lat )
-                    DEALLOCATE( sys(maxSys)%lon )
                  END IF       
               END DO  
-              maxSys = maxSys-1
 
 !             Update wsdat as well
               DO iw = 1, maxI
@@ -3055,56 +3117,46 @@
                         ind = ind + 1
                      END DO
                      IF (found) THEN
-!                       Shift up entries, deleting the duplicate partition
-!                       REPLACE WITH CSHIFT(ARRAY, SHIFT, dim)?
-                        IF (ind.LT.leng) THEN
-                           wsdat%par(iw,jw)%hs(ind:(leng-1)) = &
-                              wsdat%par(iw,jw)%hs((ind+1):leng)
-                           wsdat%par(iw,jw)%tp(ind:(leng-1)) = &
-                              wsdat%par(iw,jw)%tp((ind+1):leng)
-                           wsdat%par(iw,jw)%dir(ind:(leng-1)) = &
-                             wsdat%par(iw,jw)%dir((ind+1):leng)
-                           wsdat%par(iw,jw)%dspr(ind:(leng-1)) = &
-                             wsdat%par(iw,jw)%dspr((ind+1):leng)
-!                           wsdat%par(iw,jw)%wf(ind:(leng-1)) = &
-!                             wsdat%par(iw,jw)%wf((ind+1):leng)
-                           wsdat%par(iw,jw)%sys(ind:(leng-1)) = &
-                              wsdat%par(iw,jw)%sys((ind+1):leng)
-                           wsdat%par(iw,jw)%ipart(ind:(leng-1)) = & 
-                              wsdat%par(iw,jw)%ipart((ind+1):leng)
-                        END IF
-!                       Add blank to end
-                        wsdat%par(iw,jw)%hs(leng) = 9999.
-                        wsdat%par(iw,jw)%tp(leng) = 9999.
-                        wsdat%par(iw,jw)%dir(leng) = 9999.
-                        wsdat%par(iw,jw)%dspr(leng) = 9999.
-!                        wsdat%par(iw,jw)%wf(leng) = 9999.
-                        wsdat%par(iw,jw)%sys(leng) = 9999
-                        wsdat%par(iw,jw)%ipart(leng) = 9999
+!                       Blank out used record
+                        wsdat%par(iw,jw)%sys(ind) = 9999
+                        wsdat%par(iw,jw)%ipart(ind) = 9999
                      END IF
                  END DO
               END DO        
           END IF
       END DO
 
-!     Deallocate redundant sys fields
-      IF (maxSys.GT.0) THEN
-         ALLOCATE( systemp(maxSys) )
-         systemp( 1:maxSys ) = sys( 1:maxSys )
-         WRITE(20,*) 'Deallocating sys of SIZE =',SIZE(sys)
-         DEALLOCATE(sys)
-         NULLIFY(sys)
-         ALLOCATE( sys(maxSys) )
-         sys = systemp
-         DEALLOCATE(systemp)
-         WRITE(20,*) '*** Deallocated. New size =',SIZE(sys)
+!     Compile array index of active systems in sys      
+      actSys = 0
+      DO so = 1,maxSys
+         IF (sys(so)%nPoints>0) actSys = actSys + 1
+      END DO
+      IF (ALLOCATED(actSysInd)) DEALLOCATE(actSysInd)
+      ALLOCATE( actSysInd(actSys) )
+      actSys = 0
+      DO so = 1,maxSys
+         IF (sys(so)%nPoints>0) THEN
+            actSys = actSys + 1
+            actSysInd(actSys) = sys(so)%sysInd
+         END IF
+      END DO
+      
+      WRITE(20,*) '*** After filtering out small systems:'
+      WRITE(20,*) 'actSys =',actSys
+!opt      WRITE(20,*) 'actSysInd =',actSysInd
+      DO so = 1,SIZE(actSysInd)
+         s = actSysInd(so)
+!opt         WRITE(20,*) 'sys(',s,')%sysInd =',sys(s)%sysInd
+      END DO     
 
-         CALL printFinalSys (wsdat,maxSys,maxI,maxJ,2,sys)
-      ELSE
-         DEALLOCATE(sys)
-         ALLOCATE( sys(maxSys) )
-         WRITE(20,*) '*** No systems present!! No. systems =',SIZE(sys)
-      END IF
+      CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
+      WRITE(20,*) '*** After printFinalSys:'
+      WRITE(20,*) 'maxSys =',maxSys
+!opt      WRITE(20,*) 'actSysInd =',actSysInd
+!opt      DO so = 1,maxSys
+!opt         WRITE(20,*) 'sys(',so,')%sysInd =',sys(so)%sysInd, &
+!opt                     ',  sys(',so,')%nPoints =',sys(so)%nPoints
+!opt      END DO
 
       RETURN
       END SUBROUTINE combineWaveSystems
@@ -3112,8 +3164,8 @@
 !/
 
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE printFinalSys (wsdat    ,maxSys    ,maxI     , &
-                                maxJ     ,flag      ,sys    )
+      SUBROUTINE printFinalSys (wsdat    ,maxSys    ,actSysInd , & 
+                                maxI     ,maxJ      ,flag      ,sys    )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -3156,8 +3208,10 @@
       TYPE(dat2d)  :: wsdat
       TYPE(system), POINTER :: sys(:)
       INTEGER      :: maxSys, maxI, maxJ, flag
+      INTEGER, ALLOCATABLE :: actSysInd(:)
 
-      INTENT (IN) wsdat, maxSys, maxI, maxJ, flag
+      INTENT (IN) wsdat, actSysInd, maxI, maxJ, flag
+      INTENT (OUT) maxSys
 !      INTENT (IN OUT) sys
 !
 !     Local variables
@@ -3203,6 +3257,7 @@
       IF (flag.NE.2) THEN
 !         Allocate data structure with the final wave systems
           WRITE(20,*) 'In printFinalSys...'
+          maxSys = SIZE(actSysInd)
           NULLIFY(sys)
           ALLOCATE( sys(maxSys) )
           WRITE(20,*) 'Allocated sys okay, SIZE(sys) =',SIZE(sys)
@@ -3251,7 +3306,8 @@
                   DO j = 1, maxJ
 !                     ind=wsdat.par(i,j).sys==ic;
                       DO ind = 1, SIZE(wsdat%par(i,j)%sys)                !40.81 !Optimize this?
-                         IF (wsdat%par(i,j)%sys(ind).EQ.ic) THEN
+                         IF (wsdat%par(i,j)%sys(ind).EQ.actSysInd(ic)) &
+                            THEN
                            nGuys=nGuys+1
                            sys(ic)%hs(nGuys)=wsdat%par(i,j)%hs(ind)
                            sys(ic)%tp(nGuys)=wsdat%par(i,j)%tp(ind)
@@ -3335,7 +3391,7 @@
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE combineSys (wsdat    ,sys      ,maxSys   ,maxI     , &
-                             maxJ     ,perKnob  ,dirKnob  )
+                             maxJ     ,actSysInd,perKnob  ,dirKnob  )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -3372,13 +3428,14 @@
 !     wsdat   Type(dat2d)  input   Combined data structure
 !     maxI, maxJ  Int      input   Maximum indices of wave field  
 !     sys     Type(system) output  Final set of tracked systems, for one time level
-!     maxSys      Int      input  Numebr of systems
+!     maxSys      Int      input  Number of systems
 !     dirKnob     Real     input  Parameter in direction for combining fields in space
 !     perKnob     Real     input  Parameter in period for combining fields in space 
 !
       TYPE(dat2d)  :: wsdat                                               !40.PAR
       TYPE(system), POINTER :: sys(:)                                     !40.PAR
       INTEGER      :: maxSys, maxI, maxJ                                  !40.PAR
+      INTEGER, ALLOCATABLE :: actSysInd(:)
       REAL         :: perKnob ,dirKnob
       REAL         :: dx, m1, m2
 
@@ -3411,6 +3468,7 @@
       TYPE(neighbr) :: ngbr(50)
 !061512 -----------------------------------------------
       REAL      :: TEMP1, TEMP2
+      INTEGER   :: actSys
 
 !
 !  4. Subroutines used :
@@ -3453,9 +3511,9 @@
       ALLOCATE( sysSortedInd(maxSys) )
       ALLOCATE( sysOut(maxSys) )
       ALLOCATE( rounded(maxSys) )
-!     This improves the iterative combining in the special case that the 
-!     wave period is constant over the domain, but tpMean is not because 
-!     of truncation errors at very high decimals.
+!     Sort in decending Tp: the following improves the iterative combining in  
+!     the special case that the wave period is constant over the domain, but  
+!     tpMean is not because of truncation errors at very high decimals.
       rounded = REAL(INT(sys(1:maxSys)%tpMean*10**4))/10**4
       CALL SORT(rounded,maxSys,sysOrdered,sysSortedInd,'D')
       sysOut=sys(sysSortedInd)%sysInd
@@ -3474,11 +3532,13 @@
       END IF
 !051612 --- Land mask addition
 
+!opt      WRITE(20,*) 'SIZE(sysOut)=',SIZE(sysOut)
       DO so = 1, SIZE(sysOut)
-!012912          WRITE(20,*) 'so =',so
+!          WRITE(20,*) 'so =',so
           s = sysOut(so)
           ss = FINDFIRST(REAL(sys(:)%sysInd),SIZE(sys(:)%sysInd), &
                          REAL(s))
+!opt          WRITE(20,*) 's,ss=',s,ss 
           ngbIndex(:) = 0
           ii = 1
           leng = LENGTH(REAL(sys(ss)%ngbr),SIZE(sys(ss)%ngbr), &
@@ -3500,6 +3560,8 @@
              END IF
           END DO
           ii = ii-1
+!opt          WRITE(20,*) so,'.   sys =',s,', Tp =',sys(s)%tpMean, &
+!opt                      ', size=',sys(s)%nPoints,', #neighbours=',ii          
 
           IF ( ii.GT.0 ) THEN
               DO ngb = 1, ii
@@ -3652,6 +3714,8 @@
                            (absHs.LT.deltaHsB) ) THEN
                          indMatch = ngbIndex(ngb)
                          matchSys = sys(indMatch)%sysInd
+!opt                         WRITE(20,*) '-> Matched sys',s, &
+!opt                                     'with neighbor sys',matchSys
                       ELSE
                          CYCLE
                       END IF
@@ -3667,9 +3731,9 @@
                          jj = sys(ss)%j(hh)
                          ind = 0
                          ind = FINDFIRST(REAL(wsdat%par(ii,jj)%sys), &
-                               SIZE(wsdat%par(ii,jj)%sys),REAL(s))
+                               SIZE(wsdat%par(ii,jj)%sys),REAL(s))        !Shouldn't REAL(s) be matchSys...
                          IF (ind.NE.0) THEN
-                            wsdat%par(ii,jj)%sys(ind)=matchSys
+                            wsdat%par(ii,jj)%sys(ind)=matchSys            !...and matchSys be s, (i.e. add the matching neigbour to the base?)
                          END IF
 !                        Remove the "-1" system from the set
                          ind2 = 1
@@ -3822,20 +3886,32 @@
                                  SIZE(sys(indMatch)%i),REAL(9999))
 !                     Clear array of system that has just been combined with another
                       sys(ss)%nPoints = 0
-                      sys(ss)%hs(:) = 9999.
-                      sys(ss)%tp(:) = 9999.
-                      sys(ss)%dir(:) = 9999.
-                      sys(ss)%dspr(:) = 9999.
-!                      sys(ss)%wf(:) = 9999.
-                      sys(ss)%i(:) = 9999
-                      sys(ss)%j(:) = 9999
-                      sys(ss)%lat(:) = 9999.
-                      sys(ss)%lon(:) = 9999.
-!                      sys(ss)%sysInd = 0
-                      sys(ss)%hsMean = 9999.
-                      sys(ss)%tpMean = 9999.
-                      sys(ss)%dirMean = 9999.
                       sys(ss)%ngbr(:) = 9999
+                      WRITE(20,*) 'Deallocating sys',s
+                      DEALLOCATE( sys(ss)%hs )                            !opt
+                      DEALLOCATE( sys(ss)%tp )                            !opt
+                      DEALLOCATE( sys(ss)%dir )                           !opt
+                      DEALLOCATE( sys(ss)%dspr )                          !opt
+!                      DEALLOCATE( sys(ss)%wf )                           !opt
+                      DEALLOCATE( sys(ss)%i )                             !opt
+                      DEALLOCATE( sys(ss)%j )                             !opt
+                      DEALLOCATE( sys(ss)%lat )                           !opt
+                      DEALLOCATE( sys(ss)%lon )                           !opt
+!                      DEALLOCATE( sys(ss)%hsMean )                        !opt
+!                      DEALLOCATE( sys(ss)%tpMean )                        !opt
+!                      DEALLOCATE( sys(ss)%dirMean )                       !opt
+!                      NULLIFY( sys(ss)%hs )                               !opt
+!                      NULLIFY( sys(ss)%tp )                               !opt
+!                      NULLIFY( sys(ss)%dir )                              !opt
+!                      NULLIFY( sys(ss)%dspr )                             !opt
+!!                      NULLIFY( sys(ss)%wf )                              !opt
+!                      NULLIFY( sys(ss)%i )                                !opt
+!                      NULLIFY( sys(ss)%j )                                !opt
+!                      NULLIFY( sys(ss)%lat )                              !opt
+!                      NULLIFY( sys(ss)%lon )                              !opt
+!                      NULLIFY( sys(ss)%hsMean )                           !opt
+!                      NULLIFY( sys(ss)%tpMean )                           !opt
+!                      NULLIFY( sys(ss)%dirMean )                          !opt
 
 !                     Loop through wsdat to update neighbouring system values
                       DO i = 1, maxI
@@ -3891,62 +3967,32 @@
           END IF
       END DO
 
-!     Loop one more time through sys to get rid of the empty ones. Can't do it
-!     in the first loop because it would change the index
-
-!     *** NOTE: maxSys is computed incorrectly in combineSys,              True?
-!     but is not used further on, so does not affect the results.          True?
-      ic = 1
-      icEnd = maxSys
-
-      DO WHILE (ic.LE.icEnd)
-         IF (sys(ic)%nPoints.EQ.0) THEN
-            WRITE(20,*) 'In combineSys: Removing system ',ic,'...'
-!           Remove system, and shift up indices to fill the gap
-!           Shift up entries, deleting the duplicate partition
-            IF (ic.LT.icEnd) THEN
-!              Since we use pointers, we have to copy each index and
-!              field individually. Otherwise memory corruption occurs.
-               DO iloop = ic,(icEnd-1)
-                  sys(iloop)%hs(:) = sys(iloop+1)%hs(:)
-                  sys(iloop)%tp(:) = sys(iloop+1)%tp(:)
-                  sys(iloop)%dir(:) = sys(iloop+1)%dir(:)
-                  sys(iloop)%dspr(:) = sys(iloop+1)%dspr(:)
-!                  sys(iloop)%wf(:) = sys(iloop+1)%wf(:)
-                  sys(iloop)%i(:) = sys(iloop+1)%i(:)
-                  sys(iloop)%j(:) = sys(iloop+1)%j(:)
-                  sys(iloop)%lat(:) = sys(iloop+1)%lat(:)
-                  sys(iloop)%lon(:) = sys(iloop+1)%lon(:)
-                  sys(iloop)%sysInd = sys(iloop+1)%sysInd
-                  sys(iloop)%hsMean = sys(iloop+1)%hsMean
-                  sys(iloop)%tpMean = sys(iloop+1)%tpMean
-                  sys(iloop)%dirMean = sys(iloop+1)%dirMean
-                  sys(iloop)%nPoints = sys(iloop+1)%nPoints
-                  sys(iloop)%ngbr(:) = sys(iloop+1)%ngbr(:)
-                  sys(iloop)%grp = sys(iloop+1)%grp
-               END DO
-            END IF
-!           Deallocate record at the end
-            WRITE(20,*) 'Deallocating record',icEnd
-            DEALLOCATE( sys(icEnd)%hs )
-            DEALLOCATE( sys(icEnd)%tp )
-            DEALLOCATE( sys(icEnd)%dir )
-            DEALLOCATE( sys(icEnd)%dspr )
-!            DEALLOCATE( sys(icEnd)%wf )
-            DEALLOCATE( sys(icEnd)%i )
-            DEALLOCATE( sys(icEnd)%j )
-            DEALLOCATE( sys(icEnd)%lat )
-            DEALLOCATE( sys(icEnd)%lon )
-            icEnd = icEnd-1
-            maxSys = maxSys-1
-         ELSE
-            ic = ic+1
-         END IF
-      END DO
-
       IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
       IF (ALLOCATED(sysSortedInd)) DEALLOCATE(sysSortedInd)
       IF (ALLOCATED(sysOut)) DEALLOCATE(sysOut)
+
+!     Compile array index of active systems in sys      
+      actSys = 0
+      DO ic = 1,maxSys
+         IF (sys(ic)%nPoints>0) actSys = actSys + 1
+      END DO
+      IF (ALLOCATED(actSysInd)) DEALLOCATE(actSysInd)
+      ALLOCATE( actSysInd(actSys) )
+      actSys = 0
+      DO ic = 1,maxSys
+         IF (sys(ic)%nPoints>0) THEN
+            actSys = actSys + 1
+            actSysInd(actSys) = sys(ic)%sysInd
+         END IF
+      END DO
+      
+!opt      WRITE(20,*) 'actSys =',actSys
+!opt      WRITE(20,*) 'actSysInd =',actSysInd
+!opt      DO ic = 1,SIZE(actSysInd)
+!opt         s = actSysInd(ic)
+!opt         WRITE(20,*) 'sys(',s,')%sysInd =',sys(s)%sysInd
+!opt      END DO     
+      WRITE(20,*) 'Leaving combineSys...'
 
       RETURN
       END SUBROUTINE combineSys
@@ -4454,7 +4500,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!     Start by limiting search to possible common region.
+!     Start by limiting search to possible common region.
 !     Find min for i and j for data A and B
       leng_ai = LENGTH(REAL(a%i),SIZE(a%i),REAL(9999))
       leng_aj = LENGTH(REAL(a%j),SIZE(a%j),REAL(9999))
@@ -5259,15 +5305,19 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      I = 1
-      FIELD = ARRAY(I)
-      DO WHILE (FIELD.NE.VAL)
-         I = I+1
-         IF (I.GT.SIZE(ARRAY)) EXIT
+      IF (ARRSIZE.GT.0) THEN
+         I = 1
          FIELD = ARRAY(I)
-      END DO
-      LENGTH = I-1
-
+         DO WHILE (FIELD.NE.VAL)
+            I = I+1
+            IF (I.GT.SIZE(ARRAY)) EXIT
+            FIELD = ARRAY(I)
+         END DO
+         LENGTH = I-1
+      ELSE
+         LENGTH = 0
+      END IF
+ 
       RETURN
       END FUNCTION LENGTH
 !/ End of LENGTH ----------------------------------------------------- /
