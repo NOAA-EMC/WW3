@@ -21,7 +21,7 @@
 !/    20-Dec-2013 : Allow scale factor and offset in    ( version 4.16 )
 !/                  NetCDF variables (S. Zieger)
 !/    24-Oct-2014 : Allows "As Is" curvilinear grids    ( version 5.02 )
-!/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.XX )
+!/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.11 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

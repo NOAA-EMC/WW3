@@ -19,7 +19,7 @@
 !/    11-Feb-2014 : Add NetCDF output option. Both NetCDF-3 and
 !/                  NetCDF-4 are available. (B. Li).    ( version 4.18 )
 !/    26-Sep-2016 : Optimization updates (A. van der Westhuysen) 
-!/                                                      ( version 5.xx )
+!/                                                      ( version 5.15 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
