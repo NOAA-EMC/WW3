@@ -1182,15 +1182,20 @@
 !/FLD1      CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
 !/FLD2      CALL CALC_FPI(SPEC, CG1, FPI, VSIN )
 !
-!/FLD1      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
+!/FLD1      IF (U10ABS.GT.5. .and. HSTOT.gt.0.5) then
 !/FLD1          CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD1                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
 !/FLD1                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+!/FLD1      ELSE 
+!/FLD1          CHARN = AALPHA 
 !/FLD1      ENDIF
-!/FLD2      IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
+!/FLD2      IF (U10ABS.GT.5. .and. HSTOT.gt.0.5) then
 !/FLD2          CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
 !/FLD2                    COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
 !/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+!/FLD2      ELSE 
+!/FLD2          CHARN = AALPHA 
+!/FLD2      ENDIF
 !/FLD2      ENDIF
 !
 ! 10 includes shoreline reflection --------------------------------------------- *

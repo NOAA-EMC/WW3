@@ -2087,7 +2087,7 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if ( isActiveExpField(i1) ) then
         if (.NOT.ALLOCATED(z0wave)) ALLOCATE(z0wave(NSEALM))
-        fillValue = 0.02 !????????????????????
+        fillValue = 0.00
         if ( natGridIsLocal ) then
           call FieldFill( natField, fillValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
