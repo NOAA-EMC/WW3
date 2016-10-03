@@ -352,7 +352,9 @@
       USE W3DISPMD 	
 !/NNT      USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 !/FLD1      USE W3FLD1MD, ONLY: W3FLD1
+!/FLD1      USE W3GDATMD, ONLY: AALPHA
 !/FLD2      USE W3FLD2MD, ONLY: W3FLD2
+!/FLD2      USE W3GDATMD, ONLY: AALPHA
 !/FLX1      USE W3FLX1MD
 !/FLX2      USE W3FLX2MD
 !/FLX3      USE W3FLX3MD
@@ -1195,7 +1197,6 @@
 !/FLD2                    USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
 !/FLD2      ELSE 
 !/FLD2          CHARN = AALPHA 
-!/FLD2      ENDIF
 !/FLD2      ENDIF
 !
 ! 10 includes shoreline reflection --------------------------------------------- *
