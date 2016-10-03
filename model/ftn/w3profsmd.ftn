@@ -166,7 +166,7 @@
 !/
       REAL                    :: VLCFLX((NX+1)*NY), VLCFLY(NX*NY)
       DOUBLE PRECISION        :: AC(NX)
-!/ ------------------------------------------------------------------- /				     
+!/ ------------------------------------------------------------------- /                                     
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
@@ -367,7 +367,7 @@
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
        REAL,    PARAMETER :: THR       = TINY(1.0) 
 
-!/ ------------------------------------------------------------------- /				     
+!/ ------------------------------------------------------------------- /                                     
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
@@ -1280,7 +1280,7 @@
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
                             IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA
-       USE W3WDATMD, ONLY: TIME		      
+       USE W3WDATMD, ONLY: TIME               
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
@@ -1517,7 +1517,7 @@
       END SUBROUTINE W3XYPFSFCT2 
 
 !/ ------------------------------------------------------------------- /
- 	
+        
 END MODULE W3PROFSMD 
 
 
@@ -4723,27 +4723,27 @@ DOUBLE PRECISION X( * )
 ! On entry, the value scale in the equation above.
 ! On exit, SCALE is overwritten with scl , the scaling factor
 ! for the sum of squares.
- 	DOUBLE PRECISION ZERO
- 	PARAMETER ( ZERO = 0.0D+0 )
- 	INTEGER IX
- 	DOUBLE PRECISION ABSXI
- 	INTRINSIC ABS
+        DOUBLE PRECISION ZERO
+        PARAMETER ( ZERO = 0.0D+0 )
+        INTEGER IX
+        DOUBLE PRECISION ABSXI
+        INTRINSIC ABS
 !
- 	IF( N.GT.0 ) THEN
-	DO IX = 1, 1 + ( N-1 )
-	  IF( X( IX ).NE.ZERO ) THEN
-	    ABSXI = ABS( X( IX ) )
-	    IF( SCALE.LT.ABSXI ) THEN
-	      SUMSQ = 1 + SUMSQ*( SCALE / ABSXI )**2
-	      SCALE = ABSXI
-	    ELSE
+        IF( N.GT.0 ) THEN
+        DO IX = 1, 1 + ( N-1 )
+          IF( X( IX ).NE.ZERO ) THEN
+            ABSXI = ABS( X( IX ) )
+            IF( SCALE.LT.ABSXI ) THEN
+              SUMSQ = 1 + SUMSQ*( SCALE / ABSXI )**2
+              SCALE = ABSXI
+            ELSE
          SUMSQ = SUMSQ + ( ABSXI / SCALE )**2
        END IF
-	  END IF
-	END DO
-	END IF
-	RETURN
-	END
+          END IF
+        END DO
+        END IF
+        RETURN
+        END
 
 !-------------------------------------------------------------------------
       double precision function ddot(n,dx,dy)

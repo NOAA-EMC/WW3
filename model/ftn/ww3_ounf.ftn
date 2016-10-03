@@ -985,7 +985,7 @@
               varnm(1)='t02'
               varnl(1)='mean period T02'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
-					                   spectral_density_second_frequency_moment'
+                                                           spectral_density_second_frequency_moment'
               varng(1)='mean_period_t02'
               varnc(1)=''
               vmin = 0
@@ -1000,7 +1000,7 @@
               varnm(1)='t0m1'
               varnl(1)='mean period T0m1'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance&
-					                  _spectral_density_inverse_frequency_moment'
+                                                          _spectral_density_inverse_frequency_moment'
               varng(1)='mean_period_t0m1'
               varnc(1)=''
               vmin = 0 
@@ -1015,7 +1015,7 @@
               varnm(1)='t01'
               varnl(1)='mean period T01'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance&
-					                  _spectral_density_first_frequency_moment' 
+                                                          _spectral_density_first_frequency_moment' 
               varng(1)='mean_period_t01'
               varnc(1)=''
               vmin = 0
@@ -3213,8 +3213,8 @@
       call check_err(iret)
 !/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
 !/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
-!/ST4    IF (BBETA.NE.1.52)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
-!/ST4    IF(SSDSC(7).NE.0.8)   iret=nf90_put_att(ncid,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
+!/ST4    IF (BBETA.NE.1.43)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
+!/ST4    IF(SSDSC(7).NE.0.3)   iret=nf90_put_att(ncid,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
 ! ... TO BE CONTINUED ... 
       open(unit=994,file='NC_globatt.inp',status='old',iostat=icode)
       IF (ICODE.EQ.0) THEN

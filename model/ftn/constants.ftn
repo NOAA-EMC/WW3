@@ -172,7 +172,7 @@
          ABR=EXP(ABRLOG*L10)
          FACT=1/ABR/(21.2*KAPPA)
          FSUBW=0.05
-	 dzeta0=0.
+         dzeta0=0.
          DO ITER=1,NITER
             fsubwmemo=fsubw
             dzeta0memo=dzeta0

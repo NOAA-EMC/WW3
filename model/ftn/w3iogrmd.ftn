@@ -176,7 +176,7 @@
 !     ----------------------------------------------------------------
 !      W3INIT    Subr. W3INITMD Wave model initialization routine.
 !      ......    Prog.   N/A    All WAVEWATCH III aux programs and
-!                               drivers.		
+!                               drivers.                
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :

@@ -587,7 +587,7 @@
       REAL               :: K_OPEN     ! open-water value of k
       REAL               :: CG_OPEN    ! open-water value of Cg
       REAL               :: FWANTED    ! Freq. corresponding to sigma
-      
+      REAL               :: FERROR     ! Max acceptable error after test to avoid crash    
 
 !/
 !/ ------------------------------------------------------------------- /
@@ -595,65 +595,71 @@
 !/S      CALL STRACE (IENT, 'LIU_FORWARD_DISPERSION')
 !
 !/ 0) --- Initialize/allocate variables ------------------------------ /
-	
+        
  
       
 
       DO IK = 1, NK
 
-	GET_CG  = .FALSE.
-	!/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
-	!/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
-	     FWANTED=SIGMA(IK)/TPI
-	! First guess for k :
-	      
-	      CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
-	!     KWN(1)  = 0.2 ! (old method)
-	      KWN(1)  =K_OPEN ! new method, Mar 10 2014
-	!
-	!/ 1) ----- Iteration loop to find k --------------------------------- /
-	      ITER = 0
-	      DF   = 999.
+        GET_CG  = .FALSE.
+        !/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
+        !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
+             FWANTED=SIGMA(IK)/TPI
+        ! First guess for k :
+              
+              CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
+        !     KWN(1)  = 0.2 ! (old method)
+              KWN(1)  =K_OPEN ! new method, Mar 10 2014
+        !
+        !/ 1) ----- Iteration loop to find k --------------------------------- /
+              ITER = 0
+              DF   = 999.
 
-	      DO WHILE ( ABS(DF).GE.FERRORMAX .AND. ITER.LE.N_ITER )
-		 ITER = ITER + 1
-		 ! compute freq for this iteration
-		 CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,KWN(ITER), &
-		                             GET_CG,FREQ(ITER),CG(IK),ALPHA(IK))
+              IF ( (H_ICE.LT.0.4).OR.(H_WDEPTH.LT.80) ) THEN
+                 FERROR=2*FERRORMAX
+              ELSE
+                 FERROR=FERRORMAX
+              ENDIF
 
-		 ! calculate dk
-		 IF (ITER == 1)THEN
-		    ! We do not have slope yet, so pick a number...
-		    DK = 0.01
-		 ELSEIF (ITER.EQ.N_ITER+1) THEN
-		    WRITE(NDSE,800) N_ITER
-		    CALL EXTCDE(2)
-		 ELSE
-		    ! use slope
-		    DFDK = (FREQ(ITER)-FREQ(ITER-1)) / (KWN(ITER)-KWN(ITER-1))
-		    DF   = FWANTED - FREQ(ITER)
-	!/T38       WRITE(*,*)'ITER = ',ITER,' ;  K = ',KWN(ITER),' ; F = ', &
-	!/T38                  FREQ(ITER),' ; DF = ',DF
-		    DK   = DF / DFDK
-		 ENDIF
+              DO WHILE ( ABS(DF).GE.FERROR .AND. ITER.LE.N_ITER )
+                 ITER = ITER + 1
+                 ! compute freq for this iteration
+                 CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,KWN(ITER), &
+                                             GET_CG,FREQ(ITER),CG(IK),ALPHA(IK))
 
-		 ! Decide on next k to try
-		 KWN(ITER+1) = KWN(ITER) + DK
-		 ! If we end up with a negative k for the next iteration, don't 
-		 !   allow this. 
-		 IF(KWN(ITER+1) < 0.0)THEN
-		    KWN(ITER+1) = TPI / 1000.0
-		 ENDIF
+                 ! calculate dk
+                 IF (ITER == 1)THEN
+                    ! We do not have slope yet, so pick a number...
+                    DK = 0.01
+                 ELSEIF (ITER.EQ.N_ITER+1) THEN
+                    WRITE(NDSE,800) N_ITER
+                    CALL EXTCDE(2)
+                 ELSE
+                    ! use slope
+                    DFDK = (FREQ(ITER)-FREQ(ITER-1)) / (KWN(ITER)-KWN(ITER-1))
+                    DF   = FWANTED - FREQ(ITER)
+        !/T38       WRITE(*,*)'ITER = ',ITER,' ;  K = ',KWN(ITER),' ; F = ', &
+        !/T38                  FREQ(ITER),' ; DF = ',DF
+                    DK   = DF / DFDK
+                 ENDIF
 
-	      END DO
+                 ! Decide on next k to try
+                 KWN(ITER+1) = KWN(ITER) + DK
+                 ! If we end up with a negative k for the next iteration, don't 
+                 !   allow this. 
+                 IF(KWN(ITER+1) < 0.0)THEN
+                    KWN(ITER+1) = TPI / 1000.0
+                 ENDIF
 
-	!/ 2) -------- Finish up. -------------------------------------------- /
-	!     Success, so return K_SOLUTION, and call LIU_REVERSE_DISPERSION one
-	!     last time, to get CG and ALPHA
+              END DO
 
-	      K_SOLUTION(IK) = KWN(ITER)  
+        !/ 2) -------- Finish up. -------------------------------------------- /
+        !     Success, so return K_SOLUTION, and call LIU_REVERSE_DISPERSION one
+        !     last time, to get CG and ALPHA
 
-	GET_CG     = .TRUE.
+              K_SOLUTION(IK) = KWN(ITER)  
+
+        GET_CG     = .TRUE.
       CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,K_SOLUTION(IK), &
            GET_CG,FDUMMY,CG(IK),ALPHA(IK))
 END DO 

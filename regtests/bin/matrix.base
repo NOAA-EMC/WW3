@@ -871,6 +871,9 @@
     echo "$rtst -s ST2      -w work_ST2      $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST3      -w work_ST3      $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4      -w work_ST4      $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_WRT  -w work_ST4_WRT  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_GMD  -w work_ST4_GMD  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_TSA  -w work_ST4_TSA  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST6      -w work_ST6      $ww3 ww3_ts1" >> matrix.body
   fi
 

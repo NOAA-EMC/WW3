@@ -279,7 +279,7 @@ END FUNCTION Df1f2theta
 ! This is the coupling coefficient for the SURFACE ELEVATION. See .e.g. forristall (JPO 2000)
 !
               DD(iIG,ifr,ith1,ith2)=(Df1f2theta(SIG(ifr)+SIG(iIG),-SIG(ifr), WN1,WN(IFR), &
-		                 (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2 
+                                 (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2 
 
               END DO
             END DO
@@ -291,7 +291,7 @@ END FUNCTION Df1f2theta
 ! Computes indices for a proper integration over the spectral domain using Rectangle's rule
 ! since we integrate E(f)*E(f+fIG)*df  for a fixed fIG
 
-	      iloc=1
+              iloc=1
 
         if (SIG(iIG) < 0.5*DSIP(ifr))THEN
           ifr2c(iIG,ifr)=ifr
@@ -315,18 +315,18 @@ END FUNCTION Df1f2theta
 
 ! AR calculating k1 and k2 before loops on th1 and th2      
        
-   	    k1=WN(ifr)
-  	       k2=WN(ifr2c(iIG,ifr))
+            k1=WN(ifr)
+               k2=WN(ifr2c(iIG,ifr))
 
           DO ith1 = 1,NTH
             DO ith2 = 1,NTH 
-		
+                
 ! Adds the effect of interaction of frequency f(ifr), theta(ith1) with f(ifr)+fIG(:), theta(ith2)
               ISP1 = ITH1 + (ifr2c(iIG,ifr)-1)*NTH        
               ISP2 = ITH2 + (ifr-1)*NTH        
  
               Eadd=DD(iIG,ifr,ith1,ith2)*wfr1(iIG,ifr) &
-		              *ESPEC(ISP1)*ESPEC(ISP2) ! Rectangle rule by AR
+                              *ESPEC(ISP1)*ESPEC(ISP2) ! Rectangle rule by AR
               Dkx=k2*cos(dble(dth*ith2))- k1*cos(dble(dth*ith1))
               Dky=k2*sin(dble(dth*ith2))- k1*sin(dble(dth*ith1)) 
 
@@ -334,10 +334,10 @@ END FUNCTION Df1f2theta
 
               if (thetaIG.LT.0) thetaIG=2*pi+thetaIG
 ! Finding corresponding index of theta IG in theta array
-   		!I=INT((thetaIG/(2*pi))*nth)
-		
+                !I=INT((thetaIG/(2*pi))*nth)
+                
               I=minloc(abs(thetaIG-TH), 1)-1
-	           if (I==0) I=nth
+                   if (I==0) I=nth
               ISP3 = I + (iIG-1)*NTH        
 !            memo=EfthIG(ISP3)
                 EfthIG(ISP3)= EfthIG(ISP3)+Eadd;

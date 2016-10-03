@@ -513,11 +513,6 @@
          DO IK=1, NK
             !            recall that D=S/E=-2*Cg*k_i
             D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
-! reminder: delete temporary lines (lower case "write") before public release
-!           freq=sig(ik)/tpi
-!           write(*,*)freq,wn_i(ik),(CG_tmp(IK)/CG(IK)),' % freq,k_i,CG_IC3/CG'
-!           write(*,*)freq,wn_i(ik),ix,iy,' % freq,k_i,ix,iy'
-
          END DO
          !
 
@@ -544,9 +539,6 @@
          DO IK=1, NK
             !            recall that D=S/E=-2*Cg*k_i
             D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
-
-! reminder: delete temporary lines (lower case "write")
-!           write(*,*)'V1 WN_I(',IK,') = ',WN_I(IK)
          END DO
          !
       ELSE ! .. e.g. if ice thickness is .gt. 10 cm

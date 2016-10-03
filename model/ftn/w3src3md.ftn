@@ -79,7 +79,7 @@
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS, WNMEAN,     &
                     AMAX, U, UDIR, USTAR, USDIR, TAUWX, TAUWY, CD, Z0,&
-		              CHARN, LLWS, FMEANWS)
+                              CHARN, LLWS, FMEANWS)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III                SHOM |
@@ -255,7 +255,7 @@
       ELSE
         FMEANWS  = TPIINV *( MAX ( 1.E-7 , FMEANWS )                       &
                      / MAX ( 1.E-7 , EMEANWS ))**(1/(2.*WWNMEANPTAIL))
-	END IF
+        END IF
 !
 ! 5.  Cd and z0 ----------------------------------------------- *
 !
@@ -511,7 +511,7 @@
         YSTRESS=STRESSSTAB (3,2)
         TAUWNX =STRESSSTABN(3,1)
         TAUWNY =STRESSSTABN(3,2)
-!	      WRITE(995,'(A,11G14.5)') 'NEGSTRESS:    ',TAUWNX,TAUWNY,FW*UORB**3
+!             WRITE(995,'(A,11G14.5)') 'NEGSTRESS:    ',TAUWNX,TAUWNY,FW*UORB**3
 !/STAB3      END DO 
 !/STAB3      D(:)=0.5*(DSTAB(1,:)+DSTAB(2,:))
 !/STAB3      XSTRESS=0.5*(STRESSSTAB(1,1)+STRESSSTAB(2,1))
@@ -571,7 +571,7 @@
         TAUWX=TAUWX*TAUWB/TAUW
         TAUWY=TAUWY*TAUWB/TAUW
         END IF
-	 
+         
       RETURN
 !
 ! Formats
@@ -775,10 +775,10 @@
                X   = ZTAUW/TAUOLD
                UST = SQRT(TAUOLD)
                ZZ00=AALPHA*TAUOLD/GRAV
-	       IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
+               IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
                ! Corrects roughness ZZ00 for quasi-linear effect
-	       ZZ0 = ZZ00/(1.-X)**XM
-	       !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
+               ZZ0 = ZZ00/(1.-X)**XM
+               !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
           !ZZ0 = MAX(ZNU,ZZ0)
                F   = UST-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))
                DELF= 1.-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))**2*2./UST &
@@ -789,8 +789,8 @@
             TAUT(I,J)  = SQRT(TAUOLD)
             END DO   
          END DO
-	 I=ITAUMAX
-	 J=JUMAX
+         I=ITAUMAX
+         J=JUMAX
 !         
 !  Force zero wind to have zero stress (Bidlot 1996)
 !
@@ -913,7 +913,7 @@
             UST      = MAX(REAL(K)*DELUST,0.000001)
             ZZ00       = UST**2*AALPHA/GRAV
             IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
-	    ZZ0       = ZZ00*(1+FLOAT(L)*DELALP/AALPHA)
+            ZZ0       = ZZ00*(1+FLOAT(L)*DELALP/AALPHA)
             OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
             YC       = OMEGACC*SQRT(ZZ0/GRAV)
             DELY     = MAX((1.-YC)/REAL(JTOT),0.)
@@ -1040,11 +1040,11 @@
       !
       SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
       Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
-		IF (USTAR.GT.0.001) THEN 
-		  CHARN = GRAV*Z0/USTAR**2
-		ELSE 
-		  CHARN = AALPHA
-		  END IF
+                IF (USTAR.GT.0.001) THEN 
+                  CHARN = GRAV*Z0/USTAR**2
+                ELSE 
+                  CHARN = AALPHA
+                  END IF
 !
       RETURN
       END SUBROUTINE CALC_USTAR

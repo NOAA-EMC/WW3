@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 |
+!/                  | Last update :         28-Sep-2016 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                       ( version 3.07 )
@@ -26,6 +26,8 @@
 !/    03-Sep-2012 : Add clock parameters (init.).      ( version 4.10 )
 !/    04-Feb-2014 : Switched to DATE_AND_TIME param.   ( version 4.18 )
 !/    10-Dec-2014 : Add checks for allocate status     ( version 5.04 )
+!/    28-Sep-2016 : Adjust MTAG? values so that MPI tags used fit
+!/                  within allowed bounds.             ( version 5.15 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -102,6 +104,7 @@
 !      MPI_COMM_MWAVE
 !                Int.  Public   MPI communicator.             ( !/MPI )
 !      MTAGn     Int.  Public   "Zero" tag number for MPI     ( !/MPI )
+!      MTAG_UB   Int.  Public   Upper-bound for MPI tags      ( !/MPI )
 !      NBISTA    I.A.  Public   Status for gathering input boundary
 !                               data.                         ( !/MPI )
 !      HGHSTA    I.A.  Public   Status for gathering high resolution
@@ -294,10 +297,11 @@
 !/F90      INTEGER                 :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 !/MPRF      INTEGER                 :: MDSP
 !/MPI      INTEGER                 :: MPI_COMM_MWAVE
-!/MPI      INTEGER, PARAMETER      :: MTAGB =  900000
-!/MPI      INTEGER, PARAMETER      :: MTAG0 = 1000000
-!/MPI      INTEGER, PARAMETER      :: MTAG1 = 2000000
-!/MPI      INTEGER, PARAMETER      :: MTAG2 = 3000000
+!/MPI      INTEGER, PARAMETER      :: MTAGB = 0
+!/MPI      INTEGER, PARAMETER      :: MTAG0 = 1000
+!/MPI      INTEGER, PARAMETER      :: MTAG1 = 10000
+!/MPI      INTEGER, PARAMETER      :: MTAG2 = 1500000
+!/MPI      INTEGER, PARAMETER      :: MTAG_UB = 2**21-1 !MPI_TAG_UB on Cray XC40
       INTEGER, ALLOCATABLE    :: MDSF(:,:), GRANK(:), GRGRP(:),       &
                                  INGRP(:,:), GRDHGH(:,:), GRDEQL(:,:),&
                                  GRDLOW(:,:), ALLPRC(:,:),            &

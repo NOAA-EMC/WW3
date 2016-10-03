@@ -506,7 +506,7 @@
 
     cd svn
 
-    for dir in model manual guide regtests cases
+    for dir in model manual guide regtests cases smc_docs
     do
       if [ ! -d $dir ]
       then
@@ -1531,7 +1531,7 @@ sleep 2
 # 6. Set-up / update manual /guide directories                                #
 # --------------------------------------------------------------------------- #
 
-  for ldir in manual guide
+  for ldir in manual guide smc_docs
   do
 
     rm -f ${main_dir}/tmp/${ldir}_setup.out

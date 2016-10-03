@@ -371,8 +371,8 @@
             ALLOCATE (SPEC2D(NTH1,NK1,NT1,NBO2))
             ALLOCATE (ABPIN2(NK*NTH1,NT1,NBO2))
 
-	        ! read time variable
-            iret=nf90_inq_varid(ncid(IP), 'time', varid(1))	
+            ! read time variable
+            iret=nf90_inq_varid(ncid(IP), 'time', varid(1))
             iret=nf90_get_var(ncid(IP), varid(1), times(:))
             iret=nf90_get_att(ncid(IP), varid(1),'units',timeunits)
 
@@ -398,21 +398,21 @@
           ! position variables : lon/lat or x/y
           IF ( FLAGLL ) THEN
             !WRITE (NDSO,951)
-            iret=nf90_inq_varid(ncid(IP), 'latitude', varid(2))	
+            iret=nf90_inq_varid(ncid(IP), 'latitude', varid(2))
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
             call check_err(iret)
-            iret=nf90_inq_varid(ncid(IP), 'longitude', varid(3))	
+            iret=nf90_inq_varid(ncid(IP), 'longitude', varid(3))        
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
             call check_err(iret)
           ELSE
             !WRITE (NDSO,952)
-            iret=nf90_inq_varid(ncid(IP), 'y', varid(2))	
+            iret=nf90_inq_varid(ncid(IP), 'y', varid(2))        
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
             call check_err(iret)
-            iret=nf90_inq_varid(ncid(IP), 'x', varid(3))	
+            iret=nf90_inq_varid(ncid(IP), 'x', varid(3))        
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
             call check_err(iret)

@@ -105,7 +105,7 @@ implicit none
 !       If QUAL='SNU'
 !         If iunit >= 10 find free unit number
 !         Open new file with unit number and qualifier
-!     	Else
+!       Else
 !         Iunit = -1   File does not exist
 !       End if
 !     End if

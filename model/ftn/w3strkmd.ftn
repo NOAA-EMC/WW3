@@ -427,7 +427,7 @@
 !/MPI      INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
 !/MPI/!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR 
 !/MPI      INTEGER    :: MPI_STATUS(MPI_STATUS_SIZE)
-!/MPI 	  INTEGER    :: REQ(16), ISTAT(MPI_STATUS_SIZE,16)
+!/MPI      INTEGER    :: REQ(16), ISTAT(MPI_STATUS_SIZE,16)
 !/MPI      REAL       :: COMMARR1(44)
 !/MPI      INTEGER    :: COMMARR2(11)
 !
@@ -1566,7 +1566,7 @@
          DO WHILE ( (wsdat%lat(1,j).LT.seedLat).AND.(j.LT.wsdat%maxj) )     !40.PAR !Improve with SWAN's indice identification
             j=j+1
          END DO
-         DO WHILE ( (wsdat%lon(1,i).LT.seedLon).AND.(i.LT.wsdat%maxi) )
+         DO WHILE ( (wsdat%lon(i,1).LT.seedLon).AND.(i.LT.wsdat%maxi) )
             i=i+1
          END DO
       END IF

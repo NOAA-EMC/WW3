@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2009 |
+!/                  | Last update :         28-Sep-2016 |
 !/                  +-----------------------------------+
 !/
 !/    29-May-2006 : Origination.                        ( version 3.09 )
@@ -14,6 +14,7 @@
 !/    22-Jan-2007 : Adding NAVMAX in WMIOEG.            ( version 3.10 )
 !/    30-Jan-2007 : Fix memory leak WMIOBS.             ( version 3.10 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+!/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -81,12 +82,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Jan-2007 !
+!/                  | Last update :         28-Sep-2016 !
 !/                  +-----------------------------------+
 !/
 !/    06-Oct-2005 : Origination.                        ( version 3.08 )
 !/    29-May-2006 : Adding buffering for MPI.           ( version 3.09 )
 !/    30-Jan-2007 : Fix memory leak.                    ( version 3.10 )
+!/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
 !/
 !  1. Purpose :
 !
@@ -115,6 +117,7 @@
 !                Subr. WxxDATMD Manage data structures.
 !      W3CSPC    Subr. W3CSPCMD Spectral grid conversion.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
+!      EXTCDE    Sur.    Id.    Program abort.
 !
 !      MPI_ISEND
 !                Subr. mpif.h   MPI routines.
@@ -129,6 +132,8 @@
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
+!
+!     See FORMAT label 1001.
 !
 !  7. Remarks :
 !
@@ -157,6 +162,7 @@
       USE WMMDATMD
 !
       USE W3CSPCMD, ONLY: W3CSPC
+      USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -260,6 +266,10 @@
 !/MPI        IF ( IAPROC .EQ. 1 ) THEN
 !/MPI            BPSTGE(J,IMOD)%STIME = TIME
 !/MPI            ITAG   = MTAG0 + IMOD + (J-1)*NRGRD
+!/MPI            IF ( ITAG .GT. MTAG1 ) THEN
+!/MPI                WRITE (MDSE,1001)
+!/MPI                CALL EXTCDE (1001) 
+!/MPI              END IF
 !/MPI            DO IP=1, NMPROC
 !/MPI              IF ( ALLPRC(IP,J) .NE. 0 .AND.                 &
 !/MPI                   ALLPRC(IP,J) .LE. OUTPTS(J)%NAPROC ) THEN
@@ -296,6 +306,10 @@
 !/MPI                 ALLPRC(IP,J) .LE. OUTPTS(J)%NAPROC ) THEN
 !/MPI                NRQ    = NRQ + 1
 !/MPI                ITAG   = IT0 + I
+!/MPI                IF ( ITAG .GT. MTAG1 ) THEN
+!/MPI                    WRITE (MDSE,1001)
+!/MPI                    CALL EXTCDE (1001) 
+!/MPI                  END IF
 !/MPI                CALL MPI_ISEND ( SBPI(1,I), NSPEC, MPI_REAL, &
 !/MPI                                 IP-1, ITAG, MPI_COMM_MWAVE, &
 !/MPI                                 IRQ(NRQ), IERR_MPI )
@@ -338,6 +352,8 @@
 !
 ! Formats
 !
+!/MPI 1001 FORMAT (/' *** ERROR WMIOBS : REQUESTED MPI TAG EXCEEDS', &
+!/MPI                                    ' UPPER BOUND (MTAG1) ***')
 !/T 9000 FORMAT ( ' TEST WMIOBS : STAGING DATA FROM GRID ',I3)
 !/T 9001 FORMAT ( ' TEST WMIOBS : NR. OF SPECTRA PER GRID : '/        &
 !/T               '             ',25I4)
@@ -1031,11 +1047,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Dec-2006 !
+!/                  | Last update :         28-Sep-2016 !
 !/                  +-----------------------------------+
 !/
 !/    27-Jan-2006 : Origination.                        ( version 3.08 )
 !/    20-Dec-2006 : Remove VTIME from MPI comm.         ( version 3.10 )
+!/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
 !/
 !  1. Purpose :
 !
@@ -1061,6 +1078,7 @@
 !      W3SETG, W3SETW, W3SETA, W3SETO, WMSETM
 !                Subr. WxxDATMD Manage data structures.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
+!      EXTCDE    Sur.    Id.    Program abort.
 !      DSEC21    Func. W3TIMEMD Difference between times.
 !     ----------------------------------------------------------------
 !
@@ -1072,6 +1090,8 @@
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
+!
+!     See FORMAT label 1001.
 !
 !  7. Remarks :
 !
@@ -1099,6 +1119,7 @@
       USE W3ODATMD
       USE WMMDATMD
 !
+      USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3TIMEMD, ONLY: DSEC21
 !
@@ -1215,7 +1236,11 @@
 !/DIST          IP     = HGSTGE(J,IMOD)%ISEND(I,2)
           I1     = HGSTGE(J,IMOD)%ISEND(I,3)
           I2     = HGSTGE(J,IMOD)%ISEND(I,4)
-!/DIST          ITAG   = HGSTGE(J,IMOD)%ISEND(I,5) + IT0
+!/MPI          ITAG   = HGSTGE(J,IMOD)%ISEND(I,5) + IT0
+!/MPI          IF ( ITAG .GT. MTAG2 ) THEN
+!/MPI              WRITE (MDSE,1001)
+!/MPI              CALL EXTCDE (1001) 
+!/MPI            END IF
 !
           DO IS=1, NSPEC
 !/SHRD            SHGH(IS,I2,I1) = VA(IS,JSEA) * SIG2(IS)             &
@@ -1248,6 +1273,8 @@
 !
 ! Formats
 !
+!/MPI 1001 FORMAT (/' *** ERROR WMIOHS : REQUESTED MPI TAG EXCEEDS', &
+!/MPI                                    ' UPPER BOUND (MTAG2) ***')
 !/T 9000 FORMAT ( ' TEST WMIOHS : STAGING DATA FROM GRID ',I3,        &
 !/T               '   FLGHG1 = ',L1)
 !/T 9001 FORMAT ( ' TEST WMIOHS : NR. OF SPECTRA PER GRID : '/        &
@@ -1861,11 +1888,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Dec-2006 !
+!/                  | Last update :         28-Sep-2016 !
 !/                  +-----------------------------------+
 !/
 !/    25-May-2006 : Origination.                        ( version 3.09 )
 !/    21-Dec-2006 : Remove VTIME from MPI comm.         ( version 3.10 )
+!/    28-Sep-2016 : Add error traps for MPI tags.       ( version 5.15 )
 !/
 !  1. Purpose :
 !
@@ -1891,6 +1919,7 @@
 !      W3SETG, W3SETW, W3SETA, W3SETO, WMSETM
 !                Subr. WxxDATMD Manage data structures.
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
+!      EXTCDE    Sur.    Id.    Program abort.
 !      DSEC21    Func. W3TIMEMD Difference between times.
 !     ----------------------------------------------------------------
 !
@@ -1902,6 +1931,8 @@
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
+!
+!     See FORMAT label 1001.
 !
 !  7. Remarks :
 !
@@ -1929,6 +1960,7 @@
       USE W3ODATMD
       USE WMMDATMD
 !
+      USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3TIMEMD, ONLY: DSEC21
 !
@@ -2022,6 +2054,10 @@
           I2     = EQSTGE(J,IMOD)%SI2(I)
 !/MPI          IP     = EQSTGE(J,IMOD)%SIP(I)
 !/MPI          ITAG   = EQSTGE(J,IMOD)%STG(I) + IT0
+!/MPI          IF ( ITAG .GT. MTAG_UB ) THEN
+!/MPI              WRITE (MDSE,1001)
+!/MPI              CALL EXTCDE (1001) 
+!/MPI            END IF
 !
           DO IS=1, NSPEC
 !/SHRD            SEQL(IS,I1,I2) = VA(IS,JSEA) * SIG2(IS)             &
@@ -2054,6 +2090,8 @@
 !
 ! Formats
 !
+!/MPI 1001 FORMAT (/' *** ERROR WMIOES : REQUESTED MPI TAG EXCEEDS', &
+!/MPI                                  ' UPPER BOUND (MTAG_UB) ***')
 !/T 9000 FORMAT ( ' TEST WMIOES : STAGING DATA FROM GRID ',I3)
 !/T 9001 FORMAT ( ' TEST WMIOES : NR. OF SPECTRA PER GRID : '/        &
 !/T               '             ',15I6)

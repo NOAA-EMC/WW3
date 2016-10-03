@@ -1047,12 +1047,12 @@
 !Li    LLTOEQ1A  WCOEFF1A  and  LBCROTWINDS1
 !Li  The last subroutine is modified to process only one level winds
 !Li  cpp directives are removed and required header C_Pi.h inserted.
-!Li	    Jian-Guo Li     26 May 2005
+!Li         Jian-Guo Li     26 May 2005
 !Li
 !Li  The WCOEFF1A subroutine is merged into LLTOEQ to reduce repetition
 !Li  of the same calculations. Subroutine interface changed to 
 !Li  LLTOEQANGLE
-!Li	    Jian-GUo Li     23 Aug 2005
+!Li         Jian-GUo Li     23 Aug 2005
 !Li
 !Li  Subroutine W3LLTOEQ   --------------------------------------------    
 !Li                                                                        
@@ -1061,9 +1061,9 @@
 !Li            models from input arrays of latitude and                    
 !Li            longitude on standard grid. Both input and output           
 !Li            latitudes and longitudes are in degrees.                    
-!Li	       Also calculate rotation angle in degree to tranform
+!Li            Also calculate rotation angle in degree to tranform
 !Li            standard wind velocity into equatorial wind.
-!Li	       Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
+!Li            Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
 !Li                                                                        
 !* Arguments:--------------------------------------------------------    
       SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &              
@@ -1189,7 +1189,7 @@
 !Li    EQTOLL1A  WCOEFF1A  and  LBCROTWINDS1
 !Li  The last subroutine is modified to process only one level winds
 !Li  cpp directives are removed and required header C_Pi.h inserted.
-!Li	    Jian-Guo Li     26 May 2005
+!Li         Jian-Guo Li     26 May 2005
 !Li
 !Li  The WCOEFF1A subroutine is merged into EQTOLL to reduce repetition
 !Li  of the same calculations. Subroutine interface changed to 
@@ -1204,9 +1204,9 @@
 !Li            equatorial latitude-longitude (eq) grid used
 !Li            in regional models. Both input and output latitudes
 !Li            and longitudes are in degrees.
-!Li	       Also calculate rotation angle in degree to tranform
+!Li            Also calculate rotation angle in degree to tranform
 !Li            standard wind velocity into equatorial wind.
-!Li	       Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
+!Li            Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
 !Li
 !Li  Arguments:--------------------------------------------------------
 

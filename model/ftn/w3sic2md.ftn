@@ -236,7 +236,7 @@
       REAL, INTENT(IN)        :: A(NSPEC), DEPTH, ICEH
       REAL, INTENT(IN)        :: CG(NK),   WN(NK)
       REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
-      REAL, INTENT(IN)       :: ALPHA(NK) ! exponential (spatial) decay rate for energy (1/m)	
+      REAL, INTENT(IN)       :: ALPHA(NK) ! exponential (spatial) decay rate for energy (1/m)   
       INTEGER, INTENT(IN)     :: IX, IY
       REAL, INTENT(IN)       :: WN_R(NK), CG_ICE(NK)
 !/
@@ -255,7 +255,7 @@
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
                                  SMOOTH, RE, UORB, AORB, EB,   &
                                  DELI1, DELI2, FW, XI, FTURB,  & 
-				                 CG_EFF(NK)
+                                                 CG_EFF(NK)
       INTEGER                 :: IND, ITH, IS
       LOGICAL                 :: NOICE=.FALSE.
         ! Warning, ALPHA = 2 * WN_I -> Makes WN_I useless, doesnt it ?
@@ -273,7 +273,7 @@
       ICECOEF2 = 0.0
       ICECONC  = 0.0
       CG_EFF = 0.
-!	
+!       
       IF (INFLAGS2(-7))ICECOEF1 = ICEH
       IF (INFLAGS2(-6))ICECOEF2 = ICEP2(IX,IY)
       IF (INFLAGS2(4))  ICECONC = ICEI(IX,IY)

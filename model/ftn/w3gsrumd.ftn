@@ -165,6 +165,8 @@
 !     - The burden is upon the user to invoke the destroy method when
 !       finished with a GSU object.  If created GSU objects are
 !       not properly destroyed, then memory leaks may be introduced.
+!     - Currently, this module does not work correctly for tripole
+!       grids.
 !
 !  6. Switches :
 !

@@ -450,8 +450,8 @@ CONTAINS
          USE W3GDATMD  
 !/S      USE W3SERVMD, ONLY: STRACE
          IMPLICIT NONE
-!	 
-!local parameters	 
+!        
+!local parameters        
 ! 
          REAL              :: TL1, TL2, TL3, TMPTRIGP
          INTEGER           :: I1, I2, I3
@@ -571,14 +571,14 @@ CONTAINS
 !
 ! counters which stands for occurence of a vertex in the whole triangle list, i.e the number of its
 ! connected triangle
-!		   
+!                  
      X1(:) = XYB(I1,:)
      X2(:) = XYB(I2,:)
      X3(:) = XYB(I3,:)
 !
 ! test to see if vertices are on the contour. if it is so, its coordinates are nullyfied
 ! this is perform to get better gradients at grid points near the contour.
-!		  
+!                 
      IF ((MAPSTA(1,I1).EQ.0).OR.(MAPSTA(1,I2).EQ.0)) THEN
        X1(:) = 0. 
        X2(:) = 0.
@@ -597,7 +597,7 @@ CONTAINS
 ! interpolation coefficient: these are the components of the normals to the 
 ! triangle sides, multiplied by the side length and divided by 2 times the 
 ! triangle area
-!		   		   
+!                                  
       CROSSDIFF(1,K) = REAL(X2(2) - X3(2)) * FACT
       CROSSDIFF(2,K) = REAL(X3(2) - X1(2)) * FACT
       CROSSDIFF(3,K) = REAL(X1(2) - X2(2)) * FACT
@@ -657,19 +657,19 @@ END SUBROUTINE
     USE CONSTANTS
 
          IMPLICIT NONE
-	 
+         
 !
 !local parameter 
-!	 
-	 
+!        
+         
          INTEGER :: IP, IE
          INTEGER :: I1, I2, I3, I11, I22, I33
          REAL*8    :: P1(2), P2(2), P3(2)
          REAL*8    :: R1(2), R2(2), R3(2)
          REAL*8    :: N1(2), N2(2), N3(2)
-	 REAL*8    :: TMP(3)
-	 REAL*8    :: TMPINV(3)
-!/S        INTEGER                      ::  IENT = 0 	 
+         REAL*8    :: TMP(3)
+         REAL*8    :: TMPINV(3)
+!/S        INTEGER                      ::  IENT = 0     
 !/ ------------------------------------------------------------------- /   
 !/S      CALL STRACE (IENT, 'NVECTRI')   
 
@@ -770,7 +770,7 @@ END SUBROUTINE
 !       COUNTRI      Int    O   Maximum number of connected triangle 
 !                               for a given points
 !       COUNTOT      Int    O   Global number of triangle connection 
-!                               for the whole grid.   	
+!                               for the whole grid.     
 !     ----------------------------------------------------------------
 !  4. Subroutines used :
 !
@@ -977,7 +977,7 @@ END SUBROUTINE
          !DOUBLE PRECISION ,  PARAMETER            :: ONE      = 1.0d
          !DOUBLE PRECISION ,  PARAMETER            :: THREE    = 3.0d
          DOUBLE PRECISION, PARAMETER :: ONETHIRD = 0.33333333333333333333333333333333333333333333333 !ONETHIRD = ONE/THREE
-!/S        INTEGER                      ::  IENT = 0  	
+!/S        INTEGER                      ::  IENT = 0    
 !/ ------------------------------------------------------------------- /      
 
 !/S      CALL STRACE (IENT, 'AREA_SI')
@@ -1081,7 +1081,7 @@ END SUBROUTINE
 ! the global index is J . From now, all the computation step based on these arrays must
 ! abide by the conservation of the 2 loop algorithm (points + connected triangles)
 ! AR: I will change this now to pointers in order to omit fix loop structure for the LTS stuff ...
-!	   
+!          
          INDEX_CELL(1)=1
          DO IP = 1, NX
            DO I = 1, CCON(IP)
@@ -1814,7 +1814,7 @@ END SUBROUTINE
       INTEGER                 :: TRILAND(NTRI)
       REAL                    :: ANGLETOT(NX), ANGLETOTINV(NX)
 !/S      INTEGER, SAVE           :: IENT = 0
-!/ ------------------------------------------------------------------- /				     
+!/ ------------------------------------------------------------------- /                                     
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants

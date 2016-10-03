@@ -1361,7 +1361,7 @@
                                    YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
                                    FMEAN, WNMEAN, UDIRCA, CHARN, M2KM
       REAL                      :: ICETHICK, ICECON, WN_R(NK),CG_ICE(NK), ALPHA_LIU(NK)
-!/IS2       REAL                     :: ICEF, ICEDMAX				   
+!/IS2       REAL                     :: ICEF, ICEDMAX                              
       REAL                      :: UDIR1(NREQ), CDIR1(NREQ)
       LOGICAL                   :: LASTSTATION=.FALSE.
       LOGICAL                   :: SHORT=.TRUE.
@@ -2012,7 +2012,7 @@
             END IF
             IF ( FLSRCE(6) ) THEN
               IF (IICEDISP) THEN  
-	              CALL LIU_FORWARD_DISPERSION (ICETHICK,0.,DEPTH, &
+                      CALL LIU_FORWARD_DISPERSION (ICETHICK,0.,DEPTH, &
                      SIG,WN_R,CG_ICE,ALPHA_LIU)
               ELSE
                 WN_R=WN
@@ -2020,7 +2020,7 @@
                 END IF
 !
 !/IS2              CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX,  &
-!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)  	      
+!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)          
             END IF
 !
 !/XXX                CALL W3SXXX
@@ -2405,7 +2405,7 @@
                       CALL PRT2DS (NDSO, NK, NK, NTH, SIS,      &
                           SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
                            'Sice(f,th)', 'm^2', PTNME(J) )
-		          IF ( FLSRCE(7) )                              &
+                          IF ( FLSRCE(7) )                              &
                       CALL PRT2DS (NDSO, NK, NK, NTH, STT,      &
                           SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
                            'Stot(f,th)', 'm^2', PTNME(J) )
@@ -2430,7 +2430,7 @@
               iret=nf90_put_var(ncid,varid(12),SNL1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               iret=nf90_put_var(ncid,varid(13),SDS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
               iret=nf90_put_var(ncid,varid(14),SBT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
-              iret=nf90_put_var(ncid,varid(15),SIS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))	      
+              iret=nf90_put_var(ncid,varid(15),SIS1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))              
               iret=nf90_put_var(ncid,varid(16),STT1(1:NK),start=(/1,J1,IOUT /),count=(/NK,1,1/))
 
 !
@@ -2456,7 +2456,7 @@
                   iret=nf90_put_var(ncid,varid(12),FACT*SNL1(IK),(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(13),FACT*SDS1(IK),(/ IK,J1,IOUT /))
                   iret=nf90_put_var(ncid,varid(14),FACT*SBT1(IK),(/ IK,J1,IOUT /))
-                  iret=nf90_put_var(ncid,varid(15),FACT*SIS1(IK),(/ IK,J1,IOUT /))		  
+                  iret=nf90_put_var(ncid,varid(15),FACT*SIS1(IK),(/ IK,J1,IOUT /))                
                   iret=nf90_put_var(ncid,varid(16),FACT*STT1(IK),(/ IK,J1,IOUT /))
                 ELSE
                   iret=nf90_put_var(ncid,varid(11),NF90_FILL_FLOAT,(/ IK,J1,IOUT /))
@@ -2507,7 +2507,7 @@
                  count=(/NTH,NK,1,1/)                               )
               IF ( FLSRCE(6) )  iret=nf90_put_var(ncid,varid(21),   &
                  TRANSPOSE(SIS(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
-                 count=(/NTH,NK,1,1/)                               )		 
+                 count=(/NTH,NK,1,1/)                               )            
               IF ( FLSRCE(7) )  iret=nf90_put_var(ncid,varid(22),   &
                  TRANSPOSE(STT(1:NK,1:NTH)), start=(/1,1,J1,IOUT/), &
                  count=(/NTH,NK,1,1/)                               )
@@ -3461,7 +3461,7 @@
 !fp
          iret=nf90_def_var(ncid, 'fp', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(11))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(11), 1, 1, deflate)
-        iret=nf90_put_att(ncid,varid(11),'long_name','	peak frequency (Fp=1/Tp)')
+        iret=nf90_put_att(ncid,varid(11),'long_name','  peak frequency (Fp=1/Tp)')
         iret=nf90_put_att(ncid,varid(11),'standard_name','dominant_wave_frequency')
         iret=nf90_put_att(ncid,varid(11),'globwave_name','dominant_wave_frequency')
         iret=nf90_put_att(ncid,varid(11),'units','s-1')
