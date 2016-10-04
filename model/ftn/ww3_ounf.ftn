@@ -1922,6 +1922,7 @@
               FSC    = 0.01
               ENAME  = '.abr'
               UNITS  = 'm'
+              ! NB: ABA and ABD are the X and Y components of the bottom displacement
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABD(1:NSEA)       &
@@ -1945,6 +1946,7 @@
               FSC    = 0.01
               ENAME  = '.ubr'
               UNITS  = 'm s-1'
+              ! NB: UBA and UBD are the X and Y components of the bottom velocity
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
@@ -2009,9 +2011,9 @@
               FSC    = 0.000001
               UNITS  = 'm2 s-2'
               ENAME  = '.tbb'
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)        &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1) &
                                                         , MAPSF, XX )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOY(1:NSEA)        &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2) &
                                                         , MAPSF, XY )
               NFIELD=2
               varnm(1)='utbb'

@@ -869,15 +869,33 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWOY'
 !
-!/OASOCM         CASE('UBR')
-!/OASOCM            ! uba / wave_uba : rms amplitude of orbital velocity of the waves (m/s)
-!/OASOCM            ID_NB_SND = ID_NB_SND +1
-!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__UBR'
-!
 !/OASOCM         CASE('FOC')
 !/OASOCM            ! phioc / wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__FOC'
+!
+!/OASOCM         CASE('TBB')
+!/OASOCM            ! Momentum flux due to bottom friction, u component (m2.s-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TBBX'
+!
+!/OASOCM            ! Momentum flux due to bottom friction, v component (m2.s-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TBBY'
+!
+!/OASOCM         CASE('FBB')
+!/OASOCM            ! phibbl / wave_phibbl : Energy flux due to bottom friction (phioc in W.m-2)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__FBB'
+!
+!/OASOCM         CASE('UBR')
+!/OASOCM            ! uba / wave_ubrx : x component of the rms amplitude of orbital velocity of the waves (m/s)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_UBRX'
+!
+!/OASOCM            ! uba / wave_ubry : y component of the rms amplitude of orbital velocity of the waves (m/s)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_UBRY'
 !
 !/OASOCM         CASE('TAW')
 !/OASOCM            ! tauwix / wave_tauwix : Net wave-supported stress, u component (tauwix in m2.s-2)
