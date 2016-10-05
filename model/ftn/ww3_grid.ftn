@@ -1503,7 +1503,7 @@
 !
 !/ST4      SDSC1  = 0.0     ! not used in ST4, should be cleaned up                                                             
 !/ST4      WNMEANP = 0.5    ! taken from Bidlot et al. 2005
-!/ST4      FXFM3 = 9.9 
+!/ST4      FXFM3 = 2.5 
 !/ST4      FXFMAGE = 0. 
 !/ST4      FXINCUT = 0. 
 !/ST4      FXDSCUT = 0. 
