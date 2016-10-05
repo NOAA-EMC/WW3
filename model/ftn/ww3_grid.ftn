@@ -4720,7 +4720,7 @@
 !/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS2              ' --------------------------------------------------')
 !/IS2 948 FORMAT  ('  IS2 Scattering ... '/&
-!/IS2              '        scattering coefficient       : ',F5.2/ &
+!/IS2              '        scattering coefficient       : ',F6.2/ &
 !/IS2              '        0: no back-scattering        : ',F5.2/ &
 !/IS2              '     TRUE: update of ICEDMAX         : ',L3/ &
 !/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/ &

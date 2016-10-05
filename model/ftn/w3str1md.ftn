@@ -113,6 +113,7 @@
 !/                  +-----------------------------------+
 !/
 !/    13 Jan-2013 : Origination, based on SWAN v40.91 code ( version 4.08 )
+!/    05 Oct-2016 : Avoiding divide by zero for EMEAN      ( version 5.15 )
 !/
 !  1. Purpose :
 !
@@ -353,7 +354,7 @@
 !
 ! 4.  Final processing
 !
-      SIGM01 = MAX ( 1.E-7 , SIGM01 ) / EMEAN
+      SIGM01 = MAX ( 1.E-7 , SIGM01 ) / MAX(EMEAN,0.001)
 
 !---- Temporary parameters (to be replaced by namelists) -----
       PTRIAD(1) = 0.05
