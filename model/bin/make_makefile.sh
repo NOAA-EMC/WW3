@@ -974,7 +974,7 @@
                prop=
              source=
                  IO=
-                aux='w3servmd w3timemd' ;;
+                aux='constants w3servmd w3timemd' ;;
     esac
 
     d_string='$(aPe)/'"$prog"' : $(aPo)/'
