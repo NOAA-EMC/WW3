@@ -1163,7 +1163,7 @@
               ENAME  = '.sdmh'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hmaxe'
+              varnm(1)='hmaxd'
               varnl(1)='STD of maximum wave height (nonlinear,2nd order)'
               varns(1)='STD of maximum wave height (nonlinear,2nd order)'
               varng(1)='STD of maximum wave height (nonlinear,2nd order)'
@@ -1177,7 +1177,7 @@
               ENAME  = '.sdmhc'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hcmaxe'
+              varnm(1)='hcmaxd'
               varnl(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
               varns(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
               varng(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
