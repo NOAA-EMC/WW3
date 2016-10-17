@@ -955,7 +955,7 @@
   994 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
                '     OutputType=4 needs TRKNC and NC4 switch ')
   995 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
-               '     OutputType,',I,'not valid. Options: 1,3,4')
+               '     OutputType,',I3,'not valid. Options: 1,3,4')
 
   999 FORMAT (/15X,'End of program '/ &
                15X,'==============================================='/ &
