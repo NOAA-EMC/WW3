@@ -75,9 +75,9 @@
 # 2.b.1 Build options and determine compiler name
 
   # compilation options
-  #opt="-c CB -list -O3 -convert big_endian -module $path_m"
-  #opt="-c $list -g -traceback -debug full -convert big_endian -use-asm -O3 -xSSE4.2 -module $path_m"
-  opt="-c -heap-arrays 20480 -zero -O3 -mssse3 -convert big_endian -module $path_m"
+  #opt="-c CB -list -O3 -assume byterecl -convert big_endian -module $path_m"
+  #opt="-c $list -assume byterecl -g -traceback -debug full -convert big_endian -use-asm -O3 -xSSE4.2 -module $path_m"
+  opt="-c -heap-arrays 20480 -assume byterecl -zero -O3 -mssse3 -convert big_endian -module $path_m"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]

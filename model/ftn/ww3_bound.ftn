@@ -163,6 +163,7 @@
       NDSI   = 10
       NDSB   = 33
       NDSM   = 20
+      NDSS   = 40
 !
       NDSTRC =  6
       NTRACE = 10
