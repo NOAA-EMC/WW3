@@ -6,11 +6,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         01-Nov-2012 |
+!/                  | Last update :         20-Oct-2016 |
 !/                  +-----------------------------------+
 !/
 !/    28-Aug-2012 : adaptation from SHOM/Ifremer code   ( version 4.08 )
 !/    01-Nov-2012 : Bug correction for NKI != NK        ( version 4.08 )
+!/    20-Oct-2016 : Error statement updates             ( version 5.15 ) 
 !/
 !/    Copyright 2012-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -345,12 +346,32 @@
           READ(200+IP,*) THETA(1:NTH1)
         END DO
 
-      IFMIN=1  ! index of first freq. in source spectrum
-      IFMIN2=1
-      IFMAX=NK1 ! index of last freq. in source spectrum
 !
 ! Defines frequency range in spectra
 !
+
+      ! Checks consistency of NK
+      IF (NKI.GT.NK) GOTO 2008
+!
+      ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
+      ! such that source spec SPEC (read in input) links with output spec
+      ! APBIN with APBIN(IFMIN2:IFMAX2) = SPEC(IFMIN:IFMAX)
+      ! Then APBIN(1:IFMIN2) = 0 and APBIN(IFMAX2:end) = 0
+      IFMIN=1  ! index of first freq. in source spectrum
+      IFMIN2=1 ! index of first freq. in output spectrum
+      IFMAX=NK1 ! index of last freq. in source spectrum
+!        IFMAX2=NK ! index of last freq. in output spectrum
+!
+      ! Checks consistency of XFR
+      IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 2006
+!
+      ! Checks consistency of NTH
+      ! WARNING: check is only done on number of directions, no check 
+      ! is done on the relative offset of first direction in terms of 
+      ! the directional increment [-0.5,0.5] (last parameter of the 
+      ! spectral definition in ww3_grid.inp, on second active line) 
+      IF (NTHI.NE.NTH) GOTO 2007
+
       IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN 
         DO J=1,MIN(NK1,NK)
           IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN 
@@ -504,21 +525,48 @@ STOP
 
  2001 CONTINUE
       WRITE (NDSE,1001)
+      CALL EXTCDE ( 61 )
 !
  2002 CONTINUE
       WRITE (NDSE,1002) IERR
+      CALL EXTCDE ( 62 )
+!
+ 2006 CONTINUE
+      WRITE (NDSE,1006) XFR
+      CALL EXTCDE ( 66 )
+!
+ 2007 CONTINUE
+      WRITE (NDSE,1007) NTH, NTHI
+      CALL EXTCDE ( 67 )
+!
+ 2008 CONTINUE
+      WRITE (NDSE,1008) NK, NKI
+      CALL EXTCDE ( 68 )
+!
+ 2222 CONTINUE
+!
   901 FORMAT (/' *** WAVEWATCH-III ERROR IN W3IOBC :'/                &
                '     ILEGAL IDSTR, READ : ',A/                        &
                '                  CHECK : ',A/)
 !
   920 FORMAT ( '  Grid name : ',A/)
 !
- 1001 FORMAT (/' *** WAVEWATCH-III ERROR IN W3BOUND : '/               &
+ 1001 FORMAT (/' *** WAVEWATCH-III ERROR IN W3BOUND : '/              &
                '     PREMATURE END OF INPUT FILE'/)
 !
  1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
-               '     ERROR IN READING ',A,' FROM INPUT FILE'/               &
+               '     ERROR IN READING ',A,' FROM INPUT FILE'/         &
                '     IOSTAT =',I5/)
+!
+ 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
+               '     ILLEGAL XFR, XFR =',F12.6/)
+!
+ 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
+               '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
+!
+ 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
+               '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
+               '     IT WILL BE MANAGED SOON BY SPCONV')
 !
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUND: '/               &
                '     ILLEGAL TYPE, ITYPE =',I4/)
