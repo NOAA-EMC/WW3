@@ -1,8 +1,8 @@
 \vsssub
-\subsubsection{~$S_{is}$: Diffusive scattering by sea ice (simple)} \label{sec:ICE1}
+\subsubsection{~$S_{is}$: Diffusive scattering by sea ice (simple)} \label{sec:IS1}
 \vsssub
 
-\opthead{IS1}{\ws/NRL}{E. Rogers and S. Zieger}
+\opthead{IS1}{\ws/NRL}{S. Zieger}
 
 \noindent
 The non-conservative effect of ice on waves has been implemented in switches
@@ -17,7 +17,7 @@ concentration ICE using a simple linear transfer function
 \end{equation}
 
 \noindent
-The coefficients $C_1$ and $C_2$ are customizable through namelist {\code \&SIS1}
+The coefficients $C_1$ and $C_2$ are customizable through namelist {\F SIS1}
 with namelist parameters {\code ISC1} and {\code ISC2}. At each discrete
 frequency and direction the wave energy is reduced by the amount of
 $\alpha_{ice}$ and redistributed to all direction in the same discrete

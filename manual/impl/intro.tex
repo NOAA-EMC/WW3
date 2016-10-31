@@ -2,17 +2,17 @@
 \subsection{~Introduction}
 \vssub
 
-\ws\ is written in ANSI standard \fortran-90, with in no machine-dependent
+\ws\ is written in ANSI standard \fortran-90, with no machine-dependent
 elements, so that \ws\ can be installed without modifications on most
 platforms. \ws\ utilizes its own preprocessor to select model options at the
 compile level, and to switch test output on or off. This approach proved to be
-efficient during the development of \ws, but it complicates the installation
-of \ws. To minimize complications, a set of \unix/Linux scripts is provided to
+efficient during the development of \ws, but complicates its installation. 
+To minimize complications, a set of \unix/Linux scripts is provided to
 automate the installation in general and the use of the preprocessor in
 particular. This option is not supported for other operation systems like MS
 products. If the code is to be compiled on one of the latter platforms, it is
 suggested to extract a working code in a \unix/Linux environment using the
-utility {\code w3\_source} (see below), and than to port this clean code to
+utility {\code w3\_source} (see below), and then to port this clean code to
 the platform of choice.
 
 \begin{center}

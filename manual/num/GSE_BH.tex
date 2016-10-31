@@ -6,7 +6,7 @@
 
 \opthead{PR2}{\ws}{H. L. Tolman}
 
-\noindent
+
 The classical GSE alleviation method is from \cite{art:BH87}, who derived an
 alternative propagation equation for the discrete spectrum, including a
 diffusive correction to account for continuous dispersion in spite of the
@@ -92,7 +92,7 @@ D_{xx} \frac{\p \cN}{\p x} \approx \cD_{i,-} =
 \noindent
 Corresponding values for counters $i$ and $i+1$, and for gradients in
 $\lambda$ ($y$) space again are obtained by rotating indices and
-increments. If one of the two grid points in located on land,
+increments. If one of the two grid points is located on land,
 Eq.~(\ref{eq:ddif_1}) is set to zero. The mixed derivative at the right side
 of Eq.~(\ref{eq:d_bal_1}) (denoted as $\cD_{ij,--}$) is estimated for the grid
 point $i$ and $i-1$ in $x$-space and $j$ and $j-1$ in $y$-space as
@@ -141,7 +141,7 @@ Stable solutions are obtained for \citep[e.g.,][Part I section
 where $D_{\max}$ is the maximum value of the diffusion coefficient (typically
 $D_{\max} = D_{nn}$). Because this stability criterion is a quadratic function
 of the grid increment, stability can become a serious problem at high
-latitudes for large scale applications. To avoid that this puts undue
+latitudes for large scale applications. To avoid this putting undue
 constraints on the time step of a model, a corrected swell age $T_{s,c}$ is
 used
 
@@ -155,9 +155,10 @@ T_{s,c} = T_s \min \left \{ \: 1 \: , \:
 \noindent
 where $\phi_c$ is a cut-off latitude defined by the user.
 
-\vspace{\baselineskip} \noindent 
-The above diffusion is needed for swell propagation only, but is not realistic
-for growing wind seas. In the latter conditions, the \uq\ scheme without the
+\vspace{\baselineskip} \noindent
+ 
+The above diffusion is needed for swell propagation, but is not realistic
+for growing wind seas. For wind seas, the \uq\ scheme without the
 dispersion correction is sufficiently smooth to render stable fetch-limited
 growth curves \citep{tol:OMB95}. To remove minor oscillations, a small
 isotropic diffusion is used for growing wave components. To assure that this
@@ -169,7 +170,7 @@ components
 % eq:Dg              Diffusion growing components
 
 \begin{equation}
-D_g = \frac{c_g \: \min(\Delta x , \Delta y)}{\cR} \: , \label{eq:Dg}
+D_g = \frac{c_g \: \min(\Delta x , \Delta y)}{\cR} \: . \label{eq:Dg}
  \end{equation}
 
 \noindent

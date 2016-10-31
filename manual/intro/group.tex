@@ -2,46 +2,41 @@
 \subsection{~The development group}
 \vssub
 
-Even in its original development, when I was working on the code mostly on my
-own on the development of \ws, many have contributed to the success of the
-model. With the expansion of physical and numerical parameterizations
-available, the list of contributors to this model is growing. I would like to
-recognize the following contributors as the development group (in alphabetic
-order) :
+The development of \ww  relies on the efforts of a team of developers that have worked tirelessly to make this an effective community tool. With the expansion of physical and numerical parameterizations available, the list of contributors to this model keeps growing. The development group consists of a core group of developers that are involved in overall code development, debugging and optimization as well as a larger group that has either made or continues to make contributions to physics packages and numerics. The following is a list of contributors (both past and present) of this development group (in alphabetic order) :
 
 \begin{list}{\ldots}{ }
 
 \item [Mickael Accensi] (Ifremer, France) \\
-  NetCDF for input and output (ww3\_prnc , ww3\_ounf, ww3\_ounp), namelist input files for ww3\_multi .
+  NetCDF for input and output (ww3\_prnc , ww3\_ounf, ww3\_ounp), namelist input files for ww3\_multi, and general code development support.
 
 \item [Jose-Henrique Alves] (SRG at NOAA/NCEP/EMC, USA) \\
-  Support of code development while at NCEP, shallow water physics packages.
+  Support of code development at NCEP, shallow water physics packages, development of space-time wave-height extremes approach.
 
 \item [Fabrice Ardhuin] (CNRS, France, previously at SHOM then Ifremer) \\
   Various physics packages (ST3, ST4, BS1, BT4, IG1, REF1, IS2...), interface with unstructured grid schemes, tidal analysis, and some I/O aspects (estimation of fluxes, adaptation of NetCDF). 
+
 \item [Francesco Barbariol] (ISMAR-CNR, Italy) \\
-  Development and coding of a space-time wave-height extremes approach.
+  Development of a space-time wave-height extremes approach.
 
 \item [Alvise Benetazzo] (ISMAR-CNR, Italy) \\
   Development of a space-time wave-height extremes approach.
 
+\item [Anne-Claire Bennis] (University of Caen, France, previously at SHOM, France) \\
+  Coupling with 3D flow model using PALM.
+
 \item [Jean Bidlot] (ECMWF, UK) \\
-  Updates to physics package ST3
+  Updates to physics package ST3.
 
-\item [Guillaume Boutin] (Ifremer, France) \\
-  Contribution to IS2 and IC2. 
-
-  \item [Nico Booij] (Delft University of Technology, The Netherlands, retired) \\
+\item [Nico Booij] (Delft University of Technology, The Netherlands, retired) \\
   Original design of source code pre-processor ({\code w3adc}), basic method
   of documentation and other programming habits. Spatially varying wavenumber
   grid.
 
-\item [Anne-Claire Bennis] (University of Caen, France, previously at SHOM, France) \\
-  Coupling with 3D flow model using PALM.
+\item [Guillaume Boutin] (Ifremer, France) \\
+  Contribution to IS2 and IC2. 
 
 \item [Tim Campbell] (Naval Research Laboratory, USA)\\ 
-  Search and regrid utilities, irregular grids, regression testing
-  shell script.
+  Search and regrid utilities, irregular grids, regression testing shell script, and overall code development support.
 
 \item [Dmitry V. Chalikov] (Formerly UCAR at NOAA/NCEP/EMC) \\ Co-author of the
   \cite{tol:JPO96} input and dissipation parameterizations and source code.
@@ -50,14 +45,20 @@ order) :
   Support of code development at NCEP, GRIB packing, automated grid generation
   software \citep{tol:MMAB07a, tol:OMOD08a}.
 
+\item [Sukun Cheng] (while at Clarkson University, USA) \\
+  Original author of the code that was ported into WW3 (for model version 5) as the improved ``IC3'' parameterization for effect of sea ice on waves.
+
+\item [Clarence Collins] (while an NRL/ASEE post-doc, USA) \\
+  Origination of IC4 (sea ice source function).
+
 \item [Jean-Fran{\c c}ois Filipot] (France Energy Marine, formerly at SHOM then Ifremer, France).\\
   Unification of whitecapping and breaking in ST4. 
 
 \item [Mike Foreman]  (IOS, Canada) \\
   Versatile tidal analysis package. 
 
-\item [Peter Janssen] (ECMWF, UK) \\
-  Original version of WAM-Cycle 4 package (ST3), canonical transform fot the second order wave spectrum 
+\item [Peter Janssen] (ECMWF, United Kingdom) \\
+  Original version of WAM-Cycle 4 package (ST3), canonical transform for the second order wave spectrum.
 
 \item [Fabien Leckler] (Ifremer, France) \\
   Breaking parameters from source terms and contributions to ST4.
@@ -68,21 +69,32 @@ order) :
 \item [Kevin Lind]  (DoD PETTT, USA)\\ 
   Improvements to performance of some multi-grid functions.
 
+\item [Jessica Meixner] (IMSG at NOAA/NCEP/EMC, USA) \\
+  Coupled modeling development, tripole grids, general code development support  and code manager for \ws.
+ 
 \item [Mark Orzech]  (Naval Research Laboratory, USA)\\ 
-  Source terms for effects of mud.
+  Source terms for effects of mud (BT8, BT9).
 
 \item [Roberto Padilla--Hern\'andez]  (IMSG at NOAA/NCEP/EMC, USA)\\ 
   Support of code development at NCEP, editing.
-   
-\item [W. Erick Rogers]  (Naval Research Laboratory, USA)\\ 
-  Irregular grids, source terms for effects of sea ice (IC1, IC2, IC3, IC4, IS1) and mud, 
-  adaptation/interfacing of conservative remapping software.
+
+\item [William Perrie] (Bedford Institute of Oceanography, Canada)\\
+ Two-Scale Approximations for non-linear interactions (NL4).
 
 \item [Arshad Rawat] (MIO, Mauritius and Ifremer, France) \\
-  Contribution to second order spectrum and free infragravity wave sources (IG1).
-    
+  Contribution to second order spectrum and free infragravity wave sources (IG1).    
+   
+\item [W. Erick Rogers]  (Naval Research Laboratory, USA)\\ 
+  Irregular grids, source terms for effects of sea ice (e.g. in IC1, IC2, IC3, IC4, IC5) and mud (BT8, BT9), adaptation/interfacing of conservative remapping software, tripole grid, regression tests, and overall code development support.
+
 \item [Aron Roland] (T. U. Darmstadt, Germany) \\
   Advection on unstructured (triangle-based) grids and meshing tools.
+
+\item [Caroline Sevigny] (UQAR, Canada) \\
+  Contribution to ice scattering including ice break-up.
+
+\item [Hayley Shen] (Clarkson Univ.) \\
+  Supervised contributions by Zhao and Cheng on the ``IC3'' parameterization for effect of sea ice on waves.
 
 \item [Mathieu Dutour Sikiric] (IRB, Croatia) \\
   Multi-grid computations with unstructured (triangle-based) grids.
@@ -90,25 +102,27 @@ order) :
 \item [Mark Szyszka] (RPS Group, Australia) \\
   Identifying several bugs in the code development process and providing fixes for Openmp issues.
 
-\item [Caroline Sevigny] (UQAR, Canada) \\
-  Contribution to ice scattering including ice break-up.
+\item [Hendrik L. Tolman] (DOC/NOAA/NWS/OSTI, USA). \\
+  General code architecture, original \wt-I, II and III models. Ongoing model
+  development.
 
-  \item [Hendrik L. Tolman] (NOAA/NCEP/EMC, formerly through UCAR and SAIC). \\
-  General code architecture, original \wt-I, II and III models. ongoing model
-  development and management.
+\item [Bash Toulany] (Bedford Institute of Oceanography, Canada)\\
+ Two-Scale Approximations for non-linear interactions (NL4).
 
 \item [Barbara Tracy] (US Army Corps of Engineers, ERDC-CHL, USA, retired) \\
-  Spectral partitioning
+  Spectral partitioning.
 
 \item [Gerbrant Ph. van Vledder] (Delft University of Technology, NL) \\
   Webb-Resio-Tracy exact nonlinear interaction routines, as well as some of
   the original service routines.
 
 \item [Andr\'e van der Westhuysen](IMSG at NOAA/NCEP/EMC, USA) \\
-  Support of code development at NCEP, wave system tracking.
+  Support of code development at NCEP, wave system tracking, addition of triad interactions.
 
-\item [Stefan Zieger] (Swinburne Univ., Australia) \\
-  Deepwater source term package ``ST6''
-  and source terms for effects of sea ice.
+\item [Xin Zhao] (while at Clarkson University, USA) \\
+  Original author of the code that was ported into WW3 (model version 4) as the ``IC3'' parameterization for effect of sea ice on waves.
+
+\item [Stefan Zieger] (Bureau of Meteorology, Australia) \\
+  Deepwater source term package (ST6) and source terms for effects of sea ice.
 
 \end{list}

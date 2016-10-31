@@ -23,7 +23,7 @@ $
 $
 $ lowest and highest fraction of communicator to be used for grid.
 $ and flag for running grids side-by-side inside fraction
-$  F: for test purpuses only, defeats most reasons for spliting
+$  F: for test purposes only, defeats most reasons for splitting
 $  T: normal operations
 $
    0.4  1.  F

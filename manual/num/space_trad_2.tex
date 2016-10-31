@@ -1,16 +1,16 @@
-\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Second order scheme
+\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Second-order scheme
   (UNO)}
 
 \vspace{\baselineskip} 
 \vspace{\baselineskip} 
-\noindent {\bf Second order scheme (UNO)}
+\noindent {\bf Second-order scheme (UNO)}
 
 \opthead{UNO}{MetOffice}{J.-G. Li}
 
 \noindent
-The upstream non-oscillatory 2nd order (UNO2) advection scheme
+The upstream non-oscillatory 2nd order (UNO) advection scheme
 \citep{art:Li08} is an extension of the MINMOD scheme \citep{art:Roe86}. In
-the UNO2 scheme, the interpolated wave action value at the mid-flux point for
+the UNO scheme, the interpolated wave action value at the mid-flux point for
 the cell face between cell \emph{i}-1 and cell \emph{i} is given by
 \begin{equation}
 N_{i-}^{*}=N_{c}+sign\left(N_{d}-N_{c}\right)\frac{\left(1-C\right)}{2}\min\left(|N_{u}-N_{c}|,|N_{c}-N_{d}|\right) \:\:\: ,
@@ -24,14 +24,14 @@ t/\Delta\phi$ is the absolute CFL number; and the subscripts \emph{u},
 \emph{downstream} cells, respectively, relative to the given \emph{i}- cell
 face velocity $\dot{\phi}_{b}$. If $\dot{\phi}_{b}>0$, \emph{u} = \emph{i}-2,
 \emph{c}=\emph{i}-1, \emph{d}=\emph{i} for the cell face between cell
-\emph{i}-1 and cell \emph{i}. If$\dot{\phi}_{b}\leq0$ then
+\emph{i}-1 and cell \emph{i}. If $\dot{\phi}_{b}\leq0$ then
 \emph{u}=\emph{i}+1, \emph{c}=\emph{i}, \emph{d}=\emph{i}-1. Details of the
-UNO2 scheme are given in \cite{art:Li08} alongside standard numerical tests
-which demonstrate that the UNO2 scheme on Cartesian multiple-cell grids is
+UNO scheme are given in \cite{art:Li08} alongside standard numerical tests
+which demonstrate that the UNO scheme on Cartesian multiple-cell grids is
 non-oscillatory, conservative, shape-preserving, and faster than its classical
 counterpart as long as the CFL number is less than 1.0.
 
-The flux and cell value update follow the same fornulations as the first order
+The flux and cell value update follow the same formulations as the first order
 upstream scheme, that is,
 
 \begin{equation}

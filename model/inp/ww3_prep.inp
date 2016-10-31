@@ -43,8 +43,8 @@ $
 $ Additional input format type 'F1' or 'F2' -------------------------- $
 $ Three or four additional input lines, to define the file(s) with
 $ the grid information :
-$ 1) Discrete size of input grid (NXI,NYI) and flag identifying closure
-$    in longitudes ("CLO").
+$ 1) Discrete size of input grid (NXI,NYI) and T/F flag identifying
+$    closure in longitudes ("CLO"). Tripole input is not supported.
 $ 2) Define type of file using the parameters FROM, IDLA, IDFM (see
 $    input for grid preprocessor), and a format
 $ 3) Unit number and (dummy) name of first file.
@@ -80,7 +80,7 @@ $
 $
 $ This example is mean parameter assimilation data
 $ First record gives number of data records, data are read as as
-$ individual records of reals with recored length as given above
+$ individual records of reals with record length as given above
 $
 $  3
 $ 1.5  1.6 0.70 10.3

@@ -1,7 +1,7 @@
 \newcommand{\WWver}{5.15}
 \newcommand{\guidever}{1.2}
 \newcommand{\guideref}{tol:MMABguide}
-\newcommand{\genever}{1.4}
+\newcommand{\genever}{1.5}
 \newcommand{\generef}{tol:MMAB14c}
 %\newcommand{\prevman}{tol:MMAB09a}
 \newcommand{\prevman}{tol:MMAB14a}
@@ -46,7 +46,7 @@
 \newcommand{\showex}{SHOWEX}
 \newcommand{\ncar}{NCAR}
 %\newcommand{\para}{\S$\:$}
-\newcommand{\para}{section~}
+\newcommand{\para}{Section~}
 \newcommand{\as}{ASCII}
 \newcommand{\qck}{QUICKEST}
 \newcommand{\ult}{ULTIMATE}
@@ -116,26 +116,48 @@
 \newcommand{\opt}{$\strut^\ast$}
 \newcommand{\inpfile}[1]{
   \vspace{\baselineskip} \noindent
-  \rule[1mm]{43mm}{.5mm} {\rm start of example input file}
+  \rule[1mm]{43mm}{.5mm} {\rm start of example input file (traditional form)}
   \rule[1mm]{43mm}{.5mm}
   {\footnotesize \input{#1} } \noindent
-  \rule[1mm]{46mm}{.5mm} end of example input file \rule[1mm]{45.1mm}{.5mm}
+  \rule[1mm]{46mm}{.5mm} end of example input file (traditional form) \rule[1mm]{45.1mm}{.5mm}
   }
 
+\newcommand{\nmlfile}[1]{
+  \vspace{\baselineskip} \noindent
+  \rule[1mm]{43mm}{.5mm} {\rm start of example input file (namelist form)}
+  \rule[1mm]{43mm}{.5mm}
+  {\footnotesize \input{#1} } \noindent
+  \rule[1mm]{46mm}{.5mm} end of example input file (namelist form) \rule[1mm]{45.1mm}{.5mm}
+  }
+
+
+% flist: file list
 \newenvironment{flist}{\begin{list}{nofile ?}{\parsep 0mm
             \itemsep 0mm \leftmargin 35mm \labelwidth 25mm
             \rightmargin 10mm}}{\end{list}}
 \newcommand{\fit}[2]{\item[{\file{#1}}\hfill]{#2}}
 
+% clist: list of code variables
+% used in shell compile.tex for environment variables
 \newenvironment{clist}{\begin{list}{nofile ?}{\parsep 0mm
             \itemsep 0mm \leftmargin 40mm \labelwidth 30mm
             \rightmargin 10mm}}{\end{list}}
 \newcommand{\cit}[2]{\item[{\code{#1}}\hfill]{#2}}
 
+% flisti: subroutine list
 \newenvironment{flisti}{\begin{list}{nofile ?}{\parsep 0mm
             \itemsep 0mm \leftmargin 30mm \labelwidth 20mm
             \rightmargin 10mm}}{\end{list}}
 
+% vlist: subroutine list, like flisti, alternative used by Jian-Guo
+\newenvironment{vlist}{\begin{list}{novar ?}{\parsep 0mm
+            \itemsep 0mm \leftmargin 27mm \labelwidth 17mm
+            \rightmargin 0mm}}{\end{list}}
+\newcommand{\vit}[3]{\item[{\F{#1}}\hfill]{
+            \begin{list}{ }{\rightmargin 5mm}
+            \item[{\F #2}\hfill] #3 \end{list} }}
+
+% slist: switch list
 \newenvironment{slist}{\begin{list}{noswitch ?}{\parsep 0mm
             \itemsep 0mm \leftmargin 22mm \labelwidth 15mm
             \rightmargin 10mm}}{\end{list}}
@@ -145,18 +167,13 @@
 \newcommand{\sitb}[2]{\item[{{\F{#1}}b}\hfill]{#2}}
 \newcommand{\sitc}[2]{\item[{{\F{#1}}c}\hfill]{#2}}
 
+% dlist: directory list
 \newenvironment{dlist}{\begin{list}{nodir ?}{\parsep 0mm
             \itemsep 0mm \leftmargin 27mm \labelwidth 17mm
             \rightmargin 10mm}}{\end{list}}
 \newcommand{\dit}[2]{\item[{\dir{#1}}\hfill]{#2}}
 
-\newenvironment{vlist}{\begin{list}{novar ?}{\parsep 0mm
-            \itemsep 0mm \leftmargin 27mm \labelwidth 17mm
-            \rightmargin 0mm}}{\end{list}}
-\newcommand{\vit}[3]{\item[{\F{#1}}\hfill]{
-            \begin{list}{ }{\rightmargin 5mm}
-            \item[{\F #2}\hfill] #3 \end{list} }}
-
+% refs: reference list
 \newenvironment{refs}{\begin{list}{ }{\leftmargin 8mm
                       \itemindent -8mm \parsep 0mm 
                       \itemsep 0mm}}{\end{list}}

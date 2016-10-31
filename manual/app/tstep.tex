@@ -75,7 +75,7 @@ expected. Such an impact may be notable, but is generally very minor.
 
 The third time step to consider is the maximum refraction (and wavenumber
 shift) time step. For maximum model economy, this time step should be set
-equal to (or lager then) the overall time step. However, this will alternate
+equal to (or larger than) the overall time step. However, this will alternate
 the order of spatial and refraction computations for consecutive model time
 steps, which in cases of strong refraction may lead to a minor oscillation of
 wave parameter with a period of $2 \Delta t$. Such oscillations can be avoided
@@ -121,7 +121,7 @@ algorithm,
 \item If two grids with identical rank overlap, then the required width of the
 overlap area will be defined by the stencil width of the numerical scheme, and
 the number of times this scheme is called for the longest wave component
-(ratio of overall time step to maximum \cfl\ time step. Thus, model economy
+(ratio of overall time step to maximum \cfl\ time step). Thus, model economy
 for individual grids will improve with increased overall model time step, but
 the required overlap of equally ranked grids will then increase, reducing the
 economy of the mosaic approach.

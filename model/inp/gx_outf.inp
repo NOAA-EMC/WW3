@@ -20,7 +20,7 @@ $
 $
 $ NOTE : In the Cartesian grid version of the code, X and Y are
 $        converted to longitude and latitude assuming that 1 degree
-$        equals 100 km if th maximum of X or Y is larger than 1000km.
+$        equals 100 km if the maximum of X or Y is larger than 1000km.
 $        For maxima between 100 and 1000km 1 degree is assumed to be
 $        10km etc. Adjust labels in GrADS scripts accordingly.
 $

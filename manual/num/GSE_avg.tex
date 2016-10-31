@@ -6,13 +6,13 @@
 
 \opthead{PR3}{\ws}{H. L. Tolman}
 
-\noindent
+
 The major drawback of the above GSE alleviation method is its potential impact
 on model economy as discussed in relation to Eq.~(\ref{eq:ddif_4}) and in
-\cite{tol:Waves01a,tol:OMOD02b}. For this reason, additional GSE alleviation
-methods have been developed for \ws.
+\cite{tol:Waves01a,tol:OMOD02b}. For this reason, an alternative additional GSE alleviation
+method has been developed for \ws.
 
-The first of these methods, which represents the default for \ws, replaces the
+This method which represents the default for \ws, replaces the
 additional diffusion step (\ref{eq:d_bal_1}) with a separate fractional step
 in which direct averaging of the field of energy densities for a given
 spectral component is considered. The area around each grid point over which
@@ -26,7 +26,7 @@ the averaging is performed extends in the propagation ($\bs$) and normal
 
 \noindent
 where $\gamma_{a,s}$ and $\gamma_{a,n}$ are tunable constants, the default
-value of which is set to 1.5. This averaging is graphically depicted in
+value of which is set to 1.5. This averaging is illustrated in
 Fig.~\ref{fig:GSE_1}. Note that these values may require some retuning for
 practical applications, as discussed in \cite{tol:OMOD02b}. Appendix A of the
 latter paper presents details of the averaging scheme, including conservation
@@ -46,8 +46,8 @@ high-latitude filtering.
 
 \begin{figure} \begin{center}
 \epsfig{file=./num/GSE_1.eps,angle=0,width=2.2in}
-\caption{Graphical depiction of spatial averaging GSE alleviation technique
-used here. Solid circles and dotted lines represent the spatial grid. Hatched
+\caption{Schematic of spatial averaging GSE alleviation technique. 
+Solid circles and dotted lines represent the spatial grid. Hatched
 area represent averaging area to be considered. Corner point values are
 obtained from the central grid point and the gray points. The latter values
 are obtained by interpolation from adjacent grid points
@@ -58,14 +58,10 @@ are obtained by interpolation from adjacent grid points
 
 As is illustrated in \cite{tol:OMOD02b,tol:OMB02b}, this method gives
 virtually identical results as the previous method, but does so at slightly
-lower costs. For high resolution applications, the averaging method may become
+lower costs. For high-resolution applications, the averaging method may become
 dramatically more economical.
 
-A third possible GSE alleviation method considers that the advection for a
-give discrete spectral bin is not unidirectional but divergent
-\citep[see][]{tol:OMOD02b}.  An early version of this method was included in
-model version 1.18. Because this method has not yet been developed to
-maturity, it is not provided with the present release of \ws.
+
 
 Finally, the GSE can be alleviated somewhat by assuring that the discrete
 spectral directions do not coincide with spatial grid lines. This can be
@@ -79,6 +75,6 @@ achieved by defining the first discrete direction $\theta_1$ as
 
 \noindent
 where $-0.5 \leq \alpha_\theta \leq 0.5$ can be defined by the user. Note that
-setting $\alpha \neq 0$ is beneficial to the first order scheme, but has
-negligible impact on the third order scheme.
+setting $\alpha \neq 0$ is beneficial to the first-order scheme, but has
+negligible impact on the third-order scheme.
  

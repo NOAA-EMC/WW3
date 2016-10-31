@@ -20,11 +20,11 @@ modified as
 \begin{equation}
 \cN_{i,j,l,m}^{n+1} = \cN_{i,j,l,m}^n +
 \frac{\Delta t}{\Delta \phi} \left [ \alpha_{i,-} \cF_{i,-} - \alpha_{i,+} \cF_{i,+} \right ]
-\: . \label{eq:uq_xy_obstr} \end{equation}
+\: , \label{eq:uq_xy_obstr} \end{equation}
 
 \begin{figure} \begin{center}
 \epsfig{file=./num/obstr.eps,angle=0,width=2.2in}
-\caption{Graphical depiction of treatment of unresolved obstacles. Common cell
+\caption{Treatment of unresolved obstacles. Common cell
          boundary (dotted line) has transparency $\alpha$. Dashed lines
          represent other cell boundaries. Numerical flux from left to right.}
          \label{fig:obstr} \botline
@@ -32,14 +32,14 @@ modified as
 \end{figure}
 
 \noindent
-where $\alpha_{i,-}$ and $\alpha_{i,+}$ are `transparencies' of the
+where $\alpha_{i,-}$ and $\alpha_{i,+}$ are `transmissions' of the
 corresponding cell boundaries, ranging from 0 (closed boundary) to 1 (no
 obstructions). For outflow boundaries, transparencies by definition are 1,
 otherwise energy will artificially accumulate in cells. For inflow boundaries,
 transparencies less than 1 result in elimination of obstructed energy at the
-cell boundary. This approach is graphically depicted in
+cell boundary. This approach is illustrated in
 Fig.~\ref{fig:obstr}. Note that a similar approach is easily adopted in the
-first and second order schemes.  Note, furthermore, that an alternate
+first- and second-order schemes.  Note, furthermore, that an alternate
 obstruction approach with obstructions as a function of the spectral direction
 $\theta$ has been used by \cite{art:HY96} and \cite{art:HMM00}.
 
@@ -56,13 +56,13 @@ obstructed, the product of individual transparencies is applied.
 This approach can also be used to continuously model the effects of ice
 coverage on wave propagation. This is discussed in \para\ref{sub:num_ice}.
 Details of the sub-grid treatment of islands and ice can be found in
-\cite{tol:OMOD03a}. A study of impacts of this approach in large scale wave
+\cite{tol:OMOD03a}. A study of impacts of this approach in large-scale wave
 models is presented in \cite{tol:OMB02b,tol:OMOD03a}.
 
-The default setting of \ws\ is not to include sub-grid modeling of
+The default setting of \ws\ is to not include sub-grid modeling of
 obstacles. Generating obstruction grids can be labor intensive. For this
 reason, an automated approach for generating bottom and obstruction grids was
 developed by \cite{tol:MMAB07a, tol:OMOD08a}.  Note that this option does not
 involve compile-level choices, but is entirely controlled from the grid
-preprocessor (see following chapter).
+preprocessor (see Chapter \ref{chapt:run}).
 

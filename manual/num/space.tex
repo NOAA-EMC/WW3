@@ -22,7 +22,7 @@ becomes
 
 \noindent 
 where the propagated quantity $\cN$ is defined as $\cN \equiv N \, c_g^{-1} \,
-\cos\phi$. For the Cartesian grid, a similar equation is found propagating
+\cos\phi$. For the Cartesian grid, a similar equation is found for
 $\cN \equiv N \, c_g^{-1}$. In this section equations for the more complicated
 spherical grid are presented only. Conversion to a Cartesian grid is generally
 a simplification and is trivial.
@@ -37,20 +37,23 @@ approach is used. Action traveling toward such points is absorbed, whereas
 action at the boundary points is used to estimate action fluxes for components
 traveling into the model.
 
-The spatial grids can use two different coordinate systems, either a 'flat'
+The spatial grids can use two different coordinate systems, either a `flat'
 Cartesian coordinate system typically used for small scale and idealized test
 applications, and a spherical (latitude-longitude) system used for most
 real-world applications. In model version 3.14, the coordinate system was
 selected at compile time with the {\code XYG} or {\code LLG} switches. In more
 recent model versions, the grid type is now a variable defined in {\file
-ww3\_grid} and stored in the {\file mod\_def.ww3} file.
+ww3\_grid} and stored in the {\file mod\_def.ww3} file. 
 
+There is an option for spherical grids to have simple closure, to be periodic
+ in the longitude direction, e.g. so that energy can propagate east from the maximum longitude in the grid to the minimum longitude in the grid. This closure is ``simple'' insofar as the index for latitude does not change across this ``seam''. A ``not simple'' type of closure is also permitted: this is associated with tripole grids. The tripole grid is a type of irregular grid and so this closure is discussed further in (\ref{sub:num_space_curv}).
+ 
 Up to model version 3.14, \ws\ considered only regular discrete grids,
 where the two main grid axes ($x,y$) are discretized using constant
 increments $\Delta x$ and $\Delta y$. In model version \WWver\
 additional options have been included, including curvilinear grids and
-unstructured grids. In the following sections these grid approached
+unstructured grids. In the following sections these grid approaches
 will be discussed, before additional propagation issues are addressed,
 covering the Garden Sprinkler Effect (\ref{sub:num_GSE}), continuously
 moving grids (\ref{sub:num_move}) unresolved islands
-(\ref{sub:num_obst}), and rotated grids (\ref{sub:num_space_rotagrid})
+(\ref{sub:num_obst}), and rotated grids (\ref{sub:num_space_rotagrid}).

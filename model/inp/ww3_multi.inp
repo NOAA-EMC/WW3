@@ -9,7 +9,7 @@ $ ***        be run as an independent interactive run             ***
 $ *******************************************************************
 $
 $ The first input line sets up the general multi-grid model definition
-$ by defining the follwing six parameters :
+$ by defining the following six parameters :
 $
 $   1) Number of wave model grids.                          ( NRGRD )
 $   2) Number of grids defining input fields.               ( NRINP )
@@ -25,7 +25,7 @@ $ If there are input data grids defined ( NRINP > 0 ), then these
 $ grids are defined first. These grids are defined as if they are wave
 $ model grids using the file mod_def.MODID. Each grid is defined on
 $ a separate input line with MODID, and eight input flags identifying
-$ the presentce of 1) water levels 2) currents 3) winds 4) ice and
+$ the presence of 1) water levels 2) currents 3) winds 4) ice and
 $ 5-7) assimilation data as in the file ww3_shel.inp.
 $
   'input' F F T F F F F
@@ -48,7 +48,7 @@ $ file out_pnt.points
 $
 $ -------------------------------------------------------------------- $
 $ Now each actual wave model grid is defined using 13 parameters to be
-$ read fom a single line in the file. Each line contains the following
+$ read from a single line in the file. Each line contains the following
 $ parameters
 $     1)   Define the grid with the extension of the mod_def file.
 $    2-8)  Define the inputs used by the grids with 8 keywords 
@@ -76,7 +76,7 @@ $ 'grd2'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   2  1  0.25 0.75  F
 $ 'grd3'  'no' 'no' 'input' 'no' 'no' 'no' 'no'   3  1  0.50 1.00  F
 $
 $ In this example three grids are used requiring the files
-$ mod_def.grdN. All files get ther winds from the grid 'input'
+$ mod_def.grdN. All files get their winds from the grid 'input'
 $ defined by mod_def.input, and no other inputs are used. In the lines
 $ that are commented out, each grid runs on a part of the pool of
 $ processes assigned to the computation.
@@ -111,7 +111,7 @@ $
 $----------------------------------------------------------------
 $
 $ NOTE: If UNIPTS = .TRUE. then the point output needs to be defined
-$       here and cannot be redifined below.
+$       here and cannot be redefined  below.
 $
    19680606 000000   3600  19680608 000000
        0.E3     0.E3  'eye       '
@@ -176,7 +176,7 @@ $  19680606 000000    900  19680608 000000
 $     0 999 1 0 999 1 T 
 $
 $ -------------------------------------------------------------------- $
-$ Mandatory end of outpout requests per grid, identified by output 
+$ Mandatory end of output requests per grid, identified by output 
 $ type set to 0.
 $
   'the_end'  0

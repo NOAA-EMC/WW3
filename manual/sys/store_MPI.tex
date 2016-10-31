@@ -59,7 +59,7 @@ communication behind calculation will occur if the hardware is capable of
 doing this. To avoid problems with incompatibilities between FORTRAN and MPI,
 separate gather and scatter data arrays are used.  The buffered data
 transposes are graphically depicted in Fig.~\ref{fig:transpose}. More details
-can be found in \cite{tol:PACO02}
+can be found in \cite{tol:PACO02}.
 
 % fig:transpose
 
@@ -74,7 +74,7 @@ stride {\F naproc} only.
 
 Distributed memory also requires modifications to the I/O. Input files are
 read completely by each separate processor. The type of file output is
-determined by the I/O type indicator {\F iostyp}
+determined by the I/O type indicator {\F iostyp}.
 
 \begin{center} \begin{tabular}{cl}
 {\F iostyp} & implies \\ \hline

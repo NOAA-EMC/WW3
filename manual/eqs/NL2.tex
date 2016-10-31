@@ -31,7 +31,7 @@ resonance conditions
 \noindent
 which is a more general version of the resonance conditions
 (\ref{eq:resonance}). The rate of change of action density $N_1 $ at
-wave number $\bk_1$ due to all quadruplet interactions involving
+wavenumber $\bk_1$ due to all quadruplet interactions involving
 $\bk_1$ is given by
 
 \begin{eqnarray}
@@ -108,7 +108,7 @@ N_3  - N_1 \right ) \right ] \: d s  \:\:\: , \label{eq:WRT_T2}
 \end{eqnarray}
 
 \noindent
-In which $G$ is the coupling coefficient and $\left| {\partial W/\partial n}
+in which $G$ is the coupling coefficient and $\left| {\partial W/\partial n}
 \right|$ is the gradient term of a function representing the resonance
 conditions \citep[see][]{pro:vVl00}. Numerically, the Boltzmann integral is
 computed as the finite sum of many line integrals $T$ for all discrete
@@ -130,25 +130,25 @@ $\bk_1 $ is given by
 \begin{equation}
 \frac{\p N(\bk_1)}{\p t} \approx \sum_{i_{k3}  = 1}^{n_k }
 {\sum_{i_{\theta 3}  = 1}^{n_\theta  } k_3 T(\bk_1,\bk_3) \: \Delta
-k_{i_{k3}} \: \Delta \theta_{i_{\theta 3} } } \label{eq:WRT_numT}
+k_{i_{k3}} \: \Delta \theta_{i_{\theta 3} } }, \label{eq:WRT_numT}
 \end{equation}
 
 \noindent
 where $n_k$ and $n_\theta$ are the discrete number of wavenumbers and
-directions in the calculational grid, respectively. Note that although the
-spectrum is defined in terms of the vector wavenumber $\bk$, the calculational
+directions in the computational grid, respectively. Note that although the
+spectrum is defined in terms of the vector wavenumber $\bk$, the computational
 grid in a wave model is more conveniently defined in terms of the absolute
 wavenumber and wave direction ($k,\theta$) to assure directional isotropy of
-the calculations. Taking all wave numbers $\bk_1 $ into account produces the
+the calculations. Taking all wavenumbers $\bk_1 $ into account produces the
 complete source term due to nonlinear quadruplet wave-wave
 interactions. Details of the efficient computation of a locus for a given
-combination of the wave numbers $\bk_1 $ and $\bk_3 $ can be found in
+combination of the wavenumbers $\bk_1 $ and $\bk_3 $ can be found in
 \cite{pro:vVl00,rep:vVl02a,rep:vVl02b}.
 
 It should be noted that these exact interaction calculations are extremely
 expensive, typically requiring $10^3$ to $10^4$ times more computational
 effort than the \dia. Presently, these calculations can therefore only be made
-for highly idealized test cases involving a limited spatial grid.
+for highly-idealized test cases involving a limited spatial grid.
 
 The nonlinear interactions according to the \xnl\ method have been implemented
 in \ws\ using the portable subroutines developed by \cite{rep:vVl02b}.  In
@@ -177,10 +177,10 @@ initialization phase of the wave model the integration space, consisting of
 the discretized paths of all loci, together with the interaction coefficients
 and gradient terms, are computed and stored in a binary data file. For each
 water depth such a data file is generated and stored in the current
-directory. The names of these data files consist of a keyword, "quad",
-followed by the keyword "{\it{xxxx}}", with {\it xxxx} the water depth in
+directory. The names of these data files consist of a keyword, ``quad",
+followed by the keyword ``{\it{xxxx}}", with {\it xxxx} the water depth in
 meters, or 9999 for deep water.  The extension of the binary data file is
-"bqf" (of Binary Quadruplet File). If a BQF file exists, the program checks if
+``bqf" (Binary Quadruplet File, BQF). If a BQF file exists, the program checks if
 this BQF file has been generated with the proper spectral grid. If this is not
 the case, the existing BQF file is overwritten with the correct BQF
 file. During a wave model run with various depths, the optimal BQF is used, by

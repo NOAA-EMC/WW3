@@ -12,7 +12,7 @@ $
   N
   DPT HS FP T01
 $
-$ Aditional info needed for grib file
+$ Additional info needed for grib file
 $   Forecast time, center ID, generating process ID, grid definition
 $   and GDS/BMS flag
 $

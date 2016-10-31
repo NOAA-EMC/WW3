@@ -16,7 +16,7 @@ accuracy up to $\Delta d / d \simeq 0.6$ \citep{art:AM07}. The source term
 reads,
 
 \begin{equation}
-\cS_{\mathrm{sc}}({\bk}) =
+\cS_{\mathrm{bs}}({\bk}) =
 \frac{\pi}{2}\int_{0}^{2 \pi}
  \frac{k'^2 M^2({\bk},\textbf{k}')}{\sigma \sigma' \left(k' C'_g +
 {\bk}  \cdot {\bf U}  \right)}
@@ -44,7 +44,7 @@ the resonance condition, $\omega=\omega'$, i.e. $\sigma+{\bk} \cdot {\bf U}
 velocity \cite[see, e.g.,][]{tol:WISE07}.
 
 The bottom spectrum $F^B({\bk})$ is specified in the file {\file
-bottom\_spectrum.inp}. This spectrum may be determined from multi beam
+bottom\_spectrum.inp}. This spectrum may be determined from multi-beam
 bathymetric data.  In the absence of detailed bathymetric data, the sand dune
 spectrum may be parameterized based on the work of \cite{art:Hino68}.  Recent
 observations generally confirm the earlier data on sand dune spectra
@@ -67,10 +67,10 @@ The source term is computed according to different methods depending on the
 value of the current. For zero current, the interactions only involves waves
 of the same frequency and the interaction is always the same and linear in
 terms of the directional spectrum. In this case the interaction is expressed
-as a matrix problem. Namely, the directional spectrum $F$ is vector of {\F NTH} components, 
+as a matrix problem. Namely, the directional spectrum $F$ is a vector of {\F NTH} components, 
 and the source term is a vector of same size that is obtained by 
 the matrix multiplication $S = M F$ with $M$ a square ({\F NTH,NTH}) array. This array is 
-a function of the bottom spectrum and the non-dimensional depth $kh$.  This 
+a function of the bottom spectrum and the non-dimensional depth $kd$.  This 
 scattering matrix is precomputed and diagonalized as a
 preprocessing step for a finite number of wavenumber magnitudes
 \citep{art:AH02}.  The cost of this preprocessing increases linearly with the

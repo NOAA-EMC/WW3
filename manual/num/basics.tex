@@ -1,8 +1,8 @@
-The Wave Action Equation in Cartesian (\ref{eq:bal_plane}) or spherical (\ref{eq:bal_sphere}) coordinates is the basic
+The Wave Action Equation in Cartesian  (\ref{eq:bal_plane}) or spherical  (\ref{eq:bal_sphere}) coordinates is the basic
 equations of the wave model. However, modified versions of these equations are
 used in the model, where (a) they are solved on a variable wavenumber grid
-(see below), where (b) a modified versions of these equations are used to
-properly described dispersion for discretized equations in selected numerical
+(see below), where (b) modified versions of these equations are used to
+properly describe dispersion for discretized equations in selected numerical
 schemes (see \para\ref{sub:xy_prop}), and where (c) sub-grid obstacles such as
 islands are considered (see \para\ref{sub:xy_prop}).
 
@@ -12,17 +12,17 @@ islands are considered (see \para\ref{sub:xy_prop}).
 \vsssub
 
 
-If (\ref{eq:bal_plane}) or (\ref{eq:bal_sphere}) is solved directly, an
+If Eq. (\ref{eq:bal_plane}) or Eq. (\ref{eq:bal_sphere}) is solved directly, an
 effective reduction of spectral resolution occurs in shallow water
 \citep[see][]{tol:GAOS98b}. This loss of resolution can be avoided if the
 equation is solved on a variable wavenumber grid, which implicitly
 incorporates the kinematic wavenumber changes due to shoaling. Such a
 wavenumber grid corresponds to a spatially and temporally invariant
-grid in relartive frequency \citep{tol:GAOS98b}. The corresponding local wavenumber grid can be
+grid in relative frequency \citep{tol:GAOS98b}. The corresponding local wavenumber grid can be
 calculated directly from the invariant frequency grid and the dispersion
 relation (\ref{eq:disp}), and hence becomes a function of the local depth
 $d$. To accommodate economical calculations of $S_{nl}$ and allow a good separation of swell frequencies, a frequency discretization with 
-exponentially increasing lags is adopted, so that the varying frequency resolution is proportional to the local frequency, 
+exponentially increasing increments is adopted, so that the varying frequency resolution is proportional to the local frequency, 
 
 %----------------------------%
 % Exponential frequency grid %
@@ -39,7 +39,7 @@ the user in the input files of the program. Traditionally, in most
 applications of third-generation models $X_\sigma \simeq 1.1$ is used.
 
 The effects of a spatially varying grid will be discussed for the Cartesian
-equation (\ref{eq:bal_plane}) only. Adaptation to the spherical grid is
+Eq. (\ref{eq:bal_plane}) only. Adaptation to the spherical grid is
 trivial. Denoting the variable wavenumber grid with $\kappa$, the balance
 equation becomes
 
@@ -69,7 +69,7 @@ equation becomes
 \subsection{~Splitting of the wave action equation} \label{sec:basic_num}
 \vsssub
 
-In \ww, equation (\ref{eq:bal_f_grid}) is solved using a fractional step method. 
+In \ws\, Eq. (\ref{eq:bal_f_grid}) is solved using a fractional step method. 
 The first step treats the temporal variations of
 the depth, and corresponding changes in the wavenumber grid. As is discussed
 by \cite{tol:GAOS98b}, this step can be invoked sparsely. By splitting off
@@ -78,18 +78,18 @@ the depth becomes quasi-steady for the remaining fractional steps. Other
 fractional steps consider spatial propagation, intra-spectral propagation and
 source terms. Starting with version 5.10, the source term $S$ is further split into 
 non-ice $S_{no~ice}$ and ice $S_{ice}$ source term. For a single model grid, the following sequence of integration  is performed 
-by the {\code W3WAVE} routine,
+by the {\code W3WAVE} routine:
 \begin{itemize}
- \item[1.] update of water level 
- \item[2.] intra-spectral part 1: integration over $\Delta t_g/2$ of  $\frac{\p}{\p t} \frac{N}{c_g} + \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =0 $ 
- \item[3.] spatial propagation : integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g} +  
+ \item[1.] Update of water level 
+ \item[2.] Intra-spectral part 1: integration over $\Delta t_g/2$ of  $\frac{\p}{\p t} \frac{N}{c_g} + \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =0 $ 
+ \item[3.] Spatial propagation: integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g} +  
 \frac{\p}{\p x} \frac{\dot{x} N}{c_g} + 
 \frac{\p}{\p y} \frac{\dot{y} N}{c_g}  = 0$
- \item[4.] intra-spectral part 2: integration over $\Delta t_g/2$ of  $\frac{\p}{\p t} \frac{N}{c_g} + \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =0 $ 
- \item[5.] source term integration : integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{no~ice}}{\sigma c_g}$
- \item[6.] ice source term integration : integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{ice}}{\sigma c_g}$ 
+ \item[4.] Intra-spectral part 2: integration over $\Delta t_g/2$ of  $\frac{\p}{\p t} \frac{N}{c_g} + \frac{\p}{\p \kappa} \frac{\dot{\kappa} N}{c_g} + \frac{\p}{\p \theta} \frac{\dot{\theta} N}{c_g}  =0 $ 
+ \item[5.] Source term integration: integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{no~ice}}{\sigma c_g}$
+ \item[6.] Ice source term integration: integration over $\Delta t_g$ of $\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{ice}}{\sigma c_g}$ 
 \end{itemize}
-The succession of these 6 steps is, in the limit $\Delta t_g \rightarrow 0$, equivalent to the integration of eq. (\ref{eq:bal_f_grid}) over a global 
+The succession of these 6 steps is, in the limit $\Delta t_g \rightarrow 0$, equivalent to the integration of Eq. (\ref{eq:bal_f_grid}) over a global 
 time step $\Delta t_g$. 
 
 This splitting in multiple steps allows an  efficient 
@@ -122,7 +122,7 @@ calculated within the model as
 
 \begin{equation}
 \Delta t_{p,m} = \frac{{\dot{x}}_{p,r}}{{\dot{x}}_{p,m}} \Delta t_{p,r}
-\: . \label{eq:dtpl} \end{equation}
+\: , \label{eq:dtpl} \end{equation}
 
 \noindent
 where $\dot{x}_{p,r}$ is the maximum advection speed for the longest waves
@@ -162,12 +162,13 @@ calculation time, a minimum time step is defined by the user.
 The following sections deal with the separate steps in the fractional step
 method, and various subjects associated with this.  The main issue are covered
 in \para\ref{sub:num_depth}, which addresses treatment of temporal variations
-of the water depth, \para\ref{sub:xy_prop}, which addresses spatial
-propagation, \para\ref{sub:spec}, which addresses intra-spectral propagation,
-and \para\ref{sub:source} addresses the numerical integration of the source
-terms.  Sections \ref{sub:num_w_c} and following deal with additional
+of the water depth, \para\ref{sub:xy_prop} which addresses spatial
+propagation, \para\ref{sub:spec} which addresses intra-spectral propagation,
+and Sections \ref{sub:source} and \ref{sub:icesource} which address the numerical 
+integration of non-icea and ice source
+terms.  The other sections deal with additional
 numerical approaches and techniques, covering the treatment of winds and
-currents, including tides (\ref{sub:num_w_c}, \ref{sub:num_tide}), treatment
-of ice (\ref{sub:num_ice}), spectral partitioning and the corresponding
-tracking of wave systems in space and time (\ref{sub:num_part},
-\ref{sub:num_track}), and nesting (\ref{sub:num_nest}).
+currents (\para\ref{sub:num_w_c}), including tides (\para\ref{sub:num_tide}), calculating space-time extremes (\para\ref{sub:space_time_ext}), treatment
+of ice (\para\ref{sub:num_ice}), spectral partitioning and the corresponding
+tracking of wave systems in space and time (Sections \ref{sub:num_part},
+\ref{sub:num_track}), and nesting (\para\ref{sub:num_nest}).

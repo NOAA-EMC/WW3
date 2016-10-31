@@ -1,6 +1,6 @@
 \vssub
-\subsection{~Ice coverage ({\code IC0})} \label{sub:num_ice}
-\conthead{\ws}{H. L. Tolman}
+\subsection{~Simple ice blocking ({\code IC0})} \label{sub:num_ice}
+\opthead{IC0}{\ws}{H. L. Tolman} %\conthead{\ws}{H. L. Tolman}
 
 \noindent
 Ice covered sea is considered as `land' in \ws, assuming zero wave energy and
@@ -10,7 +10,7 @@ becomes larger than a user-defined concentration. If the ice concentration
 drops below its critical value, the corresponding grid point is
 `re-activated'. The spectrum is then initialized with a PM spectrum based on
 the local wind direction with a peak frequency corresponding to the
-second-highest discrete frequency in the grid. A small spectrum is used to
+second-highest discrete frequency in the grid. A low energy spectrum is used to
 assure that spectra are realistic, even for shallow coastal points.
 
 The above discontinuous ice treatment represents the default model setting in
@@ -20,19 +20,19 @@ The above discontinuous ice treatment represents the default model setting in
 at which obstruction begins ($\epsilon_{c,0}$) and is complete
 ($\epsilon_{c,n}$) are given (defaults are $\epsilon_{c,0} = \epsilon_{c,n} =
 0.5$, i.e., discontinuous treatment of ice). From these critical
-concentrations, corresponding decay length scales are calculated as,
+concentrations, corresponding decay length scales are calculated as
 
 \begin{equation}
 l_0 = \epsilon_{c,0} \min ( \Delta x , \Delta y )
-\:\:\: . \label{eq:l0}
+, \label{eq:l0}
 \end{equation}
 \begin{equation}
 l_n = \epsilon_{c,n} \min ( \Delta x , \Delta y )
-\:\:\: . \label{eq:ln}
+, \label{eq:ln}
 \end{equation}
 
 \noindent
-from which cell transparencies in $x$ and $y$ ($\alpha_x$ and $\alpha_y$,
+from which cell transmissions in $x$ and $y$ ($\alpha_x$ and $\alpha_y$,
 respectively) are calculated as
 
 \begin{equation}
@@ -58,4 +58,4 @@ time approximately half way in between the valid times of the old and new ice
 maps. The map will not be updated, if the time stamps of both ice fields are
 identical.
 
-The above description pertains to the switch {\code IC0}. Note that either ice transparency for propagation ({\code IC0}), or ice as a source term can be used ({\code IC1}, {\code IC2}, {\code IC3}), but not both approaches at the same time.
+The above description pertains to the switch {\code IC0}. Note that either ice transmissions for propagation ({\code IC0}), or ice as a source term can be used ({\code IC1}, {\code IC2}, {\code IC3}), but not both approaches at the same time.

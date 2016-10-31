@@ -1,78 +1,65 @@
 \vssub
-\subsection{~Wave Crest and Height Space-Time Extremes} \label{sub:space_time_ext}
+\subsection{~Wave crest and height space-time extremes} \label{sub:space_time_ext}
 \conthead{\ws (ISMAR, NCEP)}{Barbariol, F., Benetazzo, A., Alves, J.H.G.M.}
 
-Space-Time (ST) extreme waves are modeled in WAVEWATCH III based on the Euler Characteristics (EC) approach, which states that for a given multidimensional (2-D space + time), statistically homogeneous and stationary Gaussian random wave field, the probability of exceedance of the maximal sea surface elevation is approximated by means of the mean value of the EC \citep{Fed12eu}. The ST extreme elevation model used here was formulated by \cite{Fed12sp} for Gaussian sea waves, and extended to second-order nonlinear spatial wave fields by \cite{Fed13} and spatio-temporal fields by \cite{Beet15}. The proposed ST extreme linear model was assessed with numerical simulations \citep{Baet15}, while the extension to second-order nonlinear waves was verified using stereo imaging \citep{Fed13,Beet15}. According to those models, the probability of exceedance of the second-order nonlinear ST maximal crest height $\eta_{2ST_m}$ is approximated (for large threshold $z_2$ with respect to the standard deviation of the surface elevation $\sigma$) as:
-
+Space-Time (ST) extreme waves are modeled in WAVEWATCH III based on the Euler Characteristics (EC) approach, which states that for a given multi-dimensional (2-D space + time), statistically homogeneous and stationary Gaussian random wave field, the probability of exceedance of the maximal sea surface elevation is approximated by means of the mean value of the EC \citep{Fed12eu}. The ST extreme elevation model used here was formulated by \cite{Fed12sp} for Gaussian sea waves, and extended to second-order nonlinear spatial wave fields by \cite{Fed13} and spatio-temporal fields by \cite{Beet15}. The proposed ST extreme linear model was assessed with numerical simulations \citep{Baet15}, while the extension to second-order nonlinear waves was verified using stereo imaging \citep{Fed13,Beet15}. According to those models, the probability of exceedance of the second-order nonlinear ST maximal crest height $\eta_{2ST_m}$ is approximated (for large threshold $z_2$ with respect to the standard deviation of the surface elevation $\sigma$) as:
 \begin{equation}
-P(\eta_{2ST_m} > z_2) \approx \left[N_{3D} \left( \frac{z_1}{\sigma} \right)^{2} + N_{2D} \left( \frac{z_1}{\sigma} \right) + N_{1D} \right] \exp{ \left( -\frac{z_1^2}{2 \sigma^2} \right)}
+P(\eta_{2ST_m} > z_2) \approx \left[N_{3D} \left( \frac{z_1}{\sigma} \right)^{2} + N_{2D} \left( \frac{z_1}{\sigma} \right) + N_{1D} \right] \exp{ \left( -\frac{z_1^2}{2 \sigma^2} \right)},
 \label{eq_STE1}
 \end{equation}
-
 where the nonlinear threshold $z_2$ is related to its linear approximation $z_1$ via the Tayfun quadratic equation using the steepness parameter $\mu$, strictly valid in deep waters, which accounts for bandwidth effects. Parameters $N_{3D}$, $N_{2D}$, and $N_{1D}$ express the average number of 3D, 2D, and 1D waves within the ST region, respectively, and are determined from the moments $m_{ijl}$ of the directional wave spectrum $S(k, \theta)$ defined as follows:
-
 \begin{equation}
-m_{ijl}=\int k_{x}^{i}k_{y}^{j}\omega^{l}S(k,\theta)dkd\theta
+m_{ijl}=\int k_{x}^{i}k_{y}^{j}\omega^{l}S(k,\theta)dkd\theta.
 \label{eq_STE2}
 \end{equation}
 
-The average numbers of waves in Eq. (\ref{eq_STE1}) also depend on the size of the spatio-temporal domain, namely the spatial dimension $X$ along the mean direction of wave propagation, the spatial dimension $Y$ orthogonal to the mean direction of wave propagation, and the duration $D$. Expected value $\bar{\eta}_{2ST_m}$ (output parameter \textbf{STMAXE}, in meters) of the random variable $\eta_{2ST_m}$ is given by
-
+The average number of waves in Eq. (\ref{eq_STE1}) also depends on the size of the spatio-temporal domain, namely the spatial dimension $X$ along the mean direction of wave propagation, the spatial dimension $Y$ orthogonal to the mean direction of wave propagation, and the duration $D$. The expected value $\bar{\eta}_{2ST_m}$ (output parameter \textbf{STMAXE}, in meters) of the random variable $\eta_{2ST_m}$ is given by
 \begin{multline}
 \bar{\eta}_{2ST_m}=\mathbb{E}\left\{\eta_{2ST_m} \right\} = \\ 
 	\sigma \left[(h_1+\frac{\mu}{2}h_1^{2})+
-\gamma \left( h_1-\frac{2N_{3D}h_1+N_{2D}}{N_{3D} h_1^{2}+N_{2D} h_1+N_{1D}}\right)^{-1} (1+\mu h_1) \right]
+\gamma \left( h_1-\frac{2N_{3D}h_1+N_{2D}}{N_{3D} h_1^{2}+N_{2D} h_1+N_{1D}}\right)^{-1} (1+\mu h_1) \right],
 \label{eq_STE3}
 \end{multline}
-
 where $\gamma \approx 0.5772$ is the Euler-Mascheroni constant, and $h_1$ is the dimensionless (with respect to the standard deviation $\sigma$) most probable (mode) extreme value, which is the largest solution of the implicit equation in $h$
-
 \begin{equation}
 \left[N_{3D} h^{2} + N_{2D} h + N_{1D} \right] \exp{ \left( -\frac{h^2}{2} \right)}=1.
 \label{eq_STE4}
 \end{equation}
 
 The standard deviation $\sigma_{2_m}$ (output parameter \textbf{STMAXD}, in meters) of the crest height $\eta_{2ST_m}$ is given by:
-
 \begin{equation}
-\sigma_{2_m}=std(\eta_{2ST_m})=\sigma \frac{\pi}{\sqrt{6}} \left( h_1-\frac{2N_{3D}h_1+N_{2D}}{N_{3D} h_1^{2}+N_{2D} h_1+N_{1D}}\right)^{-1} (1+\mu h_1) 
+\sigma_{2_m}=std(\eta_{2ST_m})=\sigma \frac{\pi}{\sqrt{6}} \left( h_1-\frac{2N_{3D}h_1+N_{2D}}{N_{3D} h_1^{2}+N_{2D} h_1+N_{1D}}\right)^{-1} (1+\mu h_1) .
 \label{eq_STE5}
 \end{equation}
 
 The expected value of the ST extreme crest-to-trough wave height is obtained using the Quasi-Determinism (QD) model, which predicts the mean shape of ST wave groups close to the apex of their development. According to the QD model the expected value of the crest-to-trough height $\bar{H}_{1_{cm}}$ (output parameter \textbf{HCMAXE}, in meters) of the wave with linear extreme crest height $\bar{\eta}_{1ST_m}$ is expressed as
-
 \begin{equation}
-\bar{H}_{1_{cm}}=\mathbb{E}\left\{H_{1_{cm}} \right\} = \bar{\eta}_{1ST_m}(1-\psi_1^* / \sigma^2)
+\bar{H}_{1_{cm}}=\mathbb{E}\left\{H_{1_{cm}} \right\} = \bar{\eta}_{1ST_m}(1-\psi_1^* / \sigma^2),
 \label{eq_STE6}
 \end{equation}
-
 where $\psi_1^* < 0$ is the value of the first minimum of the temporal autocovariance function computed from the spectrum as
-
 \begin{equation}
-\psi_1(\tau) = \int S(\omega) \cos{(\omega \tau)} d \omega
+\psi_1(\tau) = \int S(\omega) \cos{(\omega \tau)} d \omega,
 \label{eq_STE7}
 \end{equation}
-
-and $\bar{\eta}_{1ST_m}  \psi_1^*/\sigma^2 < 0$ is the expected displacement of the wave trough preceding or following the expected linear extreme crest height $\bar{\eta}_{1ST_m}$ (which is computed using Eq. (\ref{eq_STE3}) after letting the wave steepness $\mu=0$). For a given linear group, the height $\bar{H}_{1_{cm}}$ is generally smaller than the maximum expected wave height $\bar{H}_{1_m}$ (output parameter \textbf{HMAXE}, in meters), which is computed as
-
+and $\bar{\eta}_{1ST_m}  \psi_1^*/\sigma^2 < 0$ is the expected displacement of the wave trough preceding or following the expected linear extreme crest height $\bar{\eta}_{1ST_m}$, which is computed using Eq. (\ref{eq_STE3}) after letting the wave steepness $\mu=0$. For a given linear group, the height $\bar{H}_{1_{cm}}$ is generally smaller than the maximum expected wave height $\bar{H}_{1_m}$ (output parameter \textbf{HMAXE}, in meters), which is computed as
 \begin{equation}
-\bar{H}_{1_m}=\mathbb{E}\left\{H_{1_m} \right\} = \bar{\eta}_{1ST_m}\sqrt{2(1-\psi_1^* / \sigma^2)}
+\bar{H}_{1_m}=\mathbb{E}\left\{H_{1_m} \right\} = \bar{\eta}_{1ST_m}\sqrt{2(1-\psi_1^* / \sigma^2)}.
 \label{eq_STE8}
 \end{equation}
 
 The effect on wave heights of second-order nonlinearities is generally small, particularly in narrow band seas, and it will be neglected in the present implementation to reduce the computational cost. Uncertainty of estimates of $\bar{H}_{1_{cm}}$ (output parameter \textbf{HCMAXD}, in meters) and $\bar{H}_{1_m}$ (output parameter \textbf{HMAXD}, in meters) are determined using the standard deviation of $\eta_{1ST_m}$ ($\sigma_{1_m}$, which is computed using Eq. (\ref{eq_STE5}) after letting the wave steepness $\mu=0$) as follows:
-
 \begin{eqnarray}
-std({H}_{1_m})=\sigma_{1_m}\sqrt{2(1-\psi_1^* / \sigma^2)} \nonumber \\
-std({H}_{1_{cm}})=\sigma_{1_m}(1-\psi_1^* / \sigma^2)
+std({H}_{1_m})&=&\sigma_{1_m}\sqrt{2(1-\psi_1^* / \sigma^2)}, \nonumber \\
+std({H}_{1_{cm}})&=&\sigma_{1_m}(1-\psi_1^* / \sigma^2).
 \label{eq_STE9}
 \end{eqnarray}
 
-In WAVEWATCH III, for each time step at all grid points, ST extremes are computed over the spatio-temporal region $XYD$; the default values for $X = 1000$ m, $Y = 1000$ m, and $D = 1200$ s can be redefined by the user in the model input file \texttt{ww3\_grid.inp} as namelists \textbf{STDX} (variable $X$), \textbf{STDY} (variable $Y$), \textbf{STDT} (variable $D$). In the present implementation, only the prognostic part of the spectrum is used for extreme computation. For additional implementation details, underlying approximations, assumptions and a full set of references for the fundamental theoretical and empirical framework underlying the ST extremes parameters used here, see \cite{Fed12sp} and \cite{Baet16}.
+In WAVEWATCH III, for each time step at all grid points, ST extremes are computed over the spatio-temporal region $XYD$; the default values for $X = 1000$ m, $Y = 1000$ m, and $D = 1200$ s can be redefined by the user in the model input file {\file ww3\_grid.inp} as namelists {\code STDX} (variable $X$), {\code STDY} (variable $Y$), {\code STDT} (variable $D$). In the present implementation, only the prognostic part of the spectrum is used for extreme computation. For additional implementation details, underlying approximations, assumptions and a full set of references for the fundamental theoretical and empirical framework underlying the ST extremes parameters used here, see \cite{Fed12sp} and \cite{Baet16}.
 
-To activate the computation of wave crest and height space-time extremes in WAVEWATCH III, the user has to specify values of the NAMELIST parameters STDX, STDY and STDT in WW3\_grid.inp different to -1 (the latter is a default value that avoids computer overheads when these parameters are not wanted). STDX and STDY are spatial dimensions over which extremes are calculated. STDT is the time length over which extremes are calculated. If STDX and STDY are left at default values (-1), but STDT has a NAMELIST value different to default (e.g., greater than 0), then extreme values are provided over time, for a point. Conversely, if STDT is kept at default (-1) and STDX and STDY are greater than zero, instantaneous extreme values are computed over space. When all three parameters are greater than zero, space-time probabilities and values are computed.
+To activate the computation of wave crest and height space-time extremes in WAVEWATCH III, the user has to specify values of the {\F MISC} namelist parameters {\code STDX}, {\code STDY} and {\code STDT} in {\file ww3\_grid.inp} different to -1 (the latter is a default value that avoids computer overheads when these parameters are not wanted). {\code STDX} and {\code STDY} are spatial dimensions over which extremes are calculated. {\code STDT} is the time length over which extremes are calculated. If {\code STDX} and {\code STDY} are left at default values (-1), but {\code STDT} has a namelist value different to default (e.g., greater than 0), then extreme values are provided over time, for a point. Conversely, if {\code STDT} is kept at default (-1) and {\code STDX} and {\code STDY} are greater than zero, instantaneous extreme values are computed over space. When all three parameters are greater than zero, space-time probabilities and values are computed.
 
-Wave crest and height space-time extremes outputs follow the standard WAVEWATCH III parameter framework, and have to be specified as namelists or flags in ww3\_shel.inp or ww3\_multi.inp, in which case they are included in the standard gridded binary output files during a model run. Consequently, they also have to be specified in gridded output post-processors for obtaining a final human-readable form. Space-time extremes output parameters available in WAVEWATCH III are provided in table \ref{tab:ste_parm}.
+Wave crest and height space-time extremes outputs follow the standard WAVEWATCH III parameter framework, and have to be specified as namelists or flags in {\file ww3\_shel.inp} or {\file ww3\_multi.inp}, in which case they are included in the standard gridded binary output files during a model run. Consequently, they also have to be specified in gridded output post-processors for obtaining a final human-readable form. Space-time extremes output parameters available in WAVEWATCH III are provided in Table \ref{tab:ste_parm}.
 
 \begin{table}[h]
 \begin{center} \begin{tabular}{|l|c|c|} \hline \hline
@@ -85,7 +72,7 @@ HMAXD   &   SDMH  & STD of MXH (STE) \\
 HCMAXD  &   SDMHC & STD of MXHC (STE) \\ \hline
 \end{tabular}
 \end{center}
-\caption{User-defined parameters in the Computation of wave crest and height space-time extremes}
+\caption{User-defined parameters in the computation of wave crest and height space-time extremes.}
 \label{tab:ste_parm} \botline \end{table}
 
 

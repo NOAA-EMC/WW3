@@ -10,8 +10,8 @@ documented in a set of Technical notes \citep{tol:MMAB03a, tol:MMAB05a, tol:MMAB
 tol:MMAB10d}, reports \citep{tol:Oahu04a, tol:Hal09a, tol:Kona11b}, and papers
 \citep{tol:OMOD04, tol:OMOD13d}. As part of the development of the \gmd, a
 holistic genetic optimization technique was developed \citep{tol:OMOD13e}. A
-package to perform this optimization within \ws\ was first provided as
-\citep{tol:MMAB10e}. the most recent version of this package is version
+package to perform this optimization within \ws\ was first provided by
+\cite{tol:MMAB10e}. The most recent version of this package is version
 \genever\ \citep{\generef}.
 
 The \gmd\ expands on the \dia\ in three ways. First, the definition of the
@@ -77,7 +77,7 @@ In the \gmd, the discrete interaction are computed for arbitrary depths.
 Somewhat surprisingly, interactions computed for the $F(f, \theta)$ spectrum
 and converted to the native \ws\ spectrum $N(k, \theta)$ using a Jacobian
 transformation proved more easily optimizable than computing the interaction
-contributions for the latter spectrum directly. Furthermore, a two component
+contributions for the latter spectrum directly. Furthermore, a two-component
 scaling function was introduced with a `deep' scaling function for the
 traditionally represented weak interactions in intermediate to deep water, and
 a `shallow' scaling function representing strong interactions in extremely
@@ -121,12 +121,12 @@ B_{\rm{shal}} = \frac{g^2 \: k^{11}}{(2\pi)^{11} \: c_g} (kd)^n
 
 \noindent
 with $m$ and $n$ as tunable parameters, $C_{\rm{deep}}$ and $C_{\rm{shal}}$
-in Eq.~(\ref{eq:gmd_dsnl}) are the corresponding tunable proportionality
-constants, and $n_{q,d}$ and $n_{q,d}$ are the number of representative
+in Eq.~(\ref{eq:gmd_dsnl}) are the corresponding deep and shallow water tunable proportionality
+constants, and $n_{q,d}$ and $n_{q,s}$ are the number of representative
 quadruplets with deep and shallow water scaling, respectively, representing
 the feature of the \gmd\ that multiple representative quadruplets can be used.
 
-In the namelists {\F snl3} and {\F anl3} the user refines the number of
+In the namelists {\F snl3} and {\F anl3} the user defines the number of
 quadruplets, and per quadruplet $\lambda$, $\mu$, $\theta_{12}$,
 $C_{\rm{deep}}$ and $C_{\rm{shal}}$. Values of $m$ and $n$ are defined once,
 and used for all quadruplets. Finally relative depth below which deep water

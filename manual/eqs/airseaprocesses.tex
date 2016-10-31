@@ -1,0 +1,47 @@
+\vssub
+\subsection{~Air-sea processes}
+\vsssub
+\subsubsection{~General concepts}
+\vsssub
+
+Additional subroutines are provided within \ws\ for use as part of coupled ocean-wave or ocean-atmosphere systems.
+These subroutines are designed to compute additional quantities related to the surface wave field which are intended to be passed to external models (e.g. ocean models).
+The motivation for these subroutines is to allow the external model to include the impact of waves on quantities such as the wind stress and the upper ocean turbulence.
+
+\paragraph{Sea-state dependent air-sea fluxes}
+
+The air-sea momentum flux, or the total wind stress, is the sum of the momentum flux into both surface waves and subsurface currents.
+Coupled atmosphere-ocean models that do not consider the impact of the surface gravity wave field typically compute the total wind stress based on an empirical relationship between the wind speed and the wind stress (via a drag coefficient, $C_d$).
+The provided {\it FLD} subroutines allows the computation of the total wind stress based on the \ws\ wavenumber-direction spectrum for use in coupled numerical models.
+
+To the leading order, the total wind stress is equal to the sum of the momentum flux into surface waves (form drag of surface waves) and the momentum flux directly into the subsurface currents (through viscous stress).
+The momentum flux into the waves may be expressed as an integral of the wave variance spectrum multiplied by the wave growth rate (momentum-uptake rate).
+A few assumptions are needed to calculate the wave form drag.
+First, the wave form drag is sensitive at the leading order to the level of the high frequency waves (or the spectral tail).
+This part of the wave spectrum contains a great deal of uncertainty within the wave model, and therefore may need to be separately parameterized for computing the wind stress.
+An assumption must therefore be made to parameterize the high frequency, which is not constrained by observational data and wind speeds above 15 m/s.
+Second, assumptions of the wave growth-rate function are needed since it has historically been parameterized from either the wind speed or the wind stress.
+In either case, empirical coefficients are needed within the growth-rate function based on wavelength and wave direction relative to the wind and/or stress.
+Third, there is feedback due to the wave form drag on the turbulence profile and the wind profile within the wave boundary layer (roughly the upper 10 meters above the air-sea interface).
+How important this feedback is on determining the wind stress and the mean wind profile is not entirely understood.
+Finally, the growth rate is known to be different over breaking and non-breaking waves.
+However, there are no simple methods for explicitly including the breaking wave impact within wind-stress calculation models.
+Therefore, no separation is made in either of the present {\it FLD} subroutines between breaking and non-breaking wave growth-rates.
+
+The total air-sea momentum flux can be expressed (to the leading order) as:
+\begin{equation}
+\vec{\tau}=\vec{\tau}_{\nu}+\vec{\tau}_{f},
+\end{equation}
+where $\vec{\tau}_{\nu}$ is the viscous stress vector and $\vec{\tau}_{f}$ is the wave form drag.
+At the air-sea interface, the wave form drag can be computed as the contribution of the momentum flux into all waves:
+\begin{equation}\label{formdrag}
+\vec{\tau}_{f}=\rho_w\int_{k_{min}}^{k_{max}}\int_{-\pi}^{\pi} \beta_g(k,\theta) \sigma F (k,\theta) d\theta \vec{k} dk,
+\end{equation}
+where $\rho_w$ is the water density, $k$ is the wavenumber, $\theta$ is the wave direction, $\sigma$ is the angular frequency, $\beta_g (k,\theta)$ is the growth rate,
+$F (k,\theta)$ is the wave variance spectrum, and $k_{min}$ and $k_{max}$ are the minimum and maximum wavenumbers of contributing waves.
+The expression for the growth rate varies based on the theory applied in the model, and will be described separately for each theory in their following descriptions.
+
+The spectral tail at wind speeds above 15 m/s is not well constrained observationally or theoretically.
+Therefore, the spectral tail level in the {\it FLD} subroutines has been empirically parameterized such that the mean drag coefficient corresponds to the standard bulk drag coefficient used within the modeling system.
+In this way, the mean value of the wind stress will not be modified by using any explicit sea state dependent wind stress formulation, but the stress will deviate from the mean based on the sea-state.
+It is assumed that the tail level is a function of a wind speed only and is independent of sea states.

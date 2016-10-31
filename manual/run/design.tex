@@ -17,7 +17,7 @@ file extension {\file .ww3}, except in the multi-grid wave model {\file
 ww3\_multi}, where the file extension identifies an individual grid. For
 simplicity, the file extension {\file .ww3} will be used throughout this
 chapter.  A relational diagram including the basic data flow is presented in
-figure~\ref{fig:elements}.
+Fig.~\ref{fig:elements}.
 
 The grid preprocessor writes a model definition file {\file mod\_def.ww3} with
 bottom and obstruction information and parameter values defining the physical
@@ -29,7 +29,9 @@ ability of the model to start from calm conditions. If linear growth or
 spectral seeding is switch on, the model will start from calm conditions ($H_s
 = 0$), otherwise the initial conditions will consist of a parametric
 fetch-limited spectrum based on the initial wind field (see the corresponding
-option in the initial conditions program).  The wave model routine ({\F
+option in the initial conditions program).  
+
+The wave model routine ({\F
   w3wave}) optionally generates up to 9 restart files {\file
   restart{\em{n}}.ww3}, where {\file{\em{n}}} represents a single digit
 integer number. The wave model also optionally reads boundary conditions from
@@ -48,7 +50,7 @@ is the processor number starting with 1.  Finally, various output
 post-processors are available (binary post-processing of raw gridded fields,
 point output and track output files; NetCDF and GRIB(2) packing of wave data;
 post-processing for later GrADS graphical processing of gridded and spectral
-data). A more detailed description of all program elements and there input
+data). A more detailed description of all program elements and their input
 files is given below. Note that the source codes of each routine are fully
 documented. This documentation is an additional source of information about
 \ws.

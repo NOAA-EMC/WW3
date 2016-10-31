@@ -37,7 +37,7 @@
   then
     echo -e '\n For installation from tar files, use instead: '
     echo -e '   install_ww3_tar \n\n'
-    exit
+    exit 1
   fi
 
 # 1. Preparations                                                             #
@@ -126,7 +126,7 @@
     fi
   else
       echo -e "\n\n\n Chosen install type ${sww3dir} not available, aborting. \n"
-      exit
+      exit 2
   fi
 
   echo -e "\n\n Installing in "
@@ -143,7 +143,7 @@
   then
     echo -e '\n\n\n Change to correct directory. '
     echo -e '\n\n   --- INSTALL ABORTED --- \n\n' 
-    exit
+    exit 3
   fi
 
   cd $main_dir
@@ -357,7 +357,7 @@
     echo -e '\n\n                    =============================== '
     echo -e '                  ------    End of program     ------ '
     echo -e '                    =============================== \n'
-    exit
+    exit 4
   else
     echo -e '\n Starting actual implementation ... '
     echo -e '   Use Ctrl-C to terminate program ... '
@@ -398,10 +398,6 @@
 # Check if this is a valid svn server location
          svni=`svn info ${address}`
          svntest=`echo $svni | awk '{print $1}'`
-         if [ "${svntest}" != "Path:" ]
-         then
-           echo -e "\n Wrong svn path provided as per message above."
-         fi 
       elif [ "$torb" = "B" ] || [ "$torb" = "b" ]
       then
         echo -en "\n   Enter branch name now : " 
@@ -410,10 +406,6 @@
 # Check if this is a valid svn server location
         svni=`svn info ${address}`
         svntest=`echo $svni | awk '{print $1}'`
-        if [ "${svntest}" != "Path:" ]
-        then
-          echo -e "\n Wrong svn path provided as per message above."
-        fi
       elif [ "$torb" = "A" ] || [ "$torb" = "a" ]
       then
         echo -en "\n   Enter tag name now : "
@@ -422,11 +414,12 @@
 # Check if this is a valid svn server location
         svni=`svn info ${address}`
         svntest=`echo $svni | awk '{print $1}'`
-        if [ "${svntest}" != "Path:" ]
-        then
-          echo -e "\n Wrong svn path provided as per message above."
-        fi
       fi 
+      if [ "${svntest}" != "Path:" ]
+      then
+        echo -e "\n Wrong svn path provided as per message above."
+        exit 5
+      fi
       echo -e "\n Installing from: : "
       echo -e "  ${bold}${address}${unbold} \n"
       echo -en " Is this OK [y/-] ? "
@@ -577,7 +570,7 @@
   dirs_model=
   for i in $(ls -d */ ); do dirs_model="$dirs_model ${i}"; done
   cd ${main_dir}
-  for dir in aux bin ftn obj mod exe inp work
+  for dir in aux bin ftn obj mod exe inp work nml
   do
     if [ ! -d $dir ]
     then
@@ -1174,7 +1167,65 @@ sleep 2
   sleep 2
 
 # --------------------------------------------------------------------------- #
-# 7. Set-up / update cases directory                                           #
+# 6. Set-up / update nml directory                                            #
+# --------------------------------------------------------------------------- #
+
+  rm -f ${main_dir}/tmp/nml_setup.out
+
+  cd $main_dir/svn/model/nml
+  files=`ls ww3_*.nml`
+  cd $main_dir/nml
+
+  echo -e '\n\n ==============================='
+  echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/nml_setup.out
+  echo -e ' =============================================================='    
+  echo -e "    Directory `pwd` \n" | tee ${main_dir}/tmp/nml_setup.out
+
+  nr_old=0
+  nr_new=0
+
+  echo -e ' NML files (.nml) :'
+  echo -e ' ------------------'
+
+  for file in $files
+  do
+    if [ -f $file ]
+    then
+      nr_old=`expr $nr_old + 1`
+      echo -e "   Old link $file ..." >> ${main_dir}/tmp/nml_setup.out
+    else
+      nr_new=`expr $nr_new + 1`
+      echo -e "   New link $file ..." >> ${main_dir}/tmp/nml_setup.out
+    fi
+    ln -sf ../svn/model/nml/$file
+  done
+
+  if [ "$nr_old" != '0' ]
+  then
+    echo -e "  This section: $nr_old existing links found."
+  fi
+  if [ "$nr_new" != '0' ]
+  then
+    echo -e "  This section: $nr_new new links found."
+  fi
+
+  echo -e '\n\n End of nml directory section '
+  echo -e ' ---------------------------- '
+
+  if [ "$nr_old" != '0' ]
+  then
+    echo -e "\n   Total of $nr_old existing links found."
+  fi
+  if [ "$nr_new" != '0' ]
+  then
+    echo -e "\n   Total of $nr_new new links found."
+  fi
+  echo -e "\n   List of existing (old) or new links routed to :"
+  echo -e "     ${main_dir}/tmp/nml_setup.out "
+  sleep 2
+
+# --------------------------------------------------------------------------- #
+# 8. Set-up / update cases directory                                           #
 # --------------------------------------------------------------------------- #
 
   rm -f ${main_dir}/tmp/cases_setup.out
@@ -1250,7 +1301,7 @@ sleep 2
   tnr_old=`expr $tnr_old + $nr_old`
   tnr_new=`expr $tnr_new + $nr_new`
 
-# 7.b Directories
+# 8.b Directories
 
   echo -e '\n Data directories :'
   echo -e ' ------------------'
@@ -1327,7 +1378,7 @@ sleep 2
   sleep 2
 
 # --------------------------------------------------------------------------- #
-# 7.1 Set-up / update regtests directory                                           #
+# 8.1 Set-up / update regtests directory                                           #
 # --------------------------------------------------------------------------- #
 
   rm -f ${main_dir}/tmp/reg_setup.out
@@ -1528,7 +1579,7 @@ sleep 2
   sleep 2
 
 # --------------------------------------------------------------------------- #
-# 6. Set-up / update manual /guide directories                                #
+# 9. Set-up / update manual /guide directories                                #
 # --------------------------------------------------------------------------- #
 
   for ldir in manual guide smc_docs
@@ -1616,7 +1667,7 @@ sleep 2
   done
 
 # --------------------------------------------------------------------------- #
-# 8. Set-up / update work directory                                           #
+# 10. Set-up / update work directory                                           #
 # --------------------------------------------------------------------------- #
 
   cd $main_dir/work
@@ -1626,14 +1677,14 @@ sleep 2
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd` \n"
 
-# 8.a comp link and switch
+# 10.a comp link and switch
 
   echo -e '\n Setting up links to comp link and switch ...'
   ln -sf ../bin/switch
   ln -sf ../bin/comp
   ln -sf ../bin/link
 
-# 8.b selected GrADS scripts
+# 10.b selected GrADS scripts
 
   echo -e '\n Setting up links to selected GrADS scripts ...'
   for file in cbarn.gs colorset.gs spec.gs source.gs 1source.gs spec_ids
@@ -1644,7 +1695,7 @@ sleep 2
     fi
   done
 
-# 8.c input files
+# 10.c input files
 
   echo -e '\n Setting up links to input files ...'
   cd $main_dir/inp
@@ -1659,7 +1710,7 @@ sleep 2
     fi
   done
 
-# 8.d hook in present script
+# 10.d hook in present script
 
   cd $main_dir
   if [ ! -f install_ww3_svn ]
@@ -1689,7 +1740,7 @@ sleep 2
   sleep 2
 
 # --------------------------------------------------------------------------- #
-# 7. Remove broken links
+# 11. Remove broken links
 # --------------------------------------------------------------------------- #
 
   cd ${main_dir}
@@ -1714,7 +1765,7 @@ sleep 2
   fi
 
 # --------------------------------------------------------------------------- #
-# 9. The end                                                                  #
+# 12. The end                                                                  #
 # --------------------------------------------------------------------------- #
 
   echo -e '\n\n =============================== '

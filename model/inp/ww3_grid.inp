@@ -192,7 +192,7 @@ $                          SWLB1    : Coefficient for swell dissipation
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1
-$                           GAMMA   : As it says.
+$                           GAMMA   : Bottom friction emprical constant
 $
 $
 $ Surf breaking  - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -214,7 +214,7 @@ $                           IC2SMOOTH  : smoothing of transition reprensenting r
 $                           IC2VISC    : empirical factor for viscous part 
 $
 $
-$ Scattering in the ice    - - - - - - - - - - - - - - - - - - - - - - 
+$ Scattering in the ice  & creep dissipations- - - - - - - - - - - - - 
 $   Generalization of Wiliams et al. : Namelist SIS2
 $                           ISC1          : scattering coefficient (default = 1)
 $                           IS2BACKSCAT   : fraction of energy back-scattered (default = 1 )
@@ -264,15 +264,9 @@ $                           IGSOURCE  : 1: uses bound waves, 2: empirical
 $                           IGSTERMS  :  > 0 : no source term in IG band
 $                           IGMAXFREQ : maximum frequency of IG band
 $                           IGEMPIRICAL: constant in empirical free IG source
-$                           IGSWELLMAX: activates free IG sources for all freq.
+$                           IGBCOVERWRITE: T: Replaces IG spectrum, does not add
+$                           IGSWELLMAX: T: activates free IG sources for all freq.
 $
-$ Propagation schemes ------------------------------------------------ $
-$ SMC grid propagation    : Namelist PSMC
-$                           CFLTM  : Maximum CFL number for propagation.
-$                           DTIME  : Swell age (s) for diffusion term.
-$                           LATMIN : Maximum latitude (deg) for GCT. 
-$                           RFMAXD : Maximum refraction turning (deg).
-$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0  /
 $
 $ Propagation schemes ------------------------------------------------ $
 $   First order         : Namelist PRO1
@@ -299,19 +293,51 @@ $   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST 
-$                           UGOBCAUTO : Automatic detection of OBC points
-$                           UGOBCDEPTH: Threshold ( < 0) depth for OBC points
+$                           UGOBCAUTO : TRUE: OBC points are taken from  type 15 elements
+$                                       FALSE: OBC points must be listed in ww3_grid.inp
+$                           UGOBCDEPTH: Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
 $                           EXPFSN    : Activation of N scheme
 $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSN    : Activation of N implicit scheme
 $
-$ SMC grid propagation    : Namelist PSMC
-$                           CFLTM  : Maximum CFL number for propagation.
-$                           DTIME  : Swell age (s) for diffusion term.
-$                           LATMIN : Maximum latitude (deg) for GCT. 
-$                           RFMAXD : Maximum refraction turning (deg).
-$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0  /
+$ SMC grid propagation    : Namelist PSMC and default values
+$                           CFLTM  : Maximum CFL no. for propagation, 0.7
+$                           DTIME  : Swell age for diffusion term (s), 0.0
+$                           LATMIN : Maximum latitude (deg) for GCT,   86.0 
+$                           RFMAXD : Maximum refraction turning (deg), 80.0
+$                           LvSMC  : No. of refinement level, default 1  
+$                           ISHFT  : Shift number of i-index, default 0  
+$                           JEQT   : Shift number of j-index, default 0  
+$                           NBISMC : No. of input boundary points,    0  
+$                           UNO3   : Use 3rd order advection scheme, .FALSE.
+$                           UNO3   : Add extra spatial averaging,    .FALSE.
+$ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, LvSMC=3, JEQT=1344  /
+$
+$ Output of 3D arrays------------------------------------------------- $
+$ In order to limit the use of memory, arrays for 3D output fiels (i.e. 
+$ variables that are a function of both space and frequency, are not 
+$ declared, and thus cannot be used, unless specified by namelists.
+$ NB: Output of 'first 5' moments E, th1m, sth1m, th2, sth2m allows to estimate the full 
+$  directional spectrum using, e.g. MEM (Lygre&Krogstad 1986). 
+$
+$ Parameters (integers)   : Namelist OUTS
+$ For the frequency spectrum E(f)     
+$                          E3D     : <=0: not declared, > 0: declared
+$                          I1E3D   : First frequency index of output (default is 1)
+$                          I2E3D   : Last frequency index of output  (default is NK)
+$ For the mean direction th1m(f), and spread sth1m(f)     
+$                   TH1MF, STH1MF  : <=0: not declared, > 0: declared
+$                 I1TH1MF, I1STH1MF: First frequency index of output (default is 1)
+$                 I2TH1MF, I2STH1MF: First frequency index of output (default is 1)
+$ For the mean direction th2m(f), and spread sth2m(f)     
+$                   TH2MF, STH2MF  : <=0: not declared, > 0: declared
+$                 I1TH2MF, I1STH2MF: First frequency index of output (default is 1)
+$                 I2TH2MF, I2STH2MF: First frequency index of output (default is 1)
+$ For 2nd order pressure at K=0 (source of microseisms & microbaroms)
+$                           P2SF   : <=0: not declared, > 0: declared
+$                           I1P2SF : First frequency index of output (default is 1)
+$                           I2P2SF : Last frequency index of output  (default is NK)
 $
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
@@ -353,13 +379,25 @@ $                                       0: Constant value (prescribed)
 $                                       1: Wind speed dependent
 $                                          (Based on GFDL Hurricane
 $                                          Model Z0 relationship)
-$                           TAILLEV   : Level of high freuency tail 
+$                           TAILLEV   : Level of high frequency tail 
 $                                       (if TAILTYPE==0)
 $                                       Valid choices:
 $                                       Capped min: 0.001, max: 0.02
+$                           TAILT1    : Tail transition ratio 1
+$                                       TAILT1*peak input frequency
+$                                       is the first transition point of
+$                                       the saturation specturm
+$                                       Default is 1.25
+$                           TAILT1    : Tail transition ratio 2
+$                                       TAILT2*peak input frequency
+$                                       is the second transition point of
+$                                       the saturation specturm
+$                                       Default is 3.00
 $   Donelan et al. 2012 : Namelist FLD2
 $                           TAILTYPE : See above (FLD1)
 $                           TAILLEV  : See above (FLD1)
+$                           TAILT1   : See above (FLD1)
+$                           TAILT2   : See above (FLD1)
 $
 $ In the 'Out of the box' test setup we run with sub-grid obstacles
 $ and with continuous ice treatment.
@@ -394,7 +432,7 @@ $                       : may be rectilinear or curvilinear.
 $               'TRPL'  : Tripole grid closure : Grid is periodic in the
 $                       : i-index and wraps at i=NX+1 and has closure at
 $                       : j=NY+1. In other words, (NX+1,J<=NY) => (1,J)
-$                       : and (I,NY+1) => (MOD(NX-I+1,NX)+1,NY). Tripole
+$                       : and (I,NY+1) => (NX-I+1,NY). Tripole
 $                       : grid closure requires that NX be even. A grid
 $                       : with tripole closure must be curvilinear.
 $  2 NX, NY. As the outer grid lines are always defined as land
@@ -554,26 +592,28 @@ $  6 6 6 6 6 6 6 6 6 6 6 6
 $
 $ -------------------------------------------------------------
 $ SMC grid use the same spherical lat-lon grid parameters 
-$     'RECT'  T  'NONE'
+$     'RECT'  T  'SMPL'
 $   1024    704
-$ plus 3 extra parameter: 
-$ Number of refined level NRLv, j-count shift, and boundary cell number. 
-$ See aux/SMC_Grid_Guide.pdf for explaination of j-count shift.
-$ Zero boundary cell number will make the model to skip all boundary update lines.
-$ Non-zero boundary cell number will require an extra boundary cell list input file.
-$   3  1344   0
 $ SMC grid base level resolution dlon dlat and start lon lat 
 $ 0.35156250  0.23437500   1.
 $ 0.17578125 -78.6328125   1.
-$ And the usual depth, subgrid-obstruction, and mask as in spherical lat-lon grid
-$ plus SMC cell and face arrays:
+$
+$ Normal depth input line is used to passing the minimum depth
+$ though the depth file is not read for SMC grid. 
 $  -0.1  10.0  30   -1. 1 1 '(....)' 'NAME' 'SMC25Depth.dat'
-$  31  1.0  1  1 '(...)' 'NAME'  'SMC25Subtr.dat'
+$ SMC cell and face arrays and obstruction ratio:
 $  32  1  1  '(....)'  'S6125MCels.dat'
 $  33  1  1  '(....)'  'S6125ISide.dat'
 $  34  1  1  '(....)'  'S6125JSide.dat'
-$$ 35  1  1  '(....)'  'S6125Bundy.dat'
-$  36  1  1  '(....)'  'NAME'  'SMC25Masks.dat'
+$  31  1.0  1  1 '(...)' 'NAME'  'SMC25Subtr.dat'
+$ The input boundary cell file is only needed when NBISMC > 0.
+$  35  1  1  '(....)'  'S6125Bundy.dat'
+$ Extra cell and face arrays for Arctic part if ARC is selected. 
+$  36  1  1  '(....)'  'S6125MBArc.dat'
+$  37  1  1  '(....)'  'S6125AISid.dat'
+$  38  1  1  '(....)'  'S6125AJSid.dat'
+$ Normal land-sea mask file input line is kept but file is not used.
+$  39  1  1  '(....)'  'NAME'  'S6125Masks.dat'
 $    Boundary cell id list file (unit 35) is only required if boundary 
 $    cell number entered above is non-zero.  The cell id number should be 
 $    the sequential number in the cell array (unit 32) S625MCels.dat.

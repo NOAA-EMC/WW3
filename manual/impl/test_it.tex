@@ -3,7 +3,7 @@
 \vssub
 
 If \ws\ is installed and compiled successfully, it can be tested by running
-most different program elements interactively from the {\file work}
+ different program elements interactively from the {\file work}
 directory. The switch settings in the generic switch file correspond to the
 activated inputs in the example input files. It should therefore be possible
 to run all model elements by typing
@@ -30,7 +30,6 @@ generate graphical output for these calculations. All intermediate output
 files are placed in the {\file work} directory, and can be removed
 conveniently by typing \command{w3\_clean}
 
-\vspace{\baselineskip} \noindent
 Up to version 3.14, \ws\ was provided with a set of simple tests to
 established assess the proper behavior of the basic functionality of the
 model. In the early development of the next release of the model, Erick Rogers
@@ -54,6 +53,7 @@ directory completely. The following regression tests are available in the
 \fit{ww3\_tp1.6}{1D propagation, wave blocking by current.}
 \fit{ww3\_tp1.7}{1D propagation, IG wave generation.}
 \fit{ww3\_tp1.8}{1D propagation, wave breaking on a beach.}
+\fit{ww3\_tp1.9}{1D propagation, Beji and Battjes (1993) barred flume case.}
 \fit{ww3\_tp2.1}{2D propagation under angle with grid.}
 \fit{ww3\_tp2.2}{2D propagation over half the globe without land (with
                  directional spread). }
@@ -67,13 +67,19 @@ directory completely. The following regression tests are available in the
 \fit{ww3\_tp2.10}{Tests for SMC grid.}
 \fit{ww3\_tp2.11}{Tests for rotated grid.}
 \fit{ww3\_tp2.12}{Test for system tracking.}
+\fit{ww3\_tp2.13}{Test for propagation under angle with grid (tripole)}
+\fit{ww3\_tp2.14}{Test for toy-model using OASIS coupler.}
+\fit{ww3\_tp2.15}{Test for space-time extremes parameters.}
 \fit{ww3\_ts1  }{Source term test, time limited growth.}
 \fit{ww3\_ts2  }{Source term test, fetch limited growth.}
 \fit{ww3\_ts3  }{Source term test, hurricane with single moving grid.}
 \fit{ww3\_tic1.1}{Wave-ice interaction, 1D test of $S_{ice}$.}
 \fit{ww3\_tic1.2}{Wave-ice interaction, 1D test of ``shoaling'' effect.}
 \fit{ww3\_tic1.3}{Wave-ice interaction, 1D test of refraction effect.}
+\fit{ww3\_tic1.4}{Wave-ice interaction, 1D test with ice floes and ice thickness.}
 \fit{ww3\_tic2.1}{Wave-ice interaction, 2D test of $S_{ice}$.}
+\fit{ww3\_tic2.2}{Wave-ice interaction, 2D test with non-uniform ice.}
+\fit{ww3\_tic2.3}{Wave-ice interaction, 2D test with uniform ice with increasing thickness.}
 \fit{ww3\_tbt1.1}{Wave-mud interaction, 1D test of $S_{mud}$.}
 \fit{ww3\_tbt2.1}{Wave-mud interaction, 2D test of $S_{mud}$.}
 \fit{mww3\_test\_01}{Test for expanded grid mask with wetting and drying, etc.}
@@ -83,8 +89,9 @@ directory completely. The following regression tests are available in the
 \fit{mww3\_test\_04}{Current or sea-mount test for two-way nesting with
                      stationary swell conditions.}
 \fit{mww3\_test\_05}{Three nested hurricane grids with moving grids test.}
-\fit{mww3\_test\_06}{Tests for irregular grid(s) w/ {\file ww3\_multi}}
-\fit{mww3\_test\_07}{Tests for unstructured grid(s) w/ {\file ww3\_multi}}
+\fit{mww3\_test\_06}{Tests for irregular grid(s) w/ {\file ww3\_multi}.}
+\fit{mww3\_test\_07}{Tests for unstructured grid(s) w/ {\file ww3\_multi}.}
+\fit{mww3\_test\_08}{Tests with wind and ice input.}
 \end{flist}
 
 \noindent
@@ -100,7 +107,7 @@ e.g.  {\file regtests/ww3\_tp1.1}. For example, the contents of {\file
 \fit{info }{A file containing information about the test case.} 
 \fit{input}{A permanent directory containing input files for the test case.}
 \fit{work\_PR3}{A scratch directory for model output (in this example,
-    filename is such because the user had specified ``{\file run\_test -w PR3
+    filename is such because the user had specified ``{\file run\_test -w work\_PR3
       ...''}).}
 \end{flist}
 

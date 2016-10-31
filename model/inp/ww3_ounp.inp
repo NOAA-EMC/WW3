@@ -95,7 +95,7 @@ $  4  0  0  T T T T T T T  0
 $
 $ The transfer file contains records with the following contents.
 $
-$ - File ID in quotes, nubmer of frequencies, directions and points,
+$ - File ID in quotes, number of frequencies, directions and points,
 $   flags for spectrum and source terms (C*21, 3I, 6L)
 $ - Bin frequencies in Hz for all bins.
 $ - Bin directions in radians for all bins (Oceanographic conv.).

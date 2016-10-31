@@ -21,16 +21,16 @@ In a nutshell, OASIS3-MCT ...
   \item ... is able to exchange 2D and 3D fields
   \item ... is able to exchange fields in parallel
   \item ... support unstructured grids
-  \item ... uses an input file called \textit{namcouple} that allow to change the coupling characteristics (exchange time, interpolation type, number of exchange fields) without recompiling the code...
+  \item ... uses an input file called \textit{namcouple} that allows changes to the coupling characteristics (exchange time, interpolation type, number of exchange fields) without recompiling the code...
 \end{itemize}
 
 \vssub
 \subsection{~Interfacing with OASIS3-MCT} \label{sec:couplingB}
 \vssub
 
-To communicate with another model a component model (ocean, wave or atmosphere) needs to include a few specific calls to the OASIS3-MCT coupling library. To use these OASIS's functions in \ws\ we created 3 new modules:
+To communicate with another model, a component model (ocean, wave or atmosphere) needs to include a few specific calls to the OASIS3-MCT coupling library. To use these OASIS's functions in \ws\ we created 3 new modules:
 \begin{itemize}
-\item {\file w3oacpmd.ftn}, module containing common functions for atmosphere and ocean coupling. These functions are called before the temporal loop, in the {\code ww3\_shel} program
+\item {\file w3oacpmd.ftn}, module containing common functions for atmosphere and ocean coupling. These functions are called before the temporal loop, in the {\code ww3\_shel} program.
 \item {\file w3ogcmmd.ftn} and {\file w3agcmmd.ftn}, modules containing specific functions for, respectively, waves-ocean coupling and waves-atmosphere coupling.  These functions are called in the temporal loop.
 \end{itemize}
 
@@ -48,22 +48,17 @@ To use or not these coupling functions 4 switches were created:
 
 To allow the use of OASIS, \ww~ should be compiled with the following switches. For 
 a coupling with an atmospheric circulation model 
-
 \command{COU OASIS OASACM}
-
-and with an ocean circulation oceanic
-
+and with an ocean circulation model
 \command{COU OASIS OASOCM}
-
 and both ocean and atmosphere circulation models 
-
 \command{COU OASIS OASACM OASOCM}
 
 Only the program {\code ww3\_shel} is compiled with the OASIS library, all the other programs can be used as usual. \\
 
 The switches for interpolation in time of the wind and current forcing fields must not be used regarding the
 fact that coupling mechanisms cannot provided the future value of the forcing field.
-Depending on the type of coupling, the switch WNT0 must be set for atmospheric coupling and the switch CRT0 must be set for oceanic coupling.
+Depending on the type of coupling, the switch {\code WNT0} must be set for atmospheric coupling and the switch {\code CRT0} must be set for oceanic coupling.
 
 \vssub
 \subsection{~Launch a coupling simulation} \label{sec:couplingC}

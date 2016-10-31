@@ -17,9 +17,9 @@ $ mandatory end of list
  -1
 $
 $ -------------------------------------------------------------------- $
-$   Flags for plotting F, Sin, Snl, Sds, Sbt, Stot
+$   Flags for plotting F, Sin, Snl, Sds, Sbt, Sice, Stot
 $
-  T T T T T T 
+  T T T T T T T 
 $
 $ NOTE : In the Cartesian grid version of the code, X and Y are
 $        converted to km. Use source_xy.gs instead of source.gs
