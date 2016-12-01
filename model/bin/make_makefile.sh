@@ -211,7 +211,7 @@
 #sort:s_nl:
       s_nl   ) TY='one'
                ID='quadruplet interactions'
-               OK='NL0 NL1 NL2 NL3 NLX' ;;
+               OK='NL0 NL1 NL2 NL3 NL4 NLX' ;;
 #sort:snls:
       snls   ) TY='upto1'
                ID='quadruplet smoother'
@@ -659,6 +659,8 @@
         nlx="$nl" ;;
    NL3) nl='w3snl3md'
         nlx='w3snl3md' ;;
+   NL4) nl='w3snl4md'
+        nlx='w3snl4md' ;;
    NLX) nl='w3snlxmd'
         nlx='w3snlxmd' ;;
   esac
@@ -1119,7 +1121,7 @@
                W3SLN1MD W3SLNXMD \
                W3SRC0MD W3SRC1MD W3SRC2MD W3SRC3MD W3SRC4MD \
                         W3SRC6MD W3SRCXMD \
-               W3SNL1MD W3SNL2MD W3SNL3MD W3SNLXMD W3SNLSMD \
+               W3SNL1MD W3SNL2MD W3SNL3MD W3SNL4MD W3SNLXMD W3SNLSMD \
                         m_xnldata serv_xnl4v5 m_fileio m_constants \
                W3SWLDMD \
                W3SBT1MD W3SBT4MD W3SBT8MD W3SBT9MD W3SBTXMD \
@@ -1187,6 +1189,7 @@
          'W3SNL1MD'     ) modtest=w3snl1md.o ;;
          'W3SNL2MD'     ) modtest=w3snl2md.o ;;
          'W3SNL3MD'     ) modtest=w3snl3md.o ;;
+         'W3SNL4MD'     ) modtest=w3snl4md.o ;;
          'W3SNLXMD'     ) modtest=w3snlxmd.o ;;
          'W3SNLSMD'     ) modtest=w3snlsmd.o ;;
          'm_xnldata'    ) modtest=mod_xnl4v5.o ;;

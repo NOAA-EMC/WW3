@@ -309,6 +309,7 @@
 !/NL1      TNAME2 = 'Discrete Interaction Approx.  '
 !/NL2      TNAME2 = 'Exact nonlinear interactions  '
 !/NL3      TNAME2 = 'Generalized Multiple DIA      '
+!/NL4      TNAME2 = 'Two Scaled Approximation      '
 !/NLX      TNAME2 = 'Experimental                  '
 !/BT0      TNAME3 = 'Not defined                   '
 !/BT1      TNAME3 = 'JONSWAP                       '
@@ -1004,6 +1005,15 @@
 !/NL3             END DO
 !/NL3        END IF
 !
+!/NL4      IF ( WRITE ) THEN
+!/NL4          WRITE (NDSM) ITSA, IALT
+!/NL4        ELSE
+!/NL4          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+!/NL4                       ITSA, IALT
+!/NL4        END IF
+!
+!/NL4      IF ( FLTEST ) WRITE (NDST,9051) ITSA, IALT
+!
 !/NLS      IF ( WRITE ) THEN
 !/NLS          WRITE (NDSM)                                           &
 !/NLS                CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
@@ -1298,6 +1308,9 @@
 !/NL3 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
 !/NL3              '      DATA   : ',I4,4F8.3)
 !/NL3 9151 FORMAT ('               ',2F8.3,F6.1,2E12.4)
+!
+!/NL4 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/             &
+!/NL4              '      DATA   : ',I4,I4)
 !
 !/NLS 9251 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP (NLS)'/       &
 !/NLS              '      DATA   : ',F8.3,E12.4,4F8.3)

@@ -443,6 +443,9 @@
 !      SNLT      R.A.  Public   Array with Dtheta for quadruplet.
 !      SNLCD     R.A.  Public   Array with Cd for quadruplet.
 !      SNLCS     R.A.  Public   Array with Cs for quadruplet.
+!                                                             (!/NL4)
+!      ITSA      Int.  Public   Integer indicating TSA (1) or FBI (0)
+!      IALT      Int.  Public   Integer determining alternating looping
 !                                                             (!/NLS)
 !      NTHX      Int.  Public   Expanded discrete direction range.
 !      NFRX      Int.  Public   Expanded discrete frequency range.
@@ -775,6 +778,7 @@
 !/NL3                                 QST5(:,:,:), QST6(:,:,:),            &
 !/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
 !/NL3                                 SNLCD(:), SNLCS(:)
+!/NL4        INTEGER               :: ITSA, IALT
 !/NLX        REAL                  :: DUMMY
 !/NLS        INTEGER               :: NTHX, NFRX, NSPL, NSPH
 !/NLS        REAL                  :: CNLSA, CNLSC, CNLSFM,                &
@@ -1030,6 +1034,7 @@
 !/NL3                                 QST5(:,:,:), QST6(:,:,:),            &
 !/NL3                                 SNLL(:), SNLM(:), SNLT(:),           &
 !/NL3                                 SNLCD(:), SNLCS(:)
+!/NL4      INTEGER, POINTER        :: ITSA, IALT
 !/NLS      INTEGER, POINTER        :: NTHX, NFRX, NSPL, NSPH
 !/NLS      REAL, POINTER           :: CNLSA, CNLSC, CNLSFM,                &
 !/NLS                                 CNLSC1, CNLSC2, CNLSC3, SNSST(:,:)
@@ -2172,6 +2177,8 @@
 !/NL3      SNLT   => MPARS(IMOD)%SNLPS%SNLT
 !/NL3      SNLCD  => MPARS(IMOD)%SNLPS%SNLCD
 !/NL3      SNLCS  => MPARS(IMOD)%SNLPS%SNLCS
+!/NL4      ITSA   => MPARS(IMOD)%SNLPS%ITSA
+!/NL4      IALT   => MPARS(IMOD)%SNLPS%IALT
 !/NLS      NTHX   => MPARS(IMOD)%SNLPS%NTHX
 !/NLS      NFRX   => MPARS(IMOD)%SNLPS%NFRX
 !/NLS      NSPL   => MPARS(IMOD)%SNLPS%NSPL
