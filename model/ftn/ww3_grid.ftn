@@ -498,7 +498,8 @@
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO
       USE W3ODATMD, ONLY: NBI, NBI2, NFBPO, NBO, NBO2, FLBPI, FLBPO,  &
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE,    &
-                          IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL
+                          IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB,       &
+                          NOSWLL
 !
 !/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
 !/NLS      USE W3SNLSMD, ONLY: ABMAX
@@ -640,9 +641,9 @@
 !/ Namelists
 !/
       INTEGER                 :: FLAGTR, IHM
-      REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,   &
-                                 LICE, ICEHMIN, ICEHINIT, ICEWIND,    &
-                                 XSEED, XR, HSPM, WSM, WSC
+      REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,    &
+                                 LICE, XSEED, XR, HSPM, WSM, WSC, STDX,&
+                                 STDY, STDT, ICEHMIN, ICEHINIT, ICEWIND
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC, ICEDISP
 !/FLD1      INTEGER                 :: TAILTYPE
@@ -763,10 +764,11 @@
            NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH,                     &
                            EXPFSN, EXPFSPSI, EXPFSFCT,                &
                            IMPFSN
-           NAMELIST /MISC/ CICE0, CICEN, LICE, ICEHMIN, XSEED, FLAGTR,&
-                      XP, XR, XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, &
-                      FMICHE, RWNDC, FACBERG, NOSW, GSHIFT,           &
-                      ICEHINIT, WCOR1, WCOR2, ICEDISP, ICEWIND
+           NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
+                      XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
+                      RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
+                      STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
+                      ICEWIND
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              E3D, I1E3D, I2E3D,                       &
@@ -1916,6 +1918,11 @@
       RWNDC  = 1.
       WCOR1  = 99. 
       WCOR2  = 0.
+! Variables for Space-Time Extremes
+!  Default negative values make w3iogomd use local grid size
+      STDX = -1. 
+      STDY = -1. 
+      STDT = -1. 
       ICEDISP = .FALSE.
 ! Variables for 3D array output
       E3D=0 
@@ -2107,7 +2114,24 @@
       WRITE (NDSO,961) CICE0, CICEN
       WRITE (NDSO,8972) ICEWIND
       FICE0  = CICE0
-
+! Variables for Space-Time Extremes
+      STEXU = STDX
+      IF ( STDY .LE. 0. ) THEN
+        STDY = STDX
+      END IF
+      STEYU = STDY
+      STEDU = STDT
+      IF ( STDX .GT. 0 ) THEN
+         WRITE (NDSO,1040) STDX
+         WRITE (NDSO,1041) STDY
+      ELSE
+         WRITE (NDSO,1042)
+      END IF
+      IF ( STDT .GT. 0 ) THEN
+         WRITE (NDSO,1043) STDT 
+      ELSE
+         WRITE (NDSO,1044)
+      END IF
 !/MGG      WRITE (NDSO,962) PMOVE
 !
 !/SEED      XSEED  =  MAX ( 1. , XSEED )
@@ -2283,17 +2307,19 @@
 
 !
         IF ( FLCOMB ) THEN
-          WRITE (NDSO,2966) CICE0, CICEN, LICE, ICEHMIN, PMOVE, XSEED,&
-                                FLAGTR, XP, XR, XFILT, IHMAX, HSPMIN, &
-                                WSMULT, WSCUT, '.TRUE.', NOSWLL,FHMAX,&
+          WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
+                                XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
+                                WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                ICEHINIT, ICEDISP, ICEWIND
+                                STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
+                                ICEDISP, ICEWIND
         ELSE
-          WRITE (NDSO,2966) CICE0, CICEN, LICE, ICEHMIN, PMOVE, XSEED,&
-                                FLAGTR, XP, XR, XFILT, IHMAX, HSPMIN, &
-                                WSMULT, WSCUT, '.FALSE.',NOSWLL,FHMAX,&
+          WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
+                                XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
+                                WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                ICEHINIT, ICEDISP, ICEWIND
+                                STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
+                                ICEDISP, ICEWIND
 
           END IF
 !
@@ -4845,17 +4871,17 @@
  2980 FORMAT ( '  &SIC4  IC4METHOD = ',I1,','/'         IC4KI = ',10(1X,E10.2,',')/'         IC4FC = ',8(1X,F8.3,','), F8.3/' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
-                     ', LICE = ',F8.1, ', ICEHMIN = ',F5.2,           &
-                     ', PMOVE =',F6.3,','/                            &
+                     ', LICE = ',F8.1,', PMOVE =',F6.3,','/           &
                '        XSEED =',F6.3,', FLAGTR = ', I1,              &
                      ', XP =',F6.3,', XR =',F6.3,', XFILT =', F6.3 /  &
                '        IHM =',I5,', HSPM =',F6.3,', WSM =',F6.3,     &
                      ', WSC =',F6.3,', FLC = ',A/                     &
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
                         F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/   &
-               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,          &
-                     ', ICEHINIT = ',F5.2,', ICEDISP = ',L3/,         &
-                     ', ICEWIND = ',F6.2,' /')
+               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,','/      &
+               '        STDX =',F7.2,', STDY =',F7.2,', STDT =', F8.2,&
+                     ', ICEHMIN = ',F5.2,', ICEHINIT = ',F5.2,','/   &
+               '        ICEDISP = ',L3,', ICEWIND = ',F6.2,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  
@@ -5117,6 +5143,12 @@
                '     ONLY FIRST PROPAGATION SCHEME WILL BE USED: ')
  1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     ILLEGAL NUMBER OF !/ISn SWITCHES :',I3)
+!
+ 1040 FORMAT ( '       Space-time extremes DX      :',F10.2)
+ 1041 FORMAT ( '       Space-time extremes DX      :',F10.2)
+ 1042 FORMAT ( '       Space-time extremes DX-Y set to default 1000 m')
+ 1043 FORMAT ( '       Space-time extremes Dt      :',F8.2)
+ 1044 FORMAT ( '       Space-time extremes Dt set to default 1200 s')
 !
  1100 FORMAT (/'  Status map, printed in',I3,' part(s) '/             &
                ' -----------------------------------'/)

@@ -112,7 +112,8 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
                           TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
-                          CFLTHMAX, CFLXYMAX, CFLKMAX , TAUICE, PHICE, &
+                          CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
+                          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M, WN
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE
@@ -1099,6 +1100,90 @@
               varnc(1)=''
               vmin = 0 
               vmax = 5000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 11 ) THEN
+              FSC    = 0.002
+              UNITS  = 'm'
+              ENAME  = '.mxe'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXE, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='stmaxe'
+              varnl(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
+              varns(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
+              varng(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
+              FSC    = 0.002
+              UNITS  = 'm'
+              ENAME  = '.mxes'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXD, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='stmaxd'
+              varnl(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+              varns(1)='std of expected maximum sea surface elevation (nonlinear,2nd order)'
+              varng(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
+              FSC    = 0.002
+              UNITS  = 'm'
+              ENAME  = '.mxh'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXE, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='hmaxe'
+              varnl(1)='expected maximum wave height (nonlinear,2nd order)'
+              varns(1)='expected maximum wave height (nonlinear,2nd order)'
+              varng(1)='expected maximum wave height (nonlinear,2nd order)'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 14 ) THEN
+              FSC    = 0.002
+              UNITS  = 'm'
+              ENAME  = '.mxhc'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXE, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='hcmaxe'
+              varnl(1)='expected maximum wave height from crest (nonlinear,2nd order)'
+              varns(1)='expected maximum wave height from crest (nonlinear,2nd order)'
+              varng(1)='expected maximum wave height from crest (nonlinear,2nd order)'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 15 ) THEN
+              FSC    = 0.002
+              UNITS  = 'm'
+              ENAME  = '.sdmh'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='hmaxe'
+              varnl(1)='STD of maximum wave height (nonlinear,2nd order)'
+              varns(1)='STD of maximum wave height (nonlinear,2nd order)'
+              varng(1)='STD of maximum wave height (nonlinear,2nd order)'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
+!
+            ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
+              FSC    = 0.002
+              UNITS  = 'm'
+              ENAME  = '.sdmhc'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='hcmaxe'
+              varnl(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
+              varns(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
+              varng(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
 !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               ! Information for spectral

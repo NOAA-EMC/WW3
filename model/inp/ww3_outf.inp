@@ -9,7 +9,7 @@ $ Output request flags identifying fields as in ww3_shel.inp. See this
 $ file for a full documentation of the field output options.
 $
   N
-  DPT HS FP T01
+  DPT HS FP T01 WL02 ALPXT ALPYT ALPXY
 $
 $ Output type ITYPE [0,1,2,3], and IPART [ 0,...,NOSWLL ]
 $

@@ -1,0 +1,157 @@
+
+                  *** WAVEWATCH III Field output postp. ***   
+               ===============================================
+
+  Comment character is '$'
+
+  Grid name : 1-D PROPAGATION EQUATOR       
+
+  Fields in file : 
+ --------------------------
+      Wave height         
+      Mean wave period(+1)
+      Peak direction      
+      Space-Time Max E    
+      Lx-Ly mean wvlength 
+      Surf grad correl XT 
+      Surf grad correl YT 
+      Surf grad correl XY 
+      Surface crest param 
+
+  Output time data : 
+ --------------------------------------------------
+      First time         : 1968/06/06 00:00:00 UTC
+      Interval           :            03:00:00    
+      Number of requests :      1
+
+ *** WAVEWATCH III WARNING  : 
+     REQUESTED OUTPUT FIELD STMAXSD WAS NOT RECOGNIZED.
+
+            Fields   : Wave height         
+                       Mean wave period(+1)
+                       Peak direction      
+                       Space-Time Max E    
+                       Lx-Ly mean wvlength 
+                       Surf grad correl XT 
+                       Surf grad correl YT 
+                       Surf grad correl XY 
+                       Surface crest param 
+
+  Output type  1 :
+ --------------------------------------------------
+      Print plots
+
+      X range and interval :     1    3    2
+      Y range and interval :     2    2    1
+      Data is normalized 
+
+  Requested output fields : 
+ --------------------------------------------------
+      Wave height            
+      Mean wave period(+1)   
+      Peak direction         
+      Space-Time Max E       
+      Lx-Ly mean wvlength    
+      Surf grad correl XT    
+      Surf grad correl YT    
+      Surf grad correl XY    
+      Surface crest param    
+
+
+  Output for 1968/06/06 00:00:00 UTC
+ --------------------------------------------------
+
+ Variable: Wave height          Max.:  0.501E+00 m         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Mean wave period(+1) Max.:  0.275E+01 s         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Peak direction       Max.:  0.900E+02 degree    
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Space-Time Max E     Max.:  0.100E-14 m         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Lx-Ly mean wvlength  Max.:  0.246E+00 m         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Lx-Ly mean wvlength  Max.:  0.426E+00 m         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Surf grad correl XT  Max.:  0.220E+02 1         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Surf grad correl YT  Max.:  0.652E-05 1         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Surf grad correl XY  Max.:  0.260E-06 1         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+ Variable: Surface crest param  Max.:  0.577E+00 1         
+ 
+         1
+       +-----+
+     2 | * * |
+       +-----+
+         1
+ 
+
+  End of program 
+ =========================================
+         WAVEWATCH III Field output 
+

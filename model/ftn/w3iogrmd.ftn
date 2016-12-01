@@ -579,9 +579,10 @@
           IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
           WRITE (NDSM)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-               FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
-               FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
-               CLATS, CLATIS,CTHG0S, IICEDISP, ICE100WIND
+               FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
+               FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
+               STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
+               ICE100WIND
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
 !/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
@@ -654,9 +655,10 @@
             END IF
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
                DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-               FICE0, FICEN, FICEL, IICEHMIN, IICEHINIT,PFMOVE,       &
-               FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, FLBPI, FLBPO,   &
-               CLATS, CLATIS,CTHG0S, IICEDISP, ICE100WIND
+               FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
+               FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
+               CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
+               IICEDISP, ICE100WIND
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 !/SEC1         READ (NDSM) NITERSEC1
@@ -694,7 +696,8 @@
       DEALLOCATE ( MAPTMP )
 !
 !/T      WRITE (NDST,9015) DTCFL, DTCFLI, DTMAX, DTMIN,               &
-!/T                        DMIN, CTMAX, FICE0, FICEN, FICEL, PFMOVE
+!/T                        DMIN, CTMAX, FICE0, FICEN, FICEL, PFMOVE,  &
+!/T                        STEXU, STEYU, STEDU
 !/T      WRITE (NDST,9016) FLDRY, FLCX, FLCY, FLCTH, FLCK,            &
 !/T                        FLSOU, FLBPI, FLBPO
 !/T      WRITE (NDST,9017) (CLATS(ISEA),ISEA=1,1),                    &
@@ -1249,7 +1252,10 @@
 !/T              '      DEPTH  : ',F8.1,F10.3/                        &
 !/T              '      FICE0/N: ',F9.2,F8.2/                         &
 !/T              '      FICEL  : ',F9.1 /                             &
-!/T              '      PFMOVE : ',F9.2)
+!/T              '      PFMOVE : ',F9.2 /                             &
+!/T              '      STEXU  : ',F9.2 /                             &
+!/T              '      STEYU  : ',F9.2 /                             &
+!/T              '      STEDU  : ',F9.2)
 !
 !/T 9016 FORMAT ('      FLAGS  : ',8L2)
 !/T 9017 FORMAT ('      CLATS   : ',3F8.3,' ...'/                      &

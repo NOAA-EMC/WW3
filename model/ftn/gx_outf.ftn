@@ -124,16 +124,17 @@
 !/
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST, USTDIR
-     USE W3ADATMD, ONLY:  CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN, &
-                          DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,&
-                          THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,  &
+     USE W3ADATMD, ONLY:  CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN,  &
+                          DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,  &
+                          THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,   &
                           SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
-                          PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,     &
+                          PWST, PNR, USERO, TAUOX, TAUOY, TAUWIX,      &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
-                          USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-                          TAUWNX,  TAUWNY, BHD, P2SMS, DTDYN,       &
+                          USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
+                          TAUWNX,  TAUWNY, BHD, P2SMS, DTDYN,          &
                           CGE, T02, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,&
-                          CFLXYMAX, CFLTHMAX, CFLKMAX, US3D 
+                          CFLXYMAX, CFLTHMAX, CFLKMAX, US3D, STMAXE,   &
+                          STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD
       USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE
 !

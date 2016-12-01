@@ -341,6 +341,9 @@ $                                    partitioning.
 $                           NOSW   : Number of partitioned swell fields
 $                                    in field output.
 $                           FMICHE : Constant in Miche limiter.
+$                           STDX   : Space-Time Extremes X-Length
+$                           STDY   : Space-Time Extremes Y-Length
+$                           STDT   : Space-Time Extremes Duration
 $                           P2SF   : ......
 $
 $ Diagnostic Sea-state Dependent Stress- - - - - - - - - - - - - - - - -

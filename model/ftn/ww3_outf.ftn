@@ -125,7 +125,8 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
                           CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
-                          CGE, T01, HSIG
+                          CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
+                          HCMAXE, HMAXD, HCMAXD
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
                           UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -989,6 +990,72 @@
                 ELSE
                   CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HSIG  , MAPSF, X1 )
                   END IF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 11 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.002
+                UNITS  = 'm'
+                ENAME  = '.emc'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = STMAXE
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXE, MAPSF, X1 )
+                END IF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.002
+                UNITS  = 'm'
+                ENAME  = '.smc'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = STMAXD
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, STMAXD, MAPSF, X1 )
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.002
+                UNITS  = 'm'
+                ENAME  = '.emh'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = HMAXE
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXE, MAPSF, X1 )
+                END IF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 14 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.002
+                UNITS  = 'm'
+                ENAME  = '.eml'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = HCMAXE
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXE, MAPSF, X1 )
+                ENDIF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 15 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.002
+                UNITS  = 'm'
+                ENAME  = '.smh'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = HMAXD
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
+                END IF
+!
+              ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
+                FLONE  = .TRUE.
+                FSC    = 0.002
+                UNITS  = 'm'
+                ENAME  = '.sml'
+                IF ( ITYPE .EQ. 4 ) THEN
+                   XS1    = HCMAXD
+                ELSE
+                  CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1)
+                ENDIF
 !
               ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
                 FLONE  = .TRUE.
