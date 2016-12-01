@@ -169,6 +169,15 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
+         ! Peak period (s)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___TP') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(FP0 /= UNDEF) TMP=1./FP0
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
       ENDDO
 !
 !/ ------------------------------------------------------------------- /

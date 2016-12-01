@@ -365,7 +365,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: GRAV,nu_air,KAPPA,TPI,FWTABLE,SIZEFWTABLE, & 
-!/T                        RADE                                      & 
+!/T                        RADE,                                      & 
                            DELAB,ABMIN
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, DDEN, SIG, SIG2, TH,   &
                           ESIN, ECOS, EC2, ZZWND, AALPHA, BBETA, ZZALP,&

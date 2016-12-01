@@ -612,9 +612,9 @@
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
 !/REF1                                 REFFREQPOW
 !
-!/IG1  LOGICAL                 :: IGSWELLMAX
+!/IG1  LOGICAL                 :: IGSWELLMAX, IGBCOVERWRITE
 !/IG1  INTEGER                 :: IGMETHOD, IGADDOUTP, IGSOURCE,      &
-!/IG1                             IGSOURCEATBP, IGBCOVERWRITE, IGSTERMS
+!/IG1                             IGSOURCEATBP, IGSTERMS
 !/IG1  REAL                    :: IGMAXFREQ, IGMINDEP, IGMAXDEP,      &
 !/IG1                             IGKDMIN, IGFIXEDDEPTH, IGEMPIRICAL
 !
@@ -1999,7 +1999,7 @@
 !/IG1       IGSTERMS = 0
 !/IG1       IGMAXFREQ=0.03
 !/IG1       IGSOURCEATBP = 0
-!/IG1       IGBCOVERWRITE = 1
+!/IG1       IGBCOVERWRITE = .TRUE.
 !/IG1       IGSWELLMAX = .TRUE.
 !/IG1       IGKDMIN = 1.1
 !/IG1       IGFIXEDDEPTH = 0.
@@ -2025,13 +2025,15 @@
 !/IC3       IC2SMOOTH = 7.0E4
 !/IC3       IC2VISC = 2.0
 !/IC3       IC3CHENG = .TRUE.
-!/IC3       USECGICE = .TRUE.
+!/IC3       USECGICE = .FALSE.
 !/IC3       IC3HILIM = 100.0
 !/IC3       IC3KILIM = 100.0
 !/IC3       IC3HICE = -1.0
 !/IC3       IC3VISC = -2.0
 !/IC3       IC3DENS = -3.0
 !/IC3       IC3ELAS = -4.0
+!fixme: if USECGICE = .TRUE., don't allow use of IC3MAXTHK<100.0
+
 !/IC4       IC4METHOD = 1 !switch for methods within IC4
 !/IC4       IC4KI=0.0
 !/IC4       IC4FC=0.0
@@ -2105,11 +2107,11 @@
 ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
 !     grid, that is initialized with zeros as default.
       IF ( FLAGTR .LT. 3 ) THEN
-         IF (CICE0.NE.CICEN) THEN
-            CICE0 = CICEN
-            IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
-         END IF
-      END IF
+        IF (CICE0.NE.CICEN) THEN
+          CICE0 = CICEN
+          IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+          END IF
+        END IF
 !/IC0      IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
       WRITE (NDSO,961) CICE0, CICEN
       WRITE (NDSO,8972) ICEWIND
@@ -2302,8 +2304,7 @@
 !/IC3                          USECGICE, IC3HILIM, IC3KILIM,          &
 !/IC3                          IC3HICE, IC3VISC, IC3DENS, IC3ELAS
 
-!/IC4         WRITE(NDSO,2980) IC4METHOD,(IC4KI(JJ),JJ=1,NIC4),       &
-!/IC4                          (IC4FC(JJ),JJ=1,NIC4)
+!/IC4         WRITE(NDSO,NML=SIC4)
 
 !
         IF ( FLCOMB ) THEN
@@ -3835,7 +3836,8 @@
 !/IG1       IGPARS(1)=IGMETHOD
 !/IG1       IGPARS(2)=IGADDOUTP
 !/IG1       IGPARS(3)=IGSOURCE
-!/IG1       IGPARS(4)=IGBCOVERWRITE
+!/IG1       IGPARS(4)=0
+!/IG1       IF (IGBCOVERWRITE) IGPARS(4)=IGPARS(4)+1
 !/IG1       IF (IGSWELLMAX) IGPARS(4)=IGPARS(4)+2
 !/IG1       IGPARS(5)=1
 !/IG1       DO IK=1,NK
@@ -4846,8 +4848,8 @@
                ' --------------------------------------------------')
  4981 FORMAT ( '       Coefficient for shorelines  :',F6.4)
  4989 FORMAT ( '          *** CURVLINEAR GRID: REFLECTION NOT IMPLEMENTED YET ***')
- 2977 FORMAT ( '  &IG1  IGMETHOD =',I2,', IGADDOUTP =',I2,', IGSOURCE =',I2, &
-               ', IGSTERMS = ',I2,', IGBCOVERWRITE =', I2,','/        & 
+ 2977 FORMAT ( '  &SIG1  IGMETHOD =',I2,', IGADDOUTP =',I2,', IGSOURCE =',I2, &
+               ', IGSTERMS = ',I2,', IGBCOVERWRITE =', L3,','/        & 
                '        IGSWELLMAX =', L3,', IGMAXFREQ =',F6.4,       &
                ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
                '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
@@ -4867,8 +4869,6 @@
                '        IC3KILIM = ',E9.2,', IC3HICE = ',E9.2,        &
                ', IC3VISC = ',E9.2,','/                               &
                '        IC3DENS = ',E9.2,', IC3ELAS = ',E9.2,' /')
-!
- 2980 FORMAT ( '  &SIC4  IC4METHOD = ',I1,','/'         IC4KI = ',10(1X,E10.2,',')/'         IC4FC = ',8(1X,F8.3,','), F8.3/' /')
 !
  2966 FORMAT ( '  &MISC CICE0 =',F6.3,', CICEN =',F6.3,               &
                      ', LICE = ',F8.1,', PMOVE =',F6.3,','/           &

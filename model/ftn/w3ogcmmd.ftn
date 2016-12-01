@@ -109,7 +109,7 @@
       USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
       USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
-                           TAUWIX, TAUWIY, WLM
+                           TAUWIX, TAUWIY, TUSX, TUSY, USSX, USSY, WLM
       USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
       USE CONSTANTS, ONLY: PI, DERA
 !
@@ -244,6 +244,42 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
+         ! Volume transport associated to Stokes drift, u component (tusx in m2.s-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TUSX') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TUSX /= UNDEF) TMP(:)=TUSX(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Volume transport associated to Stokes drift, v component (tusy in m2.s-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TUSY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TUSY /= UNDEF) TMP(:)=TUSY(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Surface Stokes drift, u component (ussx in m.s-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_USSX') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(USSX /= UNDEF) TMP(:)=USSX(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Surface Stokes drift, v component (ussy in m.s-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_USSY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(USSY /= UNDEF) TMP(:)=USSY(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
          ! Mean wave length (wlm in m)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___LM') THEN
@@ -351,6 +387,8 @@
 ! For the same coupling time, W3FLDG is called for the level and current variables.
 ! As RCV_FIELDS_FROM_OCEAN is called from W3FLDG, the following test prevents to 
 ! exchange the wet-dry variables more than once per coupling time.
+!cval well but it cannot work because MASKT,MASKU,MASKV variable are not global variable
+!cval Anyway we will give up the exchange of mask, it is not a good idea at all
 
       IF (ID_OASIS_TIME > ID_OASIS_TIME_WETDRYONLYONCE) THEN
          !

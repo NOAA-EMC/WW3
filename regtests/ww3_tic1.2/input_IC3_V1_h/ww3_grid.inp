@@ -1,0 +1,34 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D ICE REFRACTION (X)        '
+$
+   1.25 0.10  3  24  0.
+$
+   F T F T F T
+  30. 30. 30. 30.
+$
+ &SIC3 IC3CHENG=.FALSE., USECGICE=.TRUE. /  
+!   IC3VISC = 1.0e3, IC3DENS = 917.0, IC3ELAS = 1.0e3 /
+
+ &PRO1 CFLTM = 0.75 /
+ &PRO2 CFLTM = 0.75 /
+ &PRO3 CFLTM = 0.75, WDTHCG = 0., WDTHTH = 0. /
+ &PRO4 CFLTM = 0.75, RNFAC = 0., RSFAC = 0. /
+
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   303  3
+    0.5E3   0.5E3  1.
+   -0.5E3  -0.5E3  1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+ -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC3_V1_h/bot.dat'
+$
+  10  1 1 '(....)' 'PART' 'input'
+$ 
+   2  2  F
+   0  0  F
+   0  0  F
+   0  0 
+$
+   0. 0. 0. 0.  0

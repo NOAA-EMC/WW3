@@ -889,7 +889,7 @@
 !     student, it is very fast to find roots. I suggest that perhaps you
 !     try the pure viscous case by setting G=0 to start with. nu can be
 !     set at 0.05*ice concentration (m^2/s) to begin with, because for
-!     grease ice Newyear’s data showed nu to be about 0.02-0.03 m^2/s.
+!     grease ice Newyear's data showed nu to be about 0.02-0.03 m^2/s.
 !     By setting G=0 in you get exactly the Keller model for pure 
 !     viscous layer. 
 !

@@ -243,7 +243,7 @@
       USE W3WDASMD
 !/
       USE W3IOGRMD, ONLY: W3IOGR
-      USE W3IOGOMD, ONLY: W3READFLGRD, FLDLIST
+      USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT
       USE W3IOPOMD
       USE W3SERVMD, ONLY : NEXTLN, EXTCDE
       USE W3TIMEMD
@@ -275,6 +275,7 @@
                              NH(-7:4), THO(2,-7:4,NHMAX), RCLD(5:7),  &
                              NDT(5:7), NDTNEW, MPI_COMM = -99, JJ,    &
                              IPRT(6) = 0, IFI, IFJ
+!/COU      INTEGER             :: OFL
 !/F90      INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8) 
 !/MPI      INTEGER             :: IERR_MPI
       INTEGER             :: NODATA(5:7), FLAGTIDE
@@ -308,7 +309,8 @@
       CHARACTER(LEN=23)   :: DTME21
       CHARACTER(LEN=30)   :: IDOTYP(7)
       CHARACTER(LEN=80)   :: LINE
-      CHARACTER(LEN=1024) :: INFIELDNAMES
+      CHARACTER(LEN=1024) :: FLDIN
+!/COU      CHARACTER(LEN=30)       :: OFILE
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -398,9 +400,9 @@
       NDSO   =  6
       NDSE   =  6
       NDST   =  6
-!/OASIS      NDSO   =  333
-!/OASIS      NDSE   =  333
-!/OASIS      NDST   =  333
+!/COU      NDSO   =  333
+!/COU      NDSE   =  333
+!/COU      NDST   =  333
 
 
       NDSF(-7)  = 1008
@@ -439,6 +441,12 @@
       NAPOUT = 1
       NAPERR = 1
 !
+!/COU      OFILE  = 'output.ww3'
+!/COU      OFL    = LEN_TRIM(OFILE)
+!/COU      J      = LEN_TRIM(FNMPRE)
+!/COU      IF ( IAPROC .EQ. NAPOUT )             &
+!/COU        OPEN (333,FILE=FNMPRE(:J)//OFILE(:OFL),ERR=2008,IOSTAT=IERR)
+
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
 !
       IF ( IAPROC .EQ. NAPERR ) THEN
@@ -805,7 +813,7 @@
 !/COU                                  FLGR2, IAPROC, NAPOUT, IERR )
 !/COU               IF ( IERR .NE. 0 ) GOTO 2222
 !/COU               CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-!/COU               READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) INFIELDNAMES
+!/COU               READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) FLDIN
 !
               END IF
 !
@@ -1029,7 +1037,7 @@
 !/OASIS      ENDIF 
 !/OASIS      CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
 !/OASIS ! Estimate the weights for the spatial interpolation
-!/OASIS      CALL CPL_OASIS_DEFINE(NDSO, INFIELDNAMES, FLDLIST)
+!/OASIS      CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
@@ -1242,12 +1250,12 @@
 !/TIDE                            END IF
 !/TIDE                        ELSE
 !/OASIS                 COUPL_COMM = MPI_COMM
-!/OASIS                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+!/OASOCM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV,   &
                            IERR                                       &
-!/OASIS                    , COUPL_COMM                               &
+!/OASOCM                   , COUPL_COMM                               &
                            )
 !/TIDE                          END IF
                    END IF
@@ -1269,13 +1277,13 @@
 !/TIDE                          CALL TICK21 ( TCN, TIDE_DT )
 !/TIDE                        ELSE
 !/OASIS                 COUPL_COMM = MPI_COMM
-!/OASIS                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+!/OASOCM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
                            IERR                                       &
-!/OASIS                    , COUPL_COMM                               &
+!/OASOCM                   , COUPL_COMM                               &
                            )
 !/TIDE                          END IF
                    END IF
@@ -1287,13 +1295,13 @@
                            TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
                    ELSE
 !/OASIS                 COUPL_COMM = MPI_COMM
-!/OASIS                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
+!/OASACM                IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 !/NCC                        IF (.NOT.CFLAG(J)) THEN
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
                            IERR                                       &
-!/OASIS                    , COUPL_COMM                               &
+!/OASACM                   , COUPL_COMM                               &
                            )
 !/NCC                        END IF
 !/NCC                        CALL WW_CDETECT(CFLAG(J))
@@ -1529,6 +1537,10 @@
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
       GOTO 2222
 !
+ 2008 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1008) IERR
+      GOTO 2222
+!
  2222 CONTINUE
 !
 !/MPI      CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
@@ -1648,6 +1660,10 @@
 !
  1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
                '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
+!
+ 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
+               '     ERROR IN OPENING OUTPUT FILE'/                   &
+               '     IOSTAT =',I5/)
 !
 !/T 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 !/T 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)

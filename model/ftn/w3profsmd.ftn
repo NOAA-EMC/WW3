@@ -7,7 +7,7 @@
 !/                  |           Aron Roland             |
 !/                  |         Fabrice Ardhuin           |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-Dec-2013 |
+!/                  | Last update :         18-Aug-2016 |
 !/                  +-----------------------------------+
 !/
 !/    XX-Nov-2007 : Origination.                        ( version 3.10 )
@@ -16,6 +16,7 @@
 !/    20-Jun-2013 : Update test output for time steps   ( version 4.10 )
 !/    17-Oct-2013 : Removes boundary nodes from CFL     ( version 4.12 )
 !/    15-Dec-2013 : Bug fix for implicit scheme         ( version 4.16 )
+!/    18-Aug-2016 : Corrected boundary treatment        ( version 4.16 )
 !
 !  1. Purpose :
 !
@@ -164,9 +165,7 @@
 !/ Automatic work arrays
 !/
       REAL                    :: VLCFLX((NX+1)*NY), VLCFLY(NX*NY)
-      REAL                    ::  AQ(NX)                        
-      ! AQ(1-NY:NY*(NX+2)) 
-      REAL                    :: AC(NX)
+      DOUBLE PRECISION        :: AC(NX)
 !/ ------------------------------------------------------------------- /				     
 !
 ! 1.  Preparations --------------------------------------------------- *
@@ -216,12 +215,9 @@
 !
 ! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
 !
-      DO IX=1,NX
-        AC(IX) = VQ(IX)  
-        AQ(IX) = VQ(IX)   
-        C(IX,1)  = VLCFLX(IX)
-        C(IX,2)  = VLCFLY(IX)
-        END DO
+      AC(1:NX) = DBLE(VQ(1:NX))  
+      C(1:NX,1)  = VLCFLX(1:NX)
+      C(1:NX,2)  = VLCFLY(1:NX)
 !
 ! 4. Prepares boundary update
 !
@@ -236,19 +232,19 @@
 ! 4. propagate using the selected scheme 
 !      
        IF (FSN) THEN
-         CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
+         CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
        ELSE IF (FSPSI) THEN
-         CALL W3XYPFSPSI2 (ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
+         CALL W3XYPFSPSI2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
        ELSE IF (FSFCT) THEN
-         CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
+         CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
        ELSE IF (FSNIMP) THEN
-         CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC, AQ)
+         CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC)
        ENDIF  
 !
        DO IX=1,NX
          ISEA=MAPFS(1,IX)
-         VQ(IX)=AC(IX)
-       ENDDO          
+         VQ(IX)=REAL(AC(IX))
+         ENDDO          
     
 ! 6.  Store results in VQ in proper format --------------------------- *
 !
@@ -448,7 +444,7 @@
  END SUBROUTINE W3CFLUG    
 !/ ------------------------------------------------------------------- /
 
-      SUBROUTINE W3XYPFSN2 ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
+      SUBROUTINE W3XYPFSN2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
      
 !/
 !/
@@ -506,7 +502,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, XYB
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IOBPA, XYB
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -516,11 +512,10 @@
      
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
-       REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
-       REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
+       REAL,    INTENT(IN)    :: C(:,:)                ! Velocity field in it's X- and Y- Components, 
+       DOUBLE PRECISION, INTENT(INOUT):: AC(:)         ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       REAL,    INTENT(INOUT) :: AQ(:)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -534,7 +529,6 @@
        REAL*8,  PARAMETER :: ONESIXTH  = 1.0d0/6.0d0
        REAL*8,  PARAMETER :: THR8      = TINY(1.0d0)
        REAL,    PARAMETER :: THR       = TINY(1.0) 
-!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -550,7 +544,7 @@
 !:
 ! local double
 !
-         REAL*8  :: UTILDE 
+         REAL*8  :: UTILDE, BOUNDARY_FORCING
          REAL*8  :: CFLXY
          REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
@@ -568,11 +562,6 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
-!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
-
-
-!         IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) WRITE(*,*) SUM(AC), SUM(AQ)
-
 !
 !2       Propagation 
 !2.a     Calculate K-Values and contour based quantities ...
@@ -646,7 +635,7 @@
            END DO
 
            DO IT = 1, ITER(IK,ITH)
-             U = DBLE(AC)
+             U = AC
              ST = 0.d0
              DO IE = 1, NTRI
                NI     = TRIGP(IE,:)
@@ -657,19 +646,16 @@
              DO IP = 1, NX
 !
 ! IOBPD=0  : waves coming from land
-! IOBPDR=1 : waves coming from land with energy reflected
+! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
 !
-               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) 
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) &
+                       + AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected boundary values 
                END DO
-!/REF1 !
-!/REF1 ! Setting shoreline boundary back to initial value (AC)
-!/REF1 !
-!/REF1             WHERE (IOBPDR.EQ.1) U=DBLE(AC)
-             AC = REAL(U)
 !
-! 5 Update boundaries ... would be better to omit any if clause in this loop ...
-!   a possibility would be to use NBI = 0 when FLBPI is FALSE and loop on IBI whatever the value of NBI
-! 
+             AC = U
+!
+! 5 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn) 
+!
              IF ( FLBPI ) THEN 
                RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
                RD2=RD20
@@ -681,15 +667,14 @@
                  RD2    = 1.
                  END IF
 !
-! NB: this treatment of the open boundary (time interpolation) is different from
-! the constant boundary in the structured grids ... which restores the boundary 
-! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
-! Why this difference ?
+! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0) 
 !
-               DO IBI=1, NBI
+              DO IBI=1, NBI
                  IP    = MAPSF(ISBPI(IBI),1)
-                 AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                 BOUNDARY_FORCING = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI)) 
+                 AC(IP) = AC(IP)*DBLE(IOBPD(ITH,IP)) +   &
+                          BOUNDARY_FORCING *IOBPA(IP)*(1-IOBPD(ITH,IP))
                  END DO
                END IF  
            END DO ! IT        
@@ -700,7 +685,7 @@
       END SUBROUTINE W3XYPFSN2
       
 !/ ------------------------------------------------------------------- /  
-      SUBROUTINE W3XYPFSPSI2 ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
+      SUBROUTINE W3XYPFSPSI2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
      
 !/
 !/
@@ -752,7 +737,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, NNZ
+                            IEN, TRIGP, CLATS, MAPSF, IOBPA, IOBPD, IOBP, NNZ
        USE W3WDATMD, ONLY: TIME     
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -763,11 +748,9 @@
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
        REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
-       REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
+       DOUBLE PRECISION,INTENT(INOUT) :: AC(:)         ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       REAL,    INTENT(INOUT) :: AQ(:)
-!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -815,8 +798,6 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
-!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
-
 !
 !2       Propagation 
 !2.a     Calculate K-Values and contour based quantities ...
@@ -877,7 +858,7 @@
            END DO
 
            DO IT = 1, ITER(IK,ITH)
-             U = DBLE(AC)
+             U = AC
 
              ST = 0.d0
 
@@ -903,18 +884,12 @@
                ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
              END DO
 
-!             DO IP = 1, NX
-!               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) ! Add dry/wet flag ... 
-!             END DO
-
-             DO IP = 1, NX
-               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*DBLE(IOBPD(ITH,IP)) ! Add dry/wet flag ... 
+              DO IP = 1, NX
+               U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP))*IOBPD(ITH,IP)  &
+                       + AC(IP)*(1-IOBPD(ITH,IP))  ! restores reflected data
                END DO
-!/REF1 !
-!/REF1 ! Setting shoreline boundary back to initial value (AC)
-!/REF1 !
-!/REF1             WHERE (IOBPDR.EQ.1) U=DBLE(AC)
-             AC = REAL(U)
+!
+             AC = U
 !
 ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
@@ -929,15 +904,12 @@
                  RD2    = 1.
               END IF
 !
-! NB: this treatment of the open boundary (time interpolation) is different from
-! the constant boundary in the structured grids ... which restores the boundary 
-! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
-! Why this difference ?
+! Time interpolation as done in rect grids
 !
                DO IBI=1, NBI
                      IP    = MAPSF(ISBPI(IBI),1)
                      AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                             *IOBPA(IP)*(1-IOBPD(ITH,IP))/ CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
                ENDDO
              END IF  
 !          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
@@ -949,7 +921,7 @@
       END SUBROUTINE W3XYPFSPSI2
       
 !/ ------------------------------------------------------------------- /  
-      SUBROUTINE W3XYPFSNIMP ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
+      SUBROUTINE W3XYPFSNIMP ( ISP, C, LCALC, RD10, RD20, DT, AC)
      
 !/
 !/
@@ -1003,7 +975,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, IAA, JAA, POSI, &
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, IOBP, IAA, JAA, POSI, &
                             TRIA, NNZ
        USE W3WDATMD, ONLY: TIME      
        USE W3ADATMD, ONLY: CG, ITER    
@@ -1015,11 +987,9 @@
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
        REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
-       REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
+       DOUBLE PRECISION,INTENT(INOUT) :: AC(:)         ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary conditions
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       REAL,    INTENT(INOUT) :: AQ(:)
-!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1092,15 +1062,13 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
-!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
 
-!         IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) THEN 
         IF (.FALSE.) THEN
            WRITE(*,*) 'NNZ', NNZ
            WRITE(*,*) 'MINVAL IAA,JAA', MINVAL(IAA), MINVAL(JAA)
            WRITE(*,*) 'MINVAL IAA,JAA', MAXVAL(IAA), MAXVAL(JAA)
            WRITE(*,*) 'MAX/MIN POSI',   MAXVAL(POSI), MINVAL(POSI)
-           WRITE(*,*) 'AC, AQ', SUM(AC), SUM(AQ)
+           WRITE(*,*) 'AC, AQ', SUM(AC)
          END IF
 !
 !2       Propagation 
@@ -1184,9 +1152,9 @@
 
 !         WRITE(*,*) 'PRECONDITIONER', IERROR
 
-!         IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) THEN
+!         IF (SUM(AC) .GT. 0.) THEN
          IF (.FALSE.) THEN
-           WRITE(*,*) SUM(AC), SUM(AQ)
+           WRITE(*,*) SUM(AC)
            WRITE(*,*) 'CALL SOLVER'
            WRITE(*,*) 'WRITE CG', SUM(CG)
            WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
@@ -1201,7 +1169,7 @@
 
           CALL RUNRC (NX, B, X, IPAR, FPAR, WKSP, INIU, ASPAR, JAA, IAA, AU, FLJAU, FLJU, BCGSTAB)
 
-!         IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) THEN
+!         IF (SUM(AC) .GT. 0. ) THEN
          IF (.FALSE.) THEN
            WRITE(*,*) 'SOLUTION'
            WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
@@ -1212,10 +1180,12 @@
          END IF
 
           DO IP = 1,NX
-            U(IP) =  MAX(0.d0,X(IP)) * DBLE(IOBPD(ITH,IP))
+            U(IP) = MAX(0.d0,X(IP))*IOBPD(ITH,IP)  &
+                       + DBLE(AC(IP))*(1-IOBPD(ITH,IP))  ! restores reflected boundary
+
             END DO
 
-!        IF (SUM(AC) .GT. 0. .OR. SUM(AQ) .GT. 0) THEN
+!        IF (SUM(AC) .GT. 0. ) THEN
         IF (.FALSE.) THEN
           WRITE(*,*) 'SOLUTION'
           WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
@@ -1240,15 +1210,12 @@
                  RD2    = 1.
               END IF
 !
-! NB: this treatment of the open boundary (time interpolation) is different from
-! the constant boundary in the structured grids ... which restores the boundary 
-! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
-! Why this difference ?
+! Time interpolation as done in rect grids
 !
                DO IBI=1, NBI
                  IP    = MAPSF(ISBPI(IBI),1)
                  AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                           *IOBPA(IP)*(1-IOBPD(ITH,IP)) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
                  END DO
              END IF  
 !          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
@@ -1261,7 +1228,7 @@
       
 !/ ------------------------------------------------------------------- /  
 
-      SUBROUTINE W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC, AQ)
+      SUBROUTINE W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
      
 !/
 !/
@@ -1312,7 +1279,7 @@
 !/ ------------------------------------------------------------------- /
 !/
        USE W3GDATMD, ONLY : NK, NTH, NTRI, NX, CCON, IE_CELL,POS_CELL, SI, &
-                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBP, TRIA
+                            IEN, TRIGP, CLATS, MAPSF, IOBPD, IOBPA, TRIA
        USE W3WDATMD, ONLY: TIME		      
        USE W3ADATMD, ONLY: CG, ITER    
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
@@ -1323,10 +1290,9 @@
        INTEGER, INTENT(IN)    :: ISP                   ! Actual Frequency/Wavenumber, actual Wave Direction
        REAL,    INTENT(IN)    :: DT                    ! Time intervall for which the advection should be computed for the given velocity field
        REAL,    INTENT(IN)    :: C(:,:)              ! Velocity field in it's X- and Y- Components, 
-       REAL,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
+       DOUBLE PRECISION,    INTENT(INOUT) :: AC(:)               ! Wave Action before and after advection
        REAL,    INTENT(IN)    :: RD10, RD20            ! Time interpolation coefficients for boundary condition
        LOGICAL, INTENT(IN)    :: LCALC                 ! Switch for the calculation of the max. Global Time step
-       REAL,    INTENT(INOUT) :: AQ(:)
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1372,7 +1338,6 @@
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX), BETA
          REAL*8  :: NM(NTRI) 
-!/REF1       INTEGER(KIND=1)    :: IOBPDR(NX)  
 
 !/S      CALL STRACE (IENT, 'W3XYPFSFCT2')
 
@@ -1381,7 +1346,6 @@
          ITH    = 1 + MOD(ISP-1,NTH)
          IK     = 1 + (ISP-1)/NTH 
          DTMAXGL = DBLE(10.E10)
-!/REF1       IOBPDR(:)=(1-IOBP(:))*(1-IOBPD(ITH,:))
 !
 !2       Propagation 
 !2.a     Calculate K-Values and contour based quantities ...
@@ -1421,7 +1385,6 @@
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
              END DO ! IE
              DO IP = 1, NX
-!               DTMAXEXP = MAX( ABS(DBLE(IOBP(IP))*DBLE(10.E10)),SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*DBLE(OBPD(ITH,IP)))) 
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP
@@ -1439,9 +1402,11 @@
            DT4AI = DBLE(DT)/DBLE(ITER(IK,ITH)) 
            DTSI(:)  = DT4AI/SI(:) ! Some precalculations for the time integration.
 
-           U = DBLE(AC)
+           U = AC
            UL = U
-
+!
+!  Now loop on sub-timesteps
+!
            DO IT = 1, ITER(IK,ITH)
 
            ST = 0.d0
@@ -1516,13 +1481,10 @@
 !
 ! IOBPD is the switch for removing energy coming from the shoreline 
 !
-              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
-            END DO
-!/REF1 !
-!/REF1 ! Setting shoreline boundary back to initial value (AC)
-!/REF1 !
-!/REF1             WHERE (IOBPDR.EQ.1) U=DBLE(AC)
-            AC = REAL(U)
+              U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP)) &
+                       + DBLE(AC(IP))*(1-IOBPD(ITH,IP))  ! restores reflected boundary 
+              END DO
+            AC = U
 !
 ! 5 Update open boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
 !
@@ -1537,20 +1499,15 @@
                  RD2    = 1.
               END IF
 !
-! NB: this treatment of the open boundary (time interpolation) is different from
-! the constant boundary in the structured grids ... which restores the boundary 
-! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
-! Why this difference ?
+! Time interpolation as done in rect grids
 !
                DO IBI=1, NBI
                      IP    = MAPSF(ISBPI(IBI),1)
                      AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                             / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                             *IOBPA(IP)*(1-IOBPD(ITH,IP))/ CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
                ENDDO
              END IF  
 !          WRITE(6,*) 'ITER:',IK, ITH, LCALC, ITER(IK,ITH),IT,RD10,RD20,RD1,RD2 
-
-             U = REAL(AC) 
 
            END DO ! IT        
 !      CALL EXTCDE ( 99 )

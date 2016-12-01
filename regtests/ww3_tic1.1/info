@@ -87,14 +87,17 @@
 #        -w work_IC3_CGICE_CHENG -i input_IC3NL ../model ww3_tic1.1         #
 # ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_CHENG \                      #
 #        -w work_IC3_CGOW_CHENG -i input_IC3NL ../model ww3_tic1.1          #
-# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_NOCHENG \                   #
-#        -w work_IC3_CGICE_NOCHENG -i input_IC3NL ../model ww3_tic1.1       #
 # ./bin/run_test -s MPI -p mpirun -n 3 -g CGOW_NOCHENG \                    #
 #        -w work_IC3_CGOW_NOCHENG -i input_IC3NL ../model ww3_tic1.1        #
 # ./bin/run_test -g CGICE_NOCHENG -w work_IC3_CGICE_NOCHENG_TT \            #
 #        -i input_IC3 ../model ww3_tic1.1                                   #
 # ./bin/run_test -g CGOW_NOCHENG -w work_IC3_CGOW_NOCHENG_TT \              #
 #        -i input_IC3 ../model ww3_tic1.1                                   #
+#                                                                           #
+# The following is removed, since the code no long supports this            #
+#    combination (CGICE=TRUE + CHENG=FALSE + namelist input) :              #
+# ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_NOCHENG \                   #
+#        -w work_IC3_CGICE_NOCHENG -i input_IC3NL ../model ww3_tic1.1       #
 #                                                                           #
 #                                 origination: Erick Rogers, Dec 2012       #
 #                                     updated: Stefan Zieger, Oct 2013      #
