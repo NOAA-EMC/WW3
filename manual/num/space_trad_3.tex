@@ -1,18 +1,18 @@
-\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Third order scheme (UQ)}
+\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Third-order scheme (UQ)}
 
 \vspace{\baselineskip}
 \vspace{\baselineskip} 
-\noindent {\bf Third order scheme (UQ)}
+\noindent {\bf Third-order scheme (UQ)}
 
 \opthead{UQ}{\ws}{H. L. Tolman}
 
 \noindent 
-The third order accurate scheme available in \ws\ is the \qck\ scheme
+The third-order accurate scheme available in \ws\ is the \qck\ scheme
 \citep{art:Leo79,art:DM82} combined with the \ult\ \tvd\ (total variance
 diminishing) limiter \citep{art:Leo91}. This is the default propagation scheme
 for \ws. This scheme is third-order accurate in both space and time, and has
-been selected based on the extensive intercomparison of higher order finite
-difference schemes for water quality models performed by
+been selected based on the extensive intercomparison of higher-order finite
+difference schemes for water quality models 
 \citep[see][]{PhD:Cah,pro:FC93,tol:OMB95}. This scheme is applied to
 propagation in longitudinal and latitudinal directions separately, alternating
 the direction to be treated first.
@@ -84,8 +84,8 @@ If the initial state is monotonic (i.e., $0 \leq \tilde\cN_c \leq 1$), the
 (normalized) action at the cell boundary $\cN_b$ is limited to
 
 \begin{equation}
-\tilde\cN_c \leq \tilde\cN_b \leq 1 \:\:\: , \:\:\:
-\tilde\cN_b \leq \tilde\cN_c \: C^{-1} \:\:\: . 
+\tilde\cN_c \leq \tilde\cN_b \leq 1 , \:\:\:
+\tilde\cN_b \leq \tilde\cN_c \: C^{-1}  . 
 \label{eq:ult_3} \end{equation}
 \noindent otherwise \begin{equation}
 \tilde\cN_b = \tilde\cN_c 
@@ -121,7 +121,7 @@ The final propagation scheme, similar to Eq.~(\ref{eq:1up_xy_tot}),  becomes
 
 \noindent
 The scheme for propagation in $\lambda$-space is simply obtained by rotating
-indices and increments in the above equations\footnote{~The `soft' boundary
+indices and increments in the above equations.\footnote{~The `soft' boundary
 treatment as described on page 31 of \cite{tol:OMB02c} is no longer available,
 because it is incompatible with the advanced nesting techniques introduced in
 model version 3.14.}

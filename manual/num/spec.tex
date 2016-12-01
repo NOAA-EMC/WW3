@@ -22,7 +22,7 @@ step becomes
 \dot{k}_g  = \frac{\p \sigma}{\p d} 
     \frac{{\bf U} \cdot \nabla_x d}{c_g}  -
     {\bf k} \cdot \frac{\p {\bf U}}{\p s}
-\: . \label{eq:k_dot_g} \end{equation}
+\: , \label{eq:k_dot_g} \end{equation}
 
 \noindent
 where $\dot{k}_g$ is the wavenumber velocity relative to the grid, and
@@ -54,14 +54,14 @@ due to refraction, the propagation velocities in $\theta$-space and $k$-space
 \dot{\theta_c} + \dot{\theta_g} \right)\: , \label{eq:theta_filter} \end{equation}
 
 \noindent
-where the indices d, c and g refer to the depth, current and great-circle
+where the indices $d$, $c$ and $g$ refer to the depth, current and great-circle
 related fraction of the refraction velocity in (\ref{eq:theta_dot}). The
 filter factor $X_{rd}$ is calculated for every wavenumber and location
 separately, and is determined so that the \cfl\ number for propagation in
 $\theta$-space due to the {\em depth} refraction term cannot exceed a pre-set
 (user defined) value (default 0.7). This corresponds to a reduction of the
 bottom slope for some low frequency wave components. For mid-latitudes, the
-effected components are expected to carry little energy because they are in
+affected components are expected to carry little energy because they are in
 extremely shallow water. Long wave components carrying significant energy are
 usually traveling toward the coast, where their energy is dissipated
 anyway. This filtering is also important for short waves, and close to the
@@ -72,7 +72,7 @@ output of the model.  These are computed just before the filter is applied.
 % \vspace{\baselineskip}
 % \centerline{\ldots ADD DYNAMIC TIME INTEGRATION \ldots}
 
-\vspace{\baselineskip} \noindent 
+
 The spectral space is always discretized with constants directional increments
 and a logarithmic frequency grid (\ref{eq:sigma_grid}) to accommodate
 computations of the nonlinear interaction $S_{nl}$. First, second and third

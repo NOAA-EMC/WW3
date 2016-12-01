@@ -7,13 +7,14 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         17-Aug-2016 |
+!/                  | Last update :         16-Oct-2016 |
 !/                  +-----------------------------------+
 !/
 !/    24-May-2013 : Adaptation from ww3_bound.ftn    ( version 4.08 )
 !/     1-Apr-2015 : Add checks on lat lon xfr        ( version 5.05 )
 !/    11-May-2015 : Allow use of cartesian grids     ( version 5.08 )
 !/    17-Aug-2016 : Bug correction on RDBPO          ( version 5.10 ) 
+!/    20-Oct-2016 : Error statement updates          ( version 5.15 )
 !/
 !/    Copyright 2012-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -371,8 +372,8 @@
             ALLOCATE (SPEC2D(NTH1,NK1,NT1,NBO2))
             ALLOCATE (ABPIN2(NK*NTH1,NT1,NBO2))
 
-	        ! read time variable
-            iret=nf90_inq_varid(ncid(IP), 'time', varid(1))	
+            ! read time variable
+            iret=nf90_inq_varid(ncid(IP), 'time', varid(1))
             iret=nf90_get_var(ncid(IP), varid(1), times(:))
             iret=nf90_get_att(ncid(IP), varid(1),'units',timeunits)
 
@@ -398,21 +399,21 @@
           ! position variables : lon/lat or x/y
           IF ( FLAGLL ) THEN
             !WRITE (NDSO,951)
-            iret=nf90_inq_varid(ncid(IP), 'latitude', varid(2))	
+            iret=nf90_inq_varid(ncid(IP), 'latitude', varid(2))
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
             call check_err(iret)
-            iret=nf90_inq_varid(ncid(IP), 'longitude', varid(3))	
+            iret=nf90_inq_varid(ncid(IP), 'longitude', varid(3))        
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
             call check_err(iret)
           ELSE
             !WRITE (NDSO,952)
-            iret=nf90_inq_varid(ncid(IP), 'y', varid(2))	
+            iret=nf90_inq_varid(ncid(IP), 'y', varid(2))        
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(2), lats(IP))
             call check_err(iret)
-            iret=nf90_inq_varid(ncid(IP), 'x', varid(3))	
+            iret=nf90_inq_varid(ncid(IP), 'x', varid(3))        
             call check_err(iret)
             iret=nf90_get_var(ncid(IP), varid(3), lons(IP))
             call check_err(iret)
@@ -452,9 +453,18 @@
 !
 ! 6. Defines frequency range in spectra
 !
+
+        ! Checks consistency of NK
+        IF (NKI.GT.NK) GOTO 2008
+!
+        ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
+        ! such that source spec SPEC (read in input) links with output spec
+        ! APBIN2 with APBIN2(IFMIN2:IFMAX2) = SPEC(IFMIN:IFMAX)
+        ! Then APBIN2(1:IFMIN2) = 0 and APBIN2(IFMAX2:end) = 0
         IFMIN=1  ! index of first freq. in source spectrum
-        IFMIN2=1
+        IFMIN2=1 ! index of first freq. in output spectrum
         IFMAX=NK1 ! index of last freq. in source spectrum
+!        IFMAX2=NK ! index of last freq. in output spectrum
 !
         ! Checks consistency of XFR
         IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 2006
@@ -646,31 +656,35 @@
 
  2001 CONTINUE
       WRITE (NDSE,1001)
-      GOTO 2222
+      CALL EXTCDE ( 61 )
 !
  2002 CONTINUE
       WRITE (NDSE,1002) IERR
-      GOTO 2222
+      CALL EXTCDE ( 62 )
 !
  2003 CONTINUE
       WRITE (NDSE,1003) IDTST, IDSTRBC
-      GOTO 2222
+      CALL EXTCDE ( 63 )
 !
  2004 CONTINUE
       WRITE (NDSE,1004)
-      GOTO 2222
+      CALL EXTCDE ( 64 )
 !
  2005 CONTINUE
       WRITE (NDSE,1005) IERR
-      GOTO 2222
+      CALL EXTCDE ( 65 )
 !
  2006 CONTINUE
       WRITE (NDSE,1006) XFR
-      GOTO 2222
+      CALL EXTCDE ( 66 )
 !
  2007 CONTINUE
       WRITE (NDSE,1007) NTH, NTHI
-      GOTO 2222
+      CALL EXTCDE ( 67 )
+!
+ 2008 CONTINUE
+      WRITE (NDSE,1008) NK, NKI
+      CALL EXTCDE ( 68 )
 !
  2222 CONTINUE
 !
@@ -715,6 +729,10 @@
 !
  1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
                '     ILLEGAL NTH, NTH =',I3,' DIFFERS FROM NTHI =',I3/)
+!
+ 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3BOUNC: '/               &
+               '     ILLEGAL NK, NK =',I3,' DIFFERS FROM NKI =',I3/   &
+               '     IT WILL BE MANAGED SOON BY SPCONV')
 !/
 !/ End of W3BOUNC ---------------------------------------------------- /
 !/

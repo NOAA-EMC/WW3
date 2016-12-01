@@ -1,23 +1,23 @@
 \documentclass[12pt]{article}
-
+      
 \oddsidemargin=0.4in
 \evensidemargin=0.4in
 \textwidth=6.0in
 \topmargin=-0.6in
 \textheight=8.5in
-
+ 
 \usepackage{psfig}
 \usepackage{natbib}
 \usepackage{svn}
 \usepackage{hyperref}
-
+ 
 \SVN $Revision$
 \SVN $Date$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % proper link to most recent manual %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\manver}{5.15}
+\newcommand{\manver}{5.16}
 \newcommand{\manref}{tol:MMABmanual}
 \newcommand{\manregtestsec}{5.6}
 
@@ -136,7 +136,7 @@ Marine Modeling and Analysis Branch
 % Version 0.1, May 2010
 % Version 1.0, Feb. 2011
 % Version 1.1, Mar. 2014
-Version 1.2 (DRAFT), \today 
+Version 1.2, Oct. 2016 %\today 
 \\ Last Changed Rev: \SVNRevision\ on \SVNDate \\
 \vspace{\baselineskip}
 \vfill {\sc this is an unreviewed manuscript, primarily
@@ -146,13 +146,13 @@ members}
 \end{center}
 \noindent \rule{140mm}{0.5mm} \\
 {\small $^\dag$ MMAB Contribution No.~286. \\
-$^\ddag$ e-mail: Hendrik.Tolman@NOAA.gov} \\
+$^\ddag$ Contact code manager, e-mail: Jessica.Meixner@NOAA.gov} \\
 
 \bpage
 
 \pagebreak
 
-\markright{\fbox{\rm{DRAFT}} \hspace{2mm} \today}
+%\markright{\fbox{\rm{DRAFT}} \hspace{2mm} \today}
 \pagestyle{\pstyle}
 \pagenumbering{roman}
 \setcounter{page}{1}
@@ -191,7 +191,7 @@ version & svn rev.     & date    & comment    \\ \hline \hline
         &              &               & Adding Sec.~\ref{sec:dist} (code distr.). \\
         &              &               & Finalize for release of v. 4.18.      \\
   1.2   & \SVNRevision &   \SVNDate    &                                       \\
-(draft) &              &               & Prepare for release of v. \manver.    \\
+   &              &               & Prepare for release of v. \manver.    \\
 \hline \end{tabular}
 \end{center}
 \vspace{-3mm}
@@ -331,7 +331,7 @@ and modules, respectively. Examples of this can be found throughout the source
 code, and templates are also provided in `user slot' routines for source terms
 and propagation schemes. 
 
-Is should be noted that \ws\ consists of incomplete ('{\file .ftn}') FORTRAN
+Is should be noted that \ws\ consists of incomplete (`{\file .ftn}') FORTRAN
 files that require standard \ws\ preprocessing. All changes and additions
 should be made in these files, not in extracted true FORTRAN files (for
 details see the manual).
@@ -561,7 +561,7 @@ scripts.  Specifically, the new switches must be properly encoded in {\file
 that switch incompatibilities can be trapped at compile time and source files
 affected by changes to {\file model/bin/switch} can be correctly identified
 and recompiled. Documentation for new software selection switches must be
-added to chapter 5.4 of the manual.
+added to Chapter 5.4 of the manual.
 
 \vspace{\baselineskip} \noindent The above approach are applicable to
 inherently modular elements of \ws\ such as source terms or propagation
@@ -610,8 +610,8 @@ naming the test cases:
 \item {\file ww3\_ic{\it d}.{\it n}}: Tests for wave-ice interaction.
        ({\it d} = 1 or 2, indicating one- or two-dimensional test case.)
 
-\item {\file ww3\_systrk\_test\_{\it nn}}: Test cases for reconstructing full
-        wave fields in space and time from local spectral wave partitions.
+%\item {\file ww3\_systrk\_test\_{\it nn}}: Test cases for reconstructing full
+%        wave fields in space and time from local spectral wave partitions.
 
 \item {\file mww3\_test\_{\it nn}}: Tests cases for the multi-grid wave model.
 \end{itemize}
@@ -722,7 +722,6 @@ on a regular grid with otherwise identical model settings.
 %\vspace{-10mm}
 \input{run_test.out}
 \end{minipage} }
-
 \end{center}
 \botline
 \myfcapc{Description of arguments for {\file run\_test} script.}
@@ -743,7 +742,7 @@ The \ws\ manual and other \ws\ documents like this guide are written in
 maintained in svn, together with the \ws\ source code, script and auxiliary
 files. Because the manual is rather large, it has been stored in several
 {\file .tex} files. During the development of model version 4.18, most
-ub-sections were places in their own file, to minimize conflicts in editing
+sub-sections were placed in their own file, to minimize conflicts in editing
 when many contributors work on the manual simutaneously.  The main files (and
 directories) making up the manual are
 
@@ -906,10 +905,11 @@ trunk} (and {\file tags}), we have set up directories
 
 \begin{flist}
 \fit{model    }{Model files as previously distributed as {\file .tar} files.}
-\fit{manual   }{\LaTeX files and graphics files for the manual.}
-\fit{guide    }{\LaTeX file for this guide.}
-\fit{regtests }{\LaTeX Regression tests.}
-\fit{cases    }{\LaTeX Larger regression test cases.}
+\fit{manual   }{\LaTeX\ files and graphics files for the manual.}
+\fit{guide    }{\LaTeX\ file for this guide.}
+\fit{regtests }{Regression tests.}
+\fit{cases    }{Larger regression test cases.}
+\fit{smc\_docs }{Documents pertaining to the SMC grid type.}
 \end{flist}
 
 \noindent
@@ -1033,7 +1033,7 @@ PROMPT :: ./install_ww3_svn
 
 
                   ===================================
-              ------ Installing WAVEWATCH III  v.4 ------
+              ------ Installing WAVEWATCH III  v.5 ------
                   =================================== 
 
        Script for installing package from Subversion server source. 
@@ -1044,7 +1044,7 @@ PROMPT :: ./install_ww3_svn
 
 
                   ===================================
-              ------ Installing WAVEWATCH III  v.4 ------
+              ------ Installing WAVEWATCH III  v.5 ------
                   ===================================
                                      from svn source 
 
@@ -1054,7 +1054,7 @@ PROMPT :: ./install_ww3_svn
  - A generic [G] dot-file .wwatch3.env (Old-fashioned option).
  [L] Installs new, uses existing or updates env file in current directory.
  [G] Installs new, uses existing or updates env file in home directory, 
-                   (home is presumably /export/emc-lw-jhalves/wd20ha}).
+                   (home is presumably /path/to/home/directory/here}).
 
  
  Type your choice now: L
@@ -1063,7 +1063,7 @@ PROMPT :: ./install_ww3_svn
 
 
  Installing in 
-   /export/emc-lw-jhalves/wd20ha/WW3_GUIDE
+   /path/to/current/local/directory/here
 
    OK ? [y/n] y
 
@@ -1086,7 +1086,7 @@ PROMPT :: ./install_ww3_svn
       Printer (listings)       : printer 
       FORTRAN comp. (aux only) : f77 
       C Compiler (aux only)    : cc 
-      Scratch directory        : /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp 
+      Scratch directory        : /path/to/current/local/directory/here/tmp 
       Save source code         : yes 
       Save listings            : yes 
 
@@ -1099,7 +1099,7 @@ PROMPT :: ./install_ww3_svn
       Printer for listings [printer] : 
       Compiler for aux. [f77] : gfortran
       Compiler for aux. [cc] : gcc
-      Scratch space [/export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp] : 
+      Scratch space [/path/to/current/local/directory/here/tmp] : 
       Save source code files (*.f)  [yes] : 
       Save listing files  [yes] : 
  
@@ -1107,7 +1107,7 @@ PROMPT :: ./install_ww3_svn
       Printer (listings)       : printer 
       FORTRAN comp. (aux only) : gfortran 
       C Compiler (aux only)    : gcc 
-      Scratch directory        : /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/tmp 
+      Scratch directory        : /path/to/current/local/directory/here/tmp 
       Save sources             : yes 
       Save listings            : yes 
 
@@ -1122,7 +1122,7 @@ PROMPT :: ./install_ww3_svn
               ------ Setup or update WAVEWATCH III ------
                   ===================================
                                      Using svn source 
-                  Directory /export/emc-lw-jhalves/wd20ha/WW3_GUIDE/svn
+                  Directory /path/to/current/local/directory/here/svn
 
 
  This is a new installation. Create new svn directory [y/-] ? y

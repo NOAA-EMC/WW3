@@ -1,0 +1,123 @@
+\vsssub
+\subsubsection[~$S_{nl}$: Two-Scale Approximation (TSA)]{~$S_{nl}$: The Two-Scale Approximation (TSA) and the  Full Boltzmann Integral (FBI) \label{sec:NL4}}
+\vsssub
+
+\opthead{NL4 with INDTSA=1 for TSA or 0 for FBI}{ Full Boltzmann Integral }{B. Toulany, W. Perrie, D. Resio \& M. Casey}
+
+
+\noindent
+The Boltzmann integral describes the rate of change of action density of a particular wavenumber due to resonant interactions among four wavenumbers. The wavenumbers must satisfy a resonance:
+\begin{equation}
+{\bf k}_1 +{\bf k}_2 = {\bf k}_3+{\bf k}_4. 
+\end{equation}
+
+The Two-Scale Approximation (TSA) for calculating the nonlinear interactions that is implemented in  \ws\ is based on papers by \cite{art:Resio2008} (hereafter RP08), \cite{art:Perrie2009}, \cite{art:Resio2011} and \cite{art:Perrie2013}. A description of TSA with respect to the Boltzmann integral is similar to the description for the WRT method. Here, we focus on the TSA derivation and the differences with the WRT method.
+
+Starting from RP08 Eq. (2), the integral of the transfer rate from wavenumber ${\bf k}_3$ to wavenumber ${\bf k}_1$, denoted $T({\bf k}_1,{\bf k}_3 )$, satisfies: 
+\begin{equation}
+\frac{\partial n({\bf k}_1)}{\partial t} = \int \int T ({\bf k}_1,{\bf k}_3 ) d {\bf k}_3 \label{eq:nl4_2}
+\end{equation}    
+which can be re-written (as in RP08) as: 
+\begin{eqnarray}
+T({\bf k}_1,{\bf k}_3 ) &=& 2 \oint [n_1 n_3 (n_4-n_2) +n_2n_4(n_3-n_1)] C({\bf k}_1,{\bf k}_2,{\bf k}_3,{\bf k}_4)\nonumber \\
+&& \vartheta (|{\bf k}_1-{\bf k}_4|-|{\bf k}_1-{\bf k}_3|) \left|\frac{\partial W}{\partial \eta}\right|^{-1} ds \nonumber\\
+& \equiv & 2 \oint N^3 C \vartheta \left|\frac{\partial W}{\partial \eta}\right|^{-1} ds \label{eq:nl4_3}
+\end{eqnarray}
+as a line integral on contour $s$ and where the function $W$ is given by 
+\begin{equation}
+W = \omega_1+\omega_2-\omega_3-\omega_4
+\end{equation}
+where $\vartheta$ is the Heaviside function and ${\bf k}_2={\bf k}_2(s,{\bf k}_1,{\bf k}_3)$. Here, $n_i$ is the action density at ${\bf k}_i$ and function $W$ is given by $W = \omega_1+\omega_2-\omega_3-\omega_4$ requiring that the interactions conserve energy on $s$, which is the locus of points satisfying $W=0$ and $\eta$ is the local orthogonal to the locus $s$. Note that Eq.(\ref{eq:nl4_3}) is similar to Eq. (\ref{eq:WRT_T2}) of WRT in section  \ref{sec:NL2} with coupling coefficient $C$ equal to the WRT coupling coefficient $G$ divided by 2.
+
+\paragraph{TSA and FBI}
+
+For FBI, as well as for WRT, we numerically compute the discretized form of Eq.(\ref{eq:nl4_3}) as a finite sum of many line integrals (around locus $s$) of $T({\bf k}_1,{\bf k}_3 )$ for all discrete  combinations of ${\bf k}_1$ and ${\bf k}_3$. The line integral is determined by dividing the locus into a finite number of segments, each with the length $ds$. A complete `exact' computation is expensive, requiring $10^3-10^4$ times DIA’s run time. 
+
+The methodology for TSA is to decompose a directional spectrum into a \textit{parametric} (\textit{broadscale}) spectrum and a (\textit{local-scale}) nonparametric \textit{residual} component. The residual component allows the decomposition to retain the same number of degrees of freedom as the original spectrum, a prerequisite for the nonlinear transfer source term in 3G models. As explained in the cited literature, this decomposition leads to a representation of the nonlinear wave-wave interactions in terms of the \textit{broadscale} interactions, \textit{local-scale} interactions, and the \textit{cross terms}: the interactions between the broadscale and local-scale components of the spectrum. This method allows the broadscale interactions and certain portions of the local-scale interactions to be \textit{pre-computed}. TSA's accuracy is dependent on the accuracy of the parameterization used to represent the broadscale component.
+
+We begin by decomposing a given action density spectrum $n_i$ into the \textit{parametric} broadscale term $\hat{n}_i$ and a \textit{residual} local-scale (or `\textit{perturbation}-scale') term $n'_i$. The broadscale term $\hat{n}_i$ is assumed to have a JONSWAP-type form, depending on only a few parameters, 
+\begin{equation}
+		n'_i=n_i-\hat{n}_i
+\end{equation}			
+TSA's accuracy depends on $\hat{n}_i$, in that if the number of degrees of freedom used for $\hat{n}_i$ approaches the number of degrees of freedom in a given wave spectrum $n_i$, the local-scale $n'_i$ becomes quite small, and thus, TSA is very accurate.  However, it is time-consuming to set up large multi-dimensional sets of pre-computed matrices for $\hat{n}_i$. Therefore an optimal TSA formulation must minimize the number of parameters needed for $\hat{n}_i$.  However, even for complicated multi-peaked spectra $n_i$, a small set of parameters can be used to let $\hat{n}_i$ capture \textit{most} of the spectra so that the residual $n'_i$, can be small (RP08; \cite{art:Perrie2009}). 
+ 
+RP08 describe the partitioning of $n_i$ so that the transfer integral $T$ in Eq. (\ref{eq:nl4_3}) consists of the sum of \textit{broadscale} terms $\hat{n}_i$, denoted $B$, \textit{local-scale} terms $n'_i$, denoted $L$, and \textit{cross-scale terms} of $\hat{n}_i$ and $n'_i$, denoted $X$. Thus the nonlinear transfer term can be represented as,   
+\begin{equation}
+S_{nl}(f,\theta) = B+L+X \label{eq:nl4_6}
+\end{equation}
+where $B$ depends on JONSWAP-type parameters $x_i$ and can be pre-computed, 
+\begin{equation}
+S_{nl}(f,\theta)_{broadscale} = B(f,\theta,x_1,\ldots,x_n). \label{eq:nl4_7}
+\end{equation}
+TSA needs to find accurate efficient approximations for $L+X$. If all terms in Eq. (\ref{eq:nl4_6}) are computed as in FBI, this might result in an $8\times$ increase in the computations, compared to $B$ in Eq. (\ref{eq:nl4_6}). While this approach can provide a means to examine the general problem of bimodal wave spectra, for example in mixed seas and swells, by subtracting the interactions for a single spectral region from the interactions for the sum of the two spectral regions, it does not provide the same insight as the use of the \textit{split} density function, where the cross-interaction terms can be examined algebraically. 
+
+
+In any case, to simplify Eq. (\ref{eq:nl4_6}), terms involving  $n'_2$ and $n'_4$  are neglected assuming that these local-scale terms are deviations about the broadscale terms, $\hat{n}_2$ and $\hat{n}_4$, which are supposed to capture most of the spectra, whereas $n'_2$ and $n'_4$, with their positive/negative differences and products tend to cancel. TSA's ability to match the FBI (or WRT) results for test spectra is used to justify the approach. Moreover, the broadscale terms $\hat{n}_2$ and $\hat{n}_4$, tend to have much longer lengths along locus $s$ and therefore should contribute more to the net transfer integral. Thus, RP08 show that 
+\begin{equation}
+S_{nl}(k_1) = B+L+X=B + \int\int \oint N^3_* C\left| \frac{\partial W}{\partial n} \right|^{-1} ds k_3 d\theta_3dk_3, \label{eq:nl4_8}
+\end{equation}                   
+where $N^3_*$ is what's left from all the cross terms, after neglecting terms involving  $n'_2$ and $n'_4$,    
+\begin{equation}
+N^3_*=\hat{n}_2 \hat{n}_4 (n'_3-n'_1)+n'_1 n'_3(\hat{n}_4-\hat{n}_2)+\hat{n}_1n'_3(\hat{n}_4-\hat{n}_2)+n'_1\hat{n}_3(\hat{n}_4-\hat{n}_2),.
+\end{equation}
+and they use known scaling relations, with specific parameterizations, for example for $f^{-4}$ or $f^{-5}$ based spectra. To implement this formulation, we generally fit each peak separately. 
+
+
+It should be noted that to speed up the computation, a pre-computed set of multi-dimensional arrays, for example the grid geometry arrays and the gradient array, which are functions of spectral parameters, number of segments on the locus and depth, are generated and saved in a file with filename `\textbf{grd\_dfrq\_nrng\_nang\_npts\_ndep.dat}', for example, `grd\-\_1.1025\-\_35\-\_36\-\_30\-\_37\-.dat', etc.
+
+The flow chart for TSA's main subroutine W3SNL4 in w3snl4md.ftn is as follows:
+{\footnotesize 
+\begin{verbatim}
+           /
+          |
+          |*** It's called from:
+          |    -----------------
+          |    (1) W3SRCE in w3srcemd.ftn; to calc. & integrate source term 
+          |        at single pt
+          |    (2) GXEXPO in gx_outp.ftn;  to perform point output
+          |    (3) W3EXPO in ww3_outp.ftn; to perform point output
+          |    (4) W3EXNC in ww3_ounp.ftn; to perform point output
+          |*** It can also be called from:
+          |    (5) W3IOGR in w3iogrmd.ftn; to perform I/O of "mod_def.ww3"
+          |
+W3SNL4 -->| 
+          |
+          |*** It calls:
+          |    ---------
+          |               /
+          |              |
+          |              |*** It's called from:
+          |              |    -----------------
+          |              |    W3SNL4 in w3snl4md.ftn; main TSA subr.
+          |              |*** It can also be called from: subr W3IOGR
+          |              |    W3IOGR in w3iogrmd.ftn; I/O of mod_def.ww3
+          |              |
+          |              |*** It calls:
+          |              |    ---------
+          |              |--> wkfnc (function)
+          |              |--> cgfnc (function)
+          |(1)           |
+          |--> INSNL4 -->|                 /
+          |              |                |--> shloxr (uses function wkfnc)
+          |              |--> gridsetr -->|--> shlocr
+          |              |                |--> cplshr
+          |              |                 \
+          |(2)            \
+          |--> optsa2
+          |
+          |                 /
+          |(3)             |    if (ialt=2)
+          |--> snlr_tsa -->|--> interp2
+          |                |
+          |                 \
+          |
+          |
+          |                 /
+          |(4)             |    if (ialt=2)
+          |--> snlr_fbi -->|--> interp2
+          |                |
+          |                 \
+          |
+           \ 
+\end{verbatim}
+ }

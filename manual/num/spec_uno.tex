@@ -1,11 +1,11 @@
 \vssub
-\subsubsection{~Second  order scheme (UNO)}
+\subsubsection{~Second-order scheme (UNO)}
 \opthead{UNO}{Met Office}{J.-G. Li}
 
 \noindent
-The UNO2 scheme for the directional $\theta$-space is identical to the regular
+The UNO scheme for the directional $\theta$-space is identical to the regular
 grid one assuming that the directional bins are regularly spaced. For the
-\emph{k}-space, however, the UNO2 scheme uses its irregular version, which
+\emph{k}-space, however, the UNO scheme uses its irregular version, which
 uses local gradients instead of differences to estimate wave action value at
 the mid-flux point for the cell face between spectral bin \emph{i}-1 and
 \emph{i}, that is:
@@ -21,13 +21,13 @@ the mid-flux point for the cell face between spectral bin \emph{i}-1 and
 where \emph{i}- is the wave number \emph{k} bin index; the subscripts
 \emph{u}, \emph{c} and \emph{d} indicate the \emph{upstream, central} and
 \emph{downstream} cells, respectively, relative to the given \emph{i}- face
-velocity $\dot{k}_{i-}$; $k_{c}$is the central bin wave number and $\Delta
-k_{c}$is the central bin widith. Details of the irregular grid UNO2 scheme are
+velocity $\dot{k}_{i-}$; $k_{c}$ is the central bin wave number and $\Delta
+k_{c}$ is the central bin widith. Details of the irregular grid UNO scheme are
 given in \cite{art:Li08}.
 
 Boundary conditions for the $\theta$-space is the natural periodic
 condition. For the \emph{k}-space, two more zero spectral bins are added to
-each end of the wave spectral domain as the UNO2 scheme is 2nd order in
+each end of the wave spectral domain as the UNO scheme is 2nd order in
 accuracy.
 
 

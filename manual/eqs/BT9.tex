@@ -5,10 +5,10 @@
 \opthead{BT9}{NRL/SWAN}{M. Orzech and E. Rogers}
 
 \noindent
-To activate viscous mud effects with the (Ng) routines, the user specifies
+To activate viscous mud effects with the Ng routines, the user specifies
 {\code BT9} in the switch parameter file. The Ng method computes $k_i$ as:
 \begin{equation}\label{eq:dmud3}
-  k_i \approx {D_{mud}} \equiv \frac{\delta_m({B_r'}+{B_i'}){k_1}^2}{sinh2{k_1}{d}+2{k_1}{d}}
+  k_i \approx {D_{mud}} \equiv \frac{\delta_m({B_r'}+{B_i'}){k_1}^2}{sinh2{k_1}{d}+2{k_1}{d}},
 \end{equation}
 Here, ${\delta_m}$ is the Stokes boundary layer thickness for mud, ${d}$ is
 water depth, and ${k_1}$ is leading order term of the real part of the

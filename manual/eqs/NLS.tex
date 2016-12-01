@@ -1,5 +1,5 @@
 \vsssub
-\subsubsection{~$S_{nl}$: Nonlinear filter} \label{sec:NLS}
+\subsubsection{~$S_{nl}$: Nonlinear Filter} \label{sec:NLS}
 \vsssub
 
 \opthead{NLS}{\ws}{H. L. Tolman}
@@ -27,11 +27,11 @@ $\lambda_{nl}$ is computed as
 % eq:nls_a34
 
 \begin{equation}
-\lambda_{nl} = \alpha_{34} (X_{\sigma}-1) \:\:\: , \label{eq:nls_a34}
+\lambda_{nl} = \alpha_{34} (X_{\sigma}-1) , \label{eq:nls_a34}
 \end{equation}
 
 \noindent 
-where $X_{\sigma}$ is the increment factor for the discrete frequency grid
+where $X_{\sigma}$ is the increment factor for the discrete frequency grid, typically $X_{\sigma}=1.1$
 [Eq.~(\ref{eq:sigma_grid})]. Using the native spectral description of \ws, the
 change in spectral density $\delta N_i$ at quadruplet component $i$, is
 written in the form of a discrete diffusion equation as \citep[page
@@ -46,14 +46,14 @@ written in the form of a discrete diffusion equation as \citep[page
 N_1 \: \left ( \begin{array}{c} 0 \\ 1 \\ 0 \end{array} \right ) +
 N_1 \:  \frac{S \Delta t}{N_1}
 \left ( \begin{array}{r} 1 \\ -2 \\ 1 \end{array} \right )
- \:\:\: , \label{eq:nls_dist}
+ , \label{eq:nls_dist}
 \end{equation}
 with
 \begin{equation}
 S = \frac{C_{nlf} \: k^4 \sigma^{12} }{(2\pi)^9 \: g^4 \: c_g }
 \left [ \frac{N_1^2}{k_1^2}  \left ( \frac{N_3}{k_3}+\frac{N_4}{k_4} \right ) 
                - 2 \frac{N_1}{k_1} \frac{N_3}{k_3} \frac{N_4}{k_4} \right ]
-\:\:\: . \label{eq:nls_S}
+, \label{eq:nls_S}
 \end{equation}
 
 \noindent 
@@ -66,7 +66,7 @@ smoother at higher frequencies only, with
 
 \begin{equation}
 \Phi(f) = \exp \left [ -c_1 \left ( \frac{f}{c_2 f_p} \right ) ^ {-c_3}
-               \right ] \:\:\: ,
+               \right ] ,
 \label{eq:nls_filter}
 \end{equation}
 
@@ -76,20 +76,20 @@ need to be chosen such that $\Phi(f_p) \approx 0$, $\Phi(f > 3f_p) \approx 1$
 and that $\Phi \approx 0.5$ for frequencies moderately larger than $f_p$. This
 can be achieved by setting
 \begin{equation}
-c_1 = 1.25 \:\:\: , \:\:\: c_2 = 1.50 \:\:\: , \:\:\: c_3 = 6.00 \:\:\: .
+c_1 = 1.25, \:\:\:  \:\:\: c_2 = 1.50, \:\:\:  \:\:\: c_3 = 6.00. 
 \label{eq:nls_f_parms}
 \end{equation}
 
-\noindent 
+ 
 Accounting for the redistribution of the changes $S_{a,b}$ over the
-neighbouring discrete spectral grids points, the effective nondimensional
+neighboring discrete spectral grids points, the effective nondimensional
 strengths ($\tilde{S}_{a,b}$) of the interactions for both quadruplets become
 
 \begin{equation}
 \tilde{S}_a = \Phi(f) M_1 S_a \Delta t / N_1
-\:\:\: , \:\:\:
+, \:\:\:
 \tilde{S}_b = \Phi(f) M_1 S_b \Delta t / N_1
-\:\:\: , \label{eq:nls_tilde_s}
+, \label{eq:nls_tilde_s}
 \end{equation}
 
 \noindent 
@@ -103,10 +103,10 @@ maximum change is distributed over the two quadruplets using
 \begin{equation}
 \tilde{S}_{m,a} = 
    \frac{|\tilde{S}_a|\tilde{S}_{\max}}{|\tilde{S}_a|+|\tilde{S}_b|}
- \:\:\: , \:\:\:
+ , \:\:\:
 \tilde{S}_{m,b} = 
    \frac{|\tilde{S}_b|\tilde{S}_{\max}}{|\tilde{S}_a|+|\tilde{S}_b|}
-\:\:\: ,
+ ,
 \label{eq:nls_limit_2D}
 \end{equation}
 
@@ -114,8 +114,8 @@ maximum change is distributed over the two quadruplets using
 and the normalized changes $\tilde{S}_a$ and $\tilde{S}_b$ are limited as
 
 \begin{equation}
-- \tilde{S}_{m,a} \leq \tilde{S}_a \leq \tilde{S}_{m,a} \:\:\: , \:\:\:
-- \tilde{S}_{m,b} \leq \tilde{S}_b \leq \tilde{S}_{m,b} \:\:\: .
+- \tilde{S}_{m,a} \leq \tilde{S}_a \leq \tilde{S}_{m,a}, \:\:\:
+- \tilde{S}_{m,b} \leq \tilde{S}_b \leq \tilde{S}_{m,b}.
 \label{eq:nls_limit}
 \end{equation}
 
@@ -128,4 +128,4 @@ through the namelist {\F snls} in {\file ww3\_grid.inp} (parameters {\F a34} ,
 {\F fhfc}, {\F dnm}, {\F fc1}, {\F fc2} and {\F fc3}, respectively).  Note
 that this filter is applied in addition to a parameterization of $S_{nl}$, but
 does not replace it. Hence, it is used on concert with a full parameterization
-of $S_{nl}$ and described in the preceding sections.
+of $S_{nl}$, described in the preceding sections.

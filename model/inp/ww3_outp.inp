@@ -41,7 +41,7 @@ $ The transfer file contains records with the following contents.
 $
 $ - File ID in quotes, number of frequencies, directions and points.
 $   grid name in quotes (for unformatted file C*21,3I,C*30).
-$ - Bin frequenies in Hz for all bins.
+$ - Bin frequencies in Hz for all bins.
 $ - Bin directions in radians for all bins (Oceanographic conv.).
 $                                                         -+
 $ - Time in yyyymmdd hhmmss format                         | loop
@@ -51,8 +51,8 @@ $   direction, current speed and direction     |   over    |
 $ - E(f,theta)                                 |  points   | times
 $                                             -+          -+
 $
-$ The formatted file is readable usign free format throughout.
-$ This datat set can be used as input for the bulletin generator
+$ The formatted file is readable using free format throughout.
+$ This data set can be used as input for the bulletin generator
 $ w3split.
 $
 $ -------------------------------------------------------------------- $
@@ -83,7 +83,7 @@ $            print plots.
 $          - Unit number for transfer file, also used in table file
 $            name.
 $          - Flags for spectrum, input, interactions, dissipation,
-$            bottom and total source term.
+$            bottom, ice and total source term.
 $          - scale ISCALE for OTYPE=2,3
 $                              0 : Dimensional.
 $                              1 : Nondimensional in terms of U10
@@ -91,13 +91,13 @@ $                              2 : Nondimensional in terms of U*
 $                             3-5: like 0-2 with f normalized with fp.
 $          - Flag for unformatted transfer file.
 $
-$ 1  0. 0. 50   T T T T T T  0  F
+$ 1  0. 0. 50   T T T T T T T 0  F
 $
 $ The transfer file contains records with the following contents.
 $
-$ - File ID in quotes, nubmer of frequencies, directions and points,
+$ - File ID in quotes, number of frequencies, directions and points,
 $   flags for spectrum and source terms (C*21, 3I, 6L)
-$ - Bin frequenies in Hz for all bins.
+$ - Bin frequencies in Hz for all bins.
 $ - Bin directions in radians for all bins (Oceanographic conv.).
 $                                                         -+
 $ - Time in yyyymmdd hhmmss format                         | loop
@@ -109,6 +109,7 @@ $ - Sin(f,theta) if requested                  |           |
 $ - Snl(f,theta) if requested                  |           |
 $ - Sds(f,theta) if requested                  |           |
 $ - Sbt(f,theta) if requested                  |           |
+$ - Sice(f,theta) if requested                 |           |
 $ - Stot(f,theta) if requested                 |           |
 $                                             -+          -+
 $ -------------------------------------------------------------------- $
@@ -131,7 +132,7 @@ $ The transfer file contains records with the following contents.
 $
 $ - File ID in quotes, number of frequencies, directions and points.
 $   grid name in quotes (for unformatted file C*21,3I,C*30).
-$ - Bin frequenies in Hz for all bins.
+$ - Bin frequencies in Hz for all bins.
 $ - Bin directions in radians for all bins (Oceanographic conv.).
 $                                                         -+
 $ - Time in yyyymmdd hhmmss format                         | loop

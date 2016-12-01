@@ -686,9 +686,9 @@
 ! AC = WLG_I(IK)**2 * STRAIN_C /(2*WSQ(IK)*PI**2*ICEH)
 ! CURVSPEC is the curvature variance = elevation variance * k^4 
 ! STRAINSPEC is the strain variance = elevation variance * k^4 * ICEH^2/4 
-	CURVSPEC (IK) = SUME * (2*PI/ WLG_I(IK))**4
-	ESPEC (IK) = SUME 
-	SUMALLDIR = SUMALLDIR / REAL(NTH)
+        CURVSPEC (IK) = SUME * (2*PI/ WLG_I(IK))**4
+        ESPEC (IK) = SUME 
+        SUMALLDIR = SUMALLDIR / REAL(NTH)
 !
 ! Adds the scattered energy isotropically to conserve the energy 
 ! This may not be a very good scheme numerically. Another possible 

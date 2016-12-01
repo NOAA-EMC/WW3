@@ -1089,7 +1089,7 @@
                 BERGAUX     = UNDEF
                 SED_D50AUX  = UNDEF
                 ICEHAUX     = UNDEF
-                ICEFAUX     = UNDEF		
+                ICEFAUX     = UNDEF
                 SUMWT1      = 0
 !   
 ! Group 2 variables

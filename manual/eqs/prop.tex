@@ -14,7 +14,7 @@ conservation equation conserves total wave energy/action, unlike the transport
 equation. This is an important feature of an equation when applied in a
 numerical model. The balance equation for the spectrum $N(k,\theta;\bx,t)$ as
 used in \ws\ is given as (for convenience of notation, the spectrum is
-henceforth denoted simply as $N$)
+henceforth denoted simply as $N$):
 
 %----------------------------------%
 % Plain-grid propagation equations %
@@ -46,7 +46,7 @@ henceforth denoted simply as $N$)
 \end{equation}
 
 \noindent
-where ${\bf c}_g$ is given by $c_g$ and $\theta$, $s$ is a coordinate in the
+where ${\bf c}_g = (c_g \sin \theta, c_g \cos \theta$, $s$ is a coordinate in the
 direction $\theta$ and $m$ is a coordinate perpendicular to $s$.
 Equation~(\ref{eq:bal_plane}) is valid for Cartesian coordinates. For large-scale
 applications, this equation is usually transferred to spherical coordinates,
@@ -90,11 +90,11 @@ where $R$ is the radius of the earth and $U_\phi$ and $U_\lambda$ are current
 components. Equation~(\ref{eq:theta_g_dot}) includes a correction term for
 propagation along great circles, using a Cartesian definition of $\theta$
 where $\theta = 0$ corresponds to waves traveling from west to east. \ws\ can
-be run using either Cartesian or spherical coordinates. Note that unresolved obstacles
+be run using either Cartesian or Spherical coordinates. Note that unresolved obstacles
 such as islands can be included in the equations. In \ws\ this is done at the
 level of the numerical scheme, as is discussed in section~\ref{sub:num_obst}. Also, depth variations 
 at the scale of the wavelength can be introduced by a scattering source term described in 
  section~\ref{sec:BS1}. 
  
- Finally, both Cartesian  and spherical coordinates can be discretized in many ways, using quadrangles (rectangular, curvulinear or SMC grids) and triangles. 
+ Finally, both Cartesian  and spherical coordinates can be discretized in many ways, using quadrangles (rectangular, curvilinear or SMC grids) and triangles. 
 That aspect is treated in chapter~\ref{chapt:num}.

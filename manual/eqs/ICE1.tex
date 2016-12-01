@@ -5,7 +5,7 @@
 \opthead{IC1}{\ws/NRL}{E. Rogers and S. Zieger}
 
 \noindent
-Experimental routines for respresentation of the effect of ice on waves have
+Experimental routines for representation of the effect of ice on waves have
 been implemented using the switches {\code IC1}, {\code IC2}, and {\code
 IC3}. These effects can be presented in terms of a complex wavenumber
 
@@ -20,13 +20,13 @@ refraction by bathymetry, whereas the imaginary part of the complex
 wavenumber, ${k_i}$, is an exponential decay coefficient
 ${k_i}({x},{y},{t},\sigma $) (depending on location, time and frequency,
 respectively), producing wave attenuation.  The ${k_i}$ is introduced as
-${S_{ice}}/{E}=-2{C_g}{k_i}$, where ${S_{ice}}$ is a source term (see also
+${S_{ice}}/{E}=-2{c_g}{k_i}$, where ${S_{ice}}$ is a source term (see also
 \cite{bk:WAM94}, pg. 170).
 
 The effect of sea ice on ${k_i}$ is used for all three of the source functions
-({\code IC1}, {\code IC2}, {\code IC3}). The effect of sea ice on ${k_r}$ does
-not apply to {\code IC1}, has not been implemented for {\code IC2}, and has
-been implemented for {\code IC3}.
+({\code IC1}, {\code IC2}, {\code IC3}). The effect of sea ice on ${k_r}$ has
+been implemented for {\code IC3}, does
+not apply to {\code IC1}, and has not been implemented for {\code IC2}.
 
 With the ice source functions, {\code IC1}, {\code IC2}, and {\code IC3}, ice
 concentration is not a required input, but if ice concentration has been read
@@ -62,5 +62,5 @@ revision.
 scattering of waves from sea ice is not considered via {\code IC1}, {\code
 IC2}, {\code IC3}. This is an important physical process \citep{art:Wad75},
 but since it is conservative, it should be treated separately from the source
-functions {\code IC1}, {\code IC2}, {\code IC3}, which are intented to
+functions {\code IC1}, {\code IC2}, {\code IC3}, which are intended to
 represent non-conservative effects of sea ice. This work is in progress.

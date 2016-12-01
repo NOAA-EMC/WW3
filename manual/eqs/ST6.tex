@@ -1,12 +1,11 @@
 \vsssub
-\subsubsection{~$S_{in} + S_{ds}$: BYDRZ} \label{sec:ST6}
+\subsubsection{~$S_{in} + S_{ds}$: Zieger et al. 2015} \label{sec:ST6}
 \vsssub
 
-\opthead{ST6}{AUSWEX, Lake George}{S. Zieger}
+\opthead{ST6}{AUSWEX, Lake George}{A. Babanin, I. Young, M. Donelan, E. Rogers, S. Zieger}
 
 \noindent
-BYDRZ (Babanin/Young/Donelan/Rogers/Zieger) version implements\linebreak
-observation-based physics for deep-water source/sink terms. These include wind input
+This version implements observation-based physics for deep-water source/sink terms. These include wind input
 source term, and sink terms due to negative wind input, whitecapping
 dissipation and wave-turbulence interactions (swell dissipation).
 The wind input and whitecapping dissipation source terms are based on
@@ -22,25 +21,25 @@ previously not accounted for:
 (i) full air-flow separation that leads to a relative reduction of
 wind input for conditions of strong winds/steep waves;
 (ii) dependence of the wave growth rate on wave steepness,
-which signifies nonlinear behaviour of the wind-input source function;
+which signifies nonlinear behavior of the wind-input source function;
 (iii) enhancement of input in the presence of wave breaking
-\citep{art:Dea06,art:Bea07} (the last feature was not implemented in BYRDZ).
+\citep{art:Dea06,art:Bea07} (the last feature was not implemented in here).
 Following \citet{art:RBW12}, this input source term is formulated as
 \begin{eqnarray}
-S_{in}(k,\theta) & = & \frac{\rho_a}{\rho_w}\, \sigma\,\gamma(k,\theta)\,N(k,\theta) \:\:\: ,
-\label{eq:ST601} \\ \gamma(k,\theta) &=& G\,\sqrt{B_n}\,W \:\:\: ,
+S_{in}(k,\theta) & = & \frac{\rho_a}{\rho_w}\, \sigma\,\gamma(k,\theta)\,N(k,\theta)  ,
+\label{eq:ST601} \\ \gamma(k,\theta) &=& G\,\sqrt{B_n}\,W  ,
 \label{eq:ST602} \\
-G                &=& 2.8-\Bigl (1+\tanh (10\sqrt{B_n}W-11) \Bigr) \:\:\: ,
+G                &=& 2.8-\Bigl (1+\tanh (10\sqrt{B_n}W-11) \Bigr)  ,
 \label{eq:ST603} \\
-B_n              &=& A(k)\,N(k)\sigma\,k^3 \:\:\: ,
+B_n              &=& A(k)\,N(k)\sigma\,k^3  ,
 \label{eq:ST604} \\
-W                &=& \left (\frac{U}{c}\,-\,1 \right )^2 \:\:\: .
+W                &=& \left (\frac{U}{c}\,-\,1 \right )^2  .
 \label{eq:ST605}
 \end{eqnarray}
 
 \noindent
 In (\ref{eq:ST601})$-$(\ref{eq:ST605}) $\rho_a$ and $\rho_w$ are densities
-of air and water, respectively, $U$ is wind speed, $c$ refers to 
+of air and water, respectively, $U$ is wind speed, $c$ refers to
 wave phase speed, $\sigma$ is radian frequency and $k$
 is wavenumber. The spectral saturation (\ref{eq:ST604}), introduced
 by \citet{art:Phi84}, is a spectral measure of steepness $ak$.  The
@@ -53,28 +52,28 @@ directions $\theta\in[0,2\pi]$ \citep{art:BS87}.
 
 \citet{art:Dea06} parameterized the growth rate (\ref{eq:ST602}) in terms
 of winds 10\,m above the mean surface. Wave models typically employ friction
-velocity $u_\star=\tau/\rho_a$. Wind speed scaling $U=28 u_\star$ is adopted 
+velocity $u_\star=\tau/\rho_a$. Wind speed scaling $U=28 u_\star$ is adopted
 from \citet{art:Sea81} and \citet{art:KHH84} following equation (\ref{eq:Snyder}).
 \begin{eqnarray}
 W_1 & = & \mathrm{max}^2 \left \{ 0,\frac{U}{c}\ \cos(\theta-\theta_w)-1
-\right \} \:\:\: , \label{eq:ST606-1} \\
+\right \}  , \label{eq:ST606-1} \\
 W_2 & = & \mathrm{min}^2 \left \{ 0,\frac{U}{c}\ \cos(\theta-\theta_w)-1
-\right \} \:\:\: .\label{eq:ST606-2} 
+\right \} .\label{eq:ST606-2}
 \end{eqnarray}
 
 \noindent
-The directional distribution of $W$ is implemented as the sum of favourable
+The directional distribution of $W$ is implemented as the sum of favorable
 winds (\ref{eq:ST606-1}) and adverse winds (\ref{eq:ST606-2}), so that they
-complement one another (i.e. $W=\{W_1\cup W_2$\}, see {\it Negative Input} 
+complement one another (i.e. $W=\{W_1\cup W_2$\}, see {\it Negative Input}
 later this section):
 \begin{equation}\label{eq:ST606}
-W=W_1-a_0\,W_2  \:\:\: .
+W=W_1-a_0\,W_2  .
 \end{equation}
 
 \paragraph{Wind input constraint.} One important part of the input is the
 calculation of the momentum flux from the atmosphere to the ocean,
-which must agree with the flux received by the waves. Close to the surface,
-the stress $\vec{\tau}$ can be written as the sum of the viscouse and
+which must agree with the flux received by the waves. At the surface,
+the stress $\vec{\tau}$ can be written as the sum of the viscous and
 wave-supported stress: $\vec{\tau} = \vec{\tau}_{v} + \vec{\tau}_{w}$.
 The wave-supported stress $ \vec{\tau}_{w}$ is used as the principal
 constraint for the wind input and cannot exceed the total stress
@@ -86,7 +85,7 @@ the wind-momentum-input function:
 \begin{equation}\label{eq:ST609}
    \vec{\tau}_w = \rho_w g \int_{0}^{2\pi} \int_{0}^{k_{max}}
    \frac{S_{in}(k^\prime,\theta)}{c} \Bigl (\cos\theta,\sin\theta \Bigr )
-   dk^\prime d\theta \:\:\: .
+   dk^\prime d\theta  .
 \end{equation}
 
 \noindent
@@ -101,7 +100,7 @@ $S_{in}(k^\prime)=L(k^\prime)\,S_{in}(k^\prime)$ with
 
 \begin{equation}\label{eq:ST610}
 L(k^\prime) = \min \Bigl \{ 1, \exp \bigl ( \mu\,[1- U/c] \bigr ) \Bigr
-\}  \:\:\: .
+\}  .
 \end{equation}
 
 \noindent
@@ -112,64 +111,61 @@ which has a greater impact at high frequencies and only little impact on the
 energy-dominant part of the spectrum. The value of $\mu$ is dynamically
 calculated by iteration at each integration time step \citep{art:Tea10}.
 
-For the drag coefficient, parameterization (\ref{eq:ST607}) was selected and
+The drag coefficient is given by 
+\begin{equation}\label{eq:ST607}
+C_d \times 10^4 = 8.058 + 0.967 U_{10} - 0.016 U_{10}^2 ,
+\end{equation}
+which was selected and
 implemented as switch {\code FLX4}. The parameterization was proposed by
-\citet{art:Hwa11} and accounts for saturation, and even decline 
+\citet{art:Hwa11} and accounts for saturation, and further decline
 for extreme winds, of the sea drag at wind speeds in excess of 30\,m~s$^{-1}$.
 To prevent $u_\star$ from dropping to zero at very strong winds
 ($U_{10}\ge50.33$m~s$^{-1}$) expression (\ref{eq:ST607}) was modified to yield
-$u_\star=2.026$m~s $^{-1}$. {\it Important!} In BYDRZ, bulk adjustment to any
+$u_\star=2.026$m~s $^{-1}$. {\it Important!} In ST6, bulk adjustment to any
 uniform bias in the wind input field is done in terms of the wind stress
 parameter $u_\star$ rather than $U_{10}$. In order to achieve that, the
 factor in expression $C_d \times 10^4$ on the left hand side of
 (\ref{eq:ST607}) was substituted with $C_d \times \mathrm{FAC}$ and added
-as the namelist parameter {\code \&FLX4 CDFAC} (see {\it Bulk Adjustment}
+as the {\F FLX4} namelist parameter {\code CDFAC} (see {\it Bulk Adjustment}
 at the end of this section).
-
-\begin{equation}\label{eq:ST607}
-C_d \times 10^4 = 8.058 + 0.967 U_{10} - 0.016 U_{10}^2 \:\:\: .
-\end{equation}
-
-\noindent
-For the viscous drag coefficient equation (\ref{eq:ST608}) is selected which
-was parameterized by \citet{art:Tea10} as a function of wind speed by using
-data from \citet{art:BP98}:
-
+The viscous drag coefficient,
 \begin{equation}\label{eq:ST608}
-  C_v \times 10^3 = 1.1 - 0.05 U_{10} \:\:\: .
+  C_v \times 10^3 = 1.1 - 0.05 U_{10} ,
 \end{equation}
+was parameterized by \citet{art:Tea10} as a function of wind speed using
+data from \citet{art:BP98}.
 
 
-\paragraph{Negative Input.} Apart from the positive input, BYDRZ also has
+\paragraph{Negative Input.} Apart from the positive input, ST6 also has a 
 negative input term in order to attenuate growth of waves in those parts
 of wave spectrum where adverse component of the wind stress is present
 (\ref{eq:ST606-1}--\ref{eq:ST606-2}). The growth rate for adverse winds
 is negative \citep{pro:Don99} and is applied after the constraint of
 the wave-supported stress $\tau_w$ is met. The value of $a_0$
 (in \ref{eq:ST606}) is a tuning parameter in the parameterization of the
-input and is adjustable through namelist parameter {\code \&SIN6 SINA0}.
+input and is adjustable through the {\F SIN6} namelist parameter {\code  SINA0}.
 
 
 
 \noindent
 \paragraph{Whitecapping Dissipation.} For dissipation due to wave breaking,
 the Lake George field study revealed a number of new features: (i) the
-threshold behaviour of wave breaking \citep{art:BBY01}. The waves do not
+threshold behavior of wave breaking \citep{art:BBY01}. The waves do not
 break unless they exceed a generic steepness in which case the wave breaking
 probability depends on the level of excedence above this threshold steepness.
 For waves below the critical threshold, whitecapping dissipation is zero.
 (ii) the cumulative dissipative effect due to breaking and dissipation of
-short waves affected by longer waves 
+short waves affected by longer waves
 \citep{pro:Don01,pro:BY05,art:Mea06,art:YB06,art:Bea10},
 (iii) nonlinear dissipation function at strong winds
 (\citeauthor{art:Mea06}, \citeyear{art:Mea06};\linebreak
  \citeauthor{art:Bea07}, \citeyear{art:Bea07}),
 (iv) bimodal distribution of the directional spreading of the dissipation
-\citep{art:YB06,art:Bea10} (the last feature was not implemented in BYRDZ).
+\citep{art:YB06,art:Bea10} (the last feature was not implemented in ST6).
 Following \citet{art:RBW12}, the whitecapping dissipation term is
 implemented as:
 \begin{equation}\label{eq:ST620}
-  S_{ds}(k,\theta) = \Bigl [ T_1(k,\theta) + T_2(k,\theta) \Bigr ]\ N(k,\theta) \:\:\: ,
+  S_{ds}(k,\theta) = \Bigl [ T_1(k,\theta) + T_2(k,\theta) \Bigr ]\ N(k,\theta) ,
 \end{equation}
 
 \noindent
@@ -182,13 +178,16 @@ the spectral peak. Once the peak moves below this particular frequency, $T_2$
 becomes active and progressively more important as the peak downshifts further.
 
 
-The threshold spectral density $F_{\mathrm{T}}$ is calculated as shown in
-(\ref{eq:ST621}), where $k$ is the wavenumber and with
-$\varepsilon_{\mathrm{T}}=0.035^2$ being the empirical constant
-\citep{art:Bea07,bk:Bab11}:
+The threshold spectral density $F_{\mathrm{T}}$ is calculated as 
+\begin{equation}\label{eq:ST621}
+  F_{\mathrm{T}}(k)=\frac{\varepsilon_{\mathrm{T}}}{A(k)\,k^3}  ,
+\end{equation} 
+where $k$ is the wavenumber and with
+$\varepsilon_{\mathrm{T}}=0.035^2$ being an empirical constant
+\citep{art:Bea07,bk:Bab11}.
 
 \begin{equation}\label{eq:ST621}
-  F_{\mathrm{T}}(k)=\frac{\varepsilon_{\mathrm{T}}}{A(k)\,k^3} \:\:\: . 
+  F_{\mathrm{T}}(k)=\frac{\varepsilon_{\mathrm{T}}}{A(k)\,k^3}  .
 \end{equation}
 
 \noindent
@@ -200,30 +199,30 @@ component can be calculated as
 
 \begin{equation}\label{eq:ST622}
 T_1(k)=a_1 A(k)\frac{\sigma}{2\pi} \left [ \frac{\Delta(k)}{\mathcal{F}(k)}
-\right ]^{p_1} \:\:\: .
+\right ]^{p_1}  .
 \end{equation}
 
 \noindent
-The cumulative dissipation term is not local in frequency space and is 
-based on an integral that grows towards higher frequencies, dominating at 
+The cumulative dissipation term is not local in frequency space and is
+based on an integral that grows towards higher frequencies, dominating at
 smaller scales:
 
 \begin{equation}\label{eq:ST623}
 T_2(k)=a_2 \int\limits_0^k A(k) \frac{c_g}{2\pi} \left [
-\frac{\Delta(k)}{\mathcal{F}(k)} \right ]^{p_2}\!\!dk \:\:\: .
+\frac{\Delta(k)}{\mathcal{F}(k)} \right ]^{p_2}\!\!dk .
 \end{equation}
 
 \noindent
 The dissipation terms (\ref{eq:ST622})$-$(\ref{eq:ST623}) depend on five
 parameters: a generic spectral density $\mathcal{F}(k)$ used for
 normalization, and four coefficients $a_1$, $a_2$, $p_1$, and $p_2$.  The
-coefficients $p_1$ and $p_2$ control the strength of the normalised threshold
+coefficients $p_1$ and $p_2$ control the strength of the normalized threshold
 spectral density $\Delta(k)/\mathcal{F}(k)$ of the dissipation terms.
 Namelist parameter {\code SDSET} changes between the spectral density
 $F(k)$ and threshold spectral density $F_{\mathrm{T}}(k)$ for
 normalization in (\ref{eq:ST622})--(\ref{eq:ST623}).
 According to \citet{art:Bea07} and \citet{art:Bab09}, the directional
-narrowness parameter is set to unity $A(k)\approx 1$ in equations
+narrowness parameter is set to unity $A(k)\approx 1$ in Eqs.
 (\ref{eq:ST621})$-$(\ref{eq:ST623}).
 
 % -------------------------------------------------------------------
@@ -245,7 +244,7 @@ Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,\WWver \\
   $C$              &  NLPROP      & SNL1     & 3.00E7   &  3.00E7    \\
  \hline \hline
 \end{tabular} \end{center}
-\caption{Summary of calibration parameters for BYDRZ source terms.
+\caption{Summary of calibration parameters for ST6 source terms.
          Values tabulated represent default model settings.
          Abbreviation ``n/a'' indicates that the variable is not applicable
          in that release of the code.}
@@ -253,11 +252,11 @@ Parameter          &  WWATCH var. & namelist &  vers.\,4.18 & vers.\,\WWver \\
 % -------------------------------------------------------------------
 
 \citet{art:RBW12} calibrated the dissipation terms based on duration-limited
-academic tests. Calibration coefficients used in BYRDZ and listed in
+academic tests. Calibration coefficients used in ST6 and listed in
 Table~\ref{tab:ST601} differ somewhat from those of \citet{art:RBW12}
 mainly due to the fact that the wave-supported stress $\vec{\tau}_w$
 is implemented in the form of vector components and the scaling model
-for wind speed is customisable in the wind input parameterization.
+for wind speed is customizable in the wind input parameterization.
 
 \paragraph{Swell Dissipation.} In the absence of wave breaking,
 other mechanisms of wave attenuation are present. Here, they are
@@ -267,35 +266,35 @@ This mechanism, however, remains active for the wind-generated
 waves too. Its contribution across the spectrum is small, if the
 spectrum is above the wave-breaking threshold, but it is dominant
 at the front face of the spectrum, or even at the peak in case of
-the full Pierson-Moscowitz development. 
+the full Pierson-Moscowitz development.
 
 \begin{equation}\label{eq:ST624}
-  S_{swl}(k,\theta) = -\frac{2}{3}b_1 \sigma\ \sqrt{B_n}\ N(k,\theta) \:\:\:.
+  S_{swl}(k,\theta) = -\frac{2}{3}b_1 \sigma\ \sqrt{B_n}\ N(k,\theta).
 \end{equation}
 
 \noindent
-By making coefficient $b_1$ in equation (\ref{eq:ST624}) dependent
+By making coefficient $b_1$ in Eq. (\ref{eq:ST624}) dependent
 on steepness the large gradient in the spatial bias in wave height
 can be reduced:
 
 \begin{equation}\label{eq:ST625}
-   b_1 = B_1 \, 2\sqrt{E}\,k_p \:\:\:.
+   b_1 = B_1 \, 2\sqrt{E}\,k_p .
 \end{equation}
 
-In equation (\ref{eq:ST625}), $B_1$ is a scaling coefficient,
-$E$ (\ref{eq:etot}) is the total sea surface variance  and $k_p$
-is the peak wavenumber.  Equation (\ref{eq:ST625}) can be
-flagged through namelist parameter {\code \&SWL6 CSTB1}.The value for the
-coefficient $B_1$ in (\ref{eq:ST625}) and/or $b_1$ in (\ref{eq:ST624})
-is customizable through namelist parameter {\code \&SWL6 SWLB1}
+In Eq. (\ref{eq:ST625}), $B_1$ is a scaling coefficient,
+$E$  is the total sea surface variance Eq. (\ref{eq:etot}) and $k_p$
+is the peak wavenumber.  Eq. (\ref{eq:ST625}) can be
+flagged through the {\F SWL6} namelist parameter {\code CSTB1}.The value for the
+coefficient $B_1$ in Eq. (\ref{eq:ST625}) and/or $b_1$ in Eq. (\ref{eq:ST624})
+is customizable through the {\F SWL6} namelist parameter {\code SWLB1}
 (see Table~\ref{tab:ST601}).
 
 \noindent
 \paragraph{Bulk Adjustments.} The source term
 {\code ST6} has been calibrated with flux parameterization {\code FLX4}.
 Bulk adjustment to the wind filed can be achieved by re-scaling the drag
-parameterization {\code FLX4} through namelist parameter {\code
-\&FLX4 CDFAC=1.0E-4}.  This has a similar effect to tuning variable
+parameterization {\code FLX4} through the {\F FLX4} namelist parameter {\code
+ CDFAC=1.0E-4}.  This has a similar effect to tuning variable
 $\beta_{max}$ in {\code ST4} source term package, equations
 (\ref{eq:SinWAM4}) and (\ref{eq:tauhfint}), which is customizable
 through namelist parameter {\code BETAMAX} (see section
@@ -309,7 +308,7 @@ for extreme wind conditions such as hurricanes \citep{art:ZBRY15}.  In global
 hindcast, the coefficient for the negative input can be used to tune
 the bulk of wave height in scatter comparisons, whereas the scaling
 coefficient for swell dissipation primarily effect large sea states.
-When discrete interactive approximation (DIA) is used to compute the four-wave
+When the discrete interaction approximation (DIA) is used to compute the four-wave
 interaction the default value for the proportionality constant changes to
 $C=3.00\;10^7$.
 

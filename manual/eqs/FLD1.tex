@@ -1,0 +1,66 @@
+\vsssub
+\subsubsection{~Sea-state dependent $\tau$: Reichl et al. 2014} \label{sec:FLD1}
+\vsssub
+
+\opthead{FLD1}{\ws}{B. Reichl}
+
+\paragraph{Wind stress according to Reichl et al., 2014}
+
+In \citet{art:Rei14} the total stress is constant in height, but is decomposed into two components as a function of height as:
+\begin{equation}
+\vec{\tau}=\vec{\tau}_t(z)+\vec{\tau}_f(z),
+\end{equation}
+where $\tau_t$ is the turbulent stress and is equal to the viscous stress very near the surface.
+The wave form stress can be expressed as:
+\begin{equation}
+\vec{\tau}_f(z)=\rho_w\int^{k=\delta/z}_{k_{min}} \int^\pi_{-\pi}\beta_g(k,\theta) \sigma F(k,\theta) d\theta {\vec{k}} dk,
+\end{equation}
+that is, the wave form stress at height $z$ is equal to the integration of the wave form stress at the surface for wavenumbers below $k=\delta/z$, where $\delta/k$ is the inner layer height \citep{art:Har04} for waves at a wavenumber $k$.
+This expression is derived by assuming that the wave-induced stress is significant from the surface up to the inner layer height, but is negligible further above.
+Since at the surface
+\begin{equation}
+\vec{\tau}=\vec{\tau}_\nu+\vec{\tau}_f(z=0)=\vec{\tau}_\nu+\rho_w\int^{k_{max}}_{k_{min}} \int^\pi_{-\pi}\beta_g(k,\theta) \sigma F(k,\theta) d\theta {\vec{k}} dk,
+\end{equation}
+the turbulent stress at a height $z$ can be expressed as:
+\begin{equation}
+\vec{\tau}_t(z)=\vec{\tau}_\nu+\rho_w\int^{k_{max}}_{k=\delta/z} \int^\pi_{-\pi}\beta_g(k,\theta) \sigma F(k,\theta) d\theta {\vec{k}} dk.
+\end{equation}
+
+In this model it is assumed that the turbulent stress at the inner layer height $z=\delta/k$ determines the growth rate of waves at wavenumber $k$:
+\begin{equation}
+\beta_g(k,\theta)=c_\beta \sigma\frac{\left|\tau_t(z=\delta/k)\right|}{\rho_wc^2}\cos^2(\theta-\theta_\tau),
+\end{equation}
+where $\theta_\tau$ is the direction of the turbulent stress at the inner layer height.
+The turbulent stress at the inner layer height is used in place of the total wind stress because longer waves reduce the effective wind forcing on shorter waves (wave sheltering).
+
+The growth rate coefficient $c_\beta$ varies depending on the ratio of the wave phase speed to the local turbulent friction velocity (friction velocity at the inner layer height), $u_\star^l=\sqrt{\tau_t(z=\delta/k)/\rho_a)}$.
+\begin{equation}
+c_{\beta}=\left\{
+\begin{array}{cll} 
+25  &: \cos(\theta-\theta_w)>0 \hspace{2mm}&:c/u_{\star}^l<10\\
+10+15\cos[\pi(c/u_\star-10)/15]   &:&:10\le c/u_{\star}^l<25 \\
+-5  &:&:25\le c/u_{\star}^l\\
+-25  &: \cos(\theta-\theta_w)<0 &\\
+\end{array}
+\right.
+\end{equation}
+
+The wind profile is explicitly calculated using the energy conservation constraint in the wave boundary layer.
+From the top of the viscous sublayer to the inner layer height of the shortest waves the wind shear is expressed as:
+\begin{equation}
+\frac{d {\vec{u}}}{\partial z}=\frac{\rho_a}{\kappa z}\left|\frac{ \vec{\tau}_\nu}{\rho_a}\right|^{3/2}\frac{\vec{\tau}_\nu}{\vec{\tau}_\nu\cdot\vec{\tau}_{tot}}\hspace{3mm}{\rm for}\hspace{3mm}z_\nu<z<\delta/k_l.
+\end{equation}
+Between the inner layer height of the shortest waves and that of the longest waves the wind shear is expressed as:
+\begin{equation}
+\frac{d {\vec{u}}}{\partial z}=\left[ \frac{\delta}{z^2}\tilde{F}_w\left(k=\frac{\delta}{z}\right)+\frac{\rho_a}{\kappa z}\left| \frac{\vec{\tau}_t(z)}{\rho_a}\right|^{3/2} \right]\times\frac{\vec{\tau}_t(z)}{\vec{\tau}_t(z)\cdot\vec{\tau}_{tot}}\hspace{3mm}{\rm for}\hspace{3mm}\delta/k_l\le z,
+\end{equation}
+where $\tilde{F}_w(k=\delta/z)$ is the energy uptake by surface waves:
+\begin{equation}
+\tilde{F}_w(k=\delta/z)=\rho_w\int^{\pi}_{-\pi}\beta_g(k,\theta)gF(k,\theta)k d\theta.
+\end{equation}
+Finally, above the inner layer height of the longest waves the wave effect is negligible and the wind shear is aligned in the direction of the wind stress:
+\begin{equation}
+\frac{d{\vec{u}}}{dz}=\frac{u_\star}{\kappa z}\frac{\vec{\tau}_{tot}}{|\vec{\tau}_{tot}|}.
+\end{equation}
+
+Note that when using the FLD1 switch, internal variables and output values of the viscous stress, friction velocity, surface roughness length and Charnock parameter are recalculated and overwritten. 

@@ -109,7 +109,8 @@
       USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
       USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
-                           TAUWIX, TAUWIY, TUSX, TUSY, USSX, USSY, WLM
+                           TAUWIX, TAUWIY, TUSX, TUSY, USSX, USSY, WLM, &
+                           PHIBBL,TAUBBL
       USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
       USE CONSTANTS, ONLY: PI, DERA
 !
@@ -210,6 +211,42 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
+         ! Wave-to-ocean TKE flux (phioc in W.m-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FOC') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(PHIOC /= UNDEF) TMP(:)=PHIOC(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Momentum flux due to bottom friction (taubblx in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBX') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUOX /= UNDEF) TMP(:)=TAUBBL(:,1)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Momentum flux due to bottom friction (taubbly in m2.s-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TAUOY /= UNDEF) TMP(:)=TAUBBL(:,2)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Energy flux due to bottom friction (phibbl in W.m-2)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FBB') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(PHIOC /= UNDEF) TMP(:)=PHIBBL(:)
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
          ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__UBR') THEN
@@ -217,12 +254,21 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
-         ! Wave-to-ocean TKE flux (phioc in W.m-2)
+         ! x component of the near-bottom rms wave velocity (in m.s-1)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FOC') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRX') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(PHIOC /= UNDEF) TMP(:)=PHIOC(:)
-            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            WHERE(UBA(:) /= UNDEF) TMP=UBA(:)*COS(UBD(:))
+            RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! y component of the near-bottom rms wave velocity (in m.s-1)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRY') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(UBA(:) /= UNDEF) TMP=UBA(:)*SIN(UBD(:))
+            RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !

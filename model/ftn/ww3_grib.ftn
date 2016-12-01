@@ -450,16 +450,16 @@
 !            0 = Metereological; 10 = Oceanographic
 !      ( 2)  GRIB Edition Number
 !      ( 3)
-!/NCEP2       LISTSEC0	    =	0
-!/NCEP2       LISTSEC0(1)   =   10 	
-!/NCEP2       LISTSEC0(2)   =   2 	
+!/NCEP2       LISTSEC0      =   0
+!/NCEP2       LISTSEC0(1)   =   10      
+!/NCEP2       LISTSEC0(2)   =   2       
 !
 ! ... Set GRIB2 Identification Section
-!	( 1) ID OF CENTER
-!	( 2) ID OF SUB-CENTER
-!	( 3) GRIB Master Tables Version Number (Code Table 1.0)
-!	( 4) GRIB Local Tables Version Number (Code Table 1.0)
-!	( 5) Significance of Reference Time (Code Table 1.2)
+!       ( 1) ID OF CENTER
+!       ( 2) ID OF SUB-CENTER
+!       ( 3) GRIB Master Tables Version Number (Code Table 1.0)
+!       ( 4) GRIB Local Tables Version Number (Code Table 1.0)
+!       ( 5) Significance of Reference Time (Code Table 1.2)
 !     * ( 6) YEAR (4 digits)
 !     * ( 7) MONTH OF YEAR
 !     * ( 8) DAY OF MONTH
@@ -467,7 +467,7 @@
 !       (10) MINUTE OF HOUR
 !       (11) SECOND OF MINUTE
 !       (12) Production status of data (Code Table 1.3)
-!	(13) Type of processed data (Code Table 1.4)
+!       (13) Type of processed data (Code Table 1.4)
 !
 !/NCEP2       LISTSEC1     =  0
 !/NCEP2       LISTSEC1(1)  = CID

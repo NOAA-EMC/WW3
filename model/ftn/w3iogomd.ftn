@@ -222,7 +222,7 @@
 
       DO I=1,5
         IF (E3DF(1,I).LE.0.OR.E3DF(3,I).LT.E3DF(2,I)) THEN
-          IF (FLGRD(3,I).EQ..TRUE..OR.FLGR2(3,I).EQ..TRUE.) THEN 
+          IF (FLGRD(3,I).OR.FLGR2(3,I)) THEN 
              WRITE(NDSEN,1008) VARNAME1(I),VARNAME2(I)
           END IF
           FLGRD(3,I)=.FALSE.
@@ -230,14 +230,14 @@
         END IF
       END DO
       IF (US3DF(1).LE.0.OR.US3DF(3).LT.US3DF(2)) THEN
-        IF (FLGRD(6,8).EQ..TRUE..OR.FLGR2(6,8).EQ..TRUE.) THEN
+        IF (FLGRD(6,8).OR.FLGR2(6,8)) THEN
           WRITE(NDSEN,1008) 'USF','US3D'
         END IF
         FLGRD(6,8)=.FALSE.
         FLGR2(6,8)=.FALSE.
       END IF
       IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) THEN
-        IF (FLGRD(6,8).EQ..TRUE..OR.FLGR2(6,8).EQ..TRUE.) THEN
+        IF (FLGRD(6,8).OR.FLGR2(6,8)) THEN
           WRITE(NDSEN,1008) 'P2L','P2SF'
         END IF
         FLGRD(6,9)=.FALSE.
@@ -457,7 +457,7 @@
              FLG2D(2,8)=.TRUE.
            CASE('DP')
              FLG2D(2,9)=.TRUE.
-           CASE('HSIG')
+           CASE('HIG')
              FLG2D(2,10)=.TRUE.
            CASE('STMAXE')
              FLG2D(2,11)=.TRUE.
@@ -840,6 +840,18 @@
            FLG2D(2,9)=.TRUE.
          CASE('HIG')
            FLG2D(2,10)=.TRUE.
+         CASE('STMAXE')
+           FLG2D(2,11)=.TRUE.
+         CASE('STMAXD')
+           FLG2D(2,12)=.TRUE.
+         CASE('HMAXE')
+           FLG2D(2,13)=.TRUE.
+         CASE('HCMAXE')
+           FLG2D(2,14)=.TRUE.
+         CASE('HMAXD')
+           FLG2D(2,15)=.TRUE.
+         CASE('HCMAXD')
+           FLG2D(2,16)=.TRUE.
 !
 ! Group 3
 !
@@ -1698,7 +1710,7 @@
         SXY(JSEA) = SXY(JSEA) + FTE * ABXY(JSEA) / CG(NK,ISEA)
 !
 ! Tail for surface stokes drift is commented out: very sensitive to tail power
-!	
+!       
 !       USSX(JSEA)  = USSX(JSEA) + 2*GRAV*ETUSCX(JSEA)/SIG(NK)
 !       USSY(JSEA)  = USSY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)
         UBS(JSEA) = UBS(JSEA) + FTWL * EBAND/GRAV

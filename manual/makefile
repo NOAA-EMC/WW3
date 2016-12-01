@@ -30,6 +30,7 @@ endif
 # The default can be overridden by specifying INPDIR on the make
 # command-line or in the environment.
 INPDIR ?= ${WW3}/model/inp
+NMLDIR ?= ${WW3}/model/nml
 
 # Make sure INPDIR exists (if not clean)
 ifneq ($(MAKECMDGOALS),clean)
@@ -39,6 +40,13 @@ ifneq ($(MAKECMDGOALS),clean)
   ifeq ($(shell if [ ! -e $(INPDIR) ]; then echo 1; fi),1)
     $(error INPDIR=$(INPDIR) does not exist.  INPDIR must point to the \
       location of the ww3_*.inp input files used for documentation)
+  endif
+  ifeq ($(shell if [ ! -e $(NMLDIR) ]; then echo 1; fi),1)
+    NMLDIR = ${WW3}/nml
+  endif
+  ifeq ($(shell if [ ! -e $(NMLDIR) ]; then echo 1; fi),1)
+    $(error INPDIR=$(NMLDIR) does not exist.  INPDIR must point to the \
+      location of the ww3_*.nml input files used for documentation)
   endif
 endif
 
@@ -231,6 +239,7 @@ ww3_prnc.tex \
 ww3_gspl.tex \
 ww3_shel.tex \
 ww3_multi.tex \
+ww3_multi.tel \
 ww3_trck.tex \
 ww3_outf.tex \
 ww3_outp.tex \
@@ -272,6 +281,15 @@ clean:
 	\rm -f *.log */*.aux *.aux *.bbl *.blg *.toc *.out *~ */*~
 	\rm -f *.dvi *.pdf
 
+%.tel : $(NMLDIR)/%.nml
+	-@echo "Processing $<"
+	-@if [ ! -e $< ]; then echo "ERROR: $< not found"; exit 1; fi
+	-@\rm -f $@
+	-@touch $@
+	-@printf '%s\n' \\begin\{verbatim\} >> $@
+	-@cat $< >> $@
+	-@printf '%s\n' \\end\{verbatim\} >> $@
+
 %.tex : $(INPDIR)/%.inp
 	-@echo "Processing $<"
 	-@if [ ! -e $< ]; then echo "ERROR: $< not found"; exit 1; fi
@@ -280,6 +298,8 @@ clean:
 	-@printf '%s\n' \\begin\{verbatim\} >> $@
 	-@cat $< >> $@
 	-@printf '%s\n' \\end\{verbatim\} >> $@
+
+
 
 ww3_gspl.sh.out : $(GSPL)
 	-@echo "Processing $<"

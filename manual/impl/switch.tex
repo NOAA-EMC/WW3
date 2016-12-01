@@ -58,15 +58,15 @@ stand-alone program.
 
 \noindent
 Selection of propagation schemes and GSE alleviation method. These represent
-two sets of switched with some shared switches between the groups. Note that
+two sets of switches with some shared switches between the groups. Note that
 the second set of switches is secondary to the selection of program modules
 in the first set of switches, and therefore, does not have a user-defined
 option.
 \begin{slist}
 \sit{pr0} {No propagation scheme / GSE alleviation used.}
 \sit{pr1} {First order propagation scheme, no GSE alleviation.}
-\sit{pr2} {Higher order schemes with \cite{art:BH87} dispersion correction.}
-\sit{pr3} {Higher order schemes with \cite{tol:OMOD02b} averaging technique.}
+\sit{pr2} {Higher-order schemes with \cite{art:BH87} dispersion correction.}
+\sit{pr3} {Higher-order schemes with \cite{tol:OMOD02b} averaging technique.}
 %\sit{pr4} {\uq\ propagation scheme with \cite{tol:OMOD02b}
 %           divergence technique.}
 \sit{prx} {Experimental (user supplied).}
@@ -74,9 +74,9 @@ option.
 
 \begin{slist}
 \sit{pr0} {No propagation scheme used.}
-\sit{pr1} {First order propagation scheme.}
-\sit{uno} {Second order (UNO) propagation scheme.}
-\sit{uq } {Third order (UQ) propagation scheme.}
+\sit{pr1} {First-order propagation scheme.}
+\sit{uno} {Second-order (UNO) propagation scheme.}
+\sit{uq } {Third-order (UQ) propagation scheme.}
 \end{slist}
 
 \noindent
@@ -124,6 +124,7 @@ Selection of nonlinear interactions:
 \sit{nl1} {Discrete interaction approximation (\dia).}
 \sit{nl2} {Exact interaction approximation (\xnl).}
 \sit{nl3} {Generalized Multiple \dia\ (\gmd).}
+\sit{nl4} {Two-scale approximation (TSA).} 
 \sit{nlx} {Experimental (user supplied).}
 \end{slist}
 
@@ -147,6 +148,15 @@ Selection of term for damping by sea ice:
 \sit{ic1} {Simple formulation.}
 \sit{ic2} {Liu et al. formulation.}
 \sit{ic3} {Wang and Shen formulation.}
+\sit{ic4} {Frequency-dependent damping by sea ice.}
+\end{slist}
+
+\noindent
+Selection of term for scattering by sea ice:
+\begin{slist}
+\sit{is0} {No scattering by sea ice.}
+\sit{is1} {Diffusive scattering by sea ice (simple).}
+\sit{is2} {Floe-size dependent scattering and dissipation.}
 \end{slist}
 
 \noindent
@@ -206,6 +216,7 @@ Selection of method of wind interpolation (space):
 \noindent
 Selection of method of current interpolation (time):
 \begin{slist}
+\sit{crt0}{No interpolation.}
 \sit{crt1}{Linear interpolation.}
 \sit{crt2}{Approximately quadratic interpolation.}
 \end{slist}
@@ -318,22 +329,25 @@ Furthermore the following miscellaneous switches are available:
 \sit{cou} {Activates the calculation of variables required for coupling}
 \sit{dss0}{Switch off frequency dispersion in diffusive
            dispersion correction.}
+\sit{fld1}{Sea-state dependent $\tau$ \citet{art:Rei14} (\para\ref{sec:FLD1}).}      
+\sit{fld2}{Sea-state dependent $\tau$ \citet{art:Don12} (\para\ref{sec:FLD2}).}
+\sit{ig1} {Second-order spectrum and free infragravity waves (\para\ref{sec:IG1}.}        
 \sit{mlim}{Use Miche-style shallow water limiter of Eq.~(\ref{eq:MLIM})}.
 \sit{mpibdi}{Experimental parallelization of multi-grid model initialization.}
 \sit{mpit}{Test output for \mpi\ initializations.}
 \sit{mprf}{Profiling of individual models and nesting in {\file ww3\_multi}.}
 \sit{nc4} {Activates the NetCDF-4 API in the NetCDF pre- and post-processing
            programs.}
-\sit{trknc} {Activates the NetCDF API in the wave system tracking
-           post-processing program. Selecting TRKNC alone will generate 
-           NetCDF-3 files. Selecting both TRKNC and NC4 will generate 
-           NetCDF-4 files.}
+\sit{ncc} {NCEP coupler.}
 \sit{nco} {Code modifications for operational implementation at NCO
            (NCEP Central Operations). Mostly changes unit numbers
            and file names. Not recommended for general use.} 
 \sit{nls }{Activate nonlinear smoother (\para\ref{sec:NLS}).}
 \sit{nnt} {Generate file test\_data\_{\it{nnn}}.ww3 with spectra and 
            nonlinear interactions for training and testing of NNIA}.
+\sit{oasis }{Initializes OASIS Coupler (App.~\ref{sec:couplingB}).}   
+\sit{oasacm}{OASIS atmospheric model coupling fields(App.~\ref{sec:couplingB}).}
+\sit{oasocm}{OASIS oceanic model coupling fields (App.~\ref{sec:couplingB}).}
 \sit{refrx} {Enables refraction based on spatial gradients in phase velocity (\para\ref{sec:ICE3})}
 \sit{reft}{Test output for shoreline reflection (which is activated with
           {\F ref1}).}
@@ -356,6 +370,10 @@ Furthermore the following miscellaneous switches are available:
            files, run-time tidal prediction in ww3\_shel or tidal prediction
            with ww3\_prtide.}
 \sit{tidet}{test output for tidal analysis.}
+\sit{trknc} {Activates the NetCDF API in the wave system tracking
+           post-processing program. Selecting TRKNC alone will generate 
+           NetCDF-3 files. Selecting both TRKNC and NC4 will generate 
+           NetCDF-4 files.}
 \sit{xw0 }{Swell diffusion only in \uq\ scheme.}
 \sit{xw1 }{Id. wave growth diffusion only.}
 \end{slist}

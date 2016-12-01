@@ -720,7 +720,9 @@
       WND_PA=wnd_in_mag*COS(wnd_in_dir-USTD)
       Z0 = ZWND/exp(wnd_pa*kappa/ust)
       CD = UST**2 / wnd_in_mag**2
-      CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
+      IF (PRESENT(CHARN)) THEN
+         CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
+      ENDIF
       FSFL1=.not.((CD .LT. 0.01).AND.(CD .GT. 0.0001))
       FSFL2=.not.(cos(wnd_in_dir-ustd).GT.0.9)
       IF (FSFL1 .or. FSFL2) THEN

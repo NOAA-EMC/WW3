@@ -41,7 +41,7 @@
 
   src_dir=arc_tmp # Source directory (before links or copies are made)
 
-  dirs="model cases regtests"
+  dirs="model cases regtests smc_docs"
   for dir in $dirs
   do
     fname=wwatch3.*.$dir.tar
@@ -398,6 +398,8 @@
   tar xf ../$regtests
   echo -e "Unpacking $cases"
   tar xf ../$cases
+  echo -e "Unpacking $smc_docs" 
+  tar xf ../$smc_docs 
 
 # Placeholder for cases
 #  echo -e "Unpacking $cases"
@@ -406,7 +408,7 @@
   cd ${main_dir}
 
 # Make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp work cases regtests
+  for dir in aux bin ftn obj mod exe inp nml work cases regtests smc_docs
   do
     if [ ! -d $dir ]
     then
@@ -432,6 +434,9 @@
 
   cd $main_dir/${src_dir}/model/inp
   chmod 644 *.inp track_i.ww3
+
+  cd $main_dir/${src_dir}/model/nml
+  chmod 644 *.nml
 
 #  cd $main_dir/${src_dir}/cases
 #  chmod 744 mww3_case_*
@@ -938,6 +943,66 @@
   sleep 2
 
 # --------------------------------------------------------------------------- #
+# 6b. Set-up / update nml directory                                            #
+# --------------------------------------------------------------------------- #
+  rm -f ${main_dir}/tmp/nml_setup.out
+
+  cd $main_dir/${src_dir}/model/nml
+  files=`ls ww3_*.nml`
+#  files="$files `ls gx_*.nml`"
+  cd $main_dir/nml
+  echo -e ' '
+
+  echo -e '\n\n ==============================='
+  echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/nml_setup.out
+  echo -e ' =============================================================='    
+  echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/nml_setup.out
+  echo -e ' '
+
+  nr_old=0
+  nr_new=0
+
+  echo -e ' Input files (.nml) :'
+  echo -e ' ------------------'
+
+  for file in $files
+  do
+    if [ -f $file ]
+    then
+      nr_old=`expr $nr_old + 1`
+      echo -e "   Old link $file ..." >> ${main_dir}/tmp/nml_setup.out
+    else
+      nr_new=`expr $nr_new + 1`
+      echo -e "   New link $file ..." >> ${main_dir}/tmp/nml_setup.out
+    fi
+    cp -f ../${src_dir}/model/nml/$file .
+  done
+
+  if [ "$nr_old" != '0' ]
+  then
+    echo -e "  This section: $nr_old existing files found."
+  fi
+  if [ "$nr_new" != '0' ]
+  then
+    echo -e "  This section: $nr_new files copied."
+  fi
+
+  echo -e '\n\n End of nml directory section '
+  echo -e ' ---------------------------- '
+
+  if [ "$nr_old" != '0' ]
+  then
+    echo -e "\n   Total of $nr_old existing files found."
+  fi
+  if [ "$nr_new" != '0' ]
+  then
+    echo -e "\n   Total of $nr_new files copied."
+  fi
+  echo -e "\n   List of existing (old) or files copied routed to :"
+  echo -e "     ${main_dir}/tmp/nml_setup.out "
+  sleep 2
+
+# --------------------------------------------------------------------------- #
 # 7. Set-up / update cases directory                                           #
 # --------------------------------------------------------------------------- #
 
@@ -1292,6 +1357,255 @@
   fi
   echo -e "\n   List of existing (old) or files copied routed to :"
   echo -e "     ${main_dir}/tmp/reg_setup.out "
+  sleep 2
+
+# --------------------------------------------------------------------------- #
+# 7.2 Set-up / update smc_docs directory                                      #
+# --------------------------------------------------------------------------- #
+
+  rm -f ${main_dir}/tmp/smc_setup.out
+  tnr_old=0
+  tnr_new=0
+
+  cd $main_dir/${src_dir}/smc_docs
+
+  echo -e '\n\n ================================'
+  echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/smc_setup.out
+  echo -e ' =============================================================='    
+  echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/smc_setup.out
+
+
+  tmp_files=`ls`
+  all_files=
+  tmp_dirs=
+  for file in $tmp_files
+  do
+    if [ -d $file ]
+    then
+      tmp_dirs="$tmp_dirs $file"
+    else
+      all_files="$all_files $file"
+    fi
+  done
+  cd $main_dir/smc_docs 
+  echo -e ' '
+
+  nr_old=0
+  nr_new=0
+
+  files=$all_files
+  if [ -z "$files" ]
+  then
+    echo -e '  No files found'
+  else
+    for file in $files
+    do
+      if [ -f $file ]
+      then
+        nr_old=`expr $nr_old + 1`
+        echo -e "   Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
+      else
+        nr_new=`expr $nr_new + 1`
+        echo -e "   New link $file ..." >> ${main_dir}/tmp/smc_setup.out
+      fi
+      cp -f ../${src_dir}/smc_docs/$file .
+      tmp_files=$all_files
+      all_files=`echo -e $tmp_files | sed -e "s/$file//"`
+    done
+    if [ "$nr_old" != '0' ]
+    then
+      echo -e "  This section: $nr_old existing files found."
+    fi
+    if [ "$nr_new" != '0' ]
+    then
+      echo -e "  This section: $nr_new new files copied." 
+    fi
+  fi
+  tnr_old=`expr $tnr_old + $nr_old`
+  tnr_new=`expr $tnr_new + $nr_new`
+
+
+
+  for dir in $tmp_dirs
+  do
+
+    nr_old=0
+    nr_new=0
+
+    if [ ! -d $main_dir/smc_docs/$dir ]
+    then
+      mkdir $main_dir/smc_docs/$dir
+      echo -e "\n Making directory $dir ..."
+    else
+      echo -e "\n Checking directory $dir ..."
+    fi
+
+    cd $main_dir/${src_dir}/smc_docs/$dir
+    files=`ls -p | grep -v '/$'`
+    ndirs=`ls -p | grep '/$'`
+    cd $main_dir/smc_docs/$dir
+
+    if [ -z "$files" ]
+    then
+      echo -e '  No files found'
+    else
+      for file in $files
+      do
+        if [ -f $file ]
+        then
+          nr_old=`expr $nr_old + 1`
+          echo -e "      Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
+        else
+          nr_new=`expr $nr_new + 1`
+          echo -e "      New link $file ..." >> ${main_dir}/tmp/smc_setup.out
+        fi
+        cp -f ../../${src_dir}/smc_docs/$dir/$file .
+        tmp_files=$all_files
+        all_files=`echo -e $tmp_files | sed -e "s/$file//"`
+      done
+      if [ "$nr_old" != '0' ]
+      then
+        echo -e "  This section: $nr_old existing files found."
+      fi
+      if [ "$nr_new" != '0' ]
+      then
+        echo -e "  This section: $nr_new new files copied." 
+      fi
+ 
+    fi
+
+    tnr_old=`expr $tnr_old + $nr_old`
+    tnr_new=`expr $tnr_new + $nr_new`
+ 
+
+    for ndir in $ndirs
+    do
+      lngth=`echo $ndir | wc -c`
+      lngth=`expr $lngth - 2`
+      ndir=`echo $ndir | cut -c1-$lngth`
+      nr_old=0
+      nr_new=0
+
+      if [ ! -d $main_dir/smc_docs/$dir/$ndir ]
+      then
+        mkdir $main_dir/smc_docs/$dir/$ndir
+        echo -e "\n Making directory $dir/$ndir ..."
+      else
+        echo -e "\n Checking directory $dir/$ndir ..."
+      fi
+
+      cd $main_dir/${src_dir}/smc_docs/$dir/$ndir
+      files=`ls -p | grep -v '/$'`
+      sdirs=`ls -p | grep '/$'`
+      cd $main_dir/smc_docs/$dir/$ndir
+
+      if [ -z "$files" ]
+      then
+        echo -e '  No files found'
+      else
+        for file in $files
+        do
+          if [ -f $file ]
+          then
+            nr_old=`expr $nr_old + 1`
+            echo -e "      Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
+          else
+            nr_new=`expr $nr_new + 1`
+            echo -e "      New link $file ..." >> ${main_dir}/tmp/smc_setup.out
+          fi
+          cp -f ../../../${src_dir}/smc_docs/$dir/$ndir/$file .
+          tmp_files=$all_files
+          all_files=`echo -e $tmp_files | sed -e "s/$file//"`
+        done
+        if [ "$nr_old" != '0' ]
+        then
+          echo -e "  This section: $nr_old existing files found."
+        fi
+        if [ "$nr_new" != '0' ]
+        then
+          echo -e "  This section: $nr_new new files copied." 
+        fi
+      fi
+
+      tnr_old=`expr $tnr_old + $nr_old`
+      tnr_new=`expr $tnr_new + $nr_new`
+
+      if [ ! -z "$sdirs" ]
+      then
+        for sdir in $sdirs
+        do
+          lngth=`echo $sdir | wc -c`
+          lngth=`expr $lngth - 2`
+          sdir=`echo $sdir | cut -c1-$lngth`
+          nr_old=0
+          nr_new=0
+
+          if [ ! -d $main_dir/smc_docs/$dir/$ndir/$sdir ]
+          then
+            mkdir $main_dir/smc_docs/$dir/$ndir/$sdir
+            echo -e "\n Making directory $dir/$ndir/$sdir..."
+          else
+            echo -e "\n Checking directory $dir/$ndir/$sdir ..."
+          fi
+
+          cd $main_dir/${src_dir}/smc_docs/$dir/$ndir/$sdir
+          files=`ls -p | grep -v '/$'`
+          cd $main_dir/smc_docs/$dir/$ndir/$sdir
+
+          if [ -z "$files" ]
+          then
+            echo -e '  No files found'
+          else
+            for file in $files
+            do
+              if [ -f $file ]
+              then
+                nr_old=`expr $nr_old + 1`
+                echo -e "      Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
+              else
+                nr_new=`expr $nr_new + 1`
+                echo -e "      New link $file ..." >> ${main_dir}/tmp/smc_setup.out
+              fi
+              cp ../../../../${src_dir}/smc_docs/$dir/$ndir/$sdir/$file .
+              tmp_files=$all_files
+              all_files=`echo -e $tmp_files | sed -e "s/$file//"`
+            done
+            if [ "$nr_old" != '0' ]
+            then
+              echo -e "  This section: $nr_old existing files found."
+            fi
+            if [ "$nr_new" != '0' ]
+            then
+              echo -e "  This section: $nr_new new files copied."
+            fi
+          fi
+
+          tnr_old=`expr $tnr_old + $nr_old`
+          tnr_new=`expr $tnr_new + $nr_new`
+
+        done
+
+      fi
+
+    done
+
+  done
+
+  cd $main_dir/smc_docs
+
+  echo -e '\n\n End of smc_docs directory section '
+  echo -e ' ---------------------------------- '
+
+  if [ "$tnr_old" != '0' ]
+  then
+    echo -e "\n   Total of $tnr_old existing files found."
+  fi
+  if [ "$tnr_new" != '0' ]
+  then
+    echo -e "\n   Total of $tnr_new files copied."
+  fi
+  echo -e "\n   List of existing (old) or files copied routed to :"
+  echo -e "     ${main_dir}/tmp/smc_setup.out "
   sleep 2
 
 # --------------------------------------------------------------------------- #

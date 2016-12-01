@@ -433,7 +433,6 @@
                     EXIT
                  END IF
               END DO
-!             write(*,'(a,I2.2,a,f6.3,a,e10.3)')'ik = ',ik,' ; freq = ',freq,' ; selected ki = ',wn_i(ik)
            END DO
 
         CASE DEFAULT
@@ -447,11 +446,6 @@
          DO IK=1, NK
 !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
 !             recall that D=S/E=-2*Cg*k_i
-
-! reminder: delete temporary lines (lower case "write")
-!           freq=sig(ik)/tpi
-!           write(*,*)freq,wn_i(ik),' % freq,k_i '
-
             D1D(IK) = -2. * CG(IK) * WN_I(IK)
          END DO
 !

@@ -295,9 +295,9 @@ subroutine z_polyarea(xpol,ypol,npol,area)
 !   |   +---+    8300 AE Emmeloord
 !   |   | +---+  Tel: +31 527 620909
 !   +---+ |   |  Fax: +31 527 610020
-!         +---+	 http://www.alkyon.nl
+!         +---+  http://www.alkyon.nl
 !
-!	  Gerbrant van Vledder
+!         Gerbrant van Vledder
 !
 !  0. Update history
 !

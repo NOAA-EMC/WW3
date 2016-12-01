@@ -23,7 +23,7 @@ of in particular the current, the outer grid points ({\F ix=1,nx}, unless the
 grid is global) and ({\F iy=1,ny}) will be considered as land points, inactive
 points or active boundary points. The minimum grid size therefore is {\F nx=3,
   ny=3}, except for triangle-based grids. In that latter case, all the nodes
-are listed as a long vector of dimension nx, while ny=1, allowing to keep the
+are listed as a long vector of dimension {\F nx}, while {\F ny=1}, allowing to keep the
 same code structure. Input arrays are typically assumed to be of the form
 
 \vspace{\baselineskip} \centerline{\F array(nx,ny) ,} \vspace{\baselineskip}
@@ -66,10 +66,10 @@ spectrum {\F a} is defined as
 \noindent
 and equivalent one-dimensional arrays are used throughout the program. Inside
 the model, directions are always Cartesian, $\theta = 0^\circ$ corresponds to
-propagation from east to west (positive $x$ or {\F ix} direction), and $\theta
+propagation from west to east (positive $x$ or {\F ix} direction), and $\theta
 = 90^\circ$ corresponds to propagation from south to north (positive $y$ or
 {\F iy} direction). Output directions use other conventions, as is discussed
-in chapter~\ref{chapt:run}.
+in Chapter~\ref{chapt:run}.
 
 The storage of the wave spectra accounts for the majority of the memory
 required by the model, because the splitting technique used assures that any
@@ -113,8 +113,8 @@ map for the grid;
 \strut \hspace{25mm} {\F mapsta(iy,ix) = 1} \hspace{10mm} for sea points, \\
 \strut \hspace{25mm} {\F mapsta(iy,ix) = 2} \hspace{10mm} for active boundary points.
 
-\vspace{\baselineskip} 
-\noindent 
+\vspace{\baselineskip}
+
 Sea points and active boundary point which are not considered in the wave
 model due to the presence of ice are marked by their corresponding negative
 status indicator (-1 or -2). {\F mapst2} contains secondary information. For
@@ -132,7 +132,7 @@ indicating deactivation).
   4  & Masked in two-way nesting
 \end{tabular} \end{center}
 
-\noindent
+
 Two additional considerations have been made. First, the two status maps can
 be collapsed into a single map for storage. To assure that the storage is
 backward compatible with the previous mode version, the two maps are combined
@@ -161,12 +161,12 @@ defined as
 {map} & implies \\ \hline
   2 & Active boundary point \\
   1 & Active sea point      \\
-  0 & Land point (including as identified in {\F MAPST2}. \\
- -1 & Point covered by ice, but wet. \\
- -2 & Dry point, not covered by ice. \\
- -3 & Dry point covered by ice. \\
- -4 & Point masked in the two-way nesting scheme. \\
- -5 & Other disabled point.
+  0 & Land point (including as identified in {\F MAPST2} \\
+ -1 & Point covered by ice, but wet \\
+ -2 & Dry point, not covered by ice \\
+ -3 & Dry point covered by ice \\
+ -4 & Point masked in the two-way nesting scheme \\
+ -5 & Other disabled point
 \end{tabular} \end{center}
 
 \noindent

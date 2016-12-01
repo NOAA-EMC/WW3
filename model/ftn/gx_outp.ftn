@@ -180,7 +180,7 @@
                     'Nonlinear interactions   ' ,                     &
                     'Dissipation              ' ,                     &
                     'Wave-bottom interactions ' ,                     &
-                    'Wave-ice interactions ' ,                     &		    
+                    'Wave-ice interactions ' ,                     &                
                     'Sum of selected sources  ' /
       DATA FLSRCE / .FALSE. , .FALSE. , .FALSE. ,                     &
                     .FALSE. , .FALSE. , .FALSE., .FALSE. /
@@ -671,7 +671,7 @@
                                  FACTOR, CD, USTAR, FHIGH, ZWND, ICE, &
                                  USTD, Z0, CHARN, EMEAN, FMEAN, WNMEAN,&
                                  ICETHICK, ICECON
-!/IS2       REAL		   :: ICEDMAX, ICEF
+!/IS2       REAL                   :: ICEDMAX, ICEF
 !/ST1      REAL                    :: AMAX, FH1, FH2
 !/ST2      REAL                    :: AMAX, ALPHA(NK), FPI
 !/ST3      REAL                    :: FMEANS, FMEANWS, TAUWX, TAUWY, AMAX, &
@@ -688,7 +688,7 @@
       REAL                    :: WN(NK), CG(NK), E(NK,NTH), E1(NK),   &
                                  APM(NK), THBND(NK), SPBND(NK),       &
                                  A(NTH,NK), WN2(NTH,NK),WN_R(NK),     &
-				 ALPHA_LIU(NK), CG_ICE(NK) 
+                                 ALPHA_LIU(NK), CG_ICE(NK) 
       REAL                    :: DIA(NTH,NK), SWI(NK,NTH), SNL(NK,NTH),&
                                  SDS(NK,NTH), SBT(NK,NTH), SIS(NK,NTH),&
                                  STT(NK,NTH), DIA2(NK,NTH)
@@ -747,10 +747,10 @@
           UDIRR  = WDO(J)
           UABS   = MAX ( 0.001 , WAO(J) )
           CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
-!/IS2	        ICEDMAX = MAX ( 0., ICEFO(J))
+!/IS2           ICEDMAX = MAX ( 0., ICEFO(J))
 !/IS2          ICEF     = ICEDMAX
-	        ICETHICK = MAX (0., ICEHO(J))
-	        ICECON = MAX (0., ICEO(J))
+                ICETHICK = MAX (0., ICEHO(J))
+                ICECON = MAX (0., ICEO(J))
 !
 !/STAB2            STAB0  = ZWIND * GRAV / 273.
 !/STAB2            STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
@@ -1028,7 +1028,7 @@
               END IF
            IF ( FLSRCE(6) ) THEN
 !/IS2           CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
-!/IS2                       XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)  	   	     
+!/IS2                       XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)                    
            END IF
 !
 !/XXX            CALL W3SXXX

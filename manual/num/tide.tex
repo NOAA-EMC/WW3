@@ -9,11 +9,11 @@ using the {\code TIDE} switch which activates the detection of the needed
 information in current.ww3 and level.ww3 files. The tidal analysis can be
 performed from NetCDF current or water level files, using the {\file
   ww3\_prnc} preprocessing program. In that case the analysis method uses the
-flexible tide analysis package by \cite{art:For09}. The precomputed tidal consituents 
+flexible tide analysis package by \cite{art:For09}. The precomputed tidal constituents 
 can be used at run time by {\file ww3\_shel}.
 
 However, that method may not be very efficient due to the large memory 
-required to store a large number of tidal consituents because, like other 
+required to store a large number of tidal constituents because, like other 
 forcing parameters, they are not decomposed across processors: each processor stores the full 
 spatial grid of forcing parameters. To avoid this,  
 the tidal constituents can be used to generated time series with the tidal
@@ -25,7 +25,7 @@ in the input files for {\file ww3\_prnc} and {\file ww3\_prtide}. Two
 short-cuts are defined. {\code VFAST} is the following selection of 20
 components, Z0 (mean), SSA, MSM, MSF, MF, 2N2, MU2, N2, NU2, M2, S2, K2, MSN2,
 MN4, M4, MS4, S4, M6, 2MS6, and M8. When using {\code ww3\_shel} to do the
-tidal prediction, the time step at which currents or water is set to 1800~s.
+tidal prediction, the time step for currents or water is set to 1800~s.
 
 In {\file ww3\_prtide}, there is also a quality check on the values of the
 tidal constituents that is performed: unrealistically large values of the

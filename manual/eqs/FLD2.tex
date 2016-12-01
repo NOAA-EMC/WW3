@@ -1,0 +1,38 @@
+\vsssub
+\subsubsection{~Sea-state dependent $\tau$: Donelan et al. 2012} \label{sec:FLD2}
+\vsssub
+
+\opthead{FLD2}{UMWM}{B. Reichl}
+
+\paragraph{Wind stress according to Donelan et al., 2012}
+In \citet{art:Don12} the growth rate parameter in Eq. (\ref{formdrag}) is expressed as:
+\begin{equation}
+\beta_g(k,\theta)=A_1 \sigma \frac{\left[u_{\lambda/2} \cos(\theta-\theta_w)-c\right]\left| u_{\lambda/2}cos(\theta-\theta_w)-c \right|}{c^2}\frac{\rho_a}{\rho_w},
+\end{equation}
+\begin{equation}
+A_{1}=\left\{
+\begin{array}{lll} 
+0.11, & :  u_{\lambda/2}\cos\theta>c,  &\mbox{for wind forced sea}\\
+0.01 & :   0<u_{\lambda/2}\cos\theta<c, &\mbox{for swell faster than the wind}\\
+0.1 & :  \cos\theta<0,  &\mbox{for swell opposing the wind}
+\end{array}
+\right.
+\end{equation}
+where $A_1$ is the proportionality coefficient determined empirically (so that modeled wave spectra agree with field observations), $u_{\lambda/2}$ is the wind speed at the height of half the wavelength (up to 20 m), $\theta_w$ is the wind direction, and $c$ is the wave phase speed.
+The wind speed is calculated using the law of the wall for rough surfaces:
+\begin{equation}
+u(z)=\frac{u_\star}{\kappa}\ln\left(\frac{z}{z_0}\right),
+\end{equation}
+where $\kappa$ is the von K\'arm\'an coefficient (default 0.4).
+The viscous stress is calculated from the law of the wall for smooth surfaces.
+The viscous drag coefficient, $Cd_\nu$ is adjusted to account for sheltering:
+\begin{equation}
+Cd'_\nu=\frac{Cd_\nu}{3}\left(1+\frac{2 Cd_\nu}{Cd_\nu+Cd_f}\right),
+\end{equation}
+where $Cd_f$ is the wave form drag coefficient.
+The viscous stress can then be solved for as:
+\begin{equation}
+\vec{\tau}_\nu=\rho_a Cd'_\nu \left|{\bf u_{z}}\right|{\bf {u}}_{z}.
+\end{equation}
+
+Note that when using the FLD2 switch, internal variables and output values of the viscous stress, friction velocity, surface roughness length and Charnock parameter are recalculated and overwritten. 

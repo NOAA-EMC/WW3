@@ -16,7 +16,7 @@ part of the spectrum, based on the swell decay observations of
 This parameterization was further extended by \cite{rep:AB02} to take into
 account a stronger gustiness in unstable atmospheric conditions. This effect is
 included in the present parameterization and is activated with the {\code
-!/STAB3} switch. Efforts have been made to make the present implementation as
+STAB3} switch. Efforts have been made to make the present implementation as
 close as possible to the one in the ECWAM model \citep{rep:Bea05}, in
 particular the stress lookup tables were verified to be identical. 
 Later modifications include the addition of a negative part in the wind input 
@@ -35,7 +35,7 @@ $\beta_{\mathrm{max}}$ is a non-dimensional growth parameter (constant),
 $\kappa$ is von K\'{a}rm\'{a}n' constant, and $p_{in}$ is a constant that
 controls the directional distribution of $\cS_{in}$. In the present
 implementation the air/water density ratio ${\rho_a}/{\rho_w}$ is constant. We
-define $Z=\log(\mu)$ where $\mu$ is given by Janssen (1991, Eq.~(16)), and
+define $Z=\log(\mu)$ where $\mu$ is given by \cite{art:Jan91}  Eq.~(16), and
 corrected for intermediate water depths, so that
 
 \begin{equation}
@@ -62,7 +62,7 @@ z_1&=&\alpha_0 \frac{\tau}{ \sqrt{1-\tau_w/\tau}},
 \noindent
 where $\tau=u_\star^2$, and $z_u$ is the height at which the wind is
 specified. These two equations provide an implicit functional dependence of
-$u_\star$ on $U_{10}$ and $\tau_w/\tau$. This relationship is tabulated
+$u_\star$ on $U_{10}$ and $\tau_w/\tau$. This relationship is then tabulated
 \citep{art:Jan91, rep:Bea07}.
 
 An important part of the parameterization is the calculation of the
@@ -107,7 +107,7 @@ z_\alpha \right),20\right\}.
 This parameterization is sensitive to the spectral level at $k_{\max}$.
 A higher spectral level will lead to a larger value of $u_\star$ and thus
 positive feedback on the wind input via $z_1$. This sensitivity is exacerbated
-by the sensitivity of the high frequency spectral level to the presence of
+by the sensitivity of the high-frequency spectral level to the presence of
 swell via the dissipation term.
 
 A linear damping of swells was introduced in the operational ECWAM model in September 2009. It takes 
@@ -119,9 +119,9 @@ S_{out}(k,\theta)= 2 s_1  \kappa \frac{\rho_a }{\rho_w} \left(\frac{u_\star}{C}\
 \end{equation}
 
 \noindent where $s_1$ is set to 1 when this damping is used and 0 otherwise. For $s_1=0$ 
-the parameterization is the WAM4 or BJA parameterization (see table below). 
+the parameterization is the WAM4 or BJA parameterization (see Table \ref{tab:WAM4_parSIN}). 
 
-Due to the increase in high frequency input compared to WAM3, the dissipation
+Due to the increase in high-frequency input compared to WAM3, the dissipation
 function was adapted by Janssen (1994) from the WAM3 dissipation, and later
 reshaped by \cite{rep:Bea05}. That later modification is referred to as "BJA" for Bidlot, 
 Janssen and Abdallah. A more recent modification, strongly improved the model results for 
@@ -130,7 +130,7 @@ corresponds to the ECMWF WAM model contained in the IFS version CY38R1 \citep{pr
 operational ECMWF analysis. Using these with other wind products may require a re-tuning of these coefficients. For example, with NCEP or CFSRR winds, the value of BETAMAX 
 should probably be reduced or ZWND increased. 
 
-\noindent
+
 The generic form of the WAM4 dissipation term is,
 
 \begin{equation}
@@ -150,7 +150,7 @@ weight parameters,
 \end{equation}
 
 \noindent
-with $p$ a constant power. Similarly the mean frequency is defined as
+with $p$ a constant power. Similarly, the mean frequency is defined as
 
 \begin{equation}
 \overline{\sigma}=\left[\frac{\int \sigma^p N\left(k,\theta\right) {\mathrm d}
@@ -173,7 +173,7 @@ short wave modulation by long waves.
 
 The source term code was generalized to
 allow the use of WAM4, BJA or others ECWAM parameterization, via a simple change of
-the parameters in the namelists SIN3 and SDS3. At present, the default values of the namelist
+the parameters in the namelists {\F SIN3} and {\F SDS3}, see Tables \ref{tab:WAM4_parSIN} and \ref{tab:WAM4_parSDS}. At present, the default values of the namelist
 parameters correspond to BJA \citep{rep:Bea05}.
 
 \begin{table} \begin{center}
@@ -189,7 +189,7 @@ Par.         &  WWATCH var.           & namelist & WAM4 & BJA   & Bidlot 2012 \\
 \hline
 \end{tabular} \end{center}
 \caption{Parameter values for WAM4, BJA and the 2012 update in the ECWAM model. Source term
-  parameterizations that can be reset via the SIN3 and SDS3 namelist. BJA is
+  parameterizations that can be reset via the {\F SIN3} and {\F SDS3} namelist. BJA is
   generally better than WAM4. The default parameters in ST3 corresponds to BJA. Please
   note that the name of the variables only apply to the namelists. In the source
   term module the names are slightly different, with a doubled first letter, in
@@ -209,7 +209,7 @@ Par.                               &  WWATCH var.         & namelist & WAM4 & BJ
   \hline \hline
 \end{tabular} \end{center}
 \caption{Parameter values for WAM4, BJA and the update by \cite{pro:Bid12}. Source term
-parameterizations that can be reset via the SDS3 namelist. BJA is generally
+parameterizations that can be reset via the {\F SDS3} namelist. BJA is generally
 better than WAM4. Please note that the
 name of the variables only apply to the namelists. In the source term module
 the names are slightly different, with a doubled first letter, in order to

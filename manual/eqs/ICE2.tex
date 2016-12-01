@@ -13,7 +13,7 @@ This is a model for attenuation by a
 sea ice cover, derived on the assumption that dissipation is caused by
 friction in the boundary layer below the ice,
 with the ice modeled as a continuous thin elastic plate. The original form by  \cite{art:LMC88} is activated by 
-setting the {\code IC2} namelist SIC2 parameter {\code IC2DISPER = .TRUE.}. That form 
+setting the {\code IC2} namelist {\F SIC2} parameter {\code IC2DISPER = .TRUE.}. That form 
  assumes that the boundary layer is always laminar but it uses an eddy viscosity ${\nu}$ that can vary spatially 
 and is the forcing field ${C_{ice,2}}$. 
 
@@ -21,13 +21,13 @@ With {\code IC2} and {\code IC3}, the sea ice effects requires solution of a
 new dispersion relation. For {\code IC2}, the key equations are:
 
 \begin{equation}\label{eq:ice1}
-  {\sigma}^2 = ({gk_r} + {Bk_r^5})/(\coth({k_r}{h_w}) + {k_r}{M})
+  {\sigma}^2 = ({gk_r} + {Bk_r^5})/(\coth({k_r}{h_w}) + {k_r}{M}),
 \end{equation}
 \begin{equation}\label{eq:ice2}
-  {C_g} = (g + (5 + 4{k_r}{M}){B}{k_r^5})/(2{\sigma}(1+{k_r}{M})^2)
+  {c_g} = (g + (5 + 4{k_r}{M}){B}{k_r^5})/(2{\sigma}(1+{k_r}{M})^2),
 \end{equation}
 \begin{equation}\label{eq:ice3}
-  {\alpha} = (\sqrt{{\nu\sigma}}{k_r)}/({C_g}\sqrt{2}(1+{k_r}{M}))
+  {\alpha} = (\sqrt{{\nu\sigma}}{k_r)}/({c_g}\sqrt{2}(1+{k_r}{M})).
 \end{equation}
 
 \noindent
@@ -45,7 +45,10 @@ not passed back to the main program. The only effect is via ${k_i}$
  \cite{art:Aea15} distinguish between laminar and 
 turbulent regimes, allowing this is activated by setting  {\code IC2DISPER = .FALSE.}. 
 In that case the dissipation goes from a laminar form using the molecular viscosity multiplied by an 
-empirical adjustment factor {\code IC2VISC} to a turbulent form, amplified by a factor {\code IC2ROUGH}, for Reynolds numbers 
+empirical adjustment factor {\code IC2VISC} to a turbulent form, amplified by a factor {\code IC2TURB}, for Reynolds numbers 
 above a user-defined threshold {\code IC2REYNOLDS}. This transition is smoothed over a range {\code IC2SMOOTH} to take into 
 account the random nature of the wave field. In the turbulent regime, the friction factor 
-is estimated from a user-specified under-ice roughness length {\code IC2ROUGH}. 
+is estimated from a user-specified under-ice roughness length {\code IC2ROUGH}, expected to be of the order of $10^{-4}$~m. 
+The parameter {\code IC2TURBS} is an ad hoc enhancement of turbulent dissipation in the Southern hemisphere 
+that was introduced for test purposes to investigate sources of bias. This will be deprecated in future versions. It now appears 
+that combining IC2 with creep dissipation in IS2 can provide good results for dominant waves in both hemispheres. 

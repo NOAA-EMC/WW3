@@ -2,7 +2,7 @@
 \subsection{~Output parameters} \label{sub:outpars}
 \vssub
 
-The wave model provides output of the following gridded fields of mean wave
+The wave model provides output of gridded fields of mean wave
 parameters. Some of these parameters can also be found in the output for
 selected points. For activation of the output see \para\ref{sec:ww3shel}
 
@@ -15,14 +15,14 @@ parameter within its group. Groups are defined according to Table
 \begin{table} \begin{center}
  \begin{tabular}{|c|l|c|} \hline \hline
      & Group Name & Elements \\ \hline
- I   & Forcing Fields & 6 \\
- II  & Mean Wave Parameters & 9 \\ 
- III & Spectrum Parameters & N/A \\
+ I   & Forcing Fields & 10 \\
+ II  & Mean Wave Parameters & 16 \\ 
+ III & Spectrum Parameters & 6 \\
  IV  & Partitions Parameters & 8 \\
  V   & Atmosphere-Waves Layer & 10 \\
- VI  & Wave-Ocean Layer & 7 \\
+ VI  & Wave-Ocean Layer & 11 \\
  VII & Wave-Bottom Layer & 5 \\
- VIII& Spectrum parameters & 2 \\
+ VIII& Spectrum parameters & 6 \\
  IX  & Numerical Diagnostics & 5 \\
  X   & User Defined & 2 \\ \hline
 \end{tabular} \end{center}
@@ -31,7 +31,7 @@ parameter within its group. Groups are defined according to Table
 
 Below, a brief denifition of output field parameters is provided. A table
 with definitions may be found in the sample {\code ww3\_shel.inp} file,
-in Section \para\ref{sec:ww3shel}. That input file also provides a list of flags  
+in \para\ref{sec:ww3shel}. That input file also provides a list of flags  
 indicating if output parameters are available in different field
 output file types (ASCII, grib, igrads, NetCDF). 
 
@@ -42,21 +42,20 @@ file. There are 10 groups of parameters the user can choose from (reflecting the
 internal double-index structure of the code itself). If the first flag of a group 
 line is set to F then that group will not produce output, and a second line for 
 parameter flags is not expected. If the group flag is set to T, then
-a second group line is expected containing parameter flags. Example of F/T flag 
-use is given in  \para\ref{sec:ww3shel}.
+a second group line is expected containing parameter flags. Examples of F/T flag 
+use are given in  \para\ref{sec:ww3shel}.
 All parameters that are a function of frequency (e.g.  \textbf{EF} or \textbf{USF}) require the setting 
-of specific namelist parameters, in the OUTS namelist. This is to reduce the memory use
+of specific namelist parameters, in the {\F OUTS} namelist. This is to reduce the memory use
 if these parameters are not needed. 
 
-For Namelists, the first line is set to N, and the next line contains parameter
-symbols as per table in Section \para\ref{sec:ww3shel}.  An example is given in  
+For namelists, the first line is set to N, and the next line contains parameter
+symbols. Examples are given in \para\ref{sec:ww3multi} and
 \para\ref{sec:ww3ounf}. The names for these namelists are the bold names below, for 
 example \textbf{HS}. 
 
-All parameters listed below are available in output file of the types
-ASCII and NetCDF. If selected output file types are grads or grib,
+All parameters listed below are available in ASCII and NetCDF output files. If selected output file types are grads or grib,
 some parameters may not be available. Availability (or not) is identified
-in the first two columns in the field output parameter itable of 
+in the first two columns in the field output parameter table within the example input file in  
 \para\ref{sec:ww3shel}. That table also identifies, for all parameters,
 the internal WAVEWATCH III code tags, the output tags (names used is ASCII 
 file extensions, NetCDF variable names and namelist-based selection (see 
@@ -66,7 +65,7 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
             {\usecounter{outgrps} \leftmargin 7mm \labelwidth 5mm
              \rightmargin 0mm \itemsep \baselineskip \parsep 0mm}
 
-\item {Forcing Fields}
+\item {Forcing fields}
 
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
@@ -83,6 +82,8 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
   e-folding scale associated to the loss of wave energy in a field of small
   icebergs \citep{art:Aea11}.
 \item \textbf{D50} Sediment median grain size ($D_{50}$). 
+\item \textbf{IC1} Ice thickness. 
+\item \textbf{IC5} Ice flow diameter. 
 \end{list}
 
 \item{Standard mean wave parameters}
@@ -120,9 +121,20 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \item \textbf{DP} Peak direction (degr.), defined like the mean direction, using the
       frequency/wavenumber bin containing of the spectrum $F(k)$ that
       contains the peak frequency only.
+\item \textbf{HIG} Infragravity height.
+\item \textbf{MXE}   Max surface elev (Space-time extreme, STE)
+\item \textbf{MXES}  St Dev of max surface elev (STE)
+\item \textbf{MXH}  Max wave height (STE)
+\item \textbf{MXHC}  Max wave height from crest (STE)
+\item \textbf{SDMH}  St Dev of MXC (STE)
+\item \textbf{SDMHC} St Dev of MXHC (STE)           
 \end{list}
 
-\item{Spectral parameters (first 5 moments and wavenumbers)}
+\item{Spectral parameters (first 5 moments and wavenumbers). 
+
+All these parameters are a function 
+of frequency and thus these are three-dimensional arrays. Because of the large memory use, the 
+computation of these parameters requires the activation of switches in the {\F OUTS} namelist.}
 
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
@@ -142,14 +154,26 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
       \begin{equation} \sigma_1(f) = \left [ 2 \left \{ 1 - \left (
       \frac{a_1(f)^2+b_1(f)^2}{E(f)^2} \right )^{1/2} \right \} \right ]^{1/2}
       \: , \label{eq:sig_th1} \end{equation}
-\item \textbf{TH2M} Mean direction from $a_2$ and $b_2$ (degr.) (NOT PLUGGED YET)
-\item \textbf{STH2M} Spread from $a_2$ and $b_2$ (degr.)  (NOT PLUGGED YET)
+\item \textbf{TH2M} Mean direction from $a_2$ and $b_2$ (degr.)
+       \begin{equation} \theta_2 (f)= \mbox{atan} \left ( \frac{b_2(f)}{a_2(f)} \right )
+      \: , \label{eq:theta_2} \end{equation} \begin{equation}
+      a_2(f) = 2 \pi \int_0^{2\pi} \int_0^\infty \cos(2 \theta) F(\sigma,\theta) \:
+       \mathrm{d}\theta \: , \end{equation} \begin{equation}
+      b_2(f) = 2 \pi \int_0^{2\pi} \int_0^\infty \sin(2 \theta) F(\sigma,\theta) \:
+       \mathrm{d}\theta \: . \end{equation}
+\item \textbf{STH2M} Directional spreading from $a_2$ and $b_2$ (degr.)  
+      \begin{equation} \sigma_2(f) = \left [ 0.5 \left \{ 1 - \left (
+      \frac{a_2(f)^2+b_2(f)^2}{E(f)^2} \right )^{1/2} \right \} \right ]^{1/2}
+      \: , \label{eq:sig_th1} \end{equation}
 \item \textbf{WN}  Wavenumbers $k(\sigma)$ (rad/m)
       \begin{equation} \sigma^2 = g k \tanh (k D) 
       \: , \label{eq:k} \end{equation}
 \end{list}
 
-\item{Spectral partition parameters}
+\item{Spectral partition parameters} \label{out:spec_part}
+
+These output parameters are based on
+partitioning of the spectrum into individual wave fields.
 
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
@@ -163,7 +187,23 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \item \textbf{PSP} Mean direction of partitions of the spectrum.
 \item Directional spread of partition of the spectrum
       Cf. Eq.~(\ref{eq:sig_th}).
-\item \textbf{PWS} Wind sea fraction of partition of the spectrum (see below).
+\item \textbf{PWS} Wind sea fraction of partition of the spectrum.  The method of
+\cite{art:HP01} is used, implemented as described in \cite{tol:Oahu07a}. With
+this, a `wind sea fraction' $W$ is introduced
+\begin{equation}
+W = E^{-1}  \: E |_{U_p > c}  \:\:\: , \label{eq:wsf}
+\end{equation}
+where $E$ is the total spectral energy, and $E |_{U_p > c}$ is the energy in
+the spectrum for which the projected wind speed $U_p$ is larger than the local
+wave phase velocity $c = \sigma / k$. The latter defines an area in the
+spectrum under the direct influence of the wind. To allow for nonlinear
+interactions to shift this boundary to lower frequencies, and subsequently to
+have fully grown wind seas inside this are, $U_p$ includes a multiplier
+$C_{mult}$
+\begin{equation}
+U_p = C_{mult} U_{10} \cos ( \theta - \theta_w )  \:\:\: . \label{eq:Up}
+\end{equation}
+The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
 \item \textbf{TWS} Wind sea fraction of the entire spectrum.
 \item \textbf{PNR} Number of partitions found in the spectrum. \label{out:last_part}
 \end{list}
@@ -181,11 +221,12 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
       \begin{equation} C_g E =  \rho_w g \overline{C_g} E
       \: . \label{eq:CgE} \end{equation}
 \item \textbf{FAW} Wind to wave energy flux
-\item \textbf{TWA} Net wave-supported stress (wind to wave momentum flux) 
+\item \textbf{TAW} Net wave-supported stress (wind to wave momentum flux) 
+\item \textbf{TWA} Negative part of the wave-supported stress
 \item \textbf{WCC} Wave to wind momentum flux
 \item \textbf{WCF} Whitecap coverage (without dimensions) 
 \item \textbf{WCH} Whitecap mean thickness (m) 
-\item \textbf{WCM} Mean breaking wave height (m) (NOT PLUGGED YET)
+\item \textbf{WCM} Mean breaking wave height (m) (NOT AVAILABLE YET)
 %\item \textbf{PWS} Moment of whitecap distribution (?) (NOT PLUGGED YET)
 \end{list}
 
@@ -231,10 +272,11 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \item \textbf{P2L} Frequency spectrum of the second order pressure (m$^2$s)  which contributes to acoustic and seismic noise,
       \begin{equation} F_{p2D}(k=0,f) =  \frac{2 \sigma}{\pi} \int_0^{\pi}  \frac{4 \pi^2}{C_g^2} F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta
       \: . \label{eq:sopf} \end{equation}
-
+\item \textbf{TWI}   Wave to sea ice stress
+\item \textbf{FIC}   Wave to sea ice energy flux
 \end{list}
 
-\item{Wave-bottom layer}²
+\item{Wave-bottom layer}
 
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
@@ -253,7 +295,7 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 \item \textbf{TBB} Momentum loss in WBBL 
 \end{list}
 
-\item{Remote sensing and spectral tail}
+\item{Spectrum parameters}
 
 \begin{list}{\arabic{outpars})\hfill}
             {\usecounter{outpars} \leftmargin 8mm \labelwidth 7mm
@@ -261,6 +303,10 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 
 \item \textbf{MSS} Mean square slopes in $x$ and $y$ directions (zonal and meridional components of slopes variances). 
 \item \textbf{MSC} Spectral tail level (without dimensions) 
+\item \textbf{WL02}  East/X North/Y mean wavelength component
+\item \textbf{AXT}   Correl sea surface gradients (x,t)
+\item \textbf{AYT}   Correl sea surface gradients (y,t)
+\item \textbf{AXY}   Correl sea surface gradients (x,y)
 \end{list}
 
 \item{Numerical diagnostics }
@@ -288,31 +334,8 @@ also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
 
 \end{list}
 
-\noindent
-Output types \ref{out:first_part} through \ref{out:last_part} are based on
-partitioning of the spectrum into individual wave fields. The method of
-\cite{art:HP01} is used, implemented as described in \cite{tol:Oahu07a}. With
-this, a `wind sea fraction' $W$ is introduced
 
-\begin{equation}
-W = E^{-1}  \: E |_{U_p > c}  \:\:\: , \label{eq:wsf}
-\end{equation}
 
-\noindent
-where $E$ is the total spectral energy, and $E |_{U_p > c}$ is the energy in
-the spectrum for which the projected wind speed $U_p$ is larger than the local
-wave phase velocity $c = \sigma / k$. The latter defines an area in the
-spectrum under the direct influence of the wind. To allow for nonlinear
-interactions to shift this boundary to lower frequencies, and subsequently to
-have fully grown wind seas inside this are, $U_p$ includes a multiplier
-$C_{mult}$
-
-\begin{equation}
-U_p = C_{mult} U_{10} \cos ( \theta - \theta_w )  \:\:\: . \label{eq:Up}
-\end{equation}
-
-\noindent
-The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
 
 %\vspace{\baselineskip}
 %\centerline{\ldots NEEDS CLEAN UP BELOW HERE \ldots}

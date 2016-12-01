@@ -4,27 +4,26 @@
 
 \addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} General concepts}
 
-\noindent {\bf General concepts}
-\vspace{\baselineskip} 
-\noindent
+
 In order to address wave growth issues in rapidly changing, small scale
 conditions such as hurricanes, an option to add a given continuous advection
 speed to the grid has been added to the model in model version 3.02. This
 model version is described in detail in \cite{tol:OMOD05b}. Here, only a
 cursory description is given.
 
+
+
 \begin{center}
 \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm} \\
  \vspace{\baselineskip}
 \parbox{120mm}{The continuously moving grid version of \ws\ is only intended 
-for testing wave model properties in highly idealized conditions. This model
+for testing wave model properties in highly-idealized conditions. This model
 version should only be used for deep water without mean currents and land
 masses. Furthermore, to avoid complications with great circle propagation,
-only Cartesian grid should be used. The option is furthermore implemented only
+only a Cartesian grid should be used. The option is furthermore implemented only
 for propagation options {\F pr1} and {\F pr3}. Note that this is not checked
 in the scripts or programs at either the compile or run time level.  This
-option is not described in the body of the manual but in this appendix only,
-because it is not considered to be a general application.} \\
+option is not considered to be for general application.} \\
 \vspace{\baselineskip}
 \rule[1mm]{55mm}{1.0mm} WARNING \rule[1mm]{55mm}{1.0mm}
 \end{center}
@@ -40,20 +39,16 @@ For the above described application Eq.~(\ref{eq:bal_plane}) can be written as
 
 \noindent
 where ${\bf{v}}_g$ represents the advection velocity of the grid. This option
-is selected when compiling the model (see below). A second compile level
+is selected when compiling the model. A second compile level
 option allows for adding the grid advection velocity ${\bf{v}}_g$ to the wind
 field. This allows for a simple method to assure mass conservation of a wind
 field independent of the actual and instantaneous grid advection velocity. The
 advection velocity ${\bf{v}}_g$ can vary in time and is provided by the user
 at the run time of the model (see below).
 
-\vspace{\baselineskip} 
-\vspace{\baselineskip} 
-\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Numerical implementation}
-\noindent {\bf Numerical implementation}
-\vspace{\baselineskip} 
 
-\noindent
+
+
 For the simplified conditions for which Eq.~(\ref{eq:bal_move}) is valid, the
 implementation of the moving grids is trivial if it is considered that this
 equation is equivalent to
@@ -103,28 +98,22 @@ grid by rescaling the amount of smoothing applied with the expected residence
 time of corresponding spectral component in the moving grid
 \citep[see][]{tol:OMOD05b}.
 
-\vspace{\baselineskip} 
-\vspace{\baselineskip} 
-\addcontentsline{toc}{subsubsection}{\strut \hspace{24mm} Running with moving grids}
-\noindent {\bf Running with moving grids}
-\vspace{\baselineskip} 
 
-\noindent
-To switch on the moving of the grid, or the correction of the wind field, two
-optional switches are added to the \ws\ source code:
+To switch on the moving grid option or the corrections of the wind field or GSE, three
+optional switches are added to the \ws\ source code (also see, \para\ref{sec:switches}:
 
 \begin{slist}
 \sit{mgp} {Apply advection correction for continuous moving grid.}
 \sit{mgw} {Apply wind correction for continuous moving grid.}
-\sit{mgg} {Apply correction to averaging strength in GSE correction for
+\sit{mgg} {Apply GSE alleviation for
            continuous moving grid.}
 \end{slist}
 
 \noindent
 The advection velocity and direction is input to the shell similar to the
 input of homogeneous currents (see bottom of file {\file ww3\_shel.inp} in
-section~\ref{sec:ww3shel}), exchanging the keyword '{\code CUR}' with '{\code
+Section~\ref{sec:ww3shel}), exchanging the keyword `{\code CUR}' with `{\code
   MOV}'. The advection velocity can be changed in time like all homogeneous
 input fields. An example of running with a moving grid model is given in test
 case {\file ww3\_ts3}. A similar capability exist in {\file ww3\_multi.inp} in
-section \ref{sec:ww3multi}, and is tested in test case {\file mww3\_test\_05}.
+Section \ref{sec:ww3multi}, and is tested in test case {\file mww3\_test\_05}.

@@ -824,7 +824,7 @@
 !
               RW(1) =  MOD(360.+(X-X0I),360.)/SXI - REAL(IX21(IX,1)-1)
               RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
-!	
+!       
               IF (IX21(IX,1).LE.1 .AND. RW(1).LT.ACC) THEN
                 IF (RW(1).LT.0.) THEN
                   RW(1) = 0.
@@ -856,7 +856,7 @@
 !/T                       FLMOD  = .TRUE.
                 END IF
               END IF
-!	
+!       
               EFAC = SQRT ( MAX(0.,ABS(RW(1)-0.5)-0.5)**2 +  &
                             MAX(0.,ABS(RW(2)-0.5)-0.5)**2 )
               EFAC        = 1. / ( 1. + 0.25*EFAC**2 )

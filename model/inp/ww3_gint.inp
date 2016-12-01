@@ -26,7 +26,7 @@ $ of these grids a mod_def.grdN and an out_grd.grdN are available.
 $ The target grid is grd4, and a mod_def.grd4 is also made available.
 $ Upon execution of the code an out_grd.grd4 is generated via
 $ interpolation of output fields from the various out_grd.grdN
-$ (N variying from 1 to 3) files.
+$ (N varying from 1 to 3) files.
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

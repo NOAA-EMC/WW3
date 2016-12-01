@@ -91,7 +91,7 @@
 !     Adds the reflected components from 2 types of sources: 
 !        shoreline reflection, subgrid obstruction and icebergs 
 !
-!     In the case of infragravity energy, there are two passes:
+!     In the case where the IG switch is present, there are two passes:
 !        - ICALC = 1, only the wind sea and swell are reflected (no IG added) 
 !        - ICALC = 2, IG energy is added into all frequency bands 
 !

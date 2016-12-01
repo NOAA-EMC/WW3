@@ -985,7 +985,7 @@
               varnm(1)='t02'
               varnl(1)='mean period T02'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
-					                   spectral_density_second_frequency_moment'
+                                                           spectral_density_second_frequency_moment'
               varng(1)='mean_period_t02'
               varnc(1)=''
               vmin = 0
@@ -1000,7 +1000,7 @@
               varnm(1)='t0m1'
               varnl(1)='mean period T0m1'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance&
-					                  _spectral_density_inverse_frequency_moment'
+                                                          _spectral_density_inverse_frequency_moment'
               varng(1)='mean_period_t0m1'
               varnc(1)=''
               vmin = 0 
@@ -1015,7 +1015,7 @@
               varnm(1)='t01'
               varnl(1)='mean period T01'
               varns(1)='sea_surface_wind_wave_mean_period_from_variance&
-					                  _spectral_density_first_frequency_moment' 
+                                                          _spectral_density_first_frequency_moment' 
               varng(1)='mean_period_t01'
               varnc(1)=''
               vmin = 0
@@ -1163,7 +1163,7 @@
               ENAME  = '.sdmh'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hmaxe'
+              varnm(1)='hmaxd'
               varnl(1)='STD of maximum wave height (nonlinear,2nd order)'
               varns(1)='STD of maximum wave height (nonlinear,2nd order)'
               varng(1)='STD of maximum wave height (nonlinear,2nd order)'
@@ -1177,7 +1177,7 @@
               ENAME  = '.sdmhc'
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
               NFIELD=1
-              varnm(1)='hcmaxe'
+              varnm(1)='hcmaxd'
               varnl(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
               varns(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
               varng(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
@@ -1922,6 +1922,7 @@
               FSC    = 0.01
               ENAME  = '.abr'
               UNITS  = 'm'
+              ! NB: ABA and ABD are the X and Y components of the bottom displacement
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABD(1:NSEA)       &
@@ -1945,6 +1946,7 @@
               FSC    = 0.01
               ENAME  = '.ubr'
               UNITS  = 'm s-1'
+              ! NB: UBA and UBD are the X and Y components of the bottom velocity
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
@@ -2009,9 +2011,9 @@
               FSC    = 0.000001
               UNITS  = 'm2 s-2'
               ENAME  = '.tbb'
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)        &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1) &
                                                         , MAPSF, XX )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOY(1:NSEA)        &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2) &
                                                         , MAPSF, XY )
               NFIELD=2
               varnm(1)='utbb'
@@ -3213,8 +3215,8 @@
       call check_err(iret)
 !/ST4    IF (ZZWND.NE.10)      iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ZWD',ZZWND)
 !/ST4    IF (AALPHA.NE.0.0095) iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter ALPHA0',AALPHA)
-!/ST4    IF (BBETA.NE.1.52)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
-!/ST4    IF(SSDSC(7).NE.0.8)   iret=nf90_put_att(ncid,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
+!/ST4    IF (BBETA.NE.1.43)    iret=nf90_put_att(ncid,NF90_GLOBAL,'SIN4 namelist parameter BETAMAX',BBETA)
+!/ST4    IF(SSDSC(7).NE.0.3)   iret=nf90_put_att(ncid,NF90_GLOBAL,'SDS4 namelist parameter WHITECAPWIDTH', SSDSC(7))
 ! ... TO BE CONTINUED ... 
       open(unit=994,file='NC_globatt.inp',status='old',iostat=icode)
       IF (ICODE.EQ.0) THEN

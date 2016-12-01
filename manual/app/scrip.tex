@@ -8,18 +8,18 @@
 \vssub
 
 \noindent
-\ws\ version 3.14 (\cite{tol:MMAB09a}) introduced multi-grid capability. This
+\ws\ version 3.14 \citep{tol:MMAB09a} introduced multi-grid capability. This
 capability is described above (\para\ref{sub:two_way}). With model version 4,
-there is the option to use irregular grids or unstructured grids, as described
+there is an option to use irregular grids or unstructured grids, as described
 in \para\ref{sub:num_space_curv} and \para\ref{sub:num_space_tri},
-respectively. Unfortunately, the methods described in (\para\ref{sub:two_way})
+respectively. Unfortunately, the methods described in \para\ref{sub:two_way}
 are not general, as they are intended for regular grids only. Some new
-capability is implemented in \WWver\ to accommodate irregular and unstructured
+capabilities are implemented in \WWver\ to accommodate irregular and unstructured
 grids within the multi-grid approach.
 
 The core component for communication from lower rank grids to higher rank
 grids of \cite{tol:OMOD08b} is an interpolation in space to provide boundary
-data at the higher spatial resolution. For \WWver\ , the technique was
+data at the higher spatial resolution. For version \WWver\, the technique was
 generalized by making calls to the grid-search-utility (GSU) implemented in
 \ws\ version 4 by T. Campbell. Other generalizations were made to ancillary
 components of this routine.
@@ -30,7 +30,7 @@ spectral density of a larger (low rank) grid cell is updated based on the
 spectral densities of the overlapping smaller (high rank) grid cells, weighted
 according to the fraction of the larger cell that is covered by each smaller
 cell, keeping in mind that a smaller cell may be overlapping with more than
-one larger cell. For \WWver\, the technique was generalized by making calls to
+one larger cell. For version \WWver\, the technique was generalized by making calls to
 an external software package, SCRIP-WW3, which is described below. The
 remapping weights are stored in a FORTRAN ``derived data type''
 array. Generalizations were also made to ancillary components of the remapping
@@ -61,7 +61,7 @@ and includes special logic for handling longitude wrapping (the so-called
 ``branch cut'') and cells that include a pole. It also allows for unstructured
 grids, with arbitrary number of cell corners. The grid corner coordinates must
 be given in an order which traces the outside of a grid cell in a
-counterclockwise sense. The software allows either first- or second-order
+counterclockwise direction. The software allows either first- or second-order
 remapping; weights for both are calculated in SCRIP-WW3. At present, only the
 first-order remapping is implemented in \ws\ : \cite{art:Jones99} points out
 that there is virtually no advantage to using the second-order method when
@@ -78,7 +78,7 @@ program termination. SCRIP-WW3 is not required for {\file ww3\_shel}
 (traditional one-way nesting), and is not required for {\file ww3\_multi} with
 only regular grids, since original methods for remapping are retained in the
 code for this purpose. SCRIP-WW3 source files are kept in a separate
-directory {\file /ftn/SCRIP/}, since it is modified 3rd party software. With
+directory {\dir /ftn/SCRIP/}, since it is modified 3rd party software. With
 the {\F SCRIP} switch, the build system ( {\file ww3\_make} ) will
 automatically compile files from this directory and link them into {\file
   ww3\_multi}.
@@ -93,8 +93,8 @@ respectively; the numbering of grids is assigned by {\file ww3\_multi} and is
 indicated in screen output of that program. This {\file .nc} file contains all
 information required by \ws\ for remapping. Additional diagnostic information
 about the remapping can be included in the {\file .nc} file by adding the
-switch {\F T38}. Note: {\file switch} should include either {\F 'SCRIP
-  SCRIPNC'} or {\F 'SCRIP'}; using {\F SCRIPNC} without {\F SCRIP} will result
+switch {\F T38}. Note: {\file switch} should include either {\F `SCRIP
+  SCRIPNC'} or {\F `SCRIP'}; using {\F SCRIPNC} without {\F SCRIP} will result
 in a compile error.
 
 Though it is not required, SCRIP-WW3 may be utilized for remapping between
@@ -137,7 +137,7 @@ all subsequent runs with the same grid set. The scalability is limited by
 the most expensive remapping pair, i.e. load balancing is an issue. 
 For a case where 12 remapping pairs are calculated and each pair requires 
 1/12th of the computation time, speed-up will be by factor twelve. For 
-another case with 12 remapping pairs, where one remapping pair takes 50% 
+another case with 12 remapping pairs, where one remapping pair takes 50\%  
 of computation time, speed-up will be by factor two only. Note that resources
 are maximized by using a number of processes equal to the number of remapping
 pairs: extra processes will not be used. 
@@ -194,7 +194,7 @@ can be remedied by adding an artificial offset to one of the grids. It was alrea
 possible to specify an offset in {\file ww3\_grid.inp} in the grid description,
 but since that offset is intended as a real quantity, this other, artificial 
 offset is implemented separately as a namelist option. It is {\code GSHIFT} 
-under namelist group {\code MISC}. An example namelist would be: {\code MISC 
+under namelist group {\F MISC}. An example namelist would be: {\code MISC 
 GSHIFT = 1.0D-6}. A smaller number will result in less regridding error, 
 though the number must be sufficient large to actually have the intended 
 beneficial effect. We recommend to determine this by trial-and-error, varying 

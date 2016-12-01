@@ -16,7 +16,7 @@ $ for NetCDF version 4 the TRKNC and NC4 switches are needed.
    1
 $
 $ Wave tracking domain. First line: longitude limits, longitude intervals
-$ (NX-1); second line: latitude limits, latitute intervals (NY-1).
+$ (NX-1); second line: latitude limits, latitude intervals (NY-1).
 $
    100. 275. 175
      0.  55. 55

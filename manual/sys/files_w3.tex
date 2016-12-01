@@ -229,13 +229,16 @@ SMC grid routines \hfill {\file w3psmcmd.ftn}
 \begin{flisti}
 \fit{W3PSMC   }{Spatial propagation on SMC grid.}
 \fit{W3KSMC   }{Spectral modification by GCT and refraction.}
-\fit{SMCxUNO2 }{Irregular grid mid-flux on U-faces by UNO2.}
-\fit{SMCyUNO2 }{Irregular grid mid-flux on V-faces by UNO2.}
-\fit{SMCxUNO2r}{Regular grid mid-flux on U-faces by UNO2.}
-\fit{SMCyUNO2r}{Regular grid mid-flux on V-faces by UNO2.}
+\fit{SMCxUNO2/3 }{Irregular grid mid-flux on U-faces by UNO2/3.}
+\fit{SMCyUNO2/3 }{Irregular grid mid-flux on V-faces by UNO2/3.}
+\fit{SMCxUNO2r/3r}{Regular grid mid-flux on U-faces by UNO2/3.}
+\fit{SMCyUNO2r/3r}{Regular grid mid-flux on V-faces by UNO2/3.}
 \fit{SMCkUNO2 }{Shift in k-space due to refraction by UNO2.}
+\fit{SMCGradn }{Evaluate field gradient at cell centre.}
+\fit{SMCAverg }{1-2-1 weighted average for centre field.}
 \fit{SMCGtCrfr}{Refraction and GCT rotation in theta.}
 \fit{SMCDHXY  }{Evaluate depth gradient and refraction limiter.}
+\fit{SMCDCXY  }{Evaluate current velocity gradient.}
 \fit{W3GATHSMC W3SCATSMC}{}
 \fit{         }{Gather and scatter spectral components.}
 \end{flisti}
@@ -244,13 +247,13 @@ SMC grid routines \hfill {\file w3psmcmd.ftn}
 Triangle-based propagation schemes \hfill {\file w3profsmd.ftn}
 
 \begin{flisti}
-\fit{w3xypug}{Interface to the unstructured propagation schemes}
-\fit{w3cflug}{Computes the maximum CFL number for spatial propagation}
-\fit{w3xypfsn2}{N-scheme}
-\fit{w3xypfspsi2}{PSI-scheme}
-\fit{w3xypfsnimp}{Implicit version of the N-scheme}
-\fit{w3xypfsfct2}{FCT-scheme}
-\fit{bcgstab}{Part of the iterative SPARSKIT solver, used for the implicit scheme}
+\fit{w3xypug}{Interface to the unstructured propagation schemes.}
+\fit{w3cflug}{Computes the maximum CFL number for spatial propagation.}
+\fit{w3xypfsn2}{N-scheme.}
+\fit{w3xypfspsi2}{PSI-scheme.}
+\fit{w3xypfsnimp}{Implicit version of the N-scheme.}
+\fit{w3xypfsfct2}{FCT-scheme.}
+\fit{bcgstab}{Part of the iterative SPARSKIT solver, used for the implicit scheme.}
 \end{flisti}
 
 \vspace{\baselineskip} \noindent
@@ -539,14 +542,14 @@ w3sbsxmd.ftn}
 Wave-ice interactions (simple) \hfill {\file w3sic1md.ftn}
 
 \begin{flisti}
-\fit{w3sic1}{Calculation of $S_{ice}$.}
+\fit{w3sic1}{Calculation of $S_{id}$.}
 \end{flisti}
 
 \noindent
 Wave-ice interactions (Liu et al.) \hfill {\file w3sic2md.ftn}
 
 \begin{flisti}
-\fit{w3sic2}{Calculation of $S_{ice}$.}
+\fit{w3sic2}{Calculation of $S_{id}$.}
 \fit{      }{Interpolation tables.}
 \end{flisti}
 
@@ -554,13 +557,20 @@ Wave-ice interactions (Liu et al.) \hfill {\file w3sic2md.ftn}
 Wave-ice interactions \cite{art:WS10} \hfill {\file w3sic3md.ftn}
 
 \begin{flisti}
-\fit{w3sic3}{Calculation of $S_{ice}$.}
+\fit{w3sic3}{Calculation of $S_{id}$.}
 \fit{bsdet }{Calculate the determinant for the dispersion relation.}
 \fit{wn\_complex}{Calculate complex wavenumber in ice.}
 \fit{cmplx\_root\_muller}{Find root for complex numbers.}
 \fit{fun\_zhao}{Wrapper for functions below.}
 \fit{func0\_zhao, finc1\_zhao}{}
 \end{flisti}
+
+\begin{flisti}
+\fit{w3sis2}{Calculation of $S_{is}$.}
+\end{flisti}
+
+\noindent
+Waves scattering in ice and ice break-up \hfill {\file w3sis2md.ftn}
 
 \noindent
 Shoreline reflection \hfill {\file w3ref1md.ftn}
@@ -595,19 +605,20 @@ code files.
 \fit{w3bullmd.ftn}{Perform bulletin style output for output points.}
 \fit{w3cspcmd.ftn}{Conversion of spectral discretization.}
 \fit{w3dispmd.ftn}{Routines to solve the Laplace dispersion relation (linear waves, flat bottom, no ice),
-                   including interpolation tables. Includes also ice corrections in liu\_foreward\_dispersion and liu\_inverse\_dispersion}
+                   including interpolation tables. Includes also ice corrections in liu\_foreward\_dispersion and liu\_inverse\_dispersion.}
 \fit{w3gsrumd.ftn}{Regridding utilities.}
 \fit{w3partmd.ftn}{Perform spectral partitioning for a single spectrum.}
 \fit{w3servmd.ftn}{General service routines.}
 \fit{w3timemd.ftn}{Time management routines.}
 \fit{w3triamd.ftn}{Basic routines for triangle-based grids: reading, 
-                   interpolation, definition of miscellaneous arrays.}
+                   interpolation, definition of miscellaneous arrays, determination of boundary
+                   points.}
 \end{flist}
 
 \noindent
 This completes the description of the basic wave model routines. The relation
 between the initialization routine and other routines is illustrated in
-Fig.~\ref{fig:w3init}.%  (page~\pageref{fig:w3init}). 
+Fig.~\ref{fig:w3init}. %  (page~\pageref{fig:w3init}). 
 A similar relational
 diagram for the wave model routine is presented in Fig.~\ref{fig:w3wave}. 
 % (page~\pageref{fig:w3wave}).

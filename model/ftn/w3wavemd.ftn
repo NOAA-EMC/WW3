@@ -384,7 +384,7 @@
 !/OASOCM      USE W3OGCMMD, ONLY: SND_FIELDS_TO_OCEAN
 !/OASACM      USE W3AGCMMD, ONLY: SND_FIELDS_TO_ATMOS
 
-!/PALM USE palmlib 	    !interface for palm coupler
+!/PALM USE palmlib          !interface for palm coupler
 !/PALM USE palm_user_param  !min_palm_time_a etc ...
 !
       IMPLICIT NONE

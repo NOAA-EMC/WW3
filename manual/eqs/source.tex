@@ -16,8 +16,7 @@ initial wave growth, a linear input term $S_{ln}$ can also be added in
 
 In shallow water additional processes have to be considered, most notably
 wave-bottom interactions $S_{bot}$ \cite[e.g.,][]{pro:Sea78}. In extremely
-shallow water, depth-induced breaking ($S_{db}$) can be considered separately from $S_{ds}$ when 
-paramterized dissipation rates in $S_{ds}$ are not strong enough, and triad wave-wave
+shallow water, depth-induced breaking ($S_{db}$) and triad wave-wave
 interactions ($S_{tr}$) also become important. Also available in \ws\ are source
 terms for scattering of waves by bottom features ($S_{sc}$), wave-ice
 interactions ($S_{ice}$), reflection off shorelines or floating objects such
@@ -38,7 +37,7 @@ S = S_{ln} + S_{in} + S_{nl} + S_{ds} + S_{bot} + S_{db} + S_{tr} +
 \end{equation}
 
 \noindent
-Other source terms are easily added. These source terms are defined for the
+Other source terms could be easily added. Those source terms are defined for the
 {\em energy} spectra. In the model, however, most source terms are directly
 calculated for the action spectrum. The latter source terms are denoted as
 $\cS \equiv S/\sigma$.
@@ -48,13 +47,14 @@ models. Therefore, the options for the calculation of $S_{nl}$ will be
 discussed first, starting in section \ref{sec:NL1}. $S_{in}$ and $S_{ds}$
 represent separate processes, but are often interrelated,
 because the balance of these two source terms governs the integral growth
-characteristics of the wave model. Several combinations of these basic source
+characteristics of the wave energy. Several combinations of these basic source
 terms are available, and are described in section~\ref{sec:ST1} and following.
 The description of linear input starts in section~\ref{sec:LN1}, and
 section~\ref{sec:BT1} and following describe available additional processes, mostly
 related to shallow water and sea ice. 
 
-\vspace{\baselineskip} \noindent
+%\vspace{\baselineskip} \noindent
+
 A third-generation wave model effectively integrates the spectrum only up to a
 cut-off frequency $f_{hf}$ (or wavenumber $k_{hf}$), that is ideally equal to the 
 highest discretization frequency. In practice the source terms parameterization or the time step used may not allow a proper 
@@ -68,7 +68,7 @@ parametric tail is applied \citep[e.g.,][]{art:WAM88}
 
 \begin{equation}
 F(f_r,\theta) = F(f_{r,hf},\theta) \left ( \frac{f_r}{f_{r,hf}}
-\right ) ^{-m} \label{eq:tail_E_f}
+\right ) ^{-m} \label{eq:tail_E_f} ,
 \end{equation}
 
 \noindent
@@ -84,14 +84,14 @@ wave components in the tail)
 
 \begin{equation}
 N(k,\theta) = N(k_{hf},\theta) \left ( \frac{f_r}{f_{r,hf}}
-\right ) ^{-m-2} \label{eq:tail_N_k}
+\right ) ^{-m-2} \label{eq:tail_N_k} ,
 \end{equation}
 
 \noindent
-The actual values of $m$ and the expressions for $f_{r,hf}$ depend on the
+the actual values of $m$ and the expressions for $f_{r,hf}$ depend on the
 source term parameterization used, and will be given below.
 
-\vspace{\baselineskip} \noindent
+%\vspace{\baselineskip} \noindent
 Before actual source term parameterizations are described, the definition of
 the wind requires some attention. In cases with currents, one can either
 consider the wind to be defined in a fixed frame of reference, or in a frame
@@ -100,8 +100,8 @@ and can be selected during compilation. The output of the program, however,
 will always be the wind speed which is not in any way corrected for the
 current.
 
-\vspace{\baselineskip} \noindent
-The treatment of partial ice coverage (ice concentration) in the source term
+%\vspace{\baselineskip} \noindent
+The treatment of partial ice coverage (ice concentration) in the source terms
 follows the concept of a limited air-sea interface. This means that the momentum
 transferred from the atmosphere to the waves is limited. Therefore, input and
 dissipation terms are scaled by the fraction of ice concentration. The

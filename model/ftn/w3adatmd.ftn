@@ -2663,7 +2663,7 @@
           TAUWNX   => WADATS(IMOD)%XTAUWNX
           TAUWNY   => WADATS(IMOD)%XTAUWNY
           WHITECAP => WADATS(IMOD)%XWHITECAP
-!	  
+!         
           SXX    => WADATS(IMOD)%XSXX
           SYY    => WADATS(IMOD)%XSYY
           SXY    => WADATS(IMOD)%XSXY
@@ -2681,7 +2681,7 @@
           US3D   => WADATS(IMOD)%XUS3D
           PHICE  => WADATS(IMOD)%XPHICE
           TAUICE => WADATS(IMOD)%XTAUICE
-!	  
+!         
           ABA    => WADATS(IMOD)%XABA
           ABD    => WADATS(IMOD)%XABD
           UBA    => WADATS(IMOD)%XUBA
@@ -2702,7 +2702,7 @@
           CFLKMAX =>  WADATS(IMOD)%XCFLKMAX
 !
           USERO  => WADATS(IMOD)%XUSERO
-!	  
+!         
         END IF
 !
       RETURN

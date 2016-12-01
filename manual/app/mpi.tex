@@ -104,7 +104,7 @@ in the script can be run interactively, while directly editing the {\file
 %\botline
 \end{figure}
 
-An alternative way of consistently compiling the code it to first extract all
+An alternative way of consistently compiling the code is to first extract all
 necessary subroutines per code using {\file w3\_source}, then put the sources
 and the makefile in individual directories, and compile using the {\file make}
 command. In this case the code for {\file ww3\_shel} and {\file ww3\_multi}
@@ -179,6 +179,82 @@ Some of the most common errors made in attempting to run {\file ww3\_shel} and
    this. 
 
 \end{itemize}
+
+
+%%%%%%%%%%%%
+
+\vssub
+\subsection{~MPI point-to-point communication errors}
+\vssub
+
+Running {\file ww3\_multi} in parallel with several large overlapping
+grids involves a large number of concurrently active MPI point-to-point
+communications (MPI send/recv pairs).  For correct execution, each active
+MPI message must have a unique envelope (send id, recv id, tag, communicator)
+with an allowed tag value.  In this context two types of MPI point-to-point
+communication errors may occur:
+(1) the MPI message tag value exceeds an upper-bound or
+(2) two or more MPI messages have the same envelope.
+The first error may result in {\file ww3\_multi} crashing with
+a MPI ``invalid tag" error or an internal tag upper-bound exceeded error.
+The second error may result in spectra sent from one MPI task to another being
+delivered to the wrong location.  The second error is more difficult to detect
+in that it is not trapped by MPI and may only be manifested as strange results
+in model output.
+
+To address these possible errors the allowed ranges of MPI tags for the different
+sets of point-to-point communication in {\file ww3\_multi} are controlled by the
+$MTAGB$, $MTAG0$, $MTAG1$, $MTAG2$, and $MTAG\_UB$ parameters defined in {\file WMMDATMD}.
+These parameters must satisfy
+$MTAGB \geq 0$ and $7*NRGRD-1 \leq MTAG0 < MTAG1 < MTAG2 < MTAG\_UB \leq MPI\_TAG\_UB$,
+where $MPI\_TAG\_UB$ is the tag upper-bound for the MPI implementation.
+
+The value of $MPI\_TAG\_UB$ for a specific MPI implementation can be obtained at
+run-time using the $MPI\_COMM\_GET\_ATTR$ routine.
+An MPI implementation is free to set the value of $MPI\_TAG\_UB$ larger than
+the minimum set by the MPI standard ($32767 = 2^{15}-1$).
+In the current release version of OpenMPI, the value of $MPI\_TAG\_UB$ is
+2147483647 ($2^{31}-1$).
+On the Cray XC40 with Cray MPICH, the value of $MPI\_TAG\_UB$ is much smaller,
+that is, 2097151 ($2^{21}-1$).
+As the currently known lowest value of $MPI\_TAG\_UB$ amongst available parallel
+platforms, the Cray XC40 value is used to set $MTAG\_UB$ in {\file WMMDATMD}.
+
+If an MPI tag value exceeds the upper-bound ($MPI\_TAG\_UB$) imposed by the MPI
+implementation, {\file ww3\_multi} may crash with a MPI ``invalid tag" error.
+If an MPI tag value exceeds one of the internal tag upper-bounds, {\file ww3\_multi}
+will crash with error code 1001 and a report of which tag upper-bound was exceeded.
+What follows is a description of the allowed MPI tag ranges and how they are set.
+
+The $MTAGB$ parameter is only used as the tag lower-bound for blocking communication
+that does not overlap with other point-to-point communication.
+Hence it is sufficent to set $MTAGB$ to the lowest allowed MPI tag value of 0.
+
+In addition to being the tag lower-bound for communication of internal boundary data in
+{\file WMINIOMD}, the $MTAG0$ parameter is used in {\file WMIOPOMD} as the tag upper-bound
+for the unified point output communication.  To ensure that the unified point
+output communication tag values are $\geq 0$, $MTAG0$ must be at least $7*NRGRD-1$.
+A generous setting of $MTAG0 = 1000$ is used in {\file WMMDATMD}.
+
+The allowed tag range for point-to-point communication of internal boundary data
+({\file WMINIOMD:WMIOBS}) is $(MTAG0,MTAG1]$.
+Given that this communication involves only the boundary points of the model
+grids a generous setting of $MTAG1 = 10000$ is used in {\file WMMDATMD}.
+
+The allowed tag range for point-to-point communication from high rank to low rank grids
+({\file WMINIOMD:WMIOHS}) is $(MTAG1,MTAG2]$.
+The allowed tag range for point-to-point communication between equal rank model grids
+({\file WMINIOMD:WMIOES}) is $(MTAG2,MTAG\_UB]$.
+The high-rank-to-low-rank and equal-rank communications involve both
+boundary and interior points of model grids.
+Hence, the allowed tag ranges for these two communication sets should be
+larger than the allowed range for the communication of internal boundary data.
+In nested grid applications (e.g., a single global grid with several regional nests)
+the required tag range for high-rank-to-low-rank communications will be larger
+than the required tag range for the equal-rank communications.
+The setting of $MTAG2 = 1500000$ is used in {\file WMMDATMD} to give a larger portion
+of the total allowed range of tags for the high-rank-to-low-rank communications.
+Other multiple grid applications may require adjusting $MTAG2$.
 
 
 %\bpage \pagestyle{empty}

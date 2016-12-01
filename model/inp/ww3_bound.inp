@@ -23,8 +23,8 @@ $   ftp://polar.ncep.noaa.gov/pub/waves/develop/glw.latest_run/
 $                                              (the *.spec.gz files)
 $   http://tinyurl.com/iowagaftp/HINDCAST/GLOBAL/2009_ECMWF/SPEC
 $
-$ If data it used other hand from previous WAVEWATCH III runs, then
-$ these data will need to be converted to the WAVEWATCH III format.
+$ If data is used other than from previous WAVEWATCH III runs, then
+$ this data will need to be converted to the WAVEWATCH III format.
 $
 $ In the case of NetCDF files see ww3_bounc.inp  
 $

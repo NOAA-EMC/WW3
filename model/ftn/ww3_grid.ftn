@@ -1227,17 +1227,17 @@
 !/ST4      ALPHA0 = 0.0095
 !/ST4      Z0MAX = 0.0    
 !/ST4      Z0RAT = 0.04 
-!/ST4      BETAMAX   = 1.52     
+!/ST4      BETAMAX   = 1.43     
 !/ST4      SINTHP    = 2.     
-!/ST4      SWELLF    = 0.8     
+!/ST4      SWELLF    = 0.66     
 !/ST4      SWELLFPAR = 1
 !/ST4      SWELLF2 = -0.018
-!/ST4      SWELLF3 = 0.015
-!/ST4      SWELLF4 = 1.E5
+!/ST4      SWELLF3 = 0.022
+!/ST4      SWELLF4 = 1.5E5
 !/ST4      SWELLF5 = 1.2
 !/ST4      SWELLF6 = 0.
-!/ST4      SWELLF7 = 230000. 
-!/ST4      TAUWSHELTER = 1.
+!/ST4      SWELLF7 = 360000. 
+!/ST4      TAUWSHELTER = 0.3
 !/ST4      ZALP   = 0.006
 !/ST4      SINBR   = 0.
 !
@@ -1504,7 +1504,7 @@
 !
 !/ST4      SDSC1  = 0.0     ! not used in ST4, should be cleaned up                                                             
 !/ST4      WNMEANP = 0.5    ! taken from Bidlot et al. 2005
-!/ST4      FXFM3 = 9.9 
+!/ST4      FXFM3 = 2.5 
 !/ST4      FXFMAGE = 0. 
 !/ST4      FXINCUT = 0. 
 !/ST4      FXDSCUT = 0. 
@@ -4720,7 +4720,7 @@
 !/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS2              ' --------------------------------------------------')
 !/IS2 948 FORMAT  ('  IS2 Scattering ... '/&
-!/IS2              '        scattering coefficient       : ',F5.2/ &
+!/IS2              '        scattering coefficient       : ',F6.2/ &
 !/IS2              '        0: no back-scattering        : ',F5.2/ &
 !/IS2              '     TRUE: update of ICEDMAX         : ',L3/ &
 !/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/ &

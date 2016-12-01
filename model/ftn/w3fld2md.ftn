@@ -88,7 +88,7 @@
 !       FPI     Real   I   Peak input frequency.
 !       WNDX    Real   I   X-dir wind (assumed referenced to current)
 !       WNDY    Real   I   Y-dir wind (assumed referenced to current)
-!       ZWND   	Real   I   Wind height.
+!       ZWND    Real   I   Wind height.
 !       DEPTH   Real   I   Water depth.
 !       RIB     Real   I   Bulk Richardson number in lower atm
 !       TAUNUX  Real   0   X-dir viscous stress (guessed from prev.)
@@ -547,7 +547,9 @@
       UST = USTRB
       USTD = ATAN2(TAUY, TAUX)
       CD = UST**2 / UREF**2
-      CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
+      IF (PRESENT(CHARN)) THEN
+         CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
+      ENDIF
       IF (.not.((CD .LT. 0.01).AND.(CD .GT. 0.0005)).or. .not.(NO_ERR)) THEN
          !Fail safe to bulk
          print*,'Attn: W3FLD2 failed, using bulk stress'

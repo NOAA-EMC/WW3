@@ -21,7 +21,7 @@ In each case, the mud-induced dissipation is added to contributions from other
 source/sink terms in Eq.~(\ref{eq:bal_plane}).
 
 \begin{equation}\label{eq:dmud1}
-  {S_{mud}} = 2  k_i {C_{g,mud}}
+  {S_{mud}} = 2  k_i {C_{g,mud}},
 \end{equation}
 
 \noindent
@@ -31,7 +31,7 @@ velocity.
 The above follows from exponential decay of a single wave train with initial
 amplitude $a_0$:
 \begin{equation}\label{eq:dmud2}
- a=a_0e^{-k_ix}
+ a=a_0e^{-k_ix}.
 \end{equation}
 
 \noindent
@@ -49,8 +49,8 @@ with the switches {\code IC1}, {\code IC2}, {\code IC3}, {\code BT8}, or
 {\code BT9}, {\file ww3\_shel} will anticipate instructions for 8 new fields
 (5 for ice, then 3 for mud). These are given prior to the ``water levels''
 information. The new fields can also be specified as homogeneous field using
-{\file ww3\_shel.inp}. The mud parameters are mud density (kg/m3), mud
-thickness (m), and mud viscosity (m2/s), in that order.
+{\file ww3\_shel.inp}. The mud parameters are mud density (kg/m$^3$), mud
+thickness (m), and mud viscosity (m$^2$/s), in that order.
 
 The user is referred to the regression tests {\file ww3\_tbt1.1} {\file
 ww3\_tbt2.1} for examples of how to use the new mud source functions.

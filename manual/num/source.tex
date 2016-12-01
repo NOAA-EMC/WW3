@@ -1,8 +1,8 @@
 \vssub
-\subsection{~Non-ice source terms integration} \label{sub:source}
+\subsection{~Non-ice source term integration} \label{sub:source}
 \vssub
 
-Finally, the source terms are accounted for by solving
+The source terms not involving ice are accounted for by solving
 
 %---------------------%
 % Step : Source terms %
@@ -27,9 +27,8 @@ discrete change of action density $\Delta N$ becomes \citep{art:WAM88}
 where $D$ represents the diagonal terms of the derivative of $\cS$ with
 respect to $N$ \citep[Eqs. 4.1 through 4.10]{art:WAM88}, and where $\epsilon$
 defines the offset of the scheme. Originally, $\epsilon = 0.5$ was implemented
-to obtain a second order accurate scheme. Presently, $\epsilon = 1$ is used as
-it is more appropriate for the large time steps in the equilibrium range of
-the spectrum \citep{pro:HA98,art:HA01}, and as it result in much smoother
+to obtain a second-order accurate scheme. Presently, $\epsilon = 1$ is used because it is more appropriate for the large time steps in the equilibrium range of
+the spectrum \citep{pro:HA98,art:HA01} and it results in much smoother
 integration of the spectrum. The change of $\epsilon$ has little impact on
 mean wave parameters, but makes the dynamical time stepping as described below
 more economical.
@@ -73,7 +72,7 @@ N^n = \max\: \left [ \: 0 \: , \: N^{n-1} +
 \: \right ] \: . \label{eq:st_d_3}
 \end{equation}
 
-\noindent 
+
 The maximum change of action density $\Delta N_m$ is determined from a
 parametric change of action density $\Delta N_p$ and a filtered relative
 change $\Delta N_r$
@@ -101,8 +100,8 @@ N_f = \max \: \left [ \: \Delta N_p (k_{\max},\theta) \: ,
 
 \noindent 
 where $X_p$, $X_r$ and $X_f$ are user-defined constants (see
-Table~\ref{tab:st_d_p}), $\alpha$ is a {\sc pm} energy level (set to $\alpha =
-0.62\,10^{-4}$) and $k_{\max}$ is the maximum discrete wavenumber. The
+Table~\ref{tab:st_d_p}), $\alpha$ is a {\sc pm} spectrum energy level (set to $\alpha =
+0.62\times 10^{-4}$) and $k_{\max}$ is the maximum discrete wavenumber. The
 parametric spectral shape in (\ref{eq:st_d_5}) corresponds in deep water to
 the well-known high-frequency shape of the one-dimensional frequency spectrum
 $F(f) \propto f^{-5}$. The link between the filter level and the maximum
@@ -149,7 +148,7 @@ f_{hf})$ is required to at least contain a minimum action density
 
 \begin{eqnarray}
 N_{\min}(k_{seed},\theta) & = & 
-        6.25 \: 10^{-4} \frac{1}{k_{\rm seed}^3 \: \sigma_{\rm seed}}
+        6.25 \times 10^{-4} \frac{1}{k_{\rm seed}^3 \: \sigma_{\rm seed}}
         \max \left [ \: 0. \: , \: \cos^2 ( \theta - \theta_w ) \right ]
                              \nonumber \\ & & \hspace{5mm}
         \min \left [ \: 1 \: , \: \max \left ( \: 0 \: , \: 
@@ -169,10 +168,11 @@ settings include the seeding algorithm, with $X_{\rm seed} = 1$.
 
 In model version 3.11, surf-zone physics parameterizations have been
 introduced. Such physics, particularly depth-induced breaking, operate on much
-smaller time scales than deep water and limited depth physics outside the surf
+smaller time scales than deep water and limited-depth physics outside the surf
 zone. To assure reasonable behavior for larger time steps, an additional
-optional limiter has been adopted from the SWAN model, similar to the Miche
-style maximum wave height in the depth limited wave breaking source term of
+optional limiter has been adopted from the SWAN model, which can be used instead of 
+modeling surf-breaking explicitly.  This limiter is similar to the Miche
+style maximum wave height in the depth-limited wave breaking source term of
 Eq.~(\ref{eq:BJ78_Miche}). In this limiter, the maximum wave energy $E_m$ is
 computed as
 
@@ -190,16 +190,17 @@ Eq.~(\ref{eq:BJ78_Miche}), with the caveat that $\gamma_M$ is representative
 for an individual wave, whereas $\gamma_{lim}$ is representative for the
 significant wave height. For monochromatic waves, the original expression by
 \cite{art:Miche44} would correspond to $\gamma_{lim} = 0.94$ and replacing
-$H_s$ by the height $H$ of the waves. Here this idea, is applied to random
-waves.  In shallow water, this limit $H_s$ to be less than $\gamma_{lim} d$.
-
+$H_s$ by the height $H$ of the waves. Here this idea is applied to random
+waves.  In shallow water, this limits $H_s$ to be less than $\gamma_{lim} d$.
 If the total spectral energy $E$ is larger than the maximum energy $E_m$, the
 limiter is applied by simply rescaling the spectrum by the factor $E/E_m$,
 loosely following the argumentation from \cite{art:EB96} and used
-in \para\ref{sec:DB1}.  This limiter can be switched on or off in the
+in \para\ref{sec:DB1}.  
+
+This limiter can be switched on or off in the
 compilation of the model, and $\gamma_{lim}$ can be adjusted by the user. The
 default is set to $\gamma_{lim} = 1.6$ because $H_{rms}$ values close to $d$
-have indeed been recorded and thus taking a ration $H_s/H_{rms}$ of 1.4, using
+have indeed been recorded and thus taking a ratio $H_s/H_{rms}$ of 1.4, using
 1.6 allows this large steepness to be exceeded by some margin.  Note that this
 limiter should be used as a `safety valve' only, and hence that it should be
 less strict than the breaking criterion in the surf-breaking or whitecapping
@@ -213,37 +214,37 @@ the steepness with a partial spectral integration in frequencies, to make sure
 that waves of all scales are indeed not too steep.
 
 \vssub
-\subsection{Ice source terms integration} \label{sub:source}
+\subsection{~Ice source terms integration} \label{sub:icesource}
 \vssub
 
-Because the attenuation and scattering in the ice can be very strong although they are linear, it is convenient 
-to performe a separate integration of the ice terms $S_{\mathrm{ice}}=S_{\mathrm{id}}+S_{\mathrm{is}}$. This combines 
+Because the attenuation and scattering in the ice can be very strong (although they are linear), it is convenient 
+to perform a separate integration of the ice terms $S_{\mathrm{ice}}=S_{\mathrm{id}}+S_{\mathrm{is}}$. This combines 
 a dissipation term 
 \begin{equation}
-S_{\mathrm{id}}/\sigma  = \beta_{\mathrm{id}} N 
+S_{\mathrm{id}}/\sigma  = \beta_{\mathrm{id}} N ,
 \end{equation}
  and a scattering term 
 which is of the form 
 \begin{equation}
- \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is}} [N(k,\theta')-N(k,\theta)] d\theta'  
+ \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is}} [N(k,\theta')-N(k,\theta)] d\theta'  ,
  \end{equation}
  in which the scattering coefficient $\beta_{\mathrm{is}}$ is a priori a function of the difference in direction between 
  incident $\theta'$ and scattered $\theta$ directions, as well as the shape of ice floes. In general 
-  the directional spectrum $N(k,.)$ is a vector with {\F NTH} components, 
-and the source term is a vector of the same size  given by the matric product $S/\sigma = M N(k,.)$ where  
+  the directional spectrum $N(k,.)$ is a vector with {\F NTH} (number of directions) components, 
+and the source term is a vector of the same size  given by the matrix product $S/\sigma = M N(k,.)$ where  
 $M$ is a positive symmetric square {\F NTH} by {\F NTH} matrix with components given from the $\beta_{\mathrm{id}}$ values.
 The matrix $M$ is easily diagonalized as 
 \begin{equation}
- M  =  V D V^T  
+ M  =  V D V^T  ,
  \end{equation}
  where $D$ is a diagonal matrix containing all eigenvalues and $V$ is the array of eigenvectors, 
  and $V^T$ is its transpose. As a result the split wave action equation for ice source terms 
  \begin{equation}
-\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{\mathrm{id}}}{\sigma c_g} 
+\frac{\p}{\p t} \frac{N}{c_g}   = \frac{S_{\mathrm{id}}}{\sigma c_g} ,
  \end{equation}
  can be rewritten for the action $N_i$ of each eigenvector $V_i$ with eigenvalue $\lambda_i$ as 
   \begin{equation}
-\frac{\p}{\p t} \frac{N_i}{c_g}   = \frac{\beta_{\mathrm{id}} + \lambda_i}{\sigma c_g} N_i 
+\frac{\p}{\p t} \frac{N_i}{c_g}   = \frac{\beta_{\mathrm{id}} + \lambda_i}{\sigma c_g} N_i ,
  \end{equation}
  which has the following exact solution 
    \begin{equation}
@@ -257,9 +258,8 @@ The matrix $M$ is easily diagonalized as
 % Step : Source terms %
 %---------------------%
 % eq:exact_st_ice
-
 \begin{equation}
  N(t+\Delta t_g) = \exp(\beta_{\mathrm{id}} \Delta t_g) \overline{N}(t)  + \exp \left[\left(\beta_{\mathrm{id}} + \beta_{\mathrm{is}}\right) \Delta t_g\right] \left[N(t)-\overline{N}(t)\right]
-\: , \label{eq:exact_st_ice} \end{equation}
+, \label{eq:exact_st_ice} \end{equation}
 where $\overline{N}$ is the average over all directions. As a result, for a spatially homogeneous field, 
 the spectrum exponentially tends to isotropy over a time scale $1/(\beta_{\mathrm{id}})$.

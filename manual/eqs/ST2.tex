@@ -27,7 +27,7 @@ approximated as
 \begin{equation}
 10^4 \beta = \left \{
 \begin{array}{ccrcl}
--a_1\toa^2 -a_2          &,&             & \toa & \leq -1     \\
+-a_1\toa^2 -a_2          &,&             & \toa & < -1     \\
 a_3\toa(a_4\toa-a_5)-a_6 &,&         -1 \leq & \toa & <\Omega_1/2 \\
 (a_4\toa-a_5)\toa        &,& \Omega_1/2 \leq & \toa & <\Omega_1   \\
 a_7\toa-a_8              &,&   \Omega_1 \leq & \toa & <\Omega_2   \\
@@ -68,7 +68,7 @@ a_2=0.35+150\CL,    &a_5 =& a_4\Om_1                       \\
 a_4=0.30+300\CL,    &a_6 =& a_0(1-a_3)                     \\
 a_9=0.35+240\CL,    &a_7 =&
                      (a_9(\Om_2-1)^2+a_{10})/(\Om_2-\Om_1) \\
-a_{10}=-0.06+470\CL,&a_8 =& a_7\Om_1                       \\
+a_{10}=-0.05+470\CL,&a_8 =& a_7\Om_1                       \\
                     &a_0 =& 0.25 a_5^2/a_4
 \end{array} \label{eq:omapar} \end{equation}
 
@@ -109,7 +109,7 @@ approximation to these implicit relations is given as
 C_r = 10^{-3} \left ( 0.021 + \frac{10.4}{R^{1.23}+1.85} \right )
 \: . \label{eq:C95Ca} \end{equation}
 
-\noindent
+
 The estimation of the drag coefficient thus requires an estimate of the
 high-frequency energy level $\alpha$, which could be estimated directly from
 the wave model. However, the corresponding part of the spectrum is generally
@@ -149,10 +149,10 @@ and the wind velocity and drag coefficient at height $\lambda$ become
 % eq:Cl
 
 \begin{equation}
-u_{\lambda} = u_r \frac{ln(\lambda_a/z_0)}{ln(z_r/z_0)}
+u_{\lambda} = u_r \frac{ln(\lambda_a/z_0)}{ln(z_r/z_0)},
 \label{eq:ul} \end{equation} \begin{equation}
 C_{\lambda} = C_r \left ( \frac{u_a}{u_\lambda}
-\right ) ^2 \label{eq:Cl}
+\right ) ^2 ,\label{eq:Cl}
 \end{equation}
 
 \noindent
@@ -232,8 +232,8 @@ Selection of the capped drag coefficient occurs at the compile stage of the
 code. The cap level and cap type can be set by the user. Defaults settings are
 $C_{r,max} = 2.5 \:10^{-3}$ and Eq.~(\ref{eq:Cd_cap_1}).
 
-\vspace{\baselineskip}
-\noindent
+
+
 The corresponding dissipation source term consists of two constituents.  The
 (dominant) low-frequency constituent is based on an analogy with energy
 dissipation due to turbulence,
@@ -298,7 +298,7 @@ The above estimate of $b_3$ results in $\partial \phi / \partial
 \tilde{f}_{p,i} = 0$ for $\tilde{f}_{p,i} = \tilde{f}_b$. For $\tilde{f}_{p,i}
 < \tilde{f}_b$, $\phi$ is kept constant ($\phi = \phi_{\min}$).
 
-\vspace{\baselineskip} \noindent
+
 The empirical high-frequency dissipation is defined as
 
 %--------------------------------%
@@ -345,7 +345,7 @@ simple linear combination, defined by the frequencies $f_1$ and $f_2$.
   1  & \;{\rm for}\; &          &\!\!\!f& \!\!\! < f_l & ,\\
 \frac{ f-f_2}{f_1-f_2}
      & \;{\rm for}\; & f_1 \leq &\!\!\!f& \!\!\! < f_2 & ,\\
-  0  & \;{\rm for}\; & f_2 \leq &\!\!\!f&              & ,
+  0  & \;{\rm for}\; & f_2 \leq &\!\!\!f&              & .
 \end{array} \right . \label{eq:filt_A} \end{equation}
 
 \noindent
@@ -363,7 +363,7 @@ N(k_i,\theta) = \left ( 1 - {\cal{B}} \right ) N(k_{i},\theta) +
 \end{equation}
 
 \noindent
-where $i$ is a discrete wavenumber counter, and where $\cal{B}$ is defined
+where $i$ is a discrete wavenumber counter, and $\cal{B}$ is defined
 similarly to $\cal{A}$, ranging from 0 to 1 between $f_2$ and $f_{hf}$.
 
 The frequencies defining the transitions and the length scale $h$ are
