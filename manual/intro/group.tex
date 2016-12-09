@@ -1,19 +1,22 @@
 \vssub
-\subsection{~The development group}
+\subsection{~The WAVEWATCH III\textsuperscript{\textregistered} Development Group (WW3DG) \label{sec:WW3DG}}
 \vssub
 
-The development of \ww  relies on the efforts of a team of developers that have worked tirelessly to make this an effective community tool. With the expansion of physical and numerical parameterizations available, the list of contributors to this model keeps growing. The development group consists of a core group of developers that are involved in overall code development, debugging and optimization as well as a larger group that has either made or continues to make contributions to physics packages and numerics. The following is a list of contributors (both past and present) of this development group (in alphabetic order) :
+The development of \ww  relies on the efforts of a team of developers that have worked tirelessly to make this an effective community tool. With the expansion of physical and numerical parameterizations available, the list of contributors to this model keeps growing. The development group consists of a core group of developers that are involved in overall code development, debugging and optimization as well as a larger group that has either made or continues to make contributions to physics packages and numerics. The following is a list of contributors (both past and present) of this development group (in alphabetic order):
 
 \begin{list}{\ldots}{ }
 
 \item [Mickael Accensi] (Ifremer, France) \\
-  NetCDF for input and output (ww3\_prnc , ww3\_ounf, ww3\_ounp), namelist input files for ww3\_multi, and general code development support.
+  NetCDF for input and output (ww3\_prnc, ww3\_ounf, ww3\_ounp), namelist input files for ww3\_multi, and general code development support.
 
 \item [Jose-Henrique Alves] (SRG at NOAA/NCEP/EMC, USA) \\
   Support of code development at NCEP, shallow water physics packages, development of space-time wave-height extremes approach.
 
 \item [Fabrice Ardhuin] (CNRS, France, previously at SHOM then Ifremer) \\
   Various physics packages (ST3, ST4, BS1, BT4, IG1, REF1, IS2...), interface with unstructured grid schemes, tidal analysis, and some I/O aspects (estimation of fluxes, adaptation of NetCDF). 
+
+\item [Alexander Babanin] (University of Melbourne, Australia)\\
+  ST6 project leader, source functions (wind input, whitecapping dissipation, swell dissipation, negative input, physical constraints)
 
 \item [Francesco Barbariol] (ISMAR-CNR, Italy) \\
   Development of a space-time wave-height extremes approach.
@@ -57,6 +60,12 @@ The development of \ww  relies on the efforts of a team of developers that have 
 \item [Mike Foreman]  (IOS, Canada) \\
   Versatile tidal analysis package. 
 
+\item [Isaac Ginis] (University of Rhode Island, USA) \\
+  Development of source code for sea-state dependent wind stress calculations (FLD1, FLD2).
+
+\item [Tetsu Hara] (University of Rhode Island, USA) \\
+  Development of source code for sea-state dependent wind stress calculations (FLD1, FLD2).
+
 \item [Peter Janssen] (ECMWF, United Kingdom) \\
   Original version of WAM-Cycle 4 package (ST3), canonical transform for the second order wave spectrum.
 
@@ -83,7 +92,10 @@ The development of \ww  relies on the efforts of a team of developers that have 
 
 \item [Arshad Rawat] (MIO, Mauritius and Ifremer, France) \\
   Contribution to second order spectrum and free infragravity wave sources (IG1).    
-   
+
+\item [Brandon Reichl] (NOAA/GFDL and Princeton University; Formerly at University of Rhode Island, USA) \\
+  Development and coding of source code for sea-state dependent wind stress calculations (FLD1, FLD2).
+
 \item [W. Erick Rogers]  (Naval Research Laboratory, USA)\\ 
   Irregular grids, source terms for effects of sea ice (e.g. in IC1, IC2, IC3, IC4, IC5) and mud (BT8, BT9), adaptation/interfacing of conservative remapping software, tripole grid, regression tests, and overall code development support.
 
@@ -119,10 +131,12 @@ The development of \ww  relies on the efforts of a team of developers that have 
 \item [Andr\'e van der Westhuysen](IMSG at NOAA/NCEP/EMC, USA) \\
   Support of code development at NCEP, wave system tracking, addition of triad interactions.
 
+\item [Ian Young] (University of Melbourne, Australia)
+  ST6 source functions (wind input, whitecapping dissipation).
+
 \item [Xin Zhao] (while at Clarkson University, USA) \\
   Original author of the code that was ported into WW3 (model version 4) as the ``IC3'' parameterization for effect of sea ice on waves.
 
 \item [Stefan Zieger] (Bureau of Meteorology, Australia) \\
-  Deepwater source term package (ST6) and source terms for effects of sea ice.
-
+  ST6 source term package, code and testing.
 \end{list}
