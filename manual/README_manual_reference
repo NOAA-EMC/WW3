@@ -22,7 +22,7 @@ For bibtex, to use a 'short author' name of "WW3DG" instead of the full
 author name "The WAVEWATCH III Development Group (WW3DG)" add in 
 the preamble: 
 \usepackage{natbib}
-\defcitealias{tol:MMABmanual}{WW3DG}
+\defcitealias{ww3man2016}{WW3DG}
 
 Then to use the short name, within your document use \citetalias or 
 \citepalias instead of \cite, \citet, or \citep.  Note that the alias 
