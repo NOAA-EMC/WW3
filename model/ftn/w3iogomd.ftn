@@ -237,7 +237,7 @@
         FLGR2(6,8)=.FALSE.
       END IF
       IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) THEN
-        IF (FLGRD(6,8).OR.FLGR2(6,8)) THEN
+        IF (FLGRD(6,9).OR.FLGR2(6,9)) THEN
           WRITE(NDSEN,1008) 'P2L','P2SF'
         END IF
         FLGRD(6,9)=.FALSE.
