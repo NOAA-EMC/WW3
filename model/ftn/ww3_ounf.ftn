@@ -1136,9 +1136,9 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXE, MAPSF, X1 )
               NFIELD=1
               varnm(1)='hmaxe'
-              varnl(1)='expected maximum wave height (nonlinear,2nd order)'
-              varns(1)='expected maximum wave height (nonlinear,2nd order)'
-              varng(1)='expected maximum wave height (nonlinear,2nd order)'
+              varnl(1)='expected maximum wave height (linear, 1st order)'
+              varns(1)='expected maximum wave height (linear, 1st order)'
+              varng(1)='expected maximum wave height (linear, 1st order)'
               varnc(1)=''
               vmin = 0
               vmax = 32000
@@ -1150,9 +1150,9 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXE, MAPSF, X1 )
               NFIELD=1
               varnm(1)='hcmaxe'
-              varnl(1)='expected maximum wave height from crest (nonlinear,2nd order)'
-              varns(1)='expected maximum wave height from crest (nonlinear,2nd order)'
-              varng(1)='expected maximum wave height from crest (nonlinear,2nd order)'
+              varnl(1)='expected maximum wave height from crest (linear, 1st order)'
+              varns(1)='expected maximum wave height from crest (linear, 1st order)'
+              varng(1)='expected maximum wave height from crest (linear, 1st order)'
               varnc(1)=''
               vmin = 0
               vmax = 32000
@@ -1164,9 +1164,9 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HMAXD, MAPSF, X1 )
               NFIELD=1
               varnm(1)='hmaxd'
-              varnl(1)='STD of maximum wave height (nonlinear,2nd order)'
-              varns(1)='STD of maximum wave height (nonlinear,2nd order)'
-              varng(1)='STD of maximum wave height (nonlinear,2nd order)'
+              varnl(1)='STD of maximum wave height (linear, 1st order)'
+              varns(1)='STD of maximum wave height (linear, 1st order)'
+              varng(1)='STD of maximum wave height (linear, 1st order)'
               varnc(1)=''
               vmin = 0
               vmax = 32000
@@ -1178,9 +1178,9 @@
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, HCMAXD, MAPSF, X1 )
               NFIELD=1
               varnm(1)='hcmaxd'
-              varnl(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
-              varns(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
-              varng(1)='STD of maximum wave height from crest (nonlinear,2nd order)'
+              varnl(1)='STD of maximum wave height from crest (linear, 1st order)'
+              varns(1)='STD of maximum wave height from crest (linear, 1st order)'
+              varng(1)='STD of maximum wave height from crest (linear, 1st order)'
               varnc(1)=''
               vmin = 0
               vmax = 32000
