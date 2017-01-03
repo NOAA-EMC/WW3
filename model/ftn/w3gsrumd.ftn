@@ -214,8 +214,6 @@
 !     - The burden is upon the user to invoke the destroy method when
 !       finished with a GSU object.  If created GSU objects are
 !       not properly destroyed, then memory leaks may be introduced.
-!     - Currently, this module does not work correctly for tripole
-!       grids.
 !
 !  6. Switches :
 !
@@ -615,15 +613,15 @@
       LOGICAL, INTENT(IN) :: IJG
       LOGICAL, INTENT(IN) :: LLG
       INTEGER, INTENT(IN) :: ICLO
-      REAL(4), POINTER    :: XG(:,:), YG(:,:)
-      REAL(4), POINTER, OPTIONAL :: HPFC(:,:)
-      REAL(4), POINTER, OPTIONAL :: HQFC(:,:)
-      REAL(4), POINTER, OPTIONAL :: GSQR(:,:)
-      REAL(4), POINTER, OPTIONAL :: ANGL(:,:)
-      REAL(4), POINTER, OPTIONAL :: DPDX(:,:)
-      REAL(4), POINTER, OPTIONAL :: DPDY(:,:)
-      REAL(4), POINTER, OPTIONAL :: DQDX(:,:)
-      REAL(4), POINTER, OPTIONAL :: DQDY(:,:)
+      REAL(4), TARGET     :: XG(:,:), YG(:,:)
+      REAL(4), TARGET, OPTIONAL :: HPFC(:,:)
+      REAL(4), TARGET, OPTIONAL :: HQFC(:,:)
+      REAL(4), TARGET, OPTIONAL :: GSQR(:,:)
+      REAL(4), TARGET, OPTIONAL :: ANGL(:,:)
+      REAL(4), TARGET, OPTIONAL :: DPDX(:,:)
+      REAL(4), TARGET, OPTIONAL :: DPDY(:,:)
+      REAL(4), TARGET, OPTIONAL :: DQDX(:,:)
+      REAL(4), TARGET, OPTIONAL :: DQDY(:,:)
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
@@ -632,12 +630,6 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3GSUC_R4')
 !
-      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3GSUC_R4 ERROR -- ', &
-          'input grid coordinate array pointers are not associated'
-          CALL EXTCDE (1)
-        END IF
-
       GSU = GSU_CREATE( IJG, LLG, ICLO, XG4=XG, YG4=YG, &
                         NCB=NCB, NNP=NNP, DEBUG=DEBUG)
 
@@ -663,15 +655,15 @@
       LOGICAL, INTENT(IN) :: IJG
       LOGICAL, INTENT(IN) :: LLG
       INTEGER, INTENT(IN) :: ICLO
-      REAL(8), POINTER    :: XG(:,:), YG(:,:)
-      REAL(8), POINTER, OPTIONAL :: HPFC(:,:)
-      REAL(8), POINTER, OPTIONAL :: HQFC(:,:)
-      REAL(8), POINTER, OPTIONAL :: GSQR(:,:)
-      REAL(8), POINTER, OPTIONAL :: ANGL(:,:)
-      REAL(8), POINTER, OPTIONAL :: DPDX(:,:)
-      REAL(8), POINTER, OPTIONAL :: DPDY(:,:)
-      REAL(8), POINTER, OPTIONAL :: DQDX(:,:)
-      REAL(8), POINTER, OPTIONAL :: DQDY(:,:)
+      REAL(8), TARGET     :: XG(:,:), YG(:,:)
+      REAL(8), TARGET, OPTIONAL :: HPFC(:,:)
+      REAL(8), TARGET, OPTIONAL :: HQFC(:,:)
+      REAL(8), TARGET, OPTIONAL :: GSQR(:,:)
+      REAL(8), TARGET, OPTIONAL :: ANGL(:,:)
+      REAL(8), TARGET, OPTIONAL :: DPDX(:,:)
+      REAL(8), TARGET, OPTIONAL :: DPDY(:,:)
+      REAL(8), TARGET, OPTIONAL :: DQDX(:,:)
+      REAL(8), TARGET, OPTIONAL :: DQDY(:,:)
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
@@ -680,12 +672,6 @@
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3GSUC_R8')
 !
-      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3GSUC_R8 ERROR -- ', &
-          'input grid coordinate array pointers are not associated'
-          CALL EXTCDE (1)
-        END IF
-
       GSU = GSU_CREATE( IJG, LLG, ICLO, XG8=XG, YG8=YG, &
                         NCB=NCB, NNP=NNP, DEBUG=DEBUG)
 
@@ -1062,7 +1048,7 @@
       LOGICAL, INTENT(IN)     :: IJG
       LOGICAL, INTENT(IN)     :: LLG
       INTEGER, INTENT(IN)     :: ICLO
-      REAL(4), POINTER        :: XG(:,:), YG(:,:)
+      REAL(4), TARGET         :: XG(:,:), YG(:,:)
       REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
 
 !     Local parameters
@@ -1071,16 +1057,7 @@
 !/S      CALL STRACE (IENT, 'W3BBOX_GRD_R4')
 !
 ! -------------------------------------------------------------------- /
-! 1.  Test input
-!
-      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3BBOX_GRD_R4 ERROR -- ', &
-          'input grid coordinate array pointers are not associated'
-          CALL EXTCDE (1)
-        END IF
-!
-! -------------------------------------------------------------------- /
-! 2.  Set bounding box
+! 1.  Set bounding box
 !
       GSU = GSU_CREATE( IJG, LLG, ICLO, XG4=XG, YG4=YG, BBOX_ONLY=.TRUE. )
       XMIN = GSU%PTR%XMIN
@@ -1098,7 +1075,7 @@
       LOGICAL, INTENT(IN)     :: IJG
       LOGICAL, INTENT(IN)     :: LLG
       INTEGER, INTENT(IN)     :: ICLO
-      REAL(8), POINTER        :: XG(:,:), YG(:,:)
+      REAL(8), TARGET         :: XG(:,:), YG(:,:)
       REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
 
 !     Local parameters
@@ -1107,16 +1084,7 @@
 !/S      CALL STRACE (IENT, 'W3BBOX_GRD_R8')
 !
 ! -------------------------------------------------------------------- /
-! 1.  Test input
-!
-      IF ( .NOT.ASSOCIATED(XG) .OR. .NOT.ASSOCIATED(YG) ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3BBOX_GRD_R8 ERROR -- ', &
-          'input grid coordinate array pointers are not associated'
-          CALL EXTCDE (1)
-        END IF
-!
-! -------------------------------------------------------------------- /
-! 2.  Set bounding box
+! 1.  Set bounding box
 !
       GSU = GSU_CREATE( IJG, LLG, ICLO, XG8=XG, YG8=YG, BBOX_ONLY=.TRUE. )
       XMIN = GSU%PTR%XMIN
@@ -6871,10 +6839,10 @@
       LOGICAL, INTENT(IN) :: IJG
       LOGICAL, INTENT(IN) :: LLG
       INTEGER, INTENT(IN) :: ICLO
-      REAL(4), POINTER, OPTIONAL    :: XG4(:,:)
-      REAL(4), POINTER, OPTIONAL    :: YG4(:,:)
-      REAL(8), POINTER, OPTIONAL    :: XG8(:,:)
-      REAL(8), POINTER, OPTIONAL    :: YG8(:,:)
+      REAL(4), TARGET, OPTIONAL     :: XG4(:,:)
+      REAL(4), TARGET, OPTIONAL     :: YG4(:,:)
+      REAL(8), TARGET, OPTIONAL     :: XG8(:,:)
+      REAL(8), TARGET, OPTIONAL     :: YG8(:,:)
       LOGICAL, INTENT(IN), OPTIONAL :: BBOX_ONLY
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
@@ -6899,7 +6867,7 @@
       TYPE_R8 = PRESENT(XG8).AND.PRESENT(YG8)
       IF ( .NOT.TYPE_R4.AND..NOT.TYPE_R8 ) THEN
           WRITE(0,'(/1A,1A,1I2/)') 'W3GSUC ERROR -- ', &
-          'no input grid pointers specified'
+          'no input grid coordinates specified'
           CALL EXTCDE (1)
         END IF
 
@@ -8119,9 +8087,13 @@
         END IF !.NOT.LLG
       IF ( DEBUG ) THEN
           WRITE(FSTR,'(A,I0,A,I0,A)') &
-          '(/1A,7I8,/1A,2E16.8,/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
+          '(/1A,7I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
           WRITE(*,TRIM(FSTR)) &
           'DXYDP -- NP,NQ,P,Q,P0,Q0,I:',NP,NQ,P,Q,P0,Q0,I, &
+          'DXYDP --   X0,  Y0:',X0,Y0, &
+          'DXYDP -- LON0,LAT0:',LON0,LAT0, &
+          'DXYDP --   C0,IHEM:',C0,REAL(IHEM), &
+          'DXYDP -- D1DP,D2DP:',D1DP,D2DP, &
           'DXYDP -- DXDP,DYDP:',DXDP,DYDP, &
           'DXYDP --  K:', K(:,I), &
           'DXYDP --  C:', C(:,I), &
@@ -8332,9 +8304,13 @@
         END IF !.NOT.LLG
       IF ( DEBUG ) THEN
           WRITE(FSTR,'(A,I0,A,I0,A)') &
-          '(/1A,7I8,/1A,2E16.8,/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
+          '(/1A,7I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
           WRITE(*,TRIM(FSTR)) &
           'DXYDQ -- NP,NQ,P,Q,P0,Q0,J:',NP,NQ,P,Q,P0,Q0,J, &
+          'DXYDQ --   X0,  Y0:',X0,Y0, &
+          'DXYDQ -- LON0,LAT0:',LON0,LAT0, &
+          'DXYDQ --   C0,IHEM:',C0,REAL(IHEM), &
+          'DXYDQ -- D1DQ,D1DQ:',D1DQ,D1DQ, &
           'DXYDQ -- DXDQ,DYDQ:',DXDQ,DYDQ, &
           'DXYDQ --  K:', K(:,J), &
           'DXYDQ --  C:', C(:,J), &
@@ -8357,9 +8333,9 @@
 !     k0 = cos(c0/2)**2
 !
 !     dlam/dx = (     1/(2*R*k0)) * cot(nu)   * cos(mu)
-!     dlam/dy = ( alpha/(2*R*k0)) * cot(mu)   * sin(mu)
-!     dphi/dx = (-alpha/(  R*k0)) * cos(mu)^2 * sin(mu)
-!     dphi/dy = (     1/(  R*k0)) * cos(mu)^2 * cos(mu)
+!     dlam/dy = ( alpha/(2*R*k0)) * cot(nu)   * sin(mu)
+!     dphi/dx = (-alpha/(  R*k0)) * cos(nu)^2 * sin(mu)
+!     dphi/dy = (     1/(  R*k0)) * cos(nu)^2 * cos(mu)
 !
 !     dlam/dp = dx/dp*dlam/dx + dy/dp*dlam/dy
 !     dphi/dp = dx/dp*dphi/dx + dy/dp*dphi/dy
@@ -8373,25 +8349,27 @@
       REAL(8),INTENT(OUT):: DLAMDP, DPHIDP
 
 !     Local parameters
+      REAL(8), PARAMETER :: SMALL = 1D-6
       REAL(8) :: K0, A, MU, NU, FAC
-      REAL(8) :: CMU, SMU, CNU2, TNUI
+      REAL(8) :: COSMU, SINMU, COSNU2, COTNU
       REAL(8) :: DLAMDX, DLAMDY, DPHIDX, DPHIDY
 
       K0  = COS(HALF*C0*D2R)**2
       MU  = (LAM-LAM0)*D2R
       A   = SIGN(ONE,REAL(IHEM,8))
       NU  = PIO4 - A*HALF*PHI*D2R
+      NU  = SIGN(MAX(SMALL,ABS(NU)),NU)
       FAC = R2D*HALF/REARTH/K0
 
-      CMU  = COS(MU)
-      SMU  = SIN(MU)
-      CNU2 = COS(NU)**2
-      TNUI = ONE/TAN(NU)
+      COSMU  = COS(MU)
+      SINMU  = SIN(MU)
+      COSNU2 = COS(NU)**2
+      COTNU  = ONE/TAN(NU)
 
-      DLAMDX =        FAC*CMU*TNUI
-      DLAMDY =      A*FAC*SMU*TNUI
-      DPHIDX = -A*TWO*FAC*SMU*CNU2
-      DPHIDY =    TWO*FAC*CMU*CNU2
+      DLAMDX =        FAC*COTNU*COSMU
+      DLAMDY =      A*FAC*COTNU*SINMU
+      DPHIDX = -A*TWO*FAC*COSNU2*SINMU
+      DPHIDY =    TWO*FAC*COSNU2*COSMU
 
       DLAMDP = DXDP*DLAMDX + DYDP*DLAMDY
       DPHIDP = DXDP*DPHIDX + DYDP*DPHIDY
@@ -8411,9 +8389,9 @@
 !     k0 = cos(c0/2)**2
 !
 !     dlam/dx = (     1/(2*R*k0)) * cot(nu)   * cos(mu)
-!     dlam/dy = ( alpha/(2*R*k0)) * cot(mu)   * sin(mu)
-!     dphi/dx = (-alpha/(  R*k0)) * cos(mu)^2 * sin(mu)
-!     dphi/dy = (     1/(  R*k0)) * cos(mu)^2 * cos(mu)
+!     dlam/dy = ( alpha/(2*R*k0)) * cot(nu)   * sin(mu)
+!     dphi/dx = (-alpha/(  R*k0)) * cos(nu)^2 * sin(mu)
+!     dphi/dy = (     1/(  R*k0)) * cos(nu)^2 * cos(mu)
 !
 !     dlam/dp = dx/dp*dlam/dx + dy/dp*dlam/dy
 !     dphi/dp = dx/dp*dphi/dx + dy/dp*dphi/dy
@@ -8427,25 +8405,27 @@
       REAL(8),INTENT(OUT):: DLAMDQ, DPHIDQ
 
 !     Local parameters
+      REAL(8), PARAMETER :: SMALL = 1D-6
       REAL(8) :: K0, A, MU, NU, FAC
-      REAL(8) :: CMU, SMU, CNU2, TNUI
+      REAL(8) :: COSMU, SINMU, COSNU2, COTNU
       REAL(8) :: DLAMDX, DLAMDY, DPHIDX, DPHIDY
 
       K0  = COS(HALF*C0*D2R)**2
       MU  = (LAM-LAM0)*D2R
       A   = SIGN(ONE,REAL(IHEM,8))
       NU  = PIO4 - A*HALF*PHI*D2R
+      NU  = SIGN(MAX(SMALL,ABS(NU)),NU)
       FAC = R2D*HALF/REARTH/K0
 
-      CMU  = COS(MU)
-      SMU  = SIN(MU)
-      CNU2 = COS(NU)**2
-      TNUI = ONE/TAN(NU)
+      COSMU  = COS(MU)
+      SINMU  = SIN(MU)
+      COSNU2 = COS(NU)**2
+      COTNU  = ONE/TAN(NU)
 
-      DLAMDX =        FAC*CMU*TNUI
-      DLAMDY =      A*FAC*SMU*TNUI
-      DPHIDX = -A*TWO*FAC*SMU*CNU2
-      DPHIDY =    TWO*FAC*CMU*CNU2
+      DLAMDX =        FAC*COTNU*COSMU
+      DLAMDY =      A*FAC*COTNU*SINMU
+      DPHIDX = -A*TWO*FAC*COSNU2*SINMU
+      DPHIDY =    TWO*FAC*COSNU2*COSMU
 
       DLAMDQ = DXDQ*DLAMDX + DYDQ*DLAMDY
       DPHIDQ = DXDQ*DPHIDX + DYDQ*DPHIDY
