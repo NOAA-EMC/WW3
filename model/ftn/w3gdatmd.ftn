@@ -623,7 +623,8 @@
         LOGICAL          :: GUGINIT
         REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
         INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
-        INTEGER          :: E3DF(3,5), P2MSF(3), US3DF(3) ! freq. indices for 3D output
+        INTEGER          :: E3DF(3,5), P2MSF(3), US3DF(3), USSPF(2) ! freq. indices for 3D output
+        REAL             :: USSP_WN(25) !Max set to 25 decay scales.
 !
         TYPE(T_GSU) :: GSU ! Grid search utility object
 !
@@ -845,7 +846,8 @@
       INTEGER, POINTER :: GTYPE
       INTEGER, POINTER :: ICLOSE
       INTEGER, POINTER        :: NX, NY, NSEA, NSEAL, TRFLAG
-      INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:)
+      INTEGER, POINTER        :: E3DF(:,:), P2MSF(:), US3DF(:), USSPF(:)
+      REAL,    POINTER        :: USSP_WN(:)
       REAL,    POINTER        :: REFLC(:,:)
       INTEGER, POINTER        :: REFLD(:,:)    
 !
@@ -1788,6 +1790,8 @@
       E3DF   => GRIDS(IMOD)%E3DF
       P2MSF  => GRIDS(IMOD)%P2MSF
       US3DF  => GRIDS(IMOD)%US3DF
+      USSPF  => GRIDS(IMOD)%USSPF
+      USSP_WN => GRIDS(IMOD)%USSP_WN
       REFLC  => GRIDS(IMOD)%REFLC
       REFLD  => GRIDS(IMOD)%REFLD
       FFACBERG => GRIDS(IMOD)%FFACBERG

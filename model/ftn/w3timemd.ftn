@@ -67,6 +67,7 @@
 !
       INTEGER, PRIVATE        :: PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
+      LOGICAL, PUBLIC         :: NOLEAP
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -192,6 +193,7 @@
 !/
 !/    18-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.xx )
 !/
 !  1. Purpose :
 !
@@ -256,6 +258,10 @@
       ND   = MOD(NYMD,100) + M
       LEAP = MOD(NY,400).EQ.0 .OR.                              &
               ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
+      ! Add override for simulations with no leap years
+      IF (NOLEAP) then
+         LEAP = .false.
+      ENDIF
 !
 ! M = -1, change month if necessary :
 !
@@ -423,6 +429,7 @@
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+!/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.xx )
 !/
 !  1. Purpose :
 !
@@ -485,6 +492,10 @@
       ND   = MOD(NYMD,100)
       LEAP = MOD(NY,400).EQ.0 .OR.                              &
               ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
+      !Allow override for NoLeap simulations
+      IF (NOLEAP) THEN
+         LEAP=.false.
+      ENDIF
 !
 ! Loop over months :
 !

@@ -93,6 +93,7 @@
 !/    10-Mar-2014 : Adding namelist for IC2             ( version 5.01 )
 !/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/    15 Oct-2015 : Change SMC grid input files. JGLi   ( version 5.09 )
+!/    10-Jan-2017 : Changes for US3D and USSP           ( version 6.xx )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -499,6 +500,7 @@
                           IPBPO, ISBPO, XBPO, YBPO, RDBPO, FNMPRE,    &
                           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB,       &
                           NOSWLL
+      USE W3TIMEMD, ONLY: NOLEAP
 !
 !/NL3      USE W3SNL3MD, ONLY: LAMMAX, DELTHM
 !/NLS      USE W3SNLSMD, ONLY: ABMAX
@@ -554,10 +556,14 @@
       INTEGER                 :: P2SF,I1P2SF,I2P2SF
       INTEGER                 :: E3D,I1E3D,I2E3D
       INTEGER                 :: US3D,I1US3D,I2US3D,                  &
+                                 USSP, IUSSP,                         &
                                  TH1MF, I1TH1M, I2TH1M,               &
                                  STH1MF, I1STH1M, I2STH1M,            &
                                  TH2MF, I1TH2M, I2TH2M,               &
                                  STH2MF, I1STH2M, I2STH2M
+      ! STK_WN are the decays for Stokes drift partitions
+      REAL                    :: STK_WN(25)
+
 !
 !/LN1      REAL                    :: CLIN, RFPM, RFHF
 !/ST1      REAL                    :: CINP, CDIS, APM
@@ -767,9 +773,10 @@
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
-                      ICEWIND
+                      ICEWIND, NOLEAP
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
+                             USSP, IUSSP, STK_WN,                     &
                              E3D, I1E3D, I2E3D,                       &
                              TH1MF, I1TH1M, I2TH1M,                   &
                              STH1MF, I1STH1M, I2STH1M,                &
@@ -1923,6 +1930,7 @@
       STDY = -1. 
       STDT = -1. 
       ICEDISP = .FALSE.
+      NOLEAP = .FALSE.
 ! Variables for 3D array output
       E3D=0 
       I1E3D=1
@@ -1933,6 +1941,10 @@
       US3D=0 
       I1US3D=1
       I2US3D=NK
+      USSP=0
+      IUSSP=1
+      STK_WN(:)=0.0
+      STK_WN(1)=TPI/100. !Set default decay of 100 m for Stokes drift
       TH1MF=0 
       I1TH1M=1
       I2TH1M=NK
@@ -2078,13 +2090,33 @@
 ! output of Stokes drift profile
 !
       US3DF(1) = US3D
-      US3DF(2) = I1US3D
-      US3DF(3) = I2US3D
-      US3DF(2) = MAX( 1 , MIN(NK,US3DF(2)) )
-      US3DF(3) = MAX( 1 , MIN(NK,US3DF(3)) )
+      US3DF(2) = MAX( 1 , MIN( NK, I1US3D) )
+      US3DF(3) = MAX( 1 , MIN( NK, I2US3D) )
+!
+! output of Stokes drift partitions
+!
+      USSPF(1) = USSP
+      USSPF(2) = MAX( 1 , MIN(25, IUSSP ) )
+      if (iussp.gt.25) then
+         write(*,*) "  Stokes drift partition outputs not    "
+         write(*,*) "   intended for use with more than 25   "
+         write(*,*) "   partitions.  Please reduce IUSSP     "
+         write(*,*) "   specified in ww3_grid.inp to proceed "
+         STOP !Replace with an extcde
+      endif
+
+      do J=1,USSPF(2)
+         USSP_WN(j) = STK_WN(J)
+      enddo
+      
+!
       WRITE (NDSO,4971) P2MSF(1:3)
       WRITE (NDSO,4972) US3DF(1:3)
       WRITE (NDSO,4973) E3DF(1:3,1)
+      WRITE (NDSO,4974) USSPF(1:2)
+      DO J=1,USSPF(2)
+         WRITE(NDSO,4975) J,USSP_WN(J)
+      ENDDO
 !
       CALL READNL ( NDSS, 'MISC', STATUS )
       WRITE (NDSO,960) STATUS
@@ -2279,7 +2311,9 @@
         WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN
 !
-        WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF, US3D, I1US3D, I2US3D,  & 
+        WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
+                             US3D, I1US3D, I2US3D,                    & 
+                             USSP, IUSSP,                             &
                              E3D, I1E3D, I2E3D,                       &
                              TH1MF, I1TH1M, I2TH1M,                   &
                              STH1MF, I1STH1M, I2STH1M,                &
@@ -2312,14 +2346,14 @@
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
                                 STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
-                                ICEDISP, ICEWIND
+                                ICEDISP, ICEWIND, NOLEAP
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
                                 STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
-                                ICEDISP, ICEWIND
+                                ICEDISP, ICEWIND, NOLEAP
 
           END IF
 !
@@ -4843,6 +4877,9 @@
  4971 FORMAT ( '       Second order pressure at K=0:',3I4)
  4972 FORMAT ( '       Spectrum of Uss             :',3I4)
  4973 FORMAT ( '       Frequency spectrum          :',3I4)
+ 4974 FORMAT ( '       Partions of Uss             :',2I4)
+ 4975 FORMAT ( '       Partition wavenumber #',I02,'   : ',1F6.3)
+
 !
  4980 FORMAT (/'  Coastal / iceberg reflection  ',A/                   &
                ' --------------------------------------------------')
@@ -4880,11 +4917,13 @@
                         F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/   &
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,','/      &
                '        STDX =',F7.2,', STDY =',F7.2,', STDT =', F8.2,&
-                     ', ICEHMIN = ',F5.2,', ICEHINIT = ',F5.2,','/   &
-               '        ICEDISP = ',L3,', ICEWIND = ',F6.2,' /')
+                     ', ICEHMIN = ',F5.2,', ICEHINIT = ',F5.2,','/    &
+               '        ICEDISP = ',L3,', ICEWIND = ',F6.2,	      &
+	       '     ,  NOLEAP = ',L3, ' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  
+               '        USSP  =',I2,', IUSSP  =',I3,','/&
                '        E3D   =',I2,', I1E3D  =',I3,', I2E3D  =',I3,','/&  
                '        TH1MF =',I2,', I1TH1M =',I3,', I2TH1M =',I3,','/&  
                '        STH1MF=',I2,', I1STH1M=',I3,', I2STH1M=',I3,','/&  
