@@ -1073,7 +1073,7 @@
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/    10-Apr-2015 : Remove unused variables             ( version 5.08 )
-!/    10-Jan-2017 : Separate Stokes drift calculation   ( version 6.xx )
+!/    10-Jan-2017 : Separate Stokes drift calculation   ( version 6.01 )
 !/
 !  1. Purpose :
 !
@@ -3260,7 +3260,7 @@
 !/                  | Last update :         10-Jan-2017 |
 !/                  +-----------------------------------+
 !/
-!/    10-Jan-2017 : Separate Stokes drift calculation  ( version 6.xx )
+!/    10-Jan-2017 : Separate Stokes drift calculation  ( version 6.01 )
 !/
 !  1. Purpose :
 !

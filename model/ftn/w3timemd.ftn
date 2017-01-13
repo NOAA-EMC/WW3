@@ -193,7 +193,7 @@
 !/
 !/    18-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.xx )
+!/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.00 )
 !/
 !  1. Purpose :
 !
@@ -429,7 +429,7 @@
 !/
 !/    19-Oct-1998 : Final FORTRAN 77                    ( version 1.18 )
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-!/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.xx )
+!/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.01 )
 !/
 !  1. Purpose :
 !
