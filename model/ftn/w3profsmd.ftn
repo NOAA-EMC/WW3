@@ -206,11 +206,9 @@
           IF (IOBP(IXY) .EQ. 1) THEN                                  
             VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
             VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
-          !ELSE
-          !  IF (ISP.EQ.1) WRITE(6,*) 'EXCLUDED POINT FOR CURRENTS:',IXY,ISEA,IOBP(IXY)
-            END IF    
-          END DO     
-        END IF
+          END IF    
+        END DO     
+      END IF
 
 !
 ! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
@@ -253,10 +251,8 @@
       DO ISEA=1, NSEA
         IXY   = MAPSF(ISEA,3)
         VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
-        END DO
-!
-      RETURN    
- END SUBROUTINE W3XYPUG   
+      END DO
+   END SUBROUTINE W3XYPUG
 !/ ------------------------------------------------------------------- /
    SUBROUTINE W3CFLUG ( ISEA, NKCFL, FACX, FACY, DT, MAPFS, CFLXYMAX,    &
                           VGX, VGY )    
@@ -428,7 +424,7 @@
             KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians 
 
             KTMP        = KELEM ! Copy
-            NM          = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values 
+            NM          = - 1.D0/MIN(-THR,SUM(MIN(0.d0,KTMP))) ! N-Values 
             KELEM       = MAX(0.d0,KTMP)
 
             KKSUM = KKSUM  +  KELEM(IV)
@@ -438,6 +434,7 @@
           CFLXYMAX = MAX(DBLE(DT)/DTMAXEXP,DBLE(CFLXYMAX))
           END DO
         END DO
+        WRITE(*,*) NKCFL, DTMAXEXP, CFLXYMAX
         END IF
 !
       RETURN    
@@ -606,9 +603,11 @@
            DO IP = 1, NX
              DTMAXEXP = 1E10 ! initialize to large number 
 ! Does take into account boundary points in CFL calculation 
-             IF (IOBP(IP) .NE. 0) CYCLE 
-             DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
-             DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+             IF (IOBP(IP) .EQ. 1) THEN
+               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
+               DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+               !IF (IK .EQ. 1 .AND. DT/DTMAXEXP .GT. 1) WRITE(12312,*) IP, IOBP(IP), DT/DTMAXEXP
+               ENDIF
              END DO ! IP
 !/T! Test output
 !/T              WRITE(994,'(A)') 'dir.    Node    step needed step used long.   lat.  depth'
@@ -838,7 +837,6 @@
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
              END DO ! IE
              DO IP = 1, NX
-!               DTMAXEXP = MAX( ABS(DBLE(IOBP(IP))*DBLE(10.E10)),SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*DBLE(IOBPD(ITH,IP)))) ! This corrects the CFL on the boundary ... I have omitted this by now due to increased oszillations when using all physics ...
                DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP))
                DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
              END DO ! IP

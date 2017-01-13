@@ -1110,8 +1110,8 @@
 !/SHRD                  ISEA   = JSEA
 !/T                     IF (MOD(ISEA,100).EQ.0) WRITE(NDSE,*) 'COMPUTING CFL FOR NODE:',ISEA
 !/PR3                      IF (GTYPE .EQ. UNGTYPE) THEN
-!/PR3                        CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
-!/PR3                             MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
+!!/PR3                        CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
+!!/PR3                             MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
 !/PR3                      ELSE 
 !/PR3                        CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
 !/PR3                                       CFLXYMAX(JSEA), VGX, VGY )

@@ -100,7 +100,7 @@
 !           decaration and initialization of the C*3 TYPE.
 !        2) Single wind file to be tested, this is the first aux grid
 !           with wind defined.
-!        3) Needs system SLEEP command, now behind F90 switch.
+!        3) Needs system SLEEP command, now behind SBS switch.
 !/    05-Dec-2012 : Making sleep a system call.       ( version 4.11   )
 
 !
@@ -379,7 +379,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/F90      CHARACTER(LEN=10)       :: COMMAND
+!/SBS      CHARACTER(LEN=10)       :: COMMAND
 !/
 ! -------------------------------------------------------------------- /
 ! 1.  Reading loop
@@ -393,8 +393,8 @@
         IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS, 911 )
         BACKSPACE NDS
 !
-!/F90        WRITE (COMMAND,'(A5,1X,I4)') 'SLEEP', SLEEP1
-!/F90        CALL SYSTEM ( COMMAND )
+!/SBS        WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP1
+!/SBS        CALL SYSTEM ( COMMAND )
 !
         END DO
 !
@@ -462,7 +462,7 @@
       INTEGER                 :: TTIME(2), IX, IY
       INTEGER, SAVE           :: NREW  = 0
       REAL                    :: DTTST, XXX(NX,NY)
-!/F90      CHARACTER(LEN=10)       :: COMMAND
+!/SBS      CHARACTER(LEN=10)       :: COMMAND
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Loops
@@ -508,8 +508,8 @@
 !
           IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
 !
-!/F90          WRITE (COMMAND,'(A5,1X,I4)') 'SLEEP', SLEEP2
-!/F90          CALL SYSTEM ( COMMAND )
+!/SBS          WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
+!/SBS          CALL SYSTEM ( COMMAND )
 !
           END DO
 !

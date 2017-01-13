@@ -13,10 +13,17 @@ $
   DPT HS FP T01
 $
 $ Additional info needed for grib file
-$   Forecast time, center ID, generating process ID, grid definition
-$   and GDS/BMS flag
+$   Forecast time, center ID, generating process ID, grid definition,
+$   GDS/BMS flag and grid definition template number GDTN (0 = regular;
+$   30 = Lambert Conformal, only these two types available now) 
 $
-  19680606 010000 7 10 255 192
+  19680606 010000 7 10 255 192 0
+$
+$ if GDTN is 30 (lambert conformal) read next line with proj parms 
+$ LATAN1, LONV, DSX, DSY, SCNMOD, LATIN1, LATIN2, LATSP, LONSP   
+$ Example for the GLW grid at NCEP 
+$ 25 265 2.539703 2.539703 64 25 25 -90 0 
+$ Other curvilinear grids not yet implemented 
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
