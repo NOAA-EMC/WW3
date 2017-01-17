@@ -190,7 +190,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
-      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, STEXU, STEYU, STEDU
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, STEXU, STEYU, STEDU
       USE W3ODATMD, ONLY: NOGRP, NGRPP
 !/S      USE W3SERVMD, ONLY: STRACE
 !
@@ -235,6 +235,13 @@
         END IF
         FLGRD(6,8)=.FALSE.
         FLGR2(6,8)=.FALSE.
+      END IF
+      IF (USSPF(1).LE.0.OR.USSPF(2).LE.0) THEN
+        IF (FLGRD(6,12).EQ..TRUE..OR.FLGR2(6,12).EQ..TRUE.) THEN
+          WRITE(NDSEN,1008) 'USP','USSP'
+        END IF
+        FLGRD(6,12)=.FALSE.
+        FLGR2(6,12)=.FALSE.
       END IF
       IF (P2MSF(1).LE.0.OR.P2MSF(3).LT.P2MSF(2)) THEN
         IF (FLGRD(6,9).OR.FLGR2(6,9)) THEN
@@ -326,6 +333,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
+      USE W3GDATMD, ONLY: US3DF, USSPF
       USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
       USE W3SERVMD, ONLY: NEXTLN, STRSPLIT, STR_TO_UPPER
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -546,13 +554,23 @@
            CASE('P2S')
              FLG2D(6,7)=.TRUE.
            CASE('USF')
-             FLG2D(6,8)=.TRUE.
+             IF (US3DF(1).GE.1) THEN 
+               FLG2D(6,8)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'USF','US3D'
+               END IF
            CASE('P2L')
              FLG2D(6,9)=.TRUE.
            CASE('TWI')
              FLG2D(6,10)=.TRUE.
            CASE('FIC')
              FLG2D(6,11)=.TRUE.
+           CASE('USP')
+             IF (USSPF(1).GE.1) THEN
+               FLG2D(6,12)=.TRUE.
+             ELSE
+               WRITE(NDSEN,1008) 'USP','USSP'
+               END IF
 !
 ! Group 7
 !
@@ -744,8 +762,8 @@
       USE CONSTANTS
       USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
       USE W3SERVMD, ONLY: STRSPLIT, STR_TO_UPPER
+      USE W3GDATMD, ONLY: US3DF, USSPF
       USE W3NAMLMD 
-
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -927,13 +945,24 @@
          CASE('P2S')
            FLG2D(6,7)=.TRUE.
          CASE('USF')
-           FLG2D(6,8)=.TRUE.
+           IF (US3DF(1).GE.1) THEN 
+             FLG2D(6,8)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'USF','US3D'
+             END IF
          CASE('P2L')
            FLG2D(6,9)=.TRUE.
          CASE('TWI')
            FLG2D(6,10)=.TRUE.
          CASE('FIC')
            FLG2D(6,11)=.TRUE.
+         CASE('USP')
+           IF (USSPF(1).GE.1) THEN
+             FLG2D(6,12)=.TRUE.
+           ELSE
+             WRITE(NDSEN,1008) 'USP','USSP'
+             END IF
+
 !
 ! Group 7
 !
@@ -1044,6 +1073,7 @@
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/    10-Apr-2015 : Remove unused variables             ( version 5.08 )
+!/    10-Jan-2017 : Separate Stokes drift calculation   ( version 6.01 )
 !/
 !  1. Purpose :
 !
@@ -1123,7 +1153,8 @@
                           USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
                           BHD, CGE, P2SMS, US3D, EF, TH1M, STH1M,     &
                           TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
-                          HCMAXE, HMAXE, HCMAXD, HMAXD
+                          HCMAXE, HMAXE, HCMAXD, HMAXD, USSP
+
       USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
@@ -1430,11 +1461,12 @@
           USSY(JSEA)  = USSY(JSEA) + ABY(JSEA)*USSCO         
 !
 ! Fills the 3D Stokes drift spectrum array
-!
-          IF ( FLOLOC( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
-            US3D(JSEA,IK)    =  ABX(JSEA)*USSCO/(DSII(IK)*TPIINV) 
-            US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO/(DSII(IK)*TPIINV)   
-            END IF  
+!  ! The US3D Stokes drift specrum array is now calculated in a
+!  subroutine and called at the end of this subroutine
+!          IF ( FLOLOC( 6, 8).AND.(IK.GE.US3DF(2).AND.IK.LE.US3DF(3) ))   THEN 
+!            US3D(JSEA,IK)    =  ABX(JSEA)*USSCO/(DSII(IK)*TPIINV) 
+!            US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO/(DSII(IK)*TPIINV)   
+!          END IF  
           IF ( FLOLOC( 3, 2).AND.(IK.GE.E3DF(2,2).AND.IK.LE.E3DF(3,2)))  &
             TH1M(JSEA,IK)= MOD ( 630. - RADE*ATAN2(ABY(JSEA),ABX(JSEA)) , 360. )
           M1 = SQRT(ABX(JSEA)**2+ABY(JSEA)**2)/MAX(1E-20,AB(JSEA))
@@ -2132,8 +2164,18 @@
 !
 !/OMPG/!$OMP END PARALLEL DO
 !
+
         END IF
+
+      IF (FLOLOC( 6, 8)) THEN
+        CALL CALC_U3STOKES(A,1)
+      END IF
 !
+      IF (FLOLOC( 6, 12)) THEN
+         CALL CALC_U3STOKES(A,2)
+      ENDIF
+!
+
       RETURN
 !
 ! Formats
@@ -2271,7 +2313,8 @@
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE, EF, &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
                           TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
-                          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD
+                          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
+			  USSP
       USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
                           FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
                           FNMPRE, NOSWLL, NOEXTR
@@ -2506,6 +2549,7 @@
                 IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
                 IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
+                IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
 !
                 IF ( FLOGRD( 7, 1) ) THEN
                                      ABA   (ISEA) = UNDEF
@@ -2761,6 +2805,9 @@
                     WRITE ( NDSOG ) TAUICE(1:NSEA,2)
                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
                     WRITE ( NDSOG ) PHICE(1:NSEA)
+                 ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
+                    WRITE ( NDSOG ) USSP(1:NSEA,   1:USSPF(2))
+                    WRITE ( NDSOG ) USSP(1:NSEA,NK+1:NK+USSPF(2))
 !
 !     Section 7)
 !
@@ -3036,6 +3083,12 @@
                   ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        PHICE(1:NSEA)
+                  ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
+                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   USSP(1:NSEA,1:USSPF(2))
+                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)  &
+                                   USSP(1:NSEA,NK+1:NK+USSPF(2))
+
 !
 !     Section 7)
 !
@@ -3197,6 +3250,228 @@
 !/
       END SUBROUTINE W3IOGO
 !/
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE CALC_U3STOKES ( A , USS_SWITCH )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           H. L. Tolman            |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         10-Jan-2017 |
+!/                  +-----------------------------------+
+!/
+!/    10-Jan-2017 : Separate Stokes drift calculation  ( version 6.01 )
+!/
+!  1. Purpose :
+!
+!     This code is built for the purpose of outputting Stokes drift
+!       related parameters that can be utilized to obtain full
+!       Stokes drift profiles external to the wave model.
+!
+!     Option 1: USS_SWITCH == 1
+!               This method is for outputing the Stokes drift frequency
+!               spectrum for spectral frequency bands as defined by the 
+!               WW3 computation spectral frequency grid.
+!               Output Quantity: Stokes drift frequency spectrum [m/s/Hz]
+!                                X and Y componenets.
+!
+!     Option 2: USS_SWITCH == 2
+!               This method is for outputing the surface Stokes drift
+!               for a specified frequency partition/band of the
+!               wave spectrum.  These partitions do not need to be
+!               matched to WW3's computation spectral frequency grid,
+!               and will rather sum the contributions of the WW3 bands
+!               into the output partition.  The partitions are defined
+!               in the ww3_grid.inp namelist section.
+!               Output Quantity: Stokes drift surface velocity [m/s]
+!                                X and Y components
+!                                For each partition (up to 25).
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       A       R.A.   I   Input spectra. Left in par list to change
+!                          shape.
+!      USS_SWITCH  I   I   Switch if computing US3D (spectral) or USSP
+!                           (partitions)
+!     ----------------------------------------------------------------
+!
+!
+!  4. Subroutines used :
+!
+!     See module documentation.
+!
+!  5. Called by :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!     None.
+!
+!  8. Structure :
+!
+!     See source code.
+!
+!  9. Switches :
+!
+!     !/SHRD  Switch for shared / distributed memory architecture.
+!     !/DIST  Id.
+!
+!     !/C90   Cray FORTRAN 90 compiler directives.
+!     !/NEC   NEC SXF90 compiler directives.
+!     !/OMPG  OpenMP compiler directive for loop splitting.
+!
+!     !/S     Enable subroutine tracing.
+!     !/T     Test output.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY: TPIINV, GRAV, TPI
+      USE W3GDATMD,  ONLY: DDEN, DSII, XFR, SIG, NK, NTH, NSEAl,    &
+                           ECOS, ESIN, US3DF, USSPF, USSP_WN
+      USE W3ADATMD,  ONLY: CG, WN, DW
+      USE W3ADATMD,  ONLY: USSX, USSY,  US3D, USSP
+      USE W3ODATMD, ONLY: IAPROC, NAPROC
+!/S      USE W3SERVMD, ONLY: STRACE
+!
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: A(NTH,NK,0:NSEAL)
+      INTEGER, INTENT(IN)     :: USS_SWITCH
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      INTEGER                 :: IK, ITH, ISEA, JSEA 
+      INTEGER                 :: IKST, IKFI, IB, NB
+      INTEGER                 :: STKBND_INDEX
+!/S      INTEGER, SAVE           :: IENT = 0
+      REAL                    :: FACTOR, FKD,KD
+      REAL                    :: ABX(NSEAL), ABY(NSEAL), USSCO
+      REAL                    :: MINDIFF=1.e8
+      INTEGER                 :: Spc2Bnd(NK)
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!/S      CALL STRACE (IENT, 'CALC_U3STOKES')
+!
+! 1.  Initialize storage arrays -------------------------------------- *
+!
+! 2.  Integral over discrete part of spectrum ------------------------ *
+!
+      !Two options ----------------------------------------------------|
+      ! USS_SWITCH == 1 -> Old option, Stokes drift integrated in same |
+      !                    wavenumber bands as model integrates.       |
+      ! USS_SWITCH == 2 -> New option, Stokes drift integrated in a    |
+      !                    defined number (NP) of user specified       |
+      !                    partitions, where NP and the frequency      |
+      !                    ranges for each partition can be user       |
+      !                    defined at run-time.                        |
+      !----------------------------------------------------------------|
+      
+      if (USS_SWITCH==1) then
+         IKST=US3DF(2)!Start at US3DF(2)
+         IKFI=US3DF(3)!End at US3DF(3)
+      ELSEif (USS_SWITCH==2) then
+         IKST=1  ! Start at 1
+         IKFI=NK ! End at NK
+      ENDIF
+
+! Initialize US3D/USSP
+      IF (USS_SWITCH.eq.1) then
+         US3D(:,:)=0.0
+      ELSEIF (USS_SWITCH.eq.2) then
+         USSP(:,:)=0.0
+       ENDIF
+      DO IK=IKST,IKFI   !1, NK
+!
+! 2.a Initialize energy in band
+!
+         ABX    = 0.
+         ABY    = 0.
+         !
+! 2.b Integrate energy in band
+!
+         DO ITH=1, NTH
+!
+!/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FACTOR)
+!
+            DO JSEA=1, NSEAL
+!/DIST                ISEA         = IAPROC + (JSEA-1)*NAPROC
+!/SHRD                ISEA         = JSEA
+               ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
+               ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
+            END DO
+!
+!/OMPG/!$OMP END PARALLEL DO
+!
+         END DO
+!
+! 2.c Finalize integration over band and update mean arrays
+!
+!
+!/OMPG/!$OMP PARALLEL DO
+!PRIVATE(JSEA,ISEA,FACTOR,FACTOR2,KD,FKD,USSCO,M1)
+!
+         DO JSEA=1, NSEAL
+!/DIST              ISEA         = IAPROC + (JSEA-1)*NAPROC
+!/SHRD              ISEA         = JSEA
+            FACTOR       = DDEN(IK) / CG(IK,ISEA)
+!
+! Deep water limits
+!
+            KD    = MAX ( 0.001 , WN(IK,ISEA) * DW(ISEA) )
+            IF ( KD .LT. 6. ) THEN
+               FKD       = FACTOR / SINH(KD)**2 
+               USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
+            ELSE 
+               USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
+            END IF
+!
+!
+          !USSX(JSEA)  = USSX(JSEA) + ABX(JSEA)*USSCO               
+          !USSY(JSEA)  = USSY(JSEA) + ABY(JSEA)*USSCO         
+!
+! Fills the 3D Stokes drift spectrum array or surface Stokes partitions
+!
+            IF (USS_SWITCH==1) THEN
+               !Old method fills into WW3 bands
+               IF (IK.GE.US3DF(2).and.IK.LE.US3DF(3)) then
+                  US3D(JSEA,IK)    =  ABX(JSEA)*USSCO/(DSII(IK)*TPIINV)
+                  US3D(JSEA,NK+IK) =  ABY(JSEA)*USSCO/(DSII(IK)*TPIINV)
+               ENDIF
+            ELSEIF (USS_SWITCH==2) THEN
+               ! Match each spectral component to the nearest partition
+               DO IB=1,USSPF(2)
+                  IF (MinDiff .gt. abs(USSP_WN(IB)-WN(IK,ISEA))) then
+                     Spc2BND(IK) = IB
+                     MinDiff = abs(USSP_WN(IB)-WN(IK,ISEA))
+                  ENDIF
+               ENDDO
+               MINDIFF=1.e8
+               !Put spectral energey into whichever band central wavenumber fits in
+               NB=NK!allocated to size2*NK! STKBND_IN(NK)
+               USSP(JSEA,Spc2Bnd(IK))    =  USSP(JSEA,Spc2Bnd(IK)) + ABX(JSEA)*USSCO
+               USSP(JSEA,NK+Spc2BND(IK)) =  USSP(JSEA,NK+Spc2Bnd(IK)) + ABY(JSEA)*USSCO
+            ENDIF
+         END DO
+      END DO
+!
+      RETURN
+!
+!/ End of CALC_U3STOKES
+!----------------------------------------------------- /
+!/
+      END SUBROUTINE CALC_U3STOKES
 !/ End of module W3IOGOMD -------------------------------------------- /
 !/
       END MODULE W3IOGOMD

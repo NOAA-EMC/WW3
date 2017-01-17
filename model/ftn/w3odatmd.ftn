@@ -723,7 +723,7 @@
 !
 ! 6) Wave-ocean layer
 !
-      NOGE(6) = 9 
+      NOGE(6) = 12 
 !
       IDOUT( 6, 1)  = 'Radiation stresses  '
       IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -736,6 +736,7 @@
       IDOUT( 6, 9)  = '2nd ord press spectr'
       IDOUT( 6,10)  = 'Wave-ice mom. flux  '
       IDOUT( 6,11)  = 'Wave-ice energy flux'
+      IDOUT( 6,12)  = 'Split Surface Stokes'
 !
 ! 7) Wave-bottom layer
 !

@@ -1572,14 +1572,17 @@
       END IF
 !     In case center point is land point...
       IF (wsdat%par(i,j)%checked.EQ.-1) THEN
+          WRITE(20,*) 'In spiralTrackV3, Points are on land (i,j) =',i,j
           oldJ=j
-          DO WHILE (wsdat%par(i,j)%checked.EQ.-1)
+          DO WHILE ((wsdat%par(i,j)%checked.EQ.-1) & 
+                       .AND.(i.LT.maxI).AND.(j.LT.maxJ))
               j=j+1
               IF (j.EQ.maxJ) THEN
                   j=oldJ
                   i=i+1
                   oldJ=oldJ+1
               END IF
+              WRITE(20,*) 'In spiralTrackV3, Shifted points (i,j) =',i,j
           END DO
       END IF
 !     Compute distance in km between 2 grid points (at equator)

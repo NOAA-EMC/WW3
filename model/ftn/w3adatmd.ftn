@@ -130,6 +130,7 @@
 !      PHICE     R.A.  Public   Waves to ice energy flux.
 !
 !      US3D      R.A.  Public   3D Stokes drift.
+!      USSP      R.A.  Public   Partitioned Surface Stokes drift
 !
 !      ABA       R.A.  Public   Near-bottom rms wave ex. amplitude.
 !      ABD       R.A.  Public   Corresponding direction.
@@ -383,13 +384,13 @@
                                   TUSX(:),  TUSY(:),  USSX(:),        &
                                   USSY(:),  PRMS(:),  TPMS(:),        &
                                   PHICE(:), TAUICE(:,:)
-        REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:)
+        REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:), USSP(:,:)
         REAL, POINTER         :: XSXX(:), XSYY(:), XSXY(:), XTAUOX(:),&
                                  XTAUOY(:), XBHD(:), XPHIOC(:),       &
                                  XTUSX(:), XTUSY(:), XUSSX(:),        &
                                  XUSSY(:), XPRMS(:), XTPMS(:),        &
                                  XPHICE(:), XTAUICE(:,:)
-        REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:)
+        REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
 !
 ! Output fields group 7)
 !
@@ -517,7 +518,7 @@
                                  TUSX(:), TUSY(:), USSX(:), USSY(:),  &
                                  PRMS(:), TPMS(:), PHICE(:),          &
                                  TAUICE(:,:)
-      REAL, POINTER           :: P2SMS(:,:), US3D(:,:)
+      REAL, POINTER           :: P2SMS(:,:), US3D(:,:), USSP(:,:)
 !
       REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
                                  BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
@@ -785,7 +786,8 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
-                          NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+                          NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF,      &
+                          USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2
       USE W3IDATMD, ONLY: FLCUR, FLWIND
@@ -1026,6 +1028,11 @@
                    STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
+      IF ( USSPF(1).GT.0 ) THEN
+          ALLOCATE(WADATS(IMOD)%USSP(NSEALM,NK*2), &
+                   STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
 !
       WADATS(IMOD)%SXX    = UNDEF
       WADATS(IMOD)%SYY    = UNDEF
@@ -1044,6 +1051,7 @@
       WADATS(IMOD)%TAUICE = UNDEF
       IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
       IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
+      IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
 !
 ! 7) Wave-bottom layer
 !
@@ -1264,7 +1272,8 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
-                          NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+                          NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF,      &
+                          USSPF, GTYPE, UNGTYPE
       USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
                           NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2,      &
                           NOGRP, NGRPP
@@ -1766,6 +1775,15 @@
           ALLOCATE ( WADATS(IMOD)%XPHICE(1), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
+!                                                                               
+      IF ( OUTFLAGS( 6, 12) ) THEN
+          ALLOCATE ( WADATS(IMOD)%XUSSP(NXXX,2*NK), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        ELSE
+          ALLOCATE ( WADATS(IMOD)%XUSSP(1,1), STAT=ISTAT )
+          CHECK_ALLOC_STATUS ( ISTAT )
+        END IF
+
 !
       WADATS(IMOD)%XSXX    = UNDEF
       WADATS(IMOD)%XSYY    = UNDEF
@@ -1784,6 +1802,7 @@
       WADATS(IMOD)%XP2SMS  = UNDEF
       WADATS(IMOD)%XPHICE  = UNDEF
       WADATS(IMOD)%XTAUICE = UNDEF
+      WADATS(IMOD)%XUSSP   = UNDEF
 !
       IF ( OUTFLAGS( 7, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
@@ -2207,7 +2226,7 @@
 !/ ------------------------------------------------------------------- /
 !
       USE W3IDATMD, ONLY: INPUTS
-      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, GTYPE, UNGTYPE
 !
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -2394,7 +2413,8 @@
           P2SMS  => WADATS(IMOD)%P2SMS
           US3D   => WADATS(IMOD)%US3D
           PHICE  => WADATS(IMOD)%PHICE
-          TAUICE  => WADATS(IMOD)%TAUICE
+          TAUICE => WADATS(IMOD)%TAUICE
+          USSP   => WADATS(IMOD)%USSP
 !
           ABA    => WADATS(IMOD)%ABA
           ABD    => WADATS(IMOD)%ABD
@@ -2577,7 +2597,7 @@
 !/ ------------------------------------------------------------------- /
 !
       USE W3IDATMD, ONLY: INPUTS
-      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, GTYPE, UNGTYPE
+      USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, GTYPE, UNGTYPE
 !
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -2681,7 +2701,7 @@
           US3D   => WADATS(IMOD)%XUS3D
           PHICE  => WADATS(IMOD)%XPHICE
           TAUICE => WADATS(IMOD)%XTAUICE
-!         
+          USSP   => WADATS(IMOD)%XUSSP
           ABA    => WADATS(IMOD)%XABA
           ABD    => WADATS(IMOD)%XABD
           UBA    => WADATS(IMOD)%XUBA

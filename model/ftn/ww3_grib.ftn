@@ -31,6 +31,8 @@
 !/                  (Arun Chawla)
 !/    01-Mar-2013 : Adding double-index output fields   ( version 4.11 )
 !/                  (J-Henrique Alves)
+!/    01-Dec-2016 : Adding lambert conformal grid       ( version 6.01 ) 
+!/                  (J.H. Alves)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -136,7 +138,8 @@
       INTEGER                 :: NDSI, NDSM, NDSOG, NDSDAT, NDSTRC,   &
                                  NTRACE, IERR, IOTEST, I,J,K, IFI,IFJ,&
                                  ISEA, IX, IY, TOUT(2), NOUT, TDUM(2),&
-                                 FTIME(2), CID, PID, GID, GDS, IOUT
+                                 FTIME(2), CID, PID, GID, GDS, IOUT,  &
+                                 GDTN
       INTEGER, ALLOCATABLE    :: IFIA(:),IFJA(:) 
 ! GRIB1 specific variables
 !/NOGRB      INTEGER                 :: KPDS(1), KGDS(1)
@@ -148,6 +151,10 @@
 !/NCEP2      INTEGER                 :: IBMP, LCGRIB, LENGRIB, IDRSNUM
 !/NCEP2      REAL                    :: COORDLIST, XN
 !/NCEP2      CHARACTER(LEN=1), ALLOCATABLE  :: CGRIB(:)
+!/NCEP2      INTEGER                 :: LATAN1, LONV, SCNMOD, LATIN1, & 
+!/NCEP2                                 LATIN2, LATSP, LONSP  
+!/NCEP2      REAL                    :: DSX, DSY 
+!/NCEP2      REAL                    :: YN, X0N, Y0N 
 !/S      INTEGER, SAVE           :: IENT = 0
       REAL                    :: DTREQ, DTEST, RFTIME
       LOGICAL                 :: FLREQ(NOGRP,NGRPP), FLGRIB(NOGRP,NGRPP)
@@ -209,41 +216,10 @@
       CALL W3IOGR ( 'READ', NDSM )
       WRITE (NDSO,920) GNAME
 !
-      IF ( GTYPE .EQ. CLGTYPE ) THEN
-        WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
-        'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING'
-        CALL EXTCDE ( 1 )
-      END IF
-!
       IF ( .NOT. FLAGLL ) GOTO 810
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 3.  Read general data and first fields from file
-! 3.a Read file.
-!
-      CALL W3IOGO ( 'READ', NDSOG, IOTEST )
-!
-! 3.b Output fields in file
-!
-!
-      WRITE (NDSO,930)
-      DO I=1, NOGRP
-       DO J=1, NGRPP
-        IF ( FLOGRD(I,J) ) WRITE (NDSO,931) IDOUT(I,J)
-        END DO
-        END DO
-!
-! 3.c Flip MAPSF
-!
-      DO ISEA=1, NSEA
-        IX            = MAPSF(ISEA,1)
-        IY            = MAPSF(ISEA,2)
-        MAPSF(ISEA,2) = NY + 1 - IY
-        MAPSF(ISEA,3) = IY +( IX-1)*NY
-        END DO
-!
-!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 4.  Read requests from input file.
+! 3.  Read requests from input file.
 !     Output times
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -358,10 +334,66 @@
 ! ... GRIB specific parameters
 !
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) FTIME, CID, PID, GID, GDS
+      READ (NDSI,*,END=801,ERR=802) FTIME, CID, PID, GID, GDS, GDTN
+! 
+! Check if grid type is curvilinear, and only go on if Lambert conformal 
+! 
+      IF ( GTYPE .EQ. CLGTYPE ) THEN 
+!/NCEP2! Allowing code to work with Lambert conformal grids 
+!/NCEP2      IF ( GDTN .NE. 30 ) THEN 
+        WRITE(NDSE,*)'PROGRAM W3GRIB: CURVILINEAR GRID SUPPORT '// & 
+        'FOR GRIB OUTPUT IS NOT YET IMPLEMENTED. NOW STOPPING' 
+        CALL EXTCDE ( 1 ) 
+!/NCEP2      ENDIF 
+      END IF 
+! 
+! 
+! Coded up to now only for Lamber conformal grids (GDTN=30) 
+! For regular grids use GDTN=0 
+! 
+!/NCEP2      IF ( GDTN .EQ. 30 ) THEN 
+!/NCEP2! This is a Lambert conformal grid, read projection parameters 
+!/NCEP2        CALL NEXTLN ( COMSTR , NDSI , NDSE ) 
+!/NCEP2        READ (NDSI,*,END=801,ERR=802) LATAN1, LONV, DSX, DSY,          & 
+!/NCEP2                                SCNMOD, LATIN1, LATIN2, LATSP, LONSP 
+!/NCEP2      ENDIF 
 !
       CALL STME21 ( FTIME , IDTIME )
       WRITE (NDSO,948) IDTIME, CID, PID, GID, GDS
+! 
+! 
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! 4.  Read general data and first fields from file 
+! 4.a Read file. 
+! 
+      CALL W3IOGO ( 'READ', NDSOG, IOTEST ) 
+! 
+! 4.b Output fields in file 
+! 
+! 
+      WRITE (NDSO,930) 
+      DO I=1, NOGRP 
+       DO J=1, NGRPP 
+        IF ( FLOGRD(I,J) ) WRITE (NDSO,931) IDOUT(I,J) 
+        END DO 
+        END DO 
+! 
+!/NCEP2! 
+!/NCEP2      IF ( GDTN .EQ. 0 ) THEN 
+!/NCEP2! 
+! 4.c Flip MAPSF for REGULAR/RECTILINEAR grids 
+! 
+      DO ISEA=1, NSEA 
+        IX            = MAPSF(ISEA,1) 
+        IY            = MAPSF(ISEA,2) 
+        MAPSF(ISEA,2) = NY + 1 - IY 
+        MAPSF(ISEA,3) = IY +( IX-1)*NY 
+        END DO 
+!/NCEP2! 
+!/NCEP2      ENDIF 
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - -  
+! 5. Set grib encoding parameter Sections 
 ! 
 ! ... Initialize KPDS and KGDS (for both NCEP1 and NCEP2)
 !
@@ -483,10 +515,23 @@
 !       ( 4) Interpretation of list for optional points definition (Code Table 3.11)
 !       ( 5) Grid definition template number (Code Table 3.1)
 !
-!/NCEP2       IGDS     = 0
-!/NCEP2       IGDS(2)  = NX*NY
-!/NCEP2       IDEFNUM  = 0
-!/NCEP2       IDEFLIST = 0
+!/NCEP2      IF ( GDTN .EQ. 30 .AND. GTYPE .EQ. CLGTYPE ) THEN 
+!/NCEP2! Using here the Lambert conformal NDFD grid for NCEP/GLW model use only 
+!/NCEP2         IGDS     = 0 ! Defined in code  
+!/NCEP2         IGDS(2)  = NX*NY 
+!/NCEP2         IGDS(5)=GDTN 
+!/NCEP2         IDEFNUM  = 1 
+!/NCEP2         IDEFLIST = 0 
+!/NCEP2       ELSEIF ( GDTN .EQ. 0 ) THEN 
+!/NCEP2         IGDS     = 0 
+!/NCEP2         IGDS(2)  = NX*NY 
+!/NCEP2         IDEFNUM  = 0 
+!/NCEP2         IDEFLIST = 0 
+!/NCEP2       ELSE 
+!/NCEP2         WRITE(NDSE,*)'PROGRAM W3GRIB: SUPPORT FOR CHOSEN '// & 
+!/NCEP2         'GRIB2 GRID DEFINITION TEMPLATE NOT YET IMPLEMENTED' 
+!/NCEP2         CALL EXTCDE ( 2 ) 
+!/NCEP2       ENDIF 
 !
 ! ... Set GRIB2 KGDS elements
 !       ( 1) Coordinate system (6 = spherical coordinate system with radius of 6,371,229 m)
@@ -512,15 +557,38 @@
 !/NCEP2      KGDS( 1) = 6
 !/NCEP2      KGDS( 8) = NX
 !/NCEP2      KGDS( 9) = NY
-!/NCEP2      KGDS(12) = NINT(1000000.*(Y0+(REAL(NY-1)*SY)))
-!/NCEP2      X0 = MOD(X0 + 360.,360.)
-!/NCEP2      KGDS(13) = NINT(1000000.*X0)
-!/NCEP2      KGDS(14) = 48
-!/NCEP2      KGDS(15) = NINT(1000000.*Y0)
-!/NCEP2      XN = MOD(X0+REAL(NX-1)*SX + 360., 360.)
-!/NCEP2      KGDS(16) = NINT(1000000.*XN)
-!/NCEP2      KGDS(17) = NINT(1000000.*SX)
-!/NCEP2      KGDS(18) = NINT(1000000.*SY)
+!/NCEP2      IF ( GDTN .EQ. 30 ) THEN 
+!/NCEP2! Using here the Lambert conformal NDFD grid for NCEP/GLW model use only 
+!/NCEP2        X0 = MOD(XGRD(1,1) + 360.,360.) 
+!/NCEP2        XN = MOD(XGRD(NY,NX) + 360., 360.) 
+!/NCEP2        X0N = MOD(XGRD(NY,1) + 360., 360.) 
+!/NCEP2        KGDS(11)=KNINT(1000000.*X0) 
+!/NCEP2        Y0 = YGRD(1,1) 
+!/NCEP2        YN = YGRD(NY,NX) 
+!/NCEP2        Y0N = YGRD(NY,1) 
+!/NCEP2        KGDS(10)=KNINT(1000000.*Y0) 
+!/NCEP2        KGDS(12)=0 
+!/NCEP2        KGDS(13)=DBLE(1000000.*LATAN1) 
+!/NCEP2        KGDS(14)=DBLE(1000000.*LONV)
+!/NCEP2        KGDS(15)=KNINT(1000000*DSX) 
+!/NCEP2        KGDS(16)=KNINT(1000000*DSY) 
+!/NCEP2        KGDS(17)=0 
+!/NCEP2        KGDS(18)=SCNMOD  
+!/NCEP2        KGDS(19)=DBLE(1000000.*LATIN1) 
+!/NCEP2        KGDS(20)=DBLE(1000000.*LATIN2) 
+!/NCEP2        KGDS(21)=DBLE(1000000.*LATSP) 
+!/NCEP2        KGDS(22)=DBLE(1000000.*LONSP)
+!/NCEP2      ELSEIF (GDTN .EQ. 0 ) THEN 
+!/NCEP2        KGDS(12) = KNINT(1000000.*(Y0+(REAL(NY-1)*SY))) 
+!/NCEP2        X0 = MOD(X0 + 360.,360.) 
+!/NCEP2        KGDS(13) = KNINT(1000000.*X0) 
+!/NCEP2        KGDS(14) = 48 
+!/NCEP2        KGDS(15) = KNINT(1000000.*Y0) 
+!/NCEP2        XN = MOD(X0+REAL(NX-1)*SX + 360., 360.) 
+!/NCEP2        KGDS(16) = KNINT(1000000.*XN) 
+!/NCEP2        KGDS(17) = KNINT(1000000.*SX) 
+!/NCEP2        KGDS(18) = KNINT(1000000.*SY) 
+!/NCEP2      ENDIF 
 !
 ! ... Set GRIB2 PDS elements
 !     KPDSNUM   (0 indicates forecast at a horizontal level)
@@ -583,7 +651,7 @@
 !/T      WRITE (NDST,9051) KGDS
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! 5.  Time management.
+! 6.  Time management.
 !
       IOUT   = 0
       WRITE (NDSO,970)
@@ -646,15 +714,15 @@
 !
   800 CONTINUE
       WRITE (NDSE,1000) IERR
-      CALL EXTCDE ( 1 )
+      CALL EXTCDE ( 3 )
 !
   801 CONTINUE
       WRITE (NDSE,1001)
-      CALL EXTCDE ( 2 )
+      CALL EXTCDE ( 4 )
 !
   802 CONTINUE
       WRITE (NDSE,1002) IERR
-      CALL EXTCDE ( 3 )
+      CALL EXTCDE ( 5 )
 !
   810 CONTINUE
       IF ( .NOT. FLAGLL ) THEN

@@ -20,6 +20,7 @@
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
+!/    10-Jan-2017 : Changes for US3D and USSP output    ( version 6.01 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -114,7 +115,8 @@
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-                          P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M, WN
+                          P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
+                          WN, USSP, USSP_WN
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE
 !
@@ -356,7 +358,7 @@
 
 ! 5.1.2  Processes the variable value for the time step IOUT
         CALL W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA, FILEPREFIX,   &
-                      E3DF, P2MSF, US3DF, NCTYPE, TOGETHER, NCVARTYPE,&
+                      E3DF, P2MSF, US3DF, USSPF, NCTYPE, TOGETHER, NCVARTYPE,&
                       FLREQ, NCIDS, S3, stopdate )
 
 ! 5.1.3 Defines the stop date
@@ -508,8 +510,8 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,           &
-                          FILEPREFIX, E3DF, P2MSF, US3DF, NCTYPE,     &
+      SUBROUTINE W3EXNC ( NX, NY, IX1, IXN, IY1, IYN, NSEA,             &
+                          FILEPREFIX, E3DF, P2MSF, US3DF, USSPF,NCTYPE, &
                           TOGETHER, NCVARTYPEI, FLREQ, NCIDS, S3, stopdate )
 !/
 !/                  +-----------------------------------+
@@ -597,8 +599,8 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: NX, NY, IX1, IXN, IY1, IYN, NSEA,     &
-                                 E3DF(3,5), P2MSF(3), US3DF(3), NCTYPE,&
-                                 NCVARTYPEI
+                                 E3DF(3,5), P2MSF(3), US3DF(3),        & 
+                                 USSPF(2), NCTYPE, NCVARTYPEI
       CHARACTER(30)           :: FILEPREFIX
       LOGICAL, INTENT(IN)     :: TOGETHER
       LOGICAL, INTENT(IN)     :: FLREQ(NOGRP,NGRPP)
@@ -649,6 +651,7 @@
 !/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLFRQ, FLDIR
+      LOGICAL                 :: CUSTOMFRQ=.FALSE.
 !/T      LOGICAL                 :: LTEMP(NGRPP)
       CHARACTER               :: FNAMENC*50,                          &
                                  ENAME*6,FORMF*11, UNITS*20, UNITS2*20
@@ -1917,6 +1920,35 @@
               varnc(1)=''
               vmin = 0 
               vmax = 9990
+
+           ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
+              ! Information for spectral distribution of surface Stokes drift (2nd file)
+              FLFRQ=.TRUE.
+              IF (USSPF(1)==1) THEN
+                 CUSTOMFRQ=.TRUE.
+              ENDIF
+              NFIELD=2
+              varnm(1)='ussp'
+              varnm(2)='vssp'
+              varnl(1)='eastward partitioned surface stokes drift'
+              varnl(2)='northward partitioned surface stokes drift'
+              varns(1)='eastward_partitioned_surface_stokes_drift'
+              varns(2)='northward_partitioned_surface_stokes_drift'
+              varng(1)='eastward_partitioned_surface_stokes_drift'
+              varng(2)='northward_partitioned_surface_stokes_drift'
+              varnc(1)='usp=sqrt(ussp**2+vssp**2)'
+              varnc(2)='usp=sqrt(ussp**2+vssp**2)'
+              UNITS   = 'm s-1'
+              I1F=1
+              I2F=USSPF(2)
+              DO IK= I1F,I2F
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,USSP(:,IK), MAPSF, XX )
+                XXK(:,:,IK)=XX
+                CALL W3S2XY ( NSEA, NSEA, NX+1,NY,USSP(:,NK+IK), MAPSF, XY )
+                XYK(:,:,IK)=XY
+                END DO
+              FSC    = 0.0005
+              ENAME  = '.usp'
 !
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.01
@@ -2456,9 +2488,16 @@
               ! Writes frequencies to netcdf file
               IF (extradim.EQ.1) THEN
                 ALLOCATE(freq(I2F-I1F+1))
-                DO i=1,I2F-I1F+1
-                  freq(i)=SIG(I1F-1+i)*TPIINV
-                END DO
+                !BGR Here is where we should tell it what frequencies are.
+                IF (CUSTOMFRQ) THEN
+                   DO i=1,usspf(2)
+                      FREQ(i)=sqrt(GRAV*USSP_WN(i))*TPIINV
+                   ENDDO
+                ELSE
+                   DO i=1,I2F-I1F+1
+                      freq(i)=SIG(I1F-1+i)*TPIINV
+                   END DO
+                ENDIF
                 iret=nf90_put_var(ncid,varid(3),freq)
                 call check_err(iret)
                 DEALLOCATE(freq)

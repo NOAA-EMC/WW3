@@ -227,6 +227,7 @@
 !/NLX      USE W3SNLXMD, ONLY: INSNLX
 !/NLS      USE W3SNLSMD, ONLY: INSNLS
 !/IS2      USE W3SIS2MD, ONLY: INSIS2
+      USE W3TIMEMD, ONLY: NOLEAP
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
       USE W3DISPMD
@@ -583,7 +584,7 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
                STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
-               ICE100WIND
+               ICE100WIND, NOLEAP
           WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
 !/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
@@ -659,7 +660,7 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-               IICEDISP, ICE100WIND
+               IICEDISP, ICE100WIND, NOLEAP
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 !/SEC1         READ (NDSM) NITERSEC1
@@ -730,10 +731,10 @@
 !                                                 Module W3GDATMD 
       IF ( WRITE ) THEN
           WRITE (NDSM)                                                &
-                E3DF, P2MSF, US3DF
+                E3DF, P2MSF, US3DF,USSPF, USSP_WN
         ELSE
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-                E3DF, P2MSF, US3DF
+                E3DF, P2MSF, US3DF,USSPF, USSP_WN
         END IF
 
       IF ( INXOUT .EQ. 'GRID' ) THEN
