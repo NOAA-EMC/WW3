@@ -104,7 +104,7 @@
 !/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
 !/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
-!/    DD-MMM-YYYY : Fixed error return section.         ( version 5.XX )
+!/    DD-MMM-YYYY : Fixed error return section.         ( version X.YZ )
 !/
 !  1. Purpose :
 !

@@ -19,7 +19,7 @@
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Enable using input from coupler     ( version 5.XX )
+!/    DD-MMM-YYYY : Enable using input from coupler     ( version X.YZ )
 !/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
@@ -86,7 +86,7 @@
 !/    22-Feb-2005 : Origination.                        ( version 3.07 )
 !/    14-Oct-2006 : Adding separate input grids.        ( version 3.10 )
 !/    12-Jan-2007 : General clean-up and bug fixes.     ( version 3.10 )
-!/    DD-MMM-YYYY : Enable using input from coupler     ( version 5.XX )
+!/    DD-MMM-YYYY : Enable using input from coupler     ( version X.YZ )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :

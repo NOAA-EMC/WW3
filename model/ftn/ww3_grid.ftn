@@ -94,7 +94,7 @@
 !/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/    15 Oct-2015 : Change SMC grid input files. JGLi   ( version 5.09 )
 !/    10-Jan-2017 : Changes for US3D and USSP           ( version 6.01 )
-!/    DD-MMM-YYYY : Bug fix for mask input from file.   ( version 5.XX )
+!/    DD-MMM-YYYY : Bug fix for mask input from file.   ( version X.YZ )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
