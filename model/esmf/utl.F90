@@ -74,6 +74,8 @@ module UTL
     i = i+1; standardName(i) = 'surface_northward_sea_water_velocity'
              canonicalUnits(i)='m s-1'
     ! WAV export fields
+    i = i+1; standardName(i) = 'wave_z0_roughness_length'
+             canonicalUnits(i)='m'
     i = i+1; standardName(i) = 'wave_induced_charnock_parameter'
              canonicalUnits(i)='1'
     i = i+1; standardName(i) = 'surface_total_wave_induced_stress'

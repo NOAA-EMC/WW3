@@ -370,8 +370,9 @@ module MDL
 
     ! advertise exportable fields
     do i=1,numf
-      call NUOPC_StateAdvertiseField(exportState, trim(is%wrap%sname(i)), &
-        name=trim(is%wrap%fname(i)), rc=rc)
+      call NUOPC_Advertise(exportState, &
+        StandardName=trim(is%wrap%sname(i)), name=trim(is%wrap%fname(i)), &
+        TransferOfferGeomObject="will provide", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
 
@@ -454,7 +455,7 @@ module MDL
     ! remove unconnected if not realize all export
     n = 0
     do i = 1,is%wrap%numf
-      isConnected = NUOPC_StateIsFieldConnected(exportState, is%wrap%fname(i), rc=rc)
+      isConnected = NUOPC_IsConnected(exportState, is%wrap%fname(i), rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
       is%wrap%isActive(i) = isConnected .or. is%wrap%realizeAllExport
       if (is%wrap%isActive(i)) then
@@ -508,7 +509,7 @@ module MDL
         name=is%wrap%fname(i), indexFlag=ESMF_INDEX_GLOBAL, &
         staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-      call NUOPC_StateRealizeField(exportState, is%wrap%field(i), rc=rc)
+      call NUOPC_Realize(exportState, is%wrap%field(i), rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
 
@@ -579,7 +580,7 @@ module MDL
     ! generic code to set the timestamp for these fields
     do i=1,is%wrap%numf
       if (.not.is%wrap%isActive(i)) cycle
-      call NUOPC_FieldAttributeSet(is%wrap%field(i), name="Updated", value="true", rc=rc)
+      call NUOPC_SetAttribute(is%wrap%field(i), name="Updated", value="true", rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     enddo
 
@@ -646,12 +647,10 @@ module MDL
     if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
     if (localPet.eq.0) then
       write(*,'(///)')
-      call NUOPC_ClockPrintCurrTime(clock, &
-        '-->Advancing '//trim(cname)//' from: ', rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-      call NUOPC_ClockPrintStopTime(clock, &
-        '-----------------> to: ', rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
+      call ESMF_ClockPrint(clock, options='currTime', &
+        preString='-->Advancing '//trim(cname)//' from: ')
+      call ESMF_ClockPrint(clock, options='stopTime', &
+        preString='-----------------> to: ')
     endif
 
     ! set export fields
