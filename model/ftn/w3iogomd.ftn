@@ -237,7 +237,7 @@
         FLGR2(6,8)=.FALSE.
       END IF
       IF (USSPF(1).LE.0.OR.USSPF(2).LE.0) THEN
-        IF (FLGRD(6,12).EQ..TRUE..OR.FLGR2(6,12).EQ..TRUE.) THEN
+        IF (FLGRD(6,12).OR.FLGR2(6,12)) THEN
           WRITE(NDSEN,1008) 'USP','USSP'
         END IF
         FLGRD(6,12)=.FALSE.
