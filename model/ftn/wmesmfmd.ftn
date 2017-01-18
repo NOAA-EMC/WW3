@@ -114,7 +114,7 @@
 
 ! --- WW3 modules
       use CONSTANTS
-      use WMINITMD, only: WMINIT
+      use WMINITMD, only: WMINIT, WMINITNML
       use WMWAVEMD, only: WMWAVE
       use WMFINLMD, only: WMFINL
       use WMMDATMD
@@ -537,6 +537,7 @@
 !      Name            Type  Module   Description
 !     ----------------------------------------------------------------
 !      WMINIT          Subr. WMINITMD Wave model initialization
+!      WMINITNML       Subr. WMINITMD Wave model initialization
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -552,7 +553,7 @@
 !        a General I/O: (implicit in WMMDATMD)
 !        b MPI environment
 !        c Identifying output to "screen" unit
-!      2.  Initialization of all wave models / grids       ( WMINIT )
+!      2.  Initialization of all wave models / grids
 !      3.  Advertise import fields
 !      4.  Advertise export fields
 !     ----------------------------------------------------------------
@@ -733,8 +734,13 @@
       if ( .not.lsep_ss ) idss = stdo
       if ( .not.lsep_st ) idst = stdo
       if ( .not.lsep_se ) idse = stdo
-      call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
-                    mpicomm, preamb=preamb )
+      if ( trim(ifname).eq.'ww3_multi.nml' ) then
+        call wminitnml ( idsi, idso, idss, idst, idse, trim(ifname), &
+                         mpicomm, preamb=preamb )
+      else
+        call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
+                      mpicomm, preamb=preamb )
+      endif
 !
 ! 2.b Check consistency between internal timestep and external
 !     timestep (coupling interval)
@@ -975,6 +981,7 @@
 !      Name            Type  Module   Description
 !     ----------------------------------------------------------------
 !      WMINIT          Subr. WMINITMD Wave model initialization
+!      WMINITNML       Subr. WMINITMD Wave model initialization
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
