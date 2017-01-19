@@ -40,7 +40,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:c:Cdefg:Ghi:m:n:o:Op:q:r:s:t:Sw:z"  #option string for getopt function
+optstr="a:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:Sw:"  #option string for getopt function
 usage ()
 {
 cat 2>&1 << EOF
@@ -54,7 +54,9 @@ Options:
                    :   *default is <source_dir>/wwatch3.env
                    :   *file will be created if it does not already exist
   -c cmplr         : setup comp & link files for specified cmplr
-  -C               : enable coupling using OASIS3-mct
+  -C coupl         : invoke test using <coupl> coupled application
+                   :   OASIS : OASIS3-mct ww3_shel coupled application
+                   :   ESMF  : ESMF ww3_multi coupled application
   -d               : invoke main program using gdb (non-parallel)
   -e               : prompt for changes to existing WW3 environment
   -f               : force pre- and post-processing programs to be compiled
@@ -72,6 +74,7 @@ Options:
   -n nproc         : specify <nproc> processors for parallel run
                    :   *some <runcmd> programs do not require <nproc>
                    :   *ignored if -p <runcmd> or -O is not specified
+  -N               : use namelist (.nml) input instead of .inp (if available)
   -o outopt        : limit output post-processing based on <outopt>
                    :   native : post-process only native output
                    :   netcdf : post-process only NetCDF output
@@ -94,8 +97,6 @@ Options:
   -t nthrd         : Threading option. (this is system dependant and can be used
                    : only for the hybrid option)
   -w work_dir      : run test case in test_name/work_dir (default test_name/work)
-  -z               : invoke multi-model test via ESMF coupled application
-                   : test driver
 
 EOF
 }
@@ -122,12 +123,13 @@ dist=0
 inpdir=input
 outopt=native
 grads=0
+coupl=none
 while :
 do
   case "$1" in
   -a) shift; ww3_env="$1" ;;
   -c) shift; cmplr="$1" ;;
-  -C) coupl=1 ;;
+  -C) shift; coupl="$1" ;;
   -d) use_gdb=1 ;;
   -e) prompt=1 ;;
   -f) force_shrd=1 ;;
@@ -143,6 +145,7 @@ do
         multi=2
       fi ;;
   -n) shift; nproc="$1" ;;
+  -N) nml_input=1 ;;
   -o) shift; outopt="$1" ;;
   -O) pomp=1 ;;
   -p) shift; runcmd="$1" ; pmpi=1 ;;
@@ -152,7 +155,6 @@ do
   -S) stub=1 ;;
   -t) shift; nthrd="$1" ;;
   -w) shift; wrkdir="$1" ;;
-  -z) esmf_test=1 ;;
   --) break ;;
   esac
   shift
@@ -170,6 +172,32 @@ fi
 case $outopt in
   native|netcdf|both) ;;
   *) errmsg "outopt = $outopt not supported" ; usage ; exit 1 ;;
+esac
+case $coupl in
+  none) ;;
+  OASIS)
+    if [ $multi -ne 0 ]
+    then
+      errmsg "coupl = $coupl with ww3_multi is not supported"
+      usage
+      exit 1
+    fi
+  ;;
+  ESMF)
+    if [ $multi -eq 0 ]
+    then
+      errmsg "coupl = $coupl with ww3_shel is not supported"
+      usage
+      exit 1
+    fi
+    if [ -z "$ESMFMKFILE" ]
+    then
+      errmsg "ESMFMKFILE must be defined with coupl = $coupl"
+      usage
+      exit 1
+    fi
+  ;;
+  *) errmsg "coupl = $coupl not supported" ; usage ; exit 1 ;;
 esac
 
 # 2.c Get required arguments
@@ -357,7 +385,7 @@ then
   fi
 fi
 
-if [ $coupl ]
+if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
   if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr
   then :
@@ -882,7 +910,7 @@ fi
 if [ $multi -ge 1 ]
 then
   prog=ww3_multi
-  if [ $esmf_test ]
+  if [ $coupl = "ESMF" ]
   then
     prgb=ww3_multi_esmf
   else
@@ -919,7 +947,7 @@ fi
 # inp / nml file - gridset option (eq 2)
 if [ $multi -eq 2 ]
 then
-  if [ ! -z "`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`" ]
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`" ]
   then
     ifile="`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`"
     files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
@@ -927,7 +955,7 @@ then
     ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
   fi
 else
-  if [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
   then
     ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
     files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
@@ -953,7 +981,7 @@ then
     errmsg "Error occured during WW3 $prgb build"
     exit 1
   fi
-  if [ $esmf_test ]
+  if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
   then
     if [ $cmplr ]
     then
@@ -977,15 +1005,24 @@ then
 
   \rm -f $prog.inp
   \ln -s $ifile $prog.inp
-  if [ $esmf_test ]
+  if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
   then
     \rm -f PET*.ESMF_LogFile
     \rm -f ww3_esmf.rc
-    \ln -s ${path_i}/ww3_esmf.rc ww3_esmf.rc
+    \cp -f ${path_i}/ww3_esmf.rc ww3_esmf.rc
+    if [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      echo "WAV_input_file_name: $prog.nml" >> ww3_esmf.rc
+    fi
+    if [ $nproc ]
+    then
+      echo "pet_count: $nproc" >> ww3_esmf.rc
+    else
+      echo "pet_count: 1" >> ww3_esmf.rc
+    fi
   fi
-  if [ ${prog} = ww3_multi ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  if [ $multi -ge 1 ] && [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
   then
-    \rm -f $prog.inp
     \rm -f $prog.nml
     \ln -s $ifile $prog.nml
     for file_p in ${files_p}
@@ -1018,9 +1055,9 @@ then
     fi
   fi
 
-  if [ $coupl ]
+  if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
   then
-    if $runcmd $path_e/$prog : -np $nproc $path_w/toy_model | tee $ofile
+    if $runcmd $path_e/$prgb : -np $nproc $path_w/toy_model | tee $ofile
     then
       \rm -f track_i.ww3
       \rm -f $prog.inp
@@ -1029,11 +1066,10 @@ then
       exit 1
     fi
   else
-    if $runcmd $path_e/$prog | tee $ofile
+    if $runcmd $path_e/$prgb | tee $ofile
     then
       \rm -f track_i.ww3
       \rm -f $prog.inp
-      \rm -f ww3_esmf.rc
       \rm -f $prog.nml
       for file_p in ${files_p}
       do
