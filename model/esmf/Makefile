@@ -94,9 +94,9 @@ dum.o: macros.h
 .PHONY: env setup switch dust clean
 dust:
 	\rm -f PET*.ESMF_LogFile
-clean: env
+clean:
 	\rm -f $(EXE) *.o *.mod
-distclean: clean
+distclean: env clean
 	$(WW3_BINDIR)/w3_clean -c
 	\rm -fr $(WW3_TMPDIR)
 	\rm -f $(WWATCH3_ENV)
