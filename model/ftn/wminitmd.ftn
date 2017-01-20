@@ -38,7 +38,8 @@
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
-!/    DD-MMM-YYYY : Add ESMF override for STIME & ETIME ( version X.YZ )
+!/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
+!/                  Add ESMF override for STIME & ETIME ( version X.YZ )
 !/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
@@ -131,7 +132,8 @@
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
-!/    DD-MMM-YYYY : Add ESMF override for STIME & ETIME ( version X.YZ )
+!/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
+!/                  Add ESMF override for STIME & ETIME ( version X.YZ )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
@@ -2209,7 +2211,6 @@
         END DO !  DO J=JFIRST, 7
 !
         INFLAGS1  = TFLAGS
-        INFLAGS2  = TFLAGS ! necessary?
         CALL W3SETI ( I, MDSE, MDST )
         CALL W3SETA ( I, MDSE, MDST )
 !
@@ -3058,6 +3059,9 @@
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
 !/    17-Feb-2016 : New version from namelist use       ( version 5.11 )
+!/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
+!/                  Add ESMF override for STIME & ETIME ( version X.YZ )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -3321,6 +3325,7 @@
                                  TLST(2), NCPROC, NPOUTT, NAPLOC,     &
                                  NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
                                  IFT
+      INTEGER                 :: STMPT(2), ETMPT(2)
 !/MPI      INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
 !/S      INTEGER, SAVE           :: IENT = 0
       INTEGER, ALLOCATABLE    :: MDS(:,:), NTRACE(:,:), ODAT(:,:),    &
@@ -3336,7 +3341,7 @@
       LOGICAL, ALLOCATABLE    :: FLGRD(:,:,:), FLRBPI(:), BCDTMP(:),   &
                                  USEINP(:), LPRT(:), FLGR2(:,:,:),     &
                                  FLGD(:,:), FLG2(:,:), FLG2D(:,:),     &
-                                 FLG1D(:)
+                                 FLG1D(:), CPLINP(:)
       CHARACTER(LEN=1)        :: COMSTR
       CHARACTER(LEN=256)      :: TMPLINE, TEST
       CHARACTER(LEN=3)        :: IDSTR(-7:7), IDTST
@@ -3645,9 +3650,11 @@
                  TMPRNK(2*NRGRD), TMPGRP(2*NRGRD), NINGRP(2*NRGRD),    &
                  RP1(2*NRGRD), RPN(2*NRGRD), BCDTMP(NRGRD+1:2*NRGRD))
       ALLOCATE ( GRANK(NRGRD), GRGRP(NRGRD), USEINP(NRINP) )
+      ALLOCATE ( CPLINP(NRINP) )
       GRANK  = -1
       GRGRP  = -1
       USEINP = .FALSE.
+      CPLINP = .FALSE.
 !
 ! 3.a Read data
 !
@@ -3761,28 +3768,49 @@
       IDINP  = '---'
 !
       DO I=1, NRGRD
-        CALL W3SETI ( I, MDSE, MDST )
-        DO J=JFIRST, 7
-          IF ( INAMES(I,J) .EQ. 'native' ) THEN
-              INFLAGS1(J) = .TRUE.
-            ELSE
-              INFLAGS1(J) = .FALSE.
-              IF ( INAMES(I,J) .EQ. 'coupler' ) THEN
-                  INPMAP(I,J) = -1
-                ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
-                  DO JJ=1, NRINP
-                    IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
-                        INPMAP(I,J) = JJ
-                        EXIT
+         CALL W3SETI ( I, MDSE, MDST )
+         DO J=JFIRST, 7
+            IF ( INAMES(I,J) .EQ. 'native' ) THEN
+            ! *** forcing input from file & defined on the native grid ***
+                INFLAGS1(J) = .TRUE.
+              ELSE
+                INFLAGS1(J) = .FALSE.
+                IF ( INAMES(I,J)(1:4) .EQ. 'CPL:' ) THEN
+                    IF ( INAMES(I,J)(5:) .EQ. 'native' ) THEN
+                      ! *** forcing input from CPL & defined on the native grid ***
+                        INFLAGS1(J) = .TRUE.
+                        INPMAP(I,J) = -999
+                      ELSE
+                      ! *** forcing input from CPL & defined on an input grid ***
+                        DO JJ=1, NRINP
+                          IF ( MNAMES(-JJ) .EQ. INAMES(I,J)(5:) ) THEN
+                              INPMAP(I,J) = -JJ
+                              EXIT
+                            END IF
+                          END DO
+                        IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
+                        IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+                        USEINP(-INPMAP(I,J)) = .TRUE.
+                        CPLINP(-INPMAP(I,J)) = .TRUE.
                       END IF
+                  ELSE IF ( INAMES(I,J) .NE. 'no' ) THEN
+                    ! *** forcing input from file & defined on an input grid ***
+                    DO JJ=1, NRINP
+                       IF ( MNAMES(-JJ) .EQ. INAMES(I,J) ) THEN
+                          INPMAP(I,J) = JJ
+                          EXIT
+                       END IF
                     END DO
-                  IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-                  IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) )GOTO 2031
-                  USEINP(INPMAP(I,J)) = .TRUE.
-                END IF
-            END IF
-          END DO
-        END DO
+                    IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
+                    IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+                    USEINP(INPMAP(I,J)) = .TRUE.
+                  END IF
+              END IF
+         END DO !         DO J=JFIRST, 7
+!        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1, 
+!           it does not change during the simulation
+         INFLAGS2=INFLAGS1
+      END DO !      DO I=1, NRGRD
 !
       DO I=1, NRINP
         IF ( .NOT.USEINP(I) .AND.                                     &
@@ -3793,21 +3821,22 @@
         END DO
 !
 ! 3.b Assign input file unit numbers
-!     Also, set INFLAGS2. This is the initial value of INFLAGS1.
 !
       DO I=-NRINP, NRGRD
         IF ( I .EQ. 0 ) CYCLE
         CALL W3SETI ( I, MDSE, MDST )
         DO J=JFIRST, 7
+          IF ( I .GE. 1 ) THEN
+              IF ( INPMAP(I,J) .LT. 0 ) CYCLE
+            END IF
           IF ( INFLAGS1(J) ) THEN
               CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
               CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,               &
                             DESC='Input data file' )
               MDSF(I,J) = NDSFND
-          END IF
-        END DO !        DO J=JFIRST, 7
-        INFLAGS2=INFLAGS1
-      END DO !    DO I=-NRINP, NRGRD
+            END IF
+          END DO
+        END DO
 !
 !/T      WRITE (MDST,9022)
 !/T      DO I=-NRINP, NRGRD
@@ -4005,11 +4034,18 @@
 ! 4.  Model run time information etc. -------------------------------- /
 !
 !     Version 3.07: Same for all grids, diversify later ....
+!     If invoked as ESMF Component, then STIME and ETIME are set
+!     in WMESMFMD from the external clock.
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,940)
 !              
-      READ(domain_def%start, *) STIME 
-      READ(domain_def%stop, *) ETIME
+      IF (IS_ESMF_COMPONENT) THEN
+          READ(domain_def%start, *) STMPT 
+          READ(domain_def%stop, *) ETMPT
+        ELSE
+          READ(domain_def%start, *) STIME 
+          READ(domain_def%stop, *) ETIME
+        END IF
       CALL STME21 ( STIME , DTME21 )
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,941) DTME21
       CALL STME21 ( ETIME , DTME21 )
@@ -4043,7 +4079,6 @@
 !
       OT2(:)%NPTS = 0
       ILOOP = 0
-
 !
 ! 5.a Loop over types
 !
@@ -4124,20 +4159,20 @@
                 END IF
 
               IF ( J .EQ. 1 ) THEN
-  !
-  ! 5.c Type 1: fields of mean wave parameters
-  !
+!
+! 5.c Type 1: fields of mean wave parameters
+!
                 FLGRD(:,:,I)=.FALSE. ! Initialize FLGRD
                 FLDOUT = output_type(I)%field%list
                 CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
                                    FLG2D, IMPROC, NMPSCR, IERR )
                 FLGRD(:,:,I)=FLG2D
                 FLGD(:,I)   =FLG1D
-  !
+!
               ELSE IF ( J .EQ. 2 ) THEN
-  !
-  ! 5.d Type 2: point output
-  !
+!
+! 5.d Type 2: point output
+!
                 ! if the output is 0, the output is disabled
                 IF (UNIPTS) THEN
                   IF ( ODAT(8,0).EQ.0 .AND. IMPROC.EQ.NMPERR ) WRITE (MDSE,1050)
@@ -4887,11 +4922,11 @@
 !
         DO J=JFIRST, 4
           IF ( INFLAGS1(J) ) THEN
-              JJ     = LEN_TRIM(FNMPRE)
               IDINP(I,J) = IDSTR(J)
+              IF ( INPMAP(I,J) .LT. 0 ) CYCLE
               CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
                             NX, NY, GTYPE, IERR, MNAMES(I),           &
-                            trim(FNMPRE) )
+                            TRIM(FNMPRE) )
               IF ( IERR .NE. 0 ) GOTO 2080
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                    WRITE (MDSS,985) IDFLDS(J)
@@ -5118,6 +5153,8 @@
         CALL W3IOGR ( 'GRID', NDSREC, -I, MNAMES(-I)(1:J) )
         CALL W3DIMI ( -I, MDSE, MDST )
 !
+        IF ( CPLINP(I) ) CYCLE
+!
         DO J=JFIRST, 4
           IF ( INFLAGS1(J) ) THEN
               JJ     = LEN_TRIM(FNMPRE)
@@ -5150,6 +5187,7 @@
         END DO
 !
       DEALLOCATE ( USEINP )
+      DEALLOCATE ( CPLINP )
 !
 ! 8.c Inter model initialization
 !
