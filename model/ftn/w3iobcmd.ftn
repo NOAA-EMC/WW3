@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -74,7 +74,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Distributed FORTRAN 77 version.     ( version 1.18 )
@@ -98,9 +98,9 @@
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    03-Jul-2013 : Corrected ABPIN indices             ( version 4.11 )
 !/    14-Jan-2014 : Corrected ABPIN indices for W3CSPC  ( version 4.18 ) 
-!/    DD-MMM-YYYY : Allow input boundary points to lie outside the grid
+!/    20-Jan-2017 : Allow input boundary points to lie outside the grid
 !/                  within a distance of 0.1 times the grid cell size.
-!/                  (T.J. Campbell, NRL)                ( version X.YZ )
+!/                  (T.J. Campbell, NRL)                ( version 6.02 )
 !/
 !  1. Purpose :
 !

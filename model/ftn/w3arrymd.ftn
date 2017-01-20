@@ -88,7 +88,7 @@
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Add error exit using EXTCDE.        ( version X.YZ )
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -295,7 +295,7 @@
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Add error exit using EXTCDE.        ( version X.YZ )
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -457,7 +457,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Add error exit using EXTCDE.        ( version X.YZ )
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -606,7 +606,7 @@
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Add error exit using EXTCDE.        ( version X.YZ )
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !

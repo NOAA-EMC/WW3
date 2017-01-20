@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    11-Nov-1999 : Fortran 90 version.                 ( version 2.00 )
@@ -14,7 +14,7 @@
 !/    25-Jun-2011 : Adding Kelvin functions.            ( version 4.05 )
 !/    03-Sep-2012 : Adding TSTOUT flag.                 ( version 4.10 )
 !/    28-Feb-2013 : Adding cap at 0.5 in FWTABLE        ( version 4.08 )
-!/    DD-MMM-YYYY : Add parameters for ESMF             ( version X.YZ )
+!/    20-Jan-2017 : Add parameters for ESMF             ( version 6.02 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

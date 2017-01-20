@@ -22,7 +22,7 @@
 !/                  NetCDF variables (S. Zieger)
 !/    24-Oct-2014 : Allows "As Is" curvilinear grids    ( version 5.02 )
 !/    14-Oct-2015 : Add a check for latitude reversed   ( version 5.11 )
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights

@@ -982,8 +982,8 @@
 !/                  (K. R. Lind, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!/    DD-MMM-YYYY : Fix SCRIP ALLWGTS allocation error and improve
-!/                  SCRIPNC SCRIP_STOP report and exit. ( version X.YZ )
+!/    20-Jan-2017 : Fix SCRIP ALLWGTS allocation error and improve
+!/                  SCRIPNC SCRIP_STOP report and exit. ( version 6.02 )
 !/
 !  1. Purpose :
 !

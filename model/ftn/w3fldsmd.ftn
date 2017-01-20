@@ -31,7 +31,7 @@
 !/     5-Mar-2012 : Cleanup of tidal analysis           ( version 4.09 ) 
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1607,7 +1607,7 @@
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/
 !  1. Purpose :
 !

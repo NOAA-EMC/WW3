@@ -568,11 +568,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY !
+!/                  | Last update :         20-Jan-2017 !
 !/                  +-----------------------------------+
 !/
 !/    28-Mar-2005 : Origination.                        ( version 3.07 )
-!/    DD-MMM-YYYY : Add INQUIRE OPENED check.           ( version X.YZ )
+!/    20-Jan-2017 : Add INQUIRE OPENED check.           ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :

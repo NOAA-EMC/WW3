@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -38,9 +38,9 @@
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
-!/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
-!/                  Add ESMF override for STIME & ETIME ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    20-Jan-2017 : Modify input forcing flags to support coupler input.
+!/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
@@ -95,7 +95,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    13-Jun-2005 : Origination.                        ( version 3.07 )
@@ -133,9 +133,9 @@
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
-!/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
-!/                  Add ESMF override for STIME & ETIME ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    20-Jan-2017 : Modify input forcing flags to support coupler input.
+!/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
@@ -3061,9 +3061,9 @@
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
 !/    17-Feb-2016 : New version from namelist use       ( version 5.11 )
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
-!/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
-!/                  Add ESMF override for STIME & ETIME ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    20-Jan-2017 : Modify input forcing flags to support coupler input.
+!/                  Add ESMF override for STIME & ETIME ( version 6.02 )
 !/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :

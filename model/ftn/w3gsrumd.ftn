@@ -20,7 +20,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         20-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    30-Oct-2009 : Origination.                        ( version 3.14 )
@@ -44,29 +44,29 @@
 !/    15-Jun-2012 : Fixed various format statements that gave compile
 !/                  warnings with Intel compiler on NCEP R&D machine
 !/                  zeus (H. L. Tolman)                 ( version 4.07 )
-!/    DD-MMM-YYYY : Moved all record of changes from subroutines to
+!/    20-Jan-2017 : Moved all record of changes from subroutines to
 !/                  the top of the module and consolidate source code
-!/                  for procedure interfaces            ( version X.YZ )
-!/    DD-MMM-YYYY : Generalize index bounds for source  ( version X.YZ )
-!/    DD-MMM-YYYY : Fix tripole grid index mapping and implement
-!/                  additional index closure types.     ( version X.YZ )
-!/    DD-MMM-YYYY : Add small non-zero tolerance to bounding box checks,
+!/                  for procedure interfaces            ( version 6.02 )
+!/    20-Jan-2017 : Generalize index bounds for source  ( version 6.02 )
+!/    20-Jan-2017 : Fix tripole grid index mapping and implement
+!/                  additional index closure types.     ( version 6.02 )
+!/    20-Jan-2017 : Add small non-zero tolerance to bounding box checks,
 !/                  point coincidence checks and checks for points that
-!/                  lie exactly on a cell side          ( version X.YZ )
-!/    DD-MMM-YYYY : Add option to W3GFCL, W3GRMP, W3GFPT, and W3GFIJ to
-!/                  allow target outside of source grid ( version X.YZ )
-!/    DD-MMM-YYYY : Implement more accurate sin(d/2) equation in W3DIST
-!/                  for computing angular distance      ( version X.YZ )
-!/    DD-MMM-YYYY : Implement stereographic projection for remapping
-!/                  from cells near a pole              ( version X.YZ )
-!/    DD-MMM-YYYY : Add routine for computing metric and derivatives
+!/                  lie exactly on a cell side          ( version 6.02 )
+!/    20-Jan-2017 : Add option to W3GFCL, W3GRMP, W3GFPT, and W3GFIJ to
+!/                  allow target outside of source grid ( version 6.02 )
+!/    20-Jan-2017 : Implement more accurate sin(d/2) equation in W3DIST
+!/                  for computing angular distance      ( version 6.02 )
+!/    20-Jan-2017 : Implement stereographic projection for remapping
+!/                  from cells near a pole              ( version 6.02 )
+!/    20-Jan-2017 : Add routine for computing metric and derivatives
 !/                  for a curvilinear grid and routines for computing
 !/                  gradient and divergence of fields defined on a
-!/                  curvilinear grid                    ( version X.YZ )
-!/    DD-MMM-YYYY : Add routine for computing computing bounding box
-!/                  for a curvilinear grid              ( version X.YZ )
-!/    DD-MMM-YYYY : Add W3GRMC as generic routine for computing
-!/                  remapping coefficients              ( version X.YZ )
+!/                  curvilinear grid                    ( version 6.02 )
+!/    20-Jan-2017 : Add routine for computing computing bounding box
+!/                  for a curvilinear grid              ( version 6.02 )
+!/    20-Jan-2017 : Add W3GRMC as generic routine for computing
+!/                  remapping coefficients              ( version 6.02 )
 !/
 !  1. Purpose :
 !

@@ -758,7 +758,7 @@
 !/    23-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    11-Mar-2015 : Allow non-error exit (iexit=0)      ( version 5.04 )
-!/    DD-MMM-YYYY : Add optional MPI communicator arg   ( version X.YZ )
+!/    20-Jan-2017 : Add optional MPI communicator arg   ( version 6.02 )
 !/
 !  1. Purpose :
 !

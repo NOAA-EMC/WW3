@@ -38,7 +38,7 @@
 !/     3-Mar-2013 : Allows for longer input file name   ( version 4.09 )
 !/    11-Nov-2013 : Allows for input binary files to be of WAVEWATCH
 !/                  type (i.e. accounts for the header) ( version 4.13 )
-!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
