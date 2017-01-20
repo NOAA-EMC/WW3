@@ -3622,7 +3622,7 @@
 !/ =================================================================== /
 !/
 !/    SUBROUTINE W3CGDM( IJG, LLG, ICLO, PTILED, QTILED, &
-!/                       NP, NQ, LBI, UBI, LBO, UBO, X, Y, &
+!/                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, X, Y, &
 !/                       NFD, SPHERE, RADIUS, DX, DY, &
 !/                       GPPC, GQQC, GPQC, GSQR, &
 !/                       HPFC, HQFC, APPC, AQQC, APQC, &
@@ -3711,8 +3711,8 @@
 !                          in P-axis with halos of width >= NFD/2
 !       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in Q-axis with halos of width >= NFD/2
-!       NP      Int.   I   Range of P index coordinate: P in [1,NP]
-!       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
+!       PRANGE  I.A.   I   Range of P index coordinate: P in [PRANGE(1),PRANGE(2)]
+!       QRANGE  I.A.   I   Range of Q index coordinate: Q in [QRANGE(1),QRANGE(2)]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
 !       UBI     I.A.   I   Upper-bound of  input arrays, DIMENSION(2)
 !       LBO     I.A.   I   Lower-bound of output arrays, DIMENSION(2)
@@ -3779,7 +3779,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3CGDM_R4( IJG, LLG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, X, Y, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, X, Y, &
                             NFD, SPHERE, RADIUS, DX, DY, &
                             GPPC, GQQC, GPQC, GSQR, &
                             HPFC, HQFC, APPC, AQQC, APQC, &
@@ -3791,7 +3791,7 @@
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(4), INTENT(IN)   :: X(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -3825,7 +3825,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: ISTAT=0, N, I1, I2, P, Q
+      INTEGER :: ISTAT=0, N, NP, NQ, I1, I2, P, Q
       LOGICAL :: SPHR
       REAL(8) :: R, FACX, FACY
       INTEGER, ALLOCATABLE :: K(:,:)
@@ -3859,6 +3859,9 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
 
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
@@ -3933,7 +3936,7 @@
                   DYDPL = ZERO
                 ELSE
                   CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                              NP, NQ, LBI, UBI, P, Q, DXDPL, DYDPL, &
+                              PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
                               X4=X, Y4=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
@@ -3949,7 +3952,7 @@
                   DYDQL = DY
                 ELSE
                   CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                              NP, NQ, LBI, UBI, P, Q, DXDQL, DYDQL, &
+                              PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
                               X4=X, Y4=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
@@ -4036,7 +4039,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3CGDM_R8( IJG, LLG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, X, Y, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, X, Y, &
                             NFD, SPHERE, RADIUS, DX, DY, &
                             GPPC, GQQC, GPQC, GSQR, &
                             HPFC, HQFC, APPC, AQQC, APQC, &
@@ -4048,7 +4051,7 @@
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(8), INTENT(IN)   :: X(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -4082,7 +4085,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: ISTAT=0, N, I1, I2, P, Q
+      INTEGER :: ISTAT=0, N, NP, NQ, I1, I2, P, Q
       LOGICAL :: SPHR
       REAL(8) :: R, FACX, FACY
       INTEGER, ALLOCATABLE :: K(:,:)
@@ -4116,6 +4119,9 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
 
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
@@ -4190,7 +4196,7 @@
                   DYDPL = ZERO
                 ELSE
                   CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                              NP, NQ, LBI, UBI, P, Q, DXDPL, DYDPL, &
+                              PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
                               X8=X, Y8=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
@@ -4206,7 +4212,7 @@
                   DYDQL = DY
                 ELSE
                   CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                              NP, NQ, LBI, UBI, P, Q, DXDQL, DYDQL, &
+                              PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
                               X8=X, Y8=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
@@ -4304,7 +4310,7 @@
 !/ =================================================================== /
 !/
 !/    SUBROUTINE W3GRD0( NFD, IJG, ICLO, PTILED, QTILED, &
-!/                       NP, NQ, LBI, UBI, LBO, UBO, &
+!/                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
 !/                       DPDX, DPDY, DQDX, DQDY, &
 !/                       F, DFDX, DFDY, MASK, RC )
 !/
@@ -4333,8 +4339,8 @@
 !                          in P-axis with halos of width >= NFD/2
 !       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in Q-axis with halos of width >= NFD/2
-!       NP      Int.   I   Range of P index coordinate: P in [1,NP]
-!       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
+!       PRANGE  I.A.   I   Range of P index coordinate: P in [PRANGE(1),PRANGE(2)]
+!       QRANGE  I.A.   I   Range of Q index coordinate: Q in [QRANGE(1),QRANGE(2)]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
 !       UBI     I.A.   I   Upper-bound of  input arrays, DIMENSION(2)
 !       LBO     I.A.   I   Lower-bound of output arrays, DIMENSION(2)
@@ -4381,7 +4387,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3GRD0_R4( NFD, IJG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             F, DFDX, DFDY, MASK, RC )
 !     Single precision interface
@@ -4389,7 +4395,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(4), INTENT(IN)   :: DPDX(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -4404,7 +4410,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: I1, I2, P, Q
+      INTEGER :: NP, NQ, I1, I2, P, Q
       INTEGER :: ISTAT=0
       INTEGER :: K(0:NFD,0:NFD,1:NFD)
       REAL(8) :: C(0:NFD,0:NFD,1:NFD)
@@ -4428,6 +4434,9 @@
             END IF
         END IF
 
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
+
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
             CONTINUE
@@ -4476,7 +4485,7 @@
                   Q = I1
                 END IF
               CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-                           NP, NQ, LBI, UBI, P, Q, &
+                           PRANGE, QRANGE, LBI, UBI, P, Q, &
                            F4=F, DFDP=DFDP, DFDQ=DFDQ, &
                            MASK=MASK, RC=ISTAT )
               IF ( ISTAT .NE. 0 ) THEN
@@ -4497,7 +4506,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3GRD0_R8( NFD, IJG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             F, DFDX, DFDY, MASK, RC )
 !     Double precision interface
@@ -4505,7 +4514,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(8), INTENT(IN)   :: DPDX(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -4520,7 +4529,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: I1, I2, P, Q
+      INTEGER :: NP, NQ, I1, I2, P, Q
       INTEGER :: ISTAT=0
       INTEGER :: K(0:NFD,0:NFD,1:NFD)
       REAL(8) :: C(0:NFD,0:NFD,1:NFD)
@@ -4544,6 +4553,9 @@
             END IF
         END IF
 
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
+
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
             CONTINUE
@@ -4592,7 +4604,7 @@
                   Q = I1
                 END IF
               CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-                           NP, NQ, LBI, UBI, P, Q, &
+                           PRANGE, QRANGE, LBI, UBI, P, Q, &
                            F8=F, DFDP=DFDP, DFDQ=DFDQ, &
                            MASK=MASK, RC=ISTAT )
               IF ( ISTAT .NE. 0 ) THEN
@@ -4624,7 +4636,7 @@
 !/ =================================================================== /
 !/
 !/    SUBROUTINE W3DIV1( NFD, IJG, ICLO, PTILED, QTILED, &
-!/                       NP, NQ, LBI, UBI, LBO, UBO, &
+!/                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
 !/                       DPDX, DPDY, DQDX, DQDY, &
 !/                       VX, VY, DIVV, MASK, RC )
 !/
@@ -4653,8 +4665,8 @@
 !                          in P-axis with halos of width >= NFD/2
 !       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in Q-axis with halos of width >= NFD/2
-!       NP      Int.   I   Range of P index coordinate: P in [1,NP]
-!       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
+!       PRANGE  I.A.   I   Range of P index coordinate: P in [PRANGE(1),PRANGE(2)]
+!       QRANGE  I.A.   I   Range of Q index coordinate: Q in [QRANGE(1),QRANGE(2)]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
 !       UBI     I.A.   I   Upper-bound of  input arrays, DIMENSION(2)
 !       LBO     I.A.   I   Lower-bound of output arrays, DIMENSION(2)
@@ -4703,7 +4715,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3DIV1_R4( NFD, IJG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             VX, VY, DIVV, MASK, RC )
 !     Single precision interface
@@ -4711,7 +4723,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(4), INTENT(IN)   :: DPDX(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -4726,7 +4738,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: I1, I2, P, Q
+      INTEGER :: NP, NQ, I1, I2, P, Q
       INTEGER :: ISTAT=0
       INTEGER :: K(0:NFD,0:NFD,1:NFD)
       REAL(8) :: C(0:NFD,0:NFD,1:NFD)
@@ -4750,6 +4762,9 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
 
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
@@ -4799,7 +4814,7 @@
                   Q = I1
                 END IF
               CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-                           NP, NQ, LBI, UBI, P, Q, &
+                           PRANGE, QRANGE, LBI, UBI, P, Q, &
                            F4=VX, DFDP=DVXDP, DFDQ=DVXDQ, &
                            G4=VY, DGDP=DVYDP, DGDQ=DVYDQ, &
                            MASK=MASK, RC=ISTAT )
@@ -4822,7 +4837,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3DIV1_R8( NFD, IJG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             VX, VY, DIVV, MASK, RC )
 !     Double precision interface
@@ -4830,7 +4845,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(8), INTENT(IN)   :: DPDX(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -4845,7 +4860,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: I1, I2, P, Q
+      INTEGER :: NP, NQ, I1, I2, P, Q
       INTEGER :: ISTAT=0
       INTEGER :: K(0:NFD,0:NFD,1:NFD)
       REAL(8) :: C(0:NFD,0:NFD,1:NFD)
@@ -4869,6 +4884,9 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
 
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
@@ -4918,7 +4936,7 @@
                   Q = I1
                 END IF
               CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-                           NP, NQ, LBI, UBI, P, Q, &
+                           PRANGE, QRANGE, LBI, UBI, P, Q, &
                            F8=VX, DFDP=DVXDP, DFDQ=DVXDQ, &
                            G8=VY, DGDP=DVYDP, DGDQ=DVYDQ, &
                            MASK=MASK, RC=ISTAT )
@@ -4952,7 +4970,7 @@
 !/ =================================================================== /
 !/
 !/    SUBROUTINE W3DIV2( NFD, IJG, ICLO, PTILED, QTILED, &
-!/                       NP, NQ, LBI, UBI, LBO, UBO, &
+!/                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
 !/                       DPDX, DPDY, DQDX, DQDY, &
 !/                       SXX, SYY, SXY, DSX, DSY, MASK, RC )
 !/
@@ -4981,8 +4999,8 @@
 !                          in P-axis with halos of width >= NFD/2
 !       QTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in Q-axis with halos of width >= NFD/2
-!       NP      Int.   I   Range of P index coordinate: P in [1,NP]
-!       NQ      Int.   I   Range of Q index coordinate: Q in [1,NQ]
+!       PRANGE  I.A.   I   Range of P index coordinate: P in [PRANGE(1),PRANGE(2)]
+!       QRANGE  I.A.   I   Range of Q index coordinate: Q in [QRANGE(1),QRANGE(2)]
 !       LBI     I.A.   I   Lower-bound of  input arrays, DIMENSION(2)
 !       UBI     I.A.   I   Upper-bound of  input arrays, DIMENSION(2)
 !       LBO     I.A.   I   Lower-bound of output arrays, DIMENSION(2)
@@ -5034,7 +5052,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3DIV2_R4( NFD, IJG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             SXX, SYY, SXY, DSX, DSY, MASK, RC )
 !     Single precision interface
@@ -5042,7 +5060,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(4), INTENT(IN)   :: DPDX(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -5059,7 +5077,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: I1, I2, P, Q
+      INTEGER :: NP, NQ, I1, I2, P, Q
       INTEGER :: ISTAT=0
       INTEGER :: K(0:NFD,0:NFD,1:NFD)
       REAL(8) :: C(0:NFD,0:NFD,1:NFD)
@@ -5083,6 +5101,9 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
 
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
@@ -5132,7 +5153,7 @@
                   Q = I1
                 END IF
               CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-                           NP, NQ, LBI, UBI, P, Q, &
+                           PRANGE, QRANGE, LBI, UBI, P, Q, &
                            F4=SXX, DFDP=DXXDP, DFDQ=DXXDQ, &
                            G4=SYY, DGDP=DYYDP, DGDQ=DYYDQ, &
                            H4=SXY, DHDP=DXYDP, DHDQ=DXYDQ, &
@@ -5159,7 +5180,7 @@
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3DIV2_R8( NFD, IJG, ICLO, PTILED, QTILED, &
-                            NP, NQ, LBI, UBI, LBO, UBO, &
+                            PRANGE, QRANGE, LBI, UBI, LBO, UBO, &
                             DPDX, DPDY, DQDX, DQDY, &
                             SXX, SYY, SXY, DSX, DSY, MASK, RC )
 !     Double precision interface
@@ -5167,7 +5188,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LBI(2), UBI(2)
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(8), INTENT(IN)   :: DPDX(LBI(1):UBI(1),LBI(2):UBI(2))
@@ -5184,7 +5205,7 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
-      INTEGER :: I1, I2, P, Q
+      INTEGER :: NP, NQ, I1, I2, P, Q
       INTEGER :: ISTAT=0
       INTEGER :: K(0:NFD,0:NFD,1:NFD)
       REAL(8) :: C(0:NFD,0:NFD,1:NFD)
@@ -5208,6 +5229,9 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
 
       SELECT CASE ( ICLO )
           CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
@@ -5257,7 +5281,7 @@
                   Q = I1
                 END IF
               CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-                           NP, NQ, LBI, UBI, P, Q, &
+                           PRANGE, QRANGE, LBI, UBI, P, Q, &
                            F8=SXX, DFDP=DXXDP, DFDQ=DXXDQ, &
                            G8=SYY, DGDP=DYYDP, DGDQ=DYYDQ, &
                            H8=SXY, DHDP=DXYDP, DHDQ=DXYDQ, &
@@ -7707,10 +7731,10 @@
           IF ( MOD(ICLO,2).EQ.0 ) THEN
               K = NFD/2
             ELSE
-              IF (P.LE.NFD/2) THEN
-                  K = P - 1
-                ELSE IF (NX-P.LT.NFD/2) THEN
-                  K = NFD + P - NX
+              IF (P-LBX.LT.NFD/2) THEN
+                  K = P - LBX
+                ELSE IF (UBX-P.LT.NFD/2) THEN
+                  K = NFD + P - UBX
                 ELSE
                   K = NFD/2
                 END IF
@@ -7718,16 +7742,16 @@
           IF ( MOD(ICLO,3).EQ.0 ) THEN
               L = NFD/2
             ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
-              IF (Q.LE.NFD/2) THEN
-                  L = Q - 1
+              IF (Q-LBY.LT.NFD/2) THEN
+                  L = Q - LBY
                 ELSE
                   L = NFD/2
                 END IF
             ELSE
-              IF (Q.LE.NFD/2) THEN
-                  L = Q - 1
-                ELSE IF (NY-Q.LT.NFD/2) THEN
-                  L = NFD + Q - NY
+              IF (Q-LBY.LT.NFD/2) THEN
+                  L = Q - LBY
+                ELSE IF (UBY-Q.LT.NFD/2) THEN
+                  L = NFD + Q - UBY
                 ELSE
                   L = NFD/2
                 END IF
@@ -7900,7 +7924,8 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, NP, NQ, &
+      SUBROUTINE DXYDP( N, K, C, IJG, LLG, ICLO, &
+                        PTILED, QTILED, PRANGE, QRANGE, &
                         LB, UB, P, Q, DXDP, DYDP, X4, Y4, X8, Y8, RC )
 !     *** INTERNAL SUBROUTINE ***
       INTEGER, INTENT(IN)   :: N
@@ -7910,7 +7935,7 @@
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
       REAL(8), INTENT(OUT)  :: DXDP, DYDP
@@ -7924,7 +7949,7 @@
       LOGICAL, PARAMETER :: DEBUG = .FALSE.
       CHARACTER(64) :: FSTR
       LOGICAL :: TYPE_R4, TYPE_R8
-      INTEGER :: LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
+      INTEGER :: NP, NQ, LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
       INTEGER :: ISTAT=0, IHEM, I, J, L
       INTEGER :: KP(0:N), KQ(0:N)
       REAL(8) :: XP(0:N), YP(0:N), XQ(0:N), YQ(0:N), U(0:N), V(0:N)
@@ -7950,6 +7975,9 @@
             END IF
         END IF
 
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
+
       IF ( IJG ) THEN
           LBP = LB(1); LBQ = LB(2)
           UBP = UB(1); UBQ = UB(2)
@@ -7959,10 +7987,10 @@
         END IF
 
       IF ( P.LT.LBP .OR. P.GT.UBP .OR. Q.LT.LBQ .OR. Q.GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,4I6,/1A,1L2,4I6/)') 'DXYDP ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DXYDP ERROR -- '// &
           'input index coordinates outside input array bounds', &
-          'DXYDP ERROR -- PTILED,NP,P,LBP,UBP:',PTILED,NP,P,LBP,UBP, &
-          'DXYDP ERROR -- QTILED,NQ,Q,LBQ,UBQ:',QTILED,NQ,Q,LBQ,UBQ
+          'DXYDP ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
+          'DXYDP ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -7974,17 +8002,20 @@
 
       P0 = P
       Q0 = Q
-      IF ( MOD(ICLO,2).EQ.0 ) P0 = 1 + MOD(NP - 1 + MOD(P0, NP), NP)
-      IF ( MOD(ICLO,3).EQ.0 ) Q0 = 1 + MOD(NQ - 1 + MOD(Q0, NQ), NQ)
-      IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.NQ ) THEN
-          P0 = NP + 1 - P0
-          Q0 = 2*NQ - Q0 + 1
+      IF ( MOD(ICLO,2).EQ.0 ) &
+        P0 = PRANGE(1) + MOD(NP - 1 + MOD(P0 - PRANGE(1) + 1, NP), NP)
+      IF ( MOD(ICLO,3).EQ.0 ) &
+        Q0 = QRANGE(1) + MOD(NQ - 1 + MOD(Q0 - QRANGE(1) + 1, NQ), NQ)
+      IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.QRANGE(2) ) THEN
+          P0 = PRANGE(2) + PRANGE(1) - P0
+          Q0 = 2*QRANGE(2) - Q0 + 1
         END IF
-      IF ( P0.LT.1 .OR. P0.GT.NP .OR. Q0.LT.1 .OR. Q0.GT.NQ ) THEN
-          WRITE(0,'(/1A,/1A,3I6,/1A,3I6/)') 'DXYDP ERROR -- '// &
+      IF ( P0.LT.PRANGE(1) .OR. P0.GT.PRANGE(2) .OR. &
+           Q0.LT.QRANGE(1) .OR. Q0.GT.QRANGE(2) ) THEN
+          WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DXYDP ERROR -- '// &
           'shifted input index coordinates outside allowed range', &
-          'DXYDP ERROR -- NP,P,P0:',NP,P,P0, &
-          'DXYDP ERROR -- NQ,Q,Q0:',NQ,Q,Q0
+          'DXYDP ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
+          'DXYDP ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8000,10 +8031,10 @@
       IF ( MOD(ICLO,2).EQ.0 ) THEN
           I = N/2
         ELSE
-          IF (P0.LE.N/2) THEN
-              I = P0 - 1
-            ELSE IF (NP-P0.LT.N/2) THEN
-              I = N + P0 - NP
+          IF (P0-PRANGE(1).LT.N/2) THEN
+              I = P0 - PRANGE(1)
+            ELSE IF (PRANGE(2)-P0.LT.N/2) THEN
+              I = N + P0 - PRANGE(2)
             ELSE
               I = N/2
             END IF
@@ -8013,18 +8044,18 @@
       KQ(:) = Q
       IF ( .NOT.PTILED ) THEN
           IF ( MOD(ICLO,2).EQ.0 ) THEN
-              KP = 1 + MOD(NP - 1 + MOD(KP, NP), NP)
+              KP = PRANGE(1) + MOD(NP - 1 + MOD(KP - PRANGE(1) + 1, NP), NP)
             END IF
         END IF
 
       IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
            MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,7I6,/1A,1L2,7I6/)') 'DXYDP ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DXYDP ERROR -- '// &
           'stencil index coordinates outside array bounds', &
-          'DXYDP ERROR -- PTILED,NP,P,P0,LBP,UBP,PMIN,PMAX:', &
-          PTILED,NP,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-          'DXYDP ERROR -- QTILED,NQ,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-          QTILED,NQ,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+          'DXYDP ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+          PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+          'DXYDP ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+          QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8087,9 +8118,9 @@
         END IF !.NOT.LLG
       IF ( DEBUG ) THEN
           WRITE(FSTR,'(A,I0,A,I0,A)') &
-          '(/1A,7I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
+          '(/1A,9I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
           WRITE(*,TRIM(FSTR)) &
-          'DXYDP -- NP,NQ,P,Q,P0,Q0,I:',NP,NQ,P,Q,P0,Q0,I, &
+          'DXYDP -- PRANGE,QRANGE,P,Q,P0,Q0,I:',PRANGE,QRANGE,P,Q,P0,Q0,I, &
           'DXYDP --   X0,  Y0:',X0,Y0, &
           'DXYDP -- LON0,LAT0:',LON0,LAT0, &
           'DXYDP --   C0,IHEM:',C0,REAL(IHEM), &
@@ -8105,7 +8136,8 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, NP, NQ, &
+      SUBROUTINE DXYDQ( N, K, C, IJG, LLG, ICLO, &
+                        PTILED, QTILED, PRANGE, QRANGE, &
                         LB, UB, P, Q, DXDQ, DYDQ, X4, Y4, X8, Y8, RC )
 !     *** INTERNAL SUBROUTINE ***
       INTEGER, INTENT(IN)   :: N
@@ -8115,7 +8147,7 @@
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
       REAL(8), INTENT(OUT)  :: DXDQ, DYDQ
@@ -8129,7 +8161,7 @@
       LOGICAL, PARAMETER :: DEBUG = .FALSE.
       CHARACTER(64) :: FSTR
       LOGICAL :: TYPE_R4, TYPE_R8
-      INTEGER :: LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
+      INTEGER :: NP, NQ, LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
       INTEGER :: ISTAT=0, IHEM, I, J, L
       INTEGER :: KP(0:N), KQ(0:N)
       REAL(8) :: XP(0:N), YP(0:N), XQ(0:N), YQ(0:N), U(0:N), V(0:N)
@@ -8155,6 +8187,9 @@
             END IF
         END IF
 
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
+
       IF ( IJG ) THEN
           LBP = LB(1); LBQ = LB(2)
           UBP = UB(1); UBQ = UB(2)
@@ -8164,10 +8199,10 @@
         END IF
 
       IF ( P.LT.LBP .OR. P.GT.UBP .OR. Q.LT.LBQ .OR. Q.GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,4I6,/1A,1L2,4I6/)') 'DXYDQ ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DXYDQ ERROR -- '// &
           'input index coordinates outside input array bounds', &
-          'DXYDQ ERROR -- PTILED,NP,P,LBP,UBP:',PTILED,NP,P,LBP,UBP, &
-          'DXYDQ ERROR -- QTILED,NQ,Q,LBQ,UBQ:',QTILED,NQ,Q,LBQ,UBQ
+          'DXYDQ ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
+          'DXYDQ ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8179,17 +8214,20 @@
 
       P0 = P
       Q0 = Q
-      IF ( MOD(ICLO,2).EQ.0 ) P0 = 1 + MOD(NP - 1 + MOD(P0, NP), NP)
-      IF ( MOD(ICLO,3).EQ.0 ) Q0 = 1 + MOD(NQ - 1 + MOD(Q0, NQ), NQ)
-      IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.NQ ) THEN
-          P0 = NP + 1 - P0
-          Q0 = 2*NQ - Q0 + 1
+      IF ( MOD(ICLO,2).EQ.0 ) &
+        P0 = PRANGE(1) + MOD(NP - 1 + MOD(P0 - PRANGE(1) + 1, NP), NP)
+      IF ( MOD(ICLO,3).EQ.0 ) &
+        Q0 = QRANGE(1) + MOD(NQ - 1 + MOD(Q0 - QRANGE(1) + 1, NQ), NQ)
+      IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.QRANGE(2) ) THEN
+          P0 = PRANGE(2) + PRANGE(1) - P0
+          Q0 = 2*QRANGE(2) - Q0 + 1
         END IF
-      IF ( P0.LT.1 .OR. P0.GT.NP .OR. Q0.LT.1 .OR. Q0.GT.NQ ) THEN
-          WRITE(0,'(/1A,/1A,3I6,/1A,3I6/)') 'DXYDQ ERROR -- '// &
+      IF ( P0.LT.PRANGE(1) .OR. P0.GT.PRANGE(2) .OR. &
+           Q0.LT.QRANGE(1) .OR. Q0.GT.QRANGE(2) ) THEN
+          WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DXYDQ ERROR -- '// &
           'shifted input index coordinates outside allowed range', &
-          'DXYDQ ERROR -- NP,P,P0:',NP,P,P0, &
-          'DXYDQ ERROR -- NQ,Q,Q0:',NQ,Q,Q0
+          'DXYDQ ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
+          'DXYDQ ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8205,16 +8243,16 @@
       IF ( MOD(ICLO,3).EQ.0 ) THEN
           J = N/2
         ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
-          IF (Q0.LE.N/2) THEN
-              J = Q0 - 1
+          IF (Q0-QRANGE(1).LT.N/2) THEN
+              J = Q0 - QRANGE(1)
             ELSE
               J = N/2
             END IF
         ELSE
-          IF (Q0.LE.N/2) THEN
-              J = Q0 - 1
-            ELSE IF (NQ-Q0.LT.N/2) THEN
-              J = N + Q0 - NQ
+          IF (Q0-QRANGE(1).LT.N/2) THEN
+              J = Q0 - QRANGE(1)
+            ELSE IF (QRANGE(2)-Q0.LT.N/2) THEN
+              J = N + Q0 - QRANGE(2)
             ELSE
               J = N/2
             END IF
@@ -8224,24 +8262,24 @@
       KQ(:) = Q + K(:,J)
       IF ( .NOT.QTILED ) THEN
           IF ( MOD(ICLO,3).EQ.0 ) THEN
-              KQ = 1 + MOD(NQ - 1 + MOD(KQ, NQ), NQ)
+              KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
             END IF
           IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.PTILED ) THEN
-              WHERE ( KQ.GT.NQ )
-                  KP = NP + 1 - KP
-                  KQ = 2*NQ - KQ + 1
+              WHERE ( KQ.GT.QRANGE(2) )
+                  KP = PRANGE(2) + PRANGE(1) - KP
+                  KQ = 2*QRANGE(2) - KQ + 1
                 END WHERE
             END IF
         END IF
 
       IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
            MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,7I6,/1A,1L2,7I6/)') 'DXYDQ ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DXYDQ ERROR -- '// &
           'stencil index coordinates outside array bounds', &
-          'DXYDQ ERROR -- PTILED,NP,P,P0,LBP,UBP,PMIN,PMAX:', &
-          PTILED,NP,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-          'DXYDQ ERROR -- QTILED,NQ,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-          QTILED,NQ,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+          'DXYDQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+          PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+          'DXYDQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+          QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8304,9 +8342,9 @@
         END IF !.NOT.LLG
       IF ( DEBUG ) THEN
           WRITE(FSTR,'(A,I0,A,I0,A)') &
-          '(/1A,7I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
+          '(/1A,9I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
           WRITE(*,TRIM(FSTR)) &
-          'DXYDQ -- NP,NQ,P,Q,P0,Q0,J:',NP,NQ,P,Q,P0,Q0,J, &
+          'DXYDQ -- PRANGE,QRANGE,P,Q,P0,Q0,J:',PRANGE,QRANGE,P,Q,P0,Q0,J, &
           'DXYDQ --   X0,  Y0:',X0,Y0, &
           'DXYDQ -- LON0,LAT0:',LON0,LAT0, &
           'DXYDQ --   C0,IHEM:',C0,REAL(IHEM), &
@@ -8438,8 +8476,10 @@
 #define TRAP_WARNING 1
 #define TRAP_ERROR   2
 #define TRAP_SINGLE_POINT_WIDE_CHANNEL TRAP_OFF
-      SUBROUTINE DFDPQ( N, K, C, IJG, ICLO, PTILED, QTILED, &
-                        NP, NQ, LB, UB, P, Q, &
+      SUBROUTINE DFDPQ( N, K, C, IJG, ICLO, &
+                        PTILED, QTILED, &
+                        PRANGE, QRANGE, &
+                        LB, UB, P, Q, &
                         F4, F8, DFDP, DFDQ, &
                         G4, G8, DGDP, DGDQ, &
                         H4, H8, DHDP, DHDQ, &
@@ -8453,7 +8493,7 @@
       LOGICAL, INTENT(IN)   :: IJG
       INTEGER, INTENT(IN)   :: ICLO
       LOGICAL, INTENT(IN)   :: PTILED, QTILED
-      INTEGER, INTENT(IN)   :: NP, NQ
+      INTEGER, INTENT(IN)   :: PRANGE(2), QRANGE(2)
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
       REAL(4), INTENT(IN),  OPTIONAL :: F4(LB(1):UB(1),LB(2):UB(2))
@@ -8480,7 +8520,7 @@
       CHARACTER(64) :: FSTR
       LOGICAL :: COMP_M, COMP_F, COMP_G, COMP_H, TYPE_R4
       LOGICAL :: COMP_CP, COMP_CQ
-      INTEGER :: LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
+      INTEGER :: NP, NQ, LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
       INTEGER :: ISTAT=0, I, J, L, II, JJ, NI, NJ, II0, IIN, JJ0, JJN
       INTEGER :: KP(0:N), KQ(0:N)
       LOGICAL :: MP(0:N), MQ(0:N)
@@ -8517,6 +8557,9 @@
           TYPE_R4 = PRESENT(H4)
         END IF
 
+      NP = PRANGE(2) - PRANGE(1) + 1
+      NQ = QRANGE(2) - QRANGE(1) + 1
+
       IF ( IJG ) THEN
           LBP = LB(1); LBQ = LB(2)
           UBP = UB(1); UBQ = UB(2)
@@ -8526,10 +8569,10 @@
         END IF
 
       IF ( P.LT.LBP .OR. P.GT.UBP .OR. Q.LT.LBQ .OR. Q.GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,4I6,/1A,1L2,4I6/)') 'DFDPQ ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DFDPQ ERROR -- '// &
           'input index coordinates outside input array bounds', &
-          'DFDPQ ERROR -- PTILED,NP,P,LBP,UBP:',PTILED,NP,P,LBP,UBP, &
-          'DFDPQ ERROR -- QTILED,NQ,Q,LBQ,UBQ:',QTILED,NQ,Q,LBQ,UBQ
+          'DFDPQ ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
+          'DFDPQ ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8541,17 +8584,20 @@
 
       P0 = P
       Q0 = Q
-      IF ( MOD(ICLO,2).EQ.0 ) P0 = 1 + MOD(NP - 1 + MOD(P0, NP), NP)
-      IF ( MOD(ICLO,3).EQ.0 ) Q0 = 1 + MOD(NQ - 1 + MOD(Q0, NQ), NQ)
-      IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.NQ ) THEN
-          P0 = NP + 1 - P0
-          Q0 = 2*NQ - Q0 + 1
+      IF ( MOD(ICLO,2).EQ.0 ) &
+        P0 = PRANGE(1) + MOD(NP - 1 + MOD(P0 - PRANGE(1) + 1, NP), NP)
+      IF ( MOD(ICLO,3).EQ.0 ) &
+        Q0 = QRANGE(1) + MOD(NQ - 1 + MOD(Q0 - QRANGE(1) + 1, NQ), NQ)
+      IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.QRANGE(2) ) THEN
+          P0 = PRANGE(2) + PRANGE(1) - P0
+          Q0 = 2*QRANGE(2) - Q0 + 1
         END IF
-      IF ( P0.LT.1 .OR. P0.GT.NP .OR. Q0.LT.1 .OR. Q0.GT.NQ ) THEN
-          WRITE(0,'(/1A,/1A,3I6,/1A,3I6/)') 'DFDPQ ERROR -- '// &
+      IF ( P0.LT.PRANGE(1) .OR. P0.GT.PRANGE(2) .OR. &
+           Q0.LT.QRANGE(1) .OR. Q0.GT.QRANGE(2) ) THEN
+          WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DFDPQ ERROR -- '// &
           'shifted input index coordinates outside allowed range', &
-          'DFDPQ ERROR -- NP,P,P0:',NP,P,P0, &
-          'DFDPQ ERROR -- NQ,Q,Q0:',NQ,Q,Q0
+          'DFDPQ ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
+          'DFDPQ ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8578,10 +8624,10 @@
       IF ( MOD(ICLO,2).EQ.0 ) THEN
           I = N/2
         ELSE
-          IF (P0.LE.N/2) THEN
-              I = P0 - 1
-            ELSE IF (NP-P0.LT.N/2) THEN
-              I = N + P0 - NP
+          IF (P0-PRANGE(1).LT.N/2) THEN
+              I = P0 - PRANGE(1)
+            ELSE IF (PRANGE(2)-P0.LT.N/2) THEN
+              I = N + P0 - PRANGE(2)
             ELSE
               I = N/2
             END IF
@@ -8591,18 +8637,18 @@
       KQ(:) = Q
       IF ( .NOT.PTILED ) THEN
           IF ( MOD(ICLO,2).EQ.0 ) THEN
-              KP = 1 + MOD(NP - 1 + MOD(KP, NP), NP)
+              KP = PRANGE(1) + MOD(NP - 1 + MOD(KP - PRANGE(1) + 1, NP), NP)
             END IF
         END IF
 
       IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
            MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,7I6,/1A,1L2,7I6/)') 'DFDPQ ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DFDPQ ERROR -- '// &
           'stencil index coordinates outside array bounds', &
-          'DFDPQ ERROR -- PTILED,NP,P,P0,LBP,UBP,PMIN,PMAX:', &
-          PTILED,NP,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-          'DFDPQ ERROR -- QTILED,NQ,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-          QTILED,NQ,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+          'DFDPQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+          PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+          'DFDPQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+          QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8616,7 +8662,7 @@
           IP(:) = P0 + K(:,I,N)
           JP(:) = Q0
           IF ( MOD(ICLO,2).EQ.0 ) THEN
-              IP = 1 + MOD(NP - 1 + MOD(IP, NP), NP)
+              IP = PRANGE(1) + MOD(NP - 1 + MOD(IP - PRANGE(1) + 1, NP), NP)
             END IF
         END IF
 
@@ -8727,16 +8773,16 @@
       IF ( MOD(ICLO,3).EQ.0 ) THEN
           J = N/2
         ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
-          IF (Q0.LE.N/2) THEN
-              J = Q0 - 1
+          IF (Q0-QRANGE(1).LT.N/2) THEN
+              J = Q0 - QRANGE(1)
             ELSE
               J = N/2
             END IF
         ELSE
-          IF (Q0.LE.N/2) THEN
-              J = Q0 - 1
-            ELSE IF (NQ-Q0.LT.N/2) THEN
-              J = N + Q0 - NQ
+          IF (Q0-QRANGE(1).LT.N/2) THEN
+              J = Q0 - QRANGE(1)
+            ELSE IF (QRANGE(2)-Q0.LT.N/2) THEN
+              J = N + Q0 - QRANGE(2)
             ELSE
               J = N/2
             END IF
@@ -8746,24 +8792,24 @@
       KQ(:) = Q + K(:,J,N)
       IF ( .NOT.QTILED ) THEN
           IF ( MOD(ICLO,3).EQ.0 ) THEN
-              KQ = 1 + MOD(NQ - 1 + MOD(KQ, NQ), NQ)
+              KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
             END IF
           IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.PTILED ) THEN
-              WHERE ( KQ.GT.NQ )
-                  KP = NP + 1 - KP
-                  KQ = 2*NQ - KQ + 1
+              WHERE ( KQ.GT.QRANGE(2) )
+                  KP = PRANGE(2) + PRANGE(1) - KP
+                  KQ = 2*QRANGE(2) - KQ + 1
                 END WHERE
             END IF
         END IF
 
       IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
            MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,7I6,/1A,1L2,7I6/)') 'DFDPQ ERROR -- '// &
+          WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DFDPQ ERROR -- '// &
           'stencil index coordinates outside array bounds', &
-          'DFDPQ ERROR -- PTILED,NP,P,P0,LBP,UBP,PMIN,PMAX:', &
-          PTILED,NP,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-          'DFDPQ ERROR -- QTILED,NQ,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-          QTILED,NQ,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+          'DFDPQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+          PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+          'DFDPQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+          QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
           ISTAT = 1
           IF ( PRESENT(RC) ) THEN
               RC = ISTAT
@@ -8777,12 +8823,12 @@
           IQ(:) = P0
           JQ(:) = Q0 + K(:,J,N)
           IF ( MOD(ICLO,3).EQ.0 ) THEN
-              JQ = 1 + MOD(NQ - 1 + MOD(JQ, NQ), NQ)
+              JQ = QRANGE(1) + MOD(NQ - 1 + MOD(JQ - QRANGE(1) + 1, NQ), NQ)
             END IF
           IF ( ICLO.EQ.ICLO_TRPL ) THEN
-              WHERE ( JQ.GT.NQ )
-                  IQ = NP + 1 - IQ
-                  JQ = 2*NQ - JQ + 1
+              WHERE ( JQ.GT.QRANGE(2) )
+                  IQ = PRANGE(2) + PRANGE(1) - IQ
+                  JQ = 2*QRANGE(2) - JQ + 1
                 END WHERE
             END IF
         END IF

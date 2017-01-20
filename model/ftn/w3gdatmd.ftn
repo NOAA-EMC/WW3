@@ -2322,6 +2322,7 @@
       LOGICAL, PARAMETER :: QTILED = .FALSE.
       LOGICAL, PARAMETER :: IJG    = .FALSE.
       LOGICAL, PARAMETER :: SPHERE = .FALSE.
+      INTEGER :: PRANGE(2), QRANGE(2)
       INTEGER :: LBI(2), UBI(2), LBO(2), UBO(2), ISTAT
       REAL   , ALLOCATABLE :: COSA(:,:)
 !/S      INTEGER, SAVE      :: IENT = 0
@@ -2379,6 +2380,8 @@
       ALLOCATE ( COSA(NY,NX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 #endif
+      PRANGE = (/ 1,NX/)
+      QRANGE = (/ 1,NY/)
       LBI = (/ 1, 1/)
       UBI = (/NY,NX/)
       LBO = (/ 1, 1/)
@@ -2386,7 +2389,7 @@
       SELECT CASE ( GTYPE )
         CASE ( RLGTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-                       NX, NY, LBI, UBI, LBO, UBO, XGRD, YGRD,         &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
                        NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &
                        DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
                        DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
@@ -2401,7 +2404,7 @@
             END IF
         CASE ( CLGTYPE )
           CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-                       NX, NY, LBI, UBI, LBO, UBO, XGRD, YGRD,         &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
                        NFD=NFD, SPHERE=SPHERE,                         &
                        DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
                        DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
