@@ -110,14 +110,15 @@ switches="$switches PR3_UQ_MPIBDI_SCRIPNC"
 esac
 
 
+#nmlopt="-N"
 for switch in $switches
 do
   for grdset in $grdsets
   do
     work=work_${switch}_${grdset}
-    $run_test -c $comp         -m $grdset -n $nproc -p $mpirun -s $switch -w $work $srcdir $testcase
+    $run_test -c $comp         -m $grdset -n $nproc -p $mpirun -s $switch $nmlopt -w $work $srcdir $testcase
     work=work_${switch}_${grdset}_esmf
-    $run_test -c $comp -C ESMF -m $grdset -n $nproc -p $mpirun -s $switch -w $work $srcdir $testcase
+    $run_test -c $comp -C ESMF -m $grdset -n $nproc -p $mpirun -s $switch $nmlopt -w $work $srcdir $testcase
   done
 done
 
