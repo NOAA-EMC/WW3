@@ -38,6 +38,7 @@
 !/    04-Feb-2014 : Switched clock to DATE_AND_TIME     ( version 4.18 )
 !/                  (A. Chawla and Mark Szyszka) 
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version X.YZ )
 !/                  (T. J. Campbell, NRL)
@@ -132,6 +133,7 @@
 !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version X.YZ )
 !/                  (T. J. Campbell, NRL)
@@ -3059,6 +3061,7 @@
 !/    27-May-2014 : Bug fix prf file name.              ( version 5.02 )
 !/    17-Sep-2014 : Read mod_def before inp file        ( version 5.03 )
 !/    17-Feb-2016 : New version from namelist use       ( version 5.11 )
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/    DD-MMM-YYYY : Modify input forcing flags to support coupler input.
 !/                  Add ESMF override for STIME & ETIME ( version X.YZ )
 !/                  (T. J. Campbell, NRL)

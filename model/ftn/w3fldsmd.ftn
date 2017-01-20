@@ -31,6 +31,7 @@
 !/     5-Mar-2012 : Cleanup of tidal analysis           ( version 4.09 ) 
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -89,7 +90,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            A. Chawla              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         DD-MMM-YYYY |
+!/                  | Last update :         26-Dec-2012 |
 !/                  +-----------------------------------+
 !/
 !/    15-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -104,7 +105,6 @@
 !/    04-Apr-2010 : Adding iceberg field.               ( version 3.14 )
 !/    09-Sep-2012 : Implement tidal cons. (F. Ardhuin ) ( version 4.09 ) 
 !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
-!/    DD-MMM-YYYY : Fixed error return section.         ( version X.YZ )
 !/
 !  1. Purpose :
 !
@@ -477,7 +477,7 @@
          '                  SHOULD BE : ',3(1X,I4)/)            
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/          &
          '     FILLER indicates use of tidal constituents',3I4, /&
-         '     For this the code should be compiled with TIDE switch'/)            
+         '     For this the code should be compiled with TIDE switch'/)
 !
 !/T 9000 FORMAT (' TEST W3FLDO : INXOUT : ',A/                     &
 !/T              '               IDFLD  : ',A/                     &
@@ -1607,6 +1607,7 @@
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/
 !  1. Purpose :
 !

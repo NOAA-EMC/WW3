@@ -76,6 +76,7 @@
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.09 )
 !/    04-May-2016 : Add IICEDISP                  GB&FA ( version 5.10 )
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/    DD-MMM-YYYY : Change to preprocessor macros to enable test output.
 !/                  (T.J. Campbell, NRL)                ( version X.YZ )
 !/    DD-MMM-YYYY : Change calculation of curvilinear grid metric and
@@ -2263,6 +2264,7 @@
 !/                  Due to precision issues, HPFAC and HQFAC revert
 !/                  to SX and SY in case of regular grids.
 !/                  (W. E. Rogers, NRL)                 ( version 3.14 )
+!/    DD-MMM-YYYY : Update to new W3GSRUMD APIs         ( version X.YZ )
 !/    DD-MMM-YYYY : Change calculation of curvilinear grid metric and
 !/                  derivatives calculations to use W3GSRUMD:W3CGDM.
 !/                  (T.J. Campbell, NRL)                ( version X.YZ )
