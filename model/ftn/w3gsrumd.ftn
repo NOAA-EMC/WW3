@@ -105,8 +105,9 @@
 !          -----------------------------------------------------------
 !          ! Define data
 !          TYPE(T_GSU) :: GSU
-!          INTEGER :: LBX, LBY                !source grid index lower-bounds
-!          INTEGER :: UBX, UBY                !source grid index upper-bounds
+!          LOGICAL :: IJG  = .TRUE.
+!          LOGICAL :: LLG  = .TRUE.
+!          LOGICAL :: ICLO = ICLO_NONE
 !          REAL, POINTER :: XS(:,:), YS(:,:)  !source grid coordinates
 !          REAL :: FS(:,:)                    !source field
 !          INTEGER :: NT                      !number of target points
@@ -118,7 +119,7 @@
 !          < ... >
 !
 !          ! Create grid-search-utility object for source grid
-!          GSU = W3GSUC( .TRUE., .FALSE., ICLO_NONE, XS, YS )
+!          GSU = W3GSUC( IJG, LLG, ICLO, XS, YS )
 !
 !          ! Interpolate source field to target points
 !          DO K=1,NT
@@ -343,11 +344,6 @@
         REAL(8) :: XMIN, YMIN, XMAX, YMAX ! bounding box of search domain
         TYPE(T_BKT), POINTER :: B(:,:) ! array of search buckets
         TYPE(T_NNS), POINTER :: NNB  ! nearest-neighbor bucket search indices object
-        ! curvilinear grid metrics of associated grid (r4 & r8)
-        REAL(4), POINTER :: HPFC4(:,:), HQFC4(:,:), GSQR4(:,:), ANGL4(:,:)
-        REAL(4), POINTER :: DPDX4(:,:), DPDY4(:,:), DQDX4(:,:), DQDY4(:,:)
-        REAL(8), POINTER :: HPFC8(:,:), HQFC8(:,:), GSQR8(:,:), ANGL8(:,:)
-        REAL(8), POINTER :: DPDX8(:,:), DPDY8(:,:), DQDX8(:,:), DQDY8(:,:)
       END TYPE CLASS_GSU
 !/
 !/ Private search bucket type
@@ -412,13 +408,17 @@
 !/ Module Interfaces
 !/
       INTERFACE W3GSUC
-        MODULE PROCEDURE W3GSUC_R4
-        MODULE PROCEDURE W3GSUC_R8
+        MODULE PROCEDURE W3GSUC_PTR_R4
+        MODULE PROCEDURE W3GSUC_PTR_R8
+        MODULE PROCEDURE W3GSUC_TGT_R4
+        MODULE PROCEDURE W3GSUC_TGT_R8
       END INTERFACE W3GSUC
       INTERFACE W3BBOX
         MODULE PROCEDURE W3BBOX_GSU
-        MODULE PROCEDURE W3BBOX_GRD_R4
-        MODULE PROCEDURE W3BBOX_GRD_R8
+        MODULE PROCEDURE W3BBOX_GRD_PTR_R4
+        MODULE PROCEDURE W3BBOX_GRD_PTR_R8
+        MODULE PROCEDURE W3BBOX_GRD_TGT_R4
+        MODULE PROCEDURE W3BBOX_GRD_TGT_R8
       END INTERFACE W3BBOX
       INTERFACE W3GFCL
         MODULE PROCEDURE W3GFCL_R4
@@ -530,7 +530,9 @@
 !/ =================================================================== /
 !/
 !/    FUNCTION W3GSUC( IJG, LLG, ICLO, XG, YG, &
-!/                     HPFC, HQFC, GSQR, ANGL, &
+!/                     NCB, NNP, DEBUG ) RESULT(GSU)
+!/      OR
+!/    FUNCTION W3GSUC( IJG, LLG, ICLO, LB, UB, XG, YG, &
 !/                     NCB, NNP, DEBUG ) RESULT(GSU)
 !/
 !/ =================================================================== /
@@ -556,8 +558,17 @@
 !       LLG     Log.   I   Logical flag indicating the coordinate system:
 !                          T = spherical lat/lon (degrees) and F = Cartesian.
 !       ICLO    Int.   I   Parameter indicating type of index space closure
+!
+!     Inputs (for W3GSUC_PTR):
 !       XG      R.A.   I   Pointer to array of x-coordinates of input grid.
 !       YG      R.A.   I   Pointer to array of y-coordinates of input grid.
+!
+!     Inputs (for W3GSUC_TGT):
+!       LB      I.A.   I   Lower bounds of XG and YG arrays
+!       UB      I.A.   I   Upper bounds of XG and YG arrays
+!       XG      R.A.   I   Array of x-coordinates of input grid.
+!       YG      R.A.   I   Array of y-coordinates of input grid.
+!
 !       NCB     Int.   I   OPTIONAL (approximate) number of cells (in each
 !                          direction) per search bucket. (default is NCB_DEFAULT)
 !                          NCB >= 1 is required.  NCB = 1 gives most efficient
@@ -604,87 +615,109 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      FUNCTION W3GSUC_R4( IJG, LLG, ICLO, XG, YG, &
-                          HPFC, HQFC, GSQR, ANGL, &
-                          DPDX, DPDY, DQDX, DQDY, &
-                          NCB, NNP, DEBUG ) RESULT(GSU)
-!     Single precision interface
+      FUNCTION W3GSUC_PTR_R4( IJG, LLG, ICLO, XG, YG, &
+                              NCB, NNP, DEBUG ) RESULT(GSU)
+!     Single precision pointer interface
       TYPE(T_GSU)         :: GSU
       LOGICAL, INTENT(IN) :: IJG
       LOGICAL, INTENT(IN) :: LLG
       INTEGER, INTENT(IN) :: ICLO
-      REAL(4), TARGET     :: XG(:,:), YG(:,:)
-      REAL(4), TARGET, OPTIONAL :: HPFC(:,:)
-      REAL(4), TARGET, OPTIONAL :: HQFC(:,:)
-      REAL(4), TARGET, OPTIONAL :: GSQR(:,:)
-      REAL(4), TARGET, OPTIONAL :: ANGL(:,:)
-      REAL(4), TARGET, OPTIONAL :: DPDX(:,:)
-      REAL(4), TARGET, OPTIONAL :: DPDY(:,:)
-      REAL(4), TARGET, OPTIONAL :: DQDX(:,:)
-      REAL(4), TARGET, OPTIONAL :: DQDY(:,:)
+      REAL(4), POINTER    :: XG(:,:)
+      REAL(4), POINTER    :: YG(:,:)
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
 
 !     Local parameters
+      INTEGER :: LB(2), UB(2)
 !/S      INTEGER, SAVE           :: IENT = 0
-!/S      CALL STRACE (IENT, 'W3GSUC_R4')
+!/S      CALL STRACE (IENT, 'W3GSUC_PTR_R4')
 !
-      GSU = GSU_CREATE( IJG, LLG, ICLO, XG4=XG, YG4=YG, &
+      LB(1) = LBOUND(XG,1); LB(2) = LBOUND(XG,2)
+      UB(1) = UBOUND(XG,1); UB(2) = UBOUND(XG,2)
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG4=XG, YG4=YG, &
                         NCB=NCB, NNP=NNP, DEBUG=DEBUG)
 
-      IF ( PRESENT(HPFC) ) GSU%PTR%HPFC4 => HPFC
-      IF ( PRESENT(HQFC) ) GSU%PTR%HQFC4 => HQFC
-      IF ( PRESENT(GSQR) ) GSU%PTR%GSQR4 => GSQR
-      IF ( PRESENT(ANGL) ) GSU%PTR%ANGL4 => ANGL
-      IF ( PRESENT(DPDX) ) GSU%PTR%DPDX4 => DPDX
-      IF ( PRESENT(DPDY) ) GSU%PTR%DPDY4 => DPDY
-      IF ( PRESENT(DQDX) ) GSU%PTR%DQDX4 => DQDX
-      IF ( PRESENT(DQDY) ) GSU%PTR%DQDY4 => DQDY
-
-      END FUNCTION W3GSUC_R4
+      END FUNCTION W3GSUC_PTR_R4
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      FUNCTION W3GSUC_R8( IJG, LLG, ICLO, XG, YG, &
-                          HPFC, HQFC, GSQR, ANGL, &
-                          DPDX, DPDY, DQDX, DQDY, &
-                          NCB, NNP, DEBUG ) RESULT(GSU)
-!     Single precision interface
+      FUNCTION W3GSUC_PTR_R8( IJG, LLG, ICLO, XG, YG, &
+                              NCB, NNP, DEBUG ) RESULT(GSU)
+!     Double precision pointer interface
       TYPE(T_GSU)         :: GSU
       LOGICAL, INTENT(IN) :: IJG
       LOGICAL, INTENT(IN) :: LLG
       INTEGER, INTENT(IN) :: ICLO
-      REAL(8), TARGET     :: XG(:,:), YG(:,:)
-      REAL(8), TARGET, OPTIONAL :: HPFC(:,:)
-      REAL(8), TARGET, OPTIONAL :: HQFC(:,:)
-      REAL(8), TARGET, OPTIONAL :: GSQR(:,:)
-      REAL(8), TARGET, OPTIONAL :: ANGL(:,:)
-      REAL(8), TARGET, OPTIONAL :: DPDX(:,:)
-      REAL(8), TARGET, OPTIONAL :: DPDY(:,:)
-      REAL(8), TARGET, OPTIONAL :: DQDX(:,:)
-      REAL(8), TARGET, OPTIONAL :: DQDY(:,:)
+      REAL(8), POINTER    :: XG(:,:)
+      REAL(8), POINTER    :: YG(:,:)
+      INTEGER, INTENT(IN), OPTIONAL :: NCB
+      INTEGER, INTENT(IN), OPTIONAL :: NNP
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
+
+!     Local parameters
+      INTEGER :: LB(2), UB(2)
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GSUC_PTR_R4')
+!
+      LB(1) = LBOUND(XG,1); LB(2) = LBOUND(XG,2)
+      UB(1) = UBOUND(XG,1); UB(2) = UBOUND(XG,2)
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG8=XG, YG8=YG, &
+                        NCB=NCB, NNP=NNP, DEBUG=DEBUG)
+
+      END FUNCTION W3GSUC_PTR_R8
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      FUNCTION W3GSUC_TGT_R4( IJG, LLG, ICLO, LB, UB, XG, YG, &
+                              NCB, NNP, DEBUG ) RESULT(GSU)
+!     Single precision target interface
+      TYPE(T_GSU)         :: GSU
+      LOGICAL, INTENT(IN) :: IJG
+      LOGICAL, INTENT(IN) :: LLG
+      INTEGER, INTENT(IN) :: ICLO
+      INTEGER, INTENT(IN) :: LB(2)
+      INTEGER, INTENT(IN) :: UB(2)
+      REAL(4), TARGET     :: XG(LB(1):UB(1),LB(2):UB(2))
+      REAL(4), TARGET     :: YG(LB(1):UB(1),LB(2):UB(2))
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
       LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
 
 !     Local parameters
 !/S      INTEGER, SAVE           :: IENT = 0
-!/S      CALL STRACE (IENT, 'W3GSUC_R8')
+!/S      CALL STRACE (IENT, 'W3GSUC_TGT_R4')
 !
-      GSU = GSU_CREATE( IJG, LLG, ICLO, XG8=XG, YG8=YG, &
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG4=XG, YG4=YG, &
                         NCB=NCB, NNP=NNP, DEBUG=DEBUG)
 
-      IF ( PRESENT(HPFC) ) GSU%PTR%HPFC8 => HPFC
-      IF ( PRESENT(HQFC) ) GSU%PTR%HQFC8 => HQFC
-      IF ( PRESENT(GSQR) ) GSU%PTR%GSQR8 => GSQR
-      IF ( PRESENT(ANGL) ) GSU%PTR%ANGL8 => ANGL
-      IF ( PRESENT(DPDX) ) GSU%PTR%DPDX8 => DPDX
-      IF ( PRESENT(DPDY) ) GSU%PTR%DPDY8 => DPDY
-      IF ( PRESENT(DQDX) ) GSU%PTR%DQDX8 => DQDX
-      IF ( PRESENT(DQDY) ) GSU%PTR%DQDY8 => DQDY
+      END FUNCTION W3GSUC_TGT_R4
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      FUNCTION W3GSUC_TGT_R8( IJG, LLG, ICLO, LB, UB, XG, YG, &
+                              NCB, NNP, DEBUG ) RESULT(GSU)
+!     Double precision target interface
+      TYPE(T_GSU)         :: GSU
+      LOGICAL, INTENT(IN) :: IJG
+      LOGICAL, INTENT(IN) :: LLG
+      INTEGER, INTENT(IN) :: ICLO
+      INTEGER, INTENT(IN) :: LB(2)
+      INTEGER, INTENT(IN) :: UB(2)
+      REAL(8), TARGET     :: XG(LB(1):UB(1),LB(2):UB(2))
+      REAL(8), TARGET     :: YG(LB(1):UB(1),LB(2):UB(2))
+      INTEGER, INTENT(IN), OPTIONAL :: NCB
+      INTEGER, INTENT(IN), OPTIONAL :: NNP
+      LOGICAL, INTENT(IN), OPTIONAL :: DEBUG
 
-      END FUNCTION W3GSUC_R8
+!     Local parameters
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3GSUC_TGT_R8')
+!
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG8=XG, YG8=YG, &
+                        NCB=NCB, NNP=NNP, DEBUG=DEBUG)
+
+      END FUNCTION W3GSUC_TGT_R8
 !/
 !/ End of W3GSUC ===================================================== /
 !/
@@ -960,6 +993,8 @@
 !/    SUBROUTINE W3BBOX( GSU, XMIN, YMIN, XMAX, YMAX )
 !/      OR
 !/    SUBROUTINE W3BBOX( IJG, LLG, ICLO, XG, YG, XMIN, YMIN, XMAX, YMAX )
+!/      OR
+!/    SUBROUTINE W3BBOX( IJG, LLG, ICLO, LB, UB, XG, YG, XMIN, YMIN, XMAX, YMAX )
 !/
 !/ =================================================================== /
 !/
@@ -976,7 +1011,7 @@
 !     Inputs (for W3BBOX_GSU):
 !       GSU     Type   I   Grid-search-utility object
 !
-!     Inputs (for W3BBOX_GRD):
+!     Inputs (for W3BBOX_GRD_PTR):
 !       IJG     Log.   I   Logical flag indicating ordering of input
 !                          coord. arrays: T = (NX,NY) and F = (NY,NX).
 !       LLG     Log.   I   Logical flag indicating the coordinate system:
@@ -984,6 +1019,17 @@
 !       ICLO    Int.   I   Parameter indicating type of index space closure
 !       XG      R.A.   I   Pointer to array of x-coordinates of input grid.
 !       YG      R.A.   I   Pointer to array of y-coordinates of input grid.
+!
+!     Inputs (for W3BBOX_GRD_TGT):
+!       IJG     Log.   I   Logical flag indicating ordering of input
+!                          coord. arrays: T = (NX,NY) and F = (NY,NX).
+!       LLG     Log.   I   Logical flag indicating the coordinate system:
+!                          T = spherical lat/lon (degrees) and F = Cartesian.
+!       ICLO    Int.   I   Parameter indicating type of index space closure
+!       LB      I.A.   I   Lower bounds of XG and YG arrays
+!       UB      I.A.   I   Upper bounds of XG and YG arrays
+!       XG      R.A.   I   Array of x-coordinates of input grid.
+!       YG      R.A.   I   Array of y-coordinates of input grid.
 !
 !     Outputs:
 !       XMIN    Int.   O   Minimum X-coord of bounding box
@@ -1043,57 +1089,123 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3BBOX_GRD_R4( IJG, LLG, ICLO, XG, YG, &
-                                XMIN, YMIN, XMAX, YMAX )
+      SUBROUTINE W3BBOX_GRD_PTR_R4( IJG, LLG, ICLO, XG, YG, &
+                                    XMIN, YMIN, XMAX, YMAX )
       LOGICAL, INTENT(IN)     :: IJG
       LOGICAL, INTENT(IN)     :: LLG
       INTEGER, INTENT(IN)     :: ICLO
-      REAL(4), TARGET         :: XG(:,:), YG(:,:)
+      REAL(4), POINTER        :: XG(:,:)
+      REAL(4), POINTER        :: YG(:,:)
       REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
 
 !     Local parameters
       TYPE(T_GSU) :: GSU
+      INTEGER :: LB(2), UB(2)
 !/S      INTEGER, SAVE           :: IENT = 0
-!/S      CALL STRACE (IENT, 'W3BBOX_GRD_R4')
+!/S      CALL STRACE (IENT, 'W3BBOX_GRD_PTR_R4')
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Set bounding box
 !
-      GSU = GSU_CREATE( IJG, LLG, ICLO, XG4=XG, YG4=YG, BBOX_ONLY=.TRUE. )
+      LB(1) = LBOUND(XG,1); LB(2) = LBOUND(XG,2)
+      UB(1) = UBOUND(XG,1); UB(2) = UBOUND(XG,2)
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG4=XG, YG4=YG, BBOX_ONLY=.TRUE. )
       XMIN = GSU%PTR%XMIN
       YMIN = GSU%PTR%YMIN
       XMAX = GSU%PTR%XMAX
       YMAX = GSU%PTR%YMAX
       CALL W3GSUD( GSU )
 
-      END SUBROUTINE W3BBOX_GRD_R4
+      END SUBROUTINE W3BBOX_GRD_PTR_R4
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      SUBROUTINE W3BBOX_GRD_R8( IJG, LLG, ICLO, XG, YG, &
-                                XMIN, YMIN, XMAX, YMAX )
+      SUBROUTINE W3BBOX_GRD_PTR_R8( IJG, LLG, ICLO, XG, YG, &
+                                    XMIN, YMIN, XMAX, YMAX )
       LOGICAL, INTENT(IN)     :: IJG
       LOGICAL, INTENT(IN)     :: LLG
       INTEGER, INTENT(IN)     :: ICLO
-      REAL(8), TARGET         :: XG(:,:), YG(:,:)
+      REAL(8), POINTER        :: XG(:,:)
+      REAL(8), POINTER        :: YG(:,:)
       REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
 
 !     Local parameters
       TYPE(T_GSU) :: GSU
+      INTEGER :: LB(2), UB(2)
 !/S      INTEGER, SAVE           :: IENT = 0
-!/S      CALL STRACE (IENT, 'W3BBOX_GRD_R8')
+!/S      CALL STRACE (IENT, 'W3BBOX_GRD_PTR_R8')
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Set bounding box
 !
-      GSU = GSU_CREATE( IJG, LLG, ICLO, XG8=XG, YG8=YG, BBOX_ONLY=.TRUE. )
+      LB(1) = LBOUND(XG,1); LB(2) = LBOUND(XG,2)
+      UB(1) = UBOUND(XG,1); UB(2) = UBOUND(XG,2)
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG8=XG, YG8=YG, BBOX_ONLY=.TRUE. )
       XMIN = GSU%PTR%XMIN
       YMIN = GSU%PTR%YMIN
       XMAX = GSU%PTR%XMAX
       YMAX = GSU%PTR%YMAX
       CALL W3GSUD( GSU )
 
-      END SUBROUTINE W3BBOX_GRD_R8
+      END SUBROUTINE W3BBOX_GRD_PTR_R8
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      SUBROUTINE W3BBOX_GRD_TGT_R4( IJG, LLG, ICLO, LB, UB, XG, YG, &
+                                    XMIN, YMIN, XMAX, YMAX )
+      LOGICAL, INTENT(IN)     :: IJG
+      LOGICAL, INTENT(IN)     :: LLG
+      INTEGER, INTENT(IN)     :: ICLO
+      INTEGER, INTENT(IN)     :: LB(2), UB(2)
+      REAL(4), TARGET         :: XG(LB(1):UB(1),LB(2):UB(2))
+      REAL(4), TARGET         :: YG(LB(1):UB(1),LB(2):UB(2))
+      REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
+
+!     Local parameters
+      TYPE(T_GSU) :: GSU
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3BBOX_GRD_TGT_R4')
+!
+! -------------------------------------------------------------------- /
+! 1.  Set bounding box
+!
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG4=XG, YG4=YG, BBOX_ONLY=.TRUE. )
+      XMIN = GSU%PTR%XMIN
+      YMIN = GSU%PTR%YMIN
+      XMAX = GSU%PTR%XMAX
+      YMAX = GSU%PTR%YMAX
+      CALL W3GSUD( GSU )
+
+      END SUBROUTINE W3BBOX_GRD_TGT_R4
+!/
+!/ ------------------------------------------------------------------- /
+!/
+      SUBROUTINE W3BBOX_GRD_TGT_R8( IJG, LLG, ICLO, LB, UB, XG, YG, &
+                                    XMIN, YMIN, XMAX, YMAX )
+      LOGICAL, INTENT(IN)     :: IJG
+      LOGICAL, INTENT(IN)     :: LLG
+      INTEGER, INTENT(IN)     :: ICLO
+      INTEGER, INTENT(IN)     :: LB(2), UB(2)
+      REAL(8), TARGET         :: XG(LB(1):UB(1),LB(2):UB(2))
+      REAL(8), TARGET         :: YG(LB(1):UB(1),LB(2):UB(2))
+      REAL(8), INTENT(OUT)    :: XMIN, YMIN, XMAX, YMAX
+
+!     Local parameters
+      TYPE(T_GSU) :: GSU
+!/S      INTEGER, SAVE           :: IENT = 0
+!/S      CALL STRACE (IENT, 'W3BBOX_GRD_TGT_R8')
+!
+! -------------------------------------------------------------------- /
+! 1.  Set bounding box
+!
+      GSU = GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG8=XG, YG8=YG, BBOX_ONLY=.TRUE. )
+      XMIN = GSU%PTR%XMIN
+      YMIN = GSU%PTR%YMIN
+      XMAX = GSU%PTR%XMAX
+      YMAX = GSU%PTR%YMAX
+      CALL W3GSUD( GSU )
+
+      END SUBROUTINE W3BBOX_GRD_TGT_R8
 !/
 !/ End of W3BBOX ===================================================== /
 !/
@@ -6856,17 +6968,19 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      FUNCTION GSU_CREATE( IJG, LLG, ICLO, XG4, YG4, XG8, YG8, &
+      FUNCTION GSU_CREATE( IJG, LLG, ICLO, LB, UB, XG4, YG4, XG8, YG8, &
                            BBOX_ONLY, NCB, NNP, DEBUG ) RESULT(GSU)
 !     *** INTERNAL SUBROUTINE ***
       TYPE(T_GSU)         :: GSU
       LOGICAL, INTENT(IN) :: IJG
       LOGICAL, INTENT(IN) :: LLG
       INTEGER, INTENT(IN) :: ICLO
-      REAL(4), TARGET, OPTIONAL     :: XG4(:,:)
-      REAL(4), TARGET, OPTIONAL     :: YG4(:,:)
-      REAL(8), TARGET, OPTIONAL     :: XG8(:,:)
-      REAL(8), TARGET, OPTIONAL     :: YG8(:,:)
+      INTEGER, INTENT(IN) :: LB(2)
+      INTEGER, INTENT(IN) :: UB(2)
+      REAL(4), TARGET, OPTIONAL     :: XG4(LB(1):UB(1),LB(2):UB(2))
+      REAL(4), TARGET, OPTIONAL     :: YG4(LB(1):UB(1),LB(2):UB(2))
+      REAL(8), TARGET, OPTIONAL     :: XG8(LB(1):UB(1),LB(2):UB(2))
+      REAL(8), TARGET, OPTIONAL     :: YG8(LB(1):UB(1),LB(2):UB(2))
       LOGICAL, INTENT(IN), OPTIONAL :: BBOX_ONLY
       INTEGER, INTENT(IN), OPTIONAL :: NCB
       INTEGER, INTENT(IN), OPTIONAL :: NNP
@@ -6896,29 +7010,15 @@
         END IF
 
       IF (IJG) THEN
-          IF (TYPE_R4) THEN
-              LBX = LBOUND(XG4,1)
-              LBY = LBOUND(XG4,2)
-              UBX = UBOUND(XG4,1)
-              UBY = UBOUND(XG4,2)
-            ELSE
-              LBX = LBOUND(XG8,1)
-              LBY = LBOUND(XG8,2)
-              UBX = UBOUND(XG8,1)
-              UBY = UBOUND(XG8,2)
-            END IF
+          LBX = LB(1)
+          LBY = LB(2)
+          UBX = UB(1)
+          UBY = UB(2)
         ELSE
-          IF (TYPE_R4) THEN
-              LBX = LBOUND(XG4,2)
-              LBY = LBOUND(XG4,1)
-              UBX = UBOUND(XG4,2)
-              UBY = UBOUND(XG4,1)
-            ELSE
-              LBX = LBOUND(XG8,2)
-              LBY = LBOUND(XG8,1)
-              UBX = UBOUND(XG8,2)
-              UBY = UBOUND(XG8,1)
-            END IF
+          LBX = LB(2)
+          LBY = LB(1)
+          UBX = UB(2)
+          UBY = UB(1)
         END IF
       NX = UBX - LBX + 1
       NY = UBY - LBY + 1
@@ -6988,12 +7088,6 @@
       NULLIFY( PTR%NNP )
       NULLIFY( PTR%B )
       NULLIFY( PTR%NNB )
-      NULLIFY( PTR%HPFC4 )
-      NULLIFY( PTR%HQFC4 )
-      NULLIFY( PTR%GSQR4 )
-      NULLIFY( PTR%HPFC8 )
-      NULLIFY( PTR%HQFC8 )
-      NULLIFY( PTR%GSQR8 )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create nearest-neighbor point search object
