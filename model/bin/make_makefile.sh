@@ -53,6 +53,14 @@
     exit 1
   fi
 
+  os=`uname -s 2>/dev/null`
+  if [ "$os" = "AIX" ]
+  then
+    ar_cmd="ar -X32_64 rv"
+  else
+    ar_cmd="ar rv"
+  fi
+
 # 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ -d $main_dir ]
@@ -69,14 +77,16 @@
   fi
   cd $temp_dir
 
+# 1.e Create makefile with header  - - - - - - - - - - - - - - - - - - - - - -
+
+  echo '# -------------------------'              > makefile
+  echo '# WAVEWATCH III makefile   '             >> makefile
+  echo '# -------------------------'             >> makefile
+
 # --------------------------------------------------------------------------- #
 # 2. Part 1, subroutine dependencies                                          #
 # --------------------------------------------------------------------------- #
 # 2.a File ID
-
-  echo ' '                                        > makefile
-  echo '# WAVEWATCH III executables'             >> makefile
-  echo '# -------------------------'             >> makefile
 
   rm -f filelist.tmp
 
@@ -781,9 +791,14 @@
 
 # 2.c Make makefile and file list  - - - - - - - - - - - - - - - - - - - - - -
 
+  echo ' '                                       >> makefile
+  echo '# WAVEWATCH III executables'             >> makefile
+  echo '# -------------------------'             >> makefile
+
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf 
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
+  progs="$progs ww3_multi_esmf"
 
   for prog in $progs
   do
@@ -846,8 +861,16 @@
                  IO="$IO w3iosfmd w3partmd"
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd $cplcode"
                 aux="$aux w3namlmd" ;;
-    ww3_multi) IDstring='Multi-grid shell'
-               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd'
+    ww3_multi|ww3_multi_esmf)
+               if [ "$prog" = "ww3_multi" ]
+               then
+                 IDstring='Multi-grid shell'
+                 core=''
+               else
+                 IDstring='Multi-grid ESMF module'
+                 core='wmesmfmd'
+               fi
+               core="$core wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd"
                core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr"
@@ -861,7 +884,7 @@
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
                   aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
-                fi 
+                fi
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
@@ -977,10 +1000,18 @@
                 aux='constants w3servmd w3timemd' ;;
     esac
 
-    d_string='$(aPe)/'"$prog"' : $(aPo)/'
-
-    files="$aux $core $data $prop $source $IO $prog"
-    filesl="$prog $data $core $prop $source $IO $aux"
+    # if esmf is included in program name, then
+    # the target is compile and create archive
+    if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+    then
+      d_string="$prog"' : $(aPo)/'
+      files="$aux $core $data $prop $source $IO"
+      filesl="$data $core $prop $source $IO $aux"
+    else
+      d_string='$(aPe)/'"$prog"' : $(aPo)/'
+      files="$aux $core $data $prop $source $IO $prog"
+      filesl="$prog $data $core $prop $source $IO $aux"
+    fi
 
     echo "# $IDstring"                           >> makefile
     echo ' '                                     >> makefile
@@ -989,12 +1020,27 @@
       echo "$d_string$file.o"                    >> makefile
       if [ -z "`echo $file | grep scrip 2>/dev/null`" ]
       then
-      echo "$file"                               >> filelist.tmp
+        echo "$file"                             >> filelist.tmp
       fi
     done
 
-    echo '	@$(aPb)/link '"$filesl"          >> makefile
-    echo ' '                                     >> makefile
+    # if esmf is included in program name, then
+    # the target is compile and create archive
+    if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+    then
+      lib=lib$prog.a
+      objs=""
+      for file in $filesl
+      do
+        objs="$objs $file.o"
+      done
+      echo "	@cd \$(aPo); $ar_cmd $lib $objs" >> makefile
+      echo ' '                                   >> makefile
+    else
+      echo '	@$(aPb)/link '"$filesl"          >> makefile
+      echo ' '                                   >> makefile
+    fi
+
   done
 
   sort -u filelist.tmp                            > filelist
@@ -1087,7 +1133,7 @@
                W3SXXXMD \
               CONSTANTS W3SERVMD W3TIMEMD W3ARRYMD W3DISPMD W3GSRUMD W3TRIAMD \
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
-               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD \
+               WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD \
                w3getmem WW_cc CMP_COMM W3OACPMD W3AGCMMD W3OGCMMD W3NAMLMD
       do
       case $mod in
@@ -1187,6 +1233,7 @@
          'WMUNITMD'     ) modtest=wmunitmd.o ;;
          'WMIOPOMD'     ) modtest=wmiopomd.o ;;
          'WMSCRPMD'     ) modtest=wmscrpmd.o ;;
+         'WMESMFMD'     ) modtest=wmesmfmd.o ;;
          'w3getmem'     ) modtest=w3getmem.o ;;
          'WW_cc'        ) modtest=ww.comm.o  ;;
          'CMP_COMM'     ) modtest=cmp.comm.o  ;;

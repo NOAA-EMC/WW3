@@ -459,16 +459,16 @@
 ! IVER(1)=IVER(4), IVER(2)=IVER(3)
 ! JVER(1)=JVER(2), JVER(3)=JVER(4)
 
- ! point 1:
+! point 1:
                   FLAGOK = ( ABS(GRIDS(J)%MAPSTA(JVER(1),IVER(1))).GE.1 .OR.  &
                                  RW(1).LT.0.05 ) .AND.      &
- ! point 2:
+! point 2:
                            ( ABS(GRIDS(J)%MAPSTA(JVER(2),IVER(2))).GE.1 .OR.  &
                                     RW(2).LT.0.05 ) .AND.      &
- ! point 4:
+! point 4:
                            ( ABS(GRIDS(J)%MAPSTA(JVER(4),IVER(4))).GE.1 .OR.  &
                                  RW(4)   .LT.0.05 ) .AND.      &
- ! point 3:
+! point 3:
                            ( ABS(GRIDS(J)%MAPSTA(JVER(3),IVER(3))).GE.1 .OR.  &
                                     RW(3)   .LT.0.05 ) 
 !
@@ -982,6 +982,8 @@
 !/                  (K. R. Lind, NRL)
 !/    05-Aug-2013 : Change PR2/3 to UQ/UNO in distances.( version 4.12 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
+!/    20-Jan-2017 : Fix SCRIP ALLWGTS allocation error and improve
+!/                  SCRIPNC SCRIP_STOP report and exit. ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -1166,7 +1168,6 @@
 !/SCRIP      LOGICAL              :: L_MASTER = .TRUE.
 !/SCRIP      LOGICAL              :: L_READ   = .FALSE.
 !/SCRIP      LOGICAL              :: L_WRITE = .FALSE.
-!/SCRIP      LOGICAL              :: L_STOP  = .FALSE.
 !/SCRIPNC      INTEGER              :: IMPROC_ASSIGN
 !/SCRIPNC      CHARACTER(LEN=80)    :: interp_file1, interp_file_test
 !/SCRIPNC      CHARACTER(LEN=3)     :: cdst, csrc
@@ -1181,6 +1182,8 @@
                                                      ! indicates that SCRIP code has
                                                      ! been compiled with netCDF 
                                                      ! into WW3 
+      LOGICAL                 :: L_STOP = .FALSE.    ! true if SCRIPNC switch is set
+                                                     ! and STOP_SCRIP file exists
       LOGICAL                 :: T38=.FALSE.         ! true if T38 switch is set. 
                                                      ! This logical is necessary 
                                                      ! since it isn't possible to 
@@ -1220,7 +1223,7 @@
 !/T38      OPEN (NMYOUT, FILE=CMYOUT, STATUS="REPLACE")
 !/S      CALL STRACE (IENT, 'WMGHGH')
 !
-!/MPI    CALL MPI_BARRIER(MPI_COMM_WORLD, IERR_MPI)
+!/MPI    CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
 !/T38         CALL DATE_AND_TIME ( CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
 !/T38         BEG_TIME(1) = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
 !/T38         WRITE(NMYOUT,*) "WMGHGH: START: 0 MSEC"
@@ -1519,7 +1522,7 @@
 !/MPIBDI                  IF ( IM .NE. IMPROC ) THEN
 !/MPIBDI                     NRQ = NRQ + 1
 !/MPIBDI                     TAG = NMPROC * IM + IMPROC
-!/MPIBDI                     CALL MPI_IRECV ( MAPBDI(1,NX_BEG(IM)), NX_SIZE(IM), MPI_REAL, IM - 1, TAG, MPI_COMM_WORLD, &
+!/MPIBDI                     CALL MPI_IRECV ( MAPBDI(1,NX_BEG(IM)), NX_SIZE(IM), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
 !/MPIBDI                                      IRQ(NRQ), IERR_MPI )
 !/MPIBDI                  END IF
 !/MPIBDI               END DO
@@ -1527,12 +1530,12 @@
 !/MPIBDI                  IF ( IM .NE. IMPROC ) THEN
 !/MPIBDI                     NRQ = NRQ + 1
 !/MPIBDI                     TAG = NMPROC * IMPROC + IM
-!/MPIBDI                     CALL MPI_ISEND( MAPBDI(1,NX_BEG(IMPROC)), NX_SIZE(IMPROC), MPI_REAL, IM - 1, TAG, MPI_COMM_WORLD, &
+!/MPIBDI                     CALL MPI_ISEND( MAPBDI(1,NX_BEG(IMPROC)), NX_SIZE(IMPROC), MPI_REAL, IM - 1, TAG, MPI_COMM_MWAVE, &
 !/MPIBDI                                     IRQ(NRQ), IERR_MPI )
 !/MPIBDI                  END IF
 !/MPIBDI               END DO
 !/MPIBDI               CALL MPI_WAITALL( NRQ, IRQ, MPI_STATUS_IGNORE, IERR_MPI )
-!/MPIBDI               CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR_MPI )
+!/MPIBDI               CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 
                IF(IMPROC.EQ.NMPERR)WRITE(MDSE,'(A/)') &
                '  Finished generating map with distances to boundary.'
@@ -1620,7 +1623,7 @@
 !/SCRIPNC            END IF
 !/SCRIPNC         END DO
 !/SCRIPNC      END DO
-!/MPI              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_WORLD, IERR_MPI)
+!/MPI              IF (LSCRIPNC) CALL MPI_BARRIER(MPI_COMM_MWAVE, IERR_MPI)
 
       LOWRANK_GRID : DO GDST=1, NRGRD
 
@@ -1656,7 +1659,8 @@
 !   to check the closure type.
  
             IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-              IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMGHGH IS'// &
+              IF ( IMPROC.EQ.NMPERR ) &
+              WRITE(MDSE,*)'SUBROUTINE WMGHGH IS'// &
               ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
               CALL EXTCDE ( 1 )
             END IF
@@ -1700,7 +1704,7 @@
 
 !/SCRIP            NJDST=NY
 !/SCRIP            NIDST=NX
-!/SCRIP            ALLOCATE ( ALLWGTS(MAXVAL(GRDHGH)),STAT=ISTAT ) 
+!/SCRIP            ALLOCATE ( ALLWGTS(MAXVAL(GRDHGH)), STAT=ISTAT ) 
 !/SCRIP            CHECK_ALLOC_STATUS ( ISTAT )
 
 ! Next, we loop through the src grids for the dst grid that we are working on.
@@ -1876,13 +1880,46 @@
 !/T38                      END_TIME = ((DATE_TIME(5)*60 + DATE_TIME(6))*60 + DATE_TIME(7))*1000 + DATE_TIME(8)
 !/T38                      ELAPSED_TIME = END_TIME - BEG_TIME(3)
 !/T38                      WRITE(NMYOUT,*) "WMGHGH, LOOP JJ, GSRC= ", GSRC, " TOOK ", ELAPSED_TIME, " MSEC"
-!/SCRIP            END DO   !            DO JJ=1, GRDHGH(GDST,0) 
+
+!/SCRIP            END DO ! DO JJ=1, GRDHGH(GDST,0) 
+!/SCRIP            GSRC = -999 ! unset grid
+
+! If SCRIPNC and L_STOP, then cycle LOWRANK_GRID loop and deallocate
+! storage associated with dst grid.
+
 !/SCRIPNC            IF (L_STOP) THEN
-!/SCRIPNC                DEALLOCATE ( MAPTST, INFLND, STAT=ISTAT )
-!/SCRIPNC                CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                IF ( ALLOCATED(MAPTST) ) THEN
+!/SCRIPNC                    DEALLOCATE ( MAPTST, STAT=ISTAT )
+!/SCRIPNC                    CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                  END IF
+!/SCRIPNC                IF ( ALLOCATED(INFLND) ) THEN
+!/SCRIPNC                    DEALLOCATE ( INFLND, STAT=ISTAT )
+!/SCRIPNC                    CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                  END IF
+!/SCRIPNC                IF ( ALLOCATED(ALLWGTS) ) THEN
+!/SCRIPNC                    DO JJ=1, GRDHGH(GDST,0) 
+!/SCRIPNC                        GSRC = GRDHGH(GDST,JJ)
+!/SCRIPNC                        IF ( ASSOCIATED(ALLWGTS(GSRC)%WGTDATA) ) THEN
+!/SCRIPNC                            DO KDST=1, DST_GRID_SIZE
+!/SCRIPNC                                IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%W) ) THEN
+!/SCRIPNC                                    DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%W, STAT=ISTAT )
+!/SCRIPNC                                    CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                                  END IF
+!/SCRIPNC                                IF ( ALLOCATED(ALLWGTS(GSRC)%WGTDATA(KDST)%K) ) THEN
+!/SCRIPNC                                    DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA(KDST)%K, STAT=ISTAT )
+!/SCRIPNC                                    CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                                  END IF
+!/SCRIPNC                              END DO
+!/SCRIPNC                            DEALLOCATE ( ALLWGTS(GSRC)%WGTDATA, STAT=ISTAT )
+!/SCRIPNC                            CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                            NULLIFY ( ALLWGTS(GSRC)%WGTDATA )
+!/SCRIPNC                          END IF
+!/SCRIPNC                      END DO
+!/SCRIPNC                    DEALLOCATE ( ALLWGTS, STAT=ISTAT )
+!/SCRIPNC                    CHECK_DEALLOC_STATUS ( ISTAT )
+!/SCRIPNC                  END IF
+!/SCRIPNC                CYCLE LOWRANK_GRID
 !/SCRIPNC              END IF
-!/SCRIPNC            IF (L_STOP) CYCLE ! cycle out of LOWRANK_GRID loop
-!/SCRIP            GSRC   = -999 ! unset grid
 
 !################################################################
 ! End new block of code: Calculate weights by calling SCRIP interface
@@ -3142,12 +3179,17 @@
 !/T38         WRITE(NMYOUT,*) "WMGHGH, LOOP LOWRANK_GRID, GDST= ", GDST, " TOOK ", ELAPSED_TIME, " MSEC"
       END DO LOWRANK_GRID
 
-!/SCRIPNC !If L_STOP is set, we are done
-!/SCRIPNC  IF (L_STOP) THEN
-!/SCRIPNC    WRITE (MDSE,*)'Stopping after writing remap files'
-!/SCRIPNC    CALL EXTCDE(0) ! not a true error, so code is zero
-!/SCRIPNC  END IF
-!
+! If SCRIPNC and L_STOP, then we are done
+      IF ( LSCRIPNC .AND. L_STOP ) THEN
+          ! WW3 processes wait here till all have finished
+!/MPI          CALL MPI_BARRIER( MPI_COMM_MWAVE, IERR_MPI )
+          ! This is not a true error, so exit code is zero
+          WRITE( MDSE, '(A,I4.4,A)' ) 'IMPROC=',IMPROC, &
+            ': STOP_SCRIP option invoked: '// &
+            'non-error exit after writing remap netcdf files'
+          CALL EXTCDE( 0 )
+        END IF
+
       DEALLOCATE ( I1, I2, I3, I4, STAT=ISTAT )
       CHECK_DEALLOC_STATUS ( ISTAT )
 !/MPIBDI      DEALLOCATE ( NX_SIZE, IRQ, MSTAT, STAT=ISTAT )

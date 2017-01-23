@@ -88,6 +88,7 @@
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -144,6 +145,7 @@
 !/ ------------------------------------------------------------------- /
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, ONLY: EXTCDE
 !
       IMPLICIT NONE
 !/
@@ -258,11 +260,11 @@
 !
   800 CONTINUE
       WRITE (NDSE,900)
-      STOP
+      CALL EXTCDE ( ISTAT )
 !
   801 CONTINUE
       WRITE (NDSE,901) ISTAT
-      STOP
+      CALL EXTCDE ( ISTAT )
 !
 ! Formats
 !
@@ -293,6 +295,7 @@
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -303,6 +306,7 @@
 !/ ------------------------------------------------------------------- /
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, ONLY: EXTCDE
 !
       IMPLICIT NONE
 !/
@@ -416,11 +420,11 @@
 !
   800 CONTINUE
       WRITE (NDSE,900)
-      STOP
+      CALL EXTCDE ( ISTAT )
 !
   801 CONTINUE
       WRITE (NDSE,901) ISTAT
-      STOP
+      CALL EXTCDE ( ISTAT )
 !
 ! Formats
 !
@@ -453,6 +457,7 @@
 !/                  (T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -467,6 +472,7 @@
 !/ ------------------------------------------------------------------- /
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, ONLY: EXTCDE
 !
       IMPLICIT NONE
 !/
@@ -572,7 +578,7 @@
 !
   800 CONTINUE
       WRITE (NDSE,900) ISTAT
-      STOP
+      CALL EXTCDE ( ISTAT )
 !
 ! Formats
 !
@@ -600,6 +606,7 @@
 !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -610,6 +617,7 @@
 !/ ------------------------------------------------------------------- /
 !/
 !/S      USE W3SERVMD, ONLY: STRACE
+      USE W3SERVMD, ONLY: EXTCDE
 !
       IMPLICIT NONE
 !/
@@ -715,7 +723,7 @@
 !
   800 CONTINUE
       WRITE (NDSE,900) ISTAT
-      STOP
+      CALL EXTCDE ( ISTAT )
 !
 ! Formats
 !

@@ -185,9 +185,11 @@
   if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
+    cdf_programs="$cdf_programs ww3_multi_esmf"
     cdf_programs="$cdf_programs ww3_sbs1"
   else
     reg_programs="$reg_programs ww3_multi"
+    reg_programs="$reg_programs ww3_multi_esmf"
     reg_programs="$reg_programs ww3_sbs1"
   fi
 
@@ -561,6 +563,54 @@ EOF
       fi
       export oasis_mod
 
+      # if esmf is included in program name, then the compile
+      # requires DIST and NOPA switches and the ESMFMKFILE is
+      # processed to get required ESMF compile options
+      if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+      then
+        if [ -z "`grep DIST $switch_file`" ] 
+        then
+          echo ' '
+          echo "*** DIST switch must be set when compiling with ESMF ***"
+          echo ' '
+          exit 1
+        fi
+        if [ -z "`grep NOPA $switch_file`" ] 
+        then
+          echo ' '
+          echo "*** NOPA switch must be set when compiling with ESMF ***"
+          echo ' '
+          exit 1
+        fi
+        ESMF_F90COMPILEPATHS=
+        if [ $ESMFMKFILE ]
+        then
+          if [ ! -r $ESMFMKFILE ]
+          then
+            echo ' '
+            echo "*** ESMFMKFILE does not exist or is not readable: $ESMFMKFILE ***"
+            echo ' '
+            exit 1
+          fi
+          ESMF_F90COMPILEPATHS=`cat $ESMFMKFILE | grep '^ *ESMF_F90COMPILEPATHS' | sed 's/^ *ESMF_F90COMPILEPATHS *=//g'`
+        else
+          echo ' '
+          echo "*** ESMFMKFILE must be defined when compiling with ESMF ***"
+          echo ' '
+          exit 1
+        fi
+      fi
+      export ESMF_F90COMPILEPATHS
+
+      # if esmf is included in program name, then
+      # the target is compile and create archive
+      if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+      then
+        target="$prog"
+      else
+        target="$aPe/$prog"
+      fi
+
       if [ ! -f $exec_type_file ] ; then
           touch $exec_type_file ; fi
 
@@ -577,7 +627,7 @@ EOF
 
       path_m=$main_dir/mod
       export path_m
-      if make -f makefile $aPe/$prog
+      if make -f makefile $target
       then
         echo ' '
       else
@@ -585,6 +635,28 @@ EOF
       fi
 
       echo "$prog $pres_type" >> $exec_type_file
+
+      # if esmf is included in program name, then create $main_dir/nuopc.mk
+      if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
+      then
+        mkfile=$main_dir/nuopc.mk
+        mod_dir=$main_dir/mod_DIST
+        obj_dir=$main_dir/obj_DIST
+        rm -f $mkfile
+        touch $mkfile
+        echo "#-----------------------------------------------"      >> $mkfile
+        echo "# NUOPC/ESMF self-describing build dependency"         >> $mkfile
+        echo "# makefile fragment for Wavewatch III"                 >> $mkfile
+        echo "#-----------------------------------------------"      >> $mkfile
+        echo "# component module name"                               >> $mkfile
+        echo "ESMF_DEP_FRONT := WMESMFMD"                            >> $mkfile
+        echo "# component module path"                               >> $mkfile
+        echo "ESMF_DEP_INCPATH := $main_dir/mod"                     >> $mkfile
+        echo "# component module objects"                            >> $mkfile
+        echo "ESMF_DEP_CMPL_OBJS := $obj_dir/lib$prog.a(wmesmfmd.o)" >> $mkfile
+        echo "# component object/archive list"                       >> $mkfile
+        echo "ESMF_DEP_LINK_OBJS := $obj_dir/lib$prog.a"             >> $mkfile
+      fi
 
     fi
 

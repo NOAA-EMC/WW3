@@ -1,4 +1,17 @@
 #include "w3macros.h"
+!/
+!/ ------------------------------------------------------------------- /
+!/ Macros for enabling test output
+!/
+#define TEST_W3GDATMD___disabled
+#define TEST_W3GDATMD_W3NMOD___disabled
+#define TEST_W3GDATMD_W3DIMX___disabled
+#define TEST_W3GDATMD_W3DIMS___disabled
+#define TEST_W3GDATMD_W3SETG___disabled
+#define TEST_W3GDATMD_W3GNTX___disabled
+#define TEST_W3GDATMD_W3DIMUG___disabled
+#define TEST_W3GDATMD_W3SETREF___disabled
+!/
 !/ ------------------------------------------------------------------- /
       MODULE W3GDATMD
 !/
@@ -63,6 +76,12 @@
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.09 )
 !/    04-May-2016 : Add IICEDISP                  GB&FA ( version 5.10 )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    20-Jan-2017 : Change to preprocessor macros to enable test output.
+!/                  (T.J. Campbell, NRL)                ( version 6.02 )
+!/    20-Jan-2017 : Change calculation of curvilinear grid metric and
+!/                  derivatives calculations to use W3GSRUMD:W3CGDM.
+!/                  (T.J. Campbell, NRL)                ( version 6.02 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -520,6 +539,8 @@
 !
 !  6. Switches :
 !
+!     See subroutine documentation.
+!
 !     !/PRn  Select propagation scheme
 !     !/SMC  UNO2 propagation on SMC grid.   
 !
@@ -533,7 +554,6 @@
 !     !/XXn
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 !  7. Source code :
 !
@@ -1095,7 +1115,6 @@
 !  9. Switches :
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 ! 10. Source code :
 !
@@ -1164,8 +1183,9 @@
         MPARS(I)%PINIT  = .FALSE.
 !/NL2        MPARS(I)%SNLPS%NDPTHS = 0
         END DO
-!
-!/T      WRITE (NDST,9000) NLOW, NGRIDS
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3NMOD)
+      WRITE (NDST,9000) NLOW, NGRIDS
+#endif
 !
       RETURN
 !
@@ -1177,10 +1197,10 @@
                '                    NUMBER = ',I10/)
  1003 FORMAT (/' *** ERROR W3NMOD : ILLEGAL NUMBER OF AUX GRIDS *** '/&
                '                    NUMBER = ',I10/)
-!
-!/T 9000 FORMAT (' TEST W3NMOD : SETTING UP FOR GRIDS ',I3,           &
-!/T              ' THROUGH ',I3)
-!
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3NMOD)
+ 9000 FORMAT (' TEST W3NMOD : SETTING UP FOR GRIDS ',I3,           &
+              ' THROUGH ',I3)
+#endif
 !/
 !/ End of W3NMOD ----------------------------------------------------- /
 !/
@@ -1262,7 +1282,6 @@
 !  9. Switches :
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 ! 10. Source code :
 !
@@ -1309,8 +1328,9 @@
           WRITE (NDSE,1004)
           CALL EXTCDE (4)
         END IF
-!
-!/T      WRITE (NDST,9000) IMOD, MX, MY, MSEA
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
+      WRITE (NDST,9000) IMOD, MX, MY, MSEA
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
@@ -1399,8 +1419,9 @@
 !/IC4       CHECK_ALLOC_STATUS ( ISTAT )
 !/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(18), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
-!/T      WRITE (NDST,9001)
-!
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
+      WRITE (NDST,9001)
+#endif
 !/REF1      GRIDS(IMOD)%REFLC(1:4,0:NSEA)=0.
 !/REF1      GRIDS(IMOD)%REFLD(:,:)=0
 !/IG1      GRIDS(IMOD)%IGPARS(:)=0.
@@ -1413,15 +1434,17 @@
       GRIDS(IMOD)%NX     = MX
       GRIDS(IMOD)%NY     = MY
       GRIDS(IMOD)%NSEA   = MSEA
-!
-!/T      WRITE (NDST,9002)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
+      WRITE (NDST,9002)
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Point to allocated arrays
 !
       CALL W3SETG ( IMOD, NDSE, NDST )
-!
-!/T      WRITE (NDST,9003)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
+      WRITE (NDST,9003)
+#endif
 !
       RETURN
 !
@@ -1436,11 +1459,12 @@
  1003 FORMAT (/' *** ERROR W3DIMX : ILLEGAL GRID DIMENSION(S) *** '/  &
                '                    INPUT = ',4I10 /)
  1004 FORMAT (/' *** ERROR W3DIMX : ARRAY(S) ALREADY ALLOCATED *** ')
-!
-!/T 9000 FORMAT (' TEST W3DIMX : MODEL ',I4,' DIM. AT ',2I5,I7)
-!/T 9001 FORMAT (' TEST W3DIMX : ARRAYS ALLOCATED')
-!/T 9002 FORMAT (' TEST W3DIMX : DIMENSIONS STORED')
-!/T 9003 FORMAT (' TEST W3DIMX : POINTERS RESET')
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
+ 9000 FORMAT (' TEST W3DIMX : MODEL ',I4,' DIM. AT ',2I5,I7)
+ 9001 FORMAT (' TEST W3DIMX : ARRAYS ALLOCATED')
+ 9002 FORMAT (' TEST W3DIMX : DIMENSIONS STORED')
+ 9003 FORMAT (' TEST W3DIMX : POINTERS RESET')
+#endif
 !/
 !/ End of W3DIMX ----------------------------------------------------- /
 !/
@@ -1511,7 +1535,6 @@
 !  9. Switches :
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 ! 10. Source code :
 !
@@ -1562,8 +1585,9 @@
 !
       MK2    = MK + 2
       MSPEC  = MK * MTH
-!
-!/T      WRITE (NDST,9000) IMOD, MTH, MK, MK2, MSPEC
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMS)
+      WRITE (NDST,9000) IMOD, MTH, MK, MK2, MSPEC
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
@@ -1597,15 +1621,17 @@
 !/ST4      CHECK_ALLOC_STATUS ( ISTAT )
 !
       SGRDS(IMOD)%SINIT  = .TRUE.
-!
-!/T      WRITE (NDST,9001)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMS)
+      WRITE (NDST,9001)
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Point to allocated arrays
 !
       CALL W3SETG ( IMOD, NDSE, NDST )
-!
-!/T      WRITE (NDST,9002)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMS)
+      WRITE (NDST,9002)
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 4.  Update counters in grid
@@ -1614,8 +1640,9 @@
       NK2    = MK + 2
       NTH    = MTH
       NSPEC  = MK * MTH
-!
-!/T      WRITE (NDST,9003)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMS)
+      WRITE (NDST,9003)
+#endif
 !
       RETURN
 !
@@ -1630,11 +1657,12 @@
  1003 FORMAT (/' *** ERROR W3DIMS : ILLEGAL GRID DIMENSION(S) *** '/  &
                '                    INPUT = ',4I10/)
  1004 FORMAT (/' *** ERROR W3DIMS : ARRAY(S) ALREADY ALLOCATED *** ')
-!
-!/T 9000 FORMAT (' TEST W3DIMS : MODEL ',I4,' DIM. AT ',3I5,I7)
-!/T 9001 FORMAT (' TEST W3DIMS : ARRAYS ALLOCATED')
-!/T 9002 FORMAT (' TEST W3DIMS : POINTERS RESET')
-!/T 9003 FORMAT (' TEST W3DIMS : DIMENSIONS STORED')
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMS)
+ 9000 FORMAT (' TEST W3DIMS : MODEL ',I4,' DIM. AT ',3I5,I7)
+ 9001 FORMAT (' TEST W3DIMS : ARRAYS ALLOCATED')
+ 9002 FORMAT (' TEST W3DIMS : POINTERS RESET')
+ 9003 FORMAT (' TEST W3DIMS : DIMENSIONS STORED')
+#endif
 !/
 !/ End of W3DIMS ----------------------------------------------------- /
 !/
@@ -1718,7 +1746,6 @@
 !     !/BTn
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 ! 10. Source code :
 !
@@ -1753,8 +1780,9 @@
           WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
           CALL EXTCDE (2)
         END IF
-!
-!/T      WRITE (NDST,9000) IMOD
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETG)
+      WRITE (NDST,9000) IMOD
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Set model numbers
@@ -2207,8 +2235,9 @@
                '                    IMOD   = ',I10/                   &
                '                    NAUXGR = ',I10/                   &
                '                    NGRIDS = ',I10/)
-!
-!/T 9000 FORMAT (' TEST W3SETG : GRID/MODEL ',I4,' SELECTED')
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETG)
+ 9000 FORMAT (' TEST W3SETG : GRID/MODEL ',I4,' SELECTED')
+#endif
 !/
 !/ End of W3SETG ----------------------------------------------------- /
 !/
@@ -2235,6 +2264,10 @@
 !/                  Due to precision issues, HPFAC and HQFAC revert
 !/                  to SX and SY in case of regular grids.
 !/                  (W. E. Rogers, NRL)                 ( version 3.14 )
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
+!/    20-Jan-2017 : Change calculation of curvilinear grid metric and
+!/                  derivatives calculations to use W3GSRUMD:W3CGDM.
+!/                  (T.J. Campbell, NRL)                ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -2269,7 +2302,6 @@
 !  9. Switches :
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 ! 10. Source code :
 !
@@ -2287,18 +2319,14 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      REAL(8), PARAMETER :: PI = 3.14159265358979323846D0
-      REAL(8), PARAMETER :: D360 = 360D0
-      REAL(8), PARAMETER :: D180 = 180D0
-      REAL(8), PARAMETER :: D2R = PI/D180
-      REAL(8), PARAMETER :: R2D = 1D0/D2R
-      REAL(8), PARAMETER :: HALF = 0.5D0
-      REAL(8)            :: DXCIRC(3)
-      INTEGER            :: IX, IY
-!/T      REAL               :: ANGPQ(NY,NX)
-!     REAL               :: UVECPX(NY,NX), UVECPY(NY,NX)
-!     REAL               :: UVECQX(NY,NX), UVECQY(NY,NX)
-      
+      INTEGER, PARAMETER :: NFD    = 4
+      LOGICAL, PARAMETER :: PTILED = .FALSE.
+      LOGICAL, PARAMETER :: QTILED = .FALSE.
+      LOGICAL, PARAMETER :: IJG    = .FALSE.
+      LOGICAL, PARAMETER :: SPHERE = .FALSE.
+      INTEGER :: PRANGE(2), QRANGE(2)
+      INTEGER :: LBI(2), UBI(2), LBO(2), UBO(2), ISTAT
+      REAL   , ALLOCATABLE :: COSA(:,:)
 !/S      INTEGER, SAVE      :: IENT = 0
 !/
 !/S      CALL STRACE (IENT, 'W3GNTX')
@@ -2316,228 +2344,100 @@
           CALL EXTCDE (2)
         END IF
 !
-!/T      WRITE (NDST,9000) IMOD
+      SELECT CASE ( GRIDS(IMOD)%GTYPE )
+        CASE ( RLGTYPE )
+        CASE ( CLGTYPE )
+        CASE DEFAULT
+          WRITE (NDSE,1003) GRIDS(IMOD)%GTYPE
+          CALL EXTCDE (3)
+        END SELECT
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+      WRITE (NDST,9000) IMOD
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Create grid search utility object
 !
-      GRIDS(IMOD)%GSU = W3GSUC( .FALSE., FLAGLL, GRIDS(IMOD)%ICLOSE, &
-                                GRIDS(IMOD)%NX, GRIDS(IMOD)%NY, &
+      GRIDS(IMOD)%GSU = W3GSUC( IJG, FLAGLL, GRIDS(IMOD)%ICLOSE, &
                                 GRIDS(IMOD)%XGRD, GRIDS(IMOD)%YGRD )
-
-!/T      CALL W3GSUP(GRIDS(IMOD)%GSU, NDST)
-!
-!/T      WRITE (NDST,9001)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+      CALL W3GSUP(GRIDS(IMOD)%GSU, NDST)
+      WRITE (NDST,9001)
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Reset grid pointers
 !
       CALL W3SETG ( IMOD, NDSE, NDST )
-!
-!/T      WRITE (NDST,9002)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+      WRITE (NDST,9002)
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 4.  Construct curvilinear grid derivatives and metric
+!     Note that in the case of lon/lat grids, these quantities do not
+!     include the spherical coordinate metric (SPHERE=.FALSE.).
 !
-!  x = x(p,q);  y = y(p,q);  dp = dq = 1;
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+      ALLOCATE ( COSA(NY,NX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+#endif
+      PRANGE = (/ 1,NX/)
+      QRANGE = (/ 1,NY/)
+      LBI = (/ 1, 1/)
+      UBI = (/NY,NX/)
+      LBO = (/ 1, 1/)
+      UBO = (/NY,NX/)
+      SELECT CASE ( GTYPE )
+        CASE ( RLGTYPE )
+          CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
+                       NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &
+                       DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
+                       DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
+                       HPFC=HPFAC, HQFC=HQFAC, GSQR=GSQRT,             &
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+                       COSA=COSA,                                      &
+#endif
+                       RC=ISTAT )
+          IF ( ISTAT.NE.0 ) THEN
+              WRITE (NDSE,1004) GTYPE
+              CALL EXTCDE (4)
+            END IF
+        CASE ( CLGTYPE )
+          CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
+                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, XGRD, YGRD, &
+                       NFD=NFD, SPHERE=SPHERE,                         &
+                       DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
+                       DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
+                       HPFC=HPFAC, HQFC=HQFAC, GSQR=GSQRT,             &
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+                       COSA=COSA,                                      &
+#endif
+                       RC=ISTAT )
+          IF ( ISTAT.NE.0 ) THEN
+              WRITE (NDSE,1004) GTYPE
+              CALL EXTCDE (4)
+            END IF
+        END SELECT
 !
-!  When using spherical coordinates x = longitude and y = latitude.
-!  Also, the derivatives with respect to p are adjusted by the spherical
-!  coordinate metric.  In other words (with radius = 1),
-!
-!      dx/dp <= cos(y)*(dx/dp)  and  dy/dp <= cos(y)*(dy/dp).
-!
-!  The 2D curvilinear coordinates metric is
-!
-!      g_pq = (dx/dp)*(dx/dq) + (dy/dp)*(dy/dq),
-!      g_pp = (dx/dp)*(dx/dp) + (dy/dp)*(dy/dp),
-!      g_qq = (dx/dq)*(dx/dq) + (dy/dq)*(dy/dq).
-!
-!  Derivatives are computed with central differences for all non-boundary
-!  cells.  One-sided differences are used at boundary cells.  If the grid
-!  is a lat/lon grid, then the i-differences at the i=1 and i=nx boundary
-!  cells are computed with central differences using the wrapped cell
-!  x-coordinates.
-!
-!  Admittedly, in case of branch cut, we could use centered difference
-!  to get a more accurate derivative at the boundaries (IX=1 or NX), but
-!  we don't do this. Note that it would get more complicated for a 
-!  tripole grid (IY=NY) ....
-
-!
-!  Compute dx/dp & dy/dp & dm/dp
-
-      IX = 1
-      IF(FLAGLL)THEN
-         DO IY=1,NY
-            DXCIRC(1)=       ( XGRD(IY ,IX+1) - XGRD(IY ,IX  ) )-D360
-            DXCIRC(2)=       ( XGRD(IY ,IX+1) - XGRD(IY ,IX  ) )
-            DXCIRC(3)=       ( XGRD(IY ,IX+1) - XGRD(IY ,IX  ) )+D360
-            DXDP(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
-         END DO
-      ELSE
-         DXDP(: ,IX) =        ( XGRD(: ,IX+1) - XGRD(: ,IX  ) )
-      ENDIF
-      DYDP(: ,IX) =        ( YGRD(: ,IX+1) - YGRD(: ,IX  ) )
-      DO IY=1,NY
-         HPFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX+1),YGRD(IY,IX+1), &
-              XGRD(IY,IX),YGRD(IY,IX))
-      END DO
-
-      IX = NX
-      IF(FLAGLL)THEN
-         DO IY=1,NY
-            DXCIRC(1)=       ( XGRD(IY ,IX  ) - XGRD(IY ,IX-1) )-D360
-            DXCIRC(2)=       ( XGRD(IY ,IX  ) - XGRD(IY ,IX-1) )
-            DXCIRC(3)=       ( XGRD(IY ,IX  ) - XGRD(IY ,IX-1) )+D360
-            DXDP(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
-         END DO
-      ELSE
-         DXDP(: ,IX) =        ( XGRD(: ,IX  ) - XGRD(: ,IX-1) )
-      ENDIF
-      DYDP(: ,IX) =        ( YGRD(: ,IX  ) - YGRD(: ,IX-1) )
-      DO IY=1,NY
-         HPFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX), &
-              XGRD(IY,IX-1),YGRD(IY,IX-1))
-      END DO
-
-      DO IX=2, NX-1
-
-         IF(FLAGLL)THEN
-            DO IY=1,NY
-               DXCIRC(1)= ( XGRD(IY ,IX+1) - XGRD(IY ,IX-1) )-D360
-               DXCIRC(2)= ( XGRD(IY ,IX+1) - XGRD(IY ,IX-1) )
-               DXCIRC(3)= ( XGRD(IY ,IX+1) - XGRD(IY ,IX-1) )+D360
-               DXDP(IY,IX)=HALF * DXCIRC(MINLOC(ABS(DXCIRC),1))
-            END DO
-         ELSE
-            DXDP(: ,IX)   = HALF * ( XGRD(: ,IX+1) - XGRD(: ,IX-1) )
-         ENDIF
-
-         DYDP(: ,IX)   = HALF * ( YGRD(: ,IX+1) - YGRD(: ,IX-1) )
-         DO IY=1,NY
-            HPFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX+1),YGRD(IY,IX+1), &
-                 XGRD(IY,IX-1),YGRD(IY,IX-1))*HALF
-         END DO
-
-      END DO
-
-!
-!  Compute dx/dq & dy/dq & dm/dq
-
-      IY = 1
-      IF(FLAGLL)THEN
-         DO IX=1,NX
-            DXCIRC(1)=       ( XGRD(IY+1,IX) - XGRD(IY  ,IX) )-D360
-            DXCIRC(2)=       ( XGRD(IY+1,IX) - XGRD(IY  ,IX) )
-            DXCIRC(3)=       ( XGRD(IY+1,IX) - XGRD(IY  ,IX) )+D360
-            DXDQ(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
-         END DO
-      ELSE
-         DXDQ(IY,: )   =        ( XGRD(IY+1,: ) - XGRD(IY  ,: ) )
-      ENDIF
-      DYDQ(IY,: )   =        ( YGRD(IY+1,: ) - YGRD(IY  ,: ) )
-      DO IX=1,NX
-         HQFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY+1,IX),YGRD(IY+1,IX), &
-              XGRD(IY,IX),YGRD(IY,IX))
-      END DO
-
-      IY = NY
-      IF(FLAGLL)THEN
-         DO IX=1,NX
-            DXCIRC(1)=       ( XGRD(IY  ,IX) - XGRD(IY-1,IX) )-D360
-            DXCIRC(2)=       ( XGRD(IY  ,IX) - XGRD(IY-1,IX) )
-            DXCIRC(3)=       ( XGRD(IY  ,IX) - XGRD(IY-1,IX) )+D360
-            DXDQ(IY,IX)=DXCIRC(MINLOC(ABS(DXCIRC),1))
-         END DO
-      ELSE
-         DXDQ(IY,: )   =        ( XGRD(IY  ,: ) - XGRD(IY-1,: ) )
-      ENDIF
-      DYDQ(IY,: )   =        ( YGRD(IY  ,: ) - YGRD(IY-1,: ) )
-      DO IX=1,NX
-         HQFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY,IX),YGRD(IY,IX), &
-              XGRD(IY-1,IX),YGRD(IY-1,IX))
-      END DO
-
-      DO IY=2, NY-1
-         IF(FLAGLL)THEN
-            DO IX=1,NX
-               DXCIRC(1)= ( XGRD(IY+1,IX) - XGRD(IY-1,IX) )-D360
-               DXCIRC(2)= ( XGRD(IY+1,IX) - XGRD(IY-1,IX) )
-               DXCIRC(3)= ( XGRD(IY+1,IX) - XGRD(IY-1,IX) )+D360
-               DXDQ(IY,IX)=HALF * DXCIRC(MINLOC(ABS(DXCIRC),1))
-            END DO
-         ELSE
-            DXDQ(IY,: ) = HALF * ( XGRD(IY+1,: ) - XGRD(IY-1,: ) )
-         ENDIF
-         DYDQ(IY,: ) = HALF * ( YGRD(IY+1,: ) - YGRD(IY-1,: ) )
-         DO IX=1,NX
-            HQFAC(IY,IX)=W3DIST(FLAGLL,XGRD(IY+1,IX),YGRD(IY+1,IX), &
-                 XGRD(IY-1,IX),YGRD(IY-1,IX))*HALF
-         END DO
-      END DO
-
-!......notes: Though we *should* recover SX and SY using calculations on XGRD and YGRD,
-!.............it turns out that there are small differences which cause problems for 
-!.............SCRIP. Therefore, we add the if-then here to use SX and SY in case of 
-!.............regular grids, to overwrite DXDP etc. calculated above.
-!.............Note 1: that this may be unnecessary if we go to double precision.
-!.............Note 2: HQFAC calculated above is still used. Thus, we don't have the entire
-!.....................block of code above inside an "if not regular grid" 
-
-      IF(GRIDS(IMOD)%GTYPE.EQ.RLGTYPE)THEN
-         DXDP=SX
-         DXDQ=0.0D0
-         DYDP=0.0D0
-         DYDQ=SY
-      ENDIF   !    IF(GRIDS(IMOD)%GTYPE.EQ.RLGTYPE)THEN
-
-!
-!  Account for spherical metric if lat/lon grid (only if the metric
-!  is to be w.r.t. the Cartesian space)
-!     IF ( FLAGLL ) THEN
-!         DXDP = DXDP * COS(YGRD*D2R)
-!         DXDQ = DXDQ * COS(YGRD*D2R)
-!       END IF
-!  If we do this, then the COS(YGRD*D2R) factor must be removed from
-!  the HPFAC & HQFAC.
-!
-!/T      WRITE(NDST,'(A,2E14.6)')'HPFAC MIN/MAX:',MINVAL(HPFAC),MAXVAL(HPFAC)
-!/T      WRITE(NDST,'(A,2E14.6)')'HQFAC MIN/MAX:',MINVAL(HQFAC),MAXVAL(HQFAC)
-!
-!  GSQRT: sqrt(g) = (dx/dp)(dy/dq) - (dx/dq)(dy/dp)
-      GSQRT = DXDP*DYDQ - DXDQ*DYDP
-!/T      WRITE(NDST,'(A,2E14.6)')'GSQRT MIN/MAX:',MINVAL(GSQRT),MAXVAL(GSQRT)
-!
-!  Compute curvilinear derivatives
-!  DPDX: dp/dx =  (1/sqrt(g))*(dy/dq)
-!  DPDY: dp/dy = -(1/sqrt(g))*(dx/dq)
-!  DQDX: dq/dx = -(1/sqrt(g))*(dy/dp)
-!  DQDY: dq/dy =  (1/sqrt(g))*(dx/dp)
-      DPDX =  DYDQ / GSQRT
-      DPDY = -DXDQ / GSQRT
-      DQDX = -DYDP / GSQRT
-      DQDY =  DXDP / GSQRT
-!/T      WRITE(NDST,'(A,2E14.6)')'DPDX MIN/MAX:',MINVAL(DPDX),MAXVAL(DPDX)
-!/T      WRITE(NDST,'(A,2E14.6)')'DPDY MIN/MAX:',MINVAL(DPDY),MAXVAL(DPDY)
-!/T      WRITE(NDST,'(A,2E14.6)')'DQDX MIN/MAX:',MINVAL(DQDX),MAXVAL(DQDX)
-!/T      WRITE(NDST,'(A,2E14.6)')'DQDY MIN/MAX:',MINVAL(DQDY),MAXVAL(DQDY)
-!
-!  Check orthogonality of grid by computing angle between the
-!  curvilinear coordinate unit vectors.
-!    cos(a) = uvec_p \dot uvec_q = g_pq/sqrt(g_pp*g_qq)
-!/T      ANGPQ = R2D * ACOS( ( DXDP*DXDQ + DYDP*DYDQ ) / ( HPFAC*HQFAC ) )
-!/T      WRITE(NDST,'(A,2E14.6)')'ANGPQ MIN/MAX:',MINVAL(ANGPQ),MAXVAL(ANGPQ)
-!
-!  Compute cell unit vectors
-!  uvec_p = (1/h_p)*(dx/dp)*uvec_x + (1/h_p)*(dy/dp)*uvec_y
-!  uvec_q = (1/h_q)*(dx/dq)*uvec_x + (1/h_q)*(dy/dq)*uvec_y
-!     UVECPX = DXDP / HPFAC
-!     UVECPY = DYDP / HPFAC
-!     UVECQX = DXDQ / HQFAC
-!     UVECQY = DYDQ / HQFAC
-!
-!/T      WRITE (NDST,9003)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+      WRITE(NDST,'(A,2E14.6)')'HPFAC MIN/MAX:',MINVAL(HPFAC),MAXVAL(HPFAC)
+      WRITE(NDST,'(A,2E14.6)')'HQFAC MIN/MAX:',MINVAL(HQFAC),MAXVAL(HQFAC)
+      WRITE(NDST,'(A,2E14.6)')'GSQRT MIN/MAX:',MINVAL(GSQRT),MAXVAL(GSQRT)
+      WRITE(NDST,'(A,2E14.6)')'DXDP  MIN/MAX:',MINVAL(DXDP),MAXVAL(DXDP)
+      WRITE(NDST,'(A,2E14.6)')'DYDP  MIN/MAX:',MINVAL(DYDP),MAXVAL(DYDP)
+      WRITE(NDST,'(A,2E14.6)')'DXDQ  MIN/MAX:',MINVAL(DXDQ),MAXVAL(DXDQ)
+      WRITE(NDST,'(A,2E14.6)')'DYDQ  MIN/MAX:',MINVAL(DYDQ),MAXVAL(DYDQ)
+      WRITE(NDST,'(A,2E14.6)')'DPDX  MIN/MAX:',MINVAL(DPDX),MAXVAL(DPDX)
+      WRITE(NDST,'(A,2E14.6)')'DPDY  MIN/MAX:',MINVAL(DPDY),MAXVAL(DPDY)
+      WRITE(NDST,'(A,2E14.6)')'DQDX  MIN/MAX:',MINVAL(DQDX),MAXVAL(DQDX)
+      WRITE(NDST,'(A,2E14.6)')'DQDY  MIN/MAX:',MINVAL(DQDY),MAXVAL(DQDY)
+      WRITE(NDST,'(A,2E14.6)')'COSA  MIN/MAX:',MINVAL(COSA),MAXVAL(COSA)
+      WRITE (NDST,9003)
+      DEALLOCATE ( COSA, STAT=ISTAT )
+      CHECK_DEALLOC_STATUS ( ISTAT )
+#endif
 !
 ! Formats
 !
@@ -2547,11 +2447,17 @@
                '                    IMOD   = ',I10/                   &
                '                    NAUXGR = ',I10/                   &
                '                    NGRIDS = ',I10/)
+ 1003 FORMAT (/' *** ERROR W3GNTX : UNSUPPORTED TYPE OF GRID *** '/   &
+               '                    GTYPE  = ',I10/)
+ 1004 FORMAT (/' *** ERROR W3GNTX : ERROR OCCURED IN W3CGDM *** '/    &
+               '                    GTYPE  = ',I10/)
 !
-!/T 9000 FORMAT (' TEST W3GNTX : MODEL ',I4)
-!/T 9001 FORMAT (' TEST W3GNTX : SEARCH OBJECT CREATED')
-!/T 9002 FORMAT (' TEST W3GNTX : POINTERS RESET')
-!/T 9003 FORMAT (' TEST W3GNTX : GRID ARRAYS CONSTRUCTED')
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
+ 9000 FORMAT (' TEST W3GNTX : MODEL ',I4)
+ 9001 FORMAT (' TEST W3GNTX : SEARCH OBJECT CREATED')
+ 9002 FORMAT (' TEST W3GNTX : POINTERS RESET')
+ 9003 FORMAT (' TEST W3GNTX : GRID ARRAYS CONSTRUCTED')
+#endif
 !/
 !/ End of W3GNTX ----------------------------------------------------- /
 !/
@@ -2620,7 +2526,6 @@
 !  9. Switches :
 !
 !     !/S    Enable subroutine tracing.
-!     !/T    Enable test output
 !
 ! 10. Source code :
 !
@@ -2659,9 +2564,9 @@
         WRITE (NDSE,1004)
         CALL EXTCDE (4)
         END IF
-!
-!
-!/T      WRITE (NDST,9000) IMOD, MX, MTRI
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
+      WRITE (NDST,9000) IMOD, MX, MTRI
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
@@ -2691,8 +2596,9 @@
       CHECK_ALLOC_STATUS ( ISTAT )
 !
                  GRIDS(IMOD)%IOBP(:)=1
-!
-!/T      WRITE (NDST,9001)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
+      WRITE (NDST,9001)
+#endif
 !
 !some segmentation troubles can appear, they are related with the allocation of 
 !normal(1st dimension) and the nesting of the triangulated grid.
@@ -2700,8 +2606,9 @@
 ! 3.  Point to allocated arrays
 !
       CALL W3SETG ( IMOD, NDSE, NDST )
-!
-!/T      WRITE (NDST,9002)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
+      WRITE (NDST,9002)
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 4.  Update counters in grid
@@ -2709,7 +2616,9 @@
       NTRI   = MTRI
       COUNTOT=COUNTOTA
       GUGINIT  = .FALSE.
-!/T      WRITE (NDST,9003)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
+      WRITE (NDST,9003)
+#endif
       RETURN
 !
 ! Formats
@@ -2722,11 +2631,12 @@
  1003 FORMAT (/' *** ERROR W3DIMUG : ILLEGAL GRID DIMENSION(S) *** '/  &
                '                    INPUT = ',I10/)
  1004 FORMAT (/' *** ERROR W3DIMUG : ARRAY(S) ALREADY ALLOCATED *** ')
-!
-!/T 9000 FORMAT (' TEST W3DIMUG: MODEL ',I4,' DIM. AT ',2I5,I7)
-!/T 9001 FORMAT (' TEST W3DIMUG : ARRAYS ALLOCATED')
-!/T 9002 FORMAT (' TEST W3DIMUG : POINTERS RESET')
-!/T 9003 FORMAT (' TEST W3DIMUG : DIMENSIONS STORED')
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
+ 9000 FORMAT (' TEST W3DIMUG: MODEL ',I4,' DIM. AT ',2I5,I7)
+ 9001 FORMAT (' TEST W3DIMUG : ARRAYS ALLOCATED')
+ 9002 FORMAT (' TEST W3DIMUG : POINTERS RESET')
+ 9003 FORMAT (' TEST W3DIMUG : DIMENSIONS STORED')
+#endif
 !/
 !/ End of W3DIMUG ----------------------------------------------------- /
 !/
@@ -2782,7 +2692,6 @@
 !  9. Switches :
 !
 !       !/S      Enable subroutine tracing.
-!       !/T      Basic test output.
 !
 ! 10. Source code :
 !
@@ -2796,8 +2705,8 @@
 !/
       INTEGER                 :: ISEA, IX, IY, IXY, IXN, IXP, IYN, IYP
       INTEGER                 :: J, K, NEIGH1(0:7)
+      INTEGER                 :: ILEV, NLEV
 !/S      INTEGER, SAVE           :: IENT = 0
-!/T      INTEGER                 :: ILEV, NLEV
 
       REAL                    :: TRIX(NY*NX), TRIY(NY*NX), DX, DY,    &
                                  COSAVG, SINAVG, THAVG, ANGLES(0:7), CLAT
@@ -2916,8 +2825,10 @@
 !/REF1                IF (J.GT.0) THEN 
 !/REF1                  IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
 !/REF1                  THAVG=ATAN2(SINAVG,COSAVG) 
-!/T                     !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
-!/T                     !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETREF)
+!/REF1                  !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
+!/REF1                  !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+#endif
 !/REF1                  REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 !/REF1                ELSE
 !/REF1

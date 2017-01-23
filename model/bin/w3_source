@@ -152,9 +152,11 @@
   if [ -n "`grep SCRIPNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
+    cdf_programs="$cdf_programs ww3_multi_esmf"
     cdf_programs="$cdf_programs ww3_sbs1"
   else
     reg_programs="$reg_programs ww3_multi"
+    reg_programs="$reg_programs ww3_multi_esmf"
     reg_programs="$reg_programs ww3_sbs1"
   fi
 

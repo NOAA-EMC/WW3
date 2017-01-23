@@ -568,10 +568,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         28-Mar-2005 !
+!/                  | Last update :         20-Jan-2017 !
 !/                  +-----------------------------------+
 !/
 !/    28-Mar-2005 : Origination.                        ( version 3.07 )
+!/    20-Jan-2017 : Add INQUIRE OPENED check.           ( version 6.02 )
+!/                  (T. J. Campbell, NRL)
 !/
 !  1. Purpose :
 !
@@ -636,6 +638,7 @@
       INTEGER                 :: NRC, I, J
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL                 :: OK
+      LOGICAL                 :: OPND
 !/
 !/S      CALL STRACE (IENT, 'WMUGET')
 !
@@ -666,10 +669,14 @@
 !      (4th argument)
         OK     = .NOT.U_USED(I) .AND. U_TYPE(I).EQ.TYPE  &
                  .AND. I.NE.NDST
+        INQUIRE ( I, OPENED=OPND )
+        OK     = OK .AND. .NOT.OPND
         IF ( OK ) THEN
             DO J=1, NRC-1
               OK     = OK .AND. (.NOT.U_USED(I+J) .AND.               &
                                       U_TYPE(I+J).EQ.TYPE )
+              INQUIRE ( I+J, OPENED=OPND )
+              OK     = OK .AND. .NOT.OPND
               END DO
           END IF
         IF ( OK ) THEN

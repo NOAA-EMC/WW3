@@ -1,0 +1,126 @@
+#!/bin/sh
+myname="`basename $0`"  #name of script
+run_test="`dirname $0`"/run_test
+run_clean="`dirname $0`"/run_clean
+srcdir="`dirname $0`"/../../model
+if [ $# = 1 ]
+then
+  target=$1
+else
+  echo "usage: $myname <test|clean>"
+  exit 1
+fi
+case $target in
+  test) ;;
+  clean) $run_clean -c -C ESMF $srcdir ; exit 0 ;;
+  *) echo "target must be either test or clean" ; exit 1 ;;
+esac
+
+nproc=4
+comp=Portland
+
+case $comp in
+  Portland)
+    MPI_COMPILER=pgi
+    CMP_VERSION=15.7
+    MPI_VERSION=1.10.4
+    CDF_VERSION=4.4.1
+    export LM_LICENSE_FILE=/common/pgi/license.dat
+    export PATH=/common/pgi/${CMP_VERSION}/linux86-64/bin:${PATH}
+  ;;
+  gnu)
+    MPI_COMPILER=gnu
+    CMP_VERSION=4.8.5
+    MPI_VERSION=1.10.4
+    CDF_VERSION=4.4.1
+  ;;
+  *) echo "unsupported comp" ; exit 1 ;;
+esac
+ESMF_VERSION=7.0.1
+ESMF_BOPT=O
+
+export MPI_DIR=/common/openmpi/el7/${MPI_COMPILER}${CMP_VERSION}/${MPI_VERSION}
+export WWATCH3_NETCDF=NC4
+export NETCDF_CONFIG=/common/netcdf/el7/${MPI_COMPILER}${CMP_VERSION}/openmpi${MPI_VERSION}/${CDF_VERSION}/bin/nf-config
+export ESMFMKFILE=/common/esmf/el7/${MPI_COMPILER}${CMP_VERSION}/openmpi${MPI_VERSION}/${ESMF_VERSION}/lib/lib${ESMF_BOPT}/esmf.mk
+
+export PATH=${MPI_DIR}/bin:${PATH}
+mpirun=mpirun
+
+
+testcases=""
+testcases="$testcases mww3_test_02"
+testcases="$testcases mww3_test_03"
+testcases="$testcases mww3_test_04"
+testcases="$testcases mww3_test_05"
+testcases="$testcases mww3_test_06"
+
+
+for testcase in $testcases
+do
+
+
+case $testcase in
+mww3_test_02)
+grdsets=""
+grdsets="$grdsets grdset_a"
+grdsets="$grdsets grdset_b"
+grdsets="$grdsets grdset_c"
+grdsets="$grdsets grdset_d"
+switches=""
+switches="$switches PR3_UQ_MPI"
+;;
+mww3_test_03)
+grdsets=""
+grdsets="$grdsets grdset_a"
+grdsets="$grdsets grdset_b"
+grdsets="$grdsets grdset_c"
+grdsets="$grdsets grdset_d"
+grdsets="$grdsets grdset_d2"
+grdsets="$grdsets grdset_e"
+switches=""
+switches="$switches PR3_UQ_MPI"
+;;
+mww3_test_04)
+grdsets=""
+grdsets="$grdsets grdset_a"
+grdsets="$grdsets grdset_b"
+grdsets="$grdsets grdset_c"
+grdsets="$grdsets grdset_d"
+grdsets="$grdsets grdset_e"
+grdsets="$grdsets grdset_f"
+grdsets="$grdsets grdset_g"
+switches=""
+switches="$switches PR3_UQ_MPI"
+;;
+mww3_test_05)
+grdsets=""
+grdsets="$grdsets grdset_a"
+switches=""
+switches="$switches ST6_PR3_UQ_MPI"
+;;
+mww3_test_06)
+grdsets=""
+grdsets="$grdsets grdset_d"
+switches=""
+switches="$switches PR3_UQ_MPI_SCRIP"
+switches="$switches PR3_UQ_MPI_SCRIPNC"
+switches="$switches PR3_UQ_MPIBDI_SCRIPNC"
+;;
+esac
+
+
+#nmlopt="-N"
+for switch in $switches
+do
+  for grdset in $grdsets
+  do
+    work=work_${switch}_${grdset}
+    $run_test -c $comp         -m $grdset -n $nproc -p $mpirun -s $switch $nmlopt -w $work $srcdir $testcase
+    work=work_${switch}_${grdset}_esmf
+    $run_test -c $comp -C ESMF -m $grdset -n $nproc -p $mpirun -s $switch $nmlopt -w $work $srcdir $testcase
+  done
+done
+
+
+done

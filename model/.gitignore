@@ -1,0 +1,13 @@
+.wwatch3.env
+*.[oa]
+*.mod
+mod
+mod_*
+obj
+obj_*
+exe
+tmp
+nuopc*.mk
+aux/makefile
+ftn/makefile
+ftn/makefile_*

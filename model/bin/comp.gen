@@ -103,6 +103,8 @@
 # fi
 
 # opt="$opt -I$path_i"
+# opt="$opt $ESMF_F90COMPILEPATHS"
+# opt="$opt $EXTRA_COMP_OPTIONS"
 
 # 2.b.2 Compile
 

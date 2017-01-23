@@ -31,6 +31,7 @@
 !/     5-Mar-2012 : Cleanup of tidal analysis           ( version 4.09 ) 
 !/    24-Apr-2015 : Adding OASIS coupling calls         ( version 5.07 )
 !/                  (M. Accensi & F. Ardhuin, IFREMER)
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -476,7 +477,7 @@
          '                  SHOULD BE : ',3(1X,I4)/)            
  1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3FLDO : '/          &
          '     FILLER indicates use of tidal constituents',3I4, /&
-         '     For this the code should be compiled with TIDE switch'/)            
+         '     For this the code should be compiled with TIDE switch'/)
 !
 !/T 9000 FORMAT (' TEST W3FLDO : INXOUT : ',A/                     &
 !/T              '               IDFLD  : ',A/                     &
@@ -1080,8 +1081,8 @@
             TF0(1) = TFN(1)
             TF0(2) = TFN(2)
 !/T            WRITE (NDST,9020)
- ! unless TFN has been changed in the do loop, the following line is essentally 
- !       "if not.flfrst"
+! unless TFN has been changed in the do loop, the following line is essentally 
+!       "if not.flfrst"
             IF ( TFN(1) .NE. -1 ) THEN
                 DO IX=1, NX
                   DO IY=1, NY
@@ -1606,6 +1607,7 @@
 !/    30-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
+!/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -1803,7 +1805,7 @@
 !
       PLAT => ALAT
       PLON => ALON
-      GSU = W3GSUC( .TRUE., FLAGLL, ICLO, MXI, MYI, PLON, PLAT )
+      GSU = W3GSUC( .TRUE., FLAGLL, ICLO, PLON, PLAT )
 !
 !/T      WRITE (NDST,9001)
 !/T      CALL W3GSUP( GSU, NDST )
@@ -1825,7 +1827,7 @@
 !
               NNBR = NNBR_MAX
               INGRID = W3GRMP( GSU, X, Y, II, JJ, RR, &
-                               LMSK, MSKC, NNBR, LDBG )
+                       MASK=LMSK, MSKC=MSKC, NNBR=NNBR, DEBUG=LDBG )
 !
               IF ( INGRID ) THEN
 !

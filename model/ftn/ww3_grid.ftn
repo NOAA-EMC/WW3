@@ -94,6 +94,7 @@
 !/    29-May-2014 : Adding namelist for IC3             ( version 5.01 )
 !/    15 Oct-2015 : Change SMC grid input files. JGLi   ( version 5.09 )
 !/    10-Jan-2017 : Changes for US3D and USSP           ( version 6.01 )
+!/    20-Jan-2017 : Bug fix for mask input from file.   ( version 6.02 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2810,7 +2811,6 @@
 !
       IF ( TRFLAG .EQ. 0 ) THEN
           WRITE (NDSO,976) 'Not available.'
-          WRITE (NDSO,*)
         ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
           WRITE (NDSO,976) 'In between grid points.'
         ELSE
@@ -2874,12 +2874,12 @@
 ! 7.g.3 Read the data
 !
           CALL INA2R ( OBSX, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-                       IDFM, RFORM, IDLA, VSC, 0.0)
+                       IDFT, RFORM, IDLA, VSC, 0.0)
 !
           IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !
           CALL INA2R ( OBSY, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-                       IDFM, RFORM, IDLA, VSC, 0.0)
+                       IDFT, RFORM, IDLA, VSC, 0.0)
 !
 ! 7.g.4 Limit
 !
@@ -3342,13 +3342,14 @@
           IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
           IF (FROM.EQ.'NAME') WRITE (NDSO,974) TNAME
 !
-          IF ( NDSTR .NE. NDSI ) THEN
+          IF ( NDSTR .EQ. NDSI ) THEN
               IF ( IDFT .EQ. 3 ) THEN
                   WRITE (NDSE,1004) NDSTR
                   CALL EXTCDE (23)
                 ELSE
                   CALL NEXTLN ( COMSTR , NDSI , NDSE )
                 END IF
+            ELSE
               IF ( IDFT .EQ. 3 ) THEN
                   IF (FROM.EQ.'NAME') THEN
                       J      = LEN_TRIM(FNMPRE)
@@ -3371,10 +3372,9 @@
                 END IF
             END IF
 !
-          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
           ALLOCATE ( READMP(NX,NY) )
           CALL INA2I ( READMP, NX, NY, 1, NX, 1, NY, NDSTR, NDST,    &
-                       NDSE, IDFM, RFORM, IDLA, 1, 0 )
+                       NDSE, IDFT, RFORM, IDLA, 1, 0 )
 !
           IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
               DO IY=2, NY-1
@@ -4669,7 +4669,7 @@
 !/ST4               '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
 !/ST4               ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
 !/ST4               F5.2,', '/,                                       &
-!/ST4               ',       WHITECAPWIDTH =',F5.2,', SDSLFGEN = ',   &
+!/ST4               '        WHITECAPWIDTH =',F5.2,', SDSLFGEN = ',   &
 !/ST4               F5.2,', SDSHFGEN = ',F5.2,' /')
 !
 !/ST6  924 FORMAT (/'  Dissipation (Rogers et al. 2012) ',A/             &
@@ -4819,9 +4819,9 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3, ', UGOBCDEPTH =', F8.3/      &
-               ',       EXPFSN =',L3,',EXPFSPSI =',L3, ',EXPFSFCT =', & 
-               L3,',IMPFSN =',L3         / )
+ 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,','/    &
+               '        EXPFSN =',L3,', EXPFSPSI =',L3,', EXPFSFCT =', &
+               L3,', IMPFSN =',L3,' /' )
 !
   960 FORMAT (/'  Miscellaneous ',A/                                   &
                ' --------------------------------------------------')
@@ -5018,12 +5018,12 @@
                '       Format indicator            :',I6)
   973 FORMAT ( '       Format                      : ',A)
   974 FORMAT ( '       File name                   : ',A)
-  976 FORMAT ( '       Sub-grid information        : ',A)
+  976 FORMAT (/'       Sub-grid information        : ',A)
   977 FORMAT ( '       Obstructions unit           :',I6/             &
                '       Scale factor                :',F10.4/          &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)
-  978 FORMAT ( '       Mask information            : From file.'/     &
+  978 FORMAT (/'       Mask information            : From file.'/     &
                '       Mask unit                   :',I6/             &
                '       Layout indicator            :',I6/             &
                '       Format indicator            :',I6)

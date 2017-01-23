@@ -745,7 +745,7 @@
 !/
       END SUBROUTINE WWTIME
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE EXTCDE ( IEXIT, UNIT, MSG, FILE, LINE )
+      SUBROUTINE EXTCDE ( IEXIT, UNIT, MSG, FILE, LINE, COMM )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -758,6 +758,7 @@
 !/    23-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
 !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
 !/    11-Mar-2015 : Allow non-error exit (iexit=0)      ( version 5.04 )
+!/    20-Jan-2017 : Add optional MPI communicator arg   ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -765,7 +766,7 @@
 !
 !     If exit code IEXIT=0, then it is not an error, but 
 !     a stop has been requested by the calling routine:
-!     wait for other processes to catch up.
+!     wait for other processes in communicator to catch up.
 !     
 !     If exit code IEXIT.ne.0, then abort program w/out
 !     waiting for other processes to catch up (important for example
@@ -784,6 +785,7 @@
 !       MSG     Str.   I   (optional) error message
 !       FILE    Str.   I   (optional) name of source code file
 !       LINE    Int.   I   (optional) line number in source code file
+!       COMM    Int.   I   (optional) MPI communicator
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -811,6 +813,7 @@
       CHARACTER(*), INTENT(IN), OPTIONAL :: MSG
       CHARACTER(*), INTENT(IN), OPTIONAL :: FILE
       INTEGER,      INTENT(IN), OPTIONAL :: LINE
+      INTEGER,      INTENT(IN), OPTIONAL :: COMM
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -845,18 +848,20 @@
           WRITE (IUN,"(A)") PREFIX//TRIM(LMSG)
         END IF
 !/
-!/ Test if MPI needs to be closed
+!/ Handle MPI exit
 !/
 !/MPI      CALL MPI_INITIALIZED ( RUN, IERR_MPI )
 !/MPI      IF ( RUN ) THEN
-!/MPI        IF (IEXIT.EQ.0)THEN ! non-error state
-!/MPI          CALL MPI_BARRIER ( MPI_COMM_WORLD, IERR_MPI )
+!/MPI        IF ( IEXIT.EQ.0 ) THEN ! non-error state
+!/MPI          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
 !/MPI          CALL MPI_FINALIZE (IERR_MPI )
 !/MPI        ELSE ! error state
 !/MPI          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
 !/MPI        END IF
 !/MPI      END IF
-!
+!/
+!/ Handle non-MPI exit
+!/
 !/F90      CALL EXIT ( IEXIT )
 !/DUM      STOP
 !/
