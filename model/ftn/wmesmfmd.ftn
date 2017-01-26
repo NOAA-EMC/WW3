@@ -2010,7 +2010,7 @@
       real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
                  tauwx, tauwy, cd, z0, fmeanws
       logical :: llws(nspec)
-      real, allocatable :: z0wave(:)
+      real    :: z0wave(nseal)
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETEXPORT)
       type(ESMF_State) :: dumpState
       integer, save :: timeSlice = 1
@@ -2051,7 +2051,7 @@
       i1 = FieldIndex( expFieldName, 'charno', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if ( isActiveExpField(i1) ) then
-        fillValue = 0.016 !COAMPS: atmos/libsrc/amlib/sfcflx.f
+        fillValue = zeroValue
         if ( natGridIsLocal ) then
           call FieldFill( natField, fillValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2093,8 +2093,7 @@
       i1 = FieldIndex( expFieldName, 'z0rlen', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if ( isActiveExpField(i1) ) then
-        if (.NOT.ALLOCATED(z0wave)) ALLOCATE(z0wave(NSEALM))
-        fillValue = 0.00
+        fillValue = zeroValue
         if ( natGridIsLocal ) then
           call FieldFill( natField, fillValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2104,7 +2103,7 @@
             do jsea = 1,nseal
 !/DIST              isea = iaproc + (jsea-1)*naproc
 !/SHRD              isea = jsea 
-              z0wave(jsea) = charn(jsea)*UST(ISEA)**2/GRAV
+              z0wave(jsea) = charn(jsea)*ust(isea)**2/grav
 !/ST0              z0wave(jsea) = fillValue !no charn calculated
             enddo
           endif
