@@ -116,7 +116,7 @@
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
                           STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
                           P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-                          WN, USSP, USSP_WN
+                          WN, USSP
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT, UNDEF,&
                           FLOGRD, FNMPRE, NOSWLL, NOGE
 !
