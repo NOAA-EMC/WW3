@@ -22,8 +22,8 @@
 !/ Macros for enabling test output
 !/
 #define TEST_WMESMFMD___disabled
-#define TEST_WMESMFMD_GETIMPORT .true.
-#define TEST_WMESMFMD_SETEXPORT .true. 
+#define TEST_WMESMFMD_GETIMPORT___disabled
+#define TEST_WMESMFMD_SETEXPORT___disabled
 #define TEST_WMESMFMD_CREATEIMPGRID___disabled 
 #define TEST_WMESMFMD_CREATEEXPGRID___disabled
 #define TEST_WMESMFMD_BLENDIMPFIELDS___disabled
