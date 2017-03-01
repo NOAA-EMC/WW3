@@ -3015,8 +3015,6 @@
 ! Formats
 !
   973 FORMAT ( 'NEW NetCDF file was created ',A)
-  990 FORMAT ( ' *** WAVEWATCH III ERROR IN W3EXNC :'/                &
-               '     CURVILINEAR GRID NOT YET IMPLEMENTED')
   999 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXNC :'/                &
                '     PLEASE UPDATE FIELDS !!! '/                      &
                '     IFI = ',I2, '- IFJ = ',I2/)

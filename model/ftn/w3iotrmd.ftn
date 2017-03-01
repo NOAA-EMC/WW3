@@ -160,12 +160,26 @@
 !     !/T2    Test output of mask arrays.
 !     !/T3    Test output for writing of file.
 !
-! 10. Source code :
+! 10. Remarks :
+!
+!     Regarding section 3.e.2 "Optimize: omit points that are not 
+!       strictly required.". This optimization saves disk space but 
+!       results in output files that are more difficult to use. For 
+!       example, matlab built-in function "griddata" requires all four
+!       bounding points. This means that a post-processing code must
+!       have extra logic do deal with cases without all four bounding
+!       points (interpolation along a line, or nearest neighbor). 
+!       A namelist variable has been add to make this feature optional. 
+!       Default, original behavior: TRCKCMPR = T (in /MISC/ namelist).
+!       Save all points: TRCKCMPR =  F (in /MISC/ namelist).
+!       Within the present routine, the logical is named "CMPRTRCK".
+!
+! 11. Source code :
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
 !/
-      USE W3GDATMD, ONLY: W3SETG
+      USE W3GDATMD, ONLY: W3SETG, CMPRTRCK
       USE W3WDATMD, ONLY: W3SETW
       USE W3ADATMD, ONLY: W3SETA
       USE W3ODATMD, ONLY: W3SETO, W3DMO3
@@ -396,6 +410,9 @@
 !
 ! 3.e Check point coordinates
 !
+
+! 3.e.1 Initial identification of computational grid points to include.
+!
 !       Find cell that encloses target point (note that the returned
 !       cell corner indices are adjusted for global wrapping and the
 !       coordinates are adjusted to avoid branch cut crossings)
@@ -411,31 +428,38 @@
         IXX(4) = IXX(3);  IYY(4) = IYY(3);
         IXX(3) = IX;      IYY(3) = IY;
 !
-!       Project onto I-axis
-        RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
-           + DPDY(IYY(1),IXX(1))*(YT-YY(1))
+! 3.e.2 Optimize: omit points that are not strictly required.
+!       See "Remarks"
+
+        IF(CMPRTRCK)THEN ! perform track compression
+
+!         Project onto I-axis
+          RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
+             + DPDY(IYY(1),IXX(1))*(YT-YY(1))
 !
-!       Collapse to left or right if within tolerance
-        IF ( RD .LT. RDCHCK ) THEN
-            IXX(2) = IXX(1)
-            IXX(4) = IXX(3)
+!         Collapse to left or right if within tolerance
+          IF ( RD .LT. RDCHCK ) THEN
+              IXX(2) = IXX(1)
+              IXX(4) = IXX(3)
           ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-            IXX(1) = IXX(2)
-            IXX(3) = IXX(4)
+              IXX(1) = IXX(2)
+              IXX(3) = IXX(4)
           END IF
 !
-!       Project onto J-axis
-        RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
-           + DQDY(IYY(1),IXX(1))*(YT-YY(1))
+!         Project onto J-axis
+          RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
+             + DQDY(IYY(1),IXX(1))*(YT-YY(1))
 !
-!       Collapse to top or bottom if within tolerance
-        IF ( RD .LT. RDCHCK ) THEN
-            IYY(3) = IYY(1)
-            IYY(4) = IYY(2)
-          ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-            IYY(1) = IYY(3)
-            IYY(2) = IYY(4)
+!         Collapse to top or bottom if within tolerance
+          IF ( RD .LT. RDCHCK ) THEN
+              IYY(3) = IYY(1)
+              IYY(4) = IYY(2)
+            ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
+              IYY(1) = IYY(3)
+              IYY(2) = IYY(4)
           END IF
+
+        END IF ! IF(CMPRTRCK)THEN 
 !
 ! 3.f Mark the four corner points
 !

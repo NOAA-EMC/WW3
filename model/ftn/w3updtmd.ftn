@@ -2307,7 +2307,7 @@
 !  7. Remarks :
 !
 !     This routine replaces the functionality of W3DDXY and W3DCXY.
-!
+!     NB: subroutine "W3CGDM" has a similar purpose.
 !     Output arrays are always initialized to zero.
 !
 !  8. Structure :

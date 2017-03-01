@@ -651,7 +651,7 @@
                                  LICE, XSEED, XR, HSPM, WSM, WSC, STDX,&
                                  STDY, STDT, ICEHMIN, ICEHINIT, ICEWIND
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
-      LOGICAL                 :: FLC, ICEDISP
+      LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
 !/FLD1      INTEGER                 :: TAILTYPE
 !/FLD1      REAL                    :: TAILLEV, TAILT1, TAILT2
 !/FLD2      INTEGER                 :: TAILTYPE
@@ -774,7 +774,7 @@
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
-                      ICEWIND, NOLEAP
+                      ICEWIND, NOLEAP, TRCKCMPR
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
@@ -1920,6 +1920,7 @@
       WSM    = 1.7
       WSC    = 0.333
       FLC    = .TRUE.
+      TRCKCMPR = .TRUE.
       NOSW   = 5
       FMICHE = 1.6
       RWNDC  = 1.
@@ -2128,6 +2129,7 @@
       FICEN  = CICEN
       GRIDSHIFT=GSHIFT
       ICE100WIND=ICEWIND
+      CMPRTRCK=TRCKCMPR
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
       FICEL  = LICE
       IICEHMIN  = ICEHMIN
@@ -2171,6 +2173,7 @@
 !/SEED      XSEED  =  MAX ( 1. , XSEED )
 !/SEED      WRITE (NDSO,964) XSEED
 !/SCRIP     WRITE (NDSO,963) GSHIFT
+      WRITE (NDSO,1972) TRCKCMPR
       FACSD  = XSEED
 !/RWND RWINDC = RWNDC 
 !/WCOR WWCOR(1) = WCOR1 
@@ -2347,14 +2350,14 @@
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
                                 STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
-                                ICEDISP, ICEWIND, NOLEAP
+                                ICEDISP, ICEWIND, NOLEAP, TRCKCMPR
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
                                 STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
-                                ICEDISP, ICEWIND, NOLEAP
+                                ICEDISP, ICEWIND, NOLEAP, TRCKCMPR
 
           END IF
 !
@@ -4836,6 +4839,7 @@
   961 FORMAT ( '       Ice concentration cut-offs  :',F8.2,F6.2)
 !/MGG  962 FORMAT  ( '       Moving grid GSE cor. power  :',F8.2)
 !/SCRIP  963 FORMAT( ' Grid offset for multi-grid w/SCRIP  : ',E11.3)
+  1972 FORMAT( '       Compression of track output  : ',L3)
 !/SEED  964 FORMAT ( '       Xseed in seeding algorithm  :',F8.2)
   965 FORMAT (/'    Dynamic source term integration scheme :'/        &
                '       Xp                      (-) :',F9.3/           &
@@ -4915,11 +4919,12 @@
                      ', WSC =',F6.3,', FLC = ',A/                     &
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
                         F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/   &
-               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,','/      &
-               '        STDX =',F7.2,', STDY =',F7.2,', STDT =', F8.2,&
+               '        FACBERG =',F4.1,', GSHIFT = ',E11.3,          &
+                        ',STDX = ' ,F7.2,', STDY =',F7.2,','/         &
+               '        STDT =', F8.2,                                &
                      ', ICEHMIN = ',F5.2,', ICEHINIT = ',F5.2,','/    &
-               '        ICEDISP = ',L3,', ICEWIND = ',F6.2,	      &
-	       '     ,  NOLEAP = ',L3, ' /')
+               '        ICEDISP = ',L3,', ICEWIND = ',F6.2,           &
+                   ' ,  NOLEAP = ',L3,' , TRCKCMPR = ',L3,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  
