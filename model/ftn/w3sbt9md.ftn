@@ -131,6 +131,10 @@
 !
 !  7. Remarks :
 !
+!     Cg_mud calculation could be improved by using dsigma/dk instead
+!        of n*C. The latter is a "naive" method and its accuracy has
+!        not been confirmed.
+!
 !  8. Structure :
 !
 !     See source code.

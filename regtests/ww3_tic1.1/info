@@ -42,7 +42,7 @@
 #          IC3 = Wang and Shen (JGR 2010), dissipation is caused by         #
 #                interaction between waves and ice, where ice layer is      #
 #                represented as a continuous viscoelastic layer             #
-#          IC4 = Choice of 4 simple physics.                      # 
+#          IC4 = Choice of 4 simple physics.                                # 
 #   Scattering of waves by ice floes will be treated separately from        #
 #   IC1/IC2/IC3/IC4 and and is not included in this test case.              #
 #                                                                           #
@@ -79,9 +79,7 @@
 #                                                                           #
 # ./bin/run_test -w work_IC3_nondisp -i input_IC3_nondisp ../ ww3_tic1.1    #
 #                                                                           #
-# ./bin/run_test -w work_IC4 -g 1000m -i input_IC4 ../ ww3_tic1.1           #
-# ./bin/run_test -w work_IC4_M3 -g 1000m -i input_IC4/input_IC4_M3 \        #
-#       ../ ww3_tic1.1                                                      #
+# ./bin/run_test -w work_IC4_M3 -g 1000m -i input_IC4/M3 ../ ww3_tic1.1     #
 #                                                                           #
 # ./bin/run_test -s MPI -p mpirun -n 3 -g CGICE_CHENG \                     #
 #        -w work_IC3_CGICE_CHENG -i input_IC3NL ../model ww3_tic1.1         #

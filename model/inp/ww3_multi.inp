@@ -81,6 +81,16 @@ $ defined by mod_def.input, and no other inputs are used. In the lines
 $ that are commented out, each grid runs on a part of the pool of
 $ processes assigned to the computation.
 $
+$ Limitations relevant to irregular (curvilinear) grids:
+$   1) Equal rank is not supported when one or more is an irregular
+$       grid. Use non-equal rank instead. (see wmgridmd.ftn)
+$   2) Non-native input grids: feature is not supported when either 
+$      an input grid or computational grids is irregular.
+$      (see wmupdtmd.ftn)
+$   3) Irregular grids with unified point output: This is supported
+$      but the feature has not been verified for accuracy.
+$      (see wmiopomd.ftn)
+$
 $ -------------------------------------------------------------------- $
 $ Starting and ending times for the entire model run
 $

@@ -187,6 +187,7 @@
 !      PFMOVE    Real  Public   Tunable parameter in GSE correction
 !                               for moving grids.
 !      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
+!      CMPRTRCK  Log.  Public   True for traditional compression of track output
 !      PoLat/Lon R.A.  Public   Rotated N-Pole standard latitude/longitude. 
 !      AnglD     R.A.  Public   Rotation angle in degree to turn rotated grid
 !                               back to standard grid.  JGLi12Jun2012
@@ -637,6 +638,7 @@
 
         LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
         LOGICAL          :: FLAGLL
+        LOGICAL          :: CMPRTRCK
         LOGICAL, POINTER :: FLAGST(:)
         CHARACTER(LEN=30):: GNAME
         CHARACTER(LEN=13):: FILEXT
@@ -936,6 +938,7 @@
 
       LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
       LOGICAL, POINTER :: FLAGLL
+      LOGICAL, POINTER :: CMPRTRCK
       LOGICAL, POINTER :: FLAGST(:)
 
       CHARACTER(LEN=30), POINTER :: GNAME
@@ -1846,6 +1849,7 @@
       CTMAX  => GRIDS(IMOD)%CTMAX
       FICE0  => GRIDS(IMOD)%FICE0
       GRIDSHIFT  => GRIDS(IMOD)%GRIDSHIFT
+      CMPRTRCK => GRIDS(IMOD)%CMPRTRCK
 !/RTD      Polat  => GRIDS(IMOD)%Polat
 !/RTD      Polon  => GRIDS(IMOD)%Polon
       FICEN  => GRIDS(IMOD)%FICEN
