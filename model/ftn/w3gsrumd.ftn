@@ -20,7 +20,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         25-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    30-Oct-2009 : Origination.                        ( version 3.14 )
@@ -67,6 +67,8 @@
 !/                  for a curvilinear grid              ( version 6.02 )
 !/    20-Jan-2017 : Add W3GRMC as generic routine for computing
 !/                  remapping coefficients              ( version 6.02 )
+!/    25-Jan-2017 : Fix index offsets for MASK in W3GRMP and W3GRMC.
+!/                  Change redist to nearpt in W3GRMC.  ( version 6.03 )
 !/
 !  1. Purpose :
 !
@@ -917,7 +919,7 @@
       WRITE(NDST,'(A,1I2)') 'Grid precision:',PTR%GKIND
       WRITE(NDST,'(A,2I6)') 'Grid lbx,lby:',PTR%LBX,PTR%LBY
       WRITE(NDST,'(A,2I6)') 'Grid ubx,uby:',PTR%UBX,PTR%UBY
-      WRITE(NDST,'(A,2I6)') 'Grid nx,ny:',PTR%NX,PTR%NY
+      WRITE(NDST,'(A,2I6)') 'Grid  nx, ny:',PTR%NX,PTR%NY
       IF ( PRESENT(LFULL) ) THEN
           IF ( LFULL ) THEN
               WRITE(NDST,'( 80A)') ('-',K=1,80)
@@ -943,7 +945,7 @@
               WRITE(NDST,'(2A4,4A24)') 'IB','JB','X1','Y1','X2','Y2'
               DO IB=1,PTR%NBX
               DO JB=1,PTR%NBY
-                  WRITE(*,'(2I4,4E24.16)') IB,JB, &
+                  WRITE(NDST,'(2I4,4E24.16)') IB,JB, &
                   PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
                   PTR%XMIN+(IB  )*PTR%DXB,PTR%YMIN+(JB  )*PTR%DYB
                 END DO
@@ -2634,6 +2636,24 @@
         END IF
       NNP => GSU%PTR%NNP
 !
+      IF ( PRESENT(MASK) ) THEN
+          IF ( IJG ) THEN
+              IF ( .NOT.(UBOUND(MASK,1).EQ.NX.AND. &
+                         UBOUND(MASK,2).EQ.NY) ) THEN
+                  WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+                  'MASK array size does not agree with GSU index bounds'
+                  CALL EXTCDE (1)
+                END IF
+            ELSE
+              IF ( .NOT.(UBOUND(MASK,2).EQ.NX.AND. &
+                         UBOUND(MASK,1).EQ.NY) ) THEN
+                  WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+                  'MASK array size does not agree with GSU index bounds'
+                  CALL EXTCDE (1)
+                END IF
+            END IF
+        END IF
+!
       RW = ZERO;
 !
       XT = XTIN;  YT = YTIN;
@@ -2687,11 +2707,11 @@
 !-----copy cell mask values according to array ordering
       IF ( IJG ) THEN
           DO L=1,4
-              MSK(L) = MASK(IS(L),JS(L))
+              MSK(L) = MASK(IS(L)-LBX+1,JS(L)-LBY+1)
             END DO
         ELSE
           DO L=1,4
-              MSK(L) = MASK(JS(L),IS(L))
+              MSK(L) = MASK(JS(L)-LBY+1,IS(L)-LBX+1)
             END DO
         END IF
 !
@@ -2759,9 +2779,9 @@
                 END IF
 !-------------set mask
               IF ( IJG ) THEN
-                  M = MASK(I,J)
+                  M = MASK(I-LBX+1,J-LBY+1)
                 ELSE
-                  M = MASK(J,I)
+                  M = MASK(J-LBY+1,I-LBX+1)
                 END IF
               IF ( LDBG ) &
               WRITE(*,'(A,4I6,1L6)') &
@@ -2868,7 +2888,7 @@
 !       GSU     Type   I   Grid-search-utility object.
 !       XTIN    Real   I   X-coordinate of target point.
 !       YTIN    Real   I   Y-coordinate of target point.
-!       RTYP    Str.   I   Remap type: 'redist', 'bilinr', 'bicubc',
+!       RTYP    Str.   I   Remap type: 'nearpt', 'bilinr', 'bicubc',
 !                                      'filter'
 !       NS      Int.   O   Number of vertices for remapping
 !       IS,JS   I.A.   O   (I,J) indices of vertices for remapping
@@ -2943,7 +2963,8 @@
       LOGICAL, INTENT(IN)   , OPTIONAL :: DEBUG
 
 !     Local parameters
-      REAL(8) :: XT, YT, LEPS, LDCIN, LWDTH
+      REAL(8) :: LEPS, LDCIN, LWDTH=ZERO
+      REAL(8) :: XT, YT
       REAL(8), POINTER :: CS8(:) => NULL()
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3GRMC_R4')
@@ -2958,7 +2979,7 @@
         END IF
 !
       SELECT CASE (RTYP)
-        CASE ('redist')
+        CASE ('nearpt')
         CASE ('bilinr')
         CASE ('bicubc')
         CASE ('filter')
@@ -3036,13 +3057,14 @@
 !     Local parameters
       LOGICAL, PARAMETER :: LCMP = .TRUE.
       INTEGER, PARAMETER :: NMSK_DEFAULT = 2
-      REAL(8) :: LEPS, LWDTH
+      REAL(8), PARAMETER :: BIG = 1D16
+      REAL(8) :: LEPS, LWDTH=ZERO
       LOGICAL :: LDBG, FNCL, POLE, DOBLC, LMSK
-      INTEGER :: I, J, K, KK, MCS, MCSMAX
+      INTEGER :: I, II, J, JJ, K, KK, MCS, MCSMAX
       INTEGER :: IC(4), JC(4)
       REAL(8) :: XT, YT, XC(4), YC(4)
       REAL(8) :: XTC, YTC, XSC(4), YSC(4)
-      REAL(8) :: LDCIN, IXR, JXR, DD, LON0, LAT0
+      REAL(8) :: LDCIN, IXR, JXR, DD, LON0, LAT0, DMIN
       REAL(8) :: IX, JX, CZS
       INTEGER :: NZ
       LOGICAL, POINTER :: LZ(:)
@@ -3064,7 +3086,7 @@
         END IF
 !
       SELECT CASE (RTYP)
-        CASE ('redist')
+        CASE ('nearpt')
         CASE ('bilinr')
         CASE ('bicubc')
         CASE ('filter')
@@ -3133,6 +3155,24 @@
       UBX = GSU%PTR%UBX;  UBY = GSU%PTR%UBY;
       NX = GSU%PTR%NX;  NY = GSU%PTR%NY;
 !
+      IF ( PRESENT(MASK) ) THEN
+          IF ( IJG ) THEN
+              IF ( .NOT.(UBOUND(MASK,1).EQ.NX.AND. &
+                         UBOUND(MASK,2).EQ.NY) ) THEN
+                  WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+                  'MASK array size does not agree with GSU index bounds'
+                  CALL EXTCDE (1)
+                END IF
+            ELSE
+              IF ( .NOT.(UBOUND(MASK,2).EQ.NX.AND. &
+                         UBOUND(MASK,1).EQ.NY) ) THEN
+                  WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+                  'MASK array size does not agree with GSU index bounds'
+                  CALL EXTCDE (1)
+                END IF
+            END IF
+        END IF
+!
       NS = 0
       IF ( ASSOCIATED(IS) ) THEN
           DEALLOCATE( IS )
@@ -3190,9 +3230,9 @@
                ABS(JC(KK)-JX).LE.LEPS ) THEN
               IF ( PRESENT(MASK) ) THEN
                   IF ( IJG ) THEN
-                      IF ( .NOT.MASK(IC(KK),JC(KK)) ) EXIT KK_LOOP
+                      IF ( .NOT.MASK(IC(KK)-LBX+1,JC(KK)-LBY+1) ) EXIT KK_LOOP
                     ELSE
-                      IF ( .NOT.MASK(JC(KK),IC(KK)) ) EXIT KK_LOOP
+                      IF ( .NOT.MASK(JC(KK)-LBY+1,IC(KK)-LBX+1) ) EXIT KK_LOOP
                     END IF
                 ELSE
                   EXIT KK_LOOP
@@ -3205,9 +3245,9 @@
       IF ( PRESENT(MASK) ) THEN
           DO K=1,4
               IF ( IJG ) THEN
-                  IF ( MASK(IC(K),JC(K)) ) MCS = MCS+1
+                  IF ( MASK(IC(K)-LBX+1,JC(K)-LBY+1) ) MCS = MCS+1
                 ELSE
-                  IF ( MASK(JC(K),IC(K)) ) MCS = MCS+1
+                  IF ( MASK(JC(K)-LBY+1,IC(K)-LBX+1) ) MCS = MCS+1
                 END IF
             END DO
         END IF
@@ -3216,21 +3256,34 @@
 ! 4.  Compute source grid points and remapping coefficients
 !
       SELECT CASE (RTYP)
-        CASE ('redist')
-          ! *** redistribution ***
-          IF ( KK.LE.4 ) THEN
-              ! coincident with unmasked point kk
+        CASE ('nearpt')
+          ! *** nearest point ***
+          DMIN = BIG
+          DO K=1,4
+              DD = (IX - IC(K))**2 + (JX - JC(K))**2
+              IF ( DD .LT. DMIN ) THEN
+                  DMIN = DD;  II = IC(K);  JJ = JC(K);
+                END IF
+            END DO
+          NZ = 1
+          IF ( PRESENT(MASK) ) THEN
+              IF ( IJG ) THEN
+                  IF ( MASK(II-LBX+1,JJ-LBY+1) ) NZ = 0
+                ELSE
+                  IF ( MASK(JJ-LBY+1,II-LBX+1) ) NZ = 0
+                END IF
+            END IF
+          IF ( NZ.EQ.1 ) THEN
+              ! nearest point is unmasked
               ! set number of points to one and coefficient to one
-              NZ = 1
               ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
               LZ(NZ) = .TRUE.
-              IZ(NZ) = IC(KK)
-              JZ(NZ) = JC(KK)
+              IZ(NZ) = II
+              JZ(NZ) = JJ
               CZ(NZ) = ONE
             ELSE
-              ! no coincident unmasked points
+              ! nearest point is masked
               ! set number of points to zero and return
-              NS = 0
               RETURN
             END IF
         CASE ('bilinr')
@@ -3282,9 +3335,9 @@
                       CHECK: DO K=1,NZ
                           IF ( LZ(K) ) THEN
                               IF ( IJG ) THEN
-                                  LMSK = MASK(IZ(K),JZ(K))
+                                  LMSK = MASK(IZ(K)-LBX+1,JZ(K)-LBY+1)
                                 ELSE
-                                  LMSK = MASK(JZ(K),IZ(K))
+                                  LMSK = MASK(JZ(K)-LBY+1,IZ(K)-LBX+1)
                                 END IF
                               IF ( LMSK ) THEN
                                   DOBLC = .TRUE.
@@ -3317,7 +3370,7 @@
               ! unmasked or partially masked cell
               ! get gaussian filter
               CALL GETGFC( GSU, IC(1), JC(1), IXR, JXR, &
-                           WDTH, LCMP, NZ, LZ, IZ, JZ, CZ )
+                           LWDTH, LCMP, NZ, LZ, IZ, JZ, CZ )
             ELSE
               ! fully masked cell
               ! set number of points to zero and return
@@ -3335,9 +3388,9 @@
               IF ( LZ(K) ) THEN
                   IF ( PRESENT(MASK) ) THEN
                       IF ( IJG ) THEN
-                          LMSK = MASK(IZ(K),JZ(K))
+                          LMSK = MASK(IZ(K)-LBX+1,JZ(K)-LBY+1)
                         ELSE
-                          LMSK = MASK(JZ(K),IZ(K))
+                          LMSK = MASK(JZ(K)-LBY+1,IZ(K)-LBX+1)
                         END IF
                       IF ( LMSK ) THEN
                           LZ(K) = .FALSE.
