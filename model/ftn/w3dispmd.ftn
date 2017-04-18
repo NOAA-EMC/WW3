@@ -790,6 +790,13 @@ END DO
 !     This subroutine expects eddy viscosity in units of m2/sec even
 !     though values are given in units of cm2/sec in the Liu paper.
 !
+!     Cg used here is correct only for deep water. It is taken from 
+!     Liu et al. (1991) equation 2. If we want to calculate for finite
+!     depths accurately, we need to use d_sigma/d_k. However, be warned
+!     that this calculation is sensitive to numerical error and so the 
+!     (potentially too coarse) computational grid for sigma and k should 
+!     *not* be used. 
+!
 !  8. Structure :
 !
 !     See source code.
@@ -861,7 +868,7 @@ END DO
       FREQ  = SIGMA/(TPI)
 
 !/ 2) --- Calculate Cg and alpha if requested ------------------------ /
-
+!     Note: Cg is correct only for deep water
       IF (GET_CG) THEN
          CG    = (GRAV + (5.0+4.0 * KWN * M) * (B * KWN**4)) &
                / (2.0 * SIGMA * ((1.0 + KWN * M)**2))

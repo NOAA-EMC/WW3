@@ -259,6 +259,7 @@
       INTEGER                 :: IND, ITH, IS
       LOGICAL                 :: NOICE=.FALSE.
         ! Warning, ALPHA = 2 * WN_I -> Makes WN_I useless, doesnt it ?
+! ER: the above comment came from SWARP branch, rev 75074, from Fabrice
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -320,7 +321,17 @@
 !            Note: We should not use CG_ICE here unless CG_ICE is also
 !            used for advection in w3wavemd.ftn (see lines for IC3
 !            there).
+
+! Erick says: Someone broke this.
+! There was a WN_I calculation here and it was removed.
+!  So dissipation rate is now zero.
+!  This was rev 75076 in the SWARP branch
+!  https://svnemc.ncep.noaa.gov/trac/ww3/changeset/75076
+             WRITE(NDSE,*)'This option was broken in rev 75076'
+             CALL EXTCDE (501)
+
              D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
+
              END DO
 !
 ! Alternative by F.A.: generalization to a turbulent boundary layer

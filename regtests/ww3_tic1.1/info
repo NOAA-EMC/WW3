@@ -42,9 +42,56 @@
 #          IC3 = Wang and Shen (JGR 2010), dissipation is caused by         #
 #                interaction between waves and ice, where ice layer is      #
 #                represented as a continuous viscoelastic layer             #
-#          IC4 = Choice of 4 simple physics.                                # 
+#          IC4 = Choose from several empirical parameterizations            # 
+#            IC4METHOD = 1 - Wadhams et al. (1988)                          #
+#            IC4METHOD = 2 - Meylan et al. (2014)                           #
+#            IC4METHOD = 3 - Kohout & Meylan (2008) in                      #
+#                               Horvat & Tziperman (2015)                   #
+#            IC4METHOD = 4 - Kohout et al. (2014)                           #
+#            IC4METHOD = 5 - Simple ki step function                        #
+#            IC4METHOD = 6 - Simple ki step function via namelist           #
+#            IC4METHOD = 7 - Doble et al. (GRL 2015)                        #
 #   Scattering of waves by ice floes will be treated separately from        #
 #   IC1/IC2/IC3/IC4 and and is not included in this test case.              #
+#                                                                           #
+#   IC4 settings used in tests for IC4METHOD = 1,2,3,4 are given now :      #
+#      ------------> &SIC4 IC4METHOD = 1 /                                  #
+#            ...   ICECOEF1, ICECOEF2 are required:                         #
+#                  T T     Ice parameter 1                                  #
+#                  T T     Ice parameter 2                                  #
+#            ...                                                            #
+#                  'IC1' 19680606 000000   0.18                             #
+#                  'IC2' 19680606 000000   7.3                              #
+#                                                                           #
+#      ------------> &SIC4 IC4METHOD = 2 /                                  #
+#            ...ICECOEF1 to ICECOEF5 are required:                          #
+#               T T     Ice parameter 1                                     #
+#               T T     Ice parameter 2                                     #
+#               T T     Ice parameter 3                                     #
+#               T T     Ice parameter 4                                     #
+#               T T     Ice parameter 5                                     #
+#            ...                                                            #
+#               'IC1' 19680606 000000   0.0                                 #
+#               'IC2' 19680606 000000   0.0                                 #
+#               'IC3' 19680606 000000   0.0212                              #
+#               'IC4' 19680606 000000   0.0                                 #
+#               'IC5' 19680606 000000   0.459                               #
+#                                                                           #
+#      ------------> &SIC4 IC4METHOD = 3 /                                  #
+#                  and                                                      #
+#      ------------> &SIC4 IC4METHOD = 7 /                                  #
+#            ...ICECOEF1 is required, representing ice thickness.           #
+#               T T     Ice parameter 1                                     #
+#            ...                                                            #
+#               'IC1' 19680606 000000   0.25                                #
+#                                                                           #
+#      ------------> &SIC4 IC4METHOD = 4 /                                  #
+#            ...ICECOEF1, ICECOEF2 are required:                            #
+#               T T     Ice parameter 1                                     #
+#               T T     Ice parameter 2                                     #
+#            ...                                                            #
+#               'IC1' 19680606 000000   5.35E-6                             #
+#               'IC2' 19680606 000000   16.05E-6                            #
 #                                                                           #
 #  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
 #  available from http://www7320.nrlssc.navy.mil/pubs.php                   #
