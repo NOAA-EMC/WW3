@@ -442,8 +442,14 @@ EOF
   fi
 
   cd $temp_dir
-  rm -f *.f *.F *.f90 *.F90
-  rm -f *.l
+  if [ "$source" != 'yes' ]
+  then
+    rm -f *.f *.F *.f90 *.F90
+  fi
+  if [ "$list" != 'yes' ]
+  then
+    rm -f *.l
+  fi
   cd $main_dir/ftn
 
 # 1.e Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
