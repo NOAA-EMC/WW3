@@ -24,7 +24,7 @@
 #define TEST_WMESMFMD___disabled
 #define TEST_WMESMFMD_GETIMPORT___disabled
 #define TEST_WMESMFMD_SETEXPORT___disabled
-#define TEST_WMESMFMD_CREATEIMPGRID___disabled 
+#define TEST_WMESMFMD_CREATEIMPGRID___disabled
 #define TEST_WMESMFMD_CREATEEXPGRID___disabled
 #define TEST_WMESMFMD_BLENDIMPFIELDS___disabled
 !/
@@ -35,10 +35,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Add ocean forcing export fields     ( version X.YZ )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -83,6 +84,9 @@
 !      FieldGather      Subr.  Private  Gather ESMF field
 !      FieldIndex       Func.  Private  Return field index
 !      PrintTimers      Subr.  Private  Print wallclock timers
+!      CalcDecomp       Subr.  Private  Calculate a 2D processor layout
+!      GetEnvValue      Subr.  Private  Get value of env. variable
+!      GetZlevels       Subr.  Private  Get z-levels from file for SDC
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -154,13 +158,15 @@
 
 ! --- Miscellaneous
       integer, parameter :: stdo = 6
-      integer, parameter :: haloWidth = 3
       type(ESMF_VM) :: vm
       integer :: lpet, npet
       integer :: verbosity
       logical :: realizeAllExport = .false.
       integer :: maskValueWater = DEFAULT_MASK_WATER
       integer :: maskValueLand  = DEFAULT_MASK_LAND
+      integer              :: nz    ! Number of z-levels for SDC
+      real(4), allocatable :: zl(:) ! Array of z-levels for SDC
+      character(256)       :: zlfile = 'none' ! File containing z-levels for SDC
       character(ESMF_MAXSTR) :: msg
       real(ESMF_KIND_RX) :: zeroValue
       real(ESMF_KIND_RX) :: missingValue
@@ -178,6 +184,7 @@
       type(ESMF_Grid)       :: impGrid
       integer               :: impGridID
       logical               :: impGridIsLocal
+      integer, parameter    :: impHaloWidth = 3
       integer               :: impHaloLWidth(2)
       integer               :: impHaloUWidth(2)
       type(ESMF_RouteHandle):: impHaloRH
@@ -206,14 +213,13 @@
       type(ESMF_Grid)       :: expGrid
       integer               :: expGridID
       logical               :: expGridIsLocal
+      integer, parameter    :: expHaloWidth = 0
       integer               :: expHaloLWidth(2)
       integer               :: expHaloUWidth(2)
       type(ESMF_RouteHandle):: expHaloRH
       type(ESMF_Field)      :: expMask
-      logical               :: include3D
-      integer               :: nz ! Number of z-levels for 3D fields
       logical               :: noActiveExpFields
-      integer, parameter    :: numExpFields = 2
+      integer, parameter    :: numExpFields = 9
       character(6)          :: expFieldName(numExpFields)
       character(128)        :: expFieldStdName(numExpFields)
       integer               :: expFieldDim(numExpFields)
@@ -509,10 +515,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Add ocean forcing export fields     ( version X.YZ )
 !/
 !  1. Purpose :
 !
@@ -693,6 +700,10 @@
         call ESMF_ConfigGetAttribute(config, maskValueLand, &
           label='mask_value_land:', default=DEFAULT_MASK_LAND, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        ! z-level file
+        call ESMF_ConfigGetAttribute(config, zlfile, &
+          label=trim(cname)//'_zlevel_exp_file:', default='none', rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !     preamb = trim(wrkdir)//'/'
       preamb = trim(preamb)//'/' !TODO: have separate paths for .inp, logs and data?
@@ -838,24 +849,32 @@
       expFieldStdName(i1) = 'wave_z0_roughness_length'
       expFieldDim(i1)     = 2
 
-!     i1 = 2;  i2 = 3;  i3 = 3;
-!     expFieldName(i1)    = 'uscurr'
-!     expFieldStdName(i1) = 'eastward_stokes_drift_current'
-!     expFieldDim(i1)     = 3
-!     expFieldName(i2)    = 'vscurr'
-!     expFieldStdName(i2) = 'northward_stokes_drift_current'
-!     expFieldDim(i2)     = 3
+      i1 = 3;  i2 = 4;  i3 = 4;
+      expFieldName(i1)    = 'uscurr'
+      expFieldStdName(i1) = 'eastward_stokes_drift_current'
+      expFieldDim(i1)     = 3
+      expFieldName(i2)    = 'vscurr'
+      expFieldStdName(i2) = 'northward_stokes_drift_current'
+      expFieldDim(i2)     = 3
 
-!     i1 = 4;  i2 = 5;  i3 = 6;
-!     expFieldName(i1)    = 'wbcuru'
-!     expFieldStdName(i1) = 'eastward_wave_bottom_current'
-!     expFieldDim(i1)     = 2
-!     expFieldName(i2)    = 'wbcurv'
-!     expFieldStdName(i2) = 'northward_wave_bottom_current'
-!     expFieldDim(i2)     = 2
-!     expFieldName(i3)    = 'wbcurf'
-!     expFieldStdName(i3) = 'wave_bottom_current_radian_frequency'
-!     expFieldDim(i3)     = 2
+      i1 = 5;  i2 = 6;  i3 = 7;
+      expFieldName(i1)    = 'wbcuru'
+      expFieldStdName(i1) = 'eastward_wave_bottom_current'
+      expFieldDim(i1)     = 2
+      expFieldName(i2)    = 'wbcurv'
+      expFieldStdName(i2) = 'northward_wave_bottom_current'
+      expFieldDim(i2)     = 2
+      expFieldName(i3)    = 'wbcurp'
+      expFieldStdName(i3) = 'wave_bottom_current_period'
+      expFieldDim(i3)     = 2
+
+      i1 = 8;  i2 = 9;  i3 = 9;
+      expFieldName(i1)    = 'wavsgu'
+      expFieldStdName(i1) = 'eastward_wave_radiation_stress_gradient'
+      expFieldDim(i1)     = 2
+      expFieldName(i2)    = 'wavsgv'
+      expFieldStdName(i2) = 'northward_wave_radiation_stress_gradient'
+      expFieldDim(i2)     = 2
 
       noActiveExpFields = all(.not.isActiveExpField)
 !
@@ -953,10 +972,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Update 3D export field setup        ( version X.YZ )
 !/
 !  1. Purpose :
 !
@@ -1013,7 +1033,7 @@
       character(ESMF_MAXSTR) :: cname
       integer, parameter :: iwt=3
       real(8) :: wstime, wftime
-      integer :: i, n
+      integer :: i1, i2, i3, i, n
       logical :: isConnected
 !
 ! -------------------------------------------------------------------- /
@@ -1116,6 +1136,8 @@
         if ( expFieldDim(i).eq.3 ) then
           expField(i) = ESMF_FieldCreate( expGrid, expArraySpec3D, &
             totalLWidth=expHaloLWidth, totalUWidth=expHaloUWidth, &
+            gridToFieldMap=(/2,3/), &
+            ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
             staggerLoc=expStaggerLoc, name=trim(expFieldName(i)), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         else
@@ -1169,10 +1191,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Add clean up of local allocations   ( version X.YZ )
 !/
 !  1. Purpose :
 !
@@ -1241,6 +1264,14 @@
 ! 2.  Clean up ESMF data structures
 !
 !TODO
+!
+! -------------------------------------------------------------------- /
+! 3.  Clean up locally allocated data structures
+!
+      if (allocated(zl)) then
+        deallocate (zl, stat=rc)
+        if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
+      endif
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -1950,10 +1981,11 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Add ocean forcing export fields     ( version X.YZ )
 !/
 !  1. Purpose :
 !
@@ -2118,13 +2150,58 @@
 ! -------------------------------------------------------------------- /
 ! 4.  Stokes Drift
 !
+      i1 = FieldIndex( expFieldName, 'uscurr', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'vscurr', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( isActiveExpField(i1) .and. &
+           isActiveExpField(i2) ) then
+        fillValue = zeroValue
+        call FieldFill( expField(i1), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call FieldFill( expField(i2), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
 !
 ! -------------------------------------------------------------------- /
 ! 5.  Bottom Current
 !
+      i1 = FieldIndex( expFieldName, 'wbcuru', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'wbcurv', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i3 = FieldIndex( expFieldName, 'wbcurp', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( isActiveExpField(i1) .and. &
+           isActiveExpField(i2) .and. &
+           isActiveExpField(i3) ) then
+        fillValue = zeroValue
+        call FieldFill( expField(i1), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call FieldFill( expField(i2), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call FieldFill( expField(i3), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
 !
 ! -------------------------------------------------------------------- /
-! 6.  Clean up
+! 6.  Radiation stress gradients
+!
+      i1 = FieldIndex( expFieldName, 'wavsgu', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'wavsgv', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( isActiveExpField(i1) .and. &
+           isActiveExpField(i2) ) then
+        fillValue = zeroValue
+        call FieldFill( expField(i1), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call FieldFill( expField(i2), fillValue, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+!
+! -------------------------------------------------------------------- /
+! 7.  Clean up
 !
       call ESMF_FieldDestroy( natField, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2211,8 +2288,7 @@
 !/ Local parameters
 !/
       character(ESMF_MAXSTR) :: cname
-      integer :: nproc, nxproc, nyproc, n, nfac, irp
-      real    :: gr, rp, pr, diff
+      integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: ldecnt
       integer :: ix, iy, isea, jsea
@@ -2252,29 +2328,8 @@
 !
 ! 1.b Compute a 2D subdomain layout based on nproc
 !
-      if ( nx.gt.ny ) then
-        gr = real(nx)/real(ny)
-      else
-        gr = real(ny)/real(nx)
-      endif
-      irp = int(sqrt(real(nproc)))
-      diff = huge(gr)
-      nfac = nproc
-      do n = irp,nproc
-        if ( mod(nproc,n).ne.0 ) cycle
-        pr = real(n**2)/real(nproc)
-        if ( abs(gr-pr) < diff ) then
-          diff = abs(gr-pr)
-          nfac = n
-        endif
-      enddo
-      if ( nx.gt.ny ) then
-        nxproc = nfac
-        nyproc = nproc/nfac
-      else
-        nxproc = nproc/nfac
-        nyproc = nfac
-      endif
+      call CalcDecomp( nx, ny, nproc, impHaloWidth, .true., nxproc, nyproc, rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 1.c Set arraySpec, staggerLoc, and indexFlag for import fields
 !
@@ -2353,8 +2408,8 @@
 ! 2.e Set halo widths for import fields
 !
       if ( impGridIsLocal ) then
-        impHaloLWidth = (/haloWidth,haloWidth/)
-        impHaloUWidth = (/haloWidth,haloWidth/)
+        impHaloLWidth = (/impHaloWidth,impHaloWidth/)
+        impHaloUWidth = (/impHaloWidth,impHaloWidth/)
         select case (iclose)
           case (iclose_none)
             if ( elb(1).eq.1  ) impHaloLWidth(1) = 0
@@ -2440,6 +2495,26 @@
 ! Post
 !
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_CREATEIMPGRID)
+      write(msg,'(a,i6)')  '     impGridID: ',impGridID
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,l6)')  'impGridIsLocal: ',impGridIsLocal
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '        nx, ny: ',nx,ny
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') 'naproc, nmproc: ',naproc,nmproc
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,i6)')  '         nproc: ',nproc
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') 'nxproc, nyproc: ',nxproc,nyproc
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           elb: ',elb(:)
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           eub: ',eub(:)
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') ' impHaloLWidth: ',impHaloLWidth(:)
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') ' impHaloUWidth: ',impHaloUWidth(:)
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       call ESMF_FieldWrite( impMask, &
         "wmesmfmd_createimpgrid_import_mask.nc", overwrite=.true., rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2491,6 +2566,16 @@
       endif
       call ESMF_FieldWrite( tmpField, &
         "wmesmfmd_createimpgrid_import_hqfac.nc", overwrite=.true., rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( impGridIsLocal ) then
+        do iy = elb(2),eub(2)
+          do ix = elb(1),eub(1)
+            rptr(ix,iy) = lpet
+          enddo
+        enddo
+      endif
+      call ESMF_FieldWrite( tmpField, &
+        "wmesmfmd_createimpgrid_import_dcomp.nc", overwrite=.true., rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_FieldDestroy( tmpField, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2565,11 +2650,10 @@
 !/ Local parameters
 !/
       character(ESMF_MAXSTR) :: cname
-      integer :: nproc, nxproc, nyproc, n, nfac, irp
-      real    :: gr, rp, pr, diff
+      integer :: nproc, nxproc, nyproc
       integer, parameter :: lde = 0
       integer :: ldecnt
-      integer :: ix, iy, isea, jsea
+      integer :: ix, iy, isea, jsea, k
       integer :: elb(2), eub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
@@ -2606,29 +2690,8 @@
 !
 ! 1.b Compute a 2D subdomain layout based on nproc
 !
-      if ( nx.gt.ny ) then
-        gr = real(nx)/real(ny)
-      else
-        gr = real(ny)/real(nx)
-      endif
-      irp = int(sqrt(real(nproc)))
-      diff = huge(gr)
-      nfac = nproc
-      do n = irp,nproc
-        if ( mod(nproc,n).ne.0 ) cycle
-        pr = real(n**2)/real(nproc)
-        if ( abs(gr-pr) < diff ) then
-          diff = abs(gr-pr)
-          nfac = n
-        endif
-      enddo
-      if ( nx.gt.ny ) then
-        nxproc = nfac
-        nyproc = nproc/nfac
-      else
-        nxproc = nproc/nfac
-        nyproc = nfac
-      endif
+      call CalcDecomp( nx, ny, nproc, expHaloWidth, .false., nxproc, nyproc, rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 1.c Set arraySpec, staggerLoc, and indexFlag for export fields
 !
@@ -2648,6 +2711,21 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       natStaggerLoc = ESMF_STAGGERLOC_CENTER
       natIndexFlag = ESMF_INDEX_DELOCAL
+!
+! 1.e Get z-levels for 3D export fields
+!
+      call GetZlevels( rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      write(msg,'(a)') 'input z-level file: '//trim(zlfile)
+      call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a)') 'table of z-levels'
+      call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a)') '   index         z'
+      call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
+      do k=1,nz
+        write(msg,'(i8,1f10.2)') k, zl(k)
+        call ESMF_LogWrite(trim(cname)//': '//trim(msg), ESMF_LOGMSG_INFO)
+      enddo
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Create ESMF grid for export with 2D subdomain layout
@@ -2718,8 +2796,8 @@
 ! 2.e Set halo widths for export fields
 !
       if ( expGridIsLocal ) then
-        expHaloLWidth = (/haloWidth,haloWidth/)
-        expHaloUWidth = (/haloWidth,haloWidth/)
+        expHaloLWidth = (/expHaloWidth,expHaloWidth/)
+        expHaloUWidth = (/expHaloWidth,expHaloWidth/)
         select case (iclose)
           case (iclose_none)
             if ( elb(1).eq.1  ) expHaloLWidth(1) = 0
@@ -2924,6 +3002,26 @@
 ! Post
 !
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_CREATEEXPGRID)
+      write(msg,'(a,i6)')  '     expGridID: ',expGridID
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,l6)')  'expGridIsLocal: ',expGridIsLocal
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '        nx, ny: ',nx,ny
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') 'naproc, nmproc: ',naproc,nmproc
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,i6)')  '         nproc: ',nproc
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') 'nxproc, nyproc: ',nxproc,nyproc
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           elb: ',elb(:)
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           eub: ',eub(:)
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') ' expHaloLWidth: ',expHaloLWidth(:)
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') ' expHaloUWidth: ',expHaloUWidth(:)
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       call ESMF_FieldWrite( expMask, &
         "wmesmfmd_createexpgrid_export_mask.nc", overwrite=.true., rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2975,6 +3073,16 @@
       endif
       call ESMF_FieldWrite( tmpField, &
         "wmesmfmd_createexpgrid_export_hqfac.nc", overwrite=.true., rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( expGridIsLocal ) then
+        do iy = elb(2),eub(2)
+          do ix = elb(1),eub(1)
+            rptr(ix,iy) = lpet
+          enddo
+        enddo
+      endif
+      call ESMF_FieldWrite( tmpField, &
+        "wmesmfmd_createexpgrid_export_dcomp.nc", overwrite=.true., rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_FieldDestroy( tmpField, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3048,7 +3156,7 @@
       real(ESMF_KIND_RX), parameter :: zero = 0.0
       real(ESMF_KIND_RX), parameter :: half = 0.5
       real(ESMF_KIND_RX), parameter ::  one = 1.0
-      integer, parameter :: nsig = haloWidth
+      integer, parameter :: nsig = impHaloWidth
       integer, parameter :: niter = 10
       integer, parameter :: lde = 0
       integer :: iter, i, j, ii, jj, k, l
@@ -3622,6 +3730,331 @@
 !/ End of PrintTimers ------------------------------------------------ /
 !/
       end subroutine PrintTimers
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcDecomp"
+      subroutine CalcDecomp ( nx, ny, nproc, npmin, adjust, nxproc, nyproc, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Calculate a 2D processor layout
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       nx,ny     Int    I   Grid dimensions
+!       nproc     Int    I   Total processor count
+!       npmin     Int    I   Min number of grid points per tile per direction
+!       adjust    Log    I   Enable/disable adjusting proc count downward
+!       nxproc    Int    O   Processor count in x-direction
+!       nyproc    Int    O   Processor count in y-direction
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      integer, intent(in)    :: nx, ny
+      integer, intent(in)    :: nproc
+      integer, intent(in)    :: npmin
+      logical, intent(in)    :: adjust
+      integer, intent(out)   :: nxproc
+      integer, intent(out)   :: nyproc
+      integer, intent(inout) :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      integer, parameter :: k = 4
+      integer :: mproc, n, nfac, irp
+      real(k) :: gr, rp, pr, diff, npx, npy
+      character(256) :: msg
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+      if ( nx.gt.ny ) then
+        gr = real(nx,k)/real(ny,k)
+      else
+        gr = real(ny,k)/real(nx,k)
+      endif
+
+      mproc = nproc
+      mproc_loop: do
+
+        irp = int(sqrt(real(mproc,k)))
+        diff = huge(gr)
+        nfac = mproc
+        do n = irp,mproc
+          if ( mod(mproc,n).ne.0 ) cycle
+          pr = real(n**2,k)/real(mproc,k)
+          if ( abs(gr-pr) < diff ) then
+            diff = abs(gr-pr)
+            nfac = n
+          endif
+        enddo
+        if ( nx.gt.ny ) then
+          nxproc = nfac
+          nyproc = mproc/nfac
+        else
+          nxproc = mproc/nfac
+          nyproc = nfac
+        endif
+
+        npx = nx/real(nxproc,k)
+        npy = ny/real(nyproc,k)
+        if (.not.adjust) exit mproc_loop
+
+        if ( npx.ge.npmin .and. npy.ge.npmin ) then
+          exit mproc_loop
+        else
+          if ( mproc.gt.1 ) then
+            mproc = mproc - 1
+          else
+            exit mproc_loop
+          endif
+        endif
+
+      enddo mproc_loop
+
+      if ( npx.lt.npmin .or. npy.lt.npmin ) then
+        write(msg,'(a,7i6)') 'proc count is too large for grid size:', &
+          nx,ny,npmin,nproc,mproc,nxproc,nyproc
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+        rc = ESMF_FAILURE
+      endif
+!/
+!/ End of CalcDecomp ------------------------------------------------- /
+!/
+      end subroutine CalcDecomp
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "GetEnvValue"
+      subroutine GetEnvValue ( cenv, cval, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Get value of environment variable
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       cenv      Str    I   Name of environment variable
+!       cval      Str    O   Value of environment variable
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      character(*) :: cenv
+      character(*) :: cval
+      integer      :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(256) :: msg
+      integer :: length, istat
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+      call get_environment_variable( name=trim(cenv), value=cval, &
+             length=length, trim_name=.false., status=istat )
+      if (istat.lt.0) then
+        ! The VALUE argument is present and has a length less than
+        ! the significant length of the environment variable value.
+        write(msg,'(a,i3,a)') "Length of input variable", &
+          " is less than length of environment variable " &
+          //trim(cenv)//" value (",length,")."
+        call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+        rc = istat
+      elseif (istat.gt.0) then
+        ! 1: The specified environment variable NAME does not exist.
+        ! 2: The processor does not support environment variables.
+        !>2: Some other error condition occured.
+        cval=" "
+      endif
+      if (length.eq.0) cval=" "
+!/
+!/ End of GetEnvValue ------------------------------------------------ /
+!/
+      end subroutine GetEnvValue
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "GetZlevels"
+      subroutine GetZlevels ( rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Get array of z-levels from zlfile for SDC
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      integer      :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      character(256) :: msg
+      integer :: k, iunit, ierr
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+      if (len_trim(zlfile).eq.0 .or. trim(zlfile) .eq. 'none') then
+
+        nz = 1
+        allocate(zl(nz), stat=rc)
+        if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+        zl(1) = 0
+
+      else
+
+        call ESMF_UtilIOUnitGet(iunit, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        open(unit=iunit, file=trim(zlfile), form='formatted', &
+             status='old', access='sequential', iostat=ierr)
+        if (ierr.ne.0) then
+          msg = "failed opening "//trim(zlfile)
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+        endif
+        read(iunit, fmt=*, iostat=ierr) nz
+        if (ierr.ne.0) then
+          msg = "read nz failed: "//trim(zlfile)
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+        endif
+        allocate(zl(nz), stat=rc)
+        if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+        do k=1,nz
+          read(iunit, fmt=*, iostat=ierr) zl(k)
+          if (ierr.ne.0) then
+            msg = "read zl failed: "//trim(zlfile)
+            call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+            rc = ESMF_FAILURE
+            return
+          endif
+        enddo
+        close(iunit)
+
+      endif
+!/
+!/ End of GetZlevels ------------------------------------------------- /
+!/
+      end subroutine GetZlevels
 !/ ------------------------------------------------------------------- /
 !/
 !/ End of module WMESMFMD -------------------------------------------- /
