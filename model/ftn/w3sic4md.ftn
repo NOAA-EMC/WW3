@@ -121,12 +121,12 @@
 !            7 indicates freq cutoff #3 =FC7=ICECOEF7 (MUDT)
 !     freq cutoff is given in Hz, freq=1/T (not sigma)
 !     Examples using hindcast, inversion with uniform ki:
-!        1) Beaufort Sea, AWAC mooring, 2012, Aug 17 to 20
+!        5.1) Beaufort Sea, AWAC mooring, 2012, Aug 17 to 20
 !             0.0418 Hz to 0.15 Hz : ki=10e-6
 !             0.15 Hz to 0.175 Hz : ki=11e-6
 !             0.175 Hz to 0.25 Hz : ki=15e-6
 !             0.25 Hz to 0.5 Hz : ki=25e-6
-!        2) Beaufort Sea, AWAC mooring, 2012, Oct 27 to 30
+!        5.2) Beaufort Sea, AWAC mooring, 2012, Oct 27 to 30
 !             0.0418 Hz to 0.1 Hz : ki=5e-6
 !             0.1 Hz to 0.12 Hz : ki=7e-6
 !             0.12 Hz to 0.16 Hz : ki=15e-6
@@ -173,6 +173,11 @@
 !                             0.000,      0.000,      0.000,
 !                             0.000
 !                             /
+!
+!     7) Doble et al. (GRL 2015), eq. 3. This is a function of ice 
+!        thickness and wave period.
+!        ALPHA  = 0.2*(T^(-2.13)*HICE or
+!        ALPHA  = 0.2*(FREQ^2.13)*HICE
 !
 !     More verbose description of implementation of Sice in WW3:
 !      See documentation for IC1
@@ -374,6 +379,9 @@
           WN_I = 0.5 * ALPHA
         
         CASE (2) ! IC4M2 : Polynomial fit, Eq. 3 from Meylan et al. 2014
+                 !NB: Eq. 3 only includes T^2 and T^4 terms, 
+                 !  which correspond to ICECOEF3, ICECOEF5, so in
+                 !  regtest: ICECOEF1=ICECOEF2=ICECOEF4=0
           MARG1 = ICECOEF1 + ICECOEF2*(SIG/TPI) + ICECOEF3*(SIG/TPI)**2
           MARG2 = ICECOEF4*(SIG/TPI)**3 + ICECOEF5*(SIG/TPI)**4
           ALPHA = MARG1 + MARG2 
@@ -407,7 +415,7 @@
             WN_I=ICECOEF2/HS ! from: DHDX=ICECOEF2 and WN_I=DHDX/HS
           END IF
 
-        CASE (5) ! Simple step function
+        CASE (5) ! Simple step function (time- and/or space-varying)
            ! rename variables for clarity
            KI1=ICECOEF1
            KI2=ICECOEF2
@@ -456,6 +464,15 @@
                  END IF
               END DO
            END DO
+
+        CASE (7) ! Doble et al. (GRL 2015)
+           
+           HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
+           DO IK=1,NK
+              FREQ=SIG(IK)/TPI
+              ALPHA(IK)  = 0.2*(FREQ**2.13)*HICE
+           END DO
+           WN_I= 0.5 * ALPHA
 
         CASE DEFAULT
           WN_I = ICECOEF1 !Default to IC1: Uniform in k

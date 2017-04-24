@@ -47,10 +47,11 @@
 !                                       the dispersion relation.
 !      WN_CMPLX_V1       Func. Private  Calculate complex wavenumber in 
 !                                       ice
-!      WN_PRECALC_CHENG    Subr. Private  Calculate complex wavenumber in 
+!      WN_PRECALC_CHENG  Subr. Private  Calculate complex wavenumber in
 !                                       ice
 !      WN_CMPLX_HF       Func. Private  Like above, but for h-f waves
-!      CMPLX_ROOT_MULLER Func. Private  Find root for complex numbers
+!      CMPLX_ROOT_MULLER_CHENG Func. Private  Find root for complex 
+!                                             numbers
 !      FUN_ZHAO          Func. Private  Wrapper function for FUNC0/FUNC1
 !      FUNC0_ZHAO        Func. Private
 !      FUNC1_ZHAO        Func. Private
@@ -513,8 +514,8 @@
          DO IK=1, NK
             !            recall that D=S/E=-2*Cg*k_i
             D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
+
          END DO
-         !
 
       ELSEIF ( (ICECOEF1 .LE. MAXTHK) .OR. (ICECONC .LE. MAXCNC) ) THEN
 !.......... e.g. if ice thickness is .le. 10 cm
@@ -853,8 +854,8 @@
 !
 !      Name               Type  Module   Description
 !     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
+!      CMPLX_ROOT_MULLER_CHENG  Func. W3SIC3MD Find root for complex
+!                                         wavenumbers for waves in ice.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -999,8 +1000,8 @@
 !
 !      Name               Type  Module   Description
 !     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
+!      CMPLX_ROOT_MULLER_CHENG  Func. W3SIC3MD Find root for complex
+!                                         wavenumbers for waves in ice.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -1831,6 +1832,12 @@
 !     by IC3WN_R in the look up table. IC3WN_R is related to an ice
 !     thickness in the table, which is closest to HICE and less than
 !     HICE
+!   
+!     Fix submitted by Sukun March 2017:
+!         replace :
+!            I = MIN(INT(HICE/IC3_DITK)+1,ITKNUM)
+!         with :   
+!            I = MIN(NINT(HICE/IC3_DITK),ITKNUM)
 !
 !  8. Structure :
 !
@@ -1853,8 +1860,8 @@
       REAL, ALLOCATABLE  :: SIGMA(:)
       !
       INTEGER     :: I, I1, I2, IK, KL,KU, ITKNUM
-      COMPLEX     :: WNCOMPLEX, X0,X1,X2, WNR, WNL
-      REAL        :: DEPTH, HICE, NU, DICE, ES_MOD, RR, K_OCEAN, &
+      COMPLEX(8)  :: WNCOMPLEX, X0,X1,X2, WNR, WNL
+      REAL(8)     :: DEPTH, HICE, NU, DICE, ES_MOD, RR, K_OCEAN, &
            CG_OCEAN
       REAL        :: IC3HILIM,IC3KILIM
 
@@ -1883,13 +1890,13 @@
       HICE    =   ICE1    ! ice thickness
 
 ! Optional: limit ice thickness
-      HICE=MIN(IC3HILIM,HICE)
+      HICE=MIN(DBLE(IC3HILIM),HICE)
       NU      =   ICE2    ! "effective viscosity" parameter
       DICE    =   ICE3    ! density of ice
       ES_MOD  =   ICE4    ! effective shear modulus of ice
       !
       ITKNUM  = CEILING(IC3_MAXITK/IC3_DITK)
-      I       = MIN(INT(HICE/IC3_DITK)+1,ITKNUM)
+      I       = MIN(NINT(HICE/IC3_DITK),ITKNUM)
 
 ! Find values in pre-calculated look-up table
 ! See Remarks section.
@@ -1907,12 +1914,13 @@
             x0  = X1*(1-RR)
             x2  = X1*(1+RR)
             WNCOMPLEX = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1, &
-                 SIGMA(IK),ES_MOD,NU,DICE,HICE,DEPTH)
+                 DBLE(SIGMA(IK)),ES_MOD,NU,DICE,HICE,DEPTH)
             WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))  !  ki
             WN_R(IK)  = REAL(WNCOMPLEX)         !  kr
          ENDIF
       ENDDO
 
+    CALL SMOOTH_K(WN_R,WN_I,SIGMA,KU-KL+ 1,0)
 ! Optional : limit ki
       DO IK   =   KL,KU
          WN_I(IK)  = MIN(WN_I(IK),IC3KILIM)
@@ -1920,6 +1928,7 @@
 
 !!!     --- Update group velocitiy ----
       CALL CGinIC3_CHENG(CG,SIGMA,WN_R,KU-KL+1)
+      
       DEALLOCATE(SIGMA)
 
 900   FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC3_W3IC3WNCG : '/&
@@ -1953,8 +1962,8 @@
 !
 !      Name               Type  Module   Description
 !     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
+!      CMPLX_ROOT_MULLER_CHENG  Func. W3SIC3MD Find root for complex
+!                                         wavenumbers for waves in ice.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -2039,8 +2048,8 @@ END SUBROUTINE IC3TABLE_CHENG
 !
 !      Name               Type  Module   Description
 !     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
+!      CMPLX_ROOT_MULLER_CHENG  Func. W3SIC3MD Find root for complex
+!                                       wavenumbers for waves in ice.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -2083,11 +2092,11 @@ END SUBROUTINE IC3TABLE_CHENG
       REAL, INTENT(INOUT):: WN_R(0:NK+1),WN_I(0:NK+1), CG(0:NK+1)
       REAL, INTENT(IN)   :: ICE1, ICE2, ICE3, ICE4, DPT
 
-      INTEGER            :: IK, KL,KU,IX,NUM
-      REAL               :: K_OCEAN,CG_OCEAN,CG1,CG2,CG3
-      REAL               :: KH, K_NOICE, DEPTH, HICE, NU, DICE, &
-                            ES_MOD,SIGMAM1,DKR
-      COMPLEX            :: WNCOMPLEX, X0,X1,X2,WNM1,WNM2,WN_O
+      INTEGER            :: IK, KL,KU,IX,NUM,SWITCHID
+      REAL               :: K_OCEAN,CG_OCEAN
+      REAL(8)            :: KH, K_NOICE, DEPTH, HICE, NU, DICE, &
+                            ES_MOD,SIGMAM1
+      COMPLEX(8)         :: WNCOMPLEX, X0,X1,X2,WNM1,WNM2,WN_O
 !
 !     --- Input to routine
       DEPTH   =   DPT     ! water depth
@@ -2098,6 +2107,7 @@ END SUBROUTINE IC3TABLE_CHENG
 
       KL    = 0
       KU    = NK+1
+      SWITCHID = 0
 
       DO IK = KL,KU
         CALL WAVNU1(SIG(IK),DPT,K_OCEAN,CG_OCEAN)
@@ -2115,13 +2125,13 @@ END SUBROUTINE IC3TABLE_CHENG
         ENDIF
 
         WN_O = CMPLX(K_NOICE,0.0)
-        CALL WN_PRECALC_CHENG(WNCOMPLEX,SIG(IK),SIGMAM1,WN_O, &
-                            WNM1,WNM2,ES_MOD,NU,DICE,HICE,DEPTH)
+        CALL WN_PRECALC_CHENG(WNCOMPLEX,dble(SIG(IK)),dble(SIGMAM1),WN_O, &
+            WNM1,WNM2,ES_MOD,NU,DICE,HICE,DEPTH,SWITCHID,IK,KU)
  !     --- Output to routine
         WN_R(IK)  = REAL(WNCOMPLEX)         !  kr
         WN_I(IK)  = IMAG(WNCOMPLEX)         !  ki
       ENDDO
-
+      CALL SMOOTH_K(WN_R,WN_I,SIG,KU-KL+1,SWITCHID)
       CALL CGinIC3_CHENG(CG,SIG,WN_R,KU-KL+1)
 !/
     END SUBROUTINE IC3PRECALC_CHENG
@@ -2129,13 +2139,13 @@ END SUBROUTINE IC3TABLE_CHENG
 !/ -------------------------------------------------------------------/
 
     SUBROUTINE WN_PRECALC_CHENG(WN,SIGMA,SIGMAM1,WN_O,WNM1,WNM2,ES_MOD, &
-                              NU,DICE,HICE,DEPTH)
+                                NU,DICE,HICE,DEPTH,SWITCHID,IK,KU)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           S. Cheng                |
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
 !/                  |           X. Zhao                 |
-!/                  |           S. Cheng                |
 !/                  |                        FORTRAN 90 |
 !/                  | Last update :         13-Jan-2016 |
 !/                  +-----------------------------------+
@@ -2166,8 +2176,8 @@ END SUBROUTINE IC3TABLE_CHENG
 !
 !      Name               Type  Module   Description
 !     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
+!      CMPLX_ROOT_MULLER_CHENG  Func. W3SIC3MD Find root for complex
+!                                         wavenumbers for waves in ice.
 !     ----------------------------------------------------------------
 !
 !  5. Called by :
@@ -2221,104 +2231,166 @@ END SUBROUTINE IC3TABLE_CHENG
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL(4)       :: SIGMA,SIGMAM1,ES_MOD,NU,DICE,HICE,DEPTH
-      COMPLEX(4)    :: WN_O, WNM1, WNM2, WN0
-      COMPLEX(4),INTENT(OUT) :: WN ! RESULT
+      REAL(8)       :: SIGMA,SIGMAM1,ES_MOD,NU,DICE,HICE,DEPTH
+      COMPLEX(8)    :: WN_O, WNM1, WNM2, WN0, WN1,WN2
+      COMPLEX(8),INTENT(OUT) :: WN ! RESULT
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER       :: I,IX,NUM,READY
-      REAL(4)       :: RR, R2, EPS, SIGMA0, KAPPA, DIS, EPSD,EPSK, &
-                       EPS1,EPS2
-      COMPLEX(4)    :: X0, X1, X2
-      COMPLEX(8)    :: F1, F0
-
+      INTEGER       :: I,IX,NUM,SWITCHID,IK,KU
+      REAL(8)       :: RR, R2, EPS, SIGMA0, KAPPA, DIS
+      COMPLEX(8)    :: X0, X1, X2, kp, ks, Gv
 !/
 !/ ------------------------------------------------------------------- /
+!   compute shear wave and pressure wave modes
+      GV = CMPLX(ES_MOD,-SIGMA*NU*DICE)      
+      KP = SIGMA/SQRT(4*GV/DICE)
+      KS = 2*KP
+!   RR,R2 are empirical coefficients
+      RR  = 0.2
+      R2  = 4
+      EPS = 1.D-10   ! assuming variable =0, if it is less than this value
+!   compute root 1  
+!   initial guesses from wave number of open water 
 !
-! --- RR,R2 are empirical coefficients
+      X1  = WN_O    ! initial guess
+      X0  = X1*(1-RR)
+      X2  = X1*(1+RR)
 
-    RR  = 0.2
-    R2  = 4
-    EPS = 1.E-6   ! assuming variable =0, if it is less than this value
-!
-    X1  = WN_O    ! initial guess
-    x0  = X1*(1-RR)
-    x2  = X1*(1+RR)
+      WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,SIGMA, & 
+           ES_MOD,NU,DICE,HICE,DEPTH)
+!   if root finder failed, or found shear wave mode, 
+!   redo searching using simplified dispersion relation form, index 2
+      IF (REAL(WN1)<0.or.abs(wn1-ks)/abs(ks)<0.03 .or. &
+          abs(wn1-kp)/abs(kp)<0.03.and.Es_mod>1.e7*nu)THEN
+         WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA, &     
+              ES_MOD,NU,DICE,HICE,DEPTH)   
+      ENDIF
+!   similar as wn1, but search with opposite order of inital guesses
+      WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA, &     
+           ES_MOD,NU,DICE,HICE,DEPTH)     
+      IF (REAL(WN2)<0.or.abs(wn2-ks)/abs(ks)<0.03)THEN
+         WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,2,SIGMA, &     
+              ES_MOD,NU,DICE,HICE,DEPTH) 
+      ENDIF
+      IF(ABS(REAL(WN1)-REAL(WN_O))<ABS(REAL(WN2)-REAL(WN_O)))THEN
+         WN0 = WN1
+      ELSE
+         WN0 = WN2
+      ENDIF
 
-    !initial guesses from wave number of open water
-    WN0 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,(SIGMA), & 
-                               ES_MOD,NU,DICE,HICE,DEPTH)
-
-    IF(SIGMAM1==0.)THEN
-        WN = WN0
-    ELSE
-! Calculate the other wave number based on last frequency in the
-!    frequency array
-        R2    = ABS(WNM1-WNM2)/ABS(WNM2)
-        READY = 0
-        DO I  = 1,9,2
-            IF(READY==1)THEN
-                EXIT
+      IF(SIGMAM1==0.)THEN
+         WN = WN0
+      ELSE
+         !      compute root 2        
+         !      Calculate the other wave number based on last frequency 
+         !      in the frequency array
+         R2    = MAX(ABS(WNM1-WNM2)/ABS(WNM2), ABS((SIGMA-SIGMAM1)/SIGMA))
+         DO I  = 1,7,2
+            IF(I<3.AND.SIGMA>4)THEN
+               CYCLE
             ENDIF
             NUM = 2**(I-1)
-            RR  = MIN(MAX(R2/NUM,0.001),0.5)
+            RR  = MIN(MAX(R2/REAL(NUM,8),0.001D0),0.5D0)
             X1  = WNM1
             DO IX  = 1,NUM
-                X0 = X1*(1-RR)
-                X2 = X1*(1+RR)
-                SIGMA0 = SIGMAM1 + (1.0*IX)/NUM*(SIGMA-SIGMAM1)
-                WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,0,SIGMA0, &
-                                       ES_MOD,NU,DICE,HICE,DEPTH)
-                IF(real(WN)<0)then   ! try another searching direction
-                    WN = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,0,SIGMA0, &
-                                            ES_MOD,NU,DICE,HICE,DEPTH)
-                ENDIF
+               X0 = X1*(1-RR)
+               X2 = X1*(1+RR)
+               SIGMA0 = SIGMAM1 + (1.0*IX)/NUM*(SIGMA-SIGMAM1)
+               WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,SIGMA0, &
+                    ES_MOD,NU,DICE,HICE,DEPTH)
+               IF(REAL(WN)<0)THEN   ! try another searching direction
+                  WN = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA0, &
+                       ES_MOD,NU,DICE,HICE,DEPTH)
+               ENDIF
+               IF(REAL(WN)<0)THEN   ! try another dispersion relation form
+                   WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,3,SIGMA0, &
+                        ES_MOD,NU,DICE,HICE,DEPTH)
+               ENDIF 
+               KP = SIGMA0/SQRT(4*GV/DICE)
+               KS = 2*KP
+               !               set 3 means simple dispersion relation form
+               IF(ABS(WN-KS)/ABS(KS)<0.03.OR.REAL(WN)<0)THEN 
+                  WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA0, &  
+                       ES_MOD,NU,DICE,HICE,DEPTH)
+               ENDIF
+               X1 = WN
+               IF( REAL(WN)<0.99*REAL(WNM1).OR. ABS(WN-WN0)>EPS .AND. &
+                    (ABS(X1-WN)/ABS(WN)>0.3 .OR.                  &
+                    IMAG(WN)/(IMAG(X1)+EPS)>10.OR. REAL(WN)<0))THEN  
+                  EXIT  ! redo with smaller intervals
+               ENDIF
+               X0 = X1
+               X1 = WN
+            ENDDO !            DO IX  = 1,NUM
 
-                IF(  ABS(WN-WN0)>EPS .AND. &
-                    (ABS(WNM1-WN)/ABS(WNM1) > 3*R2 .OR. &
-                     IMAG(WN)/(IMAG(X1)+EPS)>10 .OR. real(WN)<0))THEN
-                    EXIT  ! redo with smaller intervals
-                ENDIF
-                X1 = WN
-            ENDDO
-            !  0.1,0.2,0.05,0.8 are empirical values.
             IF(IX==NUM+1)THEN
-                IF( REAL(WN0)>0 .AND.  ABS(WN - WN0)>EPS .and. &
-                    real(wnm1)<real(wn0))THEN
-                    ! IF WN=WN0, RETURN directly
-                    DIS   = ABS(REAL(WN)-REAL(WN_O))/ABS(REAL(WN0) &
-                            -REAL(WN_O))
-                    KAPPA = IMAG(WN)/(IMAG(WN0) + EPS)
-                    ! wn0 has smaller attenuation and closer to k0
-                    IF (DIS >= 1 .AND. KAPPA>=1 .AND. &
-                        IMAG(WN0)>0.1*IMAG(WNM1) ) THEN
-                        WN = WN0
-                    ! wn0 has larger attenuation and closer to k0
-                    ELSEIF( DIS>=1 .AND. KAPPA<1 .AND. KAPPA> 0.2 &
-                        .AND. IMAG(WN0)/REAL(WN0)<0.05 )THEN
-                        WN = WN0
-                    ! wn0 has smaller attenuation and farther to k0, OR
-                    ELSEIF( KAPPA>=1 .AND. DIS<1 .AND. DIS>  0.8 )THEN
-                        WN = WN0
-                    ! wn0 has lager attenuation and farther to k0
-                    ELSEIF(DIS<1 .AND. KAPPA<1) THEN
-                        !Keep wn without change
-                    ENDIF
-                ENDIF
-                READY = 1
+               EXIT
             ENDIF
-        ENDDO
+            WN = X1  !/ --- if exit of inner loop: give an approximate wn             
+         ENDDO !         DO I  = 1,7,2
+        
+! part 2
+! assume found two roots, choose from the two condidates.
+         KP = SIGMA/SQRT(4*GV/DICE)
+         IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)>EPS)THEN  
+!do switch at last 3 points is not worth numerically. 
+!For v>5.e-2, it is low chance to be wrong at the last 3 points        
+! we suppose to use two mode in the future
+            IF(NU>0.AND.IK>=KU-1.OR.   &  
+                 NU>0.AND.SWITCHID/=0)THEN
+! assume one mode switch for general viscoelastic model
+            ELSE
+               DIS   = ABS(REAL(WN)-REAL(WN_O))/ABS(REAL(WN0)-REAL(WN_O))
+               KAPPA = (IMAG(WN)+ EPS)/(IMAG(WN0) + EPS)
+! wn0 has smaller attenuation and closer to k0
+               IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
+                    IMAG(WN0)>=0.1*IMAG(WNM1).AND. &
+                    ABS(WN-KP)<ABS(WN0-KP)) .OR.  &
+! wn0 has larger attenuation and closer to k0                        
+                    ( DIS>=1 .AND. KAPPA<1 .AND. &
+                    ((KAPPA> 0.2 .AND. IMAG(WN0)/REAL(WN0)<0.5).or. &
+                    ABS(REAL(WN)-REAL(KP))<ABS(REAL(WN0)-REAL(KP)))).OR.&
+! wn0 has smaller attenuation and farther to k0, 
+! wn0 could be wrong at high G 
+! (kappa>1 .and. dis<1 .and. dis>  0.8 ))then
+                    ( KAPPA>1 .AND. DIS<1 .AND. &
+                    ABS(REAL(WN)-REAL(WNM1))>   &
+                    ABS(REAL(WN0)-REAL(WNM1)) ))THEN
+                  WN = WN0
+                  SWITCHID = IK
+! wn0 has lager attenuation and farther to k0
+               ELSEIF(DIS<1 .AND. KAPPA<1) THEN
+! keep wn without change
+               ENDIF !  IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
+            ENDIF !   IF(NU>0.AND.IK>=KU-2.OR.   &  
 
-!       IF WN is wrong, THEN set later ik as the same value -/
-! / --- Anormal exit: give an approximate wn
-        IF(READY==0) THEN
-            !print*,wn,x1,wn0,wn_O,WNM1
-            WN = X1
-        ENDIF
-    ENDIF
-    RETURN
+! choose dominant mode is farther than pressure wave. 
+!but it doens't work for high viscosity.
+            if (abs(wn-kp)/abs(kp)<0.03) then
+                wn = wn0
+                SWITCHID = IK
+            endif
+            !if (real(wn)<=real(wnm1))then
+            !    wn = wn0
+            !    switchid = ik
+            !endif  
+
+            IF (REAL(WN0)>REAL(WNM1).AND.REAL(WN0)<REAL(WN).and. &
+            ABS(IMAG(WN0)-IMAG(WNM1))<ABS(IMAG(WN)-IMAG(WNM1)))THEN
+ ! mainly for pure elastic case has multiple branchs
+               WN = WN0
+               SWITCHID = IK
+            ENDIF
+         ENDIF ! IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)....
+      ENDIF   !      IF(SIGMAM1==0.)THEN
+
+      IF(REAL(WN)<0)THEN     
+         PRINT*, "MULLER METHOD FAILED, ES_MOD,NU,HICE:",ES_MOD,NU,HICE
+      ENDIF
+      RETURN
+
     END SUBROUTINE WN_PRECALC_CHENG
 !/ -----------------------------------------------------------------
 !/
@@ -2384,51 +2456,66 @@ END SUBROUTINE IC3TABLE_CHENG
       INTEGER           :: IK, M
       REAL              :: CG1,CG2,CG3,CG0(1:N)
 !/
-
-      DO IK = 1,N
-            IF (IK==1) THEN
-                CG(IK) = (SIGMA(IK+1) - SIGMA(IK))  /(WN_R(IK+1) - &
-                         WN_R(IK))
-            ELSEIF (IK==N) THEN
-                CG(IK) = CG(IK-1)
-
-            ELSE
-                IF(WN_R(IK) < WN_R(IK-1)) THEN
-                    CG(IK) = (SIGMA(IK+1) - SIGMA(IK))  /(WN_R(IK+1)- &
-                             WN_R(IK))
-
-                ELSEIF(WN_R(IK+1) < WN_R(IK)) THEN
-                    CG(IK) = (SIGMA(IK)   - SIGMA(IK-1))/(WN_R(IK) - &
-                             WN_R(IK-1))
-                ELSE
-                    CG1 = (SIGMA(IK)   - SIGMA(IK-1))/(WN_R(IK)    - &
-                          WN_R(IK-1))
-                    CG2 = (SIGMA(IK+1) - SIGMA(IK))  /(WN_R(IK+1) - &
-                          WN_R(IK))
-                    CG3 = (SIGMA(IK+1) - SIGMA(IK-1))/(WN_R(IK+1) - &
-                          WN_R(IK-1))
-                    CG(IK) = Min(CG1,CG2,CG3)
-                ENDIF
-                CG(IK) = MIN(CG(IK),1.5*CG(IK-1))
-                IF (CG(IK)<=0)THEN
-                    CG(IK) = CG(IK-1)
-                ENDIF
-            ENDIF
+    IK = 1
+    CG(IK)=(SIGMA(IK+1)-SIGMA(IK))/(WN_R(IK+1)-WN_R(IK))
+    IK = N
+    CG(IK)=(SIGMA(IK)-SIGMA(IK-1))/(WN_R(IK)-WN_R(IK-1))
+      DO IK = 2,N-1
+        CG1 = (SIGMA(IK)-SIGMA(IK-1))/(WN_R(IK)-WN_R(IK-1))
+        CG2 = (SIGMA(IK+1)-SIGMA(IK))/(WN_R(IK+1)-WN_R(IK))
+        CG(IK) = 2.0/(1./CG1 + 1./CG2)        
       END DO
-!/ smooth funciton
-      M   = 1
-      CG0 = CG
-      DO IK = 1+M,N-M
-          CG(IK) = 1./(2*M+1)*SUM(CG0(IK-M:IK+M))
-      ENDDO
 
       RETURN
       END SUBROUTINE CGINIC3_CHENG
 
 !/ ------------------------------------------------------------------- /
+! numerically smooth WN_R and WN_I by linear interpolation
+    SUBROUTINE SMOOTH_K(WN_R,WN_I,SIGMA,N,SWITCHID)
+    REAL, INTENT(IN)  :: SIGMA(N)
+    REAL              :: WN_R(N), WN_I(N),DIFF(N),REMOVEID(N)
+    INTEGER           :: N,I,J,SWITCHID
+!    
+    DIFF = 0
+! remove kr in mode switch zone,
+! if it is a local extremum or suddenly increasing
+    DO J = 1,3 ! 3 times to guarantee wavenumber increases monotonically
+    REMOVEID = 0
+        DO I = 2,N
+      DIFF(I) = WN_R(I) - WN_R(I-1)
+    ENDDO
+    DO I = 3,N            
+            IF(DIFF(I)<=0.OR.DIFF(I)>3*DIFF(I-1).OR.SWITCHID==I)THEN
+                REMOVEID(I) = 1
+                REMOVEID(I-1) = 1
+            ENDIF
+        ENDDO
+! fill removed location with kr,ki by interpolation
+         DO I = 2,N-1
+             IF (REMOVEID(I) ==1) THEN             
+                 WN_R(I) = WN_R(I-1) + (WN_R(I+1)-WN_R(I-1))/    &
+         (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
+                 WN_I(I) = WN_I(I-1) + (WN_I(I+1)-WN_I(I-1))/    &
+         (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
+             ENDIF
+         ENDDO         
+    ENDDO 
+! mode switch upward at the last frequencies
+    IF (DIFF(N)>3*DIFF(N-1))THEN
+        I = N
+        WN_R(I) = WN_R(I-1) + (WN_R(I-1)-WN_R(I-2))/   & 
+        (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
+        WN_I(I) = WN_I(I-1) + (WN_I(I-1)-WN_I(I-2))/   &
+        (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
+    ENDIF
+  RETURN
+  END SUBROUTINE
 
-    FUNCTION CMPLX_ROOT_MULLER_CHENG(X0, X1, X2, JUDGE, SIGMA0,  &
-                ES0, NU0, DICE0, HICE0, DPT )           RESULT(P3)
+
+!/ ------------------------------------------------------------------- /
+
+    FUNCTION CMPLX_ROOT_MULLER_CHENG(X0, X1, X2, JUDGE,  &
+                SIGMA,ES,NU,DICE,HICE,DEPTH )           RESULT(P3)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           E. Rogers               |
@@ -2511,8 +2598,8 @@ END SUBROUTINE IC3TABLE_CHENG
 !/ Parameter list
 !/
       COMPLEX(8)            :: P3                     ! RESULT
-      COMPLEX(4), INTENT(IN):: X0,X1,X2
-      REAL(4), INTENT(IN)   :: SIGMA0,ES0,NU0,DICE0,HICE0,DPT
+      COMPLEX(8), INTENT(IN):: X0,X1,X2
+      REAL(8), INTENT(IN)   :: SIGMA,ES,NU,DICE,HICE,DEPTH
       INTEGER, INTENT(IN)   :: JUDGE
 !/
 !/ ------------------------------------------------------------------- /
@@ -2521,72 +2608,67 @@ END SUBROUTINE IC3TABLE_CHENG
 
       INTEGER               :: I
       INTEGER, PARAMETER    :: IMAX = 200
-      REAL(8)               :: DLTA,EPSI,SIGMA,ES,NU,DICE,HICE,DEPTH
+      REAL(8)               :: DLTA,EPSI
       COMPLEX(8)            :: P0,P1,P2
       COMPLEX(8)            :: Y0,Y1,Y2,Y3
       COMPLEX(8)            :: A,B,C,Q,DISC,DEN1,DEN2
 !/
 !/ ------------------------------------------------------------------- /
-        DEPTH   =   DBLE(DPT)     ! WATER DEPTH
-        HICE    =   DBLE(HICE0)    ! ICE THICKNESS
-        NU      =   DBLE(NU0)    ! "EFFECTIVE VISCOSITY" PARAMETER
-        DICE    =   DBLE(DICE0)    ! DENSITY OF ICE
-        ES      =   DBLE(ES0)    ! EFFECTIVE SHEAR MODULUS OF ICE
-        SIGMA   =   DBLE(SIGMA0)
 
-        P0      =   DBLE(X0)
-        P1      =   DBLE(X1)
-        P2      =   DBLE(X2)
-        P3      = 0.D0
-!
-      EPSI    = 1.D-10
-      DLTA    = 1.D-8
+      P0      =   X0
+      P1      =   X1
+      P2      =   X2
+      P3      = 0.D0
+
+      EPSI    = 1.D-8
+      DLTA    = 1.D-8   ! relax it may cause error, too rigorous is not good neither.
       Y0      = F_ZHAO_CHENG(JUDGE,P0,SIGMA,ES,NU,DICE,HICE,DEPTH)
       Y1      = F_ZHAO_CHENG(JUDGE,P1,SIGMA,ES,NU,DICE,HICE,DEPTH)
       Y2      = F_ZHAO_CHENG(JUDGE,P2,SIGMA,ES,NU,DICE,HICE,DEPTH)
-!
+
       DO I = 1,IMAX
          Q = (P2 - P1) / (P1 - P0)
          A = Q * Y2 - Q * (1.D0+Q) * Y1 + Q**2.D0 * Y0
          B = (2.D0 * Q + 1.D0) * Y2 - (1.D0 + Q)**2.D0 * Y1 &
-             + Q**2.D0 * Y0
+              + Q**2.D0 * Y0
          C = (1.D0 + Q) * Y2
-!
+
          IF ( ABS(A).NE.0.D0 ) THEN
 
             DISC = B**2.D0 - 4.D0 * A * C;
-!
+
             DEN1 = ( B + SQRT ( DISC ) )
             DEN2 = ( B - SQRT ( DISC ) )
-!
+
             IF ( ABS ( DEN1 ) .LT. ABS ( DEN2 ) )THEN
                P3 = P2 - (P2 - P1) * (2.D0 * C / DEN2)
             ELSE
                P3 = P2 - (P2 - P1) * (2.D0 * C / DEN1)
             ENDIF
-!
+
          ELSE
-!
+
             IF ( ABS(B) .NE. 0.D0 )THEN
-                P3 = P2 - (P2 - P1) * (C / B)
+               P3 = P2 - (P2 - P1) * (C / B)
             ELSE
-                P3 = P2
-                RETURN
+               P3 = P2
+               RETURN
             ENDIF
          ENDIF
- !
-        IF (IMAG(P3).LT.0)THEN
+
+         IF (IMAG(P3).LT.0)THEN
             P3 = REAL(P3) - CMPLX(0.,1.)*IMAG(P3)
-        ENDIF
+         ENDIF
          IF (REAL(P3).LT.0)THEN
             P3 = -REAL(P3) + CMPLX(0.,1.)*IMAG(P3)
          ENDIF
-  !
+
          IF(NU==0)THEN
-             P3 = CMPLX(REAL(P3),0)
+            P3 = CMPLX(REAL(P3),0)
          ENDIF
          Y3 = F_ZHAO_CHENG(JUDGE,P3,SIGMA,ES,NU,DICE,HICE,DEPTH);
-         IF ( ABS(P3-P2).LT.DLTA .OR. ABS(Y3).LT.EPSI ) THEN
+         IF ( ABS(P3-P2).LT.DLTA .AND. ABS(Y3).LT.EPSI ) THEN
+! exit before finding a true root,Result may not be accurate
             RETURN
          ENDIF
 
@@ -2598,10 +2680,10 @@ END SUBROUTINE IC3TABLE_CHENG
          Y1 = Y2
          Y2 = Y3
       ENDDO
-!
+
       P3 = CMPLX(-100.,0)
       RETURN
-!/
+
     END FUNCTION CMPLX_ROOT_MULLER_CHENG
 !/ ------------------------------------------------------------------- /
 !/
@@ -2659,8 +2741,8 @@ END SUBROUTINE IC3TABLE_CHENG
 !
 !      Name               Type  Module   Description
 !     ----------------------------------------------------------------
-!      CMPLX_ROOT_MULLER  Func. W3SIC3MD Find root for complex wave-
-!                                        numbers for waves in ice.
+!      CMPLX_ROOT_MULLER_CHENG  Func. W3SIC3MD Find root for complex
+!                                         wavenumbers for waves in ice.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -2695,16 +2777,16 @@ END SUBROUTINE IC3TABLE_CHENG
       DOUBLE COMPLEX               :: FZHAO  ! RESULT
 !/
 !/ ------------------------------------------------------------------- /
-      IF (JUDGE ==1) THEN
-         FZHAO = DRFUN_dble_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH)
-      ELSE
+      IF (JUDGE >0) THEN
+         FZHAO = DRFUN_dble_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH,JUDGE)
+      ELSEIF(JUDGE ==0)THEN
          FZHAO = DRFUN_quad_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH)
       ENDIF
 !
     END FUNCTION F_ZHAO_CHENG
 !/ ------------------------------------------------------------------- /
 !/
-    FUNCTION DRFUN_DBLE_CHENG(WN,SIGMA,ES,NU,DICE,HICE,DEPTH) &
+    FUNCTION DRFUN_DBLE_CHENG(WN,SIGMA,ES,NU,DICE,HICE,DEPTH,JUDGE) &
              RESULT(FUNC1)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2787,7 +2869,8 @@ END SUBROUTINE IC3TABLE_CHENG
 !/
       COMPLEX(8), INTENT(IN)   :: WN
       REAL(8), INTENT(IN)      :: SIGMA, ES, NU, DICE, HICE, DEPTH
-      COMPLEX(8)               :: FUNC1                   ! RESULT
+      COMPLEX(8)               :: FUNC1,AA(4,4)                   ! RESULT
+      INTEGER                  :: JUDGE  
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -2814,13 +2897,44 @@ END SUBROUTINE IC3TABLE_CHENG
       ELSE
           TH = 1.D0
       ENDIF
+!      JUDGE==3 is not used yet   
+      IF ((ES>=1.E5.AND.JUDGE/=2).or.JUDGE==3) THEN
+          L     = 2 * WN * ALPHA * SIGMA * VE
+          M     = (DBLE(DWAT)/DICE - 1) * DBLE(GRAV) * WN             &
+                - DBLE(DWAT) / DICE * SIGMA**2 / TH          
+         AA(1,1) = 0.
+         AA(1,2) = 2 * CMPLX(0.,1.) * WN**2.
+         AA(1,3) = ALPHA**2. + WN**2.
+         AA(1,4) = 0.
 !
-      J1    = DICE/DBLE(DWAT)*(WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. &
-              + 16.* VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
-              *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))
-      J2    = (4.*WN**3.*ALPHA*VE**2.*SK*CA+N**2.*SA*CK &
-              -DBLE(GRAV)*WN*SK*SA)
-      FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV))*J2 - TH*J1
+         AA(2,1) = N * SIGMA
+         AA(2,2) = -WN * DBLE(GRAV)
+         AA(2,3) = CMPLX(0.,1.) * WN * DBLE(GRAV)
+         AA(2,4) = L
+!
+         AA(3,1) = -2. * CMPLX(0.,1.) * WN**2. * SK
+         AA(3,2) =  2. * CMPLX(0.,1.) * WN**2. * CK
+         AA(3,3) =  (ALPHA**2. + WN**2.) * CA
+         AA(3,4) = -(ALPHA**2. + WN**2.) * SA
+!
+         AA(4,1) =   N * SIGMA * CK - M * SK
+         AA(4,2) = - N * SIGMA * SK + M * CK
+         AA(4,3) = -CMPLX(0.,1.) * M * CA - L * SA
+         AA(4,4) =  CMPLX(0.,1.) * M * SA + L * CA
+!
+         FUNC1   = BSDET(AA,4)
+      ELSE
+          J1    = DICE/DBLE(DWAT)*(WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. &
+                  + 16.* VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
+                  *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))
+          J2    = (4.*WN**3.*ALPHA*VE**2.*SK*CA+N**2.*SA*CK &
+                  -DBLE(GRAV)*WN*SK*SA)          
+          IF (JUDGE==2)THEN
+            FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV)) - TH*J1/(J2+1.e-20)
+          ELSEIF (JUDGE==1)THEN
+            FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV))*J2 - TH*J1
+          ENDIF
+      ENDIF
 !/
     END FUNCTION DRFUN_DBLE_CHENG
 !/ ------------------------------------------------------------------- /

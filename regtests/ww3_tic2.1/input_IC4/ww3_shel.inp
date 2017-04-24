@@ -1,0 +1,75 @@
+$ WAVEWATCH III shell input file
+$ ------------------------------
+$ Define input to be used with flag for use and flag for definition
+$ as a homogeneous field (first xxxxx only); xxxxx input lines.
+$
+   F F     Ice parameter 1
+   F F     Ice parameter 2
+   F F     Ice parameter 3
+   F F     Ice parameter 4
+   F F     Ice parameter 5
+   F F     Mud parameter 1
+   F F     Mud parameter 2
+   F F     Mud parameter 3
+   F F     Water levels
+   F F     Currents
+   F F     Winds
+   T       Ice concentrations
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
+$
+   20170101 000000
+   20170101 120000
+$
+   1
+$
+   20170101 000000    3600  20180101 000000
+  N
+$ Options: DPT CUR WND DT  WLV ICE HS  L T02 T01 TM1 FP  DIR SPR DP EF 
+$          TH1M STH1M PHS PTP PLP PDIR PSP WSF TWS PNR UST CHA CGE FAW 
+$          TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S WN USF 
+$          P2L ABR UBR BED FBB TBB MSS MSC DTD FCT CFX CFT CFK US1 US2
+  DPT HS ICE
+$
+   20170101 000000    3600  20170101 120000
+     10.0E3 10.0E3  'Point1'
+     20.0E3 20.0E3  'Point2'
+     30.0E3 30.0E3  'Point3'
+     40.0E3 40.0E3  'Point4'
+     50.0E3 50.0E3  'Point5'
+     60.0E3 60.0E3  'Point6'
+     70.0E3 70.0E3  'Point7'
+     80.0E3 80.0E3  'Point8'
+     90.0E3 90.0E3  'Point9'
+    100.0E3 100.0E3  'Point10'
+    110.0E3 110.0E3  'Point11'
+    120.0E3 120.0E3  'Point12'
+    130.0E3 130.0E3  'Point13'
+    140.0E3 140.0E3  'Point14'
+    150.0E3 150.0E3  'Point15'
+    160.0E3 160.0E3  'Point16'
+    170.0E3 170.0E3  'Point17'
+    180.0E3 180.0E3  'Point18'
+    190.0E3 190.0E3  'Point19'
+    200.0E3 200.0E3  'Point20'
+    210.0E3 210.0E3  'Point21'
+    220.0E3 220.0E3  'Point22'
+    230.0E3 230.0E3  'Point23'
+    240.0E3 240.0E3  'Point24'
+      0.    0.  'STOPSTRING'
+   20170101 000000      0  20170101 120000
+   20170101 000000      0  20170101 120000
+   20170101 000000      0  20170101 120000
+   20170101 000000      0  20170101 120000
+$
+$ Testing of output through parameter list (C/TPAR) ------------------ $
+$    Time for output and field flags as in above output type 1.
+$
+$  20170101 014500
+$    T T T T T  T T T T T  T T T T T  T
+$
+$ Homogeneous field data --------------------------------------------- $
+  'STP'
+$
+$ --------------------------------------------------------------------

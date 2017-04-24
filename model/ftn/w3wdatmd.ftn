@@ -383,7 +383,7 @@
         END IF
 !
       ALLOCATE ( WDATAS(IMOD)%WLV(NSEA),                              &
-                 WDATAS(IMOD)%ICE(0:NSEA),                            &
+                 WDATAS(IMOD)%ICE(NSEA),                              &
                  WDATAS(IMOD)%BERG(NSEA),                             &
                  WDATAS(IMOD)%ICEH(0:NSEA),                           &
                  WDATAS(IMOD)%ICEF(0:NSEA),                           &
