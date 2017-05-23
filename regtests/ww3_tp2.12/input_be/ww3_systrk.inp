@@ -3,7 +3,7 @@ $ WAVEWATCH III Spatial and temporal tracking of wave systems          $
 $ -------------------------------------------------------------------- $
 $ File name for raw partition data
 $
-  '../input/partition.ww3'
+  '../input_be/partition.ww3'
 $
 $ First time level (yyyymmdd hhmmss), time increment and number of 
 $ time levels to process.
