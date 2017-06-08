@@ -5,7 +5,7 @@
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
+!/                  |                      FORTRAN 2003 |
 !/                  | Last update :         06-Apr-2016 |
 !/                  +-----------------------------------+
 !/
@@ -91,6 +91,8 @@
 !/    31-May-2016 : Optimize restart file size for un-  ( version 5.10 )
 !/                  structured grid and restart read.
 !/                  (M. Ward, NCI, S. Zieger, BOM)
+!/    10-Mar-2017 : File access mode changed to 'STREAM'( version 5.16 )
+!/                  (S. Zieger, BOM)
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -215,8 +217,6 @@
 !     !/DIST  Id.
 !     !/MPI   Id.
 !
-!     !/LRBn  Word length in bites.
-!
 !     !/S     Enable subroutine tracing.
 !     !/T     Enable test output
 !
@@ -255,20 +255,20 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-!/LRB4      INTEGER, PARAMETER      :: LRB = 4
-!/LRB8      INTEGER, PARAMETER      :: LRB = 8
+      INTEGER, PARAMETER      :: LRB = 4
 !
       INTEGER                 :: IGRD, I, J, LRECL, NSIZE, IERR,      &
                                  NSEAT, MSPEC, TTIME(2), ISEA, JSEA,  &
                                  NREC, NPART, IPART, IX, IY, IXL, IP, &
-                                 NPRTX2
+                                 NPRTX2, NFILL
       INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
 !/S      INTEGER, SAVE           :: IENT = 0
 !/MPI      INTEGER                 :: IERR_MPI, IH, IB, ISEA0, ISEAN, &
 !/MPI                                 NRQ, NSEAL_MIN
-!/MPI      INTEGER(KIND=8)         :: RPOS
+      INTEGER(KIND=8)         :: RPOS
 !/MPI      INTEGER, ALLOCATABLE    :: STAT1(:,:), STAT2(:,:)
 !/MPI      REAL, ALLOCATABLE       :: VGBUFF(:), VLBUFF(:)
+      REAL(KIND=LRB), ALLOCATABLE :: NULLBUFF(:)
       LOGICAL                 :: WRITE, IOSFLG
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
@@ -331,7 +331,12 @@
 !
       LRECL  = MAX ( LRB*NSPEC ,                                      &
                      LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+
       NSIZE  = LRECL / LRB
+!     --- Allocate buffer array with zeros (used to
+!         fill bytes up to size LRECL). ---
+      ALLOCATE(NULLBUFF(NSIZE))
+      NULLBUFF(1:NSIZE) = 0.
 !
 ! open file ---------------------------------------------------------- *
 !
@@ -349,7 +354,7 @@
 !
 !/T      WRITE (NDST,9001) FNAME, LRECL
 !
-      
+
       IF(NDST.EQ.NDSR)THEN
          IF ( IAPROC .EQ. NAPERR )                                    &
             WRITE(NDSE,'(A,I8)')'UNIT NUMBERS OF RESTART FILE AND '&
@@ -360,10 +365,10 @@
       IF ( WRITE ) THEN
           IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
           OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &
-                ACCESS='DIRECT',RECL=LRECL,ERR=800,IOSTAT=IERR)
+                ACCESS='STREAM',ERR=800,IOSTAT=IERR)
         ELSE
           OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &
-                ACCESS='DIRECT',RECL=LRECL,ERR=800,IOSTAT=IERR,       &
+                ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                 STATUS='OLD',ACTION='READ')
         END IF
 !
@@ -371,12 +376,18 @@
 !
       IF ( WRITE ) THEN
 !
-          IF ( IAPROC .EQ. NAPRST ) WRITE (NDSR,REC=1)                &
-            IDSTR, VERINI, GNAME, TYPE, NSEA, NSPEC
+          IF ( IAPROC .EQ. NAPRST ) THEN
+!           Because data has mixed data types we do not know how many
+!           bytes remain to fill up to LRECL. ---
+!           --- Make the entire record zero ---
+            WRITE (NDSR,POS=1) NULLBUFF(NSIZE)
+!           --- Replace zeros with data ---
+            WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA, NSPEC
+          END IF
           INTYPE = 3
 !
         ELSE
-          READ (NDSR,REC=1,ERR=802,IOSTAT=IERR)                       &
+          READ (NDSR,POS=1,ERR=802,IOSTAT=IERR)                       &
             IDTST, VERTST, TNAME, TYPE, NSEAT, MSPEC
 !
           IF ( IDTST .NE. IDSTR ) THEN
@@ -424,10 +435,14 @@
 ! TIME if required --------------------------------------------------- *
 !
       IF (TYPE.EQ.'FULL') THEN
+          RPOS  = 1_8 + LRECL*(2-1)
           IF ( WRITE ) THEN
-              IF ( IAPROC .EQ. NAPRST ) WRITE (NDSR,REC=2) TIME
+              IF ( IAPROC .EQ. NAPRST ) THEN
+                WRITE (NDSR,POS=RPOS) NULLBUFF(NSIZE)
+                WRITE (NDSR,POS=RPOS) TIME
+              END IF
             ELSE
-              READ (NDSR,REC=2,ERR=802,IOSTAT=IERR) TTIME
+              READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
               IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
                   IF ( IAPROC .EQ. NAPERR )                           &
                       WRITE (NDSE,906) TTIME, TIME
@@ -458,7 +473,10 @@
 !/DIST                    ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD                    ISEA   = JSEA
                     NREC   = ISEA + 2
-                    WRITE (NDSR,REC=NREC) (VA(I,JSEA),I=1,NSPEC)
+                    NFILL  = (LRECL - SIZEOF(VA(1:NSPEC,JSEA))) / LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS) (VA(I,JSEA),I=1,NSPEC)
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
                     END DO
 !
 ! I/O server version writing of spectra ( !/MPI )
@@ -497,11 +515,17 @@
 !/MPI                          JSEA   = 1 + (ISEA-1)/NAPROC
 !/MPI                          IP     = 1 + MOD(ISEA-1,NAPROC)
 !/MPI                          IF ( IP .EQ. NAPRST ) THEN
-!/MPI                              WRITE (NDSR,REC=NREC) VA(:,JSEA)
+!/MPI                              NFILL = (LRECL - SIZEOF(VA(:,JSEA))) / LRB
+!/MPI                              RPOS  = 1_8 + LRECL*(NREC-1)
+!/MPI                              WRITE (NDSR,POS=RPOS) VA(:,JSEA)
+!/MPI                              IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
 !/MPI                            ELSE
 !/MPI                              JSEA   = JSEA - 2*((IB-1)/2)*RSBLKS
-!/MPI                              WRITE (NDSR,REC=NREC)              &
-!/MPI                                     VAAUX(:,JSEA,IP)
+!/MPI                              NFILL = (LRECL                     &
+!/MPI                                    - SIZEOF(VAAUX(:,JSEA,IP))) / LRB
+!/MPI                              RPOS  = 1_8 + LRECL*(NREC-1)
+!/MPI                              WRITE (NDSR,POS=RPOS) VAAUX(:,JSEA,IP)
+!/MPI                              IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
 !/MPI                            END IF
 !/MPI                          END DO
 !
@@ -534,11 +558,6 @@
 !/MPI!/             using streams and scatter the results using MPI.
 !/MPI!/                                                      ( M. WARD, NCI )
 !/MPI!
-!/MPI!              Re-open file to support datastreams. ------------------ *
-!/MPI               CLOSE (NDSR)
-!/MPI               OPEN (NDSR,FILE=FNMPRE(:J)//FNAME, ACCESS='STREAM',     &
-!/MPI                    FORM='UNFORMATTED', STATUS='OLD',                  &
-!/MPI                    ERR=800, IOSTAT=IERR, ACTION='READ')
 !/MPI!              Main loop --------------------------------------------- *
 !/MPI               ALLOCATE( VGBUFF( NSIZE * NAPROC ) )
 !/MPI               ALLOCATE( VLBUFF( NSIZE ) )
@@ -559,18 +578,13 @@
 !/MPI                 VA(1:NSPEC,JSEA) = VLBUFF(1:NSPEC)
 !/MPI                 END DO
 !/MPI!
-!/MPI!              Re-open file using FORTRAN record format. ------------- *
-!/MPI               CLOSE (NDSR)
-!/MPI               OPEN (NDSR,FILE=FNMPRE(:J)//FNAME, ACCESS='DIRECT',     &
-!/MPI                    FORM='UNFORMATTED', RECL=LRECL, STATUS='OLD',      &
-!/MPI                    ERR=800, IOSTAT=IERR, ACTION='READ')
-!/MPI!
 !/MPI!              Include remainder values (switch to record format) ---- *
 !/MPI               JSEA = NSEAL_MIN + 1
 !/MPI               IF ( JSEA.EQ.NSEAL ) THEN
 !/MPI                  ISEA = IAPROC + (JSEA - 1) * NAPROC
 !/MPI                  NREC = ISEA + 2
-!/MPI                  READ (NDSR, REC=NREC, ERR=802, IOSTAT=IERR)          &
+!/MPI                  RPOS = 1_8 + LRECL*(NREC-1)
+!/MPI                  READ (NDSR, POS=RPOS, ERR=802, IOSTAT=IERR)          &
 !/MPI                            (VA(I,JSEA), I=1,NSPEC)
 !/MPI                 END IF
 !/MPI!
@@ -582,7 +596,8 @@
 !/DIST                ISEA   = IAPROC + (JSEA-1)*NAPROC
 !/SHRD                ISEA   = JSEA
                 NREC   = ISEA + 2
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                          (VA(I,JSEA),I=1,NSPEC)
                 END DO
 !/MPI            END IF
@@ -611,52 +626,92 @@
 !/MPI                     ( NRQRS, IRQRS , STAT2, IERR_MPI )
 !/MPI                  DEALLOCATE ( STAT2 )
 !
-                  WRITE (NDSR,REC=NREC) TLEV, TICE
+                  NFILL = (LRECL - SIZEOF(TLEV) - SIZEOF(TICE)) / LRB
+                  RPOS  = 1_8 + LRECL*(NREC-1)
+                  WRITE (NDSR,POS=RPOS) TLEV, TICE, NULLBUFF(1:NFILL)
+
                   DO IPART=1,NPART
                     NREC  = NREC + 1
-                    WRITE (NDSR,REC=NREC)                             &
+                    NFILL = (LRECL - SIZEOF(                          &
+                     WLV(1+(IPART-1)*NSIZE:MIN(NSEA,IPART*NSIZE))))/LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS)                             &
                           (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
                                           MIN(NSEA,IPART*NSIZE))
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                     END DO
                   DO IPART=1,NPART
                     NREC  = NREC + 1
-                    WRITE (NDSR,REC=NREC)                             &
-                          (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
-                                          MIN(NSEA,IPART*NSIZE))
+                    NFILL = (LRECL - SIZEOF(                          &
+                     ICE(1+(IPART-1)*NSIZE:MIN(NSEA,IPART*NSIZE))))/LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS)                             &
+                            (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,        &
+                                            MIN(NSEA,IPART*NSIZE))
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                     END DO
                   ALLOCATE ( MAPTMP(NY,NX) )
                   MAPTMP = MAPSTA + 8*MAPST2
                   DO IY=1, NY
                     DO IPART=1,NPRTX2
                       NREC  = NREC + 1
-                      WRITE (NDSR,REC=NREC) (MAPTMP(IY,IXL),          &
+                      NFILL = (LRECL - SIZEOF(                        &
+                          MAPTMP(IY,1+(IPART-1)*NSIZE:MIN(NX,         &
+                          IPART*NSIZE)))) / LRB
+                      RPOS  = 1_8 + LRECL*(NREC-1)
+                      WRITE (NDSR,POS=RPOS) (MAPTMP(IY,IXL),          &
                              IXL=1+(IPART-1)*NSIZE,MIN(NX,IPART*NSIZE))
+                      IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                       END DO
                     END DO
                   DEALLOCATE ( MAPTMP )
                   DO IPART=1,NPART
                     NREC  = NREC + 1
-                    WRITE (NDSR,REC=NREC)                             &
+                    NFILL = (LRECL - SIZEOF(                          &
+                     UST(1+(IPART-1)*NSIZE:MIN(NSEA,IPART*NSIZE))))/LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS)                             &
                           (UST(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
                                           MIN(NSEA,IPART*NSIZE))
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                     END DO
                   DO IPART=1,NPART
                     NREC  = NREC + 1
-                    WRITE (NDSR,REC=NREC)                             &
+                    NFILL = (LRECL - SIZEOF(                          &
+                     USTDIR(1+(IPART-1)*NSIZE:MIN(NSEA,IPART*NSIZE))))&
+                     / LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS)                             &
                           (USTDIR(ISEA),ISEA=1+(IPART-1)*NSIZE,       &
                                           MIN(NSEA,IPART*NSIZE))
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                     END DO
                   DO IPART=1,NPART
                     NREC  = NREC + 1
-                    WRITE (NDSR,REC=NREC)                             &
+                    NFILL = (LRECL  - SIZEOF(                         &
+                     ASF(1+(IPART-1)*NSIZE:MIN(NSEA,IPART*NSIZE))))/LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS)                             &
                           (ASF(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
                                           MIN(NSEA,IPART*NSIZE))
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                     END DO
                   DO IPART=1,NPART
                     NREC  = NREC + 1
-                    WRITE (NDSR,REC=NREC)                             &
+                    NFILL = (LRECL  - SIZEOF(                         &
+                     FPIS(1+(IPART-1)*NSIZE:MIN(NSEA,IPART*NSIZE))))/LRB
+                    RPOS  = 1_8 + LRECL*(NREC-1)
+                    WRITE (NDSR,POS=RPOS)                             &
                           (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE,         &
                                           MIN(NSEA,IPART*NSIZE))
+                    IF (NFILL.GT.0) WRITE (NDSR) NULLBUFF(1:NFILL)
+
                     END DO
 !/T                  WRITE (NDST,9007)
 !/T                ELSE
@@ -669,16 +724,19 @@
             END IF
         ELSE
           IF (TYPE.EQ.'FULL') THEN
-              READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR) TLEV, TICE
+              RPOS = 1_8 + LRECL*(NREC-1)
+              READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TLEV, TICE
               DO IPART=1,NPART
                 NREC  = NREC + 1
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                       (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
               DO IPART=1,NPART
                 NREC  = NREC + 1
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                       (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
@@ -686,7 +744,8 @@
               DO IY=1, NY
                 DO IPART=1,NPRTX2
                   NREC  = NREC + 1
-                  READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)            &
+                  RPOS = 1_8 + LRECL*(NREC-1)
+                  READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)            &
                         (MAPTMP(IY,IXL),IXL=1+(IPART-1)*NSIZE,        &
                                             MIN(NX,IPART*NSIZE))
                   END DO
@@ -705,25 +764,29 @@
 !
               DO IPART=1,NPART
                 NREC  = NREC + 1
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                       (UST(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
               DO IPART=1,NPART
                 NREC  = NREC + 1
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                       (USTDIR(ISEA),ISEA=1+(IPART-1)*NSIZE,           &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
               DO IPART=1,NPART
                 NREC  = NREC + 1
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                       (ASF(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
               DO IPART=1,NPART
                 NREC  = NREC + 1
-                READ (NDSR,REC=NREC,ERR=802,IOSTAT=IERR)              &
+                RPOS = 1_8 + LRECL*(NREC-1)
+                READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
                       (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE,             &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
@@ -748,6 +811,8 @@
 ! Close file --------------------------------------------------------- *
 !
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) CLOSE ( NDSR )
+!
+      IF (ALLOCATED(NULLBUFF)) DEALLOCATE(NULLBUFF)
 !
       RETURN
 !

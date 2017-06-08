@@ -17,7 +17,7 @@
 #   WNX1 WNT1 CRX1 CRT1      Wind and current interpolation.                #
 #   O0 O1 O2 O3 O4 O5 O6 O7   Sdt out output options.                       #
 #   NOPA                                                                    #
-#   F90 NOGRB  LRB4 FLX2                                                    #
+#   F90 NOGRB  FLX2                                                         #
 #   SHRD or DIST MPI                                                        #
 #   BT8   Muddy bed (Dalrymple & Liu).                                      #
 #      or                                                                   #
