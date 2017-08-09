@@ -168,6 +168,7 @@
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
+  reg_programs="$reg_programs libww3"
 
 
 # cdf_programs = NetCDF programs
@@ -613,6 +614,11 @@ EOF
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
         target="$prog"
+      # if program name is libww3, then
+      # the target is compile and create archive
+      elif [ "$prog" = "libww3" ]
+      then
+        target="$prog"
       else
         target="$aPe/$prog"
       fi
@@ -657,7 +663,7 @@ EOF
         echo "# component module name"                               >> $mkfile
         echo "ESMF_DEP_FRONT := WMESMFMD"                            >> $mkfile
         echo "# component module path"                               >> $mkfile
-        echo "ESMF_DEP_INCPATH := $main_dir/mod"                     >> $mkfile
+        echo "ESMF_DEP_INCPATH := $mod_dir"                          >> $mkfile
         echo "# component module objects"                            >> $mkfile
         echo "ESMF_DEP_CMPL_OBJS := $obj_dir/lib$prog.a(wmesmfmd.o)" >> $mkfile
         echo "# component object/archive list"                       >> $mkfile
