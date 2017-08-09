@@ -26,7 +26,7 @@
 #define TEST_WMESMFMD_SETEXPORT___disabled
 #define TEST_WMESMFMD_CREATEIMPGRID___disabled
 #define TEST_WMESMFMD_CREATEEXPGRID___disabled
-#define TEST_WMESMFMD_BLENDIMPFIELDS___disabled
+#define TEST_WMESMFMD_SETUPIMPBMSK___disabled
 !/
 !/ ------------------------------------------------------------------- /
       module WMESMFMD
@@ -79,7 +79,8 @@
 !      SetExport        Subr.  Private  Set fields from export state
 !      CreateImpGrid    Subr.  Private  Create ESMF grid for import
 !      CreateExpGrid    Subr.  Private  Create ESMF grid for export
-!      BlendImpFields   Subr.  Private  Blend two import fields
+!      SetupImpBmsk     Subr.  Private  Setup background blending mask
+!      BlendImpField    Subr.  Private  Blend import field with background
 !      FieldFill        Subr.  Private  Fill ESMF field
 !      FieldGather      Subr.  Private  Gather ESMF field
 !      FieldIndex       Func.  Private  Return field index
@@ -204,6 +205,7 @@
       character(128)        :: mbgFieldStdName(numImpFields)
       logical               :: isActiveMbgField(numImpFields)
       type(ESMF_Field)      :: mbgField(numImpFields)
+      type(ESMF_Field)      :: bmskField(numImpFields)
 !
 ! --- Export fields
       type(ESMF_ArraySpec)  :: expArraySpec2D
@@ -213,7 +215,7 @@
       type(ESMF_Grid)       :: expGrid
       integer               :: expGridID
       logical               :: expGridIsLocal
-      integer, parameter    :: expHaloWidth = 0
+      integer, parameter    :: expHaloWidth = 3
       integer               :: expHaloLWidth(2)
       integer               :: expHaloUWidth(2)
       type(ESMF_RouteHandle):: expHaloRH
@@ -1080,6 +1082,11 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         call NUOPC_Realize( impState, mbgField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        bmskField(i) = ESMF_FieldCreate( impGrid, impArraySpec2D, &
+          totalLWidth=impHaloLWidth, totalUWidth=impHaloUWidth, &
+          staggerLoc=impStaggerLoc, indexFlag=impIndexFlag, &
+          name='bmsk_'//trim(impFieldName(i)), rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
 !
 ! 1.c Report realized import fields
@@ -1244,6 +1251,7 @@
       character(ESMF_MAXSTR) :: cname
       integer, parameter :: iwt=6
       real(8) :: wstime, wftime
+      integer :: i
 !
 ! -------------------------------------------------------------------- /
 ! Prep
@@ -1263,7 +1271,46 @@
 ! -------------------------------------------------------------------- /
 ! 2.  Clean up ESMF data structures
 !
-!TODO
+! 2.a Import field and grid stuff
+!
+      do i = 1,numImpFields
+        if (.not.isActiveImpField(i)) cycle
+        call ESMF_FieldDestroy(impField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        if (.not.isActiveMbgField(i)) cycle
+        call ESMF_FieldDestroy(mbgField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldDestroy(bmskField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+
+      call ESMF_FieldHaloRelease(impHaloRH, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_GridDestroy(impGrid, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 2.b Export field and grid stuff
+!
+      do i = 1,numExpFields
+        if (.not.isActiveExpField(i)) cycle
+        call ESMF_FieldDestroy(expField(i), rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+
+      call ESMF_FieldHaloRelease(expHaloRH, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_GridDestroy(expGrid, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!
+! 2.c Native field and grid stuff
+!
+      call ESMF_FieldRedistRelease(n2eRH, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_GridDestroy(natGrid, rc=rc)
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Clean up locally allocated data structures
@@ -1442,7 +1489,16 @@
       if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
       if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
 !
-! 2.b Get import fields
+! 2.b Setup background blending mask for each import field
+!
+      do i = 1,numImpFields
+        if (.not.isActiveImpField(i)) cycle
+        if (.not.isActiveMbgField(i)) cycle
+        call SetupImpBmsk(bmskField(i), impField(i), missingValue, rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      enddo
+!
+! 2.c Get import fields
 !
       call GetImport(gcomp, rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1791,8 +1847,7 @@
         endif
         tfn(:,j) = tln
         if ( isActiveMbgField(i1) ) then
-          call BlendImpFields( impField(i1), mbgField(i1), &
-            missingValue, rc=rc )
+          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
         call FieldGather( impField(i1), nx, ny, wlev, rc=rc )
@@ -1833,11 +1888,9 @@
         endif
         tfn(:,j) = tcn
         if ( isActiveMbgField(i1) ) then
-          call BlendImpFields( impField(i1), mbgField(i1), &
-            missingValue, rc=rc )
+          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          call BlendImpFields( impField(i2), mbgField(i2), &
-            missingValue, rc=rc )
+          call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
         call FieldGather( impField(i1), nx, ny, cxn, rc=rc )
@@ -1884,11 +1937,9 @@
         endif
         tfn(:,j) = twn
         if ( isActiveMbgField(i1) ) then
-          call BlendImpFields( impField(i1), mbgField(i1), &
-            missingValue, rc=rc )
+          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          call BlendImpFields( impField(i2), mbgField(i2), &
-            missingValue, rc=rc )
+          call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
         call FieldGather( impField(i1), nx, ny, wxn, rc=rc )
@@ -1931,8 +1982,7 @@
         endif
         tfn(:,j) = tin
         if ( isActiveMbgField(i1) ) then
-          call BlendImpFields( impField(i1), mbgField(i1), &
-            missingValue, rc=rc )
+          call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
         call FieldGather( impField(i1), nx, ny, icei, rc=rc )
@@ -2083,7 +2133,7 @@
       i1 = FieldIndex( expFieldName, 'charno', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       if ( isActiveExpField(i1) ) then
-        fillValue = zeroValue
+        fillValue = 0.016 !COAMPS: atm/libsrc/amlib/sfcflx.F
         if ( natGridIsLocal ) then
           call FieldFill( natField, fillValue, rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2479,7 +2529,8 @@
 ! 3.c Set import field land/sea mask values and update halos
 !
       if ( impGridIsLocal ) then
-        call ESMF_FieldGet( impMask, localDE=lde, farrayPtr=rptr, rc=rc )
+        call ESMF_FieldGet( impMask, localDE=lde, farrayPtr=rptr, &
+          totalLBound=tlb, totalUBound=tub, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         do iy = elb(2),eub(2)
           do ix = elb(1),eub(1)
@@ -2510,6 +2561,10 @@
       write(msg,'(a,2i6)') '           elb: ',elb(:)
       call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       write(msg,'(a,2i6)') '           eub: ',eub(:)
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           tlb: ',tlb(:)
+      call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           tub: ',tub(:)
       call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       write(msg,'(a,2i6)') ' impHaloLWidth: ',impHaloLWidth(:)
       call ESMF_LogWrite(trim(cname)//': CreateImpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
@@ -2655,6 +2710,7 @@
       integer :: ldecnt
       integer :: ix, iy, isea, jsea, k
       integer :: elb(2), eub(2)
+      integer :: tlb(2), tub(2)
       integer(ESMF_KIND_I4), pointer :: iptr(:,:)
       real(ESMF_KIND_RX), pointer :: rptrx(:,:), rptry(:,:)
       real(ESMF_KIND_RX), pointer :: rptr(:,:)
@@ -2690,7 +2746,7 @@
 !
 ! 1.b Compute a 2D subdomain layout based on nproc
 !
-      call CalcDecomp( nx, ny, nproc, expHaloWidth, .false., nxproc, nyproc, rc )
+      call CalcDecomp( nx, ny, nproc, expHaloWidth, .true., nxproc, nyproc, rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 1.c Set arraySpec, staggerLoc, and indexFlag for export fields
@@ -2867,7 +2923,8 @@
 ! 3.c Set export field land/sea mask values and update halos
 !
       if ( expGridIsLocal ) then
-        call ESMF_FieldGet( expMask, localDE=lde, farrayPtr=rptr, rc=rc )
+        call ESMF_FieldGet( expMask, localDE=lde, farrayPtr=rptr, &
+          totalLBound=tlb, totalUBound=tub, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         do iy = elb(2),eub(2)
           do ix = elb(1),eub(1)
@@ -3018,6 +3075,10 @@
       call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       write(msg,'(a,2i6)') '           eub: ',eub(:)
       call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           tlb: ',tlb(:)
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
+      write(msg,'(a,2i6)') '           tub: ',tub(:)
+      call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       write(msg,'(a,2i6)') ' expHaloLWidth: ',expHaloLWidth(:)
       call ESMF_LogWrite(trim(cname)//': CreateExpGrid: '//trim(msg), ESMF_LOGMSG_INFO)
       write(msg,'(a,2i6)') ' expHaloUWidth: ',expHaloUWidth(:)
@@ -3097,21 +3158,21 @@
       end subroutine CreateExpGrid
 !/ ------------------------------------------------------------------- /
 #undef METHOD
-#define METHOD "BlendImpFields"
-      subroutine BlendImpFields( dstField, srcField, missingVal, rc )
+#define METHOD "SetupImpBmsk"
+      subroutine SetupImpBmsk( bmskField, impField, missingVal, rc )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
-!/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
 !/
 !  1. Purpose :
 !
-!     Blend two import fields
+!     Setup background blending mask field for an import field
 !
 !  2. Method :
 !
@@ -3145,8 +3206,8 @@
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      type(ESMF_Field)      :: dstField
-      type(ESMF_Field)      :: srcField
+      type(ESMF_Field)      :: bmskField
+      type(ESMF_Field)      :: impField
       real(ESMF_KIND_RX)    :: missingVal
       integer, optional     :: rc
 !/
@@ -3156,18 +3217,22 @@
       real(ESMF_KIND_RX), parameter :: zero = 0.0
       real(ESMF_KIND_RX), parameter :: half = 0.5
       real(ESMF_KIND_RX), parameter ::  one = 1.0
-      integer, parameter :: nsig = impHaloWidth
+      integer, parameter :: nsig = impHaloWidth-1
       integer, parameter :: niter = 10
+      integer, parameter :: iter0 = 1-niter
       integer, parameter :: lde = 0
       integer :: iter, i, j, ii, jj, k, l
       integer :: elb(2), eub(2)
       integer :: tlb(2), tub(2)
-      real(ESMF_KIND_RX), pointer :: mptr(:,:), dptr(:,:), sptr(:,:)
-      type(ESMF_Field) :: bmskField, cmskField
+      real(ESMF_KIND_RX), pointer :: mptr(:,:), dptr(:,:)
+      type(ESMF_Field) :: cmskField
       real(ESMF_KIND_RX), pointer :: bmsk(:,:), cmsk(:,:)
       real(ESMF_KIND_RX) :: bsum, wsum
       real(ESMF_KIND_RX) :: wflt(-nsig:nsig,-nsig:nsig)
-      character(10) :: fnm
+      character(ESMF_MAXSTR) :: fnm
+#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETUPIMPBMSK)
+      integer :: timeSlice
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! Initialize filter
@@ -3184,16 +3249,12 @@
 ! -------------------------------------------------------------------- /
 ! Set up fields and pointers
 !
-      bmskField = ESMF_FieldCreate( impGrid, impArraySpec2D, &
-        totalLWidth=impHaloLWidth, totalUWidth=impHaloUWidth, &
-        staggerLoc=impStaggerLoc, indexFlag=impIndexFlag, &
-        name='bmsk', rc=rc )
+      call ESMF_FieldGet( impField, name=fnm, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       cmskField = ESMF_FieldCreate( impGrid, impArraySpec2D, &
         totalLWidth=impHaloLWidth, totalUWidth=impHaloUWidth, &
-        staggerLoc=impStaggerLoc, indexFlag=impIndexFlag, &
-        name='cmsk', rc=rc )
+        staggerLoc=impStaggerLoc, indexFlag=impIndexFlag, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       if ( impGridIsLocal ) then
@@ -3201,9 +3262,7 @@
           exclusiveLBound=elb, exclusiveUBound=eub, &
           totalLBound=tlb, totalUBound=tub, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call ESMF_FieldGet( dstField,  localDE=lde, farrayPtr=dptr, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call ESMF_FieldGet( srcField,  localDE=lde, farrayPtr=sptr, rc=rc )
+        call ESMF_FieldGet( impField,  localDE=lde, farrayPtr=dptr, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         call ESMF_FieldGet( bmskField, localDE=lde, farrayPtr=bmsk, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3217,7 +3276,7 @@
       if ( impGridIsLocal ) then
         do j = elb(2),eub(2)
           do i = elb(1),eub(1)
-            if ( dptr(i,j).eq.missingVal ) then
+            if ( nint(dptr(i,j)).eq.nint(missingVal) ) then
               bmsk(i,j) = zero
             else
               bmsk(i,j) = one
@@ -3226,16 +3285,15 @@
           enddo
         enddo
       endif
-#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_BLENDIMPFIELDS)
-      call ESMF_FieldGet( dstField, name=fnm, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETUPIMPBMSK)
+      timeSlice = 1
       call ESMF_FieldWrite( bmskField, &
-        "wmesmfmd_blendimpfields_"//trim(fnm)//"_bmsk.nc", &
-        overwrite=.true., timeSlice=1, rc=rc )
+        "wmesmfmd_setupimpbmsk_"//trim(fnm)//".nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 #endif
 
-      iter_loop: do iter = 1,niter
+      iter_loop: do iter = iter0,niter
 
         call ESMF_FieldHalo( bmskField, impHaloRH, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -3245,22 +3303,41 @@
           j_loop: do j = elb(2),eub(2)
             i_loop: do i = elb(1),eub(1)
               if ( nint(mptr(i,j)).eq.maskValueLand ) cycle i_loop
-              if ( dptr(i,j).eq.missingVal ) cycle i_loop
+              if ( nint(dptr(i,j)).eq.nint(missingVal) ) cycle i_loop
 
-              bsum = zero
-              wsum = zero
-              l_loop: do l = -nsig,nsig
-                jj = j + l
-                if ( jj.lt.tlb(2).or.jj.gt.tub(2) ) cycle l_loop
-                k_loop: do k = -nsig,nsig
-                  ii = i + k
-                  if ( ii.lt.tlb(1).or.ii.gt.tub(1) ) cycle k_loop
-                  if ( nint(mptr(ii,jj)).eq.maskValueLand ) cycle k_loop
-                  bsum = bsum + wflt(k,l)*bmsk(ii,jj)
-                  wsum = wsum + wflt(k,l)
-                enddo k_loop
-              enddo l_loop
-              cmsk(i,j) = bsum/wsum
+              if (iter.le.0) then
+
+                ! initialize blending zone to zero
+                l_loop0: do l = -1,1
+                  jj = j + l
+                  if ( jj.lt.tlb(2).or.jj.gt.tub(2) ) cycle l_loop0
+                  k_loop0: do k = -1,1
+                    ii = i + k
+                    if ( ii.lt.tlb(1).or.ii.gt.tub(1) ) cycle k_loop0
+                    if ( nint(mptr(ii,jj)).eq.maskValueLand ) cycle k_loop0
+                    if ( bmsk(ii,jj).eq.zero ) cmsk(i,j) = zero
+                  enddo k_loop0
+                enddo l_loop0
+
+              else
+
+                ! iterate filter over blending zone
+                bsum = zero
+                wsum = zero
+                l_loop: do l = -nsig,nsig
+                  jj = j + l
+                  if ( jj.lt.tlb(2).or.jj.gt.tub(2) ) cycle l_loop
+                  k_loop: do k = -nsig,nsig
+                    ii = i + k
+                    if ( ii.lt.tlb(1).or.ii.gt.tub(1) ) cycle k_loop
+                    if ( nint(mptr(ii,jj)).eq.maskValueLand ) cycle k_loop
+                    bsum = bsum + wflt(k,l)*bmsk(ii,jj)
+                    wsum = wsum + wflt(k,l)
+                  enddo k_loop
+                enddo l_loop
+                if ( wsum.gt.zero ) cmsk(i,j) = bsum/wsum
+
+              endif
 
             enddo i_loop
           enddo j_loop
@@ -3273,16 +3350,106 @@
           enddo
 
         endif
-#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_BLENDIMPFIELDS)
-        call ESMF_FieldGet( dstField, name=fnm, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETUPIMPBMSK)
+        timeSlice = timeSlice + 1
         call ESMF_FieldWrite( bmskField, &
-          "wmesmfmd_blendimpfields_"//trim(fnm)//"_bmsk.nc", &
-          overwrite=.true., timeSlice=iter+1, rc=rc )
+          "wmesmfmd_setupimpbmsk_"//trim(fnm)//".nc", &
+          overwrite=.true., timeSlice=timeSlice, rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 #endif
 
       enddo iter_loop
+!
+! -------------------------------------------------------------------- /
+! Clean up
+!
+      call ESMF_FieldDestroy( cmskField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+!/
+!/ End of SetupImpBmsk ----------------------------------------------- /
+!/
+      end subroutine SetupImpBmsk
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "BlendImpField"
+      subroutine BlendImpField( impField, mbgField, bmskField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Blend import field with background field
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_Field)      :: impField
+      type(ESMF_Field)      :: mbgField
+      type(ESMF_Field)      :: bmskField
+      integer, optional     :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      real(ESMF_KIND_RX), parameter ::  one = 1.0
+      integer, parameter :: lde = 0
+      integer :: i, j
+      integer :: elb(2), eub(2)
+      real(ESMF_KIND_RX), pointer :: mptr(:,:), dptr(:,:), sptr(:,:)
+      real(ESMF_KIND_RX), pointer :: bmsk(:,:)
+!
+! -------------------------------------------------------------------- /
+! Get array pointers and bounds
+!
+      if (present(rc)) rc = ESMF_SUCCESS
+
+      if ( impGridIsLocal ) then
+        call ESMF_FieldGet( impMask, localDE=lde, farrayPtr=mptr, &
+          exclusiveLBound=elb, exclusiveUBound=eub, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( impField,  localDE=lde, farrayPtr=dptr, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( mbgField,  localDE=lde, farrayPtr=sptr, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( bmskField, localDE=lde, farrayPtr=bmsk, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
 !
 ! -------------------------------------------------------------------- /
 ! Blend Fields
@@ -3295,19 +3462,10 @@
           enddo
         enddo
       endif
-!
-! -------------------------------------------------------------------- /
-! Clean up
-!
-      call ESMF_FieldDestroy( bmskField, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
-
-      call ESMF_FieldDestroy( cmskField, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !/
-!/ End of BlendImpFields --------------------------------------------- /
+!/ End of BlendImpField ---------------------------------------------- /
 !/
-      end subroutine BlendImpFields
+      end subroutine BlendImpField
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "FieldFill"
