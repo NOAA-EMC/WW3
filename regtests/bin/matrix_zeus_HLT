@@ -28,7 +28,7 @@
   echo '#PBS -l procs=24'                                   >> matrix.head
   echo '#PBS -q batch'                                      >> matrix.head
   echo '#PBS -l walltime=08:00:00'                          >> matrix.head
-  echo '#PBS -A omd'                                        >> matrix.head
+  echo '#PBS -A marine-cpu'                                 >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
