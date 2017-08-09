@@ -104,7 +104,7 @@
 
 # NOTE: comment line with '#sort:key:" used by sort_switches, including ':'
 
-  for type in mach nco grib mcp c90 nec lrecl netcdf scrip scripnc \
+  for type in mach nco grib mcp c90 nec netcdf scrip scripnc \
               shared mpp mpiexp thread GSE prop \
               stress s_ln source stab s_nl snls s_bot s_db miche s_tr s_bs \
               dstress s_ice s_is reflection s_xx \
@@ -141,10 +141,6 @@
                ID='NEC compiler directives'
                TS='NEC'
                OK='NEC' ;;
-#sort:lrecl:
-      lrecl  ) TY='one'
-               ID='word length in record length'
-               OK='LRB4 LRB8' ;;
 #sort:netcdf:
       netcdf ) TY='upto1'
                ID='netcdf api type'

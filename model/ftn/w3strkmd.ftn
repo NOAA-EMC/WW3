@@ -8,7 +8,7 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :         29-Nov-2013 |
+!/                  | Last update :         03-Mar-2016 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
@@ -16,8 +16,11 @@
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
 !/    29-Nov-2013 : Remove DOC control characters,
 !/                  update MPI! to MPI/! (H. L. Tolman). ( version 4.15 )
-!/    26-Sep-2016 : Optimization updates (A. van der Westhuysen) 
+!/    26-Sep-2016 : Optimization updates (A. van der Westhuysen)
 !/                                                      ( version 5.15 )
+!/    03-Mar-2016 : Optimization updates for INTERSECT,
+!/                  UNION, UNIQUE, SORT, SETDIFF, FINDIJ
+!/                  (S. Zieger, BoM Australia)          ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -71,7 +74,7 @@
          INTEGER :: ngbrSys(50)
          INTEGER :: checked
       END TYPE param
-!      
+!
 !     wind    Der. type     structure containing wind-related parameters
 !     wdir       Real       wind direction at grid point (Nautical or Cartesian, invariant)
 !     wspd       Real       wind speed at grid point
@@ -191,7 +194,7 @@
 !     a. Main subroutines for spatial/temporal tracking:
 !
 !     waveTracking_NWS_V2  main subroutine of spatial and temporal tracking algorithm
-!     spiralTrackV3        performs the spatial spiral tracking for a given time step  
+!     spiralTrackV3        performs the spatial spiral tracking for a given time step
 !     timeTrackingV2       performs the time tracking of all wave systems
 !
 !     b. Auxiliary subroutines and functions for tracking:
@@ -204,9 +207,9 @@
 !     combineSys           combine wave systems
 !     combinePartitionsV2  combine two partitions that have been assigned to the same system
 !     func. mean_angleV2   compute the mean direction from array of directions
-!     findIJV3             Find indices of system "a" that lie over or next to system "b"
+!     findIJV4             Find indices of system "a" that lie over or next to system "b"
 !
-!     c. Simple data maniputation (based on Matlab intrinsic functions):
+!     c. Simple data manipulation (based on Matlab intrinsic functions):
 !
 !     UNIQUE               removes duplicate reals from an vector
 !     SORT                 sorts the vector in ascending or descending order
@@ -259,7 +262,7 @@
 !     |                 (CALL UNIQUE)
 !     |                 (CALL UNION)             returns the union of vector1 and vector2
 !     |                 (CALL SETDIFF)
-!     |                 CALL findIJV3            Find indices of system "a" that lie over or next to system "b"
+!     |                 CALL findIJV4            Find indices of system "a" that lie over or next to system "b"
 !     |                 CALL combinePartitionsV2
 !     |
 !     +------- SUBROUTINE timeTrackingV2         performs the time tracking of all wave systems
@@ -280,8 +283,8 @@
       SUBROUTINE waveTracking_NWS_V2 (intype     ,tmax       , &
                                       tcur       ,filename   , &
                                       tstart     ,tend       , &
-                                      dt         ,ntint      , & 
-                                      minlon     ,maxlon     , & 
+                                      dt         ,ntint      , &
+                                      minlon     ,maxlon     , &
                                       minlat     ,maxlat     , &
                                       mxcwt      ,mycwt      , &
                                       dirKnob    ,             &
@@ -324,9 +327,9 @@
 !         (a) "partRes" format of IFP-SWAN (intype=1), or 
 !         (b) WW3 spectral bulletin format (intype=2).
 !         If intype=0, the partition data is read from memory (not activated yet). 
-!    
+!
 !     (2) Perform tracking in space by calling subroutine spiralTrackV3
-!     (3) Perform tracking in time by caling subroutine timeTrackingV2
+!     (3) Perform tracking in time by calling subroutine timeTrackingV2
 !
 !  3. Parameters :
 !
@@ -380,7 +383,6 @@
 !
 !     Local variables
 !     ----------------------------------------------------------------
-!     code     Char    Partitioning field code, from input file (not used)
 !     llat     Real    Latitude of partition point, from input file 
 !     llon     Real    Longitude of partition point, from input file
 !     ts       Real    Time step of partition, from input file
@@ -388,36 +390,38 @@
 !     tp0      Real    Peak period of partition, from input file
 !     dir0     Real    Mean direction of partition, from input file
 !     dspr0    Real    Mean directional spread of partition, from input file
-!     wf0      Real    wind fraction of partition, from input file
+!     wf0      Real    wind fraction of partition, from input file (removed)
 !     wndSpd0  Real    Wind speed of partition, from input file
 !     wndDir0  Real    Wind direction of partition, from input file
-!     wndFce0  Real    Wind force of partition, from input file (not, used)
+!     wndFce0  Real    Wind force of partition, from input file (not, used; removed)
 !     tss      Int.    Time step counter
 !     t0       Int     Index of first time step to compute
 !
-      LOGICAL                :: file_exists, FLFORM
+      LOGICAL                :: file_exists, FLFORM, LOOP
       LOGICAL                :: testout
       PARAMETER (testout = .FALSE.)
-      CHARACTER, ALLOCATABLE :: code(:) *12
-      CHARACTER              :: dummy*15, dummy2*10
+      CHARACTER              :: dummy*10, dummyc*12
       CHARACTER(LEN=10)      :: VERPRT
       CHARACTER(LEN=35)      :: IDSTR
-      CHARACTER(LEN=86)      :: headln1
-      CHARACTER(LEN=59)      :: headln2
+      CHARACTER(LEN=78)      :: headln1
+      CHARACTER(LEN=51)      :: headln2
       INTEGER                :: line
-      INTEGER, ALLOCATABLE   :: ts(:)
+      INTEGER, ALLOCATABLE   :: ts(:), tmp_i4(:)
       REAL, ALLOCATABLE      :: llat(:),llon(:),hs0(:), &
-                                tp0(:),dir0(:),dspr0(:),wf0(:),&
-                                wndSpd0(:),wndDir0(:),wndFce0(:)
-      REAL*8, ALLOCATABLE :: date0(:)
+                                tp0(:),dir0(:),dspr0(:),&
+                                wndSpd0(:),wndDir0(:)
+      REAL*8, ALLOCATABLE :: date0(:),tmp_r8(:)
       INTEGER    :: maxTs, t0, nout1, nout2, maxI, maxJ
-      REAL, ALLOCATABLE :: mlon(:,:), mlat(:,:)
+      REAL, ALLOCATABLE :: mlon(:,:), mlat(:,:), tmp_r4(:)
       REAL, POINTER :: uniqueTim(:),uniqueLatraw(:),uniqueLonraw(:), &
                        uniqueLat(:),uniqueLon(:)
-      INTEGER    :: ierr, i, j, k, l, alreadyIn, ok, tss, tsA, counter
+      INTEGER    :: ioerr,ierr, i, j, k, l, alreadyIn, ok, tss, tsA
+      INTEGER    :: maxPart, DATETIME(2)
       INTEGER    :: tstep, iline, numpart, skipln, readln, filesize
+      REAL       :: x,y,wnd,wnddir
       REAL       :: invar1, invar2, invar3, invar4
       REAL       :: invar5, invar6, invar7
+      REAL, ALLOCATABLE :: phs(:),ptp(:),pdir(:),pspr(:),pwf(:) ! current partition values
       REAL*8     :: date1, date2, ttest, ttemp
       INTEGER    :: ic, leng, maxpartout                                  ! Remove?
       REAL       :: dx
@@ -427,7 +431,8 @@
 !/MPI      INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
 !/MPI/!      INTEGER    :: MPI_INT_DOMARR, MPI_REAL_DOMARR 
 !/MPI      INTEGER    :: MPI_STATUS(MPI_STATUS_SIZE)
-!/MPI      INTEGER    :: REQ(16), ISTAT(MPI_STATUS_SIZE,16)
+!/MPI      INTEGER    :: REQ(16)
+!/MPI/!    INTEGER    :: ISTAT(MPI_STATUS_SIZE,16)
 !/MPI      REAL       :: COMMARR1(44)
 !/MPI      INTEGER    :: COMMARR2(11)
 !
@@ -461,8 +466,8 @@
 
 !/MPI      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 !/MPI      CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
-
-      FLFORM = .TRUE.
+      NULLIFY( sysA )
+      NULLIFY( maxSys )
 
 !     Select input type for raw partitioning data
       IF ((intype.EQ.1).OR.(intype.EQ.2)) THEN
@@ -474,7 +479,6 @@
 !           Read partRes format file
             WRITE(20,*) 'Reading partRes partitioning file...'
             filesize = 7500000
-            ALLOCATE(code(filesize))
             ALLOCATE(ts(filesize))
             ALLOCATE(llat(filesize))
             ALLOCATE(llon(filesize))
@@ -485,7 +489,6 @@
 !            ALLOCATE(wf0(filesize))
             ALLOCATE(wndSpd0(filesize))
             ALLOCATE(wndDir0(filesize))
-            ALLOCATE(wndFce0(filesize))
             ALLOCATE(date0(filesize))
             WRITE(20,*) '*** Max number of lines read from "partRes" ', &
                     'input file is = ',filesize,'!'
@@ -494,14 +497,14 @@
             IF (.NOT.file_exists) THEN
                WRITE(20,2001)
                WRITE(6,2001)
-               CALL ABORT
+               STOP 1
             END IF
             OPEN(unit=11,file=filename,status='old')
             line = 1
             DO WHILE (.TRUE.)
-               READ (11, *, END=113) code(line),llat(line),llon(line), &
+               READ (11, *, END=113) dummyc,llat(line),llon(line),   &
                             ts(line),hs0(line),tp0(line),dir0(line), &
-                            wndSpd0(line),wndDir0(line),wndFce0(line)
+                            wndSpd0(line),wndDir0(line),invar7
                !partRes file does not contain the dspr variable
                dspr0(line) = 9999.
 !               wf0(line) = 9999.
@@ -511,81 +514,125 @@
             CLOSE(11)
             line = line-1
             WRITE(6,*) '... finished'
-            IF (ALLOCATED(code)) DEALLOCATE(code)
-            IF (ALLOCATED(wndFce0)) DEALLOCATE(wndFce0)
 !            DEALLOCATE(date0)
 !/MPI            END IF
          ELSE IF (intype.EQ.2) THEN
 !/MPI            IF (rank.EQ.0) THEN
 !           Read WW3 Spectral Partition format file
-            WRITE(20,*) 'Reading raw partition file...'
 !           Query input file to determine required array sizes
-            WRITE(6,*) 'Reading raw partition file...'
             INQUIRE(FILE=filename, EXIST=file_exists)
             IF (.NOT.file_exists) THEN
                WRITE(20,2001)
                WRITE(6,2001)
-               CALL ABORT
+               STOP 1
             END IF
-!            OPEN(unit=11,file=filename,status='old')
+!/       -------------------------------------------------
+!/          Test unformatted read
+!/       -------------------------------------------------
+            OPEN(UNIT=11,FILE=FILENAME,FORM='UNFORMATTED',STATUS='OLD',ACCESS='STREAM')
+            READ(11,ERR=802,IOSTAT=IOERR) I
+            CLOSE(11)
+!/          --- First four-byte integer could possibly be byte-swapped,
+!               if ww3_shel was compiled on a different architecture. ---
+            K = SWAPI4(I)
+            FLFORM = .NOT.(I.EQ.(LEN(IDSTR)+LEN(VERPRT)).OR.&
+                           K.EQ.(LEN(IDSTR)+LEN(VERPRT))    )
+!        ======== COUNT LOOP ===========
             IF (FLFORM) THEN
 !              Input file in formatted ASCII
+               WRITE(6,*) 'Reading formatted ASCII file...'
                OPEN(unit=11,file=filename,status='old')
-               DO i = 1,3
-                  READ(11, *)
-               END DO
+               READ(11,'(78A)') headln1
+               IDSTR = headln1(1:LEN(IDSTR))
+               READ(11,'(78A)') headln1
+               READ(11,'(51A)') headln2
             ELSE
-!              Input file in unformatted binary
-               WRITE(6,*) 'Reading binary formatted file...'
-               OPEN(unit=11,file=filename,form='UNFORMATTED', &
-                    status='OLD')
+               IF (K.EQ.(LEN(IDSTR)+LEN(VERPRT))) THEN
+!/           --- Stop here. The file appears to be endian encoded
+!                different from the native machine format. And, the
+!                compiler option will override support for FORTRAN
+!                convert statements convert='big_endian' or
+!                convert='little_endian'. ---
+                 WRITE(20,1200)
+                 WRITE(6,1200)
+                 STOP 1
+               ELSE
+!                Input file in unformatted binary
+                 WRITE(6,*) 'Reading binary formatted file...'
+                 OPEN(unit=11,file=filename,form='UNFORMATTED', &
+                      status='OLD')
+               ENDIF
                REWIND(11)
-               READ(11) IDSTR,VERPRT,headln1,headln2
+               READ(11,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
+               READ(11,ERR=802,IOSTAT=IOERR) headln1
+               READ(11,ERR=802,IOSTAT=IOERR) headln2
             END IF
-
+!/
+           IF (IDSTR(1:9).ne.'WAVEWATCH') THEN
+             CLOSE(11)
+             WRITE(20,1300)
+             WRITE(6,1300)
+             STOP 1
+           ENDIF
+!/       -------------------------------------------------
+!/          Skip to start time
+!/       -------------------------------------------------
             skipln = 3
             ttest = 0
-
             DO WHILE (ttest.LT.tstart)
               IF (FLFORM) THEN
-                 READ (11,1000,END=110) date1,date2,invar1,invar2, &
-                                        numpart,invar3,invar4
-              ELSE   
-                 READ (11) date1,date2,invar1,invar2, &
-                            dummy2,numpart,invar3,invar4, &
-                            invar5,invar6,invar7
-              END IF     
-              ttest = date1 + date2/1000000
-              IF (FLFORM) THEN
-                 DO line = 1,numpart
-                   READ (11,*)
-                 END DO
+                 READ (11,1000,ERR=802,END=112) date1,date2,x,y, &
+                                  numpart,wnd,wnddir,invar6,invar7
+!/del  write(*,*) '0:',x,y,numpart
+                 skipln = skipln+1
               ELSE
-                 DO line = 1,numpart
-                   READ (11)
-                 END DO
+                 READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y, &
+                            dummy,numpart,invar1,wnd,wnddir, &
+                            invar5,invar6
+! write(*,*) '0:',DATETIME,numpart
+                 date1=dble(DATETIME(1))
+                 date2=dble(DATETIME(2))
               END IF
-              skipln = skipln+numpart+1
+              ttest = date1 + date2*1.0E-6
+              IF (FLFORM) THEN
+                DO line = 1,numpart+1
+                  READ(11,1010,END=111,ERR=802,IOSTAT=IOERR) &
+                            invar1,invar2,invar3,invar4
+! write(*,*) '0+:',line,numpart+1,invar1,invar2,invar3,invar4
+                  skipln = skipln+1
+                END DO
+              ELSE
+                DO line = 1,numpart+1
+                  READ (11,ERR=802,IOSTAT=IOERR) iline,invar1, &
+                              invar2,invar3,invar4,invar5,invar6
+! write(*,*) '0+:',line,iline,invar1,invar2,invar3,invar4,invar5,invar6
+                END DO
+              END IF
             END DO
-            skipln = skipln-numpart-1
-
+            skipln = skipln-numpart-1-1
+!/       -------------------------------------------------
 !           Read file for ntint time levels
-            readln = 0
+!/       -------------------------------------------------
+            readln = numpart
             tstep = 1
             ttemp = tstart
-            DO WHILE (.TRUE.)
+            maxPart = numpart
+            DO WHILE (tstep.LE.ntint)
               IF (readln.GT.0) THEN
                  IF (FLFORM) THEN
-                    READ (11,1000,END=111) date1,date2,invar1,invar2, &
-                                           numpart,invar3,invar4
+                   READ (11,1000,ERR=802,END=111) date1,date2,x,y, &
+                                    numpart,wnd,wnddir,invar6,invar7
                  ELSE
-                    READ (11,END=111) date1,date2,invar1,invar2, &
-                            dummy2,numpart,invar3,invar4, &
-                            invar5,invar6,invar7
+                    READ (11,END=111,ERR=802,IOSTAT=IOERR) DATETIME,  &
+                      x,y,dummy,numpart,wnd,wnddir,invar5,invar6,invar7
+! write(*,*) '1:',numpart,x,y
+                    date1=dble(DATETIME(1))
+                    date2=dble(DATETIME(2))
                  END IF
+                 maxPart = MAX(maxPart,numpart)
               END IF
-    
-              ttest = date1 + date2/1000000
+
+              ttest = date1 + date2*1.E-6
               IF (ttest.GT.ttemp) THEN
                  tstep = tstep+1
                  ttemp = ttest
@@ -593,20 +640,23 @@
               END IF
               IF (FLFORM) THEN
                  DO line = 1,numpart+1
-                   READ (11,*)
+                   READ (11,1010,END=111,ERR=802,IOSTAT=IOERR)      &
+                            invar1,invar2,invar3,invar4
+!/del write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1,invar2,invar3,invar4
+                   readln = readln+1
                  END DO
               ELSE
                  DO line = 1,numpart+1
-                   READ (11)
+                   READ (11,END=111,ERR=802,IOSTAT=IOERR) iline,invar1,&
+                       invar2,invar3,invar4,invar5,invar6
+                   readln = readln+1
                  END DO
               END IF
-              readln = readln+numpart+1
             ENDDO
  111        CONTINUE
-          
             CLOSE(11)
-
-            ALLOCATE(code(readln))
+!        ===== END COUNT LOOP =====
+!        ===== START READ LOOP =====
             ALLOCATE(ts(readln))
             ALLOCATE(llat(readln))
             ALLOCATE(llon(readln))
@@ -617,93 +667,180 @@
 !            ALLOCATE(wf0(readln))
             ALLOCATE(wndSpd0(readln))
             ALLOCATE(wndDir0(readln))
-            ALLOCATE(wndFce0(readln))
             ALLOCATE(date0(readln))
+            ts(1:readln)   = -1
+            llat(1:readln) = 9999.
+            llon(1:readln) = 9999.
+            hs0(1:readln)  = 9999.
+            tp0(1:readln)  = 9999.
+            dir0(1:readln)  = 9999.
+            dspr0(1:readln)  = 9999.
 
-!            OPEN(unit=11,file=filename,status='old')
+
             IF (FLFORM) THEN
                OPEN(unit=11,file=filename,status='old')
             ELSE
                OPEN(unit=11,file=filename,status='old', &
                     form='unformatted')
-            END IF 
+            END IF
             line = 1
-            tstep = 0
-
-!           Skip to start time
+            tstep = 1
+!/       -------------------------------------------------
+!/          Skip to start time
+!/       -------------------------------------------------
             IF (FLFORM) THEN
                DO i = 1,skipln
                   READ (11, *)
                END DO
             ELSE
-               DO i = 1,skipln
-                  READ (11)
+            ! --- Repeat from above since access='DIRECT'
+            !     does not support fseek and ftell. ---
+               READ(11,END=112,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
+               READ(11,END=112,ERR=802,IOSTAT=IOERR) headln1
+               READ(11,END=112,ERR=802,IOSTAT=IOERR) headln2
+            !/ --- allocate buffer for all partition parameters
+            !/     for a single grid point  ---
+               IF (.NOT.ALLOCATED(PHS)) ALLOCATE(PHS(maxPart))
+               IF (.NOT.ALLOCATED(PTP)) ALLOCATE(PTP(maxPart))
+               IF (.NOT.ALLOCATED(PDIR)) ALLOCATE(PDIR(maxPart))
+               IF (.NOT.ALLOCATED(PSPR)) ALLOCATE(PSPR(maxPart))
+               IF (.NOT.ALLOCATED(PWF)) ALLOCATE(PWF(maxPart))
+
+               ttest = 0
+
+               DO WHILE (ttest.LT.tstart)
+                 READ (11,END=112,ERR=802,IOSTAT=IOERR) DATETIME, &
+                            invar1,invar2,dummy,numpart,invar3,   &
+                            invar4,invar5,invar6,invar7
+                 date1=dble(DATETIME(1))
+                 date2=dble(DATETIME(2))
+                 ttest = date1 + date2*1.0E-6
+              !/ --- reset buffer ---
+                 PHS(:) = 0.
+                 PTP(:) = 0.
+                 PDIR(:) = 0.
+                 PSPR(:) = 0.
+                 PWF(:) = 0.
+
+              !/ --- fill buffer with partition data ---
+                 READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,invar1, &
+                          invar2,invar3,invar4,invar5,invar6
+                 DO i = 1,numpart
+                   READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,      &
+                       phs(i),ptp(i),invar3,pdir(i),pspr(i),pwf(i)
+                 END DO
                END DO
+             !/ --- move buffer content to data array ---
+               DO i=1,numpart
+                 hs0(line)   = phs(i)
+                 tp0(line)   = ptp(i)
+                 dir0(line)  = pdir(i)
+                 dspr0(line) = pspr(i)
+                 date0(line) = date1 + date2*1.0E-6
+                 ts(line) = tstep
+                 llat(line) = x
+                 llon(line) = y
+                 wndSpd0(line) = wnd
+                 wndDir0(line) = wnddir
+
+                 line = line + 1
+               END DO
+
             END IF
+!/       -------------------------------------------------
+!           Read file for ntint time levels
+!/       -------------------------------------------------
+            ttemp = tstart
             DO WHILE (line.LE.readln)
               IF (FLFORM) THEN
-                 READ (11,1000,END=112) date1,date2,invar1,invar2, &
-                                        numpart,invar3,invar4
+                 READ (11,1000,END=112) date1,date2,x,y,numpart, &
+                                        wnd,wnddir,invar6,invar7
               ELSE
-                 READ (11,END=112) date1,date2,invar1,invar2, &
-                            dummy2,numpart,invar3,invar4, &
-                            invar5,invar6,invar7
+                 READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y,    &
+                      dummy,numpart,wnd,wnddir,invar5,invar6,invar7
+                 date1=dble(DATETIME(1))
+                 date2=dble(DATETIME(2))
               END IF
 
-!             Partition 0 is the total field - skip this
-              IF (FLFORM) THEN
-                 READ (11, *)
-              ELSE
-                 READ (11)
+              ttest = date1 + date2*1.0E-6
+              IF (ttest.GT.ttemp) THEN
+                 tstep = tstep+1
+                 ttemp = ttest
+                 IF (tstep.GT.ntint) EXIT
               END IF
-!             Reduce the number of lines to be read by 1 to take care of skipped line
-              readln = readln-1
-              DO iline = line,(line+numpart-1)
-                IF (FLFORM) THEN
-                   READ (11,1010,END=112) hs0(iline),tp0(iline), &
-                                      dir0(iline),dspr0(iline)
-                ELSE
-                   READ (11,END=112) hs0(iline),tp0(iline), &
-                                      dir0(iline),dspr0(iline)
-                END IF
-                date0(iline) = date1 + date2/1000000
-                IF (date0(iline).GT.date0(MAX(iline-1,1))) tstep=tstep+1
-                IF ((tstep+1).GT.ntint) GOTO 110
-                ts(iline) = tstep
-                code(iline) = ''
-                llat(iline) = invar1
-                llon(iline) = invar2
-                wndSpd0(iline) = invar3
-                wndDir0(iline) = invar4
-              END DO
-              line = iline
-            ENDDO
- 1000       FORMAT(F9.0,F7.0,F8.3,F8.3,14X,I3,7X,F5.1,F6.1)
- 1010       FORMAT(3X,F8.2,F8.2,8X,F9.2,F9.2)
+
+              IF (FLFORM) THEN
+                READ (11,1010,END=112) invar1,invar2,invar3,invar4 ! Skip total integral parameters
+                DO i = 1,numpart
+                  IF (line.LE.readln) THEN
+                    READ (11,1010,END=112) hs0(line),tp0(line), &
+                                       dir0(line),dspr0(line)
+                    date0(line) = ttest
+
+                    ts(line) = tstep
+                    llat(line) = x
+                    llon(line) = y
+                    wndSpd0(line) = wnd
+                    wndDir0(line) = wnddir
+
+                    line = line+1
+                  END IF
+                END DO
+              ELSE
+                 READ (11,ERR=802,IOSTAT=IOERR) k,invar1,invar2,  &
+                     invar3,invar4,invar5
+                 DO i = 1,numpart
+                   IF (line.LE.readln) THEN
+                     READ (11,END=112,ERR=802,IOSTAT=IOERR) k,         &
+                          hs0(line),tp0(line),invar3,dir0(line),       &
+                          dspr0(line)
+                     date0(line) = ttest
+
+                     ts(line) = tstep
+                     llat(line) = x
+                     llon(line) = y
+                     wndSpd0(line) = wnd
+                     wndDir0(line) = wnddir
+
+                     line = line+1
+                  END IF
+                 END DO
+              END IF
+            END DO
+ 110        IERR = -1
+            CLOSE(11)
 
  112        CONTINUE
- 110        IERR = -1
-            IF (line.EQ.0) THEN
+            IF (line.EQ.1) THEN
                WRITE(20,2002)
                WRITE(6,2002)
-               CALL ABORT
+               STOP 1
             END IF
             CLOSE(11)
-            line = line-1
+! ===== READ LOOP FINISHED =====
+            LINE=LINE-1
+
             WRITE(6,*) '... finished'
-            IF (ALLOCATED(code)) DEALLOCATE(code)
-            IF (ALLOCATED(wndFce0)) DEALLOCATE(wndFce0)
- 2001       FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/    &
-                     '     ERROR IN OPENING INPUT FILE'/)
- 2002       FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/    &
-                     '     PREMATURE END OF INPUT FILE'/)
+
+            IF (ttest.LT.tstart) THEN
+               WRITE(20,2003) TSTART
+               WRITE(6,2003) TSTART
+               STOP 1
+            END IF
+
+            IF (ALLOCATED(PHS)) DEALLOCATE(PHS)
+            IF (ALLOCATED(PTP)) DEALLOCATE(PTP)
+            IF (ALLOCATED(PDIR)) DEALLOCATE(PDIR)
+            IF (ALLOCATED(PSPR)) DEALLOCATE(PSPR)
+            IF (ALLOCATED(PWF)) DEALLOCATE(PWF)
+
 !/MPI            END IF
          END IF
 
 !/MPI         IF (rank.EQ.0) THEN
-         ts=ts+1;
+
 !        Find unique time steps (and sort in ascending order)
-         CALL UNIQUE(REAL(ts),SIZE(ts),uniqueTim,maxTs)
+         CALL UNIQUE(REAL(ts(1:line)),line,uniqueTim,maxTs)
 
 !        Find unique lat and lon values (and sort in ascending order)
          CALL UNIQUE(llat(1:line),SIZE(llat(1:line)),uniqueLatraw,nout1)
@@ -749,10 +886,9 @@
          WRITE(20,*) 'latind1, latind2, lonind1, lonind2 =', &
                      latind1, latind2, lonind1, lonind2
          IF ((latind1.GE.latind2).OR.(lonind1.GE.lonind2)) THEN
-            WRITE(20,*) '*** Error in finding domain to process - ', &
-                       'Specified lat/lon limits within domain ', &
-                       'of raw partition file?'
-            CALL ABORT
+            WRITE(20,1400)
+            WRITE(6,1400)
+            STOP 1
          END IF
          NULLIFY(uniqueLat)
          NULLIFY(uniqueLon)
@@ -760,11 +896,9 @@
          ALLOCATE(uniqueLon(lonind2-lonind1+1))
          uniqueLat = uniqueLatraw(latind1:latind2)
          uniqueLon = uniqueLonraw(lonind1:lonind2)
-         WRITE(20,'(A,2F7.2)') &
-                    'In waveTracking_NWS_V2: Longitude range =', &
+         WRITE(20,*) 'In waveTracking_NWS_V2: Longitude range =', &
                      uniqueLon(1), uniqueLon(SIZE(uniqueLon))
-         WRITE(20,'(A,2F7.2)') &
-                    '                        Latitude range  =', &
+         WRITE(20,*) '                        Latitude range  =', &
                      uniqueLat(1), uniqueLat(SIZE(uniqueLat))
 
 !        Map is transposed (rotated by 90 deg), so that: 
@@ -773,6 +907,7 @@
 !          i.e. from this point onwards the indices (i,j) represents Cart. coordinates
          ALLOCATE( mlon(SIZE(uniqueLon),SIZE(uniqueLat)) )
          ALLOCATE( mlat(SIZE(uniqueLon),SIZE(uniqueLat)) )
+!
          maxI = SIZE(uniqueLon)
          maxJ = SIZE(uniqueLat)
          DO I = 1,maxI
@@ -804,7 +939,7 @@
             ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
             ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
             ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
-      
+
             DO j = 1,maxJ
                DO i = 1,maxI
                   wsdat(tsA)%lat(i,j)=mlat(i,j)
@@ -818,7 +953,7 @@
 !                  wsdat(tsA)%par(i,j)%wf(1:10)=9999.
                   wsdat(tsA)%par(i,j)%ipart(1:10)=0
                   wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable  
-                  wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999           
+                  wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
                   wsdat(tsA)%wnd(i,j)%wdir=9999.
                   wsdat(tsA)%wnd(i,j)%wspd=9999.
                   wsdat(tsA)%par(i,j)%checked=-1
@@ -827,38 +962,121 @@
          END DO
 
 !        Assign to each line in partition file an entry in wsdat
-         DO l = 1,line
+!        At each time step each point contains all numpart partitions.
+!        Only store the first 10 partitions.
+         l = 1
+
+         DO WHILE (l.LE.line)
             DO j = 1,maxJ
-               DO i = 1,maxI            
+               DO i = 1,maxI
 !>042916                  IF ( (llat(l).EQ.mlat(i,j)).AND. &
 !>042916                       (llon(l).EQ.mlon(i,j)) ) THEN
-                  IF ( (ABS(llat(l)-mlat(i,j)).LT.0.01).AND. &
-                       (ABS(llon(l)-mlon(i,j)).LT.0.01) ) THEN
-!                     WRITE(20,*) 'MATCHED! ',l,&
-!                        llat(l),mlat(i,j),ABS(llat(l)-mlat(i,j)),&
-!                        llon(l),mlon(i,j),ABS(llon(l)-mlon(i,j))
-                     wsdat(ts(l))%lat(i,j) = llat(l)
-                     wsdat(ts(l))%lon(i,j) = llon(l)
-!                    Find next free partition. Do not include more that 10
-                     k = MAXVAL(wsdat(ts(l))%par(i,j)%ipart(:)) + 1
-                     IF (k.GT.10) CYCLE
-                     wsdat(ts(l))%date = date0(l)
-                     wsdat(ts(l))%par(i,j)%hs(k) = hs0(l)
-                     wsdat(ts(l))%par(i,j)%ipart(k) = k
-                     wsdat(ts(l))%par(i,j)%tp(k) = tp0(l)
-                     wsdat(ts(l))%par(i,j)%dir(k) = dir0(l)
-                     wsdat(ts(l))%par(i,j)%dspr(k) = dspr0(l)
-!                     wsdat(ts(l))%par(i,j)%wf(k) = wf0(l)
-                     wsdat(ts(l))%wnd(i,j)%wdir = wndDir0(l)
-                     wsdat(ts(l))%wnd(i,j)%wspd = wndSpd0(l)
-                     wsdat(ts(l))%par(i,j)%checked = 0
-                     GOTO 400
+                  IF ( (ABS(llat(l)-mlat(i,j)).LT.1.E-2).AND. &
+                       (ABS(llon(l)-mlon(i,j)).LT.1.E-2) ) THEN
+!                    WRITE(20,*) 'MATCHED! ',l,&
+!                       llat(l),mlat(i,j),ABS(llat(l)-mlat(i,j)),&
+!                       llon(l),mlon(i,j),ABS(llon(l)-mlon(i,j))
+                    wsdat(ts(l))%lat(i,j) = llat(l)
+                    wsdat(ts(l))%lon(i,j) = llon(l)
+!                   --- Find ALL partition values associated with
+!                       lat(i,j) and lon(i,j). Keep list index l
+!                       fixed and recycle iline as variable index. ---
+                    iline = l
+                    k = 1
+                    DO WHILE (                                         &
+                       ABS(wsdat(ts(l))%lat(i,j)-llat(iline)).LT.1.E-3 &
+                  .AND.ABS(wsdat(ts(l))%lon(i,j)-llon(iline)).LT.1.E-3 )
+                      IF (k.LE.10) THEN
+                       wsdat(ts(iline))%par(i,j)%ipart(k) = k
+                       wsdat(ts(iline))%par(i,j)%hs(k)    = hs0(iline)
+                       wsdat(ts(iline))%par(i,j)%tp(k)    = tp0(iline)
+                       wsdat(ts(iline))%par(i,j)%dir(k)   = dir0(iline)
+                       wsdat(ts(iline))%par(i,j)%dspr(k)  = dspr0(iline)
+!                       wsdat(ts(k))%par(i,j)%wf(k) = wf0(l)
+                       IF (k.EQ.1) THEN
+                        wsdat(ts(iline))%date = date0(iline)
+                        wsdat(ts(iline))%wnd(i,j)%wdir = wndDir0(iline)
+                        wsdat(ts(iline))%wnd(i,j)%wspd = wndSpd0(iline)
+                        wsdat(ts(iline))%par(i,j)%checked = 0
+                       END IF
+                      END IF
+                      k = k + 1
+                      iline = iline + 1
+                      if (iline.GT.line) EXIT
+                    END DO
+!                   --- Account for increment at the end of loop (400 CONTINUE)
+!                       and go one element back in list because of increment. ---
+                    l = iline-1
+                    GOTO 400
                   END IF
                END DO
             END DO
  400        CONTINUE
+            IF (l+1.le.line) THEN
+             IF (ts(l).LT.ts(l+1)) THEN
+              K = line-l
+!             --- With each time step completed, deallocate processed 1:l
+!                 elements from 1d array. Create a temporary array size of
+!                 (l+1:line) with k elements and reallocate original array. ---
+              IF (ALLOCATED(tmp_i4)) DEALLOCATE(tmp_i4)
+!             --- REALLOCATE(integer arrays) ---
+              ALLOCATE(tmp_i4(k))
+              tmp_i4(1:k) = ts((l+1):line)
+              DEALLOCATE(ts)
+              ALLOCATE(ts(k))
+              ts(1:k) = tmp_i4(1:k)
+              DEALLOCATE(tmp_i4)
+!             --- REALLOCATE(double precision arrays) ---
+              IF (ALLOCATED(tmp_r8)) DEALLOCATE(tmp_r8)
+              ALLOCATE(tmp_r8(k))
+              tmp_r8(1:k) = date0((l+1):line)
+              DEALLOCATE(date0)
+              ALLOCATE(date0(k))
+              date0(1:k) = tmp_r8(1:k)
+              DEALLOCATE(tmp_r8)
+!             --- REALLOCATE(single precision arrays) ---
+              IF (ALLOCATED(tmp_r4)) DEALLOCATE(tmp_r4)
+              ALLOCATE(tmp_r4(k))
+              tmp_r4(1:k) = llat((l+1):line)
+              DEALLOCATE(llat)
+              ALLOCATE(llat(k))
+              llat(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = llon((l+1):line)
+              DEALLOCATE(llon)
+              ALLOCATE(llon(k))
+              llon(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = hs0((l+1):line)
+              DEALLOCATE(hs0)
+              ALLOCATE(hs0(k))
+              hs0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = tp0((l+1):line)
+              DEALLOCATE(tp0)
+              ALLOCATE(tp0(k))
+              tp0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = dir0((l+1):line)
+              DEALLOCATE(dir0)
+              ALLOCATE(dir0(k))
+              dir0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = dspr0((l+1):line)
+              DEALLOCATE(dspr0)
+              ALLOCATE(dspr0(k))
+              dspr0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = wndSpd0((l+1):line)
+              DEALLOCATE(wndSpd0)
+              ALLOCATE(wndSpd0(k))
+              wndSpd0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = wndDir0((l+1):line)
+              DEALLOCATE(wndDir0)
+              ALLOCATE(wndDir0(k))
+              wndDir0(1:k) = tmp_r4(1:k)
+              DEALLOCATE(tmp_r4)
+              line = k
+              l = 0
+             END IF
+            END IF
+            l = l + 1
          END DO
-
+!
          IF (ALLOCATED(ts)) DEALLOCATE(ts)
          IF (ALLOCATED(llat)) DEALLOCATE(llat)
          IF (ALLOCATED(llon)) DEALLOCATE(llon)
@@ -897,7 +1115,7 @@
 !/MPI                         wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
 !/MPI                         wsdat(tsA)%par(i,j)%ipart(1:10)=0
 !/MPI                         wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable  
-!/MPI                         wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999           
+!/MPI                         wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
 !/MPI                         wsdat(tsA)%wnd(i,j)%wdir=9999.
 !/MPI                         wsdat(tsA)%wnd(i,j)%wspd=9999.
 !/MPI                         wsdat(tsA)%par(i,j)%checked=-1
@@ -979,7 +1197,6 @@
 ! ----*** Test Output *** --------------------------------------------------
       IF (testout) THEN
 !-----RAW PARTITION output: Coordinates
-!      OPEN(unit=31,recl=2147483646,file='PART_COORD.OUT',status='unknown')
       OPEN(unit=31,file='PART_COORD.OUT',status='unknown')
 
       WRITE(31,*) 'Longitude ='
@@ -1001,15 +1218,13 @@
       CLOSE(31)
 
 !-----RAW PARTITION output: hs
-!      OPEN(unit=32,recl=2147483646, file='PART_HSIGN.OUT', &
-!           status='unknown')
       OPEN(unit=32, file='PART_HSIGN.OUT', &
            status='unknown')
 
       maxpartout = 5
       DO tsA = 1,SIZE(wsdat)
          WRITE(32,'(I4,71x,A)') tsA,'Time step'
-         WRITE(32,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'      
+         WRITE(32,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
             WRITE(32,'(I4,71x,A)') k,'System number'  
             WRITE(32,'(I4,71x,A)') 9999,'Number of points in system'
@@ -1032,7 +1247,7 @@
 
       DO tsA = 1,SIZE(wsdat)
          WRITE(33,'(I4,71x,A)') tsA,'Time step'
-         WRITE(33,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'      
+         WRITE(33,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
             WRITE(33,'(I4,71x,A)') k,'System number'  
             WRITE(33,'(I4,71x,A)') 9999,'Number of points in system'
@@ -1048,14 +1263,12 @@
       CLOSE(33)
 
 !-----RAW PARTITION output: dir
-!      OPEN(unit=34,recl=2147483646, file='PART_DIR.OUT', & 
-!           status='unknown')
       OPEN(unit=34, file='PART_DIR.OUT', & 
            status='unknown')
 
       DO tsA = 1,SIZE(wsdat)
          WRITE(34,'(I4,71x,A)') tsA,'Time step'
-         WRITE(34,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'      
+         WRITE(34,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
             WRITE(34,'(I4,71x,A)') k,'System number'  
             WRITE(34,'(I4,71x,A)') 9999,'Number of points in system'
@@ -1071,14 +1284,12 @@
       CLOSE(34)
 
 !-----RAW PARTITION output: dspr
-!      OPEN(unit=35,recl=2147483646, file='PART_DSPR.OUT', & 
-!           status='unknown')
-      OPEN(unit=35, file='PART_DSPR.OUT', & 
+      OPEN(unit=35, file='PART_DSPR.OUT', &
            status='unknown')
 
       DO tsA = 1,SIZE(wsdat)
          WRITE(35,'(I4,71x,A)') tsA,'Time step'
-         WRITE(35,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'      
+         WRITE(35,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
          DO k = 1,maxpartout
             WRITE(35,'(I4,71x,A)') k,'System number'  
             WRITE(35,'(I4,71x,A)') 9999,'Number of points in system'
@@ -1102,7 +1313,6 @@
 !/MPI         IF (rank.EQ.0) THEN
          WRITE(20,*) 'Allocating sysA...'
 !/MPI         END IF
-         NULLIFY( sysA )
          ALLOCATE( sysA(maxTs) )
 !/MPI         IF (rank.EQ.0) THEN
          WRITE(20,*) 'SIZE(sysA) = ',SIZE(sysA)
@@ -1119,7 +1329,6 @@
          t0 = tcur
 
 !        Allocate the sysA structure
-         NULLIFY( sysA )
          ALLOCATE( sysA(1) )                                              !Change to sysA(2)?
 !        Allocate maxSys
          ALLOCATE( maxSys(1) )                                            !Change to maxSys(2)?
@@ -1127,16 +1336,18 @@
 
 !     Big loop over all time levels
 !/MPI      IF (rank.EQ.0) THEN
-         WRITE(6,*) 'Performing spatial tracking...'            
+         WRITE(6,*) 'Performing spatial tracking...'
 !/MPI      END IF
 !/MPI/!      WRITE(20,*) 'rank,t0,maxTs,nproc =',rank,t0,maxTs,nproc
 !/MPI      DO tsA = (t0+rank),maxTs,MIN(nproc,maxTS)
 !/MPI/!         WRITE(20,*) 'Computing: Rank, tsA =',rank,tsA
 !/SHRD      DO tsA = t0,maxTs
+
           WRITE(20,*) 'Call spiralTrackV3, tsA=',tsA,'...'
           CALL spiralTrackV3 ( wsdat(tsA), dirKnob, perKnob, wetPts, &
                                hsKnob, seedLat, seedLon, &
                                maxSys(tsA), sysA(tsA)%sys )
+
           WRITE(20,*) '*** SIZE(sysA(1:tsA)%sys) at end of time step', &
                        tsA,':'
           WRITE(20,*) SIZE(sysA(tsA)%sys)
@@ -1424,15 +1635,45 @@
       WRITE(20,*) 'Calling timeTrackingV2...'
       lonext = wsdat(1)%lon(maxI,1)-wsdat(1)%lon(1,1)
       latext = wsdat(1)%lat(1,maxJ)-wsdat(1)%lat(1,1)
+
       CALL timeTrackingV2 (sysA, maxSys, tpTimeKnob, dirTimeKnob, 1, &
                            maxGroup, dt, lonext, latext, maxI, maxJ)
+!
 !/MPI      END IF
-
+!
       RETURN
+!
+  802 CONTINUE
+      WRITE (6,990) IOERR
+      STOP 1
+
+  990 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRKMD : '/            &
+               '     ERROR IN READING FROM PARTITION FILE'/          &
+               '     IOSTAT =',I5/)
+ 1000 FORMAT (F9.0,F7.0,F8.3,F8.3,14X,I3,7X,F5.1,F6.1,F5.1,F6.1)
+ 1010 FORMAT (3X,F8.2,F8.2,8X,F9.2,F9.2)
+ 1200 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRKMD : '/            &
+               '     ERROR IN READING PARTITION FILE   '/            &
+               '     INCOMPATIBLE ENDIANESS'/                        )
+ 1300 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRKMD : '/            &
+        '     ERROR IN READING PARTITION FILE   '/                   &
+        '     EXPECTED IDSTR "WAVEWATCH III PARTITIONED DATA FILE"'/ )
+ 1400 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRKMD : '/            &
+               '     ERROR IN FINDING DOMAIN TO PROCESS - '/         &
+               '     SPECIFIED LAT/LON LIMITS WITHIN DOMAIN '/       &
+               '     OF RAW PARTITION FILE?'/                        )
+ 2001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     ERROR IN OPENING INPUT FILE'/                   )
+ 2002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     PREMATURE END OF INPUT FILE'/                   )
+ 2003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     PREMATURE END OF PARTITION FILE - '/            &
+               '     TSTART=',F13.4/                                 )
+!
+!
       END SUBROUTINE waveTracking_NWS_V2
 !/ End of waveTracking_NWS_V2 ---------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE spiralTrackV3 (wsdat   ,dirKnob ,perKnob ,wetPts  , &
                                 hsKnob  ,seedLat ,seedLon  , &
@@ -1487,11 +1728,11 @@
 !     wetPts      Real     input  Percentage of wet points for purging fields (fraction)
 !     hsKnob      Real     input  Parameter in wave height for purging fields
 !     seedLat     Real     input  Start Lat for tracking spiral (if =0 centre of field is used)
-!     seedLon     Real     input  Start Lon for tracking spiral (if =0 centre of field is used) 
+!     seedLon     Real     input  Start Lon for tracking spiral (if =0 centre of field is used)
 !     wsdat       Real arr output Input 2d (gridded) data structure to be spiral tracked
-!     maxSys      Int      output Maximum number of partition systems      
-!     sys     Type(system) output Final set of tracked systems, for one time level  
-!                                      
+!     maxSys      Int      output Maximum number of partition systems
+!     sys     Type(system) output Final set of tracked systems, for one time level
+!
       TYPE(dat2d)  :: wsdat
       REAL         :: dirKnob,perKnob,wetPts,hsKnob,seedLat,seedLon
       INTEGER      :: maxSys
@@ -1503,7 +1744,7 @@
 !
 !     Local variables
 !     ----------------------------------------------------------------
-!     ngbrExt    Int    How far do we want the neigbor to be condsidered
+!     ngbrExt    Int    How far do we want the neighbour to be considered
 !     combine    Int    Toggle (1=combine wave systems; 0=do not combine)
 !     maxI,MaxJ  Int    Dimensions of the 2d (gridded) data wsdat
 !     deltaLat   Real   Delta in kilometers between 2 pts (in latitude)
@@ -1572,17 +1813,14 @@
       END IF
 !     In case center point is land point...
       IF (wsdat%par(i,j)%checked.EQ.-1) THEN
-          WRITE(20,*) 'In spiralTrackV3, Points are on land (i,j) =',i,j
           oldJ=j
-          DO WHILE ((wsdat%par(i,j)%checked.EQ.-1) & 
-                       .AND.(i.LT.maxI).AND.(j.LT.maxJ))
+          DO WHILE (wsdat%par(i,j)%checked.EQ.-1)
               j=j+1
               IF (j.EQ.maxJ) THEN
                   j=oldJ
                   i=i+1
                   oldJ=oldJ+1
               END IF
-              WRITE(20,*) 'In spiralTrackV3, Shifted points (i,j) =',i,j
           END DO
       END IF
 !     Compute distance in km between 2 grid points (at equator)
@@ -1645,7 +1883,7 @@
       END DO
 !     wetPts% of wet points
       maxPts=NINT(wetPts*(maxI*maxJ-1))
-
+!
       WRITE(20,*) 'Call combineWaveSystems...'
       CALL combineWaveSystems(wsdat,maxSys,maxPts,maxI,maxJ, &
                               perKnob,dirKnob,hsKnob,combine,sys)
@@ -1654,7 +1892,6 @@
       END SUBROUTINE spiralTrackV3
 !/ End of spiralTrackV3 ---------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE timeTrackingV2 (sysA       ,maxSys     ,tpTimeKnob  , &
                                  dirTimeKnob,ts0        ,maxGroup    , &
@@ -1836,7 +2073,6 @@
             CLOSE(12)
             ts1 = ts1-1
          ELSE
-         
 !        Set up the group number array for the first time level to be tracked
          ALLOCATE( sysOrdered(maxSys(ts1)) )
          ALLOCATE( indSorted(maxSys(ts1)) )
@@ -2011,7 +2247,7 @@
             deltaPersysmem = m2sysmem(:)*1. + tpTimeKnob
             WRITE(20,*) 'deltaDirsysmem(:) = ',deltaDirsysmem
             WRITE(20,*) 'deltaPersysmem(:) = ',deltaPersysmem
-            
+
 !                 Criterion 1: Mean period 
                   ALLOCATE( TEMP(SIZE(ind2)) )
                   TEMP = ABS( sysA(i)%sys(j)%tpMean - &
@@ -2070,7 +2306,7 @@
 !                    (4*mndist(:)/dmndiag)**2
                     ( (REAL(olsize(:)) - &
                     REAL(sysMem(ind2(:))%nPoints) )/&
-                    (0.50*MAX(REAL(sysMem(ind2(:))%nPoints),0.001)) )**2                        
+                    (0.50*MAX(REAL(sysMem(ind2(:))%nPoints),0.001)) )**2
 !                 Remove GoF entries which exceed predifined tolerances
                   DO ii = 1,SIZE(ind2)
                      WRITE(20,*) 'Testing: ii,olsize(ii),size,frac =',&
@@ -2194,7 +2430,7 @@
                      END IF
                    WRITE(20,*) 'counter,maxGroup,sysA(i)%sys(j)%grp =',&
                                counter,maxGroup,sysA(i)%sys(j)%grp
-                     WRITE(20,*) 'NO GRP MATCH case 2'                    
+                     WRITE(20,*) 'NO GRP MATCH case 2'
                   END IF
 
          END DO
@@ -2262,7 +2498,7 @@
 !083012  !Filter out duplicates groups that can develop
          DO l = 1, maxGroup
             DO ll = (l+1), maxGroup
-               
+
                deltaDir = MAX((-3.645*sysMem(l)%tpMean+63.211),10.)*1.
                deltaPer = MAX((-0.346*sysMem(l)%tpMean+3.686),0.6)*1.
 
@@ -2299,7 +2535,7 @@
                   sysMem(idup)%dirMean = 9999.
                   sysMem(idup)%indx(:) = 9999
                   sysMem(idup)%updated = -9999
-                  sysMem(idup)%length = 0                  
+                  sysMem(idup)%length = 0
                END IF
             END DO
          END DO
@@ -2328,8 +2564,8 @@
             WRITE(20,*) 'sysMem(',k,')%latMean =',sysMem(k)%latMean
             WRITE(20,*) 'sysMem(',k,')%tpMean =',sysMem(k)%tpMean
             WRITE(20,*) 'sysMem(',k,')%dirMean =',sysMem(k)%dirMean
-            WRITE(20,*) 'sysMem(',k,')%updated =',sysMem(k)%updated 
-            WRITE(20,*) 'sysMem(',k,')%length =',sysMem(k)%length         
+            WRITE(20,*) 'sysMem(',k,')%updated =',sysMem(k)%updated
+            WRITE(20,*) 'sysMem(',k,')%length =',sysMem(k)%length
          END DO
 !        ********************************************
       END DO
@@ -2368,7 +2604,6 @@
       END SUBROUTINE timeTrackingV2
 !/ End of timeTrackingV2 --------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE findWay (way         ,horizStepCount,vertStepCount , &
                           vertBorder  ,horizBorder   ,stepCount     )
@@ -2407,10 +2642,10 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !     way         Char     in/out Direction of spiral search
-!     vertBorder  Int      input  
+!     vertBorder  Int      input
 !     horizBorder Int      input
 !     stepCount   Int      output Number of steps to go in the selected direction (way)
-!                                      
+!
       CHARACTER   :: way *1
       INTEGER     :: horizStepCount, vertStepCount, &
                      vertBorder, horizBorder, stepCount
@@ -2485,7 +2720,6 @@
       END SUBROUTINE findWay
 !/ End of findWay ---------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE findNext (i      ,j          ,maxI       ,maxJ     , &
                            way    ,vertBorder ,horizBorder          )
@@ -2525,9 +2759,9 @@
 !     i,j         Int      in/out  Current grid indices
 !     maxI, maxJ  Int      input   Maximum indices of wave field
 !     way         Char     input   Direction of spiral search
-!     vertBorder  Int      output  Flag indicating that vert domain edge has been hit 
+!     vertBorder  Int      output  Flag indicating that vert domain edge has been hit
 !     horizBorder Int      output  Flag indicating that hor domain edge has been hit
-!                                      
+!
       CHARACTER   :: way
       INTEGER     :: i, j, maxI, maxJ, vertBorder, horizBorder
 
@@ -2599,7 +2833,6 @@
       END SUBROUTINE findNext
 !/ End of findNext --------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE findSys (i        ,j        ,wsdat    ,maxSys    , &
                           ngbrExt  ,maxI     ,maxJ     ,perKnob   , &
@@ -2620,7 +2853,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -2632,7 +2865,7 @@
 !
 !  2. Method
 !
-!     For the given point (i,j), find all wave systems at neighbouring grid 
+!     For the given point (i,j), find all wave systems at neighbouring grid
 !     points within the reach specified by ngbrExt.
 !
 !  3. Parameters :
@@ -2660,7 +2893,7 @@
       TYPE(neighbr) :: ngbr(50)
       TYPE(mtchsys) :: match
       LOGICAL       :: found
-      INTEGER       :: counter, ii, jj, nngbr, startCount, endCount, l, &
+      INTEGER       :: counter, ii, jj, nngbr, startCount, endCount, l,&
                        nout, maxS, s, p, n, countAll, ind, minInd, &
                        npart, pp, leng
       INTEGER       :: allFullSys(50)
@@ -2699,7 +2932,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-
+      NULLIFY(realarr)
 !      WRITE(20,*) 'findSys: i,j,maxSys =',i,j,maxSys
 
 !     First find the checked neighbor
@@ -2732,22 +2965,23 @@
               startCount=endCount+1
               l=l+1
           END DO
-    
+
           IF (endCount.EQ.0) WRITE(20,*) '***1.Calling UNIQUE w. len=0!'
           CALL UNIQUE (REAL(allFullSys),endCount,realarr,nout)            !Can one do this?
           ALLOCATE(allSys(nout))
           allSys = INT(realarr)                                           !Can one do this?     
+          IF (ASSOCIATED(realarr)) DEALLOCATE(realarr)
           maxS = MAXVAL(allSys)
 
           IF (maxSys.LT.maxS) THEN
-              maxSys=maxS                    
+              maxSys=maxS
           END IF
 !         Initiate sys num
           ALLOCATE( tmpsys(SIZE(allSys)) )
 !         Clear the wsdat%par(i,j)%sys field, new values assigned below.
-!         System info temporarily stored in allSys 
+!         System info temporarily stored in allSys
           wsdat%par(i,j)%sys(1:10) = 9999
-    
+
           DO s=1, SIZE(allSys)
               hsAll(:) = 0.
               tpAll(:) = 0.
@@ -2761,7 +2995,7 @@
                  found = .FALSE.
                  DO ind = 1, SIZE(ngbr(n)%par%sys)                       !Optimize this?
                     IF ( ngbr(n)%par%sys(ind).EQ.allSys(s) ) THEN        !Put sys under par to maintain structure
-                       found = .TRUE. 
+                       found = .TRUE.
                        EXIT
                     END IF
                  END DO
@@ -2883,7 +3117,7 @@
 !     new wave system number
       npart = LENGTH(REAL(wsdat%par(i,j)%ipart), &
                      SIZE(wsdat%par(i,j)%ipart),REAL(0))
-   
+
       DO p = 1, npart
          IF (wsdat%par(i,j)%sys(p).EQ.9999) THEN
             maxSys = maxSys + 1
@@ -2891,16 +3125,14 @@
          END IF
       END DO
       wsdat%par(i,j)%checked=1
-      
+
       IF (ALLOCATED(allSys)) DEALLOCATE(allSys)
-      IF (ASSOCIATED(realarr)) DEALLOCATE(realarr)
       IF (ALLOCATED(tmpsys)) DEALLOCATE(tmpsys)
 
       RETURN
       END SUBROUTINE findSys
 !/ End of findSys ---------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE combineWaveSystems (wsdat   ,maxSys  ,maxPts   , &
                                      maxI    ,maxJ    ,perKnob  , &
@@ -3022,6 +3254,7 @@
               END IF
               WRITE(20,'(A,A,I3,A,I5,A)') 'Calling combineSys for ', & 
                            'iteration',iter,' (maxSys =',nSys,').'
+
 !opt              WRITE(20,*) 'SIZE(sys)=',SIZE(sys)
               CALL combineSys (wsdat,sys,maxSys,maxI,maxJ, &
                                actSysInd,perKnob,dirKnob)
@@ -3050,9 +3283,9 @@
 !opt      NOTE: if we deallocate the individual records without
 !opt      compressing sys, then s and sysInd will remain the same  
           ss = s
-          leng = LENGTH(REAL(sys(ss)%hs), &
-                        SIZE(sys(ss)%hs),REAL(9999.))
-          dev = STD(sys(ss)%hs(1:leng),leng)
+
+          leng = LENGTH(sys(ss)%hs,SIZE(sys(ss)%hs),9999.)
+          dev  = STD(sys(ss)%hs(1:leng),leng)
           hsCmp = sys(ss)%hsMean + 2.*dev
           maxHgt = hsKnob
 
@@ -3085,19 +3318,6 @@
 !                          DEALLOCATE( sys(iloop)%tpMean )
 !                          DEALLOCATE( sys(iloop)%dirMean )
 !                          DEALLOCATE( sys(iloop)%ngbr )
-                          NULLIFY( sys(iloop)%hs )
-                          NULLIFY( sys(iloop)%tp )
-                          NULLIFY( sys(iloop)%dir )
-                          NULLIFY( sys(iloop)%dspr )
-!                          NULLIFY( sys(iloop)%wf )
-                          NULLIFY( sys(iloop)%i )
-                          NULLIFY( sys(iloop)%j )
-                          NULLIFY( sys(iloop)%lat )
-                          NULLIFY( sys(iloop)%lon )
-!                          NULLIFY( sys(iloop)%hsMean )
-!                          NULLIFY( sys(iloop)%tpMean )
-!                          NULLIFY( sys(iloop)%dirMean )
-!                          NULLIFY( sys(iloop)%ngbr )
                        END DO
                     END IF
                  END IF       
@@ -3143,9 +3363,7 @@
             actSysInd(actSys) = sys(so)%sysInd
          END IF
       END DO
-      
-      WRITE(20,*) '*** After filtering out small systems:'
-      WRITE(20,*) 'actSys =',actSys
+
 !opt      WRITE(20,*) 'actSysInd =',actSysInd
       DO so = 1,SIZE(actSysInd)
          s = actSysInd(so)
@@ -3153,8 +3371,6 @@
       END DO     
 
       CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
-      WRITE(20,*) '*** After printFinalSys:'
-      WRITE(20,*) 'maxSys =',maxSys
 !opt      WRITE(20,*) 'actSysInd =',actSysInd
 !opt      DO so = 1,maxSys
 !opt         WRITE(20,*) 'sys(',so,')%sysInd =',sys(so)%sysInd, &
@@ -3165,7 +3381,6 @@
       END SUBROUTINE combineWaveSystems
 !/ End of combineWaveSystems ----------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE printFinalSys (wsdat    ,maxSys    ,actSysInd , & 
                                 maxI     ,maxJ      ,flag      ,sys    )
@@ -3265,7 +3480,7 @@
           ALLOCATE( sys(maxSys) )
           WRITE(20,*) 'Allocated sys okay, SIZE(sys) =',SIZE(sys)
 
-          ALLOCATE( ngbrSysAll(50*maxI*maxJ) )                            !Large enough?                              
+          ALLOCATE( ngbrSysAll(50*maxI*maxJ) )                            !Large enough?
           DO ic = 1, maxSys
               NULLIFY( sys(ic)%hs )
               NULLIFY( sys(ic)%tp )
@@ -3298,7 +3513,7 @@
               sys(ic)%hsMean = 9999.
               sys(ic)%tpMean = 9999.
               sys(ic)%dirMean = 9999.
-              sys(ic)%nPoints = 9999
+              sys(ic)%nPoints = 0
               sys(ic)%ngbr(:) = 9999
               sys(ic)%grp = 9999
               ngbrSysAll(:) = 0
@@ -3333,7 +3548,7 @@
               END DO
 
 !              if ~isempty(sys)
-              IF (nGuys.GT.0) THEN    
+              IF (nGuys.GT.0) THEN
                   sys(ic)%sysInd=ic
                   sys(ic)%hsMean = SUM(sys(ic)%hs(1:nGuys))/nGuys
                   sys(ic)%tpMean = SUM(sys(ic)%tp(1:nGuys))/nGuys
@@ -3358,10 +3573,13 @@
                   IF (endInd.GT.0) THEN
                      CALL UNIQUE(REAL(ngbrSysAll(1:endInd)),endInd, &
                                  UNIARR,UNISIZE)
-                     TEMP = [REAL(sys(ic)%sysInd),REAL(sys(ic)%sysInd)]
+                     TEMP = (/REAL(sys(ic)%sysInd),REAL(sys(ic)%sysInd)/)
                      CALL SETDIFF(REAL(UNIARR),UNISIZE, &
                                   TEMP,2,DIFARR,DIFSIZE)
-                     sys(ic)%ngbr(1:DIFSIZE) = NINT(DIFARR)
+                     DIFSIZE = MIN(DIFSIZE,SIZE(sys(ic)%ngbr))
+                     sys(ic)%ngbr(1:DIFSIZE) = NINT(DIFARR(1:DIFSIZE))
+                     IF (ASSOCIATED(UNIARR)) DEALLOCATE(UNIARR)
+                     IF (ASSOCIATED(DIFARR)) DEALLOCATE(DIFARR)
                   END IF
               ELSE
                   CYCLE
@@ -3379,7 +3597,7 @@
                  sysOrdered,sysSortedInd,'D')
       leng = LENGTH(REAL(sysOrdered), &
                             SIZE(sysOrdered),REAL(0))
-     
+
       DO ic = 1, leng
          leng2 = LENGTH(REAL(sys(sysSortedInd(ic))%ngbr), &
                        SIZE(sys(sysSortedInd(ic))%ngbr),REAL(9999))
@@ -3391,7 +3609,6 @@
       END SUBROUTINE printFinalSys
 !/ End of printFinalSys ---------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE combineSys (wsdat    ,sys      ,maxSys   ,maxI     , &
                              maxJ     ,actSysInd,perKnob  ,dirKnob  )
@@ -3454,7 +3671,7 @@
       REAL, ALLOCATABLE    :: sysOrdered(:), rounded(:)
       REAL, POINTER    :: uniarr(:), difarr(:), allngbr(:)
       INTEGER   :: leng, leng2, s, ss, so, ngb, lsys, lsys2, hh, i, j, & 
-                   ii, jj, ind, ind2, p, pp, nn, nbr, icEnd,ic,iii,iloop
+                   ii, jj, ind, ind2, nn, nbr, icEnd,ic,iii,iloop
       INTEGER   :: myngbr, indMatch, matchSys, keep, replacedInd, & 
                    hhForIndMatch, lMatch, tot, outsize
       INTEGER   :: ngbIndex(10000), keepInd(maxI*maxJ), oneLess(1000)     !Array large enough?
@@ -3479,7 +3696,7 @@
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      SORT
-!      findIJV3
+!      findIJV4
 !      UNIQUE
 !      combinePartitionsV2
 !      UNION
@@ -3504,7 +3721,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-
+!     Initialize pointer (first use)
+      NULLIFY(indSys1)
+      NULLIFY(indSys2)
 !     Flag to combine systems on a point-by-point basis along boundary, 
 !     instead of using mean values.
       ZIPMATCH = .FALSE.
@@ -3514,10 +3733,10 @@
       ALLOCATE( sysSortedInd(maxSys) )
       ALLOCATE( sysOut(maxSys) )
       ALLOCATE( rounded(maxSys) )
-!     Sort in decending Tp: the following improves the iterative combining in  
+!     Sort in descending Tp: the following improves the iterative combining in  
 !     the special case that the wave period is constant over the domain, but  
 !     tpMean is not because of truncation errors at very high decimals.
-      rounded = REAL(INT(sys(1:maxSys)%tpMean*10**4))/10**4
+      rounded = REAL(INT(sys(1:maxSys)%tpMean*1.E4))*1.E-4
       CALL SORT(rounded,maxSys,sysOrdered,sysSortedInd,'D')
       sysOut=sys(sysSortedInd)%sysInd
       IF (ALLOCATED(rounded)) DEALLOCATE(rounded)
@@ -3564,15 +3783,15 @@
           END DO
           ii = ii-1
 !opt          WRITE(20,*) so,'.   sys =',s,', Tp =',sys(s)%tpMean, &
-!opt                      ', size=',sys(s)%nPoints,', #neighbours=',ii          
+!opt                      ', size=',sys(s)%nPoints,', #neighbours=',ii
 
           IF ( ii.GT.0 ) THEN
               DO ngb = 1, ii
 !                 We first need to find the (i,j) points that are either common 
 !                 to both these systems, or at the boundary of the two systems. Here 
 !                 sys 1 will carry the 'ss' index and sys 2 the ngbIndex(ngb) index.
-                  CALL findIJV3 (sys(ss),sys(ngbIndex(ngb)), &
-                                 maxI,indSys1,indSys2)
+                  CALL findIJV4 (sys(ss),sys(ngbIndex(ngb)), &
+                                 maxI,maxJ,indSys1,indSys2)
                   IF ((SIZE(indSys1)>10).AND.(SIZE(indSys2)>10).AND. &
                       (sys(ss)%nPoints.GT.sys(ngbIndex(ngb))%nPoints)) &
                       THEN
@@ -3633,7 +3852,7 @@
                                   (absDir.LT.deltaDirB) ) THEN
                                 ngbmatch(izp)=1.
                              END IF
-                           END IF                      
+                           END IF
                         END DO
 !                       If >80% of neighbors fall within criteria, system is matched
                         IF ((SUM(ngbmatch(1:lsys))/lsys).GT.0.50) THEN
@@ -3697,7 +3916,7 @@
                           END DO
                         END DO
                       END IF
- 500                  CONTINUE                      
+ 500                  CONTINUE
 !051612               --- Land mask addition
 
                       absHs = ABS( SUM(sys(ss)%hs(indSys1))/lsys - &
@@ -3756,6 +3975,7 @@
                             WRITE(20,*) '***2.Calling UNIQUE w. len=0!'
                          CALL UNIQUE(REAL(oneLess(1:ind2)),ind2, &
                                      uniarr,outsize)
+                         IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
                          IF (ind2.GT.outsize) THEN
 !                          There is at least one duplicate, so combine systems
                            CALL combinePartitionsV2(wsdat%par(ii,jj))
@@ -3788,7 +4008,6 @@
                             keep = keep+1
                             keepInd(keep) = hh
                          END IF
-                         IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
                       END DO
                       leng = LENGTH(REAL(sys(indMatch)%hs), &
                                SIZE(sys(indMatch)%hs),REAL(9999.))
@@ -3807,14 +4026,15 @@
                                   SIZE(sys(indMatch)%ngbr), &
                                   REAL(sys(ss)%ngbr), &
                                   SIZE(sys(ss)%ngbr), &
-                                  allngbr,outsize)                      
+                                  allngbr,outsize)
                       CALL SETDIFF(allngbr,SIZE(allngbr), &
                          REAL((/sys(indMatch)%sysInd, &
                          sys(ss)%sysInd/)), &
                          SIZE((/sys(indMatch)%sysInd, &
                          sys(ss)%sysInd/)),difarr,outsize)
                       sys(indMatch)%ngbr(:) = 9999
-                      sys(indMatch)%ngbr(1:outsize) = NINT(difarr)
+                      outsize = MIN(outsize,size(sys(indMatch)%ngbr))
+                      sys(indMatch)%ngbr(1:outsize) = NINT(difarr(1:outsize))
                       IF (ASSOCIATED(allngbr)) DEALLOCATE(allngbr)
                       IF (ASSOCIATED(difarr)) DEALLOCATE(difarr)
 
@@ -3903,18 +4123,6 @@
 !                      DEALLOCATE( sys(ss)%hsMean )                        !opt
 !                      DEALLOCATE( sys(ss)%tpMean )                        !opt
 !                      DEALLOCATE( sys(ss)%dirMean )                       !opt
-!                      NULLIFY( sys(ss)%hs )                               !opt
-!                      NULLIFY( sys(ss)%tp )                               !opt
-!                      NULLIFY( sys(ss)%dir )                              !opt
-!                      NULLIFY( sys(ss)%dspr )                             !opt
-!!                      NULLIFY( sys(ss)%wf )                              !opt
-!                      NULLIFY( sys(ss)%i )                                !opt
-!                      NULLIFY( sys(ss)%j )                                !opt
-!                      NULLIFY( sys(ss)%lat )                              !opt
-!                      NULLIFY( sys(ss)%lon )                              !opt
-!                      NULLIFY( sys(ss)%hsMean )                           !opt
-!                      NULLIFY( sys(ss)%tpMean )                           !opt
-!                      NULLIFY( sys(ss)%dirMean )                          !opt
 
 !                     Loop through wsdat to update neighbouring system values
                       DO i = 1, maxI
@@ -3954,7 +4162,7 @@
                              CALL UNIQUE(REAL(sys(nn)%ngbr(1:leng2)), &
                                          leng2,uniarr,outsize)
                              sys(nn)%ngbr(:) = 9999
-                             sys(nn)%ngbr(1:outsize) = uniarr
+                             sys(nn)%ngbr(1:outsize) = NINT(uniarr)
                              IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
 !                             WRITE(20,*) 'has now ngbr: ', &
 !                                sys(nn)%ngbr(1:outsize)
@@ -3974,7 +4182,7 @@
       IF (ALLOCATED(sysSortedInd)) DEALLOCATE(sysSortedInd)
       IF (ALLOCATED(sysOut)) DEALLOCATE(sysOut)
 
-!     Compile array index of active systems in sys      
+!     Compile array index of active systems in sys
       actSys = 0
       DO ic = 1,maxSys
          IF (sys(ic)%nPoints>0) actSys = actSys + 1
@@ -3988,20 +4196,19 @@
             actSysInd(actSys) = sys(ic)%sysInd
          END IF
       END DO
-      
+
 !opt      WRITE(20,*) 'actSys =',actSys
 !opt      WRITE(20,*) 'actSysInd =',actSysInd
 !opt      DO ic = 1,SIZE(actSysInd)
 !opt         s = actSysInd(ic)
 !opt         WRITE(20,*) 'sys(',s,')%sysInd =',sys(s)%sysInd
-!opt      END DO     
+!opt      END DO
       WRITE(20,*) 'Leaving combineSys...'
 
       RETURN
       END SUBROUTINE combineSys
 !/ End of combineSys ------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE combinePartitionsV2 (dat)
 !/
@@ -4119,8 +4326,8 @@
                END IF
             END IF
          END DO
-      END DO 
-      
+      END DO
+
 !     Now go through array of duplicates for each of n systems
 !     to add all the wave energy to the most energetic of the 
 !     duplicates, and then remove the rest.
@@ -4175,7 +4382,7 @@
 !               dat%wf(npart) = 9999.
                dat%sys(npart) = 9999
                dat%ipart(npart) = 0
-            END IF       
+            END IF
          END DO
       END DO
 
@@ -4183,7 +4390,6 @@
       END SUBROUTINE combinePartitionsV2
 !/ End of combinePartitionsV2 ---------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       REAL FUNCTION mean_angleV2(ang,ll)
 !/
@@ -4268,7 +4474,7 @@
       u(:) = SIN(ang(:)*(PI/180.))
       vm = SUM(v)/ll
       um = SUM(u)/ll
-    
+
 !     Compute mean magnitude and direction relative to North (from Upolar.m)
       theta = (ATAN2(um,vm))*(180/PI)
 
@@ -4291,7 +4497,6 @@
       END FUNCTION mean_angleV2
 !/ End of mean_angleV2 ----------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       REAL FUNCTION mean_angleV3(ang,hsign,ll)
 !/
@@ -4385,7 +4590,7 @@
       END DO
       vm = TEMP1/MAX(SUM(hsign**2),0.001)
       um = TEMP2/MAX(SUM(hsign**2),0.001)
-    
+
 !     Compute mean magnitude and direction relative to North (from Upolar.m)
       theta = (ATAN2(um,vm))*(180/PI)
 
@@ -4408,184 +4613,7 @@
       END FUNCTION mean_angleV3
 !/ End of mean_angleV3 ----------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE findIJV3 (a   ,b   ,maxI ,ind_A ,ind_B )
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |     A. J. van der Westhuysen      |
-!/                  |            Jeff Hanson            |
-!/                  |        Eve-Marie Devaliere        |
-!/                  |                        FORTRAN 95 |
-!/                  | Last update :          4-Jan-2013 |
-!/                  +-----------------------------------+
-!/
-!/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
-!/                  by Jeff Hanson & Eve-Marie Devaliere
-!/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
-!/
-!/    Copyright 2009-2013 National Weather Service (NWS),
-!/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
-!/       No unauthorized use without permission.
-!/
-      IMPLICIT NONE
-!
-!  1. Purpose :
-!
-!     Find a(i,j) indices of system "a" that lie over or along the fringes 
-!     of system "b".
-!
-!  2. Method
-!
-!     Find indices of "a" such that a%i matches any b%(i-1), b%i or b%(i+1)
-!     AND a%j matches any b%(j-1), b%j or b%(j+1).
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     a, b   Type(system)  output  Final set of tracked systems, for one time level
-!     maxI        Int      input   Maximum indices of wave field  
-!
-      TYPE(system) :: a, b                                                !???
-      INTEGER      :: maxI, outsize
-      REAL, POINTER    :: pos(:)
-      INTEGER, POINTER :: ind_A(:), ind_B(:)
-
-      INTENT (IN) a, b, maxI
-!      INTENT (OUT) ind_A, ind_B
-!
-!     Local variables
-!     ----------------------------------------------------------------
-!     posA, posB    Int   Arr   Array of neighbours
-!     indA*, indB*  Int   Arr   Array of indices for combining systems
-!
-      INTEGER, POINTER :: posA(:), posB(:)
-      REAL, POINTER :: posB_MM(:), posB_MP(:) 
-      REAL, POINTER :: posB_PM(:), posB_PP(:)
-      REAL, POINTER :: indA_MM(:), indB_MM(:)
-      REAL, POINTER :: indA_MP(:), indB_MP(:)
-      REAL, POINTER :: indA_PM(:), indB_PM(:)
-      REAL, POINTER :: indA_PP(:), indB_PP(:) 
-      REAL, POINTER :: indA_P(:), indA_M(:)
-      REAL, POINTER :: indB_P(:), indB_M(:) 
-      REAL, POINTER :: TEMP_A(:), TEMP_B(:)
-      REAL, POINTER :: TEMP_A2(:), TEMP_B2(:)
-      REAL, POINTER :: TEMP_A3(:), TEMP_B3(:)
-
-      INTEGER :: ind, leng_ai, leng_aj, leng_bi, leng_bj
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      INTERSECT
-!      UNION
-!
-!  5. Subroutines calling
-!
-!     combineSys
-!
-!  6. Error messages :
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     -
-!
-!  9. Switches :
-!
-!     None defined yet.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-!     Start by limiting search to possible common region.
-!     Find min for i and j for data A and B
-      leng_ai = LENGTH(REAL(a%i),SIZE(a%i),REAL(9999))
-      leng_aj = LENGTH(REAL(a%j),SIZE(a%j),REAL(9999))
-      leng_bi = LENGTH(REAL(b%i),SIZE(b%i),REAL(9999))
-      leng_bj = LENGTH(REAL(b%j),SIZE(b%j),REAL(9999))
-
-      ALLOCATE( posA(leng_ai) )
-      ALLOCATE( posB(leng_bi) )
-      DO ind = 1, leng_ai
-         posA(ind)=(a%j(ind)-1)*maxI+a%i(ind)
-      END DO
-      DO ind = 1, leng_bi
-         posB(ind)=(b%j(ind)-1)*maxI+b%i(ind)
-      END DO
-
-      CALL INTERSECT(REAL(posA),SIZE(posA),REAL(posB),SIZE(posB), &
-                     pos,outsize,TEMP_A,TEMP_B)                           !Correct?
-   
-      ALLOCATE( posB_MM(leng_bi) )  
-      ALLOCATE( posB_MP(leng_bi) )
-      ALLOCATE( posB_PM(leng_bi) )  
-      ALLOCATE( posB_PP(leng_bi) )
-
-      DO ind = 1, leng_bi 
-         posB_MM(ind)=(b%j(ind)-2)*maxI+b%i(ind)-1
-         posB_MP(ind)=(b%j(ind)-2)*maxI+b%i(ind)+1
-         posB_PM(ind)=b%j(ind)*maxI+b%i(ind)-1
-         posB_PP(ind)=b%j(ind)*maxI+b%i(ind)+1
-      END DO
-
-      CALL INTERSECT(REAL(posA),SIZE(posA),REAL(posB_MM),SIZE(posB_MM), &
-                     pos,outsize,indA_MM,indB_MM)
-      CALL INTERSECT(REAL(posA),SIZE(posA),REAL(posB_MP),SIZE(posB_MP), &
-                     pos,outsize,indA_MP,indB_MP)
-      CALL INTERSECT(REAL(posA),SIZE(posA),REAL(posB_PM),SIZE(posB_PM), &
-                     pos,outsize,indA_PM,indB_PM)
-      CALL INTERSECT(REAL(posA),SIZE(posA),REAL(posB_PP),SIZE(posB_PP), &
-                     pos,outsize,indA_PP,indB_PP)
-
-      CALL UNION (REAL(indA_PM),SIZE(indA_PM),REAL(indA_PP), &
-                  SIZE(indA_PP),indA_P,outsize)
-      CALL UNION (REAL(indA_MM),SIZE(indA_MM),REAL(indA_MP), &
-                  SIZE(indA_MP),indA_M,outsize)
-
-      CALL UNION (REAL(indA_P),SIZE(indA_P),REAL(indA_M), &               !Removed ind_A here!
-                  SIZE(indA_M),TEMP_A2,outsize)
-      CALL UNION (REAL(TEMP_A),SIZE(TEMP_A),REAL(TEMP_A2), &              !Removed ind_A here!
-                  SIZE(TEMP_A2),TEMP_A3,outsize)
-      ALLOCATE( ind_A(SIZE(TEMP_A3)) )
-      ind_A = NINT(TEMP_A3)
-
-      CALL UNION (REAL(indB_PM),SIZE(indB_PM),REAL(indB_PP), &
-                  SIZE(indB_PP),indB_P,outsize)
-      CALL UNION (REAL(indB_MM),SIZE(indB_MM),REAL(indB_MP), &
-                  SIZE(indB_MP),indB_M,outsize)
-
-      CALL UNION (REAL(indB_P),SIZE(indB_P),REAL(indB_M), &               !Removed ind_B here!
-                  SIZE(indB_M),TEMP_B2,outsize)
-      CALL UNION (REAL(TEMP_B),SIZE(TEMP_B),REAL(TEMP_B2), &              !Removed ind_B here!
-                  SIZE(TEMP_B2),TEMP_B3,outsize)
-      ALLOCATE( ind_B(SIZE(TEMP_B3)) )
-      ind_B = NINT(TEMP_B3)
-
-      DEALLOCATE(posA,posB)
-      DEALLOCATE(posB_MM,posB_MP) 
-      DEALLOCATE(posB_PM,posB_PP)
-      DEALLOCATE(indA_MM,indB_MM)
-      DEALLOCATE(indA_MP,indB_MP)
-      DEALLOCATE(indA_PM,indB_PM)
-      DEALLOCATE(indA_PP,indB_PP) 
-      DEALLOCATE(indA_P,indA_M)
-      DEALLOCATE(indB_P,indB_M) 
-      DEALLOCATE(TEMP_A,TEMP_B)
-      DEALLOCATE(TEMP_A2,TEMP_B2)
-      DEALLOCATE(TEMP_A3,TEMP_B3)
-
-      RETURN
-      END SUBROUTINE findIJV3
-!/ End of findIJV3 --------------------------------------------------- /
-!/
-
-!/ ------------------------------------------------------------------- / 
       SUBROUTINE UNIQUE (INARRAY,INSIZE,OUTARRAY,OUTSIZE)
 !/
 !/                  +-----------------------------------+
@@ -4594,30 +4622,31 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :          4-Jan-2013 |
+!/                  | Last update :         22-Dec-2016 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
 !/                  by Jeff Hanson & Eve-Marie Devaliere
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    12-Dec-2016 : Change algorithm from N*N to N*log(N)
+!/                  (S. Zieger BoM Australia)           ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
-!/       No unauthorized use without permission. NOTE THE EXPLICIT
-!/       EXCEPTION FOR THE PRESENT SUBROUTINE, WHICH IS TAKEN FROM
-!/       http://rosettacode.org/wiki/Remove_duplicate_elements#Fortran
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
+!/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
 !
 !  1. Purpose :
 !
-!     (i)  Removes duplicate reals from an array.
-!     (ii) Sort the resulting array in ascending order.
+!     Returns the sorted elements that are unique in INARRAY.
 !
 !  2. Method
-!   
-!     Based on http://rosettacode.org/wiki/Remove_duplicate_elements#Fortran
+!
+!     1. Sort input array with quicksort
+!     2. Copy sequential-elements if the 'current' element
+!        is not equal to the 'previous' element in array.
 !
 !  3. Parameters :
 !
@@ -4625,36 +4654,24 @@
 !     ----------------------------------------------------------------
 !     INARRAY   REAL    ARR  input    Input array
 !     INSIZE    INTEGER      input    Size of input array
-!     OUTARRAY  REAL    ARR  output   Output array
+!     OUTARRAY  REAL    ARR  output   Output array (sorted)
 !     OUTSIZE   INTEGER      output   Size of output array (number of unique elements)
 !
-      INTEGER           :: INSIZE, OUTSIZE, I, J
-      REAL              :: INARRAY(INSIZE), TEMP(INSIZE)
-      REAL, POINTER :: OUTARRAY(:)
-      LOGICAL           :: FOUND
-
-      INTENT (IN)  INARRAY, INSIZE
-!      INTENT (OUT) OUTARRAY, OUTSIZE
-      INTENT (OUT) OUTSIZE
+      INTEGER, INTENT(IN)  :: INSIZE
+      INTEGER, INTENT(OUT) :: OUTSIZE
+      REAL, INTENT(IN)     :: INARRAY(INSIZE)
+      REAL, POINTER        :: OUTARRAY(:)
 !
 !     Local variables
 !     ----------------------------------------------------------------
-!     INARRAY - array of values within which to find unique values
-!     IY -      array to be carried with X (all swaps of X elements are        ??? EDIT!
-!               matched in IY .  After the sort IY(J) contains the original
-!               postition of the value X(J) in the unsorted X array.
-!     N -       number of values in array X to be sorted
-!
-      INTEGER N
-      INTEGER IY(INSIZE)
-      REAL TEMP2
-      INTEGER JMAX, ITEMP
+      INTEGER          :: I, K
+      REAL             :: ARRAY(INSIZE), TEMP(INSIZE)
 !
 !  4. Subroutines used :
 !
-!      Name      Type  Module   Description
+!      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      -
+!      QSORT     Subr. Private  Quicksort algorithm
 !
 !  5. Subroutines calling
 !
@@ -4662,7 +4679,7 @@
 !     findSys
 !     printFinalSys
 !     combineSys
-!     UNION
+!     findIJV4
 !
 !  6. Error messages :
 !
@@ -4679,59 +4696,54 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
- 
-!     NOTE: This routine can be improved further by removing "IF ( FOUND ) CYCLE"
-!     Initialize TEMP array with dummy values
-      IF (INSIZE.EQ.0) THEN
-         WRITE(20,*) '*** In Subr. UNIQUE: Input array has length=0!!!'
-         ALLOCATE(OUTARRAY(0))
-         OUTSIZE = 0
-         GOTO 300
+      K = 1
+
+      IF ( INSIZE.EQ.0 ) THEN
+        WRITE(20,*) '*** In Subr. UNIQUE: Input array has length=0!'
+      ELSE
+!/    --- Setup input arrays and temporary arrays. ---
+        DO I=1,INSIZE
+          ARRAY(I) = INARRAY(I)
+          TEMP(I)  = REAL(I)
+        END DO
+!/
+!/      --- Sort input arrays (use temporary array to store indices). ---
+        CALL QSORT(ARRAY,TEMP,1,INSIZE)
+!/
+!/      --- Reset temporary array. ---
+        TEMP(:) = 9999.
+!/
+!/      --- Initialise first values and array index. ---
+        K = 1
+        TEMP(K) = ARRAY(K)
+        K = K + 1
+!/      --- Iterate over elements in array. ---
+        DO I=2,INSIZE
+!/        --- Compare sequential array values ('previous' less than 'next')
+!/            and test against the last list element check in. ---
+          IF ( ARRAY(I).GT.ARRAY(I-1) .AND. &
+               ARRAY(I).GT.TEMP(K-1)        ) THEN
+            TEMP(K) = ARRAY(I)
+            K = K + 1
+          END IF
+        END DO
+
+!/      --- Allocate output array ---
+        OUTSIZE = K - 1
+        ALLOCATE(OUTARRAY(OUTSIZE))
+!/      --- Transfer output from temporary array to output array. ---
+        IF ( OUTSIZE.GE.1 ) THEN
+          DO I=1,OUTSIZE
+            OUTARRAY(I) = TEMP(I)
+          END DO
+        END IF
       END IF
-
-      TEMP(:) = 9999.
-      OUTSIZE = 1
-      TEMP(1) = INARRAY(1)
-      DO I=2,SIZE(INARRAY)
-         FOUND = .FALSE.
-         DO J=1,OUTSIZE
-            IF (TEMP(J) == INARRAY(I)) THEN
-               ! Found a match so start looking again
-               FOUND = .TRUE.
-            END IF
-         END DO
-         ! No match found so add it to the output
-         IF ( FOUND ) CYCLE
-         OUTSIZE = OUTSIZE + 1
-         TEMP(OUTSIZE) = INARRAY(I)
-      END DO
-
-!     Allocate OUTARRAY to the size of the unique array
-      ALLOCATE(OUTARRAY(OUTSIZE))
-      OUTARRAY = TEMP(1:OUTSIZE)
-
-!     Sort OUTARRAY in ascending order
-      N = SIZE(OUTARRAY)
-      JMAX=N-1
-      DO 200 I=1,N-1
-         TEMP2=1.E38
-         DO 100 J=1,JMAX
-            IF(OUTARRAY(J).LT.OUTARRAY(J+1)) GO TO 100
-              TEMP2=OUTARRAY(J)
-              OUTARRAY(J)=OUTARRAY(J+1)
-              OUTARRAY(J+1)=TEMP2
-              ITEMP=IY(J)
-              IY(J)=IY(J+1)
-              IY(J+1)=ITEMP
-  100    CONTINUE
-         JMAX=JMAX-1
-  200 CONTINUE
-
-  300 RETURN
+!/
+      RETURN
+!/
       END SUBROUTINE UNIQUE
 !/ End of UNIQUE ----------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SORT (INARRAY,INSIZE,OUTARRAY,IY,DIRECTION)
 !/
@@ -4741,19 +4753,17 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :          4-Jan-2013 |
+!/                  | Last update :         20-Dec-2016 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
 !/                  by Jeff Hanson & Eve-Marie Devaliere
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    20-Dec-2016 : Add quicksort algorithm (S. Zieger) ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
-!/       No unauthorized use without permission. NOTE THE EXPLICIT
-!/       EXCEPTION FOR THE PRESENT SUBROUTINE, WHICH IS TAKEN FROM
-!/       http://rosettacode.org/wiki/Remove_duplicate_elements#Fortran
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/
       IMPLICIT NONE
 !
@@ -4765,8 +4775,8 @@
 !     indices is stored in IY.
 !
 !  2. Method
-!   
-!     Based on http://rosettacode.org/wiki/Remove_duplicate_elements#Fortran
+!
+!     Sort algorithm based on quicksort.
 !
 !  3. Parameters :
 !
@@ -4778,11 +4788,9 @@
 !     IY        INTEGER ARR  output   Sorted array of the original indices
 
       CHARACTER         :: DIRECTION *1
-      INTEGER           :: INSIZE, I, J
+      INTEGER           :: INSIZE
       INTEGER           :: IY(INSIZE)
       REAL              :: INARRAY(INSIZE), OUTARRAY(INSIZE) 
-      REAL              :: TEMP(INSIZE)
-      LOGICAL           :: FOUND
 
       INTENT (IN)  INARRAY, INSIZE, DIRECTION
       INTENT (OUT) OUTARRAY, IY
@@ -4795,9 +4803,8 @@
 !                postition of the value X(J) in the unsorted X array.
 !      N -       number of values in array X to be sorted
 
-      INTEGER N
-      REAL TEMP2
-      INTEGER JMAX, ITEMP
+      INTEGER           :: I
+      REAL              :: IND(INSIZE)
 !
 !  4. Subroutines used :
 !
@@ -4826,57 +4833,37 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
- 
+
 !     Sort OUTARRAY in as/decending order
 
       IF (INSIZE.EQ.0) THEN
          WRITE(20,*) '*** In Subr. SORT: Input array has length=0 !!!'
-         GOTO 300
-      END IF
+      ELSE
 
-      OUTARRAY = INARRAY
-      N = INSIZE
-      JMAX=N-1
-      DO I = 1, N
-         IY(I) = I
+        DO I = 1, INSIZE
+           OUTARRAY(I) = INARRAY(I)
+           IND(I) = REAL(I)
+        END DO
+
+        IF (DIRECTION .EQ. 'A') THEN
+           CALL QSORT(OUTARRAY,IND,1,INSIZE)
+        ELSE IF (DIRECTION .EQ. 'D') THEN
+           CALL QSORT_DESC(OUTARRAY,IND,1,INSIZE)
+        END IF
+
+      END IF
+!
+!/    --- Cast index array to integer. ---
+      DO I = 1, INSIZE
+         IY(I) = INT(IND(I))
       END DO
-
-      IF (DIRECTION .EQ. 'A') THEN
-         DO 200 I=1,N-1
-!            TEMP2=1.E38
-            DO 100 J=1,JMAX
-               IF(OUTARRAY(J).LE.OUTARRAY(J+1)) GO TO 100
-                 TEMP2=OUTARRAY(J)
-                 OUTARRAY(J)=OUTARRAY(J+1)
-                 OUTARRAY(J+1)=TEMP2
-                 ITEMP=IY(J)
-                 IY(J)=IY(J+1)
-                 IY(J+1)=ITEMP
-  100       CONTINUE
-            JMAX=JMAX-1
-  200    CONTINUE
-      ELSE IF (DIRECTION .EQ. 'D') THEN
-         DO 201 I=1,N-1
-!            TEMP2=1.E38
-            DO 101 J=1,JMAX
-               IF(OUTARRAY(J).GE.OUTARRAY(J+1)) GO TO 101
-                 TEMP2=OUTARRAY(J)
-                 OUTARRAY(J)=OUTARRAY(J+1)
-                 OUTARRAY(J+1)=TEMP2
-                 ITEMP=IY(J)
-                 IY(J)=IY(J+1)
-                 IY(J+1)=ITEMP
-  101       CONTINUE
-            JMAX=JMAX-1
-  201    CONTINUE
-      END IF
-
-  300 RETURN
+!
+      RETURN
+!
       END SUBROUTINE SORT
 !/ End of SORT ------------------------------------------------------- /
 !/
-
-!/ ------------------------------------------------------------------- / 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE SETDIFF (INARRAY1,   INSIZE1,  INARRAY2,   INSIZE2, &
                           OUTARRAY,   OUTSIZE)
 !/
@@ -4886,12 +4873,13 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :          4-Jan-2013 |
+!/                  | Last update :         20-Dec-2016 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
 !/                  by Jeff Hanson & Eve-Marie Devaliere
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    20-Dec-2016 : Add quicksort algorithm (S.Zieger)  ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -4918,34 +4906,26 @@
 !     OUTARRAY  REAL    ARR  output   Output array
 !     OUTSIZE   INTEGER      output   Size of output array (number of unique elements)
 
-      INTEGER           :: INSIZE1, INSIZE2, OUTSIZE, I, J
+      INTEGER           :: INSIZE1, INSIZE2, OUTSIZE
       REAL              :: INARRAY1(INSIZE1), INARRAY2(INSIZE2)
-      REAL              :: TEMP(INSIZE1)
-      REAL, POINTER :: OUTARRAY(:)
-      LOGICAL           :: FOUND
+      REAL, POINTER     :: OUTARRAY(:)
 
       INTENT (IN)  INARRAY1, INSIZE1, INARRAY2, INSIZE2
-!      INTENT (OUT) OUTARRAY, OUTSIZE
       INTENT (OUT) OUTSIZE
 !
 !     Local variables
 !     ----------------------------------------------------------------
-!     INARRAY1, INARRAY2 - arrays to find the difference between 
-!     IY - array to be carried with X (all swaps of X elements are        ??? EDIT!
-!          matched in IY .  After the sort IY(J) contains the original
-!          postition of the value X(J) in the unsorted X array.
-!     N -  number of values in array X to be sorted
-
-      INTEGER N
-      INTEGER IY(INSIZE1)
-      REAL TEMP2
-      INTEGER JMAX, ITEMP
+      INTEGER          :: I,J,K
+      REAL             :: TEMP(INSIZE1)
+      REAL             :: ARRAY1(INSIZE1),ARRAY2(INSIZE2)
+      REAL             :: ID1(INSIZE1),ID2(INSIZE2)
+      LOGICAL          :: LOOP
 !
 !  4. Subroutines used :
 !
-!      Name      Type  Module   Description
+!      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      -
+!      QSORT     Subr. Private  Quicksort algorithm
 !
 !  5. Subroutines calling
 !
@@ -4968,59 +4948,80 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
- 
-!     NOTE: This routine can be improved further by removing "IF ( FOUND ) CYCLE"
-!     Initialize TEMP array with dummy values
-
-      IF (INSIZE1.EQ.0) THEN
-         WRITE(20,*) '*** In Subr. SETDIFF:Input array has length=0!!!'
-         ALLOCATE(OUTARRAY(0))
-         OUTSIZE = 0
-         GOTO 300
-      END IF
-
-      TEMP(:) = 9999.
-      OUTSIZE = 0
-      DO I=1,SIZE(INARRAY1)
-         DO J=1,SIZE(INARRAY2)
-            IF (INARRAY2(J).EQ.INARRAY1(I)) THEN
-               ! Found a match
-               GOTO 90
+      IF ( (INSIZE1).EQ.0 ) THEN 
+        OUTSIZE = 0
+        ALLOCATE(OUTARRAY(OUTSIZE))
+      ELSE IF ( INSIZE2.EQ.0 ) THEN
+        CALL UNIQUE(INARRAY1,INSIZE1,OUTARRAY,OUTSIZE)
+      ELSE
+!/      --- Setup input arrays. ---
+        DO I=1,INSIZE1
+          ARRAY1(I) = INARRAY1(I)
+          ID1(I)    = REAL(I)
+        END DO
+        DO I=1,INSIZE2
+          ARRAY2(I) = INARRAY2(I)
+          ID2(I)    = REAL(I)
+        END DO
+!/
+!/      --- Sort input arrays. ---
+        CALL QSORT(ARRAY1,ID1,1,INSIZE1)
+        CALL QSORT(ARRAY2,ID2,1,INSIZE2)
+!/
+!/      --- Initialise indices. ---
+        I = 1
+        J = 1
+        K = 1
+!/
+!/      --- Allocate and initialize temporary output ---
+        TEMP(:) = 9999.
+!/
+!/      --- Loop though both arrays by incrementing I,J. ---
+        LOOP = .TRUE.
+        DO WHILE ( LOOP )
+!/
+            IF ( ARRAY1(I).LT.ARRAY2(J) .OR.   &
+                 ARRAY1(I).GT.ARRAY2(INSIZE2)  ) THEN
+!/            --- Populate output array. Check for dumplicates
+!/                in output array. ---
+              IF ( K.EQ.1 ) THEN
+                TEMP(K) = ARRAY1(I)
+                K = K + 1
+              ELSE IF ( TEMP(K-1).LT.ARRAY1(I) ) THEN
+                TEMP(K) = ARRAY1(I)
+                K = K + 1
+              END IF
+              I = I + 1
+            ELSE IF ( ARRAY2(J).LT.ARRAY1(I) ) THEN
+              J = J + 1
+            ELSE 
+              I = I + 1
+              J = J + 1
             END IF
-         END DO
-         IF (.NOT.ANY(TEMP(:).EQ.INARRAY1(I))) THEN
-            OUTSIZE = OUTSIZE + 1
-            TEMP(OUTSIZE) = INARRAY1(I)
-         END IF
-  90  CONTINUE
-      END DO
-
-!     Allocate OUTARRAY to the size of the unique array
-      ALLOCATE(OUTARRAY(OUTSIZE))
-      OUTARRAY = TEMP(1:OUTSIZE)
-
-!     Sort OUTARRAY in ascending order
-      N = SIZE(OUTARRAY)
-      JMAX=N-1
-      DO 200 I=1,N-1
-         TEMP2=1.E38
-         DO 100 J=1,JMAX
-            IF(OUTARRAY(J).LT.OUTARRAY(J+1)) GO TO 100
-              TEMP2=OUTARRAY(J)
-              OUTARRAY(J)=OUTARRAY(J+1)
-              OUTARRAY(J+1)=TEMP2
-              ITEMP=IY(J)
-              IY(J)=IY(J+1)
-              IY(J+1)=ITEMP
-  100    CONTINUE
-         JMAX=JMAX-1
-  200 CONTINUE
-
-  300 RETURN
+!/          --- Check for exit the loop. ---
+            IF ( I.GT.INSIZE1 ) THEN
+              LOOP = .FALSE.
+            END IF
+!/          --- Make sure array pointer I,J are within array bounds. ---
+            I = MIN(I,INSIZE1)
+            J = MIN(J,INSIZE2)
+!/
+        END DO
+!/
+!/      --- Allocate output array ---
+        OUTSIZE = K-1
+        ALLOCATE(OUTARRAY(OUTSIZE))
+!/        --- Transfer output from temporary array to output array. ---
+        DO I=1,OUTSIZE
+          OUTARRAY(I) = TEMP(I)
+        END DO
+      END IF
+!/
+      RETURN
+!/
       END SUBROUTINE SETDIFF
 !/ End of SETDIFF ---------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INTERSECT (INARRAY1 ,INSIZE1  ,INARRAY2 ,INSIZE2  , &
                             OUTARRAY ,OUTSIZE  ,IND1     ,IND2     )
@@ -5031,16 +5032,19 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :          4-Jan-2013 |
+!/                  | Last update :         20-Dec-2016 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
 !/                  by Jeff Hanson & Eve-Marie Devaliere
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    20-Dec-2016 : Add count-histogram method based on
+!/                  algorithm from Mirko Velic (BoM)
+!/                  (S. Zieger BoM, Australia)          ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
       IMPLICIT NONE
@@ -5052,6 +5056,9 @@
 !
 !  2. Method
 !
+!     Sort with counting/histogram method with input array being
+!     cast as integer.
+!
 !  3. Parameters :
 !
 !     Parameter list
@@ -5061,38 +5068,36 @@
 !     INARRAY2  REAL    ARR  input    Input array
 !     INSIZE2   INTEGER      input    Size of input array
 !     OUTARRAY  REAL    ARR  output   Output array
-!     OUTSIZE   INTEGER      output   Size of output array (number of unique elements)
-
+!     OUTSIZE   INTEGER      output   Size of output array (number of
+!     intersects)
+!
       INTEGER           :: INSIZE1, INSIZE2, OUTSIZE
       REAL              :: INARRAY1(INSIZE1), INARRAY2(INSIZE2)
       REAL, POINTER :: OUTARRAY(:)
       REAL, POINTER :: IND1(:), IND2(:)
-
+!
       INTENT (IN)  INARRAY1, INSIZE1, INARRAY2, INSIZE2
-!      INTENT (OUT) OUTARRAY, OUTSIZE, IND1, IND2
       INTENT (OUT) OUTSIZE
 !
 !     Local variables
 !     ----------------------------------------------------------------
-!     INARRAY1, INARRAY2 - arrays for which to find the intersection
-!     IY - array to be carried with X (all swaps of X elements are        ??? EDIT!
-!          matched in IY .  After the sort IY(J) contains the original
-!          postition of the value X(J) in the unsorted X array.
-!     N -  number of values in array X to be sorted
-
-      REAL    :: TEMP(MIN(INSIZE1,INSIZE2))
-      REAL    :: TEMP2
-      INTEGER :: N, NN, I, J,  JMAX
+!     VIDX1, VIDX2 - array(s) in which the value is represented by
+!                    its index (i.e. histogram with frequency 1)
+!     N            - data range and size of possible intersections.
+!
+      LOGICAL,ALLOCATABLE :: VIDX1(:),VIDX2(:)
+      INTEGER,ALLOCATABLE :: IPOS1(:),IPOS2(:)
+!
+      INTEGER             :: I, J
+      INTEGER             :: N, IMIN, IMAX
+      INTEGER             :: MINV1,MAXV1, MINV2, MAXV2
 !
 !  4. Subroutines used :
 !
-!      Name      Type  Module   Description
+!      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      -
 !
 !  5. Subroutines calling
-!
-!     findIJV3
 !
 !  6. Error messages :
 !
@@ -5109,63 +5114,75 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
- 
-!     NOTE: This routine can be improved further by removing "IF ( FOUND ) CYCLE"
-!     Initialize TEMP array with dummy values
-      TEMP(:) = 9999.
+!
       OUTSIZE = 0
-      DO I=1,SIZE(INARRAY1)
-         DO J=1,SIZE(INARRAY2)
-            IF (INARRAY2(J).EQ.INARRAY1(I)) THEN
-               ! Found a match
-               IF (.NOT.ANY(TEMP(:).EQ.INARRAY1(I))) THEN
-                 OUTSIZE = OUTSIZE + 1
-                 TEMP(OUTSIZE) = INARRAY1(I)
-                 GOTO 90
-               END IF
-            END IF
-         END DO
 
-  90  CONTINUE
-      END DO
+!/    --- Calculate the range of the two sets. ---
+      MINV1  = INT(MINVAL(INARRAY1))
+      MAXV1  = INT(MAXVAL(INARRAY1))
+      MINV2  = INT(MINVAL(INARRAY2))
+      MAXV2  = INT(MAXVAL(INARRAY2))
 
-!     Allocate OUTARRAY to the size of the unique array
-      ALLOCATE(OUTARRAY(OUTSIZE))
-      ALLOCATE(IND1(OUTSIZE))
-      ALLOCATE(IND2(OUTSIZE))
-      OUTARRAY = TEMP(1:OUTSIZE)
+!/    --- Check if ranges overlap. ---
+      IF ( MAXV1.LT.MINV2.OR.INSIZE1.EQ.0.OR.INSIZE2.EQ.0 ) THEN
+        ALLOCATE(OUTARRAY(OUTSIZE))
+        ALLOCATE(IND1(OUTSIZE))
+        ALLOCATE(IND2(OUTSIZE))
+      ELSE
+!/      --- Calculate size of temporary output arrays. Allow
+!/          extra elements: ZERO, and make sure index is 1:N. ---
+        IMIN = MIN(MINV1,MINV2)-1
+        IMAX = MAX(MAXV1,MAXV2)+1
 
-!     Sort OUTARRAY in ascending order
-      N = SIZE(OUTARRAY)
-      JMAX=N-1
-      DO 200 I=1,N-1
-         TEMP2=1.E38
-         DO 100 J=1,JMAX
-            IF(OUTARRAY(J).LT.OUTARRAY(J+1)) GO TO 100
-              TEMP2=OUTARRAY(J)
-              OUTARRAY(J)=OUTARRAY(J+1)
-              OUTARRAY(J+1)=TEMP2
-  100    CONTINUE
-         JMAX=JMAX-1
-  200 CONTINUE
+        N = IMAX-IMIN
 
-!     Find orginal indices of the values in OUTARRAY 
-!     in INARRAY1 and INARRAY2
-      DO N = 1, OUTSIZE
-         DO NN = 1, INSIZE1
-            IF (INARRAY1(NN).EQ.OUTARRAY(N)) IND1(N)=NN
-         END DO
-         DO NN = 1, INSIZE2
-            IF (INARRAY2(NN).EQ.OUTARRAY(N)) IND2(N)=NN
-         END DO
-      END DO
+        ALLOCATE(VIDX1(N),VIDX2(N))
+        ALLOCATE(IPOS1(N),IPOS2(N))
 
+        VIDX1(1:N) = .FALSE.
+        VIDX2(1:N) = .FALSE.
+
+        DO I=1,INSIZE1
+          J = INT(INARRAY1(I)-IMIN)
+          VIDX1(J) = .TRUE.
+          IPOS1(J) = I
+        END DO
+
+        DO I=1,INSIZE2
+          J = INT(INARRAY2(I)-IMIN)
+!/        --- Intersect arrays and check for
+!/            duplicate elements in array2. ---
+          IF  ( VIDX1(J).AND..NOT.VIDX2(J) ) THEN
+            OUTSIZE = OUTSIZE + 1
+            VIDX2(J) = .TRUE.
+            IPOS2(J) = I
+          END IF
+        END DO
+!/      --- Allocate output arrays. ---
+        ALLOCATE(OUTARRAY(OUTSIZE))
+        ALLOCATE(IND1(OUTSIZE))
+        ALLOCATE(IND2(OUTSIZE))
+!/      --- Transfer contents. ---
+        I = 1
+        DO J=1,N
+          IF ( VIDX1(J).AND.VIDX2(J).AND.I.LE.OUTSIZE ) THEN
+            OUTARRAY(I) = INARRAY1(IPOS1(J))
+            IND1(I)     = IPOS1(J)
+            IND2(I)     = IPOS2(J)
+            I = I + 1
+          END IF
+        END DO
+!/      --- Free memory. ---
+        DEALLOCATE(VIDX1,VIDX2)
+        DEALLOCATE(IPOS1,IPOS2)
+      END IF
+!/
       RETURN
+!/
       END SUBROUTINE INTERSECT
 !/ End of INTERSECT -------------------------------------------------- /
 !/
-
-!/ ------------------------------------------------------------------- / 
+!/ ------------------------------------------------------------------- /
       SUBROUTINE UNION (INARRAY1,   INSIZE1,  INARRAY2,   INSIZE2, &
                         OUTARRAY,   OUTSIZE)
 !/
@@ -5181,6 +5198,8 @@
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
 !/                  by Jeff Hanson & Eve-Marie Devaliere
 !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    20-Dec-2016 : Add count-histogram method similarly
+!/                  to INTERSECT (S. Zieger)            ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -5196,36 +5215,41 @@
 !
 !  2. Method
 !
-
-!
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!     INARRAY1  REAL    ARR  input    Input array
-!     INSIZE1   INTEGER      input    Size of input array
-!     INARRAY2  REAL    ARR  input    Input array
-!     INSIZE2   INTEGER      input    Size of input array
-!     OUTARRAY  REAL    ARR  output   Output array
-!     OUTSIZE   INTEGER      output   Size of output array
-
+!     INARRAY   REAL    ARR  input    Input array
+!     INSIZE    INTEGER      input    Size of input array
+!     OUTARRAY  REAL    ARR  output   Output array (sorted)
+!     OUTSIZE   INTEGER      output   Size of output array (number of
+!                                     unique elements)
       INTEGER           :: INSIZE1, INSIZE2, OUTSIZE
       REAL              :: INARRAY1(INSIZE1), INARRAY2(INSIZE2)
-      REAL, POINTER :: OUTARRAY(:)
-
+      REAL, POINTER     :: OUTARRAY(:)
+!
       INTENT (IN)  INARRAY1, INSIZE1, INARRAY2, INSIZE2
-!      INTENT (OUT) OUTARRAY, OUTSIZE
       INTENT (OUT) OUTSIZE
 !
 !     Local variables
 !     ----------------------------------------------------------------
-      REAL :: COMBINE(INSIZE1+INSIZE2)
+!     VIDX1, VIDX2 - array(s) in which the value is represented by
+!                    its index (i.e. histogram with frequency 1)
+!     N            - data range and size of possible intersections.
+!
+      LOGICAL,ALLOCATABLE :: VIDX1(:),VIDX2(:)
+      INTEGER,ALLOCATABLE :: IPOS1(:),IPOS2(:)
+      REAL,ALLOCATABLE    :: TEMP(:)
+!
+      INTEGER             :: I, J
+      INTEGER             :: N, IMIN, IMAX
+      INTEGER             :: MINV1,MAXV1, MINV2, MAXV2
 !
 !  4. Subroutines used :
 !
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
-!      UNIQUE
+!      QSORT     Subr. Private  Quicksort algorithm
 !
 !  5. Subroutines calling
 !
@@ -5246,22 +5270,95 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+!/    --- Setup input arrays. ---
+      IF ( (INSIZE1+INSIZE2).EQ.0 ) THEN
+        OUTSIZE = 0
+        ALLOCATE(OUTARRAY(OUTSIZE))
 
-      IF ((INSIZE1+INSIZE2).GT.0) THEN
-         COMBINE = (/INARRAY1,INARRAY2/)
-         IF (SIZE(COMBINE).EQ.0) &
-            WRITE(20,*) '***4.Calling UNIQUE w. len=0!'
-         CALL UNIQUE(REAL(COMBINE),SIZE(COMBINE),OUTARRAY,OUTSIZE)
+      ELSEIF ( INSIZE1.EQ.0 ) THEN
+        OUTSIZE = INSIZE2
+        ALLOCATE(OUTARRAY(OUTSIZE))
+        ALLOCATE(TEMP(OUTSIZE))
+
+        DO I=1,OUTSIZE
+         OUTARRAY(I) = INARRAY2(I)
+         TEMP(I)     = REAL(I)
+        END DO
+        CALL QSORT(OUTARRAY,TEMP,1,OUTSIZE)
+
+      ELSEIF ( INSIZE2.EQ.0 ) THEN
+        OUTSIZE = INSIZE1
+        ALLOCATE(OUTARRAY(OUTSIZE),TEMP(OUTSIZE))
+
+        DO I=1,OUTSIZE
+         OUTARRAY(I) = INARRAY1(I)
+         TEMP(I)     = REAL(I)
+        END DO
+        CALL QSORT(OUTARRAY,TEMP,1,OUTSIZE)
+
       ELSE
-         ALLOCATE(OUTARRAY(0))
-         OUTSIZE = 0
-      END IF
+        OUTSIZE = 0
+!/      --- Calculate the range of the two sets. ---
+        MINV1  = INT(MINVAL(INARRAY1))
+        MAXV1  = INT(MAXVAL(INARRAY1))
+        MINV2  = INT(MINVAL(INARRAY2))
+        MAXV2  = INT(MAXVAL(INARRAY2))
+!
+!/  --- Allow extra elementes: ZERO, and make sure index is 1:N. ---
+        IMIN = MIN(MINV1,MINV2)-1
+        IMAX = MAX(MAXV1,MAXV2)+1
 
+        N = IMAX-IMIN
+
+        ALLOCATE(VIDX1(N),VIDX2(N))
+        ALLOCATE(IPOS1(N),IPOS2(N))
+
+        VIDX1(1:N) = .FALSE.
+        VIDX2(1:N) = .FALSE.
+        IPOS1(1:N) = -9999
+        IPOS2(1:N) = -9999
+!/
+        DO I=1,INSIZE1
+          J = INT(INARRAY1(I)-IMIN)
+          IF  ( .NOT.VIDX1(J) ) THEN
+            OUTSIZE = OUTSIZE + 1
+            VIDX1(J) = .TRUE.
+            IPOS1(J) = I
+          END IF
+        END DO
+
+        DO I=1,INSIZE2
+          J = INT(INARRAY2(I)-IMIN)
+          IF  ( .NOT.VIDX1(J).AND..NOT.VIDX2(J) ) THEN
+            OUTSIZE = OUTSIZE + 1
+            VIDX2(J) = .TRUE.
+            IPOS2(J) = I
+          END IF
+        END DO
+
+        ALLOCATE(OUTARRAY(OUTSIZE))
+
+        I = 1
+        DO J=1,N
+          IF ( VIDX1(J).AND.I.LE.OUTSIZE ) THEN
+            OUTARRAY(I) = INARRAY1(IPOS1(J))
+            I = I + 1
+          ELSEIF ( VIDX2(J).AND.I.LE.OUTSIZE ) THEN
+            OUTARRAY(I) = INARRAY2(IPOS2(J))
+            I = I + 1
+          END IF
+        END DO
+
+        DEALLOCATE(VIDX1,VIDX2)
+        DEALLOCATE(IPOS1,IPOS2)
+
+      END IF
+!/
       RETURN
+!/
       END SUBROUTINE UNION
 !/ End of UNION ------------------------------------------------------ /
 !/
-
 !/ ------------------------------------------------------------------- /
       INTEGER FUNCTION LENGTH(ARRAY,ARRSIZE,VAL)
 !/
@@ -5320,12 +5417,11 @@
       ELSE
          LENGTH = 0
       END IF
- 
+
       RETURN
       END FUNCTION LENGTH
 !/ End of LENGTH ----------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       INTEGER FUNCTION FINDFIRST(ARRAY,ARRSIZE,VAL)
 !/
@@ -5385,7 +5481,6 @@
       END FUNCTION FINDFIRST
 !/ End of FINDFIRST -------------------------------------------------- /
 !/
-
 !/ ------------------------------------------------------------------- /
       REAL FUNCTION STD(ARRAY,N)
 !/
@@ -5435,13 +5530,503 @@
          STD = SQRT( 1/(REAL(N)-1)*SUM( (ARRAY(:)-MN)**2 ) )
       ELSE
          STD = 0.
-      END IF      
+      END IF
 
       RETURN
       END FUNCTION STD
-!/ End of spiralTrackV3 ---------------------------------------------- /
+!/ End of STD -------------------------------------------------------- /
+!/
+      RECURSIVE SUBROUTINE QSORT(ARRAY,IDX,LO,HI)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            Stefan Zieger          |
+!/                  |                        FORTRAN 95 |
+!/                  | Last update :          6-Sep-2016 |
+!/                  +-----------------------------------+
+!/
+!/    06-Sep-2016 : Origination, based on code by Mirko ( version 5.16 )
+!/                  Velic (BoM, Australia)
+!/
+!/    Copyright 2009-2013 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!
+!  1. Purpose :
+!
+!     Quicksort algorithm.
+!
+!  2. Method
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ARRAY   REAL    ARR  in/out   Input array
+!     IDX     REAL    ARR  in/out   Original indices of input array
+!     LO      INTEGER      input    First element
+!     HI      INTEGER      input    Last element
+!
+      IMPLICIT NONE
+!/
+      INTEGER, INTENT(IN) :: LO,HI
+      REAL,INTENT(INOUT)  :: ARRAY(:),IDX(:)
+!/
+!     Local variables
+!     ----------------------------------------------------------------
+      LOGICAL :: LOOP
+      INTEGER :: TOP, BOT
+      REAL    :: VAL, TMP
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!
+!  5. Subroutines calling
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+!/    --- Check array size and bounds. ---
+      IF ( SIZE(ARRAY).EQ. 0 ) THEN
+        WRITE(6,199)
+        CALL ABORT
+      ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
+        WRITE(6,201)
+        CALL ABORT
+      ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
+        WRITE(6,203)
+        CALL ABORT
+      ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
+        WRITE(6,205)
+        CALL ABORT
+      END IF
+!
+      TOP = LO
+      BOT = HI
+      VAL = ARRAY(INT((LO+HI)/2))
+!
+      LOOP = .TRUE.
+      DO WHILE ( LOOP )
+        DO WHILE ( ARRAY(TOP).LT.VAL )
+          TOP = TOP + 1
+        END DO
+        DO WHILE ( VAL.LT.ARRAY(BOT) )
+          BOT = BOT - 1
+        END DO
+        IF ( TOP.LT.BOT ) THEN
+!/        --- Swap values at indices TOP and BOT ---
+          TMP = ARRAY(TOP)
+          ARRAY(TOP) = ARRAY(BOT)
+          ARRAY(BOT) = TMP
+!/        --- Swap index values at indices TOP and BOT ---
+          TMP = IDX(TOP)
+          IDX(TOP) = IDX(BOT)
+          IDX(BOT) = TMP
+!
+          TOP = TOP + 1
+          BOT = BOT - 1
+        ELSE
+          LOOP = .FALSE.
+        END IF
+
+      END DO
+
+!/    --- Recursive call quicksort ---
+      IF (LO.LT.TOP-1) CALL QSORT(ARRAY,IDX,LO,TOP-1)
+      IF (BOT+1.LT.HI) CALL QSORT(ARRAY,IDX,BOT+1,HI)
+!
+      RETURN
+!/
+  199 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY IS EMPTY'                           )
+  201 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY SIZE AND INDEX ARRAY SIZE MISMATCH' )
+  203 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY INDEX OUT OF LOWER BOUND'           )
+  205 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY INDEX OUT OF UPPER BOUND'           )
+!/
+      END SUBROUTINE QSORT
+!/ ------------------------------------------------------------------- /
+!/
+      RECURSIVE SUBROUTINE QSORT_DESC(ARRAY,IDX,LO,HI)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |            Stefan Zieger          |
+!/                  |                        FORTRAN 95 |
+!/                  | Last update :          6-Sep-2016 |
+!/                  +-----------------------------------+
+!/
+!/    06-Sep-2016 : Origination, based on code by Mirko ( version 5.16 )
+!/                  Velic (BoM, AUstralia)
+!/
+!/    Copyright 2009-2013 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       No unauthorized use without permission.
+!/
+!
+!  1. Purpose :
+!
+!     Quicksort algorithm with descending sort order.
+!
+!  2. Method
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     ARRAY   REAL    ARR  in/out   Input array
+!     LO      INTEGER      input    First element
+!     HI      INTEGER      input    Last element
+!
+      IMPLICIT NONE
+!/
+      INTEGER, INTENT(IN) :: LO,HI
+      REAL,INTENT(INOUT)  :: ARRAY(:),IDX(:)
+!/
+!     Local variables
+!     ----------------------------------------------------------------
+      INTEGER :: TOP, BOT, I
+      REAL    :: VAL, TMP
+      LOGICAL :: LOOP
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!
+!  5. Subroutines calling
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+!/    --- Check array size and bounds. ---
+      IF ( SIZE(ARRAY).EQ. 0 ) THEN
+        WRITE(6,199)
+        CALL ABORT
+      ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
+        WRITE(6,201)
+        CALL ABORT
+      ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
+        WRITE(6,203)
+        CALL ABORT
+      ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
+        WRITE(6,205)
+        CALL ABORT
+      END IF
+!
+      TOP = LO
+      BOT = HI
+      VAL = ARRAY(INT((LO+HI)/2))
+!
+      LOOP = .TRUE.
+      DO WHILE ( LOOP )
+        DO WHILE ( ARRAY(TOP).GT.VAL )
+          TOP = TOP + 1
+        END DO
+        DO WHILE ( VAL.GT.ARRAY(BOT) )
+          BOT = BOT - 1
+        END DO
+        IF ( TOP.LT.BOT ) THEN
+!/        --- Swap values at indices TOP and BOT ---
+          TMP = ARRAY(TOP)
+          ARRAY(TOP) = ARRAY(BOT)
+          ARRAY(BOT) = TMP
+!/        --- Swap index values at indices TOP and BOT ---
+          TMP = IDX(TOP)
+          IDX(TOP) = IDX(BOT)
+          IDX(BOT) = TMP
+!
+          TOP = TOP + 1
+          BOT = BOT - 1
+        ELSE
+          LOOP = .FALSE.
+        END IF
+
+      END DO
+!/    --- Recursive call quicksort ---
+      IF (LO.LT.TOP-1) CALL QSORT_DESC(ARRAY,IDX,LO,TOP-1)
+      IF (BOT+1.LT.HI) CALL QSORT_DESC(ARRAY,IDX,BOT+1,HI)
+!
+      RETURN
+!/
+  199 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY IS EMPTY'                           )
+  201 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY SIZE AND INDEX ARRAY SIZE MISMATCH' )
+  203 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY INDEX OUT OF LOWER BOUND'           )
+  205 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/            &
+               '     QSORT ARRAY INDEX OUT OF UPPER BOUND'           )
+!/
+      END SUBROUTINE QSORT_DESC
+!/ ------------------------------------------------------------------- /
+!/
+      FUNCTION SWAPI4(INT4) RESULT(INT4SWP)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           S. Zieger               |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         03-Jan-2017 |
+!/                  +-----------------------------------+
+!/
+!/    03-Jan-2017 : Origination                         ( version 5.16 )
+!/                                                        (S. Zieger)
+!/
+!  1. Purpose :
+!
+!     Return a Byte-swapped integer (size of 4 bytes)
+!
+!  2. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+      INTEGER(KIND=4), INTENT(IN)  :: INT4
+      INTEGER(KIND=4)              :: INT4SWP
+!/
+!     Local variables
+!     ----------------------------------------------------------------
+      INTEGER(KIND=1), DIMENSION(4) :: BYTEIN, BYTEOUT
+!/
+      BYTEIN  = TRANSFER(INT4, BYTEIN)
+      BYTEOUT = (/BYTEIN(4),BYTEIN(3),BYTEIN(2),BYTEIN(1)/)
+      INT4SWP = TRANSFER(BYTEOUT, INT4SWP)
+!/
+      RETURN
+!/
+      END FUNCTION SWAPI4
+!/ ------------------------------------------------------------------- /
+      SUBROUTINE findIJV4 (a   ,b   ,maxI,  maxJ ,indA ,indB )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |     A. J. van der Westhuysen      |
+!/                  |            Jeff Hanson            |
+!/                  |        Eve-Marie Devaliere        |
+!/                  |                        FORTRAN 95 |
+!/                  | Last update :         03-Mar-2017 |
+!/                  +-----------------------------------+
+!/
+!/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
+!/                  by Jeff Hanson & Eve-Marie Devaliere
+!/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+!/    03-Mar-2017 : Calls to INTERSECT and UNION        ( version 5.16 )
+!/                  replaced  (S. Zieger, BoM, Australia)
+!/
+!/    Copyright 2009-2013 National Weather Service (NWS),
+!/       National Oceanic and Atmospheric Administration.  All rights
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
+!/       No unauthorized use without permission.
+!/
+      IMPLICIT NONE
+!
+!  1. Purpose :
+!
+!     Find a(i,j) indices of system "a" that lie over or along the
+!     fringes of system "b".
+!
+!  2. Method
+!
+!     (i)  Use an index matrix to map locations of wave systems in B
+!     (ii) Avoid multiple use of INTERSECT and UNION as in findIJV3
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!     a, b    Type(system)  input   Final set of tracked systems, for one time level
+!     maxI         Int      input   Number rows indices of wave field
+!     maxJ         Int      input   Number column indices of wave field
+!     indA*, indB* Int.A.   output  Pointer array of indices for combining systems
+!
+      TYPE(system) :: a, b
+      INTEGER      :: maxI, maxJ
+      INTEGER, POINTER :: indA(:), indB(:)
+!
+      INTENT (IN) a, b, maxI,maxJ
+!
+!     Local variables
+!     ----------------------------------------------------------------
+!     posB         Int              Neighbour index
+!     posB_MM      Int              Neighbour index (-1,-1)
+!     posB_MP      Int              Neighbour index (-1,+1)
+!     posB_PM      Int              Neighbour index (+1,-1)
+!     posB_PP      Int              Neighbour index (+1,+1)
+!     tmpA*, tmpB* Int.A.           Array of indices for combining
+!     systems
+!
+      INTEGER      :: LENG_AI,LENG_BI
+      INTEGER      :: OUTA,OUTB,I,J,IND,OUTDUMB
+      INTEGER      :: POSB,POSB_MM,POSB_PM,POSB_MP,POSB_PP
+      INTEGER      :: IND_B2(maxI,maxJ)
+      REAL,ALLOCATABLE :: TMPA(:),DUMA(:),TMPB(:)
+      REAL,POINTER     :: DUMB(:)
+      LOGICAL      :: FOUND
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Scope    Description
+!     ----------------------------------------------------------------
+!      QSORT     Subr. Private  Quicksort algorithm
+!      UNIQUE    Subr. Private  Return sorted unique numbers of an array
+!
+!  5. Subroutines calling
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!
+      NULLIFY(DUMB)
+!
+      IF (ASSOCIATED(INDA)) DEALLOCATE(INDA)
+      IF (ASSOCIATED(INDB)) DEALLOCATE(INDB)
+!
+      LENG_AI = LENGTH(REAL(a%i),SIZE(a%i),REAL(9999))
+      LENG_BI = LENGTH(REAL(b%i),SIZE(b%i),REAL(9999))
+!
+      ALLOCATE(TMPA(LENG_AI))
+      ALLOCATE(TMPB(5*LENG_AI))
+!
+      TMPA(:) = 9999.
+      TMPB(:) = 9999.
+!
+      OUTA = 0
+      OUTB = 0
+      IND_B2(:,:) = 0
+!
+      DO IND=1,LENG_BI
+        I = B%I(IND)
+        J = B%J(IND)
+        IF (IND_B2(I,J).EQ.0) IND_B2(I,J) = IND
+      END DO
+!
+      DO IND=1,LENG_AI
+        I = A%I(IND)
+        J = A%J(IND)
+        POSB = IND_B2(I,J)
+        POSB_MM = 0
+        POSB_PP = 0
+        POSB_MP = 0
+        POSB_PM = 0
+        IF (I.GT.1.AND.J.GT.1)       POSB_MM = IND_B2(i-1,j-1)
+        IF (I.GT.1.AND.J.LT.MAXJ)    POSB_MP = IND_B2(i-1,j+1)
+        IF (I.LT.MAXI.AND.J.LT.MAXJ) POSB_PP = IND_B2(i+1,j+1)
+        IF (I.LT.MAXI.AND.J.GT.1)    POSB_PM = IND_B2(i+1,j-1)
+
+        FOUND = .FALSE.
+        IF (POSB.NE.0) THEN
+          OUTB = OUTB + 1
+          TMPB(OUTB) = REAL(POSB)
+          IF (.NOT.FOUND) THEN
+            OUTA = OUTA + 1
+            TMPA(OUTA) = REAL(IND)
+            FOUND = .TRUE.
+          END IF
+        END IF
+        IF (POSB_MM.NE.0) THEN
+          OUTB = OUTB + 1
+          TMPB(OUTB) = REAL(POSB_MM)
+          IF (.NOT.FOUND) THEN
+            OUTA = OUTA + 1
+            TMPA(OUTA) = REAL(IND)
+            FOUND = .TRUE.
+          END IF
+        END IF
+        IF (POSB_MP.NE.0) THEN
+          OUTB = OUTB + 1
+          TMPB(OUTB) = REAL(POSB_MP)
+          IF (.NOT.FOUND) THEN
+            OUTA = OUTA + 1
+            TMPA(OUTA) = REAL(IND)
+            FOUND = .TRUE.
+          END IF
+        END IF
+        IF (POSB_PM.NE.0) THEN
+          OUTB = OUTB + 1
+          TMPB(OUTB) = REAL(POSB_PM)
+          IF (.NOT.FOUND) THEN
+            OUTA = OUTA + 1
+            TMPA(OUTA) = REAL(IND)
+            FOUND = .TRUE.
+          END IF
+        END IF
+        IF (POSB_PP.NE.0) THEN
+          OUTB = OUTB + 1
+          TMPB(OUTB) = REAL(POSB_PP)
+          IF (.NOT.FOUND) THEN
+            OUTA = OUTA + 1
+            TMPA(OUTA) = REAL(IND)
+            FOUND = .TRUE.
+          END IF
+        END IF
+
+      END DO
+!
+!/    Compact indices for wave systems in B.
+!/    Check for empty arrays first.
+      IF (OUTB.GT.0) THEN
+        CALL UNIQUE(TMPB,OUTB,DUMB,OUTDUMB)
+        OUTB = OUTDUMB
+      END IF
+      ALLOCATE(INDB(OUTB))
+      IF (OUTB.GT.0) INDB(1:OUTB) = INT(DUMB(1:OUTB))
+      IF (ASSOCIATED(DUMB)) DEALLOCATE(DUMB)
+!
+!/    Allocate output array and transfer content
+!/    for wave systems in A.
+      ALLOCATE(INDA(OUTA))
+      IF (OUTA.GT.0) THEN
+        ALLOCATE(DUMA(OUTA))
+        DUMA(:) = 0
+        CALL QSORT(TMPA(1:OUTA),DUMA(1:OUTA),1,OUTA)
+        IF (ALLOCATED(DUMA)) DEALLOCATE(DUMA)
+        INDA(1:OUTA) = INT(TMPA(1:OUTA))
+      END IF
+!/
+      IF (ALLOCATED(TMPA)) DEALLOCATE(TMPA)
+      IF (ALLOCATED(TMPB)) DEALLOCATE(TMPB)
+!/
+      RETURN
+!/
+      END SUBROUTINE findIJV4
+!/ End of findIJV4 --------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
 !/
       END MODULE W3STRKMD
 !/
-!/ End of module WMWAVEMD -------------------------------------------- /
+!/ End of module W3STRKMD -------------------------------------------- /
 !/

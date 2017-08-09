@@ -1,0 +1,40 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Spatial and temporal tracking of wave systems          $
+$ -------------------------------------------------------------------- $
+$ File name for raw partition data
+$
+  '../input_le/partition.ww3'
+$
+$ First time level (yyyymmdd hhmmss), time increment and number of 
+$ time levels to process.
+$
+  20091122 010000  3600. 2
+$
+$ Output type [1,3,4] [text file, netCDF version 3, netCDF version 4]
+  4
+$
+$ Domain over which tracking is to be performed (min, max, increment).
+$   1st line: longitude limits
+$   2nd line: latitude limits
+$
+  134.0 259.0 125
+  -33.0  47.0  80
+$
+$
+$ Parameters of tracking algorithm ----------------------------------- $
+$   - dirKnob (deg), perKnob (s), hsKnob (m), wetPts (frac), 
+$     dirTimeKnob (deg), tpTimeKnob (s)
+$   - seedLat, seedLon
+$
+ 10. 1. 0.25 0.1 10. 1.
+  0. 0.
+$
+$ Output points ------------------------------------------------------ $
+$ Longitude, latitude. End with 0. 0. string on last line.
+$
+  197.79   23.43            $ 51001
+  202.22   17.19            $ 51002
+    0.    0.
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

@@ -1,9 +1,10 @@
 #############################################################################
 #                                                                           #
 # ww3_tp2.12 Test script for WW-III, two-dimensional, post-processing.      #
-#            Wave system tracking, using partitioned WW3 output.            # 
-#            N. Pacific field case (Nov 2009), taken from 30-yr CFSR        # 
-#            hindcast (Chawla et al. 2013).                                 #
+#            Wave system tracking, using partitioned WW3 output.            #
+#            N. Pacific field case (Jan 2012), taken from 30-year           #
+#            CAWCR wave hindcast (doi:10.4225/08/523168703DCC5)             #
+#            ( Durrant et al. 2014 )                                        #
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
@@ -20,22 +21,30 @@
 #                                                                           #
 # Remarks :                                                                 #
 # - Propagation scheme has no influence on regtest. Use PR1 as dummy        #
-# - Post-processor ww3_systrk only needs the switches !/SHRD and            # 
+# - Post-processor ww3_systrk only needs the switches !/SHRD and            #
 #   !/MPI !/DIST and receives its grid definition from partition.ww3.       #
 #   However, to conform to run_test, ww3_grid is also built, for which the  #
 #   remaining switches and a dummy ww3_grid.inp are provided.               #
 # - Test case input:                                                        #
 #   * ww3_grid.inp (dummy grid input file, with assoc .bot, .mask, .obst)   #
-#   * partition.ww3 (raw fields of partition data)                          #
+#   * partition.ww3 (raw fields of partition data, 4 time steps)            #
 #   * ww3_systrk.inp (instruction file)                                     #
+#   * ww3_systrk will ABORT if endianess is incompatible with binary file!  #
 #                                                                           #
 # Sample run_test commands :                                                #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                -s PR1 ../ ww3_tp2.12                      #
-#  ./bin/run_test -n 4 -p mpirun -s PR1 ../ ww3_tp2.12                      #
+#  FORMATED PARTITION FILE                                                  #
+#  ./bin/run_test                -i input           ../model ww3_tp2.12     #
+#  ./bin/run_test -n 2 -p mpirun -i input    -s MPI ../model ww3_tp2.12     #
+#  UNFORMATED PARTITION FILE (BIG_ENDIAN)                                   #
+#  ./bin/run_test                -i input_be        ../model ww3_tp2.12     #
+#  ./bin/run_test -n 2 -p mpirun -i input_be -s MPI ../model ww3_tp2.12     #
+#  UNFORMATED PARTITION FILE (LITTLE_ENDIAN)                                #
+#  ./bin/run_test                -i input_le        ../model ww3_tp2.12     #
+#  ./bin/run_test -n 2 -p mpirun -i input_le -s MPI ../model ww3_tp2.12     #
 #                                                                           #
 #                                    Andre van der Westhuysen, Jan 2014     #
-#                                                   Last Mod : Jan 2014     #
+#                                                   Last Mod : Jan 2017     #
 #                                                                           #
 #    Copyright 2014 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #

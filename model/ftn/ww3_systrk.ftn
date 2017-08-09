@@ -1,4 +1,3 @@
-#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       PROGRAM WW3_SYSTRK
 !/
@@ -8,7 +7,7 @@
 !/                  |            Jeff Hanson            |
 !/                  |        Eve-Marie Devaliere        |
 !/                  |                        FORTRAN 95 |
-!/                  | Last update :         11-Feb-2014 |
+!/                  | Last update :         16-Jan-2017 |
 !/                  +-----------------------------------+
 !/
 !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
@@ -18,8 +17,12 @@
 !/                  update MPI! to MPI/! (H.L. Tolman). ( version 4.15 )
 !/    11-Feb-2014 : Add NetCDF output option. Both NetCDF-3 and
 !/                  NetCDF-4 are available. (B. Li).    ( version 4.18 )
-!/    26-Sep-2016 : Optimization updates (A. van der Westhuysen) 
+!/    26-Sep-2016 : Optimization updates (A. van der Westhuysen)
 !/                                                      ( version 5.15 )
+!/    20-Sep-2016 : Add support for unformatted partition file.
+!/                  (S.Zieger BoM, Australia)           ( version 5.16 )
+!/    20-Dec-2016 : Optimized search algorithms and
+!/                  set functions. (S.Zieger)           ( version 5.16 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -27,6 +30,7 @@
 !/       No unauthorized use without permission.
 !/
       USE W3STRKMD
+!/F90      USE W3TIMEMD, ONLY: TDIFF
       IMPLICIT NONE
 !/MPI
 !/MPI      INCLUDE "mpif.h"
@@ -52,6 +56,8 @@
                       seedLon, dirTimeKnob, tpTimeKnob, tint
       REAL         :: lonout(100), latout(100)                            !Increase dimension?
       INTEGER      :: maxGroup, ntint, noutp
+!/F90      INTEGER      :: CLKDT0(8),CLKDT1(8)
+!/F90      REAL         :: CLKFEL
       TYPE(dat2d), POINTER :: wsdat(:)
       TYPE(timsys), POINTER :: sysA(:)
       INTEGER, POINTER :: maxSys(:)
@@ -64,14 +70,10 @@
 !     ulimGroup      Int       input  Upper limit of number of wave systems to output
 !
       LOGICAL           :: file_exists
-      CHARACTER         :: inpstr*72,prtyear*4,prtmonth*2,prtday*2, &
-                           prthr*2,prtmin*2,prtsec*2
+      CHARACTER         :: inpstr*72
       INTEGER           :: intype, tmax, tcur, maxI, maxJ
       INTEGER           :: it, igrp, sysmatch, ind, ip
-      INTEGER           :: counter, i, j, maxTs, leng
-      INTEGER           :: dumdate1, dumdate2, dumdate3, dumdate4
-      INTEGER           :: dumdate5, dumdate6
-      INTEGER           :: ulimGroup
+      INTEGER           :: i, j, leng, ulimGroup
       REAL, ALLOCATABLE :: dum(:,:)
 !/TRKNC      REAL, ALLOCATABLE :: dum2nc(:,:,:,:)
 !/TRKNC      REAL, ALLOCATABLE ::  hsprt_nc(:,:,:)
@@ -179,7 +181,7 @@
          READ(10,'(A72)') inpstr
       END DO
       BACKSPACE(10)
-      READ(10,'(2X,F8.0,X,F6.0,F6.0,I5)') date1, date2, dt, ntint
+      READ(10,*) date1, date2, dt, ntint
       tstart = date1 + date2/1000000
 
       READ(10,'(A72)') inpstr
@@ -259,8 +261,7 @@
          noutp = noutp + 1
       END DO
       noutp = noutp - 1 
- 2000 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/    &
-               '     ERROR IN OPENING INPUT FILE')
+
       CLOSE(10)
 
       WRITE(20,*) 'Raw partition file = ',filename
@@ -278,6 +279,17 @@
       DO i = 1,noutp
          WRITE(20,*) lonout(i), latout(i)
       END DO
+
+      INQUIRE(FILE=filename, EXIST=file_exists)
+      IF (.NOT.file_exists) THEN
+         WRITE(20,2200) filename
+         WRITE(6,2200) filename
+         CALL EXIT(1)
+      END IF
+
+
+!/F90         CALL DATE_AND_TIME ( VALUES=CLKDT0 )
+
 !/MPI      END IF
 
 !/MPI/!     MPI communication block 
@@ -324,6 +336,11 @@
                                 maxSys     ,maxGroup   )
 
 !/MPI      IF (rank.EQ.0) THEN
+
+!/F90         CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+!/F90         CLKFEL = TDIFF ( CLKDT0,CLKDT1 )
+!/F90         WRITE (6,998) CLKFEL
+         WRITE (6,*) 'Final system output...'
 
 !     Set upper limit for wave systems to output (limited by AWIPS display)
       ulimGroup = 9
@@ -936,20 +953,48 @@
 
 !-------------------------------------------------------------------------
 
-      WRITE(20,*) 'In ww3_systrk: Deallocating wsdat, SysA, maxSys...'
+      WRITE(20,*) 'In ww3_systrk: Deallocating wsdat ...'
+      DO it=1,size(wsdat)
+        IF (ASSOCIATED(wsdat(it)%lat)) DEALLOCATE(wsdat(it)%lat)
+        IF (ASSOCIATED(wsdat(it)%lon)) DEALLOCATE(wsdat(it)%lon)
+        IF (ASSOCIATED(wsdat(it)%par)) DEALLOCATE(wsdat(it)%par)
+        IF (ASSOCIATED(wsdat(it)%wnd)) DEALLOCATE(wsdat(it)%wnd)
+      END DO
       IF (ASSOCIATED(wsdat)) DEALLOCATE(wsdat)
+      WRITE(20,*) '               Deallocating sysA ...'
+      DO i=1,size(sysA)
+       DO j=1,size(sysA(i)%sys)
+         IF (ASSOCIATED(sysA(i)%sys(j)%i)) DEALLOCATE(sysA(i)%sys(j)%i)
+         IF (ASSOCIATED(sysA(i)%sys(j)%j)) DEALLOCATE(sysA(i)%sys(j)%j)
+         IF (ASSOCIATED(sysA(i)%sys(j)%lon)) &
+                                         DEALLOCATE(sysA(i)%sys(j)%lon)
+         IF (ASSOCIATED(sysA(i)%sys(j)%lat)) &
+                                         DEALLOCATE(sysA(i)%sys(j)%lat)
+         IF (ASSOCIATED(sysA(i)%sys(j)%hs))  &
+                                          DEALLOCATE(sysA(i)%sys(j)%hs)
+         IF (ASSOCIATED(sysA(i)%sys(j)%tp))  &
+                                          DEALLOCATE(sysA(i)%sys(j)%tp)
+         IF (ASSOCIATED(sysA(i)%sys(j)%dir)) &
+                                         DEALLOCATE(sysA(i)%sys(j)%dir)
+         IF (ASSOCIATED(sysA(i)%sys(j)%dspr)) &
+                                        DEALLOCATE(sysA(i)%sys(j)%dspr)
+       END DO
+      END DO
       IF (ASSOCIATED(sysA)) DEALLOCATE(sysA)
+      WRITE(20,*) '               Deallocating maxSys ...'
       IF (ASSOCIATED(maxSys)) DEALLOCATE(maxSys)
       CLOSE(20)
 
       WRITE(6,*) '... ww3_systrk completed successfully.'
+
       WRITE(6,999)
 
-!/MPI      END IF
+!/MPI      END IF   !/IF (rank.EQ.0)
 
 !/MPI      CALL MPI_FINALIZE(IERR)
 !/MPI/!     End of parallel region
 
+!/F90  998 FORMAT ( ' ... finished. Elapsed time: ',F10.2,' s')
   993 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
                '     OutputType=3 needs TRKNC switch ')
   994 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK : '/           &
@@ -960,6 +1005,11 @@
   999 FORMAT (/15X,'End of program '/ &
                15X,'==============================================='/ &
                15X,'     *** WAVEWATCH III Wave system tracking ***  ')
+
+ 2000 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/    &
+               '     ERROR IN OPENING INPUT FILE')
+ 2200 FORMAT (/' *** WAVEWATCH III ERROR IN W3SYSTRK : '/    &
+               '     ERROR IN OPENING PARTITION FILE : ',A)
 
       END PROGRAM WW3_SYSTRK
 !
@@ -1178,7 +1228,7 @@
 !/TRKNC      if(outputType.EQ.3) then
 !/TRKNC      iret = nf90_create('sys_pnt.ww3.nc', NF90_CLOBBER, ncid)
 !/TRKNC      endif
-!/NC4        if (outputType.EQ.4) iret = nf90_create('sys_pnt.ww3.nc',NF90_NETCDF4, ncid)
+!/TRKNC      if (outputType.EQ.4) iret = nf90_create('sys_pnt.ww3.nc',NF90_NETCDF4, ncid)
 !/TRKNC      call check(iret)
 !/TRKNC      iret = nf90_set_fill(ncid,nf90_nofill,oldMode) 
 !/TRKNC      call check(iret)
@@ -1301,4 +1351,4 @@
 !/TRKNC      call check(iret)
 !/TRKNC      return
 !/TRKNC      end subroutine pt2netcdf
-!
+

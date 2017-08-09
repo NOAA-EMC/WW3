@@ -1,6 +1,6 @@
 $ WAVEWATCH III multi-scale input file
 $ ------------------------------------
-  3 1 F 1 T T
+  3 1 T 1 T T
 $
   'input' F F T F F F F
 $
