@@ -3824,14 +3824,14 @@
 !     The covariant metric tensor components are
 !
 !         g_pp = (dx/dp)*(dx/dp) + (dy/dp)*(dy/dp),
-!         g_qq = (dx/dq)*(dx/dq) + (dy/dq)*(dy/dq).
-!         g_pq = (dx/dp)*(dx/dq) + (dy/dp)*(dy/dq),
+!         g_qq = (dx/dq)*(dx/dq) + (dy/dq)*(dy/dq),
+!         g_pq = (dx/dp)*(dx/dq) + (dy/dp)*(dy/dq).
 !
 !     The contravariant (associated) metric tensor components are
 !
 !         g^pp = (dp/dx)*(dp/dx) + (dp/dy)*(dp/dy),
-!         g^qq = (dq/dx)*(dq/dx) + (dq/dy)*(dq/dy).
-!         g^pq = (dp/dx)*(dq/dx) + (dp/dy)*(dq/dy),
+!         g^qq = (dq/dx)*(dq/dx) + (dq/dy)*(dq/dy),
+!         g^pq = (dp/dx)*(dq/dx) + (dp/dy)*(dq/dy).
 !
 !     The curvilinear scale factors are h_p = sqrt(g_pp) and h_q = sqrt(g_qq).
 !     The square root of determinant of metric tensor is
@@ -4498,7 +4498,6 @@
 !       NFD     Int.   I   Finite-difference order (even)
 !       IJG     Log.   I   Logical flag indicating ordering of input
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
-!       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure.
 !       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in P-axis with halos of width >= NFD/2
@@ -4824,7 +4823,6 @@
 !       NFD     Int.   I   Finite-difference order (even)
 !       IJG     Log.   I   Logical flag indicating ordering of input
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
-!       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure.
 !       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in P-axis with halos of width >= NFD/2
@@ -5158,7 +5156,6 @@
 !       NFD     Int.   I   Finite-difference order (even)
 !       IJG     Log.   I   Logical flag indicating ordering of input
 !                          coord. arrays: T = (NP,NQ) and F = (NP,NQ)
-!       LLG     Log.   I   Spherical coordinate (lon,lat) flag
 !       ICLO    Int.   I   Parameter indicating type of index space closure.
 !       PTILED  Log.   I   Logical flag indicating that input arrays are tiled
 !                          in P-axis with halos of width >= NFD/2

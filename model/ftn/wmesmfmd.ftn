@@ -19,6 +19,11 @@
 #endif
 !/
 !/ ------------------------------------------------------------------- /
+!/ Macro for enabling using W3OUTG to calculate export fields
+!/
+#define USE_W3OUTG_FOR_EXPORT___disabled
+!/
+!/ ------------------------------------------------------------------- /
 !/ Macros for enabling test output
 !/
 #define TEST_WMESMFMD___disabled
@@ -27,6 +32,11 @@
 #define TEST_WMESMFMD_CREATEIMPGRID___disabled
 #define TEST_WMESMFMD_CREATEEXPGRID___disabled
 #define TEST_WMESMFMD_SETUPIMPBMSK___disabled
+#define TEST_WMESMFMD_CHARNK___disabled
+#define TEST_WMESMFMD_ROUGHL___disabled
+#define TEST_WMESMFMD_BOTCUR___disabled
+#define TEST_WMESMFMD_RADSTR2D___disabled
+#define TEST_WMESMFMD_STOKES3D___disabled
 !/
 !/ ------------------------------------------------------------------- /
       module WMESMFMD
@@ -88,6 +98,11 @@
 !      CalcDecomp       Subr.  Private  Calculate a 2D processor layout
 !      GetEnvValue      Subr.  Private  Get value of env. variable
 !      GetZlevels       Subr.  Private  Get z-levels from file for SDC
+!      CalcCharnk       Subr.  Private  Calculate Charnock for export
+!      CalcRoughl       Subr.  Private  Calculate roughness length for export
+!      CalcBotcur       Subr.  Private  Calculate wave-bottom currents for export
+!      CalcRadstr2D     Subr.  Private  Calculate 2D radiation stresses for export
+!      CalcStokes3D     Subr.  Private  Calculate 3D Stokes drift current for export
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -101,6 +116,8 @@
 !     See subroutine documentation.
 !
 !     !/MPI   Switch for enabling Message Passing Interface API
+!     !/SHRD  Switch for shared memory architecture
+!     !/DIST  Switch for distributed memory architecture
 !     !/ST3   WAM 4+ input and dissipation.
 !     !/ST4   Ardhuin et al. (2009, 2010)
 !
@@ -133,6 +150,7 @@
       use W3UPDTMD, only: W3UINI
 !/ST3      use W3SRC3MD, only: W3SPR3
 !/ST4      use W3SRC4MD, only: W3SPR4
+      use W3IOGOMD, only: W3OUTG
 !/
 !/ Specify default data typing
 !/
@@ -179,58 +197,56 @@
       real(8)       :: wtime(numwt)
 !
 ! --- Import fields
-      type(ESMF_ArraySpec)  :: impArraySpec2D
-      type(ESMF_StaggerLoc) :: impStaggerLoc
-      type(ESMF_Index_Flag) :: impIndexFlag
-      type(ESMF_Grid)       :: impGrid
-      integer               :: impGridID
-      logical               :: impGridIsLocal
-      integer, parameter    :: impHaloWidth = 3
-      integer               :: impHaloLWidth(2)
-      integer               :: impHaloUWidth(2)
-      type(ESMF_RouteHandle):: impHaloRH
-      type(ESMF_Field)      :: impMask
-      logical               :: noActiveImpFields
-      integer, parameter    :: numImpFields = 6
-      character(6)          :: impFieldName(numImpFields)
-      character(128)        :: impFieldStdName(numImpFields)
-      integer               :: impFieldDim(numImpFields)
-      logical               :: initRqrdImpField(numImpFields)
-      logical               :: isActiveImpField(numImpFields)
-      logical               :: isVectorImpField(numImpFields)
-      type(ESMF_Field)      :: impField(numImpFields)
+      type(ESMF_ArraySpec)          :: impArraySpec2D
+      type(ESMF_StaggerLoc)         :: impStaggerLoc
+      type(ESMF_Index_Flag)         :: impIndexFlag
+      type(ESMF_Grid)               :: impGrid
+      integer                       :: impGridID
+      logical                       :: impGridIsLocal
+      integer, parameter            :: impHaloWidth = 3
+      integer                       :: impHaloLWidth(2)
+      integer                       :: impHaloUWidth(2)
+      type(ESMF_RouteHandle)        :: impHaloRH
+      type(ESMF_Field)              :: impMask
+      logical                       :: noActiveImpFields
+      integer                       :: numImpFields
+      character(6), allocatable     :: impFieldName(:)
+      character(128), allocatable   :: impFieldStdName(:)
+      logical, allocatable          :: impFieldInitRqrd(:)
+      logical, allocatable          :: impFieldActive(:)
+      type(ESMF_Field), allocatable :: impField(:)
 !
 ! --- Background import fields
-      character(10)         :: mbgFieldName(numImpFields)
-      character(128)        :: mbgFieldStdName(numImpFields)
-      logical               :: isActiveMbgField(numImpFields)
-      type(ESMF_Field)      :: mbgField(numImpFields)
-      type(ESMF_Field)      :: bmskField(numImpFields)
+      character(10), allocatable    :: mbgFieldName(:)
+      character(128), allocatable   :: mbgFieldStdName(:)
+      logical, allocatable          :: mbgFieldActive(:)
+      type(ESMF_Field), allocatable :: mbgField(:)
+      type(ESMF_Field), allocatable :: bmskField(:)
 !
 ! --- Export fields
-      type(ESMF_ArraySpec)  :: expArraySpec2D
-      type(ESMF_ArraySpec)  :: expArraySpec3D
-      type(ESMF_StaggerLoc) :: expStaggerLoc
-      type(ESMF_Index_Flag) :: expIndexFlag
-      type(ESMF_Grid)       :: expGrid
-      integer               :: expGridID
-      logical               :: expGridIsLocal
-      integer, parameter    :: expHaloWidth = 3
-      integer               :: expHaloLWidth(2)
-      integer               :: expHaloUWidth(2)
-      type(ESMF_RouteHandle):: expHaloRH
-      type(ESMF_Field)      :: expMask
-      logical               :: noActiveExpFields
-      integer, parameter    :: numExpFields = 9
-      character(6)          :: expFieldName(numExpFields)
-      character(128)        :: expFieldStdName(numExpFields)
-      integer               :: expFieldDim(numExpFields)
-      logical               :: isActiveExpField(numExpFields)
-      logical               :: isVectorExpField(numExpFields)
-      type(ESMF_Field)      :: expField(numExpFields)
+      type(ESMF_ArraySpec)          :: expArraySpec2D
+      type(ESMF_ArraySpec)          :: expArraySpec3D
+      type(ESMF_StaggerLoc)         :: expStaggerLoc
+      type(ESMF_Index_Flag)         :: expIndexFlag
+      type(ESMF_Grid)               :: expGrid
+      integer                       :: expGridID = 1
+      logical                       :: expGridIsLocal
+      integer, parameter            :: expHaloWidth = 3
+      integer                       :: expHaloLWidth(2)
+      integer                       :: expHaloUWidth(2)
+      type(ESMF_RouteHandle)        :: expHaloRH
+      type(ESMF_Field)              :: expMask
+      logical                       :: noActiveExpFields
+      integer                       :: numExpFields
+      character(6), allocatable     :: expFieldName(:)
+      character(128), allocatable   :: expFieldStdName(:)
+      integer, allocatable          :: expFieldDim(:)
+      logical, allocatable          :: expFieldActive(:)
+      type(ESMF_Field), allocatable :: expField(:)
 !
 ! --- Native field stuff
-      type(ESMF_ArraySpec)  :: natArraySpec1D
+      type(ESMF_ArraySpec)  :: natArraySpec2D
+      type(ESMF_ArraySpec)  :: natArraySpec3D
       type(ESMF_StaggerLoc) :: natStaggerLoc
       type(ESMF_Index_Flag) :: natIndexFlag
       type(ESMF_Grid)       :: natGrid
@@ -602,7 +618,7 @@
       integer(ESMF_KIND_I4) :: yy,mm,dd,h,m,s
       type(ESMF_Time) :: ttmp
       type(ESMF_TimeInterval) :: tstep, etstep
-      integer :: i1, i2, i3, i, j, n, imod, jmod
+      integer :: i, j, n, istep, imod, jmod
       integer, allocatable :: cplmap(:,:)
       logical :: includeObg, includeAbg, includeIbg
 !
@@ -690,6 +706,10 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         call ESMF_ConfigGetAttribute(config, lsep_se, &
           label=trim(cname)//'_error_output_to_file:', default=.false., rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        ! export grid id
+        call ESMF_ConfigGetAttribute(config, expGridID, &
+          label=trim(cname)//'_export_grid_id:', default=1, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         ! realize all export flag
         call ESMF_ConfigGetAttribute(config, realizeAllExport, &
@@ -794,91 +814,188 @@
 ! -------------------------------------------------------------------- /
 ! 3.  Initialize import field list
 !
-      isActiveImpField(:) = .false.
-      impFieldDim(:) = 2
+      istep_import: do istep = 1, 2
+      
+      if ( istep.eq.2 ) then
+        allocate ( impFieldName(numImpFields), &
+                   impFieldStdName(numImpFields), &
+                   impFieldInitRqrd(numImpFields), &
+                   impFieldActive(numImpFields), &
+                   impField(numImpFields), &
+                   stat=rc )
+        if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+        allocate ( mbgFieldName(numImpFields), &
+                   mbgFieldStdName(numImpFields), &
+                   mbgFieldActive(numImpFields), &
+                   mbgField(numImpFields), &
+                   bmskField(numImpFields), &
+                   stat=rc )
+        if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+        impFieldActive(:) = .false.
+      endif
+      i = 0
 
-      j = 1;  i1 = 1;  i2 = 1;
-      isActiveImpField(i1:i2) = any(inpmap(:,j).lt.0)
-      impFieldName(i1)        = 'seahgt'
-      impFieldStdName(i1)     = 'sea_surface_height_above_sea_level'
-      initRqrdImpField(i1:i2) = .true.
-      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeObg
+      i = i + 1
+      if ( istep.eq.2 ) then
+        j = 1
+        impFieldActive(i)   = any(inpmap(:,j).lt.0)
+        impFieldName(i)     = 'seahgt'
+        impFieldStdName(i)  = 'sea_surface_height_above_sea_level'
+        impFieldInitRqrd(i) = .true.
+        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      endif
 
-      j = 2;  i1 = 2;  i2 = 3;
-      isActiveImpField(i1:i2) = any(inpmap(:,j).lt.0)
-      impFieldName(i1)        = 'uucurr'
-      impFieldStdName(i1)     = 'surface_eastward_sea_water_velocity'
-      impFieldName(i2)        = 'vvcurr'
-      impFieldStdName(i2)     = 'surface_northward_sea_water_velocity'
-      initRqrdImpField(i1:i2) = .true.
-      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeObg
+      i = i + 1
+      if ( istep.eq.2 ) then
+        j = 2
+        impFieldActive(i)   = any(inpmap(:,j).lt.0)
+        impFieldName(i)     = 'uucurr'
+        impFieldStdName(i)  = 'surface_eastward_sea_water_velocity'
+        impFieldInitRqrd(i) = .true.
+        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      endif
 
-      j = 3;  i1 = 4;  i2 = 5;
-      isActiveImpField(i1:i2) = any(inpmap(:,j).lt.0)
-      impFieldName(i1)        = 'uutrue'
-      impFieldStdName(i1)     = 'eastward_wind_at_10m_height'
-      impFieldName(i2)        = 'vvtrue'
-      impFieldStdName(i2)     = 'northward_wind_at_10m_height'
-      initRqrdImpField(i1:i2) = .true.
-      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeAbg
+      i = i + 1
+      if ( istep.eq.2 ) then
+        j = 2
+        impFieldActive(i)   = any(inpmap(:,j).lt.0)
+        impFieldName(i)     = 'vvcurr'
+        impFieldStdName(i)  = 'surface_northward_sea_water_velocity'
+        impFieldInitRqrd(i) = .true.
+        mbgFieldActive(i)   = impFieldActive(i).and.includeObg
+      endif
 
-      j = 4;  i1 = 6;  i2 = 6;
-      isActiveImpField(i1:i2) = any(inpmap(:,j).lt.0)
-      impFieldName(i1)        = 'seaice'
-      impFieldStdName(i1)     = 'sea_ice_concentration'
-      initRqrdImpField(i1:i2) = .true.
-      isActiveMbgField(i1:i2) = isActiveImpField(i1).and.includeIbg
+      i = i + 1
+      if ( istep.eq.2 ) then
+        j = 3
+        impFieldActive(i)   = any(inpmap(:,j).lt.0)
+        impFieldName(i)     = 'uutrue'
+        impFieldStdName(i)  = 'eastward_wind_at_10m_height'
+        impFieldInitRqrd(i) = .true.
+        mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        j = 3
+        impFieldActive(i)   = any(inpmap(:,j).lt.0)
+        impFieldName(i)     = 'vvtrue'
+        impFieldStdName(i)  = 'northward_wind_at_10m_height'
+        impFieldInitRqrd(i) = .true.
+        mbgFieldActive(i)   = impFieldActive(i).and.includeAbg
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        j = 4
+        impFieldActive(i)   = any(inpmap(:,j).lt.0)
+        impFieldName(i)     = 'seaice'
+        impFieldStdName(i)  = 'sea_ice_concentration'
+        impFieldInitRqrd(i) = .true.
+        mbgFieldActive(i)   = impFieldActive(i).and.includeIbg
+      endif
+
+      numImpFields = i
+      enddo istep_import
+
+      noActiveImpFields = all(.not.impFieldActive)
 
       do i = 1,numImpFields
         mbgFieldName(i) = 'mbg_'//trim(impFieldName(i))
         mbgFieldStdName(i) = 'mbg_'//trim(impFieldStdName(i))
       enddo
-
-      noActiveImpFields = all(.not.isActiveImpField)
 !
 ! -------------------------------------------------------------------- /
 ! 4.  Initialize export field list
 !
-      isActiveExpField(:) = .false.
+      istep_export: do istep = 1, 2
+      
+      if ( istep.eq.2 ) then
+        allocate ( expFieldName(numExpFields), &
+                   expFieldStdName(numExpFields), &
+                   expFieldDim(numExpFields), &
+                   expFieldActive(numExpFields), &
+                   expField(numExpFields), &
+                   stat=rc )
+        if (ESMF_LogFoundAllocError(rc, PASSTHRU)) return
+        expFieldActive(:) = .false.
+      endif
+      i = 0
 
-      i1 = 1;  i2 = 1;  i3 = 1;
-      expFieldName(i1)    = 'charno'
-      expFieldStdName(i1) = 'wave_induced_charnock_parameter'
-      expFieldDim(i1)     = 2
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'charno'
+        expFieldStdName(i) = 'wave_induced_charnock_parameter'
+        expFieldDim(i)     = 2
+      endif
 
-      i1 = 2;  i2 = 2;  i3 = 2;
-      expFieldName(i1)    = 'z0rlen'
-      expFieldStdName(i1) = 'wave_z0_roughness_length'
-      expFieldDim(i1)     = 2
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'z0rlen'
+        expFieldStdName(i) = 'wave_z0_roughness_length'
+        expFieldDim(i)     = 2
+      endif
 
-      i1 = 3;  i2 = 4;  i3 = 4;
-      expFieldName(i1)    = 'uscurr'
-      expFieldStdName(i1) = 'eastward_stokes_drift_current'
-      expFieldDim(i1)     = 3
-      expFieldName(i2)    = 'vscurr'
-      expFieldStdName(i2) = 'northward_stokes_drift_current'
-      expFieldDim(i2)     = 3
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'uscurr'
+        expFieldStdName(i) = 'eastward_stokes_drift_current'
+        expFieldDim(i)     = 3
+      endif
 
-      i1 = 5;  i2 = 6;  i3 = 7;
-      expFieldName(i1)    = 'wbcuru'
-      expFieldStdName(i1) = 'eastward_wave_bottom_current'
-      expFieldDim(i1)     = 2
-      expFieldName(i2)    = 'wbcurv'
-      expFieldStdName(i2) = 'northward_wave_bottom_current'
-      expFieldDim(i2)     = 2
-      expFieldName(i3)    = 'wbcurp'
-      expFieldStdName(i3) = 'wave_bottom_current_period'
-      expFieldDim(i3)     = 2
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'vscurr'
+        expFieldStdName(i) = 'northward_stokes_drift_current'
+        expFieldDim(i)     = 3
+      endif
 
-      i1 = 8;  i2 = 9;  i3 = 9;
-      expFieldName(i1)    = 'wavsgu'
-      expFieldStdName(i1) = 'eastward_wave_radiation_stress_gradient'
-      expFieldDim(i1)     = 2
-      expFieldName(i2)    = 'wavsgv'
-      expFieldStdName(i2) = 'northward_wave_radiation_stress_gradient'
-      expFieldDim(i2)     = 2
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'wbcuru'
+        expFieldStdName(i) = 'eastward_wave_bottom_current'
+        expFieldDim(i)     = 2
+      endif
 
-      noActiveExpFields = all(.not.isActiveExpField)
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'wbcurv'
+        expFieldStdName(i) = 'northward_wave_bottom_current'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'wbcurp'
+        expFieldStdName(i) = 'wave_bottom_current_period'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'wavsuu'
+        expFieldStdName(i) = 'eastward_wave_radiation_stress'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'wavsuv'
+        expFieldStdName(i) = 'eastward_northward_wave_radiation_stress'
+        expFieldDim(i)     = 2
+      endif
+
+      i = i + 1
+      if ( istep.eq.2 ) then
+        expFieldName(i)    = 'wavsvv'
+        expFieldStdName(i) = 'northward_wave_radiation_stress'
+        expFieldDim(i)     = 2
+      endif
+
+      numExpFields = i
+      enddo istep_export
+
+      noActiveExpFields = all(.not.expFieldActive)
 !
 ! -------------------------------------------------------------------- /
 ! 5.  Advertise import fields
@@ -887,12 +1004,12 @@
 !
       n = 0
       do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
+        if (.not.impFieldActive(i)) cycle
         n = n + 1
         call NUOPC_Advertise(impState, &
           trim(impFieldStdName(i)), name=trim(impFieldName(i)), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        if (.not.isActiveMbgField(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
         n = n + 1
         call NUOPC_Advertise(impState, &
           trim(mbgFieldStdName(i)), name=trim(mbgFieldName(i)), rc=rc)
@@ -909,12 +1026,12 @@
       call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
       n = 0
       do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
+        if (.not.impFieldActive(i)) cycle
         n = n + 1
         write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
           ' ',trim(impFieldName(i)),' ',trim(impFieldStdName(i))
         call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
-        if (.not.isActiveMbgField(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
         n = n + 1
         write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
           ' ',trim(mbgFieldName(i)),' ',trim(mbgFieldStdName(i))
@@ -1060,7 +1177,7 @@
 !
       n = 0
       do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
+        if (.not.impFieldActive(i)) cycle
         n = n + 1
         impField(i) = ESMF_FieldCreate( impGrid, impArraySpec2D, &
           totalLWidth=impHaloLWidth, totalUWidth=impHaloUWidth, &
@@ -1071,7 +1188,7 @@
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
         call NUOPC_Realize( impState, impField(i), rc=rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        if (.not.isActiveMbgField(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
         n = n + 1
         mbgField(i) = ESMF_FieldCreate( impGrid, impArraySpec2D, &
           totalLWidth=impHaloLWidth, totalUWidth=impHaloUWidth, &
@@ -1099,12 +1216,12 @@
       call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
       n = 0
       do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
+        if (.not.impFieldActive(i)) cycle
         n = n + 1
         write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
           ' ',trim(impFieldName(i)),' ',trim(impFieldStdName(i))
         call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
-        if (.not.isActiveMbgField(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
         n = n + 1
         write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
           ' ',trim(mbgFieldName(i)),' ',trim(mbgFieldStdName(i))
@@ -1121,9 +1238,9 @@
         isConnected = NUOPC_IsConnected(expState, &
                       expFieldName(i), rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        isActiveExpField(i) = isConnected .or. realizeAllExport
-        if (isActiveExpField(i)) noActiveExpFields = .false.
-        if (.not.isActiveExpField(i)) then
+        expFieldActive(i) = isConnected .or. realizeAllExport
+        if (expFieldActive(i)) noActiveExpFields = .false.
+        if (.not.expFieldActive(i)) then
           call ESMF_StateRemove(expState, (/expFieldName(i)/), rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
@@ -1138,13 +1255,12 @@
 !
       n = 0
       do i = 1,numExpFields
-        if (.not.isActiveExpField(i)) cycle
+        if (.not.expFieldActive(i)) cycle
         n = n + 1
         if ( expFieldDim(i).eq.3 ) then
           expField(i) = ESMF_FieldCreate( expGrid, expArraySpec3D, &
             totalLWidth=expHaloLWidth, totalUWidth=expHaloUWidth, &
-            gridToFieldMap=(/2,3/), &
-            ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+            gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
             staggerLoc=expStaggerLoc, name=trim(expFieldName(i)), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         else
@@ -1169,12 +1285,59 @@
       call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
       n = 0
       do i = 1,numExpFields
-        if (.not.isActiveExpField(i)) cycle
+        if (.not.expFieldActive(i)) cycle
         n = n + 1
         write(msg,'(a,i5,a,a10,a3,a)') trim(cname)//': ',n, &
           ' ',trim(expFieldName(i)),' ',trim(expFieldStdName(i))
         call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
       enddo
+!
+! 2.e Set W3OUTG flags needed for calculating export fields
+!
+#ifdef USE_W3OUTG_FOR_EXPORT
+      call w3seto ( expGridID, mdse, mdst )
+
+      i1 = FieldIndex( expFieldName, 'uscurr', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'vscurr', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) ) then
+        flogr2(6,8) = .true.  !Spectrum of surface Stokes drift
+        if ( us3df(1) .le. 0 ) then
+          msg = trim(cname)//': Stokes drift export using W3OUTG'// &
+            ' requires setting US3D=1 (ww3_grid.inp: OUTS namelist)'
+          call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+        endif
+      endif
+
+      i1 = FieldIndex( expFieldName, 'wbcuru', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'wbcurv', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i3 = FieldIndex( expFieldName, 'wbcurp', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) .and. &
+           expFieldActive(i3) ) then
+        flogr2(7,1) = .true.  !Near bottom rms amplitudes
+        flogr2(7,2) = .true.  !Near bottom rms velocities
+      endif
+
+      i1 = FieldIndex( expFieldName, 'wavsuu', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i2 = FieldIndex( expFieldName, 'wavsuv', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      i3 = FieldIndex( expFieldName, 'wavsvv', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) .and. &
+           expFieldActive(i3) ) then
+        flogr2(6,1) = .true.  !Radiation stresses
+      endif
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -1273,44 +1436,80 @@
 !
 ! 2.a Import field and grid stuff
 !
-      do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
-        call ESMF_FieldDestroy(impField(i), rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        if (.not.isActiveMbgField(i)) cycle
-        call ESMF_FieldDestroy(mbgField(i), rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call ESMF_FieldDestroy(bmskField(i), rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      enddo
+      if ( .not.noActiveImpFields ) then
 
-      call ESMF_FieldHaloRelease(impHaloRH, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        do i = 1,numImpFields
+          if (.not.impFieldActive(i)) cycle
+          call ESMF_FieldDestroy(impField(i), rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          if (.not.mbgFieldActive(i)) cycle
+          call ESMF_FieldDestroy(mbgField(i), rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+          call ESMF_FieldDestroy(bmskField(i), rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        enddo
 
-      call ESMF_GridDestroy(impGrid, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldHaloRelease(impHaloRH, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        call ESMF_GridDestroy(impGrid, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      endif
+
+      deallocate (impFieldName, &
+                  impFieldStdName, &
+                  impFieldInitRqrd, &
+                  impFieldActive, &
+                  impField, &
+                  stat=rc)
+      if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
+
+      deallocate (mbgFieldName, &
+                  mbgFieldStdName, &
+                  mbgFieldActive, &
+                  mbgField, &
+                  bmskField, &
+                  stat=rc)
+      if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
 !
 ! 2.b Export field and grid stuff
 !
-      do i = 1,numExpFields
-        if (.not.isActiveExpField(i)) cycle
-        call ESMF_FieldDestroy(expField(i), rc=rc)
+      if ( .not.noActiveExpFields ) then
+
+        do i = 1,numExpFields
+          if (.not.expFieldActive(i)) cycle
+          call ESMF_FieldDestroy(expField(i), rc=rc)
+          if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        enddo
+
+        call ESMF_FieldHaloRelease(expHaloRH, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      enddo
 
-      call ESMF_FieldHaloRelease(expHaloRH, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_GridDestroy(expGrid, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
-      call ESMF_GridDestroy(expGrid, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      endif
+
+      deallocate (expFieldName, &
+                  expFieldStdName, &
+                  expFieldDim, &
+                  expFieldActive, &
+                  expField, &
+                  stat=rc)
+      if (ESMF_LogFoundDeallocError(rc, PASSTHRU)) return
 !
 ! 2.c Native field and grid stuff
 !
-      call ESMF_FieldRedistRelease(n2eRH, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( .not.noActiveExpFields ) then
 
-      call ESMF_GridDestroy(natGrid, rc=rc)
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldRedistRelease(n2eRH, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        call ESMF_GridDestroy(natGrid, rc=rc)
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Clean up locally allocated data structures
@@ -1430,8 +1629,8 @@
 
       allUpdated = .true.
       do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
-        if (initRqrdImpField(i)) then
+        if (.not.impFieldActive(i)) cycle
+        if (impFieldInitRqrd(i)) then
           fldUpdated = NUOPC_IsAtTime(impField(i), currTime, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (fldUpdated) then
@@ -1452,8 +1651,8 @@
         if (verbosity.gt.0) call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
         if (improc.eq.nmpscr) write(*,'(a)') trim(msg)
         ! background
-        if (.not.isActiveMbgField(i)) cycle
-        if (initRqrdImpField(i)) then
+        if (.not.mbgFieldActive(i)) cycle
+        if (impFieldInitRqrd(i)) then
           fldUpdated = NUOPC_IsAtTime(mbgField(i), currTime, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (fldUpdated) then
@@ -1492,8 +1691,8 @@
 ! 2.b Setup background blending mask for each import field
 !
       do i = 1,numImpFields
-        if (.not.isActiveImpField(i)) cycle
-        if (.not.isActiveMbgField(i)) cycle
+        if (.not.impFieldActive(i)) cycle
+        if (.not.mbgFieldActive(i)) cycle
         call SetupImpBmsk(bmskField(i), impField(i), missingValue, rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       enddo
@@ -1525,7 +1724,7 @@
 !     generic code to set the timestamp for these fields
 !
       do i = 1,numExpFields
-        if (.not.isActiveExpField(i)) cycle
+        if (.not.expFieldActive(i)) cycle
         call NUOPC_SetAttribute(expField(i), name="Updated", &
           value="true", rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1811,9 +2010,7 @@
 #endif
 !
 ! -------------------------------------------------------------------- /
-! 1.  Setup
-!
-! 1.a Setup time stamps using currTime and stopTime
+! Set time stamps using currTime and stopTime
 !
       call ESMF_GridCompGet(gcomp, clock=clock, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -1831,13 +2028,13 @@
       tend(2) = 10000*h  + 100*m  + s
 !
 ! -------------------------------------------------------------------- /
-! 2.  Water levels
+! Water levels
 !
       j = 1
       i1 = FieldIndex( impFieldName, 'seahgt', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = i1
-      if ( isActiveImpField(i1) ) then
+      if ( impFieldActive(i1) ) then
         call w3setg ( impGridID, mdse, mdst )
         call w3seti ( impGridID, mdse, mdst )
         if (firstCall) then
@@ -1846,7 +2043,7 @@
           tln = tend
         endif
         tfn(:,j) = tln
-        if ( isActiveMbgField(i1) ) then
+        if ( mbgFieldActive(i1) ) then
           call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
@@ -1868,14 +2065,14 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! 3.  Currents
+! Currents
 !
       j = 2
       i1 = FieldIndex( impFieldName, 'uucurr', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = FieldIndex( impFieldName, 'vvcurr', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveImpField(i1) ) then
+      if ( impFieldActive(i1) ) then
         call w3setg ( impGridID, mdse, mdst )
         call w3seti ( impGridID, mdse, mdst )
         if (firstCall) then
@@ -1887,7 +2084,7 @@
           tcn = tend
         endif
         tfn(:,j) = tcn
-        if ( isActiveMbgField(i1) ) then
+        if ( mbgFieldActive(i1) ) then
           call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
@@ -1917,14 +2114,14 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! 4.  Winds
+! Winds
 !
       j = 3
       i1 = FieldIndex( impFieldName, 'uutrue', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = FieldIndex( impFieldName, 'vvtrue', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveImpField(i1) ) then
+      if ( impFieldActive(i1) ) then
         call w3setg ( impGridID, mdse, mdst )
         call w3seti ( impGridID, mdse, mdst )
         if (firstCall) then
@@ -1936,7 +2133,7 @@
           twn = tend
         endif
         tfn(:,j) = twn
-        if ( isActiveMbgField(i1) ) then
+        if ( mbgFieldActive(i1) ) then
           call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           call BlendImpField( impField(i2), mbgField(i2), bmskField(i2), rc=rc )
@@ -1966,13 +2163,13 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! 5.  Sea ice concentration
+! Sea ice concentration
 !
       j = 4
       i1 = FieldIndex( impFieldName, 'seaice', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = i1
-      if ( isActiveImpField(i1) ) then
+      if ( impFieldActive(i1) ) then
         call w3setg ( impGridID, mdse, mdst )
         call w3seti ( impGridID, mdse, mdst )
         if (firstCall) then
@@ -1981,7 +2178,7 @@
           tin = tend
         endif
         tfn(:,j) = tin
-        if ( isActiveMbgField(i1) ) then
+        if ( mbgFieldActive(i1) ) then
           call BlendImpField( impField(i1), mbgField(i1), bmskField(i1), rc=rc )
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
         endif
@@ -2084,15 +2281,8 @@
       character(ESMF_MAXSTR) :: cname
       integer, parameter :: iwt=8
       real(8) :: wstime, wftime
-      integer :: i1, i2, i3, isea, jsea
-      logical, save :: firstCall = .true.
-      type(ESMF_Field) :: natField
-      real(ESMF_KIND_RX), pointer :: natPtr(:)
-      real(ESMF_KIND_RX) :: fillValue
-      real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
-                 tauwx, tauwy, cd, z0, fmeanws
-      logical :: llws(nspec)
-      real    :: z0wave(nseal)
+      integer :: i1, i2, i3
+      logical :: flpart = .false., floutg = .false., floutg2 = .true.
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETEXPORT)
       type(ESMF_State) :: dumpState
       integer, save :: timeSlice = 1
@@ -2110,9 +2300,7 @@
         ': entered SetExport', ESMF_LOGMSG_INFO)
 !
 ! -------------------------------------------------------------------- /
-! 1.  Setup
-!
-! 1.a Set pointers for model grid
+! Setup
 !
       call w3setg ( expGridID, mdse, mdst )
       call w3setw ( expGridID, mdse, mdst )
@@ -2120,101 +2308,45 @@
       call w3seti ( expGridID, mdse, mdst )
       call w3seto ( expGridID, mdse, mdst )
       call wmsetm ( expGridID, mdse, mdst )
-!
-! 1.b Create temporary field on native grid
-!
-      natField = ESMF_FieldCreate( natGrid, natArraySpec1D, &
-        staggerLoc=natStaggerLoc, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#ifdef USE_W3OUTG_FOR_EXPORT
+      if ( natGridIsLocal ) call w3outg( va, flpart, floutg, floutg2 )
+#endif
 !
 ! -------------------------------------------------------------------- /
-! 2.  Charnock
+! Charnock
 !
       i1 = FieldIndex( expFieldName, 'charno', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveExpField(i1) ) then
-        fillValue = 0.016 !COAMPS: atm/libsrc/amlib/sfcflx.F
-        if ( natGridIsLocal ) then
-          call FieldFill( natField, fillValue, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          if ( firstCall ) then
-            do jsea = 1,nseal
-!/DIST              isea = iaproc + (jsea-1)*naproc
-!/SHRD              isea = jsea
-!/ST0              charn(jsea) = fillValue
-!/ST1              charn(jsea) = fillValue
-!/ST2              charn(jsea) = fillValue
-!/ST3              llws(:) = .true.
-!/ST3              ustar = 0.
-!/ST3              ustdr = 0.
-!/ST3              call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-!/ST3                           emean, fmean, fmean1, wnmean, amax,         &
-!/ST3                           u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-!/ST3                           tauwy, cd, z0, charn(jsea), llws, fmeanws )
-!/ST4              llws(:) = .true.
-!/ST4              ustar = 0.
-!/ST4              ustdr = 0.
-!/ST4              call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-!/ST4                           emean, fmean, fmean1, wnmean, amax,         &
-!/ST4                           u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-!/ST4                           tauwy, cd, z0, charn(jsea), llws, fmeanws )
-!/ST6              charn(jsea) = fillValue
-            enddo
-          endif
-          call ESMF_FieldGet( natField, farrayPtr=natPtr, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          natPtr(1:nseal) = charn(1:nseal)
-        endif
-        call ESMF_FieldRedist( natField, expField(i1), n2eRH, rc=rc )
+      if ( expFieldActive(i1) ) then
+        call CalcCharnk( expField(i1), rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
 ! -------------------------------------------------------------------- /
-! 3.  Surface Roughness 
+! Surface Roughness 
 !
       i1 = FieldIndex( expFieldName, 'z0rlen', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveExpField(i1) ) then
-        fillValue = zeroValue
-        if ( natGridIsLocal ) then
-          call FieldFill( natField, fillValue, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          if ( firstCall ) then
-            z0wave = fillValue
-          else
-            do jsea = 1,nseal
-!/DIST              isea = iaproc + (jsea-1)*naproc
-!/SHRD              isea = jsea 
-              z0wave(jsea) = charn(jsea)*ust(isea)**2/grav
-!/ST0              z0wave(jsea) = fillValue !no charn calculated
-            enddo
-          endif
-          call ESMF_FieldGet( natField, farrayPtr=natPtr, rc=rc )
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return
-          natPtr(1:nseal) = z0wave(1:nseal)
-        endif
-        call ESMF_FieldRedist( natField, expField(i1), n2eRH, rc=rc )
+      if ( expFieldActive(i1) ) then
+        call CalcRoughl( expField(i1), rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
 ! -------------------------------------------------------------------- /
-! 4.  Stokes Drift
+! Stokes Drift 3D
 !
       i1 = FieldIndex( expFieldName, 'uscurr', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i2 = FieldIndex( expFieldName, 'vscurr', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveExpField(i1) .and. &
-           isActiveExpField(i2) ) then
-        fillValue = zeroValue
-        call FieldFill( expField(i1), fillValue, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call FieldFill( expField(i2), fillValue, rc=rc )
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) ) then
+        call CalcStokes3D( va, expField(i1), expField(i2), rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
 ! -------------------------------------------------------------------- /
-! 5.  Bottom Current
+! Bottom Currents
 !
       i1 = FieldIndex( expFieldName, 'wbcuru', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2222,39 +2354,28 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       i3 = FieldIndex( expFieldName, 'wbcurp', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveExpField(i1) .and. &
-           isActiveExpField(i2) .and. &
-           isActiveExpField(i3) ) then
-        fillValue = zeroValue
-        call FieldFill( expField(i1), fillValue, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call FieldFill( expField(i2), fillValue, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call FieldFill( expField(i3), fillValue, rc=rc )
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) .and. &
+           expFieldActive(i3) ) then
+        call CalcBotcur( va, expField(i1), expField(i2), expField(i3), rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
 !
 ! -------------------------------------------------------------------- /
-! 6.  Radiation stress gradients
+! Radiation stresses 2D
 !
-      i1 = FieldIndex( expFieldName, 'wavsgu', rc )
+      i1 = FieldIndex( expFieldName, 'wavsuu', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      i2 = FieldIndex( expFieldName, 'wavsgv', rc )
+      i2 = FieldIndex( expFieldName, 'wavsuv', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
-      if ( isActiveExpField(i1) .and. &
-           isActiveExpField(i2) ) then
-        fillValue = zeroValue
-        call FieldFill( expField(i1), fillValue, rc=rc )
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return
-        call FieldFill( expField(i2), fillValue, rc=rc )
+      i3 = FieldIndex( expFieldName, 'wavsvv', rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      if ( expFieldActive(i1) .and. &
+           expFieldActive(i2) .and. &
+           expFieldActive(i3) ) then
+        call CalcRadstr2D( va, expField(i1), expField(i2), expField(i3), rc )
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
       endif
-!
-! -------------------------------------------------------------------- /
-! 7.  Clean up
-!
-      call ESMF_FieldDestroy( natField, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -2268,7 +2389,6 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       timeSlice = timeSlice + 1
 #endif
-      firstCall = .false.
       rc = ESMF_SUCCESS
       call ESMF_VMWtime(wftime)
       wtime(iwt) = wtime(iwt) + wftime - wstime
@@ -2734,7 +2854,8 @@
 !
 ! 1.a Set grid pointers
 !
-      expGridID = 1 !TODO: only export from grid 1
+      !TODO: only export from one grid
+      !expGridID set from config input (default = 1)
       call w3setg ( expGridID, mdse, mdst )
       call w3setw ( expGridID, mdse, mdst )
       call w3seta ( expGridID, mdse, mdst )
@@ -2762,7 +2883,10 @@
 !
 ! 1.d Set arraySpec, staggerLoc, and indexFlag for native fields
 !
-      call ESMF_ArraySpecSet( natArraySpec1D, rank=1, &
+      call ESMF_ArraySpecSet( natArraySpec2D, rank=1, &
+        typekind=ESMF_TYPEKIND_RX, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ArraySpecSet( natArraySpec3D, rank=2, &
         typekind=ESMF_TYPEKIND_RX, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       natStaggerLoc = ESMF_STAGGERLOC_CENTER
@@ -3035,7 +3159,7 @@
 !
 ! 5.a Create temporary fields
 !
-      nField = ESMF_FieldCreate( natGrid, natArraySpec1D, &
+      nField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
         staggerLoc=natStaggerLoc, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       eField = ESMF_FieldCreate( expGrid, expArraySpec2D, &
@@ -3180,6 +3304,10 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!       bmskField  Type   I/O blending mask field
+!       impField   Type   I   import field
+!       missingVal Real   I   missing value
+!       rc         Int    O   Return code
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -3393,6 +3521,10 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!       impField   Type   I/O import field
+!       mbgField   Type   I/O import background field
+!       bmskField  Type   I   blending mask field
+!       rc         Int    O   Return code
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -3469,16 +3601,17 @@
 !/ ------------------------------------------------------------------- /
 #undef METHOD
 #define METHOD "FieldFill"
-      subroutine FieldFill(field, fillVal, maskVal, rc)
+      subroutine FieldFill(field, fillVal, rc)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |        T. J. Campbell, NRL        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         DD-MMM-YYYY |
 !/                  +-----------------------------------+
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
+!/    DD-MMM-YYYY : Remove mask parameter.              ( version X.YZ )
 !/
 !  1. Purpose :
 !
@@ -3490,6 +3623,9 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!       field      Type   I/O ESMF field
+!       fillVal    Real   I   fill value
+!       rc         Int    O   Return code
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -3518,22 +3654,16 @@
 !/
       type(ESMF_Field)                 :: field
       real(ESMF_KIND_RX)               :: fillVal
-      integer(ESMF_KIND_I4), optional  :: maskVal(:)
       integer,               optional  :: rc
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
       integer :: ldecnt, lde, i, j, k
-      integer :: rank, iund
+      integer :: rank
       integer :: lb1(1), ub1(1)
       integer :: lb2(2), ub2(2)
       integer :: lb3(3), ub3(3)
-      integer :: gridToFieldMap(2)
-      type(ESMF_Grid) :: grid
-      type(ESMF_StaggerLoc) :: stgr
-      type(ESMF_Array) :: maskArray
-      integer(ESMF_KIND_I4), pointer :: mask(:,:)
       real(ESMF_KIND_RX), pointer :: dptr1(:)
       real(ESMF_KIND_RX), pointer :: dptr2(:,:)
       real(ESMF_KIND_RX), pointer :: dptr3(:,:,:)
@@ -3543,33 +3673,12 @@
 !
       if (present(rc)) rc = ESMF_SUCCESS
 
-      call ESMF_FieldGet(field, localDECount=ldecnt, grid=grid, &
-        staggerLoc=stgr, rank=rank, &
-        gridToFieldMap=gridToFieldMap, rc=rc)
+      call ESMF_FieldGet(field, localDECount=ldecnt, rank=rank, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
       if (rank.ne.1.and.rank.ne.2.and.rank.ne.3) then
         call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
         msg='FieldFill: rank must be 1, 2 or 3')
         return ! bail out
-      endif
-
-      if (gridToFieldMap(1).eq.1.and.gridToFieldMap(2).eq.2) then
-        iund = 3
-      elseif (gridToFieldMap(1).eq.1.and.gridToFieldMap(2).eq.3) then
-        iund = 2
-      else
-        iund = 1
-      endif
-
-      if (present(maskVal)) then
-        if ( rank.eq.1 ) then
-          call ESMF_LogSetError(ESMF_FAILURE, rcToReturn=rc, &
-          msg='FieldFill: maskVal cannot be used with rank=1')
-          return ! bail out
-        endif
-        call ESMF_GridGetItem(grid, itemFlag=ESMF_GRIDITEM_MASK, &
-          staggerLoc=stgr, array=maskArray, rc=rc)
-        if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
       endif
 
       do lde=0,ldecnt-1
@@ -3588,57 +3697,12 @@
           if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
         endif
 
-        if (present(maskVal)) then
-          call ESMF_ArrayGet(maskArray, localDE=lde, farrayPtr=mask, rc=rc)
-          if (ESMF_LogFoundError(rc, PASSTHRU)) return ! bail out
-        endif
-
         if (rank.eq.1) then
-
           dptr1(lb1(1):ub1(1)) = fillVal
-
         elseif (rank.eq.2) then
-
-          if (present(maskVal)) then
-            do j = lb2(2),ub2(2)
-            do i = lb2(1),ub2(1)
-              if (all(mask(i,j).ne.maskVal)) dptr2(i,j) = fillVal
-            enddo
-            enddo
-          else
-            dptr2(lb2(1):ub2(1),lb2(2):ub2(2)) = fillVal
-          endif
-
+          dptr2(lb2(1):ub2(1),lb2(2):ub2(2)) = fillVal
         else
-
-          if (present(maskVal)) then
-            select case (iund)
-            case (1)
-              do j = lb3(3),ub3(3)
-              do i = lb3(2),ub3(2)
-                if (all(mask(i,j).ne.maskVal)) &
-                  dptr3(lb3(1):ub3(1),i,j) = fillVal
-              enddo
-              enddo
-            case (2)
-              do j = lb3(3),ub3(3)
-              do i = lb3(1),ub3(1)
-                if (all(mask(i,j).ne.maskVal)) &
-                  dptr3(i,lb3(2):ub3(2),j) = fillVal
-              enddo
-              enddo
-            case (3)
-              do j = lb3(2),ub3(2)
-              do i = lb3(1),ub3(1)
-                if (all(mask(i,j).ne.maskVal)) &
-                  dptr3(i,j,lb3(3):ub3(3)) = fillVal
-              enddo
-              enddo
-            end select
-          else
-            dptr3(lb3(1):ub3(1),lb3(2):ub3(2),lb3(3):ub3(3)) = fillVal
-          endif
-
+          dptr3(lb3(1):ub3(1),lb3(2):ub3(2),lb3(3):ub3(3)) = fillVal
         endif
 
       enddo
@@ -3670,6 +3734,10 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
+!       field      Type   I/O ESMF field
+!       n1,n2      Int    I   Dimensions of output array
+!       fout       R.A.   O   global output array
+!       rc         Int    O   Return code
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -4213,6 +4281,915 @@
 !/ End of GetZlevels ------------------------------------------------- /
 !/
       end subroutine GetZlevels
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcCharnk"
+      subroutine CalcCharnk ( chkField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Calculate Charnock for export
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       chkField  Type   I/O 2D Charnock export field
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_Field) :: chkField
+      integer          :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      real   , parameter :: zero  = 0.0
+      logical, save :: firstCall = .true.
+      integer :: isea, jsea
+      real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
+                 tauwx, tauwy, cd, z0, fmeanws
+      logical :: llws(nspec)
+      type(ESMF_Field) :: chknField
+      real(ESMF_KIND_RX), pointer :: chkn(:)
+      integer, save :: timeSlice = 1
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+      chknField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call FieldFill( chknField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( natGridIsLocal ) then
+
+        call ESMF_FieldGet( chknField, farrayPtr=chkn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        jsea_loop: do jsea = 1,nseal
+!/DIST          isea = iaproc + (jsea-1)*naproc
+!/SHRD          isea = jsea
+          if ( firstCall ) then
+            charn(jsea) = zero
+!/ST3            llws(:) = .true.
+!/ST3            ustar = zero
+!/ST3            ustdr = zero
+!/ST3            call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+!/ST3                         emean, fmean, fmean1, wnmean, amax,         &
+!/ST3                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+!/ST3                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+!/ST4            llws(:) = .true.
+!/ST4            ustar = zero
+!/ST4            ustdr = zero
+!/ST4            call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+!/ST4                         emean, fmean, fmean1, wnmean, amax,         &
+!/ST4                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+!/ST4                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+          endif !firstCall
+          chkn(jsea) = charn(jsea)
+        enddo jsea_loop
+
+      endif !natGridIsLocal
+
+      call ESMF_FieldRedist( chknField, chkField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_FieldDestroy( chknField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      firstCall = .false.
+
+#ifdef TEST_WMESMFMD_CHARNK
+      call ESMF_FieldWrite( chkField, "wmesmfmd_charnk_chk.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      timeSlice = timeSlice + 1
+#endif
+!/
+!/ End of CalcCharnk ------------------------------------------------- /
+!/
+      end subroutine CalcCharnk
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcRoughl"
+      subroutine CalcRoughl ( wrlField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Calculate 2D wave roughness length for export
+!
+!  2. Method :
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       wrlField  Type   I/O 2D roughness length export field
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      type(ESMF_Field) :: wrlField
+      integer          :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      real   , parameter :: zero  = 0.0
+      logical, save :: firstCall = .true.
+      integer :: isea, jsea
+      real    :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr, &
+                 tauwx, tauwy, cd, z0, fmeanws
+      logical :: llws(nspec)
+      type(ESMF_Field) :: wrlnField
+      real(ESMF_KIND_RX), pointer :: wrln(:)
+      integer, save :: timeSlice = 1
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+      wrlnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call FieldFill( wrlnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( natGridIsLocal ) then
+
+        call ESMF_FieldGet( wrlnField, farrayPtr=wrln, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        jsea_loop: do jsea = 1,nseal
+!/DIST          isea = iaproc + (jsea-1)*naproc
+!/SHRD          isea = jsea
+          if ( firstCall ) then
+            charn(jsea) = zero
+!/ST3            llws(:) = .true.
+!/ST3            ustar = zero
+!/ST3            ustdr = zero
+!/ST3            call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+!/ST3                         emean, fmean, fmean1, wnmean, amax,         &
+!/ST3                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+!/ST3                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+!/ST4            llws(:) = .true.
+!/ST4            ustar = zero
+!/ST4            ustdr = zero
+!/ST4            call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
+!/ST4                         emean, fmean, fmean1, wnmean, amax,         &
+!/ST4                         u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+!/ST4                         tauwy, cd, z0, charn(jsea), llws, fmeanws )
+          endif !firstCall
+          wrln(jsea) = charn(jsea)*ust(isea)**2/grav
+        enddo jsea_loop
+
+      endif !natGridIsLocal
+
+      call ESMF_FieldRedist( wrlnField, wrlField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_FieldDestroy( wrlnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      firstCall = .false.
+
+#ifdef TEST_WMESMFMD_ROUGHL
+      call ESMF_FieldWrite( wrlField, "wmesmfmd_roughl_wrl.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      timeSlice = timeSlice + 1
+#endif
+!/
+!/ End of CalcRoughl ------------------------------------------------- /
+!/
+      end subroutine CalcRoughl
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcBotcur"
+      subroutine CalcBotcur ( a, wbxField, wbyField, wbpField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Calculate wave-bottom currents for export
+!
+!  2. Method :
+!
+!   > Madsen, O. S. (1994), ICCE
+!
+!                          //
+!   U_bot       = sqrt( 2*|| S_ub dsig dtheta )
+!   (magnitude)          //
+!
+!                            //
+!                           || S_ub*sin(theta) dsig dtheta
+!                          //
+!   phi_b       = arctan( ---------------------------------- )
+!   (direction)              //
+!                           || S_ub*cos(theta) dsig dtheta
+!                          //
+!
+!                              //
+!                             || S_ub dsig dtheta
+!                            //
+!   U_bp        =  2*pi * ----------------------------
+!   (period)                 //
+!                           || sig*S_ub dsig dtheta
+!                          //
+!
+! Where:
+!   S_ub(theta,k) = near-bottom orbital velocity spectrum
+!                 = ( sig^2 / sinh^2(kD) ) *  E(theta,k) / Cg
+!                 = ( sig^3 / sinh^2(kD) ) * Ac(theta,k) / Cg
+!   Ac(theta,k) = wave action density
+!   D = depth
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       a         Real   I   Input spectra (in par list to change shape)
+!       wbxField  Type   I/O WBC 2D eastward-component export field
+!       wbyField  Type   I/O WBC 2D northward-component export field
+!       wbpField  Type   I/O WBC 2D period export field
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      real             :: a(nth,nk,0:nseal)
+      type(ESMF_Field) :: wbxField
+      type(ESMF_Field) :: wbyField
+      type(ESMF_Field) :: wbpField
+      integer          :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      real(8), parameter :: zero  = 0.0
+      real(8), parameter :: half  = 0.5
+      real(8), parameter ::  one  = 1.0
+      real(8), parameter ::  two  = 2.0
+      ! kdmin = 1e-7: sinh(kdmin)**2 ~ 1e-14
+      real(8), parameter :: kdmin = 1e-7
+      ! kdmax = 18.0:  1/sinh(kdmax)**2 ~ 1e-14
+      real(8), parameter :: kdmax = 18.0
+      integer :: isea, jsea, ik, ith
+      real(8) :: depth
+      real(8) :: kd, fack, fkd, aka, akx, aky, abr, ubr, ubx, uby, dir
+      real(8), allocatable :: sig2(:)
+      type(ESMF_Field) :: wbxnField, wbynField, wbpnField
+      real(ESMF_KIND_RX), pointer :: wbxn(:), wbyn(:), wbpn(:)
+      integer, save :: timeSlice = 1
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+      wbxnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      wbynField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      wbpnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call FieldFill( wbxnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( wbynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( wbpnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( natGridIsLocal ) then
+
+        call ESMF_FieldGet( wbxnField, farrayPtr=wbxn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( wbynField, farrayPtr=wbyn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( wbpnField, farrayPtr=wbpn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        allocate( sig2(1:nk) )
+        sig2(1:nk) = sig(1:nk)**2
+
+        jsea_loop: do jsea = 1,nseal
+!/DIST          isea = iaproc + (jsea-1)*naproc
+!/SHRD          isea = jsea
+          if ( dw(isea).le.zero ) cycle jsea_loop
+          depth = max(dmin,dw(isea))
+#ifdef USE_W3OUTG_FOR_EXPORT
+          if ( aba(jsea).le.zero ) cycle jsea_loop
+          if ( uba(jsea).le.zero ) cycle jsea_loop
+          wbxn(jsea) = uba(jsea)*cos(ubd(jsea))
+          wbyn(jsea) = uba(jsea)*sin(ubd(jsea))
+          wbpn(jsea) = tpi*aba(jsea)/uba(jsea)
+#else
+          abr = zero
+          ubr = zero
+          ubx = zero
+          uby = zero
+          ik_loop: do ik = 1,nk
+            aka = zero
+            akx = zero
+            aky = zero
+            ith_loop: do ith = 1,nth
+              aka = aka + a(ith,ik,jsea)
+              akx = akx + a(ith,ik,jsea)*ecos(ith)
+              aky = aky + a(ith,ik,jsea)*esin(ith)
+            enddo ith_loop
+            fack = dden(ik)/cg(ik,isea)
+            kd = max(kdmin,min(kdmax,wn(ik,isea)*depth))
+            fkd = fack/sinh(kd)**2 
+            abr = abr + aka*fkd
+            ubr = ubr + aka*sig2(ik)*fkd
+            ubx = ubx + akx*sig2(ik)*fkd
+            uby = uby + aky*sig2(ik)*fkd
+          enddo ik_loop
+          if ( abr.le.zero .or. ubr.le.zero ) cycle jsea_loop
+          abr = sqrt(two*abr)
+          ubr = sqrt(two*ubr)
+          dir = atan2(uby,ubx)
+          wbxn(jsea) = ubr*cos(dir)
+          wbyn(jsea) = ubr*sin(dir)
+          wbpn(jsea) = tpi*abr/ubr
+#endif
+        enddo jsea_loop
+
+        deallocate( sig2 )
+
+      endif !natGridIsLocal
+
+      call ESMF_FieldRedist( wbxnField, wbxField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( wbynField, wbyField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( wbpnField, wbpField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_FieldDestroy( wbxnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( wbynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( wbpnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+#ifdef TEST_WMESMFMD_BOTCUR
+      call ESMF_FieldWrite( wbxField, "wmesmfmd_botcur_wbx.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( wbyField, "wmesmfmd_botcur_wby.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( wbpField, "wmesmfmd_botcur_wbp.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      timeSlice = timeSlice + 1
+#endif
+!/
+!/ End of CalcBotcur ------------------------------------------------- /
+!/
+      end subroutine CalcBotcur
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcRadstr2D"
+      subroutine CalcRadstr2D ( a, sxxField, sxyField, syyField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Calculate 2D radiation stresses for export
+!
+!  2. Method :
+!
+! Radiation stresses are defined as:
+!
+!                   //
+!   Sxx = rho grav || (N*cos^2(theta) + N - 1/2) * sig*Ac(theta,k)/Cg dsig dtheta
+!                 //
+!                   //
+!   Sxy = rho grav ||  N*sin(theta)*cos(theta)   * sig*Ac(theta,k)/Cg dsig dtheta
+!                 //
+!                   //
+!   Syy = rho grav || (N*sin^2(theta) + N - 1/2) * sig*Ac(theta,k)/Cg dsig dtheta
+!                 //
+!
+! Where:
+!   rho = density of sea water
+!   grav = acceleration due to gravity
+!   Ac(theta,k) = wave action density
+!   N = Cg/C = ratio of group velocity and phase velocity
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       a         Real   I   Input spectra (in par list to change shape)
+!       sxxField  Type   I/O RS 2D eastward-component export field
+!       sxyField  Type   I/O RS 2D eastward-northward-component export field
+!       syyField  Type   I/O RS 2D northward-component export field
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      real             :: a(nth,nk,0:nseal)
+      type(ESMF_Field) :: sxxField
+      type(ESMF_Field) :: sxyField
+      type(ESMF_Field) :: syyField
+      integer          :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      real(8), parameter :: zero  = 0.0
+      real(8), parameter :: half  = 0.5
+      real(8), parameter ::  one  = 1.0
+      real(8), parameter ::  two  = 2.0
+      integer :: isea, jsea, ik, ith
+      real(8) :: sxxs, sxys, syys
+      real(8) :: akxx, akxy, akyy, cgoc, facd, fack, facs
+      type(ESMF_Field) :: sxxnField, sxynField, syynField
+      real(ESMF_KIND_RX), pointer :: sxxn(:), sxyn(:), syyn(:)
+      integer, save :: timeSlice = 1
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+      sxxnField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      sxynField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      syynField = ESMF_FieldCreate( natGrid, natArraySpec2D, &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call FieldFill( sxxnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( sxynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( syynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( natGridIsLocal ) then
+
+        call ESMF_FieldGet( sxxnField, farrayPtr=sxxn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( sxynField, farrayPtr=sxyn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( syynField, farrayPtr=syyn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        facd = dwat*grav
+        jsea_loop: do jsea = 1,nseal
+!/DIST          isea = iaproc + (jsea-1)*naproc
+!/SHRD          isea = jsea
+          if ( dw(isea).le.zero ) cycle jsea_loop
+#ifdef USE_W3OUTG_FOR_EXPORT
+          sxxn(jsea) = sxx(jsea)
+          sxyn(jsea) = sxy(jsea)
+          syyn(jsea) = syy(jsea)
+#else
+          sxxs = zero
+          sxys = zero
+          syys = zero
+          ik_loop: do ik = 1,nk
+            akxx = zero
+            akxy = zero
+            akyy = zero
+            cgoc = cg(ik,isea)*wn(ik,isea)/sig(ik)
+            cgoc = min(one,max(half,cgoc))
+            ith_loop: do ith = 1,nth
+              akxx = akxx + (cgoc*(ec2(ith)+one)-half)*a(ith,ik,jsea)
+              akxy = akxy + cgoc*esc(ith)*a(ith,ik,jsea)
+              akyy = akyy + (cgoc*(es2(ith)+one)-half)*a(ith,ik,jsea)
+            enddo ith_loop
+            fack = dden(ik)/cg(ik,isea)
+            sxxs = sxxs + akxx*fack
+            sxys = sxys + akxy*fack
+            syys = syys + akyy*fack
+          enddo ik_loop
+          facs = (one+fte/cg(nk,isea))*facd
+          sxxn(jsea) = sxxs*facs
+          sxyn(jsea) = sxys*facs
+          syyn(jsea) = syys*facs
+#endif
+        enddo jsea_loop
+
+      endif !natGridIsLocal
+
+      call ESMF_FieldRedist( sxxnField, sxxField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( sxynField, sxyField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( syynField, syyField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      call ESMF_FieldDestroy( sxxnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( sxynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( syynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+#ifdef TEST_WMESMFMD_RADSTR2D
+      call ESMF_FieldWrite( sxxField, "wmesmfmd_radstr2d_sxx.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( sxyField, "wmesmfmd_radstr2d_sxy.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( syyField, "wmesmfmd_radstr2d_syy.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      timeSlice = timeSlice + 1
+#endif
+!/
+!/ End of CalcRadstr2D ----------------------------------------------- /
+!/
+      end subroutine CalcRadstr2D
+!/ ------------------------------------------------------------------- /
+#undef METHOD
+#define METHOD "CalcStokes3D"
+      subroutine CalcStokes3D ( a, usxField, usyField, rc )
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |        T. J. Campbell, NRL        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         DD-MMM-YYYY |
+!/                  +-----------------------------------+
+!/
+!/    DD-MMM-YYYY : Origination.                        ( version X.YZ )
+!/
+!  1. Purpose :
+!
+!     Calculate 3D Stokes drift current for export
+!
+!  2. Method :
+!
+!    Kenyon, K. E. (1969), J. Geophys. R., Vol 74, No 28, p 6991
+!
+!    U_vec(z)
+!             //
+!      = 2 g || ( F(f,theta) k_vec/C cosh(2k(D+z))/sinh(2kD) ) dsig dtheta
+!           //
+!
+!          //
+!      =  || (Ac(k,theta) sig^2 k_vec/Cg cosh(2k(D+z))/sinh^2(kD) ) dsig dtheta
+!        //
+!
+! Where:
+!   Ac(k,theta) = wave action density
+!   k_vec = k*[cos(theta),sin(theta)]
+!   D = depth
+!   z = height (0 = mean sea level)
+!
+! In deep water (kD large):  cosh(2k(D+z))/sinh^2(kD) --> 2*exp(2kz)
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       a         Real   I   Input spectra (in par list to change shape)
+!       usxField  Type   I/O 3D SDC eastward-component export field
+!       usyField  Type   I/O 3D SDC northward-component export field
+!       rc        Int    O   Return code
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      NONE
+!     ----------------------------------------------------------------
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      real             :: a(nth,nk,0:nseal)
+      type(ESMF_Field) :: usxField
+      type(ESMF_Field) :: usyField
+      integer          :: rc
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+      real(8), parameter :: zero  = 0.0
+      real(8), parameter :: half  = 0.5
+      real(8), parameter ::  one  = 1.0
+      real(8), parameter ::  two  = 2.0
+      ! kdmin = 1e-7: sinh(kdmin)**2 ~ 1e-14
+      real(8), parameter :: kdmin = 1e-7
+      ! kdmax = 18.0:  cosh(2*(kdmax+kz))/sinh(kdmax)**2 - 2*exp(2*kz) < 1e-14
+      real(8), parameter :: kdmax = 18.0
+      ! kdmin & kdmax settings used in w3iogomd
+      real(8), parameter :: kdmin_us3d = 1e-3
+      real(8), parameter :: kdmax_us3d = 6.0
+      integer :: isea, jsea, ik, ith, iz
+      real(8) :: depth
+      real(8) :: akx, aky, kd, kz, fac1, fac2, fac3
+      real(8) :: uzx(nz), uzy(nz)
+      real(8), allocatable :: fack(:)
+      type(ESMF_Field) :: usxnField, usynField
+      real(ESMF_KIND_RX), pointer :: usxn(:,:), usyn(:,:)
+      integer, save :: timeSlice = 1
+! Need this workaround to deal with ESMF_FieldCreate not setting up the
+! Fortran arrays with the ungridded dimension as the first array dimension
+#define ESMF_ARBSEQ_WORKAROUND
+#ifdef ESMF_ARBSEQ_WORKAROUND
+      type(ESMF_DistGrid) :: natDistGrid
+      type(ESMF_Array) :: usxnArray, usynArray
+#endif
+!
+! -------------------------------------------------------------------- /
+!
+      rc = ESMF_SUCCESS
+
+#ifdef ESMF_ARBSEQ_WORKAROUND
+      call ESMF_GridGet( natGrid, distGrid=natDistGrid, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      usxnArray = ESMF_ArrayCreate( natDistGrid, ESMF_TYPEKIND_RX, &
+        distGridToArrayMap=(/2/), undistLBound=(/1/), undistUBound=(/nz/), rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      usxnField = ESMF_FieldCreate( natGrid, usxnArray, &
+        gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      usynArray = ESMF_ArrayCreate( natDistGrid, ESMF_TYPEKIND_RX, &
+        distGridToArrayMap=(/2/), undistLBound=(/1/), undistUBound=(/nz/), rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      usynField = ESMF_FieldCreate( natGrid, usynArray, &
+        gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#else
+      usxnField = ESMF_FieldCreate( natGrid, natArraySpec3D, &
+        gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      usynField = ESMF_FieldCreate( natGrid, natArraySpec3D, &
+        gridToFieldMap=(/2,3/), ungriddedLBound=(/1/), ungriddedUBound=(/nz/), &
+        staggerLoc=natStaggerLoc, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#endif
+
+      call FieldFill( usxnField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call FieldFill( usynField, zeroValue, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+      if ( natGridIsLocal ) then
+
+        call ESMF_FieldGet( usxnField, farrayPtr=usxn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+        call ESMF_FieldGet( usynField, farrayPtr=usyn, rc=rc )
+        if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+        allocate( fack(1:nk) )
+        fack(1:nk) = dden(1:nk) * sig(1:nk)
+
+        jsea_loop: do jsea = 1,nseal
+!/DIST          isea = iaproc + (jsea-1)*naproc
+!/SHRD          isea = jsea
+          if ( dw(isea).le.zero ) cycle jsea_loop
+          depth = max(dmin,dw(isea))
+          uzx(:) = zero
+          uzy(:) = zero
+#ifdef USE_W3OUTG_FOR_EXPORT
+          ik_loop: do ik = us3df(2),us3df(3)
+            fac1 = tpiinv*dsii(ik)
+            kd = max(kdmin_us3d,wn(ik,isea)*dw(isea))
+            iz_loop: do iz = 1,nz
+              if ( dw(isea)+zl(iz).le.zero ) cycle iz_loop
+              kz = wn(ik,isea)*zl(iz)
+              if ( kd .lt. kdmax_us3d ) then
+                fac2 = fac1*cosh(two*max(zero,kd+kz))/cosh(two*kd)
+              else
+                fac2 = fac1*exp(two*kz)
+              endif
+              uzx(iz) = uzx(iz) + us3d(jsea,ik   )*fac2
+              uzy(iz) = uzy(iz) + us3d(jsea,nk+ik)*fac2
+            enddo iz_loop
+          enddo ik_loop
+#else
+          ik_loop: do ik = 1,nk
+            akx = zero
+            aky = zero
+            ith_loop: do ith = 1,nth
+              akx = akx + a(ith,ik,jsea)*ecos(ith)
+              aky = aky + a(ith,ik,jsea)*esin(ith)
+            enddo ith_loop
+            fac1 = fack(ik)*wn(ik,isea)/cg(ik,isea)
+            kd = max(kdmin,wn(ik,isea)*depth)
+            if ( kd .lt. kdmax ) then
+              fac2 = fac1/sinh(kd)**2
+            else
+              fac2 = fac1*two
+            endif
+            akx = akx*fac2
+            aky = aky*fac2
+            iz_loop: do iz = 1,nz
+              if ( depth+zl(iz).le.zero ) cycle iz_loop
+              kz = wn(ik,isea)*zl(iz)
+              if ( kd .lt. kdmax ) then
+                fac3 = cosh(two*max(zero,kd+kz))
+              else
+                fac3 = exp(two*kz)
+              endif
+              uzx(iz) = uzx(iz) + akx*fac3
+              uzy(iz) = uzy(iz) + aky*fac3
+            enddo iz_loop
+          enddo ik_loop
+#endif
+          usxn(:,jsea) = uzx(:)
+          usyn(:,jsea) = uzy(:)
+        enddo jsea_loop
+
+        deallocate( fack )
+
+      endif !natGridIsLocal
+
+      call ESMF_FieldRedist( usxnField, usxField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldRedist( usynField, usyField, n2eRH, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+#ifdef ESMF_ARBSEQ_WORKAROUND
+      call ESMF_ArrayDestroy( usxnArray, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_ArrayDestroy( usynArray, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+#endif
+      call ESMF_FieldDestroy( usxnField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldDestroy( usynField, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+
+#ifdef TEST_WMESMFMD_STOKES3D
+      call ESMF_FieldWrite( usxField, "wmesmfmd_stokes3d_usx.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      call ESMF_FieldWrite( usyField, "wmesmfmd_stokes3d_usy.nc", &
+        overwrite=.true., timeSlice=timeSlice, rc=rc )
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
+      timeSlice = timeSlice + 1
+#endif
+!/
+!/ End of CalcStokes3D ----------------------------------------------- /
+!/
+      end subroutine CalcStokes3D
 !/ ------------------------------------------------------------------- /
 !/
 !/ End of module WMESMFMD -------------------------------------------- /
