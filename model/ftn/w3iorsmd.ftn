@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                      FORTRAN 2003 |
-!/                  | Last update :         06-Apr-2016 |
+!/                  | Last update :         09-Aug-2017 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -67,7 +67,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         31-May-2016 |
+!/                  | Last update :         09-Aug-2017 |
 !/                  +-----------------------------------+
 !/
 !/    12-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -91,8 +91,10 @@
 !/    31-May-2016 : Optimize restart file size for un-  ( version 5.10 )
 !/                  structured grid and restart read.
 !/                  (M. Ward, NCI, S. Zieger, BOM)
-!/    10-Mar-2017 : File access mode changed to 'STREAM'( version 5.16 )
+!/    10-Mar-2017 : File access mode changed to 'STREAM'( version 6.02 )
 !/                  (S. Zieger, BOM)
+!/    09-Aug-2017 : Bug fix for MPI restart read issue  ( version 6.02 )
+!/                  (T. Campbell, NRL)
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -233,7 +235,7 @@
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
                           IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP
 !/MPI      USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS, VAAUX
-!/MPI      USE W3ADATMD, ONLY: MPI_COMM_WAVE
+!/MPI      USE W3ADATMD, ONLY: MPI_COMM_WCMP
 !/
       USE W3SERVMD, ONLY: EXTCDE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -556,6 +558,9 @@
 !/MPI!/             using streams and scatter the results using MPI.
 !/MPI!/                                                      ( M. WARD, NCI )
 !/MPI!
+!/MPI!              Begin computational proc. only section ---------------- *
+!/MPI               IF ( IAPROC.LE.NAPROC ) THEN
+!/MPI!
 !/MPI!              Main loop --------------------------------------------- *
 !/MPI               ALLOCATE( VGBUFF( NSIZE * NAPROC ) )
 !/MPI               ALLOCATE( VLBUFF( NSIZE ) )
@@ -571,7 +576,7 @@
 !/MPI!                Distribute one record to each rank.
 !/MPI                 CALL MPI_SCATTER(VGBUFF, NSIZE, MPI_REAL,             &
 !/MPI                                  VLBUFF, NSIZE, MPI_REAL,             &
-!/MPI                                  NAPROC-1, MPI_COMM_WAVE, IERR        )
+!/MPI                                  NAPROC-1, MPI_COMM_WCMP, IERR        )
 !/MPI!                Transfer the spectral content of VLBUFF to VA. ------ *
 !/MPI                 VA(1:NSPEC,JSEA) = VLBUFF(1:NSPEC)
 !/MPI                 END DO
@@ -588,6 +593,9 @@
 !/MPI!
 !/MPI               DEALLOCATE( VGBUFF )
 !/MPI               DEALLOCATE( VLBUFF )
+!/MPI!
+!/MPI!              End computational proc. only section ------------------ *
+!/MPI               END IF
 !/MPI!
 !/MPI            ELSE
               DO JSEA=1, NSEAL
