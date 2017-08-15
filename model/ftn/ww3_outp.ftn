@@ -57,6 +57,8 @@
 !/    06-Feb-2014 : Fix header format in part. files.   ( version 4.18 )
 !/    27-Aug-2015 : Sice add as additional output       ( version 5.10 )
 !/                  (in source terms)
+!/    27-Jun-2017 : Expanding WMO table to 2 digits JHA ( version 6.02 )
+
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2342,20 +2344,20 @@
    ' ---------------------------------------------------',       &
    '---------------------')
  1916 FORMAT (' Time : ',A//                                     &
-   '   Long.   Lat.   U10     Dir.     Hs      Tp  '/         &
+   '   Long.     Lat.   U10   Dir.     Hs      Tp  '/         &
    '                 (m/s)   (d.N)    (m)     (s)  '/         &
    '-----------------------------------------------')
  1716 FORMAT (' Time : ',A//                                     &
-   '    X     Y     U10     Dir.     Hs      Tp  '/         &
-   '    (m)  (m)   (m/s)   (d.N)    (m)     (s)  '/         &
-   '---------------------------------------------')
+   '     X      Y      U10      Dir.      Hs       Tp  '/         &
+   '    (m)    (m)    (m/s)    (d.N)     (m)      (s)  '/         &
+   '---------------------------------------------------')
  1921 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F10.1,F6.2,F7.1,F6.2,F7.1)
  1922 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F9.3,F7.1,F7.2,F7.1,F7.2,        &
                F8.4,F7.1,F7.2)
  1923 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F8.4,2E11.3,2F7.3)
  1924 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F7.1,2E11.3,2F7.3)
  1925 FORMAT ( 2X,I8.8,I3,2(1X,I2.2),F7.2,F7.1,2F7.2,2F8.2,F7.1)
- 1926 FORMAT ( 2X,I4,3(1X,I2),F5.1,1X,I3,2F5.1)
+ 1926 FORMAT ( 2X,I4,3(1X,I2),F6.2,1X,I3,2F6.2)
  1931 FORMAT ( 2X,2F8.3,F10.1,F6.2,F7.1,F6.2,F7.1)
  1932 FORMAT ( 2X,2F8.3,F9.3,F7.1,F7.2,F7.1,F7.2,                &
                F8.4,F7.1,F7.2)
@@ -2366,8 +2368,8 @@
  1934 FORMAT ( 2X,2F9.1,F7.1,2E11.3,2F7.3)
  1935 FORMAT ( 2X,2F8.3,F7.2,F7.1,2F7.2,2F8.2,F7.1)
  1735 FORMAT ( 2X,2(F7.1,'E3'),F7.2,F7.1,2F7.2,2F8.2,F7.1)
- 1936 FORMAT ( 2X,2F8.3,F5.1,1X,I3,2F5.1)
- 1736 FORMAT ( 2X,2(F7.1,'E3'),F5.1,1X,I3,2F5.1)
+ 1936 FORMAT ( 2X,2F8.3,F6.2,1X,I3,2F6.2)
+ 1736 FORMAT ( 2X,2(F8.2,'E3'),F6.2,1X,I3,2F6.2)
 !
  2920 FORMAT (' Time     : ',A/                                  &
               ' Location : ',A,'  (',2F8.2,' )'/                 &
