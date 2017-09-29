@@ -385,9 +385,9 @@
       ALLOCATE ( WDATAS(IMOD)%WLV(NSEA),                              &
                  WDATAS(IMOD)%ICE(NSEA),                              &
                  WDATAS(IMOD)%BERG(NSEA),                             &
-                 WDATAS(IMOD)%ICEH(0:NSEA),                           &
-                 WDATAS(IMOD)%ICEF(0:NSEA),                           &
-                 WDATAS(IMOD)%ICEDMAX(0:NSEA),                        &
+                 WDATAS(IMOD)%ICEH(NSEA),                             &
+                 WDATAS(IMOD)%ICEF(NSEA),                             &
+                 WDATAS(IMOD)%ICEDMAX(NSEA),                          &
                  WDATAS(IMOD)%UST(0:NSEATM),                          &
                  WDATAS(IMOD)%USTDIR(0:NSEATM),                       &
                  WDATAS(IMOD)%ASF(NSEATM),                            &

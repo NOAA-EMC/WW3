@@ -72,7 +72,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2017-02-28'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2017-09-29'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -584,7 +584,10 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
                STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
-               ICE100WIND, NOLEAP, CMPRTRCK, GRIDSHIFT
+               ICE100WIND, NOLEAP, CMPRTRCK, IICEHFAC, IICEHDISP,     &
+               IICEDDISP, IICEFDISP
+
+          WRITE(NDSM)GRIDSHIFT
 !/SEC1              WRITE (NDSM) NITERSEC1
 !/RTD !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
 !/RTD         WRITE (NDSM) Polat, Polon, AnglD
@@ -659,7 +662,10 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-               IICEDISP, ICE100WIND, NOLEAP, CMPRTRCK, GRIDSHIFT
+               IICEDISP, ICE100WIND, NOLEAP, CMPRTRCK, IICEHFAC,      &
+               IICEDDISP, IICEHDISP, IICEFDISP 
+
+              READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 !/SEC1         READ (NDSM) NITERSEC1
 !
 !/RTD !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012

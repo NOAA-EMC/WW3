@@ -190,7 +190,7 @@
       INTEGER                 :: ISCALE = 0
 !/O14      INTEGER                 :: NDBO
 !/S      INTEGER, SAVE           :: IENT   = 0
-!/NCO                              :: NDSTAB 
+!/NCO                              :: NDSTAB
       REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
       REAL                    :: M2KM
       REAL, ALLOCATABLE       :: XPART(:,:)
@@ -356,7 +356,7 @@
       ELSE
         WRITE(DATE,'(I8.8,I6.6)') TIME(1), TIME(2)
       END IF
-      WRITE(FILETIME,'(7A)') DATE(1:4), DATE(5:6), DATE(7:8), 'T', DATE(9:10)
+      WRITE(FILETIME,'(8A)') DATE(1:4), DATE(5:6), DATE(7:8), 'T', DATE(9:10), 'Z'
 
 
 ! 4.3 Loops on TIME from out_pnt file to reach the first time PASTDATE
@@ -442,13 +442,13 @@
       IF (S3.LT.4) S3=4 
       IF (S3.GT.10) S3=10 
 !
-      ! Defines the format of FILETIME
+      ! Defines the format of FILETIME as ISO8601 convention
       S5=S3-8
-      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSS'
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
       IF (S3.EQ.10) THEN 
-        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
+        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
-               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5)))
+               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -572,11 +572,11 @@
 
 
 ! 5.6.1 Redefines the filetime when it's a new date defined by the date division S3
-        ! if S3=>YYYYMMDDHH then filetime='YYYYMMDD HHMMSS'
+        ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
         IF (S3.EQ.10) THEN 
-          WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
+          WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
           WRITE (FILETIME,FORMAT1) TIME(1), 'T', &
-                 NINT(REAL(TIME(2))/NINT(10.**(6-S5)))
+                 NINT(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
         ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
         ELSE IF (S3.EQ.8) THEN
           WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -1361,7 +1361,8 @@
                                    XYZ, AGE1, AFR, AGE2, FACT, XSTAR,   &
                                    YSTAR, FHIGH, ZWND, Z0, USTD, EMEAN, &
                                    FMEAN, WNMEAN, UDIRCA, CHARN, M2KM
-      REAL                      :: ICETHICK, ICECON, WN_R(NK),CG_ICE(NK), ALPHA_LIU(NK)
+      REAL                      :: ICETHICK, ICECON, WN_R(NK),CG_ICE(NK), &
+                                   ALPHA_LIU(NK), R(NK)
 !/IS2       REAL                     :: ICEF, ICEDMAX                              
       REAL                      :: UDIR1(NREQ), CDIR1(NREQ)
       LOGICAL                   :: LASTSTATION=.FALSE.
@@ -2021,7 +2022,7 @@
                 END IF
 !
 !/IS2              CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX,  &
-!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)          
+!/IS2                          IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)          
             END IF
 !
 !/XXX                CALL W3SXXX

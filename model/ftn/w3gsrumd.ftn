@@ -3788,7 +3788,7 @@
 !/
 !/    SUBROUTINE W3CGDM( IJG, LLG, ICLO, PTILED, QTILED, &
 !/                       PRANGE, QRANGE, LBI, UBI, LBO, UBO, X, Y, &
-!/                       NFD, SPHERE, RADIUS, DX, DY, &
+!/                       MASK, NFD, SPHERE, RADIUS, DX, DY, &
 !/                       GPPC, GQQC, GPQC, GSQR, &
 !/                       HPFC, HQFC, APPC, AQQC, APQC, &
 !/                       DXDP, DYDP, DXDQ, DYDQ, &
@@ -3884,6 +3884,8 @@
 !       UBO     I.A.   I   Upper-bound of output arrays, DIMENSION(2)
 !       X       R.A.   I   Gridded X-coordinates, DIMENSION(LBI(1):UBI(1),LBI(2):UBI(2))
 !       Y       R.A.   I   Gridded Y-coordinates, DIMENSION(LBI(1):UBI(1),LBI(2):UBI(2))
+!       MASK    L.A.   I   OPTIONAL logical mask (T = invalid, F = valid)
+!                          DIMENSION(LBI(1):UBI(1),LBI(2):UBI(2))
 !       NFD     Int.   I   OPTIONAL finite-difference order (even), Default is NFD_DEFAULT.
 !       SPHERE  Log.   I   OPTIONAL apply spherical coord metric if LLG, Default is T
 !       RADIUS  Real   I   OPTIONAL radius for sphere.  Default is REARTH
@@ -3945,7 +3947,7 @@
 !/
       SUBROUTINE W3CGDM_R4( IJG, LLG, ICLO, PTILED, QTILED, &
                             PRANGE, QRANGE, LBI, UBI, LBO, UBO, X, Y, &
-                            NFD, SPHERE, RADIUS, DX, DY, &
+                            MASK, NFD, SPHERE, RADIUS, DX, DY, &
                             GPPC, GQQC, GPQC, GSQR, &
                             HPFC, HQFC, APPC, AQQC, APQC, &
                             DXDP, DYDP, DXDQ, DYDQ, &
@@ -3961,6 +3963,7 @@
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(4), INTENT(IN)   :: X(LBI(1):UBI(1),LBI(2):UBI(2))
       REAL(4), INTENT(IN)   :: Y(LBI(1):UBI(1),LBI(2):UBI(2))
+      LOGICAL, INTENT(IN),  OPTIONAL :: MASK(LBI(1):UBI(1),LBI(2):UBI(2))
       INTEGER, INTENT(IN),  OPTIONAL :: NFD
       LOGICAL, INTENT(IN),  OPTIONAL :: SPHERE
       REAL(4), INTENT(IN),  OPTIONAL :: RADIUS
@@ -3990,17 +3993,18 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
+      REAL(8), PARAMETER :: SMALL = 1D-15
       INTEGER :: ISTAT=0, N, NP, NQ, I1, I2, P, Q
       LOGICAL :: SPHR
       REAL(8) :: R, FACX, FACY
-      INTEGER, ALLOCATABLE :: K(:,:)
-      REAL(8), ALLOCATABLE :: C(:,:)
+      INTEGER, ALLOCATABLE :: K(:,:,:)
+      REAL(8), ALLOCATABLE :: C(:,:,:)
       REAL(8) :: GPPCL, GQQCL, GPQCL
       REAL(8) :: GSQRL, HPFCL, HQFCL
       REAL(8) :: APPCL, AQQCL, APQCL
       REAL(8) :: DXDPL, DYDPL, DXDQL, DYDQL
       REAL(8) :: DPDXL, DPDYL, DQDXL, DQDYL
-      REAL(8) :: COSAL, SINAL, COSTP, SINTP, COSCL, SINCL
+      REAL(8) :: COSAL, SINAL, COSTP, SINTP, COSCL, SINCL, ANGLL
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3CGDM_R4')
 ! -------------------------------------------------------------------- /
@@ -4067,11 +4071,37 @@
           R = REARTH
         END IF
       FACY = R*D2R
+
+      IF ( PRESENT(DX) ) THEN
+          IF ( DX.LE.ZERO ) THEN
+              WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DX must be > 0'
+              ISTAT = 1
+              IF ( PRESENT(RC) ) THEN
+                  RC = ISTAT
+                  RETURN
+                ELSE
+                  CALL EXTCDE (ISTAT)
+                END IF
+            END IF
+        END IF
+
+      IF ( PRESENT(DY) ) THEN
+          IF ( DY.LE.ZERO ) THEN
+              WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DY must be > 0'
+              ISTAT = 1
+              IF ( PRESENT(RC) ) THEN
+                  RC = ISTAT
+                  RETURN
+                ELSE
+                  CALL EXTCDE (ISTAT)
+                END IF
+            END IF
+        END IF
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Setup finite difference coefficients
 !
-      ALLOCATE ( K(0:N,0:N), C(0:N,0:N), STAT=ISTAT )
+      ALLOCATE ( K(0:N,0:N,1:N), C(0:N,0:N,1:N), STAT=ISTAT )
       IF ( ISTAT .NE. 0 ) THEN
           WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
           'finite difference coeff allocation failed'
@@ -4082,7 +4112,7 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
-      CALL GET_FDW2( N, M, K, C )
+      CALL GET_FDW3 ( N, M, K, C )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Compute optional return quantities
@@ -4102,7 +4132,7 @@
                 ELSE
                   CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
-                              X4=X, Y4=Y, RC=ISTAT )
+                              MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
                           RC = ISTAT
@@ -4118,7 +4148,7 @@
                 ELSE
                   CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
-                              X4=X, Y4=Y, RC=ISTAT )
+                              MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
                           RC = ISTAT
@@ -4135,9 +4165,6 @@
                   DXDQL = DXDQL*FACX
                   DYDQL = DYDQL*FACY
                 END IF
-              GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
-              GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
-              GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
               GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
               IF ( GSQRL .LT. ZERO ) THEN
                   ISTAT = 1
@@ -4155,13 +4182,19 @@
                       CALL EXTCDE (ISTAT)
                     END IF
                 END IF
+              GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
+              GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
+              GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
+              GSQRL = MAX(GSQRL,SMALL)
+              GPPCL = MAX(GPPCL,SMALL)
+              GQQCL = MAX(GQQCL,SMALL)
               DPDXL = DYDQL/GSQRL
               DPDYL =-DXDQL/GSQRL
               DQDXL =-DYDPL/GSQRL
               DQDYL = DXDPL/GSQRL
-              APQCL = DPDXL*DQDXL + DPDYL*DQDYL
               APPCL = DPDXL*DPDXL + DPDYL*DPDYL
               AQQCL = DQDXL*DQDXL + DQDYL*DQDYL
+              APQCL = DPDXL*DQDXL + DPDYL*DQDYL
               HPFCL = SQRT(GPPCL)
               HQFCL = SQRT(GQQCL)
               COSAL = GPQCL/(HPFCL*HQFCL)
@@ -4170,6 +4203,7 @@
               SINTP = DYDPL/HQFCL
               COSCL = SINAL*COSTP + COSAL*SINTP
               SINCL = SINAL*SINTP - COSAL*COSTP
+              ANGLL = ATAN2(SINCL,COSCL)*R2D
               IF (PRESENT(GPPC)) GPPC(I1,I2) = GPPCL
               IF (PRESENT(GQQC)) GQQC(I1,I2) = GQQCL
               IF (PRESENT(GPQC)) GPQC(I1,I2) = GPQCL
@@ -4190,7 +4224,7 @@
               IF (PRESENT(COSA)) COSA(I1,I2) = COSAL
               IF (PRESENT(COSC)) COSC(I1,I2) = COSCL
               IF (PRESENT(SINC)) SINC(I1,I2) = SINCL
-              IF (PRESENT(ANGL)) ANGL(I1,I2) = ATAN2(SINCL,COSCL)*R2D
+              IF (PRESENT(ANGL)) ANGL(I1,I2) = ANGLL
             END DO !I1
         END DO !I2
 !
@@ -4205,7 +4239,7 @@
 !/
       SUBROUTINE W3CGDM_R8( IJG, LLG, ICLO, PTILED, QTILED, &
                             PRANGE, QRANGE, LBI, UBI, LBO, UBO, X, Y, &
-                            NFD, SPHERE, RADIUS, DX, DY, &
+                            MASK, NFD, SPHERE, RADIUS, DX, DY, &
                             GPPC, GQQC, GPQC, GSQR, &
                             HPFC, HQFC, APPC, AQQC, APQC, &
                             DXDP, DYDP, DXDQ, DYDQ, &
@@ -4221,6 +4255,7 @@
       INTEGER, INTENT(IN)   :: LBO(2), UBO(2)
       REAL(8), INTENT(IN)   :: X(LBI(1):UBI(1),LBI(2):UBI(2))
       REAL(8), INTENT(IN)   :: Y(LBI(1):UBI(1),LBI(2):UBI(2))
+      LOGICAL, INTENT(IN),  OPTIONAL :: MASK(LBI(1):UBI(1),LBI(2):UBI(2))
       INTEGER, INTENT(IN),  OPTIONAL :: NFD
       LOGICAL, INTENT(IN),  OPTIONAL :: SPHERE
       REAL(8), INTENT(IN),  OPTIONAL :: RADIUS
@@ -4250,17 +4285,18 @@
 
 !     Local parameters
       INTEGER, PARAMETER :: M = 1 ! order of derivative
+      REAL(8), PARAMETER :: SMALL = 1D-15
       INTEGER :: ISTAT=0, N, NP, NQ, I1, I2, P, Q
       LOGICAL :: SPHR
       REAL(8) :: R, FACX, FACY
-      INTEGER, ALLOCATABLE :: K(:,:)
-      REAL(8), ALLOCATABLE :: C(:,:)
+      INTEGER, ALLOCATABLE :: K(:,:,:)
+      REAL(8), ALLOCATABLE :: C(:,:,:)
       REAL(8) :: GPPCL, GQQCL, GPQCL
       REAL(8) :: GSQRL, HPFCL, HQFCL
       REAL(8) :: APPCL, AQQCL, APQCL
       REAL(8) :: DXDPL, DYDPL, DXDQL, DYDQL
       REAL(8) :: DPDXL, DPDYL, DQDXL, DQDYL
-      REAL(8) :: COSAL, SINAL, COSTP, SINTP, COSCL, SINCL
+      REAL(8) :: COSAL, SINAL, COSTP, SINTP, COSCL, SINCL, ANGLL
 !/S      INTEGER, SAVE           :: IENT = 0
 !/S      CALL STRACE (IENT, 'W3CGDM_R8')
 ! -------------------------------------------------------------------- /
@@ -4327,11 +4363,37 @@
           R = REARTH
         END IF
       FACY = R*D2R
+
+      IF ( PRESENT(DX) ) THEN
+          IF ( DX.LE.ZERO ) THEN
+              WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DX must be > 0'
+              ISTAT = 1
+              IF ( PRESENT(RC) ) THEN
+                  RC = ISTAT
+                  RETURN
+                ELSE
+                  CALL EXTCDE (ISTAT)
+                END IF
+            END IF
+        END IF
+
+      IF ( PRESENT(DY) ) THEN
+          IF ( DY.LE.ZERO ) THEN
+              WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DY must be > 0'
+              ISTAT = 1
+              IF ( PRESENT(RC) ) THEN
+                  RC = ISTAT
+                  RETURN
+                ELSE
+                  CALL EXTCDE (ISTAT)
+                END IF
+            END IF
+        END IF
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Setup finite difference coefficients
 !
-      ALLOCATE ( K(0:N,0:N), C(0:N,0:N), STAT=ISTAT )
+      ALLOCATE ( K(0:N,0:N,1:N), C(0:N,0:N,1:N), STAT=ISTAT )
       IF ( ISTAT .NE. 0 ) THEN
           WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
           'finite difference coeff allocation failed'
@@ -4342,7 +4404,7 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
-      CALL GET_FDW2( N, M, K, C )
+      CALL GET_FDW3 ( N, M, K, C )
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Compute optional return quantities
@@ -4362,7 +4424,7 @@
                 ELSE
                   CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
-                              X8=X, Y8=Y, RC=ISTAT )
+                              MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
                           RC = ISTAT
@@ -4378,7 +4440,7 @@
                 ELSE
                   CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
                               PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
-                              X8=X, Y8=Y, RC=ISTAT )
+                              MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
                   IF ( ISTAT .NE. 0 ) THEN
                       IF ( PRESENT(RC) ) THEN
                           RC = ISTAT
@@ -4395,9 +4457,6 @@
                   DXDQL = DXDQL*FACX
                   DYDQL = DYDQL*FACY
                 END IF
-              GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
-              GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
-              GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
               GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
               IF ( GSQRL .LT. ZERO ) THEN
                   ISTAT = 1
@@ -4415,13 +4474,19 @@
                       CALL EXTCDE (ISTAT)
                     END IF
                 END IF
+              GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
+              GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
+              GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
+              GSQRL = MAX(GSQRL,SMALL)
+              GPPCL = MAX(GPPCL,SMALL)
+              GQQCL = MAX(GQQCL,SMALL)
               DPDXL = DYDQL/GSQRL
               DPDYL =-DXDQL/GSQRL
               DQDXL =-DYDPL/GSQRL
               DQDYL = DXDPL/GSQRL
-              APQCL = DPDXL*DQDXL + DPDYL*DQDYL
               APPCL = DPDXL*DPDXL + DPDYL*DPDYL
               AQQCL = DQDXL*DQDXL + DQDYL*DQDYL
+              APQCL = DPDXL*DQDXL + DPDYL*DQDYL
               HPFCL = SQRT(GPPCL)
               HQFCL = SQRT(GQQCL)
               COSAL = GPQCL/(HPFCL*HQFCL)
@@ -4430,6 +4495,7 @@
               SINTP = DYDPL/HQFCL
               COSCL = SINAL*COSTP + COSAL*SINTP
               SINCL = SINAL*SINTP - COSAL*COSTP
+              ANGLL = ATAN2(SINCL,COSCL)*R2D
               IF (PRESENT(GPPC)) GPPC(I1,I2) = GPPCL
               IF (PRESENT(GQQC)) GQQC(I1,I2) = GQQCL
               IF (PRESENT(GPQC)) GPQC(I1,I2) = GPQCL
@@ -4451,6 +4517,7 @@
               IF (PRESENT(COSC)) COSC(I1,I2) = COSCL
               IF (PRESENT(SINC)) SINC(I1,I2) = SINCL
               IF (PRESENT(ANGL)) ANGL(I1,I2) = ATAN2(SINCL,COSCL)*R2D
+              IF (PRESENT(ANGL)) ANGL(I1,I2) = ANGLL
             END DO !I1
         END DO !I2
 !
@@ -8068,13 +8135,16 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
+#define DXYDP_SINGLE_POINT_WIDE_CHANNEL_ERROR
+#undef  DXYDP_SINGLE_POINT_WIDE_CHANNEL_WARNING
       SUBROUTINE DXYDP( N, K, C, IJG, LLG, ICLO, &
                         PTILED, QTILED, PRANGE, QRANGE, &
-                        LB, UB, P, Q, DXDP, DYDP, X4, Y4, X8, Y8, RC )
+                        LB, UB, P, Q, DXDP, DYDP, MASK, &
+                        X4, Y4, X8, Y8, RC )
 !     *** INTERNAL SUBROUTINE ***
       INTEGER, INTENT(IN)   :: N
-      INTEGER, INTENT(IN)   :: K(0:N,0:N)
-      REAL(8), INTENT(IN)   :: C(0:N,0:N)
+      INTEGER, INTENT(IN)   :: K(0:N,0:N,1:N)
+      REAL(8), INTENT(IN)   :: C(0:N,0:N,1:N)
       LOGICAL, INTENT(IN)   :: IJG
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
@@ -8083,6 +8153,7 @@
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
       REAL(8), INTENT(OUT)  :: DXDP, DYDP
+      LOGICAL, INTENT(IN),  OPTIONAL :: MASK(LB(1):UB(1),LB(2):UB(2))
       REAL(4), INTENT(IN),  OPTIONAL :: X4(LB(1):UB(1),LB(2):UB(2))
       REAL(4), INTENT(IN),  OPTIONAL :: Y4(LB(1):UB(1),LB(2):UB(2))
       REAL(8), INTENT(IN),  OPTIONAL :: X8(LB(1):UB(1),LB(2):UB(2))
@@ -8090,15 +8161,21 @@
       INTEGER, INTENT(OUT), OPTIONAL :: RC
 
 !     Local parameters
+      INTEGER, PARAMETER :: M = 1 ! order of derivative
       LOGICAL, PARAMETER :: DEBUG = .FALSE.
       CHARACTER(64) :: FSTR
-      LOGICAL :: TYPE_R4, TYPE_R8
+      LOGICAL :: COMP_M, TYPE_R4, TYPE_R8
+      INTEGER :: IHEM
       INTEGER :: NP, NQ, LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
-      INTEGER :: ISTAT=0, IHEM, I, J, L
+      INTEGER :: ISTAT=0, I, J, L, II, JJ, NI, NJ, II0, IIN, JJ0, JJN
       INTEGER :: KP(0:N), KQ(0:N)
-      REAL(8) :: XP(0:N), YP(0:N), XQ(0:N), YQ(0:N), U(0:N), V(0:N)
+      LOGICAL :: MP(0:N), MQ(0:N)
+      REAL(8) :: XP(0:N), XQ(0:N)
+      REAL(8) :: YP(0:N), YQ(0:N)
+      REAL(8) :: UP(0:N), UQ(0:N)
+      REAL(8) :: VP(0:N), VQ(0:N)
       REAL(8) :: X0, Y0, XC(4), YC(4), LON0, LAT0, C0
-      REAL(8) :: D1DP, D2DP
+      REAL(8) :: D1DP, D2DP, D1DQ, D2DQ
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Check and setup inputs
@@ -8168,6 +8245,17 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      DXDP = ZERO
+      DYDP = ZERO
+      COMP_M = PRESENT(MASK)
+      IF ( COMP_M ) THEN
+          IF ( IJG ) THEN
+               IF ( MASK(P0,Q0) ) RETURN
+            ELSE
+               IF ( MASK(Q0,P0) ) RETURN
+            END IF
+        END IF
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Compute DX/DP & DY/DP
@@ -8184,7 +8272,7 @@
             END IF
         END IF
 
-      KP(:) = P + K(:,I)
+      KP(:) = P + K(:,I,N)
       KQ(:) = Q
       IF ( .NOT.PTILED ) THEN
           IF ( MOD(ICLO,2).EQ.0 ) THEN
@@ -8211,6 +8299,7 @@
 
       DO L = 0, N
           IF ( IJG ) THEN
+              IF ( COMP_M ) MP(L) = MASK(KP(L),KQ(L))
               IF ( TYPE_R4 ) THEN
                   XP(L) = X4(KP(L),KQ(L))
                   YP(L) = Y4(KP(L),KQ(L))
@@ -8219,6 +8308,7 @@
                   YP(L) = Y8(KP(L),KQ(L))
                 END IF
             ELSE
+              IF ( COMP_M ) MP(L) = MASK(KQ(L),KP(L))
               IF ( TYPE_R4 ) THEN
                   XP(L) = X4(KQ(L),KP(L))
                   YP(L) = Y4(KQ(L),KP(L))
@@ -8229,64 +8319,115 @@
             END IF
         END DO
 
-      IF ( LLG ) THEN
+      II = I
+      NI = N
+      II0 = 0
+      IIN = N
+      IF ( COMP_M ) THEN
+          DO L = I-1, 0, -1
+              IF ( MP(L) ) THEN
+                  MP(0:L) = .TRUE.
+                  EXIT
+                END IF
+            END DO
+          DO L = I+1, N
+              IF ( MP(L) ) THEN
+                  MP(L:N) = .TRUE.
+                  EXIT
+                END IF
+            END DO
+          II = COUNT(.NOT.MP(0:I)) - 1
+          NI = COUNT(.NOT.MP(0:N)) - 1
+          II0 = I - II
+          IIN = II0 + NI
+        END IF
+#ifdef DXYDP_SINGLE_POINT_WIDE_CHANNEL_ERROR
+      IF ( NI.LE.0 ) THEN
+          WRITE(0,'(/1A,1A,4I6/)') 'DXYDP ERROR -- ', &
+          'single point wide channel not allowed',P,Q,P0,Q0
+          ISTAT = 1
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
+        END IF
+#endif
+
+      IF ( NI.GT.0 ) THEN
+          IF ( LLG ) THEN
 #define DXYDP_USE_SPLX
 #ifdef DXYDP_USE_SPLX
-          IF ( IJG ) THEN
-              IF ( TYPE_R4 ) THEN
-                  X0 = X4(P,Q); Y0 = Y4(P,Q);
+              IF ( IJG ) THEN
+                  IF ( TYPE_R4 ) THEN
+                      X0 = X4(P,Q); Y0 = Y4(P,Q);
+                    ELSE
+                      X0 = X8(P,Q); Y0 = Y8(P,Q);
+                    END IF
                 ELSE
-                  X0 = X8(P,Q); Y0 = Y8(P,Q);
+                  IF ( TYPE_R4 ) THEN
+                      X0 = X4(Q,P); Y0 = Y4(Q,P);
+                    ELSE
+                      X0 = X8(Q,P); Y0 = Y8(Q,P);
+                    END IF
                 END IF
-            ELSE
-              IF ( TYPE_R4 ) THEN
-                  X0 = X4(Q,P); Y0 = Y4(Q,P);
-                ELSE
-                  X0 = X8(Q,P); Y0 = Y8(Q,P);
-                END IF
-            END IF
-          IHEM = 1; IF (MAXVAL(YP).LT.ZERO) IHEM = -1;
-          LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
-          C0 = D90 - ABS(Y0)
-          CALL W3SPLX(LON0,LAT0,C0,XP,YP,U,V)
-          D1DP = DOT_PRODUCT(C(:,I),U)
-          D2DP = DOT_PRODUCT(C(:,I),V)
-          CALL SPDDP(LON0,C0,IHEM,X0,Y0,D1DP,D2DP,DXDP,DYDP)
+              IHEM = 1; IF (MAXVAL(YP(II0:IIN)).LT.ZERO) IHEM = -1;
+              LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
+              C0 = D90 - ABS(Y0)
+              CALL W3SPLX(LON0,LAT0,C0,XP(II0:IIN),YP(II0:IIN), &
+                                       UP(II0:IIN),VP(II0:IIN))
+              D1DP = DOT_PRODUCT(C(0:NI,II,NI),UP(II0:IIN))
+              D2DP = DOT_PRODUCT(C(0:NI,II,NI),VP(II0:IIN))
+              CALL SPDDP(LON0,C0,IHEM,X0,Y0,D1DP,D2DP,DXDP,DYDP)
 #else
-          DXDP = DOT_PRODUCT(C(:,I),XP)
-          DYDP = DOT_PRODUCT(C(:,I),YP)
+              DXDP = DOT_PRODUCT(C(0:NI,II,NI),XP(II0:IIN))
+              DYDP = DOT_PRODUCT(C(0:NI,II,NI),YP(II0:IIN))
 #endif
-        ELSE !.NOT.LLG
-          DXDP = DOT_PRODUCT(C(:,I),XP)
-          DYDP = DOT_PRODUCT(C(:,I),YP)
-        END IF !.NOT.LLG
-      IF ( DEBUG ) THEN
-          WRITE(FSTR,'(A,I0,A,I0,A)') &
-          '(/1A,9I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
-          WRITE(*,TRIM(FSTR)) &
-          'DXYDP -- PRANGE,QRANGE,P,Q,P0,Q0,I:',PRANGE,QRANGE,P,Q,P0,Q0,I, &
-          'DXYDP --   X0,  Y0:',X0,Y0, &
-          'DXYDP -- LON0,LAT0:',LON0,LAT0, &
-          'DXYDP --   C0,IHEM:',C0,REAL(IHEM), &
-          'DXYDP -- D1DP,D2DP:',D1DP,D2DP, &
-          'DXYDP -- DXDP,DYDP:',DXDP,DYDP, &
-          'DXYDP --  K:', K(:,I), &
-          'DXYDP --  C:', C(:,I), &
-          'DXYDP -- XP:',XP(:), &
-          'DXYDP -- YP:',YP(:)
+            ELSE !.NOT.LLG
+              DXDP = DOT_PRODUCT(C(0:NI,II,NI),XP(II0:IIN))
+              DYDP = DOT_PRODUCT(C(0:NI,II,NI),YP(II0:IIN))
+            END IF !.NOT.LLG
+          IF ( DEBUG ) THEN
+              WRITE(FSTR,'(A,I0,A,I0,A)') &
+              '(/1A,12I8,5(/1A,2E16.8),/1A,', &
+              NI+1,'I16,3(/1A,',NI+1,'E16.8))'
+              WRITE(*,TRIM(FSTR)) &
+              'DXYDP -- PRANGE,QRANGE,P,Q,P0,Q0,NI,II,II0,IIN:',&
+                        PRANGE,QRANGE,P,Q,P0,Q0,NI,II,II0,IIN,  &
+              'DXYDP --   X0,  Y0:',X0,Y0, &
+              'DXYDP -- LON0,LAT0:',LON0,LAT0, &
+              'DXYDP --   C0,IHEM:',C0,REAL(IHEM), &
+              'DXYDP -- D1DP,D2DP:',D1DP,D2DP, &
+              'DXYDP -- DXDP,DYDP:',DXDP,DYDP, &
+              'DXYDP --  K:', K(0:NI,II,NI), &
+              'DXYDP --  C:', C(0:NI,II,NI), &
+              'DXYDP -- XP:',XP(II0:IIN), &
+              'DXYDP -- YP:',YP(II0:IIN)
+            END IF
+        ELSE
+#ifdef DXYDP_SINGLE_POINT_WIDE_CHANNEL_WARNING
+          WRITE(0,'(/1A,1A,4I6/)') 'DXYDP WARNING -- ', &
+          'single point wide channel, DXDP & DYDP set to zero:',P,Q,P0,Q0
+#endif
+          DXDP = ZERO
+          DYDP = ZERO
         END IF
 
       END SUBROUTINE DXYDP
 !/
 !/ ------------------------------------------------------------------- /
 !/
+#define DXYDQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
+#undef  DXYDQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
       SUBROUTINE DXYDQ( N, K, C, IJG, LLG, ICLO, &
                         PTILED, QTILED, PRANGE, QRANGE, &
-                        LB, UB, P, Q, DXDQ, DYDQ, X4, Y4, X8, Y8, RC )
+                        LB, UB, P, Q, DXDQ, DYDQ, MASK, &
+                        X4, Y4, X8, Y8, RC )
 !     *** INTERNAL SUBROUTINE ***
       INTEGER, INTENT(IN)   :: N
-      INTEGER, INTENT(IN)   :: K(0:N,0:N)
-      REAL(8), INTENT(IN)   :: C(0:N,0:N)
+      INTEGER, INTENT(IN)   :: K(0:N,0:N,1:N)
+      REAL(8), INTENT(IN)   :: C(0:N,0:N,1:N)
       LOGICAL, INTENT(IN)   :: IJG
       LOGICAL, INTENT(IN)   :: LLG
       INTEGER, INTENT(IN)   :: ICLO
@@ -8295,6 +8436,7 @@
       INTEGER, INTENT(IN)   :: LB(2), UB(2)
       INTEGER, INTENT(IN)   :: P, Q
       REAL(8), INTENT(OUT)  :: DXDQ, DYDQ
+      LOGICAL, INTENT(IN),  OPTIONAL :: MASK(LB(1):UB(1),LB(2):UB(2))
       REAL(4), INTENT(IN),  OPTIONAL :: X4(LB(1):UB(1),LB(2):UB(2))
       REAL(4), INTENT(IN),  OPTIONAL :: Y4(LB(1):UB(1),LB(2):UB(2))
       REAL(8), INTENT(IN),  OPTIONAL :: X8(LB(1):UB(1),LB(2):UB(2))
@@ -8302,15 +8444,21 @@
       INTEGER, INTENT(OUT), OPTIONAL :: RC
 
 !     Local parameters
+      INTEGER, PARAMETER :: M = 1 ! order of derivative
       LOGICAL, PARAMETER :: DEBUG = .FALSE.
       CHARACTER(64) :: FSTR
-      LOGICAL :: TYPE_R4, TYPE_R8
+      LOGICAL :: COMP_M, TYPE_R4, TYPE_R8
+      INTEGER :: IHEM
       INTEGER :: NP, NQ, LBP, LBQ, UBP, UBQ, P0, Q0, PP, QQ
-      INTEGER :: ISTAT=0, IHEM, I, J, L
+      INTEGER :: ISTAT=0, I, J, L, II, JJ, NI, NJ, II0, IIN, JJ0, JJN
       INTEGER :: KP(0:N), KQ(0:N)
-      REAL(8) :: XP(0:N), YP(0:N), XQ(0:N), YQ(0:N), U(0:N), V(0:N)
+      LOGICAL :: MP(0:N), MQ(0:N)
+      REAL(8) :: XP(0:N), XQ(0:N)
+      REAL(8) :: YP(0:N), YQ(0:N)
+      REAL(8) :: UP(0:N), UQ(0:N)
+      REAL(8) :: VP(0:N), VQ(0:N)
       REAL(8) :: X0, Y0, XC(4), YC(4), LON0, LAT0, C0
-      REAL(8) :: D1DQ, D2DQ
+      REAL(8) :: D1DP, D2DP, D1DQ, D2DQ
 !
 ! -------------------------------------------------------------------- /
 ! 1.  Check and setup inputs
@@ -8380,6 +8528,17 @@
               CALL EXTCDE (ISTAT)
             END IF
         END IF
+
+      DXDQ = ZERO
+      DYDQ = ZERO
+      COMP_M = PRESENT(MASK)
+      IF ( COMP_M ) THEN
+          IF ( IJG ) THEN
+               IF ( MASK(P0,Q0) ) RETURN
+            ELSE
+               IF ( MASK(Q0,P0) ) RETURN
+            END IF
+        END IF
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Compute DX/DQ & DY/DQ
@@ -8403,7 +8562,7 @@
         END IF
 
       KP(:) = P
-      KQ(:) = Q + K(:,J)
+      KQ(:) = Q + K(:,J,N)
       IF ( .NOT.QTILED ) THEN
           IF ( MOD(ICLO,3).EQ.0 ) THEN
               KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
@@ -8435,6 +8594,7 @@
 
       DO L = 0, N
           IF ( IJG ) THEN
+              IF ( COMP_M ) MQ(L) = MASK(KP(L),KQ(L))
               IF ( TYPE_R4 ) THEN
                   XQ(L) = X4(KP(L),KQ(L))
                   YQ(L) = Y4(KP(L),KQ(L))
@@ -8443,6 +8603,7 @@
                   YQ(L) = Y8(KP(L),KQ(L))
                 END IF
             ELSE
+              IF ( COMP_M ) MQ(L) = MASK(KQ(L),KP(L))
               IF ( TYPE_R4 ) THEN
                   XQ(L) = X4(KQ(L),KP(L))
                   YQ(L) = Y4(KQ(L),KP(L))
@@ -8453,51 +8614,99 @@
             END IF
         END DO
 
-      IF ( LLG ) THEN
+      JJ = J
+      NJ = N
+      JJ0 = 0
+      JJN = N
+      IF ( COMP_M ) THEN
+          DO L = J-1, 0, -1
+              IF ( MQ(L) ) THEN
+                  MQ(0:L) = .TRUE.
+                  EXIT
+                END IF
+            END DO
+          DO L = J+1, N
+              IF ( MQ(L) ) THEN
+                  MQ(L:N) = .TRUE.
+                  EXIT
+                END IF
+            END DO
+          JJ = COUNT(.NOT.MQ(0:J)) - 1
+          NJ = COUNT(.NOT.MQ(0:N)) - 1
+          JJ0 = J - JJ
+          JJN = JJ0 + NJ
+        END IF
+#ifdef DXYDQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
+      IF ( NJ.LE.0 ) THEN
+          WRITE(0,'(/1A,1A,4I6/)') 'DXYDQ ERROR -- ', &
+          'single point wide channel not allowed',P,Q,P0,Q0
+          ISTAT = 1
+          IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
+        END IF
+#endif
+
+      IF ( NJ.GT.0 ) THEN
+          IF ( LLG ) THEN
 #define DXYDQ_USE_SPLX
 #ifdef DXYDQ_USE_SPLX
-          IF ( IJG ) THEN
-              IF ( TYPE_R4 ) THEN
-                  X0 = X4(P,Q); Y0 = Y4(P,Q);
+              IF ( IJG ) THEN
+                  IF ( TYPE_R4 ) THEN
+                      X0 = X4(P,Q); Y0 = Y4(P,Q);
+                    ELSE
+                      X0 = X8(P,Q); Y0 = Y8(P,Q);
+                    END IF
                 ELSE
-                  X0 = X8(P,Q); Y0 = Y8(P,Q);
+                  IF ( TYPE_R4 ) THEN
+                      X0 = X4(Q,P); Y0 = Y4(Q,P);
+                    ELSE
+                      X0 = X8(Q,P); Y0 = Y8(Q,P);
+                    END IF
                 END IF
-            ELSE
-              IF ( TYPE_R4 ) THEN
-                  X0 = X4(Q,P); Y0 = Y4(Q,P);
-                ELSE
-                  X0 = X8(Q,P); Y0 = Y8(Q,P);
-                END IF
-            END IF
-          IHEM = 1; IF (MAXVAL(YQ).LT.ZERO) IHEM = -1;
-          LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
-          C0 = D90 - ABS(Y0)
-          CALL W3SPLX(LON0,LAT0,C0,XQ,YQ,U,V)
-          D1DQ = DOT_PRODUCT(C(:,J),U)
-          D2DQ = DOT_PRODUCT(C(:,J),V)
-          CALL SPDDQ(LON0,C0,IHEM,X0,Y0,D1DQ,D2DQ,DXDQ,DYDQ)
+              IHEM = 1; IF (MAXVAL(YQ(JJ0:JJN)).LT.ZERO) IHEM = -1;
+              LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
+              C0 = D90 - ABS(Y0)
+              CALL W3SPLX(LON0,LAT0,C0,XQ(JJ0:JJN),YQ(JJ0:JJN), &
+                                       UQ(JJ0:JJN),VQ(JJ0:JJN))
+              D1DQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),UQ(JJ0:JJN))
+              D2DQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),VQ(JJ0:JJN))
+              CALL SPDDQ(LON0,C0,IHEM,X0,Y0,D1DQ,D2DQ,DXDQ,DYDQ)
 #else
-          DXDQ = DOT_PRODUCT(C(:,J),XQ)
-          DYDQ = DOT_PRODUCT(C(:,J),YQ)
+              DXDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),XQ(JJ0:JJN))
+              DYDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),YQ(JJ0:JJN))
 #endif
-        ELSE !.NOT.LLG
-          DXDQ = DOT_PRODUCT(C(:,J),XQ)
-          DYDQ = DOT_PRODUCT(C(:,J),YQ)
-        END IF !.NOT.LLG
-      IF ( DEBUG ) THEN
-          WRITE(FSTR,'(A,I0,A,I0,A)') &
-          '(/1A,9I8,5(/1A,2E16.8),/1A,',N+1,'I16,3(/1A,',N+1,'E16.8))'
-          WRITE(*,TRIM(FSTR)) &
-          'DXYDQ -- PRANGE,QRANGE,P,Q,P0,Q0,J:',PRANGE,QRANGE,P,Q,P0,Q0,J, &
-          'DXYDQ --   X0,  Y0:',X0,Y0, &
-          'DXYDQ -- LON0,LAT0:',LON0,LAT0, &
-          'DXYDQ --   C0,IHEM:',C0,REAL(IHEM), &
-          'DXYDQ -- D1DQ,D1DQ:',D1DQ,D1DQ, &
-          'DXYDQ -- DXDQ,DYDQ:',DXDQ,DYDQ, &
-          'DXYDQ --  K:', K(:,J), &
-          'DXYDQ --  C:', C(:,J), &
-          'DXYDQ -- XQ:',XQ(:), &
-          'DXYDQ -- YQ:',YQ(:)
+            ELSE !.NOT.LLG
+              DXDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),XQ(JJ0:JJN))
+              DYDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),YQ(JJ0:JJN))
+            END IF !.NOT.LLG
+          IF ( DEBUG ) THEN
+              WRITE(FSTR,'(A,I0,A,I0,A)') &
+              '(/1A,12I8,5(/1A,2E16.8),/1A,', &
+              NJ+1,'I16,3(/1A,',NJ+1,'E16.8))'
+              WRITE(*,TRIM(FSTR)) &
+              'DXYDQ -- PRANGE,QRANGE,P,Q,P0,Q0,NJ,JJ,JJ0,JJN:',&
+                        PRANGE,QRANGE,P,Q,P0,Q0,NJ,JJ,JJ0,JJN,  &
+              'DXYDQ --   X0,  Y0:',X0,Y0, &
+              'DXYDQ -- LON0,LAT0:',LON0,LAT0, &
+              'DXYDQ --   C0,IHEM:',C0,REAL(IHEM), &
+              'DXYDQ -- D1DQ,D1DQ:',D1DQ,D1DQ, &
+              'DXYDQ -- DXDQ,DYDQ:',DXDQ,DYDQ, &
+              'DXYDQ --  K:', K(0:NJ,JJ,NJ), &
+              'DXYDQ --  C:', C(0:NJ,JJ,NJ), &
+              'DXYDQ -- XQ:',XQ(JJ0:JJN), &
+              'DXYDQ -- YQ:',YQ(JJ0:JJN)
+            END IF
+        ELSE
+#ifdef DXYDQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
+          WRITE(0,'(/1A,1A,4I6/)') 'DXYDQ WARNING -- ', &
+          'single point wide channel, DXDQ & DYDQ set to zero:',P,Q,P0,Q0
+#endif
+          DXDQ = ZERO
+          DYDQ = ZERO
         END IF
 
       END SUBROUTINE DXYDQ
@@ -8616,10 +8825,8 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-#define TRAP_OFF     0
-#define TRAP_WARNING 1
-#define TRAP_ERROR   2
-#define TRAP_SINGLE_POINT_WIDE_CHANNEL TRAP_OFF
+#define DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
+#undef  DFDPQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
       SUBROUTINE DFDPQ( N, K, C, IJG, ICLO, &
                         PTILED, QTILED, &
                         PRANGE, QRANGE, &
@@ -8858,7 +9065,7 @@
           II0 = I - II
           IIN = II0 + NI
         END IF
-#if TRAP_SINGLE_POINT_CHANNEL == TRAP_ERROR
+#ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
       IF ( NI.LE.0 ) THEN
           WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ ERROR -- ', &
           'DFDP -- single point wide channel not allowed',P,Q,P0,Q0
@@ -8897,7 +9104,7 @@
               'DFDPQ -- DFDP -- FP:', FP(II0:IIN)
             END IF
         ELSE
-#if TRAP_SINGLE_POINT_CHANNEL == TRAP_WARNING
+#ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
           WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ WARNING -- ', &
           'single point wide channel, DFDP set to zero:',P,Q,P0,Q0
 #endif
@@ -9025,7 +9232,7 @@
           JJ0 = J - JJ
           JJN = JJ0 + NJ
         END IF
-#if TRAP_SINGLE_POINT_CHANNEL == TRAP_ERROR
+#ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
       IF ( NJ.LE.0 ) THEN
           WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ ERROR -- ', &
           'DFDQ -- single point wide channel not allowed',P,Q,P0,Q0
@@ -9064,7 +9271,7 @@
               'DFDPQ -- DFDQ -- FQ:', FQ(JJ0:JJN)
             END IF
         ELSE
-#if TRAP_SINGLE_POINT_CHANNEL == TRAP_WARNING
+#ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
           WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ WARNING -- ', &
           'single point wide channel, DFDQ set to zero:',P,Q,P0,Q0
 #endif

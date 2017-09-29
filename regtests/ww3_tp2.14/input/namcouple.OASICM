@@ -9,7 +9,7 @@
  $NFIELDS
 # The number of fields described in the second part of the namcouple.
 #
-         3
+         4
  $END
 #########################################################################
  $NBMODEL
@@ -104,7 +104,7 @@
 #~~~~~~~~~~~
 # Field 1 : 
 #~~~~~~~~~~~
-TOY_U10M WW3__U10 1 180 1 r-toy.nc EXPOUT
+TOY__IC1 WW3__IC1 1 180 1 r-toy.nc EXPOUT
 80 80 103 119 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
@@ -113,7 +113,15 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # Field 2 : 
 #~~~~~~~~~~~
-TOY_V10M WW3__V10 1 180 1 r-toy.nc EXPOUT
+TOY__IC5 WW3__IC5 1 180 1 r-toy.nc EXPOUT
+80 80 103 119 toyt ww3t LAG=+180
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#~~~~~~~~~~~
+# Field 2 : 
+#~~~~~~~~~~~
+TOY__ICE WW3__ICE 1 180 1 r-toy.nc EXPOUT
 80 80 103 119 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
@@ -126,7 +134,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # Field 3 : 
 #~~~~~~~~~~~
-WW3_ACHA TOY__CHA 1 180 1 r-ww3.nc EXPOUT
+WW3_ICEF TOY_ICEF 1 180 1 r-ww3.nc EXPOUT
 103 119 80 80 ww3t toyt LAG=+180 
 R  0  R  0
 SCRIPR

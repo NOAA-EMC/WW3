@@ -147,7 +147,8 @@
       SIS1FTABLE = (/ 0.0420, 0.04620, 0.050820, 0.0559020, 0.06149220, 0.06764142,0.0744055620000000, &
                0.0818461182, 0.09003073002, 0.099033803022, 0.1089371833242, 0.11983090, 0.13181399, &
                0.144995391, 0.15949493 ,  0.175444423115458, 0.192988865427003, 0.212287751969704, &
-               0.233516527, 0.256868, 0.28255499787, 0.310810497658843, 0.341891547424728, 0.376080702167200, 0.413688772383920 /) 
+               0.233516527, 0.256868, 0.28255499787, 0.310810497658843, 0.341891547424728, 0.376080702167200, 0.413688772383920 /)
+IF (IS2PARS(18).LT.0.5) THEN
       SIS1ALPHATABLE = reshape((/  &
         1.78E-007, 2.21E-006, 6.57E-006, 1.31E-005, 2.28E-005, 3.60E-005, 5.23E-005, 7.19E-005, 9.60E-005, 0.0001260665, &
         0.0001621645, 0.0002032202, 0.0002483457, 0.0002987263, 0.0003571903, &
@@ -250,6 +251,138 @@
         14.9965430946, 16.972215146, 18.903468102, 20.9125176371, 23.3776351255  &
         /) ,(/NTHICK,NFTAB/))
 
+ELSE
+! May be changed, but according to T. Williams, wim1 is okay from 0.25 only
+       SIS1HTABLE = (/ 0.25, 0.35, 0.6, 0.85, 1.1, 1.35, 1.6, 1.85, 2.1,  2.35, &
+                      2.6, 2.85, 3.1, 3.35, 3.6, 3.85, 4.1, 4.35, 4.6, 4.85 /) 
+       SIS1ALPHATABLE = reshape((/  &
+       3.80373e-06 ,  6.02822e-06 , 1.12121e-05 , 2.24588e-05 , & 
+3.05165e-05 ,  3.85142e-05 , 5.29712e-05 , 7.55453e-05 , & 
+1.05531e-04 ,  1.38952e-04 , 1.73378e-04 , 2.09421e-04 , & 
+2.47299e-04 ,  2.87669e-04 , 3.34304e-04 , 3.91094e-04 , & 
+4.57710e-04 ,  5.31901e-04 , 6.14490e-04 , 7.08299e-04 , & 
+4.76980e-06 ,  6.95433e-06 , 1.54179e-05 , 2.46138e-05 , & 
+3.79955e-05 ,  5.96725e-05 , 8.81668e-05 , 1.20881e-04 , & 
+1.57364e-04 ,  1.99666e-04 , 2.50723e-04 , 3.13346e-04 , & 
+3.89907e-04 ,  4.81606e-04 , 5.88164e-04 , 7.08707e-04 , & 
+8.42536e-04 ,  9.88622e-04 , 1.14498e-03 , 1.30931e-03 , & 
+5.84556e-06 ,  8.58738e-06 , 2.00947e-05 , 3.18410e-05 , & 
+5.67385e-05 ,  9.37456e-05 , 1.37304e-04 , 1.87832e-04 , & 
+2.49218e-04 ,  3.28900e-04 , 4.31988e-04 , 5.59364e-04 , & 
+7.11302e-04 ,  8.86736e-04 , 1.08074e-03 , 1.28808e-03 , & 
+1.50809e-03 ,  1.74230e-03 , 1.98930e-03 , 2.24607e-03 , & 
+6.90305e-06 ,  1.12155e-05 , 2.59514e-05 , 5.15063e-05 , & 
+9.18902e-05 ,  1.45703e-04 , 2.18304e-04 , 3.18476e-04 , & 
+4.51992e-04 ,  6.21037e-04 , 8.24428e-04 , 1.05881e-03 , & 
+1.32112e-03 ,  1.60970e-03 , 1.92396e-03 , 2.26484e-03 , & 
+2.63577e-03 ,  3.04238e-03 , 3.49116e-03 , 3.98911e-03 , & 
+8.46004e-06 ,  1.46791e-05 , 3.69837e-05 , 8.32870e-05 , & 
+1.49151e-04 ,  2.46175e-04 , 3.92165e-04 , 5.95871e-04 , & 
+8.57938e-04 ,  1.17280e-03 , 1.53668e-03 , 1.95109e-03 , & 
+2.42048e-03 ,  2.95341e-03 , 3.56468e-03 , 4.27150e-03 , & 
+5.08843e-03 ,  6.02927e-03 , 7.11153e-03 , 8.35459e-03 , & 
+1.11513e-05 ,  1.95090e-05 , 5.78215e-05 , 1.32267e-04 , & 
+2.57932e-04 ,  4.61051e-04 , 7.55044e-04 , 1.14193e-03 , & 
+1.62478e-03 ,  2.21208e-03 , 2.92101e-03 , 3.77684e-03 , & 
+4.80845e-03 ,  6.04635e-03 , 7.52256e-03 , 9.26818e-03 , & 
+1.13101e-02 ,  1.36712e-02 , 1.63732e-02 , 1.94360e-02 , & 
+1.52571e-05 ,  2.78128e-05 , 9.43665e-05 , 2.30636e-04 , & 
+4.90057e-04 ,  9.02105e-04 , 1.48012e-03 , 2.24822e-03 , & 
+3.24754e-03 ,  4.53444e-03 , 6.16979e-03 , 8.21171e-03 , & 
+1.07145e-02 ,  1.37253e-02 , 1.72805e-02 , 2.14091e-02 , & 
+2.61367e-02 ,  3.14840e-02 , 3.74632e-02 , 4.40798e-02 , & 
+2.13731e-05 ,  4.29771e-05 , 1.64050e-04 , 4.49510e-04 , & 
+9.84576e-04 ,  1.82921e-03 , 3.06425e-03 , 4.79802e-03 , & 
+7.14520e-03 ,  1.02139e-02 , 1.40940e-02 , 1.88529e-02 , & 
+2.45396e-02 ,  3.11875e-02 , 3.88141e-02 , 4.74255e-02 , & 
+5.70233e-02 ,  6.76049e-02 , 7.91611e-02 , 9.16776e-02 , & 
+3.17688e-05 ,  7.05749e-05 , 3.13449e-04 , 9.26652e-04 , & 
+2.08059e-03 ,  3.98338e-03 , 6.87070e-03 , 1.09528e-02 , & 
+1.63868e-02 ,  2.32726e-02 , 3.16649e-02 , 4.15851e-02 , & 
+5.30293e-02 ,  6.59789e-02 , 8.04085e-02 , 9.62863e-02 , & 
+1.13575e-01 ,  1.32236e-01 , 1.52233e-01 , 1.73533e-01 , & 
+5.14019e-05 ,  1.24975e-04 , 6.49063e-04 , 2.01553e-03 , & 
+4.70028e-03 ,  9.17913e-03 , 1.58010e-02 , 2.47576e-02 , & 
+3.61186e-02 ,  4.98708e-02 , 6.59568e-02 , 8.42994e-02 , & 
+1.04811e-01 ,  1.27404e-01 , 1.51996e-01 , 1.78511e-01 , & 
+2.06873e-01 ,  2.37011e-01 , 2.68862e-01 , 3.02365e-01 , & 
+9.05394e-05 ,  2.44433e-04 , 1.43884e-03 , 4.66981e-03 , & 
+1.09558e-02 ,  2.08947e-02 , 3.46681e-02 , 5.22109e-02 , & 
+7.33489e-02 ,  9.78738e-02 , 1.25579e-01 , 1.56274e-01 , & 
+1.89790e-01 ,  2.25973e-01 , 2.64687e-01 , 3.05808e-01 , & 
+3.49223e-01 ,  3.94830e-01 , 4.42530e-01 , 4.92227e-01 , & 
+1.75074e-04 ,  5.25080e-04 , 3.39573e-03 , 1.10036e-02 , & 
+2.46312e-02 ,  4.44096e-02 , 6.99511e-02 , 1.00742e-01 , & 
+1.36302e-01 ,  1.76219e-01 , 2.20147e-01 , 2.67802e-01 , & 
+3.18937e-01 ,  3.73339e-01 , 4.30813e-01 , 4.91183e-01 , & 
+5.54282e-01 ,  6.19954e-01 , 6.88048e-01 , 7.58418e-01 , & 
+3.74908e-04 ,  1.22443e-03 , 8.17252e-03 , 2.46994e-02 , & 
+5.11207e-02 ,  8.63422e-02 , 1.29173e-01 , 1.78641e-01 , & 
+2.34006e-01 ,  2.94691e-01 , 3.60235e-01 , 4.30258e-01 , & 
+5.04426e-01 ,  5.82438e-01 , 6.64019e-01 , 7.48914e-01 , & 
+8.36872e-01 ,  9.27649e-01 , 1.02102e+00 , 1.11676e+00 , & 
+8.82800e-04 ,  3.03043e-03 , 1.88248e-02 , 5.09125e-02 , & 
+9.68861e-02 ,  1.54064e-01 , 2.20524e-01 , 2.94949e-01 , & 
+3.76394e-01 ,  4.64138e-01 , 5.57588e-01 , 6.56231e-01 , & 
+7.59605e-01 ,  8.67281e-01 , 9.78849e-01 , 1.09393e+00 , & 
+1.21214e+00 ,  1.33315e+00 , 1.45662e+00 , 1.58224e+00 , & 
+2.22521e-03 ,  7.51676e-03 , 3.98357e-02 , 9.57376e-02 , & 
+1.68983e-01 ,  2.55527e-01 , 3.52939e-01 , 4.59644e-01 , & 
+5.74490e-01 ,  6.96566e-01 , 8.25086e-01 , 9.59331e-01 , & 
+1.09864e+00 ,  1.24238e+00 , 1.38997e+00 , 1.54085e+00 , & 
+1.69451e+00 ,  1.85049e+00 , 2.00833e+00 , 2.16765e+00 , & 
+5.66833e-03 ,  1.75464e-02 , 7.66453e-02 , 1.65727e-01 , & 
+2.74951e-01 ,  3.99380e-01 , 5.36249e-01 , 6.83721e-01 , & 
+8.40370e-01 ,  1.00497e+00 , 1.17642e+00 , 1.35368e+00 , & 
+1.53580e+00 ,  1.72190e+00 , 1.91118e+00 , 2.10291e+00 , & 
+2.29645e+00 ,  2.49123e+00 , 2.68675e+00 , 2.88259e+00 , & 
+1.36539e-02 ,  3.72456e-02 , 1.35140e-01 , 2.67780e-01 , & 
+4.22901e-01 ,  5.95111e-01 , 7.81333e-01 , 9.79307e-01 , & 
+1.18712e+00 ,  1.40304e+00 , 1.62548e+00 , 1.85300e+00 , & 
+2.08433e+00 ,  2.31832e+00 , 2.55400e+00 , 2.79055e+00 , & 
+3.02727e+00 ,  3.26361e+00 , 3.49910e+00 , 3.73337e+00 , & 
+2.98722e-02 ,  7.15314e-02 , 2.21423e-01 , 4.09271e-01 , & 
+6.21810e-01 ,  8.53369e-01 , 1.10028e+00 , 1.35949e+00 , & 
+1.62829e+00 ,  1.90425e+00 , 2.18522e+00 , 2.46937e+00 , & 
+2.75516e+00 ,  3.04136e+00 , 3.32695e+00 , 3.61118e+00 , & 
+3.89345e+00 ,  4.17331e+00 , 4.45047e+00 , 4.72471e+00 , & 
+5.88578e-02 ,  1.25612e-01 , 3.41821e-01 , 5.98292e-01 , & 
+8.81793e-01 ,  1.18598e+00 , 1.50596e+00 , 1.83748e+00 , & 
+2.17675e+00 ,  2.52062e+00 , 2.86649e+00 , 3.21233e+00 , & 
+3.55662e+00 ,  3.89823e+00 , 4.23636e+00 , 4.57049e+00 , & 
+4.90029e+00 ,  5.22559e+00 , 5.54632e+00 , 5.86250e+00 , & 
+1.05468e-01 ,  2.04724e-01 , 5.03158e-01 , 8.44026e-01 , & 
+1.21416e+00 ,  1.60557e+00 , 2.01139e+00 , 2.42573e+00 , & 
+2.84383e+00 ,  3.26205e+00 , 3.67776e+00 , 4.08914e+00 , & 
+4.49503e+00 ,  4.89472e+00 , 5.28788e+00 , 5.67440e+00 , & 
+6.05432e+00 ,  6.42782e+00 , 6.79514e+00 , 7.15656e+00 , & 
+1.74545e-01 ,  3.14137e-01 , 7.13063e-01 , 1.15691e+00 , & 
+1.63126e+00 ,  2.12499e+00 , 2.62866e+00 , 3.13493e+00 , & 
+3.63860e+00 ,  4.13623e+00 , 4.62576e+00 , 5.10610e+00 , & 
+5.57680e+00 ,  6.03787e+00 , 6.48955e+00 , 6.93227e+00 , & 
+7.36652e+00 ,  7.79283e+00 , 8.21174e+00 , 8.62378e+00 , & 
+2.70834e-01 ,  4.59350e-01 , 9.80330e-01 , 1.54856e+00 , & 
+2.14570e+00 ,  2.75617e+00 , 3.36813e+00 , 3.97376e+00 , & 
+4.56847e+00 ,  5.14997e+00 , 5.71743e+00 , 6.27093e+00 , & 
+6.81101e+00 ,  7.33850e+00 , 7.85432e+00 , 8.35942e+00 , & 
+8.85471e+00 ,  9.34106e+00 , 9.81925e+00 , 1.02900e+01 , & 
+3.99120e-01 ,  6.46435e-01 , 1.31507e+00 , 2.03136e+00 , & 
+2.76957e+00 ,  3.50946e+00 , 4.23832e+00 , 4.94958e+00 , & 
+5.64069e+00 ,  6.31137e+00 , 6.96253e+00 , 7.59564e+00 , & 
+8.21234e+00 ,  8.81426e+00 , 9.40295e+00 , 9.97983e+00 , & 
+1.05461e+01 ,  1.11030e+01 , 1.16515e+01 , 1.21924e+01 , & 
+5.64538e-01 ,  8.82405e-01 , 1.72870e+00 , 2.61770e+00 , & 
+3.51364e+00 ,  4.39362e+00 , 5.24695e+00 , 6.07052e+00 , & 
+6.86499e+00 ,  7.63269e+00 , 8.37647e+00 , 9.09919e+00 , & 
+9.80351e+00 ,  1.04918e+01 , 1.11660e+01 , 1.18280e+01 , & 
+1.24792e+01 ,  1.31209e+01 , 1.37543e+01 , 1.43803e+01 , & 
+7.72889e-01 ,  1.17552e+00 , 2.23335e+00 , 3.31894e+00 , & 
+4.38704e+00 ,  5.41672e+00 , 6.40295e+00 , 7.34788e+00 , & 
+8.25618e+00 ,  9.13289e+00 , 9.98272e+00 , 1.08097e+01 , & 
+1.16174e+01 ,  1.24086e+01 , 1.31857e+01 , 1.39506e+01 , & 
+1.47049e+01 ,  1.54501e+01 , 1.61872e+01 , 1.69173e+01   & 
+        /) ,(/NTHICK,NFTAB/))
+        END IF
       DO I=1,NK
         DO J=1,NTHICK
           IF (SIG(I)*TPIINV.LT.SIS1FTABLE(1)) THEN 
@@ -374,8 +507,8 @@
 0.000007782240, 0.000002755736, 0.000000005024, 0.000000101927, 0.000088216814, &
 0.009792270789, 0.030135654570, 0.009293514348, 0.001549599316, 0.000298014001, &
 0.000055965309, 0.000007063938, 0.000000637549, 0.000000072256, 0.000000017854, &
-0.000000008901, 0.000000004238, 0.000000001169, 0.000000000492, 0.000000001113 /) , &
-    (/NTHICK,NFTAB/))
+0.000000008901, 0.000000004238, 0.000000001169, 0.000000000492, 0.000000001113 /), &
+(/NTHICK,NFTAB/))
 
       DO I=1,NK
         DO J=1,NTHICK
@@ -427,13 +560,14 @@
 !/
       END SUBROUTINE INSIS2
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SIS2 (A, DEPTH, CICE, ICEH, ICEF, ICEDMAX, IX, IY, S, D, DCREEP, WN, CG, WN_R, CG_ICE)
+      SUBROUTINE W3SIS2 (A, DEPTH, CICE, ICEH, ICEF, ICEDMAX, IX, IY, &
+                         S, D, DCREEP, WN, CG, WN_R, CG_ICE, R)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  | P. Nicot & F. Ardhuin & G. Boutin |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          04-May-2016 |
+!/                  | Last update :         04-May-2016 |
 !/                  +-----------------------------------+
 !/
 !/    16-Mar-2014 : Origination.                        ( version 4.18 )
@@ -445,7 +579,7 @@
 !/    13-Jan-2016 : Changed initialization of ICEDMAX   ( version 5.10 ) 
 !/    06-Feb-2016 : Added IICEHMIN and creep dissipation( version 5.10 ) 
 !/    10-Mar-2016 : Added depth and call to Liu disp.   ( version 5.10 )
-!/    02-May-2016 : Call to Liu disp moved to w3srce(GB)( version 5.10 )
+!/    02-May-2016 : Call to Liu disp moved to w3srce    ( version 5.10 )
 !
 !  1. Purpose :
 !     Wave scattering in the MIZ, adapted from Dumont et al.  
@@ -464,16 +598,19 @@
 !     ----------------------------------------------------------------
 !       A       R.A.  I     Action density spectrum (1-D)
 !       DEPTH   Real  I     Water depth
-!       CICE    Real  I     Sea ice concentration.
+!       CICE    Real  I     Sea ice concentration
 !       ICEH    Real  I     ice thickness
 !       ICEF    Real  I/O   Maximum floe size (updated)
 !       ICEDMAX Real  I     Maximum floe size
 !       IX,IY   Int   I     Not used
-!       S       R.A.  O     Source term (1-D version).
-!       D       R.A.  O     Diagonal part of scattering (1-D version).
-!       DCREEP  R.A.  O     Diagonal creep term (1-D version).
-!       WN      R.A.  I/O   Wave number
-!       CG      R.A.  I/O   Group speed
+!       S       R.A.  O     Source term (1-D version)
+!       D       R.A.  O     Diagonal part of scattering (1-D version)
+!       DCREEP  R.A.  O     Diagonal creep term (1-D version)
+!       WN      R.A.  I     Wave number
+!       CG      R.A.  I     Group speed
+!       WN_R    R.A.  I     Wave number in ice
+!       CG_ICE  R.A.  I     Group speed in ice
+!       R       R.A.  O     Ratio of energy to wave energy without ice
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -517,7 +654,7 @@
       USE CONSTANTS, ONLY: TPIINV, PI, TPI, GRAV, DWAT
       USE W3SERVMD, ONLY: EXTCDE
       USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, SIG2, DDEN, IS2PARS, XFR, &
-                          IICEHMIN 
+                          IICEHMIN,IICESMOOTH
 !/T      USE W3ODATMD, ONLY: NDST
 !/S      USE W3SERVMD, ONLY: STRACE
 !/T      USE W3ARRYMD, ONLY: PRT2DS
@@ -527,32 +664,32 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
-      REAL, INTENT(IN)        :: A(NSPEC), DEPTH, CICE, ICEH, ICEDMAX, WN(NK), CG(NK)
+      REAL, INTENT(IN)        :: A(NSPEC), DEPTH, CICE, ICEH, ICEDMAX
       INTEGER, INTENT(IN)     :: IX, IY
-      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), DCREEP(NSPEC)
+      REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), DCREEP(NSPEC), R(NK)
       REAL, INTENT(INOUT)     :: ICEF
-      REAL, INTENT(IN)        :: WN_R(NK), CG_ICE(NK)
+      REAL, INTENT(IN)        :: WN(NK), CG(NK), WN_R(NK), CG_ICE(NK)
 
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
 !/S      INTEGER, SAVE           :: IENT = 0
-      INTEGER                 :: IK, ITH, ITH2, IS, IS2, IND1, IND2
+      INTEGER                 :: IK, IKP1, IKM1, ITH, ITH2, IS, IS2, IND1, IND2
       REAL                    :: W
       INTEGER                 :: IKBREAK, NSUM
-      LOGICAL                 :: BRK_CRIT_W, BRK_CRIT
+      LOGICAL                 :: BRK_CRIT_W(NK), BRK_CRIT
       REAL                    :: ALPHA, STRAIN_C, WAMP(NK), D_FLEX_FAIL,  &
-                                 AC, SMOOTHD,                             &
+                                 SMOOTHD,                                 &
                                  DMAX, S_ATT, FACTOR, BETA
-      REAL                    :: ICEDAVE, CURVTOSTRAIN, CREEPFAC, MP2, B
+      REAL                    :: ICEDAVE(NK), CURVTOSTRAIN, CREEPFAC, MP2, B
       REAL                    :: SUMALLDIR, SUMA, SUME, CURVSPEC(NK), ESPEC(NK),STRAIN
       REAL, PARAMETER         :: YOUNG = 5.49E+9   ! Young modulus 
       REAL, PARAMETER         :: POISSON = 0.3     ! Poisson Ratio 
       REAL, PARAMETER         :: SIGMA_C =  2.7414E+05  ! Flexural strenght in Pa
       REAL, PARAMETER         :: DENS = 1025.0     ! ice density 
       REAL, DIMENSION(NK)        :: WN_I, WN_RP, WSQ, WLG, WLG_I, CG_I,   &
-                                    R, CURV, CGRATIO, CG_EFF, DUMMY, ALPHA_DISP
+                                    CURV, CGRATIO, CG_EFF, DUMMY, ALPHA_DISP
 !/T      REAL                    :: SOUT(NK,NTH)
 !/
 !/ ------------------------------------------------------------------- /
@@ -578,19 +715,15 @@
         CREEPFAC = -2*(0.25/(IS2PARS(15)+2))*0.375*B*ICEH**(IS2PARS(15)+2)  &
                         *(YOUNG/(2*B*MP2))**(IS2PARS(15)+1)/(DWAT*GRAV)
       ELSE 
-        CREEPFAC=1.
+        CREEPFAC=0.
         ENDIF
 
       WLG = TPI/WN
       DMAX = ICEF
-      IF (IS2PARS(10).LT.0.5) THEN ! resets max floe size to the last forcing or initial value
-        DMAX = ICEDMAX
-        ICEF = ICEDMAX
-      END IF
       BRK_CRIT = .FALSE.
       NSUM = NINT(0.3/(XFR-1.))
 !    
-      STRAIN_C = SIGMA_C/YOUNG
+      STRAIN_C = SIGMA_C/(YOUNG*MP2)
 
 ! Minimum floe size that can break 
       D_FLEX_FAIL =  ( (PI**4*YOUNG*ICEH**3)/( 48*DENS*GRAV*MP2 ) )**.25
@@ -598,12 +731,22 @@
       IF (DMAX.GT.NICED) THEN
         ICEDAVE=DMAX
       ELSE
-        ICEDAVE= ICEDAVETAB(MAX(1,NINT(DMAX)))
+        IF (IS2PARS(9).GT.0) THEN
+          ICEDAVE= ICEDAVETAB(MAX(1,NINT(DMAX)))
+        ELSE 
+          DO IK=1,NK
+            IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.DMAX) THEN
+              ICEDAVE(IK)=W3FSD_DAVE( (TPI/WN_R(IK))*IS2PARS(14),DMAX,IS2PARS(8))
+            ELSE 
+              ICEDAVE(IK)=DMAX
+              ENDIF 
+            END DO
+          ENDIF
         ENDIF
-
+!
 !/T      SOUT  = 0.
 !
-      IF (CICE .GT. 0 .AND. DMAX .GT. 0) THEN
+      IF (CICE .GT. 0) THEN
 !
 !  1. Calculate wavelength, Robinson-Palmer dispersion relation 
 !     (should be tabulated )
@@ -612,15 +755,19 @@
         IF (IS2PARS(6).GT.0.5) THEN 
           CALL W3RPWNICE(ICEH,WN_I,WN_RP,CG_I)
         ELSE 
-
           WN_I  = WN_R
           CG_I  = CG_ICE
-
           WN_RP=WN*0.
           END IF          
+!
         WLG_I = TPI/WN_I  ! Ice wavelength 
         WSQ = (WLG/WLG_I)  
-        CGRATIO(:)=CG_I(:)/CG(:)
+!
+        IF (IS2PARS(16).GT.0.5) THEN
+          CGRATIO(:)=CG_I(:)/CG(:)
+        ELSE
+          CGRATIO(:)=1
+          END IF
 !
 !  2. gets reflection coefficient from table 
 !
@@ -637,123 +784,167 @@
           W = 0 
           END IF
 !
-!
-      DO IK = 1,NK
+        DO IK = 1,NK
 !
 ! Spatial decay scale taken from table. This corresponds the the values shown 
 ! in Dumont et al. (JGR 2011, fig 3). 
 !
-        CG_EFF(IK) = CICE*CG_I(IK) + (1-CICE)*CG(IK)
+          CG_EFF(IK) = CICE*CG_I(IK) + (1-CICE)*CG(IK)
 
 ! Note by FA: dissipation should be done by ICx not by ISx 
 ! the RP damping is thus defined by an optional IS2PARS(7), which is 0 by default
-        ALPHA = -1.*(  (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W)/ICEDAVE &
+          ALPHA = -1.*(  (SIS2ALPHAS(IND1,IK)*(1-W)+SIS2ALPHAS(IND2,IK)*W)/ICEDAVE(IK) &
                         +2.*IS2PARS(7)*WN_RP(IK) )*CICE
 !
 ! Additional scattering for pack ice defined by IS2PARS(4:5)  (see Squire et al. GRL 2009)
 !
-        ALPHA = IS2PARS(1) * ALPHA -2.*IS2PARS(4)*EXP(-1.*IS2PARS(5)/SIG(IK))
-        IF (IS2PARS(11).GT.0) THEN 
-          IF (CICE.LT.0.2) ALPHA = 0.
-          IF (CICE.GT.0.8) ALPHA = 0.
-          IF (CICE.GE.0.2.AND.CICE.LE.0.8) ALPHA = ALPHA*(CICE-0.2)*(0.8-CICE)
-          END IF 
+          ALPHA = IS2PARS(1) * ALPHA -2.*IS2PARS(4)*EXP(-1.*IS2PARS(5)/SIG(IK))
+          IF (IS2PARS(11).GT.0) THEN 
+            IF (CICE.LT.0.2) ALPHA = 0.
+            IF (CICE.GT.0.8) ALPHA = 0.
+            IF (CICE.GE.0.2.AND.CICE.LE.0.8) ALPHA = ALPHA*(CICE-0.2)*(0.8-CICE)
+            END IF 
 !
 ! time decay
 !
-        BETA = ALPHA * CICE * CG_EFF(IK) 
+          BETA = ALPHA * CICE * CG_EFF(IK) 
 !
 !  3. attenuation due to scattering for all spectral components
 !     with added backscattering for energy conservation ( if IS2PARS(2).EQ.1)
 !
-        SUMALLDIR= 0.
-        SUMA = 0.
-        CURVTOSTRAIN =  (0.25*MAX(ICEH,IICEHMIN)**2)
-        DO ITH = 1,NTH
-          IS  = ITH+(IK-1)*NTH
-          D(IS) = BETA
-          S(IS) = BETA * A(IS) 
-          SUMALLDIR = SUMALLDIR + S(IS) 
-          SUMA = SUMA + A(IS)
-          END DO ! loop over directions
+          SUMALLDIR= 0.
+          SUMA = 0.
+          CURVTOSTRAIN =  (0.25*MAX(ICEH,IICEHMIN)**2)
+          DO ITH = 1,NTH
+            IS  = ITH+(IK-1)*NTH
+            D(IS) = BETA
+            S(IS) = BETA * A(IS) 
+            SUMALLDIR = SUMALLDIR + S(IS) 
+            SUMA = SUMA + A(IS)
+            END DO ! loop over directions
 !
 ! R is the ratio of energy (including bending of ice) to wave energy without ice
 ! Wadhams 1973 eq. 34, warning, his ice thickness is 2*h 
+! Warning : R uses DMAX=ICEF, even if IS2DUPDATE=F   
 !
-        R(IK) =1+IS2PARS(16)*4*YOUNG*ICEH**3*(PI/WLG_I(IK))**4/(3*DWAT*GRAV*MP2) 
-        SUME = SUMA*DDEN(IK) / CG(IK)  / (R(IK)*CGRATIO(IK))
-
-! AC = WLG_I(IK)**2 * STRAIN_C /(2*WSQ(IK)*PI**2*ICEH)
+          IF (IICESMOOTH) THEN
+            IF (IS2PARS(14)*WLG_I(IK).LT.DMAX) THEN 
+              SMOOTHD=TANH((DMAX-IS2PARS(14)*WLG_I(IK))/(DMAX*IS2PARS(13))) 
+            ELSE
+              SMOOTHD=0.
+              END IF    
+          ELSE 
+            SMOOTHD=1.
+            END IF
+!
+          R(IK) =1+IS2PARS(16)*SMOOTHD*4*YOUNG*ICEH**3*(PI/WLG_I(IK))**4/(3*DWAT*GRAV*MP2)
+!
+! Converting action to surface elevation variance SUME with units m^2
+!
+          SUME = SUMA*DDEN(IK) / CG(IK)  / (R(IK)*CGRATIO(IK))
+! 
 ! CURVSPEC is the curvature variance = elevation variance * k^4 
-! STRAINSPEC is the strain variance = elevation variance * k^4 * ICEH^2/4 
-        CURVSPEC (IK) = SUME * (2*PI/ WLG_I(IK))**4
-        ESPEC (IK) = SUME 
-        SUMALLDIR = SUMALLDIR / REAL(NTH)
+!
+          CURVSPEC (IK) = SUME * (2*PI/ WLG_I(IK))**4
+          ESPEC (IK) = SUME 
+          SUMALLDIR = SUMALLDIR / REAL(NTH)
 !
 ! Adds the scattered energy isotropically to conserve the energy 
 ! This may not be a very good scheme numerically. Another possible 
 ! approach is the matrix inversion used for bottom scattering (w3sbs1md.ftn) 
 !
-        S(1+(IK-1)*NTH:IK*NTH)=S(1+(IK-1)*NTH:IK*NTH)-SUMALLDIR*IS2PARS(2)
-        END DO ! loop over wavenumbers IK
+          S(1+(IK-1)*NTH:IK*NTH)=S(1+(IK-1)*NTH:IK*NTH)-SUMALLDIR*IS2PARS(2)
+          END DO ! loop over wavenumbers IK
 !
 !  4. update of floe size 
 !      
-      IF (IS2PARS(3).GT.0.5) THEN
-        IKBREAK=0
-        DO IK = 1, NK 
-          CURV(IK) = SUM(CURVSPEC(MAX(1,IK-NSUM):MIN(NK,IK+NSUM)))  ! this is the variance of the curvature 
-          STRAIN = CURV(IK)*CURVTOSTRAIN                            ! converts curvature variance to strain variance 
-          IF (D_FLEX_FAIL .LT. DMAX) THEN 
-            ! Williams et al. used IS2PARS(17)=SQRT(2), default is 3.6
-            WAMP(IK) = IS2PARS(17)*SQRT(STRAIN)
-            BRK_CRIT_W = WAMP(IK) .GT. STRAIN_C .AND. WLG_I(IK)/2 .GT. ICEDMIN .AND. WLG_I(IK)/2 .LT. DMAX               
+
+        IF (IS2PARS(10).LT.0.5) THEN ! resets max floe size to the last forcing or initial value
+          DMAX = ICEDMAX
+          ICEF = ICEDMAX
+          END IF
 !
-            IF (BRK_CRIT_W) THEN
-              IKBREAK=IK
-              BRK_CRIT = .TRUE.
+        IF (IS2PARS(3).GT.0.5) THEN
+          IKBREAK=0
+          DO IK = 1, NK 
+! CURV is the variance of the curvature integrated over a finite bandwidth 
+            CURV(IK) = SUM(CURVSPEC(MAX(1,IK-NSUM):MIN(NK,IK+NSUM)))  
+! Now converts curvature variance to strain variance 
+            STRAIN = CURV(IK)*CURVTOSTRAIN                            
+            IF (D_FLEX_FAIL .LT. DMAX) THEN 
+! Note that Williams et al. used IS2PARS(17)=SQRT(2), Here our default is 3.6
+!	    IF (IS2PARS(17).LE.0) THEN
+!     This could be good if there was waves during only one time step DTG... 
+!     othewise this would introduce some artificial time step dependance ... 
+!	      N_WAVES=FLOOR(DTG*SIG(IK)/TPI)
+!	      WAMP(IK)= ( (1+0.29/log(N_WAVES))*(2*log(N_WAVES))**(0.5) ) *SQRT(STRAIN)
+!	    ELSE
+              WAMP(IK)= IS2PARS(17)*SQRT(STRAIN)
+!	      END IF
+
+              BRK_CRIT_W(IK) = WAMP(IK) .GT. STRAIN_C  .AND.  &
+                               WLG_I(IK)/2 .GT. ICEDMIN .AND. WLG_I(IK)/2 .LT. DMAX               
+!
+              IF (BRK_CRIT_W(IK)) THEN
+                IKBREAK=IK
+                BRK_CRIT = .TRUE.
+                END IF
               END IF
-            END IF
-          END DO ! end of loop on IK
+            END DO ! end of loop on IK
 !
 ! 4.b Correction for bias introduced by the finite bandwidth sum .. .
 !
-        IF (BRK_CRIT) THEN
-          DO IK=IKBREAK,MAX(IKBREAK-NSUM,1),-1
-            IF (WAMP(IK).GE.WAMP(IKBREAK).AND.DMAX.GE.(WLG_I(IK)/2)) THEN 
+          IF (BRK_CRIT) THEN
+            DO IK=MAX(IKBREAK-NSUM,1),IKBREAK,1
+! Modified by F.A. on Jan. 31, 2017: uses the maximum of CURVSPEC instead of CURV. 
+! this is better for very narrow spectra. 
+            IF (CURVSPEC(IK).GE.CURVSPEC(IKBREAK).AND.DMAX.GE.(WLG_I(IK)/2)) THEN 
               IKBREAK = IK
               END IF
             END DO
-          DMAX = WLG_I(IKBREAK)/2  ! could use a parabolic fit to have a continuous shift of DMAX ..
-          ICEF = DMAX
-          END IF
-        END IF  !end of test  (IS2PARS(3).GT.0.5)
+!
+            DMAX = WLG_I(IKBREAK)/2  
+!
+!  Uses  a weighting by CURVSPEC to have a continuous shift of DMAX ..
+!
+            IKP1=MIN(IKBREAK+1,NK)
+            IKM1=MAX(IKBREAK-1,1)
+            IF (BRK_CRIT_W(IKP1).AND.BRK_CRIT_W(IKM1)) THEN
+              DMAX = (WLG_I(IKBREAK)*CURVSPEC(IKBREAK)  &
+                    +WLG_I(IKP1)*CURVSPEC(IKP1)+WLG_I(IKM1)*CURVSPEC(IKM1)) &
+                    /(2.*(CURVSPEC(IKBREAK)+CURVSPEC(IKM1)+CURVSPEC(IKP1)))
+              END IF
+!	
+            ICEF = DMAX
+            END IF
+          END IF  !end of test  (IS2PARS(3).GT.0.5)
 !
 !  5. creep dissipation 
 !      
-      IF (IS2PARS(12).GT.0) THEN
-        DO IK = 1, NK 
+        IF (IS2PARS(12).GT.0) THEN
+          DO IK = 1, NK 
 !        
 ! The TANH((DMAX-D*WLG_I(IK))/DMAX*C) 
 ! is an ad hoc factor that goes to zero for WLG << DMAX and 1 for WLG >> DMAX 
 ! this should probably be adjusted... 
 !
-          IF (IS2PARS(14)*WLG_I(IK).LT.DMAX) THEN 
-            SMOOTHD=TANH((DMAX-IS2PARS(14)*WLG_I(IK))/(DMAX*IS2PARS(13)))
-            DCREEP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)*CG(IK) & 
+            IF (IS2PARS(14)*WLG_I(IK).LT.DMAX) THEN 
+              SMOOTHD=TANH((DMAX-IS2PARS(14)*WLG_I(IK))/(DMAX*IS2PARS(13)))
+              DCREEP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)                & 
                                         *((2*PI)/WLG_I(IK))**(IS2PARS(15)+1) &
                                         /(CGRATIO(IK)**2*R(IK)**2)           &
                                         *SMOOTHD
-            END IF
-          END DO ! end of loop on IK
-        ENDIF ! end of test (IS2PARS(12).GT.0)
+              END IF
+            S=S+DCREEP*CICE*A
+            END DO ! end of loop on IK
+          ENDIF ! end of test (IS2PARS(12).GT.0)
 !
 !  6. Case of no scattering nor dissipation 
 !      
-     ELSE 
-       DMAX = 0.
-       ICEF = 0. 
-       END IF   ! end of test  (CICE .GT. 0 .AND. ICEDAVE .GT. 0)  
+      ELSE 
+        DMAX = 0.
+        ICEF = 0. 
+        END IF   ! end of test  (CICE .GT. 0 .AND. ICEDAVE .GT. 0)  
 !
 !/T         DO IK = 1, NK
 !/T           DO ITH = 1, NTH
@@ -835,7 +1026,7 @@
       REAL, INTENT(IN)        :: ICEH
       REAL, INTENT(INOUT)  :: WN_I(:), DAMPING(:), CG_I(:) 
 
-!/    
+!/	
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
@@ -1037,15 +1228,21 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/   
-      ! analytic solution, if the FSD is given by P(x) = x^(-1-gam) for icedmin <= x <= icedmax and 0 elsewhere
+!
+! analytic solution, if the FSD is given by P(x) = x^(-1-gam) for icedmin <= x <= icedmax and 0 elsewhere
+!
        REAL                    :: GAM, MR, R, DENOM, ICEDMAXL
        REAL, PARAMETER :: xi = 2
-
+!
        ICEDMAXL=MAX(ICEDMIN*1.01,ICEDMAX)
        GAM = 2 + log(FRAGILITY)/log(2.)
-       W3FSD_DAVE = GAM/(GAM-1) * ( (ICEDMAXL**(-GAM+1)-ICEDMIN**(-GAM+1))&
+       IF (ICEDMIN.EQ.0) THEN
+         W3FSD_DAVE =ICEDMAXL
+       ELSE
+         W3FSD_DAVE = GAM/(GAM-1) * ( (ICEDMAXL**(-GAM+1)-ICEDMIN**(-GAM+1))&
                       /(ICEDMAXL**(-GAM)-ICEDMIN**(-GAM)) )
-
+      END IF
+!
 ! Other possibility: analytical solution to Toyota algorithm (F. Arduin)
 !       MR=log(ICEDMAXL/ICEDMIN)/log(2.)
 !       R=(1-FRAGILITY*xi**2)/(1-FRAGILITY*xi)
@@ -1053,10 +1250,8 @@
 !       W3FSD_DAVE2 = MAX(ICEDMAXL*R* (1-(FRAGILITY*xi)**(MR+1.))/DENOM,ICEDMIN)
 !  WRITE(991,*) ICEDMAX, GAM, W3FSD_DAVE, W3FSD_DAVE2
        END FUNCTION W3FSD_DAVE
-
-
+!
 !/ ------------------------------------------------------------------- /
-!     FUNCTION FUNCD(WN_GUESS, VISC_RP,ICEH)
       FUNCTION FUNCD_FVAL(WN_GUESS, VISC_RP,ICEH,SIGMA)  RESULT(FVAL)
 !/
 !/                  +-----------------------------------+
@@ -1219,23 +1414,24 @@
 
 !/
 !/ ------------------------------------------------------------------- /
-
-      ! Length below which flexural felure cannot occur, flexural rigidity
+!
+! Length below which flexural felure cannot occur, flexural rigidity
+!
       FLEX_RIGID =  YOUNG * ICEH**3 /(12 * (1-POISSON**2))    
       DRAFT = (DENS_ICE/DENS)*ICEH
       DENS_GRAV = DENS*GRAV
       
       ALP = SIGMA**2/GRAV     
-      ! Artificial viscosity (Robinson & Palmer, 1990) 
+!      
+! Artificial viscosity (Robinson & Palmer, 1990) 
+!
       GAMMA = SIGMA * VISC_RP/DENS_GRAV
       C1 = CMPLX(1 - ALP*DRAFT, -1.*GAMMA)
       C5 = FLEX_RIGID/DENS_GRAV
-      
+!      
       FDERIV = 5*C5*WN_GUESS**4 +C1  
-
+!
       END FUNCTION FUNCD_FDERIV      
-      
-      
 !/
 !/ End of module W3SIS1MD -------------------------------------------- /
 !/

@@ -1,6 +1,6 @@
 #!/bin/bash
 # --------------------------------------------------------------------------- #
-# install_ww3_tar: install WAVEWATCH III version 4 from tar archive files     #
+# install_ww3_tar: install WAVEWATCH III version 6 from tar archive files     #
 #                                                                             #
 # -remarks :                                                                  #
 #                                                                             #
@@ -23,7 +23,7 @@
 
   clear
   echo -e '\n\n\n                  ==================================='
-  echo -e '              ------ Installing WAVEWATCH III  v.4 ------'
+  echo -e '              ------ Installing WAVEWATCH III  v.6 ------'
   echo -e '                  =================================== \n'
   echo -e '                  Script for installing package from tar files. '
   echo -e '                  Requires files in same directory as script.\n'
@@ -60,7 +60,7 @@
   clear
   echo -e '\n\n\n'
   echo -e '                  ==================================='
-  echo -e '              ------ Installing WAVEWATCH III  v.4 ------'
+  echo -e '              ------ Installing WAVEWATCH III  v.6 ------'
   echo -e '                  ==================================='
   echo -e '                                     from tar source \n'
 
@@ -1173,11 +1173,12 @@
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/reg_setup.out
 
-  tmp_dirs=`ls`
+  tmp_dirs=`find . -type d`
 
   for dir in $tmp_dirs
   do
-
+    lngth=`echo $dir | wc -c`
+    dir=`echo $dir | cut -c3-$lngth`
     nr_old=0
     nr_new=0
 
@@ -1191,7 +1192,6 @@
 
     cd $main_dir/${src_dir}/regtests/$dir
     files=`ls -p | grep -v '/$'`
-    ndirs=`ls -p | grep '/$'`
     cd $main_dir/regtests/$dir
 
     if [ -z "$files" ]
@@ -1208,7 +1208,7 @@
           nr_new=`expr $nr_new + 1`
           echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
         fi
-        cp -f ../../${src_dir}/regtests/$dir/$file .
+        cp -f $main_dir/${src_dir}/regtests/$dir/$file .
         tmp_files=$all_files
         all_files=`echo -e $tmp_files | sed -e "s/$file//"`
       done
@@ -1226,118 +1226,6 @@
     tnr_old=`expr $tnr_old + $nr_old`
     tnr_new=`expr $tnr_new + $nr_new`
  
-
-    for ndir in $ndirs
-    do
-      lngth=`echo $ndir | wc -c`
-      lngth=`expr $lngth - 2`
-      ndir=`echo $ndir | cut -c1-$lngth`
-      nr_old=0
-      nr_new=0
-
-      if [ ! -d $main_dir/regtests/$dir/$ndir ]
-      then
-        mkdir $main_dir/regtests/$dir/$ndir
-        echo -e "\n Making directory $dir/$ndir ..."
-      else
-        echo -e "\n Checking directory $dir/$ndir ..."
-      fi
-
-      cd $main_dir/${src_dir}/regtests/$dir/$ndir
-      files=`ls -p | grep -v '/$'`
-      sdirs=`ls -p | grep '/$'`
-      cd $main_dir/regtests/$dir/$ndir
-
-      if [ -z "$files" ]
-      then
-        echo -e '  No files found'
-      else
-        for file in $files
-        do
-          if [ -f $file ]
-          then
-            nr_old=`expr $nr_old + 1`
-            echo -e "      Old link $file ..." >> ${main_dir}/tmp/reg_setup.out
-          else
-            nr_new=`expr $nr_new + 1`
-            echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
-          fi
-          cp -f ../../../${src_dir}/regtests/$dir/$ndir/$file .
-          tmp_files=$all_files
-          all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-        done
-        if [ "$nr_old" != '0' ]
-        then
-          echo -e "  This section: $nr_old existing files found."
-        fi
-        if [ "$nr_new" != '0' ]
-        then
-          echo -e "  This section: $nr_new new files copied." 
-        fi
-      fi
-
-      tnr_old=`expr $tnr_old + $nr_old`
-      tnr_new=`expr $tnr_new + $nr_new`
-
-      if [ ! -z "$sdirs" ]
-      then
-        for sdir in $sdirs
-        do
-          lngth=`echo $sdir | wc -c`
-          lngth=`expr $lngth - 2`
-          sdir=`echo $sdir | cut -c1-$lngth`
-          nr_old=0
-          nr_new=0
-
-          if [ ! -d $main_dir/regtests/$dir/$ndir/$sdir ]
-          then
-            mkdir $main_dir/regtests/$dir/$ndir/$sdir
-            echo -e "\n Making directory $dir/$ndir/$sdir..."
-          else
-            echo -e "\n Checking directory $dir/$ndir/$sdir ..."
-          fi
-
-          cd $main_dir/${src_dir}/regtests/$dir/$ndir/$sdir
-          files=`ls -p | grep -v '/$'`
-          cd $main_dir/regtests/$dir/$ndir/$sdir
-
-          if [ -z "$files" ]
-          then
-            echo -e '  No files found'
-          else
-            for file in $files
-            do
-              if [ -f $file ]
-              then
-                nr_old=`expr $nr_old + 1`
-                echo -e "      Old link $file ..." >> ${main_dir}/tmp/reg_setup.out
-              else
-                nr_new=`expr $nr_new + 1`
-                echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
-              fi
-              cp ../../../../${src_dir}/regtests/$dir/$ndir/$sdir/$file .
-              tmp_files=$all_files
-              all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-            done
-            if [ "$nr_old" != '0' ]
-            then
-              echo -e "  This section: $nr_old existing files found."
-            fi
-            if [ "$nr_new" != '0' ]
-            then
-              echo -e "  This section: $nr_new new files copied."
-            fi
-          fi
-
-          tnr_old=`expr $tnr_old + $nr_old`
-          tnr_new=`expr $tnr_new + $nr_new`
-
-        done
-
-      fi
-
-    done
-
   done
 
   cd $main_dir/regtests

@@ -520,7 +520,7 @@
                                  IDX, IXO, IDY, IYO, IBA, NBA, ILOOP, &
                                  IFL, NBOTOT, NPO, IP, IX1, IX2, IY1, &
                                  IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
-                                 IST, NKI, NTHI, NRIC, NRIS,          &
+                                 IST, NKI, NTHI, NRIC, NRIS, I,       &
                                  IDFT, NSTAT, NBT, NLAND, NOSW
 !/PALM     INTEGER            :: IPALM, JPALM
 !/NL2      INTEGER            :: IDEPTH
@@ -611,7 +611,8 @@
 !/IS2      REAL                    :: ISC1, IS2BACKSCAT, IS2C2, IS2C3,&
 !/IS2                                 IS2FRAGILITY, IS2DMIN, IS2DAMP, &
 !/IS2                                 IS2CONC, IS2CREEPB, IS2CREEPC,  &
-!/IS2                                 IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF 
+!/IS2                                 IS2CREEPD, IS2CREEPN, IS2BREAKE,&
+!/IS2                                 IS2WIM1, IS2BREAKF 
 !/IS2      LOGICAL                 :: IS2BREAK, IS2DISP, IS2DUPDATE 
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
@@ -649,7 +650,9 @@
       INTEGER                 :: FLAGTR, IHM
       REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,    &
                                  LICE, XSEED, XR, HSPM, WSM, WSC, STDX,&
-                                 STDY, STDT, ICEHMIN, ICEHINIT, ICEWIND
+                                 STDY, STDT, ICEHMIN, ICEHFAC, ICEHINIT, &
+                                 ICEWIND, ICEHDISP, ICEFDISP, ICEDDISP
+!
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
 !/FLD1      INTEGER                 :: TAILTYPE
@@ -774,7 +777,7 @@
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
-                      ICEWIND, NOLEAP, TRCKCMPR
+                      ICEWIND, ICEHFAC, ICEHDISP, ICEDDISP, ICEFDISP
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
@@ -787,7 +790,8 @@
 !/IS2           NAMELIST /SIS2/ ISC1, IS2C2, IS2C3, IS2BACKSCAT, IS2BREAK,  &
 !/IS2                           IS2DISP, IS2FRAGILITY, IS2CONC, IS2DMIN,    &
 !/IS2                           IS2DAMP, IS2DUPDATE, IS2CREEPB, IS2CREEPC,  &
-!/IS2                           IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF
+!/IS2                           IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF, &
+!/IS2                           IS2WIM1
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -1905,9 +1909,13 @@
       CICE0  = 0.5
       CICEN  = 0.5
       LICE   = 0.
+      ICEHFAC= 1.0  
       ICEHMIN= 0.2  ! the 0.2 value is arbitrary and needs to be tuned.
-      ICEHINIT=0.5  
-      ICEWIND=1.0
+      ICEHINIT= 0.5  
+      ICEWIND= 1.0
+      ICEHDISP= 0.6 ! Prevent from convergence crash in w3dispmd in the presence of ice, should be tuned
+      ICEDDISP= 80
+      ICEFDISP= 2
       GSHIFT = 0.0D0
       PMOVE  = 0.5
       XSEED  = 1.
@@ -1986,11 +1994,12 @@
 !/IS2      IS2CREEPD=0.4
 !/IS2      IS2CREEPN=3.0
 !/IS2      IS2BREAKE=1.
+!/IS2      IS2WIM1=1.
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
 !/IS2      WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2BREAK, IS2DUPDATE, IS2DISP, &
 !/IS2        IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2, IS2C3, IS2CONC, IS2CREEPB,&
-!/IS2        IS2CREEPC, IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF
+!/IS2        IS2CREEPC, IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -2133,8 +2142,12 @@
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
       FICEL  = LICE
       IICEHMIN  = ICEHMIN
+      IICEHFAC  = ICEHFAC
       IICEHINIT  = ICEHINIT
       IICEDISP= ICEDISP
+      IICEHDISP  = ICEHDISP
+      IICEDDISP  = ICEDDISP
+      IICEFDISP  = ICEFDISP
       PMOVE  = MAX ( 0. , PMOVE )
       PFMOVE = PMOVE
 !
@@ -2300,7 +2313,7 @@
 !/IS2          WRITE (NDSO,2948) ISC1, IS2BACKSCAT, IS2BREAK, IS2DUPDATE,  &
 !/IS2                    IS2DISP, IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2,   &
 !/IS2                    IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
-!/IS2                    IS2CREEPN, IS2BREAKE, IS2BREAKF
+!/IS2                    IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -2349,16 +2362,17 @@
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
-                                ICEDISP, ICEWIND, NOLEAP, TRCKCMPR
+                                STDX, STDY, STDT, ICEHMIN, ICEHFAC,   &
+                                ICEHINIT, ICEDISP, ICEWIND, ICEHDISP, &
+                                ICEDDISP,ICEFDISP, NOLEAP, TRCKCMPR
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
                                 XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-                                STDX, STDY, STDT, ICEHMIN, ICEHINIT,  &
-                                ICEDISP, ICEWIND, NOLEAP, TRCKCMPR
-
+                                STDX, STDY, STDT,  ICEHMIN, ICEHFAC,  &
+                                ICEHINIT, ICEDISP, ICEWIND, ICEHDISP, &
+                                ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR
           END IF
 !
 !/FLD1         WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
@@ -3865,7 +3879,11 @@
 !/O2c      J      = LEN_TRIM(FNMPRE)
 !/O2c      OPEN (NDSM,FILE=FNMPRE(:J)//'mapsta.ww3')
 !/O2c      DO IY=NY,1, -1
-!/O2c         WRITE (NDSM,1998) TMPSTA(IY,:)
+!/O2c        DO IX=1,NX
+!/O2c          DO I=1,50
+!/O2c            WRITE (NDSM,1998,ADVANCE='NO') (TMPSTA(IY,IX))
+!/O2c           END DO
+!/O2c         END DO
 !/O2c        END DO
 !/O2c      CLOSE (NDSM)
 !
@@ -3932,6 +3950,43 @@
 !/IS2      IF (IS2DISP) IS2PARS(6)=1.
 !/IS2      IS2PARS(7)=IS2DAMP
 !/IS2      IS2PARS(8)=IS2FRAGILITY
+!/IC2       IC2PARS(4)=IC2REYNOLDS
+!/IC2       IC2PARS(5)=IC2SMOOTH
+!/IC2       IC2PARS(6)=IC2VISC
+!/IC2       IC2PARS(7)=IC2TURBS
+!
+!/IC3       IC3PARS(:)=0.
+!/IC3       IC3PARS(1)=IC3MAXTHK
+!/IC3       IC3PARS(2)=IC2TURB
+!/IC3       IC3PARS(3)=IC2ROUGH
+!/IC3       IC3PARS(4)=IC2REYNOLDS
+!/IC3       IC3PARS(5)=IC2SMOOTH
+!/IC3       IC3PARS(6)=IC2VISC
+!/IC3       IC3PARS(7)=IC2TURBS
+!/IC3       IC3PARS(8)=IC3MAXCNC
+!/IC3       IF (IC3CHENG) IC3PARS(9)=1.0
+!/IC3       IC3PARS(10)=IC3HILIM
+!/IC3       IC3PARS(11)=IC3KILIM
+!/IC3       IF (USECGICE) IC3PARS(12)=1.0
+!/IC3       IC3PARS(13)=IC3HICE
+!/IC3       IC3PARS(14)=IC3VISC
+!/IC3       IC3PARS(15)=IC3DENS
+!/IC3       IC3PARS(16)=IC3ELAS
+!
+!/IC4      IC4PARS(1)=IC4METHOD
+!/IC4      IC4_KI=IC4KI
+!/IC4      IC4_FC=IC4FC
+!
+!/IS2      IS2PARS(1) = ISC1
+!/IS2      IS2PARS(2) = IS2BACKSCAT
+!/IS2      IS2PARS(3)=0.
+!/IS2      IF (IS2BREAK) IS2PARS(3)=1.
+!/IS2      IS2PARS(4)=IS2C2
+!/IS2      IS2PARS(5)=IS2C3
+!/IS2      IS2PARS(6)=0.
+!/IS2      IF (IS2DISP) IS2PARS(6)=1.
+!/IS2      IS2PARS(7)=IS2DAMP
+!/IS2      IS2PARS(8)=IS2FRAGILITY
 !/IS2      IS2PARS(9)=IS2DMIN 
 !/IS2      IS2PARS(10)=0.
 !/IS2      IF (IS2DUPDATE) IS2PARS(10)=1.
@@ -3942,6 +3997,7 @@
 !/IS2      IS2PARS(15)=IS2CREEPN
 !/IS2      IS2PARS(16)=IS2BREAKE
 !/IS2      IS2PARS(17)=IS2BREAKF
+!/IS2      IS2PARS(18)=IS2WIM1
 !
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
@@ -4015,14 +4071,14 @@
 !/REF1! 9.d Read the data
 !/REF1!
 !/REF1!         CALL INA2R ( REFD, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-!/REF1!                       IDFM, RFORM, IDLA, VSC, VOF)
+!/REF1!                       IDFM, RFORM, IDLA, VSC, 0.0)
 !/REF1!
 !/REF1          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
 !/REF1!
 !/REF1!         CALL INA2R ( REFD2, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-!/REF1!                       IDFM, RFORM, IDLA, VSC, VOF)
+!/REF1!                       IDFM, RFORM, IDLA, VSC, 0.0)
 !/REF1          CALL INA2R ( REFS, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-!/REF1                       IDFM, RFORM, IDLA, VSC, VOF)
+!/REF1                       IDFM, RFORM, IDLA, VSC, 0.0)
 !/REF1          DO ISEA=1,NSEA
 !/REF1            IX = MAPSF(ISEA,1)
 !/REF1            IY = MAPSF(ISEA,2)
@@ -4782,7 +4838,7 @@
 !/IS2               ', IS2CONC =',F5.1,', IS2CREEPB =',E11.3,','/   &
 !/IS2               '       IS2CREEPC =',F5.2,', IS2CREEPD =',F5.2, &
 !/IS2               ', IS2CREEPN =',F5.2,', IS2BREAKE =',F5.2,      &
-!/IS2               ', IS2BREAKF =',F5.2,' /')
+!/IS2               ', IS2BREAKF =',F5.2,', IS2WIM1 =',F5.2,' /')
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
@@ -4920,11 +4976,13 @@
                '        NOSW =',I3,', FMICHE =',F6.3,', RWNDC =' ,    &
                         F6.3,', WCOR1 =',F6.2,', WCOR2 =',F6.2,','/   &
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,          &
-                        ',STDX = ' ,F7.2,', STDY =',F7.2,','/         &
+                     ', STDX = ' ,F7.2,', STDY =',F7.2,','/           &
                '        STDT =', F8.2,                                &
-                     ', ICEHMIN = ',F5.2,', ICEHINIT = ',F5.2,','/    &
-               '        ICEDISP = ',L3,', ICEWIND = ',F6.2,           &
-                   ' ,  NOLEAP = ',L3,' , TRCKCMPR = ',L3,' /')
+                     ', ICEHMIN = ',F5.2,', ICEHFAC = ',F5.2,','/     &
+               '        ICEHINIT = ',F5.2,', ICEDISP = ',L3,          &
+                     ', ICEWIND = ',F6.2,', ICEHDISP = ',F5.2,','/    &
+               '        ICEDDISP = ',F5.2,', ICEFDISP = ',F5.2,       &
+                     ', NOLEAP = ',L3,' , TRCKCMPR = ',L3,' /')
 !
  2976 FORMAT ( '  &OUTS P2SF  =',I2,', I1P2SF =',I2,', I2P2SF =',I3,','/&    
                '        US3D  =',I2,', I1US3D =',I3,', I2US3D =',I3,','/&  
@@ -5221,7 +5279,7 @@
  9997 FORMAT (/'  Summary grid statistics : '/                        &
                ' --------------------------------------------------'/ &
                '       Number of longitudes      :',I10/              &
-               '       Number of latitides       :',I10/              &
+               '       Number of latitudes       :',I10/              &
                '       Number of grid points     :',I10/              &
                '       Number of sea points      :',I10,' (',F4.1,'%)'/&
                '       Number of input b. points :',I10/              &
@@ -5230,7 +5288,7 @@
  9998 FORMAT (/'  Summary grid statistics : '/                        &
                ' --------------------------------------------------'/ &
                '       Number of longitudes      :',I10/              &
-               '       Number of latitides       :',I10/              &
+               '       Number of latitudes       :',I10/              &
                '       Number of grid points     :',I10/              &
                '       Number of sea points      :',I10,' (100%)'/    &
                '       Number of input b. points :',I10/              &

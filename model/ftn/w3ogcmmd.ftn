@@ -110,7 +110,7 @@
       USE W3GDATMD,  ONLY: NSEAL, MAPSTA, MAPSF
       USE W3ADATMD,  ONLY: HS, T0M1, THM, BHD, TAUOX, TAUOY, PHIOC, UBA, UBD, &
                            TAUWIX, TAUWIY, TUSX, TUSY, USSX, USSY, WLM, &
-                           PHIBBL,TAUBBL
+                           PHIBBL,TAUBBL, CHARN
       USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
       USE CONSTANTS, ONLY: PI, DERA
 !
@@ -154,6 +154,13 @@
             TMP(1:NSEAL) = 0.0
             WHERE(T0M1 /= UNDEF) TMP=T0M1
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+         ! Charnock coefficient  (-)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OCHA') THEN
+            RLA_OASIS_SND(:,1) = DBLE(CHARN(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
@@ -416,7 +423,6 @@
       REAL(kind=8), DIMENSION(NSEAL,1) :: RLA_OASIS_RCV
       REAL(kind=8), DIMENSION(NSEAL)   :: TMP, MASKT, MASKU, MASKV
       REAL, DIMENSION(1:NSEA)          :: SND_BUFF,RCV_BUFF
-      REAL, DIMENSION(0:NSEA)          :: SND_BUFF1,RCV_BUFF1
 !
 !----------------------------------------------------------------------
 ! * Executable part
@@ -516,22 +522,22 @@
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKU(1:NSEAL)
-                  SND_BUFF1(0:NSEA) = 0.0
+                  SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
                      IB_J = IAPROC + (IB_I-1)*NAPROC
-                     SND_BUFF1(IB_J) = TMP(IB_I)
+                     SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
                   !
-                  CALL MPI_ALLREDUCE(SND_BUFF1(0:NSEA),       &
-                                     RCV_BUFF1(0:NSEA),       &
-                                     NSEA+1,   &
+                  CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                                     RCV_BUFF(1:NSEA),       &
+                                     NSEA,     &
                                      MPI_REAL, &
                                      MPI_SUM,  &
                                      ID_LCOMM, &
                                      IL_ERR)
                   !
                   ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FXN)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
                   !
                ENDIF
             ENDIF
@@ -542,22 +548,22 @@
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKV(1:NSEAL)
-                  SND_BUFF1(0:NSEA) = 0.0
+                  SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
                      IB_J = IAPROC + (IB_I-1)*NAPROC
-                     SND_BUFF1(IB_J) = TMP(IB_I)
+                     SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
                   !
-                  CALL MPI_ALLREDUCE(SND_BUFF1(0:NSEA),       &
-                                     RCV_BUFF1(0:NSEA),       &
-                                     NSEA+1,   &
+                  CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                                     RCV_BUFF(1:NSEA),       &
+                                     NSEA,     &
                                      MPI_REAL, &
                                      MPI_SUM,  &
                                      ID_LCOMM, &
                                      IL_ERR)
                   !
                   ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF1(0:NSEA),MAPSF,FYN)
+                  CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
                   !
                ENDIF
             ENDIF

@@ -42,24 +42,24 @@
 
   ! model grid data structure
   TYPE model_forcing_t
-    CHARACTER(10)               :: water_levels
-    CHARACTER(10)               :: currents
-    CHARACTER(10)               :: winds
-    CHARACTER(10)               :: ice_conc
-    CHARACTER(10)               :: ice_param1
-    CHARACTER(10)               :: ice_param2
-    CHARACTER(10)               :: ice_param3
-    CHARACTER(10)               :: ice_param4
-    CHARACTER(10)               :: ice_param5
-    CHARACTER(10)               :: mud_density
-    CHARACTER(10)               :: mud_thickness
-    CHARACTER(10)               :: mud_viscosity
+    CHARACTER(13)               :: water_levels
+    CHARACTER(13)               :: currents
+    CHARACTER(13)               :: winds
+    CHARACTER(13)               :: ice_conc
+    CHARACTER(13)               :: ice_param1
+    CHARACTER(13)               :: ice_param2
+    CHARACTER(13)               :: ice_param3
+    CHARACTER(13)               :: ice_param4
+    CHARACTER(13)               :: ice_param5
+    CHARACTER(13)               :: mud_density
+    CHARACTER(13)               :: mud_thickness
+    CHARACTER(13)               :: mud_viscosity
   END TYPE model_forcing_t
 !
   TYPE model_assim_t
-    CHARACTER(10)               :: mean
-    CHARACTER(10)               :: spec1d
-    CHARACTER(10)               :: spec2d
+    CHARACTER(13)               :: mean
+    CHARACTER(13)               :: spec1d
+    CHARACTER(13)               :: spec2d
   END TYPE model_assim_t
 !
   TYPE model_resource_t
@@ -71,7 +71,7 @@
   END TYPE model_resource_t
 !
   TYPE model_grid_t 
-    CHARACTER(10)               :: name
+    CHARACTER(13)               :: name
     TYPE(model_forcing_t)       :: forcing
     TYPE(model_assim_t)         :: assim
     TYPE(model_resource_t)      :: resource
@@ -102,7 +102,7 @@
   END TYPE input_assim_t
 !
   TYPE input_grid_t
-    CHARACTER(10)               :: name
+    CHARACTER(13)               :: name
     TYPE(input_forcing_t)       :: forcing
     TYPE(input_assim_t)         :: assim
   END TYPE input_grid_t
@@ -111,7 +111,7 @@
 
   ! output TYPE structure
   TYPE point_t
-    CHARACTER(10)               :: name
+    CHARACTER(13)               :: name
     CHARACTER(64)               :: file
   END TYPE point_t
 !

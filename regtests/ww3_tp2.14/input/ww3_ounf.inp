@@ -11,7 +11,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- WND CUR WLV ICE HS DIR T02 T01 T0M1 CGE PNR DTD UST CHA FAW WCM ABR UBR BED TBB TWO FOC BHD
+ HS FP DIR DP CHA UST DPT CUR WND ICE IC1 IC5 TWI
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
@@ -30,7 +30,7 @@ $ IX and IY ranges [regular:IX NX IY NY DX DY, unstructured:IP NP DP DP]
 $
 ww3.
 6
-1 102 1 118
+1 10000 1 10000
 $
 $ For each field and time a new file is generated with the file name
 $ ww3.date_xxx.nc , where date is a conventional time indicator with S3

@@ -70,7 +70,7 @@
 
       implicit none
 
-      integer (SCRIP_i4) :: nthreads=1  ! Number of parallel threads
+      integer (SCRIP_i4) :: nthreads=2  ! Number of parallel threads
 
 !............variables that needed to be moved from "local level" to
 !............ "module level" in order that we can clear them later.
@@ -277,9 +277,9 @@ C$OMP& srch_center_lon_find_adj_cell)
      &     opp_grid_num,        ! Index of opposite grid (2,1)
      &     maxrd_cell,          ! cell with the max. relative difference
                                 ! in area
-     &     progint              ! Intervals at which progress is to be
+     &     progint,             ! Intervals at which progress is to be
                                 ! printed
-     &     ,icount              ! for counting
+     &     icount               ! for counting
 
       real (SCRIP_r8) ::
      &     norm_factor          ! factor for normalizing wts
@@ -1160,7 +1160,8 @@ C$OMP END PARALLEL
          !***
 
          ncorners = grid1_corners
-         nalloc = ncorners+2
+         nalloc = min(ncorners + 2,
+     &                size(grid1_corner_lat(:,1)))
          allocate (cell_corner_lat(nalloc),
      &        cell_corner_lon(nalloc))
 
@@ -1192,7 +1193,8 @@ C$OMP END PARALLEL
          !***
 
          ncorners = grid2_corners
-         nalloc = ncorners + 2
+         nalloc = min(ncorners + 2, 
+     &                size(grid2_corner_lat(:,1)))
          allocate (cell_corner_lat(nalloc),
      &        cell_corner_lon(nalloc))
 
@@ -1452,11 +1454,11 @@ C$OMP END PARALLEL
                   srch_success = .false.
                   if (search) then
 
-                     !***
-                     !*** Offset the start point in ever increasing 
-                     !*** amounts until we are able to reliably locate 
-                     !*** the point in a cell of grid2. Inability to locate 
-                     !*** the point causes the offset amount to increase
+                  !***
+                  !*** Offset the start point in ever increasing 
+                  !*** amounts until we are able to reliably locate 
+                  !*** the point in a cell of grid2. Inability to locate
+                  !*** the point causes the offset amount to increase
 
                      it = 0
                      do while (.not. srch_success) 
@@ -1523,10 +1525,10 @@ C$OMP END PARALLEL
 
                   if (srch_success) then 
 
-                     !***
-                     !*** First setup local copy of oppcell with room for
-                     !*** adding degenerate edges
-                     !***
+                  !***
+                  !*** First setup local copy of oppcell with room for
+                  !*** adding degenerate edges
+                  !***
 
                      if (grid_num .eq. 1) then
                         ncorners_opp = grid2_corners
@@ -1564,7 +1566,8 @@ C$OMP END PARALLEL
                      endif
                      
                      !***
-                     !*** First see if the segment end is in the same cell
+                     !*** First see if the segment end is 
+                     !*** in the same cell
                      !***
 
                      call ptincell(endlat1,endlon1, oppcell_add, 
@@ -1679,12 +1682,12 @@ C$OMP END PARALLEL
                      if (lcoinc .and. .not. bndedge  !NRL
      &                   .and. intedge /= 0) then    !NRL
 
-                        !***
-                        !*** Segment is coincident with edge of other grid
-                        !*** which means it could belong to one of 2 cells
-                        !*** Choose the cell such that edge that is 
-                        !*** coincident with the segment is in the same
-                        !*** dir as the segment
+                     !***
+                     !*** Segment is coincident with edge of other grid
+                     !*** which means it could belong to one of 2 cells
+                     !*** Choose the cell such that edge that is 
+                     !*** coincident with the segment is in the same
+                     !*** dir as the segment
 
                         i = intedge
                         inext = mod(i,ncorners_opp)+1
@@ -2131,7 +2134,7 @@ C$OMP END CRITICAL(block4)
       !*** MAJOR ASSUMPTION HERE IS THAT CELL_CORNER_LAT AND 
       !*** CELL_CORNER_LON HAVE ROOM TO GROW
       !***
-
+      if (ncorners .ge. nalloc) return ! ** * No room to grow
 
       pcorner = 0
       npcorners = 0
@@ -2213,14 +2216,14 @@ C$OMP END CRITICAL(block4)
      &     seg_grid_id    ! ID of grid that intersecting segment is from
 
       real (SCRIP_r8), intent(in) :: 
-     &     beglat, beglon,     ! beginning lat/lon endpoints for segment
-     &     endlat, endlon      ! ending    lat/lon endpoints for segment
+     &     beglat, beglon,! beginning lat/lon endpoints for segment
+     &     endlat, endlon ! ending    lat/lon endpoints for segment
 
       real (SCRIP_r8), dimension(2), intent(inout) :: 
-     &     begseg              ! begin lat/lon of full segment
+     &     begseg         ! begin lat/lon of full segment
 
       integer (SCRIP_i4), intent(in) ::
-     &     begedge             ! edge that beginning point is on (can be 0)
+     &     begedge        ! edge that beginning point is on (can be 0)
 
       integer (SCRIP_i4), intent(in) ::
      &     cell_id             ! cell to intersect with
@@ -4222,7 +4225,7 @@ C$OMP END CRITICAL(block6)
     !*** IF POINT IS IN POLAR REGION, CHECK IN A TRANSFORMED SPACE
     !*** HOWEVER, POINTS THAT ARE PRACTICALLY AT THE POLE CANNOT
     !*** BE CORRECTLY LOCATED THIS WAY BECAUSE THE POLE IS A SINGULARITY
-    !*** AND CONTAINMENT IN ANY CELL INCIDENT ON THE POLE WILL GIVE US A 
+    !*** AND CONTAINMENT IN ANY CELL INCIDENT ON THE POLE WILL GIVE US A
     !*** POSITIVE ANSWER. FOR THESE POINTS REVERT TO THE LATLON SPACE
     !***
 
@@ -4679,7 +4682,7 @@ C$OMP END CRITICAL(block6)
     !*** SPACE
     !*** HOWEVER, POINTS THAT ARE PRACTICALLY AT THE POLE CANNOT
     !*** BE CORRECTLY LOCATED THIS WAY BECAUSE THE POLE IS A SINGULARITY
-    !*** AND CONTAINMENT IN ANY CELL INCIDENT ON THE POLE WILL GIVE US A 
+    !*** AND CONTAINMENT IN ANY CELL INCIDENT ON THE POLE WILL GIVE US A
     !*** POSITIVE ANSWER. FOR THESE POINTS REVERT TO THE LATLON SPACE
     !***
 
@@ -5335,7 +5338,7 @@ C$OMP END CRITICAL(block6)
                cross_product = vec1_y*vec2_x - vec2_y*vec1_x
 
                !***
-               !***   if the cross product for a side is zero, the point 
+               !***   if the cross product for a side is zero, the point
                !***   lies exactly on the side or the side is degenerate
                !***   (zero length).  if degenerate, set the cross 
                !***   product to a positive number.  

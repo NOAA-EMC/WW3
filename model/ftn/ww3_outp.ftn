@@ -1126,7 +1126,7 @@
 !/STAB2      REAL                    :: STAB0, STAB,  COR1, COR2, ASFAC,     &
 !/STAB2                                 THARG1, THARG2
       REAL, SAVE              :: HSMIN  = 0.05
-      REAL                    :: WN(NK), CG(NK)
+      REAL                    :: WN(NK), CG(NK), R(NK)
       REAL                    :: E(NK,NTH), E1(NK), APM(NK),           &
                                  THBND(NK), SPBND(NK), A(NTH,NK),      &
                                  WN2(NTH,NK)
@@ -1694,9 +1694,8 @@
 !/IS2                     CG_ICE=CG
 !/IS2                     END IF
 !
-
 !/IS2                  CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, &
-!/IS2                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE)    
+!/IS2                              IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)    
                   END IF
 !
 !/XXX                CALL W3SXXX

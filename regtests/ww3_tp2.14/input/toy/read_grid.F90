@@ -41,8 +41,8 @@
   !
   CALL hdlerr( NF90_INQ_VARID(il_file_id, 'longitude' , il_lon_id), __LINE__,__FILE__ )
   CALL hdlerr( NF90_INQ_VARID(il_file_id, 'latitude' , il_lat_id), __LINE__,__FILE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'clo_t' , il_clo_id), __LINE__,__FILE__ )
-  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'cla_t' , il_cla_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'clo_f' , il_clo_id), __LINE__,__FILE__ )
+  CALL hdlerr( NF90_INQ_VARID(il_file_id, 'cla_f' , il_cla_id), __LINE__,__FILE__ )
   CALL hdlerr( NF90_INQ_VARID(il_file_id, 'srf' , il_srf_id), __LINE__,__FILE__ )
   CALL hdlerr( NF90_INQ_VARID(il_file_id, 'imask_t' , il_indice_id), __LINE__,__FILE__ )
   !

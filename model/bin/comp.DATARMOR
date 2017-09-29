@@ -73,13 +73,12 @@
 # 2.b.1 Build options and determine compiler name
 
   # compilation options
-  opt="-c -O0 -assume byterecl -convert big_endian -module $path_m"
-  opt="-p -pg -g $opt"
+  opt="-c -xCORE-AVX2 -O3 -fno-alias -fp-model precise -assume byterecl -convert big_endian -no-fma -ip -module $path_m"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp='ifort -lmpi'
+    comp=ifort
   else
     comp=ifort
   fi
@@ -87,7 +86,7 @@
   # open mpi implementation
   if [ "$omp_mod" = 'yes' ]
   then
-    opt="$opt -openmp"
+    opt="$opt -qopenmp"
   fi
 
   # oasis coupler include dir

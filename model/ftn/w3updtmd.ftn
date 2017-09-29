@@ -274,7 +274,7 @@
 !/CRT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/CRT2      RD2    = 1. - RD
-!/OASIS      RD     = 1.
+!/OASOCM     RD     = 1.
 !
 !/T      WRITE (NDST,9000) DT0N, DT0T, RD
 
@@ -538,7 +538,7 @@
 !/WNT1      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/WNT2      RD     = DT0T / MAX ( 1.E-7 , DT0N )
 !/WNT2      RD2    =  1. - RD
-!/OASIS      RD     = 1.
+!/OASACM     RD     = 1.
 !
 !/T      WRITE (NDST,9000) DT0N, DT0T, RD
 !
@@ -1091,7 +1091,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /   
-      USE W3GDATMD, ONLY: NSEA, NSEA, MAPSF
+      USE W3GDATMD, ONLY: NSEA, NSEA, MAPSF, IICEHMIN, IICEHFAC
       USE W3WDATMD, ONLY: TIME, TIC1, ICEH
       USE W3IDATMD, ONLY: TI1, ICEP1, FLIC1
 !/
@@ -1120,7 +1120,7 @@
 !
         IX        = MAPSF(ISEA,1)
         IY        = MAPSF(ISEA,2)
-        ICEH(ISEA) = ICEP1(IX,IY)
+        ICEH(ISEA) = MAX(IICEHMIN,IICEHFAC*ICEP1(IX,IY))
       END DO
 !
       RETURN

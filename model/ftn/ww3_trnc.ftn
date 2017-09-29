@@ -472,7 +472,7 @@
 !/S      CALL STRACE (IENT, 'W3EXNC')
 !
 
-! 1.1 Sets the date 
+! 1.1 Sets the date as ISO8601 convention
       ! S3 defines the number of characters in the date for the filename
       ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
       ! Setups min and max date format
@@ -483,12 +483,12 @@
       S5=S3-8
       S4=S3
       OLDTIMEID=TIMEID
-      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSS'
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
       IF (S3.EQ.10) THEN 
-        S4=S4+1 ! T between day and minutes
-        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
+        S4=S4+2 ! add chars for ISO8601 : day T hours Z
+        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
-               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5)))
+               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'

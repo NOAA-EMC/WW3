@@ -499,7 +499,7 @@
 !      VISC       Real    I  Eddy viscosity (m2/sec)
 !      H_WDEPTH   Real    I  Water depth
 !      SIGMA      R.A.    I  Radian Wave frequency
-!      K_SOLUTION R.A.    O  Frequency
+!      K_SOLUTION R.A.    O  Wave number
 !      CG         R.A.    O  Group velocity 
 !      ALPHA      R.A.    O  Exponential decay rate of energy 
 !      NK         Int.    I  Number of frequencies
@@ -552,7 +552,7 @@
       USE CONSTANTS, ONLY: TPI
       USE W3ODATMD,  ONLY: NDSE
       USE W3SERVMD,  ONLY: EXTCDE
-      USE W3GDATMD, ONLY: NK
+      USE W3GDATMD, ONLY: NK, IICEHDISP, IICEDDISP, IICEFDISP, IICEHMIN
       ! USE W3DISPMD,  ONLY: WAVNU1
 !/S      USE W3SERVMD,  ONLY: STRACE
 !/
@@ -615,8 +615,8 @@
               ITER = 0
               DF   = 999.
 
-              IF ( (H_ICE.LT.0.4).OR.(H_WDEPTH.LT.80) ) THEN
-                 FERROR=2*FERRORMAX
+              IF ( (H_ICE.LT.IICEHDISP).OR.(H_WDEPTH.LT.IICEDDISP) ) THEN
+                 FERROR=IICEFDISP*FERRORMAX
               ELSE
                  FERROR=FERRORMAX
               ENDIF
@@ -662,7 +662,7 @@
         GET_CG     = .TRUE.
       CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,K_SOLUTION(IK), &
            GET_CG,FDUMMY,CG(IK),ALPHA(IK))
-END DO 
+      END DO 
 !
 !/T38      WRITE(*,*)'FORWARD OUT: K_SOLUTION,CG,ALPHA = ', &
 !/T38                          K_SOLUTION,CG,ALPHA

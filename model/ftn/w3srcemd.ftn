@@ -55,8 +55,8 @@
                           REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
                           TRNY, BERG, FPI, DTDYN, FCUT, DTG, TAUWX,   &
                           TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
-                          TAUWNY, PHIAW, CHARN, PHIOC, WHITECAP, D50, &
-                          PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,     &
+                          TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
+                          D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
                           PHICE, COEF) 
 !/
 !/                  +-----------------------------------+
@@ -64,7 +64,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Dec-2015 |
+!/                  | Last update :         30-Jul-2017 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -110,6 +110,7 @@
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    27-Aug-2015 : Adding inputs to function W3SIS2    ( version 5.10 )
 !/    13-Dec-2015 : Exact integration of ice terms      ( version 5.10 )
+!/    30-Jul-2017 : Adds TWS in interface               ( version 6.XX )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -345,7 +346,7 @@
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
                           FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
-                          ICE100WIND
+                          ICE100WIND, IICESMOOTH
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
@@ -420,7 +421,7 @@
                                  SPEC(NSPEC), ALPHA(NK), USTAR,       &
                                  USTDIR, FPI, TAUOX, TAUOY,           &
                                  TAUWX, TAUWY, PHIAW, PHIOC, PHICE,   &
-                                 CHARN, BEDFORM(3), PHIBBL,           &
+                                 CHARN, TWS, BEDFORM(3), PHIBBL,      &
                                  TAUBBL(2), TAUICE(2), WHITECAP(4),   &
                                  TAUWIX, TAUWIY, TAUWNX, TAUWNY,      &
                                  ICEF
@@ -436,8 +437,10 @@
 !/NNT      INTEGER, SAVE           :: NDSD = 89, NDSD2 = 88, J
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
-      REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT
-      REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2
+      REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT,    &
+                                 SMOOTH_ICEDISP
+      REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2,&
+                                 R(NK)
       DOUBLE PRECISION        :: ATT
 !/ST1      REAL                    :: FH1, FH2
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
@@ -568,6 +571,7 @@
       NSTEPS = 0
       PHIAW  = 0.
       CHARN  = 0.
+      TWS    = 0.
       PHINL  = 0.
       PHIBBL = 0.
       TAUWIX = 0.
@@ -611,6 +615,7 @@
 !/ST3      CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS, WNMEAN, &
 !/ST3                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
 !/ST3                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST3      TWS = 1./FMEANWS
 !/ST4      TAUWX=0.
 !/ST4      TAUWY=0.
 !/ST4      IF ( FIRST ) THEN
@@ -628,6 +633,7 @@
 !/ST4      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
 !/ST4                   AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
 !/ST4                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+!/ST4      TWS = 1./FMEANWS
 !/ST6      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)  
 !
 ! 1.c2 Stores the initial data
@@ -643,7 +649,7 @@
 !/FLX3                                          USTAR, USTDIR, Z0, CD )
 !/FLX4      CALL W3FLX4 ( ZWND, U10ABS, U10DIR, USTAR, USTDIR, Z0, CD )
 !
-! 1.e Prepare cut-off 
+! 1.e Prepare cut-off beyond which the tail is imposed with a power law
 !
 !/ST0      FHIGH  = SIG(NK)
 !/ST1      FH1    = FXFM * FMEAN
@@ -655,7 +661,7 @@
 !/ST4! Introduces a Long & Resio (JGR2007) type dependance on wave age  
 ! !/ST4      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
 !/ST4      FAGE   = 0.
-!/ST4      FHIGH  = MAX( (FFXFM + FAGE ) * MAX(FMEAN1,FMEANWS),FFXPM / USTAR)
+!/ST4      FHIGH  = MAX( (FFXFM + FAGE ) * MAX(FMEAN1,FMEANWS), FFXPM / USTAR)
 !/ST4      FHIGI  = FFXFA * FMEAN1
 !/ST6      FHIGH  = MAX (FXFM * FMEAN, FXPM / USTAR)
 !
@@ -893,13 +899,7 @@
              / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
            PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
              / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
-           IF (VSIN(IS).GT.0.) THEN 
-             WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
-           ELSE
-           ! computes the upward energy flux (counted > 0 upward)
-             CHARN = CHARN - (VSIN(IS))* DT * FACTOR                    &
-              / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
-             END IF
+           IF (VSIN(IS).GT.0.) WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
            HSTOT = HSTOT + SPEC(IS) * FACTOR
            END DO
          END DO
@@ -1098,52 +1098,61 @@
 
       IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
 
-        IF ( INFLAGS2(-6)) THEN 
-          ICECOEF2 = ICEP2(IX,IY)
-        ELSE 
-          ICECOEF2 = 0.
-          END IF
+         IF (IICEDISP) THEN 
+           ICECOEF2 = 1E-6
+           CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
+                                        SIG,WN_R,CG_ICE,ALPHA_LIU)
 !
-        IF (IICEDISP) THEN
-          CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
-                                       SIG,WN_R,CG_ICE,ALPHA_LIU)
-         ELSE
-            WN_R=WN1
-            CG_ICE=CG1
-            END IF
-!
+      IF (IICESMOOTH) THEN
+!/IS2   DO IK=1,NK
+!/IS2     SMOOTH_ICEDISP=0. 
+!/IS2     IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
+!/IS2       SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13))) 
+!/IS2       END IF
+!/IS2     WN_R(IK)=WN1(IK)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
+!/IS2     END DO
+        END IF
+     ELSE
+      WN_R=WN1
+      CG_ICE=CG1
+     END IF
+
+     R(:)=1 ! In case IC2 is defined but not IS2
+
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
-!/IC2      CALL W3SIC2 ( SPEC,DEPTH, ICEH, CG1,  WN1, IX, IY, VSIC, VDIC ,WN_R, CG_ICE,ALPHA_LIU)
+!/IS2      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
+!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
+
+!/IC2                CALL W3SIC2 ( SPEC, DEPTH, ICEH ,CG1,  WN1, IX, IY, VSIC, VDIC, WN_R, &
+!/IC2                              CG_ICE, ALPHA_LIU, R, ICEF)
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC4      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !
 !/IS1      CALL W3SIS1 ( SPEC, ICE, VSIR )
-!/IS2      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
-!/IS2                              VSIR, VDIR, VDIR2, WN1, CG1,WN_R, CG_ICE )
-      SPEC2 = SPEC
+   SPEC2 = SPEC
 !
-           TAUICE(:) = 0.
-           PHICE = 0.
-           DO IK=1,NK
-             IS = 1+(IK-1)*NTH 
+   TAUICE(:) = 0.
+   PHICE = 0.
+   DO IK=1,NK
+     IS = 1+(IK-1)*NTH 
 !
 ! First part of ice term integration: dissipation part ATT. 
 !
-             ATT=1.
+     ATT=1.
 !/IC1             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC2             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC3             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC4             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IS1             ATT=ATT*EXP(VDIR(IS)*DTG)
 !/IS2             IF (IS2PARS(2).EQ.0) THEN 
-!/IS2               ATT=ATT*EXP((VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
+!/IS2               ATT=ATT*EXP((ICE*VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2             ELSE 
 !
 ! Second part of ice term integration: scattering (only if there is back-scattering, i.e. IS2PARS(2).NE.0 ) 
 !
 !/IS2               SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-!/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*EXP(VDIR2(IS)*DTG)*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
+!/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*EXP(ICE*VDIR2(IS)*DTG)*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
 !/IS2               ATT = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
 !/IS2! Warning, the following line is only correct for isotropic diffusion               
 !/IS2! in that case the spectrum relaxes exponentially to an isotropic spectrum              
@@ -1226,6 +1235,7 @@
       FIRST  = .FALSE.
       IF (IT.EQ.0) SPEC = SPECINIT
 !
+
       RETURN
 !
 ! Formats

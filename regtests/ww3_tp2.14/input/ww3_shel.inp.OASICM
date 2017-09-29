@@ -5,18 +5,18 @@ $ Define input to be used with F/T/C flag for use or nor or coupling and
 $ T/F flag for definition as a homogeneous field.
 $
 $ Include ice and mud parameters only if IC1/2/3/4 used :
-   F F     Ice parameter 1
+   C F     Ice parameter 1
    F F     Ice parameter 2
    F F     Ice parameter 3
    F F     Ice parameter 4
-   F F     Ice parameter 5
+   C F     Ice parameter 5
    F F     Mud parameter 1
    F F     Mud parameter 2
    F F     Mud parameter 3
    F F     Water levels
    F F     Currents
-   C F     Winds
-   F       Ice concentrations
+   F F     Winds
+   C       Ice concentrations
    F       Assimilation data : Mean parameters
    F       Assimilation data : 1-D spectra
    F       Assimilation data : 2-D spectra
@@ -69,7 +69,7 @@ $ Output request flags identifying fields.
 $
 N
 $
-HS FP DIR DP CHA UST DPT CUR WND
+HS FP DIR DP CHA UST DPT CUR WND ICE IC1 IC5 TWI
 $
 $----------------------------------------------------------------
 $
@@ -126,14 +126,14 @@ $       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
 $       - Atmospheric model : ACHA AHS TP (or FP) FWS
 $       - Ice model : IC5 TWI
 $
- ACHA
+ IC5
 $
 $   - Received fields by ww3:
 $       - Ocean model : SSH CUR
 $       - Atmospheric model : WND
 $       - Ice model : ICE IC1 IC5
 $
- WND
+ ICE IC1 IC5
 $
 $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID

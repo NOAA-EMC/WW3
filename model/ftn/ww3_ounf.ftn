@@ -7,7 +7,7 @@
 !/                  |           F. Ardhuin              |
 !/                  |           M. Accensi              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Aug-2015 |
+!/                  | Last update :         01-May-2017 |
 !/                  +-----------------------------------+
 !/
 !/    17-Mar-2010 : Creation                            ( version 3.14_SHOM )
@@ -21,6 +21,7 @@
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    10-Jan-2017 : Changes for US3D and USSP output    ( version 6.01 )
+!/    01-May-2017 : Adds directional MSS parameters     ( version 6.XX )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -110,7 +111,8 @@
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
                           TAUOX, TAUOY, TAUWIX,                        &
                           TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
-                          USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,   &
+                          USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
+                          MSCD, CHARN, TWS,                            &
                           TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
                           T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
                           CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
@@ -690,7 +692,7 @@
         COORDTYPE=2
       ENDIF
 
-! 1.2 Sets the date 
+! 1.2 Sets the date as ISO8601 convention 
       ! S3 defines the number of characters in the date for the filename
       ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDHH
       ! Setups min and max date format
@@ -701,12 +703,12 @@
       S5=S3-8
       S4=S3
       OLDTIMEID=TIMEID
-      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHH'
+      ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHZ'
       IF (S3.EQ.10) THEN 
-        S4=S4+1 ! T between day and minutes
-        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,')'
+        S4=S4+2 ! add chars for ISO8601 : day T hours Z
+        WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
         WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
-               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5)))
+               FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
       ELSE IF (S3.EQ.8) THEN
         WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
@@ -1642,6 +1644,20 @@
               vmin = 0
               vmax = 10000
 !
+            ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
+              FSC    = 0.002
+              UNITS  = 's'
+              ENAME  = '.fws'
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TWS(1:NSEA), MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='fws'
+              varnl(1)='Wind_sea_mean_period_T0M1'
+              varns(1)='Wind_sea_mean_period_T0M1'
+              varng(1)='Wind_sea_mean_period_T0M1'
+              varnc(1)=''
+              vmin = 0
+              vmax = 32000
+!
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 10.
               FSC3    = 1.
@@ -1796,7 +1812,7 @@
               varng(1)='eastward_surface_stokes_drift'
               varng(2)='northward_surface_stokes_drift'
               varnc(1)='uss=sqrt(uuss**2+vuss**2)'
-              varnc(2)='uss=sqrt(uuss**2+vuss**2)'
+              WRITE(varnc(2),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
               vmin = -9900 
               vmax =  9900
 !
@@ -2070,14 +2086,14 @@
               NFIELD=2
               varnm(1)='mssx'
               varnm(2)='mssy'
-              varnl(1)='eastward mean square slope'
-              varnl(2)='northward mean square slope'
-              varns(1)='eastward_mean_square_slope'
-              varns(2)='northward_mean_square_slope'
-              varng(1)='eastward_mean_square_slope'
-              varng(2)='northward_mean_square_slope'
+              varnl(1)='x-direction mean square slope'
+              varnl(2)='y-direction mean square slope'
+              varns(1)='x_mean_square_slope'
+              varns(2)='y_mean_square_slope'
+              varng(1)='x_mean_square_slope'
+              varng(2)='y_mean_square_slope'
               varnc(1)='mss=mssx+mssy'
-              varnc(2)='mss=mssx+mssy'
+              WRITE(varnc(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
               vmin = 0 
               vmax = 30000
 !
@@ -2100,6 +2116,44 @@
               varnc(2)='msc=mscx+mscy'
               vmin = 0 
               vmax = 30000
+!
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
+              FSC    = 0.1
+              UNITS  = 'degree'
+              ENAME  = '.msd'
+              DO ISEA=1, NSEA
+                IF ( MSSD(ISEA) .NE. UNDEF )  THEN
+                  MSSD(ISEA) = MOD ( 630. - RADE*MSSD(ISEA) , 180. )
+                  END IF
+                END DO
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSSD   , MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='mssd'
+              varnl(1)='x direction for mss'
+              varns(1)='sea_surface_wave_dominant_mean_square_slope_direction'
+              varng(1)='sea_surface_wave_dominant_mean_square_slope_direction'
+              WRITE(varnc(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              vmin = 0
+              vmax = 3600
+!
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
+              FSC    = 0.1
+              UNITS  = 'degree'
+              ENAME  = '.mcd'
+              DO ISEA=1, NSEA
+                IF ( MSCD(ISEA) .NE. UNDEF )  THEN
+                  MSCD(ISEA) = MOD ( 630. - RADE*MSCD(ISEA) , 180. )
+                  END IF
+                END DO
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, MSCD   , MAPSF, X1 )
+              NFIELD=1
+              varnm(1)='mscd'
+              varnl(1)='x direction for msc'
+              varns(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+              varng(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
+              varnc(1)=''
+              vmin = 0
+              vmax = 3600
 !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
               FSC    = 0.1

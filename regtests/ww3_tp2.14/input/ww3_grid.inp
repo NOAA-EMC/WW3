@@ -239,12 +239,12 @@ $     connect flag. If this flag is true, and the present and previous
 $     point are on a grid line or diagonal, all intermediate points
 $     are also defined as boundary points.
 $
-$      102 86   F
-$      102 118  T
-$        2 118  T
-$        2 2  T
-$      102 2  T
-$      102 11  T
+      103 86   F
+      103 119  T
+        1 119  T
+        1 1  T
+      103 1  T
+      103 11  T
 $
 $  Close list by defining point (0,0) (mandatory)
 $

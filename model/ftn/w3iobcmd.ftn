@@ -230,7 +230,7 @@
 !/RTD        REAL, ALLOCATABLE   :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
       REAL, ALLOCATABLE       :: TMPSPC(:,:)
       LOGICAL                 :: FLOK
-      CHARACTER(LEN=16)       :: FILEN
+      CHARACTER(LEN=18)       :: FILEN
       CHARACTER(LEN=10)       :: VERTST
       CHARACTER(LEN=32)       :: IDTST
 !/

@@ -10,6 +10,8 @@
 #         selecting coupling atmospheric model with the coupler OASIS3-mct  #
 #   !/COU !/OASIS !/OASOCM                                                  #
 #         selecting coupling ocean model with the coupler OASIS3-mct        #
+#   !/COU !/OASIS !/OASICM                                                  #
+#         selecting coupling ice model with the coupler OASIS3-mct          #
 #                                                                           #
 # Prerequisites :                                                           #
 #                                                                           #
@@ -40,6 +42,7 @@
 # - User must select one of available switch inputs:                        #
 #       switch_OASACM : for coupling atmospheric model with oasis           #
 #       switch_OASOCM : for coupling ocean model with oasis                 #
+#       switch_OASICM : for coupling ice model with oasis                   #
 #                                                                           #
 # - Test case input (default):                                              #
 #   * ww3_shel.inp :                                                        #
@@ -65,14 +68,16 @@
 #       - remark : define a makefile with the same ww3 comp&link extension  #
 #                                                                           #
 #  Sample run_test commands :                                               #
-#   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test -C -c mpt -s OASACM -o netcdf -w work_OASACM -p mpirun    #
-#                 -n 4 ../ ww3_tp2.14                                       #
-#  ./bin/run_test -C -c Altix -s OASOCM -o netcdf -w work_OASOCM -p mpirun  #
-#                 -n 4 ../ ww3_tp2.14                                       #
+#   (Note: Altix and mpirun commands differ by local system)                #
+#  ./bin/run_test -C OASIS -c Altix -s OASACM -o netcdf -w work_OASACM      #
+#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
+#  ./bin/run_test -C OASIS -c Altix -s OASOCM -o netcdf -w work_OASOCM      # 
+#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
+#  ./bin/run_test -C OASIS -c Altix -s OASICM -o netcdf -w work_OASICM      #
+#                 -p mpirun -n 4 ../ ww3_tp2.14                             #
 #                                                                           #
 #                                             M. Accensi, Feb 2015          #
 #                                             Ifremer Institute             #
-#                                                   Last Mod : Jun 2016     #
+#                                                   Last Mod : Aug 2017     #
 #                                                                           #
 #############################################################################

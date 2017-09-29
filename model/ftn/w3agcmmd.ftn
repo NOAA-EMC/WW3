@@ -100,7 +100,7 @@
 !
       USE W3OACPMD,  ONLY: ID_OASIS_TIME, IL_NB_SND, SND_FLD, CPL_OASIS_SND
       USE W3GDATMD,  ONLY: NSEAL, NSEA 
-      USE W3ADATMD,  ONLY: CX, CY, CHARN, HS, FP0
+      USE W3ADATMD,  ONLY: CX, CY, CHARN, HS, FP0, TWS
       USE W3ODATMD,  ONLY: UNDEF, NAPROC, IAPROC
 !
 !/ ------------------------------------------------------------------- /
@@ -144,7 +144,7 @@
          !
          ! Charnock Coefficient (-)
          ! ---------------------------------------------------------------------
-         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__CHA') THEN
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ACHA') THEN
             TMP(1:NSEAL) = 0.0
             WHERE(CHARN /= UNDEF) TMP=CHARN
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
@@ -178,6 +178,16 @@
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
          !
+         ! Wind sea Mean period (s)
+         ! ---------------------------------------------------------------------
+         IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FWS') THEN
+            TMP(1:NSEAL) = 0.0
+            WHERE(TWS /= UNDEF) TMP=TWS
+            RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+            CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+         ENDIF
+         !
+
       ENDDO
 !
 !/ ------------------------------------------------------------------- /
@@ -305,7 +315,7 @@
                   !
                   CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
                                      RCV_BUFF(1:NSEA),       &
-                                     NSEA,   &
+                                     NSEA,     &
                                      MPI_REAL, &
                                      MPI_SUM,  &
                                      ID_LCOMM, &

@@ -37,9 +37,9 @@ $ for massively parallel computations. Only IOSTYP = 0 requires a true
 $ parallel file system like GPFS.
 $
 $    IOSTYP = 0 : No data server processes, direct access output from
-$                 each process (requirese true parallel file system).
+$                 each process (requires true parallel file system).
 $             1 : No data server process. All output for each type 
-$                 performed by process that performes computations too.
+$                 performed by process that performs computations too.
 $             2 : Last process is reserved for all output, and does no
 $                 computing.
 $             3 : Multiple dedicated output processes.
@@ -116,20 +116,22 @@ $       0 999 1 0 999 1 T
 $
 $ Type 7 : Coupling. (must be fully commented if not used with switch COU)
 $          Namelist type selection is used here.
-$          Diagnostic fields to exchange. (same format as output fields except HS)
+$          Diagnostic fields to exchange. (see namcouple for more information)
 $
    20110902 000000  180  20110902 010000
  N
 $
 $   - Sent fields by ww3:
-$       - Ocean model : T0M1 OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
-$       - Atmospheric model : CHA AHS FP
+$       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
+$       - Atmospheric model : ACHA AHS TP (or FP) FWS
+$       - Ice model : IC5 TWI
 $
  DIR 
 $
 $   - Received fields by ww3:
 $       - Ocean model : SSH CUR
 $       - Atmospheric model : WND
+$       - Ice model : ICE IC1 IC5
 $
  CUR
 $
@@ -137,7 +139,7 @@ $ Homogeneous field data --------------------------------------------- $
 $ Homogeneous fields can be defined by a list of lines containing an ID
 $ string 'LEV' 'CUR' 'WND', date and time information (yyyymmdd
 $ hhmmss), value (S.I. units), direction (current and wind, oceanogr.
-$ convention degrees)) and air-sea temparature difference (degrees C).
+$ convention degrees)) and air-sea temperature difference (degrees C).
 $ 'STP' is mandatory stop string.
 $ Also defined here are the speed with which the grid is moved
 $ continuously, ID string 'MOV', parameters as for 'CUR'.

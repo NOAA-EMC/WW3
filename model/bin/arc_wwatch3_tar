@@ -276,7 +276,7 @@
     echo -e '                   =============================== \n'
   fi
 
-# 6.c genarate data tar files  - - - - - - - - - - - - - - - - - - - - - - - -
+# 6.c generate data tar files  - - - - - - - - - - - - - - - - - - - - - - - -
 
   mkdir -p ${main_dir}/arc
 
@@ -302,31 +302,31 @@
   if test "$make_mod" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.model.tar and copying to archive location..."
-    cd $main_dir/svn
+    cd $main_dir
     tar cf ${main_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn
   fi
   if test "$make_reg" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.regtests.tar and copying to archive location..."
-    cd $main_dir/svn
+    cd $main_dir
     tar cf ${main_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
   fi
   if test "$make_cas" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.cases.tar and copying to archive location..."
-    cd $main_dir/svn
+    cd $main_dir
     tar cf ${main_dir}/arc/wwatch3.$ID.cases.tar cases --exclude=.svn
   fi
   if test "$make_smc" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.smc_docs.tar and copying to archive location..."
-    cd $main_dir/svn
+    cd $main_dir
     tar cf ${main_dir}/arc/wwatch3.$ID.smc_docs.tar smc_docs --exclude=.svn
   fi
 
 
 # Copy install_ww3_tar to arc
-  cp -f ${main_dir}/bin/install_ww3_tar ${main_dir}/arc
+  cp -f ${main_dir}/model/bin/install_ww3_tar ${main_dir}/arc
 
 # Create master gziped tar file
   echo -e "\n Creating wwatch3.${ID}.tar.gz file with stand-alone package."

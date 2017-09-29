@@ -118,12 +118,12 @@
 !/
 
 ! character
-      CHARACTER                           :: COMSTR*1, LINE*80
+      CHARACTER                           :: COMSTR*1, LINE*512
       CHARACTER*5                         :: INXOUT
       CHARACTER*10                        :: VERTEST  ! = 'III  1.03 '
       CHARACTER*32                        :: IDTST    != 'WAVEWATCH III BOUNDARY DATA FILE'
-      CHARACTER*120, ALLOCATABLE          :: SPECFILES(:)
-      CHARACTER*120                       :: FILENAME
+      CHARACTER*512, ALLOCATABLE          :: SPECFILES(:)
+      CHARACTER*512                       :: FILENAME
       CHARACTER*14                        :: TIME_STR
 
 ! index
@@ -226,7 +226,7 @@
 !       Read input file names
         DO 
           CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
-          READ (NDSI2,'(A120)') FILENAME
+          READ (NDSI2,'(A512)') FILENAME
           JJ     = LEN_TRIM(FILENAME)
           IF ( ILOOP .EQ. 1 ) THEN
             BACKSPACE (NDSI)

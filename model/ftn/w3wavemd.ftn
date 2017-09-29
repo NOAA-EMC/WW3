@@ -383,6 +383,7 @@
 !/OASIS      USE W3OACPMD, ONLY: ID_OASIS_TIME
 !/OASOCM      USE W3OGCMMD, ONLY: SND_FIELDS_TO_OCEAN
 !/OASACM      USE W3AGCMMD, ONLY: SND_FIELDS_TO_ATMOS
+!/OASICM      USE W3IGCMMD, ONLY: SND_FIELDS_TO_ICE
 
 !/PALM USE palmlib          !interface for palm coupler
 !/PALM USE palm_user_param  !min_palm_time_a etc ...
@@ -407,7 +408,6 @@
                                  ITLOC, ITLOCH, NTLOC, ISEA, JSEA,    &
                                  IX, IY, ISPEC, J, TOUT(2), TLST(2),  &
                                  REFLED(6), IK, NKCFL
-!/OASIS     INTEGER                 :: OASISED
 !/SEC1      INTEGER                 :: ISEC1
 !/SBS      INTEGER                 :: JJ, NDSOFLG
 !/MPI      INTEGER                 :: IERR_MPI, NRQMAX
@@ -481,7 +481,6 @@
 !/OMPX      FLOMP  = .TRUE.
 !
 !/PALM      PALMED = 1
-!/OASIS      OASISED = 1
 !/COU      SCREEN   =  333
 !
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
@@ -1461,7 +1460,7 @@
                           TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),     &
                           TAUWIY(JSEA), TAUWNX(JSEA),                 &
                           TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
-                          PHIOC(JSEA), TMP1, D50, PSIC, TMP2,         &
+                          TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,&
                           PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),     &
                           ASF(ISEA))
                      WHITECAP(JSEA,1:4) = TMP1
@@ -1474,7 +1473,6 @@
                     DTDYN (JSEA) = UNDEF
                     FCUT  (JSEA) = UNDEF
                   END IF
-
                 END DO
 !
 !/OMPG/!$OMP END DO
@@ -1785,7 +1783,7 @@
 !/MPI                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
 !/MPI                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
 !/MPI                              FLGMPI(1) = .FALSE.
-                              IF ( J .EQ. 1 ) CALL W3IOGO              &
+                              IF ( J .EQ. 1 ) CALL W3IOGO             &
                                  ( 'WRITE', NDS(7), ITEST, IMOD )
 !/SBS !
 !/SBS !     Generate output flag file for fields and SBS coupling.
@@ -1801,13 +1799,14 @@
 
                           IF ( J .EQ. 7 ) THEN
 !/OASIS !
-!/OASIS ! Send variables to atmospheric or ocean circulation model
+!/OASIS ! Send variables to atmospheric or ocean circulation or ice model
 !/OASIS !
-!/OASIS                              IF (OASISED.EQ.1) THEN
+!/OASIS                              IF (DTOUT(7).NE.0) THEN
 !/OASIS                                IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0)  .LT. 1.E-7 ) .AND. &
 !/OASIS                                     (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN
 !/OASACM                                  CALL SND_FIELDS_TO_ATMOS()
 !/OASOCM                                  CALL SND_FIELDS_TO_OCEAN()
+!/OASICM                                  CALL SND_FIELDS_TO_ICE()
 !/OASIS                                  ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
 !/OASIS                                ENDIF
 
@@ -1851,8 +1850,9 @@
                       FLOUT(J)    = DTTST.GE.0.
                       IF ( FLOUT(J) ) THEN
                           OUTID(2*J-1:2*J-1) = 'X'
-!/OASIS                          IF ( (DSEC21(TIME,TIME00).EQ.0) .OR.       &
-!/OASIS                               (DSEC21(TIME,TIMEEND).EQ.0) ) OUTID(13:13) = ' '
+!/OASIS                          IF ( (DTOUT(7).NE.0) .AND.           &
+!/OASIS                               (DSEC21(TIME,TIME00).EQ.0 .OR.  &
+!/OASIS                                DSEC21(TIME,TIMEEND).EQ.0) ) OUTID(13:13) = ' '
                         ELSE
                           OUTID(2*J-1:2*J-1) = 'L'
                         END IF
@@ -1958,8 +1958,8 @@
 !
 ! Formats
 !
-  900 FORMAT (2X,I6,'  |',I4,'  | ', A19  ,' | ',A,' | ',A,' |')
-  901 FORMAT (2X,I6,'  |',I4,'  | ',11X,A8,' | ',A,' | ',A,' |')
+  900 FORMAT (4X,I6,'|',I6,'| ', A19  ,' | ',A,' | ',A,' |')
+  901 FORMAT (4X,I6,'|',I6,'| ',11X,A8,' | ',A,' | ',A,' |')
   902 FORMAT (2X,'--------+------+---------------------+'             &
                 ,'-------------------+---------------+')
 !

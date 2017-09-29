@@ -214,7 +214,8 @@
       INTEGER(KIND=4)         :: IX, IY, JX, NXLM
       INTEGER                 :: NDSI, NDSM, NDSDAT, NDSTRC, NTRACE,  &
                                  IERR, IFLD, ITYPE, J, NFCOMP,        &
-                                 TIME(2), NXI, NYI, NXJ(2), NYJ(2),   &
+                                 TIME(2), TIMESTART(2),               &
+                                 NXI, NYI, NXJ(2), NYJ(2),            &
                                  NDSLL, IDLALL, IDFMLL, NDSF(2),      &
                                  IDLAF(2), IDFMF(2), TIME2(2),        &
                                  MXM, MYM, DATTYP, RECLDT, IDAT,      &
@@ -265,10 +266,10 @@
       CHARACTER*20          :: dimname(5)
       CHARACTER*50          :: timeunits, calendar
       DOUBLE PRECISION      :: dateref, datecur
-      REAL                  :: scur, mncur, hcur, fillvalue
+      REAL                  :: scur, mncur, hcur, fillvalue, TIMESHIFT
       INTEGER               :: I,K,L,ITIME, dref, mref, yref, dcur, mcur, ycur
       INTEGER               :: hhref,mmref,ssref
-      CHARACTER*14          :: TIME_STR
+!
 ! Variables used in tidal analysis
       REAL(KIND=8), ALLOCATABLE :: ALLTIMES(:)
       INTEGER                   :: TIDE_NDEF, TIDE_ITREND
@@ -493,12 +494,12 @@
 !
       IF (.NOT. FLTIME) THEN
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIME
-        IF (TIME(1).LT.10000000) THEN
+        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIMESTART
+        IF (TIMESTART(1).LT.10000000) THEN
           WRITE (NDSE,1035) TIME
           CALL EXTCDE ( 4 )
         END IF
-        CALL STME21 ( TIME , IDTIME )
+        CALL STME21 ( TIMESTART , IDTIME )
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,931) IDTIME
       END IF
 !
@@ -1467,39 +1468,36 @@
 !/O15            ERR=870,IOSTAT=IERR )
 !
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972)
+        TIMESHIFT = 0
         DO ITIME=1,NTI
 !
 ! 6.a Read new time and fields
 !
-          IF ( FLTIME ) THEN
+          iret=nf90_inq_varid(ncid,"time",varidtmp)
+          IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
+          CALL check_err(iret)
+          iret=nf90_get_var(ncid,varidtmp,datecur,start=(/ITIME/))
+          call check_err(iret)
+          IF (index(timeunits, "seconds").NE.0)   datecur=datecur/86400.
+          IF (index(timeunits, "hours").NE.0)   datecur=datecur/24. 
+          datecur=dateref+datecur
 !
-            iret=nf90_inq_varid(ncid,"time",varidtmp)
-            IF ( iret/=nf90_noerr ) iret=nf90_inq_varid(ncid,"MT",varidtmp)
-            CALL check_err(iret)
-            iret=nf90_get_var(ncid,varidtmp,datecur,start=(/ITIME/))
-            call check_err(iret)
-            IF (index(timeunits, "seconds").NE.0)   datecur=datecur/86400.
-            IF (index(timeunits, "hours").NE.0)   datecur=datecur/24. 
-            datecur=dateref+datecur
+          CALL caldat(INT(datecur),dcur,mcur,ycur)
 
-            CALL caldat(INT(datecur),dcur,mcur,ycur)
-
-            hcur=(datecur-INT(datecur))*24.
-            IF (ABS(hcur-NINT(hcur)).LT.1.E-5) hcur=NINT(hcur)
-
-            mncur=(hcur-INT(hcur))*60.
-            IF (ABS(mncur-NINT(mncur)).LT.1.E-5) mncur=NINT(mncur)
-
-            scur=(mncur-INT(mncur))*60.
-            IF (ABS(scur-NINT(scur)).LT.1.E-5) scur=NINT(scur)
-
-            WRITE(TIME_STR,'(I4.4,5I2.2)') INT(ycur), INT(mcur), INT(dcur), &
-                                          INT(hcur), INT(mncur), INT(scur)
-
-            read(TIME_STR(1:8),'(I8.8)') TIME(1)
-            read(TIME_STR(9:14),'(I6.6)') TIME(2)
-
+          hcur=(datecur-INT(datecur))*24.
+          IF (ABS(hcur-NINT(hcur)).LT.1.E-5) hcur=NINT(hcur)
+          mncur=(hcur-INT(hcur))*60.
+          IF (ABS(mncur-NINT(mncur)).LT.1.E-5) mncur=NINT(mncur)
+          scur=(mncur-INT(mncur))*60.
+          IF (ABS(scur-NINT(scur)).LT.1.E-5) scur=NINT(scur)
+! Conversion to WW3 time integers
+          TIME(1)=INT(ycur)*10000+INT(mcur)*100 +INT(dcur) 
+          TIME(2)=INT(hcur)*10000+INT(mncur)*100+INT(scur) 
+          IF ( .NOT.FLTIME.AND.ITIME.EQ.1) THEN
+            TIMESHIFT = DSEC21 ( TIME ,TIMESTART)
             END IF
+! Shifts time to start on TIMESTART if FLTIME is false
+        CALL TICK21 ( TIME, TIMESHIFT )
 !
         CALL STME21 ( TIME , IDTIME )
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,973) IDTIME
@@ -1520,6 +1518,7 @@
               END IF
 ! The following line forces to 0 values that are undefine
             WHERE(XC.NE.XC) XC = 0. 
+            WHERE(XC.EQ.fillvalue) XC = 0.
             CALL check_err(iret)
             XC  = XC * XCFAC + XCOFF
 !
@@ -1546,12 +1545,14 @@
                     ELSE
                       IF (NDIMSVAR.EQ.3) THEN
                         iret=nf90_get_var(ncid,varidf(2),YC,start=(/1,1,ITIME/),count=(/MXM,MYM,1/))
-! The following line forces to 0 values that are undefine
-                        WHERE(YC.NE.YC) YC = 0. 
+
                       ELSE
                         iret=nf90_get_var(ncid,varidf(2),YC,start=(/1,1,1,ITIME/),count=(/MXM,MYM,1,1/))
                         END IF
                       END IF
+! The following line forces to 0 values that are undefine
+                    WHERE(YC.NE.YC) YC = 0.
+                    WHERE(YC.EQ.fillvalue) YC = 0.
                     CALL check_err(iret)
                     YC  = YC * YCFAC + YCOFF
 !
@@ -1668,18 +1669,19 @@
           ELSE IF (ITYPE.NE.5) THEN
 
             ! change fillvalue
-            DO IY=1,NY
-              DO IX=1,NX
-                IF (XC(IX21(IX,IY),IY21(IX,IY)) .EQ. fillvalue) XC(IX21(IX,IY),IY21(IX,IY))=0
-                IF (XC(IX22(IX,IY),IY21(IX,IY)) .EQ. fillvalue) XC(IX22(IX,IY),IY21(IX,IY))=0
-                IF (XC(IX21(IX,IY),IY22(IX,IY)) .EQ. fillvalue) XC(IX21(IX,IY),IY22(IX,IY))=0
-                IF (XC(IX22(IX,IY),IY22(IX,IY)) .EQ. fillvalue) XC(IX22(IX,IY),IY22(IX,IY))=0
-                IF (YC(IX21(IX,IY),IY21(IX,IY)) .EQ. fillvalue) YC(IX21(IX,IY),IY21(IX,IY))=0
-                IF (YC(IX22(IX,IY),IY21(IX,IY)) .EQ. fillvalue) YC(IX22(IX,IY),IY21(IX,IY))=0
-                IF (YC(IX21(IX,IY),IY22(IX,IY)) .EQ. fillvalue) YC(IX21(IX,IY),IY22(IX,IY))=0
-                IF (YC(IX22(IX,IY),IY22(IX,IY)) .EQ. fillvalue) YC(IX22(IX,IY),IY22(IX,IY))=0
-              END DO
-            END DO
+            ! this is done in a previous test
+            !DO IY=1,NY
+            !  DO IX=1,NX
+            !    IF (XC(IX21(IX,IY),IY21(IX,IY)) .EQ. fillvalue) XC(IX21(IX,IY),IY21(IX,IY))=0
+            !    IF (XC(IX22(IX,IY),IY21(IX,IY)) .EQ. fillvalue) XC(IX22(IX,IY),IY21(IX,IY))=0
+            !    IF (XC(IX21(IX,IY),IY22(IX,IY)) .EQ. fillvalue) XC(IX21(IX,IY),IY22(IX,IY))=0
+            !    IF (XC(IX22(IX,IY),IY22(IX,IY)) .EQ. fillvalue) XC(IX22(IX,IY),IY22(IX,IY))=0
+            !    IF (YC(IX21(IX,IY),IY21(IX,IY)) .EQ. fillvalue) YC(IX21(IX,IY),IY21(IX,IY))=0
+            !    IF (YC(IX22(IX,IY),IY21(IX,IY)) .EQ. fillvalue) YC(IX22(IX,IY),IY21(IX,IY))=0
+            !    IF (YC(IX21(IX,IY),IY22(IX,IY)) .EQ. fillvalue) YC(IX21(IX,IY),IY22(IX,IY))=0
+            !    IF (YC(IX22(IX,IY),IY22(IX,IY)) .EQ. fillvalue) YC(IX22(IX,IY),IY22(IX,IY))=0
+            !  END DO
+            !END DO
 !
 ! ... One-component fields
 !
@@ -1969,7 +1971,7 @@
                '       Format type       : ',A)
  1930 FORMAT ( '          Field conserves velocity.')
  2930 FORMAT ( '          Field corrected for energy conservation.')
-  931 FORMAT (/'       Single field, time: ',A)
+  931 FORMAT (/'       Time shifted. Starting: ',A)
   932 FORMAT (/'       Input grid dim.   :',I9,3X,I5)
   933 FORMAT ( '       Longitude range   :',2F8.2,' (deg)'/           &
                '       Latitude range    :',2F8.2,' (deg)')

@@ -166,6 +166,7 @@ $  F  F  5     7   WHITECAP   WCC   Whitecap coverage
 $  F  F  5     8   WHITECAP   WCF   Whitecap thickness
 $  F  F  5     9   WHITECAP   WCH   Mean breaking height
 $  F  F  5    10   WHITECAP   WCM   Whitecap moment
+$  F  F  5    11   FWS        FWS   Wind sea mean period
 $   -------------------------------------------------
 $        6                          Wave-ocean layer 
 $   -------------------------------------------------
@@ -235,8 +236,8 @@ $ PHS PTP PLP PDIR PSPR PWS TWS PNR
   T   T   T   T   T   T   T   T
 $ (5) Atmosphere-waves layer
   T
-$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM
-  T   T   T   T   T   T   T   T   T   T
+$ UST CHA CGE FAW TAW TWA WCC WCF WCH WCM FWS
+  T   T   T   T   T   T   T   T   T   T   T
 $ (6) Wave-Ocean layer
   T
 $ SXY TWO BHD FOC TUS USS P2S USF P2L TWI FIC
@@ -320,14 +321,16 @@ $  19680606 000000   3600  20010102 000000
 $  N
 $
 $   - Sent fields by ww3:
-$       - Ocean model : T0M1 OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
-$       - Atmospheric model : CHA AHS TP (or FP)
+$       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
+$       - Atmospheric model : ACHA AHS TP (or FP) FWS
+$       - Ice model : IC5 TWI
 $
 $  CHA
 $
 $   - Received fields by ww3:
 $       - Ocean model : SSH CUR
 $       - Atmospheric model : WND
+$       - Ice model : ICE IC1 IC5
 $
 $  WND
 $

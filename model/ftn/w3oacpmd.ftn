@@ -231,20 +231,11 @@
             !
             ! 1.1. regular and curvilinear grids
             ! ----------------------------------
-            NXW = 1 ; NXE = NX ; NYS = 1 ; NYN = NY 
-            DO WHILE ( MAXVAL(MAPSTA(:,NXW)) == 0. )
-               NXW = NXW + 1
-            END DO
-            DO WHILE ( MAXVAL(MAPSTA(:,NXE)) == 0. )
-               NXE = NXE - 1
-            END DO
-            DO WHILE ( MAXVAL(MAPSTA(NYS,:)) == 0. )
-               NYS = NYS + 1
-            END DO
-            DO WHILE ( MAXVAL(MAPSTA(NYN,:)) == 0. )
-               NYN = NYN - 1
-            END DO
-            NNODES = (NXE-NXW+1)*(NYN-NYS+1)
+            NNODES = NX*NY
+            NXW=1
+            NXE=NX
+            NYS=1
+            NYN=NY
             ! 
             ! lat/lon
             ALLOCATE ( LON(NNODES,1), LAT(NNODES,1) ) 
@@ -281,8 +272,12 @@
             DO IY = NYS, NYN
                DO IX = NXW, NXE
                   I = I+1
-                  ! Get the mask : 0 - sea 1 - open boundary cells (the land is already excluded)
-                  MASK(I,1) = 1 - MOD(MAPSTA(IY,IX),2)
+                  ! Get the mask : 0 - sea  / 1 - open boundary cells (the land is already excluded)
+                  IF ((MAPSTA(IY,IX) .EQ. 1)) THEN
+                    MASK(I,1) = 0
+                  ELSE
+                    MASK(I,1) = 1
+                  END IF
                END DO
             END DO
          ELSE
@@ -398,21 +393,9 @@
          ! 1.1. regular and curvilinear grids
          ! ----------------------------------
          NHXW = 1 ; NHXE = NX ; NHYS = 1 ; NHYN = NY
-         DO WHILE ( MAXVAL(MAPSTA(:,NHXW)) == 0. )
-            NHXW = NHXW + 1
-         END DO
          NHXW = NHXW - 1
-         DO WHILE ( MAXVAL(MAPSTA(:,NHXE)) == 0. )
-            NHXE = NHXE - 1
-         END DO
          NHXE = NX - NHXE
-         DO WHILE ( MAXVAL(MAPSTA(NHYS,:)) == 0. )
-            NHYS = NHYS + 1
-         END DO
             NHYS = NHYS - 1
-         DO WHILE ( MAXVAL(MAPSTA(NHYN,:)) == 0. )
-            NHYN = NHYN - 1
-         END DO
          NHYN = NY - NHYN
          !
          ALLOCATE(ILA_PARAL(2+NSEAL*2))
@@ -541,6 +524,7 @@
 !     ----------------------------------------------------------------
 !      SND_FIELDS_TO_ATMOS   Subr.   W3AGCMMD   Send fields to atmos. model
 !      SND_FIELDS_TO_OCEAN   Subr.   W3OGCMMD   Send fields to ocean model
+!      SND_FIELDS_TO_ICE     Subr.   W3IGCMMD   Send fields to ice model
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -611,6 +595,7 @@
 !     ----------------------------------------------------------------
 !      RCV_FIELDS_FROM_ATMOS   Subr.   W3AGCMMD   Receive fields from atmos. model
 !      RCV_FIELDS_FROM_OCEAN   Subr.   W3OGCMMD   Receive fields from ocean model
+!      RCV_FIELDS_FROM_ICE     Subr.   W3IGCMMD   Receive fields from ice model
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -778,6 +763,9 @@
          TESTSTR=OUT_NAMES(IOUT+1)
          SELECT CASE(TRIM(TESTSTR(1:6)))
               !
+!
+! OCEAM MODEL VARIABLES
+!
 !/OASOCM      CASE('DRY')
 !/OASOCM         ! wet-drying at the middle of the cell
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
@@ -805,6 +793,10 @@
 !/OASOCM         ID_NB_RCV=ID_NB_RCV+1
 !/OASOCM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSV'
 !
+
+!
+! ATMOSPHERE MODEL VARIABLES
+!
 !/OASACM      CASE('WND')
 !/OASACM         ! U10 : 10m u-wind speed (m.s-1)
 !/OASACM         ID_NB_RCV=ID_NB_RCV+1
@@ -814,6 +806,26 @@
 !/OASACM         ID_NB_RCV=ID_NB_RCV+1
 !/OASACM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__V10'
 !
+
+!
+! ICE MODEL VARIABLES
+!
+!/OASICM      CASE('IC1')
+!/OASICM         ! IC1 : ice thickness (m)
+!/OASICM         ID_NB_RCV=ID_NB_RCV+1
+!/OASICM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__IC1'
+!
+!/OASICM      CASE('IC5')
+!/OASICM         ! ICEF : ice floe diameters (m)
+!/OASICM         ID_NB_RCV=ID_NB_RCV+1
+!/OASICM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__IC5'
+!
+!/OASICM      CASE('ICE')
+!/OASICM         ! ICE : ice concentration (n.d)
+!/OASICM         ID_NB_RCV=ID_NB_RCV+1
+!/OASICM         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__ICE'
+!
+
          CASE DEFAULT
             WRITE (NDSO,1001) TRIM(TESTSTR(1:6))
          END SELECT
@@ -831,6 +843,9 @@
          TESTSTR=OUT_NAMES(IOUT+1)
          SELECT CASE(TRIM(TESTSTR(1:6)))
                  !
+!
+! OCEAM MODEL VARIABLES
+!
 !/OASOCM         CASE('OHS')
 !/OASOCM            ! Significant wave height (m)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
@@ -911,11 +926,6 @@
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___LM'
 !
-!/OASACM         CASE('AHS')
-!/OASACM            ! Significant wave height (m)
-!/OASACM            ID_NB_SND = ID_NB_SND +1
-!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__AHS'
-!
 !/OASOCM         CASE('TUS')
 !/OASOCM            ! Volume transport associated to Stokes drift, u component (m2.s-1)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
@@ -933,7 +943,20 @@
 !/OASOCM            ! Surface Stokes drift, v component (m.s-1)
 !/OASOCM            ID_NB_SND = ID_NB_SND +1
 !/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_USSY'
+!
+!/OASOCM         CASE('OCHA')
+!/OASOCM            ! Charnock Coefficient (-)
+!/OASOCM            ID_NB_SND = ID_NB_SND +1
+!/OASOCM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_OCHA'
 
+!
+! ATMOSPHERE MODEL VARIABLES
+!
+!/OASACM         CASE('AHS')
+!/OASACM            ! Significant wave height (m)
+!/OASACM            ID_NB_SND = ID_NB_SND +1
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__AHS'
+!
 !/OASACM         CASE('CUR')
 !/OASACM            ! Ocean sea surface current (m.s-1)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
@@ -943,10 +966,10 @@
 !/OASACM            ID_NB_SND = ID_NB_SND +1
 !/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_WSSV'
 !
-!/OASACM         CASE('CHA')
+!/OASACM         CASE('ACHA')
 !/OASACM            ! Charnock Coefficient (-)
 !/OASACM            ID_NB_SND = ID_NB_SND +1
-!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__CHA'
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ACHA'
 !
 !/OASACM         CASE('FP')
 !/OASACM            ! Peak frequency (s-1)
@@ -958,6 +981,29 @@
 !/OASACM            ID_NB_SND = ID_NB_SND +1
 !/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3___TP'
 !
+!/OASACM         CASE('FWS')
+!/OASACM            ! Wind_sea_mean_period_T0M1 (s)
+!/OASACM            ID_NB_SND=ID_NB_SND+1
+!/OASACM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3__FWS'
+!
+
+!
+! ICE MODEL VARIABLES
+!
+!/OASICM         CASE('IC5')
+!/OASICM            ! Ice floe diameters (m)
+!/OASICM            ID_NB_SND = ID_NB_SND +1
+!/OASICM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ICEF'
+!
+!/OASICM         CASE('TWI')
+!/OASICM            ! TWIX : x stress to ice , u component (twix in m2.s-2)
+!/OASICM            ID_NB_SND = ID_NB_SND +1
+!/OASICM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWIX'
+!
+!/OASICM            ! TWIY : y stress to ice , v component (twiy in m2.s-2)
+!/OASICM            ID_NB_SND = ID_NB_SND +1
+!/OASICM            SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWIY'
+                    !
          CASE DEFAULT
             WRITE (NDSO,1002) TRIM(TESTSTR(1:6))
          END SELECT

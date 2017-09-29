@@ -967,9 +967,9 @@ END SUBROUTINE
 !/ local parameters   
 
          INTEGER :: COUNTER,ifound,alreadyfound
-         INTEGER :: I, J, K, II
+         INTEGER :: I, J, K
          INTEGER :: IP, IE, POS, POS_I, POS_J, POS_K, IP_I, IP_J, IP_K
-         INTEGER :: I1, I2, I3, IP2, CHILF(NX)
+         INTEGER :: I1, I2, I3, IP2
          INTEGER :: TMP(NX), CELLVERTEX(NX,COUNTRI,2)
          INTEGER :: COUNT_MAX
          DOUBLE PRECISION   :: TRIA03
@@ -981,74 +981,39 @@ END SUBROUTINE
 !/ ------------------------------------------------------------------- /      
 
 !/S      CALL STRACE (IENT, 'AREA_SI')
-
-         WRITE(*,'("+TRACE......",A)') 'COMPUTE SI, TRIA und CCON'
          
          SI(:) = 0.D0
 !
 ! calculate the number of triangle connected to a point and reckon the surface of a dual cell
-! Ask Aron: Should be uptated with water levels ??? Aron: No
+! Ask Aron: Should be uptated with water levels ???         
 !
-         CCON(:) = 0     ! Number of connected Elements
-         DO IE = 1 , NTRI 
-           I1 = TRIGP(IE,1)
-           I2 = TRIGP(IE,2)
-           I3 = TRIGP(IE,3)
-           CCON(I1) = CCON(I1) + 1
-           CCON(I2) = CCON(I2) + 1
-           CCON(I3) = CCON(I3) + 1
-           TRIA03 = ONETHIRD * TRIA(IE)
-           SI(I1) = SI(I1) + TRIA03
-           SI(I2) = SI(I2) + TRIA03
-           SI(I3) = SI(I3) + TRIA03
-           ENDDO
-
-         CELLVERTEX(:,:,:) = 0 ! Stores for each node the Elementnumbers of the connected Elements
-                               ! and the Position of the position of the Node in the Element Index
-
-         WRITE(*,'("+TRACE......",A)') 'COMPUTE CELLVERTEX'
-
-         CHILF             = 0
-
-         DO IE = 1, NTRI 
-           DO J=1,3
-             I = TRIGP(IE,J)!INE(J,IE)
-             CHILF(I) = CHILF(I)+1
-             CELLVERTEX(I,CHILF(I),1) = IE
-             CELLVERTEX(I,CHILF(I),2) = J
-           END DO
-         ENDDO
-
-         WRITE(*,'("+TRACE......",A)') 'COMPUTE IE_CELL and POS_CELL'
-          
-         J = 0
-!
-! Second step in storage, the initial 3D array CELLVERTEX, is transformed in a 1D array
-! the global index is J . From now, all the computation step based on these arrays must
-! abide by the conservation of the 2 loop algorithm (points + connected triangles)
-! AR: I will change this now to pointers in order to omit fix loop structure for the LTS stuff ...
-!	   
-         INDEX_CELL(1)=1
          DO IP = 1, NX
-           DO I = 1, CCON(IP)
-             J = J + 1
-             IE_CELL(J)  = CELLVERTEX(IP,I,1)
-             POS_CELL(J) = CELLVERTEX(IP,I,2) 
-           END DO
-           INDEX_CELL(IP+1)=J+1
-         END DO
-
-         WRITE(*,'("+TRACE......",A)') 'COMPUTE VNEIGH'
-
+           COUNTER = 0
+           DO IE = 1, NTRI  
+             IF (IP == TRIGP(IE,1) .OR. IP == TRIGP(IE,2) .OR. IP== TRIGP(IE,3)) THEN
+               COUNTER = COUNTER + 1
+               CCON(IP) = COUNTER
+               TRIA03 = ONETHIRD * TRIA(IE)
+               SI(IP) = SI(IP) +  ONETHIRD * TRIA(IE) 
+               END IF
+             END DO
+           END DO 
+              
+         CELLVERTEX(:,:,:) = 0
          VNEIGH(:,:) = 0
 !
-          J = 0
           DO IP = 1, NX
+            COUNTER = 0
             ifound = 0
-            DO II = 1, CCON(IP) 
-              J = J + 1
-              IE = IE_CELL(J)
+ !
+ ! first step of the storage, for a given vertex, the triangle it belongs to and the vertex position
+ ! are stored  
+ !
+            DO IE = 1, NTRI
               IF (IP == TRIGP(IE,1)) THEN
+                COUNTER = COUNTER + 1
+                CELLVERTEX(IP,COUNTER,1) = IE
+                CELLVERTEX(IP,COUNTER,2) = 1
                 DO IP2=2,3
                   alreadyfound = 0
                   DO I=1,ifound
@@ -1060,8 +1025,11 @@ END SUBROUTINE
                     END IF
                   END DO
                END IF
-
+              
              IF (IP == TRIGP(IE,2)) THEN
+               COUNTER = COUNTER + 1
+               CELLVERTEX(IP,COUNTER,1) = IE
+               CELLVERTEX(IP,COUNTER,2) = 2
                 DO IP2=3,4
                   alreadyfound = 0
                   DO I=1,ifound
@@ -1073,22 +1041,23 @@ END SUBROUTINE
                     END IF
                   END DO
                 END IF
-
+              
              IF (IP == TRIGP(IE,3)) THEN
+               COUNTER = COUNTER + 1
+               CELLVERTEX(IP,COUNTER,1) = IE
+               CELLVERTEX(IP,COUNTER,2) = 3
                 DO IP2=1,2
                   alreadyfound = 0
                   DO I=1,ifound
                     IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) alreadyfound=alreadyfound+1
                     END DO
-                  IF (alreadyfound.EQ.0) THEN
+                  IF (alreadyfound.EQ.0) THEN 
                     ifound=ifound+1
                     VNEIGH(IP,ifound)=TRIGP(IE,IP2)
                     END IF
                   END DO
                 END IF
-             END DO ! CCON
-
-          
+             END DO
 !
 ! COUNTCON is a counter on connected points. In comparison with the number of connected triangle
 ! CCON, it will enable to spot whether a point belong to the contour
@@ -1104,7 +1073,7 @@ END SUBROUTINE
               enddo
            enddo
           
-         END DO !NX
+         END DO
           
          J = 0
 !
@@ -1122,8 +1091,6 @@ END SUBROUTINE
            END DO
            INDEX_CELL(IP+1)=J+1
          END DO
-
-         RETURN
 
          J = 0
          DO IP = 1, NX 
@@ -1416,6 +1383,219 @@ END SUBROUTINE
        END IF
      ENDDO
      END SUBROUTINE IS_IN_UNGRID
+     SUBROUTINE IS_IN_UNGRID2(IMOD, XTIN, YTIN, FORCE, ITOUT, IS, JS, RW)
+!/ -------------------------------------------------------------------
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |      Mathieu Dutour Sikiric, IRB  |
+!/                  |                 Aron Roland, Z&P  |
+!/                  |             Fabrice Ardhuin       |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          26-Jan-2014|
+!/                  +-----------------------------------+
+!/
+!/ Adapted from other subroutine 
+!/    15-Oct-2007 : Origination.                        ( version 3.13 )
+!/    21-Sep-2012 : Uses same interpolation as regular  ( version 4.08 )
+!/    26-Jan-2014 : Correcting bug in RW                ( version 4.18 )
+!/
+!  1. Purpose :
+!
+!      Determine whether a point is inside or outside an unstructured grid, 
+!      and returns index of triangle and interpolation weights 
+!      This is the analogue for triangles of the FUNCTION W3GRMP
+!
+!  2. Method :
+!
+!     Using barycentric coordinates defined as the ratio of triangle algebric areas 
+!     which are positive or negative. 
+!     Computes the 3 interpolation weights for each triangle until they are all positive
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       IMOD    Int.   I   Model number to point to.
+!       XTIN    Real   I   X-coordinate of target point.
+!       YTIN    Real   I   Y-coordinate of target point.
+!       ITOUT    Int.   I   Model number to point to.
+!       IS,JS   I.A.   O   (I,J) indices of vertices of enclosing grid cell.
+!       RW      R.A.   O   Array of interpolation weights.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     None
+!
+!  5. Called by :
+!
+!     WMGLOW, W3IOPP, WMIOPP, WW3_GINT
+!
+!  6. Error messages :
+!
+!     - Error checks on previous setting of variable.
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/S    Enable subroutine tracing.
+!     !/T    Enable test output
+!
+! 10. Source code :
+!
+
+
+!  2. Method :
+!
+!     Using barycentric coordinates. Each coefficient depends on the mass of its related point in the interpolation.
+!
+!  3. Parameters :
+!
+!  4. Subroutines used :
+!
+!  5. Called by :
+!
+!       Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3IOPP    Subr. Internal  Preprocessing of point output.
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!      This subroutine is adjusted from CREST code (Fabrice Ardhuin)
+!      For a given output point, the algorithm enable to glance through all the triangles 
+!      to find the one the point belong to, and then make interpolation.
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!       !/LLG   Spherical grid.
+!       !/XYG   Carthesian grid.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD
+      USE W3SERVMD, ONLY: EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+      USE W3ODATMD, ONLY: NDSE
+      IMPLICIT NONE
+
+!/ ------------------------------------------------------------------- /
+! Parameter list
+
+     INTEGER, INTENT(IN)            :: IMOD, FORCE
+     REAL   , INTENT(IN)            :: XTIN, YTIN
+     INTEGER, INTENT(OUT)           :: itout
+     INTEGER, INTENT(OUT)           :: IS(4), JS(4)
+     REAL, INTENT(OUT)              :: RW(4)
+!/ ------------------------------------------------------------------- /
+!local parameters
+
+     DOUBLE PRECISION             :: x1, x2, x3, D1, D2, D3, DISTMIN, DDMIN
+     DOUBLE PRECISION             :: s1, s2, s3, sg1, sg2, sg3, smin, ssum
+     DOUBLE PRECISION             :: y1, y2, y3
+     INTEGER                      :: ITRI, ITRIS
+     INTEGER                      :: I1, I2, I3
+     INTEGER                      :: nbFound
+     LOGICAL                      :: MAPSTAOK
+!/S     INTEGER                      ::  IENT = 0
+!/S     CALL STRACE (IENT, 'IS_IN_UNGRID2')
+
+!
+     itout = 0
+     nbFound=0
+     ITRI = 0
+     ITRIS = 1
+     ssum = 0
+     smin = 0
+     DO WHILE (nbFound.EQ.0.AND.ITRI.LT.GRIDS(IMOD)%NTRI)
+       ITRI = ITRI +1 
+       I1=GRIDS(IMOD)%TRIGP(ITRI,1)
+       I2=GRIDS(IMOD)%TRIGP(ITRI,2)
+       I3=GRIDS(IMOD)%TRIGP(ITRI,3)
+! coordinates of the first vertex A
+       x1=GRIDS(IMOD)%XYB(I1,1)
+       y1=GRIDS(IMOD)%XYB(I1,2)
+! coordinates of the 2nd vertex B
+       x2=GRIDS(IMOD)%XYB(I2,1)
+       y2=GRIDS(IMOD)%XYB(I2,2)
+!coordinates of the 3rd vertex C
+       x3=GRIDS(IMOD)%XYB(I3,1)
+       y3=GRIDS(IMOD)%XYB(I3,2)
+!with M = (XTIN,YTIN) the target point ... 
+!vector product of AB and AC
+       sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
+!vector product of AB and AM
+       s3=(YTIN-y1)*(x2-x1)-(XTIN-x1)*(y2-y1)
+!vector product of BC and BA
+       sg1=(y1-y2)*(x3-x2)-(x1-x2)*(y3-y2)
+!vector product of BC and BM
+       s1=(YTIN-y2)*(x3-x2)-(XTIN-x2)*(y3-y2)
+!vector product of CA and CB
+       sg2=(y2-y3)*(x1-x3)-(x2-x3)*(y1-y3)
+!vector product of CA and CM
+       s2=(YTIN-y3)*(x1-x3)-(XTIN-x3)*(y1-y3)
+!     ssum = ABS(s1*sg1)+ABS(s2*sg2)+ABS(s3*sg3)
+       MAPSTAOK = ((GRIDS(IMOD)%MAPSTA(1,I1).GE.1).AND. &
+                   (GRIDS(IMOD)%MAPSTA(1,I2).GE.1).AND.(GRIDS(IMOD)%MAPSTA(1,I3).GE.1))
+       IF (FORCE.LT.2) MAPSTAOK =.TRUE.
+       ssum = (XTIN-(x1+x2+x3)/3.)**2+(YTIN-(y1+y2+y2)/3.)**2
+       IF (smin.EQ.0.AND. MAPSTAOK ) smin=ssum
+       !WRITE(6,*) 'ssum',ITRI,MAPSTAOK,ssum,smin
+       IF (ssum.LT.smin .AND.  MAPSTAOK  ) THEN 
+          smin=ssum
+          ITRIS=ITRI
+       ENDIF
+       IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) THEN
+         itout=ITRI
+         nbFound=nbFound+1
+         IS(1)=I1
+         IS(2)=I2
+         IS(3)=I3
+         IS(4)=1
+         JS(:)=1
+         RW(1)=s1/sg1
+         RW(2)=s2/sg2
+         RW(3)=1.-RW(1)-RW(2)  !s3/sg3
+         RW(4)=0.
+       END IF
+     ENDDO
+     IF (itout.EQ.0.AND.FORCE.GT.0) THEN
+       ITRI=ITRIS
+       I1=GRIDS(IMOD)%TRIGP(ITRI,1)
+       I2=GRIDS(IMOD)%TRIGP(ITRI,2)
+       I3=GRIDS(IMOD)%TRIGP(ITRI,3)
+! coordinates of the first vertex A
+       x1=GRIDS(IMOD)%XYB(I1,1)
+       y1=GRIDS(IMOD)%XYB(I1,2)
+! coordinates of the 2nd vertex B
+       x2=GRIDS(IMOD)%XYB(I2,1)
+       y2=GRIDS(IMOD)%XYB(I2,2)
+!coordinates of the 3rd vertex C
+       x3=GRIDS(IMOD)%XYB(I3,1)
+       y3=GRIDS(IMOD)%XYB(I3,2)
+       D1=(XTIN-X1)**2+(YTIN-Y1)**2
+       D2=(XTIN-X2)**2+(YTIN-Y2)**2
+       D3=(XTIN-X3)**2+(YTIN-Y3)**2
+         IF (D1.LE.D2.AND.D1.LE.D3) IS(1)=I1
+         IF (D2.LE.D1.AND.D2.LE.D3) IS(1)=I2
+         IF (D3.LE.D2.AND.D3.LE.D1) IS(1)=I3
+         IS(2:4)=1
+         JS(:)=1
+         RW(1)=1
+         RW(2:4)=0.
+         ITOUT=ITRI
+ 
+     ENDIF
+     END SUBROUTINE IS_IN_UNGRID2
+
 
 !/ ------------------------------------------------------------------- / 
       SUBROUTINE UG_GRADIENTS (PARAM, DIFFX, DIFFY)
@@ -1685,24 +1865,23 @@ END SUBROUTINE
       INTEGER :: INEXT(3), IPREV(3)
       INTEGER          :: ZNEXT, IP, I, IE, IPNEXT, IPPREV, COUNT
       integer nb0, nb1, nbM1
-      STATUS = -1
+      STATUS(:) = -1
       INEXT=(/ 2, 3, 1 /) !IPREV=1+MOD(I+1,3)
       IPREV=(/ 3, 1, 2 /) !INEXT=1+MOD(I,3)
       DO IE=1,NTRI 
 ! If one of the points of the triangle is masked out (land) then do as if triangle does not exist... 
-!        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
+        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
         DO I=1,3
           IP=TRIGP(IE,I)
-          CALL TRIANG_INDEXES(I, IPNEXT, IPPREV)
-          !IPNEXT=TRIGP(IE,INEXT(I))
-          !IPPREV=TRIGP(IE,IPREV(I))
+          IPNEXT=TRIGP(IE,INEXT(I))
+          IPPREV=TRIGP(IE,IPREV(I))
           IF (STATUS(IP).EQ.-1) THEN
             STATUS(IP)=1
             PREVVERT(IP)=IPPREV
             NEXTVERT(IP)=IPNEXT
             END IF
           END DO
-!        ENDIF
+        ENDIF
         END DO
       STATUS(:)=-1
  !
@@ -1711,12 +1890,11 @@ END SUBROUTINE
         COUNT = COUNT + 1
         COLLECTED(:)=0
         DO IE=1,NTRI
-!        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
+        IF ((MASK(TRIGP(IE,1)).GT.0).AND.(MASK(TRIGP(IE,2)).GT.0).AND.(MASK(TRIGP(IE,3)).GT.0)) THEN 
           DO I=1,3
             IP=TRIGP(IE,I)
-            CALL TRIANG_INDEXES(I, IPNEXT, IPPREV)
-            !IPNEXT=TRIGP(IE,INEXT(I))
-            !IPPREV=TRIGP(IE,IPREV(I))
+            IPNEXT=TRIGP(IE,INEXT(I))
+            IPPREV=TRIGP(IE,IPREV(I))
             IF (STATUS(IP).EQ.-1) THEN
               ZNEXT=NEXTVERT(IP)
               IF (ZNEXT.EQ.IPPREV) THEN
@@ -1728,7 +1906,7 @@ END SUBROUTINE
                 END IF
               END IF
             END DO
-!            END IF ! end of test on MASK
+            END IF ! end of test on MASK
           END DO
 !
 ! Checks that all nodes have been treated ...
@@ -1750,235 +1928,10 @@ END SUBROUTINE
           EXIT
         END IF
       END DO
-
-      STATUS = 1 
-      CALL GET_BOUNDARY(NX, NTRI, TRIGP, STATUS, PREVVERT, NEXTVERT)
-      DO IP= 1, NX
-        WRITE(12000,*) IP, STATUS(IP)
-      ENDDO
-
 !#ifdef MPI_PARALL_GRID
 !      CALL exchange_p2di(STATUS)
 !#endif
       END SUBROUTINE SET_IOBP
-!/ ------------------------------------------------------------------- /
-
-      SUBROUTINE GET_BOUNDARY(MNP, MNE, TRIGP, IOBP, NEIGHBOR_PREV,       &
-     &   NEIGHBOR_NEXT)
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III                     |
-!/                  | M. Dutour, A. Roland              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Dec-2014 !
-!/                  +-----------------------------------+
-!/
-!  Written:
-!
-!    20-Feb-2012
-!/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-!
-!  Author:
-!
-!    Mathieu Dutour Sikiric, IRB & Aron Roland, Z&P
-!
-!  Parameters:
-!   Input:
-!    MNP: number of nodes
-!    TRIGP: list of nodes
-!    MNE: number of triangles
-!   Output:
-!    NEIGHBOR
-!
-!  Description:
-!    if a node belong to a boundary, the function
-!    returns the neighbor of this point on one side.
-!    if the point is interior then the value 0 is set.
-!    
-        USE W3SERVMD, ONLY: EXTCDE
-        IMPLICIT NONE
-
-        INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
-        INTEGER, INTENT(INOUT)          :: IOBP(MNP)
-        INTEGER, INTENT(INOUT)          :: NEIGHBOR_PREV(MNP)
-        INTEGER, INTENT(INOUT)          :: NEIGHBOR_NEXT(MNP)
-
-        INTEGER, POINTER :: STATUS(:)
-        INTEGER, POINTER :: COLLECTED(:)
-        INTEGER, POINTER :: NEXTVERT(:)
-        INTEGER, POINTER :: PREVVERT(:)
-
-        INTEGER :: IE, I, IP, IP2, IP3
-        INTEGER :: ISFINISHED, INEXT, IPREV, ISTAT
-        INTEGER :: IPNEXT, IPPREV, ZNEXT, ZPREV
-
-        ALLOCATE(STATUS(MNP), STAT=ISTAT)
-        CHECK_ALLOC_STATUS ( ISTAT )
-        ALLOCATE(COLLECTED(MNP), STAT=ISTAT)
-        CHECK_ALLOC_STATUS ( ISTAT )
-        ALLOCATE(PREVVERT(MNP), STAT=ISTAT)
-        CHECK_ALLOC_STATUS ( ISTAT )
-        ALLOCATE(NEXTVERT(MNP), STAT=ISTAT)
-        CHECK_ALLOC_STATUS ( ISTAT )
-        NEIGHBOR_NEXT = 0
-        NEIGHBOR_PREV = 0
-!  Now computing the next items
-        STATUS = 0
-        NEXTVERT = 0
-        PREVVERT = 0
-        DO IE=1,MNE
-          DO I=1,3
-            CALL TRIANG_INDEXES(I, INEXT, IPREV)
-            IP=TRIGP(IE,I)
-            IPNEXT=TRIGP(IE,INEXT)
-            IPPREV=TRIGP(IE,IPREV)
-            IF (STATUS(IP).EQ.0) THEN
-              STATUS(IP)=1
-              PREVVERT(IP)=IPPREV
-              NEXTVERT(IP)=IPNEXT
-            END IF
-          END DO
-        END DO
-        STATUS(:)=0
-        DO
-          COLLECTED(:)=0
-          DO IE=1,MNE
-            DO I=1,3
-              CALL TRIANG_INDEXES(I, INEXT, IPREV)
-              IP=TRIGP(IE,I)
-              IPNEXT=TRIGP(IE,INEXT)
-              IPPREV=TRIGP(IE,IPREV)
-              IF (STATUS(IP).EQ.0) THEN
-                ZNEXT=NEXTVERT(IP)
-                IF (ZNEXT.EQ.IPPREV) THEN
-                  COLLECTED(IP)=1
-                  NEXTVERT(IP)=IPNEXT
-                  IF (NEXTVERT(IP).EQ.PREVVERT(IP)) THEN
-                    STATUS(IP)=1
-                  END IF
-                END IF
-              END IF
-            END DO
-          END DO
-
-          ISFINISHED=1
-          DO IP=1,MNP
-            IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
-              STATUS(IP)=-1
-              NEIGHBOR_NEXT(IP)=NEXTVERT(IP)
-            END IF
-            IF (STATUS(IP).EQ.0) THEN
-              ISFINISHED=0
-            END IF
-          END DO
-          IF (ISFINISHED.EQ.1) THEN
-            EXIT
-          END IF
-        END DO
-
-!  Now computing the prev items
-        STATUS = 0
-        NEXTVERT = 0
-        PREVVERT = 0
-        DO IE=1,MNE
-          DO I=1,3
-            CALL TRIANG_INDEXES(I, INEXT, IPREV)
-            IP=TRIGP(IE,I)
-            IPNEXT=TRIGP(IE,INEXT)
-            IPPREV=TRIGP(IE,IPREV)
-            IF (STATUS(IP).EQ.0) THEN
-              STATUS(IP)=1
-              PREVVERT(IP)=IPPREV
-              NEXTVERT(IP)=IPNEXT
-            END IF
-          END DO
-        END DO
-        STATUS(:)=0
-        DO
-          COLLECTED(:)=0
-          DO IE=1,MNE
-            DO I=1,3
-              CALL TRIANG_INDEXES(I, INEXT, IPREV)
-              IP=TRIGP(IE,I)
-              IPNEXT=TRIGP(IE,INEXT)
-              IPPREV=TRIGP(IE,IPREV)
-              IF (STATUS(IP).EQ.0) THEN
-                ZPREV=PREVVERT(IP)
-                IF (ZPREV.EQ.IPNEXT) THEN
-                  COLLECTED(IP)=1
-                  PREVVERT(IP)=IPPREV
-                  IF (PREVVERT(IP).EQ.NEXTVERT(IP)) THEN
-                    STATUS(IP)=1
-                  END IF
-                END IF
-              END IF
-            END DO
-          END DO
-
-          ISFINISHED=1
-          DO IP=1,MNP
-            IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
-              STATUS(IP)=-1
-              NEIGHBOR_PREV(IP)=PREVVERT(IP)     ! new code
-            END IF
-            IF (STATUS(IP).EQ.0) THEN
-              ISFINISHED=0
-            END IF
-          END DO
-          IF (ISFINISHED.EQ.1) THEN
-            EXIT
-          END IF
-        END DO
-!  Now making checks
-        DO IP=1,MNP
-          IP2=NEIGHBOR_NEXT(IP)
-          IF (IP2.GT.0) THEN
-            IP3=NEIGHBOR_PREV(IP2)
-            IF (ABS(IP3 - IP).GT.0) THEN
-              Print *, 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
-              Print *, 'We have a dramatic inconsistency'
-              STOP
-            END IF
-          END IF
-        END DO
-!   Now assigning the boundary IOBP array
-        DO IP=1,MNP
-          IF (STATUS(IP).EQ.-1 .AND. IOBP(IP) .EQ. 1) THEN
-            IOBP(IP)=0
-          END IF
-        END DO
-
-        DEALLOCATE(STATUS, STAT=ISTAT)
-        CHECK_DEALLOC_STATUS ( ISTAT )
-        DEALLOCATE(COLLECTED, STAT=ISTAT)
-        CHECK_DEALLOC_STATUS ( ISTAT )
-        DEALLOCATE(NEXTVERT, STAT=ISTAT)
-        CHECK_DEALLOC_STATUS ( ISTAT )
-        DEALLOCATE(PREVVERT, STAT=ISTAT)
-        CHECK_DEALLOC_STATUS ( ISTAT )
-
-      END SUBROUTINE
-
-!/ ------------------------------------------------------------------- /
-
-      SUBROUTINE TRIANG_INDEXES(I, INEXT, IPREV)
-!  1. Original author :
-!
-!     Mathieu Dutour Sikiric, IRB & Aron Roland, Z&P
-!
-        INTEGER, INTENT(IN)  :: I
-        INTEGER, INTENT(OUT) :: INEXT, IPREV
-        IF (I.EQ.1) THEN
-          INEXT=3
-        ELSE
-          INEXT=I-1
-        END IF
-        IF (I.EQ.3) THEN
-          IPREV=1
-        ELSE
-          IPREV=I+1
-        END IF
-      END SUBROUTINE
-
 
 !/ ------------------------------------------------------------------- /
    SUBROUTINE SETUGIOBP ( )    

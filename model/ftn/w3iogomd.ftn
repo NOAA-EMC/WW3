@@ -411,7 +411,6 @@
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
           CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
-          !WRITE(6,*) 'Requested:',OUT_NAMES(IOUT+1)
 !
 ! 2. Matches names with expected ... 
 !
@@ -443,10 +442,10 @@
 !
 ! Group 2
 !
-           CASE('AHS')
-             FLG2D(2,1)=.TRUE.
-           CASE('OHS')
-             FLG2D(2,1)=.TRUE.
+!/OASACM           CASE('AHS')
+!/OASACM             FLG2D(2,1)=.TRUE.
+!/OASOCM           CASE('OHS')
+!/OASOCM             FLG2D(2,1)=.TRUE.
            CASE('HS')
              FLG2D(2,1)=.TRUE.
            CASE('LM')
@@ -518,6 +517,10 @@
 !
            CASE('UST')
              FLG2D(5,1)=.TRUE.
+!/OASACM         CASE('ACHA')
+!/OASACM           FLG2D(5,2)=.TRUE.
+!/OASOCM         CASE('OCHA')
+!/OASOCM           FLG2D(5,2)=.TRUE.
            CASE('CHA')
              FLG2D(5,2)=.TRUE.
            CASE('CGE')
@@ -536,6 +539,8 @@
              FLG2D(5,9)=.TRUE.
            CASE('WCM')
              FLG2D(5,10)=.TRUE.
+           CASE('FWS')
+             FLG2D(5,11)=.TRUE.
 !
 ! Group 6
 !
@@ -591,6 +596,10 @@
              FLG2D(8,1)=.TRUE.
            CASE('MSC')
              FLG2D(8,2)=.TRUE.
+           CASE('MSD')
+             FLG2D(8,3)=.TRUE.
+           CASE('MCD')
+             FLG2D(8,4)=.TRUE.
 !
 ! Group 9
 !
@@ -806,7 +815,6 @@
         IOUT=0
         DO WHILE (len_trim(OUT_NAMES(IOUT+1)).NE.0)
           CALL STR_TO_UPPER(OUT_NAMES(IOUT+1))           
-          !WRITE(6,*) 'Requested:',OUT_NAMES(IOUT+1)
 !
 ! 2. Matches names with expected ... 
 !
@@ -831,7 +839,10 @@
            FLG2D(1,7)=.TRUE.
 !/BT4           CASE('D50')
 !/BT4             FLG2D(1,8)=.TRUE.
-!
+!/IS2           CASE('IC1')
+!/IS2             FLG2D(1,9)=.TRUE.
+!/IS2           CASE('IC5')
+!/IS2             FLG2D(1,10)=.TRUE.!
 ! Group 2
 !
 !/OASACM         CASE('AHS')
@@ -909,6 +920,10 @@
 !
          CASE('UST')
            FLG2D(5,1)=.TRUE.
+!/OASACM         CASE('ACHA')
+!/OASACM           FLG2D(5,2)=.TRUE.
+!/OASOCM         CASE('OCHA')
+!/OASOCM           FLG2D(5,2)=.TRUE.
          CASE('CHA')
            FLG2D(5,2)=.TRUE.
          CASE('CGE')
@@ -927,6 +942,8 @@
            FLG2D(5,9)=.TRUE.
          CASE('WCM')
            FLG2D(5,10)=.TRUE.
+         CASE('FWS')
+           FLG2D(5,11)=.TRUE.
 !
 ! Group 6
 !
@@ -983,6 +1000,10 @@
            FLG2D(8,1)=.TRUE.
          CASE('MSC')
            FLG2D(8,2)=.TRUE.
+         CASE('MSD')
+           FLG2D(8,3)=.TRUE.
+         CASE('MCD')
+           FLG2D(8,4)=.TRUE.
 !
 ! Group 9
 !
@@ -1145,12 +1166,14 @@
       USE W3GDATMD
       USE W3WDATMD, ONLY: UST, FPIS
       USE W3ADATMD, ONLY: CG, WN, DW
-      USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0
+      USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0,               &
+                          THM, THS, THP0
 
       USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT, SXX,   &
                           SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,    &
                           PWST, PNR, USERO, TUSX, TUSY, PRMS, TPMS,   &
-                          USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
+                          USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,   &
+                          MSCD, CHARN,                                &
                           BHD, CGE, P2SMS, US3D, EF, TH1M, STH1M,     &
                           TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
                           HCMAXE, HMAXE, HCMAXD, HMAXD, USSP
@@ -1179,15 +1202,17 @@
       REAL                    :: FXPMC, FACTOR, FACTOR2, EBAND, FKD,  &
                                  FP1STR, FP1TST, FPISTR, AABS, UABS,  &
                                  XL, XH, XL2, XH2, EL, EH, DENOM, KD, &
-                                 M1, M2, STEX, STEY, STED
+                                 M1, M2, MA, MB, MC, STEX, STEY, STED
       REAL                    :: ET(NSEAL), EWN(NSEAL), ETR(NSEAL),   &
                                  ETX(NSEAL), ETY(NSEAL), AB(NSEAL),   &
+                                 ETXX(NSEAL), ETYY(NSEAL), ETXY(NSEAL),  &
                                  ABX(NSEAL), ABY(NSEAL),ET02(NSEAL),  &
                                  EBD(NK,NSEAL), EC(NSEAL),            &
                                  ABR(NSEAL), UBR(NSEAL), UBS(NSEAL),  &
                                  ABX2(NSEAL), ABY2(NSEAL),            &
                                  ABST(NSEAL), ABXX(NSEAL),            &
                                  ABYY(NSEAL), ABXY(NSEAL),            &
+                                 ABYX(NSEAL),            &
                                  ETUSCX(NSEAL), ETUSCY(NSEAL),        &
                                  ETMSSL(NSEAL), ETMSSCL(NSEAL),       &
                                  ETTPMM(NSEAL), ETF(NSEAL),           &
@@ -1234,6 +1259,9 @@
       ET1    = 0. 
       ETX    = 0.
       ETY    = 0.
+      ETXX   = 0.
+      ETYY   = 0.
+      ETXY   = 0.
       ABR    = 0.
       ABA    = 0.
       ABD    = 0.
@@ -1250,8 +1278,10 @@
       TUSY   = 0.
       MSSX   = 0.
       MSSY   = 0.
+      MSSD   = 0.
       MSCX   = 0.
       MSCY   = 0.
+      MSCD   = 0.
       PRMS   = 0.
       TPMS   = 0.
       ETUSCY = 0.
@@ -1323,6 +1353,7 @@
         ABXX   = 0.
         ABYY   = 0.
         ABXY   = 0.
+        ABYX   = 0.
         ABST   = 0.
 !
 ! 2.b Integrate energy in band
@@ -1339,6 +1370,7 @@
             ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
             ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)        
             ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
+            ABYX(JSEA) = ABYX(JSEA) + A(ITH,IK,JSEA)*ESC(ITH)
             IF (ITH.LE.NTH/2) THEN 
               ABST(JSEA) = ABST(JSEA) +                               &
                               A(ITH,IK,JSEA)*A(ITH+NTH/2,IK,JSEA)
@@ -1380,8 +1412,10 @@
                      *GRAV*WN(IK,ISEA)/SIG(IK)
           TUSY(JSEA)  = TUSY(JSEA) + ABY(JSEA)*FACTOR               &
                      *GRAV*WN(IK,ISEA)/SIG(IK)
-          MSSX(JSEA)  = MSSX(JSEA) + ABX2(JSEA)*FACTOR * WN(IK,ISEA)**2
-          MSSY(JSEA)  = MSSY(JSEA) + ABY2(JSEA)*FACTOR * WN(IK,ISEA)**2
+          ETXX(JSEA)   = ETXX(JSEA) + ABX2(JSEA) * FACTOR* WN(IK,ISEA)**2
+          ETYY(JSEA)   = ETYY(JSEA) + ABY2(JSEA) * FACTOR* WN(IK,ISEA)**2
+          ETXY(JSEA)   = ETXY(JSEA) + ABYX(JSEA) * FACTOR* WN(IK,ISEA)**2
+          ETY(JSEA)    = ETY(JSEA) + ABY(JSEA) * FACTOR
           IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN 
             ETMSSL(JSEA)  = ETMSSL(JSEA) + AB(JSEA)*FACTOR           &
                      *WN(IK,ISEA)**2
@@ -1424,8 +1458,22 @@
             FACTOR2       = SIG(IK)**5/(GRAV**2)/DSII(IK)
             ETUSCX(JSEA)  = ABX(JSEA)*FACTOR*FACTOR2
             ETUSCY(JSEA)  = ABY(JSEA)*FACTOR*FACTOR2
-            MSCX(JSEA)  = ABX2(JSEA) * FACTOR * FACTOR2
-            MSCY(JSEA)  = ABY2(JSEA) * FACTOR * FACTOR2
+!
+!     NB: the slope PDF is proportional to ell1=ETYY*EC2-2*ETXY*ECS+ETYY*ES2 = A*EC2-2*B*ECS+C*ES2
+!     This is an ellipse equation with axis direction given by dir=0.5*ATAN2(-2.*ETXY,ETYY-ETXX)
+!
+            MA  = ABX2(JSEA) * FACTOR * FACTOR2
+            MC  = ABY2(JSEA) * FACTOR * FACTOR2
+            MB  = ABYX(JSEA) * FACTOR * FACTOR2
+!
+! Old definitions:  MSCX(JSEA)  = ABX2(JSEA) * FACTOR * FACTOR2
+!                   MSCY(JSEA)  = ABY2(JSEA) * FACTOR * FACTOR2
+            MSCD(JSEA)=0.5*ATAN2(2*MB,MA-MC)
+
+            MSCX(JSEA)= MA*COS(MSCD(JSEA))**2   &
+                       +2*MB*SIN(MSCD(JSEA))*COS(MSCD(JSEA))+MA*SIN(MSCD(JSEA))**2 
+            MSCY(JSEA)= MC*COS(MSCD(JSEA))**2   &
+                       -2*MB*SIN(MSCD(JSEA))*COS(MSCD(JSEA))+MA*SIN(MSCD(JSEA))**2 
             END IF
 !
 ! Deep water limits
@@ -1720,14 +1768,28 @@
      ENDIF
 
 ! 3.  Finalize computation of mean parameters ------------------------ *
-! 3.a Add tail
-!     ( DTH * SIG absorbed in FTxx )
 !
 !/OMPG/!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,EBAND)
 !
       DO JSEA=1, NSEAL
 !/DIST        ISEA      = IAPROC + (JSEA-1)*NAPROC
 !/SHRD        ISEA      = JSEA
+!
+! 3.a Directional mss parameters
+!     NB: the slope PDF is proportional to ell1=ETYY*EC2-2*ETXY*ECS+ETXX*ES2 = C*EC2-2*B*ECS+A*ES2
+!     This is an ellipse equation with axis direction given by dir=0.5*ATAN2(2.*ETXY,ETXX-ETYY)
+!     From matlab script: t0=0.5*(atan2(2.*B,A-C));
+!     From matlab script: A2=A.*cos(t0).^2+2.*B.*sin(t0).*cos(t0)+A.*cos(t0).^2+C.*sin(t0)^2;
+!     From matlab script: C2=C.*cos(t0)^2-2.*B.*sin(t0).*cos(t0)+A.*sin(t0).^2;
+         MSSD(JSEA)=0.5*(ATAN2(2*ETXY(JSEA),ETXX(JSEA)-ETYY(JSEA)))
+         MSSX(JSEA)  = ETXX(JSEA)*COS(MSSD(JSEA))**2   &
+                       +2*ETXY(JSEA)*SIN(MSSD(JSEA))*COS(MSSD(JSEA))+ETYY(JSEA)*SIN(MSSD(JSEA))**2 
+         MSSY(JSEA)  = ETYY(JSEA)*COS(MSSD(JSEA))**2   &
+                       -2*ETXY(JSEA)*SIN(MSSD(JSEA))*COS(MSSD(JSEA))+ETXX(JSEA)*SIN(MSSD(JSEA))**2 
+!
+! 3.b Add tail
+!     ( DTH * SIG absorbed in FTxx )
+
         EBAND     = AB(JSEA) / CG(NK,ISEA)
         ET (JSEA) = ET (JSEA) + FTE  * EBAND
         EWN(JSEA) = EWN(JSEA) + FTWL * EBAND
@@ -2308,8 +2370,8 @@
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
                           USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,  &
                           PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,        &
-                          USSX, USSY, MSSX, MSSY, MSCX, MSCY,          &
-                          TAUWNX, TAUWNY, CHARN, BHD,                  &
+                          USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
+                          MSCD, TAUWNX, TAUWNY, CHARN, TWS, BHD,       &
                           PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE, EF, &
                           CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
                           TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
@@ -2571,6 +2633,8 @@
                                      MSCX  (ISEA) = UNDEF
                                      MSCY  (ISEA) = UNDEF
                   END IF
+                IF ( FLOGRD( 8, 3) ) MSSD (ISEA) = UNDEF
+                IF ( FLOGRD( 8, 4) ) MSCD (ISEA) = UNDEF
 !
                 IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
                 IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
@@ -2772,6 +2836,8 @@
                     WRITE ( NDSOG ) WHITECAP(1:NSEA,3)
                   ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
                     WRITE ( NDSOG ) WHITECAP(1:NSEA,4)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
+                    WRITE ( NDSOG ) TWS(1:NSEA)
 !
 !     Section 6)
 !
@@ -2857,6 +2923,10 @@
                   ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
                     WRITE ( NDSOG ) MSCX(1:NSEA)
                     WRITE ( NDSOG ) MSCY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
+                    WRITE ( NDSOG ) MSSD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
+                    WRITE ( NDSOG ) MSCD(1:NSEA)
 !
 !     Section 9)
 !
@@ -3034,6 +3104,9 @@
                   ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                    WHITECAP(1:NSEA,4)
+                  ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                   TWS(1:NSEA)
 !
 !     Section 6)
 !
@@ -3126,6 +3199,12 @@
                                                        MSCX(1:NSEA)
                     READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                                                        MSCY(1:NSEA)
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       MSSD(1:NSEA)
+                  ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
+                    READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                                                       MSCD(1:NSEA)
 !
 !     Section 9)
 !

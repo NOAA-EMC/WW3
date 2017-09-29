@@ -91,6 +91,8 @@
 !       NDST    Int.  Test output unit number (shell only).
 !       NDSF    I.A.  Field files unit numbers (shell only).
 !       FLH     L.A.  Flags for homogeneous fields.
+!       FLAGSC  L.A.  Flags for coupling fields
+!       FLAGSCI Log.  Flags for ice ic1 ic5 coupling
 !       NH      I.A.  Number of times for homogeneous fields.
 !       THO     I.A.  Times of homogeneous fields.
 !       TIME0   I.A.  Starting time.
@@ -293,6 +295,7 @@
       LOGICAL             :: FLGR2(NOGRP,NGRPP), FLG2(NOGRP)
       LOGICAL             :: FLAGSTIDE(4)
       LOGICAL             :: PRTFRM
+      LOGICAL             :: FLAGSCI
       LOGICAL             :: FLLST_ALL(-7:8)
       LOGICAL             :: DEBUG_NCC = .FALSE.
 !/NCC      LOGICAL             :: CFLAG(10) 
@@ -548,21 +551,33 @@
             END IF
             FLH(J) = FLH(J) .AND. INFLAGS1(J)
           ELSE
-            READ (NDSI,*,END=2001,ERR=2002) INFLAGS1(J)
+            READ (NDSI,*,END=2001,ERR=2002) FLAGTFC
             FLH(J) = .FALSE.
+            IF (FLAGTFC.EQ.'T') THEN 
+              INFLAGS1(J)=.TRUE.
+              FLAGSC(J)=.FALSE.
+            END IF
+            IF (FLAGTFC.EQ.'F') THEN 
+              INFLAGS1(J)=.FALSE.
+              FLAGSC(J)=.FALSE.
+            END IF
+            IF (FLAGTFC.EQ.'C') THEN 
+              INFLAGS1(J)=.TRUE.
+              FLAGSC(J)=.TRUE.
+            END IF
           END IF
         IF ( INFLAGS1(J) ) THEN
             YESXNO = 'YES/--'
           ELSE
             YESXNO = '---/NO'
-          END IF
+        END IF
         IF ( FLH(J) ) THEN
             STRNG  = '(homogeneous field) '
           ELSE IF ( FLAGSC(J) ) THEN
             STRNG  = '(coupling field) '
           ELSE
             STRNG  = '                    '
-          END IF
+        END IF
         IF ( IAPROC .EQ. NAPOUT )                                     &
               WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
         END DO
@@ -669,6 +684,14 @@
             TTIME(1) = 0
             TTIME(2) = 0
             DTTST    = REAL ( ODAT(5*(J-1)+3) )
+!/COU            ! Force coupling time step to model time step
+!/COU            IF ( J .EQ. 7 .AND. DTTST.NE.DTMAX ) THEN
+!/COU              IF ( IAPROC .EQ. NAPOUT ) THEN
+!/COU                WRITE (NDSO,1009) DTTST, DTMAX
+!/COU              END IF
+!/COU              ODAT(5*(J-1)+3) = INT(DTMAX)
+!/COU              DTTST = DTMAX
+!/COU            END IF
             CALL TICK21 ( TTIME , DTTST  )
             CALL STME21 ( TTIME , DTME21 )
             IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
@@ -813,7 +836,7 @@
 !/COU                                  FLGR2, IAPROC, NAPOUT, IERR )
 !/COU               IF ( IERR .NE. 0 ) GOTO 2222
 !/COU               CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-!/COU               READ (NDSI,'(A)',END=2001,ERR=2003,IOSTAT=IERR) FLDIN
+!/COU               READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) FLDIN
 !
               END IF
 !
@@ -1035,9 +1058,12 @@
 !/OASIS      ELSE
 !/OASIS         L_MASTER = .FALSE.
 !/OASIS      ENDIF 
-!/OASIS      CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
 !/OASIS ! Estimate the weights for the spatial interpolation
+!/OASIS  IF (DTOUT(7).NE.0) THEN
+!/OASIS      CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
 !/OASIS      CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
+!/OASIS  END IF
+
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
@@ -1123,7 +1149,8 @@
               END IF
             ELSE 
 !/OASIS             ID_OASIS_TIME = DSEC21 ( TIME00 , TIME )
-!/OASIS             IF ( (MOD(ID_OASIS_TIME/DTOUT(7),1.0) .LT. 1.E-7 ) .AND. &
+!/OASIS             IF ( (DTOUT(7).NE.0) .AND.                               &
+!/OASIS                  (MOD(ID_OASIS_TIME/DTOUT(7),1.0) .LT. 1.E-7 ) .AND. &
 !/OASIS                  (DSEC21 (TIME, TIMEEND) .GT. 0.0)) DTTST=0.
              END IF
 !
@@ -1138,16 +1165,22 @@
                 IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972) IDFLDS(J)
 !/TIDE                 END IF
 !
-! IC1 : (in context of IC3, this is ice thickness)
+! IC1 : (in context of IC3 & IC2, this is ice thickness)
                 IF ( J .EQ. -7 ) THEN
                    IF ( FLH(J) ) THEN
                       CALL W3FLDH (J, NDST, NDSEN, NX, NY, NX, NY,    &
                            TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                            TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
                    ELSE
+!/OASIS                 COUPL_COMM = MPI_COMM
+!/OASICM                IF (FLAGSC(J)) FLAGSCI = .TRUE.
+!/OASICM                IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
+                           TTT, XXX, XXX, XXX, TI1, XXX, XXX, ICEP1,  &
+                           IERR, FLAGSC(J)                            &
+!/OASICM                   , COUPL_COMM                               &
+                           )
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! IC2 : (in context of IC3, this is ice viscosity)
@@ -1159,7 +1192,8 @@
                    ELSE
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
+                           TTT, XXX, XXX, XXX, TI2, XXX, XXX, ICEP2,  &
+                           IERR, FLAGSC(J))
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! IC3 : (in context of IC3, this is ice density)
@@ -1171,7 +1205,8 @@
                    ELSE
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
+                           TTT, XXX, XXX, XXX, TI3, XXX, XXX, ICEP3,  &
+                           IERR, FLAGSC(J))
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! IC4 : (in context of IC3, this is ice modulus)
@@ -1181,10 +1216,11 @@
                            TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                            TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
                    ELSE
-                      CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
+                     CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
-                   END IF
+                           TTT, XXX, XXX, XXX, TI4, XXX, XXX, ICEP4,  &
+                           IERR, FLAGSC(J))
+                     END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! IC5 : ice flow diam.
                 ELSE IF ( J .EQ. -3 ) THEN
@@ -1193,10 +1229,16 @@
                            TIME0, TIMEN, NH(J), NHMAX, THO, HA, HD, HS,&
                            TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
                    ELSE
+!/OASIS                 COUPL_COMM = MPI_COMM
+!/OASICM                IF (FLAGSC(J)) FLAGSCI = .TRUE.
+!/OASICM                IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
-                   END IF
+                           TTT, XXX, XXX, XXX, TI5, XXX, XXX, ICEP5,  &
+                           IERR, FLAGSC(J)                            &
+!/OASICM                   , COUPL_COMM                               &
+                           )
+                     END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! MUD1 : mud density
                 ELSE IF ( J .EQ. -2 ) THEN
@@ -1207,7 +1249,8 @@
                    ELSE
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD, IERR)
+                           TTT, XXX, XXX, XXX, TZN, XXX, XXX, MUDD,   &
+                           IERR, FLAGSC(J))
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! MUD2 : mud thickness
@@ -1219,7 +1262,8 @@
                    ELSE
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT, IERR)
+                           TTT, XXX, XXX, XXX, TTN, XXX, XXX, MUDT,   &
+                           IERR, FLAGSC(J))
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! MUD3 : mud viscosity
@@ -1231,7 +1275,8 @@
                    ELSE
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
-                           TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV, IERR)
+                           TTT, XXX, XXX, XXX, TVN, XXX, XXX, MUDV,   &
+                           IERR, FLAGSC(J))
                    END IF
                    IF ( IERR .LT. 0 )FLLST_ALL(J) = .TRUE.
 ! LEV : water levels
@@ -1254,7 +1299,7 @@
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TTT, XXX, XXX, XXX, TLN, XXX, XXX, WLEV,   &
-                           IERR                                       &
+                           IERR, FLAGSC(J)                            &
 !/OASOCM                   , COUPL_COMM                               &
                            )
 !/TIDE                          END IF
@@ -1282,7 +1327,7 @@
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TC0, CX0, CY0, XXX, TCN, CXN, CYN, XXX,    &
-                           IERR                                       &
+                           IERR, FLAGSC(J)                            &
 !/OASOCM                   , COUPL_COMM                               &
                            )
 !/TIDE                          END IF
@@ -1300,7 +1345,7 @@
                       CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                            NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                            TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &
-                           IERR                                       &
+                           IERR, FLAGSC(J)                            &
 !/OASACM                   , COUPL_COMM                               &
                            )
 !/NCC                        END IF
@@ -1314,9 +1359,15 @@
 ! ICE : ice conc.
                 ELSE IF ( J .EQ. 4 ) THEN
 !/NCC                    IF (.NOT.CFLAG(J)) THEN
+!/OASIS                 COUPL_COMM = MPI_COMM
+!/OASICM                IF (FLAGSC(J)) FLAGSCI = .TRUE.
+!/OASICM                IF (.NOT.FLAGSCI) ID_OASIS_TIME = -1
                    CALL W3FLDG ('READ', IDSTR(J), NDSF(J),            &
                         NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN,    &
-                        TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI, IERR)
+                        TTT, XXX, XXX, XXX, TIN, XXX, BERGI, ICEI,    &
+                        IERR, FLAGSC(J)                               &
+!/OASICM                , COUPL_COMM                                  &
+                        )
                    IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
 !could use this:   IF ( IERR .LT. 0 ) FLLST_ALL(J) = .TRUE.
 !/NCC                    END IF
@@ -1664,6 +1715,10 @@
  1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : '/               &
                '     ERROR IN OPENING OUTPUT FILE'/                   &
                '     IOSTAT =',I5/)
+ 1009 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : '/             &
+               '     COUPLING AND MODEL TIME STEPS NOT CONSISTENT'/   &
+               '     IT WILL OVERWRITE COUPLING TIME STEP'/           &
+               '     FROM ',F4.1, ' TO ',F4.1/)
 !
 !/T 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 !/T 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)

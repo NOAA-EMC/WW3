@@ -29,7 +29,7 @@
 # debug and time statistic information written by OASIS3-MCT for each model
 # and processor (see user manual for more details)
 #
-  30  3
+ 1
  $END
 ###########################################################################
  $STRINGS
@@ -61,6 +61,12 @@
 #  --------------------------------------------------------------|
 # |                    WND   |    WW3__U10 WW3__V10              |
 # |--------------------------------------------------------------|
+# | received fields by ww3 from Ice model :         WW3 | OASIS  |
+#  --------------------------------------------------------------|
+# |                    ICE   |    WW3__ICE                       |
+# |                    IC1   |    WW3__IC1                       |
+# |                    IC5   |    WW3__IC5                       |
+# |--------------------------------------------------------------|
 # | sent fields by ww3 to Ocean model :             WW3 | OASIS  |
 # |--------------------------------------------------------------|
 # |            not defined   |    WW3_ODRY                       |
@@ -73,13 +79,20 @@
 # |                    FOC   |    WW3__FOC                       |
 # |                    TAW   |    WW3_TAWX WW3_TAWY              |
 # |                     LM   |    WW3___LM                       |
+# |                   OCHA   |    WW3_OCHA                       |
 # |--------------------------------------------------------------|
 # | sent fields by ww3 to Atmospheric model :       WW3 | OASIS  |
 # |--------------------------------------------------------------|
 # |                    CUR   |    WW3_WSSU WW3_WSSV              |
-# |                    CHA   |    WW3__CHA                       |
+# |                   ACHA   |    WW3_ACHA                       |
 # |                     HS   |    WW3__AHS                       |
 # |                     FP   |    WW3___FP                       |
+# |                    FWS   |    WW3__FWS                       |
+# |--------------------------------------------------------------|
+# | sent fields by ww3 to Ice model :               WW3 | OASIS  |
+# |--------------------------------------------------------------|
+# |                    TWI   |    WW3_TWIX WW3_TWIY              |
+# |                    IC5   |    WW3_ICEF                       |
 # |--------------------------------------------------------------|
 #
 #  
@@ -92,19 +105,19 @@
 # Field 1 : 
 #~~~~~~~~~~~
 TOY___UZ WW3_OSSU  1 180 1 r-toy.nc EXPOUT
-80 80 101 117 toyt ww3t LAG=+180
+80 80 103 119 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
-BILINEAR LR SCALAR LATLON 1 4
+DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # Field 2 : 
 #~~~~~~~~~~~
 TOY___VZ WW3_OSSV  1 180 1 r-toy.nc EXPOUT
-80 80 101 117 toyt ww3t LAG=+180
+80 80 103 119 toyt ww3t LAG=+180
 R  0  R  0
 SCRIPR
-BICUBIC LR SCALAR LATLON 1 4
+DISTWGT LR SCALAR LATLON 1 4
 #
 #                     -----------------------------------------
 #                        WW3 (wwatch) ==> TOY (toyexe)
@@ -114,7 +127,7 @@ BICUBIC LR SCALAR LATLON 1 4
 # Field 3 : 
 #~~~~~~~~~~~
 WW3_CDIR TOY_CDIR 1 180 1 r-ww3.nc EXPOUT
-101 117 80 80 ww3t toyt LAG=+180
+103 119 80 80 ww3t toyt LAG=+180
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
@@ -123,7 +136,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # Field 4 : 
 #~~~~~~~~~~~
 WW3_SDIR TOY_SDIR 1 180 1 r-ww3.nc EXPOUT
-101 117 80 80 ww3t toyt LAG=+180
+103 119 80 80 ww3t toyt LAG=+180
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4

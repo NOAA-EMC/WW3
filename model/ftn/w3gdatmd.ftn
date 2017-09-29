@@ -173,6 +173,8 @@
 !      FICE0/N   Real  Public   Cut-off ice conc. for ice coverage.
 !      FICEL     Real  Public   Length scale for sea ice damping
 !      IICEHMIN  Real  Public   Minimum thickness of sea ice
+!      IICEHDISP Real  Public   Minimum thickness of sea ice in the dispersion relation before relaxing the conv. criterion
+!      IICEHFAC  Real  Public   Scale factor for sea ice thickness
 !      IICEHINIT Real  Public   Initial value of ice thickness
 !      ICE100WIND Real  Publ.   Reduction of wind input if ice fraction=1.0
 !                               Default is 1.0, meaning that 100% ice 
@@ -213,6 +215,7 @@
 !      FLAGST    L.A.  Public   Flag for source term computations 
 !                               for individual grid points.
 !      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
+!      IICESMOOTH Log.  Public   Flag to smooth the ice covered dispertion relation in broken ice.
 !       
 !
 !      GNAME     C*30  Public   Grid name.
@@ -613,7 +616,9 @@
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
                             DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
                             PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
-                            IICEHINIT, ICE100WIND
+                            IICEHINIT, ICE100WIND, IICEHFAC, IICEHDISP, &
+		                    IICEDDISP, IICEFDISP
+
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
 !/RTD        REAL                  :: Polat, Polon   ! Rotated N-Pole lat/lon
@@ -636,7 +641,8 @@
         REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
         REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
-        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
+        LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
+			                IICESMOOTH
         LOGICAL          :: FLAGLL
         LOGICAL          :: CMPRTRCK
         LOGICAL, POINTER :: FLAGST(:)
@@ -915,7 +921,8 @@
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX, &
                                  DTMIN, DMIN, CTMAX, FICE0, FICEN,     &
                                  FICEL, PFMOVE, STEXU, STEYU, STEDU,   &
-                                 IICEHMIN, IICEHINIT, ICE100WIND
+                                 IICEHMIN, IICEHINIT, ICE100WIND,      &
+                                 IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: Polat, Polon
 !/RTD        REAL, POINTER         :: AnglD(:)
@@ -936,7 +943,8 @@
       REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 !/BT4        REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 
-      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP
+      LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
+                          IICESMOOTH
       LOGICAL, POINTER :: FLAGLL
       LOGICAL, POINTER :: CMPRTRCK
       LOGICAL, POINTER :: FLAGST(:)
@@ -1409,7 +1417,7 @@
 !/REF1      CHECK_ALLOC_STATUS ( ISTAT )
 !/IG1       ALLOCATE ( GRIDS(IMOD)%IGPARS(12), STAT=ISTAT )
 !/IG1       CHECK_ALLOC_STATUS ( ISTAT )
-!/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(7), STAT=ISTAT )
+!/IC2       ALLOCATE ( GRIDS(IMOD)%IC2PARS(9), STAT=ISTAT )
 !/IC2       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC3       ALLOCATE ( GRIDS(IMOD)%IC3PARS(16), STAT=ISTAT )
 !/IC3       CHECK_ALLOC_STATUS ( ISTAT )
@@ -1855,6 +1863,10 @@
       FICEN  => GRIDS(IMOD)%FICEN
       FICEL  => GRIDS(IMOD)%FICEL
       IICEHMIN  => GRIDS(IMOD)%IICEHMIN
+      IICEHDISP  => GRIDS(IMOD)%IICEHDISP
+      IICEFDISP  => GRIDS(IMOD)%IICEFDISP
+      IICEDDISP  => GRIDS(IMOD)%IICEDDISP
+      IICEHFAC  => GRIDS(IMOD)%IICEHFAC
       IICEHINIT  => GRIDS(IMOD)%IICEHINIT
       ICE100WIND  => GRIDS(IMOD)%ICE100WIND
       PFMOVE => GRIDS(IMOD)%PFMOVE
@@ -1871,6 +1883,7 @@
       FLCK   => GRIDS(IMOD)%FLCK
       FLSOU  => GRIDS(IMOD)%FLSOU
       IICEDISP => GRIDS(IMOD)%IICEDISP
+      IICESMOOTH => GRIDS(IMOD)%IICESMOOTH
 !
       GNAME  => GRIDS(IMOD)%GNAME
       FILEXT => GRIDS(IMOD)%FILEXT
