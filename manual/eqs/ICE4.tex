@@ -1,5 +1,5 @@
 \vsssub
-\subsubsection{~$S_{ice}$: Frequency-dependent damping by sea ice} \label{sec:ICE4}
+\subsubsection{~$S_{ice}$: Empirical/parametric damping by sea ice} \label{sec:ICE4}
 \vsssub
 
 \opthead{IC4}{\ws/NRL}{C. Collins and E. Rogers}
@@ -14,8 +14,7 @@ In the following discussion we use {\code IC4M1} to denote {\code IC4} method 1,
   {\alpha} = \exp\left[\frac{-{2\pi}C_{ice, 1}}{{\sigma}} - C_{ice, 2}\right]
 \end{equation}
 
-\noindent
-The values determined from the data are ${C_{ice,1...2}}=[0.18, 7.3]$ but these may be tweaked for attenuation of a qualitatively similar character. 
+\noindent Here, $\alpha$ is the exponential decay rate for energy, which is twice that for amplitude: $\alpha = 2k_i$. The values determined from the data are ${C_{ice,1...2}}=[0.18, 7.3]$, but these may be modified by the user. 
 
 {\code IC4M2}: \cite{art:MBK14} used a polynomial to fit their data. The additional physics parameterized here is the so-called “roll-over effect” where the attenuation levels off at the higher frequencies. The equation is the following:
 \begin{equation}\label{eq:ice2}
@@ -37,13 +36,19 @@ Be advised, the equation itself was an extrapolation of the original range of $h
 \begin{equation}
 \left \{
 \begin{array}{llrcl}
-{\alpha} = {C_{ice,1}}\times {H_s}   & & \text{for} \> {H_s} \leq 3 m  \\
-{\alpha} = {C_{ice,2}}               & & \text{for} \> {H_s} > 3 m     \\
+{\frac{\partial H_s}{\partial dx}} = {C_{ice,1}}\times {H_s}   & & \text{for} \> {H_s} \leq 3 m  \\
+{\frac{\partial H_s}{\partial dx}} = {C_{ice,2}}               & & \text{for} \> {H_s} > 3 m     \\
 \end{array} \right .
 \end{equation}
+where {$k_i=\frac{\partial H_s}{\partial dx}/H_s$}.
 
 The values given in \cite{art:Ko14} are ${C_{ice,1...2}}=[5.35\times 10^{-6}, 16.05\times 10^{-6}]$. See regression test {\file ww3\_tic1.1/input\_IC4/M4} for examples.
 
 {\code IC4M5}: This is a simple step function with up to 4 steps. It is controlled by the optionally nonstationary and non-uniform parameters ${C_{ice,1...7}}$. Parameters ${C_{ice,1...4}}$ control the step levels, which are in terms of dissipation rate, ${k_i}$, in radians per meter. Parameters ${C_{ice,5...7}}$ control the step boundaries (given in Hz). See regression test {\file ww3\_tic1.1/input\_IC4/M5} for examples.
 
 {\code IC4M6}: This is a simple step function with up to 10 steps. It is controlled by the stationary and uniform namelist parameters {\code IC4KI} and {\code IC4FC}. Array {\code IC4KI} controls the step levels, which are in terms of dissipation rate, ${k_i}$, in radians per meter. Array {\code IC4FC} controls the step boundaries (given in Hz). See regression test {\file ww3\_tic1.1/input\_IC4/M6} for examples. 
+
+{\code IC4M7}: This is a formula for dissipation from \cite{art:Dob15}, developed for a mixture of pancake and frazil ice, using data collected in the Weddell Sea (Antarctica). The formula depends on wave frequency and ice thickness:
+\begin{equation}\label{eq:ice7}
+  {\alpha=0.2T^{-2.13}h} \:\:\: .
+\end{equation}
