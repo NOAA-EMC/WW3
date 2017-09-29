@@ -7,7 +7,7 @@
 !/                  | Adv, GCT, Rfr, Dif subroutines.    |
 !/                  |           Jian-Guo Li              |
 !/                  | First created:     8 Nov 2010      |
-!/                  | Last modified:     3 Sep 2015      |
+!/                  | Last modified:     8 Aug 2017      |
 !/                  +------------------------------------+
 !/
 !/    08-Nov-2010 : Coding started by adapting w3pro2md.ftn.
@@ -31,6 +31,7 @@
 !/    18-Aug-2015 : New gradient, average and 3rd order advection subs. 
 !/     3-Sep-2015 : UNO3 advection scheme by logical option FUNO3. 
 !/    14-Sep-2015 : Modify DHDX/Y for Arctic part refraction term.  
+!/     8-Aug-2017 : Update SMCGradn for 0 or 1 boundary conditions. 
 !/
 !  1. Purpose :
 !
@@ -764,7 +765,7 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN) :: ISEA
-!/S      INTEGER, SAVE           :: IENT = 0
+!/S      INTEGER, SAVE       :: IENT = 0
       REAL, INTENT(IN)    :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
                              WN(0:NK+1), DEPTH, DDDX, DDDY,       &
                              ALFLMT(NTH), CX, CY, DCXDX, DCXDY,   & 
@@ -833,8 +834,11 @@
 !Li   Current induced refraction stored in FKC.    JGLi30Mar2016
           IF ( FLCUR ) THEN
              DO ITH=1, NTH
-                FKC(ITH) = FACTH*( DCYDX*ES2(ITH) - DCXDY*EC2(ITH) +  & 
+!Li   Put a CTMAX limit on current theta rotation.  JGLi02Mar2017
+!               FKC(ITH) = FACTH*( DCYDX*ES2(ITH) - DCXDY*EC2(ITH) +  & 
+                FGC      = FACTH*( DCYDX*ES2(ITH) - DCXDY*EC2(ITH) +  & 
                                   (DCXDX - DCYDY)*ESC(ITH) )
+                FKC(ITH) = SIGN( MIN(ABS(FGC), CTMAX), FGC )
              END DO
           ELSE
                 FKC(:)=0.0
@@ -1802,8 +1806,9 @@
 ! Subroutine that calculate cell centre gradient for any input variable.
 ! Nemerical average is applied to size-changing faces and the gradients 
 ! are along the lat-lon local east-north directions.    JGLi18Aug2015
+! Add optional zero-gradient bounday conditions.    JGLi08Aug2017
 !
-       SUBROUTINE SMCGradn(CVQ, GrdX, GrdY) 
+       SUBROUTINE SMCGradn(CVQ, GrdX, GrdY, L0r1) 
 
          USE CONSTANTS
          USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,   MRFct,       &
@@ -1812,8 +1817,12 @@
          USE W3ODATMD, ONLY: NDSE, NDST 
 
          IMPLICIT NONE
-         REAL,    INTENT( IN)::  CVQ(-9:NSEA)
+!!   New boundary conditions depending on user defined L0r1.
+!!   L0r1 = 0 will set zero at land points while L0r1 > 0 invokes 
+!!   the zero-gradient boundary condition.    JGLi08Aug2017
+         REAL,    INTENT( IN)::  CVQ(NSEA)
          REAL,    INTENT(Out):: GrdX(NSEA), GrdY(NSEA)
+         INTEGER, INTENT( IN):: L0r1      
 !
          INTEGER :: I, J, K, L, M, N
          REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6 
@@ -1823,10 +1832,9 @@
          REAL,  Dimension(-9:NSEA):: CVF, AUN, AVN  
 
 !    Two layer of boundary cells are added to each boundary cell face
-!    with all boundary cell values CVF(-9:0)=CV0.
-!        CVF(-9:0)  =CV0
-!        CVF(1:NSEA)=CVQ(1:NSEA) 
-         CVF=CVQ 
+!    with all boundary cell default values CVF(-9:0)= 0.0.
+         CVF(-9:0)  = 0.0
+         CVF(1:NSEA)=CVQ(1:NSEA) 
 
 !!   Initialize arrays
          AUN = 0.
@@ -1847,6 +1855,9 @@
            L=IJKUFc(5,i)
            M=IJKUFc(6,i)
 
+!!   For zero-gradient boundary conditions, simply skip boundary faces.
+        IF( L0r1 .EQ. 0 .OR. (L > 0 .AND. M > 0) ) THEN
+
 !    Multi-resolution SMC grid requires flux multiplied by face factor.
            CNST1=FLOAT( IJKUFc(3,i) ) 
 
@@ -1854,12 +1865,15 @@
            CNST2=FLOAT( IJKCel(3,L) ) 
            CNST3=FLOAT( IJKCel(3,M) ) 
 
+!    Side gradients over 2 cell lengths for central cell.
+!    Face size factor is also included for average.
            CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
 
 !    Store side gradient in two neighbouring cells
            AUN(L) = AUN(L) + CNST5 
            AUN(M) = AUN(M) + CNST5 
 
+        ENDIF
         END DO
 
 !  Assign averaged side-gradient to GrdX, plus latitude factor
@@ -1880,6 +1894,9 @@
            L=IJKVFc(5,j)
            M=IJKVFc(6,j)
 
+!!   For zero-gradient boundary conditions, simply skip boundary faces.
+        IF( L0r1 .EQ. 0 .OR. (L > 0 .AND. M > 0) ) THEN
+
 !    Face size is required for multi-resolution grid.
            CNST1=Real( IJKVFc(3,j) )
 
@@ -1889,14 +1906,13 @@
 
 !    Side gradients over 2 cell lengths for central cell.
 !    Face size factor is also included for average.
-!    Side gradients over 2 cell lengths for central cell.
-!    Face size factor is also included for average.
            CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
 
 !    Store side gradient in two neighbouring cells
            AVN(L) = AVN(L) + CNST6 
            AVN(M) = AVN(M) + CNST6 
 
+        ENDIF
         END DO
 
 !  Assign averaged side-gradient to GrdY.
@@ -2091,6 +2107,7 @@
 ! The term is equivalent to advection on an irregular k-space grid.
 ! The UNO2 scheme on irregular grid is used for this term. 
 !                 Jian-Guo Li  15 Nov 2010
+! Fix bug on CFL limiter and add positive filter.  JGLi28Jun2017
 !Li
 
        SUBROUTINE SMCkUNO2(CoRfr, SpeTHK, DKC, DKS)
@@ -2112,9 +2129,9 @@
 !    The wave action in k-space is extended at the high-wavenumber (frequency) end 
 !    by the (m+2)th negative power of frequency for boundary conditions.  Outside 
 !    low-wavenumber (frequncy) end, wave action is assumed to be zero.
-      CNST=XFR**(-7)
+        CNST=XFR**(-7)
 
-      DO n=1, NTH
+        DO n=1, NTH
 
 !!   Asign cell spectrum to temporary variable Spcetr
          Spectr(-1)  =0.0
@@ -2140,14 +2157,14 @@
          IF(CNST6 > 0.0)  THEN
 
             CNST0 = MIN( CTMAX*DKC(j), CNST6 )
-         SpeFlx(j) = CNST6*( Spectr(j) + SIGN(0.5, SpeRfr(j))*(DKC(j)-CNST0)  &
+         SpeFlx(j) = CNST0*( Spectr(j) + SIGN(0.5, SpeRfr(j))*(DKC(j)-CNST0)  &
                       *MIN( ABS(SpeRfr(j-1)), ABS(SpeRfr(j)) ) )
  
 !    For negative or no turning case
          ELSE 
 
-             CNST0 = MIN( CTMAX*DKC(j+1), -CNST6 )
-         SpeFlx(j) = CNST6*( Spectr(j+1) - SIGN(0.5, SpeRfr(j))*(DKC(j+1)-CNST0) &
+            CNST0 = MIN( CTMAX*DKC(j+1), -CNST6 )
+         SpeFlx(j) = -CNST0*( Spectr(j+1) - SIGN(0.5, SpeRfr(j))*(DKC(j+1)-CNST0) &
                       *MIN( ABS(SpeRfr(j+1)), ABS(SpeRfr(j)) ) )
 
          ENDIF
@@ -2158,16 +2175,18 @@
 !!   Update spectrum for the given direction
          DO j=1, NK
 !    Final refraction Courant number for this k-space face 
-            SpeTHK(n, j) = Spectr(j) + (SpeFlx(j-1) - SpeFlx(j))/DKC(j)
+!           SpeTHK(n, j) = Spectr(j) + (SpeFlx(j-1) - SpeFlx(j))/DKC(j)
+!    Add positive filter in case negative values.  JGLi27Jun2017
+            SpeTHK(n, j) = MAX( 0.0, Spectr(j)+(SpeFlx(j-1)-SpeFlx(j))/DKC(j) )
          END DO
 
 !!   End of directional loop n
-      END DO
+        END DO
 
-! 999  PRINT*, ' Sub SMCkUNO2 ended.'
+! 999   PRINT*, ' Sub SMCkUNO2 ended.'
 
-      RETURN
-      END SUBROUTINE SMCkUNO2
+        RETURN
+        END SUBROUTINE SMCkUNO2
 
 
 ! Subroutine that calculates water-depth gradient for refraction.
@@ -2184,14 +2203,14 @@
 
          IMPLICIT NONE
 
-         INTEGER :: I, J, K, L, M, N
+         INTEGER :: I, J, K, L, M, N 
          REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
-         REAL, Dimension(NSEA) :: GrHx, GrHy
-         REAL, Dimension(-9:NSEA) :: HCel
+         REAL, Dimension(NSEA) :: HCel, GrHx, GrHy
+!        REAL, Dimension(-9:NSEA) :: HCel
 
 !!   Assign water depth to HCel from DW integer values.
 !!   set half the minimum depth DMIN for negative cells.
-       HCel(-9:0) = 0.5*DMIN
+!      HCel(-9:0) = 0.5*DMIN
        HCel(1:NSEA)= DW(1:NSEA) 
 
 !!   Reset shallow water depth with minimum depth
@@ -2203,8 +2222,11 @@
        DDDX = 0.
        DDDY = 0.
 
+!!   Use zero-gradient boundary condition or L0r1 > 0
+       L = 1
+
 !!   Calculate sea point water depth gradient
-       CALL SMCGradn(HCel, GrHx, GrHy)
+       CALL SMCGradn(HCel, GrHx, GrHy, L)
 
 !!   Pass gradient values to DHDX, DHDY
        DHDX(1:NSEA) = GrHx
@@ -2287,11 +2309,13 @@
 
          INTEGER :: I, J, K, L, M, N
          REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
-         REAL, Dimension(NSEA) :: GrHx, GrHy
-         REAL, Dimension(-9:NSEA) :: CXCY
+         REAL, Dimension(NSEA) :: CXCY, GrHx, GrHy
+!        REAL, Dimension(-9:NSEA) :: CXCY
 
 !!   Assign current CX speed to CXCY and set negative cells.
-       CXCY(-9:0) = 0.0
+!      CXCY(-9:0) = 0.0
+!!   Use zero-gradient boundary condition or L0r1 > 0
+       L = 1
        CXCY(1:NSEA)= CX(1:NSEA) 
 
 !!   Initialize full grid gradient arrays
@@ -2299,14 +2323,14 @@
        DCXDY = 0.0
 
 !!   Calculate sea point water depth gradient
-       CALL SMCGradn(CXCY, GrHx, GrHy)
+       CALL SMCGradn(CXCY, GrHx, GrHy, L)
 
 !!   Apply limiter to CX-gradient and copy to full grid.
        DO n=1,NSEA
 
-!  A limiter of gradient <= 0.1 is applied.
-           IF( ABS( GrHx(n) ) .GT.  0.1) GrHx(n)=SIGN( 0.1, GrHx(n) )
-           IF( ABS( GrHy(n) ) .GT.  0.1) GrHy(n)=SIGN( 0.1, GrHy(n) )
+!  A limiter of gradient <= 0.01 is applied.
+           IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
+           IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
 
 !/ARC  !Li  Current gradient in the Arctic part has to be rotated into 
 !/ARC  !Li  the map-east system for calculation of refraction. 
@@ -2329,7 +2353,9 @@
        END DO
 
 !!   Assign current CY speed to CXCY and set negative cells.
-       CXCY(-9:0) = 0.0
+!      CXCY(-9:0) = 0.0
+!!   Use zero-gradient boundary condition or L0r1 > 0
+       L = 1
        CXCY(1:NSEA)= CY(1:NSEA) 
 
 !!   Initialize full grid gradient arrays
@@ -2337,14 +2363,14 @@
        DCYDY = 0.0
 
 !!   Calculate sea point water depth gradient
-       CALL SMCGradn(CXCY, GrHx, GrHy)
+       CALL SMCGradn(CXCY, GrHx, GrHy, L)
 
 !!   Apply limiter to CX-gradient and copy to full grid.
        DO n=1,NSEA
 
 !  A limiter of gradient <= 0.1 is applied.
-           IF( ABS( GrHx(n) ) .GT.  0.1) GrHx(n)=SIGN( 0.1, GrHx(n) )
-           IF( ABS( GrHy(n) ) .GT.  0.1) GrHy(n)=SIGN( 0.1, GrHy(n) )
+           IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
+           IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
 
 !/ARC  !Li  Current gradient in the Arctic part has to be rotated into 
 !/ARC  !Li  the map-east system for calculation of refraction. 

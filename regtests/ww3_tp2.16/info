@@ -1,0 +1,41 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.16 Test script for WW-III, two-dimensional propagation.           #
+#           Propagation on SMC grid with ARC option.                       #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   see the switch files in subdirectory input/.                            # 
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - This is a simplified version of the global 50km SMC grid, covering the  #
+#   area above 65N within the Arcic circle for a quick regression test.     #
+#   Corresponding input files are labeled with id 'A50'.                    #
+#                                                                           #
+#   Output is converted into text files by ww3_outf as type 4 output, which #
+#   is added as a new type for all sea points.  Plotting of the output is   #
+#   achieved with a proper projection method with the help of the cell      #
+#   information files A50SMCels.dat and A50SMCBAr.dat, stored in input/.    #
+#   IDL scripts for SMC grid output is available in smc_docs/SMCG_TKs/.     #
+#   Regular grid output at the base resolution is also possible as type 3.  #
+#                                                                           #
+#   Further details about SMC grid, please see the guide documents:         #
+#      smc_docs/SMC_Grid_Guide.pdf                                          #
+#   or contact me at Jian-Guo.Li@metoffice.gov.uk                           #
+#                                                                           #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                           ../ ww3_tp2.16                  #
+#  ./bin/run_test -n 3 -p mpirun -f         ../ ww3_tp2.16                  #
+#                                                                           #
+#                                                Jian-Guo Li,  Aug 2017     #
+#                                                     U. K.  Met Office     #
+#                                                   Last Mod : Aug 2017     #
+#                                                                           #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
