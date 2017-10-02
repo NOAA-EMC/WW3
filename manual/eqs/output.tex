@@ -259,16 +259,17 @@ The multiplier can be set by the user. The default value is $C_{mult} = 1.7$.
         {\sigma}  \: F(k,\theta) \: dk d\theta
       \: , \label{eq:Mw} \end{equation}
 \item \textbf{USS} Stokes drift at the sea surface (m/s)
-     \begin{equation} (U_{ssx},U_{ssy}) =  g \int \!\!\!\! \int  \sigma \cosh 2kd \frac{(k \cos(\theta),k \sin(\theta))}
+     \begin{equation} (U_{ssx},U_{ssy}) =  \int \!\!\!\! \int  \sigma \cosh 2kd \frac{(k \cos(\theta),k \sin(\theta))}
         {\sinh^2 kd}  \: F(k,\theta) \: dk d\theta
       \: , \label{eq:Uss} \end{equation}
 \item \textbf{P2S} Second order pressure variance (m$^2$) and peak period of this pressure (s) which contributes to acoustic and seismic noise, 
       \begin{equation} F_{p2D}(k=0) = \int_0^{\infty} \frac{4 \sigma}{C_g} \int_0^{\pi}  F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta dk
       \: , \label{eq:sop} \end{equation}
 \item \textbf{USF} Frequency spectrum of Stokes drift at the sea surface (m/s/Hz)
-     \begin{equation} (U_{ssx}(f),U_{ssy}(f)) =  g \int \!\!\!\! \int  \sigma \cosh 2kd \frac{(k \cos(\theta),k \sin(\theta))}
+     \begin{equation} (U_{ssx}(f),U_{ssy}(f)) =  \int \sigma \cosh 2kd \frac{(k \cos(\theta),k \sin(\theta))}
         {\sinh^2 kd}  \: F(k,\theta) \frac{2 \pi}{C_g} d\theta
       \: , \label{eq:Ussf} \end{equation}
+Note that US3D=1 must be set in the ww3\_grid.inp OUTS namelist in order to activate the 3D arrays needed for USF output.
 \item \textbf{P2L} Frequency spectrum of the second order pressure (m$^2$s)  which contributes to acoustic and seismic noise,
       \begin{equation} F_{p2D}(k=0,f) =  \frac{2 \sigma}{\pi} \int_0^{\pi}  \frac{4 \pi^2}{C_g^2} F(k,\theta) \:  F(k,\theta+\pi) \:  d\theta
       \: . \label{eq:sopf} \end{equation}
