@@ -8825,7 +8825,7 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-#define DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
+#undef  DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
 #undef  DFDPQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
       SUBROUTINE DFDPQ( N, K, C, IJG, ICLO, &
                         PTILED, QTILED, &
