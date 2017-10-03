@@ -24,7 +24,7 @@
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
-
+# set -x
   ww3_env="${HOME}/.wwatch3.env"                           # setup file
 # The following line must not be removed: it is a switch for local install
 # so that all bin scripts point to the local wwatch3.env
@@ -811,7 +811,7 @@
   progs="ww3_grid ww3_strt ww3_prep ww3_prnc ww3_shel ww3_multi ww3_sbs1
          ww3_outf ww3_outp ww3_trck ww3_trnc ww3_grib gx_outf gx_outp ww3_ounf 
          ww3_ounp ww3_gspl ww3_gint ww3_bound ww3_bounc ww3_systrk $tideprog"
-  progs="$progs ww3_multi_esmf"
+  progs="$progs ww3_multi_esmf  ww3_uprstr"
   progs="$progs libww3"
 
   for prog in $progs
@@ -1019,6 +1019,14 @@
              source="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $refcode $igcode"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
+     ww3_uprstr) IDstring='Update Restart File' 
+                 core= 
+	              data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
+                 prop= 
+                 source="$stx $nlx $btx $is" 
+                 IO='w3iogrmd w3iogomd w3iorsmd' 
+                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' 
+                 aux="$aux w3namlmd" ;; 
     esac
 
     # if esmf is included in program name, then

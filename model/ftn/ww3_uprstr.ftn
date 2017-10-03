@@ -1,0 +1,911 @@
+#include "w3macros.h"
+!/ ------------------------------------------------------------------- /
+   PROGRAM W3UPRSTR
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Stelios Flampouris        |
+!/                  |                        FORTRAN 90 |
+!/                  | First version:        16-Feb-2017 |
+!/                  +-----------------------------------+
+!/
+!/    16-Feb-2017 :  Original Code                       ( version X.XX )
+!/    07-Jun-2017 :  Change of the Core
+!/    07-Jul-2017 :  Clean the code, add some flexibility, etc
+!/    04-Sep-2017 :  Simplified the code, take out a significant part of the
+!/                   flexibility (The code is still available at SVN/UpRest)
+!/    15-Sep-2017 :  Version 0.65
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!
+!     Update the WAVEWATCH III restart files based on the significant 
+!     wave height analysis from any data assimilation system.
+!     
+!  2. Method :
+!     
+!  2.1. General:
+!     The W3UPRSTR is the intermediator between the background WW3
+!     and the analysis of the wave field, it modifies the original restart 
+!     file according to the analysis.
+!     For the wave modeling and DA, the ww3_uprstr program applies the 
+!     operator from the diagnostic to the prognostic variable. 
+!
+!     See the chart below:
+!
+!                       +-------------------+
+!                       | WW3 Background Run|
+!                       +-------------------+
+!    +--------------+              |                   +-----+
+!    | Restart File | <------------|-----------------> |  Hs |   
+!    +--------------+                                  +-----+
+!            |                                            |
+!            |                                            |
+!            |               +---------------+         +-----+   
+!            |               |Hs Observations|-------> | D.A.|
+!            |               +---------------+         +-----+
+!            |                                            |
+!            |                  +----------+              |
+!            +----------------> | W3UPRSTR |<-/Analysis/--+  
+!                               +----------+  
+!                                     |
+!                          +----------------------+
+!                          | Updated Restart File |
+!                          +----------------------+
+!
+!     A. The WW3 Background Run has to provide two files: 
+!         i. The field of Hs (for NCEP at grib2 format) and 
+!        ii. the restart.ww3, at the WW3 format for restart files.
+!     Both of them, at the moment of the assimilation (Nevertheless, the WW3
+!     restart reader will fail when the timestamps are not identical).
+!
+!     B. The DA module produces the analysis and/or the difference (%) of 
+!     the analysis from the first guess of Hs in the space of model and 
+!     exports the results. 
+!
+!     C. The algorithm
+!     The Hs correction is redistributed to each frequency and direction.
+!
+!     1. The W3UPRSTR imports: i. the restart.ww3, 
+!                             ii. one of or both: correction or/and analysis file and
+!                            iii. the input file: ww3_uprstr.inp, details at 2.2.2.i.
+!     
+!     2. The W3UPRSTR updates the restart file according to the option at
+!     ww3_uprstr UPD[N] 
+!
+!     3. W3UPRSTR exports the updated spectrum in the same format as the
+!     restart.ww3. The name of the output file is: restart001.ww3 and it has to
+!     be renamed "restart.ww3" for the initialization of the next prediction
+!     cycle.
+!     
+!     E. The user runs WW3 with the analysis restart file.
+!
+!     2.2. How to use ww3_uprstr
+!     The ww3_uperstr is one of the WW3 auxilary programs, therefore it works in
+!     a very similar way as the other auxilary programs.
+!     
+!     A. To compile:
+!     
+!     ww3_uprstr is included in the make_makefile.sh, to compile:
+!     $ ./w3_make ww3_uprstr 
+!     or
+!     $ ./w3_make
+!     
+!     And the executable "ww3_uprstr" will appear at [...]/model/exe/
+!
+!     B. To run:
+!     At the computational path: 
+!        > ${EXE}/ww3_uprstr
+!     And it should run if the input files are at ./
+!
+!     C. Input Files:
+!
+!        i. ww3_uprstr.inp
+!     It includes some limited information for running the program:
+! -------------------------------------------------------------------- $
+!$ WAVEWATCH III Update Restart input file                              $
+!$ -------------------------------------------------------------------- $
+!$
+!$ Time of Assimilation ----------------------------------------------- $
+!$ - Starting time in yyyymmdd hhmmss format.
+!$
+!$ This is the assimilation starting time and has to be the same with 
+!$ the time at the restart.ww3.
+!
+!   20170801 060000 $20050828 090000 
+!$
+!$ Choose algorithm to update restart file 
+!$  UPDN for the Nth approach
+!$  The UPDN*, with N<2 the same correction factor is applied at all the grid points
+!$   UPD0C:: Option 0C  All the spectra are updated with a constant 
+!$           fac=(HsBckg-HsAnl)/HsAnl.
+!$           Expected input: PRCNTG, as defined at fac
+!$   UPDOF:: Option 0F  All the spectra are updated with a constant 
+!$           fac=HsAnl/HsBckg.
+!$           Expected input: PRCNTG, as defined at fac
+!$   UPD1 :: Option 1   The fac(x,y,frq,theta), is weighted according to
+!$           the % of energy at each spectral bin.
+!$           Expected input: PRCNTG, as defined at UPD0F
+!$   UPDN, with N>1 each gridpoint has its own update factor.
+!$   UPD2 :: Option 2   The fac(x,y,frq,theta), is calculated at each grid point
+!$           according to HsBckg and HsAnl
+!$           Expected input the Analysis field, grbtxt format
+!$   UPD3 :: Option 3   The update factor is a surface with the shape of 
+!$           the background spectrum. 
+!$           Expected input the Analysis field, grbtxt format
+!$   UPD4 :: [NOT INCLUDED in this Version, Just keeping the spot]
+!$           Option 4  The generalization of the UPD3. The update factor
+!$           is the sum of surfaces which are applied on the background 
+!$           spectrum 
+!$           Expected input: the Analysis field, grbtxt format and the 
+!$           functions(frq,theta) of the update to be applied. 
+!   UPD3
+!$
+!$ PRCNTG is input for option 1 and it is the percentage of correction 
+!$applied  to all the gridpoints (e.g. 1.) 
+!   1.0
+!$
+!$ Name of the file with the SWH analysis from the DA system            $
+!$ suffix .grbtxt for text out of grib2 file.                           $
+!$
+!   anl.grbtxt
+!$
+!$ -------------------------------------------------------------------- $
+!$ WAVEWATCH III EoF ww3_uprstr.inp
+!$ -------------------------------------------------------------------- $
+!
+!   ii. Data files anl.XXX
+! 
+! USE THE grbtxt FORMAT, See E.
+!
+! Format E. 
+!        Text file created by wgrib2. This format is tested more extensively 
+!        and currently the only format supported for anl.grbtxt.
+!     
+!        NX NY
+!        VAL0001
+!        VAL0002
+!        ...
+!        VALNX*NY
+!
+! IMPORTANT : All the tests are with the format E. strongly recommended. 
+! The order of the values in .grbtxt, it is the same by 
+! defaults with the order in the restart file.
+!
+! NOTE About Format: if you prefer a different format; there are several 
+! I/O subroutines ready, not included in the current version of the code, 
+! contact the prgmr to get access to the source code. 
+! 
+!        iii. restart.ww3
+! The restart file as came out of the background run, the name has to be 
+! restart.ww3, but the name of the output depends on the mod_def.ww3, the
+! ww3_uprstr follows it's content (be careful with ovewriting).
+!
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3NMOD    Subr. W3GDATMD Set number of model.
+!      W3SETG    Subr.   Id.    Point to selected model.
+!      W3NDAT    Subr. W3WDATMD Set number of model for wave data.
+!      W3SETW    Subr.   Id.    Point to selected model for wave data.
+!      W2NAUX    Subr. W3ADATMD Set number of model for aux data.
+!      W3SETA    Subr.   Id.    Point to selected model for aux data.
+!      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
+!      NEXTLN    Subr.   Id.    Get next line from input file.
+!      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
+!      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
+!      WAVNU1    Subr. W3DISPMD 
+
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!   READ_GRBTXT
+!   WORKER
+!   SWH_RSRT_1p
+!   WRITEMATRIX
+!
+!  5. Called by :
+!
+!     None, stand-alone program.
+!
+!  6. Error messages :
+!
+!  7. Remarks:
+!
+!     7.1 Use the grbtxt format for correction and analysis files.
+!
+!     7.2 There are some variables not used but declared, it's for future
+!      development.
+!
+!  8. Structure :
+!
+!     ----------------------------------------------------
+!     1.    Set up data structures.
+!     2.    Read model defintion file with base model ( W3IOGR )
+!     3.    Import restart file                       ( W3IORS )
+!     4.    Import correction percentage              (  )
+!        OR Import the analysis field                 (  )
+!     5.    Apply correction to the restart file      (  )
+!     6.    Export the updated restart file           ( W3IORS )
+!     ----------------------------------------------------
+!
+!  9. Switches :
+!
+!     !/SHRD  Switch for shared / distributed memory architecture.
+!     !/T
+!     !/S     Enable subroutine tracing.
+!
+! 10. Source code :
+!
+!/
+      USE W3GDATMD, ONLY: W3NMOD, W3SETG
+      USE W3WDATMD, ONLY: W3NDAT, W3SETW
+      USE W3ADATMD, ONLY: W3NAUX, W3SETA
+      USE W3ODATMD, ONLY: W3NOUT, W3SETO
+      USE W3IORSMD, ONLY: W3IORS
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+      USE W3IOGRMD, ONLY: W3IOGR
+      USE W3DISPMD, ONLY: WAVNU1
+!/
+      USE W3GDATMD, ONLY: GNAME, NX, NY, MAPSTA, SIG, NK, NTH, NSEA   &
+                        , NSEAL, MAPSF, DMIN, ZB, DSIP, DTH
+      USE W3WDATMD, ONLY: VA, TIME
+      USE W3ADATMD, ONLY: NSEALM
+      USE W3ODATMD, ONLY: IAPROC, NAPERR, NAPLOG, NDS, NAPOUT
+      USE W3ODATMD, ONLY: NDSE, NDSO, NDST, IDOUT, FNMPRE  
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local variables
+!/
+      INTEGER                 :: NDSI, NDSM, NDSTRC, NTRACE, IERR, I, J
+      CHARACTER               :: COMSTR*1 
+      !/
+!      REAL, ALLOCATABLE       :: BETAW(:)
+!      LOGICAL, ALLOCATABLE    :: MASK(:)
+      LOGICAL                 :: anl_exists
+      INTEGER                 :: IMOD, INTYPE, NDSEN, IX, IY, IK, ITH
+      REAL, ALLOCATABLE       :: UPDPRCNT(:,:),VATMP(:), HSIG(:,:),A(:), HS_ANAL(:,:),gues(:,:),HS_DIF(:,:),SWHANL(:,:) &
+                                ,SWHBCKG(:,:), SWHUPRSTR(:,:),VATMP_NORM(:)
+      REAL                    :: PRCNTG
+      INTEGER                 :: ROWS, COLS, ISEA
+      CHARACTER(128)          :: FLNMCOR, FLNMANL
+      CHARACTER(16)           :: UPDPROC
+!     for howv
+      REAL                    :: SWHTMP,SWHBCKG_1, SWHANL_1, REL_ERROR, DEPTH, WN, CG, ETOT, E1I, SWH_ANL1,SWHTMP1,SUMVATMP
+      REAL                    :: SUMVA,NITER, K
+      CHARACTER(8), PARAMETER :: MYNAME='W3UPRSTR'
+
+!/
+!/ ------------------------------------------------------------------- /
+!/
+!  1.  IO set-up.
+      CALL W3NMOD ( 1, 6, 6 )
+      CALL W3SETG ( 1, 6, 6 )
+      CALL W3NDAT (    6, 6 )
+      CALL W3SETW ( 1, 6, 6 )
+      CALL W3NAUX (    6, 6 )
+      CALL W3SETA ( 1, 6, 6 )
+      CALL W3NOUT (    6, 6 )
+      CALL W3SETO ( 1, 6, 6 )
+!/
+      NDSE   = 6
+      NDSI   = 10
+      NDSM   = 20
+!/
+      IAPROC = 1
+      NAPOUT = 1
+      NAPERR = 1
+      IMOD   = 1
+      NAPLOG = 1
+!/
+      NDSTRC =  6
+      NTRACE = 10
+      CALL ITRACE ( NDSTRC, NTRACE )
+!/
+      IF ( IAPROC .EQ. NAPERR ) THEN
+          NDSEN  = NDSE
+      ELSE
+          NDSEN  = -1
+      END IF
+!/
+      WRITE (NDSO,900)
+!/
+!  2. Read the ww3_uprstr.inp
+!/
+      J      = LEN_TRIM(FNMPRE)
+      OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',       &
+            ERR=800,IOSTAT=IERR)
+      READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+      IF (COMSTR.EQ.' ') COMSTR = '$'
+      WRITE (NDSO,901) COMSTR
+!/
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) TIME
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) UPDPROC
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) PRCNTG
+!/F      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+!/F      READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) FLNMANL
+
+      PRINT*, ' TIME: ',TIME,'FLNMCOR: ',trim(FLNMCOR)          &
+            , ' FLNMANL: ', trim(FLNMANL), 'UPDPROC: ', trim(UPDPROC) &
+            , ' PRCNTG: ', PRCNTG
+!/
+!  3.  Read model definition file.
+!/
+      CALL W3IOGR ( 'READ', NDSM )
+      NSEAL  = NSEA
+      WRITE (NDSO,920) GNAME
+!/
+!  4. Read restart file
+!/
+      CALL W3IORS ( 'READ', NDS(6), SIG(NK), INTYPE, IMOD )!
+      IF ( IAPROC .EQ. NAPLOG ) THEN
+         IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
+            WRITE (NDSO,1004) 'Terminating ww3_uprstr: The restart file is not &
+            read'
+            CALL EXTCDE ( 1 )
+         ELSE
+            WRITE (NDSO,1004) 'Updating Restart File'
+         END IF
+      END IF
+!/T   WRITE (NDST,*), MYNAME,' : Exporting VA as imported to VA01.txt'
+!/T   CALL writeMatrix('VA01.txt', REAL(VA))      
+!/
+! 5. Actions according to the selected option
+!
+      select case (UPDPROC)
+      case ('UPD0F')
+         WRITE (NDSO,902) 'UPD0F'
+!/
+         DO ISEA=1, NSEA, 1
+            VA(:,ISEA)= (PRCNTG)*VA(:,ISEA)
+         END DO
+      case ('UPD0C')
+         WRITE (NDSO,902) 'UPD0C'
+!/
+         DO ISEA=1, NSEA, 1
+            VA(:,ISEA)= (1+PRCNTG)*VA(:,ISEA)
+         END DO
+
+      case ('UPD1')
+         WRITE (NDSO,902) 'UPD1'
+!/ 
+         ALLOCATE (VATMP(SIZE(VA,1)))
+         ALLOCATE (A    (SIZE(VA,1)))
+
+         DO ISEA=1, NSEA, 1
+            IX = MAPSF(ISEA,1)
+            IY = MAPSF(ISEA,2)
+            VATMP = VA(:,ISEA)
+            CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+!/
+            SWHANL_1=(1.+ PRCNTG)*SWHBCKG_1
+            IF (SWHANL_1<0.)THEN 
+               SWHANL_1=0.0
+               WRITE (NDSO,*)'Warning: The Analysis is lower than 0!'
+            END IF
+            NITER = 0
+            REL_ERROR=PRCNTG
+!/            
+            DO WHILE ( ABS(REL_ERROR) >= 0.01  &
+                .AND. NITER < 100              &
+                .AND. SWHANL_1> 0.0              ) 
+               SUMVATMP=SUM(VATMP)
+               IF (SUMVATMP>=0.0001 ) THEN
+                  A=REL_ERROR*VATMP/SUMVATMP
+               ELSE
+                  A=0.
+               END IF
+               VATMP=VATMP+VATMP*A
+               WHERE (VATMP<0.) VATMP=0.0
+               CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+               REL_ERROR=(SWHANL_1-SWHTMP)/SWHANL_1  
+!/            
+               NITER = NITER + 1
+
+            END DO
+            VA(:,ISEA)=VATMP
+         END DO
+!/
+         DEALLOCATE (VATMP,A)
+      case ('UPD2')
+         WRITE (NDSO,902) 'UPD2'
+!/
+!        Additional Input: Analysis Field
+         INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+         IF (anl_exists) then
+            ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+!/            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+            CALL READ_GRBTXT(SWHANL,FLNMANL)
+!/T            CALL writeMatrix('swhanl.txt',SWHANL)
+         ELSE
+            WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+            STOP
+         END IF
+!/
+!        Calculation
+         ALLOCATE ( VATMP(SIZE(VA,1)))
+         ALLOCATE ( SWHBCKG (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+         ALLOCATE ( SWHUPRSTR (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+!/
+         DO ISEA=1, NSEA, 1
+            IX = MAPSF(ISEA,1)
+            IY = MAPSF(ISEA,2)
+            VATMP = VA(:,ISEA)
+            CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+            SWHBCKG(IY,IX)=SWHBCKG_1
+!/
+             IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+!/
+               PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+!/T             WRITE (NDSO,*) 'ISEA =', ISEA,' IX =',IX,' IY =', IY, ' PRCNTG =',PRCNTG &
+!/T                   ,' SWHBCKG= ',SWHBCKG(IY,IX),' SWHANL= ', SWHANL(IY,IX)
+               VATMP=PRCNTG*VATMP
+               VA(:,ISEA)=VATMP
+               CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+               SWHUPRSTR(IY,IX)=SWHTMP
+               PRINT*,'ISEA=',ISEA,'BCKG=', SWHBCKG(IY,IX),'ANL=', SWHANL(IY,IX),'RSTR=',SWHUPRSTR(IY,IX)
+
+            END IF
+         END DO
+!/T         CALL writeMatrix('swhbckg.txt',SWHBCKG)
+!/T         CALL writeMatrix('swhuprstr.txt',SWHUPRSTR)
+!/
+         DEALLOCATE( SWHANL,VATMP,SWHBCKG,SWHUPRSTR )
+      case ('UPD3')
+         WRITE (NDSO,902) 'UPD3'
+!        Additional Input: Analysis Field
+         INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+         IF (anl_exists) then
+            ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+!/            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+            CALL READ_GRBTXT(SWHANL,FLNMANL)
+!/T            CALL writeMatrix('swhanl.txt',SWHANL)
+         ELSE
+            WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+            STOP
+         END IF
+!/
+!        Calculation
+         ALLOCATE ( VATMP(SIZE(VA,1)))
+         ALLOCATE ( SWHBCKG (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+         ALLOCATE ( SWHUPRSTR (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+         ALLOCATE ( VATMP_NORM(SIZE(VA,1)))
+         ALLOCATE ( A (SIZE(VA,1)))
+!/
+         DO ISEA=1, NSEA, 1
+            IX = MAPSF(ISEA,1)
+            IY = MAPSF(ISEA,2)
+!/            
+            VATMP = VA(:,ISEA)
+!/
+            CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+            SWHBCKG(IY,IX)=SWHBCKG_1
+!/
+            IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+               PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+               NITER = 0
+!/T               WRITE (NDSO,*)'ISEA =', ISEA, 'NITER=',NITER,' PRCNTG =',PRCNTG,' SWHBCKG= ',SWHBCKG(IY,IX)&
+!/T                     ,' SWHANL= ', SWHANL(IY,IX)
+               DO WHILE ( ABS(1-PRCNTG) > 0.01 .AND. NITER < 50  ) 
+                  VATMP_NORM=VATMP/SUM(VATMP)
+
+!/T                  WRITE (NDSO,*)'ISEA =', ISEA,' IX =',IX,' IY =', IY, 'NITER=',NITER  &
+!/T                              ,' PRCNTG =',PRCNTG,' SWHBCKG= ',SWHBCKG(IY,IX)         &
+!/T                               ,' SWHANL= ', SWHANL(IY,IX)
+!/T
+                  IF (PRCNTG > 1.) THEN
+                     A=PRCNTG + PRCNTG*VATMP_NORM
+                  ELSE
+                     A=PRCNTG - PRCNTG*VATMP_NORM
+                  END IF
+!/
+                  VATMP=A*VATMP
+!/
+                  CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+                  PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+                  NITER=NITER+1
+!/T                  PRINT*,'NITER=', NITER, 'PRCNTG= ',PRCNTG, SWHANL(IY,IX), SWHBCKG_1
+               END DO
+               VA(:,ISEA)=VATMP
+               CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+!/T               WRITE (NDSO,*)'ISEA =', ISEA, 'NITER=',NITER,' PRCNTG =',PRCNTG,' SWHUPRSTR(IY,IX)=', SWHTMP&
+!/T                     ,' SWHANL= ', SWHANL(IY,IX)
+
+               SWHUPRSTR(IY,IX)=SWHTMP
+            END IF
+         END DO
+!/T         CALL writeMatrix('swhbckg.txt',SWHBCKG)
+!/T         CALL writeMatrix('swhuprstr.txt',SWHUPRSTR)
+!/
+         DEALLOCATE( SWHANL,VATMP,SWHBCKG,SWHUPRSTR,VATMP_NORM,A ) 
+      case ('UPD4')
+         WRITE (NDSO,902) 'UPD4'
+!/F        Additional Input: Analysis Field
+!/F         INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+!/F         IF (anl_exists) then
+!/F            ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+!/F!/            WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+!/F            CALL READ_GRBTXT(SWHANL,FLNMANL)
+!/F!/T            CALL writeMatrix('swhanl.txt',SWHANL)
+!/F         ELSE
+!/F            WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+!/F            STOP
+!/F         END IF
+!/F!/
+!/F!        Calculation
+!/F         ALLOCATE ( VATMP(SIZE(VA,1)))
+!/F         ALLOCATE ( SWHBCKG (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+!/F         ALLOCATE ( SWHUPRSTR (SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+!/F         ALLOCATE ( VATMP_NORM(SIZE(VA,1)))
+!/F         ALLOCATE ( A (SIZE(VA,1)))
+!/F!/
+!/F         DO ISEA=1, NSEA, 1
+!/F            IX = MAPSF(ISEA,1)
+!/F            IY = MAPSF(ISEA,2)
+!/F!/            
+!/F            VATMP = VA(:,ISEA)
+!/F!/
+!/F            CALL DO_SOME_Magic()    
+!/F            SWHBCKG(IY,IX)=SWHBCKG_1
+!/F          END DO
+!/F/T         CALL writeMatrix('swhbckg.txt',SWHBCKG)
+!/F/T         CALL writeMatrix('swhuprstr.txt',SWHUPRSTR)
+!/F/
+         DEALLOCATE( SWHANL,VATMP,SWHBCKG,SWHUPRSTR,VATMP_NORM,A ) 
+!    
+      end select
+!
+! 6. Write updated restart file
+      WRITE (NDSO,903)
+      INTYPE = 3
+      CALL W3IORS ( 'HOT', NDS(6), SIG(NK), INTYPE, 1 )   
+!/ 
+! Escape locations read errors 08k:
+!
+      GOTO 888
+!
+      800 CONTINUE
+      WRITE (NDSE,1000) IERR
+      CALL EXTCDE ( 10 )
+!
+      801 CONTINUE
+      WRITE (NDSE,1001)
+      CALL EXTCDE ( 11 )
+!
+      802 CONTINUE
+      WRITE (NDSE,1002) IERR
+      CALL EXTCDE ( 12 )
+! 
+      888 CONTINUE
+      WRITE (NDSO,999)
+!
+! Escape locations read errors 2k:
+!
+      GOTO 2222
+!
+      2001 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
+      GOTO 2222
+!
+      2002 CONTINUE
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
+      GOTO 2222
+!
+      2222 CONTINUE
+
+!!  Fo1mats
+900 FORMAT (/15X,'   *** WAVEWATCH III ww3_uprsrt Initializing ***   '/ &
+               15X,'==============================================='/)
+901 FORMAT ( '  Comment character is ''',A,''''/)
+!
+902 FORMAT ( '  The Option ''',A,''' is used.'/)
+!
+903 FORMAT ( '  Exporting the Updated Restart file to "restart001.ww3"'/)
+!
+920 FORMAT ( '  Grid name : ',A/)
+!
+930 FORMAT (/'  Time interval : '/                                  &
+             ' --------------------------------------------------')
+!
+931 FORMAT ( '       Starting time : ',A)
+!
+932 FORMAT ( '       Ending time   : ',A/)
+!
+999 FORMAT (/'  End of program '/                                   &
+             ' ========================================='/          &
+             '         WAVEWATCH III ww3_uprsrt         '/)
+!
+1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3URSTR : '/               &
+               '     ERROR IN OPENING INPUT FILE'/                    &
+               '     IOSTAT =',I5/)
+!
+1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3URSTR : '/               &
+               '     PREMATURE END OF INPUT FILE'/)
+
+1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3URSTR : '/               &
+               '     ERROR IN READING FROM INPUT FILE'/               &
+               '     IOSTAT =',I5/)
+1004 FORMAT (/' '/,A/)
+1005 FORMAT (/' '/,A, I5, I5/)
+!     
+!/
+   CONTAINS
+!/
+!
+      SUBROUTINE READ_GRBTXT(UPDPRCNT,FLNMCOR)
+         REAL, DIMENSION(:,:), INTENT(OUT) :: UPDPRCNT
+         CHARACTER(*), INTENT(IN) :: FLNMCOR
+! Local Variables
+         INTEGER            :: I, J, IERR
+         INTEGER            :: K, L, M, N 
+         REAL :: A
+         INTEGER, PARAMETER :: IP_FID = 123
+         CHARACTER(25), PARAMETER::myname='read_grbtxt'
+!/
+!/T         WRITE (NDSO,*) trim(myname), ' starts'         
+!/
+         J     = LEN_TRIM(FNMPRE)
+         OPEN (IP_FID,FILE=FNMPRE(:J)//TRIM(FLNMCOR),STATUS='OLD' &
+              ,ACTION='read',IOSTAT=IERR)
+!/
+         READ( IP_FID, 110),M,N
+
+         IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
+            WRITE (NDSO,*)trim(myname),': These are not the grid dimensions: M=',M,' N=',N
+            STOP
+         END IF
+         UPDPRCNT=0
+!/
+         DO L=1,N
+            DO K=1,M
+               A=0.
+               READ(IP_FID,*)A 
+               UPDPRCNT(N+1-L,K)=A
+            END DO
+         END DO
+
+         CLOSE(IP_FID)
+!/T         WRITE (NDSO,*) trim(myname), ' ends'         
+
+110 format (2(I4) )
+         
+      END SUBROUTINE READ_GRBTXT
+
+
+
+!/
+      SUBROUTINE WORKER (VATMP, ISEA1p, SWH_ANL, REL_ERROR )
+!/ 
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Stelios Flampouris        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Mar-2017 |
+!/                  +-----------------------------------+
+!/
+!/    15-Mar-2017 : Original Code                       ( version X.XX )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!     The main subroutine updating the vertart file
+!  2. Method :
+!     
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/T
+!
+! 10. Source code :
+!
+!/
+
+         REAL, DIMENSION(:), INTENT(INOUT)  :: VATMP
+         INTEGER, INTENT(IN) :: ISEA1p
+         REAL, INTENT(IN) :: SWH_ANL
+         REAL, INTENT(OUT) :: REL_ERROR
+!
+         REAL :: SUMVA 
+         REAL, DIMENSION(SIZE(VATMP,1)) :: A
+         
+         CALL SWH_RSRT_1p (VATMP, ISEA1p, SWHTMP)
+!         REL_ERROR = (SWH_ANL - SWHTMP)/SWH_ANL
+
+!         SUMVA = SUM(VATMP)
+!/T         IF (isnan(SUMVA)) then 
+!/T            print*, 'WORKER SEA1p = ', ISEA1p
+!/T            print*, 'WORKER REL_ERROR = ',REL_ERROR
+!/T            print*, 'WORKER SUMVA = ',SUMVA
+!/T         END IF
+!         A = REL_ERROR*( VATMP/SUMVA )
+
+         VATMP = SWH_ANL * VATMP
+!         WHERE (VATMP<0.) VATMP=0.0
+         CALL SWH_RSRT_1p (VATMP, ISEA1p, SWHTMP)
+         REL_ERROR = (SWH_ANL - SWHTMP)/SWH_ANL
+
+!/T         IF (isnan(REL_ERROR)) then
+!/T             print*, 'SWH_ANL=', SWH_ANL, 'SWHTMP=', SWHTMP
+!/T             print*, (SWH_ANL - SWHTMP)/SWH_ANL
+!/T             print*, SWH_ANL - SWHTMP
+!/T         END IF
+         IF (ABS(REL_ERROR)<0.001)REL_ERROR=0.0
+
+      END SUBROUTINE WORKER
+
+
+!!/ 
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Stelios Flampouris        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Mar-2017 |
+!/                  +-----------------------------------+
+!/
+!/    15-Mar-2017 : Original Code                       ( version X.XX )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!     Calculate the significant wave height from the restart file for 1 point 
+!  2. Method :
+!     
+!  3. Parameters :
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!  5. Called by :
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/T
+!
+! 10. Source code :
+!
+!/
+      SUBROUTINE SWH_RSRT_1p (VA1p, ISEA1p, HSIG1p )  
+         
+         REAL, INTENT(OUT) :: HSIG1p
+         INTEGER, INTENT(IN) :: ISEA1p
+         REAL, DIMENSION(:), INTENT(IN)  :: VA1p
+         CHARACTER(25),PARAMETER :: myname='SWH_RSRT_1p'
+!/
+!/T         WRITE (NDSO,*) trim(myname), ' starts'         
+         HSIG1p = 0.
+         DEPTH  = MAX ( DMIN , -ZB(ISEA1p) )
+         ETOT   = 0.
+
+         DO IK=1, NK
+            CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
+            E1I    = 0.
+            DO ITH=1, NTH
+               E1I    = E1I + VA1p(ITH+(IK-1)*NTH)  *  SIG(IK) / CG
+            END DO
+            ETOT   = ETOT + E1I*DSIP(IK)
+         END DO
+
+         HSIG1p = 4. * SQRT ( ETOT * DTH )
+!/
+!/T       WRITE (NDSO,*) trim(myname), ' ends'         
+      END SUBROUTINE SWH_RSRT_1p
+!/
+      SUBROUTINE WRITEMATRIX(FILENAME, RDA_A)
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |         Stelios Flampouris        |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         15-Mar-2017 |
+!/                  +-----------------------------------+
+!/
+!/    15-Mar-2017 : Original Code                       ( version X.XX )
+!/
+!/    Copyright 2010 National Weather Service (NWS),
+!/    National Oceanic and Atmospheric Administration.  All rights
+!/    reserved.  WAVEWATCH III is a trademark of the NWS.
+!/    No unauthorized use without permission.
+!/
+!  1. Purpose :
+!      Writes a 2D array to text file, column by column
+!  2. Method :
+!     
+!  3. Parameters :
+!     fileName path to the output file
+!     rda_A 2D array to write
+!
+!     Local parameters.
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!     ----------------------------------------------------------------
+!  Internal Subroutines:
+!
+!  5. Called by :
+!  Any routine that has to write 2d arrays !?!  
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!
+!  8. Structure :
+!
+!  9. Switches :
+!
+!     !/T
+!
+! 10. Source code :
+!
+!/
+         REAL, DIMENSION(:, :), INTENT(IN) :: RDA_A
+         CHARACTER(*)         , INTENT(IN) :: FILENAME
+         INTEGER IB_I, IB_J, IL_IOS
+         INTEGER, PARAMETER :: IP_FID = 123
+!            
+         OPEN( UNIT = IP_FID, FILE = FILENAME, STATUS = 'REPLACE', FORM = 'FORMATTED', IOSTAT = IL_IOS)
+         IF (IL_IOS /= 0) PRINT*,'In writeMatrix : Error creating file'//FILENAME
+         DO IB_J = 1, SIZE(RDA_A,2)
+            DO IB_I = 1, SIZE(RDA_A,1)
+!               write(unit=ip_fid, fmt='(I, $)') rda_A(ib_i,ib_j)
+                WRITE(UNIT=IP_FID, FMT='(E18.8, $)') RDA_A(IB_I,IB_J)
+            END DO
+            WRITE(UNIT=IP_FID, FMT=*)''
+         END DO
+         CLOSE(IP_FID)
+      END SUBROUTINE WRITEMATRIX
+!/
+   END PROGRAM W3UPRSTR
