@@ -160,8 +160,8 @@
       INTEGER, PARAMETER   :: SLEEP1 = 10 , SLEEP2 = 10
       INTEGER, ALLOCATABLE :: TEND(:,:)
       REAL                 :: DTTST
-      CHARACTER(LEN=3)     :: TSFLD, TYPE = 'WNS'
-!     CHARACTER(LEN=3)     :: TSFLD, TYPE = 'WND'
+!      CHARACTER(LEN=3)     :: TSFLD, TYPE = 'WNS'
+      CHARACTER(LEN=3)     :: TSFLD, TYPE = 'WND'
       CHARACTER(LEN=13)    :: TSSTR
 !/
 !/ ------------------------------------------------------------------- /
