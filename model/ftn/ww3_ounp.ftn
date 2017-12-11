@@ -190,7 +190,7 @@
       INTEGER                 :: ISCALE = 0
 !/O14      INTEGER                 :: NDBO
 !/S      INTEGER, SAVE           :: IENT   = 0
-!/NCO                              :: NDSTAB
+!/NCO      INTEGER                 :: NDSTAB
       REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
       REAL                    :: M2KM
       REAL, ALLOCATABLE       :: XPART(:,:)
