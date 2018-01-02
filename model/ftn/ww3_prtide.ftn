@@ -462,6 +462,12 @@
             END DO
           END DO
           END IF
+
+
+        WHERE(FX.NE.FX) FX = 0.
+        WHERE(FY.NE.FY) FY = 0.
+        WHERE(FA.NE.FA) FA = 0.
+
         CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
                          NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
                          FX, FY, FA, IERR)

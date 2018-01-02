@@ -412,11 +412,7 @@
 
       INDS(:) = 0
       IF (TRIM(LIST(1)).EQ.'ALL') THEN 
-        TIDE_MF = TIDE_MF_ALL
-        IF (ALLOCATED(TIDE_FREQC)) DEALLOCATE(TIDE_FREQC)
-        ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
-        TIDECON_NAME = TIDECON_NAME_ALL
-        TIDE_FREQC = TIDE_FREQC_ALL
+        WRITE(6,*) 'Tidal constituent ALL not available anymore.'
         RETURN
         END IF
 !

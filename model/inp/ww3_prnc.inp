@@ -19,7 +19,7 @@ $   Format types :  AT    Transfer field 'as is', performs tidal
 $                         analysis on the time series (ITYPE 6)
 $                         When using AT, another line should be added
 $                         with the choice of tidal constituents:
-$                         ALL or FAST or VFAST or a list: e.g. 'M2 S2'
+$                         FAST or VFAST or a list: e.g. 'M2 S2'
 $
 $        - Format type not used for field type 'DAT'.
 $

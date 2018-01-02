@@ -466,17 +466,17 @@
              FLG2D(2,9)=.TRUE.
            CASE('HIG')
              FLG2D(2,10)=.TRUE.
-           CASE('STMAXE')
+           CASE('MXE')
              FLG2D(2,11)=.TRUE.
-           CASE('STMAXD')
+           CASE('MXES')
              FLG2D(2,12)=.TRUE.
-           CASE('HMAXE')
+           CASE('MXH')
              FLG2D(2,13)=.TRUE.
-           CASE('HCMAXE')
+           CASE('MXHC')
              FLG2D(2,14)=.TRUE.
-           CASE('HMAXD')
+           CASE('SDMH')
              FLG2D(2,15)=.TRUE.
-           CASE('HCMAXD')
+           CASE('SDMHC')
              FLG2D(2,16)=.TRUE.
 !
 ! Group 3
@@ -869,17 +869,17 @@
            FLG2D(2,9)=.TRUE.
          CASE('HIG')
            FLG2D(2,10)=.TRUE.
-         CASE('STMAXE')
+         CASE('MXE')
            FLG2D(2,11)=.TRUE.
-         CASE('STMAXD')
+         CASE('MXES')
            FLG2D(2,12)=.TRUE.
-         CASE('HMAXE')
+         CASE('MXH')
            FLG2D(2,13)=.TRUE.
-         CASE('HCMAXE')
+         CASE('MXHC')
            FLG2D(2,14)=.TRUE.
-         CASE('HMAXD')
+         CASE('SDMH')
            FLG2D(2,15)=.TRUE.
-         CASE('HCMAXD')
+         CASE('SDMHC')
            FLG2D(2,16)=.TRUE.
 !
 ! Group 3
@@ -1415,7 +1415,6 @@
           ETXX(JSEA)   = ETXX(JSEA) + ABX2(JSEA) * FACTOR* WN(IK,ISEA)**2
           ETYY(JSEA)   = ETYY(JSEA) + ABY2(JSEA) * FACTOR* WN(IK,ISEA)**2
           ETXY(JSEA)   = ETXY(JSEA) + ABYX(JSEA) * FACTOR* WN(IK,ISEA)**2
-          ETY(JSEA)    = ETY(JSEA) + ABY(JSEA) * FACTOR
           IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN 
             ETMSSL(JSEA)  = ETMSSL(JSEA) + AB(JSEA)*FACTOR           &
                      *WN(IK,ISEA)**2

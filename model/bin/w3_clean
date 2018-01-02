@@ -290,6 +290,21 @@ EOF
         echo "   Remove $main_dir/exe"
         rm -fr $main_dir/exe
       fi
+      if [ -d $main_dir/exe_SHRD ]
+      then
+        echo "   Remove $main_dir/exe_SHRD"
+        rm -fr $main_dir/exe_SHRD
+      fi
+      if [ -d $main_dir/exe_DIST ]
+      then
+        echo "   Remove $main_dir/exe_DIST"
+        rm -fr $main_dir/exe_DIST
+      fi
+      if [ -d $main_dir/exe_OMP ]
+      then
+        echo "   Remove $main_dir/exe_OMP"
+        rm -fr $main_dir/exe_OMP
+      fi
       if [ -d $main_dir/obj ] || [ -L $main_dir/obj ]
       then
         echo "   Remove $main_dir/obj"
@@ -339,6 +354,11 @@ EOF
       then
         echo "   Remove $main_dir/mod_HYB"
         rm -fr $main_dir/mod_HYB
+      fi
+      if [ -d $main_dir/tmp ]
+      then
+        echo "   Remove $main_dir/tmp"
+        rm -fr $main_dir/tmp
       fi
       if [ -d $main_dir/tmp_DIST ]
       then
