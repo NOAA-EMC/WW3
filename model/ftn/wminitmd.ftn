@@ -830,7 +830,7 @@
               END IF
 !        INFLAGS2 is initial value of INFLAGS1. Unlike INFLAGS1, 
 !           it does not change during the simulation
-         IF(INFLAGS2(J).EQ..FALSE.) INFLAGS2(J)=INFLAGS1(J)
+         IF(INFLAGS2(J).EQV..FALSE.) INFLAGS2(J)=INFLAGS1(J)
          END DO !         DO J=JFIRST, 7
       END DO !      DO I=1, NRGRD
 !
