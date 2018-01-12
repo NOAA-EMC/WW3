@@ -13,7 +13,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- ICE DPT SPR WLV HS TWI FIC E3D P2L
+ ICE IC1 IC5 DPT SPR WLV HS TWI FIC E3D P2L T02
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]

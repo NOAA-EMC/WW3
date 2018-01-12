@@ -110,8 +110,8 @@
 #                                                                           #
 # ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr \           #
 #      -i input_IC2_ifr -c gnu_debug  ../ ww3_tic1.1                        #
-# ./bin/run_test -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr \           #
-#      -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../ ww3_tic1.1      #
+# bin/run_test -g 1000m_nondisp -c gnu_debug \                              #
+       -i input_IC2_ifr -o netcdf -s IC2IS2 -w workIS2  ../model ww3_tic1.1 #
 # ./bin/run_test -g 1000m -i input_IC2_ifr -o netcdf ../ ww3_tic1.1         #
 # ./bin/run_test -w work_IC2_nondisp_SMPL -i input_IC2_nondisp ../ \        #
 #       ww3_tic1.1                                                          #

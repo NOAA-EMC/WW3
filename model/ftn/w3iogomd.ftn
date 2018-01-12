@@ -772,7 +772,6 @@
       USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, IDOUT
       USE W3SERVMD, ONLY: STRSPLIT, STR_TO_UPPER
       USE W3GDATMD, ONLY: US3DF, USSPF
-      USE W3NAMLMD 
 !/S      USE W3SERVMD, ONLY: STRACE
 !
       IMPLICIT NONE
@@ -792,10 +791,6 @@
       INTEGER             :: I, IFI, IFJ, IOUT
 !/S      INTEGER, SAVE           :: IENT = 0
       LOGICAL             :: FLT
-
-      type(output_type_t) :: output_type
-
-
 !/
 !/ ------------------------------------------------------------------- /
 !/

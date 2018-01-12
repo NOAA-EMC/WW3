@@ -1,20 +1,20 @@
 #include "w3macros.h" 
 !/ ------------------------------------------------------------------- /
-      MODULE W3NAMLMD
+      MODULE W3NMLMULTIMD
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           M. Accensi              |
 !/                  |                                   |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         09-Aug-2016 |
+!/                  | Last update :         04-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutines.
 !/
 !  1. Purpose :
 !
-!     Manages namelists from input *.nml files
+!     Manages namelists from configuration file ww3_multi.nml for ww3_multi program
 !
 !/ ------------------------------------------------------------------- /
 
@@ -181,13 +181,13 @@
 
 
   ! miscellaneous
-  CHARACTER(256)                :: msg
+  CHARACTER(256)                :: MSG
 
 
 
   CONTAINS
 !/ ------------------------------------------------------------------- /
-  SUBROUTINE NAMLMULTIDEF (MPI_COMM, NDSI, INFILE, domain_def, IERR)
+  SUBROUTINE W3NMLMULTIDEF (MPI_COMM, NDSI, INFILE, domain_def, IERR)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -258,15 +258,15 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)                       :: MPI_COMM, NDSI
-    CHARACTER*(*), INTENT(in)                 :: INFILE
-    TYPE(domain_def_t), INTENT(out)           :: domain_def 
-    INTEGER, INTENT(out)                      :: IERR
+    INTEGER, INTENT(IN)                       :: MPI_COMM, NDSI
+    CHARACTER*(*), INTENT(IN)                 :: INFILE
+    TYPE(domain_def_t), INTENT(OUT)           :: domain_def 
+    INTEGER, INTENT(OUT)                      :: IERR
 !/MPI      INTEGER                                 :: IERR_MPI
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTIDEF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTIDEF')
 
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
 !/MPI      CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
@@ -275,29 +275,29 @@
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
-    IF (IERR.ne.0) THEN
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
       RETURN
     END IF
 
     ! read domain def namelist
-    call read_domain_def_nml (NDSI, domain_def, IERR)
-    IF (IERR.ne.0) THEN
+    CALL read_domain_def_nml (NDSI, domain_def, IERR)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: error occured in read_model_def_nml'
       RETURN
     END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) call report_domain_def_nml (domain_def)
+!/T    IF ( IMPROC .EQ. NMPLOG ) CALL report_domain_def_nml (domain_def)
 
     ! close namelist file
     CLOSE (NDSI)
 
-  END SUBROUTINE NAMLMULTIDEF
+  END SUBROUTINE W3NMLMULTIDEF
 
 
 !/ ------------------------------------------------------------------- /
-  SUBROUTINE NAMLMULTICONF (MPI_COMM, NDSI, INFILE, domain_def, &
-                            input_grid, model_grid, output_type, output_date, &
-                            homogeneous_input, IERR)
+  SUBROUTINE W3NMLMULTICONF (MPI_COMM, NDSI, INFILE, domain_def, &
+                             input_grid, model_grid, output_type, output_date, &
+                             homogeneous_input, IERR)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -381,20 +381,20 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)                       :: MPI_COMM, NDSI
-    CHARACTER*(*), INTENT(in)                 :: INFILE
-    TYPE(domain_def_t), INTENT(inout)         :: domain_def
-    TYPE(input_grid_t), INTENT(inout)         :: input_grid(:) 
-    TYPE(model_grid_t), INTENT(inout)         :: model_grid(:) 
-    TYPE(output_type_t), INTENT(inout)        :: output_type(:)
-    TYPE(output_date_t), INTENT(inout)        :: output_date(:)
-    TYPE(homogeneous_input_t), INTENT(inout)  :: homogeneous_input(:)
-    INTEGER, INTENT(out)                      :: IERR
+    INTEGER, INTENT(IN)                       :: MPI_COMM, NDSI
+    CHARACTER*(*), INTENT(IN)                 :: INFILE
+    TYPE(domain_def_t), INTENT(INOUT)         :: domain_def
+    TYPE(input_grid_t), INTENT(INOUT)         :: input_grid(:) 
+    TYPE(model_grid_t), INTENT(INOUT)         :: model_grid(:) 
+    TYPE(output_type_t), INTENT(INOUT)        :: output_type(:)
+    TYPE(output_date_t), INTENT(INOUT)        :: output_date(:)
+    TYPE(homogeneous_input_t), INTENT(INOUT)  :: homogeneous_input(:)
+    INTEGER, INTENT(OUT)                      :: IERR
 !/MPI      INTEGER                                 :: IERR_MPI
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
 !/MPI      MPI_COMM_MWAVE = MPI_COMM
 !/MPI      CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
@@ -403,56 +403,56 @@
 
     ! open input file
     open (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
-    IF (IERR.ne.0) THEN
+    IF (IERR.NE.0) THEN
       WRITE (*,'(a)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
       RETURN
     END IF
 
     ! read input grid namelist
-    call read_input_grid_nml (NDSI, domain_def%nrinp, input_grid, IERR)
-    IF (IERR.ne.0) THEN
+    CALL read_input_grid_nml (NDSI, domain_def%nrinp, input_grid, IERR)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: error occured in read_input_grid_nml'
       RETURN
     END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) call report_input_grid_nml (domain_def%nrinp, input_grid)
+!/T    IF ( IMPROC .EQ. NMPLOG ) CALL report_input_grid_nml (domain_def%nrinp, input_grid)
 
     ! read model grid namelist
-    call read_model_grid_nml (NDSI, domain_def%nrgrd, model_grid, IERR)
-    IF (IERR.ne.0) THEN
+    CALL read_model_grid_nml (NDSI, domain_def%nrgrd, model_grid, IERR)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: error occured in read_model_grid_nml'
       RETURN
     END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) call report_model_grid_nml (domain_def%nrgrd, model_grid)
+!/T    IF ( IMPROC .EQ. NMPLOG ) CALL report_model_grid_nml (domain_def%nrgrd, model_grid)
 
     ! read output TYPE namelist
-    call read_output_type_nml (NDSI, domain_def%unipts, domain_def%nrgrd, output_type, IERR)
-    IF (IERR.ne.0) THEN
+    CALL read_output_type_nml (NDSI, domain_def%unipts, domain_def%nrgrd, output_type, IERR)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: error occured in read_output_type_nml'
       RETURN
     END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) call report_output_type_nml (domain_def%nrgrd, output_type)
+!/T    IF ( IMPROC .EQ. NMPLOG ) CALL report_output_type_nml (domain_def%nrgrd, output_type)
 
     ! read output date namelist
-    call read_output_date_nml (NDSI, domain_def%nrgrd, output_date, IERR)
-    IF (IERR.ne.0) THEN
+    CALL read_output_date_nml (NDSI, domain_def%nrgrd, output_date, IERR)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: error occured in read_output_date_nml'
       RETURN
     END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) call report_output_date_nml (domain_def%nrgrd,output_date)
+!/T    IF ( IMPROC .EQ. NMPLOG ) CALL report_output_date_nml (domain_def%nrgrd,output_date)
 
     ! read homogeneous input namelist
-    call read_homogeneous_input_nml (NDSI, domain_def%nmove, homogeneous_input, IERR)
-    IF (IERR.ne.0) THEN
+    CALL read_homogeneous_input_nml (NDSI, domain_def%nmove, homogeneous_input, IERR)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a)') 'ERROR: error occured in read_homogeneous_input_nml'
       RETURN
     END IF
-!/T    IF ( IMPROC .EQ. NMPLOG ) call report_homogeneous_input_nml (domain_def%nmove, homogeneous_input)
+!/T    IF ( IMPROC .EQ. NMPLOG ) CALL report_homogeneous_input_nml (domain_def%nmove, homogeneous_input)
 
 
     ! close namelist file
     CLOSE (NDSI)
 
-  END SUBROUTINE NAMLMULTICONF
+  END SUBROUTINE W3NMLMULTICONF
 
 !/ ------------------------------------------------------------------- /
 
@@ -497,7 +497,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTIDEF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTIDEF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -524,9 +524,9 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)               :: NDSI
-    TYPE(domain_def_t), INTENT(out)   :: domain_def
-    INTEGER, INTENT(out)              :: IERR
+    INTEGER, INTENT(IN)               :: NDSI
+    TYPE(domain_def_t), INTENT(OUT)   :: domain_def
+    INTEGER, INTENT(OUT)              :: IERR
 
     ! locals
     TYPE(domain_def_t) :: domain
@@ -540,22 +540,22 @@
     domain%nrinp  = 0
     domain%nrgrd  = 1
     domain%nmove  = 0
-    domain%unipts = .false.
+    domain%unipts = .FALSE.
     domain%iostyp = 1
-    domain%upproc = .false.
-    domain%pshare = .false.
-    domain%flghg1 = .false.
-    domain%flghg2 = .false.
+    domain%upproc = .FALSE.
+    domain%pshare = .FALSE.
+    domain%flghg1 = .FALSE.
+    domain%flghg2 = .FALSE.
     domain%start  = '19680606 000000'
     domain%stop   = '19680607 000000'
 
     ! read model def namelist
     REWIND (NDSI)
-    READ (NDSI, nml=domain_def_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=domain_def_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_domain_def_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
@@ -616,7 +616,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -643,19 +643,19 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)               :: NDSI, nrinp
-    TYPE(input_grid_t), INTENT(inout) :: input_grid(nrinp)
-    INTEGER, INTENT(out)              :: IERR
+    INTEGER, INTENT(IN)               :: NDSI, nrinp
+    TYPE(input_grid_t), INTENT(INOUT) :: input_grid(nrinp)
+    INTEGER, INTENT(OUT)              :: IERR
 
     ! locals
     INTEGER, parameter :: max_nrinp = 99
     TYPE(input_grid_t) :: input(max_nrinp)
     NAMELIST /input_grid_nml/ input
-    INTEGER            :: i
+    INTEGER            :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
     ! test nrinp
     IF (nrinp.gt.max_nrinp) THEN
@@ -671,44 +671,44 @@
     IF (nrinp.eq.0) RETURN
 
     ! set default values for grid input data
-    DO i = 1,nrinp
-      input(i)%name                  = 'unset'
-      input(i)%forcing%water_levels  = .false.
-      input(i)%forcing%currents      = .false.
-      input(i)%forcing%winds         = .false.
-      input(i)%forcing%ice_conc      = .false.
-      input(i)%forcing%ice_param1    = .false.
-      input(i)%forcing%ice_param2    = .false.
-      input(i)%forcing%ice_param3    = .false.
-      input(i)%forcing%ice_param4    = .false.
-      input(i)%forcing%ice_param5    = .false.
-      input(i)%forcing%mud_density   = .false.
-      input(i)%forcing%mud_thickness = .false.
-      input(i)%forcing%mud_viscosity = .false.
-      input(i)%assim%mean            = .false.
-      input(i)%assim%spec1d          = .false.
-      input(i)%assim%spec2d          = .false.
+    DO I = 1,nrinp
+      input(I)%name                  = 'unset'
+      input(I)%forcing%water_levels  = .FALSE.
+      input(I)%forcing%currents      = .FALSE.
+      input(I)%forcing%winds         = .FALSE.
+      input(I)%forcing%ice_conc      = .FALSE.
+      input(I)%forcing%ice_param1    = .FALSE.
+      input(I)%forcing%ice_param2    = .FALSE.
+      input(I)%forcing%ice_param3    = .FALSE.
+      input(I)%forcing%ice_param4    = .FALSE.
+      input(I)%forcing%ice_param5    = .FALSE.
+      input(I)%forcing%mud_density   = .FALSE.
+      input(I)%forcing%mud_thickness = .FALSE.
+      input(I)%forcing%mud_viscosity = .FALSE.
+      input(I)%assim%mean            = .FALSE.
+      input(I)%assim%spec1d          = .FALSE.
+      input(I)%assim%spec2d          = .FALSE.
     END DO
 
     ! read input grid namelist
     REWIND (NDSI)
-    READ (NDSI, nml=input_grid_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=input_grid_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_input_grid_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
     ! set/check RETURN values
-    DO i = 1,nrinp
-      IF (TRIM(input(i)%name).eq.'unset') THEN
-        WRITE (MDSE,10) 'ERROR: read_input_grid_nml: required input(',i,')%name not set'
+    DO I = 1,nrinp
+      IF (TRIM(input(I)%name).eq.'unset') THEN
+        WRITE (MDSE,10) 'ERROR: read_input_grid_nml: required input(',I,')%name not set'
         IERR = 1
       END IF
-      input_grid(i) = input(i)
+      input_grid(I) = input(I)
     END DO
-10  format (a,i0,a)
+10  format (A,I0,A)
 
   END SUBROUTINE read_input_grid_nml
 
@@ -749,7 +749,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -776,19 +776,19 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)               :: NDSI, nrgrd
-    TYPE(model_grid_t), INTENT(inout) :: model_grid(nrgrd)
-    INTEGER, INTENT(out)              :: IERR
+    INTEGER, INTENT(IN)               :: NDSI, nrgrd
+    TYPE(model_grid_t), INTENT(INOUT) :: model_grid(nrgrd)
+    INTEGER, INTENT(OUT)              :: IERR
 
     ! locals
     INTEGER, parameter :: max_nrgrd = 99
     TYPE(model_grid_t) :: model(max_nrgrd)
     NAMELIST /model_grid_nml/ model
-    INTEGER            :: i
+    INTEGER            :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
     ! test nrgrd
     IF (nrgrd.gt.max_nrgrd) THEN
@@ -801,50 +801,50 @@
     END IF
 
     ! set default values for model input data
-    DO i = 1,nrgrd
-      model(i)%name                  = 'unset'
-      model(i)%forcing%water_levels  = 'no'
-      model(i)%forcing%currents      = 'no'
-      model(i)%forcing%winds         = 'no'
-      model(i)%forcing%ice_conc      = 'no'
-      model(i)%forcing%ice_param1    = 'no'
-      model(i)%forcing%ice_param2    = 'no'
-      model(i)%forcing%ice_param3    = 'no'
-      model(i)%forcing%ice_param4    = 'no'
-      model(i)%forcing%ice_param5    = 'no'
-      model(i)%forcing%mud_density   = 'no'
-      model(i)%forcing%mud_thickness = 'no'
-      model(i)%forcing%mud_viscosity = 'no'
-      model(i)%assim%mean            = 'no'
-      model(i)%assim%spec1d          = 'no'
-      model(i)%assim%spec2d          = 'no'
-      model(i)%resource%rank_id      = i
-      model(i)%resource%group_id     = 1
-      model(i)%resource%sibling_id   = 0
-      model(i)%resource%comm_frac    = (/0.00,1.00/)
-      model(i)%resource%bound_flag   = .false.
+    DO I = 1,nrgrd
+      model(I)%name                  = 'unset'
+      model(I)%forcing%water_levels  = 'no'
+      model(I)%forcing%currents      = 'no'
+      model(I)%forcing%winds         = 'no'
+      model(I)%forcing%ice_conc      = 'no'
+      model(I)%forcing%ice_param1    = 'no'
+      model(I)%forcing%ice_param2    = 'no'
+      model(I)%forcing%ice_param3    = 'no'
+      model(I)%forcing%ice_param4    = 'no'
+      model(I)%forcing%ice_param5    = 'no'
+      model(I)%forcing%mud_density   = 'no'
+      model(I)%forcing%mud_thickness = 'no'
+      model(I)%forcing%mud_viscosity = 'no'
+      model(I)%assim%mean            = 'no'
+      model(I)%assim%spec1d          = 'no'
+      model(I)%assim%spec2d          = 'no'
+      model(I)%resource%rank_id      = i
+      model(I)%resource%group_id     = 1
+      model(I)%resource%sibling_id   = 0
+      model(I)%resource%comm_frac    = (/0.00,1.00/)
+      model(I)%resource%bound_flag   = .FALSE.
     END DO
 
     ! read model model namelist
     REWIND (NDSI)
-    READ (NDSI, nml=model_grid_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=model_grid_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_model_grid_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
     ! set/check RETURN values
-    DO i = 1,nrgrd
-      IF (TRIM(model(i)%name).eq.'unset') THEN
-        WRITE (MDSE,10) 'ERROR: read_model_grid_nml: required model(',i,')%name not set'
+    DO I = 1,nrgrd
+      IF (TRIM(model(I)%name).eq.'unset') THEN
+        WRITE (MDSE,10) 'ERROR: read_model_grid_nml: required model(',I,')%name not set'
         IERR = 1
       END IF
-      model_grid(i) = model(i)
+      model_grid(I) = model(I)
     END DO
 
-10  format (a,i0,a)
+10  format (A,I0,A)
 
   END SUBROUTINE read_model_grid_nml
 
@@ -885,7 +885,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -912,35 +912,35 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)                :: NDSI, nrgrd
-    LOGICAL, INTENT(in)                :: unipts
-    TYPE(output_type_t), INTENT(inout) :: output_type(nrgrd)
-    INTEGER, INTENT(out)               :: IERR
+    INTEGER, INTENT(IN)                :: NDSI, nrgrd
+    LOGICAL, INTENT(IN)                :: unipts
+    TYPE(output_type_t), INTENT(INOUT) :: output_type(nrgrd)
+    INTEGER, INTENT(OUT)               :: IERR
 
     ! locals
     INTEGER, parameter  :: max_nrgrd = 99
     TYPE(output_type_t) :: alltype
     TYPE(output_type_t) :: itype(max_nrgrd)
     NAMELIST /output_type_nml/ alltype, itype
-    INTEGER             :: i, j
+    INTEGER             :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
     ! set default values for output TYPE data
-    DO i=1,nrgrd
-      itype(i)%point%name   = 'unset'
-      itype(i)%point%file   = 'unset'
-      itype(i)%field%list   = 'unset'
-      itype(i)%track%format = .true.
-      itype(i)%partition%x0 = 0
-      itype(i)%partition%xn = 0
-      itype(i)%partition%nx = 0
-      itype(i)%partition%y0 = 0
-      itype(i)%partition%yn = 0
-      itype(i)%partition%ny = 0
-      itype(i)%partition%format = .true.
+    DO I=1,nrgrd
+      itype(I)%point%name   = 'unset'
+      itype(I)%point%file   = 'unset'
+      itype(I)%field%list   = 'unset'
+      itype(I)%track%format = .true.
+      itype(I)%partition%x0 = 0
+      itype(I)%partition%xn = 0
+      itype(I)%partition%nx = 0
+      itype(I)%partition%y0 = 0
+      itype(I)%partition%yn = 0
+      itype(I)%partition%ny = 0
+      itype(I)%partition%format = .true.
 !/COU      itype(i)%coupling%list   = 'unset'
     END DO
     alltype%point%name   = 'unset'
@@ -959,30 +959,30 @@
 
     ! read output_TYPE namelist
     REWIND (NDSI)
-    READ (NDSI, nml=output_type_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=output_type_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_output_type_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
-    DO i=1,nrgrd
-      itype(i) = alltype
+    DO I=1,nrgrd
+      itype(I) = alltype
     END DO
 
     ! read output_TYPE namelist
     REWIND (NDSI)
-    READ (NDSI, nml=output_type_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=output_type_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_output_type_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
-    DO i=1,nrgrd
-      output_type(i) = itype(i)
+    DO I=1,nrgrd
+      output_type(I) = itype(I)
     END DO
    
   END SUBROUTINE read_output_type_nml
@@ -1024,7 +1024,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1051,44 +1051,44 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)                :: NDSI, nrgrd
-    TYPE(output_date_t), INTENT(inout) :: output_date(nrgrd)
-    INTEGER, INTENT(out)               :: IERR
+    INTEGER, INTENT(IN)                :: NDSI, nrgrd
+    TYPE(output_date_t), INTENT(INOUT) :: output_date(nrgrd)
+    INTEGER, INTENT(OUT)               :: IERR
 
     ! locals
     INTEGER, parameter  :: max_nrgrd = 99
     TYPE(output_date_t) :: alldate
     TYPE(output_date_t) :: idate(max_nrgrd)
     NAMELIST /output_date_nml/ alldate, idate
-    INTEGER             :: i
+    INTEGER             :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
     ! set default values for output_date input data
-    DO i=1,nrgrd
-      idate(i)%field%start = '19680606 000000'
-      idate(i)%field%stride = '0'
-      idate(i)%field%stop = '19680607 000000'
-      idate(i)%point%start = '19680606 000000'
-      idate(i)%point%stride = '0'
-      idate(i)%point%stop = '19680607 000000'
-      idate(i)%track%start = '19680606 000000'
-      idate(i)%track%stride = '0'
-      idate(i)%track%stop = '19680607 000000'
-      idate(i)%restart%start = '19680606 000000'
-      idate(i)%restart%stride = '0'
-      idate(i)%restart%stop = '19680607 000000'
-      idate(i)%boundary%start = '19680606 000000'
-      idate(i)%boundary%stride = '0'
-      idate(i)%boundary%stop = '19680607 000000'
-      idate(i)%partition%start = '19680606 000000'
-      idate(i)%partition%stride = '0'
-      idate(i)%partition%stop = '19680607 000000'
-!/COU      idate(i)%coupling%start = '19680606 000000'
-!/COU      idate(i)%coupling%stride = '0'
-!/COU      idate(i)%coupling%stop = '19680607 000000'
+    DO I=1,nrgrd
+      idate(I)%field%start = '19680606 000000'
+      idate(I)%field%stride = '0'
+      idate(I)%field%stop = '19680607 000000'
+      idate(I)%point%start = '19680606 000000'
+      idate(I)%point%stride = '0'
+      idate(I)%point%stop = '19680607 000000'
+      idate(I)%track%start = '19680606 000000'
+      idate(I)%track%stride = '0'
+      idate(I)%track%stop = '19680607 000000'
+      idate(I)%restart%start = '19680606 000000'
+      idate(I)%restart%stride = '0'
+      idate(I)%restart%stop = '19680607 000000'
+      idate(I)%boundary%start = '19680606 000000'
+      idate(I)%boundary%stride = '0'
+      idate(I)%boundary%stop = '19680607 000000'
+      idate(I)%partition%start = '19680606 000000'
+      idate(I)%partition%stride = '0'
+      idate(I)%partition%stop = '19680607 000000'
+!/COU      idate(I)%coupling%start = '19680606 000000'
+!/COU      idate(I)%coupling%stride = '0'
+!/COU      idate(I)%coupling%stop = '19680607 000000'
     END DO
     alldate%field%start = '19680606 000000'
     alldate%field%stride = '0'
@@ -1115,30 +1115,30 @@
 
     ! read output_date namelist
     REWIND (NDSI)
-    READ (NDSI, nml=output_date_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=output_date_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_output_date_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
-    DO i=1,nrgrd
-      idate(i) = alldate
+    DO I=1,nrgrd
+      idate(I) = alldate
     END DO
 
     ! read output_date namelist
     REWIND (NDSI)
-    READ (NDSI, nml=output_date_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=output_date_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_output_date_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
-    DO i=1,nrgrd
-      output_date(i) = idate(i)
+    DO I=1,nrgrd
+      output_date(I) = idate(I)
     END DO
 
 
@@ -1181,7 +1181,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1208,40 +1208,40 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)                      :: NDSI, nmove
-    TYPE(homogeneous_input_t), INTENT(inout) :: homogeneous_input(nmove)
-    INTEGER, INTENT(out)                     :: IERR
+    INTEGER, INTENT(IN)                      :: NDSI, nmove
+    TYPE(homogeneous_input_t), INTENT(INOUT) :: homogeneous_input(nmove)
+    INTEGER, INTENT(OUT)                     :: IERR
 
     ! locals
     INTEGER, parameter        :: max_nmove = 99
-    INTEGER                   :: i
+    INTEGER                   :: I
     TYPE(homogeneous_input_t) :: homogeneous(max_nmove)
     NAMELIST /homogeneous_input_nml/ homogeneous
 !/S      INTEGER, SAVE                           :: IENT = 0
 
     IERR = 0
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
     ! set default values for homogeneous input data
-    DO i=1,nmove
-      homogeneous(i)%moving%start     = '19680606 000000'
-      homogeneous(i)%moving%speed     = 0.
-      homogeneous(i)%moving%direction = 0.
-      homogeneous(i)%moving%gradient  = 0.
+    DO I=1,nmove
+      homogeneous(I)%moving%start     = '19680606 000000'
+      homogeneous(I)%moving%speed     = 0.
+      homogeneous(I)%moving%direction = 0.
+      homogeneous(I)%moving%gradient  = 0.
     END DO
 
     ! read homogeneous_input namelist
     REWIND (NDSI)
-    READ (NDSI, nml=homogeneous_input_nml, iostat=IERR, iomsg=msg)
-    IF (IERR.ne.0) THEN
+    READ (NDSI, nml=homogeneous_input_nml, iostat=IERR, iomsg=MSG)
+    IF (IERR.NE.0) THEN
       WRITE (MDSE,'(a,/a)') &
         'ERROR: read_homogeneous_input_nml: namelist read error', &
-        'ERROR: '//TRIM(msg)
+        'ERROR: '//TRIM(MSG)
       RETURN
     END IF
 
-    DO i=1,nmove
-      homogeneous_input(i) = homogeneous(i)
+    DO I=1,nmove
+      homogeneous_input(I) = homogeneous(I)
     END DO
     
   END SUBROUTINE read_homogeneous_input_nml
@@ -1292,7 +1292,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1319,27 +1319,27 @@
 
     IMPLICIT NONE
 
-    TYPE(domain_def_t), INTENT(in) :: domain_def
+    TYPE(domain_def_t), INTENT(IN) :: domain_def
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
-      WRITE (msg,'(a)') 'domain def :'
-      WRITE (MDSS,'(a)')
-      WRITE (MDSS,11) TRIM(msg),'nrinp  = ',domain_def%nrinp
-      WRITE (MDSS,11) TRIM(msg),'nrgrd  = ',domain_def%nrgrd
-      WRITE (MDSS,13) TRIM(msg),'unipts = ',domain_def%unipts
-      WRITE (MDSS,11) TRIM(msg),'iostyp = ',domain_def%iostyp
-      WRITE (MDSS,13) TRIM(msg),'upproc = ',domain_def%upproc
-      WRITE (MDSS,13) TRIM(msg),'pshare = ',domain_def%pshare
-      WRITE (MDSS,13) TRIM(msg),'flghg1 = ',domain_def%flghg1
-      WRITE (MDSS,13) TRIM(msg),'flghg2 = ',domain_def%flghg2
-      WRITE (MDSS,10) TRIM(msg),'start  = ',TRIM(domain_def%start)
-      WRITE (MDSS,10) TRIM(msg),'stop   = ',TRIM(domain_def%stop)
+      WRITE (MSG,'(A)') 'domain def :'
+      WRITE (MDSS,'(A)')
+      WRITE (MDSS,11) TRIM(MSG),'nrinp  = ',domain_def%nrinp
+      WRITE (MDSS,11) TRIM(MSG),'nrgrd  = ',domain_def%nrgrd
+      WRITE (MDSS,13) TRIM(MSG),'unipts = ',domain_def%unipts
+      WRITE (MDSS,11) TRIM(MSG),'iostyp = ',domain_def%iostyp
+      WRITE (MDSS,13) TRIM(MSG),'upproc = ',domain_def%upproc
+      WRITE (MDSS,13) TRIM(MSG),'pshare = ',domain_def%pshare
+      WRITE (MDSS,13) TRIM(MSG),'flghg1 = ',domain_def%flghg1
+      WRITE (MDSS,13) TRIM(MSG),'flghg2 = ',domain_def%flghg2
+      WRITE (MDSS,10) TRIM(MSG),'start  = ',TRIM(domain_def%start)
+      WRITE (MDSS,10) TRIM(MSG),'stop   = ',TRIM(domain_def%stop)
 
-10  format (a,2x,a,a)
-11  format (a,2x,a,i1)
-13  format (a,2x,a,l1)
+10  format (A,2X,A,A)
+11  format (A,2X,A,I1)
+13  format (A,2X,A,L1)
 
   END SUBROUTINE report_domain_def_nml
 
@@ -1380,7 +1380,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1407,39 +1407,39 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)            :: nrinp
-    TYPE(input_grid_t), INTENT(in) :: input_grid(nrinp)
+    INTEGER, INTENT(IN)            :: nrinp
+    TYPE(input_grid_t), INTENT(IN) :: input_grid(nrinp)
 
     ! locals
-    INTEGER              :: i
+    INTEGER              :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
-    DO i = 1,nrinp
-      WRITE (msg,'(a,i0.2,a)') 'input grid ',i,' :'
-      WRITE (MDSS,'(a)')
-      WRITE (MDSS,10) TRIM(msg),'name                     = ',TRIM(input_grid(i)%name)
-      WRITE (MDSS,13) TRIM(msg),'forcing % water_levels   = ',input_grid(i)%forcing%water_levels
-      WRITE (MDSS,13) TRIM(msg),'forcing % currents       = ',input_grid(i)%forcing%currents
-      WRITE (MDSS,13) TRIM(msg),'forcing % wind           = ',input_grid(i)%forcing%winds
-      WRITE (MDSS,13) TRIM(msg),'forcing % ice_conc       = ',input_grid(i)%forcing%ice_conc
-      WRITE (MDSS,13) TRIM(msg),'forcing % ice_param1     = ',input_grid(i)%forcing%ice_param1
-      WRITE (MDSS,13) TRIM(msg),'forcing % ice_param2     = ',input_grid(i)%forcing%ice_param2
-      WRITE (MDSS,13) TRIM(msg),'forcing % ice_param3     = ',input_grid(i)%forcing%ice_param3
-      WRITE (MDSS,13) TRIM(msg),'forcing % ice_param4     = ',input_grid(i)%forcing%ice_param4
-      WRITE (MDSS,13) TRIM(msg),'forcing % ice_param5     = ',input_grid(i)%forcing%ice_param5
-      WRITE (MDSS,13) TRIM(msg),'forcing % mud_density    = ',input_grid(i)%forcing%mud_density
-      WRITE (MDSS,13) TRIM(msg),'forcing % mud_thickness  = ',input_grid(i)%forcing%mud_thickness
-      WRITE (MDSS,13) TRIM(msg),'forcing % mud_viscosity  = ',input_grid(i)%forcing%mud_viscosity
-      WRITE (MDSS,13) TRIM(msg),'assim % mean             = ',input_grid(i)%assim%mean
-      WRITE (MDSS,13) TRIM(msg),'assim % spec1d           = ',input_grid(i)%assim%spec1d
-      WRITE (MDSS,13) TRIM(msg),'assim % spec2d           = ',input_grid(i)%assim%spec2d
+    DO I = 1,nrinp
+      WRITE (MSG,'(A,I0.2,A)') 'input grid ',I,' :'
+      WRITE (MDSS,'(A)')
+      WRITE (MDSS,10) TRIM(MSG),'name                     = ',TRIM(input_grid(I)%name)
+      WRITE (MDSS,13) TRIM(MSG),'forcing % water_levels   = ',input_grid(I)%forcing%water_levels
+      WRITE (MDSS,13) TRIM(MSG),'forcing % currents       = ',input_grid(I)%forcing%currents
+      WRITE (MDSS,13) TRIM(MSG),'forcing % wind           = ',input_grid(I)%forcing%winds
+      WRITE (MDSS,13) TRIM(MSG),'forcing % ice_conc       = ',input_grid(I)%forcing%ice_conc
+      WRITE (MDSS,13) TRIM(MSG),'forcing % ice_param1     = ',input_grid(I)%forcing%ice_param1
+      WRITE (MDSS,13) TRIM(MSG),'forcing % ice_param2     = ',input_grid(I)%forcing%ice_param2
+      WRITE (MDSS,13) TRIM(MSG),'forcing % ice_param3     = ',input_grid(I)%forcing%ice_param3
+      WRITE (MDSS,13) TRIM(MSG),'forcing % ice_param4     = ',input_grid(I)%forcing%ice_param4
+      WRITE (MDSS,13) TRIM(MSG),'forcing % ice_param5     = ',input_grid(I)%forcing%ice_param5
+      WRITE (MDSS,13) TRIM(MSG),'forcing % mud_density    = ',input_grid(I)%forcing%mud_density
+      WRITE (MDSS,13) TRIM(MSG),'forcing % mud_thickness  = ',input_grid(I)%forcing%mud_thickness
+      WRITE (MDSS,13) TRIM(MSG),'forcing % mud_viscosity  = ',input_grid(I)%forcing%mud_viscosity
+      WRITE (MDSS,13) TRIM(MSG),'assim % mean             = ',input_grid(I)%assim%mean
+      WRITE (MDSS,13) TRIM(MSG),'assim % spec1d           = ',input_grid(I)%assim%spec1d
+      WRITE (MDSS,13) TRIM(MSG),'assim % spec2d           = ',input_grid(I)%assim%spec2d
     END DO
     WRITE (*,*)
 
-10  format (a,2x,a,a)
-13  format (a,2x,a,l1)
+10  format (A,2X,A,A)
+13  format (A,2X,A,L1)
 
   END SUBROUTINE report_input_grid_nml
 
@@ -1480,7 +1480,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1507,47 +1507,47 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)            :: nrgrd
-    TYPE(model_grid_t), INTENT(in) :: model_grid(nrgrd)
+    INTEGER, INTENT(IN)            :: nrgrd
+    TYPE(model_grid_t), INTENT(IN) :: model_grid(nrgrd)
 
     ! locals
-    INTEGER              :: i
+    INTEGER              :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
-    DO i = 1,nrgrd
-      WRITE (msg,'(a,i0.4,a)') 'model grid ',i,' :'
-      WRITE (MDSS,'(a)')
-      WRITE (MDSS,10) TRIM(msg),'name                     = ',TRIM(model_grid(i)%name)
-      WRITE (MDSS,10) TRIM(msg),'forcing % water_levels   = ',TRIM(model_grid(i)%forcing%water_levels)
-      WRITE (MDSS,10) TRIM(msg),'forcing % currents       = ',TRIM(model_grid(i)%forcing%currents)
-      WRITE (MDSS,10) TRIM(msg),'forcing % winds          = ',TRIM(model_grid(i)%forcing%winds)
-      WRITE (MDSS,10) TRIM(msg),'forcing % ice_conc       = ',TRIM(model_grid(i)%forcing%ice_conc)
-      WRITE (MDSS,10) TRIM(msg),'forcing % ice_param1     = ',TRIM(model_grid(i)%forcing%ice_param1)
-      WRITE (MDSS,10) TRIM(msg),'forcing % ice_param2     = ',TRIM(model_grid(i)%forcing%ice_param2)
-      WRITE (MDSS,10) TRIM(msg),'forcing % ice_param3     = ',TRIM(model_grid(i)%forcing%ice_param3)
-      WRITE (MDSS,10) TRIM(msg),'forcing % ice_param4     = ',TRIM(model_grid(i)%forcing%ice_param4)
-      WRITE (MDSS,10) TRIM(msg),'forcing % ice_param5     = ',TRIM(model_grid(i)%forcing%ice_param5)
-      WRITE (MDSS,10) TRIM(msg),'forcing % mud_density    = ',TRIM(model_grid(i)%forcing%mud_density)
-      WRITE (MDSS,10) TRIM(msg),'forcing % mud_thickness  = ',TRIM(model_grid(i)%forcing%mud_thickness)
-      WRITE (MDSS,10) TRIM(msg),'forcing % mud_viscosity  = ',TRIM(model_grid(i)%forcing%mud_viscosity)
-      WRITE (MDSS,10) TRIM(msg),'assim % mean             = ',TRIM(model_grid(i)%assim%mean)
-      WRITE (MDSS,10) TRIM(msg),'assim % spec1d           = ',TRIM(model_grid(i)%assim%spec1d)
-      WRITE (MDSS,10) TRIM(msg),'assim % spec2d           = ',TRIM(model_grid(i)%assim%spec2d)
-      WRITE (MDSS,11) TRIM(msg),'resource % rank_id       = ',model_grid(i)%resource%rank_id
-      WRITE (MDSS,11) TRIM(msg),'resource % group_id      = ',model_grid(i)%resource%group_id
-      WRITE (MDSS,11) TRIM(msg),'resource % sibling_id    = ',model_grid(i)%resource%sibling_id
-      WRITE (MDSS,12) TRIM(msg),'resource % comm_frac     = ',model_grid(i)%resource%comm_frac(1), &
-                                                              model_grid(i)%resource%comm_frac(2)
-      WRITE (MDSS,13) TRIM(msg),'resource % bound_flag    = ',model_grid(i)%resource%bound_flag
+    DO I = 1,nrgrd
+      WRITE (MSG,'(A,I0.4,A)') 'model grid ',I,' :'
+      WRITE (MDSS,'(A)')
+      WRITE (MDSS,10) TRIM(MSG),'name                     = ',TRIM(model_grid(I)%name)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % water_levels   = ',TRIM(model_grid(I)%forcing%water_levels)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % currents       = ',TRIM(model_grid(I)%forcing%currents)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % winds          = ',TRIM(model_grid(I)%forcing%winds)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % ice_conc       = ',TRIM(model_grid(I)%forcing%ice_conc)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % ice_param1     = ',TRIM(model_grid(I)%forcing%ice_param1)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % ice_param2     = ',TRIM(model_grid(I)%forcing%ice_param2)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % ice_param3     = ',TRIM(model_grid(I)%forcing%ice_param3)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % ice_param4     = ',TRIM(model_grid(I)%forcing%ice_param4)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % ice_param5     = ',TRIM(model_grid(I)%forcing%ice_param5)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % mud_density    = ',TRIM(model_grid(I)%forcing%mud_density)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % mud_thickness  = ',TRIM(model_grid(I)%forcing%mud_thickness)
+      WRITE (MDSS,10) TRIM(MSG),'forcing % mud_viscosity  = ',TRIM(model_grid(I)%forcing%mud_viscosity)
+      WRITE (MDSS,10) TRIM(MSG),'assim % mean             = ',TRIM(model_grid(I)%assim%mean)
+      WRITE (MDSS,10) TRIM(MSG),'assim % spec1d           = ',TRIM(model_grid(I)%assim%spec1d)
+      WRITE (MDSS,10) TRIM(MSG),'assim % spec2d           = ',TRIM(model_grid(I)%assim%spec2d)
+      WRITE (MDSS,11) TRIM(MSG),'resource % rank_id       = ',model_grid(I)%resource%rank_id
+      WRITE (MDSS,11) TRIM(MSG),'resource % group_id      = ',model_grid(I)%resource%group_id
+      WRITE (MDSS,11) TRIM(MSG),'resource % sibling_id    = ',model_grid(I)%resource%sibling_id
+      WRITE (MDSS,12) TRIM(MSG),'resource % comm_frac     = ',model_grid(I)%resource%comm_frac(1), &
+                                                              model_grid(I)%resource%comm_frac(2)
+      WRITE (MDSS,13) TRIM(MSG),'resource % bound_flag    = ',model_grid(I)%resource%bound_flag
     END DO
-    WRITE (MDSS,'(a)')
+    WRITE (MDSS,'(A)')
 
-10  format (a,2x,a,a)
-11  format (a,2x,a,i1)
-12  format (a,2x,a,'(',f5.2,',',f5.2,' )')
-13  format (a,2x,a,l1)
+10  format (A,2X,A,A)
+11  format (A,2X,A,I1)
+12  format (A,2X,A,'(',F5.2,',',F5.2,' )')
+13  format (A,2X,A,I1)
 
   END SUBROUTINE report_model_grid_nml
 
@@ -1588,7 +1588,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1615,36 +1615,36 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)             :: nrgrd
-    TYPE(output_type_t), INTENT(in) :: output_type(nrgrd)
+    INTEGER, INTENT(IN)             :: nrgrd
+    TYPE(output_type_t), INTENT(IN) :: output_type(nrgrd)
 
     ! locals
-    INTEGER              :: i
+    INTEGER              :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
-    DO i=1,nrgrd
-      WRITE (msg,'(a,i1,a)') 'output TYPE model grid',i, ' :'
-      WRITE (MDSS,'(a)')
-      WRITE (MDSS,10) TRIM(msg),'point % name         = ',TRIM(output_type(i)%point%name)
-      WRITE (MDSS,10) TRIM(msg),'point % file         = ',TRIM(output_type(i)%point%file)
-      WRITE (MDSS,10) TRIM(msg),'field % list         = ',TRIM(output_type(i)%field%list)
-      WRITE (MDSS,13) TRIM(msg),'track % format       = ',output_type(i)%track%format
-      WRITE (MDSS,11) TRIM(msg),'partition % x0       = ',output_type(i)%partition%x0
-      WRITE (MDSS,11) TRIM(msg),'partition % xn       = ',output_type(i)%partition%xn
-      WRITE (MDSS,11) TRIM(msg),'partition % nx       = ',output_type(i)%partition%nx
-      WRITE (MDSS,11) TRIM(msg),'partition % y0       = ',output_type(i)%partition%y0
-      WRITE (MDSS,11) TRIM(msg),'partition % yn       = ',output_type(i)%partition%yn
-      WRITE (MDSS,11) TRIM(msg),'partition % ny       = ',output_type(i)%partition%ny
-      WRITE (MDSS,13) TRIM(msg),'partition % format   = ',output_type(i)%partition%format
-!/COU      WRITE (MDSS,10) TRIM(msg),'coupling % list         = ',TRIM(output_type(i)%coupling%list)
+    DO I=1,nrgrd
+      WRITE (MSG,'(A,I1,A)') 'output TYPE model grid',I, ' :'
+      WRITE (MDSS,'(A)')
+      WRITE (MDSS,10) TRIM(MSG),'point % name         = ',TRIM(output_type(I)%point%name)
+      WRITE (MDSS,10) TRIM(MSG),'point % file         = ',TRIM(output_type(I)%point%file)
+      WRITE (MDSS,10) TRIM(MSG),'field % list         = ',TRIM(output_type(I)%field%list)
+      WRITE (MDSS,13) TRIM(MSG),'track % format       = ',output_type(I)%track%format
+      WRITE (MDSS,11) TRIM(MSG),'partition % x0       = ',output_type(I)%partition%x0
+      WRITE (MDSS,11) TRIM(MSG),'partition % xn       = ',output_type(I)%partition%xn
+      WRITE (MDSS,11) TRIM(MSG),'partition % nx       = ',output_type(I)%partition%nx
+      WRITE (MDSS,11) TRIM(MSG),'partition % y0       = ',output_type(I)%partition%y0
+      WRITE (MDSS,11) TRIM(MSG),'partition % yn       = ',output_type(I)%partition%yn
+      WRITE (MDSS,11) TRIM(MSG),'partition % ny       = ',output_type(I)%partition%ny
+      WRITE (MDSS,13) TRIM(MSG),'partition % format   = ',output_type(I)%partition%format
+!/COU      WRITE (MDSS,10) TRIM(MSG),'coupling % list         = ',TRIM(output_type(I)%coupling%list)
     END DO
-    WRITE (MDSS,'(a)')
+    WRITE (MDSS,'(A)')
 
-10  format (a,2x,a,a)
-11  format (a,2x,a,i1)
-13  format (a,2x,a,l1)
+10  format (A,2X,A,A)
+11  format (A,2X,A,I1)
+13  format (A,2X,A,I1)
 
   END SUBROUTINE report_output_type_nml
 
@@ -1685,7 +1685,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1712,43 +1712,43 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)             :: nrgrd
-    TYPE(output_date_t), INTENT(in) :: output_date(nrgrd)
+    INTEGER, INTENT(IN)             :: nrgrd
+    TYPE(output_date_t), INTENT(IN) :: output_date(nrgrd)
 
     ! locals
-    INTEGER              :: i
+    INTEGER              :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
-    DO i=1,nrgrd
-      WRITE (msg,'(a,i1,a)') 'output date model grid',i, ' :'
-      WRITE (MDSS,'(a)')
-      WRITE (MDSS,10) TRIM(msg),'field start        = ',TRIM(output_date(i)%field%start)
-      WRITE (MDSS,10) TRIM(msg),'field stride       = ',TRIM(output_date(i)%field%stride)
-      WRITE (MDSS,10) TRIM(msg),'field stop         = ',TRIM(output_date(i)%field%stop)
-      WRITE (MDSS,10) TRIM(msg),'point start        = ',TRIM(output_date(i)%point%start)
-      WRITE (MDSS,10) TRIM(msg),'point stride       = ',TRIM(output_date(i)%point%stride)
-      WRITE (MDSS,10) TRIM(msg),'point stop         = ',TRIM(output_date(i)%point%stop)
-      WRITE (MDSS,10) TRIM(msg),'track start        = ',TRIM(output_date(i)%track%start)
-      WRITE (MDSS,10) TRIM(msg),'track stride       = ',TRIM(output_date(i)%track%stride)
-      WRITE (MDSS,10) TRIM(msg),'track stop         = ',TRIM(output_date(i)%track%stop)
-      WRITE (MDSS,10) TRIM(msg),'restart start      = ',TRIM(output_date(i)%restart%start)
-      WRITE (MDSS,10) TRIM(msg),'restart stride     = ',TRIM(output_date(i)%restart%stride)
-      WRITE (MDSS,10) TRIM(msg),'restart stop       = ',TRIM(output_date(i)%restart%stop)
-      WRITE (MDSS,10) TRIM(msg),'boundary start     = ',TRIM(output_date(i)%boundary%start)
-      WRITE (MDSS,10) TRIM(msg),'boundary stride    = ',TRIM(output_date(i)%boundary%stride)
-      WRITE (MDSS,10) TRIM(msg),'boundary stop      = ',TRIM(output_date(i)%boundary%stop)
-      WRITE (MDSS,10) TRIM(msg),'partition start    = ',TRIM(output_date(i)%partition%start)
-      WRITE (MDSS,10) TRIM(msg),'partition stride   = ',TRIM(output_date(i)%partition%stride)
-      WRITE (MDSS,10) TRIM(msg),'partition stop     = ',TRIM(output_date(i)%partition%stop)
-!/COU      WRITE (MDSS,10) TRIM(msg),'coupling start    = ',TRIM(output_date(i)%coupling%start)
-!/COU      WRITE (MDSS,10) TRIM(msg),'coupling stride   = ',TRIM(output_date(i)%coupling%stride)
-!/COU      WRITE (MDSS,10) TRIM(msg),'coupling stop     = ',TRIM(output_date(i)%coupling%stop)
+    DO I=1,nrgrd
+      WRITE (MSG,'(A,I1,A)') 'output date model grid',I, ' :'
+      WRITE (MDSS,'(A)')
+      WRITE (MDSS,10) TRIM(MSG),'field start        = ',TRIM(output_date(I)%field%start)
+      WRITE (MDSS,10) TRIM(MSG),'field stride       = ',TRIM(output_date(I)%field%stride)
+      WRITE (MDSS,10) TRIM(MSG),'field stop         = ',TRIM(output_date(I)%field%stop)
+      WRITE (MDSS,10) TRIM(MSG),'point start        = ',TRIM(output_date(I)%point%start)
+      WRITE (MDSS,10) TRIM(MSG),'point stride       = ',TRIM(output_date(I)%point%stride)
+      WRITE (MDSS,10) TRIM(MSG),'point stop         = ',TRIM(output_date(I)%point%stop)
+      WRITE (MDSS,10) TRIM(MSG),'track start        = ',TRIM(output_date(I)%track%start)
+      WRITE (MDSS,10) TRIM(MSG),'track stride       = ',TRIM(output_date(I)%track%stride)
+      WRITE (MDSS,10) TRIM(MSG),'track stop         = ',TRIM(output_date(I)%track%stop)
+      WRITE (MDSS,10) TRIM(MSG),'restart start      = ',TRIM(output_date(I)%restart%start)
+      WRITE (MDSS,10) TRIM(MSG),'restart stride     = ',TRIM(output_date(I)%restart%stride)
+      WRITE (MDSS,10) TRIM(MSG),'restart stop       = ',TRIM(output_date(I)%restart%stop)
+      WRITE (MDSS,10) TRIM(MSG),'boundary start     = ',TRIM(output_date(I)%boundary%start)
+      WRITE (MDSS,10) TRIM(MSG),'boundary stride    = ',TRIM(output_date(I)%boundary%stride)
+      WRITE (MDSS,10) TRIM(MSG),'boundary stop      = ',TRIM(output_date(I)%boundary%stop)
+      WRITE (MDSS,10) TRIM(MSG),'partition start    = ',TRIM(output_date(I)%partition%start)
+      WRITE (MDSS,10) TRIM(MSG),'partition stride   = ',TRIM(output_date(I)%partition%stride)
+      WRITE (MDSS,10) TRIM(MSG),'partition stop     = ',TRIM(output_date(I)%partition%stop)
+!/COU      WRITE (MDSS,10) TRIM(MSG),'coupling start    = ',TRIM(output_date(I)%coupling%start)
+!/COU      WRITE (MDSS,10) TRIM(MSG),'coupling stride   = ',TRIM(output_date(I)%coupling%stride)
+!/COU      WRITE (MDSS,10) TRIM(MSG),'coupling stop     = ',TRIM(output_date(I)%coupling%stop)
     END DO
-    WRITE (MDSS,'(a)')
+    WRITE (MDSS,'(A)')
 
-10  format (a,2x,a,a)
+10  format (A,2X,A,A)
 
   END SUBROUTINE report_output_date_nml
 
@@ -1789,7 +1789,7 @@
 !
 !      Name      TYPE  Module   Description
 !     ----------------------------------------------------------------
-!      NAMLMULTICONF Subr.   N/A    Namelist configuration routine.
+!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
 !     ----------------------------------------------------------------
 !
 !  6. Error messages :
@@ -1816,26 +1816,26 @@
 
     IMPLICIT NONE
 
-    INTEGER, INTENT(in)                   :: nmove
-    TYPE(homogeneous_input_t), INTENT(in) :: homogeneous_input(nmove)
+    INTEGER, INTENT(IN)                   :: nmove
+    TYPE(homogeneous_input_t), INTENT(IN) :: homogeneous_input(nmove)
 
     ! locals
-    INTEGER              :: i
+    INTEGER              :: I
 !/S      INTEGER, SAVE                           :: IENT = 0
 
-!/S      CALL STRACE (IENT, 'NAMLMULTICONF')
+!/S      CALL STRACE (IENT, 'W3NMLMULTICONF')
 
-    WRITE (msg,'(a)') 'homogeneous input :'
+    WRITE (MSG,'(a)') 'homogeneous input :'
     WRITE (MDSS,'(a)')
-    DO i=1,nmove
-      WRITE (MDSS,10) TRIM(msg),'moving start      = ',TRIM(homogeneous_input(i)%moving%start)
-      WRITE (MDSS,14) TRIM(msg),'moving speed      = ',homogeneous_input(i)%moving%speed
-      WRITE (MDSS,14) TRIM(msg),'moving direction  = ',homogeneous_input(i)%moving%direction
+    DO I=1,nmove
+      WRITE (MDSS,10) TRIM(MSG),'moving start      = ',TRIM(homogeneous_input(I)%moving%start)
+      WRITE (MDSS,14) TRIM(MSG),'moving speed      = ',homogeneous_input(I)%moving%speed
+      WRITE (MDSS,14) TRIM(MSG),'moving direction  = ',homogeneous_input(I)%moving%direction
       WRITE (MDSS,'(a)')
     END DO
 
-10  format (a,2x,a,a)
-14  format (a,2x,a,f5.2)
+10  format (A,2X,A,A)
+14  format (A,2X,A,F5.2)
 
   END SUBROUTINE report_homogeneous_input_nml
 
@@ -1845,6 +1845,6 @@
 
 
 
-END MODULE W3NAMLMD
+END MODULE W3NMLMULTIMD
 
 !/ ------------------------------------------------------------------- /

@@ -27,6 +27,7 @@
 ! -------------------------------------------------------------------- !
 ! Define each input grid via the input_grid_nml namelist
 ! * namelist must be terminated with /
+! * index i must match indexes from 1 to domain%nrinp
 ! * input(i)%name must be set for each active input grid i
 ! * definitions & defaults:
 !     input(i)%name                  = 'unset'
@@ -69,6 +70,7 @@
 ! -------------------------------------------------------------------- !
 ! Define each model grid via the model_grid_nml namelist
 ! * namelist must be terminated with /
+! * index i must match indexes from 1 to domain%nrgrd
 ! * model(i)%name must be set for each active model grid i
 ! * definitions & defaults:
 !     model(i)%name                  = 'unset'
@@ -137,6 +139,7 @@
 ! -------------------------------------------------------------------- !
 ! Define the output types point parameters via output_type_nml namelist
 ! * namelist must be terminated with /
+! * index i must match indexes from 1 to domain%nrgrd
 ! * alltype will apply the output types for all the model grids
 ! * type(i) will apply the output types for the model grid number i
 ! * need domain%unipts equal true to use a unified point output file
@@ -175,6 +178,7 @@
 ! -------------------------------------------------------------------- !
 ! Define output dates via output_date_nml namelist
 ! * namelist must be terminated with /
+! * index i must match indexes from 1 to domain%nrgrd
 ! * alldate will apply the output dates for all the model grids
 ! * date(i) will apply the output dates for the model grid number i
 ! * start and stop times are with format 'yyyymmdd hhmmss'
@@ -226,6 +230,7 @@
 ! -------------------------------------------------------------------- !
 ! Define homogeneous input via homonegenous_input_nml namelist
 ! * namelist must be terminated with /
+! * index i must match indexes from 1 to domain%nrgrd
 ! * the number of moving grid inputs is defined by domain_def%nmove
 ! * each homogeneous input must start from index 1 to nmove
 ! * if speed is equal 0, then the moving grid is desactivated

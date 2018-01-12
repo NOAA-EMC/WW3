@@ -23,10 +23,11 @@
 #       switch_PRn_MPI : for parallel run with MPI                          #
 #                                                                           #
 #  Example run_test commands:                                               #
-#  ./bin/run_test -o netcdf ../ ww3_tp2.8                                   #
-#  ./bin/run_test -o netcdf -s TIDE ../ ww3_tp2.8                           #
+#  ./bin/run_test -o netcdf ../model ww3_tp2.8                              #
+#  ./bin/run_test -o netcdf -N ../model ww3_tp2.8                           #
+#  ./bin/run_test -o netcdf -s TIDE ../model ww3_tp2.8                      #
 #  (Note : This regtest recquires NETCDF capability. See w3_make in the     #
-#   bin directory for details on recquired variables)                       #
+#   bin directory for details on required variables)                        #
 #                                                                           #
 #                                                  F. Ardhuin, Aug 2012     #
 #                                                               Ifremer     #

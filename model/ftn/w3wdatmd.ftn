@@ -382,11 +382,12 @@
           IF ( NSEAL .NE. NSEALM ) WDATAS(IMOD)%VA(:,NSEALM) = 0.
         END IF
 !
+      ! ICE, ICEH, ICEF must be defined from 0:NSEA
       ALLOCATE ( WDATAS(IMOD)%WLV(NSEA),                              &
-                 WDATAS(IMOD)%ICE(NSEA),                              &
+                 WDATAS(IMOD)%ICE(0:NSEA),                            &
                  WDATAS(IMOD)%BERG(NSEA),                             &
-                 WDATAS(IMOD)%ICEH(NSEA),                             &
-                 WDATAS(IMOD)%ICEF(NSEA),                             &
+                 WDATAS(IMOD)%ICEH(0:NSEA),                           &
+                 WDATAS(IMOD)%ICEF(0:NSEA),                           &
                  WDATAS(IMOD)%ICEDMAX(NSEA),                          &
                  WDATAS(IMOD)%UST(0:NSEATM),                          &
                  WDATAS(IMOD)%USTDIR(0:NSEATM),                       &

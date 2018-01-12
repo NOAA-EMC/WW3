@@ -44,6 +44,9 @@
 !      CALDAT    Subr. Public   Transform Julian day to date
 !      PRINIT    Subr. Public   Initialize profiling.
 !      PRTIME    Subr. Public   Get profiling time.
+!      D2J       Subr. Public   Convert date array to julian date
+!      J2D       Subr. Public   Convert julian date to date array
+!      T2D       Subr. Public   Convert time array to date array
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines and functions used :
@@ -741,13 +744,22 @@
 
 !/ ------------------------------------------------------------------- /
       SUBROUTINE CALDAT(julian,id,mm,iyyy)
-! See numerical recipes 2nd ed. The order of month and day have been swapped!
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         23-Sep-2012 |
+!/                  +-----------------------------------+
 !
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
 !/
       IMPLICIT NONE
+!/
+! See numerical recipes 2nd ed. The order of month and day have been swapped!
+!
 !/
      INTEGER(KIND=4),    INTENT(in)  :: julian
      INTEGER(KIND=4),    INTENT(out) :: id,mm,iyyy
@@ -784,7 +796,11 @@
 !/                  | Last update :         26-Sep-2012 |
 !/                  +-----------------------------------+
 !
-!     gives date as real number
+!  1. Purpose :
+!
+!     Gives date as real number
+!
+!  2. Method :
 !
 !  3. Parameters :
 !
@@ -829,7 +845,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: NYMD, NHMS, NSEC, IY,IMO,ID,IH,IMI,IS
+      INTEGER                 :: IY,IMO,ID,IH,IMI,IS
       INTEGER(KIND=4)         :: JDAY
 !/S      INTEGER, SAVE           :: IENT = 0
 !/
@@ -996,6 +1012,377 @@
 !/ End of PRTIME ----------------------------------------------------- /
 !/
       END SUBROUTINE PRTIME
+
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE T2D(TIME,DAT,IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Jan-2018 |
+!/                  +-----------------------------------+
+!/
+!/    04-Jan-2018 : Origination                         ( version 6.XX )
+!/
+!  1. Purpose :
+!
+!     Converts time array from TIME(2) to DAT(8)
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       TIME     I.A.     I   Time array like 'YYYYMMDD HHMMSS'
+!       DAT      I.A.     O   Time array like returned by DATE_AND_TIME(3f)
+!       IERR     Integer  O   Error code returned
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       None.
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+   INTEGER,INTENT(IN)            :: TIME(2)  ! array like 'YYYYMMDD HHMMSS'
+   INTEGER,INTENT(OUT)           :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
+   INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
+                                             ! Otherwise return 1
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+        DAT(1)=TIME(1)/10000
+        DAT(2)=(TIME(1)-DAT(1)*10000)/100
+        DAT(3)=TIME(1)-DAT(1)*10000-100*DAT(2)
+        DAT(4)=0
+        DAT(5)=TIME(2)/10000
+        DAT(6)=(TIME(2)-DAT(5)*10000)/100
+        DAT(7)=TIME(2)-DAT(5)*10000-100*DAT(6)
+        DAT(8)=0
+        IERR=0
+!
+      RETURN
+!/
+!/ End of T2D ----------------------------------------------------- /
+!/
+      END SUBROUTINE T2D
+
+!/ ------------------------------------------------------------------- /
+
+
+      SUBROUTINE D2T(DAT,TIME,IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Jan-2018 |
+!/                  +-----------------------------------+
+!/
+!/    04-Jan-2018 : Origination                         ( version 6.XX )
+!/
+!  1. Purpose :
+!
+!     Converts time array from DAT(8) to TIME(2)
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       DAT      I.A.     I   Time array like returned by DATE_AND_TIME(3f)
+!       TIME     I.A.     O   Time array like 'YYYYMMDD HHMMSS'
+!       IERR     Integer  O   Error code returned
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       None.
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+   INTEGER,INTENT(IN)            :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
+   INTEGER,INTENT(OUT)           :: TIME(2)  ! array like 'YYYYMMDD HHMMSS'
+   INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
+                                             ! Otherwise return 1
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+        TIME(1)=DAT(1)*10000+DAT(2)*100+DAT(3)
+        TIME(2)=DAT(5)*10000+DAT(6)*100+DAT(7)
+        IERR=0
+!
+      RETURN
+!/
+!/ End of D2T ----------------------------------------------------- /
+!/
+      END SUBROUTINE D2T
+
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE D2J(DAT,JULIAN,IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Jan-2018 |
+!/                  +-----------------------------------+
+!/
+!/    04-Jan-2018 : Origination from m_time library     ( version 6.XX )
+!/
+!  1. Purpose :
+!
+!     Converts proleptic Gregorian date array to Julian Day
+!
+! * There is no year zero
+! * Julian Day must be non-negative
+! * Julian Day starts at noon; while Civil Calendar date starts at midnight
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       DAT      I.A.     I   Time array like returned by DATE_AND_TIME(3f)
+!       JULIAN   Double   O   Julian day
+!       IERR     Integer  O   Error code returned
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       None.
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+   INTEGER,INTENT(IN)            :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
+   DOUBLE PRECISION,INTENT(OUT)  :: JULIAN   ! Julian Day (non-negative, but may be non-integer)
+   INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
+                                             ! -1=invalid year,-2=invalid month,-3=invalid day,
+                                             ! -4=invalid date (29th Feb, non leap-year)
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+   INTEGER                 :: YEAR, MONTH, DAY, UTC, HOUR, MINUTE
+   REAL                    :: SECOND
+   INTEGER                 :: A, Y, M, JDN
+!/
+!/ ------------------------------------------------------------------- /
+
+   YEAR   = DAT(1)                        ! Year
+   MONTH  = DAT(2)                        ! Month
+   DAY    = DAT(3)                        ! Day
+   UTC    = DAT(4)*60                     ! Delta from UTC, convert from minutes to seconds
+   HOUR   = DAT(5)                        ! Hour
+   MINUTE = DAT(6)                        ! Minute
+   SECOND = DAT(7)-UTC+DAT(8)/1000.0d0    ! Second   ! correction for time zone and milliseconds
+
+   JULIAN = -HUGE(99999)                  ! this is the date if an error occurs and IERR is < 0
+
+   IF(YEAR==0 .or. YEAR .lt. -4713) THEN
+      IERR=-1
+      RETURN
+   END IF
+
+!  You must compute first the number of years (Y) and months (M) since March 1st -4800 (March 1, 4801 BC)
+   A=(14-MONTH)/12 ! A will be 1 for January or Febuary, and 0 for other months, with integer truncation
+   Y=YEAR+4800-A
+   M=MONTH+12*A-3  ! M will be 0 for March and 11 for Febuary
+
+!  All years in the BC era must be converted to astronomical years, so that 1BC is year 0, 2 BC is year "-1", etc.
+!  Convert to a negative number, then increment towards zero
+!  Starting from a Gregorian calendar date
+   JDN=DAY + (153*M+2)/5 + 365*Y + Y/4 - Y/100 + Y/400 - 32045  !  with integer truncation
+
+!  Finding the Julian date given the JDN (Julian day number) and time of day
+   JULIAN=JDN + DBLE(HOUR-12)/24.0d0 + DBLE(MINUTE)/1440.0d0 + SECOND/86400.0d0
+
+   ! Check if Julian Day is non-negative
+   IF(JULIAN.lt.0.d0) THEN                  
+     IERR=1
+   ELSE
+     IERR=0
+   END IF
+!
+      RETURN
+!/
+!/ End of D2J ----------------------------------------------------- /
+!/
+      END SUBROUTINE D2J
+
+!/ ------------------------------------------------------------------- /
+
+      SUBROUTINE J2D(JULIAN,DAT,IERR)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           M. Accensi              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         04-Jan-2018 |
+!/                  +-----------------------------------+
+!/
+!/    04-Jan-2018 : Origination from m_time library     ( version 6.XX )
+!/
+!  1. Purpose :
+!
+!     Converts Julian Day to date array
+!
+! * There is no year zero
+! * Julian Day must be non-negative
+! * Julian Day starts at noon; while Civil Calendar date starts at midnight
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       JULIAN   Double   I   Julian day
+!       DAT      I.A.     O   Time array like returned by DATE_AND_TIME(3f)
+!       IERR     Integer  O   Error code returned
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used :
+!
+!       None.
+!
+!  5. Called by :
+!
+!       Any subroutine/program.
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+   DOUBLE PRECISION,INTENT(IN)   :: JULIAN   ! Julian Day (non-negative, but may be non-integer)
+   INTEGER,INTENT(OUT)           :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
+   INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
+                                             ! Otherwise returnb 1
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+!/
+   REAL                      :: SECDAY=86400.0d0
+   INTEGER                   :: TIMEZONE(8), TZ
+
+   REAL                      :: SECOND
+   INTEGER                   :: YEAR, MONTH, DAY, HOUR, MINUTE
+   INTEGER                   :: JALPHA,JA,JB,JC,JD,JE,IJUL
+!/
+!/ ------------------------------------------------------------------- /
+
+   IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
+      IERR=1
+      RETURN
+   ELSE
+      IERR=0
+   END IF
+
+   CALL DATE_AND_TIME(values=TIMEZONE)          ! Get the timezone
+   TZ=TIMEZONE(4)
+   !TZ=0                                        ! Force to UTC timezone
+
+   IJUL=IDINT(JULIAN)                           ! Integral Julian Day
+   SECOND=SNGL((JULIAN-DBLE(IJUL))*SECDAY)      ! Seconds from beginning of Jul. Day
+   SECOND=SECOND+(tz*60)
+
+   IF(SECOND.GE.(SECDAY/2.0d0)) THEN            ! In next calendar day
+      IJUL=IJUL+1
+      SECOND=SECOND-(SECDAY/2.0d0)              ! Adjust from noon to midnight
+   ELSE                                         ! In same calendar day
+      SECOND=SECOND+(SECDAY/2.0d0)              ! Adjust from noon to midnight
+   END IF
+
+   IF(SECOND.GE.SECDAY) THEN                    ! Final check to prevent time 24:00:00
+      IJUL=IJUL+1
+      SECOND=SECOND-SECDAY
+   END IF
+
+   MINUTE=INT(SECOND/60.0)                      ! Integral minutes from beginning of day
+   SECOND=SECOND-FLOAT(MINUTE*60)               ! Seconds from beginning of minute
+   HOUR=MINUTE/60                               ! Integral hours from beginning of day
+   MINUTE=MINUTE-HOUR*60                        ! Integral minutes from beginning of hour
+
+   !---------------------------------------------
+   JALPHA=IDINT((DBLE(IJUL-1867216)-0.25d0)/36524.25d0) ! Correction for Gregorian Calendar
+   JA=IJUL+1+JALPHA-IDINT(0.25d0*DBLE(JALPHA))
+   !---------------------------------------------
+
+   JB=JA+1524
+   JC=IDINT(6680.d0+(DBLE(JB-2439870)-122.1d0)/365.25d0)
+   JD=365*JC+IDINT(0.25d0*DBLE(JC))
+   JE=IDINT(DBLE(JB-JD)/30.6001d0)
+   DAY=JB-JD-IDINT(30.6001d0*DBLE(JE))
+   MONTH=JE-1
+
+   IF(MONTH.GT.12) THEN
+      MONTH=MONTH-12
+   END IF
+
+   YEAR=jc-4715
+   IF(MONTH.GT.2) THEN
+      YEAR=YEAR-1
+   END IF
+
+   IF(YEAR.LE.0) THEN
+      YEAR=YEAR-1
+   END IF
+
+   DAT(1)=YEAR
+   DAT(2)=MONTH
+   DAT(3)=DAY
+   DAT(4)=TZ
+   DAT(5)=HOUR
+   DAT(6)=MINUTE
+   DAT(7)=INT(SECOND)
+   DAT(8)=INT((SECOND-INT(SECOND))*1000.0)
+   IERR=0
+!
+      RETURN
+!/
+!/ End of J2D ----------------------------------------------------- /
+!/
+      END SUBROUTINE J2D
+
+
 !/
 !/ End of module W3TIMEMD -------------------------------------------- /
 !/

@@ -1246,8 +1246,8 @@
 !/T              '      GTYPE  : ',I9/                                &
 !/T              '      FLAGLL : ',L9/                                &
 !/T              '      ICLOSE : ',I9/                                &
-!/T              '      SX, SY : ',2F12.2/                            &
-!/T              '      X0, Y0 : ',2F12.2/                            &
+!/T              '      SX, SY : ',2E10.3/                            &
+!/T              '      X0, Y0 : ',2E10.3/                            &
 !/T              '      TRFLAG : ',I9)
 !/T 9011 FORMAT ('      LOWER LEFT PART OF ',A)
 !/T 9012 FORMAT ('     ',4X,30I2)

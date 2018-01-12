@@ -31,24 +31,26 @@
 # measurements are merely qualitative.                                      #  
 #                                                                           #
 #  Sample run_test commands :                                               #
-#  ./bin/run_test -o netcdf  ../ ww3_tp2.15                                 #
+#  ./bin/run_test -o netcdf  ../model ww3_tp2.15                            #
 #                                                                           #
 # Options                                                                   #
 #  Run on MPI mode                                                          #
-#  ./bin/run_test -n 16 -p mpirun -s MPI -w work_MPI ../ ww3_tp2.15         #
+#  ./bin/run_test -n 16 -p mpirun -s MPI -f -w work_MPI ../model ww3_tp2.15 #
 #                                                                           #
 # Full resolution (5km grid) and entire Adriatic Sea. MPI recommended.      #
-#  ./bin/run_test -g 5km -w work_5km ../ ww3_tp2.15                         #
-#  ./bin/run_test -g 5km -n 16 -p mpirun -s MPI -w work_5km_MPI \           #
-#                 ../ ww3_tp2.15                                            #
+#  ./bin/run_test -g 5km -w work_5km ../model ww3_tp2.15                    #
+#  ./bin/run_test -g 5km -n 16 -p mpirun -s MPI -f -w work_5km_MPI \        #
+#                 ../model ww3_tp2.15                                       #
+#  ./bin/run_test -g 5km -n 16 -p mpirun -s MPI -f -w work_5km_MPI_NML \    #
+#                 -o netcdf -N ../model ww3_tp2.15                          #
 #                                                                           #
 # A matlab script is provided in the input directory: extract_AA_STE.m      #
 #   which computes STE parameters at the location of the Acqua Alta         #
 #   platform in the Adriatic Sea. Reference values are given as part of     #
-    the script output.                                                      #
+#   the script output.                                                      #
 #                                                                           #
 #                       Francesco Barbariol, Jose-Henrique Alves, Sep 2016  #
-#                                                   Last Mod : Oct 2016     #
+#                                                   Last Mod : Jan 2018     #
 #                                                                           #
 #    Copyright 2009-2016 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #

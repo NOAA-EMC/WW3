@@ -11,11 +11,11 @@ $
    F       Assimilation data : 2-D spectra.
 $
    20140310 000000
-   20140310 120000
+   20140310 060000
 $
    1
 $
-   20140310 000000  900  20140310 120000
+   20140310 000000  900  20140310 060000
 $ ---------------------------------------------------------------
 $ D C W D W  I H L T T  T C F D S  D P P P P  P P W P D  F C C U C
 $ P U N T L  C S   0    M G P I P  P H T L T  S W S N T  C F F S H
@@ -29,8 +29,8 @@ $ A A W C C  C C B B E  B B X W    O U S S S  2 S S
 $ W W A C F  H M R R D  B B Y O    C S S S C  S 1 2
 $ ---------------------------------------------------------------
   N
-  HS T02 DP DIR FP STMAXE STMAXD HMAXE HMAXD HCMAXE HCMAXD
-   20140309 000000  3600  20140310 120000
+  HS WND T02 DP DIR FP MXE MXES MXH MXHC SDMH SDMHC
+   20140310 000000  3600  20140310 060000
    12.5088  45.3138 'AA        '
      0.0   0.0  'STOPSTRING'
    20140310 000000     0  20140310 120000

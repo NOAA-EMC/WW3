@@ -455,10 +455,19 @@ then
 
     if [ $grdstr ]
     then
-      ifile=$path_i/${prog}_${grdstr}${gu}.inp
+      fileconf="${prog}_${grdstr}${gu}"
     else
-      ifile=$path_i/$prog${gu}.inp
+      fileconf="${prog}${gu}"
     fi
+
+    # select inp/nml files
+    if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+    then
+      ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+    else
+      ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
+    fi
+
     ofile="$path_w/`basename $ifile .inp`.out"
 
     if [ ! -f $path_e/$prog ]
@@ -471,13 +480,23 @@ then
       errmsg "$ifile not found"
       exit 1
     fi
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
+
+    # link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+    fi
+
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
+      \rm -f $prog.nml
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
@@ -502,7 +521,14 @@ prog=ww3_strt
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+then
+  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+else
+  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+fi
+
 if [ $? = 0 ]
 then
 
@@ -546,8 +572,17 @@ then
 
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
+
+    # link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+    fi
+
     if [ $multi -eq 2 ]
     then
       \rm -f mod_def.ww3
@@ -556,6 +591,7 @@ then
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
+      \rm -f $prog.nml
       if [ $multi -eq 2 ]
       then
         mv restart.ww3 restart.$g
@@ -583,7 +619,14 @@ prog=ww3_bound
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+then
+  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+else
+  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+fi
+
 if [ $? = 0 ]
 then
 
@@ -625,8 +668,17 @@ then
 
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
+
+    # link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+    fi
+
     if [ $multi -eq 2 ]
     then
       \rm -f mod_def.ww3
@@ -635,6 +687,7 @@ then
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
+      \rm -f $prog.nml
       if [ $multi -eq 2 ]
       then
         mv nest.ww3 nest.$g
@@ -662,7 +715,14 @@ prog=ww3_bounc
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+then
+  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+else
+  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+fi
+
 if [ $? = 0 ]
 then
 
@@ -704,8 +764,17 @@ then
 
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
+
+    # link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+    fi
+
     if [ $multi -eq 2 ]
     then
       \rm -f mod_def.ww3
@@ -714,6 +783,7 @@ then
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
+      \rm -f $prog.nml
       if [ $multi -eq 2 ]
       then
         mv nest.ww3 nest.$g
@@ -741,7 +811,14 @@ prog=ww3_prep
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+then
+  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+else
+  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+fi
+
 if [ $? = 0 ]
 then
 
@@ -787,8 +864,17 @@ then
       ofile="$path_w/`basename $ifile .inp`.out"
       echo "   Processing $ifile for $otype"
       echo "   Screen output routed to $ofile"
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
+
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+      fi
+
       if [ $multi -eq 2 ]
       then
         \rm -f mod_def.ww3
@@ -797,6 +883,7 @@ then
       if $path_e/$prog > $ofile
       then
         \rm -f $prog.inp
+        \rm -f $prog.nml
         if [ $multi -eq 2 ]
         then
           \rm -f mod_def.ww3
@@ -826,7 +913,14 @@ prog=ww3_prnc
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+then
+  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+else
+  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+fi
+
 if [ $? = 0 ]
 then
 
@@ -872,8 +966,17 @@ then
       ofile="$path_w/`basename $ifile .inp`.out"
       echo "   Processing $ifile"
       echo "   Screen output routed to $ofile"
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
+
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+      fi
+
       if [ $multi -eq 2 ]
       then
         \rm -f mod_def.ww3
@@ -882,6 +985,7 @@ then
       if $path_e/$prog > $ofile
       then
         \rm -f $prog.inp
+        \rm -f $prog.nml
         if [ $multi -eq 2 ]
         then
           \rm -f mod_def.ww3
@@ -944,24 +1048,21 @@ else
   fi
 fi
 
-# inp / nml file - gridset option (eq 2)
+# config filename - gridset option (eq 2)
 if [ $multi -eq 2 ]
 then
-  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`" ]
-  then
-    ifile="`ls ${path_i}/${prog}_${grdset}.nml 2>/dev/null`"
-    files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
-  else
-    ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
-  fi
+  fileconf="${prog}_${grdset}"
 else
-  if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
-  then
-    ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
-    files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
-  else
-    ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
-  fi
+  fileconf="${prog}"
+fi
+
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+then
+  ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+  files_p="`cat ${ifile} | grep 'point%file' |  cut -d '=' -f2 | cut -d "'" -f2 | cut -d '"' -f2 `"
+else
+  ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
 fi
 
 
@@ -1003,8 +1104,23 @@ then
 
   ofile="$path_w/$prog.out"
 
-  \rm -f $prog.inp
-  \ln -s $ifile $prog.inp
+  # link conf file
+  if [ $multi -ge 1 ] && [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  then
+    \rm -f $prog.nml
+    \ln -s $ifile $prog.nml
+    for file_p in ${files_p}
+    do
+      if [ -e ${path_i}/${file_p} ]
+      then
+        \ln -s ${path_i}/${file_p} .
+      fi
+    done
+  else
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
+  fi
+
   if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
   then
     \rm -f PET*.ESMF_LogFile
@@ -1020,18 +1136,6 @@ then
     else
       echo "pet_count: 1" >> ww3_esmf.rc
     fi
-  fi
-  if [ $multi -ge 1 ] && [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
-  then
-    \rm -f $prog.nml
-    \ln -s $ifile $prog.nml
-    for file_p in ${files_p}
-    do
-      if [ -e ${path_i}/${file_p} ]
-      then
-        \ln -s ${path_i}/${file_p} .
-      fi
-    done
   fi
 
   echo "   Processing $ifile"
@@ -1095,12 +1199,23 @@ prog=ww3_gint
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
+# config filename - gridset option (eq 2)
 if [ $multi -eq 2 ]
 then
-  ifile="`ls ${path_i}/${prog}_${grdset}.inp 2>/dev/null`"
+  fileconf="${prog}_${grdset}"
 else
-  ifile="`ls ${path_i}/${prog}.inp 2>/dev/null`"
+  fileconf="${prog}"
 fi
+
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+then
+  ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+else
+  ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
+fi
+
+
 if [ $? = 0 ]
 then
 
@@ -1126,13 +1241,23 @@ then
   fi
 
   ofile="$path_w/`basename $ifile .inp`.out"
-  \rm -f $prog.inp
-  \ln -f $ifile $prog.inp
+
+  # link conf file
+  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  then
+    \rm -f $prog.nml
+    \ln -s $ifile $prog.nml
+  else
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
+  fi
+
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
   if $path_e/$prog > $ofile
   then
     \rm -f $prog.inp
+    \rm -f $prog.nml
     for g in $intgl_grids
     do
       if [ -f "out_grd.$g" ]
@@ -1190,7 +1315,15 @@ fi
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+then
+  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+else
+  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+fi
+
+
 if [ $? = 0 ]
 then
 
@@ -1240,8 +1373,17 @@ then
       ofile="$path_w/`basename $ifile .inp`${gu}.out"
       echo "   Processing $ifile"
       echo "   Screen output routed to $ofile"
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
+
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+      fi
+
       if [ $multi -eq 2 ]
       then
         \rm -f mod_def.ww3
@@ -1254,6 +1396,7 @@ then
       if $path_e/$prog > $ofile
       then
         \rm -f $prog.inp
+        \rm -f $prog.nml
         if [ $multi -eq 2 ]
         then
           \rm -f mod_def.ww3
@@ -1347,7 +1490,15 @@ fi
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+then
+  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+else
+  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+fi
+
+
 if [ $? = 0 ]
 then
 
@@ -1397,8 +1548,17 @@ then
       ofile="$path_w/`basename $ifile .inp`${gu}.out"
       echo "   Processing $ifile"
       echo "   Screen output routed to $ofile"
-      \rm -f $prog.inp
-      \ln -s $ifile $prog.inp
+
+      # link conf file
+      if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      then
+        \rm -f $prog.nml
+        \ln -s $ifile $prog.nml
+      else
+        \rm -f $prog.inp
+        \ln -s $ifile $prog.inp
+      fi
+
       if [ $multi -eq 2 ]
       then
         \rm -f mod_def.ww3
@@ -1409,6 +1569,7 @@ then
       if $path_e/$prog > $ofile
       then
         \rm -f $prog.inp
+        \rm -f $prog.nml
         if [ $multi -eq 2 ]
         then
           \rm -f mod_def.ww3
@@ -1449,7 +1610,15 @@ do
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+then
+  inputs="`ls ${path_i}/${prog}*.nml 2>/dev/null`"
+else
+  inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
+fi
+
+
 if [ $? = 0 ]
 then
 
@@ -1490,9 +1659,19 @@ then
         continue
       fi
       gu="_$g"
+      fileconf="$prog${gu}"
+    else
+      fileconf="$prog"
     fi
 
-    ifile=$path_i/$prog${gu}.inp
+    # select inp/nml files
+    if [ $nml_input ] && [ ! -z "`ls ${path_i}/${fileconf}.nml 2>/dev/null`" ]
+    then
+      ifile="`ls ${path_i}/${fileconf}.nml 2>/dev/null`"
+    else
+      ifile="`ls $path_i/${fileconf}.inp 2>/dev/null`"
+    fi
+
     if [ ! -f $ifile ]
     then
       errmsg "$ifile not found"
@@ -1502,8 +1681,17 @@ then
     ofile="$path_w/`basename $ifile .inp`.out"
     echo "   Processing $ifile"
     echo "   Screen output routed to $ofile"
-    \rm -f $prog.inp
-    \ln -s $ifile $prog.inp
+
+    # link conf file
+    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    then
+      \rm -f $prog.nml
+      \ln -s $ifile $prog.nml
+    else
+      \rm -f $prog.inp
+      \ln -s $ifile $prog.inp
+    fi
+
     if [ $multi -eq 2 ]
     then
       \rm -f track_o.ww3
@@ -1512,6 +1700,7 @@ then
     if $path_e/$prog > $ofile
     then
       \rm -f $prog.inp
+      \rm -f $prog.nml
       if [ $multi -eq 2 ]
       then
         \rm -f track_o.ww3
@@ -1546,7 +1735,15 @@ prog=ww3_systrk
 if [ $exec_p = $prog -o $exec_p = "none" ]
 then
 
-ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+# select inp/nml files
+if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}.nml 2>/dev/null`" ]
+then
+  ifile="`ls ${path_i}/${prog}.nml 2>/dev/null`"
+else
+  ifile="`ls $path_i/$prog.inp 2>/dev/null`"
+fi
+
+
 if [ $? = 0 ]
 then
 
@@ -1573,8 +1770,17 @@ then
   fi
 
   ofile="$path_w/`basename $ifile .inp`.out"
-  \rm -f $prog.inp
-  \ln -f $ifile $prog.inp
+
+  # link conf file
+  if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+  then
+    \rm -f $prog.nml
+    \ln -s $ifile $prog.nml
+  else
+    \rm -f $prog.inp
+    \ln -s $ifile $prog.inp
+  fi
+
   echo "   Processing $ifile"
   echo "   Screen output copied to $ofile"
   if [ $pmpi ]
@@ -1587,6 +1793,7 @@ then
   if $runcmd $path_e/$prog | tee $ofile
   then
     \rm -f $prog.inp
+    \rm -f $prog.nml
   else
     errmsg "Error occured during $path_e/$prog execution"
     exit 1

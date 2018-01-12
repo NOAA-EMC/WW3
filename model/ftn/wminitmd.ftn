@@ -3304,7 +3304,7 @@
 !/MPI                          MPI_COMM_BCT, CROOT, FBCAST
 !/MPRF      USE WMMDATMD, ONLY: MDSP
       USE W3INITMD, ONLY: WWVER
-      USE W3NAMLMD
+      USE W3NMLMULTIMD
 !/
       IMPLICIT NONE
 !
@@ -3369,12 +3369,12 @@
       CHARACTER(LEN=80)       :: LINE
       CHARACTER(LEN=1024)     :: FLDOUT
 !
-      type(domain_def_t)                      :: domain_def
-      type(input_grid_t), allocatable         :: input_grid(:) 
-      type(model_grid_t), allocatable         :: model_grid(:) 
-      type(output_type_t), allocatable        :: output_type(:)
-      type(output_date_t), allocatable        :: output_date(:)
-      type(homogeneous_input_t), allocatable  :: homogeneous_input(:)
+      type(DOMAIN_DEF_T)                      :: DOMAIN_DEF
+      type(INPUT_GRID_T), ALLOCATABLE         :: INPUT_GRID(:) 
+      type(MODEL_GRID_T), ALLOCATABLE         :: MODEL_GRID(:) 
+      type(OUTPUT_TYPE_T), ALLOCATABLE        :: OUTPUT_TYPE(:)
+      type(OUTPUT_DATE_T), ALLOCATABLE        :: OUTPUT_DATE(:)
+      type(HOMOGENEOUS_INPUT_T), ALLOCATABLE  :: HOMOGENEOUS_INPUT(:)
 !
       TYPE OT2TPE
         INTEGER                    :: NPTS
@@ -3479,23 +3479,23 @@
           WRITE (MDSS,910)  IFNAME, MDSI
 !
       ! process ww3_multi namelist input
-      CALL namlmultidef (MPI_COMM, MDSI, trim(FNMPRE)//IFNAME, domain_def, ierr)
-      ALLOCATE(input_grid(domain_def%nrinp))
-      ALLOCATE(model_grid(domain_def%nrgrd)) 
-      ALLOCATE(output_type(domain_def%nrgrd))
-      ALLOCATE(output_date(domain_def%nrgrd))
-      ALLOCATE(homogeneous_input(domain_def%nmove))
-      CALL namlmulticonf (MPI_COMM, MDSI, trim(FNMPRE)//IFNAME, &
-                          domain_def, input_grid, model_grid, output_type, &
-                          output_date, homogeneous_input, ierr) 
-      IF (ierr.ne.0) THEN
+      CALL W3NMLMULTIDEF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, DOMAIN_DEF, IERR)
+      ALLOCATE(INPUT_GRID(DOMAIN_DEF%NRINP))
+      ALLOCATE(MODEL_GRID(DOMAIN_DEF%NRGRD)) 
+      ALLOCATE(OUTPUT_TYPE(DOMAIN_DEF%NRGRD))
+      ALLOCATE(OUTPUT_DATE(DOMAIN_DEF%NRGRD))
+      ALLOCATE(HOMOGENEOUS_INPUT(DOMAIN_DEF%NMOVE))
+      CALL W3NMLMULTICONF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, &
+                          DOMAIN_DEF, INPUT_GRID, MODEL_GRID, OUTPUT_TYPE, &
+                          OUTPUT_DATE, HOMOGENEOUS_INPUT, IERR) 
+      IF (IERR.NE.0) THEN
         write (*,'(2a)') 'ERROR: error occured while processing ', IFNAME
-        CALL exit (ierr)
+        CALL exit (IERR)
       END IF
 
 
       CALL WMUSET ( MDSS, MDSS, MDSI, .TRUE., 'INP',                  &
-                    trim(FNMPRE)//IFNAME, 'Model control input file')
+                    TRIM(FNMPRE)//IFNAME, 'Model control input file')
 !
 ! 1.d Log and test files
 !
@@ -3508,11 +3508,11 @@
 !/MPRF       WRITE (PFILE,FORMAT) 'prf.', IMPROC, '.mww3'
 !
       IF ( IMPROC .EQ. NMPLOG ) THEN
-          OPEN (MDSO,FILE=trim(FNMPRE)//LFILE,ERR=2010,IOSTAT=IERR)
+          OPEN (MDSO,FILE=TRIM(FNMPRE)//LFILE,ERR=2010,IOSTAT=IERR)
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
               WRITE (MDSS,911)  LFILE, MDSO
           CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'OUT',              &
-                        trim(FNMPRE)//LFILE, 'Log file')
+                        TRIM(FNMPRE)//LFILE, 'Log file')
         ELSE
           CALL WMUSET ( MDSS, MDSS, MDSO, .TRUE., 'XXX',              &
                        'Log file on other processors')
@@ -3520,16 +3520,16 @@
 !
       IF ( MDST.NE.MDSO .AND. MDST.NE.MDSS .AND. TSTOUT ) THEN
           IFT    = LEN_TRIM(TFILE)
-          OPEN (MDST,FILE=trim(FNMPRE)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
+          OPEN (MDST,FILE=TRIM(FNMPRE)//TFILE(:IFT),ERR=2011,IOSTAT=IERR)
           CALL WMUSET ( MDSS, MDST, MDST, .TRUE., 'OUT',              &
-                        trim(FNMPRE)//TFILE(:IFT), 'Test output file')
+                        TRIM(FNMPRE)//TFILE(:IFT), 'Test output file')
         END IF
 !
 !/MPRF      IFT    = LEN_TRIM(PFILE)
 !/MPRF      CALL WMUGET ( MDSS, MDST, MDSP, 'OUT' )
 !/MPRF      CALL WMUSET ( MDSS, MDST, MDSP, .TRUE., 'OUT',            &
-!/MPRF                    trim(FNMPRE)//PFILE(:IFT), 'Profiling file')
-!/MPRF      OPEN (MDSP,FILE=trim(FNMPRE)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
+!/MPRF                    TRIM(FNMPRE)//PFILE(:IFT), 'Profiling file')
+!/MPRF      OPEN (MDSP,FILE=TRIM(FNMPRE)//PFILE(:IFT),ERR=2011,IOSTAT=IERR)
 !
 ! 1.e Initial and test output
 !
@@ -3548,13 +3548,13 @@
 !     Note: grid for consolidated point output always generated.
 !     Processor set as in W3INIT to minimize communication in WMIOPO
 !
-      NRINP = domain_def%nrinp
-      NRGRD = domain_def%nrgrd
-      NMOVE = domain_def%nmove
-      UNIPTS = domain_def%unipts
-      IOSTYP = domain_def%iostyp
-      UPPROC = domain_def%upproc
-      PSHARE = domain_def%pshare
+      NRINP = DOMAIN_DEF%NRINP
+      NRGRD = DOMAIN_DEF%NRGRD
+      NMOVE = DOMAIN_DEF%NMOVE
+      UNIPTS = DOMAIN_DEF%UNIPTS
+      IOSTYP = DOMAIN_DEF%IOSTYP
+      UPPROC = DOMAIN_DEF%UPPROC
+      PSHARE = DOMAIN_DEF%PSHARE
 
       IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
 !
@@ -3618,7 +3618,7 @@
                     DESC='Recyclable I/O (mod_def etc.)' )
       CALL WMUGET ( MDSE, MDST, SCRATCH, 'SCR' )
       CALL WMUSET ( MDSE, MDST, SCRATCH, .TRUE., DESC='Scratch file', &
-                    NAME=trim(FNMPRE)//'ww3_multi.scratch' )
+                    NAME=TRIM(FNMPRE)//'ww3_multi.scratch' )
 !
       IF(MDST.EQ.NDSREC)THEN
          IF   ( IMPROC .EQ. NMPERR )                                  &
@@ -3670,22 +3670,22 @@
 !
         CALL W3SETI ( -I, MDSE, MDST )
         INFLAGS1 = .FALSE.
-        MNAMES(-I) = input_grid(I)%name 
-        INFLAGS1(-7) = input_grid(I)%forcing%ice_param1
-        INFLAGS1(-6) = input_grid(I)%forcing%ice_param2
-        INFLAGS1(-5) = input_grid(I)%forcing%ice_param3
-        INFLAGS1(-4) = input_grid(I)%forcing%ice_param4
-        INFLAGS1(-3) = input_grid(I)%forcing%ice_param5
-        INFLAGS1(-2) = input_grid(I)%forcing%mud_density
-        INFLAGS1(-1) = input_grid(I)%forcing%mud_thickness
-        INFLAGS1(0) = input_grid(I)%forcing%mud_viscosity
-        INFLAGS1(1) = input_grid(I)%forcing%water_levels
-        INFLAGS1(2) = input_grid(I)%forcing%currents
-        INFLAGS1(3) = input_grid(I)%forcing%winds
-        INFLAGS1(4) = input_grid(I)%forcing%ice_conc
-        INFLAGS1(5) = input_grid(I)%assim%mean
-        INFLAGS1(6) = input_grid(I)%assim%spec1d
-        INFLAGS1(7) = input_grid(I)%assim%spec2d
+        MNAMES(-I) = INPUT_GRID(I)%NAME 
+        INFLAGS1(-7) = INPUT_GRID(I)%FORCING%ICE_PARAM1
+        INFLAGS1(-6) = INPUT_GRID(I)%FORCING%ICE_PARAM2
+        INFLAGS1(-5) = INPUT_GRID(I)%FORCING%ICE_PARAM3
+        INFLAGS1(-4) = INPUT_GRID(I)%FORCING%ICE_PARAM4
+        INFLAGS1(-3) = INPUT_GRID(I)%FORCING%ICE_PARAM5
+        INFLAGS1(-2) = INPUT_GRID(I)%FORCING%MUD_DENSITY
+        INFLAGS1(-1) = INPUT_GRID(I)%FORCING%MUD_THICKNESS
+        INFLAGS1(0) = INPUT_GRID(I)%FORCING%MUD_VISCOSITY
+        INFLAGS1(1) = INPUT_GRID(I)%FORCING%WATER_LEVELS
+        INFLAGS1(2) = INPUT_GRID(I)%FORCING%CURRENTS
+        INFLAGS1(3) = INPUT_GRID(I)%FORCING%WINDS
+        INFLAGS1(4) = INPUT_GRID(I)%FORCING%ICE_CONC
+        INFLAGS1(5) = INPUT_GRID(I)%ASSIM%MEAN
+        INFLAGS1(6) = INPUT_GRID(I)%ASSIM%SPEC1D
+        INFLAGS1(7) = INPUT_GRID(I)%ASSIM%SPEC2D
       END DO
 !
 ! 3.a.2 Unified point output grid.
@@ -3698,7 +3698,7 @@
           NDST   = MDST
           NDSE   = MDSE
 !
-          MNAMES(0) = output_type(1)%point%name
+          MNAMES(0) = OUTPUT_TYPE(1)%POINT%NAME
 !
           IF ( IOSTYP .LE. 1 ) THEN
               NMPUPT = MAX(1,NMPROC-2)
@@ -3711,27 +3711,27 @@
 ! 3.a.3 Read wave grids
 !
       DO I=1,NRGRD
-        MNAMES(NRGRD+I) = model_grid(I)%name
-        INAMES(NRGRD+I,-7) = model_grid(I)%forcing%ice_param1
-        INAMES(NRGRD+I,-6) = model_grid(I)%forcing%ice_param2
-        INAMES(NRGRD+I,-5) = model_grid(I)%forcing%ice_param3
-        INAMES(NRGRD+I,-4) = model_grid(I)%forcing%ice_param4
-        INAMES(NRGRD+I,-3) = model_grid(I)%forcing%ice_param5
-        INAMES(NRGRD+I,-2) = model_grid(I)%forcing%mud_density
-        INAMES(NRGRD+I,-1) = model_grid(I)%forcing%mud_thickness
-        INAMES(NRGRD+I,0) = model_grid(I)%forcing%mud_viscosity
-        INAMES(NRGRD+I,1) = model_grid(I)%forcing%water_levels
-        INAMES(NRGRD+I,2) = model_grid(I)%forcing%currents
-        INAMES(NRGRD+I,3) = model_grid(I)%forcing%winds
-        INAMES(NRGRD+I,4) = model_grid(I)%forcing%ice_conc
-        INAMES(NRGRD+I,5) = model_grid(I)%assim%mean
-        INAMES(NRGRD+I,6) = model_grid(I)%assim%spec1d
-        INAMES(NRGRD+I,7) = model_grid(I)%assim%spec2d
-        TMPRNK(NRGRD+I) = model_grid(I)%resource%rank_id
-        TMPGRP(NRGRD+I) = model_grid(I)%resource%group_id
-        RP1(NRGRD+I) = model_grid(I)%resource%comm_frac(1)
-        RPN(NRGRD+I) = model_grid(I)%resource%comm_frac(2)
-        BCDTMP(NRGRD+I) = model_grid(i)%resource%bound_flag
+        MNAMES(NRGRD+I) = MODEL_GRID(I)%NAME
+        INAMES(NRGRD+I,-7) = MODEL_GRID(I)%FORCING%ICE_PARAM1
+        INAMES(NRGRD+I,-6) = MODEL_GRID(I)%FORCING%ICE_PARAM2
+        INAMES(NRGRD+I,-5) = MODEL_GRID(I)%FORCING%ICE_PARAM3
+        INAMES(NRGRD+I,-4) = MODEL_GRID(I)%FORCING%ICE_PARAM4
+        INAMES(NRGRD+I,-3) = MODEL_GRID(I)%FORCING%ICE_PARAM5
+        INAMES(NRGRD+I,-2) = MODEL_GRID(I)%FORCING%MUD_DENSITY
+        INAMES(NRGRD+I,-1) = MODEL_GRID(I)%FORCING%MUD_THICKNESS
+        INAMES(NRGRD+I,0) = MODEL_GRID(I)%FORCING%MUD_VISCOSITY
+        INAMES(NRGRD+I,1) = MODEL_GRID(I)%FORCING%WATER_LEVELS
+        INAMES(NRGRD+I,2) = MODEL_GRID(I)%FORCING%CURRENTS
+        INAMES(NRGRD+I,3) = MODEL_GRID(I)%FORCING%WINDS
+        INAMES(NRGRD+I,4) = MODEL_GRID(I)%FORCING%ICE_CONC
+        INAMES(NRGRD+I,5) = MODEL_GRID(I)%ASSIM%MEAN
+        INAMES(NRGRD+I,6) = MODEL_GRID(I)%ASSIM%SPEC1D
+        INAMES(NRGRD+I,7) = MODEL_GRID(I)%ASSIM%SPEC2D
+        TMPRNK(NRGRD+I) = MODEL_GRID(I)%RESOURCE%RANK_ID
+        TMPGRP(NRGRD+I) = MODEL_GRID(I)%RESOURCE%GROUP_ID
+        RP1(NRGRD+I) = MODEL_GRID(I)%RESOURCE%COMM_FRAC(1)
+        RPN(NRGRD+I) = MODEL_GRID(I)%RESOURCE%COMM_FRAC(2)
+        BCDTMP(NRGRD+I) = MODEL_GRID(i)%RESOURCE%BOUND_FLAG
 !
         RP1(NRGRD+I) = MAX ( 0. , MIN ( 1. , RP1(NRGRD+I) ) )
         RPN(NRGRD+I) = MAX ( RP1(NRGRD+I) , MIN ( 1. , RPN(NRGRD+I) ) )
@@ -4045,11 +4045,11 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,940)
 !              
       IF (IS_ESMF_COMPONENT) THEN
-          READ(domain_def%start, *) STMPT 
-          READ(domain_def%stop, *) ETMPT
+          READ(DOMAIN_DEF%START, *) STMPT 
+          READ(DOMAIN_DEF%STOP, *) ETMPT
         ELSE
-          READ(domain_def%start, *) STIME 
-          READ(domain_def%stop, *) ETIME
+          READ(DOMAIN_DEF%START, *) STIME 
+          READ(DOMAIN_DEF%STOP, *) ETIME
         END IF
       CALL STME21 ( STIME , DTME21 )
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,941) DTME21
@@ -4063,8 +4063,8 @@
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,943)
 !              
-      FLGHG1 = domain_def%flghg1
-      FLGHG2 = domain_def%flghg2
+      FLGHG1 = DOMAIN_DEF%FLGHG1
+      FLGHG2 = DOMAIN_DEF%FLGHG2
       FLGHG2 = FLGHG1 .AND. FLGHG2
 !
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
@@ -4092,28 +4092,28 @@
         NOTYPE = 6
 !/COU      NOTYPE = 7
 
-        READ(output_date(I)%field%start, *)   ODAT(1,I), ODAT(2,I)
-        READ(output_date(I)%field%stride, *)  ODAT(3,I)
-        READ(output_date(I)%field%stop, *)    ODAT(4,I), ODAT(5,I)
-        READ(output_date(I)%point%start, *)   ODAT(6,I), ODAT(7,I)
-        READ(output_date(I)%point%stride, *)  ODAT(8,I)
-        READ(output_date(I)%point%stop, *)    ODAT(9,I), ODAT(10,I)
-        READ(output_date(I)%track%start, *)   ODAT(11,I), ODAT(12,I)
-        READ(output_date(I)%track%stride, *)  ODAT(13,I)
-        READ(output_date(I)%track%stop, *)    ODAT(14,I), ODAT(15,I)
-        READ(output_date(I)%restart%start, *)   ODAT(16,I), ODAT(17,I)
-        READ(output_date(I)%restart%stride, *)  ODAT(18,I)
-        READ(output_date(I)%restart%stop, *)    ODAT(19,I), ODAT(20,I)
-        READ(output_date(I)%boundary%start, *)   ODAT(21,I), ODAT(22,I)
-        READ(output_date(I)%boundary%stride, *)  ODAT(23,I)
-        READ(output_date(I)%boundary%stop, *)    ODAT(24,I), ODAT(25,I)
-        READ(output_date(I)%partition%start, *)   ODAT(26,I), ODAT(27,I)
-        READ(output_date(I)%partition%stride, *)  ODAT(28,I)
-        READ(output_date(I)%partition%stop, *)    ODAT(29,I), ODAT(30,I)
+        READ(OUTPUT_DATE(I)%FIELD%START, *)   ODAT(1,I), ODAT(2,I)
+        READ(OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
+        READ(OUTPUT_DATE(I)%FIELD%STOP, *)    ODAT(4,I), ODAT(5,I)
+        READ(OUTPUT_DATE(I)%POINT%START, *)   ODAT(6,I), ODAT(7,I)
+        READ(OUTPUT_DATE(I)%POINT%STRIDE, *)  ODAT(8,I)
+        READ(OUTPUT_DATE(I)%POINT%STOP, *)    ODAT(9,I), ODAT(10,I)
+        READ(OUTPUT_DATE(I)%TRACK%START, *)   ODAT(11,I), ODAT(12,I)
+        READ(OUTPUT_DATE(I)%TRACK%STRIDE, *)  ODAT(13,I)
+        READ(OUTPUT_DATE(I)%TRACK%STOP, *)    ODAT(14,I), ODAT(15,I)
+        READ(OUTPUT_DATE(I)%RESTART%START, *)   ODAT(16,I), ODAT(17,I)
+        READ(OUTPUT_DATE(I)%RESTART%STRIDE, *)  ODAT(18,I)
+        READ(OUTPUT_DATE(I)%RESTART%STOP, *)    ODAT(19,I), ODAT(20,I)
+        READ(OUTPUT_DATE(I)%BOUNDARY%START, *)   ODAT(21,I), ODAT(22,I)
+        READ(OUTPUT_DATE(I)%BOUNDARY%STRIDE, *)  ODAT(23,I)
+        READ(OUTPUT_DATE(I)%BOUNDARY%STOP, *)    ODAT(24,I), ODAT(25,I)
+        READ(OUTPUT_DATE(I)%PARTITION%START, *)   ODAT(26,I), ODAT(27,I)
+        READ(OUTPUT_DATE(I)%PARTITION%STRIDE, *)  ODAT(28,I)
+        READ(OUTPUT_DATE(I)%PARTITION%STOP, *)    ODAT(29,I), ODAT(30,I)
 !/COU! NOT YET IMPLEMENTED
-!/COU        READ(output_date(I)%coupling%start, *)   ODAT(31,I), ODAT(32,I)
-!/COU        READ(output_date(I)%coupling%stride, *)  ODAT(33,I)
-!/COU        READ(output_date(I)%coupling%stop, *)    ODAT(34,I), ODAT(35,I)
+!/COU        READ(OUTPUT_DATE(I)%COUPLING%START, *)   ODAT(31,I), ODAT(32,I)
+!/COU        READ(OUTPUT_DATE(I)%COUPLING%STRIDE, *)  ODAT(33,I)
+!/COU        READ(OUTPUT_DATE(I)%COUPLING%STOP, *)    ODAT(34,I), ODAT(35,I)
 
         ! set the time stride at 0 or more
         ODAT(3,I) = MAX ( 0 , ODAT(3,I) )
@@ -4168,7 +4168,7 @@
 ! 5.c Type 1: fields of mean wave parameters
 !
                 FLGRD(:,:,I)=.FALSE. ! Initialize FLGRD
-                FLDOUT = output_type(I)%field%list
+                FLDOUT = OUTPUT_TYPE(I)%FIELD%LIST
                 CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
                                    FLG2D, IMPROC, NMPSCR, IERR )
                 FLGRD(:,:,I)=FLG2D
@@ -4185,7 +4185,7 @@
                 END IF
 
                 ! if the point file is not set
-                IF ( trim(output_type(I)%point%file).EQ.'unset' ) THEN
+                IF ( TRIM(OUTPUT_TYPE(I)%POINT%FILE).EQ.'unset' ) THEN
                   ! and if output also disabled, cycle to the next output type J
                   IF ( ODAT(8,I).EQ.0 ) THEN
                     ALLOCATE ( OT2(I)%X(1), OT2(I)%Y(1), OT2(I)%PNAMES(1) )
@@ -4201,11 +4201,11 @@
 !
                 IF ( UNIPTS .AND. I.GE.2 ) THEN
                   DO K=1,I-1
-                    IF ( output_type(K)%point%file.NE.output_type(I)%point%file ) GOTO 2053
+                    IF ( OUTPUT_TYPE(K)%POINT%FILE.NE.OUTPUT_TYPE(I)%POINT%FILE ) GOTO 2053
                   END DO
                 END IF
-                OPEN (MDSI, file=trim(FNMPRE)//trim(output_type(I)%point%file), &
-                      form='formatted', status='old', iostat=ierr)
+                OPEN (MDSI, file=TRIM(FNMPRE)//TRIM(OUTPUT_TYPE(I)%point%file), &
+                      form='formatted', status='old', iostat=IERR)
 
                 ! first loop to count the number of points
                 ! second loop to allocate the array and store the points
@@ -4275,7 +4275,7 @@
 !
 ! 5.e Type 3: track output
 !
-                TFLAGI = output_type(I)%track%format
+                TFLAGI = OUTPUT_TYPE(I)%TRACK%FORMAT
                 IF ( TFLAGI ) THEN
                     MDS(11,I) =  ABS(MDS(11,I))
                   ELSE
@@ -4301,13 +4301,13 @@
 !
 ! 5.h Type 6: partitioned wave field data
 !
-                IPRT(1,I) = output_type(I)%partition%x0
-                IPRT(2,I) = output_type(I)%partition%xn
-                IPRT(3,I) = output_type(I)%partition%nx
-                IPRT(4,I) = output_type(I)%partition%y0
-                IPRT(5,I) = output_type(I)%partition%yn
-                IPRT(6,I) = output_type(I)%partition%ny
-                LPRT(I) = output_type(I)%partition%format
+                IPRT(1,I) = OUTPUT_TYPE(I)%PARTITION%X0
+                IPRT(2,I) = OUTPUT_TYPE(I)%PARTITION%XN
+                IPRT(3,I) = OUTPUT_TYPE(I)%PARTITION%NX
+                IPRT(4,I) = OUTPUT_TYPE(I)%PARTITION%Y0
+                IPRT(5,I) = OUTPUT_TYPE(I)%PARTITION%YN
+                IPRT(6,I) = OUTPUT_TYPE(I)%PARTITION%NY
+                LPRT(I) = OUTPUT_TYPE(I)%PARTITION%FORMAT
                 IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
                     WRITE (MDSS,961) IPRT(:,I)
                     IF ( .NOT. LPRT(I) ) THEN
@@ -4323,7 +4323,7 @@
 !
 ! 5.i Type 7: coupling
 !
-!/COU              FLDOUT = output_type(I)%coupling%list
+!/COU              FLDOUT = OUTPUT_TYPE(I)%COUPLING%LIST
 !/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
 !/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
 !/COU              FLGR2(:,:,I)=FLG2D
@@ -4367,9 +4367,9 @@
           IF ( NMOVE .EQ. 0 ) GOTO 2060
           ALLOCATE ( TMOVE(2,NMOVE), AMOVE(NMOVE), DMOVE(NMOVE) )
           DO I=1,NMOVE
-            READ(homogeneous_input(I)%moving%start, * ) TMOVE(:,I)
-            AMOVE(I) = homogeneous_input(I)%moving%speed
-            DMOVE(I) = homogeneous_input(I)%moving%direction
+            READ(HOMOGENEOUS_INPUT(I)%MOVING%START, * ) TMOVE(:,I)
+            AMOVE(I) = HOMOGENEOUS_INPUT(I)%MOVING%SPEED
+            DMOVE(I) = HOMOGENEOUS_INPUT(I)%MOVING%DIRECTION
             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                &
                 WRITE (MDSS,968) I, TMOVE(:,I), AMOVE(I), DMOVE(I)
           END DO
@@ -4427,7 +4427,7 @@
               JJ     = LEN_TRIM(FNMPRE)
               CALL WMUGET ( MDSS, MDST, MDSUP, 'OUT' )
               CALL WMUSET ( MDSS, MDST, MDSUP, .TRUE., 'OUT',         &
-                           trim(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II),  &
+                           TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II),  &
                            'Unified point output')
             END IF
         END IF
@@ -4844,7 +4844,7 @@
 !
         IF ( MDS(7,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPFLD ) THEN
-                TNAME  = trim(FNMPRE)//'out_grd.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'out_grd.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(7,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(7,I), .FALSE. )
@@ -4854,7 +4854,7 @@
 !
         IF ( MDS(8,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPPNT ) THEN
-                TNAME  = trim(FNMPRE)//'out_pnt.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'out_pnt.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(8,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(8,I), .FALSE. )
@@ -4864,7 +4864,7 @@
 !
         IF ( MDS(9,I) .NE. -1 ) THEN
             IF ( FLBPI ) THEN
-                TNAME  = trim(FNMPRE)//'nest.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'nest.' // FILEXT(:II)
                 CALL WMUSET ( MDSE, MDST, MDS(9,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE, MDST, MDS(9,I), .FALSE. )
@@ -4874,7 +4874,7 @@
 !
         IF ( MDS(10,I) .NE. -1 ) THEN
             IF ( FLBPO .AND. IAPROC.EQ.NAPBPT ) THEN
-                TNAME  = trim(FNMPRE)//'nestN.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'nestN.' // FILEXT(:II)
                 DO J=0, NFBPO-1
                   WRITE (TNAME(JJ+5:JJ+5),'(I1)') J + 1
                   CALL WMUSET ( MDSE, MDST, MDS(10,I)+J, .TRUE.,      &
@@ -4892,13 +4892,13 @@
           END IF
 !
         IF ( MDS(11,I) .NE. -1 ) THEN
-            TNAME  = trim(FNMPRE)//'track_i.' // FILEXT(:II)
+            TNAME  = TRIM(FNMPRE)//'track_i.' // FILEXT(:II)
             CALL WMUSET ( MDSE,MDST, MDS(11,I), .TRUE., NAME=TNAME )
           END IF
 !
         IF ( MDS(12,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPTRK ) THEN
-                TNAME  = trim(FNMPRE)//'track_o.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'track_o.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(12,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(12,I), .FALSE. )
@@ -4908,7 +4908,7 @@
 !
         IF ( MDS(13,I) .NE. -1 ) THEN
             IF ( IAPROC .EQ. NAPPRT ) THEN
-                TNAME  = trim(FNMPRE)//'partition.' // FILEXT(:II)
+                TNAME  = TRIM(FNMPRE)//'partition.' // FILEXT(:II)
                 CALL WMUSET ( MDSE,MDST, MDS(13,I), .TRUE., NAME=TNAME )
               ELSE
                 CALL WMUSET ( MDSE,MDST, MDS(13,I), .FALSE. )
@@ -5166,7 +5166,7 @@
               IDINP(-I,J) = IDSTR(J)
               CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                             MDSE2, NX, NY, GTYPE, IERR,               &
-                            MNAMES(-I), trim(FNMPRE) )
+                            MNAMES(-I), TRIM(FNMPRE) )
               IF ( IERR .NE. 0 ) GOTO 2080
               IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                    WRITE (MDSS,985) IDFLDS(J)
@@ -5259,7 +5259,7 @@
                 J      = J + 5
                 CALL WMUGET ( MDSE, MDST, NDS(9), 'OUT' )
                 CALL WMUSET ( MDSE, MDST, NDS(9), .TRUE.,             &
-                              NAME=trim(FNMPRE)//TNAME(1:J),           &
+                              NAME=TRIM(FNMPRE)//TNAME(1:J),           &
                               DESC='Output data file (nest dump)' )
                 MDS(9,I) = NDSFND
               ELSE

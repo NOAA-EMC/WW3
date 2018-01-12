@@ -31,19 +31,21 @@
 #                                                                           #
 #  Example run_test commands:                                               #
 #                                                                           #
-# ./bin/run_test -g 1000m -w work_IC0IS2 -c Altix_debug -s IC0IS2 -o netcdf #
-#                ../ ww3_tic1.4                                             #
+# ./bin/run_test -g 1000m -w work_IC0IS2 -s IC0IS2 -o netcdf                #
+#                ../model ww3_tic1.4                                        #
 #                                                                           #
-# ./bin/run_test -g 1000m -w work_IC1IS2 -c Altix_debug -s IC1IS2 -o netcdf #
-#                ../ ww3_tic1.4                                             #
+# ./bin/run_test -g 1000m -w work_IC1IS2 -s IC1IS2 -o netcdf                #
+#                ../model ww3_tic1.4                                        #
 #                                                                           #
-# bin/run_test -g IC2b_1000m  -w work_IC2IS2 -c Altix_debug -s IC2IS2       #
-#                -o netcdf ../model ww3_tic1.4                              #  
-# bin/run_test -g IC2d_1000m  -w work_IC2IS2 -c Altix_debug -s IC2IS2       #
-#                -o netcdf ../model ww3_tic1.4                              #
+# bin/run_test -g IC2b_1000m  -w work_IC2IS2 -s IC2IS2 -o netcdf            #
+#                ../model ww3_tic1.4                                        #  
+# bin/run_test -g IC2d_1000m  -w work_IC2IS2 -s IC2IS2 -o netcdf            #
+#                ../model ww3_tic1.4                                        #
+# bin/run_test -g IC2d_1000m  -w work_IC2IS2 -s IC2IS2 -o netcdf -N         #
+#                ../model ww3_tic1.4                                        #
 #                                                                           #
 #                                 origination: Mickael Accensi, Oct 2015    #
-#                                last updated: Mickael Accensi, Oct 2015    #
+#                                last updated: Mickael Accensi, Jan 2018    #
 #                                                                           #
 #    Copyright 2009-2015 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
