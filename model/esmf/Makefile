@@ -35,7 +35,19 @@ else
 ifeq ($(WW3_COMP),Intel)
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else
+ifeq ($(WW3_COMP),theia)
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else
+ifeq ($(WW3_COMP),wcoss_phase2)
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else
+ifeq ($(WW3_COMP),wcoss_cray)
+ ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
+else
  $(error Unsupported WW3_COMP: $(WW3_COMP))
+endif
+endif
+endif
 endif
 endif
 endif
