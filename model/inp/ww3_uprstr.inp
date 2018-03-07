@@ -39,12 +39,7 @@ $           functions(frq,theta) of the update to be applied.
 $
 $ PRCNTG is input for option 1 and it is the percentage of correction
 $applied  to all the gridpoints (e.g. 1.)
-   1.0
 $
-   UPD3
-$
-$ PRCNTG is input for option 1 and it is the percentage of correction
-$applied  to all the gridpoints (e.g. 1.)
    1.0
 $
 $ Name of the file with the SWH analysis from the DA system            $

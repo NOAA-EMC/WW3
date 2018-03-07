@@ -183,6 +183,7 @@ run/ww3_gint.tex \
 run/gx_outp.tex \
 run/ww3_trck.tex \
 run/ww3_systrk.tex \
+run/ww3_uprstr.tex \
 impl.tex \
 impl/intro.tex \
 impl/install.tex \
@@ -248,6 +249,7 @@ ww3_ounp.tex \
 ww3_systrk.tex \
 ww3_grib.tex \
 ww3_gint.tex \
+ww3_uprstr.tex \
 gx_outf.tex \
 gx_outp.tex
 
