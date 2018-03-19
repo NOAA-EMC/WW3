@@ -62,7 +62,7 @@ $ Homogeneous field data --------------------------------------------- $
 $      ICE1  ice thickness, e.g. 1 m
 $      ICE2  eddy viscosity parameter of Liu et al.
 $ constant case:
-   'IC1' 19680606 000000   0.1
+   'IC1' 19680606 000000   0.9
    'IC2' 19680606 000000   1536.0e-4
    'IC5' 19680606 000000   1000.
    'LEV' 19680606 000000   1.1

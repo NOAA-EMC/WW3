@@ -21,7 +21,7 @@
 !/                  !           J. H. Alves             !
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         04-May-2016 |
+!/                  | Last update :         07-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    24-Jun-2005 : Origination.                        ( version 3.07 )
@@ -82,6 +82,7 @@
 !/    20-Jan-2017 : Change calculation of curvilinear grid metric and
 !/                  derivatives calculations to use W3GSRUMD:W3CGDM.
 !/                  (T.J. Campbell, NRL)                ( version 6.02 )
+!/    07-Jan-2018 : Generalizes ICE100WIND to ICESCALES ( version 6.04 )
 !/
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -176,12 +177,10 @@
 !      IICEHDISP Real  Public   Minimum thickness of sea ice in the dispersion relation before relaxing the conv. criterion
 !      IICEHFAC  Real  Public   Scale factor for sea ice thickness
 !      IICEHINIT Real  Public   Initial value of ice thickness
-!      ICE100WIND Real  Publ.   Reduction of wind input if ice fraction=1.0
+!      ICESCALES R.A.  Publ.    Scaling coefficient for source terms in the presence of ice
 !                               Default is 1.0, meaning that 100% ice 
-!                               concentration result in zero wind input. 
-!                               Sin_in_ice=Sin_in_open_water * (1-ICE*ICEWIND)
-!                               If set to 0.0, then ice has no direct impact on
-!                               wind input source function.
+!                               concentration result in zero source term
+!                               If set to 0.0, then ice has no direct impact on Sln / Sin / Snl / Sds
 !      IC3PARS   R.A.  Public   various parameters for use in IC4, handled as
 !                               an array for simplicity
 !      IC4_KI    R.A.  Public   KI (dissipation rate) values for use in IC4
@@ -616,7 +615,7 @@
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
                             DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
                             PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
-                            IICEHINIT, ICE100WIND, IICEHFAC, IICEHDISP, &
+                            IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
 		                    IICEDDISP, IICEFDISP
 
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
@@ -921,7 +920,7 @@
       REAL, POINTER           :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX, &
                                  DTMIN, DMIN, CTMAX, FICE0, FICEN,     &
                                  FICEL, PFMOVE, STEXU, STEYU, STEDU,   &
-                                 IICEHMIN, IICEHINIT, ICE100WIND,      &
+                                 IICEHMIN, IICEHINIT, ICESCALES(:),    &
                                  IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
 !/RTD        REAL, POINTER         :: Polat, Polon
@@ -1428,7 +1427,7 @@
 !/IC4       CHECK_ALLOC_STATUS ( ISTAT )
 !/IC4       ALLOCATE ( GRIDS(IMOD)%IC4_FC(NIC4), STAT=ISTAT )
 !/IC4       CHECK_ALLOC_STATUS ( ISTAT )
-!/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(18), STAT=ISTAT )
+!/IS2       ALLOCATE ( GRIDS(IMOD)%IS2PARS(24), STAT=ISTAT )
 !/IS2       CHECK_ALLOC_STATUS ( ISTAT )
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
       WRITE (NDST,9001)
@@ -1868,7 +1867,7 @@
       IICEDDISP  => GRIDS(IMOD)%IICEDDISP
       IICEHFAC  => GRIDS(IMOD)%IICEHFAC
       IICEHINIT  => GRIDS(IMOD)%IICEHINIT
-      ICE100WIND  => GRIDS(IMOD)%ICE100WIND
+      ICESCALES  => GRIDS(IMOD)%ICESCALES
       PFMOVE => GRIDS(IMOD)%PFMOVE
       STEXU  => GRIDS(IMOD)%STEXU
       STEYU  => GRIDS(IMOD)%STEYU

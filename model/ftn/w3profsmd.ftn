@@ -434,7 +434,6 @@
           CFLXYMAX = MAX(DBLE(DT)/DTMAXEXP,DBLE(CFLXYMAX))
           END DO
         END DO
-        WRITE(*,*) NKCFL, DTMAXEXP, CFLXYMAX
         END IF
 !
       RETURN    

@@ -4,21 +4,22 @@
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           P. Nicot                |
 !/                  |           F. Ardhuin              |
+!/                  |           P. Nicot                |
 !/                  |           C. Sevigny              |
 !/                  |           G. Boutin               |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Dec-2015 |
+!/                  | Last update :         21-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see W3SID1 documentation.
 !/
 !  1. Purpose :
 !
-!     Scattering of waves in the marginal ice zone based on tabulated 
+!     Floe-size dependant scattering of waves in the marginal ice zone based on tabulated 
 !     scattering coefficients for a semi-infinite ice sheet. See papers
 !     by Dumont et al. (JGR 2011) and Williams et al. (OM 2013) 
+!     combined with flexural dissipation and ice break-up.
 !
 !  2. Variables and types :
 !
@@ -45,9 +46,9 @@
 !/ ------------------------------------------------------------------- /
 !/
       INTEGER ,    PARAMETER             :: NTHICK = 20, NICED = 500
-      REAL                               :: THICK1 = 0.1, DTHICK = 0.25
-      REAL, PARAMETER                    :: ICEDMIN = 20      ! minimum floe diameter
       REAL, PARAMETER                    :: FRAGILITY = 0.9   
+      REAL                               :: THICK1 = 0.1, DTHICK = 0.25
+      REAL                               :: ICEDMIN      ! minimum floe diameter
       REAL                               :: ICEDAVETAB(NICED)
       REAL, DIMENSION(:)   , ALLOCATABLE :: SIS2ALPHAS(:,:),SIS2ALPHA2(:,:)
       DOUBLE PRECISION, ALLOCATABLE,DIMENSION(:,:)     :: IS2EIGVEC, IS2SCATMAT
@@ -66,11 +67,12 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |      P. Nicot & F. Ardhuin        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Dec-2015 |
+!/                  | Last update :         21-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    01-Apr-2014 : Creation                            ( version 4.18 )
 !/    13-Dec-2015 : Adds diagonalization of scat. matrix( version 5.10 )
+!/    21-Jan-2018 : Implements non-isotropic example    ( version 6.04 )
 !/
 !  1. Purpose :
 !
@@ -109,7 +111,8 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      USE W3GDATMD,   ONLY: SIG, DSIP, NK, NTH, IS2PARS
+      USE W3GDATMD,   ONLY: SIG, DSIP, NK, NTH, IS2PARS,  &
+                            EC2, ES2, ESC, ESIN, ECOS
       USE CONSTANTS,  ONLY: TPI, TPIINV
       USE W3SERVMD, ONLY: DIAGONALIZE
 !/S      USE W3SERVMD, ONLY: STRACE
@@ -535,25 +538,36 @@ ELSE
         ENDDO
 !
 ! -------------------------------------------------------------------- /
-! 2.  Diagonalizes the scattering matrix (assumes isotropic scattering)
+! 2.  Defines and diagonalizes the scattering matrix 
 !
       ALLOCATE(IS2SCATMAT(NTH,NTH))
       ALLOCATE(IS2EIGVEC(NTH,NTH))
       ALLOCATE(IS2EIGVAL(NTH))
+!
       DO I=1,NTH 
         DO J=1,NTH
-          IS2SCATMAT(I,J)=-1./DBLE(NTH)
-          IF (I.EQ.J) IS2SCATMAT(I,J)=IS2SCATMAT(I,J)+1.d0
+! This is for isotropic back-scatter 
+!         IS2SCATMAT(I,J)=-1./DBLE(NTH)
+! Other example that looks like figure 12 in Masson & LeBlond
+          IS2SCATMAT(I,J)=-1./DBLE(NTH)*(2.*EC2(ABS(I-J)+1)**2+0.8*ECOS(ABS(I-J)+1)**3)
+          IF (ECOS(ABS(I-J)+1).LT.0.001) IS2SCATMAT(I,J)=IS2SCATMAT(I,J)-1./DBLE(NTH)*0.8*ES2(ABS(I-J)+1)
           END DO
+!WRITE(997,'(36G16.8)') IS2SCATMAT(I,:) 
+! Now removes sum from diagonal to enforce energy conservation ... 
+          IS2SCATMAT(I,I)=IS2SCATMAT(I,I)-SUM(IS2SCATMAT(I,1:NTH))
         END DO
       CALL DIAGONALIZE(IS2SCATMAT,IS2EIGVAL,IS2EIGVEC,nrot) 
       DO I=1,NTH 
         IS2EIGVAL(I)=MAX(0.d0,IS2EIGVAL(I))
 !WRITE(994,'(36G16.8)') I,IS2EIGVAL(I) 
 !WRITE(995,'(36G16.8)') IS2EIGVEC(I,:) 
+!WRITE(996,'(36G16.8)') IS2SCATMAT(I,:) 
         END DO
 !CLOSE(994)
 !CLOSE(995)
+!CLOSE(996)
+!CLOSE(997)
+
       RETURN
 !/
 !/ End of INSIS2 ----------------------------------------------------- /
@@ -679,15 +693,18 @@ ELSE
       REAL                    :: W
       INTEGER                 :: IKBREAK, NSUM
       LOGICAL                 :: BRK_CRIT_W(NK), BRK_CRIT
-      REAL                    :: ALPHA, STRAIN_C, WAMP(NK), D_FLEX_FAIL,  &
-                                 SMOOTHD,                                 &
+      REAL                    :: ALPHA, STRAIN_C, WAMP(NK), D_FLEX_FAIL,             &
+                                 SMOOTHD, TAU_D, S_D(NK), ALPHA_D, DELTA_D,B_COLE,    &
                                  DMAX, S_ATT, FACTOR, BETA
-      REAL                    :: ICEDAVE(NK), CURVTOSTRAIN, CREEPFAC, MP2, B
+      REAL                    :: ICEDAVE(NK), CURVTOSTRAIN, CREEPFAC, MP2, B, ICEF_CREEP
       REAL                    :: SUMALLDIR, SUMA, SUME, CURVSPEC(NK), ESPEC(NK),STRAIN
       REAL, PARAMETER         :: YOUNG = 5.49E+9   ! Young modulus 
       REAL, PARAMETER         :: POISSON = 0.3     ! Poisson Ratio 
-      REAL, PARAMETER         :: SIGMA_C =  2.7414E+05  ! Flexural strenght in Pa
+      REAL                    :: SIGMA_C
+!      REAL, PARAMETER         :: SIGMA_C =  2.7414E+05  ! Flexural strenght in Pa
+                                                         ! this is now a parametrer IS2PARS(19) 
       REAL, PARAMETER         :: DENS = 1025.0     ! ice density 
+      REAL                    :: GAMMA_TOY 
       REAL, DIMENSION(NK)        :: WN_I, WN_RP, WSQ, WLG, WLG_I, CG_I,   &
                                     CURV, CGRATIO, CG_EFF, DUMMY, ALPHA_DISP
 !/T      REAL                    :: SOUT(NK,NTH)
@@ -706,7 +723,20 @@ ELSE
       WN_RP = 0.
       CG_I = 0.
       CG_EFF = 0.
+      SIGMA_C = IS2PARS(19)
       MP2=(1-POISSON**2)
+      GAMMA_TOY =  2 + log(0.9)/log(2.)
+      ! Variables from Cole et al. 1995
+      ALPHA_D=0.54
+      !B_COLE=1.205E-9 * EXP(0.55*1.60218E-19/(1.38064852e-23*263.15))
+      B_COLE=1.205E-9 * EXP(IS2PARS(24)*1.60218E-19/(1.38064852e-23*268.15))
+      TAU_D=B_COLE/0.07
+      S_D=LOG(SIG(:)*TAU_D)
+      !IF ((IX.EQ.50).AND.(IY.EQ.20)) WRITE(*,*) 'B', B_COLE, 'SD1' ,S_D(1), 'SD5', S_D(5), 'TAU_D', TAU_D
+      DELTA_D=IS2PARS(21) 
+      !SIGMA_RATIO =1.
+      !
+      IF (IS2PARS(9).GT.0) ICEDMIN = IS2PARS(9)
       IF (IS2PARS(12).GT.0) THEN 
         B=IS2PARS(12)
 ! 2 is the ratio of <H/2^4> to (Hrms/2)^4 for a Rayleigh distribution 
@@ -715,18 +745,19 @@ ELSE
         CREEPFAC = -2*(0.25/(IS2PARS(15)+2))*0.375*B*ICEH**(IS2PARS(15)+2)  &
                         *(YOUNG/(2*B*MP2))**(IS2PARS(15)+1)/(DWAT*GRAV)
       ELSE 
-        CREEPFAC=0.
+        CREEPFAC=1.
         ENDIF
 
       WLG = TPI/WN
+      ICEF_CREEP=ICEF
       DMAX = ICEF
       BRK_CRIT = .FALSE.
       NSUM = NINT(0.3/(XFR-1.))
 !    
-      STRAIN_C = SIGMA_C/(YOUNG*MP2)
+      STRAIN_C = SIGMA_C*MP2/YOUNG
 
 ! Minimum floe size that can break 
-      D_FLEX_FAIL =  ( (PI**4*YOUNG*ICEH**3)/( 48*DENS*GRAV*MP2 ) )**.25
+      D_FLEX_FAIL =  0.5* ( (PI**4*YOUNG*ICEH**3)/( 48*DENS*GRAV*MP2 ) )**.25 
 ! Estimates mean floe diameter from max floe diameter 
       IF (DMAX.GT.NICED) THEN
         ICEDAVE=DMAX
@@ -858,32 +889,33 @@ ELSE
 !
 !  4. update of floe size 
 !      
-
         IF (IS2PARS(10).LT.0.5) THEN ! resets max floe size to the last forcing or initial value
           DMAX = ICEDMAX
           ICEF = ICEDMAX
           END IF
 !
+        DO IK = 1, NK 
+! CURV is the variance of the curvature integrated over a finite bandwidth 
+          CURV(IK) = SUM(CURVSPEC(MAX(1,IK-NSUM):MIN(NK,IK+NSUM)))  
+! Now converts curvature variance to strain variance 
+          END DO ! end of loop on IK
+!
+! If IS2PARS(3)=IS2BREAK is set to true in ww3_grid, then activates ice break-up
+!
         IF (IS2PARS(3).GT.0.5) THEN
           IKBREAK=0
           DO IK = 1, NK 
-! CURV is the variance of the curvature integrated over a finite bandwidth 
-            CURV(IK) = SUM(CURVSPEC(MAX(1,IK-NSUM):MIN(NK,IK+NSUM)))  
-! Now converts curvature variance to strain variance 
             STRAIN = CURV(IK)*CURVTOSTRAIN                            
             IF (D_FLEX_FAIL .LT. DMAX) THEN 
 ! Note that Williams et al. used IS2PARS(17)=SQRT(2), Here our default is 3.6
-!	    IF (IS2PARS(17).LE.0) THEN
-!     This could be good if there was waves during only one time step DTG... 
-!     othewise this would introduce some artificial time step dependance ... 
-!	      N_WAVES=FLOOR(DTG*SIG(IK)/TPI)
-!	      WAMP(IK)= ( (1+0.29/log(N_WAVES))*(2*log(N_WAVES))**(0.5) ) *SQRT(STRAIN)
-!	    ELSE
               WAMP(IK)= IS2PARS(17)*SQRT(STRAIN)
-!	      END IF
+!
+              IF (IS2PARS(9).EQ.0) THEN
+                ICEDMIN=(TPI/WN_R(IK))*IS2PARS(14)
+                END IF
+              BRK_CRIT_W(IK) = WAMP(IK) .GT. STRAIN_C .AND. WLG_I(IK)/2 .GT. ICEDMIN .AND. WLG_I(IK)/2 .LT. DMAX &
+                               .AND. WLG_I(IK)/2 .GT. D_FLEX_FAIL
 
-              BRK_CRIT_W(IK) = WAMP(IK) .GT. STRAIN_C  .AND.  &
-                               WLG_I(IK)/2 .GT. ICEDMIN .AND. WLG_I(IK)/2 .LT. DMAX               
 !
               IF (BRK_CRIT_W(IK)) THEN
                 IKBREAK=IK
@@ -930,11 +962,17 @@ ELSE
 !
             IF (IS2PARS(14)*WLG_I(IK).LT.DMAX) THEN 
               SMOOTHD=TANH((DMAX-IS2PARS(14)*WLG_I(IK))/(DMAX*IS2PARS(13)))
-              DCREEP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)                & 
-                                        *((2*PI)/WLG_I(IK))**(IS2PARS(15)+1) &
-                                        /(CGRATIO(IK)**2*R(IK)**2)           &
-                                        *SMOOTHD
+              IF (IS2PARS(23).LE.0.5) THEN
+                DCREEP(1+(IK-1)*NTH:IK*NTH)=CREEPFAC*4*CURV(IK)                & 
+                                            *((2*PI)/WLG_I(IK))**(IS2PARS(15)+1) &
+                                            /(CGRATIO(IK)**1*R(IK)**2)           &
+                                            *SMOOTHD
+              ELSE
+                DCREEP(1+(IK-1)*NTH:IK*NTH) =-4*4/3*SIG(IK)* DELTA_D*ALPHA_D *WN_I(IK)**4 * (YOUNG/MP2)**2         &
+                                             * (ICEH/2)**3/3 * 1/( EXP(ALPHA_D*S_D(IK)) + EXP(-ALPHA_D*S_D(IK))) &
+                                             * SMOOTHD /(R(IK)**2*CGRATIO(IK)) / (DWAT*GRAV) *TPIINV 
               END IF
+            END IF
             S=S+DCREEP*CICE*A
             END DO ! end of loop on IK
           ENDIF ! end of test (IS2PARS(12).GT.0)

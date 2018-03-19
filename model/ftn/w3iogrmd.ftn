@@ -72,7 +72,7 @@
 !/
 !/ Private parameter statements (ID strings)
 !/
-      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2017-09-29'
+      CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERGRD = '2018-03-19'
       CHARACTER(LEN=35), PARAMETER, PRIVATE ::                        &
                          IDSTR = 'WAVEWATCH III MODEL DEFINITION FILE'
 !/
@@ -584,7 +584,7 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
                FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
                STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
-               ICE100WIND, NOLEAP, CMPRTRCK, IICEHFAC, IICEHDISP,     &
+               ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC, IICEHDISP, &
                IICEDDISP, IICEFDISP
 
           WRITE(NDSM)GRIDSHIFT
@@ -662,7 +662,7 @@
                FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
                FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
                CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-               IICEDISP, ICE100WIND, NOLEAP, CMPRTRCK, IICEHFAC,      &
+               IICEDISP, ICESCALES(1:4), NOLEAP, CMPRTRCK, IICEHFAC,  &
                IICEDDISP, IICEHDISP, IICEFDISP 
 
               READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
@@ -796,7 +796,7 @@
 !/IG1          WRITE   (NDSM)                                              &
 !/IG1                IGPARS(1:12)
 !/IC2          WRITE   (NDSM)                                              &
-!/IC2                IC2PARS(1:7)
+!/IC2                IC2PARS(1:8)
 !/IC3          WRITE   (NDSM)                                              &
 !/IC3                IC3PARS
 !/IC4          WRITE   (NDSM)                                              &
@@ -814,7 +814,7 @@
 !/IG1         READ   (NDSM)                                                &
 !/IG1                IGPARS(1:12)
 !/IC2         READ   (NDSM)                                                &
-!/IC2                IC2PARS(1:7)
+!/IC2                IC2PARS(1:8)
 !/IC3         READ   (NDSM)                                                &
 !/IC3                IC3PARS
 !/IC4         READ   (NDSM)                                                &

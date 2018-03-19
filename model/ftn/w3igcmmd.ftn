@@ -266,7 +266,7 @@
            CASE ('WW3__ICE')
            CASE ('WW3__IC1')
            CASE DEFAULT
-        !     WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)
+           ! WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)
            END SELECT   
            !
            ! Ice Concentration 
@@ -299,7 +299,7 @@
           CASE ('WW3__IC5') 
           CASE ('WW3__IC1')
           CASE DEFAULT
-          !   WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)    
+          !  WRITE (NDSO,1001) TRIM(RCV_FLD(IB_DO)%CL_FIELD_NAME)    
           END SELECT  
           ! Ice Thickness
           ! ----------------------------------------------------------------------

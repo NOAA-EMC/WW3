@@ -612,8 +612,11 @@
 !/IS2                                 IS2FRAGILITY, IS2DMIN, IS2DAMP, &
 !/IS2                                 IS2CONC, IS2CREEPB, IS2CREEPC,  &
 !/IS2                                 IS2CREEPD, IS2CREEPN, IS2BREAKE,&
-!/IS2                                 IS2WIM1, IS2BREAKF 
-!/IS2      LOGICAL                 :: IS2BREAK, IS2DISP, IS2DUPDATE 
+!/IS2                                 IS2WIM1, IS2BREAKF, IS2FLEXSTR, &
+!/IS2                                 IS2ANDISN, IS2ANDISE, IS2ANDISD
+!/IS2      LOGICAL                 :: IS2BREAK, IS2DISP, IS2DUPDATE,  &
+!/IS2                                 IS2ISOSCAT, IS2ANDISB
+!
 !/REF1      REAL                    :: REFCOAST, REFFREQ, REFMAP,     &
 !/REF1                                 REFSUBGRID, REFRMAX, REFMAPD,  &
 !/REF1                                 REFICEBERG, REFCOSP_STRAIGHT,  &
@@ -627,7 +630,7 @@
 !
 !/IC2  LOGICAL                 :: IC2DISPER
 !/IC2  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC2                             IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC2                             IC2SMOOTH, IC2VISC, IC2TURBS, IC2DMAX
 
 !/IC3  REAL                    :: IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                             IC2SMOOTH, IC2VISC, IC2TURBS,        &
@@ -651,7 +654,8 @@
       REAL                    :: CFLTM, CICE0, CICEN, PMOVE, XFILT,    &
                                  LICE, XSEED, XR, HSPM, WSM, WSC, STDX,&
                                  STDY, STDT, ICEHMIN, ICEHFAC, ICEHINIT, &
-                                 ICEWIND, ICEHDISP, ICEFDISP, ICEDDISP
+                                 ICESLN, ICEWIND, ICESNL, ICESDS,        &
+                                 ICEHDISP, ICEFDISP, ICEDDISP
 !
       REAL(8)                 :: GSHIFT ! see notes in WMGHGH
       LOGICAL                 :: FLC, ICEDISP, TRCKCMPR
@@ -718,7 +722,7 @@
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
 !/FLX4      NAMELIST /FLX4/ CDFAC
 !/IC2      NAMELIST /SIC2/  IC2DISPER, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
-!/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC2                      IC2SMOOTH, IC2VISC, IC2TURBS, IC2DMAX
 !/IC3      NAMELIST /SIC3/  IC3MAXTHK, IC2TURB, IC2ROUGH, IC2REYNOLDS,      &
 !/IC3                      IC2SMOOTH, IC2VISC, IC2TURBS, IC3MAXCNC,      &
 !/IC3                      IC3CHENG, USECGICE, IC3HILIM, IC3KILIM,      &
@@ -777,7 +781,8 @@
                       XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
                       RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
                       STDX, STDY, STDT, ICEHMIN, ICEHINIT, ICEDISP,   &
-                      ICEWIND, ICEHFAC, ICEHDISP, ICEDDISP, ICEFDISP
+                      ICESLN, ICEWIND, ICESNL, ICESDS, ICEHFAC,       &
+                      ICEHDISP, ICEDDISP, ICEFDISP
            NAMELIST /OUTS/ P2SF, I1P2SF, I2P2SF,                      &
                              US3D, I1US3D, I2US3D,                    &
                              USSP, IUSSP, STK_WN,                     &
@@ -787,11 +792,12 @@
                              TH2MF, I1TH2M, I2TH2M,                   &
                              STH2MF, I1STH2M, I2STH2M
 !/IS1           NAMELIST /SIS1/ ISC1, ISC2
-!/IS2           NAMELIST /SIS2/ ISC1, IS2C2, IS2C3, IS2BACKSCAT, IS2BREAK,  &
+!/IS2           NAMELIST /SIS2/ ISC1, IS2C2, IS2C3, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK,  &
 !/IS2                           IS2DISP, IS2FRAGILITY, IS2CONC, IS2DMIN,    &
 !/IS2                           IS2DAMP, IS2DUPDATE, IS2CREEPB, IS2CREEPC,  &
 !/IS2                           IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF, &
-!/IS2                           IS2WIM1
+!/IS2                           IS2WIM1, IS2FLEXSTR, IS2ANDISB, IS2ANDISE, IS2ANDISD,   &
+!/IS2                           IS2ANDISN
 !/REF1           NAMELIST /REF1/ REFCOAST, REFFREQ, REFMAP,  REFMAPD,       &
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
@@ -1912,7 +1918,10 @@
       ICEHFAC= 1.0  
       ICEHMIN= 0.2  ! the 0.2 value is arbitrary and needs to be tuned.
       ICEHINIT= 0.5  
+      ICESLN = 1.0
       ICEWIND= 1.0
+      ICESNL = 1.0
+      ICESDS = 1.0
       ICEHDISP= 0.6 ! Prevent from convergence crash in w3dispmd in the presence of ice, should be tuned
       ICEDDISP= 80
       ICEFDISP= 2
@@ -1984,6 +1993,8 @@
 !/IS2      IS2BACKSCAT = 1.
 !/IS2      IS2BREAK = .FALSE.
 !/IS2      IS2BREAKF = 3.6
+!/IS2      IS2FLEXSTR=2.7414E+05  ! value used in Boutin et al. JGR 2018. 
+!/IS2      IS2ISOSCAT=.TRUE.     ! uses isotropic back-scatter
 !/IS2      IS2DISP=.FALSE. !not dispersion only attenuation following Liu disp. eq.
 !/IS2      IS2DUPDATE=.TRUE.
 !/IS2      IS2FRAGILITY=0.9
@@ -1995,11 +2006,16 @@
 !/IS2      IS2CREEPN=3.0
 !/IS2      IS2BREAKE=1.
 !/IS2      IS2WIM1=1.
+!/IS2      IS2ANDISB=.FALSE. !anelastic instead of inelastic dissipation if IS2CREEPB>0
+!/IS2      IS2ANDISE=0.55    !energy of activation
+!/IS2      IS2ANDISD=1.672E-9!
+!/IS2      IS2ANDISN=1.      !dependency on stress. Equal to 1 normally?
 !/IS2      CALL READNL ( NDSS, 'SIS2', STATUS )
 !/IS2      WRITE (NDSO,947) STATUS
-!/IS2      WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2BREAK, IS2DUPDATE, IS2DISP, &
+!/IS2      WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK, IS2DUPDATE, IS2DISP, &
 !/IS2        IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2, IS2C3, IS2CONC, IS2CREEPB,&
-!/IS2        IS2CREEPC, IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1
+!/IS2        IS2CREEPC, IS2CREEPD, IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1,  &
+!/IS2        IS2FLEXSTR, IS2ANDISB, IS2ANDISE, IS2ANDISD, IS2ANDISN
 !
 !/REF1      REFCOAST=0.
 !/REF1      REFMAP=0.
@@ -2037,6 +2053,7 @@
 !/IC2       IC2REYNOLDS = 1.5E5
 !/IC2       IC2SMOOTH = 2E5
 !/IC2       IC2VISC = 1.
+!/IC2       IC2DMAX = 0.
 !
 !/IC3       IC3MAXTHK = 100.0
 !/IC3       IC3MAXCNC = 100.0
@@ -2134,10 +2151,16 @@
 !
       IF ( FLAGTR.LT.0 .OR. FLAGTR.GT.6 ) FLAGTR = 0
       CICEN  = MIN ( 1. , MAX ( 0. , CICEN ) )
-      ICEWIND  = MIN ( 1. , MAX ( 0. , ICEWIND ) )
+      ICESLN  = MIN ( 1. , MAX ( 0. , ICESLN ) )
+      ICEWIND = MIN ( 1. , MAX ( 0. , ICEWIND ) )
+      ICESDS  = MIN ( 1. , MAX ( 0. , ICESDS ) )
+      ICESNL  = MIN ( 1. , MAX ( 0. , ICESNL ) )
       FICEN  = CICEN
       GRIDSHIFT=GSHIFT
-      ICE100WIND=ICEWIND
+      ICESCALES(1)=ICESLN 
+      ICESCALES(2)=ICEWIND
+      ICESCALES(3)=ICESNL
+      ICESCALES(4)=ICESDS
       CMPRTRCK=TRCKCMPR
       CICE0  = MIN ( CICEN , MAX ( 0. , CICE0 ) )
       FICEL  = LICE
@@ -2309,11 +2332,6 @@
 !/BT4          WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
 !/BT4                            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
 !/BT4                            BOTROUGHMIN, BOTROUGHFAC
-!/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
-!/IS2          WRITE (NDSO,2948) ISC1, IS2BACKSCAT, IS2BREAK, IS2DUPDATE,  &
-!/IS2                    IS2DISP, IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2,   &
-!/IS2                    IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
-!/IS2                    IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1
 !/DB1          IF ( BJFLAG ) THEN
 !/DB1              WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
 !/DB1            ELSE
@@ -2347,14 +2365,24 @@
 !/IG1                    IGFIXEDDEPTH, IGEMPIRICAL 
 !
 !/IC2         WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
-!/IC2                          IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS
+!/IC2                    IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS,  &
+!/IC2                    IC2DMAX
+!
 !/IC3         WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
 !/IC3                          IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
 !/IC3                          IC2VISC, IC2TURBS, IC3CHENG,           &
 !/IC3                          USECGICE, IC3HILIM, IC3KILIM,          &
 !/IC3                          IC3HICE, IC3VISC, IC3DENS, IC3ELAS
-
+!
 !/IC4         WRITE(NDSO,NML=SIC4)
+!
+!/IS1          WRITE (NDSO,2946) IS1C1, IS1C2
+!
+!/IS2          WRITE (NDSO,2948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK,  &
+!/IS2                    IS2DUPDATE, IS2FLEXSTR, IS2DISP,  IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2,   &
+!/IS2                    IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
+!/IS2                    IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1, IS2ANDISB, &
+!/IS2                    IS2ANDISE, IS2ANDISD, IS2ANDISN
 
 !
         IF ( FLCOMB ) THEN
@@ -2363,7 +2391,8 @@
                                 WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
                                 STDX, STDY, STDT, ICEHMIN, ICEHFAC,   &
-                                ICEHINIT, ICEDISP, ICEWIND, ICEHDISP, &
+                                ICEHINIT, ICEDISP, ICEHDISP,          &
+                                ICESLN, ICEWIND, ICESNL, ICESDS,      &
                                 ICEDDISP,ICEFDISP, NOLEAP, TRCKCMPR
         ELSE
           WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
@@ -2371,7 +2400,8 @@
                                 WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
                                 RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
                                 STDX, STDY, STDT,  ICEHMIN, ICEHFAC,  &
-                                ICEHINIT, ICEDISP, ICEWIND, ICEHDISP, &
+                                ICEHINIT, ICEDISP, ICEHDISP,          &
+                                ICESLN, ICEWIND, ICESNL, ICESDS,      &
                                 ICEDDISP, ICEFDISP, NOLEAP, TRCKCMPR
           END IF
 !
@@ -3917,6 +3947,7 @@
 !/IC2       IC2PARS(5)=IC2SMOOTH
 !/IC2       IC2PARS(6)=IC2VISC
 !/IC2       IC2PARS(7)=IC2TURBS
+!/IC2       IC2PARS(8)=IC2DMAX
 !
 !/IC3       IC3PARS(:)=0.
 !/IC3       IC3PARS(1)=IC3MAXTHK
@@ -3943,44 +3974,7 @@
 !/IS2      IS2PARS(1) = ISC1
 !/IS2      IS2PARS(2) = IS2BACKSCAT
 !/IS2      IS2PARS(3)=0.
-!/IS2      IF (IS2BREAK) IS2PARS(3)=1.
-!/IS2      IS2PARS(4)=IS2C2
-!/IS2      IS2PARS(5)=IS2C3
-!/IS2      IS2PARS(6)=0.
-!/IS2      IF (IS2DISP) IS2PARS(6)=1.
-!/IS2      IS2PARS(7)=IS2DAMP
-!/IS2      IS2PARS(8)=IS2FRAGILITY
-!/IC2       IC2PARS(4)=IC2REYNOLDS
-!/IC2       IC2PARS(5)=IC2SMOOTH
-!/IC2       IC2PARS(6)=IC2VISC
-!/IC2       IC2PARS(7)=IC2TURBS
-!
-!/IC3       IC3PARS(:)=0.
-!/IC3       IC3PARS(1)=IC3MAXTHK
-!/IC3       IC3PARS(2)=IC2TURB
-!/IC3       IC3PARS(3)=IC2ROUGH
-!/IC3       IC3PARS(4)=IC2REYNOLDS
-!/IC3       IC3PARS(5)=IC2SMOOTH
-!/IC3       IC3PARS(6)=IC2VISC
-!/IC3       IC3PARS(7)=IC2TURBS
-!/IC3       IC3PARS(8)=IC3MAXCNC
-!/IC3       IF (IC3CHENG) IC3PARS(9)=1.0
-!/IC3       IC3PARS(10)=IC3HILIM
-!/IC3       IC3PARS(11)=IC3KILIM
-!/IC3       IF (USECGICE) IC3PARS(12)=1.0
-!/IC3       IC3PARS(13)=IC3HICE
-!/IC3       IC3PARS(14)=IC3VISC
-!/IC3       IC3PARS(15)=IC3DENS
-!/IC3       IC3PARS(16)=IC3ELAS
-!
-!/IC4      IC4PARS(1)=IC4METHOD
-!/IC4      IC4_KI=IC4KI
-!/IC4      IC4_FC=IC4FC
-!
-!/IS2      IS2PARS(1) = ISC1
-!/IS2      IS2PARS(2) = IS2BACKSCAT
-!/IS2      IS2PARS(3)=0.
-!/IS2      IF (IS2BREAK) IS2PARS(3)=1.
+!/IS2      IF (IS2BREAK) IS2PARS(3)=1. 
 !/IS2      IS2PARS(4)=IS2C2
 !/IS2      IS2PARS(5)=IS2C3
 !/IS2      IS2PARS(6)=0.
@@ -3998,6 +3992,14 @@
 !/IS2      IS2PARS(16)=IS2BREAKE
 !/IS2      IS2PARS(17)=IS2BREAKF
 !/IS2      IS2PARS(18)=IS2WIM1
+!/IS2      IS2PARS(19)=IS2FLEXSTR
+!/IS2      IS2PARS(20)=0.
+!/IS2      IF (IS2ISOSCAT) IS2PARS(20)=1.
+!/IS2      IS2PARS(21)=IS2ANDISD
+!/IS2      IS2PARS(22)=IS2ANDISN
+!/IS2      IS2PARS(23)=0.
+!/IS2      IF (IS2ANDISB) IS2PARS(23)=1.
+!/IS2      IS2PARS(24)=IS2ANDISE
 !
 ! 9.d Estimates shoreline direction for reflection
 !     and shoreline treatment in general for UNST grids. 
@@ -4813,13 +4815,14 @@
 !/IS2 947 FORMAT  (/'  Ice scattering ',A,/ &
 !/IS2              ' --------------------------------------------------')
 !/IS2 948 FORMAT  ('  IS2 Scattering ... '/&
-!/IS2              '        scattering coefficient       : ',F6.2/ &
+!/IS2              '        scattering coefficient       : ',F5.2/ &
 !/IS2              '        0: no back-scattering        : ',F5.2/ &
+!/IS2              '     TRUE: istropic back-scattering  : ',L3/ &
 !/IS2              '     TRUE: update of ICEDMAX         : ',L3/ &
 !/IS2              '     TRUE: keeps updated ICEDMAX     : ',L3/ &
 !/IS2              '     TRUE: uses Robinson-Palmer disp.: ',L3/ &
-!/IS2              '        attenuation                  : ',F3.1/ &
-!/IS2              '        fragility                    : ',F4.2/ &
+!/IS2              '        attenuation                  : ',F5.2/ &
+!/IS2              '        fragility                    : ',F5.2/ &
 !/IS2              '        minimum floe size in meters  : ',F5.2/ &
 !/IS2              '        pack scattering coef 1       : ',F5.2/ &
 !/IS2              '        pack scattering coef 2       : ',F5.2/ &
@@ -4829,16 +4832,26 @@
 !/IS2              '        creep D coefficient          : ',F5.2/ &
 !/IS2              '        creep N power                : ',F5.2/ &
 !/IS2              '        elastic energy factor        : ',F5.2/ &
-!/IS2              '        factor for ice breakup       : ',F5.2)
+!/IS2              '        factor for ice breakup       : ',F5.2/ &
+!/IS2              '        IS2WIM1                      : ',F5.2/ &
+!/IS2              '        flexural strength            : ',E9.3/ &
+!/IS2              '        anelastic dissipation        : ',L3/ &
+!/IS2              '        energy of activation         : ',F5.2/ &
+!/IS2              '        anelastic coefficient        : ',E11.3/ &
+!/IS2              '        anelastic exponent           : ',F5.2)
 !/IS2 2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', IS2BACKSCAT =',E9.3,   &
-!/IS2               ', IS2BREAK =',L3,', IS2DUPDATE =',L3,','/      &
-!/IS2               '       IS2DISP =',L3,', IS2DAMP =',F3.1,       &
+!/IS2               ', IS2ISOSCAT =',L3,', IS2BREAK =',L3,          &
+!/IS2               ', IS2DUPDATE =',L3,','/                        &
+!/IS2               '       IS2FLEXSTR =',E11.3,', IS2DISP =',L3,   &
+!/IS2               ', IS2DAMP =',F3.1,       &
 !/IS2               ', IS2FRAGILITY =',F4.2,', IS2DMIN =',F5.2,','/ &
 !/IS2               '       IS2C2 =',F12.8,', IS2C3 =',F8.4,        &
 !/IS2               ', IS2CONC =',F5.1,', IS2CREEPB =',E11.3,','/   &
 !/IS2               '       IS2CREEPC =',F5.2,', IS2CREEPD =',F5.2, &
 !/IS2               ', IS2CREEPN =',F5.2,', IS2BREAKE =',F5.2,      &
-!/IS2               ', IS2BREAKF =',F5.2,', IS2WIM1 =',F5.2,' /')
+!/IS2               ', IS2BREAKF =',F5.2,', IS2WIM1 =',F5.2,','/    &
+!/IS2               ', IS2ANDISB =',L3,', IS2ANDISE =',F5.2,        &
+!/IS2               ', IS2ANDISD =',E11.3,', IS2ANDISN=',F5.2, ' /')
 !
   950 FORMAT (/'  Propagation scheme : '/                             &
                ' --------------------------------------------------')
@@ -4949,12 +4962,13 @@
                ', IGSTERMS = ',I2,', IGBCOVERWRITE =', L3,','/        & 
                '        IGSWELLMAX =', L3,', IGMAXFREQ =',F6.4,       &
                ', IGSOURCEATBP = ',I2,', IGKDMIN = ',F6.4,','/        &
-               '        IGFIXEDDEPTH = ',F6.2', IGEMPIRICAL = ',F8.6,' /')
+               '        IGFIXEDDEPTH = ',F6.2,', IGEMPIRICAL = ',F8.6,' /')
 !
- 2978 FORMAT ( '  &SIC2  IC2DISPER =',L3,', IC2TURB =',F8.2,          &
+ 2978 FORMAT ( '  &SIC2  IC2DISPER =',L3,', IC2TURB =',F6.2,          &
                ', IC2ROUGH  =',F10.6,','/                             &
                '        IC2REYNOLDS = ',F10.1,', IC2SMOOTH = ',F10.1, & 
-               ', IC2VISC =',F10.3,', IC2TURBS =',F8.2,' /')
+               ', IC2VISC =',F6.3,','/                                &
+               ',       IC2TURBS =',F8.2,', IC2DMAX =',F5.3,' /')
 !
  2979 FORMAT ( '  &SIC3 IC3MAXTHK =',F6.2, ', IC3MAXCNC =',F6.2,','/  &
                '        IC2TURB =',F8.2,                              &
@@ -4978,9 +4992,11 @@
                '        FACBERG =',F4.1,', GSHIFT = ',E11.3,          &
                      ', STDX = ' ,F7.2,', STDY =',F7.2,','/           &
                '        STDT =', F8.2,                                &
-                     ', ICEHMIN = ',F5.2,', ICEHFAC = ',F5.2,','/     &
-               '        ICEHINIT = ',F5.2,', ICEDISP = ',L3,          &
-                     ', ICEWIND = ',F6.2,', ICEHDISP = ',F5.2,','/    &
+                     ', ICEHMIN =',F5.2,', ICEHFAC =',F5.2,','/       &
+               '        ICEHINIT =',F5.2,', ICEDISP =',L3,            &
+                     ', ICEHDISP =',F5.2,','/                         &
+               '        ICESLN = ',F6.2,', ICEWIND = ',F6.2,          &
+                     ', ICESNL = ',F6.2,', ICESDS = ',F5.2,','/       &
                '        ICEDDISP = ',F5.2,', ICEFDISP = ',F5.2,       &
                      ', NOLEAP = ',L3,' , TRCKCMPR = ',L3,' /')
 !

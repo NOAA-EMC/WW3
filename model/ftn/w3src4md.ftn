@@ -1340,6 +1340,8 @@
           IF (INIUSTAR.EQ.IUSTAR.AND.INIALPHA.EQ.IALPHA.AND.INILEVTAIL.EQ.ILEVTAIL.AND. &
               INZZALP.EQ.ZZALP.AND.INGRAV.EQ.GRAV.AND.INKAPPA.EQ.KAPPA) THEN 
             NOFILE=.FALSE.
+          ELSE 
+            CLOSE(993)
             END IF
           END IF
         END IF 
@@ -1411,7 +1413,7 @@
             END DO
           END DO
         DEALLOCATE(W)
-        OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR)
+        OPEN (993,FILE=FNAMETAB,FORM='UNFORMATTED',IOSTAT=IERR,STATUS='UNKNOWN')
         WRITE(993) IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
         WRITE(993) TAUHFT(0:IUSTAR,0:IALPHA)
         WRITE(993) TAUHFT2
@@ -1605,9 +1607,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, RADE
+      USE CONSTANTS,ONLY: GRAV, DAIR, DWAT, PI, TPI, RADE
       USE W3GDATMD, ONLY: NSPEC, NTH, NK, SSDSBR, DDEN,              &
-                          SSDSC, EC2, ESC,                           &
+                          SSDSC, EC2, ES2, ESC,                      &
                           SIG, SSDSP, ECOS, ESIN, DTH, DSIP,         &
                           SSDSISO, SSDSDTH, SSDSBR2, SSDSBM,         &
                           SSDSBRFDF, SSDSBCK, SSDSBINT, IKTAB, DCKI, &
@@ -1642,7 +1644,6 @@
       INTEGER                 :: NSMOOTH(NK)
       REAL                    :: COSWIND, ASUM, SDIAGISO
       REAL                    :: COEF1, COEF2, COEF3, COEF4(NK)
-      REAL                    :: MSSLONG(NK,NTH)
       REAL                    :: FACTURB, DTURB, BREAKFRACTION
       REAL                    :: RENEWALFREQ, EPSR
       REAL                    :: S1(NK), E1(NK)
@@ -1658,7 +1659,9 @@
       REAL                    :: BTHS(NSPEC)  !smoothed saturation spectrum  
       REAL                    :: SBK(NSPEC)  
       INTEGER                 :: IMSSMAX(NK)   
-      REAL                    :: SBKT(NK), MSSSUM(NK), FACHF, MSSSUMC, MSSSUMS  
+      REAL                    :: SBKT(NK), MSSSUM(NK,5), FACHF
+      REAL                    :: MSSLONG(NK,NTH)
+      REAL                    :: MSSPCS, MSSPC2, MSSPS2, MSSP, MSSD, MSSTH
       REAL                    :: MICHE, X
 !/T0      REAL                    :: DOUT(NK,NTH)
       REAL                    :: QB(NK), S2(NK)
@@ -1676,11 +1679,11 @@
 !     within the computation, but these are helping with some bugs
 !     found in certain compilers
       NSMOOTH=0
-      MSSLONG=0.;S1=0.; E1=0.
+      S1=0.; E1=0.
       NTIMES=0;IKSUP=0;IMSSMAX=0
       DK=0.; HS=0.; KBAR=0.; DCK=0.; EFDF=0.
       BTH0=0.; BTH=0.; BTH0S=0.
-      BTHS=0.; SBK=0.; SBKT=0.; MSSSUM=0.
+      BTHS=0.; SBK=0.; SBKT=0.; MSSSUM(:,:)=0.
 !/T0  DOUT=0.
       QB=0.; S2=0.;PB=0.; PB2=0.
 
@@ -1728,37 +1731,60 @@
             IF (SSDSC(8).GT.0) THEN 
               IKC = MAX(1,IK-DIKCUMUL)
               IMSSMAX (IK) = 1
-              MSSSUM (IK) = 0.
-              MSSSUMC  = 0.
-              MSSSUMS  = 0.
-              DO ITH=1,NTH            
+              MSSP   = 0.
+              MSSPC2 = 0.
+              MSSPS2 = 0.
+              MSSPCS = 0.
+!
+! Sums the contributions to the directional MSS for all ITH   
+!
+              DO ITH=1,NTH         
                 IS=ITH+(IK-1)*NTH
-                MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
-                       A(IS) * DDEN(IK) / CG(IK) 
-                MSSSUMC = MSSSUMC +MSSLONG(IK,ITH)*(2*EC2(ITH)-1)
-                MSSSUMS = MSSSUMS +MSSLONG(IK,ITH)*(2*ESC(ITH))
-                MSSSUM  (IK) = MSSSUM (IK) +MSSLONG(IK,ITH)
+                MSSLONG(IK,ITH) = K(IK)**2 * A(IS) * DDEN(IK) / CG(IK) ! contribution to MSS
+                MSSPC2 = MSSPC2 +MSSLONG(IK,ITH)*EC2(ITH)
+                MSSPS2 = MSSPS2 +MSSLONG(IK,ITH)*ES2(ITH)
+                MSSPCS = MSSPCS +MSSLONG(IK,ITH)*ESC(ITH)
+                MSSP   = MSSP +MSSLONG(IK,ITH)
                 END DO
-              IMSSMAX (IK)=1+NINT(ATAN2(MSSSUMS,MSSSUMC)/2)
+!
+! Now sums over IK
+! 
+              MSSSUM  (IK:NK,1) = MSSSUM (IK:NK,1) +MSSP
+              MSSSUM  (IK:NK,3) = MSSSUM (IK:NK,3) +MSSPC2
+              MSSSUM  (IK:NK,4) = MSSSUM (IK:NK,4) +MSSPS2
+              MSSSUM  (IK:NK,5) = MSSSUM (IK:NK,5) +MSSPCS
+!
+! Direction of long wave mss summed up to IK       
+!
+              MSSD=0.5*(ATAN2(2*MSSSUM(IK,5),MSSSUM(IK,3)-MSSSUM(IK,4)))
+              IF (MSSD.LT.0) MSSD = MSSD + PI
+              IMSSMAX (IK)=1+NINT(MSSD *NTH/TPI)
+!
+! mss along perpendicular direction        
+!
+              MSSSUM  (IK,2)  = MSSSUM(IK,4)*COS(MSSD)**2   &
+                       -2*MSSSUM(IK,5)*SIN(MSSD)*COS(MSSD)+MSSSUM(IK,3)*SIN(MSSD)**2 
+
+
               END IF
             DO ITH=1,NTH            ! partial integration
               IS=ITH+(IK-1)*NTH
 !
 ! Testing straining effect of long waves on short waves
-! From Longuet-Higgins and Stewart (1963) the amplitude modulation 
-! in deep water is equal to the long wave slope k*a 
-! Here we assume that the saturation modulated as (1 + 5.5 * ka * cos(th1-th2))
-! For a random modulating wave train this gives (1 + 5.5 sqrt ( mss_th1)) 
+! extended from Longuet-Higgins and Stewart (JFM 1960, eq. 2.27) the amplitude modulation 
+! in deep water is equal to the long wave slope k*a cos(theta1-theta2)
+! Here we assume that the saturation is modulated as (1 + SSDSC(8) *  sqrt(mss_theta) )
+! where mss_theta is the mss in direction ITH. 
+! 
+! Note: SSDSC(8) is 2 times the MTF: close to 4x2=8 for very small ka but can be 20 or larger for ak~0.1
 !
               IF (SSDSC(8).GT.0) THEN 
-                MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
-                       A(IS) * DDEN(IK) / CG(IK) 
-!               MSSLONG(IK:NK,ITH) = MSSLONG(IK:NK, ITH) + K(IK)**2 *  &
-!                       DOT_PRODUCT(A(IS0+1:IS0+NTH),         &
-!                       CSHIFT(EC2,ITH-1,1))  * DDEN(IK) / CG(IK)
-                
-                FACSTRAIN=1+SSDSC(8)*SQRT(MSSSUM(IKC)*EC2(1+ABS(ITH-IMSSMAX (IKC))))
-
+!
+                MSSTH=(MSSSUM(IKC,1)-MSSSUM(IKC,2))*EC2(1+ABS(ITH-IMSSMAX (IKC))) &
+                        +MSSSUM(IKC,2)*ES2(1+ABS(ITH-IMSSMAX (IKC)))
+!
+                FACSTRAIN=1+SSDSC(8)*SQRT(MSSTH)
+!WRITE(998,*) IK,ITH,IKC, IMSSMAX (IKC), MSSTH, MSSSUM(IKC,1:5),EC2(1+ABS(ITH-IMSSMAX (IKC))),FACSTRAIN
                 FACSAT=SIG(IK)*K(IK)**3*DTH*FACSTRAIN
                 END IF
 

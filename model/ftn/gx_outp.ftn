@@ -1015,8 +1015,8 @@
 !/BTX                CALL W3SBTX
 
 !/IC1                CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
-!/IC2                CALL W3SIC2 ( A, DEPTH, ICETHICK ,CG,  WN, IX, IY, XBT, DIA, WN_R, &
-!/IC2                              CG_ICE, ALPHA_LIU, R, ICEF )
+!/IC2                CALL W3SIC2 ( A, DEPTH, ICETHICK, ICEF ,CG,  WN, IX, IY, XBT, DIA, WN_R, &
+!/IC2                              CG_ICE, ALPHA_LIU, R )
 !/IC3                CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 !/IC4                CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA ) 
 

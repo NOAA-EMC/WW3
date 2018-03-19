@@ -11,10 +11,9 @@ by waves to be able to update a maximum floe size diameter. Finally a creep-base
 combined with the scattering.  
 
 
-The scattering source term currently uses a back-scatter that is uniform in 
-all directions,  giving the action-conserving formulation, 
+The scattering source term is defined by the scattering coefficient $\beta_{\mathrm{is},\mathrm{MIZ}}(\theta-\theta')$ which by default is isotropic, but can be given any directional dependency by setting {\code IS2ISOSCAT=.FALSE.} in namelist {\F SIS2}. The source term is thus,
 \begin{equation}
- \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is},\mathrm{MIZ}} [s_\mathrm{scat}  N(k,\theta')-N(k,\theta)] d\theta'  .
+ \frac{S_{\mathrm{is}}(k,\theta)}{\sigma} =  \int_0^{2\pi}\beta_{\mathrm{is},\mathrm{MIZ}}(\theta-\theta') [s_\mathrm{scat}  N(k,\theta')-N(k,\theta)] d\theta'  .
  \end{equation}
 where $s_\mathrm{scat}$ is set to 1.0 by default but can be modified by 
 {\code IS2BACKSCAT} in namelist {\F SIS2}. \\
@@ -29,9 +28,9 @@ such ice-water interfaces. Neglecting multiple reflections, the scattering param
 per unit time as if the ice-covered part of a grid cell was a succession of floes of mean diameter $D_{m}$ with a partial 
 reflection $\alpha_n(\sigma,h)$ for each floe, giving, 
 \begin{equation}
-\beta_{\mathrm{is},\mathrm{MIZ}}=\mathrm{ICE}~c_g \alpha_n(\sigma,h) / D_{m},
+\beta_{\mathrm{is},\mathrm{MIZ}}=c_i~c_g \alpha_n(\sigma,h) / D_{m},
  \end{equation}
-where ICE is the ice concentration. \\
+where $c_i$ is the ice concentration. \\
  
 
 The estimation of the mean floe diameter $D_m$ is based on an assumed power law for the number of 

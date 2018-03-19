@@ -6,12 +6,13 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
-!/                  |           F. Ardhuin              |
+!/                  |     F. Ardhuin & G. Boutin        |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         10-Mar-2014 |
+!/                  | Last update :         05-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01 )
+!/    05-Jan-2018 : Addition of floe size effect        ( version 6.04 )
 !/
 !/    For updates see W3SIC1 documentation.
 !/
@@ -27,11 +28,12 @@
 !          Includes generalization by F. Ardhuin with viscous and tubulent 
 !          boundary layers. That part is activating by setting namelist 
 !          parameters that define the under-ice roughness and a friction 
-!          coefficient. For example: &IC2 IC2TURB = 1. , IC2ROUGH =0.02
+!          coefficient. For example: &IC2 IC2TURB = 1. , IC2ROUGH =0.0001
 !
 !        References for Subtype 2:
 !              Liu et al.    1991: JGR 96 (C3), 4605-4621
-!              Liu and Mollo 1988: JPO 18       1720-1712 
+!              Liu and Mollo 1988: JPO 18       1720-1712
+!              Stopa et al.  2016: The Cryosphere 
 !
 !  2. Variables and types :
 !
@@ -67,16 +69,16 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3SIC2 (A, DEPTH, ICEH, CG, WN, IX, IY, S, D, WN_R, &
-                         CG_ICE, ALPHA, R, ICEF)
+      SUBROUTINE W3SIC2 (A, DEPTH, ICEH, ICEF, CG, WN, IX, IY, S, D, WN_R, &
+                         CG_ICE, ALPHA, R)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           E. Rogers               |
 !/                  |           S. Zieger               |
-!/                  |           F. Ardhuin              |
+!/                  |    F. Ardhuin & G. Boutin         |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         16-Feb-2016 |
+!/                  | Last update :         04-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    16-Oct-2012 : Origination.                        ( version 4.04 )
@@ -85,6 +87,7 @@
 !/    10-Mar-2014 : Generalization with turbulent BL    ( version 5.01 )
 !/    16-Feb-2016 : Passes ICEH as parameter            ( version 5.10 )
 !/    02-May-2016 : Call to Liu disp moved to w3srce    ( version 5.10 )
+!/    04-Jan-2018 : Includes floe size dependance       ( version 6.02 )
 !/        FIXME   : Move field input to W3SRCE and provide
 !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
 !/                : versatile for point output processors ww3_outp
@@ -143,7 +146,9 @@
 !
 !     Please note that S is source term for action. 
 !
-!     Notes regarding numerics:
+!     Notes regarding numerics: 
+!     (Note by F. Ardhuin: these may not apply in version 5 thanks to splitting 
+!                          of ice source terms and implicit integration in W3SRCE)
 !     Experiments with constant k_i values suggest that :
 !       for dx=20.0 km, k_i should not exceed 3.5e-6
 !      (assumes 2.7% Hs error in my particular test case is intolerable)
@@ -157,6 +162,9 @@
 !      For reference, ACNFS is 1/12th deg, so delta_latitude=9.25 km.
 !
 !     {put more equations here}
+!
+!     The laminar to turbulent transition is described in 
+!         Stopa et al. (The Cryosphere, 2016). 
 !
 !  3. Parameters :
 !
@@ -174,7 +182,7 @@
 !       CG_ICE  R.A.   I   Group velocities in ice
 !       ALPHA   R.A.   I   Exponential decay rate of energy
 !       R       R.A.   I   Ratio of energy to wave energy without ice
-!       ICEF    R.A.   I   Ice Floe diameter
+!       ICEF    Real   I   Ice Floe diameter
 !
 !       imported via module: 
 !       ICEP2   R.A.   I   Eddy viscosity
@@ -257,12 +265,11 @@
       REAL                    :: D1D(NK)        !In SBT1: D1D was named "CBETA"
       REAL                    :: ICECOEF1, ICECOEF2, ICECONC
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential (spatial) decay rate for amplitude (1/m)
-      ! REAL                    :: WN_R(NK), CG_ICE(NK)
       REAL                    :: VISCM=1.83E-6 ! molecular viscosity of water at freezing
       REAL                    :: PTURB, PVISC, DTURB, DVISC,   & 
                                  SMOOTH, RE, UORB, AORB, EB,   &
                                  DELI1, DELI2, FW, XI, FTURB,  & 
-                                 CG_EFF(NK), WLG_R(NK), SMOOTH_TURB(NK)
+                                 CG_EFF(NK), WLG_R(NK), SMOOTH_DMAX(NK)
       INTEGER                 :: IND, ITH, IS
       LOGICAL                 :: NOICE=.FALSE.
         ! Warning, ALPHA = 2 * WN_I -> Makes WN_I useless, doesnt it ?
@@ -281,6 +288,7 @@
       ICECOEF2 = 0.0
       ICECONC  = 0.0
       CG_EFF = 0.
+      SMOOTH_DMAX(:)=1.
 !       
       IF (INFLAGS2(-7))ICECOEF1 = ICEH
       IF (INFLAGS2(-6))ICECOEF2 = ICEP2(IX,IY)
@@ -353,15 +361,21 @@
 !
 !  UORB and AORB are the variances of the orbital velocity and surface elevation
 ! of the water relative to the ice ... this is only correct if the ice layer 
-! does not move. This should be changed by taking into account DMAX.
-                  IF (R(IK).GT.1.) THEN
-                    UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK) &
+! does not move. This should is changed by taking into account DMAX when IC2DMAX > 0: 
+!
+!/IS2          IF (IC2PARS(8).GT.0) THEN
+!/IS2            WLG_R(IK)=TPI/WN_R(IK)   
+!/IS2            SMOOTH_DMAX(IK)= (0.5*(1+TANH((ICEF-IC2PARS(8)*WLG_R(IK))/(ICEF*0.5))))**2
+!/IS2            END IF
+!
+               IF (R(IK).GT.1.) THEN
+                    UORB = UORB + EB * SMOOTH_DMAX(IK)* SIG(IK)**2 * DDEN(IK) / CG(IK) &
                            / (R(IK)*CG_ICE(IK)/CG(IK))
-                    AORB = AORB + EB             * DDEN(IK) / CG(IK) &
+                    AORB = AORB + EB * SMOOTH_DMAX(IK)             * DDEN(IK) / CG(IK) &
                            / (R(IK)*CG_ICE(IK)/CG(IK)) !deep water only
                   ELSE
-                    UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
-                    AORB = AORB + EB             * DDEN(IK) / CG(IK) !deep water only
+                    UORB = UORB + EB * SMOOTH_DMAX(IK) *SIG(IK)**2 * DDEN(IK) / CG(IK)
+                    AORB = AORB + EB * SMOOTH_DMAX(IK)             * DDEN(IK) / CG(IK) !deep water only
                  END IF
 
                END DO
@@ -386,25 +400,11 @@
              PVISC = 1.
            END IF ! IF (IC2PARS(2).GT.0.)  
 !
-           SMOOTH_TURB=1.
-           
            DO IK=1, NK
-
-             WLG_R(IK)=TPI/WN_R(IK)
-
-!/IS2       IF (IC2PARS(8).GT.0) THEN
-!/IS2                IF (IC2PARS(8)*WLG_R(IK).LT.ICEF) THEN
-!/IS2                SMOOTH_TURB(IK)= TANH((ICEF-IC2PARS(8)*WLG_R(IK)) &
-!/IS2                                 /(ICEF*IC2PARS(9)))
-!/IS2              ELSE
-!/IS2                SMOOTH_TURB(IK)=0
-!/IS2              END IF
-!/IS2        END IF
-
-
 ! WN_R is used here but warning, this is only OK for unbroken ice
              DVISC = IC2PARS(6) * WN_R(IK) * SQRT(VISCM* SIG(IK) / 2.) 
-             D1D(IK) = -1.*(PTURB*MAX(DTURB*SMOOTH_TURB(IK)*SIG(IK)**2,DVISC) + PVISC*DVISC)
+             D1D(IK) = -1.*(PTURB*MAX(DTURB*SIG(IK)**2,DVISC) + PVISC*DVISC) &
+                          *SMOOTH_DMAX(IK)
            END DO
          END IF !  IF (IC2PARS(1).GT.0.5)
 

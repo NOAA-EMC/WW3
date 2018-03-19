@@ -20,7 +20,8 @@ non-zero value, and is based on the field measurements of \cite{art:EHG94}.
 These coefficients can also be made to vary spatially, by setting {\code
 REFMAP} to a non-zero value. In that case ww3\_grid will expect to find a
 extra line after the reading of the water depths and obstructions in
-ww3\_grid.inp.
+ww3\_grid.inp, which will define the map of shoreline slopes. The values in this map 
+are multiplied by the value {\code REFMAP}.
 
 Wave reflection at the shoreline varies from a fraction of a percent to about
 50\% of the incoming wave energy, and may have important consequences for the

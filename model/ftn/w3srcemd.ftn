@@ -7,7 +7,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         13-Dec-2015 |
+!/                  | Last update :         07-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    For updates see subroutine.
@@ -64,7 +64,7 @@
 !/                  |           H. L. Tolman            |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         30-Jul-2017 |
+!/                  | Last update :         07-Jan-2018 |
 !/                  +-----------------------------------+
 !/
 !/    06-Dec-1996 : Final FORTRAN 77                    ( version 1.18 )
@@ -109,8 +109,9 @@
 !/    01-Avr-2014 : Adding ice thickness and floe size  ( version 4.18 )
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    27-Aug-2015 : Adding inputs to function W3SIS2    ( version 5.10 )
-!/    13-Dec-2015 : Exact integration of ice terms      ( version 5.10 )
+!/    13-Dec-2015 : Implicit integration of Sice (F.A.) ( version 5.10 )
 !/    30-Jul-2017 : Adds TWS in interface               ( version 6.XX )
+!/    07-Jan-2018 : Allows variable ice scaling (F.A.)  ( version 6.04 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -346,7 +347,7 @@
                           DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
                           XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
                           FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
-                          ICE100WIND, IICESMOOTH
+                          ICESCALES, IICESMOOTH
 !/REF1 USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
@@ -437,11 +438,13 @@
 !/NNT      INTEGER, SAVE           :: NDSD = 89, NDSD2 = 88, J
       REAL                    :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
                                  HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI 
+! Scaling factor for SIN, SDS, SNL
+      REAL                    :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS  
       REAL                    :: EMEAN, FMEAN, WNMEAN, AMAX, CD, Z0, SCAT,    &
                                  SMOOTH_ICEDISP
       REAL                    :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2,&
                                  R(NK)
-      DOUBLE PRECISION        :: ATT
+      DOUBLE PRECISION        :: ATT, ISO
 !/ST1      REAL                    :: FH1, FH2
 !/ST2      REAL                    :: FHTRAN, DFH, FACDIA, FACPAR
 !/ST3      REAL                    :: FMEANS, FH1, FH2
@@ -501,6 +504,10 @@
 !
       DEPTH  = MAX ( DMIN , D_INP )
       IKS1 = 1
+      ICESCALELN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(1))) 
+      ICESCALEIN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(2))) 
+      ICESCALENL = MAX(0.,MIN(1.,1.-ICE*ICESCALES(3))) 
+      ICESCALEDS = MAX(0.,MIN(1.,1.-ICE*ICESCALES(4))) 
 !/IG1! 
 !/IG1! Does not integrate source terms for IG band if IGPARS(12) = 0. 
 !/IG1! 
@@ -799,18 +806,18 @@
 !     For input and dissipation calculate the fraction of the ice-free 
 !     surface. In the presence of ice, the effective water surface
 !     is reduce to a fraction of the cell size free from ice, and so is
-!     input and dissipation:
-!             SIN = (1-ICE)*SIN and SDS=(1-ICE)*SDS ------------------ *
+!     input :
+!             SIN = (1-ICE)**ISCALEIN*SIN and SDS=(1-ICE)**ISCALEDS*SDS ------------------ *
 !     INFLAGS2(4) is true if ice concentration was ever read during  
 !             this simulation
         IF ( INFLAGS2(4) ) THEN
-          VSLN(1:NSPECH) = (MAX(0.,MIN(1.,1.-ICE)))**2 * VSLN(1:NSPECH)
-          VSIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE*ICE100WIND)) & 
-                           * VSIN(1:NSPECH)
-          VDIN(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE*ICE100WIND)) & 
-                           * VDIN(1:NSPECH)
-          VSDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VSDS(1:NSPECH)
-          VDDS(1:NSPECH) = MAX(0.,MIN(1.,1.-ICE)) * VDDS(1:NSPECH)
+          VSNL(1:NSPECH) = ICESCALENL * VSNL(1:NSPECH)
+          VDNL(1:NSPECH) = ICESCALENL * VDNL(1:NSPECH)
+          VSLN(1:NSPECH) = ICESCALELN * VSLN(1:NSPECH)
+          VSIN(1:NSPECH) = ICESCALEIN * VSIN(1:NSPECH)
+          VDIN(1:NSPECH) = ICESCALEIN * VDIN(1:NSPECH)
+          VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
+          VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
           END IF
 !
 !/ST4        NKI    = MAX ( 2 , MIN ( NKH1 ,                           &
@@ -826,7 +833,7 @@
 !/BS1          VS(IS) = VS(IS) + VSBS(IS)
 !/BSX          VS(IS) = VS(IS) + VSBS(IS)
 !/XXX          VS(IS) = VS(IS) + VSXX(IS)
-          VD(IS) =            VDIN(IS) + VDNL(IS)  &
+          VD(IS) =  VDIN(IS) + VDNL(IS)  &
                  + VDDS(IS) + VDBT(IS) 
 !/ST6          VD(IS) = VD(IS) + VDWL(IS)
 !/DB1          VD(IS) = VD(IS) + VDDB(IS)
@@ -1091,13 +1098,11 @@
       PHINL =DWAT*GRAV*PHINL /DTG  
       PHIBBL=DWAT*GRAV*PHIBBL/DTG        
 ! 
-! 9.b  Adds ice scattering and dissipation ---------------------------- *
+! 10.1  Adds ice scattering and dissipation: implicit integration---------------- *
 !     INFLAGS2(4) is true if ice concentration was ever read during  
 !             this simulation
 !
-
       IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN 
-
          IF (IICEDISP) THEN 
            ICECOEF2 = 1E-6
            CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
@@ -1116,15 +1121,15 @@
       WN_R=WN1
       CG_ICE=CG1
      END IF
-
+!
      R(:)=1 ! In case IC2 is defined but not IS2
-
+!
 !/IC1      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !/IS2      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, & 
 !/IS2                              VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
 
-!/IC2                CALL W3SIC2 ( SPEC, DEPTH, ICEH ,CG1,  WN1, IX, IY, VSIC, VDIC, WN_R, &
-!/IC2                              CG_ICE, ALPHA_LIU, R, ICEF)
+!/IC2                CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
+!/IC2                              IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
 !/IC3      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 !/IC4      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 !
@@ -1136,36 +1141,49 @@
    DO IK=1,NK
      IS = 1+(IK-1)*NTH 
 !
-! First part of ice term integration: dissipation part ATT. 
+! First part of ice term integration: dissipation part 
 !
      ATT=1.
 !/IC1             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC2             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC3             ATT=EXP(ICE*VDIC(IS)*DTG)
 !/IC4             ATT=EXP(ICE*VDIC(IS)*DTG)
-!/IS1             ATT=ATT*EXP(VDIR(IS)*DTG)
-!/IS2             IF (IS2PARS(2).EQ.0) THEN 
-!/IS2               ATT=ATT*EXP((ICE*VDIR2(IS)+VDIR(IS))*DTG)    ! Reminder : IS2PARS(2) = IS2BACKSCAT
+!/IS1             ATT=ATT*EXP(ICE*VDIR(IS)*DTG)
+!/IS2             ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
+!/IS2             IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
+!/IS2!
+!/IS2! If there is not re-distribution in directions the scattering is just an attenuation 
+!/IS2!
+!/IS2               ATT=ATT*EXP((ICE*VDIR(IS))*DTG) 
+!/IS2               END IF   
              SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
-!/IS2             ELSE 
 !
-! Second part of ice term integration: scattering (only if there is back-scattering, i.e. IS2PARS(2).NE.0 ) 
+! Second part of ice term integration: scattering including re-distribution in directions
 !
-!/IS2               SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-!/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*EXP(ICE*VDIR2(IS)*DTG)*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
-!/IS2               ATT = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
-!/IS2! Warning, the following line is only correct for isotropic diffusion               
-!/IS2! in that case the spectrum relaxes exponentially to an isotropic spectrum              
-!/IS2               SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT &
-!/IS2                      +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ATT)*SCAT
-!/IS2!              !the commented lines give the general solution with matrix exponentials    
-!/IS2!              ! ... to be tested ..    
-!/IS2               !SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
-!/IS2               !SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
-!/IS2               !   REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
-!/IS2               !                        *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
+!/IS2             IF (IS2PARS(2).GE.0) THEN 
+!/IS2               IF (IS2PARS(20).GT.0.5) THEN 
+!/IS2!
+!/IS2! Case of isotropic back-scatter: the directional spectrum is decomposed into 
+!/IS2!               - an isotropic part (ISO): eigenvalue of scattering is 0
+!/IS2!               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
+!/IS2!
+!/IS2                 SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
+!/IS2                 ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH 
+!/IS2                 SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
+!/IS2                      +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
+!/IS2               ELSE 
+!/IS2!
+!/IS2! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002) 
+!/IS2!              
+!/IS2                 SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
+!/IS2                 SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
+!/IS2                 REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
+!/IS2                                       *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
+!/IS2                 END IF
 !/IS2               END IF
- 
+! 
+! 10.2  Fluxes of energy and momentum due to ice effects
+!
              FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
              FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
              DO ITH = 1,NTH
@@ -1186,7 +1204,7 @@
 !
 ! 
 ! - - - - - - - - - - - - - - - - - - - - - -
-! 9.c Sea state dependent stress routine calls
+! 11. Sea state dependent stress routine calls
 ! - - - - - - - - - - - - - - - - - - - - - -
 !Note the Sea-state dependent stress calculations are primarily for high-wind
 !conditions (>10 m/s).  It is not recommended to use these at lower wind
@@ -1211,7 +1229,7 @@
 !/FLD2          CHARN = AALPHA 
 !/FLD2      ENDIF
 !
-! 10 includes shoreline reflection --------------------------------------------- *
+! 12. includes shoreline reflection --------------------------------------------- *
 !
 !/REF1        IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN 
 !/REF1          CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
