@@ -108,7 +108,7 @@ CONTAINS
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           F. Ardhuin              |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :          05-Dec-2011|
+!/                  | Last update :          25-Aug-2011|
 !/                  +-----------------------------------+
 !/
 !/    15-Feb-2008 : Origination.                        ( version 3.13 )
@@ -241,7 +241,7 @@ CONTAINS
 !
         CASE (2)
           J = J+ 1
-          READ(LINE,*)  Ind,eltype,ntag,tags,TRIGPTMP1(J,1:3) 
+          READ(LINE,*)  Ind,eltype,ntag,tags,TRIGPTMP1(J,1), TRIGPTMP1(J,2), TRIGPTMP1(J,3)
           END SELECT
 
         DEALLOCATE(TAGS)
@@ -328,6 +328,121 @@ CONTAINS
       CLOSE(NDS)
       END SUBROUTINE READMSH
 !/--------------------------------------------------------------------/
+
+
+!/ -------------------------------------------------------------------/
+      SUBROUTINE READMSHOBC(NDS, FNAME, TMPSTA, UGOBCOK) 
+!/ ------------------------------------------------------------------- 
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           F. Ardhuin              |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :          14-Mar-2018|
+!/                  +-----------------------------------+
+!/
+!/    14-Mar-2018 : Origination.                        ( version 6.02 )
+!/
+!
+!  1. Purpose :
+!
+!      Reads open boundary information for UNST grids following GMESH type format
+!
+!  2. Method :
+!
+!     Reads an ASCII file
+!
+!  3. Parameters :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       NDS     Int.   I   Data set number used for search.
+!       FNAME   Char*60 I  File name
+!       TMPSTA  Char*60 I/O status map to be updated (for OBC, TMPSTA = 2)
+!       UGOBCOK Logical O   flag for proper reading of OBC file
+!     ----------------------------------------------------------------
+!
+!  4. Subroutines used : NONE
+!
+!  5. Called by :
+!      Name      Type  Module   Description
+!     ----------------------------------------------------------------
+!      W3GRID    Prog.          Model configuration program
+!     ----------------------------------------------------------------
+!
+!  6. Error messages :
+!
+!  7. Remarks :
+!     
+!  8. Structure :
+!
+!  9. Switches :
+!
+! 10. Source code :
+!
+!/ ------------------------------------------------------------------- /
+      USE W3GDATMD, ONLY: NX, NY, CCON , COUNTCON
+      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+      USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+!/S      USE W3SERVMD, ONLY: STRACE
+      
+      IMPLICIT NONE
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      INTEGER, INTENT(IN)                :: NDS
+      CHARACTER(60), INTENT(IN) :: FNAME
+      INTEGER, INTENT(INOUT)    :: TMPSTA(NY,NX)
+      LOGICAL, INTENT(OUT)      :: UGOBCOK
+!/
+!/ local parameters 
+!/      
+      INTEGER                            :: I, IERR
+      INTEGER(KIND=4)                    :: Ind,ntag, INode
+      CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
+      REAL, ALLOCATABLE                  :: TAGS(:)
+      CHARACTER(LEN=120)                 :: LINE
+
+      UGOBCOK=.FALSE.
+
+      OPEN(NDS,FILE = FNAME,STATUS='old')
+      READ (NDS,'(A)') COMSTR
+     IF (COMSTR.EQ.' ') COMSTR = '$'
+      CALL NEXTLN(COMSTR, NDS, NDSE)
+      IERR = 0
+      DO WHILE (IERR.EQ.0)
+        READ (NDS,'(A100)',END=2001,ERR=2002,IOSTAT=IERR) LINE
+        READ(LINE,*,IOSTAT=IERR) Ind,ntag
+        IF (IERR.EQ.0) THEN 
+          ALLOCATE(TAGS(ntag))
+          READ(LINE,*,IOSTAT=IERR) Ind,ntag,TAGS,INODE
+          IF (IERR.EQ.0) THEN 
+            TMPSTA(1,INODE)=2  
+            DEALLOCATE(TAGS)
+          ELSE 
+            GOTO 2001 
+            END IF
+          END IF
+        END DO
+        CLOSE(NDS)
+      UGOBCOK=.TRUE.
+      RETURN
+!
+ 2001 CONTINUE
+      WRITE (NDSE,1001)
+      CALL EXTCDE ( 61 )
+!
+ 2002 CONTINUE
+      WRITE (NDSE,1002) IERR
+      CALL EXTCDE ( 62 )
+ 1001 FORMAT (/' *** WAVEWATCH III ERROR IN READMSHOBC : '/          &
+               '     PREMATURE END OF FILE IN READING ',A/)
+ 1002 FORMAT (/' *** WAVEWATCH III ERROR IN READMSHOBC : '/          &
+               '     ERROR IN READING ',A,'  IOSTAT =',I8/)
+
+      END SUBROUTINE READMSHOBC
+!/ ------------------------------------------------------------------- / 
+
+
 !/ ------------------------------------------------------------------- / 
       SUBROUTINE UG_GETOPENBOUNDARY(TMPSTA,ZBIN,ZLIM)
 !/                  +-----------------------------------+

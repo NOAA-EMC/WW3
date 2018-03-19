@@ -8,7 +8,7 @@
 !/                  |           J. H. Alves             |
 !/                  |            F. Ardhuin             |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         29-May-2014 |
+!/                  | Last update :         14-Mar-2018 |
 !/                  +-----------------------------------+
 !/
 !/    14-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
@@ -95,6 +95,7 @@
 !/    15 Oct-2015 : Change SMC grid input files. JGLi   ( version 5.09 )
 !/    10-Jan-2017 : Changes for US3D and USSP           ( version 6.01 )
 !/    20-Jan-2017 : Bug fix for mask input from file.   ( version 6.02 )
+!/    14-Mar-2018 : Option to read UNST boundary file   ( version 6.02 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -712,9 +713,11 @@
 !/SMC      LOGICAL                 :: UNO3, AVERG 
 !
 !/PR3      REAL                    :: WDTHCG, WDTHTH
-           REAL                    :: UGOBCDEPTH
+!
+           CHARACTER               :: UGOBCFILE*60
+           REAL                    :: UGOBCDEPTH 
            LOGICAL                 :: UGOBCAUTO, EXPFSN, EXPFSPSI,     &
-                                      EXPFSFCT,IMPFSN
+                                      EXPFSFCT,IMPFSN, UGOBCOK
            INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
 !
 !/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV, TAILT1, TAILT2
@@ -774,7 +777,7 @@
 !/SMC                      LvSMC, ISHFT, JEQT,   NBISMC
 ! 
 !/PR3      NAMELIST /PRO3/ CFLTM, WDTHCG, WDTHTH
-           NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH,                     &
+           NAMELIST /UNST/ UGOBCAUTO, UGOBCDEPTH, UGOBCFILE,          &
                            EXPFSN, EXPFSPSI, EXPFSFCT,                &
                            IMPFSN
            NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, & 
@@ -1772,6 +1775,8 @@
 ! initialisation of logical related to unstructured grid
        UGOBCAUTO = .TRUE.
        UGOBCDEPTH= -10.
+       UGOBCOK = .FALSE.
+       UGOBCFILE = ''
        EXPFSN    = .TRUE.
        EXPFSPSI  = .FALSE.
        EXPFSFCT  = .FALSE.
@@ -2343,7 +2348,7 @@
 !/SMC                            AVERG, LvSMC, NBISMC, ISHFT,  JEQT
 !/PR3          WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 !
-        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH,                      &
+        WRITE (NDSO,2956) UGOBCAUTO, UGOBCDEPTH, TRIM(UGOBCFILE),     &
                           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN
 !
         WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
@@ -3169,10 +3174,13 @@
 !/ARC
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 8.  Finalize status maps
-! 8.a Automatic OBC detection for ug grids
+! 8.a Defines open boundary conditions for UNST grids
 !
-      IF (GTYPE.EQ.UNGTYPE.AND.UGOBCAUTO)  &
-        CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
+       J = LEN_TRIM(UGOBCFILE)
+       IF (GTYPE.EQ.UNGTYPE.AND.UGOBCFILE(:J).NE.'')  &
+        CALL READMSHOBC(NDSS,UGOBCFILE,TMPSTA,UGOBCOK)
+       IF ((GTYPE.EQ.UNGTYPE).AND.UGOBCAUTO.AND.(.NOT.UGOBCOK))  &
+          CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
 !
 ! 8.b Determine where to get the data
 !
@@ -3215,7 +3223,7 @@
 !           
 ! ... Check if point in grid.
 !
-            IF (GTYPE.EQ.UNGTYPE.AND.UGOBCAUTO) CYCLE
+            IF (GTYPE.EQ.UNGTYPE.AND.(UGOBCAUTO.OR.UGOBCOK)) CYCLE
             IF (IX.LT.1 .OR. IX.GT.NX .OR.  IY.LT.1 .OR. IY.GT.NY) THEN
                 WRITE (NDSO,981)
                 WRITE (NDSO,*) '       ', IX, IY
@@ -4891,7 +4899,8 @@
 !/PR3 2953 FORMAT ( '  &PRO3 CFLTM =',F5.2,                           &
 !/PR3                      ', WDTHCG = ',F4.2,', WDTHTH = ',F4.2,' /')
 !
- 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,','/    &
+ 2956 FORMAT ( '  &UNST UGOBCAUTO =',L3,', UGOBCDEPTH =', F8.3,        &
+               ', UGOBCFILE=',A,','/                                   &
                '        EXPFSN =',L3,', EXPFSPSI =',L3,', EXPFSFCT =', &
                L3,', IMPFSN =',L3,' /' )
 !

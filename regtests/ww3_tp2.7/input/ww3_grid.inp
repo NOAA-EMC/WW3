@@ -40,7 +40,7 @@ $   not needed for the given switch settings will be skipped
 $   automatically, and the order of the namelists is immaterial.
 $
 $
-  &UNST UGOBCAUTO = F , EXPFSN = T   /
+  &UNST UGOBCAUTO = F , EXPFSN = T, UGOBCFILE='../input/ref1.mshb'   /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1
