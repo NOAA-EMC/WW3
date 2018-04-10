@@ -271,9 +271,9 @@
 !
 ! Variables used in tidal analysis
       DOUBLE PRECISION, ALLOCATABLE   :: ALLTIMES(:)
-!/TIDE      INTEGER                 :: TIDESIZ, K, L
-!/TIDE      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
-!/TIDE      INTEGER                 :: TIDALSTUFF
+      INTEGER                 :: TIDESIZ, K, L
+      REAL, ALLOCATABLE       :: TIDALSTUFFA(:)
+      INTEGER                 :: TIDALSTUFF
 !/TIDE      INTEGER                       :: TIDE_NDEF, TIDE_ITREND
 !/TIDE      DOUBLE PRECISION, ALLOCATABLE :: SDEV0(:), SDEV(:), RMSR(:), &
 !/TIDE                                       RMSR0(:), RMSRP(:), RESMAX(:)
@@ -400,65 +400,65 @@
          ! Read namelist
          CALL W3NMLPRNC (NDSI, TRIM(FNMPRE)//'ww3_prnc.nml', NML_FORCING, NML_FILE, IERR)
          ! Check field
-         IF      (NML_FORCING%FIELD%ICE_PARAM1 .EQ. .TRUE.) THEN
+         IF      (NML_FORCING%FIELD%ICE_PARAM1 .EQV. .TRUE.) THEN
            IDFLD = 'IC1'
            IFLD = -7
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM2 .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM2 .EQV. .TRUE.) THEN
            IDFLD = 'IC2'
            IFLD = -6
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM3 .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM3 .EQV. .TRUE.) THEN
            IDFLD = 'IC3'
            IFLD = -5
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM4 .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM4 .EQV. .TRUE.) THEN
            IDFLD = 'IC4'
            IFLD = -4
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_PARAM5 .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_PARAM5 .EQV. .TRUE.) THEN
            IDFLD = 'IC5'
            IFLD = -3
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%MUD_DENSITY .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%MUD_DENSITY .EQV. .TRUE.) THEN
            IDFLD = 'MDN'
            IFLD = -2
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%MUD_THICKNESS .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%MUD_THICKNESS .EQV. .TRUE.) THEN
            IDFLD = 'MTH'
            IFLD = -1
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%MUD_VISCOSITY .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%MUD_VISCOSITY .EQV. .TRUE.) THEN
            IDFLD = 'MVS'
            IFLD = 0
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_CONC .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_CONC .EQV. .TRUE.) THEN
            IDFLD = 'ICE'
            IFLD = 1
            NFIELDS = 1
-         ELSE IF (NML_FORCING%FIELD%ICE_BERG .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%ICE_BERG .EQV. .TRUE.) THEN
            IDFLD = 'ISI'
            IFLD = 1
            FLBERG = .TRUE.
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%WATER_LEVELS .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%WATER_LEVELS .EQV. .TRUE.) THEN
            IDFLD = 'LEV'
            IFLD = 2
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%WINDS .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%WINDS .EQV. .TRUE.) THEN
            IDFLD = 'WND'
            IFLD = 3
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%WINDS_AST .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%WINDS_AST .EQV. .TRUE.) THEN
            IDFLD = 'WNS'
            IFLD = 3
            FLSTAB = .TRUE.
            NFIELDS = 3
-         ELSE IF (NML_FORCING%FIELD%CURRENTS .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%CURRENTS .EQV. .TRUE.) THEN
            IDFLD = 'CUR'
            IFLD = 4
            NFIELDS = 2
-         ELSE IF (NML_FORCING%FIELD%DATA_ASSIM .EQ. .TRUE.) THEN
+         ELSE IF (NML_FORCING%FIELD%DATA_ASSIM .EQV. .TRUE.) THEN
            IDFLD = 'DAT'
            IFLD = 5
            ITYPE = 5
@@ -468,9 +468,9 @@
          END IF ! NML_FORCING
 
         ! Check grid asis/latlon
-        IF (NML_FORCING%GRID%ASIS .EQ. .TRUE.) THEN
+        IF (NML_FORCING%GRID%ASIS .EQV. .TRUE.) THEN
           ITYPE = 1
-        ELSE IF (NML_FORCING%GRID%LATLON .EQ. .TRUE.) THEN
+        ELSE IF (NML_FORCING%GRID%LATLON .EQV. .TRUE.) THEN
           ITYPE = 2
          ELSE
            GOTO 811
