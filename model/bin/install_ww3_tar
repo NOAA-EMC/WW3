@@ -39,9 +39,8 @@
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
-  src_dir=arc_tmp # Source directory (before links or copies are made)
 
-  dirs="model cases regtests smc_docs"
+  dirs="model regtests"
   for dir in $dirs
   do
     fname=wwatch3.*.$dir.tar
@@ -56,8 +55,6 @@
 
 # 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  clear
-  clear
   echo -e '\n\n\n'
   echo -e '                  ==================================='
   echo -e '              ------ Installing WAVEWATCH III  v.6 ------'
@@ -66,7 +63,7 @@
 
 # 1.c Test present directory and set location of environment file  - - - - - -
 
-  main_dir=`pwd`
+  ww3_dir=`pwd`
 
 # homedir may be different than where cd takes...
   if [ $HOME ]
@@ -76,84 +73,24 @@
     cd
   fi
   home_dir=`pwd`
-  cd $main_dir
+  cd $ww3_dir
 
   echo -e ' This installation requires a configuration file (wwatch3.env).'
-  echo -e ' The current version allows two types of env files: '
-  echo -e ' - A local [L] wwatch3.env (Allowing multiple independent installations).'
-  echo -e ' - A generic [G] dot-file .wwatch3.env (Old-fashioned option).'
-  echo -e ' [L] Installs new, uses existing or updates env file in current directory.'
-  echo -e ' [G] Installs new, uses existing or updates env file in home directory, '
-  echo -e "     (home is presumably $HOME}). \n"
-  echo -en ' Type your choice now: '
-  read sww3dir
+  ww3_dir=`pwd`
+  main_dir=$ww3_dir/model
 
-  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ]
+  if [ -f ${main_dir}/bin/wwatch3.env ]
   then
+    echo -e '\n This is not a new installation at this location.'
+    echo -e '  Existing local wwatch3.env will be used. Option to modify below...'
+    ww3_env="${main_dir}/bin/wwatch3.env"
+  else
+    echo -e '\n Creating new env file from scratch.'
+    ww3_env="${main_dir}/bin/wwatch3.env"
+  fi
 
-    ww3_env="${home_dir}/.wwatch3.env"   # setup file
-
-    if [ -s $ww3_env ]
-    then
-      set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
-      echo -e "\n Install directory: " 
-      echo -e "  $main_dir "
-# Check if current location is same as in existing env file
-      cur_dir=`pwd`
-      if [ "${cur_dir}" != "${main_dir}" ]
-      then
-        echo -e "\n Current directory is not the same as WW3 directory "
-        echo -e " in your existing .wwatch3.env (env) file."
-        echo -e " This will cause problems for a G-type install."
-        echo -e " Options: (1) ensure install is on dir listed in env,"
-        echo -e " (2) install then copy to dir listed in env, or "
-        echo -e " (3) create symbolic link between install dir and dir"
-        echo -e " listed in env."  
-      fi
-    else
-      echo -e "\n\n Generic dot-file .wwatch3.env file not found in "
-      echo -e "    ${home_dir} \n"
-      echo -en "\n Create .wwatch3.env file from scratch? [y|n] : "
-      read wnew
-      if [ "${wnew}" = "Y" ] || [ "${wnew}" = "y" ]
-      then
-        echo -e '\n Creating generic .wwatch3.env'
-      else
-        echo -e ' Enter correct location of env file relative to there.' 
-        echo -e ' Alternatively, quit and choose local env file [option L] \n '
-        main_dir=nodir.$$
-        until [ -d $main_dir ]
-        do
-          echo -en "   Directory (relative to $home_dir) : "
-          read OK
-          if [ -n "$OK" ]
-          then
-            main_dir="$OK"
-          fi
-        done
-        cd $main_dir
-        main_dir=`pwd`
-      fi
-    fi
-  elif [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
-  then
-     main_dir=`pwd`
-     if [ -f ${main_dir}/wwatch3.env ]
-    then
-      echo -e '\n This is not a new installation at this location.'
-      echo -e '  Existing local wwatch3.env will be used. Option to modify below...'
-      ww3_env="${main_dir}/wwatch3.env"
-    else
-      echo -e '\n Creating new env file from scratch.'
-      ww3_env="${main_dir}/wwatch3.env"
-    fi
- else
-      echo -e "\n\n\n Chosen install type ${sww3dir} not available, aborting. \n"
-      exit
- fi
-
- echo -e "\n\n Installing in "
-  echo -e "   $main_dir"
+  echo -e "\n\n Installing in "
+  echo -e "   $ww3_dir"
 
   OK="$NULL"
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
@@ -169,10 +106,11 @@
     exit
   fi
 
+  mkdir -p $main_dir/bin
   cd $main_dir
 
 # 1.d Set up environment - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  clear
+  
   echo -e '\n\n Setting up environment variables. '
 
   if [ -s ${ww3_env} ]
@@ -184,7 +122,7 @@
     set `grep WWATCH3_LPR $ww3_env` ; shift
     prnt="$*"
 
-    set `grep WWATCH3_F77 $ww3_env` ; shift
+    set `grep WWATCH3_F90 $ww3_env` ; shift
     fort="$*"
 
     set `grep WWATCH3_CC  $ww3_env` ; shift
@@ -205,15 +143,15 @@
     echo -e '\n\n   Previous setup file not found. Variables will be set to defaults. '
     echo -e '\n     (User must check to see if these setting are appropriate.)      '
     prnt=printer
-    fort=f77
-    cc=cc
+    fort=gfortran
+    cc=gcc
     temp_dir=${main_dir}/tmp
     s_source=yes
     s_list=yes
     do_set='n'
 
-    echo -e '\n\n Creating wwatch3.env locally (also in home if G option chosen). '
-    ww3_env=${main_dir}/wwatch3.env
+    echo -e '\n\n Creating wwatch3.env locally'
+    ww3_env=${main_dir}/bin/wwatch3.env
     newfile='yes'
   fi
 
@@ -238,7 +176,7 @@
 
   if [ "$do_set" = 'y' ]
   then
-    clear
+    
     echo -e '\n\n\n Modifying set-up '
     echo -e '\n Type n new settings, or press ENTER to keep [current ones]: \n'
     newfile='yes'
@@ -324,7 +262,7 @@
       echo -e "      Save listings            : $s_list "
       echo -en "\n   New settings OK ? [y/n]  "
       read OK
-      ww3_env=${main_dir}/wwatch3.env
+      ww3_env=${main_dir}/bin/wwatch3.env
     done
   else
     echo -e '\n Keeping current configuration '
@@ -344,7 +282,7 @@
   echo '#'                                                   >> $ww3_env
   echo ' '                                                   >> $ww3_env
   echo "WWATCH3_LPR      $prnt"                              >> $ww3_env
-  echo "WWATCH3_F77      $fort"                              >> $ww3_env
+  echo "WWATCH3_F90      $fort"                              >> $ww3_env
   echo "WWATCH3_CC       $cc"                                >> $ww3_env
   echo "WWATCH3_DIR      $main_dir"                          >> $ww3_env
   echo "WWATCH3_TMP      $temp_dir"                          >> $ww3_env
@@ -352,10 +290,6 @@
   echo "WWATCH3_LIST     $s_list"                            >> $ww3_env
   echo ' '                                                   >> $ww3_env
 
-  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ]
-  then
-    cp ${ww3_env} ${home_dir}/.wwatch3.env
-  fi
  fi
 
   if [ ! -d $temp_dir ]
@@ -372,7 +306,6 @@
   do
     echo -en '\n Continue with actual implementation ? [y/n] '
     read OK
-    clear
  done
 
   if [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
@@ -388,83 +321,61 @@
 
 # Unpack tar files
 
-  mkdir -p ${main_dir}/${src_dir}
+  src_dir=$ww3_dir/arc_tmp # Source directory (before links or copies are made)
+  mkdir -p $src_dir
 
-  cd ${main_dir}/${src_dir}
+  cd $src_dir
 
   echo -e "Unpacking $model"
-  tar xf ../$model
+  tar xf $ww3_dir/$model
   echo -e "Unpacking $regtests"
-  tar xf ../$regtests
-  echo -e "Unpacking $cases"
-  tar xf ../$cases
-  echo -e "Unpacking $smc_docs" 
-  tar xf ../$smc_docs 
+  tar xf $ww3_dir/$regtests
 
-# Placeholder for cases
-#  echo -e "Unpacking $cases"
-#  tar xf ../$cases
-
-  cd ${main_dir}
+  cd $ww3_dir
 
 # Make the model directories (at same level as manual and guide)
-  for dir in aux bin ftn obj mod exe inp nml work cases regtests smc_docs
+  for dir in aux bin ftn obj mod exe inp nml work
   do
     if [ ! -d $dir ]
     then
-      echo -e "   making directory $dir"
-      mkdir $dir
+      echo -e "   making directory model/$dir"
+      mkdir -p model/$dir
     fi
   done
 
+# Make the regtests directory  (at same level as manual and guide)
+  if [ ! -d regtests ]
+    then
+    echo -e "   making directory regtests"
+    mkdir regtests
+  fi
+
+
 # 2.e Set file permissions - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  cd $main_dir/${src_dir}/model/aux
+  cd $src_dir/model/aux
   chmod 644 *.gs
   chmod 644 spec_ids*
   chmod 644 *.f
 
-  cd $main_dir/${src_dir}/model/bin
-  chmod 644 switch* comp* link*
-  chmod 744 install*
+  cd $src_dir/model/bin
+  chmod 744 *
 
-  cd $main_dir/${src_dir}/model/ftn
+  cd $src_dir/model/ftn
   chmod 644 *.ftn
   chmod 644 *.f90
 
-  cd $main_dir/${src_dir}/model/inp
+  cd $src_dir/model/inp
   chmod 644 *.inp track_i.ww3
 
-  cd $main_dir/${src_dir}/model/nml
+  cd $src_dir/model/nml
   chmod 644 *.nml
 
-#  cd $main_dir/${src_dir}/cases
-#  chmod 744 mww3_case_*
-#  chmod 755 mww3_data_*
-
-  cd $main_dir/${src_dir}/regtests/bin
+  cd $src_dir/regtests/bin
   chmod 744 *
 
-# cases loop placeholder
-#  for dir in 00 01 02 03
-#  do
-#    cd $main_dir/${src_dir}/cases/mww3_data_$dir
-#    if [ "$dir" = '00' ]
-#    then
-#      chmod 644 gfs*
-#      chmod 644 ice*
-#    else
-#      chmod 644 *.bot
-#      chmod 644 *.obs*
-#      chmod 644 *.mask
-#      chmod 644 *.gs
-#    fi
-#    chmod 644 ww3_*
-#
-#  done
-
 # Prelim: setting tmp directory to store screen redirects
-  mkdir -p ${main_dir}/tmp
+  mkdir -p $main_dir/tmp
 
 # --------------------------------------------------------------------------- #
 # 3. Set-up / update aux directory                                            #
@@ -474,9 +385,8 @@
   rm -f ${main_dir}/tmp/${ldir}_setup.out
 
   cd $main_dir/${ldir}
-  all_files=`ls -p ../${src_dir}/model/${ldir} | grep -v '/$'`
+  all_files=`ls -p $src_dir/model/${ldir} | grep -v '/$'`
 
-  clear
   echo -e '\n\n =============================== '
   echo -e '--- Set up / update directories --- '
   echo -e ' ============================================================== '
@@ -491,9 +401,9 @@
   do
 
     echo -e "\n   Program $code ... " | tee ${main_dir}/tmp/${ldir}_setup.out
-    if [ -f "$main_dir/${src_dir}/model/${ldir}/$code.f" ]
+    if [ -f "$src_dir/model/${ldir}/$code.f" ]
     then
-      cp -f ../${src_dir}/model/${ldir}/$code.f .
+      cp -f $src_dir/model/${ldir}/$code.f .
       echo -e "      New $code.f was copied to $main_dir/${ldir} " | tee ${main_dir}/tmp/${ldir}_setup.out
     else
       echo -e "\n      No source for ${code}.f found, aborting! " | tee ${main_dir}/tmp/${ldir}_setup.out
@@ -548,7 +458,7 @@
     case $list in 
      1) echo -e '\n GrADS aux scripts' | tee ${main_dir}/tmp/${ldir}_setup.out
         echo -e ' -----------------'
-        cd $main_dir/${src_dir}/model/${ldir}
+        cd $src_dir/model/${ldir}
         files=`ls *.gs`
         files="$files spec_ids.gen" ;;
      2) echo -e '\n Other :'
@@ -568,7 +478,7 @@
       do
         nr_lnk=`expr $nr_lnk + 1`
         echo -e "   (re)linking $file ..." >> ${main_dir}/tmp/${ldir}_setup.out 
-        cp -f ../${src_dir}/model/${ldir}/$file .
+        cp -f $src_dir/model/${ldir}/$file .
         tmp_files=$all_files
         all_files=`echo -e $tmp_files | sed -e "s/$file//"`
       done
@@ -607,7 +517,7 @@
   tnr_old=`expr $tnr_old + $nr_old`
 
 # Check if subdirectories present
-  cd ${main_dir}/${src_dir}/model/${ldir}
+  cd $src_dir/model/${ldir}
   ndirs=`ls -p | grep '/$'`
   issd=`echo $ndirs | awk '{print $1}'`
 
@@ -618,7 +528,7 @@
     for sdir in $ndirs
     do
       echo -e "\n Sub-directory ${sdir} found in ${ldir}, copying contents."
-      cp -r ${main_dir}/${src_dir}/model/${ldir}/${sdir} . 
+      cp -r $src_dir/model/${ldir}/${sdir} . 
     done
   fi
 
@@ -648,7 +558,7 @@
   tnr_new=0
 
   cd $main_dir/${ldir}
-  all_files=`ls -p $main_dir/${src_dir}/model/${ldir} | grep -v '/$'`
+  all_files=`ls -p $src_dir/model/${ldir} | grep -v '/$'`
 
   echo -e '\n\n ==============================='
   echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/${ldir}_setup.out
@@ -665,7 +575,7 @@
       1) echo -e 'Scripts for compiling and linking :'
          echo -e '-----------------------------------'
          files='ad3_test ad3 w3_make w3_new make_makefile.sh'
-         cd $main_dir/${src_dir}/model/${ldir}
+         cd $src_dir/model/${ldir}
          files="$files switch.gen `ls comp.*` `ls link.*`"
          cd $main_dir/${ldir} ;;
       2) echo -e 'Other :'
@@ -683,7 +593,7 @@
       do
         nr_lnk=`expr $nr_lnk + 1`
         echo -e "   (re)linking $file ..." >> ${main_dir}/tmp/${ldir}_setup.out
-        cp -f ../${src_dir}/model/${ldir}/$file .
+        cp -f $src_dir/model/${ldir}/$file .
         tmp_files=$all_files
         all_files=`echo -e $tmp_files | sed -e "s/$file//"`
       done
@@ -722,32 +632,6 @@
     chmod 744 comp link
     chmod 644 switch
 
-# Local install: delete ww3_env, create new variable pointing to local wwatch3.env
-  if [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
-  then
-
-    loc_dir=$(echo $main_dir | sed 's/\//\\\//g')
-    echo -e "\n This install uses a local wwatch3.env.\n"
-    echo -e " Pointing ww3_env variable in bin scripts to:\n"
-    echo -e " ${loc_dir}/wwatch3.env \n"
-
-    cd $main_dir/${ldir}
-
-    linkfiles=`ls link*`
-    locfiles="${linkfiles} ad3 ad3_test all_switches find_switch list ln3 \
-              make_makefile.sh make_MPI make_OMP sort_all_switches sort_switch \
-              w3_clean w3_make w3_new w3_setup ww3_gspl.sh"
-    for lfile in ${locfiles}
-    do
-
-      echo -e "\n Changing ww3_env in script ${lfile}"
-# Delete generic ww3_env
-      sed '/ww3_env="${HOME}\/\.wwatch3.env"/d' ${lfile} > dumfile
-# Add new local ww3_env
-      sed -e "s/# WW3ENV/  export ww3_env=$loc_dir\/wwatch3.env/g" dumfile > ${lfile}
-      chmod 744 ${lfile}
-    done
-  fi
 
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
   echo -e ' ---------------------------- '
@@ -771,7 +655,7 @@
   ldir="ftn"
   rm -f ${main_dir}/tmp/${ldir}_setup.out
 
-  cd $main_dir/${src_dir}/model/${ldir}
+  cd $src_dir/model/${ldir}
   all_files=`ls | grep -v '/$'`
   ftn_files=`ls *.ftn`
   cd $main_dir/${ldir}
@@ -787,7 +671,7 @@
   for list in 1 2 3 4
   do
     echo -e ' '
-    cd $main_dir/${src_dir}/model/${ldir}
+    cd $src_dir/model/${ldir}
     case $list in 
       1) echo -e ' Main programs :'
          echo -e ' --------------' ; files=`ls ww3_*.ftn gx_*.ftn` ;;
@@ -817,7 +701,7 @@
           nr_new=`expr $nr_new + 1`
           echo -e "   New link $file ..." >> ${main_dir}/tmp/${ldir}_setup.out 
         fi
-        cp -f ../${src_dir}/model/${ldir}/$file .
+        cp -f $src_dir/model/${ldir}/$file .
         tmp_files=$all_files
         all_files=`echo -e $tmp_files | sed -e "s/$file//"`
         tmp_files=$ftn_files
@@ -840,7 +724,7 @@
   done
 
 # Deal with subdirectory SCRIP
-  cd $main_dir/${src_dir}/model/ftn/SCRIP
+  cd $src_dir/model/ftn/SCRIP
   files=`ls`
   nr_old=0
   nr_new=0
@@ -860,7 +744,7 @@
       nr_new=`expr $nr_new + 1`
       echo -e "   New link $file ..." >> ${main_dir}/tmp/${ldir}_setup.out
     fi
-    cp -f ../../${src_dir}/model/ftn/SCRIP/$file .
+    cp -f $src_dir/model/ftn/SCRIP/$file .
   done
 
   tnr_new=`expr $tnr_new + $nr_new`
@@ -887,7 +771,7 @@
 
   rm -f ${main_dir}/tmp/inp_setup.out
 
-  cd $main_dir/${src_dir}/model/inp
+  cd $src_dir/model/inp
   files=`ls ww3_*.inp track_i.ww3`
   files="$files `ls gx_*.inp`"
   cd $main_dir/inp
@@ -915,7 +799,7 @@
       nr_new=`expr $nr_new + 1`
       echo -e "   New link $file ..." >> ${main_dir}/tmp/inp_setup.out
     fi
-    cp -f ../${src_dir}/model/inp/$file .
+    cp -f $src_dir/model/inp/$file .
   done
 
   if [ "$nr_old" != '0' ]
@@ -947,7 +831,7 @@
 # --------------------------------------------------------------------------- #
   rm -f ${main_dir}/tmp/nml_setup.out
 
-  cd $main_dir/${src_dir}/model/nml
+  cd $src_dir/model/nml
   files=`ls ww3_*.nml`
 #  files="$files `ls gx_*.nml`"
   cd $main_dir/nml
@@ -975,7 +859,7 @@
       nr_new=`expr $nr_new + 1`
       echo -e "   New link $file ..." >> ${main_dir}/tmp/nml_setup.out
     fi
-    cp -f ../${src_dir}/model/nml/$file .
+    cp -f $src_dir/model/nml/$file .
   done
 
   if [ "$nr_old" != '0' ]
@@ -1002,161 +886,6 @@
   echo -e "     ${main_dir}/tmp/nml_setup.out "
   sleep 2
 
-# --------------------------------------------------------------------------- #
-# 7. Set-up / update cases directory                                           #
-# --------------------------------------------------------------------------- #
-
-  rm -f ${main_dir}/tmp/cases_setup.out
-  tnr_old=0
-  tnr_new=0
-
-  cd $main_dir/${src_dir}/cases
-
-  echo -e '\n\n ================================'
-  echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/cases_setup.out
-  echo -e ' =============================================================='    
-  echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/cases_setup.out
-
-  tmp_files=`ls`
-  all_files=
-  all_dirs=
-  for file in $tmp_files
-  do
-    if [ -d $file ]
-    then
-      all_dirs="$all_dirs $file"
-    else
-      all_files="$all_files $file"
-    fi
-  done
-  cd $main_dir/cases
-  echo -e ' '
-
-# 7.a Sets of test cases
-
-  for list in 1 2
-  do
-    echo -e ' '
-    cd ../${src_dir}/cases
-    case $list in 
-      1) echo -e 'Multi-scale tests :' ; \
-         echo -e '-------------------' ; \
-               files=`ls mww3_case_*` ;;
-      2) echo -e 'Other tests :' ; \
-         echo -e '-------------' ; files=$all_files ;;
-    esac
-    cd $main_dir/cases
-   
-    nr_old=0
-    nr_new=0
-
-    if [ -z "$files" ]
-    then 
-      echo -e '  No files found'
-    else
-      for file in $files
-      do
-        if [ -f $file ]
-        then
-          nr_old=`expr $nr_old + 1`
-          echo -e "   Old link $file ..." >> ${main_dir}/tmp/cases_setup.out
-        else
-          nr_new=`expr $nr_new + 1`
-          echo -e "   New link $file ..." >> ${main_dir}/tmp/cases_setup.out
-        fi
-        cp -f ../${src_dir}/cases/$file .
-        tmp_files=$all_files
-        all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-      done
-      if [ "$nr_old" != '0' ]
-      then
-        echo -e "  This section: $nr_old existing files found."
-      fi
-     if [ "$nr_new" != '0' ]
-      then
-        echo -e "  This section: $nr_new new files copied." 
-      fi
-    fi
-  done
-  tnr_old=`expr $tnr_old + $nr_old`
-  tnr_new=`expr $tnr_new + $nr_new`
-
-# 7.b Directories
-
-  echo -e ' '
-  echo -e 'Data directories :'
-  echo -e '------------------'
-
-  for dir in $all_dirs
-  do
-
-    nr_new=0
-    nr_old=0
-
-    if [ ! -d $main_dir/cases/$dir ]
-    then
-      mkdir $main_dir/cases/$dir
-      echo -e "\n Making directory $dir ..."
-    else
-      echo -e "\n Checking directory $dir ..."
-    fi
-
-    cd $main_dir/${src_dir}/cases/$dir
-    files=`ls`
-    cd $main_dir/cases/$dir
-    nr_old=0
-
-    if [ -z "$files" ]
-    then 
-      echo -e '  No files found'
-    else
-      for file in $files
-      do
-        if [ -f $file ]
-        then
-          nr_old=`expr $nr_old + 1`
-          echo -e "      Old link $file ..." >> ${main_dir}/tmp/cases_setup.out
-        else
-          nr_new=`expr $nr_new + 1`
-          echo -e "      New link $file ..." >> ${main_dir}/tmp/cases_setup.out
-        fi
-        cp -f ../../${src_dir}/cases/$dir/$file .
-        tmp_files=$all_files
-        all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-      done
-      if [ "$nr_old" != '0' ]
-      then
-        echo -e "  This section: $nr_old existing files found."
-      fi
-      if [ "$nr_new" != '0' ]
-      then
-        echo -e "  This section: $nr_new new files copied." 
-      fi
-    fi
-
-    tnr_old=`expr $tnr_old + $nr_old`
-    tnr_new=`expr $tnr_new + $nr_new`
-
-  done
-
-
-  cd $main_dir/cases
-  cp -f ../bin/switch .
-
-  echo -e '\n\n End of cases directory section '
-  echo -e ' ------------------------------ '
-
-  if [ "$tnr_old" != '0' ]
-  then
-    echo -e "\n   Total of $tnr_old existing files found."
-  fi
-  if [ "$tnr_new" != '0' ]
-  then
-    echo -e "\n   Total of $tnr_new files copied."
-  fi
-  echo -e "\n   List of existing (old) or files copied routed to :"
-  echo -e "     ${main_dir}/tmp/cases_setup.out "
-  sleep 2
 
 # --------------------------------------------------------------------------- #
 # 7.1 Set-up / update regtests directory                                           #
@@ -1166,14 +895,14 @@
   tnr_old=0
   tnr_new=0
 
-  cd $main_dir/${src_dir}/regtests
+  cd $src_dir/regtests
 
   echo -e '\n\n ================================'
   echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/reg_setup.out
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/reg_setup.out
 
-  tmp_dirs=`find . -type d`
+  tmp_dirs=$(find . ! -path . -type d)
 
   for dir in $tmp_dirs
   do
@@ -1182,17 +911,17 @@
     nr_old=0
     nr_new=0
 
-    if [ ! -d $main_dir/regtests/$dir ]
+    if [ ! -d $ww3_dir/regtests/$dir ]
     then
-      mkdir $main_dir/regtests/$dir
+      mkdir $ww3_dir/regtests/$dir
       echo -e "\n Making directory $dir ..."
     else
       echo -e "\n Checking directory $dir ..."
     fi
 
-    cd $main_dir/${src_dir}/regtests/$dir
+    cd $src_dir/regtests/$dir
     files=`ls -p | grep -v '/$'`
-    cd $main_dir/regtests/$dir
+    cd $ww3_dir/regtests/$dir
 
     if [ -z "$files" ]
     then
@@ -1208,7 +937,7 @@
           nr_new=`expr $nr_new + 1`
           echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
         fi
-        cp -f $main_dir/${src_dir}/regtests/$dir/$file .
+        cp -f $src_dir/regtests/$dir/$file .
         tmp_files=$all_files
         all_files=`echo -e $tmp_files | sed -e "s/$file//"`
       done
@@ -1228,7 +957,7 @@
  
   done
 
-  cd $main_dir/regtests
+  cd $ww3_dir/regtests
 
   chmod 744 bin/*
 
@@ -1247,264 +976,15 @@
   echo -e "     ${main_dir}/tmp/reg_setup.out "
   sleep 2
 
-# --------------------------------------------------------------------------- #
-# 7.2 Set-up / update smc_docs directory                                      #
-# --------------------------------------------------------------------------- #
-
-  rm -f ${main_dir}/tmp/smc_setup.out
-  tnr_old=0
-  tnr_new=0
-
-  cd $main_dir/${src_dir}/smc_docs
-
-  echo -e '\n\n ================================'
-  echo -e '--- Set up / update directories ---' | tee ${main_dir}/tmp/smc_setup.out
-  echo -e ' =============================================================='    
-  echo -e "    Directory `pwd`" | tee ${main_dir}/tmp/smc_setup.out
-
-
-  tmp_files=`ls`
-  all_files=
-  tmp_dirs=
-  for file in $tmp_files
-  do
-    if [ -d $file ]
-    then
-      tmp_dirs="$tmp_dirs $file"
-    else
-      all_files="$all_files $file"
-    fi
-  done
-  cd $main_dir/smc_docs 
-  echo -e ' '
-
-  nr_old=0
-  nr_new=0
-
-  files=$all_files
-  if [ -z "$files" ]
-  then
-    echo -e '  No files found'
-  else
-    for file in $files
-    do
-      if [ -f $file ]
-      then
-        nr_old=`expr $nr_old + 1`
-        echo -e "   Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
-      else
-        nr_new=`expr $nr_new + 1`
-        echo -e "   New link $file ..." >> ${main_dir}/tmp/smc_setup.out
-      fi
-      cp -f ../${src_dir}/smc_docs/$file .
-      tmp_files=$all_files
-      all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-    done
-    if [ "$nr_old" != '0' ]
-    then
-      echo -e "  This section: $nr_old existing files found."
-    fi
-    if [ "$nr_new" != '0' ]
-    then
-      echo -e "  This section: $nr_new new files copied." 
-    fi
-  fi
-  tnr_old=`expr $tnr_old + $nr_old`
-  tnr_new=`expr $tnr_new + $nr_new`
-
-
-
-  for dir in $tmp_dirs
-  do
-
-    nr_old=0
-    nr_new=0
-
-    if [ ! -d $main_dir/smc_docs/$dir ]
-    then
-      mkdir $main_dir/smc_docs/$dir
-      echo -e "\n Making directory $dir ..."
-    else
-      echo -e "\n Checking directory $dir ..."
-    fi
-
-    cd $main_dir/${src_dir}/smc_docs/$dir
-    files=`ls -p | grep -v '/$'`
-    ndirs=`ls -p | grep '/$'`
-    cd $main_dir/smc_docs/$dir
-
-    if [ -z "$files" ]
-    then
-      echo -e '  No files found'
-    else
-      for file in $files
-      do
-        if [ -f $file ]
-        then
-          nr_old=`expr $nr_old + 1`
-          echo -e "      Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
-        else
-          nr_new=`expr $nr_new + 1`
-          echo -e "      New link $file ..." >> ${main_dir}/tmp/smc_setup.out
-        fi
-        cp -f ../../${src_dir}/smc_docs/$dir/$file .
-        tmp_files=$all_files
-        all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-      done
-      if [ "$nr_old" != '0' ]
-      then
-        echo -e "  This section: $nr_old existing files found."
-      fi
-      if [ "$nr_new" != '0' ]
-      then
-        echo -e "  This section: $nr_new new files copied." 
-      fi
- 
-    fi
-
-    tnr_old=`expr $tnr_old + $nr_old`
-    tnr_new=`expr $tnr_new + $nr_new`
- 
-
-    for ndir in $ndirs
-    do
-      lngth=`echo $ndir | wc -c`
-      lngth=`expr $lngth - 2`
-      ndir=`echo $ndir | cut -c1-$lngth`
-      nr_old=0
-      nr_new=0
-
-      if [ ! -d $main_dir/smc_docs/$dir/$ndir ]
-      then
-        mkdir $main_dir/smc_docs/$dir/$ndir
-        echo -e "\n Making directory $dir/$ndir ..."
-      else
-        echo -e "\n Checking directory $dir/$ndir ..."
-      fi
-
-      cd $main_dir/${src_dir}/smc_docs/$dir/$ndir
-      files=`ls -p | grep -v '/$'`
-      sdirs=`ls -p | grep '/$'`
-      cd $main_dir/smc_docs/$dir/$ndir
-
-      if [ -z "$files" ]
-      then
-        echo -e '  No files found'
-      else
-        for file in $files
-        do
-          if [ -f $file ]
-          then
-            nr_old=`expr $nr_old + 1`
-            echo -e "      Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
-          else
-            nr_new=`expr $nr_new + 1`
-            echo -e "      New link $file ..." >> ${main_dir}/tmp/smc_setup.out
-          fi
-          cp -f ../../../${src_dir}/smc_docs/$dir/$ndir/$file .
-          tmp_files=$all_files
-          all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-        done
-        if [ "$nr_old" != '0' ]
-        then
-          echo -e "  This section: $nr_old existing files found."
-        fi
-        if [ "$nr_new" != '0' ]
-        then
-          echo -e "  This section: $nr_new new files copied." 
-        fi
-      fi
-
-      tnr_old=`expr $tnr_old + $nr_old`
-      tnr_new=`expr $tnr_new + $nr_new`
-
-      if [ ! -z "$sdirs" ]
-      then
-        for sdir in $sdirs
-        do
-          lngth=`echo $sdir | wc -c`
-          lngth=`expr $lngth - 2`
-          sdir=`echo $sdir | cut -c1-$lngth`
-          nr_old=0
-          nr_new=0
-
-          if [ ! -d $main_dir/smc_docs/$dir/$ndir/$sdir ]
-          then
-            mkdir $main_dir/smc_docs/$dir/$ndir/$sdir
-            echo -e "\n Making directory $dir/$ndir/$sdir..."
-          else
-            echo -e "\n Checking directory $dir/$ndir/$sdir ..."
-          fi
-
-          cd $main_dir/${src_dir}/smc_docs/$dir/$ndir/$sdir
-          files=`ls -p | grep -v '/$'`
-          cd $main_dir/smc_docs/$dir/$ndir/$sdir
-
-          if [ -z "$files" ]
-          then
-            echo -e '  No files found'
-          else
-            for file in $files
-            do
-              if [ -f $file ]
-              then
-                nr_old=`expr $nr_old + 1`
-                echo -e "      Old link $file ..." >> ${main_dir}/tmp/smc_setup.out
-              else
-                nr_new=`expr $nr_new + 1`
-                echo -e "      New link $file ..." >> ${main_dir}/tmp/smc_setup.out
-              fi
-              cp ../../../../${src_dir}/smc_docs/$dir/$ndir/$sdir/$file .
-              tmp_files=$all_files
-              all_files=`echo -e $tmp_files | sed -e "s/$file//"`
-            done
-            if [ "$nr_old" != '0' ]
-            then
-              echo -e "  This section: $nr_old existing files found."
-            fi
-            if [ "$nr_new" != '0' ]
-            then
-              echo -e "  This section: $nr_new new files copied."
-            fi
-          fi
-
-          tnr_old=`expr $tnr_old + $nr_old`
-          tnr_new=`expr $tnr_new + $nr_new`
-
-        done
-
-      fi
-
-    done
-
-  done
-
-  cd $main_dir/smc_docs
-
-  echo -e '\n\n End of smc_docs directory section '
-  echo -e ' ---------------------------------- '
-
-  if [ "$tnr_old" != '0' ]
-  then
-    echo -e "\n   Total of $tnr_old existing files found."
-  fi
-  if [ "$tnr_new" != '0' ]
-  then
-    echo -e "\n   Total of $tnr_new files copied."
-  fi
-  echo -e "\n   List of existing (old) or files copied routed to :"
-  echo -e "     ${main_dir}/tmp/smc_setup.out "
-  sleep 2
 
 # --------------------------------------------------------------------------- #
 # 8. Set-up / update work directory                                           #
 # --------------------------------------------------------------------------- #
 
   cd $main_dir/work
-  echo -e ' '
 
-  echo -e ' ' ; echo -e ' '
-  echo -e ' ==============================='
+
+  echo -e ' \n\n ==============================='
   echo -e '--- Set up / update directories ---'
   echo -e ' =============================================================='    
   echo -e "    Directory `pwd`"
@@ -1543,43 +1023,16 @@
     fi
   done
 
-# 8.d hook in present script
-
-  cd $main_dir
-  if [ ! -f install_ww3_tar ]
-  then
-    echo -e " Install script not in main directory, create link."
-    ln -sf ./bin/install_ww3_tar .
-  else
-    lch=`ls -l install_ww3_tar | cut -c1-1`
-    if [ "$lch" != 'l' ]
-    then
-      echo -e " Install script not a link ..."
-      difft=`diff install_ww3_tar ./${src_dir}/model/bin/.`
-      if [ -z "$difft" ]
-      then
-        echo -e " Install script identical to tar version, replace by link."
-        ln -sf ./bin/install_ww3_tar .
-      else
-        echo -e " Previous install script found, different from tar version:"
-        echo -e "  moved to extension .old. Creating link to tar version."
-        mv install_ww3_tar install_ww3_tar.old
-        ln -sf ./bin/install_ww3_tar .
-      fi
-    else
-      echo -e " Install script link checked: all OK."
-    fi 
-  fi
   sleep 2
 
 # --------------------------------------------------------------------------- #
 # 7. Clean up arc_tmp
 # --------------------------------------------------------------------------- #
 
-  rm -rf ${main_dir}/${src_dir}
+  rm -rf $src_dir
 
-  mkdir -p ${main_dir}/arc
-  mv ${main_dir}/wwatch3.*.tar* ${main_dir}/arc
+  mkdir -p ${ww3_dir}/arc
+  mv ${ww3_dir}/wwatch3.*.tar* ${ww3_dir}/arc
 
 # --------------------------------------------------------------------------- #
 # 9. The end                                                                  #

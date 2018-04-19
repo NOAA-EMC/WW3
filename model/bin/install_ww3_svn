@@ -27,7 +27,7 @@
 #
   clear
   echo -e '\n\n\n                  ==================================='
-  echo -e '              ------ Installing WAVEWATCH III  v.4 ------'
+  echo -e '              ------ Installing WAVEWATCH III  v.6 ------'
   echo -e '                  =================================== \n'
   echo -e '       Script for installing package from Subversion server source. '
   echo -e '       Requires user/pass access to NCEP Subversion server. \n'
@@ -53,7 +53,7 @@
   clear
   echo -e '\n\n\n'
   echo -e '                  ==================================='
-  echo -e '              ------ Installing WAVEWATCH III  v.4 ------'
+  echo -e '              ------ Installing WAVEWATCH III  v.6 ------'
   echo -e '                  ==================================='
   echo -e '                                     from svn source \n'
 
@@ -65,69 +65,18 @@
   cd $main_dir
 
   echo -e ' This installation requires a configuration file (wwatch3.env).'
-  echo -e ' The current version allows two types of env files: '
-  echo -e ' - A local [L] wwatch3.env (Allowing multiple independent installations).'
-  echo -e ' - A generic [G] dot-file .wwatch3.env (Old-fashioned option).'
-  echo -e ' [L] Installs new, uses existing or updates env file in current directory.'
-  echo -e ' [G] Installs new, uses existing or updates env file in home directory, '
-  echo -e "                   (home is presumably $HOME})."
-  echo -e '\n '
-  echo -en ' Type your choice now: '
-  read sww3dir
+  main_dir=`pwd`
 
-  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ] 
+  if [ -f ${main_dir}/bin/wwatch3.env ]
   then
-
-    ww3_env="${home_dir}/.wwatch3.env"   # setup file
- 
-    if [ -s $ww3_env ]
-    then
-      set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
-      echo -e "\n Install directory: " 
-      echo -e "  $main_dir "
-    else
-      echo -e "\n\n Generic dot-file .wwatch3.env file not found in "
-      echo -e "    ${home_dir} \n"
-      echo -en "\n Create .wwatch3.env file from scratch? [y|n] : "
-      read wnew
-      if [ "${wnew}" = "Y" ] || [ "${wnew}" = "y" ]
-      then 
-        echo -e '\n Creating generic .wwatch3.env'
-      else
-        echo -e ' Enter correct location of env file relative to there.' 
-        echo -e ' Alternatively, quit and choose local env file [option L] \n '
-        main_dir=nodir.$$
-        until [ -d $main_dir ]
-        do
-          echo -en "   Directory (relative to $home_dir) : "
-          read OK
-          if [ -n "$OK" ]
-          then
-            main_dir="$OK"
-          fi
-        done
-        cd $main_dir
-        main_dir=`pwd`
-      fi
-    fi
-  elif [ "${sww3dir}" = "L" ] || [ "${sww3dir}" = "l" ]
-  then
-
-    main_dir=`pwd`
-
-    if [ -f ${main_dir}/wwatch3.env ]
-    then
-      echo -e '\n This is not a new installation at this location.'
-      echo -e '  Existing local wwatch3.env will be used. Option to modify below...'
-      ww3_env="${main_dir}/wwatch3.env"
-    else
-      echo -e '\n Creating new env file from scratch.'
-      ww3_env="${main_dir}/wwatch3.env"
-    fi
+    echo -e '\n This is not a new installation at this location.'
+    echo -e '  Existing local wwatch3.env will be used. Option to modify below...'
+    ww3_env="${main_dir}/bin/wwatch3.env"
   else
-      echo -e "\n\n\n Chosen install type ${sww3dir} not available, aborting. \n"
-      exit 2
+    echo -e '\n Creating new env file from scratch.'
+    ww3_env="${main_dir}/bin/wwatch3.env"
   fi
+
 
   echo -e "\n\n Installing in "
   echo -e "   $main_dir"
@@ -161,7 +110,7 @@
     set `grep WWATCH3_LPR $ww3_env` ; shift
     prnt="$*"
 
-    set `grep WWATCH3_F77 $ww3_env` ; shift
+    set `grep WWATCH3_F90 $ww3_env` ; shift
     fort="$*"
 
     set `grep WWATCH3_CC  $ww3_env` ; shift
@@ -182,15 +131,15 @@
     echo -e '\n\n   Previous setup file not found. Variables will be set to defaults. '
     echo -e '\n     (User must check to see if these setting are appropriate.)      '
     prnt=printer
-    fort=f77
-    cc=cc
+    fort=gfortran
+    cc=gcc
     temp_dir=${main_dir}/tmp
     s_source=yes
     s_list=yes
     do_set='n'
 
     echo -e '\n\n Creating wwatch3.env locally (also in home if G option chosen). '
-    ww3_env=${main_dir}/wwatch3.env 
+    ww3_env=${main_dir}/bin/wwatch3.env 
     newfile='yes'  
   fi
     
@@ -301,7 +250,7 @@
       echo -e "      Save listings            : $s_list "
       echo -en "\n   New settings OK ? [y/n]  "
       read OK
-      ww3_env=${main_dir}/wwatch3.env 
+      ww3_env=${main_dir}/bin/wwatch3.env 
     done
   else
     echo -e '\n Keeping current configuration '
@@ -321,18 +270,13 @@
   echo '#'                                                   >> $ww3_env
   echo ' '                                                   >> $ww3_env
   echo "WWATCH3_LPR      $prnt"                              >> $ww3_env
-  echo "WWATCH3_F77      $fort"                              >> $ww3_env
+  echo "WWATCH3_F90      $fort"                              >> $ww3_env
   echo "WWATCH3_CC       $cc"                                >> $ww3_env
   echo "WWATCH3_DIR      $main_dir"                          >> $ww3_env
   echo "WWATCH3_TMP      $temp_dir"                          >> $ww3_env
   echo "WWATCH3_SOURCE   $s_source"                          >> $ww3_env
   echo "WWATCH3_LIST     $s_list"                            >> $ww3_env
   echo ' '                                                   >> $ww3_env
-
-  if [ "${sww3dir}" = "G" ] || [ "${sww3dir}" = "g" ]
-  then
-    cp ${ww3_env} ${home_dir}/.wwatch3.env
-  fi
  fi
 
   if [ ! -d $temp_dir ]
@@ -943,7 +887,7 @@ sleep 2
     loc_dir=$(echo $main_dir | sed 's/\//\\\//g')
     echo -e "\n This install uses a local wwatch3.env.\n"
     echo -e " Pointing ww3_env variable in bin scripts to:\n"
-    echo -e " ${loc_dir}/wwatch3.env \n"
+    echo -e " ${loc_dir}/bin/wwatch3.env \n"
 
     cd $main_dir/${ldir}
 
@@ -961,7 +905,7 @@ sleep 2
 # Delete generic ww3_env
       sed '/ww3_env="${HOME}\/\.wwatch3.env"/d' ${lfile} > dumfile
 # Add new local ww3_env
-      sed -e "s/# WW3ENV/  export ww3_env=$loc_dir\/wwatch3.env/g" dumfile > ${lfile}
+      sed -e "s:# WW3ENV:  export ww3_env=$loc_dir/bin/wwatch3.env:g" dumfile > ${lfile}
       chmod 744 ${lfile}
     done
 # Warning about links removed!

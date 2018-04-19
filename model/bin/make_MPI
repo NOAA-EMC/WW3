@@ -17,197 +17,77 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
-# 1.a.1 Internal variables
 
-  if test "$#" = '0'
-  then
-    default_mode=1
-    script_args=
-  else
-    default_mode=0
-    script_args="$*"
-  fi
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  tmp='ww3_temp'           # temporary working directory
-
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
-
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate file
-
-
-# 1.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
-
-  if test -f $ww3_env
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    temp_dir="$*"
-    set `grep WWATCH3_SOURCE $ww3_env` ; shift
-    source="$*"
-    set `grep WWATCH3_LIST $ww3_env` ; shift
-    list="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"; echo ' '
-    exit 1
-  fi
-
-  echo "Scratch directory : $temp_dir"
-  echo "Save source codes : $source"
-  echo "Save listings     : $list"
-  echo ' '
-
-
-# 1.a.3 Check for switch file and makefile - - - - - - - - - - - - - - - - - - - 
-
-  switch_file=$main_dir/bin/switch
-  makefile=$main_dir/ftn/makefile
-  rm -f $makefile
-
-  if test ! -f $switch_file
-  then
-    echo "*** switch file $switch_file not found ***" ; echo ' '
-    exit 1
-  fi
-
-
-# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  clear
   echo ' '
   echo '                ************************************'
   echo '              ***   WAVEWATCH III compile for MPI  ***'
   echo '                ************************************'
   echo ' '
 
+
 # 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
-  if test -f $ww3_env
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"
-    exit
-  fi
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
 
 # 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
 
-  if test -d $main_dir
+  # bin dir
+  if [ ! -d $main_dir/bin ]
   then
-    cd $main_dir
-  else
-    echo "*** Directory $main_dir not found ***"
-    exit
+    echo ' '
+    echo "[ERROR] Directory $main_dir/bin not found"
+    echo '        Please check the content of your directory model'
+    exit 1
   fi
 
-  if test -d bin
+  # switch file
+  switch_file=$main_dir/bin/switch
+  if [ ! -e $switch_file ] || [ ! -r $switch_file ]
   then
-    cd bin
-  else
-    echo "*** Directory $main_dir/bin not found ***"
-    exit
+    echo ' '
+    echo "[ERROR] switch file $switch_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
   fi
 
-# 1.e Check progs - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-# reg_programs = non-NetCDF programs
-  reg_programs="ww3_grid"
-  reg_programs="$reg_programs ww3_strt"
-  reg_programs="$reg_programs ww3_bound"
-  reg_programs="$reg_programs ww3_outf"
-  reg_programs="$reg_programs ww3_outp"
-  reg_programs="$reg_programs ww3_trck"
-  reg_programs="$reg_programs ww3_grib"
-  reg_programs="$reg_programs ww3_gint"
-  reg_programs="$reg_programs gx_outf"
-  reg_programs="$reg_programs gx_outp"
-  reg_programs="$reg_programs ww3_uprstr"
-  reg_programs="$reg_programs libww3"
-
-# cdf_programs = NetCDF programs
-  cdf_programs="ww3_prnc"
-  cdf_programs="$cdf_programs ww3_ounf"
-  cdf_programs="$cdf_programs ww3_ounp"
-  cdf_programs="$cdf_programs ww3_bounc"
-  cdf_programs="$cdf_programs ww3_trnc"
-
-  if [ -n "`grep TIDE $switch_file`" ]
+  # comp file
+  comp_file=$main_dir/bin/comp
+  if [ ! -e $comp_file ] || [ ! -r $comp_file ]
   then
-    cdf_programs="$cdf_programs ww3_prtide"
+    echo ' '
+    echo "[ERROR] comp file $comp_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
   fi
 
-  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
+  # link file
+  link_file=$main_dir/bin/link
+  if [ ! -e $link_file ] || [ ! -r $link_file ]
   then
-    mpi_cdf_programs="$mpi_cdf_programs ww3_multi"
-    #mpi_cdf_programs="$mpi_cdf_programs ww3_multi_esmf"
-    mpi_cdf_programs="$mpi_cdf_programs ww3_sbs1"
-  else
-    mpi_reg_programs="$mpi_reg_programs ww3_multi"
-    #mpi_reg_programs="$mpi_reg_programs ww3_multi_esmf"
-    mpi_reg_programs="$mpi_reg_programs ww3_sbs1"
+    echo ' '
+    echo "[ERROR] link file $comp_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
   fi
 
-
-  if [ -n "`grep TRKNC $switch_file`" ]
-  then
-    cdf_programs="$cdf_programs ww3_systrk"
-    systrck_nc4notrknc=0
-  else
-    if [ -n "`grep NC4 $switch_file`" ]
-    then
-      systrck_nc4notrknc=1
-    else
-      systrck_nc4notrknc=0
-      reg_programs="$reg_programs ww3_systrk"
-    fi
-  fi
-
-  if [ -n "`grep OASIS $switch_file`" ]
-  then
-    mpi_cdf_programs="$mpi_cdf_programs ww3_shel"
-    cdf_programs="$cdf_programs ww3_prep"
-    cdf_programs="$cdf_programs ww3_gspl"
-  else
-    mpi_reg_programs="$mpi_reg_programs ww3_shel"
-    reg_programs="$reg_programs ww3_prep"
-    reg_programs="$reg_programs ww3_gspl"
-  fi
-
-# 1.f Check NetCDF setup - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.e Check NetCDF setup - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   if [ -z "$WWATCH3_NETCDF" ]
   then
-    all_programs="$reg_programs"
-    mpi_all_programs="$mpi_reg_programs"
+    ww3_NetCDF=
   else
-    all_programs="$reg_programs $cdf_programs"
-    mpi_all_programs="$mpi_reg_programs $mpi_cdf_programs"
-  fi
-
-# progs = programs requested to compile
-  if [ $default_mode -eq 1 ]
-  then
-    seq_progs="$all_programs"
-    mpi_progs="$mpi_all_programs"
-  else
-    for prog in "$(echo $script_args)"
-    do
-      echo $prog
-      if [ "$prog" == "ww3_shel" ] || [ "$prog" == "ww3_multi" ] || [ "$prog" == "ww3_multi_esmf" ] || [ "$prog" == "ww3_sbs1" ]
-      then
-        mpi_progs="$mpi_progs $prog"
-      else
-        seq_progs="$seq_progs $prog"
-      fi
-    done
+    ww3_NetCDF="ww3_prnc ww3_ounf ww3_ounp ww3_bounc ww3_trnc ww3_prtide"
   fi
 
 # --------------------------------------------------------------------------- #
@@ -218,63 +98,53 @@
   cp switch                             switch.hold
   sed -e 's/DIST/SHRD/g' \
       -e 's/OMPG //g'\
-      -e 's/OMPH //g'\
       -e 's/OMPX //g'\
-      -e 's/MPI //g'      switch.hold > switch.shrd
-  sed 's/SHRD/DIST MPI/g' switch.shrd > switch.MPI
+      -e 's/OMPH //g'\
+      -e 's/MPI //g'      switch.hold > switch.SEQ
+  sed 's/SHRD/DIST MPI/g' switch.SEQ > switch.MPI
 
 # --------------------------------------------------------------------------- #
 # 3. Compile non-MPI codes                                                    #
 # --------------------------------------------------------------------------- #
 
-  if [ ! -z "$seq_progs" ]
-  then
-    cp switch.shrd switch
-    w3_make $seq_progs
-    cp switch.shrd ../exe/
-    mv ../exe/exec_type ../exe/exec_type_SHRD
-    mkdir -p ../exe_SHRD
-    rsync -a ../exe/ ../exe_SHRD/
-    mkdir -p ../tmp_SHRD
-    rsync -a ../tmp/ ../tmp_SHRD/
-    rm -r ../tmp
-  fi
+  cp switch.SEQ switch
+  w3_make ww3_grid ww3_strt ww3_prep ww3_outf ww3_outp ww3_trck ww3_grib \
+          ww3_uprstr ww3_gspl ww3_gint gx_outf gx_outp ww3_systrk ww3_bound \
+          $ww3_NetCDF
+  mv ../exe/exec_type ../exe/exec_type__SEQ
+  cp -r ../exe ../exe__SEQ
+  mv ../tmp ../tmp_SEQ
 
 # --------------------------------------------------------------------------- #
 # 3. Compile MPI codes                                                        #
 # --------------------------------------------------------------------------- #
 
-  if [ ! -z "$mpi_progs" ]
+  cp switch.MPI switch
+  if [ $ESMFMKFILE ]
   then
-    cp switch.MPI switch
-    w3_make $mpi_progs
-    cp switch.MPI ../exe/
-    mv ../exe/exec_type ../exe/exec_type_MPI
-    if [ ! -z "$seq_progs" ]
-    then
-      rsync -a ../exe_SHRD/ ../exe/
-      rm -r ../exe_SHRD
-    fi
-    mkdir -p ../tmp_DIST
-    rsync -a ../tmp/ ../tmp_DIST/
-    rm -r ../tmp
-    ln -sf tmp_DIST ../tmp
+    w3_make ww3_shel ww3_multi ww3_multi_esmf ww3_sbs1
   else
-    rsync -a ../exe_SHRD/ ../exe/
-    rm -rf ../exe_SHRD
-    ln -sf tmp_SHRD ../tmp
+    w3_make ww3_shel ww3_multi ww3_sbs1
   fi
+  mv ../exe/exec_type ../exe/exec_type__MPI
+  mv ../exe__SEQ/* ../exe
+  rm -r ../exe__SEQ
+  mv ../tmp ../tmp_MPI
+  ln -sf tmp_MPI ../tmp
+
 # --------------------------------------------------------------------------- #
 # 4. Reset switch file                                                        #
 # --------------------------------------------------------------------------- #
 
   cp switch.hold switch
+  cp switch.SEQ ../exe/
+  cp switch.MPI ../exe/
 
 # --------------------------------------------------------------------------- #
 # 5. Clean up                                                                 #
 # --------------------------------------------------------------------------- #
 
-  rm -f switch.hold switch.shrd switch.MPI
+  rm -f switch.hold switch.SEQ switch.MPI
 
   echo ' '
   echo ' '

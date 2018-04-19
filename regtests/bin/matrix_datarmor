@@ -3,16 +3,14 @@
 # matrix.go: Run matrix of regression tests on target machine.                #
 #                                                                             #
 # Remarks:                                                                    #
-# - This version is set up for a global .wwatch3.env file and for the         #
-#   CAPARMOR ifremer system. When using this for your own setup and          #
+# - This version is set up for automatic w3_setenv script and for the         #
+#   IFREMER HPC 'datarmor'. When using this for your own setup and            #
 #   computer, please copy rather than modify.                                 #
-# - Needs to be executed from regtests directory.                             #
-# - I like to link the version I need locally to matrix.go in the retests     #
-#   directory (links, not svn version), but that is just my taste ...         #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
 #                                                      December 2013          #
+#                                                      April 2018             #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -22,10 +20,16 @@
 # --------------------------------------------------------------------------- #
 # 0. Environment file
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+  source $(dirname $0)/../../model/bin/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
 
-
+  echo "Main directory    : $main_dir"
+  echo "Scratch directory : $temp_dir"
+  echo "Save source codes : $source"
+  echo "Save listings     : $list"
 
 
 # 1. Set up
@@ -33,34 +37,51 @@
 
   echo '#!/bin/sh'                                           > matrix.head
   echo ' '                                                  >> matrix.head
-  echo '#PBS -l procs=12'                                   >> matrix.head
-  echo '#PBS -q previww3-32'                                >> matrix.head
-  echo '#PBS -l walltime=08:00:00'                          >> matrix.head
+  echo '#PBS -q mpi_1'                                      >> matrix.head
+  echo '#PBS -l mem=60G'                                    >> matrix.head
+  echo '#PBS -l walltime=12:00:00'                          >> matrix.head
   echo '#PBS -N ww3_regtest'                                >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-  export home_dir=`pwd`
-  echo "  cd $home_dir"                                     >> matrix.head
+  echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
+
+# Netcdf modules
+
+  comp="mpt"
+  source /etc/profile.d/modules.sh
+  module purge
+  if [ $comp = "mpi" ]
+  then
+    module load NETCDF/4.3.3.1-impi5-intel2016
+  elif [ $comp = "mpt" ]
+  then
+    module load NETCDF/4.3.3.1-mpt-intel2016
+  elif [ $comp = "gfortran" ]
+  then
+    module load NetCDF/4.4.1.1__gcc-6.3.0__nop
+  fi
+
+
 
 # Compiler option. Choose appropriate compiler and set cmplOption to
 # y if using for the first time or using a different compiler
 
-  cmplr=Intel_Altix
-  export cmplOption='-'
+  cmplr=DATARMOR_debug
+  export cmplOption='y'
 
-  export  mpi='mpirun'
-  export   np='12'
-  export   nr='6'
+  export  mpi='$MPI_LAUNCH'
+  export   np='28'
+  export   nr='14'
   export  nth='2'
 
   if [ "$cmplOption" = 'y' ]
   then
-     export rtst="./bin/run_test -c $cmplr -a $ww3_env -S"
+     export rtst="./bin/run_test -o both -f -c $cmplr -S"
   else
-     export rtst="./bin/run_test -a $ww3_env -S"
+     export rtst="./bin/run_test -o both -f -S"
   fi
 
   export  ww3='../model'
@@ -69,27 +90,27 @@
 #     Addition selection by commenting out lines as below
 
   export     shrd='y' # Do shared architecture tests
-  export     dist='y' # Do distributed architecture (MPI) tests
-  export      omp='y' # Threaded (OpenMP) tests
-  export     hybd='y' # Hybrid options
+  export     dist='n' # Do distributed architecture (MPI) tests
+  export      omp='n' # Threaded (OpenMP) tests
+  export     hybd='n' # Hybrid options
 
   export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
-  export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)
-  export     time='y' # time linmited growth
-  export    fetch='y' # fetch linmited growth
-  export   hur1mg='y' # Hurricane with one moving grid
-  export    shwtr='y' # shallow water tests
-  export    unstr='y' # unstructured grid tests
-  export    smcgr='y' # SMC/Rotated grid test
-  export   mudice='y' # Mud/Ice and wave interaction tests 
-  export   infgrv='y' # Second harmonic generation tests
-  export  multi01='y' # mww3_test_01 (wetting and drying)
-  export  multi02='y' # mww3_test_02 (basic two-way nesting test))
-  export  multi03='y' # mww3_test_03 (three high and three low res grids).
-  export  multi04='y' # mww3_test_04 (swell on sea mount and/or current)
-  export  multi05='y' # mww3_test_05 (three-grid moving hurricane)
-  export  multi06='y' # mww3_test_06 (curvilinear grid tests)
-  export  multi07='y' # mww3_test_07 (unstructured grid tests)
+  export   prop2D='n' # 2-D propagation tests (ww3_tp2.X)
+  export     time='n' # time linmited growth
+  export    fetch='n' # fetch linmited growth
+  export   hur1mg='n' # Hurricane with one moving grid
+  export    shwtr='n' # shallow water tests
+  export    unstr='n' # unstructured grid tests
+  export    smcgr='n' # SMC/Rotated grid test
+  export   mudice='n' # Mud/Ice and wave interaction tests 
+  export   infgrv='n' # Second harmonic generation tests
+  export  multi01='n' # mww3_test_01 (wetting and drying)
+  export  multi02='n' # mww3_test_02 (basic two-way nesting test))
+  export  multi03='n' # mww3_test_03 (three high and three low res grids).
+  export  multi04='n' # mww3_test_04 (swell on sea mount and/or current)
+  export  multi05='n' # mww3_test_05 (three-grid moving hurricane)
+  export  multi06='n' # mww3_test_06 (curvilinear grid tests)
+  export  multi07='n' # mww3_test_07 (unstructured grid tests)
 
 # export   filter='PR3 ST2 UQ'
                       # The filter does a set of consecutinve greps on the 
@@ -97,10 +118,10 @@
                       # selected options.
 
 # --------------------------------------------------------------------------- #
-# 2.  Ecxecute matrix.base ...                                                #
+# 2.  Execute matrix.base ...                                                 #
 # --------------------------------------------------------------------------- #
-
-  ./bin/matrix.base
+             
+  $main_dir/../regtests/bin/matrix.base
 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #

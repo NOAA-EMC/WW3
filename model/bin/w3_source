@@ -40,11 +40,21 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
-# 1.a Internal variables
 
-# 1.a.0 Set default mode and capture script arguments
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ''
+  echo '               **************************************'
+  echo '             ***  making WAVEWATCH III source codes ***'
+  echo '               **************************************'
+  echo ''
+
+# 1.b Input arguments - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   if test "$#" = '0'
   then
@@ -55,65 +65,56 @@
     script_args="$*"
   fi
 
-# 1.a.1 Setup file
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install 
-# so that all bin scripts point to the local wwatch3.env 
-# WW3ENV 
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to 
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}" 
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
-
-# 1.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
-
-  if test -f $ww3_env
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    WWATCH3_DIR="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    WWATCH3_TMP="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"; echo ' '
-    exit 1
-  fi
-
-  iexit=0
-  if [ -z "${WWATCH3_DIR}" ]
-  then
-    echo '*** WWATCH3_DIR not defined '
-    iexit=`expr $iexit + 1`
-  fi
-  if [ -z "${WWATCH3_TMP}" ]
-  then
-    echo '*** WWATCH3_TMP not defined '
-    iexit=`expr $iexit + 1`
-  fi
-  echo ' '
-  if [ $iexit -gt 1 ]; then exit 1; fi
-
-# 1.a.3 Check for switch file  - - - - - - - - - - - - - - - - - - - - - - - - - 
-
+  source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
   temp_dir=$WWATCH3_TMP
-  work_dir=$main_dir/work
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
 
+  echo "Main directory    : $main_dir"
+  echo "Scratch directory : $temp_dir"
+  echo "Save source codes : $source"
+  echo "Save listings     : $list"
+
+# 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
+
+  # switch file
   switch_file=$main_dir/bin/switch
-  if test ! -f $switch_file
+  if [ ! -e $switch_file ] || [ ! -r $switch_file ]
   then
-    echo "*** switch file $switch_file not found ***" ; echo ' '
+    echo ' '
+    echo "[ERROR] switch file $switch_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
     exit 1
   fi
   switch_file_old=$main_dir/bin/switch.old
-
   switches=$(cat $switch_file)
 
-# 1.a.4 Setup suffix list  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  # work dir
+  work_dir=$main_dir/work
+  if [ ! -d $work_dir ]
+  then
+    if [ ! $(mkdir -p $work_dir) ]
+    then
+      echo ' '
+      echo "[ERROR] Directory $work_dir cannot be created"
+      echo '        Please check the permissions'
+    fi
+  fi
+
+  # temp dir
+  rm -rf $temp_dir/*
+
+
+# 1.e Setup suffix list  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   suffixes="f F f90 F90 c"
 
-# 1.a.5 Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.f Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 # reg_programs = non-NetCDF programs
   reg_programs="ww3_grid"
@@ -171,42 +172,11 @@
     progs="$script_args"
   fi
 
-# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  echo ''
-  echo '               **************************************'
-  echo '             ***  making WAVEWATCH III source codes ***'
-  echo '               **************************************'
-  echo ''
-
-# 1.c Prepare work and scratch directories - - - - - - - - - - - - - - - - - - 
-
-  if [ ! -d $work_dir ]
-  then
-    if ! `mkdir $work_dir`
-    then
-      echo '' ; echo "      *** Cannot create $work_dir ***" ; echo ''
-      exit
-    fi
-  fi
-
-  if [ ! -d $temp_dir ]
-  then
-    if ! `mkdir $temp_dir`
-    then
-      echo '' ; echo "      *** Cannot create $temp_dir ***" ; echo ''
-      exit
-    fi
-  fi
-
-  cd $temp_dir
-  \rm -f *
-
-# 1.d Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.g Prepare makefile - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   echo 'Making main makefile ...'
   cd $main_dir
-  export WWATCH3_DIR WWATCH3_TMP
   if $main_dir/bin/make_makefile.sh
   then
     \cp -f $switch_file $switch_file_old
@@ -216,7 +186,7 @@
   echo ''
   main_makefile=$main_dir/ftn/makefile
 
-# 1.e Define some useful functions - - - - - - - - - - - - - - - - - - - - - -
+# 1.h Define some useful functions - - - - - - - - - - - - - - - - - - - - - -
 
 # get make dependencies
   get_depend () {
@@ -321,7 +291,7 @@
       fi
     done
 
-# 2.d Create makefile  - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.e Create makefile  - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
     cd $temp_dir
     \rm -f makefile
@@ -389,19 +359,19 @@
       echo "$target : $depend"                                     >> makefile
     done
 
-# 2.d Create tarfile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.f Create tarfile - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
     echo ''
     echo "Create tarfile: $tarfile"
     tar -czf $tarfile $srcs $incs makefile
     \rm -f $srcs $incs makefile
 
-# 2.e End loop over all requests - - - - - - - - - - - - - - - - - - - - - - -
+# 2.g End loop over all requests - - - - - - - - - - - - - - - - - - - - - - -
 
   done
   echo ''
 
-# 2.f Check make variables and print warnings  - - - - - - - - - - - - - - - -
+# 2.h Check make variables and print warnings  - - - - - - - - - - - - - - - -
 
   check_make_variable CC       "$CC"
   check_make_variable CFLAGS   "$CFLAGS"
@@ -410,6 +380,7 @@
   check_make_variable FFLAGS   "$FFLAGS"
   check_make_variable LDFLAGS  "$LDFLAGS"
   check_make_variable LIBS     "$LIBS"
+
 
 # --------------------------------------------------------------------------- #
 # 3. End of program ID.                                                       #

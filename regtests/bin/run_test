@@ -51,7 +51,7 @@ Required:
   test_name  : name of test case (directory)
 Options:
   -a ww3_env       : use WW3 environment setup file <ww3_env>
-                   :   *default is <source_dir>/wwatch3.env
+                   :   *default is <source_dir>/bin/wwatch3.env
                    :   *file will be created if it does not already exist
   -c cmplr         : setup comp & link files for specified cmplr
   -C coupl         : invoke test using <coupl> coupled application
@@ -343,7 +343,7 @@ then
   d="`dirname $ww3_env`"; b="`basename $ww3_env`";
   export WWATCH3_ENV="`cd $d 1>/dev/null 2>&1 && pwd`/$b"
 else
-  export WWATCH3_ENV="$path_s/wwatch3.env"
+  export WWATCH3_ENV="$path_b/wwatch3.env"
 fi
 if [ -f $path_b/w3_setup ]
 then
@@ -367,6 +367,23 @@ else
   errmsg "WW3 setup script $path_b/w3_setup not found"
   exit 1
 fi
+
+#if [ ! -e $path_b/w3adc ]
+#then
+#  $path_b/w3_setup $path_s -q
+#fi
+#
+#if [ ! -e $path_b/comp ] || [ ! -e $path_b/link ]
+#then
+#  errmsg "No comp/link file found in $path_b. Use option -c"
+#  exit 1
+#fi  
+#
+#if [ ! -e $path_b/switch ]
+#then
+#  $path_b/w3_setup $path_s -s $file_c -q
+#fi
+
 
 # --------------------------------------------------------------------------- #
 # 3. Execute Test                                                             #

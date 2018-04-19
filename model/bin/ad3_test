@@ -13,6 +13,9 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
 # 1.a Check and process input
@@ -32,38 +35,18 @@
 
 # 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
-
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
   switch="switch"          # file containing switches
   compress=0               # source code compression par in w3adc
                            # if not 0, documentaion removed from .f90 file
 
-# 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ ${WWATCH3_DIR} ] && [ ${WWATCH3_TMP} ]
-  then
-    main_dir=${WWATCH3_DIR}
-    temp_dir=${WWATCH3_TMP}
-  elif [ -f $ww3_env ]
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    temp_dir="$*"
-    set `grep WWATCH3_SOURCE $ww3_env` ; shift
-    source="$*"
-    set `grep WWATCH3_LIST $ww3_env` ; shift
-    list="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"
-    exit 2
-  fi
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
+
 
 # 1.d Set up paths etc.  - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

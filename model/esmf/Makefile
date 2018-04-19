@@ -8,10 +8,10 @@ WW3_TMPDIR := $(WW3_DIR)/tmp
 WW3_EXEDIR := $(WW3_DIR)/exe
 WW3_COMP ?= gnu
 WW3_CC := gcc
-WW3_F77 := gfortran
+WW3_F90 := gfortran
 SWITCHES := $(shell cat switch)
 
-WWATCH3_ENV := $(CURDIR)/wwatch3.env
+WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
 export WWATCH3_ENV
 
 EXE := $(WW3_EXEDIR)/ww3_multi_esmf
@@ -126,7 +126,7 @@ env:
 	@echo '# ---------------------------------------'      >> $(WWATCH3_ENV)
 	@echo '#'                                              >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_LPR      $(PRINTER)'                    >> $(WWATCH3_ENV)
-	@echo 'WWATCH3_F77      $(WW3_F77)'                    >> $(WWATCH3_ENV)
+	@echo 'WWATCH3_F90      $(WW3_F90)'                    >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_CC       $(WW3_CC)'                     >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_DIR      $(WW3_DIR)'                    >> $(WWATCH3_ENV)
 	@echo 'WWATCH3_TMP      $(WW3_TMPDIR)'                 >> $(WWATCH3_ENV)

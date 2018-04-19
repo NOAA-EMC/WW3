@@ -21,26 +21,17 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
 # 1.a Internal variables
 
   set -e
-
-# 1.a.1 Setup file
-
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
-
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
-
   home_dir=`pwd`
 
-   info_bot="3  2  1.0  '(12F11.3)'"
+  info_bot="3  2  1.0  '(12F11.3)'"
   info_obst="3  2  1.0  '(26F5.2)'"
   info_mask="3  2  1    '(66I2)'"  
 
@@ -150,27 +141,18 @@ EOF
     exit 3
   fi
 
-# 1.a.4 Setup file processing
 
-  if test -f $ww3_env
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    temp_dir="$*"
-    set `grep WWATCH3_SOURCE $ww3_env` ; shift
-    source="$*"
-    set `grep WWATCH3_LIST $ww3_env` ; shift
-    list="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"; echo ' '
-    exit 1
-  fi
+# 1.a.4 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  exe_dir="$main_dir/exe"
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
+
 
 # private temp dir to allow for parallel batch processing
-
+  exe_dir="$main_dir/exe"
   temp_dir=$home_dir/ww3_gspl.temp
  
 # 1.a.5 Process input (part 2)

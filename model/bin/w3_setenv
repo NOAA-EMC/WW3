@@ -1,0 +1,160 @@
+#!/bin/sh -e
+# --------------------------------------------------------------------------- #
+# w3_setenv : Set wwatch3 env and verify the consistency of the paths used    #
+#                                                                             #
+# use     : w3_setenv                                                         #
+#                                                                             #
+# programs used :                                                             #
+#       w3_clean                                                              #
+#       w3_setup                                                              #
+#       w3_make                                                               #
+#       w3_new                                                                #
+#       w3_source                                                             #
+#       w3_automake                                                           #
+#       make_MPI                                                              #
+#       make_OMP                                                              #
+#       make_HYB                                                              #
+#       link.*                                                                #
+#       list                                                                  #
+#       ln3                                                                   #
+#       ad3                                                                   #
+#       ad3_test                                                              #
+#       all_switches                                                          #
+#       sort_all_switches                                                     #
+#       find_switch                                                           #
+#       sort_switch                                                           #
+#       make_makefile.sh                                                      #
+#       ww3_gspl.sh                                                           #
+#       matrix_datarmor                                                       #
+#                                                                             #
+#                                                                             #
+#                                                      M. Accensi             #
+#                                                      March 2018             #
+#                                                                             #
+#    Copyright 2009-2018 National Weather Service (NWS),                      #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+
+# 1.a Input arguments - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  if [[ "$BASH_SOURCE" = /* ]]
+  then
+    path_bin=$(dirname $BASH_SOURCE)
+  else
+    path_bin="${PWD}/$(dirname $BASH_SOURCE)"
+  fi
+  path_bin="$(cd $path_bin 1>/dev/null 2>&1 && pwd)"
+
+# 1.b Set wwatch3.env - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  info=0
+  if [ -e $path_bin/wwatch3.env ]
+  then
+    ww3_env=$path_bin/wwatch3.env
+    if [ $info = 1 ];then echo "[INFO] local env file wwatch3.env found in $ww3_env" ;fi
+  elif [ -e ${HOME}/.wwatch3.env ]
+  then
+    cp ${HOME}/.wwatch3.env $path_bin/wwatch3.env
+    ww3_env=$path_bin/wwatch3.env
+    if [ $info = 1 ];then echo "[INFO] global env file wwatch3.env copied in $ww3_env" ;fi
+  elif [ ${WWATCH3_ENV} ]
+  then
+    if [ -e ${WWATCH3_ENV} ] 
+    then
+      ww3_env=${WWATCH3_ENV}
+      if [ $info = 1 ];then echo "[INFO] user defined env file wwatch3.env found in $ww3_env" ;fi
+    else
+      echo "[ERROR] WWATCH3_ENV variable define a non existing wwatch3.env file"
+      echo "        Please unset or update this env variable"
+      exit 1
+    fi
+  else
+    echo "[ERROR] no env file wwatch3.env found."
+    echo "        Please run $path_bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
+  fi
+
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  set `grep WWATCH3_DIR $ww3_env` ; shift
+  main_dir="$*"
+  export WWATCH3_DIR=$main_dir
+  set `grep WWATCH3_TMP $ww3_env` ; shift
+  temp_dir="$*"
+  export WWATCH3_TMP=$temp_dir
+  set `grep WWATCH3_SOURCE $ww3_env` ; shift
+  source="$*"
+  export WWATCH3_SOURCE=$source
+  set `grep WWATCH3_LIST $ww3_env` ; shift
+  list="$*"
+  export WWATCH3_LIST=$list
+
+  path_mod="$(cd $(dirname $path_bin) 1>/dev/null 2>&1 && pwd)"
+
+  if [ -z "$(echo $path_mod | grep $main_dir)" ]
+  then
+    echo ""
+    echo "[WARNING] WWATCH3_DIR does not match current path"
+    echo "          CURRENT DIR = $path_mod"
+    echo "          WWATCH3_DIR = $main_dir"
+    echo ""
+    echo "Update WWATCH3_DIR [u] or keep [k] or exit [e] ?"
+    read OK
+    case $OK in
+      'u'|'U') do_set='y' ;;
+      'k'|'K') do_set='n' ;;
+      'e'|'E') exit       ;;
+    esac
+    if [ "$do_set" = 'y' ]
+    then
+      $path_bin/w3_setup -t "$path_mod/tmp" $path_mod
+    fi
+  fi
+
+  if [ -z "$(echo $temp_dir | grep $main_dir)" ]
+  then
+    echo ""
+    echo "[WARNING] WWATCH3_TMP does not match WWATCH3_DIR"
+    echo "          WWATCH3_TMP = $temp_dir"
+    echo "          WWATCH3_DIR = $main_dir"
+    echo ""
+    echo "Update WWATCH3_DIR [u] or keep [k] or exit [e] ?"
+    read OK
+    case $OK in
+      'y'|'Y') do_set='y' ;;
+      'k'|'K') do_set='n' ;;
+      'e'|'E') exit       ;;
+    esac
+    if [ "$do_set" = 'y' ]
+    then
+      $path_bin/w3_setup -t "$path_mod/tmp" $path_mod
+    fi
+  fi
+
+  # main dir
+  if [ ! -d $main_dir ]
+  then
+    echo ' '
+    echo "[ERROR] Directory $main_dir not found"
+    echo "        Please run $path_bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
+  fi
+
+  # tmp dir
+  if [ ! -d $temp_dir ]
+  then
+    mkdir -p $temp_dir
+  fi
+
+  # env file
+  export WWATCH3_ENV=$path_bin/wwatch3.env
+
+# End of w3_setenv ----------------------------------------------------------- #

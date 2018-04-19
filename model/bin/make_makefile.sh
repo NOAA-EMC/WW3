@@ -19,40 +19,26 @@
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
 #       No unauthorized use without permission.                               #
 #                                                                             #
+# --------------------------------------------------------------------------- #
 
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
-# 1.a Internal variables
-# set -x
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
 
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
 
-# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
+  echo ' '
+  echo '                *****************************'
+  echo '              ***   WAVEWATCH III makefile  ***'
+  echo '                *****************************'
+  echo ' '
 
-  if [ ${WWATCH3_DIR} ] && [ ${WWATCH3_TMP} ]
-  then
-    main_dir=${WWATCH3_DIR}
-    temp_dir=${WWATCH3_TMP}
-  elif [ -f $ww3_env ]
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    temp_dir="$*"
-  else
-     "*** Set-up file $ww3_env not found ***"
-    exit 1
-  fi
 
+# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+  # ar_cmd
   os=`uname -s 2>/dev/null`
   if [ "$os" = "AIX" ]
   then
@@ -61,33 +47,29 @@
     ar_cmd="ar rv"
   fi
 
-# 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
 
-  if [ -d $main_dir ]
-  then
-    cd $main_dir
-  else
-    echo "*** Directory $main_dir not found ***"
-    exit 2
-  fi
-
-  if [ ! -d $temp_dir ]
-  then
-    mkdir $temp_dir
-  fi
-  cd $temp_dir
-
-# 1.e Create makefile with header  - - - - - - - - - - - - - - - - - - - - - -
+# 1.c Create makefile with header  - - - - - - - - - - - - - - - - - - - - - -
 
   echo '# -------------------------'              > makefile
   echo '# WAVEWATCH III makefile   '             >> makefile
   echo '# -------------------------'             >> makefile
+
+
+# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
+
 
 # --------------------------------------------------------------------------- #
 # 2. Part 1, subroutine dependencies                                          #
 # --------------------------------------------------------------------------- #
 # 2.a File ID
 
+  cd $temp_dir
   rm -f filelist.tmp
 
 # 2.b Get info from switch file  - - - - - - - - - - - - - - - - - - - - - - -
@@ -952,7 +934,8 @@
                prop=
              source="$flx $ln $st $nl $bt $ic $is $db $tr $bs $xx $igcode"
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
-                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
+                aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd'
+                aux="$aux" ;;
      ww3_trck) IDstring='Track output post'
                core=
                data='w3gdatmd w3odatmd'
@@ -1007,11 +990,11 @@
                 aux='constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd' ;;
       ww3_systrk) IDstring='Wave system tracking postprocessor'
                core='w3strkmd'
-               data=
+               data='w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd'
                prop=
              source=
                  IO=
-                aux='constants w3servmd w3timemd' ;;
+                aux='constants w3servmd w3timemd w3gsrumd' ;;
      libww3) IDstring='Object file archive'
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
@@ -1021,7 +1004,7 @@
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
      ww3_uprstr) IDstring='Update Restart File' 
                  core= 
-	              data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
+	         data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
                  prop= 
                  source="$stx $nlx $btx $is" 
                  IO='w3iogrmd w3iogomd w3iorsmd' 
@@ -1183,7 +1166,7 @@
                WMINITMD WMWAVEMD WMFINLMD WMMDATMD WMGRIDMD WMUPDTMD \
                WMUNITMD WMINIOMD WMIOPOMD WMSCRPMD WMESMFMD \
                w3getmem WW_cc CMP_COMM W3OACPMD W3AGCMMD W3OGCMMD W3IGCMMD \
-               W3NMLMULTIMD W3NMLPRNCMD
+               W3NMLMULTIMD W3NMLPRNCMD W3NMLOUNFMD W3NMLOUNPMD
       do
       case $mod in
          'W3INITMD'     ) modtest=w3initmd.o ;;

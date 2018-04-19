@@ -3,16 +3,14 @@
 # matrix.go: Run matrix of regression tests on target machine.                #
 #                                                                             #
 # Remarks:                                                                    #
-# - This version is set up for a global .wwatch3.env file and for the         #
+# - This version is set up for automatic w3_setenv script and for the         #
 #   NOAA RDHPC 'zeus' system. When using this for your own setup and          #
 #   computer, please copy rather than modify.                                 #
-# - Needs to be executed from regtests directory.                             #
-# - I like to link the version I need locally to matrix.go in the retests     #
-#   directory (links, not svn version), but that is just my taste ...         #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
 #                                                      December 2013          #
+#                                                      April 2018             #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -20,6 +18,20 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+# 0. Environment file
+
+  source $(dirname $0)/../../model/bin/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
+
+  echo "Main directory    : $main_dir"
+  echo "Scratch directory : $temp_dir"
+  echo "Save source codes : $source"
+  echo "Save listings     : $list"
+
+
 # 1. Set up
 # 1.a Computer/ user dependent set up
 
@@ -34,8 +46,7 @@
   echo '#PBS -o matrix.out'                                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-  export home_dir=`pwd`
-  echo "  cd $home_dir"                                     >> matrix.head
+  echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
 # Netcdf modules
@@ -49,7 +60,7 @@
 # y if using for the first time or using a different compiler
 
   cmplr=Intel
-  export cmplOption='-'
+  export cmplOption='y'
 
   export  mpi='mpirun'
   export   np='24'
@@ -58,9 +69,9 @@
 
   if [ "$cmplOption" = 'y' ]
   then
-     export rtst="./bin/run_test -c $cmplr -a ~/.wwatch3.env -S"
+     export rtst="./bin/run_test -c $cmplr -S"
   else
-     export rtst="./bin/run_test -a ../model/wwatch3.env -S"
+     export rtst="./bin/run_test -S"
   fi
 
   export  ww3='../model'
@@ -97,10 +108,10 @@
                       # selected options.
 
 # --------------------------------------------------------------------------- #
-# 2.  Ecxecute matrix.base ...                                                #
+# 2.  Execute matrix.base ...                                                 #
 # --------------------------------------------------------------------------- #
-
-  ./bin/matrix.base
+             
+  $main_dir/../regtests/bin/matrix.base
 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #

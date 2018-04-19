@@ -1,13 +1,15 @@
-#!/bin/sh
+#!/bin/sh -e
 # --------------------------------------------------------------------------- #
 #                                                                             #
 # Script for setting up (installing) WAVEWATCH III.                           #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-# 1. Preparations                                                             #
+
+# --------------------------------------------------------------------------- #
+# 0. Process command line arguments                                           #
 # --------------------------------------------------------------------------- #
 
-# 1.a Error message function
+# 0.a Error message function
 errmsg ()
 {
   echo "" 2>&1
@@ -19,7 +21,7 @@ errmsg ()
   echo "" 2>&1
 }
 
-# 1.b Usage function
+# 0.b Usage function
 myname="`basename $0`"  #name of script
 optstr="c:hqs:et:"  #option string for getopt function
 usage ()
@@ -40,7 +42,7 @@ Options:
 EOF
 }
 
-# 1.c Setup array of command-line arguments
+# 0.c Setup array of command-line arguments
 args=`getopt $optstr $*`
 if [ $? != 0 ]
 then
@@ -49,7 +51,7 @@ then
 fi
 set -- $args
 
-# 1.d Process command-line options
+# 0.d Process command-line options
 while :
 do
   case "$1" in
@@ -70,7 +72,7 @@ then
   exit 1
 fi
 
-# 1.e Get required arguments
+# 0.e Get required arguments
 if [ ! $# = 0 ]
 then
   path_s="$1" ; shift
@@ -79,7 +81,22 @@ else
   exit 1
 fi
 
-# 1.f Convert source path from "relative" to "absolute"
+
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+
+
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo '                *****************************'
+  echo '              ***   WAVEWATCH III setup     ***'
+  echo '                *****************************'
+  echo ' '
+
+
+# 1.b Convert source path from "relative" to "absolute"
 if [ ! -d $path_s ]
 then
   errmsg "$path_s not found"
@@ -88,7 +105,7 @@ then
 fi
 path_s="`cd $path_s 1>/dev/null 2>&1 && pwd`"
 
-# 1.g Paths to source subdirectories
+# 1.c Paths to source subdirectories
 path_b="$path_s/bin"
 if [ ! -d $path_b ]
 then
@@ -102,35 +119,51 @@ then
   exit 1
 fi
 
-# 1.h Header
-echo ' '
-echo 'Setting up WAVEWATCH III'
-echo ' '
 
 # --------------------------------------------------------------------------- #
 # 2. Set up WWATCH3 environment                                               #
 # --------------------------------------------------------------------------- #
 # 2.a Environment file
 
-ww3_env="${HOME}/.wwatch3.env"
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
+if [[ "$0" = /* ]]
+then
+  path_bin=$(dirname $0)
+else
+  path_bin="${PWD}/$(dirname $0)"
+fi
+path_bin="`cd $path_bin 1>/dev/null 2>&1 && pwd`"
 
-if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi
+echo ' '
+if [ -e $path_bin/wwatch3.env ]
+then
+  ww3_env=$path_bin/wwatch3.env
+  echo "[INFO] local env file wwatch3.env found in $ww3_env"
+elif [ -e ${HOME}/.wwatch3.env ]
+then
+  cp ${HOME}/.wwatch3.env $path_bin/wwatch3.env
+  ww3_env=$path_bin/wwatch3.env
+  echo "[INFO] global env file wwatch3.env copied in $ww3_env"
+elif [ ! -z ${WWATCH3_ENV} ]
+then
+  ww3_env=${WWATCH3_ENV}
+  echo "[INFO] user defined env file wwatch3.env found in $ww3_env"
+else
+  ww3_env=$path_bin/wwatch3.env
+  echo "[INFO] local env file wwatch3.env created in $ww3_env"
+fi
 
 # 2.b Check for existing environment and set defaults
 if [ -f $ww3_env ]
 then
+  sed -i "s/WWATCH3_F77/WWATCH3_F90/g" $ww3_env
+
   echo "   Setup file $ww3_env found"
 
   set `grep WWATCH3_LPR $ww3_env` ; shift
   prntr="$*"
   echo "      Printer (listings)          : $prntr"
 
-  set `grep WWATCH3_F77 $ww3_env` ; shift
+  set `grep WWATCH3_F90 $ww3_env` ; shift
   comp_fc="$*"
   echo "      FORTRAN compiler (aux only) : $comp_fc"
 
@@ -157,23 +190,6 @@ then
   list="$*"
   echo "      Save listings               : $list"
 
-  if [ $no_prompt ]
-  then
-    do_set='n'
-  else
-    OK="$NULL"
-    until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
-          [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
-    do
-      echo -n "   Update settings ? [y/n] "
-      read OK
-      case $OK in
-       'y'|'Y') do_set='y' ;;
-       'n'|'N') do_set='n' ;;
-      esac
-    done
-  fi
-
 else
   echo "   Setup file $ww3_env not found"
 
@@ -183,31 +199,46 @@ else
   else
     prntr=printer
   fi
-  comp_fc=f77
-  comp_cc=cc
+  comp_fc=gfortran
+  comp_cc=gcc
   if [ $tdir ]
   then
     temp_dir=$tdir
   else
-    temp_dir=
-    if [ -d /tmp ]
-    then
-      if [ -n "$user" ]
-      then
-        temp_dir=/tmp/$user
-      else
-        if [ -n "$USER" ]
-        then
-          temp_dir=/tmp/$USER
-        fi
-      fi
-    fi
+    temp_dir=$(dirname $path_bin)/tmp
   fi
-  source=no
-  list=no
-  do_set='y'
+  source=yes
+  list=yes
 
+    echo ' '
+    echo "   Default set up :"
+    echo "      Printer (listings)       : $prntr"
+    echo "      FORTRAN comp. (aux only) : $comp_fc"
+    echo "      C Compiler (aux only)    : $comp_cc"
+    echo "      Scratch directory        : $temp_dir"
+    echo "      Save sources             : $source"
+    echo "      Save listings            : $list"
 fi
+
+
+if [ $no_prompt ]
+then
+  do_set='n'
+else
+  OK="$NULL"
+  until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
+        [ "$OK" = 'n' ] || [ "$OK" = 'N' ]
+  do
+    echo -n "   Update settings ? [y/n] "
+    read OK
+    case $OK in
+     'y'|'Y') do_set='y' ;;
+     'n'|'N') do_set='n' ;;
+    esac
+  done
+fi
+
+
 
 # 2.c Get user input for new environment
 if [ "$do_set" = 'y' ]
@@ -312,7 +343,7 @@ echo '# ---------------------------------------' >> $ww3_env
 echo '#'                                         >> $ww3_env
 echo ' '                                         >> $ww3_env
 echo "WWATCH3_LPR      $prntr"                   >> $ww3_env
-echo "WWATCH3_F77      $comp_fc"                 >> $ww3_env
+echo "WWATCH3_F90      $comp_fc"                 >> $ww3_env
 echo "WWATCH3_CC       $comp_cc"                 >> $ww3_env
 echo "WWATCH3_DIR      $path_s"                  >> $ww3_env
 echo "WWATCH3_TMP      $temp_dir"                >> $ww3_env
@@ -374,6 +405,7 @@ then
   echo '   Setup comp & link files'
   if [ -f $path_b/comp.$cmplr ]
   then
+    rm -f $path_b/comp
     cp -f $path_b/comp.$cmplr $path_b/comp
     echo "      $path_b/comp.$cmplr => $path_b/comp"
   else
@@ -382,6 +414,7 @@ then
   fi
   if [ -f $path_b/link.$cmplr ]
   then
+    rm -f $path_b/link
     cp -f $path_b/link.$cmplr $path_b/link
     echo "      $path_b/link.$cmplr => $path_b/link"
   else
@@ -397,6 +430,7 @@ then
   echo '   Setup switch file'
   if [ -f $path_b/switch_$swtch ]
   then
+    rm -f $path_b/switch
     cp -f $path_b/switch_$swtch $path_b/switch
     echo "      $path_b/switch_$swtch => $path_b/switch"
   else

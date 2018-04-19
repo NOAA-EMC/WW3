@@ -24,9 +24,8 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-# 1. Preparations                                                             #
+# 0. Process command line arguments                                           #
 # --------------------------------------------------------------------------- #
-# 1.a Check and process input
 
   if test "$#" -lt '1'
   then
@@ -35,30 +34,28 @@
     keys="$*"
   fi
 
-# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
 
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
+#  echo ' '
+#  echo '                *****************************'
+#  echo '              ***   WAVEWATCH III new       ***'
+#  echo '                *****************************'
+#  echo ' '
 
-  if [ ${WWATCH3_DIR} ]
-  then
-    main_dir=${WWATCH3_DIR}
-  elif test -f $ww3_env
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"
-    exit 1
-  fi
+
+# 1.b Read data from the environment file  - - - - - - - - - - - - - - - - - -
+
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
+
 
 # --------------------------------------------------------------------------- #
 # 2. Process keywords.                                                        #
@@ -350,5 +347,6 @@
        *      ) echo "w3_new: keyword [$key] not recognized" ;;
     esac
   done
+
   
 # End of w3_new ------------------------------------------------------------- #

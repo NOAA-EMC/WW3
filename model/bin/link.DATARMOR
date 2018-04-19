@@ -35,29 +35,17 @@
   echo "      Linking $prog"
   input="$*"
 
-# 1.b Internal variables - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install
-# so that all bin scripts point to the local wwatch3.env
-# WW3ENV
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}"
+# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
 
-# 1.c Read data from the environment file  - - - - - - - - - - - - - - - - - -
 
-  if [ -f $ww3_env ]
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"
-    exit 2
-  fi
-
-# 1.d Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.c Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   rm -f $main_dir/exe/$prog
 
@@ -98,8 +86,60 @@
 #     No GRIB libraries for this one
 
   # linking options
-  libs=""
-  opt="-O3 -xCORE-AVX2 -o $prog"
+  #libs="-L/appli/ddt/ddt-7.0.6/lib/64 -ldmalloc"
+  opt=" -o $prog"
+
+################################################################################
+# *** System-dependant instructions                                            #
+# -xHost : Generates instructions for the highest instruction set available on #
+#          the compilation host processor                                      #
+# -xcore-avx2 : Intel Advanced Vector Extensions 2                             #
+#                                                                              #
+# The value for <code> must be lower case on Linux or OS X                     #
+################################################################################
+  opt="$opt -xHost"
+
+
+################################################################################
+# *** Optimization levels                                                      #
+# -O0 : No optimizations applied                                               #
+# -O1 : Provides a minimum of statement–level optimizations                    #
+# -O2 : Enables basic block level optimizations                                #
+# -O3 : Adds loop unrolling and global optimizations at the function level     #
+# -O4 : Adds automatic inlining of routines contained in the same file         #
+#                                                                              #
+# Debugging with -g does not suppress -On, but -On limits -g in certain ways   #
+################################################################################
+  opt="$opt -O3"
+
+
+################################################################################
+# *** Profiling and debugging analysis                                         #
+# -p  : Profiling                                                              #
+# -pg : Profiling with statistics in gmon.out                                  #
+# -g  : Compiles for debugging and performance analysis.                       #
+#                                                                              #
+# The compiler options -p, -pg, or -xpg should not be used to compile          #
+# multi-threaded programs, because the runtime support for these options is    #
+# not thread-safe. If a program that uses multiple threads is compiled with    #
+# these options invalid results or a segmentation fault could occur at runtime #
+# If you compile with -pg, then be sure to link with -pg.                      #
+################################################################################
+  opt="$opt -p"
+#  opt="$opt -g"
+
+
+################################################################################
+# *** Memory setting                                                           #
+# -traceback : Issue a stack trace if a severe error occurs in execution       #
+#                                                                              #
+# If you compile with -traceback, then be sure to link with -traceback         #
+# The heap is memory set aside for dynamic allocation                          #
+# The stack is the memory set aside as scratch space for a thread of execution #
+# Each thread gets a stack, while there is only one heap for the application   #
+################################################################################
+#  opt="$opt -traceback"
+
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]

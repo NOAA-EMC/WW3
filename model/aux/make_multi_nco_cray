@@ -64,7 +64,7 @@ source $MODULESHOME/etc/modules.sh
 # Create new env file for this build
 cat > wwatch3.env << EOF
 WWATCH3_LPR Printer
-WWATCH3_F77 ifort
+WWATCH3_F90 ifort
 WWATCH3_CC  icc
 WWATCH3_DIR ${WWATCH3_DIR}
 WWATCH3_TMP ${WWATCH3_TMP}
@@ -72,7 +72,7 @@ WWATCH3_SOURCE no
 WWATCH3_LIST no
 EOF
 
-export WWATCH3_ENV=${WWATCH3_BUILD}/wwatch3.env
+export WWATCH3_ENV=${WWATCH3_BUILD}/bin/wwatch3.env
 
 comps=ftn
 compm=ftn

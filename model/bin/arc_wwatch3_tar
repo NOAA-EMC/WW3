@@ -18,70 +18,32 @@
 # --------------------------------------------------------------------------- #
 # 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  clear
-  echo -e '\n\n\n               ======================================'
-  echo -e '             ---   WAVEWATCH III archiving program  ---'
-  echo -e '               ======================================'
+  echo ' '
+  echo '                *****************************'
+  echo '              ***   WAVEWATCH III archive   ***'
+  echo '                *****************************'
+  echo ' '
 
-# 1.b Test present directory and set location of environment file  - - - - - -
 
-  echo -e '\n\n Choose now where you configuration file wwatch3.env is located.'
-  echo -e ' If you use a generic/system-wide wwatch3.env, type G. '
-  echo -e ' If you use a local wwatch3.env, type L. ' 
-  echo -en '\n\n Type your choice now [G|L]: '
-  read sww3dir
+# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ "${sww3dir}" == "G" ] || [ "${sww3dir}" == "g" ]
-  then
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
 
-    ww3_env="${HOME}/.wwatch3.env"   # setup file
+  echo "Main directory    : $main_dir"
+  echo "Scratch directory : $temp_dir"
+  echo "Save source codes : $source"
+  echo "Save listings     : $list"
 
-    if [ -s $ww3_env ]
-    then
-      set `grep WWATCH3_DIR $ww3_env` ; shift ; main_dir="$*"
-      echo -e "\n Install directory: " 
-      echo -e "  $main_dir"
-    else
-      echo -e "\n\n Generic wwatch3.env file not found in"
-      echo -e "  ${home_dir} "
-      echo -e '\n  Enter correct location of env file relative to there.'
-      echo -e '  Alternatively, quit and choose local env file [option L]. \n'
-      main_dir=nodir.$$
-      until [ -d $main_dir ]
-      do
-        echo -en "\n\n   Directory (relative to $home_dir) : "
-        read mdir
-        if [ -n "$mdir" ]
-        then
-          main_dir="$mdir"
-        fi
-      done
-      cd $main_dir
-      main_dir=`pwd`
-    fi
 
-  elif [ "${sww3dir}" == "L" ] || [ "${sww3dir}" == "l" ]
-  then
- 
-    echo -e "\n\n Enter the path for local wwatch3.env file."
-    echo -e "  This may be the full or relative path ( ./ and ../ ): "
-    echo -en "  " 
-    read main_dir
+  ww3_dir="`cd $main_dir/.. 1>/dev/null 2>&1 && pwd`"
 
-    if [ -f ${main_dir}/wwatch3.env ]
-    then
-      echo -e '\n Local wwatch3.env found, moving ahead.'
-      ww3_env="${main_dir}/wwatch3.env"
-    else
-      echo -e '\n\n Local file wwatch3.env not found. Exiting. \n\n'
-      exit
-    fi
-  fi
+  cd $ww3_dir
 
-  cd ${main_dir}
-  main_dir=`pwd`
-
-  echo -e "\n Archiving in $main_dir/arc"
+  echo -e "\n Archiving in $ww3_dir/arc"
 
   OK="$NULL"
   until [ "$OK" = 'y' ] || [ "$OK" = 'Y' ] || \
@@ -99,7 +61,7 @@
 
   if test ! -d arc
   then
-    mkdir ${main_dir}/arc
+    mkdir ${ww3_dir}/arc
   fi
 
 # --------------------------------------------------------------------------- #
@@ -108,7 +70,7 @@
 # 2.a Requested files
 
   echo -e "\n"
-  is="1 2 3 4 5 6"
+  is="1 2 3 4"
   for i in $is
   do
     OK="$NULL"
@@ -120,8 +82,6 @@
         2) echo -en " Make manual file ? [y/n] : " ;;
         3) echo -en " Make model file ? [y/n] : " ;;
         4) echo -en " Make regtests file  ? [y/n] : " ;;
-        5) echo -en " Make cases file  ? [y/n] : " ;;
-        6) echo -en " Make smc_docs file? [y/n] : " ;;
       esac
       read OK
     done
@@ -138,8 +98,6 @@
      2) make_man=$do_it ;;
      3) make_mod=$do_it ;;
      4) make_reg=$do_it ;;
-     5) make_cas=$do_it ;;
-     6) make_smc=$do_it ;;
     esac
   done
 
@@ -164,22 +122,18 @@
 
 # 2.c Check for existence of files - - - - - - - - - - - - - - - - - - - - - -
 
-  file_gde="$main_dir/arc/guide.$ID.pdf"
-  file_mod="$main_dir/arc/wwatch3.$ID.model.tar"
-  file_man="$main_dir/arc/manual.$ID.pdf"
-  file_reg="$main_dir/arc/wwatch3.$ID.regtests.tar"
-  file_cas="$main_dir/arc/wwatch3.$ID.cases.tar"
-  file_smc="$main_dir/arc/wwatch3.$ID.smc_docs.tar"
+  file_gde="$ww3_dir/arc/guide.$ID.pdf"
+  file_mod="$ww3_dir/arc/wwatch3.$ID.model.tar"
+  file_man="$ww3_dir/arc/manual.$ID.pdf"
+  file_reg="$ww3_dir/arc/wwatch3.$ID.regtests.tar"
 
-  for i in 1 2 3 4 5
+  for i in 1 2 3 4
   do
     case $i in
      1) file=$file_gde ; make=$make_gde ;; 
      2) file=$file_man ; make=$make_man ;; 
      3) file=$file_mod ; make=$make_mod ;; 
      4) file=$file_reg ; make=$make_reg ;;
-     5) file=$file_cas ; make=$make_cas ;;
-     6) file=$file_smc ; make=$make_smc ;;
     esac
     if test -f $file && test "$make" = 'y'
     then
@@ -193,8 +147,6 @@
          2) make_man='n' ;;
          3) make_mod='n' ;;
          4) make_reg='n' ;;
-         5) make_cas='n' ;;
-         6) make_smc='n' ;;
         esac
       fi
     fi
@@ -204,8 +156,7 @@
 
   action="$NULL"
   if [ "$make_gde" = 'n' ] && [ "$make_man" = 'n' ] && \
-     [ "$make_mod" = 'n' ] && [ "$make_reg" = 'n' ] && \
-     [ "$make_cas" = 'n' ] && [ "$make_smc" = 'n' ] 
+     [ "$make_mod" = 'n' ] && [ "$make_reg" = 'n' ]
   then
     action='n'
   else
@@ -244,22 +195,6 @@
         rm -f arc/$file_reg
       fi
     fi
-    if test "$make_cas" = 'y'
-    then
-      echo -e "   $file_cas"
-      if [ -f arc/$file_cas ]
-      then
-        rm -f arc/$file_cas
-      fi
-    fi
-    if test "$make_smc" = 'y'
-    then
-      echo -e "   $file_smc"
-      if [ -f arc/$file_smc ]
-      then
-        rm -f arc/$file_smc
-      fi
-    fi
   fi
 
   echo -en "\n Continue ? [y/-] : "
@@ -278,60 +213,53 @@
 
 # 6.c generate data tar files  - - - - - - - - - - - - - - - - - - - - - - - -
 
-  mkdir -p ${main_dir}/arc
+  mkdir -p ${ww3_dir}/arc
 
   if test "$make_gde" = 'y'
   then
     echo -e "\n Compiling guide.${ID}.pdf and copying to archive location..."
-    cd ${main_dir}/guide
+    cd ${ww3_dir}/guide
     make -B > make_guide.out
     make -B > make_guide.out
-    cp -f guide.pdf ${main_dir}/arc/guide.${ID}.pdf
+    cp -f guide.pdf ${ww3_dir}/arc/guide.${ID}.pdf
     make clean
   fi
   if test "$make_man" = 'y'
   then
     echo -e "\n Compiling manual.${ID}.pdf and copying to archive location..."
-    cd ${main_dir}/manual
+    cd ${ww3_dir}/manual
     make -B > make_man.out
     make -B > make_man.out
-    cp -f manual.pdf ${main_dir}/arc/manual.${ID}.pdf
-    cp -f README_manual_reference ${main_dir}/arc/README_manual_reference
+    cp -f manual.pdf ${ww3_dir}/arc/manual.${ID}.pdf
+    cp -f README_manual_reference ${ww3_dir}/arc/README_manual_reference
     make clean
   fi
   if test "$make_mod" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.model.tar and copying to archive location..."
-    cd $main_dir
-    tar cf ${main_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn
+    cd $ww3_dir
+    tar cf ${ww3_dir}/arc/wwatch3.$ID.model.tar model --exclude=.svn --exclude=wwatch3.env
   fi
   if test "$make_reg" = 'y'
   then
     echo -e "\n Creating wwatch3.$ID.regtests.tar and copying to archive location..."
-    cd $main_dir
-    tar cf ${main_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
-  fi
-  if test "$make_cas" = 'y'
-  then
-    echo -e "\n Creating wwatch3.$ID.cases.tar and copying to archive location..."
-    cd $main_dir
-    tar cf ${main_dir}/arc/wwatch3.$ID.cases.tar cases --exclude=.svn
-  fi
-  if test "$make_smc" = 'y'
-  then
-    echo -e "\n Creating wwatch3.$ID.smc_docs.tar and copying to archive location..."
-    cd $main_dir
-    tar cf ${main_dir}/arc/wwatch3.$ID.smc_docs.tar smc_docs --exclude=.svn
+    cd $ww3_dir
+    tar cf ${ww3_dir}/arc/wwatch3.$ID.regtests.tar regtests --exclude=.svn
   fi
 
 
 # Copy install_ww3_tar to arc
-  cp -f ${main_dir}/model/bin/install_ww3_tar ${main_dir}/arc
+  cp -f ${ww3_dir}/model/bin/install_ww3_tar ${ww3_dir}/arc
 
 # Create master gziped tar file
   echo -e "\n Creating wwatch3.${ID}.tar.gz file with stand-alone package."
-  cd ${main_dir}/arc
-  tar zcvf wwatch3.${ID}.tar.gz install* *.pdf wwatch3.$ID.*.tar README*
+  cd ${ww3_dir}/arc
+  if test "$make_gde" = 'y' || test "$make_man" = 'y'
+  then
+    tar zcvf wwatch3.${ID}.tar.gz install* *.pdf wwatch3.$ID.*.tar README*
+  else
+    tar zcvf wwatch3.${ID}.tar.gz install* wwatch3.$ID.*.tar 
+  fi
 
 # Cleanup
   echo -e "\n Cleaning up arc location (only package file is left)." 

@@ -123,13 +123,11 @@ then
 fi
 
 # 2.f Set env file
-if [ $ww3_env ]
-then
-  d="`dirname $ww3_env`"; b="`basename $ww3_env`";
-  export WWATCH3_ENV="`cd $d 1>/dev/null 2>&1 && pwd`/$b"
-else
-  export WWATCH3_ENV="$path_s/wwatch3.env"
-fi
+source $(dirname $0)/../../model/bin/w3_setenv
+main_dir=$WWATCH3_DIR
+temp_dir=$WWATCH3_TMP
+source=$WWATCH3_SOURCE
+list=$WWATCH3_LIST
 
 # --------------------------------------------------------------------------- #
 # 3. Execute Clean                                                            #

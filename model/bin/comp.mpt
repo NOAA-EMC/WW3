@@ -73,7 +73,7 @@
 # 2.b.1 Build options and determine compiler name
 
   # compilation options
-  opt="-c -fast -assume byterecl -convert big_endian -module $path_m"
+  opt="-c -O3 -fp-model precise -assume byterecl -convert big_endian -module $path_m"
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]

@@ -1,0 +1,385 @@
+#!/bin/sh -e
+# --------------------------------------------------------------------------- #
+# w3_automake : Script to manage consecutive compiling of parallel and        #
+#               sequential programs of WAVEWATCH III using w3_make scripts.   #
+#                                                                             #
+# use     : w3_automake  [program [...]]                                      #
+#              program: program name of WAVEWATCH III (sub)program.           #
+#                                                                             #
+#                                                      M. Accensi             #
+#                                                      March 2018             #
+#                                                                             #
+#    Copyright 2010-2018 National Weather Service (NWS),                      #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
+# 1. Preparations                                                             #
+# --------------------------------------------------------------------------- #
+
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo '                *****************************'
+  echo '              ***   WAVEWATCH III automake  ***'
+  echo '                *****************************'
+  echo ' '
+
+
+
+# 1.b Input arguments - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  if [ $# -eq 0 ]
+  then
+    all_programs=""
+  else
+    all_programs="$*"
+  fi
+
+
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
+
+
+# 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
+
+  # bin dir
+  if [ ! -d $main_dir/bin ]
+  then
+    echo ' '
+    echo "[ERROR] Directory $main_dir/bin not found"
+    echo '        Please check the content of your directory model'
+    exit 1
+  fi
+
+  # switch file
+  switch_file=$main_dir/bin/switch
+  if [ ! -e $switch_file ] || [ ! -r $switch_file ]
+  then
+    echo ' '
+    echo "[ERROR] switch file $switch_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
+  fi
+  cp  $switch_file $main_dir/exe/
+
+  # comp file
+  comp_file=$main_dir/bin/comp
+  if [ ! -e $comp_file ] || [ ! -r $comp_file ]
+  then
+    echo ' '
+    echo "[ERROR] comp file $comp_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
+  fi
+
+  # link file
+  link_file=$main_dir/bin/link
+  if [ ! -e $link_file ] || [ ! -r $link_file ]
+  then
+    echo ' '
+    echo "[ERROR] link file $comp_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
+  fi
+
+  # ftn dir
+  makefile=$main_dir/ftn/makefile
+  if [ ! -d $main_dir/ftn ]
+  then
+    echo ' '
+    echo "[ERROR] Directory $main_dir/ftn not found"
+    echo '        Please check the content of your directory model'
+    exit 1
+  fi
+  rm -f $makefile
+
+  # exe dir
+  if [ ! -d $main_dir/exe ]
+  then
+    mkdir -p $main_dir/exe
+  fi
+
+  # work dir
+  if [ ! -d $main_dir/work ]
+  then
+    mkdir -p $main_dir/work
+  fi
+
+
+# 1.e Set regular and netCDF progs - - - - - - - - - - - - - - - - - - - - - -
+
+
+# GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
+  reg_programs="ww3_grid"
+  reg_programs="$reg_programs ww3_strt"
+  reg_programs="$reg_programs ww3_bound"
+  reg_programs="$reg_programs ww3_outf"
+  reg_programs="$reg_programs ww3_outp"
+  reg_programs="$reg_programs ww3_trck"
+  reg_programs="$reg_programs ww3_grib"
+  reg_programs="$reg_programs ww3_gint"
+  reg_programs="$reg_programs gx_outf"
+  reg_programs="$reg_programs gx_outp"
+  reg_programs="$reg_programs ww3_uprstr"
+  reg_programs="$reg_programs libww3"
+
+# PRNC OUNF OUNP BOUNC TRNC
+  cdf_programs="ww3_prnc"
+  cdf_programs="$cdf_programs ww3_ounf"
+  cdf_programs="$cdf_programs ww3_ounp"
+  cdf_programs="$cdf_programs ww3_bounc"
+  cdf_programs="$cdf_programs ww3_trnc"
+
+
+  # PRTIDE
+  if [ -n "`grep TIDE $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_prtide"
+  fi
+
+  # MULTI MULTI_ESMF SBS1
+  if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_multi"
+    cdf_programs="$cdf_programs ww3_sbs1"
+    if [ $ESMFMKFILE ]
+    then
+      cdf_programs="$cdf_programs ww3_multi_esmf"
+    fi
+  else
+    reg_programs="$reg_programs ww3_multi"
+    reg_programs="$reg_programs ww3_sbs1"
+    if [ $ESMFMKFILE ]
+    then
+      reg_programs="$reg_programs ww3_multi_esmf"
+    fi
+
+  fi
+
+  # SYSTRK
+  if [ -n "`grep TRKNC $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_systrk"
+    systrck_nc4notrknc=0
+  else
+    if [ -n "`grep NC4 $switch_file`" ]
+    then
+      systrck_nc4notrknc=1
+    else
+      systrck_nc4notrknc=0
+      reg_programs="$reg_programs ww3_systrk"
+    fi
+  fi
+
+  # SHEL PREP GSPL
+  if [ -n "`grep OASIS $switch_file`" ]
+  then
+    cdf_programs="$cdf_programs ww3_shel"
+    cdf_programs="$cdf_programs ww3_prep"
+    cdf_programs="$cdf_programs ww3_gspl"
+  else
+    reg_programs="$reg_programs ww3_shel"
+    reg_programs="$reg_programs ww3_prep"
+    reg_programs="$reg_programs ww3_gspl"
+  fi
+
+
+# 1.f sort sequential and parallel programs - - - - - - - - - - - - - - - - - -
+
+  # if no progs in argument
+  if [ -z "$all_programs" ]
+  then
+    if [ -z "$WWATCH3_NETCDF" ]
+    then
+      all_programs="$reg_programs"
+    else
+      all_programs="$reg_programs $cdf_programs"
+    fi
+  fi
+  echo ' '
+  echo "[INFO] list of the programs selected : $all_programs"
+
+  for prog in $all_programs
+  do
+    # skip to next prog if no NETCDF env and prog in cdf_programs list
+    if [ -z "$WWATCH3_NETCDF" ] && [ ! -z "$(echo $cdf_programs | grep $prog)" ]
+    then
+      echo "[WARNING] $prog is skipped because it need netCDF lib which is not set up"
+      continue
+    fi
+
+    # sort in seq or mpi programs
+    par_programs="ww3_shel ww3_multi ww3_sbs1"
+    if [ $ESMFMKFILE ]
+    then
+      par_programs="$par_programs ww3_multi_esmf"
+    fi
+    if [ -n "$(grep MPI $switch_file)" ] || [ -n "$(grep OMPG $switch_file)" ]
+    then
+      if [ ! -z "$(echo $par_programs | grep $prog)" ]
+      then
+        par_progs="$par_progs $prog"
+      else
+        seq_progs="$seq_progs $prog"
+      fi
+    else
+      seq_progs="$seq_progs $prog"
+    fi
+  done
+
+
+# --------------------------------------------------------------------------- #
+# 2. Process switch files                                                     #
+# --------------------------------------------------------------------------- #
+
+  # "DIST MPI"
+  if [ -n "$(grep MPI $switch_file)" ] && [ ! -n "$(grep OMPG $switch_file)" ]
+  then
+    MODES="MPI"
+  fi
+# "SHRD OMPG OMPX"
+  if [ ! -n "$(grep MPI $switch_file)" ] && [ -n "$(grep OMPG $switch_file)" ]
+  then
+    MODES="OMP"
+  fi
+# "DIST MPI OMPG OMPH"
+  if [ -n "$(grep MPI $switch_file)" ] && [ -n "$(grep OMPG $switch_file)" ]
+  then
+    MODES="HYB"
+  fi
+# "SHRD"
+  if [ ! -n "$(grep MPI $switch_file)" ] && [ ! -n "$(grep OMPG $switch_file)" ]
+  then
+    MODES="SEQ"
+  fi
+
+  # set sequential switch if parallel mode
+  cd $main_dir/bin
+  mkdir -p $main_dir/work_$MODES
+  cp switch $main_dir/work_$MODES/switch.$MODES
+
+  # if parallel switch and no parallel prog selected : unset parallel mode
+  if [ "$MODES" != "SEQ" ] && [ -z "$par_progs" ]
+  then
+    MODES=""
+  fi
+
+  # if parallel switch and sequential prog selected : add sequential mode
+  if [ "$MODES" != "SEQ" ] && [ ! -z "$seq_progs" ]
+  then
+    MODES="SEQ $MODES"
+  fi
+
+  # create sequential switch if needed
+  if [ "$MODES" != "SEQ" ]
+  then
+    mkdir -p $main_dir/work_SEQ
+    sort_switch -s -r switch
+    sed -e 's/DIST/SHRD/g' \
+        -e 's/OMPG //g'    \
+        -e 's/OMPH //g'    \
+        -e 's/OMPX //g'    \
+        -e 's/MPI //g' switch > $main_dir/work_SEQ/switch.SEQ
+  fi
+  
+  exec_type_file=$main_dir/exe/exec_type
+  switch_file_old=$main_dir/bin/switch.old
+
+
+# --------------------------------------------------------------------------- #
+# 3. Compile sequential and/or parallel codes                                 #
+# --------------------------------------------------------------------------- #
+
+  for MODE in $MODES
+  do
+
+    if [ "$MODE" == "SEQ" ]
+    then
+      progs=$seq_progs
+    else
+      progs=$par_progs
+    fi
+
+    echo ' '
+    echo "[INFO] $MODE progs : $progs"
+    echo ' '
+
+    # clean up mod and obj
+    rm -rf $main_dir/obj 
+    rm -rf $main_dir/mod
+    mkdir -p $main_dir/obj_$MODE
+    mkdir -p $main_dir/mod_$MODE
+    ln -sf $main_dir/obj_$MODE $main_dir/obj
+    ln -sf $main_dir/mod_$MODE $main_dir/mod
+
+    # clean up tmp
+    mkdir -p $temp_dir
+    cd $temp_dir
+    if [ "$source" != 'yes' ]
+    then
+      rm -f *.f *.F *.f90 *.F90
+    fi
+    if [ "$list" != 'yes' ]
+    then
+      rm -f *.l
+    fi
+
+    # clean up ftp
+    rm -f $main_dir/ftn/makefile
+
+    # clean up exe
+    mkdir -p $main_dir/exe
+
+
+    # make progs
+    cd $main_dir/work_$MODE
+    ln -sfn switch.$MODE switch
+    # TODO: to not use w3_make
+    # need to integrate the make_makefile/netcdf check/esmf/exec_type 
+    $main_dir/bin/w3_make $progs
+
+    # save exe and tmp
+    cp $main_dir/bin/comp $main_dir/exe/comp_$MODE
+    cp $main_dir/bin/link $main_dir/exe/link_$MODE
+    mv ../exe/exec_type ../exe/exec_type_$MODE
+    mv switch.$MODE $main_dir/exe/
+    rm -rf $main_dir/exe_$MODE
+    mv $main_dir/exe $main_dir/exe_$MODE
+    mv $temp_dir  ${temp_dir}_$MODE
+
+  done
+
+
+  # sync exe and link tmp and switch
+  for MODE in $MODES
+  do
+    rsync -a $main_dir/exe_$MODE/ $main_dir/exe/
+    rm -rf $main_dir/exe_$MODE
+    #ln -sfn ${temp_dir}_$MODE $temp_dir
+    #unlink $main_dir/work_$MODE/switch
+    #cp $main_dir/exe/switch.$MODE switch
+  done
+
+
+# --------------------------------------------------------------------------- #
+# 4. End of program ID.                                                       #
+# --------------------------------------------------------------------------- #
+
+  echo ' '
+  echo ' '
+  echo '                   *******************************'
+  echo '                 ***       End of program        ***'
+  echo '                   *******************************'
+  echo ' '
+
+# end of script ------------------------------------------------------------- #

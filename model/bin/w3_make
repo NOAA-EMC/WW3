@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 # --------------------------------------------------------------------------- #
 # w3_make : Compile and link WAVEWATCH III programs using standard make and   #
 #           makefile methods.                                                 #
@@ -25,139 +25,113 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
-# 1.a Internal variables
 
-# 1.a.0 Set default mode and capture script arguments
 
-  if test "$#" = '0'
+# 1.a ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  echo ' '
+  echo '                *****************************'
+  echo '              ***   WAVEWATCH III make      ***'
+  echo '                *****************************'
+  echo ' '
+
+
+
+# 1.b Input arguments - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  if [ $# -eq 0 ]
   then
     default_mode=1
-    script_args=
+    all_programs=""
   else
     default_mode=0
-    script_args="$*"
+    all_programs="$*"
   fi
 
-# 1.a.1 Setup file
 
-  ww3_env="${HOME}/.wwatch3.env"                           # setup file
-# The following line must not be removed: it is a switch for local install 
-# so that all bin scripts point to the local wwatch3.env 
-# WW3ENV 
-# For manual install (without install_ww3_tar or install_ww3_svn) make sure to 
-# either use the generic ww3_env or to add your own ww3_env="${my_directory}" 
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  if [ ${WWATCH3_ENV} ]; then ww3_env="${WWATCH3_ENV}"; fi # alternate setup file
+  source $(dirname $0)/w3_setenv
+  main_dir=$WWATCH3_DIR
+  temp_dir=$WWATCH3_TMP
+  source=$WWATCH3_SOURCE
+  list=$WWATCH3_LIST
 
-# 1.a.2 Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
-
-  if test -f $ww3_env
-  then
-    set `grep WWATCH3_DIR $ww3_env` ; shift
-    main_dir="$*"
-    set `grep WWATCH3_TMP $ww3_env` ; shift
-    temp_dir="$*"
-    set `grep WWATCH3_SOURCE $ww3_env` ; shift
-    source="$*"
-    set `grep WWATCH3_LIST $ww3_env` ; shift
-    list="$*"
-  else
-    echo "*** Set-up file $ww3_env not found ***"; echo ' '
-    exit 1
-  fi
-
+  echo "Main directory    : $main_dir"
   echo "Scratch directory : $temp_dir"
   echo "Save source codes : $source"
   echo "Save listings     : $list"
-  echo ' '
 
-# 1.a.3 Check for switch file and makefile - - - - - - - - - - - - - - - - - - - 
+# 1.d Check / make directories   - - - - - - - - - - - - - - - - - - - - - - -
 
-  switch_file=$main_dir/bin/switch
-  makefile=$main_dir/ftn/makefile
-  rm -f $makefile
-
-  if test ! -f $switch_file
+  # bin dir
+  if [ ! -d $main_dir/bin ]
   then
-    echo "*** switch file $switch_file not found ***" ; echo ' '
+    echo ' '
+    echo "[ERROR] Directory $main_dir/bin not found"
+    echo '        Please check the content of your directory model'
+    exit 1
+  fi
+
+  # exe dir
+  if [ ! -d $main_dir/exe ]
+  then
+    mkdir -p $main_dir/exe
+  fi
+
+  # switch file
+  switch_file=$main_dir/bin/switch
+  if [ ! -e $switch_file ] || [ ! -r $switch_file ]
+  then
+    echo ' '
+    echo "[ERROR] switch file $switch_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
     exit 1
   fi
   cp  $switch_file $main_dir/exe/
 
-  flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
-  flag_OMPX=`grep OMPX $switch_file | wc -l | awk '{ print $1}'`
-  flag_OMPH=`grep OMPH $switch_file | wc -l | awk '{ print $1}'`
-
-  switch_file_old=$main_dir/bin/switch.old
-  exec_type_file=$main_dir/exe/exec_type
-
-  here=`pwd`
-
-  if [ ! -d $main_dir/obj_SHRD ] ; then
-     mkdir  $main_dir/obj_SHRD ; fi
-  if [ ! -d $main_dir/obj_DIST ] ; then
-     mkdir  $main_dir/obj_DIST ; fi
-  if [ ! -d $main_dir/obj_OMP ] ; then
-     mkdir  $main_dir/obj_OMP ; fi
-  if [ ! -d $main_dir/obj_HYB ] ; then
-     mkdir  $main_dir/obj_HYB ; fi
-  rm -rf $main_dir/obj
-  if [ ! -d $main_dir/mod_SHRD ] ; then
-     mkdir  $main_dir/mod_SHRD ; fi
-  if [ ! -d $main_dir/mod_DIST ] ; then
-     mkdir  $main_dir/mod_DIST ; fi
-  if [ ! -d $main_dir/mod_OMP ] ; then
-     mkdir  $main_dir/mod_OMP ; fi
-  if [ ! -d $main_dir/mod_HYB ] ; then
-     mkdir  $main_dir/mod_HYB ; fi
-  rm -rf $main_dir/mod
-
-  if [ "$flag_SHRD" -gt '0' ]
+  # comp file
+  comp_file=$main_dir/bin/comp
+  if [ ! -e $comp_file ] || [ ! -r $comp_file ]
   then
-    if [ "$flag_OMPX" -gt '0' ]
-    then
-      pres_type='OMP'
-      if [ -f ${switch_file_old}_OMP ] ; then
-           cp ${switch_file_old}_OMP $switch_file_old ; fi
-      if [ -f ${makefile}_OMP ] ; then
-           cp ${makefile}_OMP $makefile ; fi
-      cd $main_dir ; ln -sf obj_OMP obj
-                     ln -sf mod_OMP mod ; cd $here
-    else
-      pres_type='SHRD'
-      if [ -f ${switch_file_old}_SHRD ] ; then
-           cp ${switch_file_old}_SHRD $switch_file_old ; fi
-      if [ -f ${makefile}_SHRD ] ; then
-           cp ${makefile}_SHRD $makefile ; fi
-      cd $main_dir ; ln -sf obj_SHRD obj
-                     ln -sf mod_SHRD mod ; cd $here
-    fi
-  else
-    if [ "$flag_OMPH" -gt '0' ]
-    then
-      pres_type='HYB'
-      if [ -f ${switch_file_old}_HYB ] ; then
-           cp ${switch_file_old}_HYB $switch_file_old ; fi
-      if [ -f ${makefile}_HYB ] ; then
-           cp ${makefile}_HYB $makefile ; fi
-      cd $main_dir ; ln -sf obj_HYB obj
-                     ln -sf mod_HYB mod ; cd $here
-    else
-      pres_type='DIST'
-      if [ -f ${switch_file_old}_DIST ] ; then
-           cp ${switch_file_old}_DIST $switch_file_old ; fi
-      if [ -f ${makefile}_DIST ] ; then
-           cp ${makefile}_DIST $makefile ; fi
-      cd $main_dir ; ln -sf obj_DIST obj
-                     ln -sf mod_DIST mod ; cd $here
-    fi
+    echo ' '
+    echo "[ERROR] comp file $comp_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
   fi
 
-# 1.a.4 Setup program lists  - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # link file
+  link_file=$main_dir/bin/link
+  if [ ! -e $link_file ] || [ ! -r $link_file ]
+  then
+    echo ' '
+    echo "[ERROR] link file $comp_file not found"
+    echo "        Please run $main_dir/bin/w3_setup <main_dir> -c <comp> -s <switch>"
+    exit 1
+  fi
 
-# reg_programs = non-NetCDF programs
+  # ftn dir
+  makefile=$main_dir/ftn/makefile
+  if [ ! -d $main_dir/ftn ]
+  then
+    echo ' '
+    echo "[ERROR] Directory $main_dir/ftn not found"
+    echo '        Please check the content of your directory model'
+    exit 1
+  fi
+  rm -f $makefile
+
+
+
+
+# 1.e Set regular and netCDF progs - - - - - - - - - - - - - - - - - - - - - -
+
+# GRID STRT BOUND OUTF OUTP TRCK GRIB GINT GX* UPRSTR LIBWW3
   reg_programs="ww3_grid"
   reg_programs="$reg_programs ww3_strt"
   reg_programs="$reg_programs ww3_bound"
@@ -168,47 +142,57 @@
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
-  reg_programs="$reg_programs ww3_uprstr" 
+  reg_programs="$reg_programs ww3_uprstr"
   reg_programs="$reg_programs libww3"
 
-
-# cdf_programs = NetCDF programs
+# PRNC OUNF OUNP BOUNC TRNC
   cdf_programs="ww3_prnc"
   cdf_programs="$cdf_programs ww3_ounf"
   cdf_programs="$cdf_programs ww3_ounp"
   cdf_programs="$cdf_programs ww3_bounc"
   cdf_programs="$cdf_programs ww3_trnc"
 
+
+  # PRTIDE
   if [ -n "`grep TIDE $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_prtide"
   fi
 
+  # MULTI MULTI_ESMF SBS1
   if [ -n "`grep SCRIPNC $switch_file`" ] || [ -n "`grep OASIS $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_multi"
-    cdf_programs="$cdf_programs ww3_multi_esmf"
     cdf_programs="$cdf_programs ww3_sbs1"
+    if [ $ESMFMKFILE ]
+    then
+      cdf_programs="$cdf_programs ww3_multi_esmf"
+    fi
   else
     reg_programs="$reg_programs ww3_multi"
-    reg_programs="$reg_programs ww3_multi_esmf"
     reg_programs="$reg_programs ww3_sbs1"
+    if [ $ESMFMKFILE ]
+    then
+      reg_programs="$reg_programs ww3_multi_esmf"
+    fi
   fi
 
+  # SYSTRK
   if [ -n "`grep TRKNC $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_systrk"
     systrck_nc4notrknc=0
   else
     if [ -n "`grep NC4 $switch_file`" ]
-    then 
-      systrck_nc4notrknc=1 
-    else 
+    then
+      systrck_nc4notrknc=1
+    else
       systrck_nc4notrknc=0
       reg_programs="$reg_programs ww3_systrk"
     fi
   fi
 
+  # SHEL PREP GSPL
   if [ -n "`grep OASIS $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
@@ -220,24 +204,71 @@
     reg_programs="$reg_programs ww3_gspl"
   fi
 
-# all_programs = all possible programs
-  all_programs="$reg_programs $cdf_programs"
-
-# progs = programs requested to compile
-  if [ $default_mode -eq 1 ]
+  # if no progs in argument
+  if [ -z "$all_programs" ]
   then
-    progs="$all_programs"
+    if [ -z "$WWATCH3_NETCDF" ]
+    then
+      all_programs="$reg_programs"
+    else
+      all_programs="$reg_programs $cdf_programs"
+    fi
+  fi
+  echo ' '
+  echo "[INFO] list of the programs selected : $all_programs"
+
+
+# 1.f sort sequential and parallel programs - - - - - - - - - - - - - - - - - -
+
+  # no filtering is done to distinguish sequential to parallel programs 
+  # see w3_automake for this feature
+  progs=$all_programs
+
+
+# 1.e Set sequential or parallel folders - - - - - - - - - - - - - - - - - - -
+
+  flag_SHRD=`grep SHRD $switch_file | wc -l | awk '{ print $1}'`
+  flag_OMPX=`grep OMPX $switch_file | wc -l | awk '{ print $1}'`
+  flag_OMPH=`grep OMPH $switch_file | wc -l | awk '{ print $1}'`
+
+  switch_file_old=$main_dir/bin/switch.old
+  exec_type_file=$main_dir/exe/exec_type
+
+  here=`pwd`
+
+
+  if [ "$flag_SHRD" -gt '0' ]
+  then
+    if [ "$flag_OMPX" -gt '0' ]
+    then
+      pres_type='OMP'
+    else
+      pres_type='SEQ'
+    fi
   else
-    progs="$script_args"
+    if [ "$flag_OMPH" -gt '0' ]
+    then
+      pres_type='HYB'
+    else
+      pres_type='MPI'
+    fi
   fi
 
-# 1.b ID header  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  rm -rf $main_dir/obj
+  rm -rf $main_dir/mod
+  if [ -f ${switch_file_old}_$pres_type ] ; then
+     cp ${switch_file_old}_$pres_type $switch_file_old
+  fi
+  if [ -f ${makefile}_$pres_type ] ; then
+    cp ${makefile}_$pres_type $makefile
+  fi
+  cd $main_dir
+  mkdir -p obj_$pres_type mod_$pres_type
+  ln -sf obj_$pres_type obj
+  ln -sf mod_$pres_type mod
+  cd $here
 
-  echo ' '
-  echo '                    *****************************'
-  echo '                  ***  compiling WAVEWATCH III  ***'
-  echo '                    *****************************'
-  echo ' '
+
 
 # 1.c Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -478,8 +509,8 @@ EOF
           cp $switch_file ${switch_file_old}_OMP
           cp $makefile ${makefile}_OMP
         else
-          cp $switch_file ${switch_file_old}_SHRD
-          cp $makefile ${makefile}_SHRD
+          cp $switch_file ${switch_file_old}_SEQ
+          cp $makefile ${makefile}_SEQ
         fi
       else
         if [ "$flag_OMPH" -gt '0' ]
@@ -487,8 +518,8 @@ EOF
           cp $switch_file ${switch_file_old}_HYB
           cp $makefile ${makefile}_HYB
         else
-          cp $switch_file ${switch_file_old}_DIST
-          cp $makefile ${makefile}_DIST
+          cp $switch_file ${switch_file_old}_MPI
+          cp $makefile ${makefile}_MPI
         fi
       fi
     else
@@ -653,8 +684,8 @@ EOF
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
         mkfile=$main_dir/nuopc.mk
-        mod_dir=$main_dir/mod_DIST
-        obj_dir=$main_dir/obj_DIST
+        mod_dir=$main_dir/mod_MPI
+        obj_dir=$main_dir/obj_MPI
         rm -f $mkfile
         touch $mkfile
         echo "#-----------------------------------------------"      >> $mkfile
@@ -679,7 +710,7 @@ EOF
 
   cp  $main_dir/bin/comp $main_dir/exe/
   cp  $main_dir/bin/link $main_dir/exe/
-
+ 
 # --------------------------------------------------------------------------- #
 # 3. End of program ID.                                                       #
 # --------------------------------------------------------------------------- #
