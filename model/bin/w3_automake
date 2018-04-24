@@ -284,7 +284,7 @@
   if [ "$MODES" != "SEQ" ]
   then
     mkdir -p $main_dir/work_SEQ
-    sort_switch -s -r switch
+    ./sort_switch -s -r switch
     sed -e 's/DIST/SHRD/g' \
         -e 's/OMPG //g'    \
         -e 's/OMPH //g'    \
