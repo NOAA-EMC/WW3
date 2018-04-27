@@ -22,6 +22,9 @@
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    10-Jan-2017 : Changes for US3D and USSP output    ( version 6.01 )
 !/    01-May-2017 : Adds directional MSS parameters     ( version 6.XX )
+!/    01-Mar-2018 : RTD option add variable de-rotation,( version 6.02 )
+!/                  standard lat-lons and rotated grid
+!/                  metadata
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -591,6 +594,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3SERVMD, ONLY : W3S2XY
+!/RTD      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN, W3EQTOLL
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
       USE W3GDATMD, ONLY : SIG, GTYPE, FLAGLL, MAPSTA, MAPST2, GNAME
       USE NETCDF
@@ -616,10 +620,12 @@
                                  MFILL, I, ISEA, IX, IY,      &
                                  I1, J1, IPART, INDEXIPART
       INTEGER                 :: MAP(NX+1,NY), MP2(NX+1,NY)
-      INTEGER(KIND=2)         :: MX1(NX,NY), MXX(NX,NY), MYY(NX,NY),           &
-                                 MXY(NX,NY), MAPOUT(NX,NY)
-      REAL   (KIND=4)         :: MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY),        &
-                                 MXYR(NX,NY), MFILLR
+      ! Make the below allocatable to avoid stack overflow on some machines
+      INTEGER(KIND=2), ALLOCATABLE :: MX1(:,:), MXX(:,:), MYY(:,:),            &
+                                     MXY(:,:), MAPOUT(:,:)
+      REAL   (KIND=4), ALLOCATABLE :: MX1R(:,:), MXXR(:,:), MYYR(:,:),         &
+                                      MXYR(:,:)
+      REAL   (KIND=4)         :: MFILLR
 !
       INTEGER                 :: S1, S2, S4, S5, NCID, COORDTYPE,               & 
                                  MAPSTAOUT, NDSDAT,                            &
@@ -635,21 +641,22 @@
       INTEGER(KIND=4), ALLOCATABLE       :: TRIGP2(:,:)
 
       CHARACTER*80            :: varnm(8),varnl(8)
-      CHARACTER*120           :: varns(8),varnc(8),varng(8),str2
+      CHARACTER*120           :: varns(8),varnc(8),varng(8),varnd(8),str2
       CHARACTER*20            :: unitvar(3),FORMAT1
       CHARACTER*30            :: startdate
 
       DOUBLE PRECISION        :: timenc
       REAL,DIMENSION(:),  ALLOCATABLE    :: lon, lat, freq
-      REAL,DIMENSION(:,:),  ALLOCATABLE  :: lon2D, lat2D
+      REAL,DIMENSION(:,:),  ALLOCATABLE  :: lon2D, lat2D, AnglD2D
+!/RTD      REAL,DIMENSION(:,:),  ALLOCATABLE  :: lon2Deq, lat2Deq
 
 !/S      INTEGER, SAVE           :: IENT   =   0
       REAL                    :: FSC, FSC3, CABS, UABS
-      REAL                    :: X1(NX+1,NY), X2(NX+1,NY),            &
-                                 XX(NX+1,NY), XY(NX+1,NY),            &
-                                 XK(NX+1,NY,NK),                      &
-                                 XXK(NX+1,NY,NK),                     & 
-                                 XYK(NX+1,NY,NK) 
+      ! Make the below allocatable to avoid stack overflow on some machines 
+      REAL, ALLOCATABLE       :: X1(:,:), X2(:,:),                    &
+                                 XX(:,:), XY(:,:),                    &
+                                 XK(:,:,:), XXK(:,:,:),               &
+                                 XYK(:,:,:)
 !/BT4   REAL, PARAMETER            :: LOG2=LOG(2.)
       DOUBLE PRECISION        :: SXD, SYD, X0D, Y0D
       LOGICAL                 :: FLFRQ, FLDIR
@@ -675,6 +682,11 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 1.  Preparations
 !
+      ALLOCATE(X1(NX+1,NY),X2(NX+1,NY),XX(NX+1,NY),XY(NX+1,NY))
+      ALLOCATE(XK(NX+1,NY,NK), XXK(NX+1,NY,NK), XYK(NX+1,NY,NK))
+      ALLOCATE(MX1(NX,NY), MXX(NX,NY), MYY(NX,NY), MXY(NX,NY), MAPOUT(NX,NY))
+      ALLOCATE(MX1R(NX,NY), MXXR(NX,NY), MYYR(NX,NY), MXYR(NX,NY))
+
       X1     = UNDEF
       X2     = UNDEF
       XX     = UNDEF
@@ -773,6 +785,7 @@
               varns(1)='depth'
               varng(1)='depth'
               varnc(1)=''
+              varnd(1)=''
               vmin = -90000 
               vmax = 140000
 !
@@ -780,24 +793,30 @@
               FSC    = 0.01
               ENAME  = '.cur'
               UNITS  = 'm s-1'
+              !! Note - CX and CY read in from .ww3 file are X-Y vectors
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX(1:NSEA), CY(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CX(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
                                                         , MAPSF, XY )
-              DO ISEA=1, NSEA
-                CABS   = SQRT(CX(ISEA)**2+CY(ISEA)**2)
-                IF ( CABS .GT. 0.05 ) THEN
-                  CY(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(CY(ISEA),CX(ISEA)) , 360. )
-                ELSE
-                  CY(ISEA) = UNDEF
-                  END IF
-                CX(ISEA) = CABS
-                END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CX(1:NSEA)        &
-                                                        , MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
-                                                        , MAPSF, X2 )
+              !! Commented out unnecessary statements below for time being
+              !! CX,CY are in north-east convention and X1,X2
+              !! are not actually written out below
+              !DO ISEA=1, NSEA
+              !  CABS   = SQRT(CX(ISEA)**2+CY(ISEA)**2)
+              !  IF ( CABS .GT. 0.05 ) THEN
+              !    CY(ISEA) = MOD ( 630. -                         &
+              !              RADE*ATAN2(CY(ISEA),CX(ISEA)) , 360. )
+              !  ELSE
+              !    CY(ISEA) = UNDEF
+              !    END IF
+              !  CX(ISEA) = CABS
+              !  END DO
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CX(1:NSEA)        &
+              !                                          , MAPSF, X1 )
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, CY(1:NSEA)        &
+              !                                          , MAPSF, X2 )
               NFIELD=2
               varnm(1)='ucur'
               varnm(2)='vcur'
@@ -809,6 +828,16 @@
               varng(2)='northward_sea_water_velocity'
               varnc(1)='cur=sqrt(U**2+V**2)'
               varnc(2)='cur=sqrt(U**2+V**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -990
               vmax =  990
 !
@@ -816,24 +845,30 @@
               FSC    = 0.1
               ENAME  = '.wnd'
               UNITS  = 'm s-1'
+              !! Note - UA and UD read in from .ww3 file are UX,UY
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA(1:NSEA), UD(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UA(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
                                                         , MAPSF, XY )
-              DO ISEA=1, NSEA
-                UABS   = SQRT(UA(ISEA)**2+UD(ISEA)**2)
-                IF ( UABS .GT. 1.0 ) THEN
-                  UD(ISEA) = MOD ( 630. -                         &
-                            RADE*ATAN2(UD(ISEA),UA(ISEA)) , 360. )
-                ELSE
-                  UD(ISEA) = UNDEF
-                  END IF
-                UA(ISEA) = UABS
-              END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UA(1:NSEA)        &
-                                                        , MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
-                                                        , MAPSF, X2 )
+              !! Commented out unnecessary statements below for time being
+              !! UA,UD are  in north-east convention and X1,X2
+              !! are not actually written out below
+              !DO ISEA=1, NSEA
+              !  UABS   = SQRT(UA(ISEA)**2+UD(ISEA)**2)
+              !  IF ( UABS .GT. 1.0 ) THEN
+              !    UD(ISEA) = MOD ( 630. -                         &
+              !              RADE*ATAN2(UD(ISEA),UA(ISEA)) , 360. )
+              !  ELSE
+              !    UD(ISEA) = UNDEF
+              !    END IF
+              !  UA(ISEA) = UABS
+              !END DO
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UA(1:NSEA)        &
+              !                                          , MAPSF, X1 )
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UD(1:NSEA)        &
+              !                                          , MAPSF, X2 )
               NFIELD=2
               varnm(1)='uwnd'
               varnm(2)='vwnd'
@@ -845,6 +880,16 @@
               varng(2)='northward_wind'
               varnc(1)='wind=sqrt(U10**2+V10**2)'
               varnc(2)='wind=sqrt(U10**2+V10**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -990
               vmax =  990
 !
@@ -860,6 +905,7 @@
               varns(1)='air_sea_temperature_difference'
               varng(1)='air_sea_temperature_difference'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0    
               vmax = 4000
 !
@@ -874,6 +920,7 @@
               varns(1)='sea_surface_height_above_sea_level'
               varng(1)='sea_surface_height_above_sea_level'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 10000
 !
@@ -888,6 +935,7 @@
               varns(1)='sea_ice_area_fraction'
               varng(1)='sea_ice_area_fraction'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 1000
 !
@@ -903,6 +951,7 @@
               varns(1)='icebergs_induced_attenuation_scale_for_waves'
               varng(1)='icebergs_damping'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -918,6 +967,7 @@
 !/BT4              varns(1)='sediment_grain_size'
 !/BT4              varng(1)='sediment_grain_size'
 !/BT4              varnc(1)=''
+!/BT4              varnd(1)=''
 !/BT4              vmin = -10000
 !/BT4              vmax = 32000
 !
@@ -932,6 +982,7 @@
 !/IS2              varns(1)='ice_thickness'
 !/IS2              varng(1)='ice_thickness'
 !/IS2              varnc(1)=''
+!/IS2              varnd(1)=''
 !/IS2              vmin = 0
 !/IS2              vmax = 30000
 !
@@ -947,6 +998,7 @@
 !/IS2              varns(1)='maximum_ice_floe_diameter'
 !/IS2              varng(1)='maximum_ice_floe_diameter'
 !/IS2              varnc(1)=''
+!/IS2              varnd(1)=''
 !/IS2              vmin = 0
 !/IS2              vmax = 30000
 
@@ -964,6 +1016,7 @@
               varns(1)='sea_surface_wave_significant_height' 
               varng(1)='significant_wave_height'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 
@@ -978,6 +1031,7 @@
               varns(1)='mean_wave_length' 
               varng(1)='mean_wave_length' 
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 3200
 !
@@ -989,10 +1043,11 @@
               NFIELD=1
               varnm(1)='t02'
               varnl(1)='mean period T02'
-              varns(1)='sea_surface_wind_wave_mean_period_from_variance_&
-                                                           spectral_density_second_frequency_moment'
+              varns(1)='sea_surface_wind_wave_mean_period_from_variance_' // &
+                       'spectral_density_second_frequency_moment'
               varng(1)='mean_period_t02'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 5000
 !
@@ -1004,10 +1059,11 @@
               NFIELD=1
               varnm(1)='t0m1'
               varnl(1)='mean period T0m1'
-              varns(1)='sea_surface_wind_wave_mean_period_from_variance&
-                                                          _spectral_density_inverse_frequency_moment'
+              varns(1)='sea_surface_wind_wave_mean_period_from_variance' // &
+                       '_spectral_density_inverse_frequency_moment'
               varng(1)='mean_period_t0m1'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 5000
 !
@@ -1019,10 +1075,11 @@
               NFIELD=1
               varnm(1)='t01'
               varnl(1)='mean period T01'
-              varns(1)='sea_surface_wind_wave_mean_period_from_variance&
-                                                          _spectral_density_first_frequency_moment' 
+              varns(1)='sea_surface_wind_wave_mean_period_from_variance' // &
+                       '_spectral_density_first_frequency_moment' 
               varng(1)='mean_period_t01'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 5000
 !
@@ -1037,6 +1094,7 @@
               varns(1)='sea_surface_wave_peak_frequency'
               varng(1)='dominant_wave_frequency'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 10000
 !
@@ -1044,18 +1102,27 @@
               FSC    = 0.1
               UNITS  = 'degree'
               ENAME  = '.dir'
+!/RTD              ! Rotate direction back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3THRTN(NSEA, THM, AnglD, .FALSE.)
               DO ISEA=1, NSEA
                 IF ( THM(ISEA) .NE. UNDEF )  THEN
                   THM(ISEA) = MOD ( 630. - RADE*THM(ISEA) , 360. )
                   END IF
                 END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM   , MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM, MAPSF, X1 )
               NFIELD=1
               varnm(1)='dir'
               varnl(1)='wave mean direction'
               varns(1)='sea_surface_wave_from_direction'
               varng(1)='wave_from_direction'
               varnc(1)=''
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0
               vmax = 3600
 !
@@ -1070,6 +1137,7 @@
               varns(1)='sea_surface_wave_directional_spread'
               varng(1)='directional_spread'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 900
 !
@@ -1077,6 +1145,8 @@
               FSC    = 1.
               UNITS  = 'degree'
               ENAME  = '.dp'
+!/RTD              ! Rotate direction back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
               DO ISEA=1, NSEA
                 IF ( THP0(ISEA) .NE. UNDEF ) THEN
                   THP0(ISEA) = MOD ( 630-RADE*THP0(ISEA) , 360. )
@@ -1089,6 +1159,13 @@
               varns(1)='sea_surface_wave_peak_direction'
               varng(1)='dominant_wave_direction'
               varnc(1)=''
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0 
               vmax = 360
 !
@@ -1103,6 +1180,7 @@
               varns(1)='sea_surface_wave_infragravity_significant_height' 
               varng(1)='infragravity_significant_wave_height' 
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 5000
 !
@@ -1117,6 +1195,7 @@
               varns(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
               varng(1)='expected maximum sea surface elevation (nonlinear,2nd order)'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1131,6 +1210,7 @@
               varns(1)='std of expected maximum sea surface elevation (nonlinear,2nd order)'
               varng(1)='standard deviation of maximum sea surface elevation (nonlinear,2nd order)'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1145,6 +1225,7 @@
               varns(1)='expected maximum wave height (linear, 1st order)'
               varng(1)='expected maximum wave height (linear, 1st order)'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1159,6 +1240,7 @@
               varns(1)='expected maximum wave height from crest (linear, 1st order)'
               varng(1)='expected maximum wave height from crest (linear, 1st order)'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1173,6 +1255,7 @@
               varns(1)='STD of maximum wave height (linear, 1st order)'
               varng(1)='STD of maximum wave height (linear, 1st order)'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1187,6 +1270,7 @@
               varns(1)='STD of maximum wave height from crest (linear, 1st order)'
               varng(1)='STD of maximum wave height from crest (linear, 1st order)'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1198,6 +1282,7 @@
               varnl(1)='wave_elevation_spectrum'
               varng(1)=varns(1)
               varnc(1)=''
+              varnd(1)=''
               IF (NCVARTYPE.LE.3) THEN 
                 UNITS  = 'log10(m2 s+1E-12)'
                 varns(1)='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
@@ -1230,11 +1315,20 @@
               varns(1)='sea_surface_wave_from_direction_frequency_spectrum'
               varng(1)=varns(1)
               varnc(1)=''
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               UNITS  = 'degree'
               ENAME  = '.th1m'
               I1F=E3DF(2,2)
               I2F=E3DF(3,2)
               DO IK=I1F,I2F
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, TH1M(:,IK), AnglD, .FALSE.)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TH1M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
@@ -1251,6 +1345,7 @@
               varns(1)='sea_surface_wave_spreading_spectrum'
               varng(1)=varns(1)
               varnc(1)=''
+              varnd(1)=''
               UNITS  = 'degree'
               ENAME  = '.sth1m'
               I1F=E3DF(2,3)
@@ -1272,11 +1367,20 @@
               varns(1)='sea_surface_wave_from_direction_frequency_spectrum_from_second_moments'
               varng(1)=varns(1)
               varnc(1)=''
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               UNITS  = 'degree'
               ENAME  = '.th2m'
               I1F=E3DF(2,4)
               I2F=E3DF(3,4)
               DO IK=I1F,I2F
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, TH2M(:,IK), AnglD, .FALSE.)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,TH2M(:,IK),MAPSF, XX )
                 XK(:,:,IK)=XX
                 END DO
@@ -1293,6 +1397,7 @@
               varns(1)='sea_surface_wave_spreading_spectrum_from_second_moments'
               varng(1)=varns(1)
               varnc(1)=''
+              varnd(1)=''
               UNITS  = 'degree'
               ENAME  = '.sth2m'
               I1F=E3DF(2,5)
@@ -1322,6 +1427,7 @@
               varns(1)='wave_numbers'
               varng(1)='wave_numbers'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 !
@@ -1336,6 +1442,7 @@
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_significant_height_partition_',IPART 
               WRITE(varng(1),'(A,I1)') 'significant_wave_height_partition_',IPART 
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 !
@@ -1350,6 +1457,7 @@
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_peak_period_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'dominant_wave_period_partition_',IPART
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 10000
 !
@@ -1364,6 +1472,7 @@
               WRITE(varns(1),'(A,I1)') 'peak_wave_length_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'peak_wave_length_partition_',IPART
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 10000
 !
@@ -1371,6 +1480,8 @@
               FSC    = 1.
               UNITS  = 'degree'
               WRITE(ENAME,'(A5,I1)') '.pdir',IPART
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,IPART), AnglD, .FALSE.)
               DO ISEA=1, NSEA
                 IF ( PDIR(ISEA,IPART) .NE. UNDEF ) THEN
                   PDIR(ISEA,IPART) = MOD ( 630-RADE*PDIR(ISEA,IPART) , 360. )
@@ -1383,6 +1494,13 @@
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_from_direction_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'wave_from_direction_partition_',IPART
               varnc(1)=''
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0 
               vmax = 360
 !
@@ -1397,6 +1515,7 @@
               WRITE(varns(1),'(A,I1)') 'sea_surface_wave_directional_spread_partition_',IPART
               WRITE(varng(1),'(A,I1)') 'directional_spread_partition_',IPART
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 900
 !
@@ -1411,6 +1530,7 @@
               WRITE(varns(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART 
               WRITE(varng(1),'(A,I1)') 'wind_sea_fraction_in_partition_',IPART
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 1000
 !
@@ -1425,6 +1545,7 @@
               varns(1)='wind_sea_fraction'
               varng(1)='wind_sea_fraction'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 1000
 !
@@ -1439,6 +1560,7 @@
               varns(1)='number_of_wave_partitions'
               varng(1)='number_of_wave_partitions'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 100
 !
@@ -1446,6 +1568,7 @@
               FSC    = 0.01
               ENAME  = '.ust'
               UNITS  = 'm s-1'
+              !! Note - UST and USTDIR read in from .ww3 file are X-Y vectors
               DO ISEA=1, NSEA
                 UABS   = SQRT(UST(ISEA)**2+USTDIR(ISEA)**2)
                  IF (UABS.GE.10.) THEN
@@ -1453,23 +1576,28 @@
                   USTDIR(ISEA)=UNDEF
                   END IF
                  END DO
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UST(1:NSEA), USTDIR(1:NSEA), AnglD)
               CALL W3S2XY (NSEA,NSEA,NX+1,NY, UST   (1:NSEA), MAPSF, XX )
               CALL W3S2XY (NSEA,NSEA,NX+1,NY, USTDIR(1:NSEA), MAPSF, XY )
-              DO ISEA=1, NSEA
-                UABS   = SQRT(UST(ISEA)**2+USTDIR(ISEA)**2)
-                IF ( UST(ISEA) .EQ. UNDEF ) THEN
-                    USTDIR(ISEA) = UNDEF
-                    UABS         = UNDEF
-                  ELSE IF ( UABS .GT. 0.05 ) THEN
-                    USTDIR(ISEA) = MOD ( 630. -                     &
-                      RADE*ATAN2(USTDIR(ISEA),UST(ISEA)) , 360. )
-                  ELSE
-                    USTDIR(ISEA) = UNDEF
-                  END IF
-                UST(ISEA) = UABS
-                END DO
-              CALL W3S2XY (NSEA,NSEA,NX+1,NY, UST   (1:NSEA) , MAPSF, X1 )
-              CALL W3S2XY (NSEA,NSEA,NX+1,NY, USTDIR(1:NSEA) , MAPSF, X2 )
+              !! Commented out unnecessary statements below for time being
+              !! UST,USTDIR are in north-east convention and X1,X2
+              !! are not actually written out below
+              !DO ISEA=1, NSEA
+              !  UABS   = SQRT(UST(ISEA)**2+USTDIR(ISEA)**2)
+              !  IF ( UST(ISEA) .EQ. UNDEF ) THEN
+              !      USTDIR(ISEA) = UNDEF
+              !      UABS         = UNDEF
+              !    ELSE IF ( UABS .GT. 0.05 ) THEN
+              !      USTDIR(ISEA) = MOD ( 630. -                     &
+              !        RADE*ATAN2(USTDIR(ISEA),UST(ISEA)) , 360. )
+              !    ELSE
+              !      USTDIR(ISEA) = UNDEF
+              !    END IF
+              !  UST(ISEA) = UABS
+              !  END DO
+              !CALL W3S2XY (NSEA,NSEA,NX+1,NY, UST   (1:NSEA) , MAPSF, X1 )
+              !CALL W3S2XY (NSEA,NSEA,NX+1,NY, USTDIR(1:NSEA) , MAPSF, X2 )
               NFIELD=2
               varnm(1)='uust'
               varnm(2)='vust'
@@ -1481,6 +1609,16 @@
               varng(2)='northward_friction_velocity'
               varnc(1)='ust=sqrt(uust**2+vust**2)'
               varnc(2)='ust=sqrt(uust**2+vust**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -9900
               vmax =  9900
 !
@@ -1495,6 +1633,7 @@
               varns(1)='charnock_coefficient_for_surface_roughness_length_for_momentum_in_air'
               varng(1)='charnock_coefficient'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32700
 !
@@ -1510,6 +1649,7 @@
               varns(1)='sea_surface_wind_wave_energy_flux'
               varng(1)='wave_energy_flux'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 9990
 !
@@ -1525,6 +1665,7 @@
               varns(1)='wind_mixing_energy_flux_into_sea_water'
               varng(1)='wind_to_wave_energy_flux'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 9990
 !
@@ -1532,22 +1673,27 @@
               FSC    = 0.000001
               UNITS  = 'm2 s-2'
               ENAME  = '.taw'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUWIX(1:NSEA), TAUWIY(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY(1:NSEA)        &
                                                         , MAPSF, XY )
-              DO ISEA=1, NSEA
-                CABS   = SQRT(TAUWIX(ISEA)**2+TAUWIY(ISEA)**2)
-                IF ( CABS .NE. UNDEF ) THEN
-                    TAUWIY(ISEA) = MOD ( 630. -                         &
-                          RADE*ATAN2(TAUWIY(ISEA),TAUWIX(ISEA)) , 360. )
-                  ELSE
-                    TAUWIY(ISEA) = UNDEF
-                  END IF
-                TAUWIX(ISEA) = CABS
-                END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TAUWIX,MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY,TAUWIY,MAPSF, X2 )
+              !! Commented out unnecessary statements below for time being
+              !! TAUWIX, TAUWIY are in north-east convention and X1,X2
+              !! are not actually written out below
+              !DO ISEA=1, NSEA
+              !  CABS   = SQRT(TAUWIX(ISEA)**2+TAUWIY(ISEA)**2)
+              !  IF ( CABS .NE. UNDEF ) THEN
+              !      TAUWIY(ISEA) = MOD ( 630. -                         &
+              !            RADE*ATAN2(TAUWIY(ISEA),TAUWIX(ISEA)) , 360. )
+              !    ELSE
+              !      TAUWIY(ISEA) = UNDEF
+              !    END IF
+              !  TAUWIX(ISEA) = CABS
+              !  END DO
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIX, MAPSF, X1 )
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWIY, MAPSF, X2 )
               NFIELD=2
               varnm(1)='utaw'
               varnm(2)='vtaw'
@@ -1559,6 +1705,16 @@
               varng(2)='northward_wave_supported_wind_stress'
               varnc(1)='taw=sqrt(utaw**2+vtaw**2)'
               varnc(2)='taw=sqrt(utaw**2+vtaw**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -32000
               vmax =  32000
 !
@@ -1566,6 +1722,8 @@
               FSC    = 0.0001
               ENAME  = '.twa'
               UNITS  = 'm2 s-2'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUWNX(1:NSEA), TAUWNY(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNX(1:NSEA)     &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUWNY(1:NSEA)     &
@@ -1581,6 +1739,16 @@
               varng(2)='northward_wave_to_wind_stress'
               varnc(1)='twa=sqrt(utwa**2+vtwa**2)'
               varnc(2)='twa=sqrt(utwa**2+vtwa**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -32000
               vmax =  32000
 !
@@ -1596,6 +1764,7 @@
               varns(1)='whitecap_coverage'
               varng(1)='whitecap_coverage'            
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 10000
 !
@@ -1611,6 +1780,7 @@
               varns(1)='whitecap_foam_thickness'
               varng(1)='whitecap_foam_thickness' 
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 10000
 !
@@ -1626,6 +1796,7 @@
               varns(1)='significant_breaking_wave_height'
               varng(1)='significant_breaking_wave_height'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1641,6 +1812,7 @@
               varns(1)='whitecap_moment'   
               varng(1)='whitecap_moment'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 10000
 !
@@ -1655,6 +1827,7 @@
               varns(1)='Wind_sea_mean_period_T0M1'
               varng(1)='Wind_sea_mean_period_T0M1'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 32000
 !
@@ -1663,6 +1836,8 @@
               FSC3    = 1.
               UNITS  = 'N m-1'
               ENAME  = '.sxy'
+!/RTD         ! Radition stress components are always left on rotated pole
+!/RTD         ! at present - need to confirm how to de-rotate
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SXX(1:NSEA)       &
                                                         , MAPSF, X1 )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SYY(1:NSEA)       &
@@ -1686,6 +1861,13 @@
               varnc(1)=''
               varnc(2)=''
               varnc(3)=''
+              varnd(1)=''
+              varnd(2)=''
+              varnd(3)=''
+!/RTD              ! Override standard direction comment
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                varnd(3) = 'Rotated Pole Grid North'
               vmin = -3000.
               vmax = 3000     
 !
@@ -1693,6 +1875,8 @@
               FSC    = 0.000001
               UNITS  = 'm2 s-2'
               ENAME  = '.two'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOX(1:NSEA), TAUOY(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOX(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOY(1:NSEA)        &
@@ -1708,6 +1892,16 @@
               varng(2)='northward_wave_to_ocean_stress'
               varnc(1)='two=sqrt(utwo**2+vtwo**2)'
               varnc(2)='two=sqrt(utwo**2+vtwo**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -32000 
               vmax =  32000
 !
@@ -1723,6 +1917,7 @@
               varns(1)='radiation_pressure'
               varng(1)='radiation_pressure'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 1000
 !
@@ -1742,6 +1937,7 @@
               varns(1)='wave_to_ocean_energy_flux'
               varng(1)='wave_to_ocean_energy_flux'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 9990
 !
@@ -1749,6 +1945,8 @@
               FSC    = 0.001
               UNITS  = 'm2 s-1'
               ENAME  = '.tus'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TUSX(1:NSEA), TUSY(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSX(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TUSY(1:NSEA)        &
@@ -1776,6 +1974,16 @@
               varng(2)='northward_stokes_transport'
               varnc(1)='tus=sqrt(utus**2+vtus**2)'
               varnc(2)='tus=sqrt(utus**2+vtus**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -9900 
 !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
@@ -1786,22 +1994,27 @@
                  USSX(ISEA)=MAX(-0.9998,MIN(0.9998,USSX(ISEA)))
                  USSY(ISEA)=MAX(-0.9998,MIN(0.9998,USSY(ISEA)))
                  END DO
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSX(1:NSEA), USSY(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSX(1:NSEA)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, USSY(1:NSEA)        &
                                                         , MAPSF, XY )
-              DO ISEA=1, NSEA
-                CABS   = SQRT(USSX(ISEA)**2+USSY(ISEA)**2)
-                IF ( CABS .NE. UNDEF ) THEN
-                    USSY(ISEA) = MOD ( 630. -                         &
-                          RADE*ATAN2(USSY(ISEA),USSX(ISEA)) , 360. )
-                  ELSE
-                    USSY(ISEA) = UNDEF
-                  END IF
-                USSX(ISEA) = CABS
-                END DO
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSX,MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSY,MAPSF, X2 )
+              !! Commented out unnecessary statements below for time being
+              !! TAUWIX, TAUWIY are in north-east convention and X1,X2
+              !! are not actually written out below
+              !DO ISEA=1, NSEA
+              !  CABS   = SQRT(USSX(ISEA)**2+USSY(ISEA)**2)
+              !  IF ( CABS .NE. UNDEF ) THEN
+              !      USSY(ISEA) = MOD ( 630. -                         &
+              !            RADE*ATAN2(USSY(ISEA),USSX(ISEA)) , 360. )
+              !    ELSE
+              !      USSY(ISEA) = UNDEF
+              !    END IF
+              !  USSX(ISEA) = CABS
+              !  END DO
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSX,MAPSF, X1 )
+              !CALL W3S2XY ( NSEA, NSEA, NX+1, NY,USSY,MAPSF, X2 )
               NFIELD=2
               varnm(1)='uuss'
               varnm(2)='vuss'
@@ -1813,6 +2026,16 @@
               varng(2)='northward_surface_stokes_drift'
               varnc(1)='uss=sqrt(uuss**2+vuss**2)'
               WRITE(varnc(2),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -9900 
               vmax =  9900
 !
@@ -1832,6 +2055,8 @@
               varng(2)='peak_period_of_power_spectral_density_of_equivalent_surface_pressure'
               varnc(1)=''
               varnc(2)=''
+              varnd(1)=''
+              varnd(2)=''
               vmin = -15000 
               vmax = 32000
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PRMS(1:NSEA)        &
@@ -1853,10 +2078,22 @@
               varng(2)='northward_spectral_variance_of_surface_stokes_drift'
               varnc(1)='usf=sqrt(uusf**2+vusf**2)'
               varnc(2)='usf=sqrt(uusf**2+vusf**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               UNITS   = 'm s-1 Hz-1'
               I1F=US3DF(2)
               I2F=US3DF(3)
               DO IK= I1F,I2F
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, US3D(:,IK), US3D(:,NK+IK), AnglD)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,IK), MAPSF, XX )
                 XXK(:,:,IK)=XX
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,US3D(:,NK+IK), MAPSF, XY )
@@ -1878,6 +2115,7 @@
                 varns(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
                 varng(1)='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
                 varnc(1)=''
+                varnd(1)=''
                 ENAME  = '.p2l'
                 I1F=P2MSF(2)
                 I2F=P2MSF(3)
@@ -1900,6 +2138,8 @@
               FSC    = 0.000001
               UNITS  = 'm2 s-2'
               ENAME  = '.tic'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUICE(1:NSEA,1), TAUICE(1:NSEA,2), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUICE(1:NSEA,1)        &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUICE(1:NSEA,2)        &
@@ -1915,6 +2155,16 @@
               varng(2)='northward_wave_to_sea_ice_stress'
               varnc(1)='two=sqrt(utwo**2+vtwo**2)'
               varnc(2)='two=sqrt(utwo**2+vtwo**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -32000 
               vmax =  32000
 !
@@ -1934,6 +2184,7 @@
               varns(1)='wave_to_sea_ice_energy_flux'
               varng(1)='wave_to_sea_ice_energy_flux'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 9990
 
@@ -1954,10 +2205,22 @@
               varng(2)='northward_partitioned_surface_stokes_drift'
               varnc(1)='usp=sqrt(ussp**2+vssp**2)'
               varnc(2)='usp=sqrt(ussp**2+vssp**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               UNITS   = 'm s-1'
               I1F=1
               I2F=USSPF(2)
               DO IK= I1F,I2F
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSP(:,IK), USSP(:,NK+IK), AnglD)
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,USSP(:,IK), MAPSF, XX )
                 XXK(:,:,IK)=XX
                 CALL W3S2XY ( NSEA, NSEA, NX+1,NY,USSP(:,NK+IK), MAPSF, XY )
@@ -1971,6 +2234,8 @@
               ENAME  = '.abr'
               UNITS  = 'm'
               ! NB: ABA and ABD are the X and Y components of the bottom displacement
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, ABA(1:NSEA), ABD(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, ABD(1:NSEA)       &
@@ -1987,6 +2252,16 @@
               varng(2)='rms_of_bottom_displacement_amplitude_meridional'
               varnc(1)='abr=sqrt(uabr**2+vabr**2)'
               varnc(2)='abr=sqrt(uabr**2+vabr**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -18000
               vmax = 18000
 !
@@ -1995,6 +2270,8 @@
               ENAME  = '.ubr'
               UNITS  = 'm s-1'
               ! NB: UBA and UBD are the X and Y components of the bottom velocity
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UBA(1:NSEA), UBD(1:NSEA), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBA(1:NSEA)       &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, UBD(1:NSEA)       &
@@ -2010,6 +2287,16 @@
               varng(2)='rms_of_bottom_velocity_amplitude_meridional'
               varnc(1)='ubr=sqrt(uubr**2+vubr**2)'
               varnc(2)='ubr=sqrt(uubr**2+vubr**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -18000 
               vmax = 18000
 !
@@ -2017,6 +2304,9 @@
               FSC    = 0.001
               UNITS  = 'm'
               ENAME  = '.bed'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
+!/RTD                                           BEDFORMS(1:NSEA,3), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1)    &
                                                         , MAPSF, X1 )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2)    &
@@ -2030,13 +2320,26 @@
               varnl(1)='bottom roughness'
               varnl(2)='eastward sea bottom ripple wavelength'
               varnl(3)='northward sea bottom ripple wavelength'
-              varns(2)='sea bottom roughness length'
+              varns(1)='sea bottom roughness length'
               varns(2)='eastward_ripple_wavelength'
               varns(3)='northward_ripple_wavelength'
+              varng(1)='ripple_wavelength'
               varng(2)='eastward_ripple_wavelength'
               varng(3)='northward_ripple_wavelength'
+              varnc(1)='ripple_length=sqrt(ripplex**2+rippley**2)'
               varnc(2)='ripple_length=sqrt(ripplex**2+rippley**2)'
               varnc(3)='ripple_length=sqrt(ripplex**2+rippley**2)'
+              varnd(1)=''
+              varnd(2)=''
+              varnd(3)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(2) = 'True North'
+!/RTD                varnd(3) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD                varnd(3) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0
               vmax = 30000
 !
@@ -2052,6 +2355,7 @@
               varns(1)='wave_energy_dissipation_in_bottom_boundary_layer'
               varng(1)='wave_dissipation_in_bbl'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 9990
 !
@@ -2059,6 +2363,9 @@
               FSC    = 0.000001
               UNITS  = 'm2 s-2'
               ENAME  = '.tbb'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
+!/RTD                                           TAUBBL(1:NSEA,2), AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1) &
                                                         , MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2) &
@@ -2074,6 +2381,16 @@
               varng(2)='northward_wave_to_bbl_stress'
               varnc(1)='tbb=sqrt(utbb**2+vtbb**2)'
               varnc(2)='tbb=sqrt(utbb**2+vtbb**2)'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = -32000 
               vmax =  32000
 !
@@ -2081,6 +2398,8 @@
               FSC    = 0.00001
               ENAME  = '.mss'
               UNITS  = '1'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSSX, MSSY, AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSX,MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSSY,MAPSF, XY )
               NFIELD=2
@@ -2094,6 +2413,16 @@
               varng(2)='y_mean_square_slope'
               varnc(1)='mss=mssx+mssy'
               WRITE(varnc(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0 
               vmax = 30000
 !
@@ -2101,6 +2430,8 @@
               FSC    = 1E-7     
               ENAME  = '.msc'
               UNITS  = '1'
+!/RTD              ! Rotate x,y vector back to standard pole
+!/RTD              IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSCX, MSCY, AnglD)
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCX,MAPSF, XX )
               CALL W3S2XY ( NSEA, NSEA, NX+1,NY,MSCY,MAPSF, XY )
               NFIELD=2
@@ -2114,6 +2445,16 @@
               varng(2)='northward_phillips_constant'
               varnc(1)='msc=mscx+mscy'
               varnc(2)='msc=mscx+mscy'
+              varnd(1)=''
+              varnd(2)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD                varnd(2) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD                varnd(2) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0 
               vmax = 30000
 !
@@ -2121,6 +2462,8 @@
               FSC    = 0.1
               UNITS  = 'degree'
               ENAME  = '.msd'
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, MSSD, AnglD, .FALSE.)
               DO ISEA=1, NSEA
                 IF ( MSSD(ISEA) .NE. UNDEF )  THEN
                   MSSD(ISEA) = MOD ( 630. - RADE*MSSD(ISEA) , 180. )
@@ -2133,6 +2476,13 @@
               varns(1)='sea_surface_wave_dominant_mean_square_slope_direction'
               varng(1)='sea_surface_wave_dominant_mean_square_slope_direction'
               WRITE(varnc(1),'(A,F8.4,A,F8.4,A)') 'Frequency range ',SIG(1)*TPIINV,' to ',SIG(NK)*TPIINV,' Hz'
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0
               vmax = 3600
 !
@@ -2140,6 +2490,8 @@
               FSC    = 0.1
               UNITS  = 'degree'
               ENAME  = '.mcd'
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, MSCD, AnglD, .FALSE.)
               DO ISEA=1, NSEA
                 IF ( MSCD(ISEA) .NE. UNDEF )  THEN
                   MSCD(ISEA) = MOD ( 630. - RADE*MSCD(ISEA) , 180. )
@@ -2152,6 +2504,13 @@
               varns(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
               varng(1)='sea_surface_wave_dominant_mean_square_slope_direction_in_highest_frequency'
               varnc(1)=''
+              varnd(1)=''
+!/RTD              ! Override standard direction comment
+!/RTD              IF ( FLAGUNR ) THEN
+!/RTD                varnd(1) = 'True North'
+!/RTD              ELSE IF ( .NOT. FLAGUNR ) THEN
+!/RTD                varnd(1) = 'Rotated Pole Grid North'
+!/RTD              END IF
               vmin = 0
               vmax = 3600
 !
@@ -2171,6 +2530,7 @@
               varns(1)='dynamic_time_step'
               varng(1)='dynamic_time_step'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 !
@@ -2185,6 +2545,7 @@
               varns(1)='cut_off_frequency'
               varng(1)='cut_off_frequency'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 8000
 !
@@ -2199,6 +2560,7 @@
               varns(1)='maximum_cfl_for_spatial_advection'
               varng(1)='maximum_cfl_for_spatial_advection'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 !
@@ -2213,6 +2575,7 @@
               varns(1)='maximum_cfl_for_direction_advection'
               varng(1)='maximum_cfl_for_direction_advection'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 !
@@ -2227,6 +2590,7 @@
               varns(1)='maximum_cfl_for_frequency_advection'
               varng(1)='maximum_cfl_for_frequency_advection'
               varnc(1)=''
+              varnd(1)=''
               vmin = 0 
               vmax = 32000
 !
@@ -2242,6 +2606,7 @@
               WRITE (varns(1),'(A12,I2.2)') 'User_defined', IFJ
               WRITE (varng(1),'(A12,I2.2)') 'user_defined', IFJ
               varnc(1)=''
+              varnd(1)=''
               vmin = 0
               vmax = 9990
 !
@@ -2381,9 +2746,6 @@
               END IF   
 
 
-
-
-
               ! Initializes the time iteration counter n
               n=1
 
@@ -2415,10 +2777,14 @@
               ELSE 
                 ! instanciates lon with X/lon for regular grid or nodes for unstructured mesh
                 IF (.NOT.ALLOCATED(lon)) ALLOCATE(lon(NX))
+!/RTD                ! 2d longitude array for standard grid coordinates
+!/RTD                IF (.NOT.ALLOCATED(lon2D)) ALLOCATE(lon2D(NX,NY),lon2Deq(NX,NY),AnglD2D(NX,NY))
                 IF (.NOT.ALLOCATED(lat)) THEN 
                   ! If regular grid, instanciates lat with Y/lat
                   IF (GTYPE.EQ.RLGTYPE) THEN 
                     ALLOCATE(lat(NY))
+!/RTD                    ! 2d latitude array for standard grid coordinates
+!/RTD                    IF (.NOT.ALLOCATED(lat2D)) ALLOCATE(lat2D(NX,NY),lat2Deq(NX,NY))
                   ! If unstructured mesh, instanciates lat with nodes
                   ELSE 
                     ALLOCATE(lat(NX))
@@ -2437,10 +2803,17 @@
                 Y0D=DBLE(0.000001d0*DNINT(1d6*(DBLE(Y0)) ))
                 DO i=1,NX
                   lon(i)=REAL(X0D+SXD*DBLE(i-1))
+!/RTD                  lon2Deq(i,1:NY)=lon(i)
                 END DO
                 DO i=1,NY
                   lat(i)=REAL(Y0D+SYD*DBLE(i-1))
+!/RTD                  lat2Deq(1:NX,i)=lat(i)
                 END DO
+!/RTD                ! Calculate the standard grid coordinates
+!/RTD                DO i=1,NX
+!/RTD                  CALL W3EQTOLL(lat2Deq(i,1:NY), lon2Deq(i,1:NY), lat2D(i,1:NY), &
+!/RTD                                 lon2D(i,1:NY), AnglD2D(i,1:NY), PoLat, PoLon, NY)
+!/RTD                END DO   
                 WRITE(str2,*) SY
                 str2=ADJUSTL(str2)
                 iret=nf90_put_att(ncid,NF90_GLOBAL,   &
@@ -2500,6 +2873,11 @@
                   'altitude_resolution','n/a')
               call check_err(iret)
 
+!/RTD                  iret=nf90_put_att(ncid,NF90_GLOBAL,  &
+!/RTD                      'grid_north_pole_latitude',PoLat)
+!/RTD                  iret=nf90_put_att(ncid,NF90_GLOBAL,  &
+!/RTD                      'grid_north_pole_longitude',PoLon)
+
               iyc=TIME(1)/10000
               imc=(TIME(1)-iyc*10000)/100
               idc=TIME(1)-iyc*10000-100*imc
@@ -2521,6 +2899,10 @@
                 call check_err(iret)
                 iret=nf90_put_var(ncid,varid(2),lat(IY1:IYN))
                 call check_err(iret)
+!/RTD                iret=nf90_put_var(ncid,varid(291),lon2D(IX1:IXN,IY1:IYN))
+!/RTD                call check_err(iret)
+!/RTD                iret=nf90_put_var(ncid,varid(292),lat2D(IX1:IXN,IY1:IYN))
+!/RTD                call check_err(iret)
               END IF
 
               ! If spherical grid
@@ -2642,6 +3024,16 @@
                   iret=nf90_put_att(ncid,varid(ivar),'comment',varnc(I))
                   call check_err(iret)
                 END IF
+                IF (varnd(I).NE.'') THEN
+                  iret=nf90_put_att(ncid,varid(ivar),'direction_reference',varnd(I))
+                  call check_err(iret)
+                END IF
+!/RTD
+!/RTD                  ! Add grid mapping attribute for rotated pole grids:
+!/RTD                  iret=nf90_put_att(ncid,varid(ivar),'grid_mapping',    &
+!/RTD                                    'rotated_pole')
+!/RTD                  call check_err(iret)
+!/RTD
               END DO
 !
               ! put start date in global attribute
@@ -2759,6 +3151,16 @@
                     iret=nf90_put_att(ncid,varid(ivar),'comment',varnc(I))
                     call check_err(iret)
                   END IF
+                  IF (varnd(I).NE.'') THEN
+                    iret=nf90_put_att(ncid,varid(ivar),'direction_reference',varnd(I))
+                    call check_err(iret)
+                  END IF
+!/RTD
+!/RTD                  ! Add grid mapping attribute for rotated pole grids:
+!/RTD                  iret=nf90_put_att(ncid,varid(ivar),'grid_mapping',    &
+!/RTD                                    'rotated_pole')
+!/RTD                  call check_err(iret)
+!/RTD
                 END DO
                 iret = nf90_enddef(ncid)
                 call check_err(iret)
@@ -3058,6 +3460,14 @@
         END DO  ! IFI=1, NOGRP
       END DO  ! IFJ=1, NGRPP
 !
+! Clean up
+      DEALLOCATE(X1, X2, XX, XY, XK, XXK, XYK)
+      DEALLOCATE(MX1, MXX, MYY, MXY, MAPOUT)
+      DEALLOCATE(MX1R, MXXR, MYYR, MXYR)
+      IF (ALLOCATED(lon)) DEALLOCATE(lon, lat)
+      IF (ALLOCATED(lon2D)) DEALLOCATE(lon2D, lat2D)
+!/RTD      IF (ALLOCATED(lon2Deq)) DEALLOCATE(lat2Deq, lon2Deq, AnglD2D)
+!
       RETURN
 !
 ! Error escape locations
@@ -3194,14 +3604,45 @@
         iret=nf90_put_att(ncid,varid(1),'units','degree_east')
         iret=nf90_put_att(ncid,varid(1),'long_name','longitude')
         iret=nf90_put_att(ncid,varid(1),'standard_name','longitude')
+!/RTD        ! Override the above for RTD pole:
+!/RTD        iret=nf90_put_att(ncid,varid(1),'long_name','longitude in rotated pole grid')
+!/RTD        iret=nf90_put_att(ncid,varid(1),'standard_name','grid_longitude')
         iret=nf90_put_att(ncid,varid(1),'valid_min',-180.0)
         iret=nf90_put_att(ncid,varid(1),'valid_max',360.)
 !
         iret=nf90_put_att(ncid,varid(2),'units','degree_north')
         iret=nf90_put_att(ncid,varid(2),'long_name','latitude')
         iret=nf90_put_att(ncid,varid(2),'standard_name','latitude')
+!/RTD        ! Override the above for RTD pole:
+!/RTD        iret=nf90_put_att(ncid,varid(2),'long_name','latitude in rotated pole grid')
+!/RTD        iret=nf90_put_att(ncid,varid(2),'standard_name','grid_latitude')
         iret=nf90_put_att(ncid,varid(2),'valid_min',-90.0)
         iret=nf90_put_att(ncid,varid(2),'valid_max',180.)
+!
+!/RTD        !Add secondary coordinate system linking rotated grid back to standard lat-lon
+!/RTD        iret = nf90_def_var(ncid, 'standard_longitude', nf90_float, (/ dimid(2), dimid(3)/), &
+!/RTD                             varid(291))
+!/RTD        iret=nf90_put_att(ncid,varid(291),'units','degree_east')
+!/RTD        iret=nf90_put_att(ncid,varid(291),'long_name','longitude')
+!/RTD        iret=nf90_put_att(ncid,varid(291),'standard_name','longitude')
+!/RTD        iret=nf90_put_att(ncid,varid(291),'valid_min',-180.0)
+!/RTD        iret=nf90_put_att(ncid,varid(291),'valid_max',360.)
+!/RTD        iret = nf90_def_var(ncid, 'standard_latitude', nf90_float, (/ dimid(2), dimid(3)/), &
+!/RTD                             varid(292))
+!/RTD        iret=nf90_put_att(ncid,varid(292),'units','degree_north')
+!/RTD        iret=nf90_put_att(ncid,varid(292),'long_name','latitude')
+!/RTD        iret=nf90_put_att(ncid,varid(292),'standard_name','latitude')
+!/RTD        iret=nf90_put_att(ncid,varid(292),'valid_min',-90.0)
+!/RTD        iret=nf90_put_att(ncid,varid(292),'valid_max',180.)
+!/RTD
+!/RTD        ! Add rotated pole grid mapping variable (dummy scalar variable
+!/RTD        ! used to simply store rotated pole information; see CF1.6 conventions).
+!/RTD        iret=nf90_def_var(ncid, 'rotated_pole', nf90_char, varid(293))
+!/RTD        iret=nf90_put_att(ncid, varid(293), 'grid_north_pole_latitude',PoLat)
+!/RTD        iret=nf90_put_att(ncid, varid(293), 'grid_north_pole_longitude',PoLon)
+!/RTD        iret=nf90_put_att(ncid, varid(293), 'grid_mapping_name',              &
+!/RTD                                   'rotated_latitude_longitude')
+!
       ELSE 
         IF (GTYPE.EQ.RLGTYPE) THEN 
           iret = nf90_def_var(ncid, 'x', nf90_float, dimid(2), varid(1))

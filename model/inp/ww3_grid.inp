@@ -314,6 +314,21 @@ $                           UNO3   : Use 3rd order advection scheme, .FALSE.
 $                           UNO3   : Add extra spatial averaging,    .FALSE.
 $ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, LvSMC=3, JEQT=1344  /
 $
+$ Rotated pole ------------------------------------------------------ $
+$   Pole  parameters    : Namelist ROTD
+$                           PLAT  : Rotated pole latitude
+$                           PLON  : Rotated pole longitude
+$                           UNROT : Logical, un-rotate directions to true north
+$
+$    These will be used to derive rotation angle corrections in the
+$    model. The corrections are used for rotation of boundary spectra 
+$    and for restoring conventional lat/lon orientation of the
+$    output spectra, mean direction or any related variables.
+$    The PLAT/LON example below is a standard setting for Met
+$    Office UK regional models.
+$
+$ &ROTD PLAT = 37.5, PLON = 177.5, UNROT = .TRUE. /
+$
 $ Output of 3D arrays------------------------------------------------- $
 $ In order to limit the use of memory, arrays for 3D output fiels (i.e. 
 $ variables that are a function of both space and frequency, are not 

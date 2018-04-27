@@ -2827,6 +2827,11 @@
         iret=nf90_put_att(ncid,varid(10),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(10),'content','TX')
         iret=nf90_put_att(ncid,varid(10),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(10),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(10),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 
 !f/fp
@@ -2871,6 +2876,12 @@
         iret=nf90_put_att(ncid,varid(13),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(13),'content','TXY')
         iret=nf90_put_att(ncid,varid(13),'associates','time station frequency')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(13),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(13),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !sth1m
          iret=nf90_def_var(ncid, 'sth1m', NF90_FLOAT,(/ dimid(4),dimid(two),dimid(one) /), varid(14))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(14), 1, 1, deflate)
@@ -2972,7 +2983,6 @@
         iret=nf90_put_att(ncid,varid(8),'content','Y')
         iret=nf90_put_att(ncid,varid(8),'associates','frequency')
 
-
 !direction
         iret=nf90_def_var(ncid, 'direction', NF90_FLOAT, (/dimid(5)/), varid(9))
         call check_err(iret)
@@ -2987,6 +2997,11 @@
         iret=nf90_put_att(ncid,varid(9),'valid_max',360.)
         iret=nf90_put_att(ncid,varid(9),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(9),'axis','Z') 
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !Efth
         iret=nf90_def_var(ncid,'efth',NF90_FLOAT,(/dimid(5),dimid(4),dimid(two),dimid(one)/),varid(10))
@@ -3005,6 +3020,12 @@
         iret=nf90_put_att(ncid,varid(10),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(10),'content','TXYZ')
         iret=nf90_put_att(ncid,varid(10),'associates','time station frequency direction')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(10),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(10),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !d
         iret=nf90_def_var(ncid, 'dpt', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(11))
         call check_err(iret)
@@ -3051,6 +3072,11 @@
         iret=nf90_put_att(ncid,varid(13),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(13),'content','TX')
         iret=nf90_put_att(ncid,varid(13),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(13),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(13),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !Uc
         iret=nf90_def_var(ncid, 'cur', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(14))
@@ -3083,6 +3109,11 @@
         iret=nf90_put_att(ncid,varid(15),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(15),'content','TX')
         iret=nf90_put_att(ncid,varid(15),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(15),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(15),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 
         ! Add values in netCDF file      
@@ -3170,6 +3201,12 @@
         iret=nf90_put_att(ncid,varid(9),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(9),'content','TX')
         iret=nf90_put_att(ncid,varid(9),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !Uc
          iret=nf90_def_var(ncid, 'cur', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(10))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(10), 1, 1, deflate)
@@ -3198,7 +3235,11 @@
         iret=nf90_put_att(ncid,varid(11),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(11),'content','TX')
         iret=nf90_put_att(ncid,varid(11),'associates','time station')
-
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(11),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(11),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !Hs
          iret=nf90_def_var(ncid, 'hs', NF90_FLOAT, (/dimid(4),dimid(two),dimid(one)/),varid(12))
@@ -3270,6 +3311,12 @@
         iret=nf90_put_att(ncid,varid(16),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(16),'content','TXY')
         iret=nf90_put_att(ncid,varid(16),'associates','time station npart')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(16),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(16),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !sth1m
          iret=nf90_def_var(ncid, 'sth1m', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/),varid(17))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(17), 1, 1, deflate)
@@ -3338,6 +3385,12 @@
         iret=nf90_put_att(ncid,varid(8),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(8),'content','TX')
         iret=nf90_put_att(ncid,varid(8),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(8),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(8),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !U10
          iret=nf90_def_var(ncid, 'wnd', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(9))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(9), 1, 1, deflate)
@@ -3366,6 +3419,12 @@
         iret=nf90_put_att(ncid,varid(10),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(10),'content','TX')
         iret=nf90_put_att(ncid,varid(10),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(10),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(10),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !zeta_setup
 !/SETUP         iret=nf90_def_var(ncid, 'wave_setup', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(11))
 !/SETUP!/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(11), 1, 1, deflate)
@@ -3446,6 +3505,12 @@
         iret=nf90_put_att(ncid,varid(9),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(9),'content','TX')
         iret=nf90_put_att(ncid,varid(9),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !sth1p
          iret=nf90_def_var(ncid, 'sth1p', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(10))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(10), 1, 1, deflate)
@@ -3488,6 +3553,12 @@
         iret=nf90_put_att(ncid,varid(12),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(12),'content','TX')
         iret=nf90_put_att(ncid,varid(12),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(12),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(12),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !sth1m
          iret=nf90_def_var(ncid, 'sth1m', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(13))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(13), 1, 1, deflate)
@@ -3542,6 +3613,12 @@
         iret=nf90_put_att(ncid,varid(7),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(7),'content','TX')
         iret=nf90_put_att(ncid,varid(7),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !fpst
          iret=nf90_def_var(ncid, 'fpst', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(8))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(8), 1, 1, deflate)
@@ -3625,6 +3702,12 @@
         iret=nf90_put_att(ncid,varid(7),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(7),'content','TX')
         iret=nf90_put_att(ncid,varid(7),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !fpst
          iret=nf90_def_var(ncid, 'fpst', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(8))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(8), 1, 1, deflate)
@@ -3707,6 +3790,12 @@
         iret=nf90_put_att(ncid,varid(7),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(7),'content','TX')
         iret=nf90_put_att(ncid,varid(7),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !Hs
          iret=nf90_def_var(ncid, 'hs', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(8))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(8), 1, 1, deflate)
@@ -3818,6 +3907,12 @@
         iret=nf90_put_att(ncid,varid(7),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(7),'content','TX')
         iret=nf90_put_att(ncid,varid(7),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(7),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
+
 !Hs
          iret=nf90_def_var(ncid, 'hs', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(8))
 !/NC4        IF (NCTYPE.EQ.4) iret=nf90_def_var_deflate(ncid, varid(8), 1, 1, deflate)
@@ -3990,7 +4085,6 @@
           iret=nf90_put_att(ncid,varid(11),'associates','time station ffp')
         END IF
 
-
 !Snl / Snlst
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
           iret=nf90_def_var(ncid, 'snl', NF90_FLOAT,(/dimid(4),dimid(two),dimid(one)/), varid(12))
@@ -4020,7 +4114,6 @@
         ELSE
           iret=nf90_put_att(ncid,varid(12),'associates','time station ffp')
         END IF
-
 
 !Sds / Sdsst
         IF (ISCALE.EQ.0 .OR. ISCALE.EQ.3) THEN
@@ -4512,6 +4605,11 @@
         iret=nf90_put_att(ncid,varid(9),'valid_max',360.)
         iret=nf90_put_att(ncid,varid(9),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(9),'axis','Z') 
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(9),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !d
         iret=nf90_def_var(ncid, 'dpt', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(10))
@@ -4556,6 +4654,11 @@
         iret=nf90_put_att(ncid,varid(12),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(12),'content','TX')
         iret=nf90_put_att(ncid,varid(12),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(12),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(12),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !Uc
         iret=nf90_def_var(ncid, 'cur', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(13))
@@ -4586,6 +4689,11 @@
         iret=nf90_put_att(ncid,varid(14),'_FillValue',NF90_FILL_FLOAT)
         iret=nf90_put_att(ncid,varid(14),'content','TX')
         iret=nf90_put_att(ncid,varid(14),'associates','time station')
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(14),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(14),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !Ust
         iret=nf90_def_var(ncid, 'ust', NF90_FLOAT, (/ dimid(two),dimid(one) /), varid(15))
@@ -4621,6 +4729,11 @@
             iret=nf90_put_att(ncid,varid(16),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(16),'associates','time station frequency direction')
           ENDIF
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          iret=nf90_put_att(ncid,varid(16),'direction_reference','True North')
+!/RTD        ELSE
+!/RTD          iret=nf90_put_att(ncid,varid(16),'direction_reference','Rotated Pole Grid North')
+!/RTD        END IF
 
 !Swn
           IF ( FLSRCE(2) )  THEN
@@ -4637,6 +4750,7 @@
             iret=nf90_put_att(ncid,varid(17),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(17),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(17),'associates','time station frequency direction')
+!/RTD            iret=nf90_put_att(ncid,varid(17),'direction_reference','Rotated Pole Grid North')
           ENDIF
 
 !Snl
@@ -4654,6 +4768,7 @@
             iret=nf90_put_att(ncid,varid(18),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(18),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(18),'associates','time station frequency direction')
+!/RTD            iret=nf90_put_att(ncid,varid(18),'direction_reference','Rotated Pole Grid North')
           ENDIF
 
 !Sds
@@ -4671,6 +4786,7 @@
             iret=nf90_put_att(ncid,varid(19),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(19),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(19),'associates','time station frequency direction')
+!/RTD            iret=nf90_put_att(ncid,varid(19),'direction_reference','Rotated Pole Grid North')
           ENDIF
 
 !Sbt
@@ -4688,6 +4804,7 @@
             iret=nf90_put_att(ncid,varid(20),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(20),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(20),'associates','time station frequency direction')
+!/RTD            iret=nf90_put_att(ncid,varid(20),'direction_reference','Rotated Pole Grid North')
           ENDIF
 
 !Sice
@@ -4705,6 +4822,7 @@
             iret=nf90_put_att(ncid,varid(21),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(21),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(21),'associates','time station frequency direction')
+!/RTD            iret=nf90_put_att(ncid,varid(21),'direction_reference','Rotated Pole Grid North')
           ENDIF
 
 !Stt
@@ -4722,6 +4840,7 @@
             iret=nf90_put_att(ncid,varid(22),'_FillValue',NF90_FILL_FLOAT)
             iret=nf90_put_att(ncid,varid(22),'content','TXYZ')
             iret=nf90_put_att(ncid,varid(22),'associates','time station frequency direction')
+!/RTD            iret=nf90_put_att(ncid,varid(22),'direction_reference','Rotated Pole Grid North')
           ENDIF
         ENDIF
 

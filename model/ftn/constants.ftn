@@ -15,6 +15,7 @@
 !/    03-Sep-2012 : Adding TSTOUT flag.                 ( version 4.10 )
 !/    28-Feb-2013 : Adding cap at 0.5 in FWTABLE        ( version 4.08 )
 !/    20-Jan-2017 : Add parameters for ESMF             ( version 6.02 )
+!/    01-Mar-2018 : Add UNDEF parameter                 ( version 6.02 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -46,6 +47,7 @@
 !      DERA      Real  Global   Conv. factor from degrees to radians.
 !      RADIUS    Real  Global   Radius of the earth.             (m)
 !      TSTOUT    Log.  Global   Flag for generation of test files.
+!      UNDEF     Real  Global   Value for undefined variable in output
 !     ----------------------------------------------------------------
 !
 !  5. Remarks
@@ -80,6 +82,8 @@
 !
       REAL, PARAMETER         :: G2PI3I = 1. / ( GRAV**2 * TPI**3 )
       REAL, PARAMETER         :: G1PI1I = 1. / ( GRAV * TPI )
+!
+      REAL                    :: UNDEF = -999.9
 !
 ! Parameters for friction factor table 
 !

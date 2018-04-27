@@ -95,6 +95,7 @@
 !/    15 Oct-2015 : Change SMC grid input files. JGLi   ( version 5.09 )
 !/    10-Jan-2017 : Changes for US3D and USSP           ( version 6.01 )
 !/    20-Jan-2017 : Bug fix for mask input from file.   ( version 6.02 )
+!/    01-Mar-2018 : RTD poles info read from namelist   ( version 6.02 )
 !/    14-Mar-2018 : Option to read UNST boundary file   ( version 6.02 )
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -720,6 +721,9 @@
                                       EXPFSFCT,IMPFSN, UGOBCOK
            INTEGER                 :: UNSTSCHEMES(4), UNSTSCHEME
 !
+!/RTD      REAL                    :: PLAT, PLON
+!/RTD      LOGICAL                 :: UNROT
+!
 !/FLD1      NAMELIST /FLD1/ TAILTYPE, TAILLEV, TAILT1, TAILT2
 !/FLD2      NAMELIST /FLD2/ TAILTYPE, TAILLEV, TAILT1, TAILT2
 !/FLX3      NAMELIST /FLX3/ CDMAX, CTYPE
@@ -805,6 +809,8 @@
 !/REF1                          REFSUBGRID, REFICEBERG,                     &
 !/REF1                          REFCOSP_STRAIGHT, REFSLOPE, REFRMAX,        &
 !/REF1                          REFFREQPOW
+!/
+!/RTD      NAMELIST /ROTD/ PLAT, PLON, UNROT
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -1915,6 +1921,13 @@
 !
       CTMAX  = CFLTM
 !
+!/RTD ! Set/ read in rotation values - these will be written out
+!/RTD ! out later with the rest of the grid info
+!/RTD      PLAT = -999.9
+!/RTD      PLON = -999.9
+!/RTD      UNROT = .TRUE.
+!/RTD      CALL READNL ( NDSS, 'ROTD', STATUS )
+!
 ! 6.n Set miscellaneous parameters (ice, seeding, numerics ... )
 !
       CICE0  = 0.5
@@ -2949,29 +2962,37 @@
 !Li     End of RGLGRD block
         ENDIF
 !Li 
-!/RTD ! 7.h  Read rotated grid Polat and Polon and define angleD variable
-!/RTD       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-!/RTD !AC   READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDFM, IDLA, RFORM, TNAME
-!/RTD       READ (NDSI,*,END=2001,ERR=2002) Polat, Polon
-!/RTD !Li   J = LEN_TRIM(FNMPRE)
-!/RTD !Li   OPEN (NDSTR,FILE=FNMPRE(:J)//TNAME,             &
-!/RTD !Li               FORM='FORMATTED',STATUS='OLD',ERR=2000)
-!/RTD       ALLOCATE ( AnglDin(NX,NY) )
-!/RTD       ALLOCATE ( StdLon(NX,NY), StdLat(NX,NY) )
-!/RTD !Li
-!/RTD !Li   CALL INA2R ( AnglDin, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-!/RTD !Li                IDFM, RFORM, IDLA, 1.0, 0.0)
-!/RTD !Li   Use the regular grid X/YGRDIN as euqatorial lon/lat 
-!/RTD       IX=NX*NY
-!/RTD       CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon,   &
-!/RTD     &                AnglDin, Polat, Polon,  IX )
+!
+!/RTD ! 7.h Calculate rotation angles for configs with rotated pole
+!/RTD !     Check that pole lat/lon values have been read in
+!/RTD !     and exit the program if they have not
+!/RTD       PoLon = PLON
+!/RTD       PoLat = PLAT
+!/RTD       FLAGUNR = UNROT
+!/RTD       IF( PoLon .EQ. -999.9 .OR. PoLat .EQ. -999.9 ) THEN
+!/RTD         WRITE( NDSE, 1050 )
+!/RTD         CALL EXTCDE ( 63 )
+!/RTD       ENDIF
+!/RTD
+!/RTD       ALLOCATE( AnglDin(NX,NY) )
+!/RTD       ALLOCATE(StdLat(NX,NY), StdLon(NX,NY))
+!/RTD
+!/RTD !     Calculate rotation angles; (StdLon/Lat are returned, but not used)
+!/RTD !     The regular grid X/YGRDIN are used as equatorial lon and lat
+!/RTD       CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon, AnglDin, &
+!/RTD                      PoLat, PoLon, NX*NY )
+!/RTD
+!/RTD !     Write out rotation information
+!/RTD       WRITE (NDSO,4203)   PoLat, PoLon
 !/RTD       WRITE (NDSO,4200) 
-!/RTD       WRITE (NDSO,4201)    (        ix,     ix=1,NX,100)
-!/RTD       WRITE (NDSO,4202)    1,(AnglDin(ix, 1), ix=1,NX,100)
-!/RTD       WRITE (NDSO,4202)   NY,(AnglDin(ix,NY), ix=1,NX,100)
-!/RTD       WRITE (NDSO,4203)   Polat, Polon
+!/RTD       WRITE (NDSO,4201)    (        IX,     IX=1,NX,NX/3)
+!/RTD       WRITE (NDSO,4202)    1,(AnglDin(IX, 1), IX=1,NX,NX/3)
+!/RTD       WRITE (NDSO,4202)   NY,(AnglDin(IX,NY), IX=1,NX,NX/3)
+!/RTD       IF ( FLAGUNR ) WRITE (NDSO,4204)
 !/RTD       WRITE (NDSO,*) ' '
 !/RTD
+!/RTD !     Clean up
+!/RTD       DEALLOCATE( StdLat, StdLon )
 !
 !/SMC !! 7.i  Read SMC grid cell and face integer arrays.  
 !/SMC       CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -3854,13 +3875,12 @@
 !/ARC          CTHG0S(NCel)=0.0
 !/ARC       
 !
-!/RTD !!Li    Assign rotated grid angle for all sea points.  JGLi01Feb2016
-!/RTD           DO ISEA=1,NSEA
-!/RTD             IX = MAPSF(ISEA,1)
-!/RTD             IY = MAPSF(ISEA,2)
-!/RTD             AnglD(ISEA) = AnglDin(IX,IY)
-!/RTD           END DO
-!/RTD 
+!/RTD !Li  Assign rotated grid angle for all sea points.  JGLi01Feb2016
+!/RTD      DO ISEA=1,NSEA
+!/RTD        IX = MAPSF(ISEA,1)
+!/RTD        IY = MAPSF(ISEA,2)
+!/RTD        AnglD(ISEA) = AnglDin(IX,IY)
+!/RTD      END DO
 !
 !/T      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 0, 0.,          &
 !/T                   1, NX, IX3, 1, NY, IY3, 'Sea points', 'm')
@@ -4115,9 +4135,6 @@
 !
       DEALLOCATE ( ZBIN, TMPSTA, TMPMAP )
 !/RTD      DEALLOCATE ( AnglDin )
-!/RTD      WRITE (NDSO,*) ' '
-!/RTD      WRITE (NDSO,4204) 
-!/RTD      WRITE (NDSO,*) ' '
 !
 ! 9.e Reads bottom information from file
 !
@@ -5093,11 +5110,11 @@
 !/ARC 4038 FORMAT (9F8.2)
 !/ARC 4039 FORMAT ( '       Arctic ICLBAC defined as ',I6)
 !/ARC 4040 FORMAT (9I8)
-!/RTD 4200 FORMAT ( '       AnglDin(NX,NY) defined : ')
-!/RTD 4201 FORMAT ( '       JY/IX',9I8)
-!/RTD 4202 FORMAT (I6,9F8.2)
-!/RTD 4203 FORMAT ( '       Polat/lon  =  ',2F9.3)
-!/RTD 4204 FORMAT ( '       AnglD(NSEA) set up ')
+!/RTD 4200 FORMAT ( '       AnglDin(NX,NY) defn checks  : ')
+!/RTD 4201 FORMAT ( '       JY/IX',4I8)
+!/RTD 4202 FORMAT (I12,4F8.2)
+!/RTD 4203 FORMAT ( '       Rotated pole lat/lon (deg.) :  ',2F9.3)
+!/RTD 4204 FORMAT ( '       Output dirns and x-y vectors will be set to True North')
   972 FORMAT (/'       Bottom level unit           :',I6/             &
                '       Limiting depth          (m) :',F8.2/           &
                '       Minimum depth           (m) :',F8.2/           &
@@ -5270,6 +5287,9 @@
                '     ONLY FIRST PROPAGATION SCHEME WILL BE USED: ')
  1036 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
                '     ILLEGAL NUMBER OF !/ISn SWITCHES :',I3)
+ 1050 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
+               '     ROTATED POLE SWITCH IS SET (RTD), BUT'/          &
+               '     PLAT/PLON NAMELIST VALUES NOT SET IN ROTD' )
 !
  1040 FORMAT ( '       Space-time extremes DX      :',F10.2)
  1041 FORMAT ( '       Space-time extremes DX      :',F10.2)
@@ -5481,6 +5501,8 @@
 !/SMC                          READ (NDS,NML=PSMC,END=801,ERR=802,IOSTAT=J)
 !/PR3                        CASE('PRO3')
 !/PR3                          READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
+!/RTD                        CASE('ROTD') 
+!/RTD                          READ (NDS,NML=ROTD,END=801,ERR=802,IOSTAT=J)
 !/REF1                        CASE('REF1') 
 !/REF1                         READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
 !/IG1                        CASE('SIG1') 

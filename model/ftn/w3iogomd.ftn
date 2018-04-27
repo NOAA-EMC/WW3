@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         27-Aug-2015 |
+!/                  | Last update :         01-Mar-2018 |
 !/                  +-----------------------------------+
 !/
 !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -47,6 +47,8 @@
 !/    30-Apr-2014 : Add th2m and sth2m calculation      ( version 5.01 ) 
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/    27-Aug-2015 : Add ICEF,ICEH as output fields      ( version 5.10 )
+!/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
+!/                  processing code)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1090,6 +1092,8 @@
 !/    27-May-2014 : Switch to OMPG switch.              ( version 5.02 )
 !/    10-Apr-2015 : Remove unused variables             ( version 5.08 )
 !/    10-Jan-2017 : Separate Stokes drift calculation   ( version 6.01 )
+!/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
+!/                  processing code)
 !/
 !  1. Purpose :
 !
@@ -1737,7 +1741,7 @@
         PHIST(JSEA) = ABS(MINVAL(PHI(:,JSEA),1))
       ENDIF
 !
-! Wave height of the wave with the maximum expected crest heigth
+! Wave height of the wave with the maximum expected crest height
 ! and corresponding standard deviation
 ! (according to Boccotti Quasi-Determinism theory - linear)
         STMAXEL(JSEA) = SQRT(ET(JSEA)) * ( MODE(JSEA)+0.5772 /         &
@@ -1836,18 +1840,12 @@
               END IF
             IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 ) THEN
                 THM(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
-!/RTD  !!  Subtract AnglD from mean direction and wrap to 0-2Pi. JGLi12Jun2012
-!/RTD            THM(JSEA) = THM(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( THM(JSEA) .LT. 0.0 )  THM(JSEA) = THM(JSEA) + TPi
               ELSE
                 THM(JSEA) = 0.
               END IF
             ABR(JSEA) = SQRT ( 2. * MAX ( 0. , ABR(JSEA) ) )
             IF ( ABR(JSEA) .GE. 1.E-7 ) THEN
                 ABD(JSEA) = ATAN2(ABD(JSEA),ABA(JSEA))
-!/RTD  !!  Subtract AnglD from bottom rms direction and wrap to 0-2Pi. JGLi12Jun2012
-!/RTD            ABD(JSEA) = ABD(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( ABD(JSEA) .LT. 0.0 )  ABD(JSEA) = ABD(JSEA) + TPi
               ELSE
                 ABD(JSEA) = 0.
               ENDIF
@@ -1855,9 +1853,6 @@
             UBR(JSEA) = SQRT ( 2. * MAX ( 0. , UBR(JSEA) ) )
             IF ( UBR(JSEA) .GE. 1.E-7 ) THEN
                 UBD(JSEA) = ATAN2(UBD(JSEA),UBA(JSEA))
-!/RTD  !!  Subtract AnglD from bottom wave direction and wrap to 0-2Pi. JGLi12Jun2012
-!/RTD            UBD(JSEA) = UBD(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( UBD(JSEA) .LT. 0.0 )  UBD(JSEA) = UBD(JSEA) + TPi
               ELSE
                 UBD(JSEA) = 0.
               ENDIF
@@ -2078,9 +2073,6 @@
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP0(JSEA).NE.UNDEF )                                     &
             THP0(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
-!/RTD  !!  Subtract AnglD from peak direction and wrap to 0-2Pi.  JGLi12Jun2012
-!/RTD            THP0(JSEA) = THP0(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( THP0(JSEA) .LT. 0.0 )  THP0(JSEA) = THP0(JSEA) + TPi
         ETX(JSEA) = 0.
         ETY(JSEA) = 0.
         IKP1(JSEA) = MAX ( 1 , IKP1(JSEA) )
@@ -2130,9 +2122,6 @@
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP1(JSEA) .NE. UNDEF )                                   &
             THP1(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
-!/RTD  !!  Subtract AnglD from THP1 direction and wrap to 0-2Pi.  JGLi12Jun2012
-!/RTD            THP1(JSEA) = THP1(JSEA) - AnglD(ISEA)*DERA
-!/RTD            IF( THP1(JSEA) .LT. 0.0 )  THP1(JSEA) = THP1(JSEA) + TPi
         END DO
 !
 !/OMPG/!$OMP END PARALLEL DO
@@ -2199,7 +2188,9 @@
                     PHS(JSEA,0) = DTPRT(1,I)
                     PTP(JSEA,0) = DTPRT(2,I)
                     PLP(JSEA,0) = DTPRT(3,I)
-                    PDIR(JSEA,0) = ( 270. - DTPRT(4,I) ) * DERA
+                    ! (PDIR is already in degrees nautical - convert back to
+                    !  Cartesian in radians to maintain internal convention)
+                    PDIR(JSEA,0) = MOD((630. - DTPRT(4,I)), 360.) * DERA
                     PSI(JSEA,0) = DTPRT(5,I)
                     PWS(JSEA,0) = DTPRT(6,I)
                     I      = I + 1
@@ -2209,7 +2200,9 @@
                   PHS(JSEA,J) = DTPRT(1,I)
                   PTP(JSEA,J) = DTPRT(2,I)
                   PLP(JSEA,J) = DTPRT(3,I)
-                  PDIR(JSEA,J) = ( 270. - DTPRT(4,I) ) * DERA
+                  ! (PDIR is already in degrees nautical - convert back to
+                  !  Cartesian in radians to maintain internal convention)
+                  PDIR(JSEA,J) = MOD((630. - DTPRT(4,I)), 360.) * DERA
                   PSI(JSEA,J) = DTPRT(5,I)
                   PWS(JSEA,J) = DTPRT(6,I)
                   I      = I + 1
@@ -2277,6 +2270,9 @@
 !/                  memory footprint.
 !/    21-Aug-2013 : Added missing cos,sin for UBA, ABA  ( version 4.11 )
 !/    27-Nov-2013 : Management of coupling output       ( version 4.18 )
+!/    01-Mar-2018 : Removed RTD code (now used in post  ( version 6.02 )
+!/                  processing code)
+!/
 !  1. Purpose :
 !
 !     Read/write gridded output.
@@ -2531,8 +2527,8 @@
 !
                 IF ( FLOGRD( 2, 2) ) WLM   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 3) ) T02   (ISEA) = UNDEF
-                IF ( FLOGRD( 2, 4) ) T0M1   (ISEA) = UNDEF
-                IF ( FLOGRD( 2, 5) ) T01  (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 4) ) T0M1  (ISEA) = UNDEF
+                IF ( FLOGRD( 2, 5) ) T01   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 6) ) FP0   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 7) ) THM   (ISEA) = UNDEF
                 IF ( FLOGRD( 2, 8) ) THS   (ISEA) = UNDEF

@@ -6,7 +6,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         20-Jan-2017 |
+!/                  | Last update :         01-Mar-2018 |
 !/                  +-----------------------------------+
 !/
 !/    See subroutine for update log.
@@ -101,6 +101,8 @@
 !/    20-Jan-2017 : Allow input boundary points to lie outside the grid
 !/                  within a distance of 0.1 times the grid cell size.
 !/                  (T.J. Campbell, NRL)                ( version 6.02 )
+!/    01-Mar-2018 : Rotate boundary points and directions 
+!/                  of input spectra for rotated grids  ( version 6.02 )
 !/
 !  1. Purpose :
 !
@@ -189,8 +191,8 @@
       USE W3GDATMD, ONLY: DXYMAX  
 !/T1      USE W3GDATMD, ONLY: SIG
 !/RTD !!   Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: Polat, Polon
-!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ
+!/RTD      USE W3GDATMD, ONLY: PoLat, PoLon, AnglD
+!/RTD      USE W3SERVMD, ONLY: W3LLTOEQ, W3EQTOLL, W3ACTURN
       USE W3WDATMD, ONLY: VA
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPBPT, &
@@ -227,7 +229,11 @@
 !/T1      REAL                  :: HS, HS0
 !/RTD  !!    Declare rotation angle and rotated lat/lon variables for
 !/RTD  !!    boundary points.   JGLi12Jun2012
-!/RTD        REAL, ALLOCATABLE   :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
+!/RTD      REAL, ALLOCATABLE      :: Anglbdy(:), ELatbdy(:), ELonbdy(:) 
+      REAL, ALLOCATABLE      :: XBPO2(:), YBPO2(:)
+!/RTD      REAL, ALLOCATABLE      :: ANG(:)
+!/RTD      REAL                   :: Spectr(NK*NTH)
+!/RTD      REAL                   :: XRLIM, YRLIM
       REAL, ALLOCATABLE       :: TMPSPC(:,:)
       LOGICAL                 :: FLOK
       CHARACTER(LEN=18)       :: FILEN
@@ -305,9 +311,26 @@
 !/T                WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTRBC,       &
 !/T                       VERBPTBC, NBO(IFILE)-NBO(IFILE-1)
 !
+!
+                 ! Temporary storage for boundary points:
+                 ! The arrays are required to allow rotation of
+                 ! x,y coordinate data under the /RTD option
+                 ALLOCATE( XBPO2(NBO(IFILE)-NBO(IFILE-1)) )
+                 ALLOCATE( YBPO2(NBO(IFILE)-NBO(IFILE-1)) )
+!/RTD                 ALLOCATE( ANG(NBO(IFILE)-NBO(IFILE-1)) )
+                 XBPO2=XBPO(NBO(IFILE-1)+1:NBO(IFILE))
+                 YBPO2=YBPO(NBO(IFILE-1)+1:NBO(IFILE))
+!
+!/RTD                 ! Convert rotated lat/lon back to standard pole grid.
+!/RTD                 CALL W3EQTOLL ( YBPO(NBO(IFILE-1)+1:NBO(IFILE)),   &
+!/RTD                                 XBPO(NBO(IFILE-1)+1:NBO(IFILE)),   &
+!/RTD                                 YBPO2,XBPO2,ANG,POLAT,POLON,       &
+!/RTD                                 NBO(IFILE)-NBO(IFILE-1) )
+!/RTD
+                ! Modified write below to write out XBPO2 and YBPO2,
+                ! instead of XBPO/YBPO
                 WRITE (NDSL(IFILE))                                   &
-                     (XBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),           &
-                     (YBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),           &
+                       XBPO2, YBPO2,                                  &
                      ((IPBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4),&
                      ((RDBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4)
 !
@@ -317,6 +340,10 @@
 !/T0                         YBPO(I), (IPBPO(I,J),J=1,4),             &
 !/T0                         (RDBPO(I,J),J=1,4)
 !/T0                  END DO
+!
+                ! Deallocate temporary storage for boundary points
+                DEALLOCATE( XBPO2, YBPO2 )
+!/RTD                DEALLOCATE( ANG )
 !
                 END DO
             END IF
@@ -378,20 +405,34 @@
               ((RDBPI(I,J),I=1,NBI),J=1,4)
 !
 !/RTD !!   Convert standard into rotated lat/lon. JGLi12Jun2012
-!/RTD       ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
+!/RTD          ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
 !/RTD
-!/RTD       CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
-!/RTD     &                 Anglbdy, Polat, Polon, NBI )
+!/RTD          CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
+!/RTD       &                 Anglbdy, PoLat, PoLon, NBI )
 !/RTD
-!/RTD !!    XBPI = ELonbdy
-!/RTD       YBPI = ELatbdy
-!/RTD !!   Need to wrap NAEW Elon values greater than 360 as X0=327.265
-!/RTD       DO I=1, NBI
-!/RTD          XBPI(I)=MOD( ELonbdy(I)+360.0, 360.0)
-!/RTD          IF( XBPI(I)+0.4*SX .LT. X0 )  XBPI(I) = XBPI(I) + 360.0
-!/RTD       ENDDO
+!/RTD          XBPI = ELonbdy
+!/RTD          YBPI = ELatbdy
+!/RTD !!    W3LLTOEQ outputs longitudes on 0->360 degree grid
+!/RTD !!    Next section will revise to -180->180 convention if required
+!/RTD !!    by nested model rotated grid; determined by X0 lon value
+!/RTD          IF ( X0 .LT. 0.0 ) THEN
+!/RTD            DO I=1, NBI
+!/RTD              IF ( XBPI(I) .GT. 180.0) XBPI(I) = XBPI(I) - 360.0
+!/RTD            ENDDO
+!/RTD          END IF
+!/RTD !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD 
+!/RTD !!    values to within a tolerance of the boundary - possibly this is
+!/RTD !!    no longer required after the 20-Jan-2017 change?
+!/RTD          XRLIM = X0 + (NX-1) * SX
+!/RTD          YRLIM = Y0 + (NY-1) * SY
+!/RTD          DO I=1, NBI
+!/RTD            IF ( ABS(XBPI(I) - X0) .LT. SX/4.0 ) XBPI(I) = X0
+!/RTD            IF ( ABS(YBPI(I) - Y0) .LT. SY/4.0 ) YBPI(I) = Y0
+!/RTD            IF ( ABS(XBPI(I) - XRLIM) .LT. SX/4.0 ) XBPI(I) = XRLIM
+!/RTD            IF ( ABS(YBPI(I) - YRLIM) .LT. SY/4.0 ) YBPI(I) = YRLIM
+!/RTD          ENDDO
 !/RTD
-!/RTD       DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
+!/RTD          DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
 !/RTD
           FLOK   = .TRUE.
           IF (GTYPE .EQ. UNGTYPE) THEN
@@ -499,6 +540,12 @@
 !/DIST                ABPOS(IS,ISOUT) = ABPOS(IS,ISOUT) * SIG2(IS) /  &
 !/DIST                                    CG(1+(IS-1)/NTH,ISEA)
 !/DIST                END DO
+!
+!/RTD              ! Added spectral turning for rotated grid
+!/RTD              ! (rotate back to standard pole)
+!/RTD              Spectr = ABPOS(:,ISOUT)
+!/RTD              CALL W3ACTURN( NTH, NK, -AnglD(ISEA), Spectr )
+!/RTD              ABPOS(:,ISOUT) = Spectr
 !
               WRITE (NDSL(IFILE)) (ABPOS(IS,ISOUT),IS=1,NSPEC)
 !

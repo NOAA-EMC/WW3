@@ -192,6 +192,7 @@
 !      PoLat/Lon R.A.  Public   Rotated N-Pole standard latitude/longitude. 
 !      AnglD     R.A.  Public   Rotation angle in degree to turn rotated grid
 !                               back to standard grid.  JGLi12Jun2012
+!      FLAGUNR   Log.  Public   True if rotating directions back to true north 
 !      STEXU     Real  Public   Length-scale (X) for space-time extreme averaging
 !      STEYU     Real  Public   Length-scale (Y) for space-time extreme averaging
 !      STEDU     Real  Public   Time-scale for space-time extreme averaging
@@ -620,8 +621,9 @@
 
         REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
-!/RTD        REAL                  :: Polat, Polon   ! Rotated N-Pole lat/lon
+!/RTD        REAL                  :: PoLat, PoLon   ! Rotated N-Pole lat/lon
 !/RTD        REAL, POINTER         :: AnglD(:)       ! Angle in degree
+!/RTD        LOGICAL               :: FLAGUNR
 
         REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
         REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
@@ -923,8 +925,9 @@
                                  IICEHMIN, IICEHINIT, ICESCALES(:),    &
                                  IICEHFAC, IICEHDISP, IICEDDISP, IICEFDISP
       REAL(8),POINTER         :: GRIDSHIFT ! see notes in WMGHGH
-!/RTD        REAL, POINTER         :: Polat, Polon
+!/RTD        REAL, POINTER         :: PoLat, PoLon
 !/RTD        REAL, POINTER         :: AnglD(:)
+!/RTD        LOGICAL, POINTER      :: FLAGUNR
       REAL, POINTER           :: ZB(:), CLATS(:)
       REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
       REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
@@ -1857,8 +1860,9 @@
       FICE0  => GRIDS(IMOD)%FICE0
       GRIDSHIFT  => GRIDS(IMOD)%GRIDSHIFT
       CMPRTRCK => GRIDS(IMOD)%CMPRTRCK
-!/RTD      Polat  => GRIDS(IMOD)%Polat
-!/RTD      Polon  => GRIDS(IMOD)%Polon
+!/RTD      PoLat  => GRIDS(IMOD)%PoLat
+!/RTD      PoLon  => GRIDS(IMOD)%PoLon
+!/RTD      FLAGUNR  => GRIDS(IMOD)%FLAGUNR
       FICEN  => GRIDS(IMOD)%FICEN
       FICEL  => GRIDS(IMOD)%FICEL
       IICEHMIN  => GRIDS(IMOD)%IICEHMIN

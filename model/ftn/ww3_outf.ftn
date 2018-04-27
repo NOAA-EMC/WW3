@@ -571,6 +571,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3SERVMD, ONLY : W3S2XY
+!/RTD      USE W3SERVMD, ONLY : W3THRTN, W3XYRTN
       USE W3ARRYMD, ONLY : OUTA2I, PRTBLK
 !/
 !/ ------------------------------------------------------------------- /
@@ -725,6 +726,8 @@
                 ENAME  = '.cur'
                 UNITS  = 'm s-1'
                 FORMF  = '(1X,17I7)'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, CX, CY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = CX(1:NSEA)
                    XS2    = CY(1:NSEA)
@@ -763,6 +766,8 @@
                 FSC    = 0.1
                 ENAME  = '.wnd'
                 UNITS  = 'm s-1'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UA, UD, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = UA(1:NSEA)
                    XS2    = UD(1:NSEA)
@@ -943,6 +948,8 @@
                 FSC    = 1.
                 UNITS  = 'degree'
                 ENAME  = '.dir'
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THM, AnglD, .FALSE.)
                 DO ISEA=1, NSEA
                   IF ( THM(ISEA) .NE. UNDEF )                         &
                        THM(ISEA) = MOD ( 630. - RADE*THM(ISEA) , 360. )
@@ -969,6 +976,8 @@
                 FSC    = 1.
                 UNITS  = 'degree'
                 ENAME  = '.dp'
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
                 DO ISEA=1, NSEA
                   IF ( THP0(ISEA) .NE. UNDEF ) THEN
                       THP0(ISEA) = MOD ( 630-RADE*THP0(ISEA) , 360. )
@@ -1098,6 +1107,8 @@
                 FSC    = 1.
                 UNITS  = 'degree'
                 ENAME  = '.pdir'
+!/RTD                ! Rotate direction back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,IPART), AnglD, .FALSE.)
                 DO ISEA=1, NSEA
                   IF ( PDIR(ISEA,IPART) .NE. UNDEF ) THEN
                       PDIR(ISEA,IPART) =                               &
@@ -1167,6 +1178,8 @@
                 ENAME  = '.ust'
                 FORMF  = '(1X,20I6)'
                 UNITS  = 'm s-1'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UST, USTDIR, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = UST   (1:NSEA)
                    XS2    = USTDIR(1:NSEA)
@@ -1251,6 +1264,8 @@
                 FSC    = 1.E-6
                 UNITS  = 'm2 s-2'
                 ENAME  = '.taw'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUWIX, TAUWIY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = TAUWIX(1:NSEA)
                    XS2    = TAUWIY(1:NSEA)
@@ -1293,6 +1308,8 @@
                 FSC    = 1.E-6
                 UNITS  = 'm2 s-2'
                 ENAME  = '.twa'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUWNX, TAUWNY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = TAUWNX(1:NSEA)
                    XS2    = TAUWNY(1:NSEA)
@@ -1379,6 +1396,8 @@
                 FSC    = 10.
                 UNITS  = 'N m-1'
                 ENAME  = '.sxy'
+!/RTD                ! Radition stress components are always left on rotated pole
+!/RTD                ! at present - need to confirm how to de-rotate (A. Saulter)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = SXX(1:NSEA) 
                    XS2    = SYY(1:NSEA) 
@@ -1401,6 +1420,8 @@
                 FSC    = 1.E-6
                 UNITS  = 'm2 s-2'
                 ENAME  = '.two'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUOX, TAUOY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = TAUOX(1:NSEA) 
                    XS2    = TAUOY(1:NSEA) 
@@ -1469,6 +1490,8 @@
                 FSC    = 0.001
                 UNITS  = 'm2 s-1'
                 ENAME  = '.tus'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TUSX, TUSY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = TUSX(1:NSEA)
                    XS2    = TUSY(1:NSEA)
@@ -1512,6 +1535,8 @@
                        USSY(ISEA)=MAX(-0.9998,MIN(0.9998,USSY(ISEA)))
                      END IF
                    END DO
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSX, USSY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = USSX(1:NSEA)
                    XS2    = USSY(1:NSEA)
@@ -1567,6 +1592,8 @@
                 FSC    = 0.01
                 ENAME  = '.abr'
                 UNITS  = 'm'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, ABA, ABD, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = ABA(1:NSEA)
                    XS2    = ABD(1:NSEA)
@@ -1607,6 +1634,8 @@
                 FSC    = 0.01
                 ENAME  = '.ubr'
                 UNITS  = 'm s-1'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, UBA, UBD, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = UBA(1:NSEA)
                    XS2    = UBD(1:NSEA)
@@ -1643,6 +1672,9 @@
                 FSC    = 1.E-2
                 UNITS  = 'm'
                 ENAME  = '.bed'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
+!/RTD                                             BEDFORMS(1:NSEA,3), AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = BEDFORMS(1:NSEA,1)
                    XS2    = BEDFORMS(1:NSEA,2)
@@ -1673,6 +1705,9 @@
                 FSC    = 1.E-6
                 UNITS  = 'm2 s-2'
                 ENAME  = '.tbb'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
+!/RTD                                             TAUBBL(1:NSEA,2), AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = TAUBBL(1:NSEA,1)
                    XS2    = TAUBBL(1:NSEA,2)
@@ -1693,6 +1728,8 @@
                 ENAME  = '.mss' 
                 FORMF  = '(1X,20I6)'
                 UNITS  = '1'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSSX, MSSY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = MSSX(1:NSEA)
                    XS2    = MSSY(1:NSEA)
@@ -1712,6 +1749,8 @@
                 FSC    = 0.00001
                 ENAME  = '.msc'
                 UNITS  = '1'
+!/RTD                ! Rotate x,y vector back to standard pole
+!/RTD                IF ( FLAGUNR ) CALL W3XYRTN(NSEA, MSCX, MSCY, AnglD)
                 IF ( ITYPE .EQ. 4 ) THEN
                    XS1    = MSCX(1:NSEA)
                    XS2    = MSCY(1:NSEA)

@@ -37,6 +37,8 @@
 !/    27-Aug-2015 : Adding interpolated ICEF (mean ice  ( version 5.10 )
 !/                  floe diameter), ICEH (ice thickness)
 !/                  and ICE (ice concentration).
+!/    01-Mar-2018 : Include UNDEF from constants.ftn to ( version 6.02 )
+!/                  avoid circular referencing in w3servmd
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -288,6 +290,7 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE CONSTANTS, ONLY : UNDEF
       PUBLIC
 !/
 !/ Module private variable for checking error returns
@@ -305,7 +308,8 @@
       INTEGER, PARAMETER      :: NOEXTR=  2
       CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
       CHARACTER(LEN=80)       :: FNMPRE = './'
-      REAL                    :: UNDEF  = -999.9
+      !Moved UNDEF to constants and included above
+      !REAL                    :: UNDEF = -999.9
       LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
 !/
 !/ Set NOGE and IDOUT identifiers in W3NOUT

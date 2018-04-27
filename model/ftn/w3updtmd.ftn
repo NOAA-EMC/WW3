@@ -935,7 +935,7 @@
       USE W3GDATMD, ONLY: NSPEC, MAPWN, SIG2, DDEN
 !/RTD !!   Use rotation angle and action conversion sub.  JGLi12Jun2012
 !/RTD      USE W3GDATMD, ONLY: NK, NTH, NSPEC, AnglD 
-!/RTD      USE W3SERVMD, ONLY: w3acturn
+!/RTD      USE W3SERVMD, ONLY: W3ACTURN
       USE W3ADATMD, ONLY: CG
       USE W3ODATMD, ONLY: NBI, ABPI0, ABPIN, ISBPI, IPBPI, RDBPI,     &
                           BBPI0, BBPIN
@@ -999,7 +999,7 @@
 !/RTD !!  Rotate the spectra if model is on rotated grid.  JGLi12Jun2012
 !/RTD        Spectr = BBPIN(:,IBI)
 !/RTD        AnglBP = AnglD(ISEA)
-!/RTD        CALL  w3acturn( NTH, NK, AnglBP, Spectr )
+!/RTD        CALL  W3ACTURN( NTH, NK, AnglBP, Spectr )
 !/RTD        BBPIN(:,IBI) = Spectr
 !/RTD
 !

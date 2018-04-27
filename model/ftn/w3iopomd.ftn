@@ -129,6 +129,8 @@
 !/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
 !/    02-Sep-2012 : Clean up of open BC for UG grids    ( version 4.07 )
+!/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
+!/                  from RTD grid models             
 !/
 !  1. Purpose :
 !
@@ -211,7 +213,7 @@
                           MAPSTA, MAPFS, FILEXT, ZB, TRNX, TRNY
       USE W3GDATMD, ONLY: XYB, TRIGP,MAXX, MAXY, DXYMAX  
 !/RTD  !!  Use rotated N-Pole lat/lon and conversion sub.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: Polat, Polon    
+!/RTD      USE W3GDATMD, ONLY: PoLat, PoLon, FLAGUNR    
 !/RTD      USE W3SERVMD, ONLY: W3LLTOEQ 
       USE W3ODATMD, ONLY: W3DMO2
       USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPERR, NAPOUT, SCREEN, &
@@ -278,7 +280,7 @@
 !/RTD       StdLat = YPT
 !/RTD
 !/RTD       CALL W3LLTOEQ ( StdLat, StdLon, EquLat, EquLon,     &
-!/RTD      &                AnglPT, Polat, Polon, NPT )
+!/RTD      &                AnglPT, PoLat, PoLon, NPT )
 !/RTD
 !/RTD       XPT = EquLon
 !/RTD       YPT = EquLat
@@ -546,6 +548,8 @@
 !/                  (A. Roland and F. Ardhuin) 
 !/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
+!/    01-Mar-2018 : Add option to unrotate spectra      ( version 6.02 )
+!/                  from RTD grid models             
 !/
 !  1. Purpose :
 !
@@ -610,8 +614,8 @@
       USE W3GDATMD, ONLY: NK, NTH, SIG, NX, NY, NSEA, NSEAL,          &
                           MAPSTA, MAPFS
 !/RTD !!   Use spectral rotation sub and angle.  JGLi12Jun2012
-!/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD 
-!/RTD      USE W3SERVMD, ONLY: w3acturn 
+!/RTD      USE W3GDATMD, ONLY: NSPEC, AnglD, FLAGUNR 
+!/RTD      USE W3SERVMD, ONLY: W3ACTURN
       USE W3WDATMD, ONLY: ICE, ICEH, ICEF 
       USE W3ADATMD, ONLY: CG, DW, UA, UD, AS, CX, CY,                 &
                           SP => SPPNT
@@ -645,7 +649,8 @@
                                  FAC2(NK), FAC3(NK), FAC4(NK)
       INTEGER                 :: JSEA, ISEA
 !/T      REAL                    :: SPTEST(NK,NTH)
-!/RTD        REAL :: Spectr(NSPEC), AnglDIS      !! JGLi12Jun2012
+!/RTD      REAL :: Spectr(NSPEC), AnglDIS
+!/RTD      INTEGER :: IROT
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -683,6 +688,7 @@
           IF ( IM(J).GT.0 ) THEN
               IW(I)  = IW(I) + 1
               RDS    = RDS + RD(J)
+!/RTD              IROT   = IS(J) ! For rotation angle
             ELSE
               IF ( IM(J).LT.0 ) THEN
                   II(I)  = II(I) + 1
@@ -735,7 +741,7 @@
         WAO(I) = SQRT ( WNDX**2 + WNDY**2 )
         IF ( WAO(I).GT.1.E-7 ) THEN
             WDO(I) = ATAN2(WNDY,WNDX)
-!/RTD            WDO(I) = WDO(I) - AnglD(IS(1))*DERA
+!/RTD            IF ( FLAGUNR ) WDO(I) = WDO(I) - AnglD(IS(1))*DERA
           ELSE
             WDO(I) = 0.
           END IF
@@ -751,7 +757,7 @@
         CAO(I) = SQRT ( CURX**2 + CURY**2 )
         IF ( CAO(I).GT.1.E-7 ) THEN
             CDO(I) = ATAN2(CURY,CURX)
-!/RTD            CDO(I) = CDO(I) - AnglD(IS(1))*DERA
+!/RTD            IF ( FLAGUNR ) CDO(I) = CDO(I) - AnglD(IS(1))*DERA
           ELSE
             CDO(I) = 0.
           END IF
@@ -802,13 +808,16 @@
             END DO
           END DO
 !
-!/RTD   !!  Rotate the interpolated spectrum by -AnglD(IS(1)).  JGLi12Jun2012
-!/RTD   !!  SPCO still holds action not energy spectrum yet.  JGLi18Jun2013
-!/RTD        Spectr = SPCO(:,I)
-!/RTD        AnglDIS = -AnglD(IS(1))
-!/RTD   !!   CALL  w3spectn( NK, NTH, AnglDIS, Spectr )
-!/RTD        CALL  w3acturn( NTH, NK, AnglDIS, Spectr )
-!/RTD        SPCO(:,I) = Spectr
+!/RTD        !!  Rotate the interpolated spectrum by -AnglD(IS(1)).  JGLi12Jun2012
+!/RTD        !!  SPCO still holds action not energy spectrum yet.  JGLi18Jun2013
+!/RTD        !!  Use new index IROT rather than IS(1) as in some cases
+!/RTD        !!  IS(1) will be a coast point and have an index of 0. C.Bunney 15/02/2011
+!/RTD        IF ( FLAGUNR ) THEN
+!/RTD          Spectr = SPCO(:,I)
+!/RTD          AnglDIS = -AnglD(IROT)
+!/RTD          CALL  W3ACTURN( NTH, NK, AnglDIS, Spectr )
+!/RTD          SPCO(:,I) = Spectr
+!/RTD        END IF
 !/RTD       
 !
 !/T        WRITE (NDST,9004) DPO(I), WAO(I), WDO(I)*RADE,             &
