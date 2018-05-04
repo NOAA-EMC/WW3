@@ -3039,7 +3039,7 @@
 !/MPI      IROOT  = NAPRST - 1
 !
 !/MPI      IF ( FLOUT(4) ) THEN
-!/MPI          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(2*NSPEC) )
+!/MPI          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(3*NAPROC) )
 !/MPI          IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
 !
 ! 2.b Fields at end of file (allways)
