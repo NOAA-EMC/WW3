@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # w3_setenv : Set wwatch3 env and verify the consistency of the paths used    #
 #                                                                             #
@@ -45,13 +45,7 @@
 
 # 1.a Input arguments - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  if [[ "$BASH_SOURCE" = /* ]]
-  then
-    path_bin=$(dirname $BASH_SOURCE)
-  else
-    path_bin="${PWD}/$(dirname $BASH_SOURCE)"
-  fi
-  path_bin="$(cd $path_bin 1>/dev/null 2>&1 && pwd)"
+  path_bin="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 1.b Set wwatch3.env - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

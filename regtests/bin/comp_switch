@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # comp_switch: Script to compare switches used in regtests. This utility is   #
 #              used at NCEP to organize matrix.base in such a way that the    #
@@ -160,7 +160,7 @@ EOF
   for sw in `cat $base_test/$base_input/$base_switch`
   do
     string="$string $sw"
-    count=`expr $count + 1`
+    count=$(($count + 1))
     if [ "$count" -ge "$check" ]
     then
       echo "$string"

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # comp  : Compiler script for use in ad3 (customized for hardware and         #
 #         optimization). Note that this script will not be replaced if part   #
@@ -162,18 +162,18 @@
     while [ "$line" -le "$err_lines" ]
     do
       nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $1}'`
-      nr_inf=`expr $nr_inf + $nr_loc`
+      nr_inf=$(($nr_inf + $nr_loc))
       nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $3}'`
-      nr_war=`expr $nr_war + $nr_loc`
+      nr_war=$(($nr_war + $nr_loc))
       nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $5}'`
-      nr_sev=`expr $nr_sev + $nr_loc`
+      nr_sev=$(($nr_sev + $nr_loc))
       nr_loc=`sed -n "$line,${line}p" $name.err | awk '{ print $7}'`
-      nr_fat=`expr $nr_fat + $nr_loc`
-      line=`expr $line + 1`
+      nr_fat=$(($nr_fat + $nr_loc))
+      line=$(($line + 1))
     done
 
-    nr_err=`expr $nr_sev + $nr_fat`
-    nr_war=`expr $nr_war + $nr_inf`
+    nr_err=$(($nr_sev + $nr_fat))
+    nr_war=$(($nr_war + $nr_inf))
 
   else
     if [ "$OK" != '0' ]

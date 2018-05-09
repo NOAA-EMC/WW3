@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # link  : Linker script for use in make (customized for hardware and          #
 #         optimization. Note that this script will not be replaced if part    #

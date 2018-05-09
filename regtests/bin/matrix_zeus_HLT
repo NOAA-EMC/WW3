@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # matrix.go: Run matrix of regression tests on target machine.                #
 #                                                                             #

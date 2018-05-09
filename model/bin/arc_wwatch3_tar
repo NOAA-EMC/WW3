@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # arc_wwatch3_tar : Archive WAVEWATCH III in tar files which can be processed #
 #                   by the installation program install_wwatch3_tar.          #

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # comp  : Compiler script for use in ad3 (customized for hardware and         #
 #         optimization). Note that this script will not be replaced if part   #

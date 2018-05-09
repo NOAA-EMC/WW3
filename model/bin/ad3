@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # ad3   : Run fortran preprocessor w3adc of WAVEWATCH III on for a single     #
 #         source code file. Switches are set in the file 'switch', which      #

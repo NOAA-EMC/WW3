@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # sort_all_switches:  Run sort_switch on known switch files.                  #
 #                                                                             #
@@ -115,10 +115,10 @@ EOF
   for file in switch*
   do
     echo "   processing $file ..."
-    sort_switch $options $file
+    ./sort_switch $options $file
     if [ "$?" != '0' ] ; then
       exit 1 ; fi
-    i_count=`expr $i_count + 1`
+    i_count=$(($i_count + 1))
   done
 
 # --------------------------------------------------------------------------- #
@@ -143,10 +143,10 @@ EOF
         for file in switch*
         do
           echo "       processing $file ..."
-          sort_switch $options $file
+          ./sort_switch $options $file
           if [ "$?" != '0' ] ; then
             exit 1 ; fi
-          i_count=`expr $i_count + 1`
+          i_count=$(($i_count + 1))
         done
         cd ..
       done

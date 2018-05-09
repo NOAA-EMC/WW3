@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # sort_switch: Script to unify the way the switches are ordered in the switch #
 #              file, while checking and correcting for missing switches.      #
@@ -189,7 +189,7 @@ EOF
     for sw in $work_sw
     do
       if [ "$sw" = "$add" ] ; then
-        found=`expr $found + 1` ; fi
+        found=$(($found + 1)) ; fi
     done
     if [ "$found" = '0' ] ; then
       old_switches="$old_switches $add" ; fi
@@ -291,7 +291,7 @@ EOF
       do
         if [ "$sw" = "$avail" ]
         then
-          i_fnd=`expr $i_fnd + 1`
+          i_fnd=$(($i_fnd + 1))
           if [ "$i_fnd" = '1' ]
           then
             found="$sw"
@@ -333,7 +333,7 @@ EOF
             do
               if [ "$sw" = "$swf" ]
               then
-                i_sec=`expr $i_sec + 1`
+                i_sec=$(($i_sec + 1))
                 found="$sw"
               fi
             done
@@ -343,7 +343,7 @@ EOF
             i_fnd='1'
             found=`echo $OK | awk '{ print $1}'`
             msg=' (added)'
-            i_add=`expr $i_add + 1`
+            i_add=$(($i_add + 1))
           else
             msg=' (dual use)'
           fi
@@ -385,7 +385,7 @@ EOF
           if [ "$lines" = '0' ]
           then
             new_switches="$new_switches $pfnd"
-            i_tot=`expr $i_tot + 1`
+            i_tot=$(($i_tot + 1))
           fi
         done
       fi
@@ -477,7 +477,7 @@ EOF
 
       if [ "$i_fnd" = '1' ]
       then
-        i_tot=`expr $i_tot + 1`
+        i_tot=$(($i_tot + 1))
         new_switches="$new_switches $found"
         temp_sw=`echo "$work_sw" | sed -e "s/ $found / /g"`
         work_sw=$temp_sw

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 dirs="ww3_* mww3_*"
 for d in $dirs; do

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # link  : Link script for use in ad3 - Customised for compilation on the      #
 #         NEC SX6/SX8 supercomputer using the sxf90 compiler                  #

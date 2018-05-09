@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # ad3_test : test version of ad3 generating maximum test output for w3adc     #
 #            and skipping compile.                                            #

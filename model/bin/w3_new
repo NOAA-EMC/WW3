@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # w3_new : Touch and/or remove files to assure that make updates the          #
 #          correct subroutines after the switches in switch have been         #

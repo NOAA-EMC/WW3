@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # comp  : Compiler script for use in ad3 (customized for hardware and         #
 #         optimization). Note that this script will not be replaced if part   #
@@ -182,8 +182,8 @@
       nr_war2="`tail -1 $name.err2 | awk '{ print $5}'`"
       nr_inf2="`tail -1 $name.err2 | awk '{ print $6}'`"
 
-      nr_err=`expr $nr_unr2 + $nr_sev2`
-      nr_war=`expr $nr_err2 + $nr_war2`
+      nr_err=$(($nr_unr2 + $nr_sev2))
+      nr_war=$(($nr_err2 + $nr_war2))
     else
       OK=1
     fi

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # matrix.comp Compare output of matrix for two model versions.                #
 #                                                                             #
@@ -196,7 +196,7 @@
                       then
                         size_1=`wc -l diff_tempfile | awk '{ print $1}'`
                         size_2=`grep '\-\-\-' diff_tempfile | wc -l | awk '{ print $1}'`
-                        size_1=`expr $size_1 - $size_2`
+                        size_1=$(($size_1 - $size_2))
                         if [ "$size_1" = "$size_2" ] || [ "$size_1" = '0' ]
                         then
                           rm -f diff_tempfile

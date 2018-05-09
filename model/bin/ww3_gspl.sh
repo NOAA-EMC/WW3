@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # ww3_gspl.sh: Shell wrapper tot split grid into subgrids, including making   #
 #              all mod_def files and the relvant part of ww3_multi.inp.       #
@@ -406,7 +406,7 @@ EOF
   then
     echo ' '
     echo " Making ww3_gint.inp_tmpl ..."
-    nr_gint=`expr $nr_grid + 1`
+    nr_gint=$(($nr_grid + 1))
 
 cat > ww3_gint.inp_tmpl << EOF
 $ -------------------------------------------------------------------- $
@@ -445,7 +445,7 @@ EOF
     dataold="`head -1 tempfile`"
     rm -f tempfile
     ngrold=`echo $dataold | awk '{ print $1}'`
-    ngrnew=`expr $ngrold - 1 + $nr_grid`
+    ngrnew=$(($ngrold - 1 + $nr_grid))
     datanew=`echo "$dataold" | sed "s/$ngrold/$ngrnew/"`
 
     data=`grep $modID $inp_file | head -1 | sed "s/'//g"`

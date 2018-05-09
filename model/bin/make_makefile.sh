@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # make_makefile.sh : Generates the makefile for WAVEWATCH based on switch     #
 #                    settings                                                 #
@@ -361,7 +361,7 @@
     do
       if [ "`grep $check $switch | wc -w | awk '{print $1}'`" -gt '1' ]
       then
-        n_found=`expr $n_found + 1`
+        n_found=$(($n_found + 1))
         s_found="$s_found $check"
       fi
     done

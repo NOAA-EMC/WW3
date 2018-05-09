@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # w3_make : Compile and link WAVEWATCH III programs using standard make and   #
 #           makefile methods.                                                 #

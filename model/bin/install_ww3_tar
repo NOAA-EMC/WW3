@@ -476,7 +476,7 @@
     else
       for file in $files
       do
-        nr_lnk=`expr $nr_lnk + 1`
+        nr_lnk=$(($nr_lnk + 1))
         echo -e "   (re)linking $file ..." >> ${main_dir}/tmp/${ldir}_setup.out 
         cp -f $src_dir/model/${ldir}/$file .
         tmp_files=$all_files
@@ -484,7 +484,7 @@
       done
     fi
     echo -e "  This section: $nr_lnk files copied."
-    tnr_lnk=`expr $tnr_lnk + $nr_lnk`
+    tnr_lnk=$(($tnr_lnk + $nr_lnk))
 
   done
 
@@ -503,9 +503,9 @@
     if [ -f $file ]
     then
       echo -e "   File $file exists (will not be modified)." >> ${main_dir}/tmp/${ldir}_setup.outout
-      nr_old=`expr $nr_old + 1`
+      nr_old=$(($nr_old + 1))
     else
-      nr_new=`expr $nr_new + 1`
+      nr_new=$(($nr_new + 1))
       echo -e "   File $file does not exists." >> ${main_dir}/tmp/${ldir}_setup.out
       echo -e "      Copied from $file.gen (may be modified by user)" >> ${main_dir}/tmp/${ldir}_setup.out
       cp $file.gen $file
@@ -513,8 +513,8 @@
   done
   echo -e "  This section: $nr_old existing files found."
   echo -e "  This section: $nr_new files copied."
-  tnr_lnk=`expr $tnr_lnk + $nr_new`
-  tnr_old=`expr $tnr_old + $nr_old`
+  tnr_lnk=$(($tnr_lnk + $nr_new))
+  tnr_old=$(($tnr_old + $nr_old))
 
 # Check if subdirectories present
   cd $src_dir/model/${ldir}
@@ -591,7 +591,7 @@
     else
       for file in $files
       do
-        nr_lnk=`expr $nr_lnk + 1`
+        nr_lnk=$(($nr_lnk + 1))
         echo -e "   (re)linking $file ..." >> ${main_dir}/tmp/${ldir}_setup.out
         cp -f $src_dir/model/${ldir}/$file .
         tmp_files=$all_files
@@ -601,7 +601,7 @@
 
   done
   echo -e "  This section: $nr_lnk files copied." 
-  tnr_lnk=`expr $tnr_lnk + $nr_lnk`
+  tnr_lnk=$(($tnr_lnk + $nr_lnk))
 
 # 4.b comp and link shell scripts  - - - - - - - - - - - - - - - - - - - - - -
     nr_lnk=0
@@ -616,9 +616,9 @@
       if [ -f $file ]
       then
         echo -e "   File $file exists (will not be modified)." >> ${main_dir}/tmp/${ldir}_setup.out
-        nr_old=`expr $nr_old + 1`
+        nr_old=$(($nr_old + 1))
       else
-        nr_lnk=`expr $nr_lnk + 1`
+        nr_lnk=$(($nr_lnk + 1))
         echo -e "   File $file does not exists." >> ${main_dir}/tmp/${ldir}_setup.out
         echo -e "      Copied from $file.gen (has to be modified by user)" >> ${main_dir}/tmp/${ldir}_setup.out
         cp $file.gen $file
@@ -626,8 +626,8 @@
     done
     echo -e "  This section: $nr_old existing (old) links or files found"
     echo -e "  This section: $nr_lnk files copied"
-    tnr_lnk=`expr $tnr_lnk + $nr_lnk`
-    tnr_old=`expr $tnr_old + $nr_old`
+    tnr_lnk=$(($tnr_lnk + $nr_lnk))
+    tnr_old=$(($tnr_old + $nr_old))
 
     chmod 744 comp link
     chmod 644 switch
@@ -695,10 +695,10 @@
       do
         if [ -f $file ]
         then
-          nr_old=`expr $nr_old + 1`
+          nr_old=$(($nr_old + 1))
           echo -e "   Old link $file ..." >> ${main_dir}/tmp/${ldir}_setup.out 
         else
-          nr_new=`expr $nr_new + 1`
+          nr_new=$(($nr_new + 1))
           echo -e "   New link $file ..." >> ${main_dir}/tmp/${ldir}_setup.out 
         fi
         cp -f $src_dir/model/${ldir}/$file .
@@ -709,8 +709,8 @@
       done
     fi
 
-    tnr_new=`expr $tnr_new + $nr_new`
-    tnr_old=`expr $tnr_old + $nr_old`
+    tnr_new=$(($tnr_new + $nr_new))
+    tnr_old=$(($tnr_old + $nr_old))
 
     if [ "$nr_old" != '0' ]
     then
@@ -738,17 +738,17 @@
   do
     if [ -f $file ]
     then
-      nr_old=`expr $nr_old + 1`
+      nr_old=$(($nr_old + 1))
       echo -e "   Old link $file ..." >> ${main_dir}/tmp/${ldir}_setup.out
     else
-      nr_new=`expr $nr_new + 1`
+      nr_new=$(($nr_new + 1))
       echo -e "   New link $file ..." >> ${main_dir}/tmp/${ldir}_setup.out
     fi
     cp -f $src_dir/model/ftn/SCRIP/$file .
   done
 
-  tnr_new=`expr $tnr_new + $nr_new`
-  tnr_old=`expr $tnr_old + $nr_old`
+  tnr_new=$(($tnr_new + $nr_new))
+  tnr_old=$(($tnr_old + $nr_old))
 
   echo -e "\n\n End of ${ldir} directory section " | tee ${main_dir}/tmp/${ldir}_setup.out
   echo -e ' ---------------------------- '
@@ -793,10 +793,10 @@
   do
     if [ -f $file ]
     then
-      nr_old=`expr $nr_old + 1`
+      nr_old=$(($nr_old + 1))
       echo -e "   Old link $file ..." >> ${main_dir}/tmp/inp_setup.out
     else
-      nr_new=`expr $nr_new + 1`
+      nr_new=$(($nr_new + 1))
       echo -e "   New link $file ..." >> ${main_dir}/tmp/inp_setup.out
     fi
     cp -f $src_dir/model/inp/$file .
@@ -853,10 +853,10 @@
   do
     if [ -f $file ]
     then
-      nr_old=`expr $nr_old + 1`
+      nr_old=$(($nr_old + 1))
       echo -e "   Old link $file ..." >> ${main_dir}/tmp/nml_setup.out
     else
-      nr_new=`expr $nr_new + 1`
+      nr_new=$(($nr_new + 1))
       echo -e "   New link $file ..." >> ${main_dir}/tmp/nml_setup.out
     fi
     cp -f $src_dir/model/nml/$file .
@@ -931,10 +931,10 @@
       do
         if [ -f $file ]
         then
-          nr_old=`expr $nr_old + 1`
+          nr_old=$(($nr_old + 1))
           echo -e "      Old link $file ..." >> ${main_dir}/tmp/reg_setup.out
         else
-          nr_new=`expr $nr_new + 1`
+          nr_new=$(($nr_new + 1))
           echo -e "      New link $file ..." >> ${main_dir}/tmp/reg_setup.out
         fi
         cp -f $src_dir/regtests/$dir/$file .
@@ -952,8 +952,8 @@
  
     fi
 
-    tnr_old=`expr $tnr_old + $nr_old`
-    tnr_new=`expr $tnr_new + $nr_new`
+    tnr_old=$(($tnr_old + $nr_old))
+    tnr_new=$(($tnr_new + $nr_new))
  
   done
 

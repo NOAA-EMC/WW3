@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # all_switches : Make a list of all switches hat are found in the program     #
 #                (.ftn) files of WAVEWATCH III.                               #

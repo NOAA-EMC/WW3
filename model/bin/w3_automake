@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 # --------------------------------------------------------------------------- #
 # w3_automake : Script to manage consecutive compiling of parallel and        #
 #               sequential programs of WAVEWATCH III using w3_make scripts.   #

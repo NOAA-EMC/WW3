@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # list :      Printing of ASCII files (typically source codes) using the      #
 #             program w3print.f This program is provided as a part of         #
