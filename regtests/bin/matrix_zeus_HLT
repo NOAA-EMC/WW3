@@ -64,7 +64,7 @@
 
   export  mpi='mpirun'
   export   np='24'
-  export   nr='12'
+  export   nr='4'
   export  nth='6'
 
   if [ "$cmplOption" = 'y' ]
@@ -82,7 +82,7 @@
   export     shrd='y' # Do shared architecture tests
   export     dist='y' # Do distributed architecture (MPI) tests
   export      omp='y' # Threaded (OpenMP) tests
-  export     hybd='y' # Hybrid options
+  export     hybd='n' # Hybrid options
 
   export   prop1D='y' # 1-D propagation tests (ww3_tp1.X)
   export   prop2D='y' # 2-D propagation tests (ww3_tp2.X)
@@ -101,6 +101,8 @@
   export  multi05='y' # mww3_test_05 (three-grid moving hurricane)
   export  multi06='y' # mww3_test_06 (curvilinear grid tests)
   export  multi07='y' # mww3_test_07 (unstructured grid tests)
+  export  multi08='y' # mww3_test_08 (wind and ice tests)
+
 
 # export   filter='PR3 ST2 UQ'
                       # The filter does a set of consecutinve greps on the 

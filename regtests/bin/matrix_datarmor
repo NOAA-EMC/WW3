@@ -111,6 +111,7 @@
   export  multi05='n' # mww3_test_05 (three-grid moving hurricane)
   export  multi06='n' # mww3_test_06 (curvilinear grid tests)
   export  multi07='n' # mww3_test_07 (unstructured grid tests)
+  export  multi08='n' # mww3_test_08 (wind and ice tests)
 
 # export   filter='PR3 ST2 UQ'
                       # The filter does a set of consecutinve greps on the 

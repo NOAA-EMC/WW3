@@ -1165,7 +1165,11 @@ then
     fi
     if [ $nthrd ]
     then
-      runcmd="$runcmd omplace -nt $nthrd"
+      if ( which omplace ) ; then
+        runcmd="$runcmd omplace -nt $nthrd"
+      else
+        runcmd="$runcmd /usr/bin/env OMP_NUM_THREADS=$nthrd"
+      fi
     fi
   fi
   if [ $pomp ]

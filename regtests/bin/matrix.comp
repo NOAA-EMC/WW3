@@ -4,8 +4,9 @@
 #                                                                             #
 #    Intended for interactive running only.                                   #
 #                                                                             #
-#                                                      Hendrik L. Tolman      #
-#                                                      November 2013          #
+#                                                     Hendrik L. Tolman       #
+#						      Updated by Yukino Nagai #
+#                                                     June 2017 	      #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -13,38 +14,63 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
+# This script takes in one argument: the name of a test directory or 'all'
+#
 # 1. Set up
 # 1.a Computer/ user dependent set up
 
   home_dir=`pwd`
   base_dir='.'
-  comp_dir='../../../trunk/regtests'
+  comp_dir='../../trunk/regtests'
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 
 # 1.c Output to ID script  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  echo ' '
-  echo '       ******************************************************'
-  echo '     ***  compare WAVEWATCH III matrix of regression tests  ***'
-  echo '       ******************************************************'
-  echo ' '
+  echo ' '                                                                      > $home_dir/header.tmp
+  echo '       ******************************************************'         >> $home_dir/header.tmp
+  echo '     ***  compare WAVEWATCH III matrix of regression tests  ***'       >> $home_dir/header.tmp
+  echo '       ******************************************************'         >> $home_dir/header.tmp
+  echo ' '                                                                     >> $home_dir/header.tmp
 
-  if [ "$#" != '2' ] ; then
-    echo "usage: matrix.comp test case"
-    echo "       test and/or case can be 'all'" ; exit 1 ; fi
+  echo ' '                                                                      > $home_dir/isIdenticalList.tmp
+  echo '**********************************************************************' >> $home_dir/isIdenticalList.tmp
+  echo '************************ identical cases *****************************' >> $home_dir/isIdenticalList.tmp
+  echo '**********************************************************************' >> $home_dir/isIdenticalList.tmp
+
+  echo ' '                                                                      > $home_dir/notIdenticalList.tmp
+  echo '**********************************************************************' >> $home_dir/notIdenticalList.tmp
+  echo '********************* non-identical cases ****************************' >> $home_dir/notIdenticalList.tmp
+  echo '**********************************************************************' >> $home_dir/notIdenticalList.tmp
+
+  echo ' '                                                                      > $home_dir/summary.tmp
+  echo '**********************************************************************' >> $home_dir/summary.tmp
+  echo '******************** summary of comparison ***************************' >> $home_dir/summary.tmp
+  echo '********** only results of non-identical cases are listed ************' >> $home_dir/summary.tmp
+  echo '****** if less than 10 files differ for a case, they are listed ******' >> $home_dir/summary.tmp  
+  echo '**********************************************************************' >> $home_dir/summary.tmp
+
+  echo ' '                                                                      > $home_dir/fulldiff.tmp
+  echo '**********************************************************************' >> $home_dir/fulldiff.tmp
+  echo '******************* full output of comparison ************************' >> $home_dir/fulldiff.tmp
+  echo '**********************************************************************' >> $home_dir/fulldiff.tmp
+
+
+  if [ "$#" != '1' ] ; then
+    echo "usage: matrix.comp test"
+    echo "       test can be 'all'" ; exit 1 ; fi
 
   test=$1
-  case=$2
 
   if [ "$test" = 'all' ] ; then
-    test=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? mww3_test_??` ; fi
+    test=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? mww3_test_0?` ; fi
+  echo "base directory : $base_dir" >> $home_dir/header.tmp
+  echo "comp directory : $comp_dir" >> $home_dir/header.tmp
+  echo "test(s)        : "          >> $home_dir/header.tmp
+  echo $test                        >> $home_dir/header.tmp
+  echo " "                          >> $home_dir/header.tmp
 
-  echo "test(s)        : $test"
-  echo "case(s)        : $case"
-  echo "base directory : $base_dir"
-  echo "comp directory : $comp_dir"
-  echo
+  cat $home_dir/header.tmp
 
   if [ ! -d $base_dir ] ; then
     echo "       directory $base_dir not found." ; exit 2 ; fi
@@ -61,12 +87,12 @@
     cd $home_dir ; cd $base_dir
     if [ ! -d $tst ]
     then
-      echo "cannot find $tst in $base_dir, skipping ..."
+      echo "cannot find $tst in $base_dir, skipped" >> $home_dir/header.tmp
     else
       cd $home_dir ; cd $comp_dir
       if [ ! -d $tst ]
       then
-        echo "cannot find $tst in $comp_dir, skipping ..."
+        echo "cannot find $tst in $comp_dir, skipped" >> $home_dir/header.tmp
       else
         cd $tst
         return_comp=`pwd`
@@ -77,93 +103,98 @@
 # 3.  Looping over work directories                                           #
 # --------------------------------------------------------------------------- #
 
-        if [ "$case" = 'all' ]
-        then
-          cases=`ls -d work*`
-        else
-          cases=$case
-        fi
+        cases=`ls -d work*`
 
         for run in $cases
         do
+
+          numDiff=0
+          numSame=0
+          numSkipped=0
+          numNotInComp=0
+          numInCompOnly=0
+          isIdentical=1
+          diffFiles=""
+
           if [ ! -d $run ]
           then
-            echo "cannot find $run in $base_dir/$run, skipping ..."
+            echo "cannot find $run in $base_dir/$run, skipped" >> $home_dir/header.tmp; isIdentical=2
           else
             cd $return_comp
             if [ ! -d $run ]
             then
-              echo "cannot find $run in $comp_dir/$run, skipping ..."
+              echo "cannot find $run in $comp_dir/$run, skipped" >> $home_dir/header.tmp; isIdentical=2
             else
 
-              echo "* test case $tst test run $run"
-              echo "*********************************************************"
+              echo " testing case: $tst; run: $run"
+ 
+              echo ""                                                          >> $home_dir/fulldiff.tmp
+              echo "* test case: $tst; test run: $run"                         >> $home_dir/fulldiff.tmp
+              echo "*********************************************************" >> $home_dir/fulldiff.tmp
 
 # --------------------------------------------------------------------------- #
-# 4.  Check for files                                                         #
+# 4.  Check for files, generate lists of files                                #
 # --------------------------------------------------------------------------- #
 
               cd $return_base ; cd $run
               rm -f diff_tempfile
-              files_1=`ls`
+              files_1=`find -type f | sed "s#^./##"`
+              
+              #Generate list of binary files in the directory
+              binaryfiles=`grep . -r * | grep 'Binary file' | sed -e "s/^Binary file //" -e "s/ matches$//"`
+
+              #Generate list of files to skip
+              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished"
+
               nf_1=`echo $files_1 | wc -w | awk '{print $1}'`
-              echo "  found $nf_1 files in base directory"
+              echo "  found $nf_1 files in base directory" >> $home_dir/fulldiff.tmp
 
               cd $return_comp ; cd $run
               rm -f diff_tempfile
-              files_2=`ls`
+              files_2=`find -type f | sed "s#^./##"`
+
               nf_2=`echo $files_2 | wc -w | awk '{print $1}'`
-              echo "  found $nf_2 files in compare directory"
+              echo "  found $nf_2 files in compare directory" >> $home_dir/fulldiff.tmp
 
               cd $return_base ; cd $run
-
+              
 # --------------------------------------------------------------------------- #
 # 5.  Loop over all files in base directory                                   #
 # --------------------------------------------------------------------------- #
 
               for file in $files_1
               do
-
-# 5.a Check for buddy file
-
-
+# 5.a Check for buddy file, identify file type
+                escapedfilename=`echo ${file/\./\\\.}`
+        
                 if [ ! -f $return_comp/$run/$file ]
                 then
-                  echo "     files $file not in compare directory"
+                  isIdentical=0; let "numNotInComp += 1"
+                  echo "     $file not in compare directory" >> $home_dir/fulldiff.tmp
                 else
-#                 echo "     files $file found twice"
-                  files_2=`echo $files_2 | sed "s/$file//g" | sed "s/  / /g"`
+                  files_2=`echo $files_2 | sed "s#$escapedfilename##g" | sed "s#  # #g"`
 
-# 5.a Identify file
+                  if [[ $skipfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
+                  then
+                    filetype="skip"
+                  elif [[ $file == log.* ]]
+                  then
+                    filetype="log"
+                  elif [[ $binaryfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
+                  then
+                    filetype="binary"
+                  else
+                    filetype="file"
+                  fi
+                  
+# 5.a Assign action based on file type
 
-                  case "$file" in
-                    log.*           ) form='f' ; do='y' ; drop='y' ;;
-                    restart*.*      ) form='u' ; do='y' ; drop='-' ;;
-                    mod_def*.*      ) form='u' ; do='y' ; drop='-' ;;
-                    out_grd*.*      ) form='u' ; do='y' ; drop='-' ;;
-                    out_pnt*.*      ) form='u' ; do='y' ; drop='-' ;;
-                    current.*       ) form='u' ; do='y' ; drop='-' ;;
-                    wind.*          ) form='u' ; do='y' ; drop='-' ;;
-                    ice.*           ) form='u' ; do='y' ; drop='-' ;;
-                    tab*.ww3        ) form='f' ; do='y' ; drop='-' ;;
-                    ww3_grid*.out   ) form='f' ; do='y' ; drop='-' ;;
-                    ww3_strt*.out   ) form='f' ; do='y' ; drop='-' ;;
-                    ww3_prep*.out   ) form='f' ; do='y' ; drop='-' ;;
-                    ww3_shel.out    ) form='f' ; do='-' ; drop='-' ;;
-                    ww3_multi.out   ) form='f' ; do='-' ; drop='-' ;;
-                    ww3_outf*.out   ) form='f' ; do='y' ; drop='-' ;;
-                    ww3_outp*.out   ) form='f' ; do='y' ; drop='-' ;;
-                    ww3_gint*.out   ) form='f' ; do='y' ; drop='-' ;;
-                    ww3.????????*.* ) form='f' ; do='y' ; drop='-' ;;
-                    *.gs            ) form='f' ; do='y' ; drop='-' ;;
-                    gx_outf*.out    ) form='f' ; do='y' ; drop='-' ;;
-                    gx_outp*.out    ) form='f' ; do='y' ; drop='-' ;;
-                    *.ctl           ) form='f' ; do='y' ; drop='-' ;;
-                    ww3.*           ) form='u' ; do='y' ; drop='-' ;;
-                    prf.*.mww3      ) form='f' ; do='-' ; drop='-' ;;
-                    finished        ) form='f' ; do='-' ; drop='-' ;;
-                    *               ) echo " *** do not recognize $file ; fix script ..."
-                                      echo ' ' ; exit 5 ;;
+                  case "$filetype" in
+                    log    ) form='f' ; do='y' ; drop='y' ;;
+                    skip   ) form='f' ; do='-' ; drop='-' ;;
+                    binary ) form='u' ; do='y' ; drop='-' ;;
+                    file   ) form='f' ; do='y' ; drop='-' ;;
+                    *      ) form='f' ; do='-' ; drop='-' ;;                    
                   esac
 
                   if [ "$drop" = 'y' ]
@@ -182,16 +213,15 @@
                     then
                       if [ "$drop" = 'y' ]
                       then
-                        diff $file $return_comp/$run/. | \
+                        diff $file $return_comp/$run/$file | \
                           sed -n '/version/!p'         | \
                           sed -n '/date :/!p'          | \
                           sed -n '/time :/!p'          | \
                           sed -n '/Elapsed/!p' > diff_tempfile
                       else
-                        diff $file $return_comp/$run/. > diff_tempfile
+                        diff $file $return_comp/$run/$file > diff_tempfile
                       fi
-#                     if [ -f $diff_tempfile ] ; then
-#                       cat diff_tempfile ; fi
+
                       if [ -f diff_tempfile ]
                       then
                         size_1=`wc -l diff_tempfile | awk '{ print $1}'`
@@ -202,21 +232,16 @@
                           rm -f diff_tempfile
                         fi
                       fi
-                      if [ ! -f diff_tempfile ]
+                      if [ -f diff_tempfile ]
                       then
-                        echo "     files $file are identical$filter"
-                      else
-                        echo -n "     files $file differ. Display [y/-] ? "
-                        read OK
-                        if [ "$OK" = 'y' ]
-                        then
-                          echo '-------------------------------------------------------------------'
-                          cat diff_tempfile
-                          echo '-------------------------------------------------------------------'
-                          echo -n "     hit enter to continue ..."
-                          read OK
-                        fi
+                        echo "     $file differ. " >> $home_dir/fulldiff.tmp 
+                        diffFiles=`echo "$diffFiles $file"`
+                        isIdentical=0
+                        let "numDiff += 1"
                         rm -f diff_tempfile
+                      else
+		        echo "     $file are identical$filter" >> $home_dir/fulldiff.tmp 
+                        let "numSame += 1"
                       fi
 
 # 5.c Formatted file, use diff end exclude lines ...
@@ -224,16 +249,18 @@
                     else
                       cmp=`cmp $file -s $return_comp/$run/$file # > diff_tempfile 2> dev/null`
                       case $? in
-                       0) echo "     files $file are identical (binary)" ;;
-                       1) echo -n "     files $file are different (binary) hit enter to continue ... " ; read OK;;
-                       *) echo "     files $file error in binary compare" ;;
+                       0) echo "     $file are identical (binary)"  >> $home_dir/fulldiff.tmp ; let "numSame += 1" ;;
+                       1) echo "     $file differ (binary)"         >> $home_dir/fulldiff.tmp ; isIdentical=0; let "numDiff += 1"
+                          diffFiles=`echo "$diffFiles $file (binary)"` ;;
+                       *) echo "     $file error in binary compare" >> $home_dir/fulldiff.tmp ; isIdentical=0 ;;
                       esac
 
 # ... End of 5.a/b/c if tests
 
                     fi
                   else
-                    echo "     skipping files $file"
+                    echo "     skipped $file" >> $home_dir/fulldiff.tmp
+                    let "numSkipped += 1"
                   fi
                 fi
 
@@ -243,12 +270,10 @@
               done
 
 # 5.d Fils in compare directpry only
-
             for file in $files_2
             do
-              echo "     file $file in comp directory only ..."
+              echo "     $file in comp directory only" >> $home_dir/fulldiff.tmp; isIdentical=0 ; let "numInCompOnly += 1"
             done
-            echo 
 
 # --------------------------------------------------------------------------- #
 # 6.  End of all loops outside of 'do' test                                   #
@@ -257,20 +282,92 @@
             cd ..
             fi
           fi
+          
+          totBase=$(( $numDiff + $numSame + $numSkipped + $numNotInComp ))
+          totComp=$(( $numDiff + $numSame + $numSkipped + $numInCompOnly ))
+
+          if [[ $isIdentical -eq 1 ]] && [[ $nf_1 -ne $totBase ]]
+          then
+            isIdentical=3
+          fi
+
+          case $isIdentical in
+            0)echo "$tst/$run                     ($numDiff files differ)" >> $home_dir/notIdenticalList.tmp
+              echo ""                                                          >> $home_dir/summary.tmp
+              echo "* test case: $tst; test run: $run"                         >> $home_dir/summary.tmp
+              echo "*********************************************************" >> $home_dir/summary.tmp
+              echo "  found $nf_1 files in base directory" >> $home_dir/summary.tmp
+              echo "  found $nf_2 files in compare directory" >> $home_dir/summary.tmp
+              echo "  $numSame files are identical"                        >> $home_dir/summary.tmp    #Clean up summary output
+              echo "  $numSkipped files skipped"                           >> $home_dir/summary.tmp
+              echo "  $numNotInComp files in base directory only"          >> $home_dir/summary.tmp
+              echo "  $numInCompOnly files in comp directory only"         >> $home_dir/summary.tmp
+              echo "  $numDiff files differ"                               >> $home_dir/summary.tmp
+              [[ $numDiff -lt 10 ]] && echo $diffFiles                     >> $home_dir/summary.tmp ;;
+            1)echo "$tst/$run"				                   >> $home_dir/isIdenticalList.tmp ;;
+            2)echo "$tst/$run                     (directory not found)"   >> $home_dir/notIdenticalList.tmp ;;
+            3)echo "$tst/$run                     (file count does not match)"   >> $home_dir/notIdenticalList.tmp
+              echo ""                                                          >> $home_dir/summary.tmp
+              echo "* test case: $tst; test run: $run"                         >> $home_dir/summary.tmp
+              echo "*********************************************************" >> $home_dir/summary.tmp
+              echo "  found $nf_1 files in base directory" >> $home_dir/summary.tmp
+              echo "  found $nf_2 files in compare directory" >> $home_dir/summary.tmp
+              echo "  $numDiff files differ"                       >> $home_dir/summary.tmp    #This needs to be copied to case 3 as well
+              echo "  $numSame files are identical"                >> $home_dir/summary.tmp    #Clean up summary output
+              echo "  $numSkipped files skipped"                   >> $home_dir/summary.tmp
+              echo "  $numNotInComp files in base directory only"  >> $home_dir/summary.tmp
+              echo "  $numInCompOnly files in comp directory only" >> $home_dir/summary.tmp ;;
+            *)
+          esac
         done
-      fi
+      fi	
     fi
   done
 
 # --------------------------------------------------------------------------- #
 # 7.  End of script output                                                    #
 # --------------------------------------------------------------------------- #
+  cat $home_dir/header.tmp            > $home_dir/matrixCompFull.out
+  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompFull.out
+  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompFull.out
+  cat $home_dir/fulldiff.tmp         >> $home_dir/matrixCompFull.out
+
+  cat $home_dir/header.tmp            > $home_dir/matrixCompSummary.out
+  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompSummary.out
+  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompSummary.out
+  cat $home_dir/summary.tmp          >> $home_dir/matrixCompSummary.out
+
+  rm -f $home_dir/header.tmp
+  rm -f $home_dir/isIdenticalList.tmp
+  rm -f $home_dir/notIdenticalList.tmp
+  rm -f $home_dir/summary.tmp
+  rm -f $home_dir/fulldiff.tmp
+
+
+#  echo ' '
+#  cat $home_dir/fulldiff.tmp
+#  echo '**********************************************************************'
+#  
+#  echo ' '
+#  cat $home_dir/isIdenticalList.tmp
+#  echo '**********************************************************************'
+#
+#  echo ' '
+#  cat $home_dir/notIdenticalList.tmp
+#  echo '**********************************************************************'
+
+  echo ' '
+  echo " Saved summary to $home_dir/matrixCompSummary.out"
+  echo " Saved full output to $home_dir/matrixCompFull.out"
+  echo ' '
+
 
   echo ' '
   echo '   *************************************************************'
   echo ' ***  end of WAVEWATCH III compare matrix of regression tests  ***'
   echo '   *************************************************************'
   echo ' '
+
 
 # --------------------------------------------------------------------------- #
 # End to matrix.comp                                                          #
