@@ -285,14 +285,6 @@
 !
         CALL W3SETG ( J, MDSE, MDST )
 !
-        IF ( GTYPE .EQ. CLGTYPE ) THEN
-          IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,'(/4A)')               &
-                ' *** WARNING WMIOPP: ',                               &
-                'CURVILINEAR GRID SUPPORT IN THIS ROUTINE ',           & 
-                'HAS BEEN IMPLEMENTED BUT NOT YET VERIFIED ',          & 
-                '(curvilinear + unified point output) ***'
-          END IF
-!
 ! Loop over output points
 !
 ! notes.....Here, we have pulled coding for UNGTYPE and CLGTYPE from w3iopomd.ftn

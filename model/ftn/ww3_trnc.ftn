@@ -348,7 +348,7 @@
 !
   999 FORMAT (/'  End of program '/                                   &
                ' ========================================='/          &
-               '         WAVEWATCH III Field output '/)
+               '         WAVEWATCH III Track output '/)
 !
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3TRNC : '/               &
                '     ERROR IN OPENING INPUT FILE'/                    &
