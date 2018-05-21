@@ -305,11 +305,11 @@
 
     ! set/check RETURN values
     IF (FORCING%TIDAL.NE.'unset') THEN
-      IF (FORCING%FIELD%WATER_LEVELS.EQ..FALSE. .AND. FORCING%FIELD%CURRENTS.EQ..FALSE.) THEN
+      IF (FORCING%FIELD%WATER_LEVELS.EQV..FALSE. .AND. FORCING%FIELD%CURRENTS.EQV..FALSE.) THEN
         WRITE (NDSE,'(A,I3)') 'ERROR: TIDAL must only be used on FIELD%WATER_LEVELS or FIELD%CURRENTS'
         IERR = 1
         RETURN
-      ELSE IF (FORCING%GRID%ASIS.EQ..FALSE.) THEN
+      ELSE IF (FORCING%GRID%ASIS.EQV..FALSE.) THEN
         WRITE (NDSE,'(A,I3)') 'ERROR: TIDAL must only be used on GRID%ASIS'
         IERR = 1
         RETURN
@@ -634,39 +634,6 @@
 END MODULE W3NMLPRNCMD
 
 !/ ------------------------------------------------------------------- /
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

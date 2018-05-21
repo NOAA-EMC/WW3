@@ -266,8 +266,8 @@
       CHARACTER*50          :: TIMEUNITS, CALENDAR
       REAL                  :: FILLVALUE, TIMEDELAY
       INTEGER               :: I,ITIME
-      INTEGER               :: REFDATE(8),CURDATE(8),STARTDATE(8),STOPDATE(8)
-      DOUBLE PRECISION      :: REFJULDAY, CURJULDAY, STARTJULDAY, STOPJULDAY
+      INTEGER               :: REFDATE(8),CURDATE(8),STARTDATE(8),STPDATE(8)
+      DOUBLE PRECISION      :: REFJULDAY, CURJULDAY, STARTJULDAY, STPJULDAY
 !
 ! Variables used in tidal analysis
       DOUBLE PRECISION, ALLOCATABLE   :: ALLTIMES(:)
@@ -500,8 +500,8 @@
         CALL T2D(TIMESTART,STARTDATE,IERR)
         CALL D2J(STARTDATE,STARTJULDAY,IERR)
         READ(NML_FORCING%TIMESTOP,*) TIMESTOP
-        CALL T2D(TIMESTOP,STOPDATE,IERR)
-        CALL D2J(STOPDATE,STOPJULDAY,IERR)
+        CALL T2D(TIMESTOP,STPDATE,IERR)
+        CALL D2J(STPDATE,STPJULDAY,IERR)
 
         ! Check time shift
         FLHDR = .TRUE.
@@ -621,7 +621,7 @@
 
         ! initialize timestart and timestop
         STARTJULDAY=0
-        STOPJULDAY=100000000000
+        STPJULDAY=100000000000
 
       END IF ! .NOT. FLGNML
 
@@ -1626,7 +1626,7 @@
           IF (STARTJULDAY.GT.CURJULDAY) CYCLE
 
           ! exit when reaching the stop time
-          IF (STOPJULDAY.LT.CURJULDAY) EXIT
+          IF (STPJULDAY.LT.CURJULDAY) EXIT
 
           ! convert julday to date and time
           CALL J2D(CURJULDAY,CURDATE,IERR)
