@@ -114,7 +114,7 @@
 !/    23-May-2014 : Adding ice fluxes to W3SRCE         ( version 5.01 )
 !/    27-Aug-2015 : Adding inputs to function W3SIS2    ( version 5.10 )
 !/    13-Dec-2015 : Implicit integration of Sice (F.A.) ( version 5.10 )
-!/    30-Jul-2017 : Adds TWS in interface               ( version 6.XX )
+!/    30-Jul-2017 : Adds TWS in interface               ( version 6.04 )
 !/    07-Jan-2018 : Allows variable ice scaling (F.A.)  ( version 6.04 )
 !/    01-Jan-2018 : Add implicit source term integration ( version 6.04 )
 !/    01-Jan-2018 : within PDLIB (A. Roland, M. Dutour    

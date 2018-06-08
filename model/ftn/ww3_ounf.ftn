@@ -21,7 +21,7 @@
 !/    14-Oct-2014 : Keep the output files opened        ( version 5.01 )
 !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
 !/    10-Jan-2017 : Changes for US3D and USSP output    ( version 6.01 )
-!/    01-May-2017 : Adds directional MSS parameters     ( version 6.XX )
+!/    01-May-2017 : Adds directional MSS parameters     ( version 6.04 )
 !/    01-Mar-2018 : RTD option add variable de-rotation,( version 6.02 )
 !/                  standard lat-lons and rotated grid
 !/                  metadata
